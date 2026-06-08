@@ -22,7 +22,6 @@ ZenFile 旨在为 Android 提供极致美观的文件管理体验。拥有独家
 - **左右滑动切换页面**：在分类页与浏览页之间支持左右滑动手势切换
 - **远程服务器粘贴优化**：修复从远程服务器复制文件到本地后页面卡死的问题
 - **进度条可视化**：从远程服务器复制/剪切文件到本地时，显示圆形进度条和百分比
-- **邮箱复制功能**：长按邮箱地址即可复制，无需跳转邮件客户端
 
 ### 🛠️ 导航优化
 - **修复返回/下一级按钮**：在权限受限页面（如 `/storage/emulated`）时，返回和下一级按钮仍然可用
@@ -35,7 +34,7 @@ ZenFile 旨在为 Android 提供极致美观的文件管理体验。拥有独家
 - **精美 UI/UX：** 纹理与透明度融合的现代玻璃拟态界面设计。
 - **原生媒体索引：** 利用设备原生索引实现闪电般的图片、视频和音频库浏览，无需慢速递归扫描。
 - **内置媒体播放器：**
-    - **高性能视频播放器：** 基于 `media_kit` 驱动，流畅播放高分辨率视频。
+- **高性能视频播放器：** 基于 'media_kit' 驱动，流畅播放高分辨率视频。
     - **优雅音频播放器：** 简洁的播放界面，支持专辑封面和精确进度控制。
     - **双指缩放图片查看器：** 流畅手势操控，查看每一个细节。
 - **内置文本编辑器：** 直接在应用内查看和编辑 `.txt`、`.md`、`.json` 等代码文件。
@@ -50,7 +49,7 @@ ZenFile 旨在为 Android 提供极致美观的文件管理体验。拥有独家
 
 | | | | |
 |:---:|:---:|:---:|:---:|
-| <img src="https://github.com/l930203811/ZenFile/blob/main/assets/screenshots/screenshot_4.jpg" width="200"> | <img src="https://github.com/l930203811/ZenFile/blob/main/assets/screenshots/screenshot_2.jpg" width="200"> | <img src="https://github.com/l930203811/ZenFile/blob/main/assets/screenshots/screenshot_3.jpg" width="200"> | <img src="https://github.com/l930203811/ZenFile/blob/main/assets/screenshots/screenshot_1.png"> |
+|<img src=“https://github.com/l930203811/ZenFile/blob/main/assets/screenshots/screenshot_4.jpg” width=“200”> | <img src=“https://github.com/l930203811/ZenFile/blob/main/assets/screenshots/screenshot_2.jpg” width=“200”> | <img src=”https://github.com/l930203811/ZenFile/blob/main/assets/screenshots/screenshot_3.jpg“ 宽度=”200“> | <img src=”https://github.com/l930203811/ZenFile/blob/main/assets/screenshots/screenshot_1.png“> |
 
 ## 权限说明
 
