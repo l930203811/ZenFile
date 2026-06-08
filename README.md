@@ -2,7 +2,7 @@
 
 一款基于 Flutter 构建的精美文件管理器。
 
-> **声明**：本项目基于 [Senzme/NFile](https://github.com/Senzme/NFile) 进行二次开发优化。感谢原作者的开源贡献！
+> **声明**：本项目基于 [Senzme/NFile](https://github.com/Senzme/NFile) 进行二次开发优化。 感谢原作者的开源贡献！
 
 ## 概述
 
@@ -50,7 +50,7 @@ ZenFile 旨在为 Android 提供极致美观的文件管理体验。拥有独家
 
 | | | | |
 |:---:|:---:|:---:|:---:|
-| <img src="https://github.com/user-attachments/assets/2d36cbea-e994-4302-b3a3-4b4364e96a41" width="200"> | <img src="https://github.com/user-attachments/assets/66b864ed-2598-477c-bdb4-d045a71e93b9" width="200"> | <img src="https://github.com/user-attachments/assets/874a9d0f-1796-4e4d-9f92-2c8915626376" width="200"> | <img src="https://github.com/user-attachments/assets/ca1e78e0-8e68-4985-bc9c-39e763b8ed74" width="200"> |
+| <img src="https://github.com/l930203811/ZenFile/blob/main/assets/screenshots/screenshot_1.png" width="200"> | <img src="https://github.com/l930203811/ZenFile/blob/main/assets/screenshots/screenshot_2.jpg" width="200"> | <img src="https://github.com/l930203811/ZenFile/blob/main/assets/screenshots/screenshot_3.jpg" width="200"> | <img src="https://github.com/l930203811/ZenFile/blob/main/assets/screenshots/screenshot_4.jpg"> |
 
 ## 权限说明
 
