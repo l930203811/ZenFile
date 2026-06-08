@@ -1,0 +1,474 @@
+﻿import 'dart:io';
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:dynamic_color/dynamic_color.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+
+import 'core/theme.dart';
+import 'core/icon_fonts/broken_icons.dart';
+import 'providers/file_manager_provider.dart';
+import 'providers/media_provider.dart';
+import 'services/preferences_service.dart';
+import 'services/network_connections_service.dart';
+import 'services/intent_handler_service.dart';
+import 'services/pin_service.dart';
+import 'services/recycle_bin_service.dart';
+import 'services/audio_background_handler.dart';
+import 'package:audio_service/audio_service.dart';
+import 'ui/screens/home_screen.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  MediaKit.ensureInitialized();
+  await PreferencesService.init();
+  await PinService.init();
+  await NetworkConnectionsService.init();
+  await RecycleBinService.init();
+
+  // Load custom font dynamically if configured
+  try {
+    final customFontPath = PreferencesService.getCustomFontPath();
+    if (customFontPath != null && customFontPath.isNotEmpty) {
+      final file = File(customFontPath);
+      if (file.existsSync()) {
+        final loader = FontLoader('CustomFont');
+        final bytes = await file.readAsBytes();
+        loader.addFont(Future.value(ByteData.sublistView(bytes)));
+        await loader.load();
+        debugPrint('Successfully loaded custom font at startup');
+      }
+    }
+  } catch (e) {
+    debugPrint('Error loading custom font at startup: $e');
+  }
+
+  // Initialize audio_service for background media notification
+  // Wrapped in try-catch — app must still launch even if this fails
+  try {
+    await AudioService.init(
+      builder: () => getAudioHandler(),
+      config: const AudioServiceConfig(
+        androidNotificationChannelId: 'com.sequl.zenfile.audio',
+        androidNotificationChannelName: 'ZenFile Audio Player',
+        androidNotificationIcon: 'mipmap/ic_launcher',
+        androidShowNotificationBadge: true,
+        androidStopForegroundOnPause: true,
+        notificationColor: Color(0xFF6200EE),
+      ),
+    );
+  } catch (e) {
+    // audio_service init failed – background playback unavailable but app continues
+    debugPrint('[ZenFile] AudioService.init failed: $e');
+  }
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => FileManagerProvider()),
+        ChangeNotifierProvider(create: (_) => MediaProvider()),
+      ],
+      child: const ZenFileApp(),
+    ),
+  );
+}
+
+const _gestureExclusionChannel = MethodChannel('com.sequl.zenfile/gesture_exclusion');
+
+Future<void> _updateSystemGestureExclusion(bool disableLeftBack, double width, double screenHeight, double devicePixelRatio) async {
+  if (!Platform.isAndroid) return;
+  try {
+    final List<Map<String, int>> rects = [];
+    if (disableLeftBack) {
+      // Android enforces a strict vertical limit of 200dp per edge for gesture exclusions.
+      // We center a 200dp zone along the left edge of the screen.
+      const double exclusionHeight = 200.0;
+      final double topDp = (screenHeight - exclusionHeight) / 2.0;
+
+      final left = 0;
+      final top = (topDp * devicePixelRatio).toInt();
+      final right = (width * devicePixelRatio).toInt();
+      final bottom = ((topDp + exclusionHeight) * devicePixelRatio).toInt();
+      rects.add({
+        'left': left,
+        'top': top,
+        'right': right,
+        'bottom': bottom,
+      });
+    }
+    await _gestureExclusionChannel.invokeMethod('setSystemGestureExclusionRects', {
+      'rects': rects,
+    });
+  } catch (e) {
+    debugPrint('Failed to set system gesture exclusion: $e');
+  }
+}
+
+class ZenFileApp extends StatefulWidget {
+  const ZenFileApp({super.key});
+
+  @override
+  State<ZenFileApp> createState() => _ZenFileAppState();
+}
+
+class _ZenFileAppState extends State<ZenFileApp> {
+  ThemeMode _themeMode = ThemeMode.system;
+  bool? _hasPermission;
+  bool _sharingObserverSetup = false;
+  bool _isResolvingIntent = false;
+  StreamSubscription<List<SharedMediaFile>>? _sharingIntentSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    final hideNav = PreferencesService.getHideNavigationBar();
+    if (hideNav) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
+    } else {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
+    }
+    SystemChrome.setSystemUIChangeCallback((bool visible) async {
+      if (visible) {
+        if (PreferencesService.getHideNavigationBar()) {
+          await Future.delayed(const Duration(milliseconds: 1500));
+          if (PreferencesService.getHideNavigationBar()) {
+            SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
+          }
+        }
+      }
+    });
+    _themeMode = PreferencesService.getThemeMode();
+    // Setup sharing observer immediately to catch incoming intents at the earliest possible frame!
+    _setupSharingIntentObserver();
+    _initializeApplication();
+  }
+
+  @override
+  void dispose() {
+    _sharingIntentSubscription?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _initializeApplication() async {
+    await _checkStoragePermission();
+  }
+
+  Future<void> _checkStoragePermission() async {
+    if (Platform.isAndroid) {
+      final manageStorageGranted = await Permission.manageExternalStorage.isGranted;
+      final standardStorageGranted = await Permission.storage.isGranted;
+      bool audioGranted = true;
+      try {
+        final info = await DeviceInfoPlugin().androidInfo;
+        final sdk = info.version.sdkInt;
+        if (sdk >= 33) {
+          audioGranted = await Permission.audio.isGranted;
+        }
+      } catch (_) {}
+
+      if (mounted) {
+        setState(() {
+          _hasPermission = manageStorageGranted || (standardStorageGranted && audioGranted);
+        });
+      }
+    } else {
+      if (mounted) {
+        setState(() => _hasPermission = true);
+      }
+    }
+  }
+
+  Future<void> _requestStoragePermission() async {
+    if (Platform.isAndroid) {
+      final manageStorageGranted = await Permission.manageExternalStorage.request().isGranted;
+      bool standardStorageGranted = false;
+      bool audioGranted = true;
+      try {
+        final info = await DeviceInfoPlugin().androidInfo;
+        final sdk = info.version.sdkInt;
+        if (sdk >= 33) {
+          audioGranted = await Permission.audio.request().isGranted;
+        } else {
+          standardStorageGranted = await Permission.storage.request().isGranted;
+        }
+      } catch (_) {}
+
+      if (mounted) {
+        setState(() {
+          _hasPermission = manageStorageGranted || (standardStorageGranted && audioGranted);
+        });
+      }
+    } else {
+      if (mounted) {
+        setState(() => _hasPermission = true);
+      }
+    }
+  }
+
+  void _setupSharingIntentObserver() {
+    if (_sharingObserverSetup) return;
+    _sharingObserverSetup = true;
+    _sharingIntentSubscription = ReceiveSharingIntent.instance.getMediaStream().listen(
+      (List<SharedMediaFile> incomingFiles) {
+        if (incomingFiles.isNotEmpty) {
+          _dispatchExternalMediaOpen(incomingFiles.first.path);
+        }
+      },
+      onError: (_) {},
+    );
+
+    ReceiveSharingIntent.instance.getInitialMedia().then(
+      (List<SharedMediaFile> initialFiles) {
+        if (initialFiles.isNotEmpty) {
+          setState(() {
+            _isResolvingIntent = true;
+          });
+          _dispatchExternalMediaOpen(initialFiles.first.path);
+          ReceiveSharingIntent.instance.reset();
+        }
+      },
+      onError: (_) {},
+    );
+  }
+
+  void _dispatchExternalMediaOpen(String absoluteFilePath) {
+    if (absoluteFilePath.isEmpty) {
+      if (mounted && _isResolvingIntent) {
+        setState(() => _isResolvingIntent = false);
+      }
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final primaryContext = navigatorKey.currentContext;
+      if (primaryContext != null && primaryContext.mounted) {
+        try {
+          await IntentHandlerService.handleIncomingIntent(primaryContext, absoluteFilePath);
+        } finally {
+          if (mounted) {
+            setState(() {
+              _isResolvingIntent = false;
+            });
+          }
+        }
+      } else {
+        Future.delayed(const Duration(milliseconds: 300), () async {
+          final fallbackContext = navigatorKey.currentContext;
+          if (fallbackContext != null && fallbackContext.mounted) {
+            try {
+              await IntentHandlerService.handleIncomingIntent(fallbackContext, absoluteFilePath);
+            } finally {
+              if (mounted) {
+                setState(() {
+                  _isResolvingIntent = false;
+                });
+              }
+            }
+          } else {
+            if (mounted) {
+              setState(() {
+                _isResolvingIntent = false;
+              });
+            }
+          }
+        });
+      }
+    });
+  }
+
+  void _toggleTheme() {
+    setState(() {
+      _themeMode = _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    });
+    PreferencesService.saveThemeMode(_themeMode);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<FileManagerProvider>(
+      builder: (context, fileManager, _) {
+        final currentAccentOption = fileManager.accentColorOption;
+        final baseSeedColor = PreferencesService.getSeedColor(currentAccentOption);
+
+        return DynamicColorBuilder(
+          builder: (ColorScheme? dynamicLight, ColorScheme? dynamicDark) {
+            final activeLightScheme = currentAccentOption == 'dynamic' ? dynamicLight : null;
+            final activeDarkScheme = currentAccentOption == 'dynamic' ? dynamicDark : null;
+
+            return MaterialApp(
+              navigatorKey: navigatorKey,
+              title: 'ZenFile',
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.getAppTheme(light: true, seed: baseSeedColor, customScheme: activeLightScheme, fontFamily: fileManager.fontFamilyOption),
+              darkTheme: AppTheme.getAppTheme(light: false, pitchBlack: fileManager.amoledMode, seed: baseSeedColor, customScheme: activeDarkScheme, fontFamily: fileManager.fontFamilyOption),
+              themeMode: _themeMode,
+              builder: (context, child) {
+                final isDark = _themeMode == ThemeMode.system
+                    ? (MediaQuery.platformBrightnessOf(context) == Brightness.dark)
+                    : (_themeMode == ThemeMode.dark);
+                
+                final theme = isDark
+                    ? AppTheme.getAppTheme(light: false, pitchBlack: fileManager.amoledMode, seed: baseSeedColor, customScheme: activeDarkScheme, fontFamily: fileManager.fontFamilyOption)
+                    : AppTheme.getAppTheme(light: true, seed: baseSeedColor, customScheme: activeLightScheme, fontFamily: fileManager.fontFamilyOption);
+
+                final navBarColor = theme.scaffoldBackgroundColor;
+
+                final style = SystemUiOverlayStyle(
+                  statusBarColor: Colors.transparent,
+                  statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+                  statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+                  systemNavigationBarColor: navBarColor,
+                  systemNavigationBarDividerColor: Colors.transparent,
+                  systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+                  systemNavigationBarContrastEnforced: false,
+                  systemStatusBarContrastEnforced: false,
+                );
+
+                SystemChrome.setSystemUIOverlayStyle(style);
+
+                if (fileManager.hideNavigationBar) {
+                  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
+                } else {
+                  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
+                }
+
+                final disableLeftBack = fileManager.disableLeftBackGesture;
+                final size = MediaQuery.of(context).size;
+                final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _updateSystemGestureExclusion(disableLeftBack, 40.0, size.height, devicePixelRatio);
+                });
+
+                return AnnotatedRegion<SystemUiOverlayStyle>(
+                  value: style,
+                  child: child!,
+                );
+              },
+              home: _isResolvingIntent
+                  ? const _IntentLoadingScreen()
+                  : (_hasPermission == null
+                      ? const Scaffold()
+                      : (_hasPermission == true
+                          ? HomeScreen(toggleTheme: _toggleTheme)
+                          : _StoragePermissionShield(onRequestPermission: _requestStoragePermission))),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _IntentLoadingScreen extends StatelessWidget {
+  const _IntentLoadingScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF0D0D1A) : const Color(0xFFF9F9FF),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withOpacity(0.08),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Broken.document,
+                size: 48,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: 48,
+              child: LinearProgressIndicator(
+                minHeight: 3,
+                backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                color: theme.colorScheme.primary,
+                borderRadius: const BorderRadius.all(Radius.circular(2)),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              '正在打开共享文档...',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurface.withOpacity(0.8),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '正在解析安全内容流',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withOpacity(0.5),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StoragePermissionShield extends StatelessWidget {
+  final VoidCallback onRequestPermission;
+
+  const _StoragePermissionShield({required this.onRequestPermission});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Broken.folder_cross,
+                  size: 72,
+                  color: Theme.of(context).colorScheme.error.withOpacity(0.8),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  '需要存储权限',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'ZenFile 需要存储权限才能无缝管理、组织和显示您的媒体文件。',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                ),
+                const SizedBox(height: 32),
+                FilledButton.icon(
+                  onPressed: onRequestPermission,
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  icon: const Icon(Broken.shield_tick),
+                  label: const Text('授予权限', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
