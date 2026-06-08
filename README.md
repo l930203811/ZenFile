@@ -50,7 +50,7 @@ ZenFile 旨在为 Android 提供极致美观的文件管理体验。拥有独家
 
 | | | | |
 |:---:|:---:|:---:|:---:|
-| <img src="https://github.com/l930203811/ZenFile/blob/main/assets/screenshots/screenshot_1.png" width="200"> | <img src="https://github.com/l930203811/ZenFile/blob/main/assets/screenshots/screenshot_2.jpg" width="200"> | <img src="https://github.com/l930203811/ZenFile/blob/main/assets/screenshots/screenshot_3.jpg" width="200"> | <img src="https://github.com/l930203811/ZenFile/blob/main/assets/screenshots/screenshot_4.jpg"> |
+| <img src="https://github.com/l930203811/ZenFile/blob/main/assets/screenshots/screenshot_4.jpg" width="200"> | <img src="https://github.com/l930203811/ZenFile/blob/main/assets/screenshots/screenshot_2.jpg" width="200"> | <img src="https://github.com/l930203811/ZenFile/blob/main/assets/screenshots/screenshot_3.jpg" width="200"> | <img src="https://github.com/l930203811/ZenFile/blob/main/assets/screenshots/screenshot_1.png"> |
 
 ## 权限说明
 
