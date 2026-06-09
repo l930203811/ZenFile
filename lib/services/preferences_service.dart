@@ -602,6 +602,20 @@ class PreferencesService {
     }
   }
 
+  static const String _keyCustomAppIconPath = 'custom_app_icon_path';
+
+  static String? getCustomAppIconPath() {
+    return _prefs?.getString(_keyCustomAppIconPath);
+  }
+
+  static Future<void> saveCustomAppIconPath(String? val) async {
+    if (val == null) {
+      await _prefs?.remove(_keyCustomAppIconPath);
+    } else {
+      await _prefs?.setString(_keyCustomAppIconPath, val);
+    }
+  }
+
   static const String _keyDisableLeftBackGesture = 'disable_left_back_gesture';
 
   static bool getDisableLeftBackGesture() {
@@ -649,5 +663,16 @@ class PreferencesService {
 
   static Future<void> saveTrailingInfoType(String val) async {
     await _prefs?.setString(_keyTrailingInfoType, val);
+  }
+
+  // --- Category Icon Shape ---
+  static const String _keyCategoryIconShape = 'category_icon_shape';
+
+  static String getCategoryIconShape() {
+    return _prefs?.getString(_keyCategoryIconShape) ?? 'circle';
+  }
+
+  static Future<void> saveCategoryIconShape(String val) async {
+    await _prefs?.setString(_keyCategoryIconShape, val);
   }
 }

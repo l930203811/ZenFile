@@ -130,6 +130,7 @@ class FileManagerProvider extends ChangeNotifier {
     _rememberLastFolder = PreferencesService.getRememberLastFolder();
     _hideNavLabels = PreferencesService.getHideNavLabels();
     _trailingInfoType = PreferencesService.getTrailingInfoType();
+    _categoryIconShape = PreferencesService.getCategoryIconShape();
 
     // One-time migration: reset PDF (and other documents) default open action to 'native' if it was set to 'external'
     if (!PreferencesService.getPdfResetDone()) {
@@ -210,16 +211,18 @@ class FileManagerProvider extends ChangeNotifier {
     await PreferencesService.saveActiveAppIcon(val);
 
     String alias = 'com.sequl.zenfile.MainActivityDefault';
-    if (val == 'logo1') {
-      alias = 'com.sequl.zenfile.MainActivityLogo1';
-    } else if (val == 'logo2') {
-      alias = 'com.sequl.zenfile.MainActivityLogo2';
-    } else if (val == 'logo3') {
-      alias = 'com.sequl.zenfile.MainActivityLogo3';
-    } else if (val == 'logo4') {
-      alias = 'com.sequl.zenfile.MainActivityLogo4';
-    } else if (val == 'logo5') {
-      alias = 'com.sequl.zenfile.MainActivityLogo5';
+    if (val == 'design1') {
+      alias = 'com.sequl.zenfile.MainActivityDesign1';
+    } else if (val == 'design2') {
+      alias = 'com.sequl.zenfile.MainActivityDesign2';
+    } else if (val == 'design3') {
+      alias = 'com.sequl.zenfile.MainActivityDesign3';
+    } else if (val == 'design4') {
+      alias = 'com.sequl.zenfile.MainActivityDesign4';
+    } else if (val == 'design5') {
+      alias = 'com.sequl.zenfile.MainActivityDesign5';
+    } else if (val == 'custom') {
+      alias = 'com.sequl.zenfile.MainActivityCustom';
     }
 
     await AppManagerService.changeAppIcon(alias);
@@ -779,6 +782,16 @@ class FileManagerProvider extends ChangeNotifier {
   void toggleHideActionText() {
     _hideActionText = !_hideActionText;
     PreferencesService.saveHideActionText(_hideActionText);
+    notifyListeners();
+  }
+
+  String _categoryIconShape = 'circle';
+  String get categoryIconShape => _categoryIconShape;
+
+  void setCategoryIconShape(String shape) {
+    if (_categoryIconShape == shape) return;
+    _categoryIconShape = shape;
+    PreferencesService.saveCategoryIconShape(shape);
     notifyListeners();
   }
 
@@ -2052,13 +2065,8 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   Future<void> _pasteFromRemoteToLocal(BuildContext context, bool clearAfterPaste) async {
-    activeTab.isLoading = true;
-    notifyListeners();
-
     final conn = _remoteClipboardConnection;
     if (conn == null) {
-      activeTab.isLoading = false;
-      notifyListeners();
       return;
     }
 
@@ -2083,8 +2091,6 @@ class FileManagerProvider extends ChangeNotifier {
     }
 
     if (client == null) {
-      activeTab.isLoading = false;
-      notifyListeners();
       return;
     }
 
@@ -2165,15 +2171,6 @@ class FileManagerProvider extends ChangeNotifier {
           }
         }
       }
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_isCut ? '成功移动项目' : '成功复制项目'),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
     } catch (e) {
       debugPrint('Error pasting from remote: $e');
       if (context.mounted) {
@@ -2193,7 +2190,6 @@ class FileManagerProvider extends ChangeNotifier {
       if (clearAfterPaste) {
         clearClipboard();
       }
-      activeTab.isLoading = false;
       await loadDirectory(currentPath, showLoading: false, clearCache: true);
       notifyListeners();
     }

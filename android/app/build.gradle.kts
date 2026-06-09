@@ -49,9 +49,6 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         resourceConfigurations.addAll(listOf("en"))
-        ndk {
-            abiFilters.addAll(listOf("arm64-v8a"))
-        }
     }
 
     buildTypes {

@@ -408,10 +408,12 @@ class MainActivity : AudioServiceFragmentActivity() {
                         try {
                             val aliases = listOf(
                                 "com.sequl.zenfile.MainActivityDefault",
-                                "com.sequl.zenfile.MainActivityLogo1",
-                                "com.sequl.zenfile.MainActivityLogo2",
-                                "com.sequl.zenfile.MainActivityLogo3",
-                                "com.sequl.zenfile.MainActivityLogo4"
+                                "com.sequl.zenfile.MainActivityDesign1",
+                                "com.sequl.zenfile.MainActivityDesign2",
+                                "com.sequl.zenfile.MainActivityDesign3",
+                                "com.sequl.zenfile.MainActivityDesign4",
+                                "com.sequl.zenfile.MainActivityDesign5",
+                                "com.sequl.zenfile.MainActivityCustom"
                             )
 
                             for (alias in aliases) {

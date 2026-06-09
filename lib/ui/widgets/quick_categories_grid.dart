@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../providers/media_provider.dart';
 import '../../providers/file_manager_provider.dart';
+import '../../services/preferences_service.dart';
 import '../../services/network_connections_service.dart';
 import '../../models/network_connection_model.dart';
 import '../screens/media_category_screen.dart';
@@ -395,6 +396,8 @@ class QuickCategoriesGrid extends StatelessWidget {
                   final color = cat['color'] as Color;
                   final count = cat['count'] as String;
                   final action = cat['action'] as VoidCallback;
+                  final shape = PreferencesService.getCategoryIconShape();
+                  final isSquare = shape == 'square';
 
                   return Column(
                     key: ValueKey(label),
@@ -402,10 +405,10 @@ class QuickCategoriesGrid extends StatelessWidget {
                     children: [
                       Material(
                         color: color.withOpacity(0.15),
-                        shape: const CircleBorder(),
+                        shape: isSquare ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)) : const CircleBorder(),
                         child: InkWell(
                           onTap: action,
-                          customBorder: const CircleBorder(),
+                          customBorder: isSquare ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)) : const CircleBorder(),
                           splashColor: color.withOpacity(0.25),
                           highlightColor: color.withOpacity(0.15),
                           child: Container(

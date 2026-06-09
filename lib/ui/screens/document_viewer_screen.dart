@@ -6,6 +6,7 @@ import 'package:docx_to_text/docx_to_text.dart';
 import 'package:excel/excel.dart' as excel_pkg;
 import 'package:excel2003/excel2003.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:xml/xml.dart';
@@ -755,7 +756,36 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
             ),
             contextMenuBuilder: (context, editableTextState) {
               final buttons = editableTextState.contextMenuButtonItems;
-              if (buttons.isEmpty) return const SizedBox.shrink();
+              if (buttons.isEmpty) {
+                // Fallback: always show Copy and Select All for read-only text
+                return AdaptiveTextSelectionToolbar(
+                  anchors: editableTextState.contextMenuAnchors,
+                  children: [
+                    TextSelectionToolbarTextButton(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                      onPressed: () {
+                        final value = editableTextState.textEditingValue;
+                        if (value.selection.isValid && !value.selection.isCollapsed) {
+                          Clipboard.setData(ClipboardData(text: value.selection.textInside(value.text)));
+                        }
+                      },
+                      child: const Text('复制'),
+                    ),
+                    TextSelectionToolbarTextButton(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                      onPressed: () {
+                        editableTextState.userUpdateTextEditingValue(
+                          editableTextState.textEditingValue.copyWith(
+                            selection: TextSelection(baseOffset: 0, extentOffset: editableTextState.textEditingValue.text.length),
+                          ),
+                          SelectionChangedCause.toolbar,
+                        );
+                      },
+                      child: const Text('全选'),
+                    ),
+                  ],
+                );
+              }
               return AdaptiveTextSelectionToolbar(
                 anchors: editableTextState.contextMenuAnchors,
                 children: buttons.map((button) {
@@ -972,7 +1002,35 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
           ),
           contextMenuBuilder: (context, editableTextState) {
             final buttons = editableTextState.contextMenuButtonItems;
-            if (buttons.isEmpty) return const SizedBox.shrink();
+            if (buttons.isEmpty) {
+              return AdaptiveTextSelectionToolbar(
+                anchors: editableTextState.contextMenuAnchors,
+                children: [
+                  TextSelectionToolbarTextButton(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                    onPressed: () {
+                      final value = editableTextState.textEditingValue;
+                      if (value.selection.isValid && !value.selection.isCollapsed) {
+                        Clipboard.setData(ClipboardData(text: value.selection.textInside(value.text)));
+                      }
+                    },
+                    child: const Text('复制'),
+                  ),
+                  TextSelectionToolbarTextButton(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                    onPressed: () {
+                      editableTextState.userUpdateTextEditingValue(
+                        editableTextState.textEditingValue.copyWith(
+                          selection: TextSelection(baseOffset: 0, extentOffset: editableTextState.textEditingValue.text.length),
+                        ),
+                        SelectionChangedCause.toolbar,
+                      );
+                    },
+                    child: const Text('全选'),
+                  ),
+                ],
+              );
+            }
             return AdaptiveTextSelectionToolbar(
               anchors: editableTextState.contextMenuAnchors,
               children: buttons.map((button) {

@@ -991,7 +991,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
               actionsPadding: const EdgeInsets.only(right: 4),
               leadingWidth: isSelectionMode ? 56 : 160,
               title: isSelectionMode
-                  ? Text('${provider.selectedPaths.length}/${provider.currentFiles.length}')
+                  ? const SizedBox.shrink()
                   : const SizedBox.shrink(),
               leading: isSelectionMode
                   ? IconButton(
@@ -1034,155 +1034,9 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                         ]
                       : [
                           IconButton(
-                            icon: const Icon(Broken.document_copy),
-                            tooltip: '复制',
-                            onPressed: () {
-                              provider.copySelected();
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Broken.scissor),
-                            tooltip: '剪切',
-                            onPressed: () {
-                              provider.cutSelected();
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Broken.edit),
-                            tooltip: '重命名',
-                            onPressed: () async {
-                              if (provider.selectedPaths.length == 1) {
-                                final path = provider.selectedPaths.first;
-                                final currentName = p.basename(path);
-                                final newName = await FileActionDialogs.showTextInputDialog(
-                                  context,
-                                  title: '重命名',
-                                  hint: '输入新名称',
-                                  initialValue: currentName,
-                                  actionText: '重命名',
-                                );
-                                if (newName != null && newName.isNotEmpty) {
-                                  await provider.renameFile(path, newName);
-                                  provider.clearSelection();
-                                }
-                              } else if (provider.selectedPaths.length > 1) {
-                                await BatchRenameDialog.show(context, provider);
-                              }
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Broken.trash, color: Colors.redAccent),
-                            tooltip: '删除选中',
-                            onPressed: () async {
-                              final confirm = await FileActionDialogs.showConfirmDialog(
-                                context,
-                                title: '删除选中',
-                                content: '确定要删除 ${provider.selectedPaths.length} 个项目吗？此操作无法撤销。',
-                              );
-                              if (confirm) {
-                                await provider.deleteSelected();
-                              }
-                            },
-                          ),
-                          PopupMenuButton<String>(
-                            icon: const Icon(Broken.more),
-                            tooltip: '更多操作',
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            position: PopupMenuPosition.under,
-                            elevation: 8,
-                            onSelected: (action) async {
-                              if (action == 'select_all') {
-                                provider.selectAll();
-                              } else if (action == 'share') {
-                                final selectedPaths = provider.selectedPaths.toList();
-                                await FolderShareService.sharePaths(context, selectedPaths);
-                                provider.clearSelection();
-                              } else if (action == 'pin_to_top') {
-                                final selected = provider.selectedPaths.toList();
-                                final allPinned = selected.every((p) => PinService.isPinned(p));
-                                for (final path in selected) {
-                                  if (allPinned) {
-                                    await PinService.unpin(path);
-                                  } else {
-                                    await PinService.pin(path);
-                                  }
-                                }
-                                provider.refreshDirectoryView();
-                                provider.clearSelection();
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(allPinned ? '已取消置顶所选项目' : '已将所选项目置顶'),
-                                      behavior: SnackBarBehavior.floating,
-                                    ),
-                                  );
-                                }
-                              } else if (action == 'properties') {
-                                final selectedPaths = provider.selectedPaths.toList();
-                                if (selectedPaths.isNotEmpty) {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => PropertiesModalDialog(
-                                      selectedPaths: selectedPaths,
-                                      provider: provider,
-                                    ),
-                                  );
-                                }
-                              }
-                            },
-                            itemBuilder: (context) {
-                              final selected = provider.selectedPaths.toList();
-                              final allPinned = selected.isNotEmpty && selected.every((p) => PinService.isPinned(p));
-                              return [
-                                const PopupMenuItem<String>(
-                                  value: 'select_all',
-                                  child: Row(
-                                    children: [
-                                      Icon(Broken.tick_square, size: 20),
-                                      SizedBox(width: 12),
-                                      Text('全选', style: TextStyle(fontWeight: FontWeight.w500)),
-                                    ],
-                                  ),
-                                ),
-                                const PopupMenuItem<String>(
-                                  value: 'share',
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.share_outlined, size: 20),
-                                      SizedBox(width: 12),
-                                      Text('分享', style: TextStyle(fontWeight: FontWeight.w500)),
-                                    ],
-                                  ),
-                                ),
-                                PopupMenuItem<String>(
-                                  value: 'pin_to_top',
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        allPinned ? Icons.push_pin_rounded : Icons.push_pin_outlined, 
-                                        size: 20, 
-                                        color: allPinned ? Colors.orange : null
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Text(
-                                        allPinned ? '取消置顶' : '置顶', 
-                                        style: const TextStyle(fontWeight: FontWeight.w500)
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const PopupMenuItem<String>(
-                                  value: 'properties',
-                                  child: Row(
-                                    children: [
-                                      Icon(Broken.info_circle, size: 20),
-                                      const SizedBox(width: 12),
-                                      Text('属性', style: TextStyle(fontWeight: FontWeight.w500)),
-                                    ],
-                                  ),
-                                ),
-                              ];
-                            },
+                            icon: const Icon(Broken.tick_square),
+                            tooltip: '全选',
+                            onPressed: () => provider.selectAll(),
                           ),
                         ]
                   : provider.showBottomActionBar
@@ -1620,27 +1474,11 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                     onDoubleTap: () async {
                       FileOperationProgressDialog.show(context, provider);
                       await provider.pasteFile(context, clearAfterPaste: false);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('已粘贴（保留剪贴板以支持多次粘贴）'),
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
-                      }
                     },
                     child: FloatingActionButton.extended(
                       onPressed: () async {
                         FileOperationProgressDialog.show(context, provider);
                         await provider.pasteFile(context, clearAfterPaste: true);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('粘贴成功'),
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
-                        }
                       },
                       icon: const Icon(Broken.clipboard),
                       label: const Text('粘贴到此处'),
@@ -1663,7 +1501,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
               }
               return null;
             })(),
-            bottomNavigationBar: (isSelectionMode && provider.showBottomActionBar)
+            bottomNavigationBar: isSelectionMode
                 ? SelectionActionBar(provider: provider)
                 : !provider.showBottomActionBar
                     ? null

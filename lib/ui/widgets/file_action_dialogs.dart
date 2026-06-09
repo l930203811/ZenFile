@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/icon_fonts/broken_icons.dart';
 
 class FileActionDialogs {
   static Future<String?> showTextInputDialog(
@@ -112,6 +113,71 @@ class FileActionDialogs {
           ],
         );
       },
+    );
+  }
+}
+
+class FileActionSheet {
+  static Future<void> show(BuildContext context, Function(String) onAction, {
+    bool isArchive = false,
+    bool showShare = false,
+    bool showInLocation = false,
+  }) {
+    final theme = Theme.of(context);
+    return showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) {
+        return Container(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Center(
+                  child: Container(
+                    width: 38, height: 4, margin: const EdgeInsets.only(top: 12, bottom: 8),
+                    decoration: BoxDecoration(color: theme.colorScheme.onSurface.withOpacity(0.15), borderRadius: BorderRadius.circular(2)),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                if (showInLocation)
+                  _buildTile(ctx, theme, icon: Broken.folder_open, title: '在位置中显示', value: 'show_in_location', onAction: onAction),
+                if (showShare)
+                  _buildTile(ctx, theme, icon: Icons.share_outlined, title: '分享', value: 'share', onAction: onAction),
+                if (isArchive)
+                  _buildTile(ctx, theme, icon: Broken.archive, title: '解压', value: 'extract', onAction: onAction),
+                _buildTile(ctx, theme, icon: Broken.box_add, title: '压缩', value: 'archive', onAction: onAction),
+                _buildTile(ctx, theme, icon: Broken.document_copy, title: '复制', value: 'copy', onAction: onAction),
+                _buildTile(ctx, theme, icon: Broken.scissor, title: '剪切', value: 'cut', onAction: onAction),
+                _buildTile(ctx, theme, icon: Broken.edit, title: '重命名', value: 'rename', onAction: onAction),
+                _buildDeleteTile(ctx, theme, onAction: onAction),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  static Widget _buildTile(BuildContext ctx, ThemeData theme, {required IconData icon, required String title, required String value, required Function(String) onAction}) {
+    return ListTile(
+      leading: Icon(icon, size: 22),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+      onTap: () { Navigator.pop(ctx); onAction(value); },
+    );
+  }
+
+  static Widget _buildDeleteTile(BuildContext ctx, ThemeData theme, {required Function(String) onAction}) {
+    return ListTile(
+      leading: const Icon(Broken.trash, size: 22, color: Colors.redAccent),
+      title: const Text('删除', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.redAccent)),
+      onTap: () { Navigator.pop(ctx); onAction('delete'); },
     );
   }
 }

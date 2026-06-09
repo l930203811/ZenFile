@@ -25,7 +25,6 @@ class SelectionActionBar extends StatelessWidget {
     final hasClipboard = provider.hasClipboard;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         boxShadow: [
@@ -37,9 +36,34 @@ class SelectionActionBar extends StatelessWidget {
         ],
       ),
       child: SafeArea(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
+            // Selected count indicator
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withOpacity(0.06),
+                border: Border(
+                  bottom: BorderSide(color: theme.colorScheme.primary.withOpacity(0.1)),
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  '已选择 $selectedCount 项',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
             _ActionButton(
               icon: Broken.document_copy,
               label: '复制',
@@ -146,11 +170,6 @@ class SelectionActionBar extends StatelessWidget {
                   FileOperationProgressDialog.show(context, provider);
                   await provider.pasteFile(context);
                   provider.clearSelection();
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('成功粘贴项目')),
-                    );
-                  }
                 } else if (action == 'select_all') {
                   provider.selectAll();
                 } else if (action == 'share') {
@@ -242,6 +261,9 @@ class SelectionActionBar extends StatelessWidget {
             ),
           ],
         ),
+        const SizedBox(height: 8),
+      ],
+    ),
       ),
     );
   }

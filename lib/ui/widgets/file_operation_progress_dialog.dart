@@ -18,7 +18,7 @@ class FileOperationProgressDialog extends StatelessWidget {
       barrierDismissible: false,
       barrierColor: Colors.black.withOpacity(0.4),
       builder: (context) => PopScope(
-        canPop: false, // Prevent dismissing with back button
+        canPop: false,
         child: FileOperationProgressDialog(provider: provider),
       ),
     );
@@ -27,7 +27,6 @@ class FileOperationProgressDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final size = MediaQuery.of(context).size;
 
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
@@ -36,8 +35,6 @@ class FileOperationProgressDialog extends StatelessWidget {
           valueListenable: provider.progressNotifier,
           builder: (context, progress, child) {
             if (progress == null) {
-              // If progress is null, the operation is done or not started yet.
-              // We automatically pop the dialog in a post-frame callback.
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (Navigator.canPop(context)) {
                   Navigator.pop(context);
@@ -46,13 +43,8 @@ class FileOperationProgressDialog extends StatelessWidget {
               return const SizedBox.shrink();
             }
 
-            final percent = progress.percentage.clamp(0.0, 1.0);
-            final speedText = '${progress.speedMBs.toStringAsFixed(1)} MB/s';
-            final etaText = progress.eta.inSeconds > 0
-                ? '${progress.eta.inMinutes.toString().padLeft(2, '0')}:${(progress.eta.inSeconds % 60).toString().padLeft(2, '0')} remaining'
-                : 'calculating...';
-            final processedSize = FileUtils.formatBytes(progress.bytesProcessed, 2);
-            final totalSize = FileUtils.formatBytes(progress.totalBytes, 2);
+            final percent = (progress.percentage * 100).clamp(0, 100).toInt();
+            final isDark = theme.brightness == Brightness.dark;
 
             return Card(
               elevation: 24,
@@ -61,195 +53,162 @@ class FileOperationProgressDialog extends StatelessWidget {
                 borderRadius: BorderRadius.circular(28),
                 side: BorderSide(color: theme.colorScheme.outline.withOpacity(0.12)),
               ),
-              color: theme.colorScheme.surface.withOpacity(0.85),
-              margin: const EdgeInsets.symmetric(horizontal: 24),
+              color: isDark ? const Color(0xFF1E1E2E) : theme.colorScheme.surface.withOpacity(0.95),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(28),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
-                  child: Container(
-                    width: size.width * 0.85,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // Dialog Title & Icon
-                        Row(
+                  padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 32),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Title
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            provider.isCut ? Broken.scissor : Broken.document_copy,
+                            color: theme.colorScheme.primary,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            provider.isCut ? '正在移动文件...' : '正在复制文件...',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Circular progress with percentage
+                      SizedBox(
+                        width: 120,
+                        height: 120,
+                        child: Stack(
+                          fit: StackFit.expand,
                           children: [
+                            // Background circle
                             Container(
-                              padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.primary.withOpacity(0.12),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Icon(
-                                Broken.document_copy,
-                                color: theme.colorScheme.primary,
-                                size: 24,
+                                shape: BoxShape.circle,
+                                color: theme.colorScheme.primary.withOpacity(0.08),
                               ),
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    provider.isCut ? '正在移动文件...' : '正在复制文件...',
-                                    style: theme.textTheme.titleLarge?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: -0.5,
+                            // Progress arc
+                            ShaderMask(
+                              shaderCallback: (bounds) {
+                                return SweepGradient(
+                                  startAngle: 0.0,
+                                  endAngle: 3.141592653589793 * 2 * progress.percentage.clamp(0.0, 1.0),
+                                  colors: [
+                                    theme.colorScheme.primary,
+                                    theme.colorScheme.primary.withRed(
+                                      (theme.colorScheme.primary.red * 0.6).round().clamp(0, 255),
+                                    ).withBlue(
+                                      (theme.colorScheme.primary.blue * 1.2).round().clamp(0, 255),
                                     ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    '正在处理第 ${progress.currentFileIndex} 项，共 ${progress.totalFiles} 项',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: theme.colorScheme.onSurface.withOpacity(0.55),
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
+                                  ],
+                                  transform: const GradientRotation(-1.5708),
+                                ).createShader(bounds);
+                              },
+                              blendMode: BlendMode.srcIn,
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            // Inner circle (cutout)
+                            Center(
+                              child: Container(
+                                width: 96,
+                                height: 96,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: isDark ? const Color(0xFF1E1E2E) : theme.colorScheme.surface,
+                                ),
+                              ),
+                            ),
+                            // Percentage text
+                            Center(
+                              child: Text(
+                                '$percent%',
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.w900,
+                                  color: theme.colorScheme.primary,
+                                  letterSpacing: -1,
+                                ),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 24),
+                      ),
+                      const SizedBox(height: 20),
 
-                        // Current File Name with sleek container
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.surfaceVariant.withOpacity(0.4),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: theme.colorScheme.outline.withOpacity(0.06)),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Broken.document,
-                                size: 18,
-                                color: theme.colorScheme.primary.withOpacity(0.8),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  progress.currentFileName,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: theme.colorScheme.onSurface.withOpacity(0.85),
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
+                      // Current file info
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        const SizedBox(height: 24),
-
-                        // Sleek Linear Progress Bar with animated gradient
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                        child: Row(
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  '总体进度',
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: theme.colorScheme.onSurface.withOpacity(0.55),
-                                  ),
-                                ),
-                                Text(
-                                  '${(percent * 100).toStringAsFixed(0)}%',
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w900,
-                                    color: theme.colorScheme.primary,
-                                  ),
-                                ),
-                              ],
+                            Icon(
+                              Broken.document,
+                              size: 16,
+                              color: theme.colorScheme.primary.withOpacity(0.7),
                             ),
-                            const SizedBox(height: 8),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Stack(
-                                children: [
-                                  Container(
-                                    height: 10,
-                                    color: theme.colorScheme.primary.withOpacity(0.08),
-                                  ),
-                                  AnimatedContainer(
-                                    duration: const Duration(milliseconds: 300),
-                                    curve: Curves.easeOutCubic,
-                                    height: 10,
-                                    width: (size.width * 0.72) * percent,
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          theme.colorScheme.primary,
-                                          theme.colorScheme.primary.withRed(100).withBlue(220),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                progress.currentFileName,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: theme.colorScheme.onSurface.withOpacity(0.8),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 24),
+                      ),
+                      const SizedBox(height: 8),
 
-                        // Stats Grid (Speed, ETA, Size)
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildStatTile(
-                                theme,
-                                label: '传输速度',
-                                value: speedText,
-                                icon: Broken.chart_3,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _buildStatTile(
-                                theme,
-                                label: '预计时间',
-                                value: etaText,
-                                icon: Broken.clock,
-                              ),
-                            ),
-                          ],
+                      // Stats row
+                      Text(
+                        '${progress.currentFileIndex}/${progress.totalFiles}  |  ${FileUtils.formatBytes(progress.bytesProcessed, 1)} / ${FileUtils.formatBytes(progress.totalBytes, 1)}  |  ${progress.speedMBs.toStringAsFixed(1)} MB/s',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurface.withOpacity(0.45),
+                          fontSize: 11,
                         ),
-                        const SizedBox(height: 12),
-                        _buildStatTile(
-                          theme,
-                          label: '已处理数据',
-                          value: '$processedSize of $totalSize',
-                          icon: Broken.folder_open,
-                          isRow: true,
-                        ),
-                        const SizedBox(height: 28),
+                      ),
+                      const SizedBox(height: 20),
 
-                        // Premium outline Cancel Button
-                        OutlinedButton.icon(
+                      // Cancel button
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
                           onPressed: () {
                             provider.cancelOperation();
                           },
-                          icon: const Icon(Broken.close_square, size: 18),
-                          label: const Text('取消操作', style: TextStyle(fontWeight: FontWeight.bold)),
+                          icon: const Icon(Broken.close_square, size: 16),
+                          label: const Text('取消操作', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.redAccent,
-                            side: BorderSide(color: Colors.redAccent.withOpacity(0.4)),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            side: BorderSide(color: Colors.redAccent.withOpacity(0.3)),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(14),
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -257,64 +216,6 @@ class FileOperationProgressDialog extends StatelessWidget {
           },
         ),
       ),
-    );
-  }
-
-  Widget _buildStatTile(
-    ThemeData theme, {
-    required String label,
-    required String value,
-    required IconData icon,
-    bool isRow = false,
-  }) {
-    final content = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label.toUpperCase(),
-          style: TextStyle(
-            fontSize: 9,
-            fontWeight: FontWeight.bold,
-            color: theme.colorScheme.onSurface.withOpacity(0.4),
-            letterSpacing: 0.8,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: theme.colorScheme.onSurface.withOpacity(0.9),
-          ),
-        ),
-      ],
-    );
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceVariant.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.04)),
-      ),
-      child: isRow
-          ? Row(
-              children: [
-                Icon(icon, size: 18, color: theme.colorScheme.primary.withOpacity(0.7)),
-                const SizedBox(width: 10),
-                Expanded(child: content),
-              ],
-            )
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(icon, size: 18, color: theme.colorScheme.primary.withOpacity(0.7)),
-                const SizedBox(width: 8),
-                const SizedBox(height: 6),
-                content,
-              ],
-            ),
     );
   }
 }

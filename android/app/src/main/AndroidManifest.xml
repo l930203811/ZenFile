@@ -36,7 +36,8 @@
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
-            android:windowSoftInputMode="adjustResize">
+            android:windowSoftInputMode="adjustResize"
+            android:enabled="true">
             <!-- Boot theme while Flutter initializes -->
             <meta-data
               android:name="io.flutter.embedding.android.NormalTheme"
@@ -100,74 +101,87 @@
 
         <activity-alias
             android:name=".MainActivityDefault"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@drawable/ic_launcher_default"
+            android:label="ZF管理器"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityDesign1"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@drawable/design_1"
+            android:label="ZF管理器"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityDesign2"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@drawable/design_2"
+            android:label="ZF管理器"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityDesign3"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@drawable/design_3"
+            android:label="ZF管理器"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityDesign4"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@drawable/design_4"
+            android:label="ZF管理器"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityDesign5"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@drawable/design_5"
+            android:label="ZF管理器"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityCustom"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher"
-            android:label="ZF管理器"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-
-        <activity-alias
-            android:name=".MainActivityLogo1"
-            android:enabled="true"
-            android:exported="true"
-            android:icon="@drawable/n1"
-            android:label="ZF管理器"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-
-        <activity-alias
-            android:name=".MainActivityLogo2"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@drawable/n2"
-            android:label="ZF管理器"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-
-        <activity-alias
-            android:name=".MainActivityLogo3"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@drawable/n3"
-            android:label="ZF管理器"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-
-        <activity-alias
-            android:name=".MainActivityLogo4"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@drawable/n4"
-            android:label="ZF管理器"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-
-        <activity-alias
-            android:name=".MainActivityLogo5"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@drawable/n5"
             android:label="ZF管理器"
             android:targetActivity=".MainActivity">
             <intent-filter>

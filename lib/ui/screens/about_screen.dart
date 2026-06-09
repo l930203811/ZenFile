@@ -128,7 +128,7 @@ class AboutZenFileScreen extends StatelessWidget {
                           child: Padding(
                             padding: const EdgeInsets.all(12.0),
                             child: Image.asset(
-                              'assets/ic_launcher.webp',
+                              'assets/logo/design_5_nature.jpg',
                               fit: BoxFit.contain,
                               errorBuilder: (context, error, stackTrace) {
                                 // Fallback icon in case asset load fails
@@ -163,13 +163,24 @@ class AboutZenFileScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(30),
                       border: Border.all(color: theme.colorScheme.primary.withOpacity(0.2)),
                     ),
-                    child: Text(
-                      'v1.0.33 (Stable)',
-                      style: TextStyle(
-                        color: theme.colorScheme.primary,
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'LexendDeca',
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(30),
+                      onTap: () => _showChangelog(context, theme),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'v1.0.1 (Stable)',
+                            style: TextStyle(
+                              color: theme.colorScheme.primary,
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'LexendDeca',
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Icon(Icons.arrow_forward_ios, size: 10, color: theme.colorScheme.primary.withOpacity(0.6)),
+                        ],
                       ),
                     ),
                   ),
@@ -466,6 +477,114 @@ class AboutZenFileScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showChangelog(BuildContext context, ThemeData theme) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: theme.scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          minChildSize: 0.4,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (ctx, scrollController) {
+            return SingleChildScrollView(
+              controller: scrollController,
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 16), decoration: BoxDecoration(color: Colors.grey.withOpacity(0.3), borderRadius: BorderRadius.circular(2))),
+                  ),
+                  Text('更新日志', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 20),
+                  _buildVersionSection(ctx, theme, 'v1.0.1', '2026-06-10', [
+                    '全新安装包图标（自然禅意风格）',
+                    '圆形百分比进度条（复制/移动文件时显示）',
+                    '操作成功后自动关闭进度条，无需手动确认',
+                    '文件操作菜单改为底部弹出（不再遮挡标签栏）',
+                    '选择模式操作栏移至屏幕底部（含已选数量指示器）',
+                    '修复：备用图标切换不生效',
+                    '修复：切换图标后点击进入应用详情',
+                    '修复：远程复制后切换本地页面异常',
+                    '文本查看器长按菜单支持复制和全选（已汉化）',
+                    '文本编辑器菜单全面汉化',
+                    '拖放弹窗布局优化（更紧凑）',
+                    '分类页图标支持圆形/方形背景切换',
+                    '分类图标形状设置（外观与主题中切换）',
+                  ]),
+                  const SizedBox(height: 16),
+                  _buildVersionSection(ctx, theme, 'v1.0.0', '2026-06-01', [
+                    'ZenFile 首次发布',
+                    '双面板文件浏览器',
+                    '多标签页支持',
+                    '远程服务器连接（FTP/SFTP/WebDAV/SMB）',
+                    '内置媒体播放器',
+                    '文件加密保险柜',
+                    'FTP/WebDAV 服务器功能',
+                    '应用图标切换（多种风格可选）',
+                    '自定义主题与外观设置',
+                  ]),
+                  const SizedBox(height: 40),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildVersionSection(BuildContext ctx, ThemeData theme, String version, String date, List<String> changes) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.06)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(version, style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+              ),
+              const SizedBox(width: 10),
+              Text(date, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...changes.map((c) => Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Container(width: 5, height: 5, decoration: BoxDecoration(shape: BoxShape.circle, color: theme.colorScheme.primary.withOpacity(0.5))),
+                ),
+                const SizedBox(width: 10),
+                Expanded(child: Text(c, style: TextStyle(fontSize: 13.5, height: 1.4, color: theme.colorScheme.onSurface.withOpacity(0.8)))),
+              ],
+            ),
+          )),
+        ],
       ),
     );
   }

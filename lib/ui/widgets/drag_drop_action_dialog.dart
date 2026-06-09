@@ -113,78 +113,6 @@ class _DragDropActionDialogState extends State<DragDropActionDialog> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: _getFileIconColor(context).withOpacity(0.1),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: _getFileIconColor(context).withOpacity(0.2),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          )
-                        ]
-                      ),
-                      child: Icon(
-                        _getFileIcon(),
-                        color: _getFileIconColor(context),
-                        size: 28,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '拖放选项',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 20,
-                              letterSpacing: -0.5,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.primaryContainer.withOpacity(0.25),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: theme.colorScheme.primary.withOpacity(0.12)),
-                            ),
-                            child: Text(
-                              itemName,
-                              style: TextStyle(
-                                color: theme.colorScheme.primary,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  height: 1.5,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.transparent,
-                        theme.colorScheme.primary.withOpacity(0.25),
-                        Colors.transparent,
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-
                 Text(
                   '目标位置'.toUpperCase(),
                   style: theme.textTheme.titleSmall?.copyWith(
@@ -194,7 +122,7 @@ class _DragDropActionDialogState extends State<DragDropActionDialog> {
                     color: theme.colorScheme.primary.withOpacity(0.85),
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 6),
 
                 if (showSelectedFolderOption)
                   _buildDestinationCard(
@@ -228,9 +156,9 @@ class _DragDropActionDialogState extends State<DragDropActionDialog> {
                   },
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surfaceVariant.withOpacity(0.35),
                     borderRadius: BorderRadius.circular(14),
@@ -257,7 +185,7 @@ class _DragDropActionDialogState extends State<DragDropActionDialog> {
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
                 Text(
                   '选择操作'.toUpperCase(),
                   style: theme.textTheme.titleSmall?.copyWith(

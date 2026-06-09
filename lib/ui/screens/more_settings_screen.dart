@@ -1323,6 +1323,12 @@ class AppearanceSettingsScreen extends StatelessWidget {
               subtitle: _getFontFamilyLabel(fileManager.fontFamilyOption),
               onTap: () => _showFontFamilyPickerDialog(context, fileManager, theme),
             ),
+            SettingsTile(
+              icon: Broken.shapes,
+              title: '分类图标形状',
+              subtitle: fileManager.categoryIconShape == 'square' ? '方形' : '圆形',
+              onTap: () => _showCategoryIconShapePickerDialog(context, fileManager, theme),
+            ),
           ],
         ),
       ),
@@ -1988,14 +1994,15 @@ String _getMenuIconStyleLabel(String option) {
 
 String _getAppIconLabel(String option) {
   switch (option) {
-    case 'logo1': return '标志 1';
-    case 'logo2': return '标志 2';
-    case 'logo3': return '标志 3';
-    case 'logo4': return '标志 4';
-    case 'logo5': return '标志 5';
+    case 'design1': return '极简风';
+    case 'design2': return '玻璃拟态';
+    case 'design3': return '3D 可爱';
+    case 'design4': return '赛博朋克';
+    case 'design5': return '自然禅意';
+    case 'custom': return '自定义图标';
     case 'default':
     default:
-      return '默认标志';
+      return '默认标志（自然禅意）';
   }
 }
 
@@ -2258,6 +2265,81 @@ void _showMenuIconStylePickerDialog(BuildContext context, FileManagerProvider fi
   );
 }
 
+void _showCategoryIconShapePickerDialog(BuildContext context, FileManagerProvider fileManager, ThemeData theme) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: theme.scaffoldBackgroundColor,
+    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+    builder: (ctx) {
+      final current = fileManager.categoryIconShape;
+      final options = [
+        {'key': 'circle', 'name': '圆形', 'icon': Broken.sun_fog},
+        {'key': 'square', 'name': '方形', 'icon': Broken.stop},
+      ];
+
+      return SafeArea(
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom,
+          ),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.withOpacity(0.3), borderRadius: BorderRadius.circular(2))),
+                  ),
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Text('选择分类图标形状', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                  ),
+                  const SizedBox(height: 16),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: options.length,
+                    itemBuilder: (_, i) {
+                      final opt = options[i];
+                      final key = opt['key'] as String;
+                      final name = opt['name'] as String;
+                      final icon = opt['icon'] as IconData;
+                      final isSelected = current == key;
+
+                      return ListTile(
+                        leading: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(icon, color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.primary, size: 20),
+                        ),
+                        title: Text(name, style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+                        trailing: isSelected ? Icon(Icons.radio_button_checked, color: theme.colorScheme.primary) : const Icon(Icons.radio_button_unchecked, color: Colors.grey),
+                        onTap: () {
+                          fileManager.setCategoryIconShape(key);
+                          Navigator.pop(ctx);
+                        },
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
+
 void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileManager, ThemeData theme) {
   showGeneralDialog(
     context: context,
@@ -2307,47 +2389,52 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
                             theme,
                             id: 'default',
                             title: '默认标志',
-                            imagePath: 'assets/ic_launcher.webp',
+                            imagePath: 'assets/logo/design_5_nature.jpg',
                           ),
                           _buildIconOptionCard(
                             context,
                             fileManager,
                             theme,
-                            id: 'logo1',
-                            title: '标志 1',
-                            imagePath: 'assets/logo/n1.png',
+                            id: 'design1',
+                            title: '极简风',
+                            imagePath: 'assets/logo/design_1_minimalist.jpg',
                           ),
                           _buildIconOptionCard(
                             context,
                             fileManager,
                             theme,
-                            id: 'logo2',
-                            title: '标志 2',
-                            imagePath: 'assets/logo/n2.png',
+                            id: 'design2',
+                            title: '玻璃拟态',
+                            imagePath: 'assets/logo/design_2_glassmorphism.jpg',
                           ),
                           _buildIconOptionCard(
                             context,
                             fileManager,
                             theme,
-                            id: 'logo3',
-                            title: '标志 3',
-                            imagePath: 'assets/logo/n3.png',
+                            id: 'design3',
+                            title: '3D 可爱',
+                            imagePath: 'assets/logo/design_3_3d_cute.jpg',
                           ),
                           _buildIconOptionCard(
                             context,
                             fileManager,
                             theme,
-                            id: 'logo4',
-                            title: '标志 4',
-                            imagePath: 'assets/logo/n4.png',
+                            id: 'design4',
+                            title: '赛博朋克',
+                            imagePath: 'assets/logo/design_4_cyberpunk.jpg',
                           ),
                           _buildIconOptionCard(
                             context,
                             fileManager,
                             theme,
-                            id: 'logo5',
-                            title: '标志 5',
-                            imagePath: 'assets/logo/n5.png',
+                            id: 'design5',
+                            title: '自然禅意',
+                            imagePath: 'assets/logo/design_5_nature.jpg',
+                          ),
+                          _buildCustomIconOptionCard(
+                            context,
+                            fileManager,
+                            theme,
                           ),
                         ],
                       ),
@@ -2436,6 +2523,140 @@ Widget _buildIconOptionCard(
       ),
     ),
   );
+}
+
+Widget _buildCustomIconOptionCard(
+  BuildContext context,
+  FileManagerProvider fileManager,
+  ThemeData theme,
+) {
+  final isSelected = fileManager.activeAppIcon == 'custom';
+  final customIconPath = PreferencesService.getCustomAppIconPath();
+  final hasCustomIcon = customIconPath != null && File(customIconPath).existsSync();
+
+  return Card(
+    color: isSelected ? theme.colorScheme.primaryContainer.withOpacity(0.4) : theme.colorScheme.surfaceVariant.withOpacity(0.15),
+    elevation: 0,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16),
+      side: BorderSide(
+        color: isSelected ? theme.colorScheme.primary : theme.dividerColor.withOpacity(0.08),
+        width: isSelected ? 2.0 : 1.0,
+      ),
+    ),
+    child: InkWell(
+      onTap: () => _pickCustomIcon(context, fileManager, theme),
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: hasCustomIcon
+                  ? Image.file(
+                      File(customIconPath!),
+                      width: 56,
+                      height: 56,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _buildCustomIconPlaceholder(theme),
+                    )
+                  : _buildCustomIconPlaceholder(theme),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              isSelected ? '自定义图标' : '选择自定义图标',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _buildCustomIconPlaceholder(ThemeData theme) {
+  return Container(
+    width: 56,
+    height: 56,
+    decoration: BoxDecoration(
+      color: theme.colorScheme.primary.withOpacity(0.1),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(
+        color: theme.colorScheme.primary.withOpacity(0.3),
+        width: 1.5,
+        style: BorderStyle.solid,
+      ),
+    ),
+    child: Icon(
+      Broken.add_square,
+      size: 24,
+      color: theme.colorScheme.primary,
+    ),
+  );
+}
+
+Future<void> _pickCustomIcon(BuildContext context, FileManagerProvider fileManager, ThemeData theme) async {
+  final result = await InternalFilePickerScreen.show(
+    context,
+    rootPath: '/storage/emulated/0',
+  );
+
+  if (result != null && result.isNotEmpty) {
+    final selectedPath = result.first;
+    final ext = p.extension(selectedPath).toLowerCase();
+    const validExts = ['.png', '.jpg', '.jpeg', '.webp'];
+    
+    if (!validExts.contains(ext)) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('请选择图片文件（PNG/JPG/WEBP）'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
+    
+    final file = File(selectedPath);
+    if (await file.exists()) {
+      try {
+        // Copy to app private directory
+        final appDir = await Directory('/storage/emulated/0/Android/data/com.sequl.zenfile/files/custom_icons').create(recursive: true);
+        final destPath = p.join(appDir.path, 'custom_app_icon.png');
+        await file.copy(destPath);
+        
+        await PreferencesService.saveCustomAppIconPath(destPath);
+        await fileManager.setActiveAppIcon('custom');
+        
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('自定义图标已应用'),
+              behavior: SnackBarBehavior.floating,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('应用自定义图标失败: $e'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    }
+  }
 }
 
 void _showFontFamilyPickerDialog(BuildContext context, FileManagerProvider fileManager, ThemeData theme) {

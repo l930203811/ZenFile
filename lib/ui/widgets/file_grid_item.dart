@@ -11,6 +11,7 @@ import '../../services/app_manager_service.dart';
 import '../../providers/media_provider.dart';
 import '../../providers/file_manager_provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'file_action_dialogs.dart';
 
 class FileGridItem extends StatelessWidget {
   final FileItemModel file;
@@ -159,25 +160,14 @@ class FileGridItem extends StatelessWidget {
               Positioned(
                 top: 4,
                 right: 4,
-                child: PopupMenuButton<String>(
+                child: IconButton(
                   icon: const Icon(Broken.more, size: 20),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  position: PopupMenuPosition.under,
-                  elevation: 8,
-                  onSelected: onAction,
-                  itemBuilder: (context) {
-                    return [
-                      if (isArchive)
-                        const PopupMenuItem(value: 'extract', child: Row(children: [Icon(Broken.archive, size: 20), SizedBox(width: 12), Text('解压', style: TextStyle(fontWeight: FontWeight.w500))])),
-                      const PopupMenuItem(value: 'archive', child: Row(children: [Icon(Broken.box_add, size: 20), SizedBox(width: 12), Text('压缩', style: TextStyle(fontWeight: FontWeight.w500))])),
-                      const PopupMenuItem(value: 'copy', child: Row(children: [Icon(Broken.document_copy, size: 20), SizedBox(width: 12), Text('复制', style: TextStyle(fontWeight: FontWeight.w500))])),
-                      const PopupMenuItem(value: 'cut', child: Row(children: [Icon(Broken.scissor, size: 20), SizedBox(width: 12), Text('剪切', style: TextStyle(fontWeight: FontWeight.w500))])),
-                      const PopupMenuItem(value: 'rename', child: Row(children: [Icon(Broken.edit, size: 20), SizedBox(width: 12), Text('重命名', style: TextStyle(fontWeight: FontWeight.w500))])),
-                      const PopupMenuItem(
-                        value: 'delete',
-                        child: Row(children: [Icon(Broken.trash, size: 20, color: Colors.redAccent), SizedBox(width: 12), Text('删除', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w500))]),
-                      ),
-                    ];
+                  onPressed: () {
+                    FileActionSheet.show(
+                      context,
+                      onAction,
+                      isArchive: isArchive,
+                    );
                   },
                 ),
               ),
