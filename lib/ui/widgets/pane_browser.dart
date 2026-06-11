@@ -73,7 +73,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
     if (_scrollController.hasClients) {
       provider.saveScrollOffset(provider.tabs[widget.tabIndex].currentPath, _scrollController.offset);
     }
-    final prevPath = p.dirname(provider.tabs[widget.tabIndex].currentPath);
+    final prevPath = p.posix.dirname(provider.tabs[widget.tabIndex].currentPath);
     final handled = await provider.goBack();
     if (handled && _scrollController.hasClients) {
       final savedOffset = provider.getSavedScrollOffset(prevPath);
@@ -88,7 +88,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
       case 'archive':
         final res = await CreateArchiveDialog.show(
           context,
-          initialName: p.basename(path),
+          initialName: p.posix.basename(path),
           isMultiSelection: false,
         );
         if (res != null) {
@@ -119,7 +119,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
         if (isMulti && provider.selectedPaths.length > 1) {
           await BatchRenameDialog.show(context, provider);
         } else {
-          final currentName = p.basename(path);
+          final currentName = p.posix.basename(path);
           final newName = await FileActionDialogs.showTextInputDialog(
             context,
             title: '重命名',
@@ -160,12 +160,13 @@ class _PaneBrowserState extends State<PaneBrowser> {
     final theme = Theme.of(context);
     final provider = context.watch<FileManagerProvider>();
     
-    if (widget.tabIndex >= provider.tabs.length) {
-      return const SizedBox.shrink();
-    }
-    
-    final FolderTab tab = provider.tabs[widget.tabIndex];
-    final isActive = provider.activeTabIndex == widget.tabIndex;
+    // 双窗口模式下，如果tabIndex超出范围，显示activeTab
+    final FolderTab tab = widget.tabIndex < provider.tabs.length
+        ? provider.tabs[widget.tabIndex]
+        : provider.activeTab;
+    final isActive = widget.tabIndex < provider.tabs.length
+        ? provider.activeTabIndex == widget.tabIndex
+        : true;
     final isSelectionMode = tab.selectedPaths.isNotEmpty;
 
     return GestureDetector(
@@ -200,7 +201,8 @@ class _PaneBrowserState extends State<PaneBrowser> {
                 children: [
                   // --- Pane Custom Header ---
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    height: 28,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
                     decoration: BoxDecoration(
                       color: isActive 
                           ? theme.colorScheme.primary.withOpacity(0.06) 
@@ -215,15 +217,15 @@ class _PaneBrowserState extends State<PaneBrowser> {
                       children: [
                         // Glow/Active indicator dot or icon
                         Container(
-                          width: 8,
-                          height: 8,
+                          width: 6,
+                          height: 6,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: isActive ? const Color(0xFF00C853) : Colors.grey.withOpacity(0.6),
                             boxShadow: isActive ? [
                               BoxShadow(
                                 color: const Color(0xFF00C853).withOpacity(0.4),
-                                blurRadius: 4,
+                                blurRadius: 3,
                                 spreadRadius: 1,
                               )
                             ] : null,
@@ -232,13 +234,26 @@ class _PaneBrowserState extends State<PaneBrowser> {
                         const Spacer(),
                         // UP button for parent directory
                         if (tab.currentPath != '/' && tab.currentPath != provider.rootPath)
-                          IconButton(
-                            icon: const Icon(Broken.arrow_up_1, size: 18),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            onPressed: () => _goBack(provider),
-                            tooltip: '返回上级目录',
-                          ),
+                          GestureDetector(
+                            onTap: () => _goBack(provider),
+                            child: Container(
+                              width: 20,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: theme.colorScheme.onSurface.withOpacity(0.06),
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  Broken.arrow_up_1,
+                                  size: 12,
+                                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                                ),
+                              ),
+                            ),
+                          )
+                        else
+                          const SizedBox(width: 20, height: 20),
                       ],
                     ),
                   ),
@@ -258,12 +273,12 @@ class _PaneBrowserState extends State<PaneBrowser> {
                     child: DragTarget<DragPayload>(
                       onWillAccept: (data) {
                         if (data == null || data.paths.isEmpty) return false;
-                        final sourceParent = p.dirname(data.paths.first);
+                        final sourceParent = p.posix.dirname(data.paths.first);
                         if (sourceParent == tab.currentPath) return false;
-                        if (data.paths.any((x) => tab.currentPath == x || tab.currentPath.startsWith(x + p.separator))) return false;
+                        if (data.paths.any((x) => tab.currentPath == x || tab.currentPath.startsWith(x + p.posix.separator))) return false;
                         return true;
                       },
-                      onAccept: (data) {
+                      onAccept: (data) async {
                         _activatePane(provider);
                         if (provider.showDragDropDialog) {
                           DragDropActionDialog.show(
@@ -271,10 +286,37 @@ class _PaneBrowserState extends State<PaneBrowser> {
                             sourcePaths: data.paths,
                             initialTargetPath: tab.currentPath,
                           );
+                        } else if (data.isRemote && data.remoteItems != null) {
+                          provider.setRemoteClipboard(data.remoteItems!, isCut: true, connection: provider.activeTab.remoteConnection!);
+                          await provider.pasteFile(context, clearAfterPaste: true);
+                        } else if (tab.isRemote && tab.remoteClient != null) {
+                          provider.setClipboard(data.paths, isCut: true);
+                          await provider.pasteFile(context, clearAfterPaste: true);
                         } else {
-                          for (final path in data.paths) {
-                            provider.moveItem(context, path, tab.currentPath);
+                          provider.progressNotifier.value = FileOperationProgress(
+                            totalFiles: data.paths.length,
+                            currentFileIndex: 1,
+                            currentFileName: 'Moving...',
+                            percentage: 0.0,
+                            speedMBs: 0.0,
+                            eta: Duration.zero,
+                            totalBytes: data.paths.length,
+                            bytesProcessed: 0,
+                          );
+                          for (int i = 0; i < data.paths.length; i++) {
+                            provider.progressNotifier.value = FileOperationProgress(
+                              totalFiles: data.paths.length,
+                              currentFileIndex: i + 1,
+                              currentFileName: p.posix.basename(data.paths[i]),
+                              percentage: (i + 1) / data.paths.length,
+                              speedMBs: 0.0,
+                              eta: Duration.zero,
+                              totalBytes: data.paths.length,
+                              bytesProcessed: i + 1,
+                            );
+                            await provider.moveItem(context, data.paths[i], tab.currentPath);
                           }
+                          provider.progressNotifier.value = null;
                         }
                       },
                       builder: (context, candidateData, rejectedData) {

@@ -10,7 +10,7 @@ import '../screens/media_category_screen.dart';
 import '../screens/internal_file_picker_screen.dart';
 import '../screens/storage_analyzer/app_manager_screen.dart';
 import '../screens/more_settings_screen.dart';
-import '../screens/remote_explorer_screen.dart';
+
 import '../screens/network_connection_wizard_screen.dart';
 import '../screens/network_category_screen.dart';
 import '../screens/all_recent_files_screen.dart';
@@ -60,8 +60,8 @@ class QuickCategoriesGrid extends StatelessWidget {
         'action': () => Navigator.push(context, MaterialPageRoute(builder: (_) => MediaCategoryScreen(mediaType: MediaType.documents, onNavigateTab: onNavigateTab))),
       },
       '压缩包': {
-        'label': '压缩包',
-        'icon': Broken.archive,
+  'label': '压缩包',
+  'icon': Broken.box,
         'color': isDark ? Colors.tealAccent : const Color(0xFF00796B),
         'count': '${mediaProvider.getCategoryItemCount("压缩包")}',
         'isCustom': false,
@@ -285,9 +285,22 @@ class QuickCategoriesGrid extends StatelessWidget {
                           subtitle: Text('${conn.type} · ${conn.host}', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.5)), maxLines: 1, overflow: TextOverflow.ellipsis),
                           trailing: const Icon(Icons.chevron_right_rounded),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          onTap: () {
+                          onTap: () async {
                             Navigator.pop(ctx);
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => RemoteExplorerScreen(connection: conn)));
+                            final provider = context.read<FileManagerProvider>();
+                            final client = FileManagerProvider.createRemoteClient(conn);
+                            try {
+                              await client.connect();
+                              if (context.mounted) {
+                                provider.openRemoteTab(client, conn);
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('连接失败：$e'), backgroundColor: Colors.redAccent),
+                                );
+                              }
+                            }
                           },
                         );
                       },
@@ -321,6 +334,7 @@ class QuickCategoriesGrid extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final mediaProvider = context.watch<MediaProvider>();
+    final fileManagerProvider = context.watch<FileManagerProvider>();
 
     final allCategoriesMap = getAllCategoriesMap(context, isDark, onNavigateTab);
 
@@ -396,7 +410,7 @@ class QuickCategoriesGrid extends StatelessWidget {
                   final color = cat['color'] as Color;
                   final count = cat['count'] as String;
                   final action = cat['action'] as VoidCallback;
-                  final shape = PreferencesService.getCategoryIconShape();
+                  final shape = fileManagerProvider.categoryIconShape;
                   final isSquare = shape == 'square';
 
                   return Column(
@@ -467,6 +481,9 @@ class _CustomizeCategoriesSheet extends StatelessWidget {
       maxChildSize: 0.95,
       expand: false,
       builder: (context, scrollController) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final iconShape = PreferencesService.getCategoryIconShape();
         return Consumer<MediaProvider>(
           builder: (context, provider, child) {
             final activeCats = provider.activeCategories;
@@ -485,6 +502,24 @@ class _CustomizeCategoriesSheet extends StatelessWidget {
                     children: [
                       Text('自定义快捷方式', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                       TextButton(onPressed: () => Navigator.pop(context), child: const Text('完成', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+                    ],
+                  ),
+                ),
+                // 分类图标形状选项
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('分类图标形状', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, fontSize: 16)),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          _buildShapeOption(context, theme, iconShape, 'circle', Icons.circle_outlined, '圆形', setModalState),
+                          const SizedBox(width: 8),
+                          _buildShapeOption(context, theme, iconShape, 'square', Icons.crop_square, '方形', setModalState),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -554,7 +589,37 @@ class _CustomizeCategoriesSheet extends StatelessWidget {
             );
           },
         );
+          },
+        );
       },
+    );
+  }
+
+  static Widget _buildShapeOption(BuildContext context, ThemeData theme, String currentShape, String shapeKey, IconData icon, String label, void Function(void Function()) setModalState) {
+    final isSelected = currentShape == shapeKey;
+    return InkWell(
+      onTap: () {
+        PreferencesService.saveCategoryIconShape(shapeKey);
+        context.read<FileManagerProvider>().setCategoryIconShape(shapeKey);
+        setModalState(() {});
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: isSelected ? theme.colorScheme.primary : theme.colorScheme.surfaceVariant.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.1)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface.withOpacity(0.6)),
+            const SizedBox(width: 4),
+            Text(label, style: TextStyle(fontSize: 12, fontWeight: isSelected ? FontWeight.bold : FontWeight.w500, color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface.withOpacity(0.7))),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -608,6 +673,7 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final iconShape = context.watch<FileManagerProvider>().categoryIconShape;
     final isCustom = widget.cat['isCustom'] == true;
     final label = widget.label;
     final color = widget.cat['color'] as Color;
@@ -638,7 +704,15 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
           leading: Container(
             width: 42,
             height: 42,
-            decoration: BoxDecoration(color: color.withOpacity(0.15), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.15),
+              shape: iconShape == 'square'
+                  ? BoxShape.rectangle
+                  : BoxShape.circle,
+              borderRadius: iconShape == 'square'
+                  ? BorderRadius.circular(10)
+                  : null,
+            ),
             child: Icon(icon, color: color, size: 22),
           ),
           title: Row(

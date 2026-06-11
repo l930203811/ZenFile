@@ -416,6 +416,29 @@ class MainActivity : AudioServiceFragmentActivity() {
                                 "com.sequl.zenfile.MainActivityCustom"
                             )
 
+                            // For custom icon, try to load user-provided icon
+                            if (iconAlias == "com.sequl.zenfile.MainActivityCustom") {
+                                try {
+                                    val customIconFile = File(applicationContext.getExternalFilesDir(null), "custom_icons/custom_app_icon.png")
+                                    if (customIconFile.exists()) {
+                                        val bitmap = android.graphics.BitmapFactory.decodeFile(customIconFile.absolutePath)
+                                        if (bitmap != null) {
+                                            // Scale bitmap to standard icon size
+                                            val scaledBitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, 192, 192, true)
+                                            // Save scaled bitmap to app's cache directory for launcher to pick up
+                                            val cacheDir = File(applicationContext.cacheDir, "custom_icon")
+                                            cacheDir.mkdirs()
+                                            val cacheFile = File(cacheDir, "icon.png")
+                                            FileOutputStream(cacheFile).use { out ->
+                                                scaledBitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, out)
+                                            }
+                                        }
+                                    }
+                                } catch (e: Exception) {
+                                    android.util.Log.w("ZenFile", "Failed to load custom icon: ${e.message}")
+                                }
+                            }
+
                             for (alias in aliases) {
                                 val componentName = android.content.ComponentName(packageName, alias)
                                 val state = if (alias == iconAlias) {
@@ -429,6 +452,28 @@ class MainActivity : AudioServiceFragmentActivity() {
                                     PackageManager.DONT_KILL_APP
                                 )
                             }
+                            
+                            // For custom icon, force refresh by toggling the component
+                            if (iconAlias == "com.sequl.zenfile.MainActivityCustom") {
+                                val customComponent = android.content.ComponentName(packageName, "com.sequl.zenfile.MainActivityCustom")
+                                val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                    PackageManager.DONT_KILL_APP or PackageManager.SYNCHRONOUS
+                                } else {
+                                    PackageManager.DONT_KILL_APP
+                                }
+                                packageManager.setComponentEnabledSetting(
+                                    customComponent,
+                                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                                    flags
+                                )
+                                Thread.sleep(200)
+                                packageManager.setComponentEnabledSetting(
+                                    customComponent,
+                                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                                    flags
+                                )
+                            }
+                            
                             runOnUiThread { result.success(true) }
                         } catch (e: Exception) {
                             runOnUiThread { result.error("ICON_ERROR", e.message, null) }

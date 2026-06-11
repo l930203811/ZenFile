@@ -301,7 +301,7 @@ class PreferencesService {
   static const String _keyFolderIconStyle = 'folder_icon_style';
 
   static String getFolderIconStyle() {
-    return _prefs?.getString(_keyFolderIconStyle) ?? 'broken';
+    return _prefs?.getString(_keyFolderIconStyle) ?? 'solid';
   }
 
   static Future<void> saveFolderIconStyle(String val) async {
@@ -374,11 +374,22 @@ class PreferencesService {
 
   // --- Address Bar Settings ---
   static bool getShowAddressBar() {
-    return _prefs?.getBool(_keyShowAddressBar) ?? false;
+    return _prefs?.getBool(_keyShowAddressBar) ?? true;
   }
 
   static Future<void> saveShowAddressBar(bool val) async {
     await _prefs?.setBool(_keyShowAddressBar, val);
+  }
+
+  // --- Dual Finger Swipe Settings ---
+  static const String _keyEnableDualFingerSwipe = 'enable_dual_finger_swipe';
+
+  static bool getEnableDualFingerSwipe() {
+    return _prefs?.getBool(_keyEnableDualFingerSwipe) ?? true;
+  }
+
+  static Future<void> saveEnableDualFingerSwipe(bool val) async {
+    await _prefs?.setBool(_keyEnableDualFingerSwipe, val);
   }
 
   static const String _keyShowRecentFiles = 'show_recent_files';
@@ -669,7 +680,7 @@ class PreferencesService {
   static const String _keyCategoryIconShape = 'category_icon_shape';
 
   static String getCategoryIconShape() {
-    return _prefs?.getString(_keyCategoryIconShape) ?? 'circle';
+    return _prefs?.getString(_keyCategoryIconShape) ?? 'square';
   }
 
   static Future<void> saveCategoryIconShape(String val) async {

@@ -39,6 +39,7 @@ import '../services/remote/sftp_client.dart';
 import '../services/remote/webdav_client.dart';
 import '../services/remote/lan_client.dart';
 import '../services/remote/saf_client.dart';
+import '../services/remote/saf_client.dart';
 
 enum FileSortType {
   nameAsc,
@@ -97,6 +98,7 @@ class FileManagerProvider extends ChangeNotifier {
     _showHiddenFiles = PreferencesService.getShowHiddenFiles();
     _showFloatingAddButton = PreferencesService.getShowFloatingAddButton();
     _defaultToBrowseScreen = PreferencesService.getDefaultToBrowseScreen();
+    _enableDualFingerSwipe = PreferencesService.getEnableDualFingerSwipe();
     _showFolderFileCount = PreferencesService.getShowFolderFileCount();
     _showBottomActionBar = PreferencesService.getShowBottomActionBar();
     _showHomeBrowseNav = PreferencesService.getShowHomeBrowseNav();
@@ -556,6 +558,15 @@ class FileManagerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool _enableDualFingerSwipe = true;
+  bool get enableDualFingerSwipe => _enableDualFingerSwipe;
+
+  void toggleDualFingerSwipe() {
+    _enableDualFingerSwipe = !_enableDualFingerSwipe;
+    PreferencesService.saveEnableDualFingerSwipe(_enableDualFingerSwipe);
+    notifyListeners();
+  }
+
   // 临时导航状态：从设置页面跳转到浏览标签
   bool _navigateToBrowseTab = false;
   bool get navigateToBrowseTab => _navigateToBrowseTab;
@@ -898,15 +909,74 @@ class FileManagerProvider extends ChangeNotifier {
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       currentPath: path,
     );
-    _tabs.add(newTab);
-    _activeTabIndex = _tabs.length - 1;
+    // 在双窗口模式下，如果已有2个或更多tab，替换未激活的tab
+    if (enableSplitScreen && _tabs.length >= 2) {
+      final inactiveIndex = _activeTabIndex == 0 ? 1 : 0;
+      _tabs[inactiveIndex] = newTab;
+      _activeTabIndex = inactiveIndex;
+    } else {
+      _tabs.add(newTab);
+      _activeTabIndex = _tabs.length - 1;
+    }
     _persistTabs();
     notifyListeners();
     loadDirectory(path);
   }
 
+  /// Open a remote connection in a new (or existing) tab, reusing the
+  /// DirectoryScreen UI instead of the old RemoteExplorerScreen.
+  void openRemoteTab(RemoteClient client, NetworkConnectionModel connection) {
+    // Close any existing remote tabs first to avoid stale state
+    _tabs.removeWhere((t) => t.isRemote);
+
+    final newTab = FolderTab(
+      id: 'remote_${connection.name}_${DateTime.now().millisecondsSinceEpoch}',
+      currentPath: connection.rootPath,
+      isRemote: true,
+      remoteClient: client,
+      remoteConnection: connection,
+    );
+    // 在双窗口模式下，如果已有2个或更多tab，替换未激活的tab
+    if (enableSplitScreen && _tabs.length >= 2) {
+      final inactiveIndex = _activeTabIndex == 0 ? 1 : 0;
+      _tabs[inactiveIndex] = newTab;
+      _activeTabIndex = inactiveIndex;
+    } else {
+      _tabs.add(newTab);
+      _activeTabIndex = _tabs.length - 1;
+    }
+    _persistTabs();
+    notifyListeners();
+    loadDirectory(connection.rootPath);
+  }
+
+  /// Factory: create the correct RemoteClient subclass for a connection model.
+  static RemoteClient createRemoteClient(NetworkConnectionModel conn) {
+    switch (conn.type) {
+      case 'FTP':
+        return FtpRemoteClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
+      case 'SFTP':
+        return SftpRemoteClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
+      case 'WebDav':
+        return WebDavRemoteClient(
+          host: conn.host, port: conn.port, username: conn.username, password: conn.password,
+          protocol: conn.protocol, rootPath: conn.rootPath,
+        );
+      case '局域网/SMB':
+        return LanClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
+      case 'saf':
+        return SafRemoteClient(rootUri: conn.rootPath);
+      default:
+        throw ArgumentError('Unsupported connection type: ${conn.type}');
+    }
+  }
+
   void closeTab(int index) {
     if (_tabs.length <= 1) return;
+    final removed = _tabs[index];
+    if (removed.isRemote) {
+      removed.remoteClient?.disconnect();
+    }
     _tabs.removeAt(index);
     if (_activeTabIndex >= _tabs.length) {
       _activeTabIndex = _tabs.length - 1;
@@ -944,6 +1014,9 @@ class FileManagerProvider extends ChangeNotifier {
       isRootAvailable: active.isRootAvailable,
       scrollPositions: Map.from(active.scrollPositions),
       isPinned: active.isPinned,
+      isRemote: active.isRemote,
+      remoteClient: active.remoteClient,
+      remoteConnection: active.remoteConnection,
     );
     _tabs.add(dup);
     _activeTabIndex = _tabs.length - 1;
@@ -1074,6 +1147,14 @@ class FileManagerProvider extends ChangeNotifier {
 
   void resetScrollToHighlight() {
     _shouldScrollToHighlight = false;
+  }
+
+  void setHighlightedPaths(List<String> paths) {
+    _highlightedPaths.clear();
+    _highlightedPaths.addAll(paths);
+    _forceHighlightedPaths.clear();
+    _forceHighlightedPaths.addAll(paths);
+    _shouldScrollToHighlight = true;
   }
 
   Future<void> showFileInLocation(String filePath) async {
@@ -1421,6 +1502,33 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   Future<void> loadDirectory(String path, {bool showLoading = true, bool clearCache = false, bool recordHistory = true}) async {
+    // ── Remote branch ──
+    if (activeTab.isRemote && activeTab.remoteClient != null) {
+      if (showLoading) {
+        activeTab.isLoading = true;
+        notifyListeners();
+      }
+      try {
+        activeTab.currentPath = path;
+        final remoteItems = await activeTab.remoteClient!.listDirectory(path);
+        remoteItems.sort((a, b) {
+          if (a.isDirectory && !b.isDirectory) return -1;
+          if (!a.isDirectory && b.isDirectory) return 1;
+          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+        });
+        activeTab.currentFiles = remoteItems
+            .map((r) => FileItemModel.fromRemoteFileItem(r))
+            .toList();
+      } catch (e) {
+        debugPrint('Error loading remote directory: $e');
+        activeTab.currentFiles = [];
+      }
+      activeTab.isLoading = false;
+      _persistTabs();
+      notifyListeners();
+      return;
+    }
+
     // Normalize legacy sdcard paths to canonical /storage/emulated/0
     String resolvedPath = path.replaceAll(RegExp(r'/+'), '/');
     if (resolvedPath.startsWith('/sdcard')) {
@@ -1618,15 +1726,48 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   void copyFile(String path) {
+    if (currIsRemote) {
+      final item = currentFiles.firstWhere(
+        (f) => f.path == path,
+        orElse: () => currentFiles.first,
+      );
+      if (item.remoteSource != null && activeTab.remoteConnection != null) {
+        setRemoteClipboard([item.remoteSource!], isCut: false, connection: activeTab.remoteConnection!);
+        return;
+      }
+    }
     setClipboard([path], isCut: false);
   }
 
   void cutFile(String path) {
+    if (currIsRemote) {
+      final item = currentFiles.firstWhere(
+        (f) => f.path == path,
+        orElse: () => currentFiles.first,
+      );
+      if (item.remoteSource != null && activeTab.remoteConnection != null) {
+        setRemoteClipboard([item.remoteSource!], isCut: true, connection: activeTab.remoteConnection!);
+        return;
+      }
+    }
     setClipboard([path], isCut: true);
   }
 
   void copySelected() {
     if (selectedPaths.isEmpty) return;
+    if (currIsRemote) {
+      final items = currentFiles
+          .where((f) => selectedPaths.contains(f.path))
+          .where((f) => f.remoteSource != null)
+          .map((f) => f.remoteSource!)
+          .toList();
+      if (items.isNotEmpty && activeTab.remoteConnection != null) {
+        setRemoteClipboard(items, isCut: false, connection: activeTab.remoteConnection!);
+        selectedPaths.clear();
+        notifyListeners();
+        return;
+      }
+    }
     setClipboard(selectedPaths.toList(), isCut: false);
     selectedPaths.clear();
     notifyListeners();
@@ -1634,6 +1775,19 @@ class FileManagerProvider extends ChangeNotifier {
 
   void cutSelected() {
     if (selectedPaths.isEmpty) return;
+    if (currIsRemote) {
+      final items = currentFiles
+          .where((f) => selectedPaths.contains(f.path))
+          .where((f) => f.remoteSource != null)
+          .map((f) => f.remoteSource!)
+          .toList();
+      if (items.isNotEmpty && activeTab.remoteConnection != null) {
+        setRemoteClipboard(items, isCut: true, connection: activeTab.remoteConnection!);
+        selectedPaths.clear();
+        notifyListeners();
+        return;
+      }
+    }
     setClipboard(selectedPaths.toList(), isCut: true);
     selectedPaths.clear();
     notifyListeners();
@@ -1646,7 +1800,14 @@ class FileManagerProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      if (RecycleBinService.isEnabled()) {
+      if (activeTab.isRemote && activeTab.remoteClient != null) {
+        final client = activeTab.remoteClient!;
+        for (final path in selectedPaths) {
+          final file = currentFiles.firstWhere((f) => f.path == path, orElse: () => currentFiles.first);
+          final remotePath = file.remoteSource?.path ?? path;
+          await client.delete(remotePath, file.isDirectory);
+        }
+      } else if (RecycleBinService.isEnabled()) {
         for (final path in selectedPaths) {
           await RecycleBinService.moveToTrash(path, useRoot: useRootMode);
         }
@@ -1678,6 +1839,12 @@ class FileManagerProvider extends ChangeNotifier {
 
     if (_isRemoteClipboard) {
       await _pasteFromRemoteToLocal(context, clearAfterPaste);
+      return;
+    }
+
+    // 本地剪贴板粘贴到远程目录
+    if (currIsRemote && activeTab.remoteClient != null) {
+      await _pasteLocalToRemote(context, clearAfterPaste);
       return;
     }
 
@@ -2060,6 +2227,18 @@ class FileManagerProvider extends ChangeNotifier {
       progressNotifier.value = null;
       activeTab.isLoading = false;
       await loadDirectory(currentPath, showLoading: false, clearCache: true);
+      // 如果是剪切操作，刷新本地源目录
+      if (_isCut && _clipboardPaths.isNotEmpty) {
+        final sourceDir = p.dirname(_clipboardPaths.first);
+        if (sourceDir != currentPath) {
+          for (int i = 0; i < _tabs.length; i++) {
+            if (!_tabs[i].isRemote && _tabs[i].currentPath == sourceDir) {
+              await loadDirectoryForTab(i, sourceDir, showLoading: false, clearCache: true);
+              break;
+            }
+          }
+        }
+      }
       notifyListeners();
     }
   }
@@ -2093,6 +2272,20 @@ class FileManagerProvider extends ChangeNotifier {
     if (client == null) {
       return;
     }
+
+    _isOperationCancelled = false;
+    activeTab.isLoading = true;
+    progressNotifier.value = FileOperationProgress(
+      totalFiles: _remoteClipboardItems.length,
+      currentFileIndex: 1,
+      currentFileName: 'Connecting...',
+      percentage: 0.0,
+      speedMBs: 0.0,
+      eta: Duration.zero,
+      totalBytes: 1,
+      bytesProcessed: 0,
+    );
+    notifyListeners();
 
     try {
       await client.connect();
@@ -2190,8 +2383,131 @@ class FileManagerProvider extends ChangeNotifier {
       if (clearAfterPaste) {
         clearClipboard();
       }
+      activeTab.isLoading = false;
       await loadDirectory(currentPath, showLoading: false, clearCache: true);
+      // 如果是剪切操作，刷新远程源目录所在的tab
+      if (_isCut && _remoteClipboardItems.isNotEmpty) {
+        final sourceDir = p.dirname(_remoteClipboardItems.first.path);
+        for (int i = 0; i < _tabs.length; i++) {
+          if (_tabs[i].isRemote && _tabs[i].currentPath == sourceDir) {
+            try {
+              final tabClient = createRemoteClient(_tabs[i].remoteConnection!);
+              await tabClient.connect();
+              _tabs[i].remoteClient = tabClient;
+              await loadDirectoryForTab(i, sourceDir, showLoading: false, clearCache: true);
+            } catch (e) {
+              debugPrint('Failed to refresh remote source tab: $e');
+            }
+            break;
+          }
+        }
+      }
       notifyListeners();
+    }
+  }
+
+  Future<void> _pasteLocalToRemote(BuildContext context, bool clearAfterPaste) async {
+    final client = activeTab.remoteClient;
+    if (client == null) return;
+
+    _isOperationCancelled = false;
+    activeTab.isLoading = true;
+    notifyListeners();
+
+    try {
+      final totalFiles = _clipboardPaths.length;
+      for (int i = 0; i < _clipboardPaths.length; i++) {
+        if (_isOperationCancelled) throw Exception('Cancelled');
+
+        final srcPath = _clipboardPaths[i];
+        final name = p.basename(srcPath);
+        final destPath = _buildRemotePath(currentPath, name);
+        final isDir = FileSystemEntity.typeSync(srcPath) == FileSystemEntityType.directory;
+
+        progressNotifier.value = FileOperationProgress(
+          totalFiles: totalFiles,
+          currentFileIndex: i + 1,
+          currentFileName: name,
+          percentage: i / totalFiles,
+          speedMBs: 0.0,
+          eta: Duration.zero,
+          totalBytes: totalFiles,
+          bytesProcessed: i,
+        );
+
+        if (isDir) {
+          await _uploadLocalDirectory(client, srcPath, destPath);
+        } else {
+          await client.uploadFile(srcPath, destPath, (prog) {
+            progressNotifier.value = FileOperationProgress(
+              totalFiles: totalFiles,
+              currentFileIndex: i + 1,
+              currentFileName: name,
+              percentage: (i + prog) / totalFiles,
+              speedMBs: 0.0,
+              eta: Duration.zero,
+              totalBytes: totalFiles,
+              bytesProcessed: i,
+            );
+          });
+        }
+
+        if (_isCut) {
+          try {
+            final type = FileSystemEntity.typeSync(srcPath);
+            if (type == FileSystemEntityType.directory) {
+              await Directory(srcPath).delete(recursive: true);
+            } else {
+              await File(srcPath).delete();
+            }
+          } catch (e) {
+            debugPrint('Failed to delete local item after cut: $e');
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error pasting local to remote: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().contains('Cancelled') ? '操作已取消' : '传输失败：$e'),
+            backgroundColor: e.toString().contains('Cancelled') ? null : Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      progressNotifier.value = null;
+      if (clearAfterPaste) clearClipboard();
+      await loadDirectory(currentPath, showLoading: false, clearCache: true);
+      // 如果是剪切操作，刷新本地源目录
+      if (_isCut && _clipboardPaths.isNotEmpty) {
+        final sourceDir = p.dirname(_clipboardPaths.first);
+        for (int i = 0; i < _tabs.length; i++) {
+          if (!_tabs[i].isRemote && _tabs[i].currentPath == sourceDir) {
+            await loadDirectoryForTab(i, sourceDir, showLoading: false, clearCache: true);
+            break;
+          }
+        }
+      }
+      activeTab.isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _uploadLocalDirectory(RemoteClient client, String localDirPath, String remoteDirPath) async {
+    await client.createDirectory(remoteDirPath);
+    final localDir = Directory(localDirPath);
+    final items = localDir.listSync();
+    for (final item in items) {
+      if (_isOperationCancelled) throw Exception('Cancelled');
+      final name = p.basename(item.path);
+      final remotePath = _buildRemotePath(remoteDirPath, name);
+      if (item is Directory) {
+        await _uploadLocalDirectory(client, item.path, remotePath);
+      } else if (item is File) {
+        await client.uploadFile(item.path, remotePath, (_) {});
+      }
     }
   }
 
@@ -2337,7 +2653,10 @@ class FileManagerProvider extends ChangeNotifier {
 
   Future<void> renameFile(String oldPath, String newName) async {
     try {
-      if (isRestrictedPath(oldPath)) {
+      if (activeTab.isRemote && activeTab.remoteClient != null) {
+        final newPath = '${p.url.dirname(oldPath)}/$newName';
+        await activeTab.remoteClient!.rename(oldPath, newPath);
+      } else if (isRestrictedPath(oldPath)) {
         await RootShizukuService.renameItem(oldPath, newName, useRoot: useRootMode);
       } else {
         final newPath = p.join(p.dirname(oldPath), newName);
@@ -2354,15 +2673,26 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
+  bool get currIsRemote => activeTab.isRemote && activeTab.remoteClient != null;
+
+  /// Build a remote path joining current [dir] with [name] using '/' separator.
+  String _buildRemotePath(String dir, String name) {
+    final base = dir.endsWith('/') ? dir : '$dir/';
+    return '$base$name';
+  }
+
   Future<String?> createFolder(String name) async {
     try {
       String finalName = name;
-      final targetPath = p.join(currentPath, name);
+      final targetPath = currIsRemote ? _buildRemotePath(currentPath, name) : p.join(currentPath, name);
       if (FileSystemEntity.typeSync(targetPath) != FileSystemEntityType.notFound) {
         final uniquePath = _getUniquePath(targetPath, true);
         finalName = p.basename(uniquePath);
       }
-      if (isRestrictedPath(currentPath)) {
+      if (currIsRemote && activeTab.remoteClient != null) {
+        final remotePath = _buildRemotePath(currentPath, finalName);
+        await activeTab.remoteClient!.createDirectory(remotePath);
+      } else if (isRestrictedPath(currentPath)) {
         await RootShizukuService.createFolder(currentPath, finalName, useRoot: useRootMode);
       } else {
         final newPath = p.join(currentPath, finalName);
@@ -2379,12 +2709,15 @@ class FileManagerProvider extends ChangeNotifier {
   Future<String?> createFile(String name) async {
     try {
       String finalName = name;
-      final targetPath = p.join(currentPath, name);
-      if (FileSystemEntity.typeSync(targetPath) != FileSystemEntityType.notFound) {
+      final targetPath = currIsRemote ? _buildRemotePath(currentPath, name) : p.join(currentPath, name);
+      if (!currIsRemote && FileSystemEntity.typeSync(targetPath) != FileSystemEntityType.notFound) {
         final uniquePath = _getUniquePath(targetPath, false);
         finalName = p.basename(uniquePath);
       }
-      if (isRestrictedPath(currentPath)) {
+      if (currIsRemote && activeTab.remoteClient != null) {
+        final remotePath = _buildRemotePath(currentPath, finalName);
+        await activeTab.remoteClient!.createFile(remotePath);
+      } else if (isRestrictedPath(currentPath)) {
         await RootShizukuService.createFile(currentPath, finalName, useRoot: useRootMode);
       } else {
         final newPath = p.join(currentPath, finalName);
@@ -2632,13 +2965,32 @@ class FileManagerProvider extends ChangeNotifier {
     } else if (ApkInstallerService.isApk(path)) {
       await ApkInstallerService.installApk(context, path);
     } else {
-      // Fallback for unrecognized files: Open in the built-in TextEditorScreen
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => TextEditorScreen(filePath: path),
+      // 未知格式，弹出打开方式选择
+      final result = await showModalBottomSheet<String>(
+        context: context,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        builder: (ctx) => OpenWithSheet(
+          fileName: p.basename(path),
+          fileExtension: ext,
         ),
       );
+
+      if (result == null) return;
+
+      if (result.startsWith('always_')) {
+        final selectedType = result.substring('always_'.length);
+        await PreferencesService.saveDefaultOpenAction(ext, selectedType);
+        if (selectedType == 'native') {
+          await OpenFilex.open(path);
+        } else {
+          await OpenFilex.open(path);
+        }
+      } else if (result.startsWith('just_once_')) {
+        await OpenFilex.open(path);
+      }
     }
   }
 
@@ -2794,6 +3146,16 @@ class FileManagerProvider extends ChangeNotifier {
     }
 
     await loadDirectory(currentPath, showLoading: false, clearCache: true);
+    // 刷新源目录（如果源目录是当前打开的其他tab）
+    final sourceDir = p.dirname(sourcePath);
+    if (sourceDir != currentPath) {
+      for (int i = 0; i < _tabs.length; i++) {
+        if (_tabs[i].currentPath == sourceDir) {
+          await loadDirectoryForTab(i, sourceDir, showLoading: false, clearCache: true);
+          break;
+        }
+      }
+    }
   }
 
   Future<void> _copyDirectory(Directory source, Directory destination) async {

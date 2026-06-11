@@ -570,7 +570,7 @@ class _ZenFileAddressBarState extends State<ZenFileAddressBar> {
                                       onWillAccept: (data) {
                                         if (data == null || data.paths.isEmpty) return false;
                                         if (data.paths.contains(segment.path)) return false;
-                                        if (data.paths.any((x) => segment.path.startsWith(x + p.separator))) return false;
+                                        if (data.paths.any((x) => segment.path.startsWith(x + p.posix.separator))) return false;
 
                                         setStateSegment(() {
                                           isDragOverSegment = true;

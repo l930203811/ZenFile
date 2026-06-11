@@ -16,6 +16,7 @@ class BackgroundOperation {
   final String title;
   final String archiveName;
   final bool isCompression;
+  final String? destinationDir;
   double progress; // 0.0 to 1.0
   String currentFile;
   bool isRunningInBackground;
@@ -25,6 +26,7 @@ class BackgroundOperation {
     required this.title,
     required this.archiveName,
     required this.isCompression,
+    this.destinationDir,
     this.progress = 0.0,
     this.currentFile = '',
     this.isRunningInBackground = false,
@@ -127,6 +129,7 @@ class BackgroundArchiveService {
       title: '正在解压压缩包',
       archiveName: archiveName,
       isCompression: false,
+      destinationDir: destinationDir,
     );
 
     activeOperation.value = operation;
@@ -258,6 +261,21 @@ class BackgroundArchiveService {
       SnackBar(
         content: Text(message),
         backgroundColor: isError ? Colors.redAccent : Colors.green,
+        action: (!isError && !operation.isCompression && operation.destinationDir != null)
+            ? SnackBarAction(
+                label: '打开到所在目录',
+                onPressed: () {
+                  try {
+                    final provider = Provider.of<FileManagerProvider>(context, listen: false);
+                    final destDir = operation.destinationDir!;
+                    final destParent = p.dirname(destDir);
+                    provider.loadDirectory(destParent);
+                    provider.setHighlightedPaths([destDir]);
+                    provider.setNavigateToBrowseTab(true);
+                  } catch (_) {}
+                },
+              )
+            : null,
       ),
     );
 

@@ -170,7 +170,7 @@ class AboutZenFileScreen extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'v1.0.1 (Stable)',
+                            'v1.0.2 (查看)',
                             style: TextStyle(
                               color: theme.colorScheme.primary,
                               fontSize: 12.5,
@@ -506,6 +506,23 @@ class AboutZenFileScreen extends StatelessWidget {
                   ),
                   Text('更新日志', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 20),
+                  _buildVersionSection(ctx, theme, 'v1.0.2', '2026-06-11', [
+                    '路径栏全面优化（更紧凑的面包屑按钮和箭头样式）',
+                    '标签栏和路径栏整体上移，为文件列表留出更多空间',
+                    '双窗口头部区域精简（高度缩减30%）',
+                    '双窗口模式下远程服务器替换未激活标签页',
+                    '返回手势优化：选中状态下返回清除选中而非退出页面',
+                    '单指滑动切换页面改为双指滑动（避免误触返回手势）',
+                    '双指右滑打开抽屉页，双指左滑切换分类/浏览页',
+                    '新增双指滑动开关（常规与行为设置中可关闭）',
+                    '进度条改为圆环线条样式，中心显示百分比数字',
+                    '字体选项标题全面汉化',
+                    '远程路径兼容性修复（Windows平台路径分隔符问题）',
+                    '地址栏开关改为控制美化后的路径面包屑',
+                    '默认主页设置（可选择分类页或浏览页作为启动页）',
+                    '移除"阻止左侧返回手势打开抽屉"功能',
+                  ]),
+                  const SizedBox(height: 16),
                   _buildVersionSection(ctx, theme, 'v1.0.1', '2026-06-10', [
                     '全新安装包图标（自然禅意风格）',
                     '圆形百分比进度条（复制/移动文件时显示）',
@@ -533,6 +550,107 @@ class AboutZenFileScreen extends StatelessWidget {
                     '应用图标切换（多种风格可选）',
                     '自定义主题与外观设置',
                   ]),
+                  const SizedBox(height: 24),
+
+                  // ── 下载链接 ──
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.06)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('下载最新版本', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withOpacity(0.9))),
+                        const SizedBox(height: 12),
+                        _buildDownloadLink(ctx, theme, '夸克网盘', 'https://pan.quark.cn/s/e6081a88d463', Icons.cloud),
+                        const SizedBox(height: 8),
+                        _buildDownloadLink(ctx, theme, '123云盘', 'https://1820255615.share.123pan.cn/123pan/WrRojv-QHpnA', Icons.cloud_outlined),
+                        const SizedBox(height: 8),
+                        _buildDownloadLink(ctx, theme, '小飞机网盘', 'https://share.feijipan.com/s/5JcEKP4C', Icons.flight),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // ── 更新计划与已知问题 ──
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary.withOpacity(0.06),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: theme.colorScheme.primary.withOpacity(0.12)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('下版本更新计划', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
+                        const SizedBox(height: 10),
+                        ...[
+                          '远程服务器文件拖放操作优化',
+                          '远程服务器边缓存边播放视频',
+                          '自定义应用桌面图标功能完善',
+                        ].map((item) => Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(top: 6),
+                                child: Container(width: 5, height: 5, decoration: BoxDecoration(shape: BoxShape.circle, color: theme.colorScheme.primary.withOpacity(0.5))),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(child: Text(item, style: TextStyle(fontSize: 13, height: 1.4, color: theme.colorScheme.onSurface.withOpacity(0.75)))),
+                            ],
+                          ),
+                        )),
+                        const SizedBox(height: 16),
+                        Text('已知问题', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
+                        const SizedBox(height: 10),
+                        ...[
+                          '远程服务器文件列表中长按可能触发拖放操作弹窗（下版本修复）',
+                          '自定义图标上传后桌面图标不会更改（下版本完善）',
+                        ].map((item) => Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(top: 6),
+                                child: Container(width: 5, height: 5, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.orange.withOpacity(0.7))),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(child: Text(item, style: TextStyle(fontSize: 13, height: 1.4, color: theme.colorScheme.onSurface.withOpacity(0.75)))),
+                            ],
+                          ),
+                        )),
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.lightbulb_outline, size: 16, color: theme.colorScheme.primary.withOpacity(0.7)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  '如果您有任何优化建议或发现Bug，欢迎通过邮箱 1@sequel.dpdns.org 或QQ群 792408214 反馈给我们。',
+                                  style: TextStyle(fontSize: 12.5, height: 1.4, color: theme.colorScheme.onSurface.withOpacity(0.65)),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -585,6 +703,38 @@ class AboutZenFileScreen extends StatelessWidget {
             ),
           )),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDownloadLink(BuildContext ctx, ThemeData theme, String name, String url, IconData icon) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: () async {
+        try {
+          await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+        } catch (_) {}
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceVariant.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.06)),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: theme.colorScheme.primary.withOpacity(0.7)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                name,
+                style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500, color: theme.colorScheme.onSurface.withOpacity(0.85)),
+              ),
+            ),
+            Icon(Icons.open_in_new, size: 14, color: theme.colorScheme.onSurface.withOpacity(0.35)),
+          ],
+        ),
       ),
     );
   }

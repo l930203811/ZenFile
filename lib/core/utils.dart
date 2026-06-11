@@ -115,36 +115,73 @@ class FileUtils {
   }
 
   static IconData getIconForFile(String path) {
-    if (isArchive(path)) return Broken.archive;
-    if (isTextOrCode(path)) return Broken.document_code;
-
-    final mimeType = lookupMimeType(path);
-    if (mimeType == null) return Broken.document;
-
-    if (mimeType.startsWith('image/')) return Broken.image;
-    if (mimeType.startsWith('video/')) return Broken.video;
-    if (mimeType.startsWith('audio/')) return Broken.music;
-    if (mimeType == 'application/pdf') return Broken.document;
-    if (mimeType.startsWith('application/vnd.android.package-archive')) {
-      return Broken.mobile;
+    final ext = path.split('.').last.toLowerCase();
+    if (isArchive(path)) return Broken.box;
+    if (isImage(path)) return Broken.image;
+    if (isVideo(path)) return Broken.video;
+    if (isAudio(path)) return Broken.music;
+    
+    // 文档格式
+    switch (ext) {
+      case 'pdf': return Broken.document;
+      case 'doc': case 'docx': return Broken.document;
+      case 'xls': case 'xlsx': return Icons.table_chart;
+      case 'ppt': case 'pptx': return Icons.slideshow;
+      case 'txt': return Icons.description_outlined;
+      case 'md': return Icons.article_outlined;
+      case 'json': return Icons.data_object;
+      case 'xml': return Icons.code;
+      case 'html': case 'htm': return Icons.web;
+      case 'csv': return Icons.table_chart;
+      case 'log': return Icons.receipt_long;
+      case 'db': case 'sqlite': case 'sqlite3': return Icons.storage;
+      case 'apk': case 'aab': return Broken.mobile;
+      case 'sh': case 'bat': case 'cmd': return Icons.terminal;
+      case 'py': case 'js': case 'ts': case 'dart': case 'java': case 'kt': case 'cpp': case 'c': case 'h': case 'hpp': case 'cs': case 'php': case 'rb': case 'go': case 'rs': case 'swift': return Icons.code;
+      case 'sql': return Icons.storage_outlined;
+      case 'yaml': case 'yml': return Icons.settings;
+      case 'exe': case 'msi': return Icons.settings_applications;
+      case 'zip': case 'rar': case '7z': return Broken.box;
     }
-
-    return Broken.document;
+    
+    if (isTextOrCode(path)) return Icons.description_outlined;
+    
+    // 未知格式
+    return Icons.insert_drive_file_outlined;
   }
   
   static Color getColorForFile(String path, BuildContext context) {
-    if (isArchive(path)) return Colors.brown;
-    if (isTextOrCode(path)) return Colors.blueAccent;
-
-    final mimeType = lookupMimeType(path);
-    if (mimeType == null) return Theme.of(context).colorScheme.primary;
-
-    if (mimeType.startsWith('image/')) return Colors.purpleAccent;
-    if (mimeType.startsWith('video/')) return Colors.redAccent;
-    if (mimeType.startsWith('audio/')) return Colors.orangeAccent;
-    if (mimeType == 'application/pdf') return Colors.red;
-
-    return Theme.of(context).colorScheme.primary;
+    final ext = path.split('.').last.toLowerCase();
+    if (isArchive(path)) return Colors.orange.shade700;
+    if (isImage(path)) return Colors.purple;
+    if (isVideo(path)) return Colors.red.shade700;
+    if (isAudio(path)) return Colors.teal.shade700;
+    
+    switch (ext) {
+      case 'pdf': return Colors.red.shade700;
+      case 'doc': case 'docx': return Colors.blue.shade700;
+      case 'xls': case 'xlsx': return Colors.green.shade700;
+      case 'ppt': case 'pptx': return Colors.orange.shade700;
+      case 'txt': return Colors.blue.shade700;
+      case 'md': return Colors.grey.shade700;
+      case 'json': return Colors.amber.shade700;
+      case 'xml': return Colors.orange.shade600;
+      case 'html': case 'htm': return Colors.orange;
+      case 'csv': return Colors.green.shade600;
+      case 'db': case 'sqlite': case 'sqlite3': return Colors.indigo;
+      case 'apk': case 'aab': return Colors.green;
+      case 'sh': case 'bat': case 'cmd': return Colors.grey.shade700;
+      case 'py': case 'js': case 'ts': case 'dart': case 'java': case 'kt': case 'cpp': case 'c': case 'h': case 'hpp': case 'cs': case 'php': case 'rb': case 'go': case 'rs': case 'swift': return Colors.cyan.shade700;
+      case 'sql': return Colors.blue.shade600;
+      case 'yaml': case 'yml': return Colors.pink.shade600;
+      case 'exe': case 'msi': return Colors.blue.shade800;
+      case 'log': return Colors.grey;
+    }
+    
+    if (isTextOrCode(path)) return Colors.blue.shade700;
+    
+    // 未知格式
+    return Colors.grey.shade500;
   }
 
   static IconData getFolderIcon(String option) {

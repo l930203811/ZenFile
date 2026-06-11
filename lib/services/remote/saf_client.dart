@@ -51,6 +51,18 @@ class SafRemoteClient implements RemoteClient {
   }
 
   @override
+  Future<void> createFile(String path) async {
+    final int lastSlash = path.lastIndexOf('/');
+    final String parentUri = lastSlash != -1 ? path.substring(0, lastSlash) : '';
+    final String fileName = lastSlash != -1 ? path.substring(lastSlash + 1) : '新建文件';
+    await _channel.invokeMethod('createFile', {
+      'rootUri': rootUri,
+      'parentUri': parentUri,
+      'name': fileName,
+    });
+  }
+
+  @override
   Future<void> delete(String path, bool isDir) async {
     await _channel.invokeMethod('delete', {
       'rootUri': rootUri,

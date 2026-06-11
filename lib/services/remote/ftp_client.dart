@@ -88,6 +88,27 @@ class FtpRemoteClient implements RemoteClient {
   }
 
   @override
+  Future<void> createFile(String path) async {
+    if (_ftpConnect == null) throw Exception('FTP not connected');
+    final fileName = p.basename(path);
+    final parentPath = p.dirname(path);
+    if (parentPath.isNotEmpty && parentPath != '/') {
+      await _ftpConnect!.changeDirectory(parentPath);
+    }
+    // Create empty file by uploading zero bytes
+    final tempFile = File('${Directory.systemTemp.path}/.empty_${DateTime.now().millisecondsSinceEpoch}');
+    await tempFile.writeAsString('');
+    try {
+      await _ftpConnect!.uploadFile(
+        tempFile,
+        sRemoteName: fileName,
+      );
+    } finally {
+      if (await tempFile.exists()) await tempFile.delete();
+    }
+  }
+
+  @override
   Future<void> delete(String path, bool isDir) async {
     if (_ftpConnect == null) throw Exception('FTP not connected');
     if (isDir) {

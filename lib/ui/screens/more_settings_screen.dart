@@ -199,7 +199,8 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
     final hideNavBarVis = _shouldShow('隐藏安卓导航栏', '隐藏底部导航栏以最大化屏幕空间（上滑可显示）');
     final resetViewersVis = _shouldShow('重置默认文件查看器', '清除所有已记住的"打开方式"关联');
     final skipDialogVis = _shouldShow('跳过"打开方式"对话框', '绕过应用选择对话框，直接使用默认查看器打开文件');
-    final defaultBrowseVis = _shouldShow('默认进入浏览页', '启动时直接进入浏览存储管理器');
+    final defaultBrowseVis = _shouldShow('默认主页', '选择启动时进入分类页或浏览页');
+    final dualFingerSwipeVis = _shouldShow('双指滑动切换页面', '双指左右滑动切换分类页、浏览页或打开抽屉');
     final showFloatingVis = _shouldShow('显示浮动按钮', '在浏览页底部启用快速创建（+）按钮');
     final showHiddenVis = _shouldShow('显示隐藏文件', '显示以点(.)开头的系统文件和文件夹');
     final folderFileCountVis = _shouldShow('显示文件夹和文件计数标题', '在存储标题栏下显示文件夹和文件总数');
@@ -218,15 +219,15 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
     final confirmDragVis = fileManager.enableDragDrop && _shouldShow('确认拖放操作', '拖放文件时显示选项弹窗（复制、移动、压缩）');
     final multipleTabsVis = _shouldShow('启用多标签页', '允许在单独的标签页中打开多个文件夹以便快速导航');
     final splitScreenVis = _shouldShow('启用分屏', '并排浏览两个目录并轻松传输文件');
-    final disableLeftBackVis = _shouldShow('阻止左侧返回手势打开抽屉', '将屏幕左边缘排除在安卓系统返回手势之外，便于滑动打开抽屉。您仍可从右边缘滑动返回。');
+    final disableLeftBackVis = false; // 已移除该功能
     final rememberLastFolderVis = _shouldShow('记住上次打开的文件夹', '启动应用时打开上次浏览的文件夹');
 
     final generalStartupList = [
       defaultBrowseVis,
+      dualFingerSwipeVis,
       rememberLastFolderVis,
       showHomeBrowseNavVis,
       hideNavBarVis,
-      disableLeftBackVis,
     ];
 
     final fileExplorerList = [
@@ -484,8 +485,8 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                     if (defaultBrowseVis)
                       SettingsTile(
                         icon: Broken.folder_favorite,
-                        title: '默认进入浏览页',
-                        subtitle: '启动时直接进入浏览存储管理器',
+                        title: '默认主页',
+                        subtitle: fileManager.defaultToBrowseScreen ? '浏览页' : '分类页',
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
@@ -495,6 +496,21 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                           ),
                         ),
                         onTap: () => fileManager.toggleDefaultToBrowseScreen(),
+                      ),
+                    if (dualFingerSwipeVis)
+                      SettingsTile(
+                        icon: Broken.arrow_swap_horizontal,
+                        title: '双指滑动切换页面',
+                        subtitle: '双指左右滑动切换分类页、浏览页或打开抽屉',
+                        trailing: Transform.scale(
+                          scale: 0.85,
+                          child: Switch(
+                            value: fileManager.enableDualFingerSwipe,
+                            activeColor: theme.colorScheme.primary,
+                            onChanged: (_) => fileManager.toggleDualFingerSwipe(),
+                          ),
+                        ),
+                        onTap: () => fileManager.toggleDualFingerSwipe(),
                       ),
                     if (rememberLastFolderVis)
                       SettingsTile(
@@ -554,21 +570,6 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                           ),
                         ),
                         onTap: () => fileManager.toggleHideNavigationBar(),
-                      ),
-                    if (disableLeftBackVis)
-                      SettingsTile(
-                        icon: Icons.gesture,
-                        title: '阻止左侧返回手势打开抽屉',
-                        subtitle: '将屏幕左边缘排除在安卓系统返回手势之外，便于滑动打开抽屉。您仍可从右边缘滑动返回。',
-                        trailing: Transform.scale(
-                          scale: 0.85,
-                          child: Switch(
-                            value: fileManager.disableLeftBackGesture,
-                            activeColor: theme.colorScheme.primary,
-                            onChanged: (_) => fileManager.toggleDisableLeftBackGesture(),
-                          ),
-                        ),
-                        onTap: () => fileManager.toggleDisableLeftBackGesture(),
                       ),
                     if (bottomActionBarVis)
                       SettingsTile(
@@ -1135,8 +1136,8 @@ class GeneralSettingsScreen extends StatelessWidget {
           children: [
             SettingsTile(
               icon: Broken.folder_favorite,
-              title: '默认进入浏览页',
-              subtitle: '启动时直接进入浏览存储管理器',
+              title: '默认主页',
+              subtitle: fileManager.defaultToBrowseScreen ? '浏览页' : '分类页',
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
@@ -1146,6 +1147,20 @@ class GeneralSettingsScreen extends StatelessWidget {
                 ),
               ),
               onTap: () => fileManager.toggleDefaultToBrowseScreen(),
+            ),
+            SettingsTile(
+              icon: Broken.arrow_swap_horizontal,
+              title: '双指滑动切换页面',
+              subtitle: '双指左右滑动切换分类页、浏览页或打开抽屉',
+              trailing: Transform.scale(
+                scale: 0.85,
+                child: Switch(
+                  value: fileManager.enableDualFingerSwipe,
+                  activeColor: theme.colorScheme.primary,
+                  onChanged: (_) => fileManager.toggleDualFingerSwipe(),
+                ),
+              ),
+              onTap: () => fileManager.toggleDualFingerSwipe(),
             ),
             SettingsTile(
               icon: Broken.folder_open,
@@ -1236,20 +1251,6 @@ class GeneralSettingsScreen extends StatelessWidget {
                 ),
               ),
               onTap: () => fileManager.toggleShowRecentFiles(),
-            ),
-            SettingsTile(
-              icon: Icons.gesture,
-              title: '阻止左侧返回手势打开抽屉',
-              subtitle: '将屏幕左边缘排除在安卓系统返回手势之外，便于滑动打开抽屉。您仍可从右边缘滑动返回。',
-              trailing: Transform.scale(
-                scale: 0.85,
-                child: Switch(
-                  value: fileManager.disableLeftBackGesture,
-                  activeColor: theme.colorScheme.primary,
-                  onChanged: (_) => fileManager.toggleDisableLeftBackGesture(),
-                ),
-              ),
-              onTap: () => fileManager.toggleDisableLeftBackGesture(),
             ),
           ],
         ),
@@ -1972,14 +1973,14 @@ String _getAccentColorLabel(String option) {
 
 String _getFolderIconLabel(String option) {
   switch (option) {
-    case 'solid': return '经典实心（Material）';
-    case 'rounded': return '现代圆角（Material）';
-    case 'special': return '星标特别（Material）';
-    case 'snippet': return '文档片段（Material）';
-    case 'outlined': return '极简描边（Material）';
+    case 'solid': return '经典实心';
+    case 'rounded': return '现代圆角';
+    case 'special': return '星标特别';
+    case 'snippet': return '文档片段';
+    case 'outlined': return '极简描边';
     case 'broken':
     default:
-      return 'ZenFile 断线描边（默认）';
+      return 'ZenFile 断线描边';
   }
 }
 
@@ -2009,13 +2010,13 @@ String _getAppIconLabel(String option) {
 String _getFontFamilyLabel(String option) {
   switch (option) {
     case 'nothing': return '点阵与无衬线';
-    case 'outfit': return 'Outfit 现代无衬线';
-    case 'jetbrains': return 'JetBrains 科技等宽';
-    case 'montserrat': return 'Montserrat 都市无衬线';
+    case 'outfit': return '欧菲特现代无衬线';
+    case 'jetbrains': return '捷脑科技等宽';
+    case 'montserrat': return '蒙特都市无衬线';
     case 'custom': return '自定义导入字体';
     case 'default':
     default:
-      return '标志性默认（Lexend Deca）';
+      return '标志性默认';
   }
 }
 
@@ -2120,12 +2121,12 @@ void _showFolderIconPickerDialog(BuildContext context, FileManagerProvider fileM
     builder: (ctx) {
       final current = fileManager.folderIconOption;
       final options = [
-        {'key': 'broken', 'name': 'ZenFile 断线描边（默认）', 'icon': Broken.folder},
-        {'key': 'rounded', 'name': '现代圆角（Material）', 'icon': Icons.folder_rounded},
-        {'key': 'solid', 'name': '经典实心（Material）', 'icon': Icons.folder},
-        {'key': 'special', 'name': '星标特别（Material）', 'icon': Icons.folder_special_rounded},
-        {'key': 'snippet', 'name': '文档片段（Material）', 'icon': Icons.snippet_folder_rounded},
-        {'key': 'outlined', 'name': '极简描边（Material）', 'icon': Icons.folder_outlined},
+        {'key': 'solid', 'name': '经典实心', 'icon': Icons.folder},
+        {'key': 'broken', 'name': 'ZenFile 断线描边', 'icon': Broken.folder},
+        {'key': 'rounded', 'name': '现代圆角', 'icon': Icons.folder_rounded},
+        {'key': 'special', 'name': '星标特别', 'icon': Icons.folder_special_rounded},
+        {'key': 'snippet', 'name': '文档片段', 'icon': Icons.snippet_folder_rounded},
+        {'key': 'outlined', 'name': '极简描边', 'icon': Icons.folder_outlined},
       ];
 
       return SafeArea(
@@ -2669,11 +2670,11 @@ void _showFontFamilyPickerDialog(BuildContext context, FileManagerProvider fileM
       final current = fileManager.fontFamilyOption;
       final hasCustomFont = fileManager.customFontPath != null;
       final options = [
-        {'key': 'default', 'name': '标志性默认（Lexend Deca）', 'desc': 'ZenFile 原始简洁几何风格'},
-        {'key': 'nothing', 'name': 'Nothing 点阵与无衬线', 'desc': '高科技复古点阵标题 + 简洁正文'},
-        {'key': 'outfit', 'name': 'Outfit 现代无衬线', 'desc': '超流畅、极简且高级的几何美学'},
-        {'key': 'jetbrains', 'name': 'JetBrains 科技等宽', 'desc': '干净且未来感的开发者等宽风格'},
-        {'key': 'montserrat', 'name': 'Montserrat 都市无衬线', 'desc': '大胆、现代且醒目的字体排版'},
+        {'key': 'default', 'name': '标志性默认', 'desc': '原始简洁几何风格'},
+        {'key': 'nothing', 'name': '点阵与无衬线', 'desc': '高科技复古点阵标题 + 简洁正文'},
+        {'key': 'outfit', 'name': '欧菲特现代无衬线', 'desc': '超流畅、极简且高级的几何美学'},
+        {'key': 'jetbrains', 'name': '捷脑科技等宽', 'desc': '干净且未来感的开发者等宽风格'},
+        {'key': 'montserrat', 'name': '蒙特都市无衬线', 'desc': '大胆、现代且醒目的字体排版'},
         if (hasCustomFont)
           {'key': 'custom', 'name': '自定义字体（${p.basename(fileManager.customFontPath!)}）', 'desc': '您加载的自定义字体文件'},
       ];

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart' as p;
 import '../../models/drag_payload.dart';
+import '../../services/remote/remote_client.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/utils.dart';
@@ -14,6 +15,9 @@ class DragDropHandler extends StatefulWidget {
   final String path;
   final bool isDirectory;
   final VoidCallback? onLongPress;
+  final bool enabled;
+  final bool isRemote;
+  final List<RemoteFileItem>? remoteItems;
 
   const DragDropHandler({
     super.key,
@@ -21,6 +25,9 @@ class DragDropHandler extends StatefulWidget {
     required this.path,
     required this.isDirectory,
     this.onLongPress,
+    this.enabled = true,
+    this.isRemote = false,
+    this.remoteItems,
   });
 
   @override
@@ -97,14 +104,14 @@ class _DragDropHandlerState extends State<DragDropHandler> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<FileManagerProvider>();
-    
-    // If drag & drop is disabled in settings, return the child widget directly
-    if (!provider.enableDragDrop) {
+
+    // If drag & drop is disabled in settings or this handler is disabled, return the child widget directly
+    if (!widget.enabled || !provider.enableDragDrop) {
       return widget.child;
     }
 
     final theme = Theme.of(context);
-    final fileName = p.basename(widget.path);
+    final fileName = p.posix.basename(widget.path);
 
     final isSelected = provider.selectedPaths.contains(widget.path);
     final dragPaths = (isSelected && provider.selectedPaths.length > 1)
@@ -160,20 +167,23 @@ class _DragDropHandlerState extends State<DragDropHandler> {
         path: widget.path,
         isDirectory: widget.isDirectory,
         paths: dragPaths,
+        isRemote: widget.isRemote,
+        remoteItems: widget.remoteItems,
       ),
       feedback: feedback,
-      dragAnchorStrategy: childDragAnchorStrategy,
-      feedbackOffset: const Offset(0, -30),
-      delay: const Duration(milliseconds: 500),
+      dragAnchorStrategy: pointerDragAnchorStrategy,
+      delay: const Duration(milliseconds: 600),
       onDragStarted: () {
         _hasMoved = false;
       },
       onDragUpdate: (details) {
-        if (details.delta.dx.abs() > 1.0 || details.delta.dy.abs() > 1.0) {
+        if (details.delta.dx.abs() > 20.0 || details.delta.dy.abs() > 20.0) {
           _hasMoved = true;
         }
         _currentDragPosition = details.globalPosition;
-        _startScrollTimerIfNeeded();
+        if (_hasMoved) {
+          _startScrollTimerIfNeeded();
+        }
       },
       onDragEnd: (details) {
         _scrollTimer?.cancel();
@@ -201,7 +211,11 @@ class _DragDropHandlerState extends State<DragDropHandler> {
         onWillAccept: (data) {
           if (data == null || data.paths.isEmpty) return false;
           if (data.paths.contains(widget.path)) return false;
-          if (data.paths.any((x) => widget.path.startsWith(x + p.separator))) return false;
+          if (data.paths.any((x) => widget.path.startsWith(x + p.posix.separator))) return false;
+          // 如果拖拽源和目标文件夹在同一目录下，不接受
+          final sourceParent = p.posix.dirname(data.paths.first);
+          final targetParent = p.posix.dirname(widget.path);
+          if (sourceParent == targetParent) return false;
           
           setState(() {
             _isDragOver = true;
@@ -233,8 +247,39 @@ class _DragDropHandlerState extends State<DragDropHandler> {
               sourcePaths: data.paths,
               initialTargetPath: widget.path,
             );
+          } else if (data.isRemote && data.remoteItems != null) {
+            // 远程文件拖放到本地目录
+            provider.setRemoteClipboard(data.remoteItems!, isCut: true, connection: provider.activeTab.remoteConnection!);
+            await provider.pasteFile(context, clearAfterPaste: true);
+          } else if (provider.currIsRemote) {
+            // 本地文件拖放到远程目录
+            provider.setClipboard(data.paths, isCut: true);
+            await provider.pasteFile(context, clearAfterPaste: true);
           } else {
-            await Future.wait(data.paths.map((p) => provider.moveItem(context, p, widget.path, showToast: false)));
+            provider.progressNotifier.value = FileOperationProgress(
+              totalFiles: data.paths.length,
+              currentFileIndex: 1,
+              currentFileName: 'Moving...',
+              percentage: 0.0,
+              speedMBs: 0.0,
+              eta: Duration.zero,
+              totalBytes: data.paths.length,
+              bytesProcessed: 0,
+            );
+            for (int i = 0; i < data.paths.length; i++) {
+              provider.progressNotifier.value = FileOperationProgress(
+                totalFiles: data.paths.length,
+                currentFileIndex: i + 1,
+                currentFileName: p.posix.basename(data.paths[i]),
+                percentage: (i + 1) / data.paths.length,
+                speedMBs: 0.0,
+                eta: Duration.zero,
+                totalBytes: data.paths.length,
+                bytesProcessed: i + 1,
+              );
+              await provider.moveItem(context, data.paths[i], widget.path, showToast: false);
+            }
+            provider.progressNotifier.value = null;
             provider.clearSelection();
           }
         },

@@ -204,7 +204,7 @@ class _DragDropActionDialogState extends State<DragDropActionDialog> {
                   subtitle: '剪切并粘贴到目标文件夹',
                   icon: Broken.scissor,
                   color: Colors.orange,
-                  isDisabled: widget.sourcePaths.every((path) => p.dirname(path) == _selectedDestPath),
+                  isDisabled: widget.sourcePaths.every((path) => p.posix.dirname(path) == _selectedDestPath),
                 ),
                 _buildActionCard(
                   theme: theme,

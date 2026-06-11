@@ -8,7 +8,7 @@ import '../screens/vault_lock_screen.dart';
 import '../screens/ftp_server_screen.dart';
 import '../../services/network_connections_service.dart';
 import '../screens/network_connection_wizard_screen.dart';
-import '../screens/remote_explorer_screen.dart';
+
 import '../screens/about_screen.dart';
 import '../screens/web_sharing_screen.dart';
 import '../../providers/media_provider.dart';
@@ -173,14 +173,23 @@ class ZenFileDrawer extends StatelessWidget {
                                 context,
                                 icon: iconData,
                                 title: conn.name,
-                                onTap: () {
+                                onTap: () async {
                                   Navigator.pop(context);
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => RemoteExplorerScreen(connection: conn),
-                                    ),
-                                  );
+                                  final provider = context.read<FileManagerProvider>();
+                                  final client = FileManagerProvider.createRemoteClient(conn);
+                                  try {
+                                    await client.connect();
+                                    if (context.mounted) {
+                                      provider.openRemoteTab(client, conn);
+                                      onNavigateTab?.call(1);
+                                    }
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('连接失败：$e'), backgroundColor: Colors.redAccent),
+                                      );
+                                    }
+                                  }
                                 },
                               );
                             }),
@@ -304,7 +313,7 @@ class ZenFileDrawer extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12.0),
               child: Text(
-                'ZenFile v1.0.1',
+                'ZenFile v1.0.2',
                 style: TextStyle(fontSize: 11.5, color: theme.colorScheme.onSurface.withOpacity(0.4), fontWeight: FontWeight.w600),
               ),
             ),

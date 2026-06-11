@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import '../../providers/file_manager_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
-import 'tab_options_sheet.dart';
 
 class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
   final FileManagerProvider provider;
-  const DirectoryTabBar({super.key, required this.provider});
+  final ScrollController? scrollController;
+
+  const DirectoryTabBar({super.key, required this.provider, this.scrollController});
 
   @override
-  Size get preferredSize => const Size.fromHeight(50);
+  Size get preferredSize => const Size.fromHeight(36);
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +19,7 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
     final activeIndex = provider.activeTabIndex;
 
     return Container(
-      height: 50,
+      height: 36,
       decoration: BoxDecoration(
         color: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
         border: Border(
@@ -33,8 +34,9 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
           Expanded(
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
+              controller: scrollController,
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               itemCount: tabs.length,
               itemBuilder: (context, index) {
                 final tab = tabs[index];
@@ -51,9 +53,15 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
                     borderRadius: BorderRadius.circular(10),
                     child: InkWell(
                       onTap: () => provider.setActiveTab(index),
-                      onLongPress: () => TabOptionsSheet.show(context, provider, index),
+                      onDoubleTap: () {
+                        if (tabs.length > 1 && !tab.isPinned) {
+                          provider.closeTab(index);
+                        }
+                      },
+                      onLongPress: () => _showCloseTabSheet(context, provider, index),
                       borderRadius: BorderRadius.circular(10),
                       child: Container(
+                        constraints: const BoxConstraints(minWidth: 60, maxWidth: 120),
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
@@ -79,28 +87,19 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
                                       : theme.colorScheme.onSurface.withOpacity(0.6)),
                             ),
                             const SizedBox(width: 6),
-                            Text(
-                              title.isEmpty ? '/' : title,
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                                  color: isSelected
-                                      ? theme.colorScheme.primary
-                                      : theme.colorScheme.onSurface.withOpacity(0.8)),
-                            ),
-                            if (tabs.length > 1 && !tab.isPinned) ...[
-                              const SizedBox(width: 6),
-                              GestureDetector(
-                                onTap: () => provider.closeTab(index),
-                                child: Icon(
-                                  Icons.close,
-                                  size: 12,
-                                  color: isSelected
-                                      ? theme.colorScheme.primary.withOpacity(0.7)
-                                      : theme.colorScheme.onSurface.withOpacity(0.4),
-                                ),
+                            Flexible(
+                              child: Text(
+                                title.isEmpty ? '/' : title,
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                    color: isSelected
+                                        ? theme.colorScheme.primary
+                                        : theme.colorScheme.onSurface.withOpacity(0.8)),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
-                            ],
+                            ),
                           ],
                         ),
                       ),
@@ -122,6 +121,14 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
             tooltip: '新建标签页',
             onPressed: () {
               provider.addTab(provider.rootPath);
+              // 自动滚动到新标签页
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                scrollController?.animateTo(
+                  scrollController?.position.maxScrollExtent ?? 0,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOut,
+                );
+              });
             },
           ),
           PopupMenuButton<String>(
@@ -162,6 +169,97 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _showCloseTabSheet(BuildContext context, FileManagerProvider provider, int index) {
+    final tab = provider.tabs[index];
+    final canClose = provider.tabs.length > 1 && !tab.isPinned;
+    final theme = Theme.of(context);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return Container(
+          margin: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: theme.dividerColor.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                child: Row(
+                  children: [
+                    Icon(
+                      tab.isPinned ? Icons.push_pin_rounded : Broken.folder,
+                      size: 18,
+                      color: theme.colorScheme.primary,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        tab.currentPath == provider.rootPath ? '主目录' : p.basename(tab.currentPath),
+                        style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
+                    Text(
+                      '双击关闭标签页',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.4),
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (canClose)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8, left: 12, right: 12),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(sheetContext);
+                        provider.closeTab(index);
+                      },
+                      icon: const Icon(Broken.close_circle, size: 18),
+                      label: const Text('关闭标签页', style: TextStyle(fontWeight: FontWeight.bold)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.redAccent,
+                        side: BorderSide(color: Colors.redAccent.withOpacity(0.3)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
     );
   }
 }

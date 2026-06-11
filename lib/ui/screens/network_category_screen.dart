@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../models/network_connection_model.dart';
 import '../../services/network_connections_service.dart';
-import 'remote_explorer_screen.dart';
+import '../../providers/file_manager_provider.dart';
+
 import 'network_connection_wizard_screen.dart';
 
 class NetworkCategoryScreen extends StatefulWidget {
@@ -219,11 +221,24 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
                             ),
                           ],
                         ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => RemoteExplorerScreen(connection: conn)),
-                          );
+                        onTap: () async {
+                          final provider = context.read<FileManagerProvider>();
+                          final client = FileManagerProvider.createRemoteClient(conn);
+                          try {
+                            await client.connect();
+                            if (context.mounted) {
+                              provider.openRemoteTab(client, conn);
+                              // 通知首页切换到浏览页，并关闭当前页面
+                              widget.onNavigateTab?.call(1);
+                              Navigator.pop(context);
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('连接失败：$e'), backgroundColor: Colors.redAccent),
+                              );
+                            }
+                          }
                         },
                       ),
                     );

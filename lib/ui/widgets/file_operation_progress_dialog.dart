@@ -81,55 +81,27 @@ class FileOperationProgressDialog extends StatelessWidget {
                       ),
                       const SizedBox(height: 24),
 
-                      // Circular progress with percentage
+                      // Circular progress ring with percentage
                       SizedBox(
                         width: 120,
                         height: 120,
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
-                            // Background circle
-                            Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: theme.colorScheme.primary.withOpacity(0.08),
-                              ),
+                            // Background ring
+                            CircularProgressIndicator(
+                              value: 1.0,
+                              strokeWidth: 8,
+                              backgroundColor: theme.colorScheme.primary.withOpacity(0.08),
+                              valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary.withOpacity(0.08)),
                             ),
-                            // Progress arc
-                            ShaderMask(
-                              shaderCallback: (bounds) {
-                                return SweepGradient(
-                                  startAngle: 0.0,
-                                  endAngle: 3.141592653589793 * 2 * progress.percentage.clamp(0.0, 1.0),
-                                  colors: [
-                                    theme.colorScheme.primary,
-                                    theme.colorScheme.primary.withRed(
-                                      (theme.colorScheme.primary.red * 0.6).round().clamp(0, 255),
-                                    ).withBlue(
-                                      (theme.colorScheme.primary.blue * 1.2).round().clamp(0, 255),
-                                    ),
-                                  ],
-                                  transform: const GradientRotation(-1.5708),
-                                ).createShader(bounds);
-                              },
-                              blendMode: BlendMode.srcIn,
-                              child: Container(
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            // Inner circle (cutout)
-                            Center(
-                              child: Container(
-                                width: 96,
-                                height: 96,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: isDark ? const Color(0xFF1E1E2E) : theme.colorScheme.surface,
-                                ),
-                              ),
+                            // Progress ring
+                            CircularProgressIndicator(
+                              value: progress.percentage.clamp(0.0, 1.0),
+                              strokeWidth: 8,
+                              backgroundColor: Colors.transparent,
+                              valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
+                              strokeCap: StrokeCap.round,
                             ),
                             // Percentage text
                             Center(

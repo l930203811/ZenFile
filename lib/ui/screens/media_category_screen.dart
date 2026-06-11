@@ -124,7 +124,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       case MediaType.documents:
         return Broken.document;
       case MediaType.archives:
-        return Broken.archive;
+        return Broken.box;
       case MediaType.downloads:
         return Broken.document_download;
       case MediaType.apks:
@@ -609,6 +609,15 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                 ),
               ),
               const Divider(height: 1),
+              if (filePath != null && FileUtils.isArchive(filePath))
+                ListTile(
+                  leading: Icon(Broken.archive, color: theme.colorScheme.primary),
+                  title: const Text('解压'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    context.read<FileManagerProvider>().extractArchiveDirectly(context, filePath);
+                  },
+                ),
               ListTile(
                 leading: Icon(Broken.document_copy, color: theme.colorScheme.primary),
                 title: const Text('复制'),
@@ -1665,7 +1674,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         if (_isSelectionMode) {
           _toggleSelection(path, null);
         } else {
-          Navigator.push(context, _slideRoute(DocumentViewerScreen(filePath: path)));
+          context.read<FileManagerProvider>().openFile(context, path);
         }
       },
       onLongPress: () => _toggleSelection(path, null),
@@ -1849,7 +1858,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       case '.pdf': return Broken.document;
       case '.doc': case '.docx': case '.xls': case '.xlsx': return Broken.document_text;
       case '.ppt': case '.pptx': return Broken.presention_chart;
-      case '.txt': return Broken.note_2;
+      case '.txt': return Icons.description;
       default: return Broken.document;
     }
   }
@@ -1860,7 +1869,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       case '.doc': case '.docx': return Colors.blueAccent;
       case '.xls': case '.xlsx': return Colors.green;
       case '.ppt': case '.pptx': return Colors.orangeAccent;
-      case '.txt': return Colors.purpleAccent;
+      case '.txt': return Colors.blue.shade700;
       default: return Colors.teal;
     }
   }

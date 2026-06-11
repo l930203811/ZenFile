@@ -23,6 +23,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   DateTime? _lastBrowseTapTime;
   late AnimationController _refreshIconController;
   bool _isRefreshing = false;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  // 双指滑动检测
+  final Map<int, Offset> _activePointers = {};
+  Offset? _dualFingerStartCenter;
+  static const double _dualFingerSwipeThreshold = 30.0;
 
   @override
   void initState() {
@@ -199,34 +204,98 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
         }
       },
       child: Scaffold(
+        key: _scaffoldKey,
         drawer: ZenFileDrawer(
           toggleTheme: widget.toggleTheme,
           onNavigateTab: (index) => setState(() => _currentIndex = index),
         ),
-        body: GestureDetector(
-          onHorizontalDragEnd: (details) {
-            final velocity = details.primaryVelocity ?? 0.0;
-            // 左滑 (velocity < 0) -> 从分类页切换到浏览页
-            if (velocity < -200 && _currentIndex == 0) {
-              setState(() => _currentIndex = 1);
-            }
-            // 右滑 (velocity > 0) -> 从浏览页切换到分类页
-            else if (velocity > 200 && _currentIndex == 1) {
-              if (!provider.canGoBack && !provider.isSelectionMode) {
-                setState(() => _currentIndex = 0);
-                context.read<MediaProvider>().refreshMediaBackground();
-              }
+        body: Listener(
+          onPointerDown: (event) {
+            _activePointers[event.pointer] = event.position;
+            if (_activePointers.length == 2) {
+              final positions = _activePointers.values.toList();
+              _dualFingerStartCenter = Offset(
+                (positions[0].dx + positions[1].dx) / 2,
+                (positions[0].dy + positions[1].dy) / 2,
+              );
             }
           },
-          child: IndexedStack(
-            index: _currentIndex,
-            children: [
-              _buildHomeTab(),
-              DirectoryScreen(
-                toggleTheme: widget.toggleTheme,
-                onNavigateTab: (index) => setState(() => _currentIndex = index),
-              ),
-            ],
+          onPointerMove: (event) {
+            if (_activePointers.containsKey(event.pointer)) {
+              _activePointers[event.pointer] = event.position;
+            }
+          },
+          onPointerUp: (event) {
+            if (_activePointers.length == 2 && _dualFingerStartCenter != null) {
+              final fileProvider = context.read<FileManagerProvider>();
+              if (!fileProvider.enableDualFingerSwipe) {
+                _activePointers.remove(event.pointer);
+                if (_activePointers.length < 2) _dualFingerStartCenter = null;
+                return;
+              }
+              final positions = _activePointers.values.toList();
+              final endCenter = Offset(
+                (positions[0].dx + positions[1].dx) / 2,
+                (positions[0].dy + positions[1].dy) / 2,
+              );
+              final deltaX = endCenter.dx - _dualFingerStartCenter!.dx;
+              // 双指左滑
+              if (deltaX < -_dualFingerSwipeThreshold) {
+                if (_currentIndex == 0) {
+                  // 分类页左滑 -> 切换到浏览页
+                  setState(() => _currentIndex = 1);
+                } else if (_currentIndex == 1) {
+                  // 浏览页左滑 -> 回到分类页
+                  if (!fileProvider.canGoBack && !fileProvider.isSelectionMode) {
+                    setState(() => _currentIndex = 0);
+                    context.read<MediaProvider>().refreshMediaBackground();
+                  }
+                }
+              }
+              // 双指右滑
+              else if (deltaX > _dualFingerSwipeThreshold) {
+                if (_currentIndex == 0) {
+                  // 分类页右滑 -> 弹出抽屉页
+                  _scaffoldKey.currentState?.openDrawer();
+                } else if (_currentIndex == 1) {
+                  // 浏览页右滑 -> 回到分类页
+                  if (!fileProvider.canGoBack && !fileProvider.isSelectionMode) {
+                    setState(() => _currentIndex = 0);
+                    context.read<MediaProvider>().refreshMediaBackground();
+                  }
+                }
+              }
+            }
+            _activePointers.remove(event.pointer);
+            if (_activePointers.length < 2) {
+              _dualFingerStartCenter = null;
+            }
+          },
+          onPointerCancel: (event) {
+            _activePointers.remove(event.pointer);
+            if (_activePointers.length < 2) {
+              _dualFingerStartCenter = null;
+            }
+          },
+          child: Consumer<FileManagerProvider>(
+            builder: (context, provider, _) {
+              if (provider.navigateToBrowseTab && _currentIndex != 1) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  setState(() => _currentIndex = 1);
+                  provider.setNavigateToBrowseTab(false);
+                });
+              }
+              return IndexedStack(
+                index: _currentIndex,
+                children: [
+                  _buildHomeTab(),
+                  DirectoryScreen(
+                    toggleTheme: widget.toggleTheme,
+                    onNavigateTab: (index) => setState(() => _currentIndex = index),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),

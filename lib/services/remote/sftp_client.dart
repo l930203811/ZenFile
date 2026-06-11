@@ -73,6 +73,16 @@ class SftpRemoteClient implements RemoteClient {
   }
 
   @override
+  Future<void> createFile(String path) async {
+    if (_sftpClient == null) throw Exception('SFTP not connected');
+    final remoteFile = await _sftpClient!.open(
+      path,
+      mode: SftpFileOpenMode.create | SftpFileOpenMode.truncate | SftpFileOpenMode.write,
+    );
+    await remoteFile.write(Stream.fromIterable([])).done;
+  }
+
+  @override
   Future<void> delete(String path, bool isDir) async {
     if (_sftpClient == null) throw Exception('SFTP not connected');
     if (isDir) {

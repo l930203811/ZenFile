@@ -204,6 +204,26 @@ class WebDavRemoteClient implements RemoteClient {
   }
 
   @override
+  Future<void> createFile(String path) async {
+    var normalizedPath = path;
+    if (!normalizedPath.startsWith('/')) {
+      normalizedPath = '/$normalizedPath';
+    }
+    final url = Uri.parse(_baseUrl + Uri.encodeFull(normalizedPath));
+    final request = await _httpClient.openUrl('PUT', url);
+    final auth = _authHeader();
+    if (auth.isNotEmpty) {
+      request.headers.set('Authorization', auth);
+    }
+    request.contentLength = 0;
+    final response = await request.close();
+    if (response.statusCode >= 400) {
+      throw Exception('WebDAV createFile error: ${response.statusCode}');
+    }
+    await response.drain();
+  }
+
+  @override
   Future<void> delete(String path, bool isDir) async {
     final url = Uri.parse(_baseUrl + Uri.encodeFull(path));
     final request = await _httpClient.openUrl('DELETE', url);

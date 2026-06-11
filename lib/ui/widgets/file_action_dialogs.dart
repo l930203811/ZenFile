@@ -33,6 +33,35 @@ class FileActionDialogs {
               ),
             ),
             autofocus: true,
+            contextMenuBuilder: (context, editableTextState) {
+              final List<ContextMenuButtonItem> buttonItems = editableTextState.contextMenuButtonItems;
+              final localizedItems = buttonItems.map((item) {
+                String label = item.label ?? '';
+                switch (label) {
+                  case 'Cut':
+                    label = '剪切';
+                    break;
+                  case 'Copy':
+                    label = '复制';
+                    break;
+                  case 'Paste':
+                    label = '粘贴';
+                    break;
+                  case 'Select All':
+                    label = '全选';
+                    break;
+                }
+                return ContextMenuButtonItem(
+                  onPressed: item.onPressed,
+                  label: label,
+                  type: item.type,
+                );
+              }).toList();
+              return AdaptiveTextSelectionToolbar.buttonItems(
+                anchors: editableTextState.contextMenuAnchors,
+                buttonItems: localizedItems,
+              );
+            },
           ),
           actions: [
             TextButton(

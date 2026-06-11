@@ -33,6 +33,7 @@ abstract class RemoteClient {
   Future<void> disconnect();
   Future<List<RemoteFileItem>> listDirectory(String path);
   Future<void> createDirectory(String path);
+  Future<void> createFile(String path);
   Future<void> delete(String path, bool isDir);
   Future<void> rename(String oldPath, String newPath);
   Future<void> downloadFile(String remotePath, String localPath, Function(double progress) onProgress);

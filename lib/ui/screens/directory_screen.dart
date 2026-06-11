@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'dart:ui';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart' as p;
 import '../../providers/file_manager_provider.dart';
@@ -28,10 +29,9 @@ import '../widgets/directory_tab_bar.dart';
 import '../../services/pin_service.dart';
 import '../../services/folder_share_service.dart';
 import '../widgets/pane_browser.dart';
-import '../widgets/zenfile_address_bar.dart';
 import '../../services/network_connections_service.dart';
 import 'network_connection_wizard_screen.dart';
-import 'remote_explorer_screen.dart';
+
 
 class DirectoryScreen extends StatefulWidget {
   final VoidCallback toggleTheme;
@@ -45,6 +45,7 @@ class DirectoryScreen extends StatefulWidget {
 class _DirectoryScreenState extends State<DirectoryScreen> {
   final ScrollController _scrollController = ScrollController();
   final ScrollController _breadcrumbController = ScrollController();
+  final ScrollController _tabScrollController = ScrollController();
 
   @override
   void initState() {
@@ -58,6 +59,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   void dispose() {
     _scrollController.dispose();
     _breadcrumbController.dispose();
+    _tabScrollController.dispose();
     super.dispose();
   }
 
@@ -118,53 +120,97 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
           // 根目录图标（点击弹出存储卷选择）
           GestureDetector(
             onTap: () => _showStorageVolumeModal(context, provider),
-            child: Padding(
-              padding: const EdgeInsets.only(right: 4),
-              child: Icon(Broken.arrow_down_2, size: 16, color: theme.colorScheme.primary),
+            child: _buildBreadcrumbItem(
+              context,
+              theme,
+              label: parts.isNotEmpty ? parts[0] : currentPath,
+              isFirst: true,
+              isLast: parts.length <= 1,
+              onTap: parts.length <= 1 ? null : () {
+                provider.loadDirectory('/${parts[0]}');
+              },
+              onLongPress: parts.length <= 1 ? null : () {
+                Clipboard.setData(ClipboardData(text: '/${parts[0]}'));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('已复制路径: /${parts[0]}'), behavior: SnackBarBehavior.floating, duration: const Duration(seconds: 2)),
+                );
+              },
             ),
           ),
           // 各级路径
-          for (int i = 0; i < parts.length; i++) ...[
-            if (i > 0)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2),
-                child: Icon(Icons.chevron_right_rounded, size: 14, color: theme.colorScheme.onSurface.withOpacity(0.3)),
-              ),
-            GestureDetector(
+          for (int i = 1; i < parts.length; i++)
+            _buildBreadcrumbItem(
+              context,
+              theme,
+              label: parts[i],
+              isFirst: false,
+              isLast: i == parts.length - 1,
               onTap: () {
-                // 点击跳转到对应目录
                 final targetPath = '/${parts.sublist(0, i + 1).join('/')}';
                 if (targetPath != currentPath) {
                   provider.loadDirectory(targetPath);
                 }
               },
               onLongPress: () {
-                // 长按复制路径
                 final fullPath = '/${parts.sublist(0, i + 1).join('/')}';
                 Clipboard.setData(ClipboardData(text: fullPath));
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('已复制路径: $fullPath'), behavior: SnackBarBehavior.floating, duration: const Duration(seconds: 2)),
                 );
               },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(6),
-                  color: i == parts.length - 1 ? theme.colorScheme.primary.withOpacity(0.1) : null,
-                ),
-                child: Text(
-                  parts[i],
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: i == parts.length - 1 ? FontWeight.bold : FontWeight.w500,
-                    color: i == parts.length - 1 ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.7),
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
             ),
-          ],
         ],
+      ),
+    );
+  }
+
+  /// 构建锥形箭头面包屑项
+  Widget _buildBreadcrumbItem(
+    BuildContext context,
+    ThemeData theme, {
+    required String label,
+    required bool isFirst,
+    required bool isLast,
+    VoidCallback? onTap,
+    VoidCallback? onLongPress,
+  }) {
+    final bgColor = isLast
+        ? theme.colorScheme.primary.withOpacity(0.12)
+        : theme.colorScheme.surfaceVariant.withOpacity(0.5);
+    final textColor = isLast
+        ? theme.colorScheme.primary
+        : theme.colorScheme.onSurface.withOpacity(0.75);
+    final fontWeight = isLast ? FontWeight.bold : FontWeight.w500;
+    final arrowWidth = 6.0;
+
+    return GestureDetector(
+      onTap: onTap,
+      onLongPress: onLongPress,
+      child: ClipPath(
+        clipper: _BreadcrumbClipper(
+          hasLeftIndent: !isFirst,
+          arrowWidth: arrowWidth,
+        ),
+        child: Container(
+          height: 24,
+          padding: EdgeInsets.only(
+            left: isFirst ? 8 : 8 + arrowWidth,
+            right: 8 + arrowWidth,
+          ),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: isFirst
+                ? const BorderRadius.only(topLeft: Radius.circular(6), bottomLeft: Radius.circular(6))
+                : null,
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: TextStyle(fontSize: 12, fontWeight: fontWeight, color: textColor),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+          ),
+        ),
       ),
     );
   }
@@ -180,37 +226,38 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         children: [
           // 第二行：标签页
           if (provider.enableMultipleTabs)
-            DirectoryTabBar(provider: provider),
-          // 第三行：导航按钮 + 路径面包屑
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-            child: Row(
-              children: [
-                // 上一级按钮（路径栏左边）
-                IconButton(
-                  icon: Icon(Broken.arrow_left_2, size: 18, color: provider.canGoBack ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.3)),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                  onPressed: provider.canGoBack
-                      ? () => _goBack(provider)
-                      : null,
-                  tooltip: '上一级',
-                ),
-                // 路径面包屑
-                Expanded(child: _buildPathBreadcrumb(context, provider)),
-                // 下一级按钮（路径栏右边）
-                IconButton(
-                  icon: Icon(Broken.arrow_right_3, size: 18, color: provider.canGoForward ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.3)),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                  onPressed: provider.canGoForward
-                      ? () => provider.goForward()
-                      : null,
-                  tooltip: '下一级',
-                ),
-              ],
+            DirectoryTabBar(provider: provider, scrollController: _tabScrollController),
+          // 第三行：导航按钮 + 路径面包屑（受地址栏开关控制）
+          if (provider.showAddressBar)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(4.0, 0.0, 4.0, 1.0),
+              child: Row(
+                children: [
+                  // 上一级按钮（路径栏左边）
+                  IconButton(
+                    icon: Icon(Broken.arrow_left_2, size: 16, color: provider.canGoBack ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.3)),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 28, minHeight: 24),
+                    onPressed: provider.canGoBack
+                        ? () => _goBack(provider)
+                        : null,
+                    tooltip: '上一级',
+                  ),
+                  // 路径面包屑
+                  Expanded(child: _buildPathBreadcrumb(context, provider)),
+                  // 下一级按钮（路径栏右边）
+                  IconButton(
+                    icon: Icon(Broken.arrow_right_3, size: 16, color: provider.canGoForward ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.3)),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 28, minHeight: 24),
+                    onPressed: provider.canGoForward
+                        ? () => provider.goForward()
+                        : null,
+                    tooltip: '下一级',
+                  ),
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -220,7 +267,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     if (_scrollController.hasClients) {
       provider.saveScrollOffset(provider.currentPath, _scrollController.offset);
     }
-    final prevPath = p.dirname(provider.currentPath);
+    final prevPath = p.posix.dirname(provider.currentPath);
     final handled = await provider.goBack();
     if (handled && _scrollController.hasClients) {
       final savedOffset = provider.getSavedScrollOffset(prevPath);
@@ -234,7 +281,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
       case 'archive':
         final res = await CreateArchiveDialog.show(
           context,
-          initialName: p.basename(path),
+          initialName: p.posix.basename(path),
           isMultiSelection: false,
         );
         if (res != null) {
@@ -267,7 +314,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         if (isMulti && provider.selectedPaths.length > 1) {
           await BatchRenameDialog.show(context, provider);
         } else {
-          final currentName = p.basename(path);
+          final currentName = p.posix.basename(path);
           final newName = await FileActionDialogs.showTextInputDialog(
             context,
             title: '重命名',
@@ -353,7 +400,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         }
         break;
       case 'archive':
-        final currentFolderName = p.basename(provider.currentPath);
+        final currentFolderName = p.posix.basename(provider.currentPath);
         final res = await CreateArchiveDialog.show(
           context,
           initialName: currentFolderName.isEmpty ? 'archive' : currentFolderName,
@@ -567,7 +614,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('Item Padding & Spacing', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+                                Text('大小和间距', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
                                 Text('${(provider.itemPaddingMultiplier * 100).round()}%', style: TextStyle(fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
                               ],
                             ),
@@ -736,7 +783,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                             );
                             if (picked != null && picked.isNotEmpty) {
                               for (final path in picked) {
-                                final label = p.basename(path).isEmpty ? path : p.basename(path);
+                                final label = p.posix.basename(path).isEmpty ? path : p.posix.basename(path);
                                 provider.addPinnedFolderShortcut(path, label);
                               }
                             }
@@ -916,14 +963,23 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                             _showStorageVolumeModal(context, provider);
                           },
                         ),
-                        onTap: () {
+                        onTap: () async {
                           Navigator.pop(ctx);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => RemoteExplorerScreen(connection: conn),
-                            ),
-                          );
+                          // 使用 DirectoryScreen 统一界面打开远程连接
+                          final provider = context.read<FileManagerProvider>();
+                          final client = FileManagerProvider.createRemoteClient(conn);
+                          try {
+                            await client.connect();
+                            if (context.mounted) {
+                              provider.openRemoteTab(client, conn);
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('连接失败：$e'), backgroundColor: Colors.redAccent),
+                              );
+                            }
+                          }
                         },
                       );
                     }),
@@ -962,22 +1018,27 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                   final itemHeight = (72 * provider.itemPaddingMultiplier).clamp(40.0, 150.0);
                   targetOffset = firstHighlightedIndex * itemHeight;
                 }
-                _scrollController.jumpTo(
-                  targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
-                );
+                // 滚动到屏幕中间
+                final screenHeight = _scrollController.position.viewportDimension;
+                final clampedOffset = targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent);
+                final centerOffset = (clampedOffset - screenHeight / 3).clamp(0.0, _scrollController.position.maxScrollExtent);
+                _scrollController.jumpTo(centerOffset);
               }
             }
           });
         }
 
         return PopScope(
-          canPop: !isSelectionMode && !provider.canGoBack,
+          canPop: false,
           onPopInvoked: (didPop) {
             if (didPop) return;
             if (isSelectionMode) {
               provider.clearSelection();
             } else if (provider.canGoBack) {
               _goBack(provider);
+            } else {
+              // 根目录且无选中状态，允许退出当前页面
+              Navigator.of(context).maybePop();
             }
           },
           child: Scaffold(
@@ -1086,7 +1147,6 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
               children: [
                 // 顶部固定区域
                 if (!isSelectionMode) _buildFixedTopArea(context, provider),
-                if (provider.showAddressBar) const ZenFileAddressBar(),
                 if (provider.filterType != FileFilterType.all)
                   _buildActiveFilterBanner(context, provider),
                 if (provider.isLoading && provider.currentFiles.isNotEmpty)
@@ -1099,9 +1159,9 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                   child: DragTarget<DragPayload>(
                     onWillAccept: (data) {
                       if (data == null || data.paths.isEmpty) return false;
-                      final sourceParent = p.dirname(data.paths.first);
+                      final sourceParent = p.posix.dirname(data.paths.first);
                       if (sourceParent == provider.currentPath) return false;
-                      if (data.paths.any((x) => provider.currentPath == x || provider.currentPath.startsWith(x + p.separator))) return false;
+                      if (data.paths.any((x) => provider.currentPath == x || provider.currentPath.startsWith(x + p.posix.separator))) return false;
                       return true;
                     },
                     onAccept: (data) {
@@ -1260,6 +1320,8 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                           path: item.path,
                                           isDirectory: true,
                                           onLongPress: itemLongPress,
+                                          isRemote: item.isRemote,
+                                          remoteItems: item.remoteSource != null ? [item.remoteSource!] : null,
                                           child: FolderGridItem(
                                             folder: item,
                                             isSelected: isSelected,
@@ -1289,6 +1351,8 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                           path: item.path,
                                           isDirectory: false,
                                           onLongPress: itemLongPress,
+                                          isRemote: item.isRemote,
+                                          remoteItems: item.remoteSource != null ? [item.remoteSource!] : null,
                                           child: FileGridItem(
                                             file: item,
                                             isSelected: isSelected,
@@ -1328,6 +1392,8 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                           path: item.path,
                                           isDirectory: true,
                                           onLongPress: itemLongPress,
+                                          isRemote: item.isRemote,
+                                          remoteItems: item.remoteSource != null ? [item.remoteSource!] : null,
                                           child: FolderItem(
                                             folder: item,
                                             isSelected: isSelected,
@@ -1357,6 +1423,8 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                           path: item.path,
                                           isDirectory: false,
                                           onLongPress: itemLongPress,
+                                          isRemote: item.isRemote,
+                                          remoteItems: item.remoteSource != null ? [item.remoteSource!] : null,
                                           child: FileItem(
                                             file: item,
                                             isSelected: isSelected,
@@ -1382,68 +1450,139 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                         ),
                     ],
                   ),
-                  // 远程粘贴进度条覆盖层
-                  if (provider.progressNotifier.value != null)
-                    Positioned.fill(
-                      child: IgnorePointer(
-                        child: Container(
-                          color: Colors.black.withOpacity(0.3),
-                          child: Center(
-                            child: ValueListenableBuilder<FileOperationProgress?>(
-                              valueListenable: provider.progressNotifier,
-                              builder: (context, progress, child) {
-                                if (progress == null) return const SizedBox.shrink();
-                                final percent = (progress.percentage * 100).clamp(0, 100).toInt();
-                                return Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    SizedBox(
-                                      width: 80,
-                                      height: 80,
-                                      child: Stack(
-                                        fit: StackFit.expand,
+                  // 文件传输进度条覆盖层
+                  ValueListenableBuilder<FileOperationProgress?>(
+                    valueListenable: provider.progressNotifier,
+                    builder: (context, progress, child) {
+                      if (progress == null) return const SizedBox.shrink();
+                      final percent = (progress.percentage * 100).clamp(0, 100).toInt();
+                      final theme = Theme.of(context);
+                      final isDark = theme.brightness == Brightness.dark;
+                      return Positioned.fill(
+                        child: IgnorePointer(
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+                            child: Container(
+                              color: Colors.black.withOpacity(0.25),
+                              child: Center(
+                                child: Card(
+                                  elevation: 24,
+                                  shadowColor: Colors.black.withOpacity(0.3),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(28),
+                                    side: BorderSide(color: theme.colorScheme.outline.withOpacity(0.12)),
+                                  ),
+                                  color: isDark ? const Color(0xFF1E1E2E) : theme.colorScheme.surface.withOpacity(0.95),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(28),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 28),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          CircularProgressIndicator(
-                                            value: progress.percentage,
-                                            strokeWidth: 6,
-                                            backgroundColor: Colors.white.withOpacity(0.2),
-                                            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                                          ),
-                                          Center(
-                                            child: Text(
-                                              '$percent%',
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                provider.isCut ? Broken.scissor : Broken.document_copy,
+                                                color: theme.colorScheme.primary,
+                                                size: 18,
                                               ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                provider.isCut ? '正在移动文件...' : '正在复制文件...',
+                                                style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 20),
+                                          SizedBox(
+                                            width: 100,
+                                            height: 100,
+                                            child: Stack(
+                                              fit: StackFit.expand,
+                                              children: [
+                                                // Background ring
+                                                CircularProgressIndicator(
+                                                  value: 1.0,
+                                                  strokeWidth: 7,
+                                                  backgroundColor: theme.colorScheme.primary.withOpacity(0.08),
+                                                  valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary.withOpacity(0.08)),
+                                                ),
+                                                // Progress ring
+                                                CircularProgressIndicator(
+                                                  value: progress.percentage.clamp(0.0, 1.0),
+                                                  strokeWidth: 7,
+                                                  backgroundColor: Colors.transparent,
+                                                  valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
+                                                  strokeCap: StrokeCap.round,
+                                                ),
+                                                Center(
+                                                  child: Text(
+                                                    '$percent%',
+                                                    style: TextStyle(
+                                                      fontSize: 24,
+                                                      fontWeight: FontWeight.w900,
+                                                      color: theme.colorScheme.primary,
+                                                      letterSpacing: -1,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(height: 16),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                            decoration: BoxDecoration(
+                                              color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(
+                                                  Broken.document,
+                                                  size: 14,
+                                                  color: theme.colorScheme.primary.withOpacity(0.7),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                ConstrainedBox(
+                                                  constraints: const BoxConstraints(maxWidth: 200),
+                                                  child: Text(
+                                                    progress.currentFileName,
+                                                    style: theme.textTheme.bodySmall?.copyWith(
+                                                      fontWeight: FontWeight.w600,
+                                                      color: theme.colorScheme.onSurface.withOpacity(0.8),
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            '${progress.currentFileIndex}/${progress.totalFiles}',
+                                            style: theme.textTheme.bodySmall?.copyWith(
+                                              color: theme.colorScheme.onSurface.withOpacity(0.45),
+                                              fontSize: 11,
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
-                                    const SizedBox(height: 12),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withOpacity(0.5),
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: Text(
-                                        '${progress.currentFileIndex}/${progress.totalFiles} ${progress.currentFileName}',
-                                        style: const TextStyle(color: Colors.white, fontSize: 12),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
+                  ),
                   ],
                 ),
               );
@@ -1645,6 +1784,40 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         ),
       ),
     );
+  }
+}
+
+/// 面包屑裁剪器，裁剪为带箭头的形状
+class _BreadcrumbClipper extends CustomClipper<Path> {
+  final bool hasLeftIndent;
+  final double arrowWidth;
+
+  _BreadcrumbClipper({required this.hasLeftIndent, required this.arrowWidth});
+
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    if (hasLeftIndent) {
+      // 左侧凹陷：从左上角开始，向右凹陷到(arrowWidth, height/2)，再回到左下角
+      path.moveTo(0, 0);
+      path.lineTo(arrowWidth, size.height / 2);
+      path.lineTo(0, size.height);
+    } else {
+      // 第一个按钮左侧平整
+      path.moveTo(0, 0);
+      path.lineTo(0, size.height);
+    }
+    // 右侧凸出箭头
+    path.lineTo(size.width - arrowWidth, size.height);
+    path.lineTo(size.width, size.height / 2);
+    path.lineTo(size.width - arrowWidth, 0);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant _BreadcrumbClipper oldDelegate) {
+    return hasLeftIndent != oldDelegate.hasLeftIndent || arrowWidth != oldDelegate.arrowWidth;
   }
 }
 

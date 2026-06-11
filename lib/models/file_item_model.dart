@@ -1,4 +1,5 @@
 import 'dart:io';
+import '../services/remote/remote_client.dart';
 
 class FileItemModel {
   final FileSystemEntity entity;
@@ -8,6 +9,11 @@ class FileItemModel {
   final int size;
   final DateTime modified;
 
+  /// Remote file metadata — null for local files
+  final RemoteFileItem? remoteSource;
+
+  bool get isRemote => remoteSource != null;
+
   FileItemModel({
     required this.entity,
     required this.name,
@@ -15,6 +21,7 @@ class FileItemModel {
     required this.isDirectory,
     required this.size,
     required this.modified,
+    this.remoteSource,
   });
 
   factory FileItemModel.fromEntity(FileSystemEntity entity) {
@@ -77,6 +84,22 @@ class FileItemModel {
       isDirectory: isDirectory,
       size: size,
       modified: modified,
+    );
+  }
+
+  /// Build a FileItemModel from a remote file listing result.
+  /// The [entity] is a stub (Directory or File at a fake local path) so that
+  /// the rest of the app (icons, file-type detection) works unchanged.
+  factory FileItemModel.fromRemoteFileItem(RemoteFileItem remote) {
+    final stubEntity = remote.isDirectory ? Directory(remote.path) : File(remote.path);
+    return FileItemModel(
+      entity: stubEntity,
+      name: remote.name,
+      path: remote.path,
+      isDirectory: remote.isDirectory,
+      size: remote.size,
+      modified: remote.modified,
+      remoteSource: remote,
     );
   }
 

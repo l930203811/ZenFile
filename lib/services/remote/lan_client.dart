@@ -202,6 +202,20 @@ class LanClient implements RemoteClient {
   }
 
   @override
+  Future<void> createFile(String path) async {
+    final name = path.split('/').last;
+    if (_virtualItems.any((e) => e.path == path)) return;
+    _virtualItems.add(RemoteFileItem(
+      name: name,
+      path: path,
+      isDirectory: false,
+      size: 0,
+      modified: DateTime.now(),
+    ));
+    await _saveStructure();
+  }
+
+  @override
   Future<void> delete(String path, bool isDir) async {
     _virtualItems.removeWhere((e) => e.path == path || e.path.startsWith('$path/'));
     await _saveStructure();

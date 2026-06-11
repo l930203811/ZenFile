@@ -48,7 +48,11 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
   bool _isLoading = true;
   bool _isSaving = false;
   bool _isEditing = false;
+  bool _wordWrap = true;
+  bool _showLineNumbers = false;
   late TextEditingController _textController;
+  final FocusNode _textFieldFocusNode = FocusNode();
+  final List<String> _undoStack = [];
 
   PdfPageLayoutMode _pdfLayoutMode = PdfPageLayoutMode.continuous;
   PdfScrollDirection _pdfScrollDirection = PdfScrollDirection.vertical;
@@ -74,6 +78,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
   @override
   void dispose() {
     _textController.dispose();
+    _textFieldFocusNode.dispose();
     super.dispose();
   }
 
@@ -240,6 +245,24 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
 
   Future<void> _openExternal() async {
     await OpenFilex.open(widget.filePath);
+  }
+
+  Future<void> _createNewFile() async {
+    final directory = File(widget.filePath).parent;
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final newPath = '${directory.path}/untitled_$timestamp.txt';
+    final file = File(newPath);
+    await file.writeAsString('');
+    if (mounted) {
+      Navigator.pushReplacement(context, MaterialPageRoute(
+        builder: (_) => DocumentViewerScreen(filePath: newPath),
+      ));
+    }
+  }
+
+  void _enterEditMode() {
+    _undoStack.add(_textController.text);
+    setState(() => _isEditing = true);
   }
 
   void _showPdfSettings() {
@@ -658,27 +681,39 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
                 )
-              else
+              else ...[
+                IconButton(
+                  icon: const Icon(Icons.undo_rounded),
+                  onPressed: () {
+                    if (_undoStack.isNotEmpty) {
+                      setState(() {
+                        _textController.text = _undoStack.removeLast();
+                      });
+                    }
+                  },
+                  tooltip: '撤销',
+                ),
                 IconButton(
                   icon: const Icon(Icons.save_rounded),
                   onPressed: _saveFile,
                   tooltip: '保存',
                 ),
-              IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () {
-                  setState(() {
-                    _isEditing = false;
-                    _textController.text = _textContent;
-                  });
-                },
-                tooltip: '取消',
-              ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () {
+                    setState(() {
+                      _isEditing = false;
+                      _textController.text = _textContent;
+                    });
+                  },
+                  tooltip: '取消',
+                ),
+              ],
             ] else
               IconButton(
-                icon: const Icon(Icons.edit_rounded),
-                onPressed: () => setState(() => _isEditing = true),
-                tooltip: '编辑',
+                icon: const Icon(Icons.note_add_rounded),
+                onPressed: _createNewFile,
+                tooltip: '新建文档',
               ),
           ],
           if (_isPdf)
@@ -686,6 +721,39 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
               icon: const Icon(Icons.tune_rounded),
               onPressed: _showPdfSettings,
               tooltip: '显示设置',
+            ),
+          if (_isText)
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert),
+              tooltip: '更多选项',
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              position: PopupMenuPosition.under,
+              elevation: 8,
+              onSelected: (value) {
+                if (value == 'wrap') {
+                  setState(() => _wordWrap = !_wordWrap);
+                } else if (value == 'line_numbers') {
+                  setState(() => _showLineNumbers = !_showLineNumbers);
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'wrap',
+                  child: Row(children: [
+                    Icon(_wordWrap ? Icons.check_box_rounded : Icons.check_box_outline_blank, size: 20),
+                    const SizedBox(width: 12),
+                    const Text('自动换行', style: TextStyle(fontWeight: FontWeight.w500)),
+                  ]),
+                ),
+                PopupMenuItem(
+                  value: 'line_numbers',
+                  child: Row(children: [
+                    Icon(_showLineNumbers ? Icons.check_box_rounded : Icons.check_box_outline_blank, size: 20),
+                    const SizedBox(width: 12),
+                    const Text('显示行号', style: TextStyle(fontWeight: FontWeight.w500)),
+                  ]),
+                ),
+              ],
             ),
           IconButton(
             icon: const Icon(Icons.open_in_new_rounded),
@@ -963,25 +1031,272 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
   }
 
   Widget _buildTextViewer(ThemeData theme, bool isDark) {
+    final textStyle = TextStyle(
+      fontFamily: 'monospace',
+      fontSize: 13,
+      color: isDark ? Colors.white70 : Colors.black87,
+      height: 1.6,
+    );
+    final lineNumberStyle = TextStyle(
+      fontFamily: 'monospace',
+      fontSize: 13,
+      color: isDark ? Colors.white38 : Colors.black38,
+      height: 1.6,
+    );
+
     if (_isEditing) {
+      Widget textField = TextField(
+        controller: _textController,
+        focusNode: _textFieldFocusNode,
+        maxLines: null,
+        expands: true,
+        textAlignVertical: TextAlignVertical.top,
+        style: textStyle.copyWith(height: null),
+        strutStyle: StrutStyle(height: 1.6, fontFamily: 'monospace', fontSize: 13),
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          filled: true,
+          fillColor: isDark ? const Color(0xFF121220) : Colors.white,
+          contentPadding: const EdgeInsets.all(16),
+        ),
+        contextMenuBuilder: (context, editableTextState) {
+          final buttons = editableTextState.contextMenuButtonItems;
+          if (buttons.isEmpty) {
+            return AdaptiveTextSelectionToolbar(
+              anchors: editableTextState.contextMenuAnchors,
+              children: [
+                TextSelectionToolbarTextButton(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                  onPressed: () {
+                    final value = editableTextState.textEditingValue;
+                    if (value.selection.isValid && !value.selection.isCollapsed) {
+                      final selectedText = value.selection.textInside(value.text);
+                      editableTextState.userUpdateTextEditingValue(
+                        value.copyWith(
+                          text: value.text.replaceRange(value.selection.start, value.selection.end, ''),
+                          selection: TextSelection.collapsed(offset: value.selection.start),
+                        ),
+                        SelectionChangedCause.toolbar,
+                      );
+                      Clipboard.setData(ClipboardData(text: selectedText));
+                    }
+                  },
+                  child: const Text('剪切'),
+                ),
+                TextSelectionToolbarTextButton(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                  onPressed: () {
+                    final value = editableTextState.textEditingValue;
+                    if (value.selection.isValid && !value.selection.isCollapsed) {
+                      Clipboard.setData(ClipboardData(text: value.selection.textInside(value.text)));
+                    }
+                  },
+                  child: const Text('复制'),
+                ),
+                TextSelectionToolbarTextButton(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                  onPressed: () async {
+                    final data = await Clipboard.getData(Clipboard.kTextPlain);
+                    if (data != null && data.text != null) {
+                      final value = editableTextState.textEditingValue;
+                      final text = value.text;
+                      final selection = value.selection;
+                      final newText = text.replaceRange(selection.start, selection.end, data.text!);
+                      editableTextState.userUpdateTextEditingValue(
+                        value.copyWith(
+                          text: newText,
+                          selection: TextSelection.collapsed(offset: selection.start + data.text!.length),
+                        ),
+                        SelectionChangedCause.toolbar,
+                      );
+                    }
+                  },
+                  child: const Text('粘贴'),
+                ),
+                TextSelectionToolbarTextButton(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                  onPressed: () {
+                    editableTextState.userUpdateTextEditingValue(
+                      editableTextState.textEditingValue.copyWith(
+                        selection: TextSelection(baseOffset: 0, extentOffset: editableTextState.textEditingValue.text.length),
+                      ),
+                      SelectionChangedCause.toolbar,
+                    );
+                  },
+                  child: const Text('全选'),
+                ),
+              ],
+            );
+          }
+          return AdaptiveTextSelectionToolbar(
+            anchors: editableTextState.contextMenuAnchors,
+            children: buttons.map((button) {
+              String label = button.label ?? '';
+              switch (label) {
+                case 'Cut': label = '剪切'; break;
+                case 'Copy': label = '复制'; break;
+                case 'Paste': label = '粘贴'; break;
+                case 'Select All': label = '全选'; break;
+              }
+              return TextSelectionToolbarTextButton(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                onPressed: button.onPressed,
+                child: Text(label),
+              );
+            }).toList(),
+          );
+        },
+      );
+
+      // 自动换行：不换行时用水平滚动包裹
+      if (!_wordWrap) {
+        textField = SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: double.infinity),
+            child: IntrinsicHeight(child: textField),
+          ),
+        );
+      }
+
+      // 行号
+      if (_showLineNumbers) {
+        final lineCount = '\n'.allMatches(_textController.text).length + 1;
+        final lineNumberWidth = lineCount.toString().length * 10.0 + 24;
+
+        return Container(
+          color: isDark ? const Color(0xFF0D0D1A) : const Color(0xFFF9F9FF),
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              SizedBox(
+                width: lineNumberWidth,
+                child: ListView.builder(
+                  itemCount: lineCount,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.only(top: 16, right: 8),
+                  itemBuilder: (context, index) {
+                    return Text(
+                      '${index + 1}',
+                      style: lineNumberStyle,
+                      textAlign: TextAlign.right,
+                    );
+                  },
+                ),
+              ),
+              Expanded(child: textField),
+            ],
+          ),
+        );
+      }
+
       return Container(
         color: isDark ? const Color(0xFF0D0D1A) : const Color(0xFFF9F9FF),
         padding: const EdgeInsets.all(12),
-        child: TextField(
-          controller: _textController,
-          maxLines: null,
-          expands: true,
-          textAlignVertical: TextAlignVertical.top,
-          style: TextStyle(
-            fontFamily: 'monospace',
-            fontSize: 13,
-            color: isDark ? Colors.white70 : Colors.black87,
-          ),
-          decoration: InputDecoration(
-            border: InputBorder.none,
-            filled: true,
-            fillColor: isDark ? const Color(0xFF121220) : Colors.white,
-            contentPadding: const EdgeInsets.all(16),
+        child: textField,
+      );
+    }
+
+    // 只读模式
+    final textContent = _textController.text.isEmpty ? '（空文件）' : _textController.text;
+
+    Widget textWidget = SelectableText(
+      textContent,
+      style: textStyle,
+      contextMenuBuilder: (context, editableTextState) {
+        final buttons = editableTextState.contextMenuButtonItems;
+        if (buttons.isEmpty) {
+          return AdaptiveTextSelectionToolbar(
+            anchors: editableTextState.contextMenuAnchors,
+            children: [
+              TextSelectionToolbarTextButton(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                onPressed: () {
+                  _enterEditMode();
+                  final value = editableTextState.textEditingValue;
+                  if (value.selection.isValid && !value.selection.isCollapsed) {
+                    Clipboard.setData(ClipboardData(text: value.selection.textInside(value.text)));
+                  }
+                },
+                child: const Text('复制'),
+              ),
+              TextSelectionToolbarTextButton(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                onPressed: () {
+                  _enterEditMode();
+                  editableTextState.userUpdateTextEditingValue(
+                    editableTextState.textEditingValue.copyWith(
+                      selection: TextSelection(baseOffset: 0, extentOffset: editableTextState.textEditingValue.text.length),
+                    ),
+                    SelectionChangedCause.toolbar,
+                  );
+                },
+                child: const Text('全选'),
+              ),
+            ],
+          );
+        }
+        return AdaptiveTextSelectionToolbar(
+          anchors: editableTextState.contextMenuAnchors,
+          children: buttons.map((button) {
+            String label = button.label ?? '';
+            switch (label) {
+              case 'Cut': label = '剪切'; break;
+              case 'Copy': label = '复制'; break;
+              case 'Paste': label = '粘贴'; break;
+              case 'Select All': label = '全选'; break;
+            }
+            return TextSelectionToolbarTextButton(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+              onPressed: () {
+                _enterEditMode();
+                button.onPressed?.call();
+              },
+              child: Text(label),
+            );
+          }).toList(),
+        );
+      },
+    );
+
+    // 只读模式自动换行
+    if (!_wordWrap) {
+      textWidget = SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: double.infinity),
+          child: IntrinsicWidth(child: textWidget),
+        ),
+      );
+    }
+
+    // 只读模式行号
+    if (_showLineNumbers) {
+      final lineCount = '\n'.allMatches(textContent).length + 1;
+      final lineNumberWidth = lineCount.toString().length * 10.0 + 24;
+
+      return Container(
+        color: isDark ? const Color(0xFF0D0D1A) : const Color(0xFFF9F9FF),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: lineNumberWidth,
+                child: Column(
+                  children: List.generate(lineCount, (index) {
+                    return Text(
+                      '${index + 1}',
+                      style: lineNumberStyle,
+                      textAlign: TextAlign.right,
+                    );
+                  }),
+                ),
+              ),
+              Expanded(child: textWidget),
+            ],
           ),
         ),
       );
@@ -992,64 +1307,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
       child: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.all(16),
-        child: SelectableText(
-          _textController.text.isEmpty ? '（空文件）' : _textController.text,
-          style: TextStyle(
-            fontFamily: 'monospace',
-            fontSize: 13,
-            color: isDark ? Colors.white70 : Colors.black87,
-            height: 1.6,
-          ),
-          contextMenuBuilder: (context, editableTextState) {
-            final buttons = editableTextState.contextMenuButtonItems;
-            if (buttons.isEmpty) {
-              return AdaptiveTextSelectionToolbar(
-                anchors: editableTextState.contextMenuAnchors,
-                children: [
-                  TextSelectionToolbarTextButton(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                    onPressed: () {
-                      final value = editableTextState.textEditingValue;
-                      if (value.selection.isValid && !value.selection.isCollapsed) {
-                        Clipboard.setData(ClipboardData(text: value.selection.textInside(value.text)));
-                      }
-                    },
-                    child: const Text('复制'),
-                  ),
-                  TextSelectionToolbarTextButton(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                    onPressed: () {
-                      editableTextState.userUpdateTextEditingValue(
-                        editableTextState.textEditingValue.copyWith(
-                          selection: TextSelection(baseOffset: 0, extentOffset: editableTextState.textEditingValue.text.length),
-                        ),
-                        SelectionChangedCause.toolbar,
-                      );
-                    },
-                    child: const Text('全选'),
-                  ),
-                ],
-              );
-            }
-            return AdaptiveTextSelectionToolbar(
-              anchors: editableTextState.contextMenuAnchors,
-              children: buttons.map((button) {
-                String label = button.label ?? '';
-                switch (label) {
-                  case 'Cut': label = '剪切'; break;
-                  case 'Copy': label = '复制'; break;
-                  case 'Paste': label = '粘贴'; break;
-                  case 'Select All': label = '全选'; break;
-                }
-                return TextSelectionToolbarTextButton(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                  onPressed: button.onPressed,
-                  child: Text(label),
-                );
-              }).toList(),
-            );
-          },
-        ),
+        child: textWidget,
       ),
     );
   }
