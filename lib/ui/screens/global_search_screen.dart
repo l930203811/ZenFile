@@ -1,0 +1,756 @@
+import 'dart:async';
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:path/path.dart' as p;
+import 'package:share_plus/share_plus.dart';
+import '../../providers/file_manager_provider.dart';
+import '../../providers/media_provider.dart';
+import '../../models/file_item_model.dart';
+import '../widgets/file_item.dart';
+import '../widgets/folder_item.dart';
+import '../widgets/file_action_dialogs.dart';
+import '../widgets/batch_rename_dialog.dart';
+import '../../core/icon_fonts/broken_icons.dart';
+import '../../services/folder_share_service.dart';
+import '../widgets/directory_tab_bar.dart';
+import '../../core/utils.dart';
+import '../widgets/selection_action_bar.dart';
+
+class GlobalSearchScreen extends StatefulWidget {
+  final String? searchFolderPath;
+  const GlobalSearchScreen({super.key, this.searchFolderPath});
+
+  @override
+  State<GlobalSearchScreen> createState() => _GlobalSearchScreenState();
+}
+
+class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  String _query = '';
+  String _selectedFilter = '全部'; // 全部, 文件夹, 图片, 视频, 音频, 文档
+  
+  List<FileItemModel> _results = [];
+  bool _isSearching = false;
+  StreamSubscription<FileSystemEntity>? _searchSubscription;
+
+  final Set<String> _selectedPaths = {};
+  bool get _isSelectionMode => _selectedPaths.isNotEmpty;
+
+  int get _totalSelectedSize {
+    int total = 0;
+    for (final path in _selectedPaths) {
+      final item = _results.firstWhere(
+        (e) => e.path == path,
+        orElse: () => FileItemModel(
+          entity: File(path),
+          name: '',
+          path: path,
+          isDirectory: false,
+          size: 0,
+          modified: DateTime.now(),
+        ),
+      );
+      total += item.size;
+    }
+    return total;
+  }
+
+  String? _searchFolderPath;
+  String? _lastActivePath;
+
+  final List<String> _filters = [
+    '全部',
+    '文件夹',
+    '图片',
+    '视频',
+    '音频',
+    '文档',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _searchFolderPath = widget.searchFolderPath;
+    final fileProvider = context.read<FileManagerProvider>();
+    _lastActivePath = fileProvider.currentPath;
+    fileProvider.addListener(_onFileManagerChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchSubscription?.cancel();
+    _searchController.dispose();
+    context.read<FileManagerProvider>().removeListener(_onFileManagerChanged);
+    super.dispose();
+  }
+
+  void _onFileManagerChanged() {
+    if (!mounted) return;
+    final fileProvider = context.read<FileManagerProvider>();
+    final newPath = fileProvider.currentPath;
+    if (newPath != _lastActivePath) {
+      _lastActivePath = newPath;
+      setState(() {
+        _searchFolderPath = newPath;
+      });
+      _executeSearch();
+    } else {
+      setState(() {});
+    }
+  }
+
+  void _onSearchChanged(String value) {
+    setState(() {
+      _query = value.trim();
+    });
+    _executeSearch();
+  }
+
+  void _onFilterChanged(String filter) {
+    setState(() {
+      _selectedFilter = filter;
+    });
+    _executeSearch();
+  }
+
+  void _executeSearch() {
+    _searchSubscription?.cancel();
+    _clearSelection();
+    if (_query.isEmpty) {
+      setState(() {
+        _results = [];
+        _isSearching = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _results = [];
+      _isSearching = true;
+    });
+
+    final Set<String> seenPaths = {};
+    final List<FileItemModel> currentBatch = [];
+    final mediaProvider = context.read<MediaProvider>();
+    final fileProvider = context.read<FileManagerProvider>();
+
+    final qLower = _query.toLowerCase();
+    
+    // Resolve search scope
+    final isGlobal = _searchFolderPath == null ||
+                     _searchFolderPath == '/storage/emulated/0' ||
+                     _searchFolderPath == '/';
+
+    final rootPath = isGlobal
+        ? (Platform.isAndroid ? '/storage/emulated/0' : fileProvider.currentPath)
+        : _searchFolderPath!;
+    
+    // 1. Instant check from MediaProvider indexes if matching filter
+    if (_selectedFilter == '全部' || _selectedFilter == '文档') {
+      final matchingDocs = <FileSystemEntity>[];
+      for (final doc in mediaProvider.documents) {
+        if (!isGlobal && !doc.path.startsWith(rootPath)) continue;
+        final name = p.basename(doc.path);
+        if (name.toLowerCase().contains(qLower) && !seenPaths.contains(doc.path)) {
+          seenPaths.add(doc.path);
+          matchingDocs.add(doc);
+        }
+      }
+      if (matchingDocs.isNotEmpty) {
+        Future.wait(matchingDocs.map((doc) => FileItemModel.fromEntityAsync(doc))).then((resolvedDocs) {
+          if (mounted) {
+            setState(() {
+              _results.addAll(resolvedDocs);
+            });
+          }
+        });
+      }
+    }
+
+    if (_selectedFilter == '全部' || _selectedFilter == '音频') {
+      for (final song in mediaProvider.audios) {
+        final path = song.data;
+        if (!isGlobal && !path.startsWith(rootPath)) continue;
+        final name = p.basename(path);
+        if (name.toLowerCase().contains(qLower) && !seenPaths.contains(path)) {
+          seenPaths.add(path);
+          currentBatch.add(FileItemModel(
+            entity: File(path),
+            name: song.title,
+            path: path,
+            isDirectory: false,
+            size: song.size,
+            modified: DateTime.fromMillisecondsSinceEpoch((song.dateModified ?? 0) * 1000),
+          ));
+        }
+      }
+    }
+
+    // Update state instantly with cached media results
+    if (currentBatch.isNotEmpty) {
+      setState(() {
+        _results = List.from(currentBatch);
+      });
+    }
+
+    // 2. Stream across filesystem for full coverage (Folders and other files)
+    final rootDir = Directory(rootPath);
+    if (!rootDir.existsSync()) {
+      setState(() {
+        _isSearching = false;
+      });
+      return;
+    }
+
+    _searchSubscription = rootDir.list(recursive: true, followLinks: false).listen(
+      (entity) {
+        final name = p.basename(entity.path);
+        if (name.toLowerCase().contains(qLower)) {
+          final isDir = entity is Directory;
+          
+          bool matchFilter = false;
+          if (_selectedFilter == '全部') {
+            matchFilter = true;
+          } else if (_selectedFilter == '文件夹' && isDir) {
+            matchFilter = true;
+          } else if (_selectedFilter == '图片' && !isDir && _isImage(name)) {
+            matchFilter = true;
+          } else if (_selectedFilter == '视频' && !isDir && _isVideo(name)) {
+            matchFilter = true;
+          } else if (_selectedFilter == '音频' && !isDir && _isAudio(name)) {
+            matchFilter = true;
+          } else if (_selectedFilter == '文档' && !isDir && _isDoc(name)) {
+            matchFilter = true;
+          }
+
+          if (matchFilter && !seenPaths.contains(entity.path)) {
+            seenPaths.add(entity.path);
+            FileItemModel.fromEntityAsync(entity).then((item) {
+              if (mounted) {
+                setState(() {
+                  _results.add(item);
+                });
+              }
+            });
+          }
+        }
+      },
+      onError: (_) {},
+      onDone: () {
+        if (mounted) {
+          setState(() {
+            _isSearching = false;
+          });
+        }
+      },
+    );
+  }
+
+  bool _isImage(String name) {
+    final ext = p.extension(name).toLowerCase();
+    return ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.heic', '.avif'].contains(ext);
+  }
+
+  bool _isVideo(String name) {
+    final ext = p.extension(name).toLowerCase();
+    return ['.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.ts'].contains(ext);
+  }
+
+  bool _isAudio(String name) {
+    final ext = p.extension(name).toLowerCase();
+    return ['.mp3', '.m4a', '.wav', '.flac', '.aac', '.ogg', '.opus', '.amr'].contains(ext);
+  }
+
+  bool _isDoc(String name) {
+    final ext = p.extension(name).toLowerCase();
+    return ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt', '.csv'].contains(ext);
+  }
+
+  // --- Multi-Selection logic ---
+  void _toggleSelection(String path) {
+    setState(() {
+      if (_selectedPaths.contains(path)) {
+        _selectedPaths.remove(path);
+      } else {
+        _selectedPaths.add(path);
+      }
+    });
+  }
+
+  void _selectAll() {
+    setState(() {
+      for (final item in _results) {
+        _selectedPaths.add(item.path);
+      }
+    });
+  }
+
+  void _clearSelection() {
+    setState(() {
+      _selectedPaths.clear();
+    });
+  }
+
+  void _handleCopySelected() {
+    if (_selectedPaths.isEmpty) return;
+    context.read<FileManagerProvider>().setClipboard(_selectedPaths.toList(), isCut: false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('已复制 ${_selectedPaths.length} 个项目到剪贴板')),
+    );
+    _clearSelection();
+  }
+
+  void _handleCutSelected() {
+    if (_selectedPaths.isEmpty) return;
+    context.read<FileManagerProvider>().setClipboard(_selectedPaths.toList(), isCut: true);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('已剪切 ${_selectedPaths.length} 个项目到剪贴板')),
+    );
+    _clearSelection();
+  }
+
+  Future<void> _handleShareSelected() async {
+    if (_selectedPaths.isEmpty) return;
+    await FolderShareService.sharePaths(context, _selectedPaths.toList());
+    _clearSelection();
+  }
+
+  Future<void> _handleRenameSelected() async {
+    if (_selectedPaths.isEmpty) return;
+    final provider = context.read<FileManagerProvider>();
+    await showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.55),
+      builder: (context) => BatchRenameDialog(
+        provider: provider,
+        selectedPaths: _selectedPaths.toList(),
+      ),
+    );
+    _clearSelection();
+    _executeSearch();
+  }
+
+  Future<void> _handleDeleteSelected() async {
+    if (_selectedPaths.isEmpty) return;
+    final confirm = await FileActionDialogs.showConfirmDialog(
+      context,
+      title: '删除选中',
+      content: 'Are you sure you want to delete ${_selectedPaths.length} selected item(s)? This cannot be undone.',
+    );
+
+    if (confirm) {
+      final provider = context.read<FileManagerProvider>();
+      final toDelete = _selectedPaths.toList();
+      for (final path in toDelete) {
+        await provider.deleteFile(path);
+        setState(() {
+          _results.removeWhere((e) => e.path == path);
+        });
+      }
+      _clearSelection();
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('成功删除项目')));
+    }
+  }
+
+  void _handleAction(BuildContext context, String action, String path) async {
+    final provider = context.read<FileManagerProvider>();
+    switch (action) {
+      case 'show_in_location':
+        Navigator.pop(context);
+        await provider.showFileInLocation(path);
+        break;
+      case 'share':
+        final isMulti = _selectedPaths.isNotEmpty && _selectedPaths.contains(path);
+        final paths = isMulti ? _selectedPaths.toList() : [path];
+        await FolderShareService.sharePaths(context, paths);
+        if (isMulti) {
+          _clearSelection();
+        }
+        break;
+      case 'copy':
+        provider.copyFile(path);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已复制到剪贴板')));
+        break;
+      case 'cut':
+        provider.cutFile(path);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已剪切到剪贴板')));
+        break;
+      case 'rename':
+        final isMulti = _selectedPaths.isNotEmpty && _selectedPaths.contains(path);
+        if (isMulti && _selectedPaths.length > 1) {
+          await showDialog<void>(
+            context: context,
+            barrierColor: Colors.black.withOpacity(0.55),
+            builder: (context) => BatchRenameDialog(
+              provider: provider,
+              selectedPaths: _selectedPaths.toList(),
+            ),
+          );
+          _clearSelection();
+          _executeSearch();
+        } else {
+          final currentName = p.basename(path);
+          final newName = await FileActionDialogs.showTextInputDialog(
+            context,
+            title: '重命名',
+            hint: '输入新名称',
+            initialValue: currentName,
+            actionText: '重命名',
+          );
+          if (newName != null && newName.isNotEmpty) {
+            await provider.renameFile(path, newName);
+            if (isMulti) {
+              _clearSelection();
+            }
+            _executeSearch(); // refresh
+          }
+        }
+        break;
+      case 'delete':
+        final isMulti = _selectedPaths.isNotEmpty && _selectedPaths.contains(path);
+        final confirm = await FileActionDialogs.showConfirmDialog(
+          context,
+          title: isMulti ? '删除选中' : '删除文件',
+          content: isMulti
+              ? 'Are you sure you want to delete ${_selectedPaths.length} selected item(s)? This cannot be undone.'
+              : 'Are you sure you want to delete this item? This cannot be undone.',
+        );
+        if (confirm) {
+          if (isMulti) {
+            final toDelete = _selectedPaths.toList();
+            for (final p in toDelete) {
+              await provider.deleteFile(p);
+              setState(() {
+                _results.removeWhere((e) => e.path == p);
+              });
+            }
+            _clearSelection();
+          } else {
+            await provider.deleteFile(path);
+            setState(() {
+              _results.removeWhere((e) => e.path == path);
+            });
+          }
+        }
+        break;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final fileProvider = context.read<FileManagerProvider>();
+    final isGlobal = _searchFolderPath == null ||
+                     _searchFolderPath == '/storage/emulated/0' ||
+                     _searchFolderPath == '/';
+
+    return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: theme.colorScheme.surface,
+        leading: _isSelectionMode
+            ? IconButton(
+                icon: const Icon(Broken.close_square),
+                onPressed: _clearSelection,
+              )
+            : IconButton(
+                icon: const Icon(Broken.arrow_left),
+                onPressed: () => Navigator.pop(context),
+              ),
+        title: _isSelectionMode
+            ? Text(
+                '${_selectedPaths.length} 已选择 (${FileUtils.formatBytes(_totalSelectedSize, 1)})',
+                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              )
+            : TextField(
+                controller: _searchController,
+                autofocus: true,
+                onChanged: _onSearchChanged,
+                style: theme.textTheme.titleMedium,
+                decoration: InputDecoration(
+                  hintText: isGlobal ? '全局搜索...' : '在此文件夹中搜索...',
+                  hintStyle: TextStyle(color: theme.colorScheme.onSurface.withAlpha(102)),
+                  border: InputBorder.none,
+                  suffixIcon: _query.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Broken.close_square, size: 20),
+                          onPressed: () {
+                            _searchController.clear();
+                            _onSearchChanged('');
+                          },
+                        )
+                      : null,
+                ),
+              ),
+        bottom: (_isSelectionMode || !fileProvider.enableMultipleTabs)
+            ? null
+            : DirectoryTabBar(provider: fileProvider),
+        actions: _isSelectionMode
+            ? [
+                IconButton(
+                  icon: const Icon(Broken.document_copy),
+                  tooltip: '复制',
+                  onPressed: _handleCopySelected,
+                ),
+                IconButton(
+                  icon: const Icon(Broken.scissor),
+                  tooltip: '剪切',
+                  onPressed: _handleCutSelected,
+                ),
+                IconButton(
+                  icon: const Icon(Broken.edit),
+                  tooltip: '重命名',
+                  onPressed: _handleRenameSelected,
+                ),
+                IconButton(
+                  icon: const Icon(Broken.trash, color: Colors.red),
+                  tooltip: '删除',
+                  onPressed: _handleDeleteSelected,
+                ),
+                PopupMenuButton<String>(
+                  icon: const Icon(Broken.more),
+                  tooltip: '更多操作',
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  position: PopupMenuPosition.under,
+                  elevation: 8,
+                  onSelected: (action) {
+                    if (action == 'select_all') {
+                      _selectAll();
+                    } else if (action == 'share') {
+                      _handleShareSelected();
+                    } else if (action == 'properties') {
+                      showDialog(
+                        context: context,
+                        builder: (context) => PropertiesModalDialog(
+                          selectedPaths: _selectedPaths.toList(),
+                          provider: fileProvider,
+                        ),
+                      );
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem<String>(
+                      value: 'select_all',
+                      child: Row(
+                        children: [
+                          Icon(Broken.tick_square, size: 20),
+                          SizedBox(width: 12),
+                          Text('全选', style: TextStyle(fontWeight: FontWeight.w500)),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem<String>(
+                      value: 'share',
+                      child: Row(
+                        children: [
+                          Icon(Icons.share_outlined, size: 20),
+                          SizedBox(width: 12),
+                          Text('分享', style: TextStyle(fontWeight: FontWeight.w500)),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem<String>(
+                      value: 'properties',
+                      child: Row(
+                        children: [
+                          Icon(Broken.info_circle, size: 20),
+                          SizedBox(width: 12),
+                          Text('属性', style: TextStyle(fontWeight: FontWeight.w500)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ]
+            : null,
+      ),
+      body: GestureDetector(
+        onHorizontalDragEnd: (details) {
+          final fileProvider = context.read<FileManagerProvider>();
+          if (!fileProvider.enableMultipleTabs || fileProvider.enableSplitScreen || _isSelectionMode) {
+            return;
+          }
+          final velocity = details.primaryVelocity ?? 0.0;
+          // Swipe Left (moves right-to-left) -> Next Tab
+          if (velocity < -300) {
+            if (fileProvider.activeTabIndex < fileProvider.tabs.length - 1) {
+              fileProvider.setActiveTab(fileProvider.activeTabIndex + 1);
+            } else if (fileProvider.activeTabIndex == fileProvider.tabs.length - 1) {
+              fileProvider.addTab(fileProvider.rootPath);
+            }
+          }
+          // Swipe Right (moves left-to-right) -> Previous Tab
+          else if (velocity > 300) {
+            if (fileProvider.activeTabIndex > 0) {
+              fileProvider.setActiveTab(fileProvider.activeTabIndex - 1);
+            }
+          }
+        },
+        behavior: HitTestBehavior.translucent,
+        child: Column(
+        children: [
+          // Filter Chips Row (ZenFile style)
+          Container(
+            height: 56,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: _filters.length,
+              itemBuilder: (context, index) {
+                final filter = _filters[index];
+                final isSelected = filter == _selectedFilter;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: InkWell(
+                    onTap: () => _onFilterChanged(filter),
+                    borderRadius: BorderRadius.circular(16),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? theme.colorScheme.primary.withAlpha(38)
+                            : theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isSelected
+                              ? theme.colorScheme.primary
+                              : theme.dividerColor.withAlpha(51),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          if (isSelected) ...[
+                            Icon(Broken.tick_circle, size: 16, color: theme.colorScheme.primary),
+                            const SizedBox(width: 6),
+                          ],
+                          Text(
+                            filter,
+                            style: TextStyle(
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                              color: isSelected
+                                  ? theme.colorScheme.primary
+                                  : theme.colorScheme.onSurface.withAlpha(178),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          
+          // Search Progress Indicator
+          if (_isSearching)
+            LinearProgressIndicator(
+              backgroundColor: theme.colorScheme.primary.withAlpha(25),
+              color: theme.colorScheme.primary,
+              minHeight: 2,
+            )
+          else
+            const SizedBox(height: 2),
+ 
+          // Results List / Empty State
+          Expanded(
+            child: _query.isEmpty
+                ? _buildEmptyState(
+                    theme,
+                    Broken.search_normal_1,
+                    isGlobal ? '搜索您的存储' : '搜索此文件夹',
+                    isGlobal
+                        ? 'Find any file, folder, document or media instantly across your device'
+                        : '搜索文件和子文件夹于：${_searchFolderPath!.split("/").last}',
+                  )
+                : _results.isEmpty && !_isSearching
+                    ? _buildEmptyState(
+                        theme,
+                        Broken.document_filter,
+                        '未找到结果',
+                        '未找到匹配 "$_query" 的内容',
+                      )
+                    : ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: _results.length,
+                        itemBuilder: (context, index) {
+                          final item = _results[index];
+                          final isItemSelected = _selectedPaths.contains(item.path);
+
+                          if (item.isDirectory) {
+                            return FolderItem(
+                              folder: item,
+                              isSelected: isItemSelected,
+                              showShowInLocationOption: true,
+                              onTap: () {
+                                if (_isSelectionMode) {
+                                  _toggleSelection(item.path);
+                                } else {
+                                  Navigator.pop(context);
+                                  context.read<FileManagerProvider>().loadDirectory(item.path);
+                                }
+                              },
+                              onLongPress: () => _toggleSelection(item.path),
+                              onAction: (action) => _handleAction(context, action, item.path),
+                            );
+                          } else {
+                            return FileItem(
+                              file: item,
+                              isSelected: isItemSelected,
+                              showShowInLocationOption: true,
+                              onTap: () {
+                                if (_isSelectionMode) {
+                                  _toggleSelection(item.path);
+                                } else {
+                                  context.read<FileManagerProvider>().openFile(context, item.path);
+                                }
+                              },
+                              onLongPress: () => _toggleSelection(item.path),
+                              onAction: (action) => _handleAction(context, action, item.path),
+                            );
+                          }
+                        },
+                      ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+  Widget _buildEmptyState(ThemeData theme, IconData icon, String title, String subtitle) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withAlpha(20),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 64, color: theme.colorScheme.primary),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              title,
+              style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: theme.colorScheme.onSurface.withAlpha(127), fontSize: 15),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

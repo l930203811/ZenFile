@@ -1,0 +1,446 @@
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_avif/flutter_avif.dart';
+import '../../models/file_item_model.dart';
+import '../../core/utils.dart';
+import '../../core/icon_fonts/broken_icons.dart';
+import '../../services/pin_service.dart';
+import '../../services/app_manager_service.dart';
+import '../../providers/media_provider.dart';
+import '../../providers/file_manager_provider.dart';
+import 'package:on_audio_query/on_audio_query.dart';
+import 'file_action_dialogs.dart';
+
+class FileGridItem extends StatelessWidget {
+  final FileItemModel file;
+  final VoidCallback onTap;
+  final VoidCallback? onLongPress;
+  final VoidCallback? onIconTap;
+  final Function(String) onAction;
+  final bool isSelected;
+  final double iconScale;
+  final double itemPaddingMultiplier;
+
+  const FileGridItem({
+    super.key,
+    required this.file,
+    required this.onTap,
+    this.onLongPress,
+    this.onIconTap,
+    required this.onAction,
+    this.isSelected = false,
+    this.iconScale = 1.0,
+    this.itemPaddingMultiplier = 1.0,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final iconColor = FileUtils.getColorForFile(file.path, context);
+    final isArchive = FileUtils.isArchive(file.path);
+    final isHighlighted = context.select<FileManagerProvider, bool>(
+      (p) => p.forceHighlightedPaths.contains(file.path) || (p.enableFolderHighlight && p.highlightedPaths.contains(file.path)),
+    );
+
+    final child = Card(
+      color: isSelected ? theme.colorScheme.primaryContainer.withOpacity(0.4) : theme.colorScheme.surface,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: isSelected ? theme.colorScheme.primary : theme.dividerColor.withOpacity(0.1),
+          width: isSelected ? 1.5 : 1.0,
+        ),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        onLongPress: onLongPress,
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(
+          children: [
+            Center(
+              child: SingleChildScrollView(
+                physics: const NeverScrollableScrollPhysics(),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: (8.0 * itemPaddingMultiplier).clamp(2.0, 16.0),
+                    vertical: (8.0 * itemPaddingMultiplier).clamp(2.0, 16.0),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: onIconTap ?? onLongPress,
+                        child: Container(
+                          width: 48 * iconScale,
+                          height: 48 * iconScale,
+                          decoration: BoxDecoration(
+                            color: isSelected ? theme.colorScheme.primary : iconColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: _MediaThumbnail(
+                              file: file,
+                              iconScale: iconScale,
+                              isSelected: isSelected,
+                              iconColor: iconColor,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (PinService.isPinned(file.path)) ...[
+                            Icon(
+                              Icons.push_pin_rounded,
+                              size: 12 * (1 + (iconScale - 1) * 0.3),
+                              color: Colors.orange,
+                            ),
+                            const SizedBox(width: 4),
+                          ],
+                          Flexible(
+                            child: Text(
+                              file.name,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13.5 * (1 + (iconScale - 1) * 0.3),
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: context.select<FileManagerProvider, bool>((p) => p.adaptiveMultiLineNames) ? 3 : 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        FileUtils.formatBytes(file.size, 1),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.textTheme.bodySmall?.color?.withOpacity(0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+             if (isSelected)
+              Positioned(
+                top: 8,
+                left: 8,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Broken.tick_circle, size: 16, color: theme.colorScheme.onPrimary),
+                ),
+              )
+            else if (PinService.isPinned(file.path))
+              Positioned(
+                top: 8,
+                left: 8,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.9),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.push_pin_rounded, size: 12, color: Colors.white),
+                ),
+              ),
+            if (!isSelected && !context.select<FileManagerProvider, bool>((p) => p.hideActionMenuButtons))
+              Positioned(
+                top: 4,
+                right: 4,
+                child: IconButton(
+                  icon: const Icon(Broken.more, size: 20),
+                  onPressed: () {
+                    FileActionSheet.show(
+                      context,
+                      onAction,
+                      isArchive: isArchive,
+                    );
+                  },
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+
+    return Stack(
+      children: [
+        child,
+        Positioned.fill(
+          child: IgnorePointer(
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 500),
+              opacity: isHighlighted ? 1.0 : 0.0,
+              child: Container(
+                margin: const EdgeInsets.all(4.0),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withOpacity(0.06),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: theme.colorScheme.primary.withOpacity(0.25),
+                    width: 1.5,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MediaThumbnail extends StatefulWidget {
+  final FileItemModel file;
+  final double iconScale;
+  final bool isSelected;
+  final Color iconColor;
+
+  const _MediaThumbnail({
+    required this.file,
+    required this.iconScale,
+    required this.isSelected,
+    required this.iconColor,
+  });
+
+  @override
+  State<_MediaThumbnail> createState() => _MediaThumbnailState();
+}
+
+class _MediaThumbnailState extends State<_MediaThumbnail> {
+  static final Map<String, Uint8List?> _apkIconCache = {};
+  Uint8List? _videoThumb;
+  Uint8List? _audioThumb;
+  Uint8List? _apkIcon;
+
+  @override
+  void initState() {
+    super.initState();
+    final lowerPath = widget.file.path.toLowerCase();
+    if (FileUtils.isVideo(widget.file.path)) {
+      _loadVideoThumb();
+    } else if (FileUtils.isAudio(widget.file.path)) {
+      _loadAudioThumb();
+    } else if (lowerPath.endsWith('.apk') || lowerPath.endsWith('.xapk') || lowerPath.endsWith('.apks') || lowerPath.endsWith('.apkm')) {
+      _loadApkIcon();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _MediaThumbnail oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.file.path != oldWidget.file.path) {
+      setState(() {
+        _videoThumb = null;
+        _audioThumb = null;
+        _apkIcon = null;
+      });
+      final lowerPath = widget.file.path.toLowerCase();
+      if (FileUtils.isVideo(widget.file.path)) {
+        _loadVideoThumb();
+      } else if (FileUtils.isAudio(widget.file.path)) {
+        _loadAudioThumb();
+      } else if (lowerPath.endsWith('.apk') || lowerPath.endsWith('.xapk') || lowerPath.endsWith('.apks') || lowerPath.endsWith('.apkm')) {
+        _loadApkIcon();
+      }
+    }
+  }
+
+  Future<void> _loadApkIcon() async {
+    final path = widget.file.path;
+    if (_apkIconCache.containsKey(path)) {
+      final cachedIcon = _apkIconCache[path];
+      if (mounted && cachedIcon != null) {
+        setState(() {
+          _apkIcon = cachedIcon;
+        });
+      }
+      return;
+    }
+    try {
+      final iconBytes = await AppManagerService.getApkIcon(path);
+      _apkIconCache[path] = iconBytes;
+      if (mounted && iconBytes != null) {
+        setState(() {
+          _apkIcon = iconBytes;
+        });
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _loadAudioThumb() async {
+    if (!mounted) return;
+    try {
+      final mediaProvider = context.read<MediaProvider>();
+      final match = mediaProvider.audios.where((s) => s.data == widget.file.path).firstOrNull;
+      if (match != null) {
+        final artwork = await OnAudioQuery().queryArtwork(
+          match.id,
+          ArtworkType.AUDIO,
+          size: 200,
+          quality: 60,
+        );
+        if (mounted && artwork != null && artwork.isNotEmpty) {
+          setState(() {
+            _audioThumb = artwork;
+          });
+        }
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _loadVideoThumb() async {
+    if (!mounted) return;
+    try {
+      final mediaProvider = context.read<MediaProvider>();
+      final match = mediaProvider.videos.where((v) {
+        final titleLower = (v.title ?? '').toLowerCase();
+        final nameLower = widget.file.name.toLowerCase();
+        
+        // Case 1: title matches filename exactly
+        if (titleLower == nameLower) return true;
+        
+        // Case 2: title is basename without extension, e.g. title="my_video", filename="my_video.mp4"
+        final extIndex = nameLower.lastIndexOf('.');
+        final ext = extIndex != -1 ? nameLower.substring(extIndex) : '';
+        if (ext.isNotEmpty) {
+          final baseName = nameLower.substring(0, extIndex);
+          if (titleLower == baseName || '${titleLower}${ext}' == nameLower) {
+            return true;
+          }
+        }
+        
+        // Case 3: Match via mimeType
+        final mimeExt = v.mimeType?.split("/").last.toLowerCase();
+        if (mimeExt != null && '${titleLower}.$mimeExt' == nameLower) {
+          return true;
+        }
+        
+        return false;
+      }).firstOrNull;
+
+      if (match != null) {
+        final thumb = await ThumbnailCache.get(match);
+        if (mounted && thumb != null) {
+          setState(() {
+            _videoThumb = thumb;
+          });
+        }
+      }
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final showMediaPreviews = context.select<FileManagerProvider, bool>((p) => p.showMediaPreviews);
+    final isImg = FileUtils.isImage(widget.file.path);
+    final isVid = FileUtils.isVideo(widget.file.path);
+    final isAud = FileUtils.isAudio(widget.file.path);
+    final isApk = widget.file.path.toLowerCase().endsWith('.apk') || widget.file.path.toLowerCase().endsWith('.xapk') || widget.file.path.toLowerCase().endsWith('.apks') || widget.file.path.toLowerCase().endsWith('.apkm');
+
+    if (widget.isSelected) {
+      return Icon(Broken.tick_circle, color: Theme.of(context).colorScheme.onPrimary, size: 28 * widget.iconScale);
+    }
+
+    if (!showMediaPreviews) {
+      return Icon(
+        FileUtils.getIconForFile(widget.file.path),
+        color: widget.iconColor,
+        size: 28 * widget.iconScale,
+      );
+    }
+
+    if (isApk && _apkIcon != null) {
+      return Image.memory(
+        _apkIcon!,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+        errorBuilder: (context, error, stackTrace) => Icon(Broken.mobile, color: widget.iconColor, size: 28 * widget.iconScale),
+      );
+    }
+
+    if (isImg && widget.file.size > 16) {
+      if (widget.file.path.toLowerCase().endsWith('.avif')) {
+        return AvifImage.file(
+          File(widget.file.path),
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+          errorBuilder: (context, error, stackTrace) => Icon(Broken.image, color: widget.iconColor, size: 28 * widget.iconScale),
+        );
+      }
+      return Image.file(
+        File(widget.file.path),
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+        cacheWidth: 160,
+        errorBuilder: (context, error, stackTrace) => Icon(Broken.image, color: widget.iconColor, size: 28 * widget.iconScale),
+      );
+    }
+
+    if (isVid && _videoThumb != null) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.memory(
+            _videoThumb!,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+            errorBuilder: (context, error, stackTrace) => Icon(Broken.video, color: widget.iconColor, size: 28 * widget.iconScale),
+          ),
+          Center(
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(color: Colors.black.withOpacity(0.6), shape: BoxShape.circle),
+              child: Icon(Broken.video, color: Colors.white, size: 16 * widget.iconScale),
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (isAud && _audioThumb != null) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.memory(
+            _audioThumb!,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+            errorBuilder: (context, error, stackTrace) => Icon(Broken.music, color: widget.iconColor, size: 28 * widget.iconScale),
+          ),
+          Center(
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(color: Colors.black.withOpacity(0.6), shape: BoxShape.circle),
+              child: Icon(Broken.music, color: Colors.white, size: 16 * widget.iconScale),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Icon(
+      FileUtils.getIconForFile(widget.file.path),
+      color: widget.iconColor,
+      size: 28 * widget.iconScale,
+    );
+  }
+}
