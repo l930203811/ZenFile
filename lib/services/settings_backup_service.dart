@@ -1,3 +1,5 @@
+﻿import 'package:zenfile/l10n/generated/app_localizations.dart';
+
 import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
@@ -32,7 +34,7 @@ class SettingsBackupService {
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('设置已备份到 ZenFile/Backups/Settings/')),
+          SnackBar(content: Text('L10n.of(context).zenfilebackupssettings')),
         );
       }
       return true;
@@ -52,7 +54,7 @@ class SettingsBackupService {
       if (!filePath.toLowerCase().endsWith('.json')) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('请选择有效的 .json 设置备份文件')),
+            const SnackBar(content: Text('L10n.of(context).json')),
           );
         }
         return false;
@@ -62,7 +64,7 @@ class SettingsBackupService {
       if (!await file.exists()) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('请选择有效的 .json 设置备份文件')),
+            const SnackBar(content: Text('L10n.of(context).json')),
           );
         }
         return false;

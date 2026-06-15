@@ -1,4 +1,6 @@
-﻿import 'dart:io';
+﻿import 'package:zenfile/l10n/generated/app_localizations.dart';
+
+import 'dart:io';
 import 'dart:isolate';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -67,7 +69,7 @@ class BackgroundArchiveService {
     final archiveName = p.basename(destinationPath);
     final operation = BackgroundOperation(
       id: 'compress_${DateTime.now().millisecondsSinceEpoch}',
-      title: '正在压缩文件',
+      title: 'L10n.of(context).msg2f0138ad',
       archiveName: archiveName,
       isCompression: true,
     );
@@ -108,7 +110,7 @@ class BackgroundArchiveService {
             _updateNotification(operation);
           }
         } else if (status == 'completed') {
-          _onOperationComplete(context, operation, '压缩包创建成功');
+          _onOperationComplete(context, operation, 'L10n.of(context).msga2292820');
         } else if (status == 'error') {
           final error = message['error'] as String;
           _onOperationComplete(context, operation, 'Compression failed: $error', isError: true);
@@ -126,7 +128,7 @@ class BackgroundArchiveService {
     final archiveName = p.basename(archivePath);
     final operation = BackgroundOperation(
       id: 'extract_${DateTime.now().millisecondsSinceEpoch}',
-      title: '正在解压压缩包',
+      title: 'L10n.of(context).msg0683ca6b',
       archiveName: archiveName,
       isCompression: false,
       destinationDir: destinationDir,
@@ -165,7 +167,7 @@ class BackgroundArchiveService {
             _updateNotification(operation);
           }
         } else if (status == 'completed') {
-          _onOperationComplete(context, operation, '压缩包解压成功');
+          _onOperationComplete(context, operation, 'L10n.of(context).msg1f216eda');
         } else if (status == 'error') {
           final error = message['error'] as String;
           _onOperationComplete(context, operation, 'Extraction failed: $error', isError: true);
@@ -240,7 +242,7 @@ class BackgroundArchiveService {
         final id = operation.id.hashCode;
         await _channel.invokeMethod('showProgressNotification', {
           'id': id,
-          'title': isError ? '操作失败' : '成功',
+          'title': isError ? 'L10n.of(context).msg5fa802be' : '成功',
           'message': isError ? 'Compression/extraction failed.' : '${operation.archiveName} processed successfully.',
           'progress': 100,
           'max': 100,
@@ -252,13 +254,13 @@ class BackgroundArchiveService {
       }
     }
 
-    // 解压成功：显示"是/否"弹窗提示，不自动跳转
+    // 解压成功：显示'L10n.of(context).msg8fccf382'弹窗提示，不自动跳转
     if (!isError && !operation.isCompression && operation.destinationDir != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
             children: [
-              const Expanded(child: Text('解压成功，是否打开所在位置？')),
+              const Expanded(child: Text('L10n.of(context).msgc18fb099')),
               TextButton(
                 onPressed: () {
                   ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -333,7 +335,7 @@ class BackgroundArchiveService {
       }
 
       if (allFiles.isEmpty) {
-        sendPort.send({'status': 'error', 'error': '未找到可压缩的文件'});
+        sendPort.send({'status': 'error', 'error': 'L10n.of(context).msg4367e85a'});
         return;
       }
 
@@ -381,7 +383,7 @@ class BackgroundArchiveService {
       }
 
       if (encodedBytes == null) {
-        sendPort.send({'status': 'error', 'error': '不支持的格式'});
+        sendPort.send({'status': 'error', 'error': 'L10n.of(context).msg60a4545d'});
         return;
       }
 
@@ -409,7 +411,7 @@ class BackgroundArchiveService {
       sendPort.send({
         'status': 'progress',
         'progress': 1.0,
-        'currentFile': '压缩包创建成功',
+        'currentFile': 'L10n.of(context).msga2292820',
       });
       await Future.delayed(const Duration(milliseconds: 300));
 
@@ -430,7 +432,7 @@ class BackgroundArchiveService {
 
       final file = File(archivePath);
       if (!file.existsSync()) {
-        sendPort.send({'status': 'error', 'error': '未找到压缩包文件'});
+        sendPort.send({'status': 'error', 'error': 'L10n.of(context).msg226519e7'});
         return;
       }
       final bytes = file.readAsBytesSync();
@@ -517,7 +519,7 @@ class BackgroundArchiveService {
       sendPort.send({
         'status': 'progress',
         'progress': 1.0,
-        'currentFile': '压缩包解压成功',
+        'currentFile': 'L10n.of(context).msg1f216eda',
       });
       await Future.delayed(const Duration(milliseconds: 300));
 

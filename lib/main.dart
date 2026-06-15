@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
@@ -123,6 +124,7 @@ class ZenFileApp extends StatefulWidget {
 
 class _ZenFileAppState extends State<ZenFileApp> {
   ThemeMode _themeMode = ThemeMode.system;
+  Locale _locale = const Locale('zh', 'CN');
   bool? _hasPermission;
   bool _sharingObserverSetup = false;
   bool _isResolvingIntent = false;
@@ -148,6 +150,8 @@ class _ZenFileAppState extends State<ZenFileApp> {
       }
     });
     _themeMode = PreferencesService.getThemeMode();
+    final savedLocale = PreferencesService.getAppLocale();
+    _locale = savedLocale == 'en' ? const Locale('en', 'US') : const Locale('zh', 'CN');
     // Setup sharing observer immediately to catch incoming intents at the earliest possible frame!
     _setupSharingIntentObserver();
     _initializeApplication();
@@ -293,6 +297,16 @@ class _ZenFileAppState extends State<ZenFileApp> {
     PreferencesService.saveThemeMode(_themeMode);
   }
 
+  Locale _getLocale() => _locale;
+
+
+  void _setLocale(String localeCode) {
+    setState(() {
+      _locale = localeCode == 'en' ? const Locale('en', 'US') : const Locale('zh', 'CN');
+    });
+    PreferencesService.saveAppLocale(localeCode);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<FileManagerProvider>(
@@ -313,12 +327,15 @@ class _ZenFileAppState extends State<ZenFileApp> {
                 GlobalMaterialLocalizations.delegate,
                 GlobalWidgetsLocalizations.delegate,
                 GlobalCupertinoLocalizations.delegate,
+                L10n.delegate,
+                GlobalCupertinoLocalizations.delegate,
               ],
-              supportedLocales: const [
-                Locale('zh', 'CN'),
-                Locale('en', 'US'),
-              ],
-              locale: const Locale('zh', 'CN'),
+              supportedLocales: L10n.supportedLocales,
+              locale: _getLocale(),
+              localeResolutionCallback: (locale, supportedLocales) {
+                if (locale == null) return const Locale('zh', 'CN');
+                return supportedLocales.contains(locale) ? locale : const Locale('zh', 'CN');
+              },
               theme: AppTheme.getAppTheme(light: true, seed: baseSeedColor, customScheme: activeLightScheme, fontFamily: fileManager.fontFamilyOption),
               darkTheme: AppTheme.getAppTheme(light: false, pitchBlack: fileManager.amoledMode, seed: baseSeedColor, customScheme: activeDarkScheme, fontFamily: fileManager.fontFamilyOption),
               themeMode: _themeMode,
@@ -417,7 +434,7 @@ class _IntentLoadingScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              '正在打开共享文档...',
+              'L10n.of(context).msg6f3e533a',
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
                 color: theme.colorScheme.onSurface.withOpacity(0.8),
@@ -425,7 +442,7 @@ class _IntentLoadingScreen extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              '正在解析安全内容流',
+              'L10n.of(context).msgbca59325',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurface.withOpacity(0.5),
               ),
@@ -464,7 +481,7 @@ class _StoragePermissionShield extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'ZenFile 需要存储权限才能无缝管理、组织和显示您的媒体文件。',
+                  'L10n.of(context).zenfile',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
                 ),

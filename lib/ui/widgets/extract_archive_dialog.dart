@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/icon_fonts/broken_icons.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class ExtractArchiveResult {
   final String destinationDir;
@@ -78,7 +79,7 @@ class _ExtractArchiveDialogState extends State<ExtractArchiveDialog> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '解压压缩包',
+                          'L10n.of(context).msgc4d7eece',
                           style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         Text(
@@ -98,7 +99,7 @@ class _ExtractArchiveDialogState extends State<ExtractArchiveDialog> {
               TextField(
                 controller: _destController,
                 decoration: InputDecoration(
-                  labelText: '解压到文件夹',
+                  labelText: 'L10n.of(context).msgf15821d0',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   prefixIcon: const Icon(Broken.folder_open),
                 ),
@@ -110,7 +111,7 @@ class _ExtractArchiveDialogState extends State<ExtractArchiveDialog> {
                 controller: _passwordController,
                 obscureText: _obscurePassword,
                 decoration: InputDecoration(
-                  labelText: '密码（如果已加密）',
+                  labelText: 'L10n.of(context).msgff69affd',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   prefixIcon: const Icon(Broken.lock),
                   suffixIcon: IconButton(

@@ -10,6 +10,7 @@ import 'create_archive_dialog.dart';
 import 'package:share_plus/share_plus.dart';
 import 'batch_rename_dialog.dart';
 import '../../services/folder_share_service.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class SelectionContextBottomSheet extends StatelessWidget {
   final FileManagerProvider provider;
@@ -121,7 +122,7 @@ class SelectionContextBottomSheet extends StatelessWidget {
                           ),
                           if (isSingle)
                             Text(
-                              isFolder ? '文件夹' : '文件（长按选择打开方式）',
+                              isFolder ? 'L10n.of(context).msg1f4c1042' : 'L10n.of(context).msg8b73264b',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: theme.colorScheme.onSurface.withOpacity(0.5),
@@ -144,7 +145,7 @@ class SelectionContextBottomSheet extends StatelessWidget {
             _buildMenuItem(
               context: context,
               icon: Broken.document_copy,
-              label: '复制所选',
+              label: 'L10n.of(context).msgc5c0646c',
               onTap: () {
                 Navigator.pop(context);
                 provider.copySelected();
@@ -156,7 +157,7 @@ class SelectionContextBottomSheet extends StatelessWidget {
             _buildMenuItem(
               context: context,
               icon: Broken.scissor,
-              label: '剪切所选',
+              label: 'L10n.of(context).msg8e6d4604',
               onTap: () {
                 Navigator.pop(context);
                 provider.cutSelected();
@@ -169,16 +170,16 @@ class SelectionContextBottomSheet extends StatelessWidget {
               _buildMenuItem(
                 context: context,
                 icon: Broken.edit,
-                label: '重命名',
+                label: 'L10n.of(context).msgc8ce4b36',
                 onTap: () async {
                   Navigator.pop(context);
                   final currentName = p.basename(targetPath);
                   final newName = await FileActionDialogs.showTextInputDialog(
                     context,
-                    title: '重命名',
-                    hint: '输入新名称',
+                    title: 'L10n.of(context).msgc8ce4b36',
+                    hint: 'L10n.of(context).msgf139c5cf',
                     initialValue: currentName,
-                    actionText: '重命名',
+                    actionText: 'L10n.of(context).msgc8ce4b36',
                   );
                   if (newName != null && newName.isNotEmpty) {
                     await provider.renameFile(targetPath, newName);
@@ -190,7 +191,7 @@ class SelectionContextBottomSheet extends StatelessWidget {
               _buildMenuItem(
                 context: context,
                 icon: Broken.edit,
-                label: '重命名',
+                label: 'L10n.of(context).msgc8ce4b36',
                 onTap: () async {
                   Navigator.pop(context);
                   await BatchRenameDialog.show(context, provider);
@@ -200,7 +201,7 @@ class SelectionContextBottomSheet extends StatelessWidget {
               _buildMenuItem(
                 context: context,
                 icon: Broken.eye,
-                label: '打开方式...',
+                label: 'L10n.of(context).msg2a4cfb07',
                 onTap: () {
                   Navigator.pop(context);
                   provider.openFile(context, targetPath, forceOpenWith: true);
@@ -246,7 +247,7 @@ class SelectionContextBottomSheet extends StatelessWidget {
             _buildMenuItem(
               context: context,
               icon: Broken.info_circle,
-              label: '属性与信息',
+              label: 'L10n.of(context).msg1058354c',
               onTap: () {
                 Navigator.pop(context);
                 showDialog(
@@ -262,13 +263,13 @@ class SelectionContextBottomSheet extends StatelessWidget {
             _buildMenuItem(
               context: context,
               icon: Broken.trash,
-              label: '删除选中',
+              label: 'L10n.of(context).msgcd0b9aca',
               color: Colors.redAccent,
               onTap: () async {
                 Navigator.pop(context);
                 final confirm = await FileActionDialogs.showConfirmDialog(
                   context,
-                  title: '删除选中',
+                  title: 'L10n.of(context).msgcd0b9aca',
                   content: '确定要删除 $selectedCount 个项目吗？此操作无法撤销。',
                 );
                 if (confirm) {

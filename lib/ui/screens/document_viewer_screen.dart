@@ -11,6 +11,7 @@ import 'package:open_filex/open_filex.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:xml/xml.dart';
 import '../../core/icon_fonts/broken_icons.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class DocumentViewerScreen extends StatefulWidget {
   final String filePath;
@@ -204,7 +205,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
             final doc = XmlDocument.parse(contentStr);
             final textNodes = doc.findAllElements('a:t');
             final slideText = textNodes.map((node) => node.innerText).where((t) => t.trim().isNotEmpty).join('\n');
-            slideMap[slideNum] = slideText.isEmpty ? '（空白幻灯片）' : slideText;
+            slideMap[slideNum] = slideText.isEmpty ? 'L10n.of(context).msg5937f822' : slideText;
           }
         }
       }
@@ -226,7 +227,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('保存成功 ✓'),
+            content: Text('L10n.of(context).msg360d0b37'),
             duration: Duration(seconds: 2),
           ),
         );
@@ -325,7 +326,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                               ),
                               const SizedBox(width: 10),
                               Text(
-                                'PDF显示设置',
+                                'L10n.of(context).pdf',
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 18,
@@ -341,7 +342,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '优化大型、设计复杂或扫描文档的渲染性能。',
+                        'L10n.of(context).msg09c933bf',
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurface.withOpacity(0.6),
                         ),
@@ -376,8 +377,8 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                                 Expanded(
                                   child: _buildPresetButton(
                                     context: context,
-                                    label: '标准模式',
-                                    subtitle: '最适合文本文档',
+                                    label: 'L10n.of(context).msg701a85d4',
+                                    subtitle: 'L10n.of(context).msg2722d1a7',
                                     isActive: _pdfLayoutMode == PdfPageLayoutMode.continuous && _pdfEnableTextSelection,
                                     onTap: () {
                                       setModalState(() {
@@ -394,7 +395,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                                   child: _buildPresetButton(
                                     context: context,
                                     label: '流畅模式',
-                                    subtitle: '适合宣传册和照片',
+                                    subtitle: 'L10n.of(context).msgb2b08d54',
                                     isActive: _pdfLayoutMode == PdfPageLayoutMode.single && !_pdfEnableTextSelection,
                                     onTap: () {
                                       setModalState(() {
@@ -423,9 +424,9 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                       // Page Layout Option
                       _buildTuningOption(
                         context: context,
-                        title: '页面布局',
+                        title: 'L10n.of(context).msg8b519c02',
                         subtitle: _pdfLayoutMode == PdfPageLayoutMode.continuous
-                            ? '连续（垂直滚动列表）'
+                            ? 'L10n.of(context).msg7f2cd152'
                             : '单页（逐页滑动）',
                         child: SegmentedButton<PdfPageLayoutMode>(
                           showSelectedIcon: false,
@@ -464,9 +465,9 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                       // Scroll Direction Option
                       _buildTuningOption(
                         context: context,
-                        title: '滚动方向',
+                        title: 'L10n.of(context).msg151ea324',
                         subtitle: _pdfScrollDirection == PdfScrollDirection.vertical
-                            ? '垂直（从上到下滚动）'
+                            ? 'L10n.of(context).msg7d45ded6'
                             : '水平（从左到右滑动）',
                         child: SegmentedButton<PdfScrollDirection>(
                           showSelectedIcon: false,
@@ -510,9 +511,9 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                             Icons.text_format_rounded,
                             color: theme.colorScheme.primary,
                           ),
-                          title: const Text('启用文本选择', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          title: const Text('L10n.of(context).msg176ef589', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                           subtitle: const Text(
-                            '关闭可显著提升页面渲染速度并消除滚动卡顿。',
+                            'L10n.of(context).msg864f8706',
                             style: TextStyle(fontSize: 12),
                           ),
                           value: _pdfEnableTextSelection,
@@ -713,7 +714,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
               IconButton(
                 icon: const Icon(Icons.note_add_rounded),
                 onPressed: _createNewFile,
-                tooltip: '新建文档',
+                tooltip: 'L10n.of(context).msgd28847a2',
               ),
           ],
           if (_isPdf)
@@ -725,7 +726,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
           if (_isText)
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert),
-              tooltip: '更多选项',
+              tooltip: 'L10n.of(context).msg3007c452',
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               position: PopupMenuPosition.under,
               elevation: 8,
@@ -742,7 +743,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                   child: Row(children: [
                     Icon(_wordWrap ? Icons.check_box_rounded : Icons.check_box_outline_blank, size: 20),
                     const SizedBox(width: 12),
-                    const Text('自动换行', style: TextStyle(fontWeight: FontWeight.w500)),
+                    const Text('L10n.of(context).msg452dba7c', style: TextStyle(fontWeight: FontWeight.w500)),
                   ]),
                 ),
                 PopupMenuItem(
@@ -750,7 +751,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                   child: Row(children: [
                     Icon(_showLineNumbers ? Icons.check_box_rounded : Icons.check_box_outline_blank, size: 20),
                     const SizedBox(width: 12),
-                    const Text('显示行号', style: TextStyle(fontWeight: FontWeight.w500)),
+                    const Text('L10n.of(context).msgc31f9440', style: TextStyle(fontWeight: FontWeight.w500)),
                   ]),
                 ),
               ],
@@ -758,7 +759,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
           IconButton(
             icon: const Icon(Icons.open_in_new_rounded),
             onPressed: _openExternal,
-            tooltip: '用其他应用打开',
+            tooltip: 'L10n.of(context).msg1d93c30b',
           ),
         ],
       ),
@@ -1061,7 +1062,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
     }
 
     // 只读模式
-    final textContent = _textController.text.isEmpty ? '（空文件）' : _textController.text;
+    final textContent = _textController.text.isEmpty ? 'L10n.of(context).msgace80573' : _textController.text;
 
     Widget textWidget = SelectableText(
       textContent,
@@ -1201,7 +1202,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
             width: double.infinity,
             child: FilledButton.icon(
               icon: const Icon(Icons.open_in_new_rounded),
-              label: const Text('用应用打开'),
+              label: const Text('L10n.of(context).msg030f48bd'),
               style: FilledButton.styleFrom(
                 backgroundColor: fileColor,
                 foregroundColor: Colors.white,
@@ -1226,7 +1227,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
               ),
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('分享功能即将推出')),
+                  const SnackBar(content: Text('L10n.of(context).msgfd96af00')),
                 );
               },
             ),

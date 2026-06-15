@@ -1,0 +1,2707 @@
+﻿{
+  "@@locale": "en",
+  "@msg6f3e533a": {
+    "description": "main.dart"
+  },
+  "msg6f3e533a": "msg6f3e533a",
+  "@msgbca59325": {
+    "description": "main.dart"
+  },
+  "msgbca59325": "msgbca59325",
+  "@zenfile": {
+    "description": "main.dart"
+  },
+  "zenfile": "zenfile",
+  "@e": {
+    "type": "text"
+  },
+  "e": "e",
+  "@msg21cefa9b": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "msg21cefa9b": "msg21cefa9b",
+  "@smb": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "smb": "smb",
+  "@msg05d3c93c": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "msg05d3c93c": "msg05d3c93c",
+  "@e1": {
+    "type": "text"
+  },
+  "e1": "e1",
+  "@msga45bac47": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "msga45bac47": "msga45bac47",
+  "@e2": {
+    "type": "text"
+  },
+  "e2": "e2",
+  "@e3": {
+    "type": "text"
+  },
+  "e3": "e3",
+  "@msg3df5ef6c": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "msg3df5ef6c": "msg3df5ef6c",
+  "@msg5e32276d": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "msg5e32276d": "msg5e32276d",
+  "@msg497ec49d": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "msg497ec49d": "msg497ec49d",
+  "@e4": {
+    "type": "text"
+  },
+  "e4": "e4",
+  "@msg6b9ca1dd": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "msg6b9ca1dd": "msg6b9ca1dd",
+  "@e5": {
+    "type": "text"
+  },
+  "e5": "e5",
+  "@msg5238524c": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "msg5238524c": "msg5238524c",
+  "@e6": {
+    "type": "text"
+  },
+  "e6": "e6",
+  "@msgc806d0fa": {
+    "description": "providers\\media_provider.dart"
+  },
+  "msgc806d0fa": "msgc806d0fa",
+  "@msg03070d08": {
+    "description": "providers\\media_provider.dart"
+  },
+  "msg03070d08": "msg03070d08",
+  "@ftp": {
+    "description": "providers\\media_provider.dart"
+  },
+  "ftp": "ftp",
+  "@web": {
+    "description": "providers\\media_provider.dart"
+  },
+  "web": "web",
+  "@msge86bd662": {
+    "description": "providers\\media_provider.dart"
+  },
+  "msge86bd662": "msge86bd662",
+  "@msg16166a01": {
+    "description": "providers\\media_provider.dart"
+  },
+  "msg16166a01": "msg16166a01",
+  "@msgbb34b7ec": {
+    "description": "providers\\media_provider.dart"
+  },
+  "msgbb34b7ec": "msgbb34b7ec",
+  "@msg26a1f2d9": {
+    "description": "providers\\media_provider.dart"
+  },
+  "msg26a1f2d9": "msg26a1f2d9",
+  "@msg39e11368": {
+    "description": "services\\apk_installer_service.dart"
+  },
+  "msg39e11368": "msg39e11368",
+  "@apk": {
+    "description": "services\\apk_installer_service.dart"
+  },
+  "apk": "apk",
+  "@apk1": {
+    "description": "services\\apk_installer_service.dart"
+  },
+  "apk1": "apk1",
+  "@msg2f0138ad": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msg2f0138ad": "msg2f0138ad",
+  "@msga2292820": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msga2292820": "msga2292820",
+  "@msg0683ca6b": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msg0683ca6b": "msg0683ca6b",
+  "@msg1f216eda": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msg1f216eda": "msg1f216eda",
+  "@msg5fa802be": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msg5fa802be": "msg5fa802be",
+  "@msg8fccf382": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msg8fccf382": "msg8fccf382",
+  "@msgc18fb099": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msgc18fb099": "msgc18fb099",
+  "@msg4367e85a": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msg4367e85a": "msg4367e85a",
+  "@msg60a4545d": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msg60a4545d": "msg60a4545d",
+  "@msg226519e7": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msg226519e7": "msg226519e7",
+  "@msg88d150c7": {
+    "description": "services\\folder_share_service.dart"
+  },
+  "msg88d150c7": "msg88d150c7",
+  "@e7": {
+    "type": "text"
+  },
+  "e7": "e7",
+  "@zenfilesmbvirtualstoragebridgen": {
+    "description": "services\\remote\\lan_client.dart"
+  },
+  "zenfilesmbvirtualstoragebridgen": "zenfilesmbvirtualstoragebridgen",
+  "@msgf3a485df": {
+    "description": "services\\remote\\saf_client.dart"
+  },
+  "msgf3a485df": "msgf3a485df",
+  "@msge48a7157": {
+    "description": "services\\remote\\saf_client.dart"
+  },
+  "msge48a7157": "msge48a7157",
+  "@zenfilebackupssettings": {
+    "description": "services\\settings_backup_service.dart"
+  },
+  "zenfilebackupssettings": "zenfilebackupssettings",
+  "@json": {
+    "description": "services\\settings_backup_service.dart"
+  },
+  "json": "json",
+  "@e8": {
+    "type": "text"
+  },
+  "e8": "e8",
+  "@url": {
+    "type": "text"
+  },
+  "url": "url",
+  "@zenfile1": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "zenfile1": "zenfile1",
+  "@v103": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "v103": "v103",
+  "@zenfileflutter": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "zenfileflutter": "zenfileflutter",
+  "@msga12ebf50": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msga12ebf50": "msga12ebf50",
+  "@msgfccb5a01": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgfccb5a01": "msgfccb5a01",
+  "@msg6d8fbdac": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg6d8fbdac": "msg6d8fbdac",
+  "@ftpsftpwebdav": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "ftpsftpwebdav": "ftpsftpwebdav",
+  "@msge8f352b9": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msge8f352b9": "msge8f352b9",
+  "@amoled": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "amoled": "amoled",
+  "@msge8069659": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msge8069659": "msge8069659",
+  "@telegram": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "telegram": "telegram",
+  "@msg5f84adea": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg5f84adea": "msg5f84adea",
+  "@zenfilehttpsgithubcoml930203811zenfilereleases": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "zenfilehttpsgithubcoml930203811zenfilereleases": "zenfilehttpsgithubcoml930203811zenfilereleases",
+  "@github": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "github": "github",
+  "@sequeldpdnsorg": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "sequeldpdnsorg": "sequeldpdnsorg",
+  "@msged8518d7": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msged8518d7": "msged8518d7",
+  "@qq": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "qq": "qq",
+  "@bysequel": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "bysequel": "bysequel",
+  "@zenfile2": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "zenfile2": "zenfile2",
+  "@msg138d3725": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg138d3725": "msg138d3725",
+  "@msgccd097a7": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgccd097a7": "msgccd097a7",
+  "@msgbffe28c8": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgbffe28c8": "msgbffe28c8",
+  "@msg0537b04e": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg0537b04e": "msg0537b04e",
+  "@zenfilev103": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "zenfilev103": "zenfilev103",
+  "@msg9d287020": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg9d287020": "msg9d287020",
+  "@msgb2b41b6a": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgb2b41b6a": "msgb2b41b6a",
+  "@msg77ee718b": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg77ee718b": "msg77ee718b",
+  "@msgbff1432a": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgbff1432a": "msgbff1432a",
+  "@msge03395d0": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msge03395d0": "msge03395d0",
+  "@svg": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "svg": "svg",
+  "@ziprar7ztargz": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "ziprar7ztargz": "ziprar7ztargz",
+  "@msg09a6e11b": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg09a6e11b": "msg09a6e11b",
+  "@msg1c3206b8": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg1c3206b8": "msg1c3206b8",
+  "@msgb1e4da91": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgb1e4da91": "msgb1e4da91",
+  "@yyyymmdd": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "yyyymmdd": "yyyymmdd",
+  "@msg4c425252": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg4c425252": "msg4c425252",
+  "@msg1eaf4abb": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg1eaf4abb": "msg1eaf4abb",
+  "@msgd3381817": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgd3381817": "msgd3381817",
+  "@msg342688b2": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg342688b2": "msg342688b2",
+  "@msg8954452f": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg8954452f": "msg8954452f",
+  "@msgac5a0315": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgac5a0315": "msgac5a0315",
+  "@msg1904388e": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg1904388e": "msg1904388e",
+  "@msg2762c070": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg2762c070": "msg2762c070",
+  "@msg48dca69a": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg48dca69a": "msg48dca69a",
+  "@windows": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "windows": "windows",
+  "@msg65eefc98": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg65eefc98": "msg65eefc98",
+  "@msg96a6856a": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg96a6856a": "msg96a6856a",
+  "@msg250213fd": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg250213fd": "msg250213fd",
+  "@msg7f53e8b1": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg7f53e8b1": "msg7f53e8b1",
+  "@msg051469b5": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg051469b5": "msg051469b5",
+  "@msge4c4d5e2": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msge4c4d5e2": "msge4c4d5e2",
+  "@msga33dbb51": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msga33dbb51": "msga33dbb51",
+  "@msge6c84f11": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msge6c84f11": "msge6c84f11",
+  "@msg46b8ca8f": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg46b8ca8f": "msg46b8ca8f",
+  "@msgb3dea5f5": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgb3dea5f5": "msgb3dea5f5",
+  "@msga4c92214": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msga4c92214": "msga4c92214",
+  "@msg32854144": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg32854144": "msg32854144",
+  "@msg3a93e257": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg3a93e257": "msg3a93e257",
+  "@zenfile3": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "zenfile3": "zenfile3",
+  "@msg47b760ed": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg47b760ed": "msg47b760ed",
+  "@ftpsftpwebdavsmb": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "ftpsftpwebdavsmb": "ftpsftpwebdavsmb",
+  "@msg4b736dfb": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg4b736dfb": "msg4b736dfb",
+  "@ftpwebdav": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "ftpwebdav": "ftpwebdav",
+  "@msg03257c2d": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg03257c2d": "msg03257c2d",
+  "@msg5cce42e6": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg5cce42e6": "msg5cce42e6",
+  "@msg074f1ce7": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg074f1ce7": "msg074f1ce7",
+  "@msg5c66ffab": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg5c66ffab": "msg5c66ffab",
+  "@bug1sequeldpdnsorgqq792408214": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "bug1sequeldpdnsorgqq792408214": "bug1sequeldpdnsorgqq792408214",
+  "@msgd054a84c": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgd054a84c": "msgd054a84c",
+  "@msgb3b83e12": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgb3b83e12": "msgb3b83e12",
+  "@msgc2790d54": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgc2790d54": "msgc2790d54",
+  "@msg1292d351": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg1292d351": "msg1292d351",
+  "@e9": {
+    "type": "text"
+  },
+  "e9": "e9",
+  "@msg7a4ee0c7": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msg7a4ee0c7": "msg7a4ee0c7",
+  "@msg45326802": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msg45326802": "msg45326802",
+  "@e10": {
+    "type": "text"
+  },
+  "e10": "e10",
+  "@msg4fb42e6e": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msg4fb42e6e": "msg4fb42e6e",
+  "@msge5212c58": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msge5212c58": "msge5212c58",
+  "@msgc8ce4b36": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msgc8ce4b36": "msgc8ce4b36",
+  "@msgf139c5cf": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msgf139c5cf": "msgf139c5cf",
+  "@msg53518c22": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msg53518c22": "msg53518c22",
+  "@msg47809e5d": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msg47809e5d": "msg47809e5d",
+  "@msg7a7e6c25": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msg7a7e6c25": "msg7a7e6c25",
+  "@msg765d1698": {
+    "description": "ui\\screens\\archive_viewer_screen.dart"
+  },
+  "msg765d1698": "msg765d1698",
+  "@msg365f2f0a": {
+    "description": "ui\\screens\\archive_viewer_screen.dart"
+  },
+  "msg365f2f0a": "msg365f2f0a",
+  "@successcount": {
+    "type": "text"
+  },
+  "successcount": "successcount",
+  "@count": {
+    "type": "text"
+  },
+  "count": "count",
+  "@msg39cb3352": {
+    "description": "ui\\screens\\archive_viewer_screen.dart"
+  },
+  "msg39cb3352": "msg39cb3352",
+  "@msg99abedc6": {
+    "description": "ui\\screens\\archive_viewer_screen.dart"
+  },
+  "msg99abedc6": "msg99abedc6",
+  "@msg8d0cfb58": {
+    "description": "ui\\screens\\archive_viewer_screen.dart"
+  },
+  "msg8d0cfb58": "msg8d0cfb58",
+  "@msg5bf1fb72": {
+    "description": "ui\\screens\\audio_player\\audio_artwork_widget.dart"
+  },
+  "msg5bf1fb72": "msg5bf1fb72",
+  "@msg47cab5ae": {
+    "description": "ui\\screens\\audio_player\\audio_controls_widget.dart"
+  },
+  "msg47cab5ae": "msg47cab5ae",
+  "@msg50c1b248": {
+    "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+  },
+  "msg50c1b248": "msg50c1b248",
+  "@msg6d16d396": {
+    "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+  },
+  "msg6d16d396": "msg6d16d396",
+  "@msg3038d9b8": {
+    "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+  },
+  "msg3038d9b8": "msg3038d9b8",
+  "@msg29eed1da": {
+    "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+  },
+  "msg29eed1da": "msg29eed1da",
+  "@msg4aa059f7": {
+    "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+  },
+  "msg4aa059f7": "msg4aa059f7",
+  "@msg8f7f4490": {
+    "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+  },
+  "msg8f7f4490": "msg8f7f4490",
+  "@msgb7c87215": {
+    "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+  },
+  "msgb7c87215": "msgb7c87215",
+  "@msgfc449780": {
+    "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+  },
+  "msgfc449780": "msgfc449780",
+  "@msgb4fbc92c": {
+    "description": "ui\\screens\\backup_settings_screen.dart"
+  },
+  "msgb4fbc92c": "msgb4fbc92c",
+  "@zenfilebackupssettings1": {
+    "description": "ui\\screens\\backup_settings_screen.dart"
+  },
+  "zenfilebackupssettings1": "zenfilebackupssettings1",
+  "@json1": {
+    "description": "ui\\screens\\backup_settings_screen.dart"
+  },
+  "json1": "json1",
+  "@msg534c621a": {
+    "description": "ui\\screens\\backup_settings_screen.dart"
+  },
+  "msg534c621a": "msg534c621a",
+  "@msg396b7d3f": {
+    "description": "ui\\screens\\backup_settings_screen.dart"
+  },
+  "msg396b7d3f": "msg396b7d3f",
+  "@msgc047ee32": {
+    "description": "ui\\screens\\backup_settings_screen.dart"
+  },
+  "msgc047ee32": "msgc047ee32",
+  "@msg917fd6ef": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "msg917fd6ef": "msg917fd6ef",
+  "@sqlite": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "sqlite": "sqlite",
+  "@msg03a0d224": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "msg03a0d224": "msg03a0d224",
+  "@sql": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "sql": "sql",
+  "@msge2f0fe67": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "msge2f0fe67": "msge2f0fe67",
+  "@msg8bb11da4": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "msg8bb11da4": "msg8bb11da4",
+  "@msg7796aa3e": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "msg7796aa3e": "msg7796aa3e",
+  "@msg15f26697": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "msg15f26697": "msg15f26697",
+  "@msg0eaa935b": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "msg0eaa935b": "msg0eaa935b",
+  "@sql1": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "sql1": "sql1",
+  "@select": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "select": "select",
+  "@csv": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "csv": "csv",
+  "@select1": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "select1": "select1",
+  "@msgd1ad9002": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "msgd1ad9002": "msgd1ad9002",
+  "@targetpath": {
+    "type": "text"
+  },
+  "targetpath": "targetpath",
+  "@msg6ed14da7": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg6ed14da7": "msg6ed14da7",
+  "@msgcd0b9aca": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msgcd0b9aca": "msgcd0b9aca",
+  "@msgee14ee27": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msgee14ee27": "msgee14ee27",
+  "@filenamecreatedname": {
+    "type": "text"
+  },
+  "filenamecreatedname": "filenamecreatedname",
+  "@foldernamecreatedname": {
+    "type": "text"
+  },
+  "foldernamecreatedname": "foldernamecreatedname",
+  "@msgbd165c40": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msgbd165c40": "msgbd165c40",
+  "@msg68ac91eb": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg68ac91eb": "msg68ac91eb",
+  "@msg881f6a80": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg881f6a80": "msg881f6a80",
+  "@msg97301f64": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg97301f64": "msg97301f64",
+  "@msg829cb1dd": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg829cb1dd": "msg829cb1dd",
+  "@msg0a4ebb8d": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg0a4ebb8d": "msg0a4ebb8d",
+  "@msg88062f93": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg88062f93": "msg88062f93",
+  "@msga7c781f5": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msga7c781f5": "msga7c781f5",
+  "@msga2946a1a": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msga2946a1a": "msga2946a1a",
+  "@za": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "za": "za",
+  "@msg2e2a26bb": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg2e2a26bb": "msg2e2a26bb",
+  "@msgf437ace4": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msgf437ace4": "msgf437ace4",
+  "@msg4dfc167a": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg4dfc167a": "msg4dfc167a",
+  "@msge4c84f81": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msge4c84f81": "msge4c84f81",
+  "@msgd730e478": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msgd730e478": "msgd730e478",
+  "@msg35546526": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg35546526": "msg35546526",
+  "@msg67a6ea5e": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg67a6ea5e": "msg67a6ea5e",
+  "@msgcc51d6c2": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msgcc51d6c2": "msgcc51d6c2",
+  "@msg6e0f9cef": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg6e0f9cef": "msg6e0f9cef",
+  "@msge9691076": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msge9691076": "msge9691076",
+  "@msg551f98ba": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg551f98ba": "msg551f98ba",
+  "@msg17093362": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg17093362": "msg17093362",
+  "@msg681c0f39": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg681c0f39": "msg681c0f39",
+  "@msg0c36f64f": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg0c36f64f": "msg0c36f64f",
+  "@msg26b041dd": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg26b041dd": "msg26b041dd",
+  "@msge632ba85": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msge632ba85": "msge632ba85",
+  "@label": {
+    "type": "text"
+  },
+  "label": "label",
+  "@msg0e77af8a": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg0e77af8a": "msg0e77af8a",
+  "@e11": {
+    "type": "text"
+  },
+  "e11": "e11",
+  "@msg5937f822": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg5937f822": "msg5937f822",
+  "@msg360d0b37": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg360d0b37": "msg360d0b37",
+  "@pdf": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "pdf": "pdf",
+  "@msg09c933bf": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg09c933bf": "msg09c933bf",
+  "@msg701a85d4": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg701a85d4": "msg701a85d4",
+  "@msg2722d1a7": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg2722d1a7": "msg2722d1a7",
+  "@msgb2b08d54": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msgb2b08d54": "msgb2b08d54",
+  "@msg8b519c02": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg8b519c02": "msg8b519c02",
+  "@msg7f2cd152": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg7f2cd152": "msg7f2cd152",
+  "@msg151ea324": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg151ea324": "msg151ea324",
+  "@msg7d45ded6": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg7d45ded6": "msg7d45ded6",
+  "@msg176ef589": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg176ef589": "msg176ef589",
+  "@msg864f8706": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg864f8706": "msg864f8706",
+  "@msgd28847a2": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msgd28847a2": "msgd28847a2",
+  "@msg3007c452": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg3007c452": "msg3007c452",
+  "@msg452dba7c": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg452dba7c": "msg452dba7c",
+  "@msgc31f9440": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msgc31f9440": "msgc31f9440",
+  "@msg1d93c30b": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg1d93c30b": "msg1d93c30b",
+  "@msgace80573": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msgace80573": "msgace80573",
+  "@msg030f48bd": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg030f48bd": "msg030f48bd",
+  "@msgfd96af00": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msgfd96af00": "msgfd96af00",
+  "@ftp1": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "ftp1": "ftp1",
+  "@ftpe": {
+    "type": "text"
+  },
+  "ftpe": "ftpe",
+  "@msg5c202e56": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg5c202e56": "msg5c202e56",
+  "@msgfca29cb3": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msgfca29cb3": "msgfca29cb3",
+  "@msg8a0b5bf5": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg8a0b5bf5": "msg8a0b5bf5",
+  "@msg3bce2199": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg3bce2199": "msg3bce2199",
+  "@msg0b62b5ce": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg0b62b5ce": "msg0b62b5ce",
+  "@ftp2": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "ftp2": "ftp2",
+  "@msg5ab96a6d": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg5ab96a6d": "msg5ab96a6d",
+  "@msgc400f106": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msgc400f106": "msgc400f106",
+  "@msgb5eb59fc": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msgb5eb59fc": "msgb5eb59fc",
+  "@msg70c53afb": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg70c53afb": "msg70c53afb",
+  "@msg8e2021aa": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg8e2021aa": "msg8e2021aa",
+  "@msgd70e9bdf": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msgd70e9bdf": "msgd70e9bdf",
+  "@msg7ae644e4": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg7ae644e4": "msg7ae644e4",
+  "@msg5d57821d": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg5d57821d": "msg5d57821d",
+  "@msgfefea1b3": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msgfefea1b3": "msgfefea1b3",
+  "@msg124d9054": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg124d9054": "msg124d9054",
+  "@tlsftp": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "tlsftp": "tlsftp",
+  "@msg1f4c1042": {
+    "description": "ui\\screens\\global_search_screen.dart"
+  },
+  "msg1f4c1042": "msg1f4c1042",
+  "@msgf2ef53c0": {
+    "description": "ui\\screens\\global_search_screen.dart"
+  },
+  "msgf2ef53c0": "msgf2ef53c0",
+  "@msgfff96ede": {
+    "description": "ui\\screens\\global_search_screen.dart"
+  },
+  "msgfff96ede": "msgfff96ede",
+  "@msg88e45bb8": {
+    "description": "ui\\screens\\global_search_screen.dart"
+  },
+  "msg88e45bb8": "msg88e45bb8",
+  "@query": {
+    "type": "text"
+  },
+  "query": "query",
+  "@msge109d1ea": {
+    "description": "ui\\screens\\home_screen.dart"
+  },
+  "msge109d1ea": "msge109d1ea",
+  "@msg05cea075": {
+    "description": "ui\\screens\\home_screen.dart"
+  },
+  "msg05cea075": "msg05cea075",
+  "@msg7498c202": {
+    "description": "ui\\screens\\home_screen.dart"
+  },
+  "msg7498c202": "msg7498c202",
+  "@msg03247b17": {
+    "description": "ui\\screens\\home_screen.dart"
+  },
+  "msg03247b17": "msg03247b17",
+  "@msg354c1c9a": {
+    "description": "ui\\screens\\home_screen.dart"
+  },
+  "msg354c1c9a": "msg354c1c9a",
+  "@msg19021d08": {
+    "description": "ui\\screens\\home_screen.dart"
+  },
+  "msg19021d08": "msg19021d08",
+  "@html": {
+    "description": "ui\\screens\\html_viewer_screen.dart"
+  },
+  "html": "html",
+  "@msgfba1f416": {
+    "description": "ui\\screens\\internal_file_picker_screen.dart"
+  },
+  "msgfba1f416": "msgfba1f416",
+  "@msg33b0b21c": {
+    "description": "ui\\screens\\internal_file_picker_screen.dart"
+  },
+  "msg33b0b21c": "msg33b0b21c",
+  "@msgff3200cc": {
+    "description": "ui\\screens\\internal_file_picker_screen.dart"
+  },
+  "msgff3200cc": "msgff3200cc",
+  "@msg4614630a": {
+    "description": "ui\\screens\\internal_file_picker_screen.dart"
+  },
+  "msg4614630a": "msg4614630a",
+  "@msg5dc1fa7b": {
+    "description": "ui\\screens\\internal_file_picker_screen.dart"
+  },
+  "msg5dc1fa7b": "msg5dc1fa7b",
+  "@markdown": {
+    "description": "ui\\screens\\markdown_viewer_screen.dart"
+  },
+  "markdown": "markdown",
+  "@count1": {
+    "type": "text"
+  },
+  "count1": "count1",
+  "@count2": {
+    "type": "text"
+  },
+  "count2": "count2",
+  "@pastedcountdestdir": {
+    "type": "text"
+  },
+  "pastedcountdestdir": "pastedcountdestdir",
+  "@msgfadbb0bc": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msgfadbb0bc": "msgfadbb0bc",
+  "@msg3ad97542": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg3ad97542": "msg3ad97542",
+  "@msg1303e638": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg1303e638": "msg1303e638",
+  "@msg5bab3781": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg5bab3781": "msg5bab3781",
+  "@msg880a18f3": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg880a18f3": "msg880a18f3",
+  "@msgea9ecb93": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msgea9ecb93": "msgea9ecb93",
+  "@msg5556baa3": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg5556baa3": "msg5556baa3",
+  "@msg631cd220": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg631cd220": "msg631cd220",
+  "@name": {
+    "type": "text"
+  },
+  "name": "name",
+  "@msgcd8264f1": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msgcd8264f1": "msgcd8264f1",
+  "@msg2a4cfb07": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg2a4cfb07": "msg2a4cfb07",
+  "@msg8bf52387": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg8bf52387": "msg8bf52387",
+  "@msg419be096": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg419be096": "msg419be096",
+  "@msg5093bc80": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg5093bc80": "msg5093bc80",
+  "@msgbc74b5a8": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msgbc74b5a8": "msgbc74b5a8",
+  "@msgef7ae768": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msgef7ae768": "msgef7ae768",
+  "@msgb8140039": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msgb8140039": "msgb8140039",
+  "@msg424a0110": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg424a0110": "msg424a0110",
+  "@msgb19671d6": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msgb19671d6": "msgb19671d6",
+  "@msg11fea612": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg11fea612": "msg11fea612",
+  "@msg12e86877": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg12e86877": "msg12e86877",
+  "@msg7908038f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg7908038f": "msg7908038f",
+  "@msg9136d4dc": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg9136d4dc": "msg9136d4dc",
+  "@msg84986f91": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg84986f91": "msg84986f91",
+  "@msgfc000737": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgfc000737": "msgfc000737",
+  "@msg83de16cc": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg83de16cc": "msg83de16cc",
+  "@msgaa2a18a1": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgaa2a18a1": "msgaa2a18a1",
+  "@msg26e4c5d6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg26e4c5d6": "msg26e4c5d6",
+  "@windows1": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "windows1": "windows1",
+  "@msg74e86197": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg74e86197": "msg74e86197",
+  "@msga1fbf3c6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msga1fbf3c6": "msga1fbf3c6",
+  "@msg02dddc02": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg02dddc02": "msg02dddc02",
+  "@msg50923c95": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg50923c95": "msg50923c95",
+  "@msg6fdc09ac": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg6fdc09ac": "msg6fdc09ac",
+  "@msg0a4b0442": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg0a4b0442": "msg0a4b0442",
+  "@msge1157984": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msge1157984": "msge1157984",
+  "@msgae1854a2": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgae1854a2": "msgae1854a2",
+  "@msg11b1ec65": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg11b1ec65": "msg11b1ec65",
+  "@msg7e7765b6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg7e7765b6": "msg7e7765b6",
+  "@msg86f3d70f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg86f3d70f": "msg86f3d70f",
+  "@msg40e9c325": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg40e9c325": "msg40e9c325",
+  "@ampm24": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "ampm24": "ampm24",
+  "@msg25ee6612": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg25ee6612": "msg25ee6612",
+  "@msg337359a6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg337359a6": "msg337359a6",
+  "@msga517863e": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msga517863e": "msga517863e",
+  "@msg59a24fcb": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg59a24fcb": "msg59a24fcb",
+  "@msg309e2a28": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg309e2a28": "msg309e2a28",
+  "@msg9b7639ac": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg9b7639ac": "msg9b7639ac",
+  "@msgdd69671b": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdd69671b": "msgdd69671b",
+  "@msg57736228": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg57736228": "msg57736228",
+  "@msg1eda8a50": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg1eda8a50": "msg1eda8a50",
+  "@msgc7196afd": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgc7196afd": "msgc7196afd",
+  "@msgad54815d": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgad54815d": "msgad54815d",
+  "@msg5dff8f2d": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5dff8f2d": "msg5dff8f2d",
+  "@msg4b0a7063": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg4b0a7063": "msg4b0a7063",
+  "@msgf04ac00d": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgf04ac00d": "msgf04ac00d",
+  "@msgd1591ba4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgd1591ba4": "msgd1591ba4",
+  "@msg25792550": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg25792550": "msg25792550",
+  "@msg1b9633fe": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg1b9633fe": "msg1b9633fe",
+  "@msg64db4c2d": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg64db4c2d": "msg64db4c2d",
+  "@msgece44aa5": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgece44aa5": "msgece44aa5",
+  "@amoled1": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "amoled1": "amoled1",
+  "@amoled2": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "amoled2": "amoled2",
+  "@msg5228b59f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5228b59f": "msg5228b59f",
+  "@msge7d18d73": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msge7d18d73": "msge7d18d73",
+  "@msg036fe6a4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg036fe6a4": "msg036fe6a4",
+  "@msgead3e5c5": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgead3e5c5": "msgead3e5c5",
+  "@msg2590095f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg2590095f": "msg2590095f",
+  "@msgfdae44c3": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgfdae44c3": "msgfdae44c3",
+  "@msgeae34685": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgeae34685": "msgeae34685",
+  "@msg91b228b8": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg91b228b8": "msg91b228b8",
+  "@msgad6e8bb8": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgad6e8bb8": "msgad6e8bb8",
+  "@msg8ddc4963": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg8ddc4963": "msg8ddc4963",
+  "@msg45db4e2a": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg45db4e2a": "msg45db4e2a",
+  "@msg09ca4d86": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg09ca4d86": "msg09ca4d86",
+  "@msgeb3693fb": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgeb3693fb": "msgeb3693fb",
+  "@msg3a6a39ae": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg3a6a39ae": "msg3a6a39ae",
+  "@msg9edfaff3": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg9edfaff3": "msg9edfaff3",
+  "@msg99c9cc56": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg99c9cc56": "msg99c9cc56",
+  "@msga432d127": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msga432d127": "msga432d127",
+  "@msg226fc6ae": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg226fc6ae": "msg226fc6ae",
+  "@msgd48a082d": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgd48a082d": "msgd48a082d",
+  "@msgaac01f32": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgaac01f32": "msgaac01f32",
+  "@msg59c7debc": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg59c7debc": "msg59c7debc",
+  "@msgce732d8a": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgce732d8a": "msgce732d8a",
+  "@msg1cfeaace": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg1cfeaace": "msg1cfeaace",
+  "@msgd33e3082": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgd33e3082": "msgd33e3082",
+  "@msga4333788": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msga4333788": "msga4333788",
+  "@msg20c87c8e": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg20c87c8e": "msg20c87c8e",
+  "@msg72b1f919": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg72b1f919": "msg72b1f919",
+  "@msge99f4762": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msge99f4762": "msge99f4762",
+  "@msg2c8a394a": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg2c8a394a": "msg2c8a394a",
+  "@msg2c3c5a35": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg2c3c5a35": "msg2c3c5a35",
+  "@msg267fcd86": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg267fcd86": "msg267fcd86",
+  "@msg9104c0c5": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg9104c0c5": "msg9104c0c5",
+  "@days": {
+    "type": "text"
+  },
+  "days": "days",
+  "@msg673ad9d4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg673ad9d4": "msg673ad9d4",
+  "@msgd9f142c4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgd9f142c4": "msgd9f142c4",
+  "@msg5472ef41": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5472ef41": "msg5472ef41",
+  "@msgac7687d9": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgac7687d9": "msgac7687d9",
+  "@msg225f6249": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg225f6249": "msg225f6249",
+  "@materialyou": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "materialyou": "materialyou",
+  "@msg05cff3ad": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg05cff3ad": "msg05cff3ad",
+  "@msg5ed35657": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5ed35657": "msg5ed35657",
+  "@msge74a7283": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msge74a7283": "msge74a7283",
+  "@msg3904ba87": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg3904ba87": "msg3904ba87",
+  "@msgd58d230a": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgd58d230a": "msgd58d230a",
+  "@msg508b005e": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg508b005e": "msg508b005e",
+  "@msgefdde083": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgefdde083": "msgefdde083",
+  "@msg628e73a9": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg628e73a9": "msg628e73a9",
+  "@msg8244d240": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg8244d240": "msg8244d240",
+  "@msgf08d9b15": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgf08d9b15": "msgf08d9b15",
+  "@msge5fba3dd": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msge5fba3dd": "msge5fba3dd",
+  "@msgfe4254dc": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgfe4254dc": "msgfe4254dc",
+  "@msg84719fd5": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg84719fd5": "msg84719fd5",
+  "@zenfile4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "zenfile4": "zenfile4",
+  "@vuesax": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "vuesax": "vuesax",
+  "@msg5dc988f4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5dc988f4": "msg5dc988f4",
+  "@msgd06ba04f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgd06ba04f": "msgd06ba04f",
+  "@msg5090469e": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5090469e": "msg5090469e",
+  "@d": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "d": "d",
+  "@msg67836b24": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg67836b24": "msg67836b24",
+  "@msgf08c8dc4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgf08c8dc4": "msgf08c8dc4",
+  "@msg7372dc9f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg7372dc9f": "msg7372dc9f",
+  "@msg3004e40a": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg3004e40a": "msg3004e40a",
+  "@msgc540e940": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgc540e940": "msgc540e940",
+  "@msg00ea5776": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg00ea5776": "msg00ea5776",
+  "@msg7bdbfaa5": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg7bdbfaa5": "msg7bdbfaa5",
+  "@msgdcb4082d": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdcb4082d": "msgdcb4082d",
+  "@msg9d7001d9": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg9d7001d9": "msg9d7001d9",
+  "@msgc2f5e9e4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgc2f5e9e4": "msgc2f5e9e4",
+  "@msg6a7c758f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg6a7c758f": "msg6a7c758f",
+  "@days1": {
+    "type": "text"
+  },
+  "days1": "days1",
+  "@msgfe76ae54": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgfe76ae54": "msgfe76ae54",
+  "@msg8af2412a": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg8af2412a": "msg8af2412a",
+  "@msg245c3258": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg245c3258": "msg245c3258",
+  "@msg4439669d": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg4439669d": "msg4439669d",
+  "@msg46978666": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg46978666": "msg46978666",
+  "@msgbc9bf336": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgbc9bf336": "msgbc9bf336",
+  "@msg563871d3": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg563871d3": "msg563871d3",
+  "@msgca71ac0c": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgca71ac0c": "msgca71ac0c",
+  "@msg732630c1": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg732630c1": "msg732630c1",
+  "@msgf9224d98": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgf9224d98": "msgf9224d98",
+  "@msgc337ecfa": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgc337ecfa": "msgc337ecfa",
+  "@msgf18bc3d9": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgf18bc3d9": "msgf18bc3d9",
+  "@logo": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "logo": "logo",
+  "@msg64a6476a": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg64a6476a": "msg64a6476a",
+  "@title": {
+    "type": "text"
+  },
+  "title": "title",
+  "@msgad76161f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgad76161f": "msgad76161f",
+  "@pngjpgwebp": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "pngjpgwebp": "pngjpgwebp",
+  "@msgb06c5c34": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgb06c5c34": "msgb06c5c34",
+  "@e12": {
+    "type": "text"
+  },
+  "e12": "e12",
+  "@msg375c9eb8": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg375c9eb8": "msg375c9eb8",
+  "@msg817e321b": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg817e321b": "msg817e321b",
+  "@msg3c2a24cc": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg3c2a24cc": "msg3c2a24cc",
+  "@msg978f8d11": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg978f8d11": "msg978f8d11",
+  "@msg93b657aa": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg93b657aa": "msg93b657aa",
+  "@msg9db40ad6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg9db40ad6": "msg9db40ad6",
+  "@zenfile5": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "zenfile5": "zenfile5",
+  "@msg7372efa5": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg7372efa5": "msg7372efa5",
+  "@msg3186839b": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg3186839b": "msg3186839b",
+  "@opentypeotftruetypettf": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "opentypeotftruetypettf": "opentypeotftruetypettf",
+  "@msgcf42dedc": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgcf42dedc": "msgcf42dedc",
+  "@msg2b9abfaa": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg2b9abfaa": "msg2b9abfaa",
+  "@msgfdef8c23": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgfdef8c23": "msgfdef8c23",
+  "@msg25436ba3": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg25436ba3": "msg25436ba3",
+  "@msg85e7f60c": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg85e7f60c": "msg85e7f60c",
+  "@msgd61e706f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgd61e706f": "msgd61e706f",
+  "@msgf0ef894a": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgf0ef894a": "msgf0ef894a",
+  "@msg1200d6b7": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg1200d6b7": "msg1200d6b7",
+  "@msg432fbb31": {
+    "description": "ui\\screens\\network_category_screen.dart"
+  },
+  "msg432fbb31": "msg432fbb31",
+  "@msg3358aa10": {
+    "description": "ui\\screens\\network_category_screen.dart"
+  },
+  "msg3358aa10": "msg3358aa10",
+  "@msgc9c900d0": {
+    "description": "ui\\screens\\network_category_screen.dart"
+  },
+  "msgc9c900d0": "msgc9c900d0",
+  "@ftpsftpwebdavsmb1": {
+    "description": "ui\\screens\\network_category_screen.dart"
+  },
+  "ftpsftpwebdavsmb1": "ftpsftpwebdavsmb1",
+  "@e13": {
+    "type": "text"
+  },
+  "e13": "e13",
+  "@msgb5bc0bf1": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msgb5bc0bf1": "msgb5bc0bf1",
+  "@msg3005ba4d": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msg3005ba4d": "msg3005ba4d",
+  "@msgab36a8c6": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msgab36a8c6": "msgab36a8c6",
+  "@name1": {
+    "type": "text"
+  },
+  "name1": "name1",
+  "@msgdf434415": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msgdf434415": "msgdf434415",
+  "@documentsui": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "documentsui": "documentsui",
+  "@androidnn": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "androidnn": "androidnn",
+  "@msgb2af4e30": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msgb2af4e30": "msgb2af4e30",
+  "@safe": {
+    "type": "text"
+  },
+  "safe": "safe",
+  "@msg65c7ecb6": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msg65c7ecb6": "msg65c7ecb6",
+  "@msg69e3963c": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msg69e3963c": "msg69e3963c",
+  "@msgce1ec2ce": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msgce1ec2ce": "msgce1ec2ce",
+  "@msg25557d1f": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msg25557d1f": "msg25557d1f",
+  "@ssh": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "ssh": "ssh",
+  "@http": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "http": "http",
+  "@androidsd": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "androidsd": "androidsd",
+  "@msg8486035b": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msg8486035b": "msg8486035b",
+  "@naszenfile": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "naszenfile": "naszenfile",
+  "@selectedtype": {
+    "type": "text"
+  },
+  "selectedtype": "selectedtype",
+  "@msg5c808d9a": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msg5c808d9a": "msg5c808d9a",
+  "@nas": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "nas": "nas",
+  "@dav": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "dav": "dav",
+  "@naslocal": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "naslocal": "naslocal",
+  "@dav1": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "dav1": "dav1",
+  "@anonymousadmin": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "anonymousadmin": "anonymousadmin",
+  "@msgeec70cd2": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msgeec70cd2": "msgeec70cd2",
+  "@msgf1fa9d44": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msgf1fa9d44": "msgf1fa9d44",
+  "@selectedtype1": {
+    "type": "text"
+  },
+  "selectedtype1": "selectedtype1",
+  "@e14": {
+    "type": "text"
+  },
+  "e14": "e14",
+  "@e15": {
+    "type": "text"
+  },
+  "e15": "e15",
+  "@msg62187f1b": {
+    "description": "ui\\screens\\recycle_bin_screen.dart"
+  },
+  "msg62187f1b": "msg62187f1b",
+  "@msg8cd6bc18": {
+    "description": "ui\\screens\\recycle_bin_screen.dart"
+  },
+  "msg8cd6bc18": "msg8cd6bc18",
+  "@msga4dfc0c6": {
+    "description": "ui\\screens\\recycle_bin_screen.dart"
+  },
+  "msga4dfc0c6": "msga4dfc0c6",
+  "@msg07d80ac5": {
+    "description": "ui\\screens\\recycle_bin_screen.dart"
+  },
+  "msg07d80ac5": "msg07d80ac5",
+  "@msg96d2b75f": {
+    "description": "ui\\screens\\recycle_bin_screen.dart"
+  },
+  "msg96d2b75f": "msg96d2b75f",
+  "@msg0d824a24": {
+    "description": "ui\\screens\\recycle_bin_screen.dart"
+  },
+  "msg0d824a24": "msg0d824a24",
+  "@msg4c478216": {
+    "description": "ui\\screens\\recycle_bin_screen.dart"
+  },
+  "msg4c478216": "msg4c478216",
+  "@msgc44a57b6": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msgc44a57b6": "msgc44a57b6",
+  "@msgd6d8292d": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msgd6d8292d": "msgd6d8292d",
+  "@e16": {
+    "type": "text"
+  },
+  "e16": "e16",
+  "@msg66d723c5": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg66d723c5": "msg66d723c5",
+  "@msg53082c55": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg53082c55": "msg53082c55",
+  "@msg108feeed": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg108feeed": "msg108feeed",
+  "@msg2d4b44ec": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg2d4b44ec": "msg2d4b44ec",
+  "@filenamee": {
+    "type": "text"
+  },
+  "filenamee": "filenamee",
+  "@newname": {
+    "type": "text"
+  },
+  "newname": "newname",
+  "@msg4b342999": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg4b342999": "msg4b342999",
+  "@e17": {
+    "type": "text"
+  },
+  "e17": "e17",
+  "@msg79d7fef7": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg79d7fef7": "msg79d7fef7",
+  "@msga98473f2": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msga98473f2": "msga98473f2",
+  "@e18": {
+    "type": "text"
+  },
+  "e18": "e18",
+  "@msg5ca05a9b": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg5ca05a9b": "msg5ca05a9b",
+  "@msga636c09d": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msga636c09d": "msga636c09d",
+  "@msga4c461a4": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msga4c461a4": "msga4c461a4",
+  "@msg425502fa": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg425502fa": "msg425502fa",
+  "@msgc2b9f4b9": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msgc2b9f4b9": "msgc2b9f4b9",
+  "@msg2f7cd487": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg2f7cd487": "msg2f7cd487",
+  "@msg905c34fa": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg905c34fa": "msg905c34fa",
+  "@msg8439c155": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg8439c155": "msg8439c155",
+  "@msgda43df27": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msgda43df27": "msgda43df27",
+  "@msga21f6ab1": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msga21f6ab1": "msga21f6ab1",
+  "@msge1c538b8": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msge1c538b8": "msge1c538b8",
+  "@e19": {
+    "type": "text"
+  },
+  "e19": "e19",
+  "@msg50eaf94d": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg50eaf94d": "msg50eaf94d",
+  "@msgcb0da17b": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msgcb0da17b": "msgcb0da17b",
+  "@msg4805c385": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msg4805c385": "msg4805c385",
+  "@msg93bc1f09": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msg93bc1f09": "msg93bc1f09",
+  "@msg32e490fe": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msg32e490fe": "msg32e490fe",
+  "@apk2": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "apk2": "apk2",
+  "@msg8936ded6": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msg8936ded6": "msg8936ded6",
+  "@msgd8b3fc58": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msgd8b3fc58": "msgd8b3fc58",
+  "@msgbe1399f0": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msgbe1399f0": "msgbe1399f0",
+  "@msg9ad67f11": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msg9ad67f11": "msg9ad67f11",
+  "@msgb0681bd4": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msgb0681bd4": "msgb0681bd4",
+  "@msg34cd846c": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msg34cd846c": "msg34cd846c",
+  "@msga22ddaae": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msga22ddaae": "msga22ddaae",
+  "@msgaae779d4": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msgaae779d4": "msgaae779d4",
+  "@msg7ae97495": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msg7ae97495": "msg7ae97495",
+  "@msga5e5bf71": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msga5e5bf71": "msga5e5bf71",
+  "@msg652be256": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msg652be256": "msg652be256",
+  "@msgeb3d7d70": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\app_batch_action_bar.dart"
+  },
+  "msgeb3d7d70": "msgeb3d7d70",
+  "@msg6eb319a1": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\app_batch_action_bar.dart"
+  },
+  "msg6eb319a1": "msg6eb319a1",
+  "@msg7fbfdce6": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\app_list_tab.dart"
+  },
+  "msg7fbfdce6": "msg7fbfdce6",
+  "@msg753cdb55": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
+  },
+  "msg753cdb55": "msg753cdb55",
+  "@apk3": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
+  },
+  "apk3": "apk3",
+  "@apk4": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
+  },
+  "apk4": "apk4",
+  "@apk5": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
+  },
+  "apk5": "apk5",
+  "@apk6": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
+  },
+  "apk6": "apk6",
+  "@msga0b18169": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\backup_list_tab.dart"
+  },
+  "msga0b18169": "msga0b18169",
+  "@msgb443cd06": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\backup_list_tab.dart"
+  },
+  "msgb443cd06": "msgb443cd06",
+  "@e20": {
+    "type": "text"
+  },
+  "e20": "e20",
+  "@msg24c6ab0f": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg24c6ab0f": "msg24c6ab0f",
+  "@count3": {
+    "type": "text"
+  },
+  "count3": "count3",
+  "@msgffb01e5b": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msgffb01e5b": "msgffb01e5b",
+  "@msg7902d9c0": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg7902d9c0": "msg7902d9c0",
+  "@msgc856a077": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msgc856a077": "msgc856a077",
+  "@msg7f2c95cd": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg7f2c95cd": "msg7f2c95cd",
+  "@msg084e9388": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg084e9388": "msg084e9388",
+  "@msgf387265a": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msgf387265a": "msgf387265a",
+  "@msg1045ba75": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg1045ba75": "msg1045ba75",
+  "@msg96f0ad7d": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg96f0ad7d": "msg96f0ad7d",
+  "@msg349ab61d": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg349ab61d": "msg349ab61d",
+  "@msg0cee3cd1": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg0cee3cd1": "msg0cee3cd1",
+  "@selectedlanguage": {
+    "type": "text"
+  },
+  "selectedlanguage": "selectedlanguage",
+  "@msg0dac421f": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg0dac421f": "msg0dac421f",
+  "@msg52709ae1": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg52709ae1": "msg52709ae1",
+  "@msg4ecba8f6": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg4ecba8f6": "msg4ecba8f6",
+  "@e21": {
+    "type": "text"
+  },
+  "e21": "e21",
+  "@msg4828116a": {
+    "description": "ui\\screens\\vault_explorer_screen.dart"
+  },
+  "msg4828116a": "msg4828116a",
+  "@msg3bf31dfe": {
+    "description": "ui\\screens\\vault_lock_screen.dart"
+  },
+  "msg3bf31dfe": "msg3bf31dfe",
+  "@pin": {
+    "description": "ui\\screens\\vault_lock_screen.dart"
+  },
+  "pin": "pin",
+  "@pin1": {
+    "description": "ui\\screens\\vault_lock_screen.dart"
+  },
+  "pin1": "pin1",
+  "@pin2": {
+    "description": "ui\\screens\\vault_lock_screen.dart"
+  },
+  "pin2": "pin2",
+  "@msgbb590f19": {
+    "description": "ui\\screens\\vault_lock_screen.dart"
+  },
+  "msgbb590f19": "msgbb590f19",
+  "@msgaa43fa46": {
+    "description": "ui\\screens\\vault_lock_screen.dart"
+  },
+  "msgaa43fa46": "msgaa43fa46",
+  "@msgc16eed0e": {
+    "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
+  },
+  "msgc16eed0e": "msgc16eed0e",
+  "@msg8f106217": {
+    "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
+  },
+  "msg8f106217": "msg8f106217",
+  "@msg1f41f25d": {
+    "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
+  },
+  "msg1f41f25d": "msg1f41f25d",
+  "@msg4d2abc8c": {
+    "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
+  },
+  "msg4d2abc8c": "msg4d2abc8c",
+  "@http1": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "http1": "http1",
+  "@msg2904d894": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg2904d894": "msg2904d894",
+  "@msg2c146598": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg2c146598": "msg2c146598",
+  "@msg4a5d26f4": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg4a5d26f4": "msg4a5d26f4",
+  "@type": {
+    "type": "text"
+  },
+  "type": "type",
+  "@msgc8390d74": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msgc8390d74": "msgc8390d74",
+  "@msg5345cdce": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg5345cdce": "msg5345cdce",
+  "@http2": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "http2": "http2",
+  "@wifi": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "wifi": "wifi",
+  "@msg73c512df": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg73c512df": "msg73c512df",
+  "@url1": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "url1": "url1",
+  "@msg22b03c02": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg22b03c02": "msg22b03c02",
+  "@sharedir": {
+    "type": "text"
+  },
+  "sharedir": "sharedir",
+  "@msge6a29aa4": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msge6a29aa4": "msge6a29aa4",
+  "@wifi1": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "wifi1": "wifi1",
+  "@msg974465c1": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg974465c1": "msg974465c1",
+  "@msg27d5bd3c": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg27d5bd3c": "msg27d5bd3c",
+  "@msg66a09a42": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg66a09a42": "msg66a09a42",
+  "@msg879058ce": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg879058ce": "msg879058ce",
+  "@msg7ed199f8": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg7ed199f8": "msg7ed199f8",
+  "@msgb77e4adf": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msgb77e4adf": "msgb77e4adf",
+  "@msga61778bc": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msga61778bc": "msga61778bc",
+  "@msga3c80551": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msga3c80551": "msga3c80551",
+  "@msg6466e61e": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg6466e61e": "msg6466e61e",
+  "@msg67bd9375": {
+    "description": "ui\\widgets\\background_operation_progress_dialog.dart"
+  },
+  "msg67bd9375": "msg67bd9375",
+  "@msg3fa72416": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg3fa72416": "msg3fa72416",
+  "@msg7dbbef0e": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg7dbbef0e": "msg7dbbef0e",
+  "@msg1a2d9a44": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg1a2d9a44": "msg1a2d9a44",
+  "@msgcb029197": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msgcb029197": "msgcb029197",
+  "@msgb6d8a14f": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msgb6d8a14f": "msgb6d8a14f",
+  "@n": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "n": "n",
+  "@de": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "de": "de",
+  "@e22": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "e22": "e22",
+  "@n1": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "n1": "n1",
+  "@msg0e9dc63a": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg0e9dc63a": "msg0e9dc63a",
+  "@msg4a63edba": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg4a63edba": "msg4a63edba",
+  "@msga420ad79": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msga420ad79": "msga420ad79",
+  "@msg9857973d": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg9857973d": "msg9857973d",
+  "@msg1605701e": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg1605701e": "msg1605701e",
+  "@msgd35f80c8": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msgd35f80c8": "msgd35f80c8",
+  "@msg32c61dab": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg32c61dab": "msg32c61dab",
+  "@msg92642e0e": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg92642e0e": "msg92642e0e",
+  "@msgde88d67a": {
+    "description": "ui\\widgets\\conflict_dialog.dart"
+  },
+  "msgde88d67a": "msgde88d67a",
+  "@msge59e35b5": {
+    "description": "ui\\widgets\\conflict_dialog.dart"
+  },
+  "msge59e35b5": "msge59e35b5",
+  "@msg27dfaae5": {
+    "description": "ui\\widgets\\conflict_dialog.dart"
+  },
+  "msg27dfaae5": "msg27dfaae5",
+  "@msg6cfbf05d": {
+    "description": "ui\\widgets\\conflict_dialog.dart"
+  },
+  "msg6cfbf05d": "msg6cfbf05d",
+  "@msg25f747ce": {
+    "description": "ui\\widgets\\create_archive_dialog.dart"
+  },
+  "msg25f747ce": "msg25f747ce",
+  "@msged5f808e": {
+    "description": "ui\\widgets\\create_archive_dialog.dart"
+  },
+  "msged5f808e": "msged5f808e",
+  "@mb": {
+    "description": "ui\\widgets\\create_archive_dialog.dart"
+  },
+  "mb": "mb",
+  "@msgac52af6a": {
+    "description": "ui\\widgets\\create_archive_dialog.dart"
+  },
+  "msgac52af6a": "msgac52af6a",
+  "@msgdf2ef7f5": {
+    "description": "ui\\widgets\\create_archive_dialog.dart"
+  },
+  "msgdf2ef7f5": "msgdf2ef7f5",
+  "@msgb52d4a73": {
+    "description": "ui\\widgets\\directory_tab_bar.dart"
+  },
+  "msgb52d4a73": "msgb52d4a73",
+  "@msg4e9c344a": {
+    "description": "ui\\widgets\\directory_tab_bar.dart"
+  },
+  "msg4e9c344a": "msg4e9c344a",
+  "@msg7716532d": {
+    "description": "ui\\widgets\\directory_tab_bar.dart"
+  },
+  "msg7716532d": "msg7716532d",
+  "@msgd78603eb": {
+    "description": "ui\\widgets\\directory_tab_bar.dart"
+  },
+  "msgd78603eb": "msgd78603eb",
+  "@selectedcount": {
+    "type": "text"
+  },
+  "selectedcount": "selectedcount",
+  "@e23": {
+    "type": "text"
+  },
+  "e23": "e23",
+  "@msgc4d7eece": {
+    "description": "ui\\widgets\\extract_archive_dialog.dart"
+  },
+  "msgc4d7eece": "msgc4d7eece",
+  "@msgf15821d0": {
+    "description": "ui\\widgets\\extract_archive_dialog.dart"
+  },
+  "msgf15821d0": "msgf15821d0",
+  "@msgff69affd": {
+    "description": "ui\\widgets\\extract_archive_dialog.dart"
+  },
+  "msgff69affd": "msgff69affd",
+  "@msg67eda5e6": {
+    "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+  },
+  "msg67eda5e6": "msg67eda5e6",
+  "@msg8b2fcb31": {
+    "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+  },
+  "msg8b2fcb31": "msg8b2fcb31",
+  "@pdfword": {
+    "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+  },
+  "pdfword": "pdfword",
+  "@jpegpngwebp": {
+    "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+  },
+  "jpegpngwebp": "jpegpngwebp",
+  "@mp3wavaac": {
+    "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+  },
+  "mp3wavaac": "mp3wavaac",
+  "@mp4mkvwebm": {
+    "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+  },
+  "mp4mkvwebm": "mp4mkvwebm",
+  "@zip7zrar": {
+    "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+  },
+  "zip7zrar": "zip7zrar",
+  "@msg6d3e48cc": {
+    "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+  },
+  "msg6d3e48cc": "msg6d3e48cc",
+  "@e24": {
+    "type": "text"
+  },
+  "e24": "e24",
+  "@msg32a1bd25": {
+    "description": "ui\\widgets\\file_item.dart"
+  },
+  "msg32a1bd25": "msg32a1bd25",
+  "@count4": {
+    "type": "text"
+  },
+  "count4": "count4",
+  "@msg9d69d7a0": {
+    "description": "ui\\widgets\\file_operation_progress_dialog.dart"
+  },
+  "msg9d69d7a0": "msg9d69d7a0",
+  "@zenfile6": {
+    "description": "ui\\widgets\\open_with_sheet.dart"
+  },
+  "zenfile6": "zenfile6",
+  "@msg42be43e6": {
+    "description": "ui\\widgets\\open_with_sheet.dart"
+  },
+  "msg42be43e6": "msg42be43e6",
+  "@msgd1fca831": {
+    "description": "ui\\widgets\\open_with_sheet.dart"
+  },
+  "msgd1fca831": "msgd1fca831",
+  "@msgdb75b769": {
+    "description": "ui\\widgets\\open_with_sheet.dart"
+  },
+  "msgdb75b769": "msgdb75b769",
+  "@msg959429a5": {
+    "description": "ui\\widgets\\premium_storage_overview.dart"
+  },
+  "msg959429a5": "msg959429a5",
+  "@msgc31116e3": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msgc31116e3": "msgc31116e3",
+  "@msgf1d4ff50": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msgf1d4ff50": "msgf1d4ff50",
+  "@msg490ac572": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msg490ac572": "msg490ac572",
+  "@msg445a43cb": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msg445a43cb": "msg445a43cb",
+  "@msg944d5ecd": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msg944d5ecd": "msg944d5ecd",
+  "@msg4f356348": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msg4f356348": "msg4f356348",
+  "@msg94733bec": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msg94733bec": "msg94733bec",
+  "@msg5c29ad2f": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msg5c29ad2f": "msg5c29ad2f",
+  "@msg21de5dd7": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msg21de5dd7": "msg21de5dd7",
+  "@msg4bb81f99": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msg4bb81f99": "msg4bb81f99",
+  "@msgf544c399": {
+    "description": "ui\\widgets\\recent_files_section.dart"
+  },
+  "msgf544c399": "msgf544c399",
+  "@msgc0615eb3": {
+    "description": "ui\\widgets\\recent_files_section.dart"
+  },
+  "msgc0615eb3": "msgc0615eb3",
+  "@msg54355dd8": {
+    "description": "ui\\widgets\\recent_files_section.dart"
+  },
+  "msg54355dd8": "msg54355dd8",
+  "@msgd5eac3a3": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
+  "msgd5eac3a3": "msgd5eac3a3",
+  "@android11androiddataandroidobbzenfile": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
+  "android11androiddataandroidobbzenfile": "android11androiddataandroidobbzenfile",
+  "@root": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
+  "root": "root",
+  "@shizukuroot": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
+  "shizukuroot": "shizukuroot",
+  "@selectedcount1": {
+    "type": "text"
+  },
+  "selectedcount1": "selectedcount1",
+  "@selectedcount2": {
+    "type": "text"
+  },
+  "selectedcount2": "selectedcount2",
+  "@msga9b87614": {
+    "description": "ui\\widgets\\selection_action_bar.dart"
+  },
+  "msga9b87614": "msga9b87614",
+  "@msg84e4fac9": {
+    "description": "ui\\widgets\\selection_action_bar.dart"
+  },
+  "msg84e4fac9": "msg84e4fac9",
+  "@msg3be9abab": {
+    "description": "ui\\widgets\\selection_action_bar.dart"
+  },
+  "msg3be9abab": "msg3be9abab",
+  "@msg7704aa2c": {
+    "description": "ui\\widgets\\selection_action_bar.dart"
+  },
+  "msg7704aa2c": "msg7704aa2c",
+  "@label1": {
+    "type": "text"
+  },
+  "label1": "label1",
+  "@selectedcount3": {
+    "type": "text"
+  },
+  "selectedcount3": "selectedcount3",
+  "@msg8b73264b": {
+    "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
+  },
+  "msg8b73264b": "msg8b73264b",
+  "@msgc5c0646c": {
+    "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
+  },
+  "msgc5c0646c": "msgc5c0646c",
+  "@msg8e6d4604": {
+    "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
+  },
+  "msg8e6d4604": "msg8e6d4604",
+  "@msg1058354c": {
+    "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
+  },
+  "msg1058354c": "msg1058354c",
+  "@usedstoragestr": {
+    "type": "text"
+  },
+  "usedstoragestr": "usedstoragestr",
+  "@freestoragestr": {
+    "type": "text"
+  },
+  "freestoragestr": "freestoragestr",
+  "@msgc823e21b": {
+    "description": "ui\\widgets\\tab_options_sheet.dart"
+  },
+  "msgc823e21b": "msgc823e21b",
+  "@msg7d6c1284": {
+    "description": "ui\\widgets\\zenfile_address_bar.dart"
+  },
+  "msg7d6c1284": "msg7d6c1284",
+  "@path": {
+    "type": "text"
+  },
+  "path": "path",
+  "@msg6cbbf7d9": {
+    "description": "ui\\widgets\\zenfile_address_bar.dart"
+  },
+  "msg6cbbf7d9": "msg6cbbf7d9",
+  "@msgf13fc21c": {
+    "description": "ui\\widgets\\zenfile_drawer.dart"
+  },
+  "msgf13fc21c": "msgf13fc21c",
+  "@msg41e625d1": {
+    "description": "ui\\widgets\\zenfile_drawer.dart"
+  },
+  "msg41e625d1": "msg41e625d1",
+  "@msg8755e992": {
+    "description": "ui\\widgets\\zenfile_drawer.dart"
+  },
+  "msg8755e992": "msg8755e992",
+  "@msg1cf6fcd3": {
+    "description": "ui\\widgets\\zenfile_drawer.dart"
+  },
+  "msg1cf6fcd3": "msg1cf6fcd3",
+  "@msgeef7e30c": {
+    "description": "ui\\widgets\\zenfile_drawer.dart"
+  },
+  "msgeef7e30c": "msgeef7e30c"
+}

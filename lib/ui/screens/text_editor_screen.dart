@@ -11,6 +11,7 @@ import 'html_viewer_screen.dart';
 import 'markdown_viewer_screen.dart';
 import '../../services/intent_handler_service.dart';
 import '../../services/root_shizuku_service.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class CodeTextEditingController extends TextEditingController {
   String language;
@@ -392,7 +393,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
 
       if (mounted) {
         setState(() => _isModified = false);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('文件保存成功')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('L10n.of(context).msg24c6ab0f')));
       }
     } catch (e) {
       if (mounted) {
@@ -464,7 +465,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
 
   void _showSyntaxPicker() {
     final languages = [
-      {'key': 'plain', 'name': '纯文本'},
+      {'key': 'plain', 'name': 'L10n.of(context).msgffb01e5b'},
       {'key': 'html', 'name': 'HTML'},
       {'key': 'xml', 'name': 'XML'},
       {'key': 'json', 'name': 'JSON'},
@@ -487,7 +488,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text('选择语法', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+              child: Text('L10n.of(context).msg7902d9c0', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
             ),
             const Divider(height: 1),
             Expanded(
@@ -562,7 +563,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
         actions: [
           IconButton(
             icon: Icon(_showFindReplace ? Broken.search_zoom_out : Broken.search_normal),
-            tooltip: '查找 / 替换',
+            tooltip: 'L10n.of(context).msgc856a077',
             onPressed: () => setState(() => _showFindReplace = !_showFindReplace),
           ),
           if (_isSaving)
@@ -577,12 +578,12 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
           else
             IconButton(
               icon: const Icon(Broken.save_2),
-              tooltip: '保存文件',
+              tooltip: 'L10n.of(context).msg7f2c95cd',
               onPressed: _saveFile,
             ),
           PopupMenuButton<String>(
             icon: const Icon(Broken.more),
-            tooltip: '更多选项',
+            tooltip: 'L10n.of(context).msg3007c452',
             onSelected: (value) async {
               if (value == 'html_preview') {
                 if (context.mounted) {
@@ -629,12 +630,12 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
               if (isHtml)
                 const PopupMenuItem(
                   value: 'html_preview',
-                  child: Row(children: [Icon(Broken.global, size: 18, color: Colors.blueAccent), SizedBox(width: 12), Text('HTML 预览', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent))]),
+                  child: Row(children: [Icon(Broken.global, size: 18, color: Colors.blueAccent), SizedBox(width: 12), Text('L10n.of(context).html', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent))]),
                 ),
               if (isMd)
                 const PopupMenuItem(
                   value: 'md_preview',
-                  child: Row(children: [Icon(Broken.document_text, size: 18, color: Colors.blueAccent), SizedBox(width: 12), Text('Markdown 预览', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent))]),
+                  child: Row(children: [Icon(Broken.document_text, size: 18, color: Colors.blueAccent), SizedBox(width: 12), Text('L10n.of(context).markdown', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent))]),
                 ),
               PopupMenuItem(
                 value: 'reset_zoom',
@@ -642,19 +643,19 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
               ),
               PopupMenuItem(
                 value: 'lock_zoom',
-                child: Row(children: [Icon(_zoomLocked ? Broken.lock_1 : Broken.unlock, size: 18), const SizedBox(width: 12), Text(_zoomLocked ? '解锁缩放' : '锁定缩放')]),
+                child: Row(children: [Icon(_zoomLocked ? Broken.lock_1 : Broken.unlock, size: 18), const SizedBox(width: 12), Text(_zoomLocked ? 'L10n.of(context).msg084e9388' : '锁定缩放')]),
               ),
               PopupMenuItem(
                 value: 'word_wrap',
-                child: Row(children: [Icon(_wordWrap ? Broken.textalign_justifycenter : Broken.textalign_left, size: 18), const SizedBox(width: 12), Text(_wordWrap ? '自动换行: 开' : '自动换行: 关')]),
+                child: Row(children: [Icon(_wordWrap ? Broken.textalign_justifycenter : Broken.textalign_left, size: 18), const SizedBox(width: 12), Text(_wordWrap ? 'L10n.of(context).msgf387265a' : 'L10n.of(context).msg1045ba75')]),
               ),
               PopupMenuItem(
                 value: 'read_only',
-                child: Row(children: [Icon(_readOnly ? Broken.lock_1 : Broken.edit, size: 18), const SizedBox(width: 12), Text(_readOnly ? '编辑锁定: 开' : '编辑锁定: 关')]),
+                child: Row(children: [Icon(_readOnly ? Broken.lock_1 : Broken.edit, size: 18), const SizedBox(width: 12), Text(_readOnly ? 'L10n.of(context).msg96f0ad7d' : 'L10n.of(context).msg349ab61d')]),
               ),
               PopupMenuItem(
                 value: 'toggle_line_numbers',
-                child: Row(children: [Icon(_showLineNumbers ? Broken.eye_slash : Broken.eye, size: 18), const SizedBox(width: 12), Text(_showLineNumbers ? '隐藏行号' : '显示行号')]),
+                child: Row(children: [Icon(_showLineNumbers ? Broken.eye_slash : Broken.eye, size: 18), const SizedBox(width: 12), Text(_showLineNumbers ? 'L10n.of(context).msg0cee3cd1' : 'L10n.of(context).msgc31f9440')]),
               ),
               PopupMenuItem(
                 value: 'syntax',
@@ -708,7 +709,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                                   child: TextField(
                                     controller: _replaceController,
                                     decoration: const InputDecoration(
-                                      hintText: '替换为...',
+                                      hintText: 'L10n.of(context).msg0dac421f',
                                       border: OutlineInputBorder(),
                                       contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 0),
                                     ),
@@ -718,7 +719,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                               const SizedBox(width: 8),
                               ElevatedButton(onPressed: _replace, child: const Text('替换')),
                               const SizedBox(width: 6),
-                              ElevatedButton(onPressed: _replaceAll, child: const Text('全部替换')),
+                              ElevatedButton(onPressed: _replaceAll, child: const Text('L10n.of(context).msg52709ae1')),
                             ],
                           ),
                         ],
@@ -820,7 +821,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                                   padding: const EdgeInsets.symmetric(horizontal: 14),
                                   alignment: Alignment.center,
                                   child: Text(
-                                    sym == '\t' ? '制表符' : sym,
+                                    sym == '\t' ? 'L10n.of(context).msg4ecba8f6' : sym,
                                     style: TextStyle(
                                       fontFamily: 'monospace',
                                       fontWeight: FontWeight.bold,

@@ -19,6 +19,7 @@ import '../../core/icon_fonts/broken_icons.dart';
 import 'package:share_plus/share_plus.dart';
 import '../widgets/file_action_dialogs.dart';
 import '../widgets/batch_rename_dialog.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 enum MediaType { images, videos, audios, documents, archives, downloads, apks, screenshots }
 
@@ -103,11 +104,11 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       case MediaType.documents:
         return '文档';
       case MediaType.archives:
-        return '压缩包';
+        return 'L10n.of(context).msgc806d0fa';
       case MediaType.downloads:
         return '下载';
       case MediaType.apks:
-        return '安装包';
+        return 'L10n.of(context).msg03070d08';
       case MediaType.screenshots:
         return '截图';
     }
@@ -218,7 +219,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('确认删除'),
+        title: const Text('L10n.of(context).msg631cd220'),
         content: Text('确定要永久删除选中的 $count 个项目吗？'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
@@ -325,7 +326,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('没有可分享的文件。')),
+          const SnackBar(content: Text('L10n.of(context).msgfadbb0bc')),
         );
       }
     }
@@ -369,7 +370,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     if (filePaths.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('未找到可重命名的物理文件')),
+          const SnackBar(content: Text('L10n.of(context).msg3ad97542')),
         );
       }
       return;
@@ -381,10 +382,10 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         final currentName = path_helper.basename(filePath);
         final newName = await FileActionDialogs.showTextInputDialog(
           context,
-          title: '重命名',
-          hint: '输入新名称',
+          title: 'L10n.of(context).msgc8ce4b36',
+          hint: 'L10n.of(context).msgf139c5cf',
           initialValue: currentName,
-          actionText: '重命名',
+          actionText: 'L10n.of(context).msgc8ce4b36',
         );
         if (newName != null && newName.isNotEmpty && mounted) {
           await context.read<FileManagerProvider>().renameFile(filePath, newName);
@@ -544,13 +545,13 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                 _buildCopyableRow('名称', nameDisplay, ctx),
                 _buildCopyableRow('路径', fullPath, ctx),
                 _buildCopyableRow('大小', '${FileUtils.formatBytes(totalBytes, 2)} ($totalBytes bytes)', ctx),
-                if (lastMod != null) _buildCopyableRow('修改时间', FileUtils.formatDate(lastMod), ctx),
+                if (lastMod != null) _buildCopyableRow('L10n.of(context).msg1303e638', FileUtils.formatDate(lastMod), ctx),
                 if (mimeType.isNotEmpty && mimeType != 'file/') _buildCopyableRow('类型', mimeType, ctx),
-                if (dimensionsOrDuration.isNotEmpty) _buildCopyableRow('媒体信息', dimensionsOrDuration, ctx),
+                if (dimensionsOrDuration.isNotEmpty) _buildCopyableRow('L10n.of(context).msg5bab3781', dimensionsOrDuration, ctx),
                 if (permissionsStr.isNotEmpty) _buildCopyableRow('权限', permissionsStr, ctx),
               ] else ...[
-                _buildCopyableRow('已选择项目', '$count items', ctx),
-                _buildCopyableRow('总大小', '${FileUtils.formatBytes(totalBytes, 2)} ($totalBytes bytes)', ctx),
+                _buildCopyableRow('L10n.of(context).msg880a18f3', '$count items', ctx),
+                _buildCopyableRow('L10n.of(context).msgea9ecb93', '${FileUtils.formatBytes(totalBytes, 2)} ($totalBytes bytes)', ctx),
               ],
             ],
           ),
@@ -600,7 +601,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                       if (filePath != null) ...[
                         const SizedBox(height: 4),
                         Text(
-                          '长按打开方式...',
+                          'L10n.of(context).msg5556baa3',
                           style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.4)),
                         ),
                       ],
@@ -668,7 +669,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                   final confirm = await showDialog<bool>(
                     context: context,
                     builder: (c) => AlertDialog(
-                      title: const Text('确认删除'),
+                      title: const Text('L10n.of(context).msg631cd220'),
                       content: Text('永久删除"$name"？'),
                       actions: [
                         TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
@@ -702,7 +703,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               if (filePath != null)
                 ListTile(
                   leading: Icon(Broken.folder_open, color: theme.colorScheme.primary),
-                  title: const Text('在位置中显示'),
+                  title: const Text('L10n.of(context).msgcd8264f1'),
                   onTap: () {
                     context.read<FileManagerProvider>().showFileInLocation(filePath);
                     Navigator.pop(ctx);
@@ -713,16 +714,16 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               if (filePath != null)
                 ListTile(
                   leading: Icon(Broken.edit, color: theme.colorScheme.primary),
-                  title: const Text('重命名'),
+                  title: const Text('L10n.of(context).msgc8ce4b36'),
                   onTap: () async {
                     Navigator.pop(ctx);
                     final currentName = path_helper.basename(filePath);
                     final newName = await FileActionDialogs.showTextInputDialog(
                       context,
-                      title: '重命名',
-                      hint: '输入新名称',
+                      title: 'L10n.of(context).msgc8ce4b36',
+                      hint: 'L10n.of(context).msgf139c5cf',
                       initialValue: currentName,
-                      actionText: '重命名',
+                      actionText: 'L10n.of(context).msgc8ce4b36',
                     );
                     if (newName != null && newName.isNotEmpty && mounted) {
                       await context.read<FileManagerProvider>().renameFile(filePath, newName);
@@ -733,7 +734,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               if (filePath != null)
                 ListTile(
                   leading: Icon(Broken.eye, color: theme.colorScheme.primary),
-                  title: const Text('打开方式...'),
+                  title: const Text('L10n.of(context).msg2a4cfb07'),
                   onTap: () {
                     Navigator.pop(ctx);
                     context.read<FileManagerProvider>().openFile(context, filePath, forceOpenWith: true);
@@ -775,7 +776,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                   } else {
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('文件未找到或不可分享。')),
+                        const SnackBar(content: Text('L10n.of(context).msg8bf52387')),
                       );
                     }
                   }
@@ -815,7 +816,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             if (canPaste)
               IconButton(
                 icon: const Icon(Broken.clipboard),
-                tooltip: '粘贴到此处',
+                tooltip: 'L10n.of(context).msg419be096',
                 onPressed: _handlePaste,
               ),
             Consumer<MediaProvider>(
@@ -828,7 +829,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                     CheckedPopupMenuItem(
                       value: MediaSortOrder.newest,
                       checked: provider.sortOrder == MediaSortOrder.newest,
-                      child: const Text('最新优先'),
+                      child: const Text('L10n.of(context).msg5093bc80'),
                     ),
                     CheckedPopupMenuItem(
                       value: MediaSortOrder.oldest,
@@ -838,17 +839,17 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                     CheckedPopupMenuItem(
                       value: MediaSortOrder.dateWise,
                       checked: provider.sortOrder == MediaSortOrder.dateWise,
-                      child: const Text('按日期'),
+                      child: const Text('L10n.of(context).msgbc74b5a8'),
                     ),
                     CheckedPopupMenuItem(
                       value: MediaSortOrder.newestGrouped,
                       checked: provider.sortOrder == MediaSortOrder.newestGrouped,
-                      child: const Text('最新优先（按月分组）'),
+                      child: const Text('L10n.of(context).msgef7ae768'),
                     ),
                     CheckedPopupMenuItem(
                       value: MediaSortOrder.oldestGrouped,
                       checked: provider.sortOrder == MediaSortOrder.oldestGrouped,
-                      child: const Text('最旧优先（按月分组）'),
+                      child: const Text('L10n.of(context).msgb8140039'),
                     ),
                     CheckedPopupMenuItem(
                       value: MediaSortOrder.sizeLargest,
@@ -1003,7 +1004,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             children: [
               _buildActionItem(theme, icon: Broken.document_copy, label: '复制', onTap: () => _handleCopyCut(false)),
               _buildActionItem(theme, icon: Broken.scissor, label: '剪切', onTap: () => _handleCopyCut(true)),
-              _buildActionItem(theme, icon: Broken.edit, label: '重命名', onTap: _handleBatchRename),
+              _buildActionItem(theme, icon: Broken.edit, label: 'L10n.of(context).msgc8ce4b36', onTap: _handleBatchRename),
               _buildActionItem(theme, icon: Broken.trash, label: '删除', color: Colors.red, onTap: _handleDelete),
               _buildActionItem(theme, icon: Icons.share_outlined, label: '分享', onTap: _handleShare),
               _buildActionItem(theme, icon: Broken.info_circle, label: '信息', onTap: () => _showPropertiesDialog()),
@@ -1557,7 +1558,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               pageBuilder: (context, animation, secondaryAnimation) => AudioPlayerScreen(
                 audioPath: path,
                 title: audio.title,
-                artist: audio.artist ?? '未知艺术家',
+                artist: audio.artist ?? 'L10n.of(context).msg5e32276d',
                 allSongs: audios,
                 initialIndex: index,
               ),
@@ -1631,7 +1632,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           try {
             modified = File(path).statSync().modified;
           } catch (_) {}
-          final dateStr = modified != null ? FileUtils.formatDate(modified) : '未知日期';
+          final dateStr = modified != null ? FileUtils.formatDate(modified) : 'L10n.of(context).msg424a0110';
           final index = audios.indexOf(audio);
           return _buildAudioTile(audio, theme, isSelected, showDate, dateStr, index, audios);
         },
@@ -1648,7 +1649,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         try {
           modified = File(path).statSync().modified;
         } catch (_) {}
-        final dateStr = modified != null ? FileUtils.formatDate(modified) : '未知日期';
+        final dateStr = modified != null ? FileUtils.formatDate(modified) : 'L10n.of(context).msg424a0110';
         return _buildAudioTile(audio, theme, isSelected, isDateWise, dateStr, index, audios);
       },
     );
@@ -1920,7 +1921,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    '全部项目',
+                    'L10n.of(context).msgb19671d6',
                     style: TextStyle(
                       color: !_showFoldersMode ? theme.colorScheme.onPrimary : theme.colorScheme.onSurfaceVariant,
                       fontSize: 13,
@@ -1944,7 +1945,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    '文件夹',
+                    'L10n.of(context).msg1f4c1042',
                     style: TextStyle(
                       color: _showFoldersMode ? theme.colorScheme.onPrimary : theme.colorScheme.onSurfaceVariant,
                       fontSize: 13,

@@ -5,6 +5,7 @@ import '../../../../models/app_info_model.dart';
 import '../../../../services/app_manager_service.dart';
 import '../../../../services/apk_installer_service.dart';
 import '../../../../core/utils.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class BackupListTab extends StatefulWidget {
   final String searchQuery;
@@ -169,7 +170,7 @@ class _BackupListTabState extends State<BackupListTab> {
                 _buildBottomSheetActionItem(
                   theme: theme,
                   icon: Broken.export_1,
-                  label: '分享备份文件',
+                  label: 'L10n.of(context).msga0b18169',
                   color: Colors.teal,
                   onTap: () {
                     Navigator.pop(context);
@@ -190,7 +191,7 @@ class _BackupListTabState extends State<BackupListTab> {
                 _buildBottomSheetActionItem(
                   theme: theme,
                   icon: Broken.trash,
-                  label: '删除备份文件',
+                  label: 'L10n.of(context).msgb443cd06',
                   color: Colors.redAccent,
                   onTap: () async {
                     Navigator.pop(context);

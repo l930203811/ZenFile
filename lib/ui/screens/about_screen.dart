@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../core/icon_fonts/broken_icons.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class AboutZenFileScreen extends StatelessWidget {
   const AboutZenFileScreen({super.key});
@@ -53,7 +54,7 @@ class AboutZenFileScreen extends StatelessWidget {
             flexibleSpace: FlexibleSpaceBar(
               centerTitle: true,
               title: Text(
-                '关于 ZenFile',
+                'L10n.of(context).zenfile1',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 20,
@@ -171,7 +172,7 @@ class AboutZenFileScreen extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'v1.0.3 (查看)',
+                            'L10n.of(context).v103',
                             style: TextStyle(
                               color: theme.colorScheme.primary,
                               fontSize: 12.5,
@@ -197,7 +198,7 @@ class AboutZenFileScreen extends StatelessWidget {
                       border: Border.all(color: borderCol),
                     ),
                     child: Text(
-                      'ZenFile 是一款基于 Flutter 构建的精美、流畅、开源的文件管理器和离线媒体中心。专为极致性能、干净的毛玻璃美学和无缝用户体验而设计。',
+                      'L10n.of(context).zenfileflutter',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: theme.colorScheme.onSurface.withOpacity(0.85),
@@ -215,7 +216,7 @@ class AboutZenFileScreen extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.only(left: 4.0),
                       child: Text(
-                        '核心亮点',
+                        'L10n.of(context).msg30d17f96',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -238,26 +239,26 @@ class AboutZenFileScreen extends StatelessWidget {
                       _buildFeatureTile(
                         context,
                         icon: Broken.flash,
-                        title: '极速体验',
-                        subtitle: '无状态缓存与异步扫描',
+                        title: 'L10n.of(context).msga12ebf50',
+                        subtitle: 'L10n.of(context).msgfccb5a01',
                       ),
                       _buildFeatureTile(
                         context,
                         icon: Broken.lock,
-                        title: '保险箱安全',
-                        subtitle: '加密安全工作区',
+                        title: 'L10n.of(context).msgaba638c4',
+                        subtitle: 'L10n.of(context).msg6d8fbdac',
                       ),
                       _buildFeatureTile(
                         context,
                         icon: Broken.wifi_square,
-                        title: '服务器中心',
-                        subtitle: '支持 FTP、局域网、SFTP 和 WebDAV',
+                        title: 'L10n.of(context).msgd309e9ea',
+                        subtitle: 'L10n.of(context).ftpsftpwebdav',
                       ),
                       _buildFeatureTile(
                         context,
                         icon: Broken.magicpen,
-                        title: '精美界面',
-                        subtitle: 'AMOLED 纯黑 & 绚丽主题',
+                        title: 'L10n.of(context).msge8f352b9',
+                        subtitle: 'L10n.of(context).amoled',
                       ),
                     ],
                   ),
@@ -269,7 +270,7 @@ class AboutZenFileScreen extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.only(left: 4.0),
                       child: Text(
-                        '联系与分享',
+                        'L10n.of(context).msg4a5f936c',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -284,25 +285,25 @@ class AboutZenFileScreen extends StatelessWidget {
                   _buildSocialAction(
                     context,
                     icon: Broken.magic_star,
-                    label: '在仓库中加星',
+                    label: 'L10n.of(context).msge8069659',
                     onTap: () => _launchUrl(context, 'https://github.com/l930203811/ZenFile'),
                   ),
                   const SizedBox(height: 10),
                   _buildSocialAction(
                     context,
                     icon: Icons.send_rounded,
-                    label: '加入 Telegram 频道',
+                    label: 'L10n.of(context).telegram',
                     onTap: () => _launchUrl(context, 'https://t.me/+47n76Au6mhg0MDA1'),
                   ),
                   const SizedBox(height: 10),
                   _buildSocialAction(
                     context,
                     icon: Broken.send,
-                    label: '与好友分享应用',
+                    label: 'L10n.of(context).msg5f84adea',
                     onTap: () {
                       Share.share(
-                        '推荐 ZenFile，一款精美的离线文件管理器和媒体中心：https://github.com/l930203811/ZenFile/releases',
-                        subject: 'ZenFile - 精美文件管理器',
+                        'L10n.of(context).zenfilehttpsgithubcoml930203811zenfilereleases',
+                        subject: 'L10n.of(context).msg4d48a010',
                       );
                     },
                   ),
@@ -310,20 +311,20 @@ class AboutZenFileScreen extends StatelessWidget {
                   _buildSocialAction(
                     context,
                     icon: Icons.code_rounded,
-                    label: '查看 GitHub 源代码',
+                    label: 'L10n.of(context).github',
                     onTap: () => _launchUrl(context, 'https://github.com/l930203811/ZenFile'),
                   ),
                   const SizedBox(height: 10),
                   _buildSocialAction(
                     context,
                     icon: Icons.email_rounded,
-                    label: '联系邮箱：1@sequel.dpdns.org',
+                    label: 'L10n.of(context).sequeldpdnsorg',
                     onTap: () {},
                     onLongPress: () {
                       Clipboard.setData(const ClipboardData(text: '1@sequel.dpdns.org'));
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('邮箱已复制到剪贴板'),
+                          content: Text('L10n.of(context).msged8518d7'),
                           behavior: SnackBarBehavior.floating,
                         ),
                       );
@@ -339,7 +340,7 @@ class AboutZenFileScreen extends StatelessWidget {
                       Clipboard.setData(const ClipboardData(text: '792408214'));
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('QQ 群号已复制到剪贴板'),
+                          content: Text('L10n.of(context).qq'),
                           behavior: SnackBarBehavior.floating,
                         ),
                       );
@@ -349,7 +350,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   _buildSocialAction(
                     context,
                     icon: Icons.favorite_rounded,
-                    label: '请作者喝杯咖啡 ☕',
+                    label: 'L10n.of(context).msg1f4c0192',
                     onTap: () => _showDonationDialog(context, theme),
                   ),
 
@@ -357,7 +358,7 @@ class AboutZenFileScreen extends StatelessWidget {
 
                   // ── Elegant Footer Tribute ──
                   Text(
-                    '用心打造 ❤️ by Sequel',
+                    'L10n.of(context).bysequel',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -367,7 +368,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '版权所有 © 2026 ZenFile。保留所有权利。',
+                    'L10n.of(context).zenfile2',
                     style: TextStyle(
                       fontSize: 11,
                       color: theme.colorScheme.onSurface.withOpacity(0.35),
@@ -506,10 +507,10 @@ class AboutZenFileScreen extends StatelessWidget {
                 Center(
                   child: Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 16), decoration: BoxDecoration(color: Colors.grey.withOpacity(0.3), borderRadius: BorderRadius.circular(2))),
                 ),
-                Text('打赏作者', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                Text('L10n.of(context).msg2eceaa85', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 Text(
-                  '您的支持是我持续更新的动力 ❤️',
+                  'L10n.of(context).msg138d3725',
                   style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withOpacity(0.6)),
                 ),
                 const SizedBox(height: 24),
@@ -547,7 +548,7 @@ class AboutZenFileScreen extends StatelessWidget {
                             children: [
                               Icon(Icons.payment, size: 16, color: theme.colorScheme.primary),
                               const SizedBox(width: 6),
-                              Text('支付宝', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withOpacity(0.85))),
+                              Text('L10n.of(context).msgccd097a7', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withOpacity(0.85))),
                             ],
                           ),
                         ],
@@ -586,7 +587,7 @@ class AboutZenFileScreen extends StatelessWidget {
                             children: [
                               Icon(Icons.chat_bubble_outline, size: 16, color: theme.colorScheme.primary),
                               const SizedBox(width: 6),
-                              Text('微信支付', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withOpacity(0.85))),
+                              Text('L10n.of(context).msgbffe28c8', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withOpacity(0.85))),
                             ],
                           ),
                         ],
@@ -608,7 +609,7 @@ class AboutZenFileScreen extends StatelessWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          '长按图片可保存到相册，感谢您的支持！',
+                          'L10n.of(context).msg0537b04e',
                           style: TextStyle(fontSize: 12.5, height: 1.4, color: theme.colorScheme.onSurface.withOpacity(0.65)),
                         ),
                       ),
@@ -647,7 +648,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   Center(
                     child: Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 16), decoration: BoxDecoration(color: Colors.grey.withOpacity(0.3), borderRadius: BorderRadius.circular(2))),
                   ),
-                  Text('更新日志', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                  Text('L10n.of(context).msg305734ce', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 20),
 
                   // ── 下载链接（置顶）──
@@ -673,79 +674,85 @@ class AboutZenFileScreen extends StatelessWidget {
                           children: [
                             Icon(Icons.download_rounded, size: 18, color: theme.colorScheme.primary),
                             const SizedBox(width: 8),
-                            Text('下载 ZenFile v1.0.3', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withOpacity(0.9))),
+                            Text('L10n.of(context).zenfilev103', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withOpacity(0.9))),
                           ],
                         ),
                         const SizedBox(height: 12),
-                        _buildDownloadLink(ctx, theme, '123云盘', 'https://1820255615.share.123pan.cn/123pan/WrRojv-JHpnA?pwd=hBR2', Icons.cloud_outlined),
+                        _buildDownloadLink(ctx, theme, 'L10n.of(context).msg9d287020', 'https://1820255615.share.123pan.cn/123pan/WrRojv-JHpnA?pwd=hBR2', Icons.cloud_outlined),
                         const SizedBox(height: 8),
-                        _buildDownloadLink(ctx, theme, '115网盘', 'https://115cdn.com/s/swsho4j3hc6?password=m490', Icons.cloud_queue),
+                        _buildDownloadLink(ctx, theme, 'L10n.of(context).msgb2b41b6a', 'https://115cdn.com/s/swsho4j3hc6?password=m490', Icons.cloud_queue),
                         const SizedBox(height: 8),
-                        _buildDownloadLink(ctx, theme, '百度网盘', 'https://pan.baidu.com/s/1kYSfzTriRXwQPRL_c5Awig?pwd=xg94', Icons.cloud_circle),
+                        _buildDownloadLink(ctx, theme, 'L10n.of(context).msg77ee718b', 'https://pan.baidu.com/s/1kYSfzTriRXwQPRL_c5Awig?pwd=xg94', Icons.cloud_circle),
                         const SizedBox(height: 8),
-                        _buildDownloadLink(ctx, theme, '夸克网盘', 'https://pan.quark.cn/s/e6081a88d463', Icons.cloud),
+                        _buildDownloadLink(ctx, theme, 'L10n.of(context).msgbff1432a', 'https://pan.quark.cn/s/e6081a88d463', Icons.cloud),
                         const SizedBox(height: 8),
-                        _buildDownloadLink(ctx, theme, '小飞机网盘', 'https://share.feijipan.com/s/5JcEKP4C', Icons.flight),
+                        _buildDownloadLink(ctx, theme, 'L10n.of(context).msge03395d0', 'https://share.feijipan.com/s/5JcEKP4C', Icons.flight),
                       ],
                     ),
                   ),
 
+                  _buildVersionSection(ctx, theme, 'v1.0.4', '2026-06-15', [
+                    'L10n.of(context).msg305734ce',
+                    'L10n.of(context).msg2eceaa85',
+                    'L10n.of(context).msg4a5f936c',
+                  ]),
+                  const SizedBox(height: 16),
                   _buildVersionSection(ctx, theme, 'v1.0.3', '2026-06-15', [
-                    '新增 SVG 文件完整支持（缩略图预览与查看）',
-                    '新增压缩包格式颜色区分（zip/rar/7z/tar/gz 各有专属颜色）',
-                    '新增远程文件先下载再播放功能',
-                    '新增浏览页远程文件缩略图预览',
-                    '修复分类页解压后无法跳转到浏览页的问题',
-                    '修复远程文件无法打开播放的问题',
-                    '修复「查看缓存目录」和「解压后打开所在位置」导致页面卡死的问题',
-                    '优化文件日期格式为 yyyy-MM-dd',
-                    '优化默认启用 24 小时制时间显示',
-                    '优化远程文件缓存目录统一管理',
+                    'L10n.of(context).svg',
+                    'L10n.of(context).ziprar7ztargz',
+                    'L10n.of(context).msg09a6e11b',
+                    'L10n.of(context).msg1c80891a',
+                    'L10n.of(context).msg1c3206b8',
+                    'L10n.of(context).msg212f8f9e',
+                    'L10n.of(context).msgb1e4da91',
+                    'L10n.of(context).yyyymmdd',
+                    'L10n.of(context).msg4c425252',
+                    'L10n.of(context).msgd0cf310e',
                   ]),
                   const SizedBox(height: 16),
                   _buildVersionSection(ctx, theme, 'v1.0.2', '2026-06-11', [
-                    '路径栏全面优化（更紧凑的面包屑按钮和箭头样式）',
-                    '标签栏和路径栏整体上移，为文件列表留出更多空间',
-                    '双窗口头部区域精简（高度缩减30%）',
-                    '双窗口模式下远程服务器替换未激活标签页',
-                    '返回手势优化：选中状态下返回清除选中而非退出页面',
-                    '单指滑动切换页面改为双指滑动（避免误触返回手势）',
-                    '双指右滑打开抽屉页，双指左滑切换分类/浏览页',
-                    '新增双指滑动开关（常规与行为设置中可关闭）',
-                    '进度条改为圆环线条样式，中心显示百分比数字',
-                    '字体选项标题全面汉化',
-                    '远程路径兼容性修复（Windows平台路径分隔符问题）',
-                    '地址栏开关改为控制美化后的路径面包屑',
-                    '默认主页设置（可选择分类页或浏览页作为启动页）',
-                    '移除"阻止左侧返回手势打开抽屉"功能',
+                    'L10n.of(context).msg1eaf4abb',
+                    'L10n.of(context).msgd3381817',
+                    'L10n.of(context).msg342688b2',
+                    'L10n.of(context).msg8954452f',
+                    'L10n.of(context).msgac5a0315',
+                    'L10n.of(context).msg072f2022',
+                    'L10n.of(context).msg1904388e',
+                    'L10n.of(context).msg2762c070',
+                    'L10n.of(context).msg48dca69a',
+                    'L10n.of(context).msg66517dc4',
+                    'L10n.of(context).windows',
+                    'L10n.of(context).msg65eefc98',
+                    'L10n.of(context).msg96a6856a',
+                    'L10n.of(context).msgacad92c8',
                   ]),
                   const SizedBox(height: 16),
                   _buildVersionSection(ctx, theme, 'v1.0.1', '2026-06-10', [
-                    '全新安装包图标（自然禅意风格）',
-                    '圆形百分比进度条（复制/移动文件时显示）',
-                    '操作成功后自动关闭进度条，无需手动确认',
-                    '文件操作菜单改为底部弹出（不再遮挡标签栏）',
-                    '选择模式操作栏移至屏幕底部（含已选数量指示器）',
-                    '修复：备用图标切换不生效',
-                    '修复：切换图标后点击进入应用详情',
-                    '修复：远程复制后切换本地页面异常',
-                    '文本查看器长按菜单支持复制和全选（已汉化）',
-                    '文本编辑器菜单全面汉化',
-                    '拖放弹窗布局优化（更紧凑）',
-                    '分类页图标支持圆形/方形背景切换',
-                    '分类图标形状设置（外观与主题中切换）',
+                    'L10n.of(context).msg250213fd',
+                    'L10n.of(context).msg7f53e8b1',
+                    'L10n.of(context).msg051469b5',
+                    'L10n.of(context).msge4c4d5e2',
+                    'L10n.of(context).msga33dbb51',
+                    'L10n.of(context).msg09d0e1b6',
+                    'L10n.of(context).msge6c84f11',
+                    'L10n.of(context).msg46b8ca8f',
+                    'L10n.of(context).msgb3dea5f5',
+                    'L10n.of(context).msg2d1872c8',
+                    'L10n.of(context).msga4c92214',
+                    'L10n.of(context).msg32854144',
+                    'L10n.of(context).msg3a93e257',
                   ]),
                   const SizedBox(height: 16),
                   _buildVersionSection(ctx, theme, 'v1.0.0', '2026-06-01', [
-                    'ZenFile 首次发布',
-                    '双面板文件浏览器',
-                    '多标签页支持',
-                    '远程服务器连接（FTP/SFTP/WebDAV/SMB）',
-                    '内置媒体播放器',
-                    '文件加密保险柜',
-                    'FTP/WebDAV 服务器功能',
-                    '应用图标切换（多种风格可选）',
-                    '自定义主题与外观设置',
+                    'L10n.of(context).zenfile3',
+                    'L10n.of(context).msg2e35eef7',
+                    'L10n.of(context).msg47b760ed',
+                    'L10n.of(context).ftpsftpwebdavsmb',
+                    'L10n.of(context).msge96aa2cd',
+                    'L10n.of(context).msg4b736dfb',
+                    'L10n.of(context).ftpwebdav',
+                    'L10n.of(context).msg49a6c41e',
+                    'L10n.of(context).msg03257c2d',
                   ]),
                   const SizedBox(height: 24),
 
@@ -761,12 +768,12 @@ class AboutZenFileScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('下版本更新计划', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
+                        Text('L10n.of(context).msg4d82be7c', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
                         const SizedBox(height: 10),
                         ...[
-                          '远程服务器文件拖放操作优化',
-                          '远程服务器边缓存边播放视频',
-                          '自定义应用桌面图标功能完善',
+                          'L10n.of(context).msg5cce42e6',
+                          'L10n.of(context).msg11cb01fc',
+                          'L10n.of(context).msg074f1ce7',
                         ].map((item) => Padding(
                           padding: const EdgeInsets.only(bottom: 6),
                           child: Row(
@@ -782,11 +789,11 @@ class AboutZenFileScreen extends StatelessWidget {
                           ),
                         )),
                         const SizedBox(height: 16),
-                        Text('已知问题', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
+                        Text('L10n.of(context).msg2c8957dd', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
                         const SizedBox(height: 10),
                         ...[
-                          '远程服务器文件列表中长按可能触发拖放操作弹窗（下版本修复）',
-                          '自定义图标上传后桌面图标不会更改（下版本完善）',
+                          'L10n.of(context).msg5c66ffab',
+                          'L10n.of(context).msg60a4d643',
                         ].map((item) => Padding(
                           padding: const EdgeInsets.only(bottom: 6),
                           child: Row(
@@ -814,7 +821,7 @@ class AboutZenFileScreen extends StatelessWidget {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  '如果您有任何优化建议或发现Bug，欢迎通过邮箱 1@sequel.dpdns.org 或QQ群 792408214 反馈给我们。',
+                                  'L10n.of(context).bug1sequeldpdnsorgqq792408214',
                                   style: TextStyle(fontSize: 12.5, height: 1.4, color: theme.colorScheme.onSurface.withOpacity(0.65)),
                                 ),
                               ),
@@ -892,7 +899,7 @@ class AboutZenFileScreen extends StatelessWidget {
               icon: const Icon(Icons.close, color: Colors.white),
               onPressed: () => Navigator.of(ctx).pop(),
             ),
-            title: const Text('长按保存图片', style: TextStyle(color: Colors.white, fontSize: 14)),
+            title: const Text('L10n.of(context).msgd054a84c', style: TextStyle(color: Colors.white, fontSize: 14)),
             centerTitle: true,
           ),
           body: Center(
@@ -912,7 +919,7 @@ class AboutZenFileScreen extends StatelessWidget {
                         children: [
                           Icon(Icons.broken_image, color: Colors.white54, size: 64),
                           SizedBox(height: 16),
-                          Text('图片加载失败', style: TextStyle(color: Colors.white54)),
+                          Text('L10n.of(context).msgb3b83e12', style: TextStyle(color: Colors.white54)),
                         ],
                       ),
                     );
@@ -935,7 +942,7 @@ class AboutZenFileScreen extends StatelessWidget {
       if (!ps.isAuth) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('需要存储权限才能保存图片')),
+            const SnackBar(content: Text('L10n.of(context).msgc2790d54')),
           );
         }
         return;
@@ -951,14 +958,14 @@ class AboutZenFileScreen extends StatelessWidget {
       if (result != null && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('图片已保存到相册'),
+            content: Text('L10n.of(context).msg1292d351'),
             behavior: SnackBarBehavior.floating,
           ),
         );
       } else if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('保存失败，请重试'),
+            content: Text('L10n.of(context).msg9e68ea42'),
             behavior: SnackBarBehavior.floating,
           ),
         );

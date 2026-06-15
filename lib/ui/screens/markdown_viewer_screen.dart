@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:path/path.dart' as p;
 import '../../core/icon_fonts/broken_icons.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class MarkdownViewerScreen extends StatefulWidget {
   final String filePath;
@@ -58,7 +59,7 @@ class _MarkdownViewerScreenState extends State<MarkdownViewerScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(p.basename(widget.filePath), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            Text('Markdown 预览', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
+            Text('L10n.of(context).markdown', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
           ],
         ),
         actions: [

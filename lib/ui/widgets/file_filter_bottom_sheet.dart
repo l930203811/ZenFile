@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../models/file_filter_type.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class FileFilterBottomSheet extends StatelessWidget {
   const FileFilterBottomSheet({super.key});
@@ -29,43 +30,43 @@ class FileFilterBottomSheet extends StatelessWidget {
     final List<_FilterItem> items = [
       _FilterItem(
         type: FileFilterType.all,
-        label: '全部文件',
-        subtitle: '显示此目录中的所有文件和文件夹',
+        label: 'L10n.of(context).msg67eda5e6',
+        subtitle: 'L10n.of(context).msg8b2fcb31',
         icon: Broken.category,
         color: theme.colorScheme.primary,
       ),
       _FilterItem(
         type: FileFilterType.documents,
-        label: '仅文档',
-        subtitle: 'PDF、Word 文档、电子表格、文本和电子书',
+        label: 'L10n.of(context).msg0c36f64f',
+        subtitle: 'L10n.of(context).pdfword',
         icon: Broken.document,
         color: Colors.blueAccent,
       ),
       _FilterItem(
         type: FileFilterType.images,
         label: '仅图片',
-        subtitle: 'JPEG、PNG、WebP 和原始照片格式',
+        subtitle: 'L10n.of(context).jpegpngwebp',
         icon: Broken.image,
         color: Colors.purpleAccent,
       ),
       _FilterItem(
         type: FileFilterType.audio,
-        label: '仅音频',
-        subtitle: 'MP3、WAV、AAC 和高保真音频',
+        label: 'L10n.of(context).msg26b041dd',
+        subtitle: 'L10n.of(context).mp3wavaac',
         icon: Broken.music,
         color: Colors.greenAccent,
       ),
       _FilterItem(
         type: FileFilterType.videos,
         label: '仅视频',
-        subtitle: 'MP4、MKV、WebM 和高分辨率视频片段',
+        subtitle: 'L10n.of(context).mp4mkvwebm',
         icon: Broken.video,
         color: Colors.redAccent,
       ),
       _FilterItem(
         type: FileFilterType.archives,
-        label: '仅压缩包',
-        subtitle: 'ZIP、7Z、RAR 和其他压缩文件',
+        label: 'L10n.of(context).msge632ba85',
+        subtitle: 'L10n.of(context).zip7zrar',
         icon: Broken.archive,
         color: Colors.brown,
       ),
@@ -100,7 +101,7 @@ class FileFilterBottomSheet extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '选择一个类别以仅显示匹配的文件',
+                    'L10n.of(context).msg6d3e48cc',
                     style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.55)),
                   ),
                 ],

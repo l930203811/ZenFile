@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../services/settings_backup_service.dart';
 import 'internal_file_picker_screen.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class BackupSettingsScreen extends StatelessWidget {
   const BackupSettingsScreen({super.key});
@@ -22,7 +23,7 @@ class BackupSettingsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: scaffoldBg,
       appBar: AppBar(
-        title: const Text('备份与恢复'),
+        title: const Text('L10n.of(context).msgb4fbc92c'),
         backgroundColor: scaffoldBg,
         elevation: 0,
         iconTheme: IconThemeData(color: theme.colorScheme.onSurface),
@@ -43,7 +44,7 @@ class BackupSettingsScreen extends StatelessWidget {
             icon: Icons.backup,
             iconColor: Colors.blue,
             title: '备份设置',
-            subtitle: '将所有当前设置保存到 ZenFile/Backups/Settings/',
+            subtitle: 'L10n.of(context).zenfilebackupssettings1',
             onTap: () async {
               await SettingsBackupService.backupSettings(context);
             },
@@ -60,7 +61,7 @@ class BackupSettingsScreen extends StatelessWidget {
             icon: Icons.restore,
             iconColor: Colors.orange,
             title: '恢复设置',
-            subtitle: '选择并恢复 JSON 备份文件中的设置',
+            subtitle: 'L10n.of(context).json1',
             onTap: () async {
               final pickedPaths = await InternalFilePickerScreen.show(
                 context,
@@ -78,7 +79,7 @@ class BackupSettingsScreen extends StatelessWidget {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: const Text('请选择有效的 .json 设置备份文件'),
+                        content: const Text('L10n.of(context).json'),
                         behavior: SnackBarBehavior.floating,
                         backgroundColor: theme.colorScheme.error,
                       ),
@@ -201,7 +202,7 @@ class BackupSettingsScreen extends StatelessWidget {
             const SizedBox(height: 12),
             _buildInfoRow(
               theme: theme,
-              label: '备份目录',
+              label: 'L10n.of(context).msg534c621a',
               value: SettingsBackupService.backupDirPath,
             ),
             const SizedBox(height: 8),
@@ -227,13 +228,13 @@ class BackupSettingsScreen extends StatelessWidget {
                           children: [
                             _buildInfoRow(
                               theme: theme,
-                              label: '文件大小',
+                              label: 'L10n.of(context).msg396b7d3f',
                               value: _formatFileSize(size),
                             ),
                             const SizedBox(height: 8),
                             _buildInfoRow(
                               theme: theme,
-                              label: '最后备份时间',
+                              label: 'L10n.of(context).msgc047ee32',
                               value: _formatDateTime(modified),
                             ),
                           ],

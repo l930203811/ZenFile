@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/media_provider.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class AudioArtworkCache {
   static final Map<int, Uint8List?> _cache = {};
@@ -259,7 +260,7 @@ class _AudioArtworkWidgetState extends State<AudioArtworkWidget>
           Icon(Icons.music_note_rounded, size: size * 0.3, color: widget.accentColor.withOpacity(0.8)),
           const SizedBox(height: 12),
           Text(
-            '无损音频',
+            'L10n.of(context).msg5bf1fb72',
             style: TextStyle(
                color: widget.accentColor.withOpacity(0.6),
               fontSize: 16,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class RestrictedFolderBanner extends StatelessWidget {
   final VoidCallback onEnableRoot;
@@ -56,13 +57,13 @@ class RestrictedFolderBanner extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  '受限系统文件夹',
+                  'L10n.of(context).msgd5eac3a3',
                   style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Android 11+ 限制了对 Android/data 和 Android/obb 文件夹的标准访问，以保护应用数据。要查看和修改这些文件，ZenFile 需要高级权限。',
+                  'L10n.of(context).android11androiddataandroidobbzenfile',
                   style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface.withOpacity(0.8), height: 1.4),
                   textAlign: TextAlign.center,
                 ),
@@ -91,7 +92,7 @@ class RestrictedFolderBanner extends StatelessWidget {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
                     ),
                     icon: const Icon(Broken.key, size: 24),
-                    label: const Text('使用 Root 访问（超级用户）', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    label: const Text('L10n.of(context).root', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     onPressed: onEnableRoot,
                   ),
                   const SizedBox(height: 16),
@@ -105,7 +106,7 @@ class RestrictedFolderBanner extends StatelessWidget {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
                   ),
                   icon: const Icon(Broken.shield_tick, size: 24),
-                  label: const Text('授予Shizuku访问权限（无需Root）', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  label: const Text('L10n.of(context).shizukuroot', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   onPressed: onEnableShizuku,
                 ),
                 const SizedBox(height: 20),

@@ -15,6 +15,7 @@ import 'audio_player/audio_player_screen.dart';
 import 'text_editor_screen.dart';
 import 'internal_file_picker_screen.dart';
 import 'archive_viewer_screen.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class VaultExplorerScreen extends StatefulWidget {
   final String password;
@@ -532,7 +533,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '私人保险箱',
+                      'L10n.of(context).msgbb590f19',
                       style: theme.textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.5,
@@ -623,7 +624,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
         elevation: 4,
         icon: const Icon(Broken.add_square),
         label: const Text(
-          '隐藏文件',
+          'L10n.of(context).msg4828116a',
           style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.3),
         ),
       ),
@@ -826,7 +827,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
               child: Row(
                 children: [
                   Text(
-                    rec.isFolder ? '文件夹' : FileUtils.formatBytes(rec.size, 1),
+                    rec.isFolder ? 'L10n.of(context).msg1f4c1042' : FileUtils.formatBytes(rec.size, 1),
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -904,7 +905,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
                       Icon(Broken.trash, size: 18, color: theme.colorScheme.error),
                       const SizedBox(width: 10),
                       Text(
-                        '永久删除',
+                        'L10n.of(context).msg96d2b75f',
                         style: TextStyle(
                           fontSize: 13.5,
                           fontWeight: FontWeight.w600,

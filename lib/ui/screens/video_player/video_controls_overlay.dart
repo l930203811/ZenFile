@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zenfile/core/icon_fonts/broken_icons.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class VideoControlsOverlay extends StatelessWidget {
   final String title;
@@ -180,7 +181,7 @@ class VideoControlsOverlay extends StatelessWidget {
                   ),
                   // Speed Selector Dropdown Menu
                   PopupMenuButton<double>(
-                    tooltip: '播放速度',
+                    tooltip: 'L10n.of(context).msgc16eed0e',
                     icon: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
@@ -219,7 +220,7 @@ class VideoControlsOverlay extends StatelessWidget {
                   // Lock Toggle Button
                   IconButton(
                     icon: Icon(Broken.unlock, color: itemsColor, size: 24),
-                    tooltip: '锁定控制',
+                    tooltip: 'L10n.of(context).msg8f106217',
                     onPressed: onToggleLock,
                   ),
                 ],
@@ -371,7 +372,7 @@ class VideoControlsOverlay extends StatelessWidget {
                               color: repeatMode != 0 ? accentColor : itemsColor.withOpacity(0.7),
                               size: 22,
                             ),
-                            tooltip: '重复模式',
+                            tooltip: 'L10n.of(context).msg1f41f25d',
                             onPressed: () {
                               onInteract();
                               onToggleRepeat();
@@ -391,12 +392,12 @@ class VideoControlsOverlay extends StatelessWidget {
                           // Copy Link
                           IconButton(
                             icon: Icon(Icons.copy_rounded, color: itemsColor, size: 22),
-                            tooltip: '复制 URL',
+                            tooltip: 'L10n.of(context).url1',
                             onPressed: () {
                               onInteract();
                               onCopyUrl();
                               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                content: const Text('媒体路径已复制到剪贴板。'),
+                                content: const Text('L10n.of(context).msg4d2abc8c'),
                                 backgroundColor: accentColor,
                               ));
                             },

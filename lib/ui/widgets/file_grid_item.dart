@@ -4,11 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_avif/flutter_avif.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 import '../../models/file_item_model.dart';
 import '../../core/utils.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../services/pin_service.dart';
 import '../../services/app_manager_service.dart';
+import '../../services/preferences_service.dart';
 import '../../providers/media_provider.dart';
 import '../../providers/file_manager_provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -228,18 +231,30 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
   Uint8List? _videoThumb;
   Uint8List? _audioThumb;
   Uint8List? _apkIcon;
+  Uint8List? _remoteThumb;  // 远程文件缩略图
 
   @override
   void initState() {
     super.initState();
-    final lowerPath = widget.file.path.toLowerCase();
-    if (FileUtils.isVideo(widget.file.path)) {
-      _loadVideoThumb();
-    } else if (FileUtils.isAudio(widget.file.path)) {
-      _loadAudioThumb();
-    } else if (lowerPath.endsWith('.apk') || lowerPath.endsWith('.xapk') || lowerPath.endsWith('.apks') || lowerPath.endsWith('.apkm')) {
-      _loadApkIcon();
-    }
+    // 延迟到第一帧后执行，以便获取 context
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      // 远程文件优先处理
+      if (widget.file.isRemote && PreferencesService.getRemoteMediaThumbnailPreview()) {
+        _loadRemoteThumbnail();
+        return;
+      }
+      final lowerPath = widget.file.path.toLowerCase();
+      if (FileUtils.isVideo(widget.file.path)) {
+        _loadVideoThumb();
+      } else if (FileUtils.isAudio(widget.file.path)) {
+        _loadAudioThumb();
+      } else if (lowerPath.endsWith('.apk') || lowerPath.endsWith('.xapk') || lowerPath.endsWith('.apks') || lowerPath.endsWith('.apkm')) {
+        _loadApkIcon();
+      } else if (lowerPath.endsWith('.svg')) {
+        // SVG 本地文件无需预加载，SvgPicture.file 会直接渲染
+      }
+    });
   }
 
   @override
@@ -250,7 +265,13 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
         _videoThumb = null;
         _audioThumb = null;
         _apkIcon = null;
+        _remoteThumb = null;
       });
+      // 远程文件优先处理
+      if (widget.file.isRemote && PreferencesService.getRemoteMediaThumbnailPreview()) {
+        _loadRemoteThumbnail();
+        return;
+      }
       final lowerPath = widget.file.path.toLowerCase();
       if (FileUtils.isVideo(widget.file.path)) {
         _loadVideoThumb();
@@ -258,6 +279,8 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
         _loadAudioThumb();
       } else if (lowerPath.endsWith('.apk') || lowerPath.endsWith('.xapk') || lowerPath.endsWith('.apks') || lowerPath.endsWith('.apkm')) {
         _loadApkIcon();
+      } else if (lowerPath.endsWith('.svg')) {
+        // SVG 本地文件无需预加载，SvgPicture.file 会直接渲染
       }
     }
   }
@@ -346,6 +369,65 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
     } catch (_) {}
   }
 
+  Future<void> _loadRemoteThumbnail() async {
+    if (!mounted) return;
+    try {
+      final provider = context.read<FileManagerProvider>();
+      final activeTab = provider.activeTab;
+      if (activeTab == null || activeTab.remoteClient == null) return;
+      final client = activeTab.remoteClient!;
+
+      final thumbDir = Directory('/storage/emulated/0/Download/ZenFile_Remote/cache/thumbnails/remote');
+      if (!await thumbDir.exists()) {
+        await thumbDir.create(recursive: true);
+      }
+      final thumbName = '${widget.file.path.replaceAll('/', '_').replaceAll('\\', '_')}_thumb.jpg';
+      final thumbPath = p.join(thumbDir.path, thumbName);
+      final thumbFile = File(thumbPath);
+
+      if (await thumbFile.exists()) {
+        final bytes = await thumbFile.readAsBytes();
+        if (mounted && bytes.isNotEmpty) {
+          setState(() => _remoteThumb = bytes);
+        }
+        return;
+      }
+
+      final tempDir = await getTemporaryDirectory();
+      final ext = p.extension(widget.file.name).toLowerCase();
+      final tempPath = p.join(tempDir.path, 'remote_temp_${DateTime.now().millisecondsSinceEpoch}$ext');
+      
+      try {
+        await client.downloadFile(widget.file.path, tempPath, (_) {});
+        
+        // SVG 文件：读取字节内容用于 SvgPicture.memory 渲染
+        if (ext == '.svg') {
+          final bytes = await File(tempPath).readAsBytes();
+          if (mounted && bytes.isNotEmpty) {
+            setState(() => _remoteThumb = bytes);
+          }
+          return;
+        }
+        
+        // 图片直接复制作为缩略图
+        if (['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.heic'].contains(ext)) {
+          await File(tempPath).copy(thumbPath);
+        }
+        // 视频需要生成缩略图（简化处理：暂不实现视频远程缩略图）
+        
+        if (await thumbFile.exists()) {
+          final bytes = await thumbFile.readAsBytes();
+          if (mounted && bytes.isNotEmpty) {
+            setState(() => _remoteThumb = bytes);
+          }
+        }
+      } finally {
+        // 清理临时文件
+        try { await File(tempPath).delete(); } catch (_) {}
+      }
+    } catch (_) {}
+  }
+
   @override
   Widget build(BuildContext context) {
     final showMediaPreviews = context.select<FileManagerProvider, bool>((p) => p.showMediaPreviews);
@@ -377,8 +459,16 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
     }
 
     if (isImg && widget.file.size > 16) {
-      // SVG 需要特殊处理
+      // SVG 需要特殊处理（支持本地和远程）
       if (widget.file.path.toLowerCase().endsWith('.svg')) {
+        // 远程 SVG 使用已下载的缓存字节
+        if (widget.file.isRemote && _remoteThumb != null) {
+          return SvgPicture.memory(
+            _remoteThumb!,
+            fit: BoxFit.cover,
+            placeholderBuilder: (context) => Icon(Broken.image, color: widget.iconColor, size: 28 * widget.iconScale),
+          );
+        }
         return SvgPicture.file(
           File(widget.file.path),
           fit: BoxFit.cover,
@@ -401,6 +491,22 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
         height: double.infinity,
         cacheWidth: 160,
         errorBuilder: (context, error, stackTrace) => Icon(Broken.image, color: widget.iconColor, size: 28 * widget.iconScale),
+      );
+    }
+
+    // SVG 文件（当 isImg 返回 false 时的兜底处理）
+    if (widget.file.path.toLowerCase().endsWith('.svg')) {
+      if (widget.file.isRemote && _remoteThumb != null) {
+        return SvgPicture.memory(
+          _remoteThumb!,
+          fit: BoxFit.cover,
+          placeholderBuilder: (context) => Icon(Broken.image, color: widget.iconColor, size: 28 * widget.iconScale),
+        );
+      }
+      return SvgPicture.file(
+        File(widget.file.path),
+        fit: BoxFit.cover,
+        placeholderBuilder: (context) => Icon(Broken.image, color: widget.iconColor, size: 28 * widget.iconScale),
       );
     }
 

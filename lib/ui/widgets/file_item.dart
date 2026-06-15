@@ -17,6 +17,10 @@ import '../../providers/media_provider.dart';
 import '../../providers/file_manager_provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'file_action_dialogs.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
+
+// SVG 缩略图缓存
+final Map<String, Uint8List> _svgThumbCache = {};
 
 class FileItem extends StatelessWidget {
   final FileItemModel file;
@@ -255,6 +259,9 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         _loadAudioThumb();
       } else if (lowerPath.endsWith('.apk') || lowerPath.endsWith('.xapk') || lowerPath.endsWith('.apks') || lowerPath.endsWith('.apkm')) {
         _loadApkIcon();
+      } else if (lowerPath.endsWith('.svg')) {
+        // SVG 本地文件无需预加载，SvgPicture.file 会直接渲染
+        // 但远程 SVG 需要在 _loadRemoteThumbnail 中下载字节
       }
     });
   }
@@ -281,6 +288,8 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         _loadAudioThumb();
       } else if (lowerPath.endsWith('.apk') || lowerPath.endsWith('.xapk') || lowerPath.endsWith('.apks') || lowerPath.endsWith('.apkm')) {
         _loadApkIcon();
+      } else if (lowerPath.endsWith('.svg')) {
+        // SVG 本地文件无需预加载，SvgPicture.file 会直接渲染
       }
     }
   }
@@ -339,6 +348,15 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
       
       try {
         await client.downloadFile(widget.file.path, tempPath, (_) {});
+        
+        // SVG 文件：读取字节内容用于 SvgPicture.memory 渲染
+        if (ext == '.svg') {
+          final bytes = await File(tempPath).readAsBytes();
+          if (mounted && bytes.isNotEmpty) {
+            setState(() => _remoteThumb = bytes);
+          }
+          return;
+        }
         
         // 图片直接复制作为缩略图
         if (['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.heic'].contains(ext)) {
@@ -518,8 +536,16 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
     }
 
     if (isImg && widget.file.size > 16) {
-      // SVG 需要特殊处理
+      // SVG 需要特殊处理（支持本地和远程）
       if (widget.file.path.toLowerCase().endsWith('.svg')) {
+        // 远程 SVG 使用已下载的缓存字节
+        if (widget.file.isRemote && _remoteThumb != null) {
+          return SvgPicture.memory(
+            _remoteThumb!,
+            fit: BoxFit.cover,
+            placeholderBuilder: (context) => Icon(Broken.image, color: widget.iconColor, size: 28 * widget.iconScale),
+          );
+        }
         return SvgPicture.file(
           File(widget.file.path),
           fit: BoxFit.cover,
@@ -542,6 +568,22 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         height: double.infinity,
         cacheWidth: 160,
         errorBuilder: (context, error, stackTrace) => Icon(Broken.image, color: widget.iconColor, size: 28 * widget.iconScale),
+      );
+    }
+
+    // SVG 文件（当 isImg 返回 false 时的兜底处理）
+    if (widget.file.path.toLowerCase().endsWith('.svg')) {
+      if (widget.file.isRemote && _remoteThumb != null) {
+        return SvgPicture.memory(
+          _remoteThumb!,
+          fit: BoxFit.cover,
+          placeholderBuilder: (context) => Icon(Broken.image, color: widget.iconColor, size: 28 * widget.iconScale),
+        );
+      }
+      return SvgPicture.file(
+        File(widget.file.path),
+        fit: BoxFit.cover,
+        placeholderBuilder: (context) => Icon(Broken.image, color: widget.iconColor, size: 28 * widget.iconScale),
       );
     }
 
@@ -664,7 +706,7 @@ class _TrailingInfoWidget extends StatelessWidget {
             final count = snapshot.data;
             String label = '...';
             if (count != null && count >= 0) {
-              label = count == 1 ? '1 项' : '$count 项';
+              label = count == 1 ? 'L10n.of(context).msg32a1bd25' : '$count 项';
             }
             return Padding(
               padding: const EdgeInsets.only(left: 8.0),

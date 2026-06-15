@@ -10,6 +10,7 @@ import '../screens/media_category_screen.dart';
 import '../screens/internal_file_picker_screen.dart';
 import '../screens/storage_analyzer/app_manager_screen.dart';
 import '../screens/more_settings_screen.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 import '../screens/network_connection_wizard_screen.dart';
 import '../screens/network_category_screen.dart';
@@ -59,8 +60,8 @@ class QuickCategoriesGrid extends StatelessWidget {
         'isCustom': false,
         'action': () => Navigator.push(context, MaterialPageRoute(builder: (_) => MediaCategoryScreen(mediaType: MediaType.documents, onNavigateTab: onNavigateTab))),
       },
-      '压缩包': {
-  'label': '压缩包',
+      'L10n.of(context).msgc806d0fa': {
+  'label': 'L10n.of(context).msgc806d0fa',
   'icon': Broken.box,
         'color': isDark ? Colors.tealAccent : const Color(0xFF00796B),
         'count': '${mediaProvider.getCategoryItemCount("压缩包")}',
@@ -75,8 +76,8 @@ class QuickCategoriesGrid extends StatelessWidget {
         'isCustom': false,
         'action': () => Navigator.push(context, MaterialPageRoute(builder: (_) => MediaCategoryScreen(mediaType: MediaType.downloads, onNavigateTab: onNavigateTab))),
       },
-      '安装包': {
-        'label': '安装包',
+      'L10n.of(context).msg03070d08': {
+        'label': 'L10n.of(context).msg03070d08',
         'icon': Broken.box,
         'color': isDark ? Colors.amber : const Color(0xFFF57C00),
         'count': '${mediaProvider.getCategoryItemCount("安装包")}',
@@ -107,16 +108,16 @@ class QuickCategoriesGrid extends StatelessWidget {
         'isCustom': false,
         'action': () => Navigator.push(context, MaterialPageRoute(builder: (_) => NetworkCategoryScreen(onNavigateTab: onNavigateTab))),
       },
-      'FTP共享': {
-        'label': 'FTP共享',
+      'L10n.of(context).ftp': {
+        'label': 'L10n.of(context).ftp',
         'icon': Icons.swap_horizontal_circle_rounded,
         'color': isDark ? Colors.orangeAccent : const Color(0xFFF57C00),
         'count': '服务',
         'isCustom': false,
         'action': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FtpServerScreen())),
       },
-      'Web共享': {
-        'label': 'Web共享',
+      'L10n.of(context).web': {
+        'label': 'L10n.of(context).web',
         'icon': Icons.language_rounded,
         'color': isDark ? Colors.deepPurpleAccent : const Color(0xFF7B1FA2),
         'count': '服务',
@@ -154,7 +155,7 @@ class QuickCategoriesGrid extends StatelessWidget {
         'label': cs.label,
         'icon': cs.isDirectory ? Broken.folder : Broken.document,
         'color': isDark ? Colors.cyanAccent : Colors.cyan,
-        'count': cs.isDirectory ? '文件夹' : '文件',
+        'count': cs.isDirectory ? 'L10n.of(context).msg1f4c1042' : '文件',
         'isCustom': true,
         'path': cs.path,
         'action': () {
@@ -199,7 +200,7 @@ class QuickCategoriesGrid extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('远程连接', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                      Text('L10n.of(context).msgce1ec2ce', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                       TextButton(
                         onPressed: () => Navigator.pop(ctx),
                         child: const Text('关闭', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
@@ -215,7 +216,7 @@ class QuickCategoriesGrid extends StatelessWidget {
                         children: [
                           Icon(Broken.wifi, size: 48, color: theme.colorScheme.onSurface.withOpacity(0.2)),
                           const SizedBox(height: 16),
-                          Text('暂无远程连接', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5), fontSize: 15)),
+                          Text('L10n.of(context).msgc9c900d0', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5), fontSize: 15)),
                           const SizedBox(height: 8),
                           TextButton.icon(
                             onPressed: () {
@@ -223,7 +224,7 @@ class QuickCategoriesGrid extends StatelessWidget {
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const NetworkConnectionWizardScreen()));
                             },
                             icon: const Icon(Broken.add, size: 18),
-                            label: const Text('添加连接'),
+                            label: const Text('L10n.of(context).msg3358aa10'),
                           ),
                         ],
                       ),
@@ -246,7 +247,7 @@ class QuickCategoriesGrid extends StatelessWidget {
                                 Navigator.push(context, MaterialPageRoute(builder: (_) => const NetworkConnectionWizardScreen()));
                               },
                               icon: const Icon(Broken.add, size: 18),
-                              label: const Text('添加新连接', style: TextStyle(fontWeight: FontWeight.bold)),
+                              label: const Text('L10n.of(context).msgc31116e3', style: TextStyle(fontWeight: FontWeight.bold)),
                               style: OutlinedButton.styleFrom(
                                 minimumSize: const Size.fromHeight(48),
                                 foregroundColor: theme.colorScheme.primary,
@@ -259,7 +260,7 @@ class QuickCategoriesGrid extends StatelessWidget {
                         final conn = connections[index];
                         IconData iconData;
                         switch (conn.type) {
-                          case '局域网/SMB':
+                          case 'L10n.of(context).smb':
                             iconData = Icons.dns_rounded;
                             break;
                           case 'FTP':
@@ -367,7 +368,7 @@ class QuickCategoriesGrid extends StatelessWidget {
                         Icon(Broken.edit_2, size: 16, color: theme.colorScheme.primary),
                         const SizedBox(width: 4),
                         Text(
-                          '自定义',
+                          'L10n.of(context).msgf1d4ff50',
                           style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.primary, fontWeight: FontWeight.w600),
                         ),
                       ],
@@ -384,7 +385,7 @@ class QuickCategoriesGrid extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24.0),
                 child: Text(
-                  '未固定快捷方式。点击自定义添加。',
+                  'L10n.of(context).msg490ac572',
                   style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
                 ),
               ),
@@ -500,7 +501,7 @@ class _CustomizeCategoriesSheet extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('自定义快捷方式', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                      Text('L10n.of(context).msge7d18d73', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                       TextButton(onPressed: () => Navigator.pop(context), child: const Text('完成', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
                     ],
                   ),
@@ -511,7 +512,7 @@ class _CustomizeCategoriesSheet extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('分类图标形状', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text('L10n.of(context).msg2c3c5a35', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, fontSize: 16)),
                       const SizedBox(height: 10),
                       Row(
                         children: [
@@ -528,7 +529,7 @@ class _CustomizeCategoriesSheet extends StatelessWidget {
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      '拖动手柄 (=) 可重新排列首页图标。',
+                      'L10n.of(context).msg445a43cb',
                       style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6), fontSize: 13),
                     ),
                   ),
@@ -538,7 +539,7 @@ class _CustomizeCategoriesSheet extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: OutlinedButton.icon(
                     icon: const Icon(Broken.add, size: 20),
-                    label: const Text('添加文件夹/文件快捷方式', style: TextStyle(fontWeight: FontWeight.bold)),
+                    label: const Text('L10n.of(context).msg944d5ecd', style: TextStyle(fontWeight: FontWeight.bold)),
                     style: OutlinedButton.styleFrom(
                       minimumSize: const Size.fromHeight(46),
                       foregroundColor: theme.colorScheme.primary,
@@ -650,21 +651,21 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
   List<String> _getDefaultPaths(String category) {
     switch (category) {
       case '图片':
-        return ['设备相册（自动）', '/storage/emulated/0/DCIM', '/storage/emulated/0/Pictures'];
+        return ['L10n.of(context).msge86bd662', '/storage/emulated/0/DCIM', '/storage/emulated/0/Pictures'];
       case '视频':
-        return ['设备相册（自动）', '/storage/emulated/0/DCIM', '/storage/emulated/0/Movies'];
+        return ['L10n.of(context).msge86bd662', '/storage/emulated/0/DCIM', '/storage/emulated/0/Movies'];
       case '音频':
-        return ['设备音频库（自动）', '/storage/emulated/0/Music'];
+        return ['L10n.of(context).msg16166a01', '/storage/emulated/0/Music'];
       case '文档':
-        return ['/storage/emulated/0/Documents', '内部存储（扫描所有文件夹）'];
-      case '压缩包':
-        return ['/storage/emulated/0/Download', '内部存储（扫描所有文件夹）'];
+        return ['/storage/emulated/0/Documents', 'L10n.of(context).msgbb34b7ec'];
+      case 'L10n.of(context).msgc806d0fa':
+        return ['/storage/emulated/0/Download', 'L10n.of(context).msgbb34b7ec'];
       case '下载':
         return ['/storage/emulated/0/Download', '/storage/emulated/0/Downloads'];
-      case '安装包':
-        return ['/storage/emulated/0/Download', '内部存储（扫描所有文件夹）'];
+      case 'L10n.of(context).msg03070d08':
+        return ['/storage/emulated/0/Download', 'L10n.of(context).msgbb34b7ec'];
       case '截图':
-        return ['设备相册（截图）', '/storage/emulated/0/DCIM/Screenshots', '/storage/emulated/0/Pictures/Screenshots'];
+        return ['L10n.of(context).msg26a1f2d9', '/storage/emulated/0/DCIM/Screenshots', '/storage/emulated/0/Pictures/Screenshots'];
       default:
         return [];
     }
@@ -684,14 +685,14 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
       '视频',
       '音频',
       '文档',
-      '压缩包',
+      'L10n.of(context).msgc806d0fa',
       '下载',
-      '安装包',
+      'L10n.of(context).msg03070d08',
       '截图',
       '网络',
       '最近',
-      'FTP共享',
-      'Web共享',
+      'L10n.of(context).ftp',
+      'L10n.of(context).web',
     ].contains(label);
 
     final customPaths = widget.provider.customCategoryPaths[label] ?? [];
@@ -733,7 +734,7 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
                     });
                   },
                   visualDensity: VisualDensity.compact,
-                  tooltip: '自定义路径',
+                  tooltip: 'L10n.of(context).msg4f356348',
                 ),
               ],
             ],
@@ -749,7 +750,7 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
               if (isCustom) ...[
                 IconButton(
                   icon: const Icon(Broken.trash, color: Colors.redAccent, size: 20),
-                  tooltip: '删除快捷方式',
+                  tooltip: 'L10n.of(context).msg94733bec',
                   onPressed: () => widget.provider.removeCustomShortcut(label),
                 ),
                 const SizedBox(width: 4),
@@ -826,7 +827,7 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
                         if (isExcluded)
                           IconButton(
                             icon: const Icon(Icons.add_circle_outline, color: Colors.green, size: 18),
-                            tooltip: '恢复位置',
+                            tooltip: 'L10n.of(context).msg5c29ad2f',
                             onPressed: () {
                               widget.provider.includeDefaultCategoryPath(label, path);
                             },
@@ -851,7 +852,7 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
                 }),
                 const SizedBox(height: 12),
                 Text(
-                  '自定义扫描位置：',
+                  'L10n.of(context).msg21de5dd7',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
@@ -864,7 +865,7 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4.0),
                     child: Text(
-                      '未添加自定义路径。',
+                      'L10n.of(context).msg4bb81f99',
                       style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.4), fontSize: 12, fontStyle: FontStyle.italic),
                     ),
                   )

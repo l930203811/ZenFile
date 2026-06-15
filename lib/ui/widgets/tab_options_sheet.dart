@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import '../../providers/file_manager_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class TabOptionsSheet extends StatelessWidget {
   final FileManagerProvider provider;
@@ -132,7 +133,7 @@ class TabOptionsSheet extends StatelessWidget {
               context: context,
               icon: tab.isPinned ? Icons.push_pin_rounded : Icons.push_pin_outlined,
               iconColor: tab.isPinned ? Colors.orange : null,
-              label: tab.isPinned ? '取消固定标签页' : '固定标签页',
+              label: tab.isPinned ? 'L10n.of(context).msgc823e21b' : '固定标签页',
               onTap: () {
                 Navigator.pop(context);
                 provider.togglePinTab(tabIndex);
@@ -141,7 +142,7 @@ class TabOptionsSheet extends StatelessWidget {
             _buildMenuItem(
               context: context,
               icon: Broken.copy,
-              label: '复制标签页',
+              label: 'L10n.of(context).msg4e9c344a',
               onTap: () {
                 Navigator.pop(context);
                 provider.duplicateTab(tabIndex);

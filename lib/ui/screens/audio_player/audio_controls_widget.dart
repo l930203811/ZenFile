@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/icon_fonts/broken_icons.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class AudioControlsWidget extends StatelessWidget {
   final bool isPlaying;
@@ -216,7 +217,7 @@ class AudioControlsWidget extends StatelessWidget {
                       iconSize: 22,
                       constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
                       padding: EdgeInsets.zero,
-                      tooltip: '定时关闭',
+                      tooltip: 'L10n.of(context).msg47cab5ae',
                       color: theme.colorScheme.onSurface.withOpacity(0.8),
                       onPressed: onShowSleepTimer,
                     ),

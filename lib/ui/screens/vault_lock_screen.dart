@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../services/vault_service.dart';
 import 'vault_explorer_screen.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class VaultLockScreen extends StatefulWidget {
   const VaultLockScreen({super.key});
@@ -23,7 +24,7 @@ class _VaultLockScreenState extends State<VaultLockScreen> with SingleTickerProv
   
   // Input State
   String _inputBuffer = '';
-  String _message = '输入密码解锁';
+  String _message = 'L10n.of(context).msg3bf31dfe';
   bool _isError = false;
 
   late final AnimationController _shakeController;
@@ -50,7 +51,7 @@ class _VaultLockScreenState extends State<VaultLockScreen> with SingleTickerProv
       setState(() {
         _isPasswordSet = isSet;
         _checkingPasswordStatus = false;
-        _message = isSet ? '输入PIN码解锁钱包' : '设置您的4位钱包PIN码';
+        _message = isSet ? 'L10n.of(context).pin' : 'L10n.of(context).pin1';
       });
     }
   }
@@ -70,7 +71,7 @@ class _VaultLockScreenState extends State<VaultLockScreen> with SingleTickerProv
           _tempPassword = _inputBuffer;
           _inputBuffer = '';
           _isConfirmMode = true;
-          _message = '确认您的4位PIN码';
+          _message = 'L10n.of(context).pin2';
         });
       });
     } else if (_inputBuffer.length == 4 && !_isPasswordSet && _isConfirmMode) {
@@ -218,7 +219,7 @@ class _VaultLockScreenState extends State<VaultLockScreen> with SingleTickerProv
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    '私人保险箱',
+                    'L10n.of(context).msgbb590f19',
                     style: theme.textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.5,
@@ -327,7 +328,7 @@ class _VaultLockScreenState extends State<VaultLockScreen> with SingleTickerProv
               _buildActionKeyButton(
                 icon: Icons.clear_rounded,
                 onPressed: _onClear,
-                tooltip: '全部清除',
+                tooltip: 'L10n.of(context).msgaa43fa46',
               ),
               _buildKeyButton('0'),
               _buildActionKeyButton(

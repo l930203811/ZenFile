@@ -4,6 +4,7 @@ import '../../../../core/icon_fonts/broken_icons.dart';
 import '../../../../models/app_info_model.dart';
 import '../../../../services/app_manager_service.dart';
 import '../../../../core/utils.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class AppListTab extends StatelessWidget {
   final List<AppInfoModel> apps;
@@ -48,7 +49,7 @@ class AppListTab extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               const Text(
-                '未找到应用',
+                'L10n.of(context).msg7fbfdce6',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
             ],

@@ -27,6 +27,7 @@ import 'selection_context_bottom_sheet.dart';
 import 'file_action_dialogs.dart';
 import 'create_archive_dialog.dart';
 import 'batch_rename_dialog.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class PaneBrowser extends StatefulWidget {
   final int tabIndex;
@@ -290,10 +291,10 @@ class _PaneBrowserState extends State<PaneBrowser> {
           final currentName = p.posix.basename(path);
           final newName = await FileActionDialogs.showTextInputDialog(
             context,
-            title: '重命名',
-            hint: '输入新名称',
+            title: 'L10n.of(context).msgc8ce4b36',
+            hint: 'L10n.of(context).msgf139c5cf',
             initialValue: currentName,
-            actionText: '重命名',
+            actionText: 'L10n.of(context).msgc8ce4b36',
           );
           if (newName != null && newName.isNotEmpty) {
             await provider.renameFile(path, newName);
@@ -307,10 +308,10 @@ class _PaneBrowserState extends State<PaneBrowser> {
         final isMulti = provider.selectedPaths.isNotEmpty && provider.selectedPaths.contains(path);
         final confirm = await FileActionDialogs.showConfirmDialog(
           context,
-          title: isMulti ? '删除选中' : '删除项目',
+          title: isMulti ? 'L10n.of(context).msgcd0b9aca' : 'L10n.of(context).msg4b342999',
           content: isMulti
-              ? 'Are you sure you want to delete ${provider.selectedPaths.length} items? This cannot be undone.'
-              : 'Are you sure you want to delete this item? This cannot be undone.',
+              ? '确定要删除 ${provider.selectedPaths.length} 个项目吗？此操作无法撤销。'
+              : 'L10n.of(context).msgee14ee27',
         );
         if (confirm) {
           if (isMulti) {
@@ -464,7 +465,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                       ],
                     ),
                   ),
-                  if (tab.isLoading && tab.currentFiles.isNotEmpty)
+                  if (tab.isLoading)
                     LinearProgressIndicator(
                       minHeight: 2.0,
                       backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
@@ -555,7 +556,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                                   ),
                                                   const SizedBox(height: 16),
                                                   Text(
-                                                    '空文件夹',
+                                                    'L10n.of(context).msge9691076',
                                                     style: theme.textTheme.titleMedium?.copyWith(
                                                       fontWeight: FontWeight.bold,
                                                       color: theme.colorScheme.onSurface,
@@ -814,7 +815,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                     padding: EdgeInsets.zero,
                                   ),
                                   child: const Text(
-                                    '取消操作',
+                                    'L10n.of(context).msg17093362',
                                     style: TextStyle(fontSize: 12),
                                   ),
                                 ),
@@ -998,21 +999,22 @@ class _PaneBrowserState extends State<PaneBrowser> {
                   ],
                 ),
               ),
-              IconButton(
-                icon: const Icon(Broken.more, size: 16),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
-                onPressed: () {
-                  _activatePane(provider);
-                  FileActionSheet.show(
-                    context,
-                    (action) => _handleAction(context, action, folder.path),
-                    isArchive: false,
-                    showShare: true,
-                    showInLocation: true,
-                  );
-                },
-              ),
+              if (!context.select<FileManagerProvider, bool>((p) => p.hideActionMenuButtons))
+                IconButton(
+                  icon: const Icon(Broken.more, size: 16),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+                  onPressed: () {
+                    _activatePane(provider);
+                    FileActionSheet.show(
+                      context,
+                      (action) => _handleAction(context, action, folder.path),
+                      isArchive: false,
+                      showShare: true,
+                      showInLocation: true,
+                    );
+                  },
+                ),
             ],
           ),
         ),
@@ -1127,21 +1129,22 @@ class _PaneBrowserState extends State<PaneBrowser> {
                   ],
                 ),
               ),
-              IconButton(
-                icon: const Icon(Broken.more, size: 16),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
-                onPressed: () {
-                  _activatePane(provider);
-                  FileActionSheet.show(
-                    context,
-                    (action) => _handleAction(context, action, file.path),
-                    isArchive: FileUtils.isArchive(file.path),
-                    showShare: true,
-                    showInLocation: true,
-                  );
-                },
-              ),
+              if (!context.select<FileManagerProvider, bool>((p) => p.hideActionMenuButtons))
+                IconButton(
+                  icon: const Icon(Broken.more, size: 16),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+                  onPressed: () {
+                    _activatePane(provider);
+                    FileActionSheet.show(
+                      context,
+                      (action) => _handleAction(context, action, file.path),
+                      isArchive: FileUtils.isArchive(file.path),
+                      showShare: true,
+                      showInLocation: true,
+                    );
+                  },
+                ),
             ],
           ),
         ),
@@ -1160,7 +1163,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
       case FileFilterType.all:
         break;
       case FileFilterType.documents:
-        label = '仅文档';
+        label = 'L10n.of(context).msg0c36f64f';
         icon = Broken.document;
         color = Colors.blueAccent;
         break;
@@ -1170,7 +1173,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
         color = Colors.purpleAccent;
         break;
       case FileFilterType.audio:
-        label = '仅音频';
+        label = 'L10n.of(context).msg26b041dd';
         icon = Broken.music;
         color = Colors.greenAccent;
         break;
@@ -1180,7 +1183,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
         color = Colors.redAccent;
         break;
       case FileFilterType.archives:
-        label = '仅压缩包';
+        label = 'L10n.of(context).msge632ba85';
         icon = Broken.archive;
         color = Colors.brown;
         break;

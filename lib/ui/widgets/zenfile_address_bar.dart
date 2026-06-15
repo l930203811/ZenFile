@@ -9,6 +9,7 @@ import '../../services/root_shizuku_service.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import 'drag_drop_action_dialog.dart';
 import 'package:flutter/services.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class BreadcrumbSegment {
   final String name;
@@ -126,7 +127,7 @@ class _ZenFileAddressBarState extends State<ZenFileAddressBar> {
       }
     } else {
       // Fallback: Absolute path segments
-      list.add(BreadcrumbSegment(name: '根目录', path: '/'));
+      list.add(BreadcrumbSegment(name: 'L10n.of(context).msgc2b9f4b9', path: '/'));
       final parts = path.split('/').where((e) => e.isNotEmpty).toList();
       String current = '';
       for (final part in parts) {
@@ -271,7 +272,7 @@ class _ZenFileAddressBarState extends State<ZenFileAddressBar> {
                           ? Padding(
                               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
                               child: Text(
-                                '未找到匹配的目录或文件',
+                                'L10n.of(context).msg7d6c1284',
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   color: theme.colorScheme.onSurface.withOpacity(0.6),
                                   fontStyle: FontStyle.italic,
@@ -456,7 +457,7 @@ class _ZenFileAddressBarState extends State<ZenFileAddressBar> {
                         border: InputBorder.none,
                         isDense: true,
                         contentPadding: EdgeInsets.symmetric(vertical: 12),
-                        hintText: '输入绝对路径...',
+                        hintText: 'L10n.of(context).msg6cbbf7d9',
                       ),
                       textInputAction: TextInputAction.go,
                       keyboardType: TextInputType.text,

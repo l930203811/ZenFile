@@ -4,6 +4,7 @@ import '../../../../core/icon_fonts/broken_icons.dart';
 import '../../../../models/app_info_model.dart';
 import '../../../../services/app_manager_service.dart';
 import '../../../../core/utils.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class AppOptionsSheet extends StatelessWidget {
   final AppInfoModel app;
@@ -99,7 +100,7 @@ class AppOptionsSheet extends StatelessWidget {
             _buildBottomSheetActionItem(
               theme: theme,
               icon: Broken.play,
-              label: '启动应用',
+              label: 'L10n.of(context).msg753cdb55',
               color: theme.colorScheme.primary,
               onTap: () {
                 Navigator.pop(context);
@@ -119,12 +120,12 @@ class AppOptionsSheet extends StatelessWidget {
             _buildBottomSheetActionItem(
               theme: theme,
               icon: Broken.document_download,
-              label: '备份APK',
+              label: 'L10n.of(context).apk3',
               color: Colors.orangeAccent,
               onTap: () async {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('正在备份APK...')),
+                  const SnackBar(content: Text('L10n.of(context).apk4')),
                 );
                 final success = await AppManagerService.backupApp(app);
                 if (context.mounted) {
@@ -133,7 +134,7 @@ class AppOptionsSheet extends StatelessWidget {
                       content: Text(
                         success
                             ? 'APK backed up successfully to ZenFile/Backups/Apps/'
-                            : '备份APK失败',
+                            : 'L10n.of(context).apk5',
                       ),
                     ),
                   );
@@ -144,7 +145,7 @@ class AppOptionsSheet extends StatelessWidget {
             _buildBottomSheetActionItem(
               theme: theme,
               icon: Broken.export_1,
-              label: '分享APK文件',
+              label: 'L10n.of(context).apk6',
               color: Colors.teal,
               onTap: () {
                 Navigator.pop(context);
@@ -155,7 +156,7 @@ class AppOptionsSheet extends StatelessWidget {
               _buildBottomSheetActionItem(
                 theme: theme,
                 icon: Broken.trash,
-                label: '卸载应用',
+                label: 'L10n.of(context).msgeb3d7d70',
                 color: Colors.redAccent,
                 onTap: () {
                   Navigator.pop(context);

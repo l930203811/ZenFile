@@ -8,6 +8,7 @@ import '../../core/utils.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../services/archive_service.dart';
 import 'internal_file_picker_screen.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class ArchiveItem {
   final String name;
@@ -263,7 +264,7 @@ class _ArchiveViewerScreenState extends State<ArchiveViewerScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('删除所选项目', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        title: const Text('L10n.of(context).msg765d1698', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         content: Text('确定要删除选中的 ${_selectedInternalPaths.length} 个项目吗？此操作无法撤销。'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('取消')),
@@ -288,7 +289,7 @@ class _ArchiveViewerScreenState extends State<ArchiveViewerScreen> {
 
       if (mounted) {
         if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('项目删除成功 ✓')));
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('L10n.of(context).msg365f2f0a')));
         } else {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('删除项目失败')));
         }
@@ -462,9 +463,9 @@ class _ArchiveViewerScreenState extends State<ArchiveViewerScreen> {
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _archive == null
-                ? const Center(child: Text('无法读取压缩包'))
+                ? const Center(child: Text('L10n.of(context).msg39cb3352'))
                 : items.isEmpty
-                    ? const Center(child: Text('文件夹为空'))
+                    ? const Center(child: Text('L10n.of(context).msg4614630a'))
                     : ListView.builder(
                         physics: const BouncingScrollPhysics(),
                         padding: const EdgeInsets.symmetric(vertical: 8),
@@ -557,7 +558,7 @@ class _ArchiveViewerScreenState extends State<ArchiveViewerScreen> {
                                             children: [
                                               Icon(Broken.document_download, size: 20, color: theme.colorScheme.primary),
                                               const SizedBox(width: 12),
-                                              const Text('解压到当前文件夹', style: TextStyle(fontWeight: FontWeight.w500)),
+                                              const Text('L10n.of(context).msg99abedc6', style: TextStyle(fontWeight: FontWeight.w500)),
                                             ],
                                           ),
                                         ),
@@ -581,7 +582,7 @@ class _ArchiveViewerScreenState extends State<ArchiveViewerScreen> {
             : FloatingActionButton.extended(
                 onPressed: _addNewFile,
                 icon: const Icon(Broken.add),
-                label: const Text('添加文件'),
+                label: const Text('L10n.of(context).msg8d0cfb58'),
               ),
       ),
     );

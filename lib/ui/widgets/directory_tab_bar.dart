@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import '../../providers/file_manager_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
   final FileManagerProvider provider;
@@ -36,7 +37,7 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
                 final tab = tabs[index];
                 final isSelected = index == activeIndex;
                 final isRoot = tab.currentPath == provider.rootPath;
-                final title = isRoot ? '主目录' : p.basename(tab.currentPath);
+                final title = isRoot ? 'L10n.of(context).msgfefea1b3' : p.basename(tab.currentPath);
 
                 return Container(
                   margin: const EdgeInsets.only(right: 4),
@@ -112,7 +113,7 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
             constraints: const BoxConstraints(),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             icon: const Icon(Broken.add, size: 20),
-            tooltip: '新建标签页',
+            tooltip: 'L10n.of(context).msgb52d4a73',
             onPressed: () {
               provider.addTab(provider.rootPath);
               // 自动滚动到新标签页
@@ -145,7 +146,7 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
                   children: [
                     Icon(Broken.copy, size: 18),
                     SizedBox(width: 10),
-                    Text('复制标签页', style: TextStyle(fontWeight: FontWeight.w500)),
+                    Text('L10n.of(context).msg4e9c344a', style: TextStyle(fontWeight: FontWeight.w500)),
                   ],
                 ),
               ),
@@ -155,7 +156,7 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
                   children: [
                     Icon(Broken.close_circle, size: 18),
                     SizedBox(width: 10),
-                    Text('关闭其他标签页', style: TextStyle(fontWeight: FontWeight.w500)),
+                    Text('L10n.of(context).msg7716532d', style: TextStyle(fontWeight: FontWeight.w500)),
                   ],
                 ),
               ),
@@ -212,14 +213,14 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        tab.currentPath == provider.rootPath ? '主目录' : p.basename(tab.currentPath),
+                        tab.currentPath == provider.rootPath ? 'L10n.of(context).msgfefea1b3' : p.basename(tab.currentPath),
                         style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                       ),
                     ),
                     Text(
-                      '双击关闭标签页',
+                      'L10n.of(context).msgd78603eb',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurface.withOpacity(0.4),
                         fontSize: 11,

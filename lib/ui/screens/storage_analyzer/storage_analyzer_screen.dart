@@ -8,6 +8,7 @@ import '../../../core/utils.dart';
 import '../../../services/app_manager_service.dart';
 import '../media_category_screen.dart';
 import 'app_manager_screen.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class StorageAnalyzerScreen extends StatefulWidget {
   final String? initialVolumePath;
@@ -160,14 +161,14 @@ class _StorageAnalyzerScreenState extends State<StorageAnalyzerScreen> with Sing
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          '存储分析',
+          'L10n.of(context).msga22ddaae',
           style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             onPressed: _startStorageScan,
-            tooltip: '重新扫描存储',
+            tooltip: 'L10n.of(context).msgaae779d4',
           ),
         ],
       ),
@@ -211,7 +212,7 @@ class _StorageAnalyzerScreenState extends State<StorageAnalyzerScreen> with Sing
             ),
             const SizedBox(height: 32),
             Text(
-              '正在扫描设备存储',
+              'L10n.of(context).msg7ae97495',
               style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
@@ -316,7 +317,7 @@ class _StorageAnalyzerScreenState extends State<StorageAnalyzerScreen> with Sing
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '总存储',
+                        'L10n.of(context).msga5e5bf71',
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.textTheme.bodyMedium?.color?.withOpacity(0.5),
                         ),
@@ -385,7 +386,7 @@ class _StorageAnalyzerScreenState extends State<StorageAnalyzerScreen> with Sing
             child: Row(
               children: [
                 Text(
-                  '分类明细',
+                  'L10n.of(context).msg652be256',
                   style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ],

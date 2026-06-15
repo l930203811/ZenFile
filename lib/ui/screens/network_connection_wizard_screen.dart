@@ -9,6 +9,7 @@ import '../../services/remote/ftp_client.dart';
 import '../../services/remote/sftp_client.dart';
 import '../../services/remote/webdav_client.dart';
 import '../../services/remote/lan_client.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class NetworkConnectionWizardScreen extends StatefulWidget {
   final NetworkConnectionModel? existingConnection;
@@ -36,10 +37,10 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
   bool _isTesting = false;
   int _testStepIndex = 0;
   final List<String> _testSteps = [
-    '正在解析主机地址...',
+    'L10n.of(context).msgb5bc0bf1',
     '正在检查端口状态...',
-    '正在验证凭据...',
-    '正在挂载存储卷...',
+    'L10n.of(context).msg3005ba4d',
+    'L10n.of(context).msgab36a8c6',
   ];
 
   @override
@@ -114,7 +115,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
         _portController.text = '21';
       } else if (protocol == 'SFTP') {
         _portController.text = '22';
-      } else if (protocol == '局域网/SMB') {
+      } else if (protocol == 'L10n.of(context).smb') {
         _portController.text = '445';
       } else if (protocol == 'WebDav') {
         _webdavProtocol = 'http';
@@ -183,13 +184,13 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                 children: [
                   Icon(Icons.warning_amber_rounded, color: Colors.orange),
                   SizedBox(width: 8),
-                  Text('系统应用已禁用', style: TextStyle(fontFamily: 'LexendDeca', fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text('L10n.of(context).msgdf434415', style: TextStyle(fontFamily: 'LexendDeca', fontSize: 18, fontWeight: FontWeight.bold)),
                 ],
               ),
               content: const Text(
-                '您的设备没有启用默认的系统文件/文档应用（DocumentsUI），'
-                '这是 Android 选择和挂载目录所必需的。\n\n'
-                '请检查"文件"或"文档"系统应用是否在设备设置中被禁用，'
+                'L10n.of(context).documentsui'
+                'L10n.of(context).androidnn'
+                'L10n.of(context).msgb2af4e30'
                 '或启用它以使用 SAF 目录功能。',
                 style: TextStyle(fontSize: 14),
               ),
@@ -222,14 +223,14 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
 
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请输入连接名称')),
+        const SnackBar(content: Text('L10n.of(context).msg65c7ecb6')),
       );
       return;
     }
 
     if (_hostController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请输入服务器地址/主机名')),
+        const SnackBar(content: Text('L10n.of(context).msg69e3963c')),
       );
       return;
     }
@@ -270,7 +271,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
           protocol: _webdavProtocol,
           rootPath: path,
         );
-      } else if (_selectedType == '局域网/SMB') {
+      } else if (_selectedType == 'L10n.of(context).smb') {
         client = LanClient(host: host, port: port, username: username, password: password);
       }
 
@@ -353,7 +354,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
           onPressed: _prevStep,
         ),
         title: const Text(
-          '远程连接',
+          'L10n.of(context).msgce1ec2ce',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
@@ -423,11 +424,11 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
   // --- Step 1: Protocol Grid Selection ---
   Widget _buildProtocolSelectionStep(ThemeData theme) {
     final protocols = [
-      {'name': '局域网/SMB', 'desc': 'Local Area Network & SMB NAS Share', 'color': const Color(0xFF5B21B6)},
-      {'name': 'FTP', 'desc': '标准文件传输协议', 'color': const Color(0xFFF97316)},
-      {'name': 'SFTP', 'desc': 'SSH安全文件传输服务器', 'color': const Color(0xFF0D9488)},
-      {'name': 'WebDav', 'desc': 'HTTP网页分布式创作', 'color': const Color(0xFFE11D48)},
-      {'name': 'SAF Folder', 'desc': 'Android 存储访问框架 (SD 卡 / 外部存储)', 'color': const Color(0xFF0284C7)},
+      {'name': 'L10n.of(context).smb', 'desc': 'Local Area Network & SMB NAS Share', 'color': const Color(0xFF5B21B6)},
+      {'name': 'FTP', 'desc': 'L10n.of(context).msg25557d1f', 'color': const Color(0xFFF97316)},
+      {'name': 'SFTP', 'desc': 'L10n.of(context).ssh', 'color': const Color(0xFF0D9488)},
+      {'name': 'WebDav', 'desc': 'L10n.of(context).http', 'color': const Color(0xFFE11D48)},
+      {'name': 'SAF Folder', 'desc': 'L10n.of(context).androidsd', 'color': const Color(0xFF0284C7)},
     ];
 
     return ScrollConfiguration(
@@ -436,12 +437,12 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
         padding: const EdgeInsets.all(20.0),
         children: [
           const Text(
-            '选择网络服务',
+            'L10n.of(context).msg8486035b',
             style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca'),
           ),
           const SizedBox(height: 6),
           Text(
-            '将远程服务器或 NAS 共享挂载为 ZenFile 存储列表中的动态驱动器。',
+            'L10n.of(context).naszenfile',
             style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withOpacity(0.6)),
           ),
           const SizedBox(height: 24),
@@ -550,7 +551,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                       ),
                     ),
                     Text(
-                      '输入连接详情以链接此网络存储卷。',
+                      'L10n.of(context).msg5c808d9a',
                       style: TextStyle(
                         fontSize: 12.5,
                         color: theme.colorScheme.onSurface.withOpacity(0.5),
@@ -582,8 +583,8 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
           _buildTextField(
             controller: _hostController,
             hint: _selectedType == 'WebDav'
-                ? '例如：192.168.1.100 或 192.168.1.100/dav'
-                : '例如：192.168.1.100 或 nas.local',
+                ? 'L10n.of(context).dav'
+                : 'L10n.of(context).naslocal',
             icon: Broken.global,
           ),
           const SizedBox(height: 18),
@@ -601,7 +602,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
             _buildInputLabel('路径'),
             _buildTextField(
             controller: _pathController,
-            hint: '例如：/dav 或 /',
+            hint: 'L10n.of(context).dav1',
             icon: Broken.folder_open,
           ),
             const SizedBox(height: 18),
@@ -610,12 +611,12 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
           _buildInputLabel('用户名（可选）'),
           _buildTextField(
             controller: _usernameController,
-            hint: '例如：anonymous 或 admin',
+            hint: 'L10n.of(context).anonymousadmin',
             icon: Broken.user,
           ),
           const SizedBox(height: 18),
 
-          _buildInputLabel('密码（可选）'),
+          _buildInputLabel('L10n.of(context).msgeec70cd2'),
           _buildTextField(
             controller: _passwordController,
             hint: '••••••••',
@@ -706,7 +707,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
           const SizedBox(height: 32),
 
           Text(
-            '正在创建挂载点...',
+            'L10n.of(context).msgf1fa9d44',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -852,7 +853,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
     Color color;
 
     switch (name) {
-      case '局域网/SMB':
+      case 'L10n.of(context).smb':
         iconData = Icons.dns_rounded;
         color = const Color(0xFF5B21B6);
         break;

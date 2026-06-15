@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/icon_fonts/broken_icons.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class FileActionDialogs {
   static Future<String?> showTextInputDialog(
@@ -146,7 +147,7 @@ class FileActionSheet {
                 ),
                 const SizedBox(height: 8),
                 if (showInLocation)
-                  _buildTile(ctx, theme, icon: Broken.folder_open, title: '在位置中显示', value: 'show_in_location', onAction: onAction),
+                  _buildTile(ctx, theme, icon: Broken.folder_open, title: 'L10n.of(context).msgcd8264f1', value: 'show_in_location', onAction: onAction),
                 if (showShare)
                   _buildTile(ctx, theme, icon: Icons.share_outlined, title: '分享', value: 'share', onAction: onAction),
                 if (isArchive)
@@ -154,7 +155,7 @@ class FileActionSheet {
                 _buildTile(ctx, theme, icon: Broken.box_add, title: '压缩', value: 'archive', onAction: onAction),
                 _buildTile(ctx, theme, icon: Broken.document_copy, title: '复制', value: 'copy', onAction: onAction),
                 _buildTile(ctx, theme, icon: Broken.scissor, title: '剪切', value: 'cut', onAction: onAction),
-                _buildTile(ctx, theme, icon: Broken.edit, title: '重命名', value: 'rename', onAction: onAction),
+                _buildTile(ctx, theme, icon: Broken.edit, title: 'L10n.of(context).msgc8ce4b36', value: 'rename', onAction: onAction),
                 _buildDeleteTile(ctx, theme, onAction: onAction),
                 const SizedBox(height: 8),
               ],

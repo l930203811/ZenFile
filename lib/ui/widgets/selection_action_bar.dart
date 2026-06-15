@@ -11,6 +11,7 @@ import 'create_archive_dialog.dart';
 import 'package:share_plus/share_plus.dart';
 import 'batch_rename_dialog.dart';
 import '../../services/folder_share_service.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class SelectionActionBar extends StatelessWidget {
   final FileManagerProvider provider;
@@ -86,24 +87,8 @@ class SelectionActionBar extends StatelessWidget {
               },
             ),
             _ActionButton(
-              icon: Broken.trash,
-              label: '删除',
-              color: Colors.redAccent,
-              hideLabel: provider.hideActionText,
-              onTap: () async {
-                final confirm = await FileActionDialogs.showConfirmDialog(
-                  context,
-                  title: '删除选中',
-                  content: '确定要删除 $selectedCount 个项目吗？此操作无法撤销。',
-                );
-                if (confirm) {
-                  await provider.deleteSelected();
-                }
-              },
-            ),
-            _ActionButton(
               icon: Broken.edit,
-              label: '重命名',
+              label: 'L10n.of(context).msgc8ce4b36',
               hideLabel: provider.hideActionText,
               onTap: () async {
                 if (selectedCount == 1) {
@@ -111,10 +96,10 @@ class SelectionActionBar extends StatelessWidget {
                   final currentName = p.basename(path);
                   final newName = await FileActionDialogs.showTextInputDialog(
                     context,
-                    title: '重命名',
-                    hint: '输入新名称',
+                    title: 'L10n.of(context).msgc8ce4b36',
+                    hint: 'L10n.of(context).msgf139c5cf',
                     initialValue: currentName,
-                    actionText: '重命名',
+                    actionText: 'L10n.of(context).msgc8ce4b36',
                   );
                   if (newName != null && newName.isNotEmpty) {
                     await provider.renameFile(path, newName);
@@ -122,6 +107,22 @@ class SelectionActionBar extends StatelessWidget {
                   }
                 } else if (selectedCount > 1) {
                   await BatchRenameDialog.show(context, provider);
+                }
+              },
+            ),
+            _ActionButton(
+              icon: Broken.trash,
+              label: '删除',
+              color: Colors.redAccent,
+              hideLabel: provider.hideActionText,
+              onTap: () async {
+                final confirm = await FileActionDialogs.showConfirmDialog(
+                  context,
+                  title: 'L10n.of(context).msgcd0b9aca',
+                  content: '确定要删除 $selectedCount 个项目吗？此操作无法撤销。',
+                );
+                if (confirm) {
+                  await provider.deleteSelected();
                 }
               },
             ),
@@ -188,7 +189,7 @@ class SelectionActionBar extends StatelessWidget {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(allPinned ? '已取消置顶所选项目' : '已将所选项目置顶'),
+                        content: Text(allPinned ? 'L10n.of(context).msga9b87614' : '已将所选项目置顶'),
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
@@ -216,7 +217,7 @@ class SelectionActionBar extends StatelessWidget {
                         children: [
                           Icon(Broken.clipboard, size: 20),
                           SizedBox(width: 12),
-                          Text('粘贴到此处', style: TextStyle(fontWeight: FontWeight.w500)),
+                          Text('L10n.of(context).msg419be096', style: TextStyle(fontWeight: FontWeight.w500)),
                         ],
                       ),
                     ),
@@ -250,7 +251,7 @@ class SelectionActionBar extends StatelessWidget {
                           color: allPinned ? Colors.orange : null,
                         ),
                         const SizedBox(width: 12),
-                        Text(allPinned ? '取消置顶' : '置顶', style: const TextStyle(fontWeight: FontWeight.w500)),
+                        Text(allPinned ? 'L10n.of(context).msg84e4fac9' : '置顶', style: const TextStyle(fontWeight: FontWeight.w500)),
                       ],
                     ),
                   ),
@@ -412,7 +413,7 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
                 children: [
                   CircularProgressIndicator(),
                   SizedBox(height: 16),
-                  Text('正在计算大小...', style: TextStyle(color: Colors.grey)),
+                  Text('L10n.of(context).msg3be9abab', style: TextStyle(color: Colors.grey)),
                 ],
               ),
             )
@@ -434,20 +435,20 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
                         value: '${_folderCount - 1} subfolder(s), $_fileCount file(s)',
                       ),
                     if (_lastModified != null)
-                      _CopyablePropertyRow(label: '修改时间', value: FileUtils.formatDate(_lastModified!)),
+                      _CopyablePropertyRow(label: 'L10n.of(context).msg1303e638', value: FileUtils.formatDate(_lastModified!)),
                     if (_mimeType.isNotEmpty) _CopyablePropertyRow(label: '类型', value: _mimeType),
                     if (_permissions.isNotEmpty) _CopyablePropertyRow(label: '权限', value: _permissions),
                   ] else ...[
                     _CopyablePropertyRow(
-                      label: '已选择项目',
+                      label: 'L10n.of(context).msg880a18f3',
                       value: '$count items ($_folderCount folder(s), $_fileCount file(s))',
                     ),
                     _CopyablePropertyRow(
-                      label: '总大小',
+                      label: 'L10n.of(context).msgea9ecb93',
                       value: '${FileUtils.formatBytes(_totalBytes, 2)} ($_totalBytes bytes)',
                     ),
                     const SizedBox(height: 12),
-                    const Text('已选择路径：', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                    const Text('L10n.of(context).msg7704aa2c', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                     const SizedBox(height: 8),
                     ConstrainedBox(
                       constraints: const BoxConstraints(maxHeight: 180),

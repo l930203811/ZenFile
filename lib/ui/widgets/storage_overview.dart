@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../core/utils.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class StorageOverviewCard extends StatelessWidget {
   const StorageOverviewCard({super.key});
@@ -55,7 +56,7 @@ class StorageOverviewCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                '内部存储',
+                'L10n.of(context).msg21cefa9b',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,

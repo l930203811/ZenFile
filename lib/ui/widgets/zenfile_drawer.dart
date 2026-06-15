@@ -8,6 +8,7 @@ import '../screens/vault_lock_screen.dart';
 import '../screens/ftp_server_screen.dart';
 import '../../services/network_connections_service.dart';
 import '../screens/network_connection_wizard_screen.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 import '../screens/about_screen.dart';
 import '../screens/web_sharing_screen.dart';
@@ -80,7 +81,7 @@ class ZenFileDrawer extends StatelessWidget {
                     _buildDrawerTile(
                       context,
                       icon: Broken.cpu,
-                      title: '系统根目录',
+                      title: 'L10n.of(context).msgd730e478',
                       isSelected: fileManager.rootPath == '/',
                       onTap: () {
                         Navigator.pop(context);
@@ -92,7 +93,7 @@ class ZenFileDrawer extends StatelessWidget {
                     _buildDrawerTile(
                       context,
                       icon: Broken.search_normal,
-                      title: '全局搜索',
+                      title: 'L10n.of(context).msg681c0f39',
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.push(context, MaterialPageRoute(builder: (_) => const GlobalSearchScreen()));
@@ -116,7 +117,7 @@ class ZenFileDrawer extends StatelessWidget {
                         child: ExpansionTile(
                           leading: Icon(Broken.wifi_square, size: 22, color: theme.colorScheme.onSurface.withOpacity(0.8)),
                           title: Text(
-                            '服务器与工具',
+                            'L10n.of(context).msgf13fc21c',
                             style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withOpacity(0.9)),
                           ),
                           iconColor: theme.colorScheme.primary,
@@ -136,7 +137,7 @@ class ZenFileDrawer extends StatelessWidget {
                             _buildDrawerTile(
                               context,
                               icon: Broken.wifi,
-                              title: 'FTP 服务器',
+                              title: 'L10n.of(context).ftp2',
                               onTap: () {
                                 Navigator.pop(context);
                                 Navigator.push(context, MaterialPageRoute(builder: (_) => const FtpServerScreen()));
@@ -154,7 +155,7 @@ class ZenFileDrawer extends StatelessWidget {
                             ...connections.map((conn) {
                               IconData iconData;
                               switch (conn.type) {
-                                case '局域网/SMB':
+                                case 'L10n.of(context).smb':
                                   iconData = Icons.dns_rounded;
                                   break;
                                 case 'FTP':
@@ -196,7 +197,7 @@ class ZenFileDrawer extends StatelessWidget {
                             _buildDrawerTile(
                               context,
                               icon: Icons.add_link_rounded,
-                              title: '添加远程连接',
+                              title: 'L10n.of(context).msg41e625d1',
                               onTap: () {
                                 Navigator.pop(context);
                                 Navigator.push(
@@ -245,7 +246,7 @@ class ZenFileDrawer extends StatelessWidget {
                             _buildDrawerTile(
                               context,
                               icon: Icons.add_rounded,
-                              title: '添加快捷方式',
+                              title: 'L10n.of(context).msge4c84f81',
                               onTap: () async {
                                 final fileManager = context.read<FileManagerProvider>();
                                 final mediaProvider = context.read<MediaProvider>();
@@ -270,7 +271,7 @@ class ZenFileDrawer extends StatelessWidget {
                     _buildDrawerTile(
                       context,
                       icon: isDark ? Broken.sun_1 : Broken.moon,
-                      title: isDark ? '浅色模式' : '深色模式',
+                      title: isDark ? 'L10n.of(context).msg8755e992' : '深色模式',
                       trailing: Transform.scale(
                         scale: 0.85,
                         child: Switch(
@@ -285,7 +286,7 @@ class ZenFileDrawer extends StatelessWidget {
                     _buildDrawerTile(
                       context,
                       icon: Broken.setting_2,
-                      title: '更多设置',
+                      title: 'L10n.of(context).msg1cf6fcd3',
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.push(context, MaterialPageRoute(builder: (_) => const MoreSettingsScreen()));
@@ -294,7 +295,7 @@ class ZenFileDrawer extends StatelessWidget {
                     _buildDrawerTile(
                       context,
                       icon: Broken.info_circle,
-                      title: '关于 ZenFile',
+                      title: 'L10n.of(context).zenfile1',
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.push(
@@ -313,7 +314,7 @@ class ZenFileDrawer extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12.0),
               child: Text(
-                'ZenFile v1.0.3',
+                'ZenFile v1.0.4',
                 style: TextStyle(fontSize: 11.5, color: theme.colorScheme.onSurface.withOpacity(0.4), fontWeight: FontWeight.w600),
               ),
             ),
@@ -366,7 +367,7 @@ class ZenFileDrawer extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '精品媒体套件',
+                  'L10n.of(context).msgeef7e30c',
                   style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12.5, fontWeight: FontWeight.w500),
                 ),
               ],

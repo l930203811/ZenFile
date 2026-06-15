@@ -11,6 +11,7 @@ import 'package:path/path.dart' as p;
 import 'internal_file_picker_screen.dart';
 import 'backup_settings_screen.dart';
 import '../../services/settings_backup_service.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class MoreSettingsScreen extends StatefulWidget {
   const MoreSettingsScreen({super.key});
@@ -50,11 +51,11 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
 
   String _getTrailingInfoTypeLabel(String option) {
     switch (option) {
-      case 'dateTime': return '日期和时间';
-      case 'sizeAndCount': return '文件大小 / 项目数';
+      case 'dateTime': return 'L10n.of(context).msg11fea612';
+      case 'sizeAndCount': return 'L10n.of(context).msg12e86877';
       case 'none':
       default:
-        return '无 / 隐藏信息';
+        return 'L10n.of(context).msg7908038f';
     }
   }
 
@@ -67,9 +68,9 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
       builder: (ctx) {
         final current = fileManager.trailingInfoType;
         final options = [
-          {'key': 'none', 'name': '无 / 隐藏信息', 'desc': '不在右侧显示额外信息'},
-          {'key': 'dateTime', 'name': '日期和时间', 'desc': '显示最后修改日期和时间'},
-          {'key': 'sizeAndCount', 'name': '文件大小 / 项目数', 'desc': '文件显示大小，文件夹显示项目数'},
+          {'key': 'none', 'name': 'L10n.of(context).msg7908038f', 'desc': 'L10n.of(context).msg9136d4dc'},
+          {'key': 'dateTime', 'name': 'L10n.of(context).msg11fea612', 'desc': 'L10n.of(context).msg84986f91'},
+          {'key': 'sizeAndCount', 'name': 'L10n.of(context).msg12e86877', 'desc': 'L10n.of(context).msgfc000737'},
         ];
 
         return SafeArea(
@@ -87,12 +88,12 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                     const SizedBox(height: 16),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text('选择尾部信息样式', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                      child: Text('L10n.of(context).msg83de16cc', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                     ),
                     const SizedBox(height: 6),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text('选择当三点操作按钮隐藏时，文件和文件夹右侧显示的内容。', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6), fontSize: 13)),
+                      child: Text('L10n.of(context).msgaa2a18a1', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6), fontSize: 13)),
                     ),
                     const SizedBox(height: 16),
                     ListView.builder(
@@ -194,32 +195,32 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
     final fileManager = context.watch<FileManagerProvider>();
 
     // Visibilities for global search filtering
-    final showAddressBarVis = _shouldShow('显示地址栏', '在文件列表顶部显示可编辑的Windows资源管理器风格地址栏');
-    final preferFoldersVis = _shouldShow('默认相册首选视图', '直接以文件夹（相册）首选视图打开图片/视频快捷分类');
-    final hideNavBarVis = _shouldShow('隐藏安卓导航栏', '隐藏底部导航栏以最大化屏幕空间（上滑可显示）');
-    final resetViewersVis = _shouldShow('重置默认文件查看器', '清除所有已记住的"打开方式"关联');
-    final skipDialogVis = _shouldShow('跳过"打开方式"对话框', '绕过应用选择对话框，直接使用默认查看器打开文件');
-    final defaultBrowseVis = _shouldShow('默认主页', '选择启动时进入分类页或浏览页');
-    final swipeModeVis = _shouldShow('滑动切换页面', '选择单指或双指左右滑动切换页面');
-    final showFloatingVis = _shouldShow('显示浮动按钮', '在浏览页底部启用快速创建（+）按钮');
-    final showHiddenVis = _shouldShow('显示隐藏文件', '显示以点(.)开头的系统文件和文件夹');
-    final folderFileCountVis = _shouldShow('显示文件夹和文件计数标题', '在存储标题栏下显示文件夹和文件总数');
-    final use24HourVis = _shouldShow('使用24小时制', '在列表中切换12小时（AM/PM）和24小时时间格式');
-    final hideTimeDateVis = _shouldShow('在列表中隐藏时间和日期', '完全隐藏文件和文件夹的修改日期和时间');
-    final folderContentsVis = _shouldShow('显示文件夹内容计数', '计算并显示目录中的文件和文件夹总数');
-    final folderSizesVis = _shouldShow('显示文件夹大小', '计算并显示目录中所有文件的总大小（可能影响列表性能）');
-    final bottomActionBarVis = _shouldShow('显示底部导航栏', '在浏览页启用底部操作栏');
-    final hideActionTextVis = _shouldShow('隐藏操作栏文字标签', '在浏览和媒体页面的选择操作栏中仅显示图标');
-    final highlightFolderVis = _shouldShow('高亮退出文件夹', '返回时短暂闪烁并滚动到刚退出的文件夹');
-    final mediaPreviewsVis = _shouldShow('显示媒体预览', '显示实际的图片和视频缩略图而非通用文件图标');
-    final adaptiveNamesVis = _shouldShow('自适应多行文件名', '允许文件名换行显示3行而非截断');
-    final hideActionButtonsVis = _shouldShow('隐藏三点操作按钮', '隐藏文件夹和文件旁边的三点菜单按钮');
-    final dragDropVis = _shouldShow('启用拖放', '长按并拖动文件夹或文件将其移动到其他文件夹');
-    final confirmDragVis = fileManager.enableDragDrop && _shouldShow('确认拖放操作', '拖放文件时显示选项弹窗（复制、移动、压缩）');
-    final multipleTabsVis = _shouldShow('启用多标签页', '允许在单独的标签页中打开多个文件夹以便快速导航');
-    final splitScreenVis = _shouldShow('启用分屏', '并排浏览两个目录并轻松传输文件');
+    final showAddressBarVis = _shouldShow('L10n.of(context).msg26e4c5d6', 'L10n.of(context).windows1');
+    final preferFoldersVis = _shouldShow('L10n.of(context).msg20c87c8e', 'L10n.of(context).msg74e86197');
+    final hideNavBarVis = _shouldShow('L10n.of(context).msga1fbf3c6', 'L10n.of(context).msg02dddc02');
+    final resetViewersVis = _shouldShow('重置默认文件查看器', 'L10n.of(context).msg50923c95');
+    final skipDialogVis = _shouldShow('L10n.of(context).msg6fdc09ac', 'L10n.of(context).msg0a4b0442');
+    final defaultBrowseVis = _shouldShow('L10n.of(context).msga432d127', 'L10n.of(context).msge1157984');
+    final swipeModeVis = _shouldShow('L10n.of(context).msgd48a082d', 'L10n.of(context).msgae1854a2');
+    final showFloatingVis = _shouldShow('显示浮动按钮', 'L10n.of(context).msg11b1ec65');
+    final showHiddenVis = _shouldShow('L10n.of(context).msg124d9054', 'L10n.of(context).msg7e7765b6');
+    final folderFileCountVis = _shouldShow('L10n.of(context).msg86f3d70f', 'L10n.of(context).msg40e9c325');
+    final use24HourVis = _shouldShow('使用24小时制', 'L10n.of(context).ampm24');
+    final hideTimeDateVis = _shouldShow('L10n.of(context).msg25ee6612', 'L10n.of(context).msg337359a6');
+    final folderContentsVis = _shouldShow('显示文件夹内容计数', 'L10n.of(context).msga517863e');
+    final folderSizesVis = _shouldShow('显示文件夹大小', 'L10n.of(context).msg59a24fcb');
+    final bottomActionBarVis = _shouldShow('显示底部导航栏', 'L10n.of(context).msg309e2a28');
+    final hideActionTextVis = _shouldShow('隐藏操作栏文字标签', 'L10n.of(context).msg9b7639ac');
+    final highlightFolderVis = _shouldShow('L10n.of(context).msgd33e3082', 'L10n.of(context).msgdd69671b');
+    final mediaPreviewsVis = _shouldShow('显示媒体预览', 'L10n.of(context).msg57736228');
+    final adaptiveNamesVis = _shouldShow('自适应多行文件名', 'L10n.of(context).msg1eda8a50');
+    final hideActionButtonsVis = _shouldShow('隐藏三点操作按钮', 'L10n.of(context).msgc7196afd');
+    final dragDropVis = _shouldShow('启用拖放', 'L10n.of(context).msgad54815d');
+    final confirmDragVis = fileManager.enableDragDrop && _shouldShow('确认拖放操作', 'L10n.of(context).msg5dff8f2d');
+    final multipleTabsVis = _shouldShow('启用多标签页', 'L10n.of(context).msg4b0a7063');
+    final splitScreenVis = _shouldShow('启用分屏', 'L10n.of(context).msgf04ac00d');
     final disableLeftBackVis = false; // 已移除该功能
-    final rememberLastFolderVis = _shouldShow('记住上次打开的文件夹', '启动应用时打开上次浏览的文件夹');
+    final rememberLastFolderVis = _shouldShow('L10n.of(context).msg59c7debc', 'L10n.of(context).msgd1591ba4');
 
     final generalStartupList = [
       defaultBrowseVis,
@@ -261,19 +262,19 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
       hideActionTextVis,
     ];
 
-    final recycleBinVis = _shouldShow('启用回收站', '将删除的文件和文件夹移至隐藏的回收站而非永久删除');
-    final autoDeleteDurationVis = RecycleBinService.isEnabled() && _shouldShow('自动删除回收站时长', _getAutoDeleteDaysLabel(RecycleBinService.getAutoDeleteDays()));
+    final recycleBinVis = _shouldShow('L10n.of(context).msge99f4762', 'L10n.of(context).msg25792550');
+    final autoDeleteDurationVis = RecycleBinService.isEnabled() && _shouldShow('L10n.of(context).msgf0ef894a', _getAutoDeleteDaysLabel(RecycleBinService.getAutoDeleteDays()));
     final recycleBinList = [recycleBinVis, autoDeleteDurationVis];
 
-    final accentColorVis = _shouldShow('主题色 / 动态主题', _getAccentColorLabel(fileManager.accentColorOption));
-    final folderIconVis = _shouldShow('文件夹图标样式', _getFolderIconLabel(fileManager.folderIconOption));
-    final menuIconStyleVis = _shouldShow('应用抽屉按钮样式', _getMenuIconStyleLabel(fileManager.menuIconStyle));
-    final amoledVis = _shouldShow('AMOLED 纯黑模式', '在深色模式下为AMOLED屏幕使用纯黑背景');
+    final accentColorVis = _shouldShow('L10n.of(context).msg1b9633fe', _getAccentColorLabel(fileManager.accentColorOption));
+    final folderIconVis = _shouldShow('L10n.of(context).msg64db4c2d', _getFolderIconLabel(fileManager.folderIconOption));
+    final menuIconStyleVis = _shouldShow('L10n.of(context).msgece44aa5', _getMenuIconStyleLabel(fileManager.menuIconStyle));
+    final amoledVis = _shouldShow('L10n.of(context).amoled1', 'L10n.of(context).amoled2');
     final appIconVis = _shouldShow('应用图标', _getAppIconLabel(fileManager.activeAppIcon));
-    final typographyVis = _shouldShow('应用排版 / 字体', _getFontFamilyLabel(fileManager.fontFamilyOption));
+    final typographyVis = _shouldShow('L10n.of(context).msg5228b59f', _getFontFamilyLabel(fileManager.fontFamilyOption));
     final appearanceList = [accentColorVis, folderIconVis, menuIconStyleVis, amoledVis, appIconVis, typographyVis];
 
-    final customizeShortcutsVis = _shouldShow('自定义快捷方式', '重新排列和切换快捷分类项目的可见性');
+    final customizeShortcutsVis = _shouldShow('L10n.of(context).msge7d18d73', 'L10n.of(context).msg036fe6a4');
     final homeScreenList = [customizeShortcutsVis];
 
     final hasAnyMatch = generalStartupList.contains(true) ||
@@ -307,7 +308,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                     fontWeight: FontWeight.w500,
                   ),
                   decoration: InputDecoration(
-                    hintText: '搜索设置...',
+                    hintText: 'L10n.of(context).msgead3e5c5',
                     border: InputBorder.none,
                     hintStyle: TextStyle(
                       color: theme.colorScheme.onSurface.withOpacity(0.4),
@@ -319,7 +320,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                     });
                   },
                 )
-              : const Text('更多设置'),
+              : const Text('L10n.of(context).msg1cf6fcd3'),
           leading: IconButton(
             icon: const Icon(Broken.arrow_left),
             onPressed: () {
@@ -369,7 +370,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16.0, left: 4.0),
                   child: Text(
-                    '设置分类',
+                    'L10n.of(context).msg2590095f',
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: theme.colorScheme.onSurface.withOpacity(0.8),
@@ -380,8 +381,8 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                   context,
                   theme,
                   icon: Broken.setting_2,
-                  title: '常规与行为',
-                  subtitle: '默认屏幕、导航控制和快捷方式',
+                  title: 'L10n.of(context).msgfdae44c3',
+                  subtitle: 'L10n.of(context).msgeae34685',
                   targetScreen: const GeneralSettingsScreen(),
                 ),
                 _buildCategoryCard(
@@ -389,15 +390,15 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                   theme,
                   icon: Broken.colorfilter,
                   title: '外观与主题',
-                  subtitle: '主题、应用图标、文件夹样式和排版',
+                  subtitle: 'L10n.of(context).msg91b228b8',
                   targetScreen: const AppearanceSettingsScreen(),
                 ),
                 _buildCategoryCard(
                   context,
                   theme,
                   icon: Broken.folder_open,
-                  title: '文件浏览器选项',
-                  subtitle: '地址栏、隐藏文件、标签页和拖放',
+                  title: 'L10n.of(context).msgad6e8bb8',
+                  subtitle: 'L10n.of(context).msg8ddc4963',
                   targetScreen: const ExplorerSettingsScreen(),
                 ),
                 _buildCategoryCard(
@@ -405,7 +406,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                   theme,
                   icon: Broken.text,
                   title: '列表与布局样式',
-                  subtitle: '文件夹大小、计数和时间/日期格式',
+                  subtitle: 'L10n.of(context).msg45db4e2a',
                   targetScreen: const LayoutSettingsScreen(),
                 ),
                 _buildCategoryCard(
@@ -413,7 +414,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                   theme,
                   icon: Broken.image,
                   title: '媒体偏好',
-                  subtitle: '默认相册视图和缩略图预览',
+                  subtitle: 'L10n.of(context).msg09ca4d86',
                   targetScreen: const MediaSettingsScreen(),
                 ),
                 _buildCategoryCard(
@@ -421,7 +422,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                   theme,
                   icon: Broken.setting_3,
                   title: '文件操作与查看器',
-                  subtitle: '打开操作和默认查看器配置',
+                  subtitle: 'L10n.of(context).msgeb3693fb',
                   targetScreen: const ActionsSettingsScreen(),
                 ),
                 _buildCategoryCard(
@@ -429,13 +430,13 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                   theme,
                   icon: Broken.trash,
                   title: '回收站',
-                  subtitle: '回收站开关和自动删除时长',
+                  subtitle: 'L10n.of(context).msg3a6a39ae',
                   targetScreen: const TrashSettingsScreen(),
                 ),
                 SettingsTile(
                   icon: Broken.refresh_circle,
-                  title: '备份与恢复',
-                  subtitle: '备份或恢复所有应用设置',
+                  title: 'L10n.of(context).msgb4fbc92c',
+                  subtitle: 'L10n.of(context).msg9edfaff3',
                   trailing: Icon(Icons.chevron_right_rounded, color: theme.colorScheme.onSurface.withOpacity(0.4)),
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BackupSettingsScreen())),
                 ),
@@ -468,7 +469,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          '尝试搜索其他关键词',
+                          'L10n.of(context).msg99c9cc56',
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: theme.colorScheme.onSurface.withOpacity(0.55),
                           ),
@@ -478,28 +479,28 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                   ),
                 ] else ...[
                   if (_shouldShowHeader(generalStartupList) || _shouldShowHeader(selectionActionBarList) || _shouldShowHeader(homeScreenList)) ...[
-                    _buildSectionHeader(theme, '常规与行为'),
+                    _buildSectionHeader(theme, 'L10n.of(context).msgfdae44c3'),
                     if (defaultBrowseVis)
                       SettingsTile(
                         icon: Broken.folder_favorite,
-                        title: '默认主页',
-                        subtitle: fileManager.defaultToBrowseScreen ? '浏览页' : '分类页',
+                        title: 'L10n.of(context).msga432d127',
+                        subtitle: fileManager.defaultToBrowseScreen ? 'L10n.of(context).msg2c8a394a' : 'L10n.of(context).msg226fc6ae',
                         trailing: Icon(Broken.arrow_right_3, size: 18, color: theme.colorScheme.onSurface.withOpacity(0.3)),
                         onTap: () => _showDefaultHomeDialog(context, fileManager),
                       ),
                     if (swipeModeVis)
                       SettingsTile(
                         icon: Broken.arrow_swap,
-                        title: '滑动切换页面',
-                        subtitle: fileManager.swipeMode == 'single' ? '单指滑动' : '双指滑动',
+                        title: 'L10n.of(context).msgd48a082d',
+                        subtitle: fileManager.swipeMode == 'single' ? 'L10n.of(context).msgaac01f32' : 'L10n.of(context).msgbc9bf336',
                         trailing: Icon(Broken.arrow_right_3, size: 18, color: theme.colorScheme.onSurface.withOpacity(0.3)),
                         onTap: () => _showSwipeModeDialog(context, fileManager),
                       ),
                     if (rememberLastFolderVis)
                       SettingsTile(
                         icon: Broken.folder_open,
-                        title: '记住上次打开的文件夹',
-                        subtitle: '启动应用时打开上次浏览的文件夹',
+                        title: 'L10n.of(context).msg59c7debc',
+                        subtitle: 'L10n.of(context).msgd1591ba4',
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
@@ -513,7 +514,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                     SettingsTile(
                       icon: Broken.menu_1,
                       title: '隐藏底部导航标签',
-                      subtitle: '隐藏底部栏（首页/浏览）的文字标签，更简洁紧凑',
+                      subtitle: 'L10n.of(context).msgce732d8a',
                       trailing: Transform.scale(
                         scale: 0.85,
                         child: Switch(
@@ -527,8 +528,8 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                     if (hideNavBarVis)
                       SettingsTile(
                         icon: Icons.android,
-                        title: '隐藏安卓导航栏',
-                        subtitle: '隐藏底部导航栏以最大化屏幕空间（上滑可显示）',
+                        title: 'L10n.of(context).msga1fbf3c6',
+                        subtitle: 'L10n.of(context).msg02dddc02',
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
@@ -543,7 +544,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                       SettingsTile(
                         icon: Broken.menu,
                         title: '显示底部导航栏',
-                        subtitle: '在浏览页启用底部操作栏',
+                        subtitle: 'L10n.of(context).msg309e2a28',
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
@@ -558,7 +559,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                       SettingsTile(
                         icon: Icons.label_off_rounded,
                         title: '隐藏操作栏文字标签',
-                        subtitle: '在浏览和媒体页面的选择操作栏中仅显示图标',
+                        subtitle: 'L10n.of(context).msg9b7639ac',
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
@@ -572,8 +573,8 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                     if (customizeShortcutsVis)
                       SettingsTile(
                         icon: Broken.setting_2,
-                        title: '自定义快捷方式',
-                        subtitle: '重新排列和切换快捷分类项目的可见性',
+                        title: 'L10n.of(context).msge7d18d73',
+                        subtitle: 'L10n.of(context).msg036fe6a4',
                         onTap: () => QuickCategoriesGrid.showCustomizeDialog(context),
                       ),
                   ],
@@ -583,29 +584,29 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                     if (accentColorVis)
                       SettingsTile(
                         icon: Broken.colorfilter,
-                        title: '主题色 / 动态主题',
+                        title: 'L10n.of(context).msg1b9633fe',
                         subtitle: _getAccentColorLabel(fileManager.accentColorOption),
                         onTap: () => _showThemePickerDialog(context, fileManager, theme),
                       ),
                     if (folderIconVis)
                       SettingsTile(
                         icon: FileUtils.getFolderIcon(fileManager.folderIconOption),
-                        title: '文件夹图标样式',
+                        title: 'L10n.of(context).msg64db4c2d',
                         subtitle: _getFolderIconLabel(fileManager.folderIconOption),
                         onTap: () => _showFolderIconPickerDialog(context, fileManager, theme),
                       ),
                     if (menuIconStyleVis)
                       SettingsTile(
                         icon: Broken.category,
-                        title: '应用抽屉按钮样式',
+                        title: 'L10n.of(context).msgece44aa5',
                         subtitle: _getMenuIconStyleLabel(fileManager.menuIconStyle),
                         onTap: () => _showMenuIconStylePickerDialog(context, fileManager, theme),
                       ),
                     if (amoledVis)
                       SettingsTile(
                         icon: Broken.moon,
-                        title: 'AMOLED 纯黑模式',
-                        subtitle: '在深色模式下为AMOLED屏幕使用纯黑背景',
+                        title: 'L10n.of(context).amoled1',
+                        subtitle: 'L10n.of(context).amoled2',
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
@@ -626,19 +627,19 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                     if (typographyVis)
                       SettingsTile(
                         icon: Broken.text,
-                        title: '应用排版 / 字体',
+                        title: 'L10n.of(context).msg5228b59f',
                         subtitle: _getFontFamilyLabel(fileManager.fontFamilyOption),
                         onTap: () => _showFontFamilyPickerDialog(context, fileManager, theme),
                       ),
                   ],
                   if (_shouldShowHeader(fileExplorerList)) ...[
                     const SizedBox(height: 24),
-                    _buildSectionHeader(theme, '文件浏览器与导航'),
+                    _buildSectionHeader(theme, 'L10n.of(context).msg1cfeaace'),
                     if (showAddressBarVis)
                       SettingsTile(
                         icon: Broken.edit,
-                        title: '显示地址栏',
-                        subtitle: '在文件列表顶部显示可编辑的Windows资源管理器风格地址栏',
+                        title: 'L10n.of(context).msg26e4c5d6',
+                        subtitle: 'L10n.of(context).windows1',
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
@@ -653,7 +654,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                       SettingsTile(
                         icon: Broken.add_square,
                         title: '显示浮动按钮',
-                        subtitle: '在浏览页底部启用快速创建（+）按钮',
+                        subtitle: 'L10n.of(context).msg11b1ec65',
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
@@ -667,8 +668,8 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                     if (showHiddenVis)
                       SettingsTile(
                         icon: Broken.folder_open,
-                        title: '显示隐藏文件',
-                        subtitle: '显示以点(.)开头的系统文件和文件夹',
+                        title: 'L10n.of(context).msg124d9054',
+                        subtitle: 'L10n.of(context).msg7e7765b6',
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
@@ -682,8 +683,8 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                     if (highlightFolderVis)
                       SettingsTile(
                         icon: Broken.colorfilter,
-                        title: '高亮退出文件夹',
-                        subtitle: '返回时短暂闪烁并滚动到刚退出的文件夹',
+                        title: 'L10n.of(context).msgd33e3082',
+                        subtitle: 'L10n.of(context).msgdd69671b',
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
@@ -698,7 +699,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                       SettingsTile(
                         icon: Broken.category,
                         title: '启用多标签页',
-                        subtitle: '允许在单独的标签页中打开多个文件夹以便快速导航',
+                        subtitle: 'L10n.of(context).msg4b0a7063',
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
@@ -713,7 +714,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                       SettingsTile(
                         icon: Icons.splitscreen,
                         title: '启用分屏',
-                        subtitle: '并排浏览两个目录并轻松传输文件',
+                        subtitle: 'L10n.of(context).msgf04ac00d',
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
@@ -728,7 +729,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                       SettingsTile(
                         icon: Broken.folder_connection,
                         title: '启用拖放',
-                        subtitle: '长按并拖动文件夹或文件将其移动到其他文件夹',
+                        subtitle: 'L10n.of(context).msgad54815d',
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
@@ -745,7 +746,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                         child: SettingsTile(
                           icon: Broken.task_square,
                           title: '确认拖放操作',
-                          subtitle: '拖放文件时显示选项弹窗（复制、移动、压缩）',
+                          subtitle: 'L10n.of(context).msg5dff8f2d',
                           trailing: Transform.scale(
                             scale: 0.85,
                             child: Switch(
@@ -764,8 +765,8 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                     if (folderFileCountVis)
                       SettingsTile(
                         icon: Broken.document_text_1,
-                        title: '显示文件夹和文件计数标题',
-                        subtitle: '在存储标题栏下显示文件夹和文件总数',
+                        title: 'L10n.of(context).msg86f3d70f',
+                        subtitle: 'L10n.of(context).msg40e9c325',
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
@@ -780,7 +781,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                       SettingsTile(
                         icon: Broken.folder_open,
                         title: '显示文件夹内容计数',
-                        subtitle: '计算并显示目录中的文件和文件夹总数',
+                        subtitle: 'L10n.of(context).msga517863e',
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
@@ -795,7 +796,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                       SettingsTile(
                         icon: Broken.document_text_1,
                         title: '显示文件夹大小',
-                        subtitle: '计算并显示目录中所有文件的总大小（可能影响列表性能）',
+                        subtitle: 'L10n.of(context).msg59a24fcb',
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
@@ -810,7 +811,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                       SettingsTile(
                         icon: Icons.access_time_rounded,
                         title: '使用24小时制',
-                        subtitle: '在列表中切换12小时（AM/PM）和24小时时间格式',
+                        subtitle: 'L10n.of(context).ampm24',
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
@@ -824,8 +825,8 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                     if (hideTimeDateVis)
                       SettingsTile(
                         icon: Icons.visibility_off_rounded,
-                        title: '在列表中隐藏时间和日期',
-                        subtitle: '完全隐藏文件和文件夹的修改日期和时间',
+                        title: 'L10n.of(context).msg25ee6612',
+                        subtitle: 'L10n.of(context).msg337359a6',
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
@@ -840,7 +841,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                       SettingsTile(
                         icon: Broken.text,
                         title: '自适应多行文件名',
-                        subtitle: '允许文件名换行显示3行而非截断',
+                        subtitle: 'L10n.of(context).msg1eda8a50',
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
@@ -855,7 +856,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                       SettingsTile(
                         icon: Icons.more_vert_rounded,
                         title: '隐藏三点操作按钮',
-                        subtitle: '隐藏文件夹和文件旁边的三点菜单按钮',
+                        subtitle: 'L10n.of(context).msgc7196afd',
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
@@ -875,12 +876,12 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                   ],
                   if (_shouldShowHeader(mediaActionsList)) ...[
                     const SizedBox(height: 24),
-                    _buildSectionHeader(theme, '媒体与默认操作'),
+                    _buildSectionHeader(theme, 'L10n.of(context).msga4333788'),
                     if (preferFoldersVis)
                       SettingsTile(
                         icon: Broken.folder_2,
-                        title: '默认相册首选视图',
-                        subtitle: '直接以文件夹（相册）首选视图打开图片/视频快捷分类',
+                        title: 'L10n.of(context).msg20c87c8e',
+                        subtitle: 'L10n.of(context).msg74e86197',
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
@@ -906,7 +907,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                       SettingsTile(
                         icon: Broken.image,
                         title: '显示媒体预览',
-                        subtitle: '显示实际的图片和视频缩略图而非通用文件图标',
+                        subtitle: 'L10n.of(context).msg57736228',
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
@@ -920,8 +921,8 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                     if (skipDialogVis)
                       SettingsTile(
                         icon: Broken.setting_3,
-                        title: '跳过"打开方式"对话框',
-                        subtitle: '绕过应用选择对话框，直接使用默认查看器打开文件',
+                        title: 'L10n.of(context).msg6fdc09ac',
+                        subtitle: 'L10n.of(context).msg0a4b0442',
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
@@ -936,13 +937,13 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                       SettingsTile(
                         icon: Broken.refresh_2,
                         title: '重置默认文件查看器',
-                        subtitle: '清除所有已记住的"打开方式"关联',
+                        subtitle: 'L10n.of(context).msg50923c95',
                         onTap: () async {
                           await PreferencesService.clearAllDefaultOpenActions();
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('所有默认查看器选择已重置'),
+                                content: Text('L10n.of(context).msg72b1f919'),
                                 behavior: SnackBarBehavior.floating,
                               ),
                             );
@@ -956,8 +957,8 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                     if (recycleBinVis)
                       SettingsTile(
                         icon: Broken.trash,
-                        title: '启用回收站',
-                        subtitle: '将删除的文件和文件夹移至隐藏的回收站而非永久删除',
+                        title: 'L10n.of(context).msge99f4762',
+                        subtitle: 'L10n.of(context).msg25792550',
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
@@ -980,7 +981,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                     if (autoDeleteDurationVis)
                       SettingsTile(
                         icon: Icons.access_time_rounded,
-                        title: '自动删除回收站时长',
+                        title: 'L10n.of(context).msgf0ef894a',
                         subtitle: _getAutoDeleteDaysLabel(RecycleBinService.getAutoDeleteDays()),
                         onTap: () => _showAutoDeleteDaysPickerDialog(context, theme, () {
                           setState(() {});
@@ -1076,7 +1077,7 @@ class GeneralSettingsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('常规与行为'),
+        title: const Text('L10n.of(context).msgfdae44c3'),
         leading: IconButton(
           icon: const Icon(Broken.arrow_left),
           onPressed: () => Navigator.pop(context),
@@ -1089,22 +1090,22 @@ class GeneralSettingsScreen extends StatelessWidget {
           children: [
             SettingsTile(
               icon: Broken.folder_favorite,
-              title: '默认主页',
-              subtitle: fileManager.defaultToBrowseScreen ? '浏览页' : '分类页',
+              title: 'L10n.of(context).msga432d127',
+              subtitle: fileManager.defaultToBrowseScreen ? 'L10n.of(context).msg2c8a394a' : 'L10n.of(context).msg226fc6ae',
               trailing: Icon(Broken.arrow_right_3, size: 18, color: theme.colorScheme.onSurface.withOpacity(0.3)),
               onTap: () => _showDefaultHomeDialog(context, fileManager),
             ),
             SettingsTile(
               icon: Broken.arrow_swap,
-              title: '滑动切换页面',
-              subtitle: fileManager.swipeMode == 'single' ? '单指滑动' : '双指滑动',
+              title: 'L10n.of(context).msgd48a082d',
+              subtitle: fileManager.swipeMode == 'single' ? 'L10n.of(context).msgaac01f32' : 'L10n.of(context).msgbc9bf336',
               trailing: Icon(Broken.arrow_right_3, size: 18, color: theme.colorScheme.onSurface.withOpacity(0.3)),
               onTap: () => _showSwipeModeDialog(context, fileManager),
             ),
             SettingsTile(
               icon: Broken.folder_open,
-              title: '记住上次打开的文件夹',
-              subtitle: '启动应用时打开上次浏览的文件夹',
+              title: 'L10n.of(context).msg59c7debc',
+              subtitle: 'L10n.of(context).msgd1591ba4',
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
@@ -1117,8 +1118,8 @@ class GeneralSettingsScreen extends StatelessWidget {
             ),
             SettingsTile(
               icon: Icons.android,
-              title: '隐藏安卓导航栏',
-              subtitle: '隐藏底部导航栏以最大化屏幕空间（上滑可显示）',
+              title: 'L10n.of(context).msga1fbf3c6',
+              subtitle: 'L10n.of(context).msg02dddc02',
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
@@ -1132,7 +1133,7 @@ class GeneralSettingsScreen extends StatelessWidget {
             SettingsTile(
               icon: Broken.menu,
               title: '显示底部导航栏',
-              subtitle: '在浏览页启用底部操作栏',
+              subtitle: 'L10n.of(context).msg309e2a28',
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
@@ -1146,7 +1147,7 @@ class GeneralSettingsScreen extends StatelessWidget {
             SettingsTile(
               icon: Icons.label_off_rounded,
               title: '隐藏操作栏文字标签',
-              subtitle: '在浏览和媒体页面的选择操作栏中仅显示图标',
+              subtitle: 'L10n.of(context).msg9b7639ac',
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
@@ -1159,8 +1160,8 @@ class GeneralSettingsScreen extends StatelessWidget {
             ),
             SettingsTile(
               icon: Broken.setting_2,
-              title: '自定义快捷方式',
-              subtitle: '重新排列和切换快捷分类项目的可见性',
+              title: 'L10n.of(context).msge7d18d73',
+              subtitle: 'L10n.of(context).msg036fe6a4',
               onTap: () => QuickCategoriesGrid.showCustomizeDialog(context),
             ),
           ],
@@ -1193,26 +1194,26 @@ class AppearanceSettingsScreen extends StatelessWidget {
           children: [
             SettingsTile(
               icon: Broken.colorfilter,
-              title: '主题色 / 动态主题',
+              title: 'L10n.of(context).msg1b9633fe',
               subtitle: _getAccentColorLabel(fileManager.accentColorOption),
               onTap: () => _showThemePickerDialog(context, fileManager, theme),
             ),
             SettingsTile(
               icon: FileUtils.getFolderIcon(fileManager.folderIconOption),
-              title: '文件夹图标样式',
+              title: 'L10n.of(context).msg64db4c2d',
               subtitle: _getFolderIconLabel(fileManager.folderIconOption),
               onTap: () => _showFolderIconPickerDialog(context, fileManager, theme),
             ),
             SettingsTile(
               icon: Broken.category,
-              title: '应用抽屉按钮样式',
+              title: 'L10n.of(context).msgece44aa5',
               subtitle: _getMenuIconStyleLabel(fileManager.menuIconStyle),
               onTap: () => _showMenuIconStylePickerDialog(context, fileManager, theme),
             ),
             SettingsTile(
               icon: Broken.moon,
-              title: 'AMOLED 纯黑模式',
-              subtitle: '在深色模式下为AMOLED屏幕使用纯黑背景',
+              title: 'L10n.of(context).amoled1',
+              subtitle: 'L10n.of(context).amoled2',
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
@@ -1231,13 +1232,13 @@ class AppearanceSettingsScreen extends StatelessWidget {
             ),
             SettingsTile(
               icon: Broken.text,
-              title: '应用排版 / 字体',
+              title: 'L10n.of(context).msg5228b59f',
               subtitle: _getFontFamilyLabel(fileManager.fontFamilyOption),
               onTap: () => _showFontFamilyPickerDialog(context, fileManager, theme),
             ),
             SettingsTile(
               icon: Broken.shapes,
-              title: '分类图标形状',
+              title: 'L10n.of(context).msg2c3c5a35',
               subtitle: fileManager.categoryIconShape == 'square' ? '方形' : '圆形',
               onTap: () => _showCategoryIconShapePickerDialog(context, fileManager, theme),
             ),
@@ -1258,7 +1259,7 @@ class ExplorerSettingsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('文件浏览器选项'),
+        title: const Text('L10n.of(context).msgad6e8bb8'),
         leading: IconButton(
           icon: const Icon(Broken.arrow_left),
           onPressed: () => Navigator.pop(context),
@@ -1271,8 +1272,8 @@ class ExplorerSettingsScreen extends StatelessWidget {
           children: [
             SettingsTile(
               icon: Broken.edit,
-              title: '显示地址栏',
-              subtitle: '在文件列表顶部显示可编辑的Windows资源管理器风格地址栏',
+              title: 'L10n.of(context).msg26e4c5d6',
+              subtitle: 'L10n.of(context).windows1',
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
@@ -1286,7 +1287,7 @@ class ExplorerSettingsScreen extends StatelessWidget {
             SettingsTile(
               icon: Broken.add_square,
               title: '显示浮动按钮',
-              subtitle: '在浏览页底部启用快速创建（+）按钮',
+              subtitle: 'L10n.of(context).msg11b1ec65',
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
@@ -1299,8 +1300,8 @@ class ExplorerSettingsScreen extends StatelessWidget {
             ),
             SettingsTile(
               icon: Broken.folder_open,
-              title: '显示隐藏文件',
-              subtitle: '显示以点(.)开头的系统文件和文件夹',
+              title: 'L10n.of(context).msg124d9054',
+              subtitle: 'L10n.of(context).msg7e7765b6',
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
@@ -1313,8 +1314,8 @@ class ExplorerSettingsScreen extends StatelessWidget {
             ),
             SettingsTile(
               icon: Broken.colorfilter,
-              title: '高亮退出文件夹',
-              subtitle: '返回时短暂闪烁并滚动到刚退出的文件夹',
+              title: 'L10n.of(context).msgd33e3082',
+              subtitle: 'L10n.of(context).msgdd69671b',
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
@@ -1328,7 +1329,7 @@ class ExplorerSettingsScreen extends StatelessWidget {
             SettingsTile(
               icon: Broken.category,
               title: '启用多标签页',
-              subtitle: '允许在单独的标签页中打开多个文件夹以便快速导航',
+              subtitle: 'L10n.of(context).msg4b0a7063',
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
@@ -1342,7 +1343,7 @@ class ExplorerSettingsScreen extends StatelessWidget {
             SettingsTile(
               icon: Icons.splitscreen,
               title: '启用分屏',
-              subtitle: '并排浏览两个目录并轻松传输文件',
+              subtitle: 'L10n.of(context).msgf04ac00d',
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
@@ -1356,7 +1357,7 @@ class ExplorerSettingsScreen extends StatelessWidget {
             SettingsTile(
               icon: Broken.folder_connection,
               title: '启用拖放',
-              subtitle: '长按并拖动文件夹或文件将其移动到其他文件夹',
+              subtitle: 'L10n.of(context).msgad54815d',
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
@@ -1373,7 +1374,7 @@ class ExplorerSettingsScreen extends StatelessWidget {
                 child: SettingsTile(
                   icon: Broken.task_square,
                   title: '确认拖放操作',
-                  subtitle: '拖放文件时显示选项弹窗（复制、移动、压缩）',
+                  subtitle: 'L10n.of(context).msg5dff8f2d',
                   trailing: Transform.scale(
                     scale: 0.85,
                     child: Switch(
@@ -1415,8 +1416,8 @@ class LayoutSettingsScreen extends StatelessWidget {
           children: [
             SettingsTile(
               icon: Broken.document_text_1,
-              title: '显示文件夹和文件计数标题',
-              subtitle: '在存储标题栏下显示文件夹和文件总数',
+              title: 'L10n.of(context).msg86f3d70f',
+              subtitle: 'L10n.of(context).msg40e9c325',
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
@@ -1430,7 +1431,7 @@ class LayoutSettingsScreen extends StatelessWidget {
             SettingsTile(
               icon: Broken.folder_open,
               title: '显示文件夹内容计数',
-              subtitle: '计算并显示目录中的文件和文件夹总数',
+              subtitle: 'L10n.of(context).msga517863e',
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
@@ -1444,7 +1445,7 @@ class LayoutSettingsScreen extends StatelessWidget {
             SettingsTile(
               icon: Broken.document_text_1,
               title: '显示文件夹大小',
-              subtitle: '计算并显示目录中所有文件的总大小（可能影响列表性能）',
+              subtitle: 'L10n.of(context).msg59a24fcb',
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
@@ -1458,7 +1459,7 @@ class LayoutSettingsScreen extends StatelessWidget {
             SettingsTile(
               icon: Icons.access_time_rounded,
               title: '使用24小时制',
-              subtitle: '在列表中切换12小时（AM/PM）和24小时时间格式',
+              subtitle: 'L10n.of(context).ampm24',
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
@@ -1471,8 +1472,8 @@ class LayoutSettingsScreen extends StatelessWidget {
             ),
             SettingsTile(
               icon: Icons.visibility_off_rounded,
-              title: '在列表中隐藏时间和日期',
-              subtitle: '完全隐藏文件和文件夹的修改日期和时间',
+              title: 'L10n.of(context).msg25ee6612',
+              subtitle: 'L10n.of(context).msg337359a6',
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
@@ -1486,7 +1487,7 @@ class LayoutSettingsScreen extends StatelessWidget {
             SettingsTile(
               icon: Broken.text,
               title: '自适应多行文件名',
-              subtitle: '允许文件名换行显示3行而非截断',
+              subtitle: 'L10n.of(context).msg1eda8a50',
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
@@ -1500,7 +1501,7 @@ class LayoutSettingsScreen extends StatelessWidget {
             SettingsTile(
               icon: Icons.more_vert_rounded,
               title: '隐藏三点操作按钮',
-              subtitle: '隐藏文件夹和文件旁边的三点菜单按钮',
+              subtitle: 'L10n.of(context).msgc7196afd',
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
@@ -1542,9 +1543,9 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
     switch (days) {
       case 0: return '不自动清理';
       case 1: return '每天';
-      case 3: return '每3天';
+      case 3: return 'L10n.of(context).msg267fcd86';
       case 7: return '每周';
-      case 14: return '每两周';
+      case 14: return 'L10n.of(context).msg9104c0c5';
       case 30: return '每月';
       default: return '每$days天';
     }
@@ -1570,7 +1571,7 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
       await PreferencesService.saveRemoteCacheLastCleanTime(DateTime.now().millisecondsSinceEpoch);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('远程服务器缓存已清除'), behavior: SnackBarBehavior.floating),
+          const SnackBar(content: Text('L10n.of(context).msg673ad9d4'), behavior: SnackBarBehavior.floating),
         );
       }
     } catch (e) {
@@ -1599,7 +1600,7 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
                   decoration: BoxDecoration(color: Colors.grey.withOpacity(0.3), borderRadius: BorderRadius.circular(2)),
                 ),
                 const SizedBox(height: 16),
-                const Text('自动清理缓存', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const Text('L10n.of(context).msgd9f142c4', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 ...options.map((days) => ListTile(
                   leading: Icon(
@@ -1641,8 +1642,8 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
           children: [
             SettingsTile(
               icon: Broken.folder_2,
-              title: '默认相册首选视图',
-              subtitle: '直接以文件夹（相册）首选视图打开图片/视频快捷分类',
+              title: 'L10n.of(context).msg20c87c8e',
+              subtitle: 'L10n.of(context).msg74e86197',
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
@@ -1667,7 +1668,7 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
             SettingsTile(
               icon: Broken.image,
               title: '显示媒体预览',
-              subtitle: '显示实际的图片和视频缩略图而非通用文件图标',
+              subtitle: 'L10n.of(context).msg57736228',
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
@@ -1682,7 +1683,7 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
             SettingsTile(
               icon: Broken.trash,
               title: '清除远程缓存',
-              subtitle: '立即清除网络服务器下载的缓存文件',
+              subtitle: 'L10n.of(context).msg5472ef41',
               trailing: IconButton(
                 icon: Icon(Broken.trash, color: theme.colorScheme.error, size: 20),
                 onPressed: _clearRemoteCache,
@@ -1692,7 +1693,7 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
             SettingsTile(
               icon: Broken.folder_open,
               title: '查看缓存目录',
-              subtitle: '浏览远程服务器缓存文件所在目录',
+              subtitle: 'L10n.of(context).msgac7687d9',
               trailing: Icon(Icons.chevron_right_rounded, color: theme.colorScheme.onSurface.withOpacity(0.4)),
               onTap: () {
                 final provider = context.read<FileManagerProvider>();
@@ -1705,7 +1706,7 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
             ),
             SettingsTile(
               icon: Broken.clock,
-              title: '自动清理缓存',
+              title: 'L10n.of(context).msgd9f142c4',
               subtitle: '定期自动清理远程服务器缓存文件: ${_getAutoCleanLabel(_autoCleanDays)}',
               trailing: Icon(Icons.chevron_right_rounded, color: theme.colorScheme.onSurface.withOpacity(0.4)),
               onTap: _showAutoCleanPicker,
@@ -1713,7 +1714,7 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
             SettingsTile(
               icon: Broken.image,
               title: '远程媒体缩略图',
-              subtitle: '为网络服务器上的图片和视频显示缩略图预览',
+              subtitle: 'L10n.of(context).msg225f6249',
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
@@ -1761,8 +1762,8 @@ class ActionsSettingsScreen extends StatelessWidget {
           children: [
             SettingsTile(
               icon: Broken.setting_3,
-              title: '跳过"打开方式"对话框',
-              subtitle: '绕过应用选择对话框，直接使用默认查看器打开文件',
+              title: 'L10n.of(context).msg6fdc09ac',
+              subtitle: 'L10n.of(context).msg0a4b0442',
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
@@ -1776,13 +1777,13 @@ class ActionsSettingsScreen extends StatelessWidget {
             SettingsTile(
               icon: Broken.refresh_2,
               title: '重置默认文件查看器',
-              subtitle: '清除所有已记住的"打开方式"关联',
+              subtitle: 'L10n.of(context).msg50923c95',
               onTap: () async {
                 await PreferencesService.clearAllDefaultOpenActions();
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('所有默认查看器选择已重置'),
+                      content: Text('L10n.of(context).msg72b1f919'),
                       behavior: SnackBarBehavior.floating,
                     ),
                   );
@@ -1823,8 +1824,8 @@ class _TrashSettingsScreenState extends State<TrashSettingsScreen> {
           children: [
             SettingsTile(
               icon: Broken.trash,
-              title: '启用回收站',
-              subtitle: '将删除的文件和文件夹移至隐藏的回收站而非永久删除',
+              title: 'L10n.of(context).msge99f4762',
+              subtitle: 'L10n.of(context).msg25792550',
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
@@ -1847,7 +1848,7 @@ class _TrashSettingsScreenState extends State<TrashSettingsScreen> {
             if (RecycleBinService.isEnabled())
               SettingsTile(
                 icon: Icons.access_time_rounded,
-                title: '自动删除回收站时长',
+                title: 'L10n.of(context).msgf0ef894a',
                 subtitle: _getAutoDeleteDaysLabel(RecycleBinService.getAutoDeleteDays()),
                 onTap: () => _showAutoDeleteDaysPickerDialog(context, theme, () {
                   setState(() {});
@@ -1866,73 +1867,73 @@ class _TrashSettingsScreenState extends State<TrashSettingsScreen> {
 
 String _getAccentColorLabel(String option) {
   switch (option) {
-    case 'dynamic': return 'Material You（动态壁纸取色）';
-    case 'orange': return '活力橙';
-    case 'purple': return '皇家紫';
+    case 'dynamic': return 'L10n.of(context).materialyou';
+    case 'orange': return 'L10n.of(context).msg05cff3ad';
+    case 'purple': return 'L10n.of(context).msg5ed35657';
     case 'green': return '翠绿';
     case 'red': return '深红';
-    case 'gold': return '琥珀金';
-    case 'pink': return '赛博粉';
-    case 'sapphire': return '蓝宝石';
-    case 'forest': return '森林绿';
-    case 'peach': return '日落桃';
+    case 'gold': return 'L10n.of(context).msge74a7283';
+    case 'pink': return 'L10n.of(context).msg3904ba87';
+    case 'sapphire': return 'L10n.of(context).msgd58d230a';
+    case 'forest': return 'L10n.of(context).msg508b005e';
+    case 'peach': return 'L10n.of(context).msgefdde083';
     case 'blue':
     default:
-      return '默认蓝（标志性蓝色）';
+      return 'L10n.of(context).msg628e73a9';
   }
 }
 
 String _getFolderIconLabel(String option) {
   switch (option) {
-    case 'solid': return '经典实心';
-    case 'rounded': return '现代圆角';
-    case 'special': return '星标特别';
-    case 'snippet': return '文档片段';
-    case 'outlined': return '极简描边';
+    case 'solid': return 'L10n.of(context).msg8244d240';
+    case 'rounded': return 'L10n.of(context).msgf08d9b15';
+    case 'special': return 'L10n.of(context).msge5fba3dd';
+    case 'snippet': return 'L10n.of(context).msgfe4254dc';
+    case 'outlined': return 'L10n.of(context).msg84719fd5';
     case 'broken':
     default:
-      return 'ZenFile 断线描边';
+      return 'L10n.of(context).zenfile4';
   }
 }
 
 String _getMenuIconStyleLabel(String option) {
   switch (option) {
-    case 'category': return '分类网格 / Vuesax 网格';
+    case 'category': return 'L10n.of(context).vuesax';
     case 'hamburger':
     default:
-      return '汉堡菜单 / 经典菜单';
+      return 'L10n.of(context).msg5dc988f4';
   }
 }
 
 String _getAppIconLabel(String option) {
   switch (option) {
-    case 'design1': return '极简风';
-    case 'design2': return '玻璃拟态';
-    case 'design3': return '3D 可爱';
-    case 'design4': return '赛博朋克';
-    case 'design5': return '自然禅意';
-    case 'custom': return '自定义图标';
+    case 'design1': return 'L10n.of(context).msgd06ba04f';
+    case 'design2': return 'L10n.of(context).msg5090469e';
+    case 'design3': return 'L10n.of(context).d';
+    case 'design4': return 'L10n.of(context).msg67836b24';
+    case 'design5': return 'L10n.of(context).msgf08c8dc4';
+    case 'custom': return 'L10n.of(context).msg7372dc9f';
     case 'default':
     default:
-      return '默认标志（自然禅意）';
+      return 'L10n.of(context).msg3004e40a';
   }
 }
 
 String _getFontFamilyLabel(String option) {
   switch (option) {
-    case 'nothing': return '点阵与无衬线';
-    case 'outfit': return '欧菲特现代无衬线';
-    case 'jetbrains': return '捷脑科技等宽';
-    case 'montserrat': return '蒙特都市无衬线';
-    case 'custom': return '自定义导入字体';
+    case 'nothing': return 'L10n.of(context).msgc540e940';
+    case 'outfit': return 'L10n.of(context).msg00ea5776';
+    case 'jetbrains': return 'L10n.of(context).msg7bdbfaa5';
+    case 'montserrat': return 'L10n.of(context).msgdcb4082d';
+    case 'custom': return 'L10n.of(context).msg9d7001d9';
     case 'default':
     default:
-      return '标志性默认';
+      return 'L10n.of(context).msgc2f5e9e4';
   }
 }
 
 String _getAutoDeleteDaysLabel(int days) {
-  if (days <= 0) return '从不（禁用自动删除）';
+  if (days <= 0) return 'L10n.of(context).msg6a7c758f';
   if (days == 1) return '1 天后';
   return '$days 天后';
 }
@@ -1956,18 +1957,18 @@ void _showDefaultHomeDialog(BuildContext context, FileManagerProvider fileManage
               ),
             ),
             const SizedBox(height: 20),
-            Text('默认主页', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+            Text('L10n.of(context).msga432d127', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
             const SizedBox(height: 6),
-            Text('选择启动应用时默认显示的页面', style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withOpacity(0.5))),
+            Text('L10n.of(context).msgfe76ae54', style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withOpacity(0.5))),
             const SizedBox(height: 20),
             _buildSelectionTile(
-              ctx, theme, Broken.category, '分类页', '启动时显示快捷分类页面',
+              ctx, theme, Broken.category, 'L10n.of(context).msg226fc6ae', 'L10n.of(context).msg8af2412a',
               selected: !fileManager.defaultToBrowseScreen,
               onTap: () { Navigator.pop(ctx); fileManager.setDefaultToBrowseScreen(false); },
             ),
             const SizedBox(height: 8),
             _buildSelectionTile(
-              ctx, theme, Broken.folder_open, '浏览页', '启动时显示文件浏览页面',
+              ctx, theme, Broken.folder_open, 'L10n.of(context).msg2c8a394a', 'L10n.of(context).msg245c3258',
               selected: fileManager.defaultToBrowseScreen,
               onTap: () { Navigator.pop(ctx); fileManager.setDefaultToBrowseScreen(true); },
             ),
@@ -1997,18 +1998,18 @@ void _showSwipeModeDialog(BuildContext context, FileManagerProvider fileManager)
               ),
             ),
             const SizedBox(height: 20),
-            const Text('滑动切换页面', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+            const Text('L10n.of(context).msgd48a082d', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
             const SizedBox(height: 6),
-            Text('选择用单指或双指左右滑动切换页面', style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withOpacity(0.5))),
+            Text('L10n.of(context).msg4439669d', style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withOpacity(0.5))),
             const SizedBox(height: 20),
             _buildSelectionTile(
-              ctx, theme, Broken.arrow_swap, '单指滑动', '单指左右滑动切换分类页、浏览页或打开抽屉',
+              ctx, theme, Broken.arrow_swap, 'L10n.of(context).msgaac01f32', 'L10n.of(context).msg46978666',
               selected: fileManager.swipeMode == 'single',
               onTap: () { Navigator.pop(ctx); fileManager.setSwipeMode('single'); },
             ),
             const SizedBox(height: 8),
             _buildSelectionTile(
-              ctx, theme, Broken.arrow_swap_horizontal, '双指滑动', '双指左右滑动切换分类页、浏览页或打开抽屉',
+              ctx, theme, Broken.arrow_swap_horizontal, 'L10n.of(context).msgbc9bf336', 'L10n.of(context).msg563871d3',
               selected: fileManager.swipeMode == 'dual',
               onTap: () { Navigator.pop(ctx); fileManager.setSwipeMode('dual'); },
             ),
@@ -2075,17 +2076,17 @@ void _showThemePickerDialog(BuildContext context, FileManagerProvider fileManage
     builder: (ctx) {
       final current = fileManager.accentColorOption;
       final options = [
-        {'key': 'blue', 'name': '默认蓝（标志性蓝色）', 'color': const Color(0xFF369FE7)},
-        {'key': 'dynamic', 'name': 'Material You（动态壁纸取色）', 'color': Colors.teal},
-        {'key': 'orange', 'name': '活力橙', 'color': const Color(0xFFFF6D00)},
-        {'key': 'purple', 'name': '皇家紫', 'color': const Color(0xFF8E24AA)},
+        {'key': 'blue', 'name': 'L10n.of(context).msg628e73a9', 'color': const Color(0xFF369FE7)},
+        {'key': 'dynamic', 'name': 'L10n.of(context).materialyou', 'color': Colors.teal},
+        {'key': 'orange', 'name': 'L10n.of(context).msg05cff3ad', 'color': const Color(0xFFFF6D00)},
+        {'key': 'purple', 'name': 'L10n.of(context).msg5ed35657', 'color': const Color(0xFF8E24AA)},
         {'key': 'green', 'name': '翠绿', 'color': const Color(0xFF00C853)},
         {'key': 'red', 'name': '深红', 'color': const Color(0xFFD50000)},
-        {'key': 'gold', 'name': '琥珀金', 'color': const Color(0xFFFFD600)},
-        {'key': 'pink', 'name': '赛博粉', 'color': const Color(0xFFFF2E93)},
-        {'key': 'sapphire', 'name': '蓝宝石', 'color': const Color(0xFF0F52BA)},
-        {'key': 'forest', 'name': '森林绿', 'color': const Color(0xFF228B22)},
-        {'key': 'peach', 'name': '日落桃', 'color': const Color(0xFFFF7F50)},
+        {'key': 'gold', 'name': 'L10n.of(context).msge74a7283', 'color': const Color(0xFFFFD600)},
+        {'key': 'pink', 'name': 'L10n.of(context).msg3904ba87', 'color': const Color(0xFFFF2E93)},
+        {'key': 'sapphire', 'name': 'L10n.of(context).msgd58d230a', 'color': const Color(0xFF0F52BA)},
+        {'key': 'forest', 'name': 'L10n.of(context).msg508b005e', 'color': const Color(0xFF228B22)},
+        {'key': 'peach', 'name': 'L10n.of(context).msgefdde083', 'color': const Color(0xFFFF7F50)},
       ];
 
       return SafeArea(
@@ -2107,7 +2108,7 @@ void _showThemePickerDialog(BuildContext context, FileManagerProvider fileManage
                   const SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text('选择主题色', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                    child: Text('L10n.of(context).msgca71ac0c', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   ),
                   const SizedBox(height: 16),
                   ListView.builder(
@@ -2161,12 +2162,12 @@ void _showFolderIconPickerDialog(BuildContext context, FileManagerProvider fileM
     builder: (ctx) {
       final current = fileManager.folderIconOption;
       final options = [
-        {'key': 'solid', 'name': '经典实心', 'icon': Icons.folder},
-        {'key': 'broken', 'name': 'ZenFile 断线描边', 'icon': Broken.folder},
-        {'key': 'rounded', 'name': '现代圆角', 'icon': Icons.folder_rounded},
-        {'key': 'special', 'name': '星标特别', 'icon': Icons.folder_special_rounded},
-        {'key': 'snippet', 'name': '文档片段', 'icon': Icons.snippet_folder_rounded},
-        {'key': 'outlined', 'name': '极简描边', 'icon': Icons.folder_outlined},
+        {'key': 'solid', 'name': 'L10n.of(context).msg8244d240', 'icon': Icons.folder},
+        {'key': 'broken', 'name': 'L10n.of(context).zenfile4', 'icon': Broken.folder},
+        {'key': 'rounded', 'name': 'L10n.of(context).msgf08d9b15', 'icon': Icons.folder_rounded},
+        {'key': 'special', 'name': 'L10n.of(context).msge5fba3dd', 'icon': Icons.folder_special_rounded},
+        {'key': 'snippet', 'name': 'L10n.of(context).msgfe4254dc', 'icon': Icons.snippet_folder_rounded},
+        {'key': 'outlined', 'name': 'L10n.of(context).msg84719fd5', 'icon': Icons.folder_outlined},
       ];
 
       return SafeArea(
@@ -2188,7 +2189,7 @@ void _showFolderIconPickerDialog(BuildContext context, FileManagerProvider fileM
                   const SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text('选择文件夹图标样式', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                    child: Text('L10n.of(context).msg732630c1', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   ),
                   const SizedBox(height: 16),
                   ListView.builder(
@@ -2240,8 +2241,8 @@ void _showMenuIconStylePickerDialog(BuildContext context, FileManagerProvider fi
     builder: (ctx) {
       final current = fileManager.menuIconStyle;
       final options = [
-        {'key': 'hamburger', 'name': '汉堡菜单 / 经典菜单', 'icon': Broken.menu},
-        {'key': 'category', 'name': '分类网格 / Vuesax 网格', 'icon': Broken.category},
+        {'key': 'hamburger', 'name': 'L10n.of(context).msg5dc988f4', 'icon': Broken.menu},
+        {'key': 'category', 'name': 'L10n.of(context).vuesax', 'icon': Broken.category},
       ];
 
       return SafeArea(
@@ -2263,7 +2264,7 @@ void _showMenuIconStylePickerDialog(BuildContext context, FileManagerProvider fi
                   const SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text('选择抽屉按钮样式', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                    child: Text('L10n.of(context).msgf9224d98', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   ),
                   const SizedBox(height: 16),
                   ListView.builder(
@@ -2338,7 +2339,7 @@ void _showCategoryIconShapePickerDialog(BuildContext context, FileManagerProvide
                   const SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text('选择分类图标形状', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                    child: Text('L10n.of(context).msgc337ecfa', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   ),
                   const SizedBox(height: 16),
                   ListView.builder(
@@ -2401,7 +2402,7 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
               children: [
                 Icon(Broken.category, color: theme.colorScheme.primary, size: 26),
                 const SizedBox(width: 12),
-                const Text('应用启动器图标', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('L10n.of(context).msgf18bc3d9', style: TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
             content: SizedBox(
@@ -2410,7 +2411,7 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
-                    '为应用启动器图标选择一个自定义Logo。注意某些启动器可能需要几秒钟才能更新。',
+                    'L10n.of(context).logo',
                     style: TextStyle(fontSize: 13, height: 1.3, color: Colors.grey),
                   ),
                   const SizedBox(height: 20),
@@ -2429,7 +2430,7 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
                             fileManager,
                             theme,
                             id: 'default',
-                            title: '默认标志',
+                            title: 'L10n.of(context).msg64a6476a',
                             imagePath: 'assets/logo/design_5_nature.jpg',
                           ),
                           _buildIconOptionCard(
@@ -2437,7 +2438,7 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
                             fileManager,
                             theme,
                             id: 'design1',
-                            title: '极简风',
+                            title: 'L10n.of(context).msgd06ba04f',
                             imagePath: 'assets/logo/design_1_minimalist.jpg',
                           ),
                           _buildIconOptionCard(
@@ -2445,7 +2446,7 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
                             fileManager,
                             theme,
                             id: 'design2',
-                            title: '玻璃拟态',
+                            title: 'L10n.of(context).msg5090469e',
                             imagePath: 'assets/logo/design_2_glassmorphism.jpg',
                           ),
                           _buildIconOptionCard(
@@ -2453,7 +2454,7 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
                             fileManager,
                             theme,
                             id: 'design3',
-                            title: '3D 可爱',
+                            title: 'L10n.of(context).d',
                             imagePath: 'assets/logo/design_3_3d_cute.jpg',
                           ),
                           _buildIconOptionCard(
@@ -2461,7 +2462,7 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
                             fileManager,
                             theme,
                             id: 'design4',
-                            title: '赛博朋克',
+                            title: 'L10n.of(context).msg67836b24',
                             imagePath: 'assets/logo/design_4_cyberpunk.jpg',
                           ),
                           _buildIconOptionCard(
@@ -2469,7 +2470,7 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
                             fileManager,
                             theme,
                             id: 'design5',
-                            title: '自然禅意',
+                            title: 'L10n.of(context).msgf08c8dc4',
                             imagePath: 'assets/logo/design_5_nature.jpg',
                           ),
                           _buildCustomIconOptionCard(
@@ -2607,7 +2608,7 @@ Widget _buildCustomIconOptionCard(
             ),
             const SizedBox(height: 8),
             Text(
-              isSelected ? '自定义图标' : '选择自定义图标',
+              isSelected ? 'L10n.of(context).msg7372dc9f' : 'L10n.of(context).msgad76161f',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
@@ -2658,7 +2659,7 @@ Future<void> _pickCustomIcon(BuildContext context, FileManagerProvider fileManag
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('请选择图片文件（PNG/JPG/WEBP）'),
+            content: Text('L10n.of(context).pngjpgwebp'),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -2680,7 +2681,7 @@ Future<void> _pickCustomIcon(BuildContext context, FileManagerProvider fileManag
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('自定义图标已应用'),
+              content: Text('L10n.of(context).msgb06c5c34'),
               behavior: SnackBarBehavior.floating,
               duration: Duration(seconds: 2),
             ),
@@ -2710,13 +2711,13 @@ void _showFontFamilyPickerDialog(BuildContext context, FileManagerProvider fileM
       final current = fileManager.fontFamilyOption;
       final hasCustomFont = fileManager.customFontPath != null;
       final options = [
-        {'key': 'default', 'name': '标志性默认', 'desc': '原始简洁几何风格'},
-        {'key': 'nothing', 'name': '点阵与无衬线', 'desc': '高科技复古点阵标题 + 简洁正文'},
-        {'key': 'outfit', 'name': '欧菲特现代无衬线', 'desc': '超流畅、极简且高级的几何美学'},
-        {'key': 'jetbrains', 'name': '捷脑科技等宽', 'desc': '干净且未来感的开发者等宽风格'},
-        {'key': 'montserrat', 'name': '蒙特都市无衬线', 'desc': '大胆、现代且醒目的字体排版'},
+        {'key': 'default', 'name': 'L10n.of(context).msgc2f5e9e4', 'desc': 'L10n.of(context).msg375c9eb8'},
+        {'key': 'nothing', 'name': 'L10n.of(context).msgc540e940', 'desc': 'L10n.of(context).msg817e321b'},
+        {'key': 'outfit', 'name': 'L10n.of(context).msg00ea5776', 'desc': 'L10n.of(context).msg3c2a24cc'},
+        {'key': 'jetbrains', 'name': 'L10n.of(context).msg7bdbfaa5', 'desc': 'L10n.of(context).msg978f8d11'},
+        {'key': 'montserrat', 'name': 'L10n.of(context).msgdcb4082d', 'desc': 'L10n.of(context).msg93b657aa'},
         if (hasCustomFont)
-          {'key': 'custom', 'name': '自定义字体（${p.basename(fileManager.customFontPath!)}）', 'desc': '您加载的自定义字体文件'},
+          {'key': 'custom', 'name': '自定义字体（${p.basename(fileManager.customFontPath!)}）', 'desc': 'L10n.of(context).msg9db40ad6'},
       ];
 
       return SafeArea(
@@ -2742,7 +2743,7 @@ void _showFontFamilyPickerDialog(BuildContext context, FileManagerProvider fileM
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '选择一种精美的字体来自定义ZenFile的整体视觉主题',
+                    'L10n.of(context).zenfile5',
                     style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6), fontSize: 13, fontFamily: 'LexendDeca'),
                   ),
                   const SizedBox(height: 16),
@@ -2782,7 +2783,7 @@ void _showFontFamilyPickerDialog(BuildContext context, FileManagerProvider fileM
                   OutlinedButton.icon(
                     icon: const Icon(Broken.document_upload, size: 20),
                     label: Text(
-                      hasCustomFont ? '替换自定义字体文件' : '导入自定义字体文件 (.ttf/.otf)',
+                      hasCustomFont ? 'L10n.of(context).msg7372efa5' : '导入自定义字体文件 (.ttf/.otf)',
                       style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'LexendDeca'),
                     ),
                     style: OutlinedButton.styleFrom(
@@ -2812,7 +2813,7 @@ void _showFontFamilyPickerDialog(BuildContext context, FileManagerProvider fileM
                           } else {
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('加载所选字体文件失败。')),
+                                const SnackBar(content: Text('L10n.of(context).msg3186839b')),
                               );
                             }
                           }
@@ -2822,7 +2823,7 @@ void _showFontFamilyPickerDialog(BuildContext context, FileManagerProvider fileM
                               context: context,
                               builder: (context) => AlertDialog(
                                 title: const Text('无效的文件类型'),
-                                content: const Text('请选择有效的 OpenType (.otf) 或 TrueType (.ttf) 字体文件.'),
+                                content: const Text('L10n.of(context).opentypeotftruetypettf'),
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.pop(context),
@@ -2840,7 +2841,7 @@ void _showFontFamilyPickerDialog(BuildContext context, FileManagerProvider fileM
                     const SizedBox(height: 8),
                     TextButton.icon(
                       icon: const Icon(Broken.trash, size: 18, color: Colors.redAccent),
-                      label: const Text('移除自定义字体', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+                      label: const Text('L10n.of(context).msgcf42dedc', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
                       onPressed: () async {
                         Navigator.pop(ctx);
                         await fileManager.setCustomFontPath(null);
@@ -2849,7 +2850,7 @@ void _showFontFamilyPickerDialog(BuildContext context, FileManagerProvider fileM
                         }
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('自定义字体已移除。')),
+                            const SnackBar(content: Text('L10n.of(context).msg2b9abfaa')),
                           );
                         }
                       },
@@ -2873,10 +2874,10 @@ void _showAutoDeleteDaysPickerDialog(BuildContext context, ThemeData theme, Void
     builder: (ctx) {
       final current = RecycleBinService.getAutoDeleteDays();
       final options = [
-        {'days': 7, 'label': '7 天'},
-        {'days': 15, 'label': '15 天'},
-        {'days': 30, 'label': '30 天（推荐）'},
-        {'days': 0, 'label': '从不（手动清理）'},
+        {'days': 7, 'label': 'L10n.of(context).msgfdef8c23'},
+        {'days': 15, 'label': 'L10n.of(context).msg25436ba3'},
+        {'days': 30, 'label': 'L10n.of(context).msg85e7f60c'},
+        {'days': 0, 'label': 'L10n.of(context).msgd61e706f'},
       ];
 
       return SafeArea(
@@ -2900,7 +2901,7 @@ void _showAutoDeleteDaysPickerDialog(BuildContext context, ThemeData theme, Void
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Text(
-                  '自动删除回收站时长',
+                  'L10n.of(context).msgf0ef894a',
                   style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
               ),
@@ -2908,7 +2909,7 @@ void _showAutoDeleteDaysPickerDialog(BuildContext context, ThemeData theme, Void
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Text(
-                  '回收站中的项目将在此时长后被永久删除。',
+                  'L10n.of(context).msg1200d6b7',
                   style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.5)),
                 ),
               ),

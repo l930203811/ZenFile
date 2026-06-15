@@ -1,3 +1,5 @@
+﻿import 'package:zenfile/l10n/generated/app_localizations.dart';
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -122,9 +124,9 @@ class MediaProvider extends ChangeNotifier {
         'Videos': '视频',
         'Audio': '音频',
         'Documents': '文档',
-        'Archives': '压缩包',
+        'Archives': 'L10n.of(context).msgc806d0fa',
         'Download': '下载',
-        'APKs': '安装包',
+        'APKs': 'L10n.of(context).msg03070d08',
         'Screenshots': '截图',
       };
       for (int i = 0; i < _categoryOrder.length; i++) {
@@ -150,12 +152,12 @@ class MediaProvider extends ChangeNotifier {
         _categoryOrder.add('最近');
         orderUpdated = true;
       }
-      if (!_categoryOrder.contains('FTP共享')) {
-        _categoryOrder.add('FTP共享');
+      if (!_categoryOrder.contains('L10n.of(context).ftp')) {
+        _categoryOrder.add('L10n.of(context).ftp');
         orderUpdated = true;
       }
-      if (!_categoryOrder.contains('Web共享')) {
-        _categoryOrder.add('Web共享');
+      if (!_categoryOrder.contains('L10n.of(context).web')) {
+        _categoryOrder.add('L10n.of(context).web');
         orderUpdated = true;
       }
       if (orderUpdated) {
@@ -171,9 +173,9 @@ class MediaProvider extends ChangeNotifier {
         'Videos': '视频',
         'Audio': '音频',
         'Documents': '文档',
-        'Archives': '压缩包',
+        'Archives': 'L10n.of(context).msgc806d0fa',
         'Download': '下载',
-        'APKs': '安装包',
+        'APKs': 'L10n.of(context).msg03070d08',
         'Screenshots': '截图',
       };
       bool activeUpdated = false;
@@ -193,12 +195,12 @@ class MediaProvider extends ChangeNotifier {
         _activeCategories.add('最近');
         activeUpdated = true;
       }
-      if (!_activeCategories.contains('FTP共享')) {
-        _activeCategories.add('FTP共享');
+      if (!_activeCategories.contains('L10n.of(context).ftp')) {
+        _activeCategories.add('L10n.of(context).ftp');
         activeUpdated = true;
       }
-      if (!_activeCategories.contains('Web共享')) {
-        _activeCategories.add('Web共享');
+      if (!_activeCategories.contains('L10n.of(context).web')) {
+        _activeCategories.add('L10n.of(context).web');
         activeUpdated = true;
       }
       if (activeUpdated) {
@@ -241,14 +243,14 @@ class MediaProvider extends ChangeNotifier {
     '视频',
     '音频',
     '文档',
-    '压缩包',
+    'L10n.of(context).msgc806d0fa',
     '下载',
-    '安装包',
+    'L10n.of(context).msg03070d08',
     '截图',
     '最近',
     '网络',
-    'FTP共享',
-    'Web共享',
+    'L10n.of(context).ftp',
+    'L10n.of(context).web',
     '应用',
     '设置',
     '存储',
@@ -259,14 +261,14 @@ class MediaProvider extends ChangeNotifier {
     '视频',
     '音频',
     '文档',
-    '压缩包',
+    'L10n.of(context).msgc806d0fa',
     '下载',
-    '安装包',
+    'L10n.of(context).msg03070d08',
     '截图',
     '最近',
     '网络',
-    'FTP共享',
-    'Web共享',
+    'L10n.of(context).ftp',
+    'L10n.of(context).web',
     '应用',
     '设置',
     '存储',
@@ -306,7 +308,7 @@ class MediaProvider extends ChangeNotifier {
 
   List<dynamic> get images {
     final excluded = _excludedDefaultPaths['图片'] ?? [];
-    final excludeGallery = excluded.contains('设备相册（自动）');
+    final excludeGallery = excluded.contains('L10n.of(context).msge86bd662');
     final list = [..._images, ..._customImages].where((item) {
       if (item is AssetEntity && excludeGallery) return false;
       final path = _getItemPath(item);
@@ -321,7 +323,7 @@ class MediaProvider extends ChangeNotifier {
 
   List<dynamic> get videos {
     final excluded = _excludedDefaultPaths['视频'] ?? [];
-    final excludeGallery = excluded.contains('设备相册（自动）');
+    final excludeGallery = excluded.contains('L10n.of(context).msge86bd662');
     final list = [..._videos, ..._customVideos].where((item) {
       if (item is AssetEntity && excludeGallery) return false;
       final path = _getItemPath(item);
@@ -336,7 +338,7 @@ class MediaProvider extends ChangeNotifier {
 
   List<SongModel> get audios {
     final excluded = _excludedDefaultPaths['音频'] ?? [];
-    final excludeLibrary = excluded.contains('设备音频库（自动）');
+    final excludeLibrary = excluded.contains('L10n.of(context).msg16166a01');
     return _audios.where((song) {
       if (excludeLibrary && song.id < 900000) return false;
       final path = song.data;
@@ -347,7 +349,7 @@ class MediaProvider extends ChangeNotifier {
 
   List<FileSystemEntity> get documents {
     final excluded = _excludedDefaultPaths['文档'] ?? [];
-    final excludeAllScanned = excluded.contains('内部存储（扫描所有文件夹）');
+    final excludeAllScanned = excluded.contains('L10n.of(context).msgbb34b7ec');
     return _documents.where((file) {
       final docPaths = _customCategoryPaths['文档'] ?? [];
       final isCustom = docPaths.any((dir) => p.isWithin(dir, file.path));
@@ -358,10 +360,10 @@ class MediaProvider extends ChangeNotifier {
   }
 
   List<FileSystemEntity> get archives {
-    final excluded = _excludedDefaultPaths['压缩包'] ?? [];
-    final excludeAllScanned = excluded.contains('内部存储（扫描所有文件夹）');
+    final excluded = _excludedDefaultPaths['L10n.of(context).msgc806d0fa'] ?? [];
+    final excludeAllScanned = excluded.contains('L10n.of(context).msgbb34b7ec');
     return _archives.where((file) {
-      final archPaths = _customCategoryPaths['压缩包'] ?? [];
+      final archPaths = _customCategoryPaths['L10n.of(context).msgc806d0fa'] ?? [];
       final isCustom = archPaths.any((dir) => p.isWithin(dir, file.path));
       if (excludeAllScanned && !isCustom) return false;
       if (_isPathExcluded(file.path, excluded)) return false;
@@ -378,10 +380,10 @@ class MediaProvider extends ChangeNotifier {
   }
 
   List<FileSystemEntity> get apks {
-    final excluded = _excludedDefaultPaths['安装包'] ?? [];
-    final excludeAllScanned = excluded.contains('内部存储（扫描所有文件夹）');
+    final excluded = _excludedDefaultPaths['L10n.of(context).msg03070d08'] ?? [];
+    final excludeAllScanned = excluded.contains('L10n.of(context).msgbb34b7ec');
     return _apks.where((file) {
-      final apkPaths = _customCategoryPaths['安装包'] ?? [];
+      final apkPaths = _customCategoryPaths['L10n.of(context).msg03070d08'] ?? [];
       final isCustom = apkPaths.any((dir) => p.isWithin(dir, file.path));
       if (excludeAllScanned && !isCustom) return false;
       if (_isPathExcluded(file.path, excluded)) return false;
@@ -391,7 +393,7 @@ class MediaProvider extends ChangeNotifier {
 
   List<dynamic> get screenshots {
     final excluded = _excludedDefaultPaths['截图'] ?? [];
-    final excludeGallery = excluded.contains('设备相册（截图）');
+    final excludeGallery = excluded.contains('L10n.of(context).msg26a1f2d9');
     final list = [..._screenshots, ..._customScreenshots].where((item) {
       if (item is AssetEntity && excludeGallery) return false;
       final path = _getItemPath(item);
@@ -527,9 +529,9 @@ class MediaProvider extends ChangeNotifier {
         case '视频': return videos.length;
         case '音频': return _audios.length;
         case '文档': return _documents.length;
-        case '压缩包': return _archives.length;
+        case 'L10n.of(context).msgc806d0fa': return _archives.length;
         case '下载': return _downloads.length;
-        case '安装包': return _apks.length;
+        case 'L10n.of(context).msg03070d08': return _apks.length;
         case '截图': return screenshots.length;
         case '应用': return 0;
         case '设置': return 0;
@@ -562,11 +564,11 @@ class MediaProvider extends ChangeNotifier {
           if (!_categoryOrder.contains('最近')) {
             _categoryOrder.add('最近');
           }
-          if (!_categoryOrder.contains('FTP共享')) {
-            _categoryOrder.add('FTP共享');
+          if (!_categoryOrder.contains('L10n.of(context).ftp')) {
+            _categoryOrder.add('L10n.of(context).ftp');
           }
-          if (!_categoryOrder.contains('Web共享')) {
-            _categoryOrder.add('Web共享');
+          if (!_categoryOrder.contains('L10n.of(context).web')) {
+            _categoryOrder.add('L10n.of(context).web');
           }
         }
         if (map.containsKey('activeCategories')) {
@@ -577,11 +579,11 @@ class MediaProvider extends ChangeNotifier {
           if (!_activeCategories.contains('最近')) {
             _activeCategories.add('最近');
           }
-          if (!_activeCategories.contains('FTP共享')) {
-            _activeCategories.add('FTP共享');
+          if (!_activeCategories.contains('L10n.of(context).ftp')) {
+            _activeCategories.add('L10n.of(context).ftp');
           }
-          if (!_activeCategories.contains('Web共享')) {
-            _activeCategories.add('Web共享');
+          if (!_activeCategories.contains('L10n.of(context).web')) {
+            _activeCategories.add('L10n.of(context).web');
           }
         }
 
@@ -722,9 +724,9 @@ class MediaProvider extends ChangeNotifier {
     PreferencesService.saveCategoryCount('视频', videos.length);
     PreferencesService.saveCategoryCount('音频', _audios.length);
     PreferencesService.saveCategoryCount('文档', _documents.length);
-    PreferencesService.saveCategoryCount('压缩包', _archives.length);
+    PreferencesService.saveCategoryCount('L10n.of(context).msgc806d0fa', _archives.length);
     PreferencesService.saveCategoryCount('下载', _downloads.length);
-    PreferencesService.saveCategoryCount('安装包', _apks.length);
+    PreferencesService.saveCategoryCount('L10n.of(context).msg03070d08', _apks.length);
     PreferencesService.saveCategoryCount('截图', screenshots.length);
 
     notifyListeners();
@@ -823,9 +825,9 @@ class MediaProvider extends ChangeNotifier {
     PreferencesService.saveCategoryCount('视频', videos.length);
     PreferencesService.saveCategoryCount('音频', _audios.length);
     PreferencesService.saveCategoryCount('文档', _documents.length);
-    PreferencesService.saveCategoryCount('压缩包', _archives.length);
+    PreferencesService.saveCategoryCount('L10n.of(context).msgc806d0fa', _archives.length);
     PreferencesService.saveCategoryCount('下载', _downloads.length);
-    PreferencesService.saveCategoryCount('安装包', _apks.length);
+    PreferencesService.saveCategoryCount('L10n.of(context).msg03070d08', _apks.length);
     PreferencesService.saveCategoryCount('截图', screenshots.length);
 
     _isLoading = false;
@@ -1034,8 +1036,8 @@ class MediaProvider extends ChangeNotifier {
     }
 
     final searchDirs = await _getUserSearchDirs();
-    final excludedArch = _excludedDefaultPaths['压缩包'] ?? [];
-    final excludedApk = _excludedDefaultPaths['安装包'] ?? [];
+    final excludedArch = _excludedDefaultPaths['L10n.of(context).msgc806d0fa'] ?? [];
+    final excludedApk = _excludedDefaultPaths['L10n.of(context).msg03070d08'] ?? [];
 
     for (final dirPath in searchDirs) {
       final isArchExcl = _isPathExcluded(dirPath, excludedArch);
@@ -1056,7 +1058,7 @@ class MediaProvider extends ChangeNotifier {
       );
     }
 
-    final archPaths = _customCategoryPaths['压缩包'] ?? [];
+    final archPaths = _customCategoryPaths['L10n.of(context).msgc806d0fa'] ?? [];
     for (final dirPath in archPaths) {
       if (await Directory(dirPath).exists()) {
         await _scanDirectoryRecursively(
@@ -1071,7 +1073,7 @@ class MediaProvider extends ChangeNotifier {
       }
     }
 
-    final apkPaths = _customCategoryPaths['安装包'] ?? [];
+    final apkPaths = _customCategoryPaths['L10n.of(context).msg03070d08'] ?? [];
     for (final dirPath in apkPaths) {
       if (await Directory(dirPath).exists()) {
         await _scanDirectoryRecursively(
@@ -1144,7 +1146,7 @@ class MediaProvider extends ChangeNotifier {
     }
 
     // Archives custom path scan and merge
-    final archPaths = _customCategoryPaths['压缩包'] ?? [];
+    final archPaths = _customCategoryPaths['L10n.of(context).msgc806d0fa'] ?? [];
     final customArch = await _scanCustomPaths(archPaths, (ext) => _archiveExtensions.contains(ext));
     _archives.removeWhere((entity) {
       final isInCustomPath = archPaths.any((dir) => p.isWithin(dir, entity.path));
@@ -1160,7 +1162,7 @@ class MediaProvider extends ChangeNotifier {
     }
 
     // APKs custom path scan and merge
-    final apkPaths = _customCategoryPaths['安装包'] ?? [];
+    final apkPaths = _customCategoryPaths['L10n.of(context).msg03070d08'] ?? [];
     final customApks = await _scanCustomPaths(apkPaths, (ext) => _apkExtensions.contains(ext));
     _apks.removeWhere((entity) {
       final isInCustomPath = apkPaths.any((dir) => p.isWithin(dir, entity.path));
@@ -1491,9 +1493,9 @@ class MediaProvider extends ChangeNotifier {
     PreferencesService.saveCategoryCount('视频', videos.length);
     PreferencesService.saveCategoryCount('音频', _audios.length);
     PreferencesService.saveCategoryCount('文档', _documents.length);
-    PreferencesService.saveCategoryCount('压缩包', _archives.length);
+    PreferencesService.saveCategoryCount('L10n.of(context).msgc806d0fa', _archives.length);
     PreferencesService.saveCategoryCount('下载', _downloads.length);
-    PreferencesService.saveCategoryCount('安装包', _apks.length);
+    PreferencesService.saveCategoryCount('L10n.of(context).msg03070d08', _apks.length);
     PreferencesService.saveCategoryCount('截图', screenshots.length);
 
     await _saveCache();

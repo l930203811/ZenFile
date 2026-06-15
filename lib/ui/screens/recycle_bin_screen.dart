@@ -4,6 +4,7 @@ import '../../services/recycle_bin_service.dart';
 import '../../core/utils.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import 'package:path/path.dart' as p;
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class RecycleBinScreen extends StatefulWidget {
   const RecycleBinScreen({super.key});
@@ -172,7 +173,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('清空回收站？'),
-        content: const Text('确定要永久删除回收站中的所有项目吗？此操作不可逆。'),
+        content: const Text('L10n.of(context).msg62187f1b'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -181,7 +182,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('清空回收站'),
+            child: const Text('L10n.of(context).msg8cd6bc18'),
           ),
         ],
       ),
@@ -202,7 +203,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
       
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('回收站已成功清空'),
+          content: Text('L10n.of(context).msga4dfc0c6'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -235,7 +236,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
                     controller: _searchController,
                     autofocus: true,
                     decoration: const InputDecoration(
-                      hintText: '搜索已删除文件...',
+                      hintText: 'L10n.of(context).msg07d80ac5',
                       border: InputBorder.none,
                     ),
                     style: theme.textTheme.titleMedium,
@@ -282,7 +283,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
             IconButton(
               icon: const Icon(Broken.trash, color: Colors.redAccent),
               onPressed: _allItems.isEmpty ? null : _emptyRecycleBin,
-              tooltip: '清空回收站',
+              tooltip: 'L10n.of(context).msg8cd6bc18',
             ),
           ],
         ],
@@ -425,7 +426,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
                                               Icon(Broken.trash,
                                                   size: 20, color: Colors.redAccent),
                                               SizedBox(width: 12),
-                                              Text('永久删除',
+                                              Text('L10n.of(context).msg96d2b75f',
                                                   style: TextStyle(
                                                       color: Colors.redAccent,
                                                       fontWeight: FontWeight.w500)),
@@ -515,7 +516,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              '回收站为空',
+              'L10n.of(context).msg0d824a24',
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -554,10 +555,10 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 16),
-              _buildDetailRow('原始位置', item.originalPath),
+              _buildDetailRow('L10n.of(context).msg4c478216', item.originalPath),
               _buildDetailRow('回收日期', FileUtils.formatDate(item.deletedAt)),
-              _buildDetailRow('文件大小', FileUtils.formatBytes(item.size, 2)),
-              _buildDetailRow('类型', item.isDirectory ? '文件夹' : '文件'),
+              _buildDetailRow('L10n.of(context).msg396b7d3f', FileUtils.formatBytes(item.size, 2)),
+              _buildDetailRow('类型', item.isDirectory ? 'L10n.of(context).msg1f4c1042' : '文件'),
               const SizedBox(height: 24),
               Row(
                 children: [
@@ -590,7 +591,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
                         _selectedIds.add(item.id);
                         await _deleteSelectedPermanently();
                       },
-                      child: const Text('永久删除'),
+                      child: const Text('L10n.of(context).msg96d2b75f'),
                     ),
                   ),
                 ],

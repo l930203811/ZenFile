@@ -7,6 +7,7 @@ import '../../providers/media_provider.dart';
 import '../../models/file_item_model.dart';
 import '../screens/all_recent_files_screen.dart';
 import 'file_item.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class RecentFilesSection extends StatelessWidget {
   final Function(int)? onNavigateTab;
@@ -20,7 +21,7 @@ class RecentFilesSection extends StatelessWidget {
     if (diff.inHours < 24) return '${diff.inHours}小时前';
     if (diff.inDays == 1) return '昨天';
     if (diff.inDays < 7) return '${diff.inDays}天前';
-    final months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+    final months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', 'L10n.of(context).msgf544c399', '11月', 'L10n.of(context).msgc0615eb3'];
     return '${time.day} ${months[time.month - 1]}';
   }
 
@@ -52,7 +53,7 @@ class RecentFilesSection extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '最近文件',
+                  'L10n.of(context).msg54355dd8',
                   style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 InkWell(
@@ -210,7 +211,7 @@ class RecentFilesSection extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          isFolder ? '文件夹' : FileUtils.formatBytes(file.size, 1),
+                          isFolder ? 'L10n.of(context).msg1f4c1042' : FileUtils.formatBytes(file.size, 1),
                           style: theme.textTheme.bodySmall?.copyWith(fontSize: 10, color: theme.textTheme.bodySmall?.color?.withAlpha(153)),
                         ),
                         Text(

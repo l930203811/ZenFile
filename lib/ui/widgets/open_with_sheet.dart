@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/icon_fonts/broken_icons.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class OpenWithSheet extends StatefulWidget {
   final String fileName;
@@ -43,7 +44,7 @@ class _OpenWithSheetState extends State<OpenWithSheet> {
               ),
               const SizedBox(height: 20),
               Text(
-                '打开方式...',
+                'L10n.of(context).msg2a4cfb07',
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
@@ -116,7 +117,7 @@ class _OpenWithSheetState extends State<OpenWithSheet> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              "ZenFile 自定义原生体验",
+                              'L10n.of(context).zenfile6',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: theme.colorScheme.onSurface.withOpacity(0.6),
@@ -178,7 +179,7 @@ class _OpenWithSheetState extends State<OpenWithSheet> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '系统外部应用',
+                              'L10n.of(context).msg42be43e6',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: _selectedType == 'external'
@@ -188,7 +189,7 @@ class _OpenWithSheetState extends State<OpenWithSheet> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              "使用设备上的第三方应用打开",
+                              'L10n.of(context).msgd1fca831',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: theme.colorScheme.onSurface.withOpacity(0.6),
@@ -217,7 +218,7 @@ class _OpenWithSheetState extends State<OpenWithSheet> {
                       onPressed: () {
                         Navigator.pop(context, 'just_once_$_selectedType');
                       },
-                      child: const Text('仅一次'),
+                      child: const Text('L10n.of(context).msgdb75b769'),
                     ),
                   ),
                   const SizedBox(width: 12),

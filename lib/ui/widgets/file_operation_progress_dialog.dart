@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/utils.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class FileOperationProgressDialog extends StatelessWidget {
   final FileManagerProvider provider;
@@ -72,7 +73,7 @@ class FileOperationProgressDialog extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            provider.isCut ? '正在移动文件...' : '正在复制文件...',
+                            provider.isCut ? 'L10n.of(context).msg9d69d7a0' : '正在复制文件...',
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -169,7 +170,7 @@ class FileOperationProgressDialog extends StatelessWidget {
                             provider.cancelOperation();
                           },
                           icon: const Icon(Broken.close_square, size: 16),
-                          label: const Text('取消操作', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                          label: const Text('L10n.of(context).msg17093362', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.redAccent,
                             side: BorderSide(color: Colors.redAccent.withOpacity(0.3)),

@@ -1,3 +1,5 @@
+﻿import 'package:zenfile/l10n/generated/app_localizations.dart';
+
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
@@ -31,7 +33,7 @@ class ApkInstallerService {
           children: [
             CircularProgressIndicator(),
             SizedBox(width: 20),
-            Expanded(child: Text("正在解压安装包...")),
+            Expanded(child: Text('L10n.of(context).msg39e11368')),
           ],
         ),
       ),
@@ -78,7 +80,7 @@ class ApkInstallerService {
         if (!context.mounted) return;
         Navigator.pop(context); // Close loading dialog
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('安装包中未找到可安装的APK')),
+          const SnackBar(content: Text('L10n.of(context).apk')),
         );
         return;
       }
@@ -94,7 +96,7 @@ class ApkInstallerService {
         final success = await AppManagerService.installSplitApks(apkPaths);
         if (!success && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('无法启动分包APK安装器')),
+            const SnackBar(content: Text('L10n.of(context).apk1')),
           );
         }
       }

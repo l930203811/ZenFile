@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../core/utils.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class PremiumStorageOverview extends StatelessWidget {
   final VoidCallback onBrowseStorage;
@@ -90,7 +91,7 @@ class PremiumStorageOverview extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              '内部存储',
+                              'L10n.of(context).msg21cefa9b',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
@@ -102,7 +103,7 @@ class PremiumStorageOverview extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              '浏览设备文件',
+                              'L10n.of(context).msg959429a5',
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.8),
                                 fontSize: 11.5,

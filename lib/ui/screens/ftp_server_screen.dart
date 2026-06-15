@@ -3,6 +3,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../services/ftp_server_service.dart';
 import 'internal_file_picker_screen.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class FtpServerScreen extends StatefulWidget {
   const FtpServerScreen({super.key});
@@ -37,7 +38,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
       _ftpService.stop();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('FTP服务器已成功停止'),
+          content: Text('L10n.of(context).ftp1'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -72,7 +73,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
     if (_ftpService.isActive) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('请在更改配置前停止服务器'),
+          content: Text('L10n.of(context).msg5c202e56'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -110,7 +111,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
         return AlertDialog(
           backgroundColor: theme.scaffoldBackgroundColor,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text('更改端口', style: TextStyle(fontWeight: FontWeight.bold)),
+          title: const Text('L10n.of(context).msgfca29cb3', style: TextStyle(fontWeight: FontWeight.bold)),
           content: TextField(
             controller: controller,
             keyboardType: TextInputType.number,
@@ -134,7 +135,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
                   setState(() {});
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('无效的端口号')),
+                    const SnackBar(content: Text('L10n.of(context).msg8a0b5bf5')),
                   );
                 }
               },
@@ -170,7 +171,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
         return AlertDialog(
           backgroundColor: theme.scaffoldBackgroundColor,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text('设置用户名', style: TextStyle(fontWeight: FontWeight.bold)),
+          title: const Text('L10n.of(context).msg3bce2199', style: TextStyle(fontWeight: FontWeight.bold)),
           content: TextField(
             controller: controller,
             decoration: InputDecoration(
@@ -191,7 +192,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
                   setState(() {});
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('用户名不能为空')),
+                    const SnackBar(content: Text('L10n.of(context).msg0b62b5ce')),
                   );
                 }
               },
@@ -225,7 +226,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'FTP 服务器',
+          'L10n.of(context).ftp2',
           style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 20),
         ),
         actions: [
@@ -246,7 +247,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
                 case 'anon':
                   if (_ftpService.isActive) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('编辑设置前请先停止服务器')),
+                      const SnackBar(content: Text('L10n.of(context).msg5ab96a6d')),
                     );
                     return;
                   }
@@ -273,7 +274,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
                   children: [
                     Icon(Broken.folder, size: 18),
                     SizedBox(width: 10),
-                    Text('更改目录'),
+                    Text('L10n.of(context).msgc400f106'),
                   ],
                 ),
               ),
@@ -283,7 +284,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
                   children: [
                     Icon(Icons.numbers_rounded, size: 18),
                     SizedBox(width: 10),
-                    Text('更改端口'),
+                    Text('L10n.of(context).msgfca29cb3'),
                   ],
                 ),
               ),
@@ -293,7 +294,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
                   children: [
                     Icon(Icons.person_outline_rounded, size: 18),
                     SizedBox(width: 10),
-                    Text('设置用户'),
+                    Text('L10n.of(context).msgb5eb59fc'),
                   ],
                 ),
               ),
@@ -307,7 +308,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
                       color: _ftpService.anonymous ? theme.colorScheme.primary : null,
                     ),
                     const SizedBox(width: 10),
-                    const Text('匿名访问'),
+                    const Text('L10n.of(context).msg70c53afb'),
                   ],
                 ),
               ),
@@ -317,7 +318,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
                   children: [
                     Icon(Icons.add_to_home_screen_rounded, size: 18),
                     SizedBox(width: 10),
-                    Text('创建快捷方式'),
+                    Text('L10n.of(context).msg8e2021aa'),
                   ],
                 ),
               ),
@@ -365,7 +366,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
                                 ),
                                 const SizedBox(width: 12),
                                 Text(
-                                  isActive ? '已激活' : '未激活',
+                                  isActive ? '已激活' : 'L10n.of(context).msgd70e9bdf',
                                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                                 ),
                               ],
@@ -375,7 +376,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  '网络状态',
+                                  'L10n.of(context).msg7ae644e4',
                                   style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6), fontWeight: FontWeight.w500),
                                 ),
                                 const Text(
@@ -389,7 +390,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  '服务器地址',
+                                  'L10n.of(context).msg5d57821d',
                                   style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6), fontWeight: FontWeight.w500),
                                 ),
                                 SelectableText(
@@ -420,7 +421,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
                                 borderRadius: BorderRadius.circular(16),
                                 child: InputDecorator(
                                   decoration: InputDecoration(
-                                    labelText: '主目录',
+                                    labelText: 'L10n.of(context).msgfefea1b3',
                                     labelStyle: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold),
                                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                                     suffixIcon: const Icon(Broken.folder),
@@ -447,7 +448,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
 
                             // Show Hidden Files Row
                             SwitchListTile(
-                              title: const Text('显示隐藏文件', style: TextStyle(fontWeight: FontWeight.w500)),
+                              title: const Text('L10n.of(context).msg124d9054', style: TextStyle(fontWeight: FontWeight.w500)),
                               value: _ftpService.showHidden,
                               activeColor: theme.colorScheme.primary,
                               onChanged: (val) {
@@ -464,7 +465,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
                              // FTPES Row
                              SwitchListTile(
                                title: const Text('FTPES', style: TextStyle(fontWeight: FontWeight.w500)),
-                               subtitle: const Text('基于显式 TLS 的安全 FTP 连接', style: TextStyle(fontSize: 11.5)),
+                               subtitle: const Text('L10n.of(context).tlsftp', style: TextStyle(fontSize: 11.5)),
                                value: _ftpesEnabled,
                                activeColor: theme.colorScheme.primary,
                                onChanged: (val) {

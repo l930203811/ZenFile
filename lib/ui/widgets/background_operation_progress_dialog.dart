@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../services/background_archive_service.dart';
 import '../../core/icon_fonts/broken_icons.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class BackgroundOperationProgressDialog extends StatelessWidget {
   final BackgroundArchiveService service;
@@ -125,7 +126,7 @@ class BackgroundOperationProgressDialog extends StatelessWidget {
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
-                                  operation.currentFile.isEmpty ? '正在处理...' : operation.currentFile,
+                                  operation.currentFile.isEmpty ? 'L10n.of(context).msg67bd9375' : operation.currentFile,
                                   style: theme.textTheme.bodyMedium?.copyWith(
                                     fontWeight: FontWeight.bold,
                                     color: theme.colorScheme.onSurface.withOpacity(0.85),

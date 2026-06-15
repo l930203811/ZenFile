@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/utils.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 enum ConflictResult {
   overwrite,
@@ -101,7 +102,7 @@ class _ConflictDialogState extends State<ConflictDialog> {
           const SizedBox(width: 12),
           const Expanded(
             child: Text(
-              '文件已存在',
+              'L10n.of(context).msgde88d67a',
               style: TextStyle(fontWeight: FontWeight.bold),
               overflow: TextOverflow.ellipsis,
             ),
@@ -143,7 +144,7 @@ class _ConflictDialogState extends State<ConflictDialog> {
                   Expanded(
                     child: _buildFileComparisonCard(
                       theme: theme,
-                      title: '新建文件',
+                      title: 'L10n.of(context).msge48a7157',
                       size: _sourceStat.size,
                       modified: _sourceStat.modified,
                       isNewer: _sourceStat.modified.isAfter(_destStat.modified),
@@ -180,7 +181,7 @@ class _ConflictDialogState extends State<ConflictDialog> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        '应用于所有剩余冲突',
+                        'L10n.of(context).msge59e35b5',
                         style: theme.textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                           color: theme.colorScheme.onSurface.withOpacity(0.8),
@@ -227,7 +228,7 @@ class _ConflictDialogState extends State<ConflictDialog> {
                   style: OutlinedButton.styleFrom(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text('重命名'),
+                  child: const Text('L10n.of(context).msgc8ce4b36'),
                 ),
                 OutlinedButton(
                   onPressed: () => Navigator.pop(
@@ -247,7 +248,7 @@ class _ConflictDialogState extends State<ConflictDialog> {
                   style: OutlinedButton.styleFrom(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text('保留两者'),
+                  child: const Text('L10n.of(context).msg27dfaae5'),
                 ),
                 FilledButton(
                   onPressed: () => Navigator.pop(
@@ -341,7 +342,7 @@ class _ConflictDialogState extends State<ConflictDialog> {
     return showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('重命名文件'),
+        title: const Text('L10n.of(context).msg6cfbf05d'),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         content: TextField(
           controller: controller,
@@ -358,7 +359,7 @@ class _ConflictDialogState extends State<ConflictDialog> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: const Text('重命名'),
+            child: const Text('L10n.of(context).msgc8ce4b36'),
           ),
         ],
       ),

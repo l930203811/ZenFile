@@ -4,6 +4,7 @@ import '../../core/icon_fonts/broken_icons.dart';
 import '../../models/network_connection_model.dart';
 import '../../services/network_connections_service.dart';
 import '../../providers/file_manager_provider.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 import 'network_connection_wizard_screen.dart';
 
@@ -35,7 +36,7 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
 
   IconData _getIconForType(String type) {
     switch (type) {
-      case '局域网/SMB':
+      case 'L10n.of(context).smb':
         return Icons.dns_rounded;
       case 'FTP':
         return Icons.swap_horizontal_circle_rounded;
@@ -50,7 +51,7 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
 
   Color _getColorForType(String type) {
     switch (type) {
-      case '局域网/SMB':
+      case 'L10n.of(context).smb':
         return const Color(0xFF5B21B6);
       case 'FTP':
         return const Color(0xFFF97316);
@@ -68,7 +69,7 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('删除连接', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('L10n.of(context).msg432fbb31', style: TextStyle(fontWeight: FontWeight.bold)),
         content: Text('确定要删除 "${conn.name}" 吗？'),
         actions: [
           TextButton(
@@ -105,7 +106,7 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
         actions: [
           IconButton(
             icon: const Icon(Broken.add),
-            tooltip: '添加连接',
+            tooltip: 'L10n.of(context).msg3358aa10',
             onPressed: () async {
               await Navigator.push(
                 context,
@@ -126,7 +127,7 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
                       Icon(Broken.wifi, size: 64, color: theme.colorScheme.onSurface.withOpacity(0.15)),
                       const SizedBox(height: 20),
                       Text(
-                        '暂无远程连接',
+                        'L10n.of(context).msgc9c900d0',
                         style: theme.textTheme.titleMedium?.copyWith(
                           color: theme.colorScheme.onSurface.withOpacity(0.5),
                           fontWeight: FontWeight.bold,
@@ -134,7 +135,7 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '添加 FTP、SFTP、WebDav 或 SMB 连接',
+                        'L10n.of(context).ftpsftpwebdavsmb1',
                         style: TextStyle(
                           color: theme.colorScheme.onSurface.withOpacity(0.4),
                           fontSize: 14,
@@ -150,7 +151,7 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
                           _loadConnections();
                         },
                         icon: const Icon(Broken.add),
-                        label: const Text('添加连接'),
+                        label: const Text('L10n.of(context).msg3358aa10'),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),

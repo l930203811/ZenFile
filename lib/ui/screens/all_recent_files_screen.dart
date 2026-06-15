@@ -10,6 +10,7 @@ import '../../models/file_item_model.dart';
 import '../widgets/file_item.dart';
 import '../widgets/folder_item.dart';
 import '../widgets/file_action_dialogs.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class AllRecentFilesScreen extends StatefulWidget {
   final Function(int)? onNavigateTab;
@@ -229,7 +230,7 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
         }
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('没有可分享的文件')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('L10n.of(context).msg7a4ee0c7')));
     }
     _clearSelection();
   }
@@ -238,7 +239,7 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
     if (_selectedPaths.isEmpty) return;
     final confirm = await FileActionDialogs.showConfirmDialog(
       context,
-      title: '删除选中',
+      title: 'L10n.of(context).msgcd0b9aca',
       content: 'Are you sure you want to delete ${_selectedPaths.length} selected item(s)? This cannot be undone.',
     );
 
@@ -252,7 +253,7 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
         });
       }
       _clearSelection();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('成功删除项目')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('L10n.of(context).msg45326802')));
     }
   }
 
@@ -277,20 +278,20 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
         break;
       case 'copy':
         provider.copyFile(path);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已复制到剪贴板')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('L10n.of(context).msg4fb42e6e')));
         break;
       case 'cut':
         provider.cutFile(path);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已剪切到剪贴板')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('L10n.of(context).msge5212c58')));
         break;
       case 'rename':
         final currentName = p.basename(path);
         final newName = await FileActionDialogs.showTextInputDialog(
           context,
-          title: '重命名',
-          hint: '输入新名称',
+          title: 'L10n.of(context).msgc8ce4b36',
+          hint: 'L10n.of(context).msgf139c5cf',
           initialValue: currentName,
-          actionText: '重命名',
+          actionText: 'L10n.of(context).msgc8ce4b36',
         );
         if (newName != null && newName.isNotEmpty) {
           await provider.renameFile(path, newName);
@@ -300,7 +301,7 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
       case 'delete':
         final confirm = await FileActionDialogs.showConfirmDialog(
           context,
-          title: '删除文件',
+          title: 'L10n.of(context).msg53518c22',
           content: 'Are you sure you want to delete this item? This cannot be undone.',
         );
         if (confirm) {
@@ -385,10 +386,10 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
                           child: Icon(Broken.document_filter, size: 64, color: theme.colorScheme.primary),
                         ),
                         const SizedBox(height: 24),
-                        Text('无最近文件', style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+                        Text('L10n.of(context).msg47809e5d', style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 8),
                         Text(
-                          '新创建或下载的文件将显示在这里。',
+                          'L10n.of(context).msg7a7e6c25',
                           textAlign: TextAlign.center,
                           style: TextStyle(color: theme.colorScheme.onSurface.withAlpha(127), fontSize: 15),
                         ),

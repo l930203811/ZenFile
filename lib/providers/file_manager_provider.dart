@@ -1,4 +1,6 @@
-﻿import 'dart:io';
+﻿import 'package:zenfile/l10n/generated/app_localizations.dart';
+
+import 'dart:io';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -154,7 +156,7 @@ class FileManagerProvider extends ChangeNotifier {
     if (_totalStorageBytes > 0) {
       _storageVolumes = [
         StorageVolume(
-          name: '内部存储',
+          name: 'L10n.of(context).msg21cefa9b',
           path: '/storage/emulated/0',
           isInternal: true,
           totalBytes: _totalStorageBytes,
@@ -168,6 +170,8 @@ class FileManagerProvider extends ChangeNotifier {
 
   final ValueNotifier<FileOperationProgress?> progressNotifier = ValueNotifier<FileOperationProgress?>(null);
   bool _isOperationCancelled = false;
+  bool _isPasting = false;
+  bool get isPasting => _isPasting;
   bool _isDragging = false;
   bool get isDragging => _isDragging;
 
@@ -1013,7 +1017,7 @@ class FileManagerProvider extends ChangeNotifier {
           host: conn.host, port: conn.port, username: conn.username, password: conn.password,
           protocol: conn.protocol, rootPath: conn.rootPath,
         );
-      case '局域网/SMB':
+      case 'L10n.of(context).smb':
         return LanClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
       case 'saf':
         return SafRemoteClient(rootUri: conn.rootPath);
@@ -1390,7 +1394,7 @@ class FileManagerProvider extends ChangeNotifier {
   Future<void> _detectStorageVolumes() async {
     final volumes = <StorageVolume>[];
     if (Platform.isAndroid) {
-      volumes.add(StorageVolume(name: '内部存储', path: '/storage/emulated/0', isInternal: true));
+      volumes.add(StorageVolume(name: 'L10n.of(context).msg21cefa9b', path: '/storage/emulated/0', isInternal: true));
 
       try {
         final extDirs = await getExternalStorageDirectories();
@@ -1940,7 +1944,7 @@ class FileManagerProvider extends ChangeNotifier {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(_isCut ? '成功移动项目' : '成功复制项目'),
+              content: Text(_isCut ? 'L10n.of(context).msg05d3c93c' : '成功复制项目'),
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -1979,7 +1983,7 @@ class FileManagerProvider extends ChangeNotifier {
           if (context.mounted) {
             await FileActionDialogs.showWarningDialog(
               context,
-              title: '操作已取消',
+              title: 'L10n.of(context).msga45bac47',
               content: 'Cannot cut and paste a file into the same folder.',
             );
           }
@@ -2298,6 +2302,7 @@ class FileManagerProvider extends ChangeNotifier {
     } finally {
       progressNotifier.value = null;
       activeTab.isLoading = false;
+      _isPasting = false;
       // 稍等片刻确保文件系统已更新
       await Future.delayed(const Duration(milliseconds: 500));
       await loadDirectory(currentPath, showLoading: false, clearCache: true);
@@ -2338,17 +2343,19 @@ class FileManagerProvider extends ChangeNotifier {
         protocol: conn.protocol,
         rootPath: conn.rootPath,
       );
-    } else if (conn.type == '局域网/SMB') {
+    } else if (conn.type == 'L10n.of(context).smb') {
       client = LanClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
     } else if (conn.type == 'saf') {
       client = SafRemoteClient(rootUri: conn.rootPath);
     }
 
     if (client == null) {
+      _isPasting = false;
       return;
     }
 
     _isOperationCancelled = false;
+    _isPasting = true;
     activeTab.isLoading = true;
     progressNotifier.value = FileOperationProgress(
       totalFiles: _remoteClipboardItems.length,
@@ -2376,6 +2383,7 @@ class FileManagerProvider extends ChangeNotifier {
         );
       }
       activeTab.isLoading = false;
+      _isPasting = false;
       notifyListeners();
       return;
     }
@@ -2444,7 +2452,7 @@ class FileManagerProvider extends ChangeNotifier {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString().contains('Cancelled') ? '操作已取消' : '传输失败：$e'),
+            content: Text(e.toString().contains('Cancelled') ? 'L10n.of(context).msga45bac47' : '传输失败：$e'),
             backgroundColor: e.toString().contains('Cancelled') ? null : Colors.redAccent,
             behavior: SnackBarBehavior.floating,
           ),
@@ -2486,6 +2494,7 @@ class FileManagerProvider extends ChangeNotifier {
     if (client == null) return;
 
     _isOperationCancelled = false;
+    _isPasting = true;
     activeTab.isLoading = true;
     notifyListeners();
 
@@ -2545,7 +2554,7 @@ class FileManagerProvider extends ChangeNotifier {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString().contains('Cancelled') ? '操作已取消' : '传输失败：$e'),
+            content: Text(e.toString().contains('Cancelled') ? 'L10n.of(context).msga45bac47' : '传输失败：$e'),
             backgroundColor: e.toString().contains('Cancelled') ? null : Colors.redAccent,
             behavior: SnackBarBehavior.floating,
           ),
@@ -2566,6 +2575,7 @@ class FileManagerProvider extends ChangeNotifier {
         }
       }
       activeTab.isLoading = false;
+      _isPasting = false;
       notifyListeners();
     }
   }
@@ -2705,6 +2715,27 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   Future<void> deleteFile(String path) async {
+    // Look up the file to check if it has a remote source
+    final file = currentFiles.cast<FileItemModel?>().firstWhere(
+      (f) => f?.path == path,
+      orElse: () => null,
+    );
+    final hasRemoteSource = file?.remoteSource != null;
+
+    // If the file has a remote source, delete from the remote server
+    if (hasRemoteSource && activeTab.isRemote && activeTab.remoteClient != null) {
+      final remoteClient = activeTab.remoteClient!;
+      final remotePath = file!.remoteSource!.path;
+      try {
+        await remoteClient.delete(remotePath, file.isDirectory);
+        await loadDirectory(currentPath, showLoading: false, clearCache: true);
+      } catch (e) {
+        debugPrint('Error deleting remote file: $e');
+      }
+      return;
+    }
+
+    // Local file deletion
     try {
       if (RecycleBinService.isEnabled()) {
         await RecycleBinService.moveToTrash(path, useRoot: useRootMode);
@@ -2856,7 +2887,7 @@ class FileManagerProvider extends ChangeNotifier {
         if (context != null && context.mounted) {
           await FileActionDialogs.showWarningDialog(
             context,
-            title: '压缩超出限制',
+            title: 'L10n.of(context).msg3df5ef6c',
             content: 'TAR.ZSTD and TAR.LZ4 formats are highly memory-intensive and optimized for files under 600MB. Please use the ZIP or TAR format for larger files.',
           );
         }
@@ -3006,8 +3037,8 @@ class FileManagerProvider extends ChangeNotifier {
             '_id': i,
             '_data': file.path,
             'title': p.basenameWithoutExtension(file.path),
-            'artist': '未知艺术家',
-            'album': '本地文件夹',
+            'artist': 'L10n.of(context).msg5e32276d',
+            'album': 'L10n.of(context).msg497ec49d',
             'duration': 0,
             'size': file.size,
             'display_name': p.basename(file.path),
@@ -3182,7 +3213,7 @@ class FileManagerProvider extends ChangeNotifier {
 
     if (sourcePath == destPath || destFolderPath.startsWith(sourcePath + p.separator)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('无法将文件夹移动到自身或相同位置')),
+        const SnackBar(content: Text('L10n.of(context).msg6b9ca1dd')),
       );
       return;
     }
@@ -3282,7 +3313,7 @@ class FileManagerProvider extends ChangeNotifier {
 
     if (sourcePath == destPath || destFolderPath.startsWith(sourcePath + p.separator)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('无法将文件夹复制到自身或相同位置')),
+        const SnackBar(content: Text('L10n.of(context).msg5238524c')),
       );
       return;
     }

@@ -6,6 +6,7 @@ import '../models/custom_shortcut_model.dart';
 
 class PreferencesService {
   static const String _keyThemeMode = 'theme_mode';
+  static const String _keyAppLocale = 'app_locale';
   static const String _keyShowHiddenFiles = 'show_hidden_files';
   static const String _keyShowFloatingAddButton = 'show_floating_add_button';
   static const String _keyDefaultToBrowseScreen = 'default_to_browse_screen';
@@ -696,5 +697,13 @@ class PreferencesService {
 
   static Future<void> saveCategoryIconShape(String val) async {
     await _prefs?.setString(_keyCategoryIconShape, val);
+  }
+
+  static String getAppLocale() {
+    return _prefs?.getString(_keyAppLocale) ?? 'zh';
+  }
+
+  static Future<void> saveAppLocale(String val) async {
+    await _prefs?.setString(_keyAppLocale, val);
   }
 }
