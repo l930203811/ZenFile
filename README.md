@@ -8,6 +8,25 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 ---
 
+## 🚀 What's New in v1.0.3
+
+**Full SVG Support** — ZenFile now fully supports `.svg` vector graphics with thumbnail previews and full-screen viewing, while maintaining complete support for images, videos, audio, and archives.
+
+| | |
+|---|---|
+| 🖼️ **SVG Thumbnails** | Grid and list views both support SVG thumbnail rendering |
+| 🔍 **SVG Viewer** | Full-screen viewer renders vector graphics perfectly with zoom support |
+| 🎨 **Archive Colors** | Different compression formats display with their own color (zip orange / rar red / 7z purple / tar brown / gz green) |
+| 🌐 **Remote File Playback** | Remote server files are downloaded locally before playback, with remote thumbnail preview support |
+| 🐛 **Bug Fixes** | Fixed page freeze after extraction, remote file open failure and other issues |
+
+**Other v1.0.3 improvements:**
+- **Date Format** — Unified to `yyyy-MM-dd`
+- **Time Format** — 24-hour format enabled by default
+- **Cache Consolidation** — Remote file cache unified to `Download/ZenFile_Remote`
+
+---
+
 ## 🚀 What's New in v1.0.2
 
 **Remote Browser Rebuilt** — The biggest architectural change yet. The remote server browser now uses the same `DirectoryScreen` component as local browsing, completely eliminating the stale UI bug when switching between remote and local views.
