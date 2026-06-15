@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_avif/flutter_avif.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../models/file_item_model.dart';
 import '../../core/utils.dart';
 import '../../core/icon_fonts/broken_icons.dart';
@@ -60,7 +61,8 @@ class FileGridItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         child: Stack(
           children: [
-            Center(
+            Align(
+              alignment: Alignment.center,
               child: SingleChildScrollView(
                 physics: const NeverScrollableScrollPhysics(),
                 child: Padding(
@@ -69,6 +71,7 @@ class FileGridItem extends StatelessWidget {
                     vertical: (8.0 * itemPaddingMultiplier).clamp(2.0, 16.0),
                   ),
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       GestureDetector(
@@ -374,6 +377,14 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
     }
 
     if (isImg && widget.file.size > 16) {
+      // SVG 需要特殊处理
+      if (widget.file.path.toLowerCase().endsWith('.svg')) {
+        return SvgPicture.file(
+          File(widget.file.path),
+          fit: BoxFit.cover,
+          placeholderBuilder: (context) => Icon(Broken.image, color: widget.iconColor, size: 28 * widget.iconScale),
+        );
+      }
       if (widget.file.path.toLowerCase().endsWith('.avif')) {
         return AvifImage.file(
           File(widget.file.path),

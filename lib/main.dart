@@ -33,6 +33,9 @@ void main() async {
   await NetworkConnectionsService.init();
   await RecycleBinService.init();
 
+  // 自动清理过期缓存
+  _autoCleanRemoteCache();
+
   // Load custom font dynamically if configured
   try {
     final customFontPath = PreferencesService.getCustomFontPath();
@@ -481,5 +484,51 @@ class _StoragePermissionShield extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// 自动清理过期缓存
+void _autoCleanRemoteCache() {
+  try {
+    final autoCleanDays = PreferencesService.getRemoteCacheAutoCleanDays();
+    if (autoCleanDays <= 0) return; // 未启用自动清理
+
+    final cacheDir = Directory('/storage/emulated/0/Download/ZenFile_Remote');
+    if (!cacheDir.existsSync()) return;
+
+    final now = DateTime.now();
+    final threshold = now.subtract(Duration(days: autoCleanDays));
+
+    // 遍历缓存目录，删除过期文件
+    int deletedCount = 0;
+    int deletedSize = 0;
+
+    void cleanDirectory(Directory dir) {
+      try {
+        for (final entity in dir.listSync()) {
+          if (entity is File) {
+            final stat = entity.statSync();
+            if (stat.modified.isBefore(threshold)) {
+              deletedSize += entity.lengthSync();
+              entity.deleteSync();
+              deletedCount++;
+            }
+          } else if (entity is Directory) {
+            // 递归清理子目录
+            cleanDirectory(entity);
+          }
+        }
+      } catch (e) {
+        debugPrint('清理缓存目录失败: $e');
+      }
+    }
+
+    cleanDirectory(cacheDir);
+
+    if (deletedCount > 0) {
+      debugPrint('自动清理缓存: 删除 $deletedCount 个文件，释放 ${(deletedSize / 1024 / 1024).toStringAsFixed(1)} MB');
+    }
+  } catch (e) {
+    debugPrint('自动清理缓存失败: $e');
   }
 }

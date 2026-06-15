@@ -252,32 +252,52 @@ class BackgroundArchiveService {
       }
     }
 
-    try {
-      final provider = Provider.of<FileManagerProvider>(context, listen: false);
-      await provider.loadDirectory(provider.currentPath, showLoading: false);
-    } catch (_) {}
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError ? Colors.redAccent : Colors.green,
-        action: (!isError && !operation.isCompression && operation.destinationDir != null)
-            ? SnackBarAction(
-                label: '打开到所在目录',
+    // 解压成功：显示"是/否"弹窗提示，不自动跳转
+    if (!isError && !operation.isCompression && operation.destinationDir != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Expanded(child: Text('解压成功，是否打开所在位置？')),
+              TextButton(
                 onPressed: () {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
                   try {
                     final provider = Provider.of<FileManagerProvider>(context, listen: false);
                     final destDir = operation.destinationDir!;
                     final destParent = p.dirname(destDir);
-                    provider.loadDirectory(destParent);
-                    provider.setHighlightedPaths([destDir]);
+                    provider.setPendingBrowseNavigation(destParent, [destDir]);
+                    // 返回首页后再切换Tab，参考「在位置中显示」逻辑
+                    Navigator.popUntil(context, (route) => route.isFirst);
                     provider.setNavigateToBrowseTab(true);
                   } catch (_) {}
                 },
-              )
-            : null,
-      ),
-    );
+                child: const Text('是', style: TextStyle(color: Colors.white)),
+              ),
+              TextButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                },
+                child: const Text('否', style: TextStyle(color: Colors.white70)),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 8),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } else {
+      // 其他情况（压缩/失败）显示普通 SnackBar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: isError ? Colors.redAccent : Colors.green,
+          duration: const Duration(seconds: 4),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
 
     activeOperation.value = null;
   }

@@ -1696,8 +1696,8 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
               trailing: Icon(Icons.chevron_right_rounded, color: theme.colorScheme.onSurface.withOpacity(0.4)),
               onTap: () {
                 final provider = context.read<FileManagerProvider>();
-                provider.loadDirectory('/storage/emulated/0/Download/ZenFile_Remote');
-                // 设置导航标志，让 HomeScreen 切换到浏览标签
+                // 设置待导航路径，让 HomeScreen 切页后加载目录
+                provider.setPendingBrowseNavigation('/storage/emulated/0/Download/ZenFile_Remote', []);
                 provider.setNavigateToBrowseTab(true);
                 // 关闭所有设置页面回到首页
                 Navigator.of(context).popUntil((route) => route.isFirst);

@@ -3,12 +3,16 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_avif/flutter_avif.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 import '../../models/file_item_model.dart';
 import '../../core/utils.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../services/pin_service.dart';
 import '../../services/app_manager_service.dart';
+import '../../services/preferences_service.dart';
 import '../../providers/media_provider.dart';
 import '../../providers/file_manager_provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -69,85 +73,99 @@ class FileItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: EdgeInsets.all((12.0 * itemPaddingMultiplier).clamp(4.0, 24.0)),
-          child: Row(
+          child: Stack(
+            alignment: Alignment.topRight,
             children: [
-              GestureDetector(
-                onTap: onIconTap ?? onLongPress,
-                child: Container(
-                  width: 48 * iconScale,
-                  height: 48 * iconScale,
-                  decoration: BoxDecoration(
-                    color: isSelected ? theme.colorScheme.primary : iconColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: MediaThumbnail(
-                      file: file,
-                      iconScale: iconScale,
-                      isSelected: isSelected,
-                      iconColor: iconColor,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        if (PinService.isPinned(file.path)) ...[
-                          Icon(
-                            Icons.push_pin_rounded,
-                            size: 14 * (1 + (iconScale - 1) * 0.3),
-                            color: Colors.orange,
-                          ),
-                          const SizedBox(width: 6),
-                        ],
-                        Expanded(
-                          child: Text(
-                            file.name,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 15 * (1 + (iconScale - 1) * 0.3),
-                            ),
-                            maxLines: context.select<FileManagerProvider, bool>((p) => p.adaptiveMultiLineNames) ? 3 : 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  GestureDetector(
+                    onTap: onIconTap ?? onLongPress,
+                    child: Container(
+                      width: 48 * iconScale,
+                      height: 48 * iconScale,
+                      decoration: BoxDecoration(
+                        color: isSelected ? theme.colorScheme.primary : iconColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: MediaThumbnail(
+                          file: file,
+                          iconScale: iconScale,
+                          isSelected: isSelected,
+                          iconColor: iconColor,
                         ),
-                      ],
+                      ),
                     ),
-                    const SizedBox(height: 4),
-                    Consumer<FileManagerProvider>(
-                      builder: (context, provider, _) {
-                        return Row(
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                           children: [
-                            if (!provider.hideTimeAndDate) ...[
-                              Flexible(
-                                child: Text(
-                                  FileUtils.formatDate(file.modified, use24Hour: provider.use24HourFormat),
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.textTheme.bodySmall?.color?.withOpacity(0.6),
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                            if (PinService.isPinned(file.path)) ...[
+                              Icon(
+                                Icons.push_pin_rounded,
+                                size: 14 * (1 + (iconScale - 1) * 0.3),
+                                color: Colors.orange,
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 6),
                             ],
-                            Text(
-                              FileUtils.formatBytes(file.size, 2),
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.textTheme.bodySmall?.color?.withOpacity(0.6),
+                            Expanded(
+                              child: Text(
+                                file.name,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 15 * (1 + (iconScale - 1) * 0.3),
+                                ),
+                                maxLines: context.select<FileManagerProvider, bool>((p) => p.adaptiveMultiLineNames) ? 3 : 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
-                        );
-                      },
+                        ),
+                        const SizedBox(height: 4),
+                        Consumer<FileManagerProvider>(
+                          builder: (context, provider, _) {
+                            return Row(
+                              children: [
+                                if (!provider.hideTimeAndDate) ...[
+                                  Flexible(
+                                    child: Text(
+                                      FileUtils.formatDate(file.modified, use24Hour: provider.use24HourFormat),
+                                      style: theme.textTheme.bodySmall?.copyWith(
+                                        color: theme.textTheme.bodySmall?.color?.withOpacity(0.6),
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                ],
+                                Text(
+                                  FileUtils.formatBytes(file.size, 2),
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.textTheme.bodySmall?.color?.withOpacity(0.6),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                  if (!context.select<FileManagerProvider, bool>((p) => p.hideActionMenuButtons))
+                    const SizedBox(width: 48)
+                  else
+                    _TrailingInfoWidget(
+                      isFolder: file.isDirectory,
+                      item: file,
+                      iconScale: iconScale,
+                    ),
+                ],
               ),
               if (!context.select<FileManagerProvider, bool>((p) => p.hideActionMenuButtons))
                 IconButton(
@@ -161,12 +179,6 @@ class FileItem extends StatelessWidget {
                       showInLocation: showShowInLocationOption,
                     );
                   },
-                )
-              else
-                _TrailingInfoWidget(
-                  isFolder: file.isDirectory,
-                  item: file,
-                  iconScale: iconScale,
                 ),
             ],
           ),
@@ -223,18 +235,28 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
   Uint8List? _videoThumb;
   Uint8List? _audioThumb;
   Uint8List? _apkIcon;
+  Uint8List? _remoteThumb;  // 远程文件缩略图
 
   @override
   void initState() {
     super.initState();
-    final lowerPath = widget.file.path.toLowerCase();
-    if (FileUtils.isVideo(widget.file.path)) {
-      _loadVideoThumb();
-    } else if (FileUtils.isAudio(widget.file.path)) {
-      _loadAudioThumb();
-    } else if (lowerPath.endsWith('.apk') || lowerPath.endsWith('.xapk') || lowerPath.endsWith('.apks') || lowerPath.endsWith('.apkm')) {
-      _loadApkIcon();
-    }
+    // 延迟到第一帧后执行，以便获取 context
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      // 远程文件优先处理
+      if (widget.file.isRemote && PreferencesService.getRemoteMediaThumbnailPreview()) {
+        _loadRemoteThumbnail();
+        return;
+      }
+      final lowerPath = widget.file.path.toLowerCase();
+      if (FileUtils.isVideo(widget.file.path)) {
+        _loadVideoThumb();
+      } else if (FileUtils.isAudio(widget.file.path)) {
+        _loadAudioThumb();
+      } else if (lowerPath.endsWith('.apk') || lowerPath.endsWith('.xapk') || lowerPath.endsWith('.apks') || lowerPath.endsWith('.apkm')) {
+        _loadApkIcon();
+      }
+    });
   }
 
   @override
@@ -245,7 +267,13 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         _videoThumb = null;
         _audioThumb = null;
         _apkIcon = null;
+        _remoteThumb = null;
       });
+      // 远程文件优先处理
+      if (widget.file.isRemote && PreferencesService.getRemoteMediaThumbnailPreview()) {
+        _loadRemoteThumbnail();
+        return;
+      }
       final lowerPath = widget.file.path.toLowerCase();
       if (FileUtils.isVideo(widget.file.path)) {
         _loadVideoThumb();
@@ -254,6 +282,82 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
       } else if (lowerPath.endsWith('.apk') || lowerPath.endsWith('.xapk') || lowerPath.endsWith('.apks') || lowerPath.endsWith('.apkm')) {
         _loadApkIcon();
       }
+    }
+  }
+
+  /// 加载远程文件缩略图
+  Future<void> _loadRemoteThumbnail() async {
+    if (!mounted) return;
+    try {
+      final remoteSource = widget.file.remoteSource;
+      if (remoteSource == null) return;
+      
+      // 从 widget 树获取 remoteClient
+      final provider = context.read<FileManagerProvider>();
+      final activeTab = provider.activeTab;
+      if (activeTab?.remoteClient == null) return;
+      
+      final client = activeTab!.remoteClient!;
+      
+      // 构造缩略图缓存路径
+      Directory thumbDir;
+      try {
+        thumbDir = Directory('/storage/emulated/0/Download/ZenFile_Remote/cache/thumbnails/remote');
+        if (!thumbDir.existsSync()) thumbDir.createSync(recursive: true);
+      } catch (_) {
+        final appDir = await getApplicationDocumentsDirectory();
+        thumbDir = Directory(p.join(appDir.path, 'ZenFile_Remote', 'cache', 'thumbnails', 'remote'));
+        if (!thumbDir.existsSync()) thumbDir.createSync(recursive: true);
+      }
+      
+      final thumbName = '${widget.file.path.replaceAll('/', '_').replaceAll('\\', '_')}_thumb.jpg';
+      final thumbPath = p.join(thumbDir.path, thumbName);
+      final thumbFile = File(thumbPath);
+      
+      // 检查缓存
+      if (await thumbFile.exists()) {
+        final bytes = await thumbFile.readAsBytes();
+        if (mounted && bytes.isNotEmpty) {
+          setState(() => _remoteThumb = bytes);
+        }
+        return;
+      }
+      
+      // 下载到临时目录
+      Directory tempDir;
+      try {
+        tempDir = Directory('/storage/emulated/0/Download/ZenFile_Remote/cache/temp');
+        if (!tempDir.existsSync()) tempDir.createSync(recursive: true);
+      } catch (_) {
+        final appDir = await getApplicationDocumentsDirectory();
+        tempDir = Directory(p.join(appDir.path, 'ZenFile_Remote', 'cache', 'temp'));
+        if (!tempDir.existsSync()) tempDir.createSync(recursive: true);
+      }
+      
+      final ext = p.extension(widget.file.name).toLowerCase();
+      final tempPath = p.join(tempDir.path, 'remote_temp_${DateTime.now().millisecondsSinceEpoch}$ext');
+      
+      try {
+        await client.downloadFile(widget.file.path, tempPath, (_) {});
+        
+        // 图片直接复制作为缩略图
+        if (['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.heic'].contains(ext)) {
+          await File(tempPath).copy(thumbPath);
+        }
+        // 视频需要生成缩略图（简化处理：暂不实现视频远程缩略图）
+        
+        if (await thumbFile.exists()) {
+          final bytes = await thumbFile.readAsBytes();
+          if (mounted && bytes.isNotEmpty) {
+            setState(() => _remoteThumb = bytes);
+          }
+        }
+      } finally {
+        // 清理临时文件
+        try { await File(tempPath).delete(); } catch (_) {}
+      }
+    } catch (e) {
+      debugPrint('远程缩略图加载失败: $e');
     }
   }
 
@@ -414,6 +518,14 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
     }
 
     if (isImg && widget.file.size > 16) {
+      // SVG 需要特殊处理
+      if (widget.file.path.toLowerCase().endsWith('.svg')) {
+        return SvgPicture.file(
+          File(widget.file.path),
+          fit: BoxFit.cover,
+          placeholderBuilder: (context) => Icon(Broken.image, color: widget.iconColor, size: 28 * widget.iconScale),
+        );
+      }
       if (widget.file.path.toLowerCase().endsWith('.avif')) {
         return AvifImage.file(
           File(widget.file.path),
@@ -474,6 +586,21 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
             ),
           ),
         ],
+      );
+    }
+
+    // 远程文件缩略图（图片类型）
+    if (_remoteThumb != null) {
+      return Image.memory(
+        _remoteThumb!,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+        errorBuilder: (context, error, stackTrace) => Icon(
+          FileUtils.isVideo(widget.file.path) ? Broken.video : Broken.image,
+          color: widget.iconColor,
+          size: 28 * widget.iconScale,
+        ),
       );
     }
 

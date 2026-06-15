@@ -594,10 +594,36 @@ class FileManagerProvider extends ChangeNotifier {
   // 临时导航状态：从设置页面跳转到浏览标签
   bool _navigateToBrowseTab = false;
   bool get navigateToBrowseTab => _navigateToBrowseTab;
+  final ValueNotifier<bool> _navigateToBrowseTabNotifier = ValueNotifier<bool>(false);
+  ValueNotifier<bool> get navigateToBrowseTabNotifier => _navigateToBrowseTabNotifier;
 
   void setNavigateToBrowseTab(bool value) {
     _navigateToBrowseTab = value;
-    notifyListeners();
+    // 强制通知：先取反再设值，确保 ValueNotifier 监听器始终被触发
+    if (value) {
+      _navigateToBrowseTabNotifier.value = false;
+    }
+    _navigateToBrowseTabNotifier.value = value;
+  }
+
+  // 解压后跳转到浏览页并高亮文件
+  String? _pendingBrowsePath;
+  String? get pendingBrowsePath => _pendingBrowsePath;
+  List<String> _pendingHighlightedPaths = [];
+  List<String> get pendingHighlightedPaths => _pendingHighlightedPaths;
+
+  void setPendingBrowseNavigation(String targetPath, List<String> highlightedPaths) {
+    _pendingBrowsePath = targetPath;
+    _pendingHighlightedPaths = highlightedPaths;
+    _navigateToBrowseTab = true;
+    _navigateToBrowseTabNotifier.value = true;
+  }
+
+  void clearPendingBrowseNavigation() {
+    _pendingBrowsePath = null;
+    _pendingHighlightedPaths = [];
+    _navigateToBrowseTab = false;
+    _navigateToBrowseTabNotifier.value = false;
   }
 
   bool _rememberLastFolder = false;
@@ -2899,7 +2925,8 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   Future<void> extractArchiveDirectly(BuildContext context, String path) async {
-    final destDir = p.join(currentPath, p.basenameWithoutExtension(path));
+    // 解压到压缩包所在目录（dirname(path)），而非浏览页当前路径
+    final destDir = p.join(p.dirname(path), p.basenameWithoutExtension(path));
     final res = await ExtractArchiveDialog.show(context, archiveName: p.basename(path), defaultDestDir: destDir);
     if (res != null && context.mounted) {
       await BackgroundArchiveService.instance.startExtraction(
@@ -3056,6 +3083,27 @@ class FileManagerProvider extends ChangeNotifier {
     final ext = p.extension(path).toLowerCase();
     
     String targetPath = path;
+
+    // 远程文件：先下载到本地缓存，再打开
+    if (activeTab.isRemote && activeTab.remoteClient != null) {
+      try {
+        final cacheDir = Directory('/storage/emulated/0/Download/ZenFile_Remote');
+        if (!cacheDir.existsSync()) cacheDir.createSync(recursive: true);
+        final cachePath = p.join(cacheDir.path, p.basename(path));
+        if (!File(cachePath).existsSync()) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('正在下载 ${p.basename(path)}...'), duration: const Duration(seconds: 2)),
+            );
+          }
+          await activeTab.remoteClient!.downloadFile(path, cachePath, (progress) {});
+        }
+        targetPath = cachePath;
+      } catch (e) {
+        debugPrint('下载远程文件失败: $e');
+      }
+    }
+
     if (isRestrictedPath(path) && !FileUtils.isTextOrCode(path)) {
       try {
         final tempDir = Directory('/storage/emulated/0/.nfile_temp');
@@ -3295,6 +3343,13 @@ class FileManagerProvider extends ChangeNotifier {
       }
     }
   }
+
+  @override
+  void dispose() {
+    _navigateToBrowseTabNotifier.dispose();
+    super.dispose();
+  }
+
 }
 
 

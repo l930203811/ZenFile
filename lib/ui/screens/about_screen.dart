@@ -171,7 +171,7 @@ class AboutZenFileScreen extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'v1.0.2 (查看)',
+                            'v1.0.3 (查看)',
                             style: TextStyle(
                               color: theme.colorScheme.primary,
                               fontSize: 12.5,
@@ -649,6 +649,60 @@ class AboutZenFileScreen extends StatelessWidget {
                   ),
                   Text('更新日志', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 20),
+
+                  // ── 下载链接（置顶）──
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 20),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          theme.colorScheme.primary.withOpacity(0.08),
+                          theme.colorScheme.secondary.withOpacity(0.04),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: theme.colorScheme.primary.withOpacity(0.15)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.download_rounded, size: 18, color: theme.colorScheme.primary),
+                            const SizedBox(width: 8),
+                            Text('下载 ZenFile v1.0.3', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withOpacity(0.9))),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        _buildDownloadLink(ctx, theme, '123云盘', 'https://1820255615.share.123pan.cn/123pan/WrRojv-JHpnA?pwd=hBR2', Icons.cloud_outlined),
+                        const SizedBox(height: 8),
+                        _buildDownloadLink(ctx, theme, '115网盘', 'https://115cdn.com/s/swsho4j3hc6?password=m490', Icons.cloud_queue),
+                        const SizedBox(height: 8),
+                        _buildDownloadLink(ctx, theme, '百度网盘', 'https://pan.baidu.com/s/1kYSfzTriRXwQPRL_c5Awig?pwd=xg94', Icons.cloud_circle),
+                        const SizedBox(height: 8),
+                        _buildDownloadLink(ctx, theme, '夸克网盘', 'https://pan.quark.cn/s/e6081a88d463', Icons.cloud),
+                        const SizedBox(height: 8),
+                        _buildDownloadLink(ctx, theme, '小飞机网盘', 'https://share.feijipan.com/s/5JcEKP4C', Icons.flight),
+                      ],
+                    ),
+                  ),
+
+                  _buildVersionSection(ctx, theme, 'v1.0.3', '2026-06-15', [
+                    '新增 SVG 文件完整支持（缩略图预览与查看）',
+                    '新增压缩包格式颜色区分（zip/rar/7z/tar/gz 各有专属颜色）',
+                    '新增远程文件先下载再播放功能',
+                    '新增浏览页远程文件缩略图预览',
+                    '修复分类页解压后无法跳转到浏览页的问题',
+                    '修复远程文件无法打开播放的问题',
+                    '修复「查看缓存目录」和「解压后打开所在位置」导致页面卡死的问题',
+                    '优化文件日期格式为 yyyy-MM-dd',
+                    '优化默认启用 24 小时制时间显示',
+                    '优化远程文件缓存目录统一管理',
+                  ]),
+                  const SizedBox(height: 16),
                   _buildVersionSection(ctx, theme, 'v1.0.2', '2026-06-11', [
                     '路径栏全面优化（更紧凑的面包屑按钮和箭头样式）',
                     '标签栏和路径栏整体上移，为文件列表留出更多空间',
@@ -694,30 +748,6 @@ class AboutZenFileScreen extends StatelessWidget {
                     '自定义主题与外观设置',
                   ]),
                   const SizedBox(height: 24),
-
-                  // ── 下载链接 ──
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.06)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('下载最新版本', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withOpacity(0.9))),
-                        const SizedBox(height: 12),
-                        _buildDownloadLink(ctx, theme, '夸克网盘', 'https://pan.quark.cn/s/e6081a88d463', Icons.cloud),
-                        const SizedBox(height: 8),
-                        _buildDownloadLink(ctx, theme, '123云盘', 'https://1820255615.share.123pan.cn/123pan/WrRojv-QHpnA', Icons.cloud_outlined),
-                        const SizedBox(height: 8),
-                        _buildDownloadLink(ctx, theme, '小飞机网盘', 'https://share.feijipan.com/s/5JcEKP4C', Icons.flight),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
 
                   // ── 更新计划与已知问题 ──
                   Container(
@@ -851,42 +881,43 @@ class AboutZenFileScreen extends StatelessWidget {
   }
 
   void _showImagePreview(BuildContext context, ThemeData theme, String assetPath) {
-    showDialog(
-      context: context,
-      builder: (ctx) => Scaffold(
-        backgroundColor: Colors.black,
-        appBar: AppBar(
-          backgroundColor: Colors.black.withOpacity(0.5),
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.close, color: Colors.white),
-            onPressed: () => Navigator.of(ctx).pop(),
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (ctx) => Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(
+            backgroundColor: Colors.black.withOpacity(0.5),
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.close, color: Colors.white),
+              onPressed: () => Navigator.of(ctx).pop(),
+            ),
+            title: const Text('长按保存图片', style: TextStyle(color: Colors.white, fontSize: 14)),
+            centerTitle: true,
           ),
-          title: const Text('长按保存图片', style: TextStyle(color: Colors.white, fontSize: 14)),
-          centerTitle: true,
-        ),
-        body: Center(
-          child: InteractiveViewer(
-            minScale: 0.5,
-            maxScale: 4.0,
-            child: GestureDetector(
-              onLongPress: () => _saveImageToGallery(ctx, assetPath),
-              child: Image.asset(
-                assetPath,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) {
-                  debugPrint('Image preview error: $error');
-                  return const Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.broken_image, color: Colors.white54, size: 64),
-                        SizedBox(height: 16),
-                        Text('图片加载失败', style: TextStyle(color: Colors.white54)),
-                      ],
-                    ),
-                  );
-                },
+          body: Center(
+            child: InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: GestureDetector(
+                onLongPress: () => _saveImageToGallery(ctx, assetPath),
+                child: Image.asset(
+                  assetPath,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    debugPrint('Image preview error: $error');
+                    return const Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.broken_image, color: Colors.white54, size: 64),
+                          SizedBox(height: 16),
+                          Text('图片加载失败', style: TextStyle(color: Colors.white54)),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ),

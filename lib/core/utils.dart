@@ -18,7 +18,7 @@ class FileUtils {
 
   static String formatDate(DateTime date, {bool use24Hour = true}) {
     final timePattern = use24Hour ? 'HH:mm' : 'hh:mm a';
-    return DateFormat('MMM dd, yyyy  $timePattern').format(date);
+    return DateFormat('yyyy-MM-dd  $timePattern').format(date);
   }
 
   static bool isArchive(String path) {
@@ -152,7 +152,6 @@ class FileUtils {
   
   static Color getColorForFile(String path, BuildContext context) {
     final ext = path.split('.').last.toLowerCase();
-    if (isArchive(path)) return Colors.orange.shade700;
     if (isImage(path)) return Colors.purple;
     if (isVideo(path)) return Colors.red.shade700;
     if (isAudio(path)) return Colors.teal.shade700;
@@ -176,6 +175,20 @@ class FileUtils {
       case 'yaml': case 'yml': return Colors.pink.shade600;
       case 'exe': case 'msi': return Colors.blue.shade800;
       case 'log': return Colors.grey;
+      // 压缩包格式 - 不同格式不同颜色
+      case 'zip': return Colors.orange.shade700;
+      case 'rar': return Colors.red.shade700;
+      case '7z': return Colors.purple.shade700;
+      case 'tar': return Colors.brown.shade700;
+      case 'gz': return Colors.green.shade700;
+      case 'bz2': return Colors.blue.shade700;
+      case 'xz': return Colors.cyan.shade700;
+      case 'iso': return Colors.grey.shade700;
+      case 'cab': return Colors.indigo.shade700;
+      case 'deb': return Colors.orange.shade600;
+      case 'rpm': return Colors.red.shade600;
+      case 'dmg': return Colors.blueGrey.shade700;
+      case 'wim': return Colors.teal.shade600;
     }
     
     if (isTextOrCode(path)) return Colors.blue.shade700;

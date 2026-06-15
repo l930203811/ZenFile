@@ -1,3 +1,4 @@
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -56,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     if (fileManager.navigateToBrowseTab) {
       fileManager.setNavigateToBrowseTab(false);
       if (_currentIndex != 1) {
-        setState(() => _currentIndex = 1);
+        _switchTab(1);
       }
     }
   }
@@ -66,6 +67,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     _refreshIconController.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  void _switchTab(int index) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    setState(() => _currentIndex = index);
   }
 
   @override
@@ -230,7 +236,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
         }
         if (_currentIndex == 1) {
           if (!provider.canGoBack) {
-            setState(() => _currentIndex = 0);
+            _switchTab(0);
             context.read<MediaProvider>().refreshMediaBackground();
           }
         } else {
@@ -241,7 +247,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
         key: _scaffoldKey,
         drawer: ZenFileDrawer(
           toggleTheme: widget.toggleTheme,
-          onNavigateTab: (index) => setState(() => _currentIndex = index),
+          onNavigateTab: (index) => _switchTab(index),
         ),
         body: Consumer<FileManagerProvider>(
           builder: (context, provider, _) {
@@ -285,13 +291,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                     );
                     final deltaX = endCenter.dx - _dualFingerStartCenter!.dx;
                     if (deltaX < -_dualFingerSwipeThreshold) {
-                      if (_currentIndex == 0) setState(() => _currentIndex = 1);
+                      if (_currentIndex == 0) _switchTab(1);
                     } else if (deltaX > _dualFingerSwipeThreshold) {
                       if (_currentIndex == 0) {
                         _scaffoldKey.currentState?.openDrawer();
                       } else if (_currentIndex == 1) {
                         if (!fileProvider.isSelectionMode) {
-                          setState(() => _currentIndex = 0);
+                          _switchTab(0);
                           context.read<MediaProvider>().refreshMediaBackground();
                         }
                       }
@@ -323,13 +329,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                           final dt = DateTime.now().difference(_singleFingerLastTime!).inMilliseconds;
                           final velocity = dt > 0 ? (dx / dt) * 1000 : 0.0; // px/s
                           if (velocity < -300) {
-                            if (_currentIndex == 0) setState(() => _currentIndex = 1);
+                            if (_currentIndex == 0) _switchTab(1);
                           } else if (velocity > 300) {
                             if (_currentIndex == 0) {
                               _scaffoldKey.currentState?.openDrawer();
                             } else if (_currentIndex == 1) {
                               if (!fileProvider.isSelectionMode) {
-                                setState(() => _currentIndex = 0);
+                                _switchTab(0);
                                 context.read<MediaProvider>().refreshMediaBackground();
                               }
                             }
@@ -360,21 +366,35 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
               },
           child: Consumer<FileManagerProvider>(
             builder: (context, provider, _) {
-              if (provider.navigateToBrowseTab && _currentIndex != 1) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  setState(() => _currentIndex = 1);
-                  provider.setNavigateToBrowseTab(false);
-                });
-              }
-              return IndexedStack(
-                index: _currentIndex,
-                children: [
-                  _buildHomeTab(),
-                  DirectoryScreen(
-                    toggleTheme: widget.toggleTheme,
-                    onNavigateTab: (index) => setState(() => _currentIndex = index),
-                  ),
-                ],
+              return ValueListenableBuilder<bool>(
+                valueListenable: provider.navigateToBrowseTabNotifier,
+                builder: (context, shouldNavigate, __) {
+                  if (shouldNavigate && _currentIndex != 1) {
+                    // 使用 microtask 确保在当前 build 完成后立即切换
+                    scheduleMicrotask(() {
+                      if (mounted) {
+                        _switchTab(1);
+                        provider.setNavigateToBrowseTab(false);
+                        // 消费 pending 浏览导航
+                        if (provider.pendingBrowsePath != null) {
+                          provider.loadDirectory(provider.pendingBrowsePath!);
+                          provider.setHighlightedPaths(provider.pendingHighlightedPaths);
+                          provider.clearPendingBrowseNavigation();
+                        }
+                      }
+                    });
+                  }
+                  return IndexedStack(
+                    index: _currentIndex,
+                    children: [
+                      _buildHomeTab(),
+                      DirectoryScreen(
+                        toggleTheme: widget.toggleTheme,
+                        onNavigateTab: (index) => _switchTab(index),
+                      ),
+                    ],
+                  );
+                },
               );
             },
           ),
@@ -409,7 +429,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                     // 分类按钮（点击切换到首页）
                     IconButton(
                       onPressed: () {
-                        setState(() => _currentIndex = 0);
+                        _switchTab(0);
                         context.read<MediaProvider>().refreshMediaBackground();
                       },
                       tooltip: '首页分类',
@@ -421,7 +441,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                     // 浏览按钮（点击切换到浏览页）
                     IconButton(
                       onPressed: () {
-                        setState(() => _currentIndex = 1);
+                        _switchTab(1);
                       },
                       tooltip: '浏览',
                       icon: Icon(
@@ -468,7 +488,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   QuickCategoriesGrid(
-                    onNavigateTab: (index) => setState(() => _currentIndex = index),
+                    onNavigateTab: (index) => _switchTab(index),
                     showTitle: false,
                   ),
                   const SizedBox(height: 24),
@@ -602,3 +622,4 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     );
   }
 }
+

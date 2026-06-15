@@ -504,6 +504,13 @@ class _ZenFileAddressBarState extends State<ZenFileAddressBar> {
                                       },
                                       child: Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(
+                                            color: theme.dividerColor.withOpacity(0.25),
+                                            width: 1,
+                                          ),
+                                        ),
                                         child: Text(
                                           segment.name,
                                           style: TextStyle(

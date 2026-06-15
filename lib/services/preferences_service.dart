@@ -446,7 +446,7 @@ class PreferencesService {
   static const String _keyShowFolderContentsCount = 'show_folder_contents_count';
 
   static bool getUse24HourFormat() {
-    return _prefs?.getBool(_keyUse24HourFormat) ?? false;
+    return _prefs?.getBool(_keyUse24HourFormat) ?? true;
   }
 
   static Future<void> saveUse24HourFormat(bool val) async {
