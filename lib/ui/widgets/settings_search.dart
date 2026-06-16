@@ -39,7 +39,7 @@ class SettingsSearchBar extends StatelessWidget {
           fontWeight: FontWeight.w500,
         ),
         decoration: InputDecoration(
-          hintText: 'L10n.of(context).msgead3e5c5',
+          hintText: L10n.of(context).msgead3e5c5,
           hintStyle: TextStyle(
             color: theme.colorScheme.onSurface.withOpacity(0.4),
             fontSize: 15,

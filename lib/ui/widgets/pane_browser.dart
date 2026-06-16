@@ -291,10 +291,10 @@ class _PaneBrowserState extends State<PaneBrowser> {
           final currentName = p.posix.basename(path);
           final newName = await FileActionDialogs.showTextInputDialog(
             context,
-            title: 'L10n.of(context).msgc8ce4b36',
-            hint: 'L10n.of(context).msgf139c5cf',
+            title: L10n.of(context).msgc8ce4b36,
+            hint: L10n.of(context).msgf139c5cf,
             initialValue: currentName,
-            actionText: 'L10n.of(context).msgc8ce4b36',
+            actionText: L10n.of(context).msgc8ce4b36,
           );
           if (newName != null && newName.isNotEmpty) {
             await provider.renameFile(path, newName);
@@ -308,10 +308,10 @@ class _PaneBrowserState extends State<PaneBrowser> {
         final isMulti = provider.selectedPaths.isNotEmpty && provider.selectedPaths.contains(path);
         final confirm = await FileActionDialogs.showConfirmDialog(
           context,
-          title: isMulti ? 'L10n.of(context).msgcd0b9aca' : 'L10n.of(context).msg4b342999',
+          title: isMulti ? L10n.of(context).msgcd0b9aca : L10n.of(context).msg4b342999,
           content: isMulti
               ? '确定要删除 ${provider.selectedPaths.length} 个项目吗？此操作无法撤销。'
-              : 'L10n.of(context).msgee14ee27',
+              : L10n.of(context).msgee14ee27,
         );
         if (confirm) {
           if (isMulti) {
@@ -556,7 +556,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                                   ),
                                                   const SizedBox(height: 16),
                                                   Text(
-                                                    'L10n.of(context).msge9691076',
+                                                    L10n.of(context).msge9691076,
                                                     style: theme.textTheme.titleMedium?.copyWith(
                                                       fontWeight: FontWeight.bold,
                                                       color: theme.colorScheme.onSurface,
@@ -815,7 +815,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                     padding: EdgeInsets.zero,
                                   ),
                                   child: const Text(
-                                    'L10n.of(context).msg17093362',
+                                    '取消操作',
                                     style: TextStyle(fontSize: 12),
                                   ),
                                 ),
@@ -1163,7 +1163,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
       case FileFilterType.all:
         break;
       case FileFilterType.documents:
-        label = 'L10n.of(context).msg0c36f64f';
+        label = L10n.of(context).msg0c36f64f;
         icon = Broken.document;
         color = Colors.blueAccent;
         break;
@@ -1173,7 +1173,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
         color = Colors.purpleAccent;
         break;
       case FileFilterType.audio:
-        label = 'L10n.of(context).msg26b041dd';
+        label = L10n.of(context).msg26b041dd;
         icon = Broken.music;
         color = Colors.greenAccent;
         break;
@@ -1183,7 +1183,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
         color = Colors.redAccent;
         break;
       case FileFilterType.archives:
-        label = 'L10n.of(context).msge632ba85';
+        label = L10n.of(context).msge632ba85;
         icon = Broken.archive;
         color = Colors.brown;
         break;

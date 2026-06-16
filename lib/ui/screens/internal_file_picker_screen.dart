@@ -158,8 +158,8 @@ class _InternalFilePickerScreenState extends State<InternalFilePickerScreen> {
   Future<void> _createFolder() async {
     final newFolderName = await FileActionDialogs.showTextInputDialog(
       context,
-      title: 'L10n.of(context).msgf3a485df',
-      hint: 'L10n.of(context).msgfba1f416',
+      title: L10n.of(context).msgf3a485df,
+      hint: L10n.of(context).msgfba1f416,
       actionText: '创建',
     );
     if (newFolderName != null && newFolderName.isNotEmpty) {
@@ -184,7 +184,7 @@ class _InternalFilePickerScreenState extends State<InternalFilePickerScreen> {
         debugPrint('Error creating folder in picker: $e');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('创建文件夹出错：$e')),
+            SnackBar(content: Text('创建文件夹出错：{e}')),
           );
         }
       } finally {
@@ -346,7 +346,7 @@ class _InternalFilePickerScreenState extends State<InternalFilePickerScreen> {
                           ),
                         ),
                         title: Text(
-                          'L10n.of(context).msgd730e478',
+                          L10n.of(context).msgd730e478,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 15,
@@ -407,14 +407,14 @@ class _InternalFilePickerScreenState extends State<InternalFilePickerScreen> {
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(widget.pickDirectory ? 'L10n.of(context).msg33b0b21c' : '选择文件和文件夹', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text(widget.pickDirectory ? L10n.of(context).msg33b0b21c : '选择文件和文件夹', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               Text(_currentPath, style: TextStyle(fontSize: 12, color: theme.colorScheme.primary)),
             ],
           ),
           actions: [
             IconButton(
               icon: const Icon(Broken.folder_add),
-              tooltip: 'L10n.of(context).msgf3a485df',
+              tooltip: L10n.of(context).msgf3a485df,
               onPressed: _createFolder,
             ),
             IconButton(
@@ -425,7 +425,7 @@ class _InternalFilePickerScreenState extends State<InternalFilePickerScreen> {
             if (_selectedPaths.isNotEmpty)
               IconButton(
                 icon: const Icon(Broken.close_square),
-                tooltip: 'L10n.of(context).msgff3200cc',
+                tooltip: L10n.of(context).msgff3200cc,
                 onPressed: () => setState(() => _selectedPaths.clear()),
               ),
           ],
@@ -433,7 +433,7 @@ class _InternalFilePickerScreenState extends State<InternalFilePickerScreen> {
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _items.isEmpty
-                ? const Center(child: Text('L10n.of(context).msg4614630a'))
+                ? Center(child: Text(L10n.of(context).msg4614630a))
                 : ListView.builder(
                     controller: _scrollController,
                     physics: const BouncingScrollPhysics(),
@@ -537,7 +537,7 @@ class _InternalFilePickerScreenState extends State<InternalFilePickerScreen> {
                     backgroundColor: theme.colorScheme.primary,
                     foregroundColor: theme.colorScheme.onPrimary,
                     icon: const Icon(Broken.folder_add),
-                    label: const Text('L10n.of(context).msg5dc1fa7b'),
+                    label: Text(L10n.of(context).msg5dc1fa7b),
                   )
             : _selectedPaths.isNotEmpty
                 ? FloatingActionButton.extended(

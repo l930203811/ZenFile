@@ -56,7 +56,7 @@ class StorageOverviewCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'L10n.of(context).msg21cefa9b',
+                '内部存储',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -94,7 +94,7 @@ class StorageOverviewCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '已使用 $usedStorageStr',
+                '已使用 {usedStorageStr}',
                 style: const TextStyle(
                   color: Colors.white70,
                   fontWeight: FontWeight.w500,

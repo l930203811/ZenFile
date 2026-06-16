@@ -37,7 +37,7 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
                 final tab = tabs[index];
                 final isSelected = index == activeIndex;
                 final isRoot = tab.currentPath == provider.rootPath;
-                final title = isRoot ? 'L10n.of(context).msgfefea1b3' : p.basename(tab.currentPath);
+                final title = isRoot ? L10n.of(context).msgfefea1b3 : p.basename(tab.currentPath);
 
                 return Container(
                   margin: const EdgeInsets.only(right: 4),
@@ -113,7 +113,7 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
             constraints: const BoxConstraints(),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             icon: const Icon(Broken.add, size: 20),
-            tooltip: 'L10n.of(context).msgb52d4a73',
+            tooltip: L10n.of(context).msgb52d4a73,
             onPressed: () {
               provider.addTab(provider.rootPath);
               // 自动滚动到新标签页
@@ -140,23 +140,23 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
               }
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'duplicate',
                 child: Row(
                   children: [
                     Icon(Broken.copy, size: 18),
                     SizedBox(width: 10),
-                    Text('L10n.of(context).msg4e9c344a', style: TextStyle(fontWeight: FontWeight.w500)),
+                    Text(L10n.of(context).msg4e9c344a, style: TextStyle(fontWeight: FontWeight.w500)),
                   ],
                 ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'close_others',
                 child: Row(
                   children: [
                     Icon(Broken.close_circle, size: 18),
                     SizedBox(width: 10),
-                    Text('L10n.of(context).msg7716532d', style: TextStyle(fontWeight: FontWeight.w500)),
+                    Text(L10n.of(context).msg7716532d, style: TextStyle(fontWeight: FontWeight.w500)),
                   ],
                 ),
               ),
@@ -213,14 +213,14 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        tab.currentPath == provider.rootPath ? 'L10n.of(context).msgfefea1b3' : p.basename(tab.currentPath),
+                        tab.currentPath == provider.rootPath ? L10n.of(context).msgfefea1b3 : p.basename(tab.currentPath),
                         style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                       ),
                     ),
                     Text(
-                      'L10n.of(context).msgd78603eb',
+                      L10n.of(context).msgd78603eb,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurface.withOpacity(0.4),
                         fontSize: 11,
@@ -240,7 +240,7 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
                         provider.closeTab(index);
                       },
                       icon: const Icon(Broken.close_circle, size: 18),
-                      label: const Text('关闭标签页', style: TextStyle(fontWeight: FontWeight.bold)),
+                      label: Text(L10n.of(context).ui_close_tab, style: TextStyle(fontWeight: FontWeight.bold)),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.redAccent,
                         side: BorderSide(color: Colors.redAccent.withOpacity(0.3)),

@@ -38,7 +38,7 @@ class FileActionDialogs {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('取消'),
+              child: Text(L10n.of(context).ui_cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context, controller.text),
@@ -70,7 +70,7 @@ class FileActionDialogs {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('取消'),
+              child: Text(L10n.of(context).ui_cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context, true),
@@ -80,7 +80,7 @@ class FileActionDialogs {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('删除'),
+              child: Text(L10n.of(context).ui_delete),
             ),
           ],
         );
@@ -109,7 +109,7 @@ class FileActionDialogs {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('确定'),
+              child: Text(L10n.of(context).ui_confirm),
             ),
           ],
         );
@@ -147,15 +147,15 @@ class FileActionSheet {
                 ),
                 const SizedBox(height: 8),
                 if (showInLocation)
-                  _buildTile(ctx, theme, icon: Broken.folder_open, title: 'L10n.of(context).msgcd8264f1', value: 'show_in_location', onAction: onAction),
+                  _buildTile(ctx, theme, icon: Broken.folder_open, title: L10n.of(context).msgcd8264f1, value: 'show_in_location', onAction: onAction),
                 if (showShare)
-                  _buildTile(ctx, theme, icon: Icons.share_outlined, title: '分享', value: 'share', onAction: onAction),
+                  _buildTile(ctx, theme, icon: Icons.share_outlined, title: L10n.of(context).ui_share, value: 'share', onAction: onAction),
                 if (isArchive)
                   _buildTile(ctx, theme, icon: Broken.archive, title: '解压', value: 'extract', onAction: onAction),
-                _buildTile(ctx, theme, icon: Broken.box_add, title: '压缩', value: 'archive', onAction: onAction),
-                _buildTile(ctx, theme, icon: Broken.document_copy, title: '复制', value: 'copy', onAction: onAction),
-                _buildTile(ctx, theme, icon: Broken.scissor, title: '剪切', value: 'cut', onAction: onAction),
-                _buildTile(ctx, theme, icon: Broken.edit, title: 'L10n.of(context).msgc8ce4b36', value: 'rename', onAction: onAction),
+                _buildTile(ctx, theme, icon: Broken.box_add, title: L10n.of(context).ui_compress, value: 'archive', onAction: onAction),
+                _buildTile(ctx, theme, icon: Broken.document_copy, title: L10n.of(context).ui_copy, value: 'copy', onAction: onAction),
+                _buildTile(ctx, theme, icon: Broken.scissor, title: L10n.of(context).ui_cut, value: 'cut', onAction: onAction),
+                _buildTile(ctx, theme, icon: Broken.edit, title: L10n.of(context).msgc8ce4b36, value: 'rename', onAction: onAction),
                 _buildDeleteTile(ctx, theme, onAction: onAction),
                 const SizedBox(height: 8),
               ],
@@ -177,7 +177,7 @@ class FileActionSheet {
   static Widget _buildDeleteTile(BuildContext ctx, ThemeData theme, {required Function(String) onAction}) {
     return ListTile(
       leading: const Icon(Broken.trash, size: 22, color: Colors.redAccent),
-      title: const Text('删除', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.redAccent)),
+      title: Text(L10n.of(ctx).ui_delete, style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.redAccent)),
       onTap: () { Navigator.pop(ctx); onAction('delete'); },
     );
   }

@@ -21,7 +21,7 @@ class RecentFilesSection extends StatelessWidget {
     if (diff.inHours < 24) return '${diff.inHours}小时前';
     if (diff.inDays == 1) return '昨天';
     if (diff.inDays < 7) return '${diff.inDays}天前';
-    final months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', 'L10n.of(context).msgf544c399', '11月', 'L10n.of(context).msgc0615eb3'];
+    final months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
     return '${time.day} ${months[time.month - 1]}';
   }
 
@@ -53,7 +53,7 @@ class RecentFilesSection extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'L10n.of(context).msg54355dd8',
+                  L10n.of(context).msg54355dd8,
                   style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 InkWell(
@@ -211,7 +211,7 @@ class RecentFilesSection extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          isFolder ? 'L10n.of(context).msg1f4c1042' : FileUtils.formatBytes(file.size, 1),
+                          isFolder ? L10n.of(context).msg1f4c1042 : FileUtils.formatBytes(file.size, 1),
                           style: theme.textTheme.bodySmall?.copyWith(fontSize: 10, color: theme.textTheme.bodySmall?.color?.withAlpha(153)),
                         ),
                         Text(

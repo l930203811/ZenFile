@@ -312,7 +312,7 @@ class _SwipableStorageOverviewState extends State<SwipableStorageOverview> {
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    '$freeStorageStr 可用',
+                                    '{freeStorageStr} 可用',
                                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 9),
                                   ),
                                   const SizedBox(width: 6),

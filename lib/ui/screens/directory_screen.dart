@@ -179,7 +179,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             onLongPress: () {
               Clipboard.setData(ClipboardData(text: targetPath));
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('已复制路径: $targetPath'), behavior: SnackBarBehavior.floating, duration: const Duration(seconds: 2)),
+                SnackBar(content: Text(L10n.of(context).targetpath(targetPath)), behavior: SnackBarBehavior.floating, duration: Duration(seconds: 2)),
               );
             },
             child: itemWidgets[i],
@@ -275,7 +275,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(minWidth: 22, minHeight: 22),
                     onPressed: provider.canGoBack ? () => _goBack(provider) : null,
-                    tooltip: '上一级',
+                    tooltip: L10n.of(context).ui_go_up,
                   ),
                   Expanded(child: _buildPathBreadcrumb(context, provider)),
                   IconButton(
@@ -283,7 +283,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(minWidth: 22, minHeight: 22),
                     onPressed: provider.canGoForward ? () => provider.goForward() : null,
-                    tooltip: 'L10n.of(context).msg6ed14da7',
+                    tooltip: L10n.of(context).msg6ed14da7,
                   ),
                 ],
               ),
@@ -294,7 +294,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   }
 
   String _clipboardLabel(FileManagerProvider provider) {
-    final prefix = provider.isCut ? '剪切' : '复制';
+    final prefix = provider.isCut ? L10n.of(context).ui_cut : L10n.of(context).ui_copy;
     if (provider.isRemoteClipboard) {
       final items = provider.remoteClipboardItems;
       if (items.isEmpty) return prefix;
@@ -320,7 +320,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         itemNames.add(p.basename(path));
       }
     }
-    final prefix = provider.isCut ? '剪切' : '复制';
+    final prefix = provider.isCut ? L10n.of(context).ui_cut : L10n.of(context).ui_copy;
     final maxItemHeight = 200.0;
 
     showDialog(
@@ -364,7 +364,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '$prefix · ${itemNames.length} 项',
+                    L10n.of(context).ui_cut_copy_items(prefix, itemNames.length),
                     style: theme.textTheme.labelMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: provider.isCut ? Colors.orange : theme.colorScheme.primary,
@@ -426,7 +426,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
-                      child: const Text('清除', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                      child: Text(L10n.of(context).ui_clear, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -439,7 +439,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                         await provider.pasteFile(context, clearAfterPaste: true);
                       },
                       icon: const Icon(Icons.content_paste, size: 16),
-                      label: const Text('粘贴', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                      label: Text(L10n.of(context).ui_paste, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: theme.colorScheme.primary,
                         foregroundColor: theme.colorScheme.onPrimary,
@@ -500,11 +500,11 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         break;
       case 'copy':
         provider.copyFile(path);
-        // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('L10n.of(context).msg4fb42e6e')));
+        // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).msg4fb42e6e)));
         break;
       case 'cut':
         provider.cutFile(path);
-        // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('L10n.of(context).msge5212c58')));
+        // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).msge5212c58)));
         break;
       case 'rename':
         final isMulti = provider.selectedPaths.isNotEmpty && provider.selectedPaths.contains(path);
@@ -514,10 +514,10 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
           final currentName = p.posix.basename(path);
           final newName = await FileActionDialogs.showTextInputDialog(
             context,
-            title: 'L10n.of(context).msgc8ce4b36',
-            hint: 'L10n.of(context).msgf139c5cf',
+            title: L10n.of(context).msgc8ce4b36,
+            hint: L10n.of(context).msgf139c5cf,
             initialValue: currentName,
-            actionText: 'L10n.of(context).msgc8ce4b36',
+            actionText: L10n.of(context).msgc8ce4b36,
           );
           if (newName != null && newName.isNotEmpty) {
             await provider.renameFile(path, newName);
@@ -531,10 +531,10 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         final isMulti = provider.selectedPaths.isNotEmpty && provider.selectedPaths.contains(path);
         final confirm = await FileActionDialogs.showConfirmDialog(
           context,
-          title: isMulti ? 'L10n.of(context).msgcd0b9aca' : 'L10n.of(context).msg4b342999',
+          title: isMulti ? L10n.of(context).msgcd0b9aca : L10n.of(context).msg4b342999,
           content: isMulti
-              ? '确定要删除 ${provider.selectedPaths.length} 个项目吗？此操作无法撤销。'
-              : 'L10n.of(context).msgee14ee27',
+              ? L10n.of(context).selectedcount2(provider.selectedPaths.length)
+              : L10n.of(context).msgee14ee27,
         );
         if (confirm) {
           if (isMulti) {
@@ -561,16 +561,16 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
       case 'file':
         final fileName = await FileActionDialogs.showTextInputDialog(
           context,
-          title: 'L10n.of(context).msge48a7157',
-          hint: '文件名',
-          actionText: '创建',
+          title: L10n.of(context).msge48a7157,
+          hint: L10n.of(context).ui_file_name,
+          actionText: L10n.of(context).ui_create,
         );
         if (fileName != null && fileName.isNotEmpty) {
           final createdName = await provider.createFile(fileName);
           if (createdName != null && createdName != fileName && context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('"$fileName" 已存在，已创建 "$createdName"。'),
+                content: Text(L10n.of(context).filenamecreatedname(fileName, createdName)),
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -580,16 +580,16 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
       case 'folder':
         final folderName = await FileActionDialogs.showTextInputDialog(
           context,
-          title: 'L10n.of(context).msgf3a485df',
-          hint: 'L10n.of(context).msga98473f2',
-          actionText: '创建',
+          title: L10n.of(context).msgf3a485df,
+          hint: L10n.of(context).msga98473f2,
+          actionText: L10n.of(context).ui_create,
         );
         if (folderName != null && folderName.isNotEmpty) {
           final createdName = await provider.createFolder(folderName);
           if (createdName != null && createdName != folderName && context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('"$folderName" 已存在，已创建 "$createdName"。'),
+                content: Text(L10n.of(context).foldernamecreatedname(folderName, createdName)),
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -647,8 +647,8 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                   decoration: BoxDecoration(color: theme.colorScheme.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
                   child: Icon(Broken.folder_add, color: theme.colorScheme.primary, size: 24),
                 ),
-                title: const Text('L10n.of(context).msgf3a485df', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                subtitle: Text('创建新目录', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6))),
+                title: Text(L10n.of(context).msgf3a485df, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                subtitle: Text(L10n.of(context).ui_create_new_directory, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6))),
                 onTap: () {
                   Navigator.pop(context);
                   _handleMenuAction(context, 'folder', provider);
@@ -661,8 +661,8 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                   decoration: BoxDecoration(color: theme.colorScheme.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
                   child: Icon(Broken.document_1, color: theme.colorScheme.primary, size: 24),
                 ),
-                title: const Text('L10n.of(context).msge48a7157', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                subtitle: Text('L10n.of(context).msgbd165c40', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6))),
+                title: Text(L10n.of(context).msge48a7157, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                subtitle: Text(L10n.of(context).msgbd165c40, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6))),
                 onTap: () {
                   Navigator.pop(context);
                   _handleMenuAction(context, 'file', provider);
@@ -675,8 +675,8 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                   decoration: BoxDecoration(color: theme.colorScheme.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
                   child: Icon(Broken.box_add, color: theme.colorScheme.primary, size: 24),
                 ),
-                title: const Text('L10n.of(context).msg68ac91eb', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                subtitle: Text('L10n.of(context).msg881f6a80', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6))),
+                title: Text(L10n.of(context).msg68ac91eb, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                subtitle: Text(L10n.of(context).msg881f6a80, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6))),
                 onTap: () {
                   Navigator.pop(context);
                   _handleMenuAction(context, 'archive', provider);
@@ -711,12 +711,12 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('L10n.of(context).msg97301f64', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                        Text(L10n.of(context).msg97301f64, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                         IconButton(icon: const Icon(Broken.close_circle), onPressed: () => Navigator.pop(context)),
                       ],
                     ),
                     const SizedBox(height: 16),
-                    Text('布局模式', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                    Text(L10n.of(context).ui_layout_mode, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
                     const SizedBox(height: 12),
                     Row(
                       children: [
@@ -738,7 +738,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                 children: [
                                   Icon(Broken.row_vertical, color: !provider.isGridView ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface),
                                   const SizedBox(width: 8),
-                                  Text('L10n.of(context).msg829cb1dd', style: TextStyle(fontWeight: FontWeight.bold, color: !provider.isGridView ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface)),
+                                  Text(L10n.of(context).msg829cb1dd, style: TextStyle(fontWeight: FontWeight.bold, color: !provider.isGridView ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface)),
                                 ],
                               ),
                             ),
@@ -763,7 +763,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                 children: [
                                   Icon(Broken.element_3, color: provider.isGridView ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface),
                                   const SizedBox(width: 8),
-                                  Text('网格视图', style: TextStyle(fontWeight: FontWeight.bold, color: provider.isGridView ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface)),
+                                  Text(L10n.of(context).ui_grid_view, style: TextStyle(fontWeight: FontWeight.bold, color: provider.isGridView ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface)),
                                 ],
                               ),
                             ),
@@ -786,13 +786,13 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                             isAppearanceExpanded = exp;
                           },
                           leading: Icon(Broken.setting_2, color: theme.colorScheme.primary),
-                          title: Text('L10n.of(context).msg0a4ebb8d', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                          title: Text(L10n.of(context).msg0a4ebb8d, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
                           childrenPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           children: [
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('L10n.of(context).msg88062f93', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+                                Text(L10n.of(context).msg88062f93, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
                                 Text('${(provider.iconScale * 100).round()}%', style: TextStyle(fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
                               ],
                             ),
@@ -811,7 +811,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('L10n.of(context).msga7c781f5', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+                                Text(L10n.of(context).msga7c781f5, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
                                 Text('${(provider.itemPaddingMultiplier * 100).round()}%', style: TextStyle(fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
                               ],
                             ),
@@ -831,19 +831,19 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Text('L10n.of(context).msga2946a1a', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                    Text(L10n.of(context).msga2946a1a, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
                     const SizedBox(height: 12),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: [
-                        _buildSortChip(context, provider, setStateModal, '名称 (A-Z)', FileSortType.nameAsc),
-                        _buildSortChip(context, provider, setStateModal, 'L10n.of(context).za', FileSortType.nameDesc),
-                        _buildSortChip(context, provider, setStateModal, '最新', FileSortType.dateNewest),
-                        _buildSortChip(context, provider, setStateModal, '最旧', FileSortType.dateOldest),
-                        _buildSortChip(context, provider, setStateModal, 'L10n.of(context).msg2e2a26bb', FileSortType.sizeLargest),
-                        _buildSortChip(context, provider, setStateModal, '大小（小）', FileSortType.sizeSmallest),
-                        _buildSortChip(context, provider, setStateModal, '类型', FileSortType.type),
+                        _buildSortChip(context, provider, setStateModal, L10n.of(context).ui_name_asc, FileSortType.nameAsc),
+                        _buildSortChip(context, provider, setStateModal, L10n.of(context).za, FileSortType.nameDesc),
+                        _buildSortChip(context, provider, setStateModal, L10n.of(context).ui_newest, FileSortType.dateNewest),
+                        _buildSortChip(context, provider, setStateModal, L10n.of(context).ui_oldest, FileSortType.dateOldest),
+                        _buildSortChip(context, provider, setStateModal, L10n.of(context).msg2e2a26bb, FileSortType.sizeLargest),
+                        _buildSortChip(context, provider, setStateModal, L10n.of(context).ui_size_small, FileSortType.sizeSmallest),
+                        _buildSortChip(context, provider, setStateModal, L10n.of(context).ui_type, FileSortType.type),
                       ],
                     ),
                     const SizedBox(height: 20),
@@ -876,7 +876,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'L10n.of(context).msgf437ace4',
+                                  L10n.of(context).msgf437ace4,
                                   style: theme.textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 15,
@@ -884,7 +884,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  'L10n.of(context).msg4dfc167a',
+                                  L10n.of(context).msg4dfc167a,
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color: theme.colorScheme.onSurface.withOpacity(0.55),
                                     fontSize: 11,
@@ -961,7 +961,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                       children: [
                         Expanded(
                           child: Text(
-                            '存储卷',
+                            L10n.of(context).ui_storage_volume,
                             style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -970,7 +970,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                         TextButton.icon(
                           style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4)),
                           icon: const Icon(Broken.folder_add, size: 18),
-                          label: const Text('L10n.of(context).msge4c84f81', style: TextStyle(fontSize: 14)),
+                          label: Text(L10n.of(context).msge4c84f81, style: TextStyle(fontSize: 14)),
                           onPressed: () async {
                             Navigator.pop(ctx);
                             final picked = await InternalFilePickerScreen.show(
@@ -1022,7 +1022,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                       ),
                       child: Icon(Broken.cpu, color: provider.rootPath == '/' ? theme.colorScheme.primary : theme.colorScheme.onSurface, size: 24),
                     ),
-                    title: Text('L10n.of(context).msgd730e478', style: TextStyle(fontWeight: provider.rootPath == '/' ? FontWeight.bold : FontWeight.w600, fontSize: 16)),
+                    title: Text(L10n.of(context).msgd730e478, style: TextStyle(fontWeight: provider.rootPath == '/' ? FontWeight.bold : FontWeight.w600, fontSize: 16)),
                     subtitle: Text('/', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6))),
                     trailing: provider.rootPath == '/' ? Icon(Icons.check_circle, color: theme.colorScheme.primary) : null,
                     onTap: () {
@@ -1079,7 +1079,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'L10n.of(context).msg35546526',
+                            L10n.of(context).msg35546526,
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: theme.colorScheme.primary,
@@ -1088,7 +1088,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                           ),
                           IconButton(
                             icon: const Icon(Icons.add_link_rounded, size: 20),
-                            tooltip: 'L10n.of(context).msg67a6ea5e',
+                            tooltip: L10n.of(context).msg67a6ea5e,
                             onPressed: () async {
                               Navigator.pop(ctx);
                               final added = await Navigator.push(
@@ -1124,7 +1124,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                         case 'Box':
                           iconData = Icons.all_inbox_rounded;
                           break;
-                        case 'L10n.of(context).smb':
+                        case '局域网/SMB':
                           iconData = Icons.dns_rounded;
                           break;
                         case 'FTP':
@@ -1153,7 +1153,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                         subtitle: Text('${conn.type} • ${conn.host}', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6))),
                         trailing: IconButton(
                           icon: const Icon(Broken.trash, size: 20, color: Colors.redAccent),
-                          tooltip: 'L10n.of(context).msgcc51d6c2',
+                          tooltip: L10n.of(context).msgcc51d6c2,
                           onPressed: () async {
                             await NetworkConnectionsService.deleteConnection(conn.id);
                             Navigator.pop(ctx);
@@ -1173,7 +1173,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                           } catch (e) {
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('连接失败：$e'), backgroundColor: Colors.redAccent),
+                                SnackBar(content: Text(L10n.of(context).e13(e)), backgroundColor: Colors.redAccent),
                               );
                             }
                           }
@@ -1266,14 +1266,14 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                         ),
                         IconButton(
                           icon: Icon(Broken.category, color: theme.colorScheme.primary),
-                          tooltip: 'L10n.of(context).msg6e0f9cef',
+                          tooltip: L10n.of(context).msg6e0f9cef,
                           onPressed: () {
                             widget.onNavigateTab?.call(0);
                           },
                         ),
                         IconButton(
                           icon: Icon(Broken.folder, color: theme.colorScheme.primary),
-                          tooltip: '浏览',
+                          tooltip: L10n.of(context).ui_browse,
                           onPressed: () {
                             // 已在浏览页，无需切换
                           },
@@ -1285,14 +1285,14 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                       ? [
                           IconButton(
                             icon: const Icon(Broken.tick_square),
-                            tooltip: '全选',
+                            tooltip: L10n.of(context).ui_select_all,
                             onPressed: () => provider.selectAll(),
                           ),
                         ]
                       : [
                           IconButton(
                             icon: const Icon(Broken.tick_square),
-                            tooltip: '全选',
+                            tooltip: L10n.of(context).ui_select_all,
                             onPressed: () => provider.selectAll(),
                           ),
                         ]
@@ -1300,15 +1300,15 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                       ? [
                           PopupMenuButton<String>(
                             icon: const Icon(Broken.add_square, size: 26),
-                            tooltip: '新建',
+                            tooltip: L10n.of(context).ui_new,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                             position: PopupMenuPosition.under,
                             elevation: 8,
                             onSelected: (val) => _handleMenuAction(context, val, provider),
                             itemBuilder: (context) => [
-                              const PopupMenuItem(value: 'file', child: Row(children: [Icon(Broken.document, size: 20), SizedBox(width: 12), Text('L10n.of(context).msge48a7157', style: TextStyle(fontWeight: FontWeight.w600))])),
-                              const PopupMenuItem(value: 'folder', child: Row(children: [Icon(Broken.folder, size: 20), SizedBox(width: 12), Text('L10n.of(context).msgf3a485df', style: TextStyle(fontWeight: FontWeight.w600))])),
-                              const PopupMenuItem(value: 'archive', child: Row(children: [Icon(Broken.archive, size: 20), SizedBox(width: 12), Text('L10n.of(context).msg68ac91eb', style: TextStyle(fontWeight: FontWeight.w600))])),
+                              PopupMenuItem(value: 'file', child: Row(children: [Icon(Broken.document, size: 20), SizedBox(width: 12), Text(L10n.of(context).msge48a7157, style: TextStyle(fontWeight: FontWeight.w600))])),
+                              PopupMenuItem(value: 'folder', child: Row(children: [Icon(Broken.folder, size: 20), SizedBox(width: 12), Text(L10n.of(context).msgf3a485df, style: TextStyle(fontWeight: FontWeight.w600))])),
+                              PopupMenuItem(value: 'archive', child: Row(children: [Icon(Broken.archive, size: 20), SizedBox(width: 12), Text(L10n.of(context).msg68ac91eb, style: TextStyle(fontWeight: FontWeight.w600))])),
                             ],
                           ),
                         ]
@@ -1321,20 +1321,20 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                           ),
                           IconButton(
                             icon: Icon(Broken.filter_edit, color: theme.colorScheme.primary),
-                            tooltip: 'L10n.of(context).msg97301f64',
+                            tooltip: L10n.of(context).msg97301f64,
                             onPressed: () => _showSortModal(context, provider),
                           ),
                           PopupMenuButton<String>(
                             icon: Icon(Broken.add_square, size: 26, color: theme.colorScheme.primary),
-                            tooltip: '新建',
+                            tooltip: L10n.of(context).ui_new,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                             position: PopupMenuPosition.under,
                             elevation: 8,
                             onSelected: (val) => _handleMenuAction(context, val, provider),
                             itemBuilder: (context) => [
-                              const PopupMenuItem(value: 'file', child: Row(children: [Icon(Broken.document, size: 20), SizedBox(width: 12), Text('L10n.of(context).msge48a7157', style: TextStyle(fontWeight: FontWeight.w600))])),
-                              const PopupMenuItem(value: 'folder', child: Row(children: [Icon(Broken.folder, size: 20), SizedBox(width: 12), Text('L10n.of(context).msgf3a485df', style: TextStyle(fontWeight: FontWeight.w600))])),
-                              const PopupMenuItem(value: 'archive', child: Row(children: [Icon(Broken.archive, size: 20), SizedBox(width: 12), Text('L10n.of(context).msg68ac91eb', style: TextStyle(fontWeight: FontWeight.w600))])),
+                              PopupMenuItem(value: 'file', child: Row(children: [Icon(Broken.document, size: 20), SizedBox(width: 12), Text(L10n.of(context).msge48a7157, style: TextStyle(fontWeight: FontWeight.w600))])),
+                              PopupMenuItem(value: 'folder', child: Row(children: [Icon(Broken.folder, size: 20), SizedBox(width: 12), Text(L10n.of(context).msgf3a485df, style: TextStyle(fontWeight: FontWeight.w600))])),
+                              PopupMenuItem(value: 'archive', child: Row(children: [Icon(Broken.archive, size: 20), SizedBox(width: 12), Text(L10n.of(context).msg68ac91eb, style: TextStyle(fontWeight: FontWeight.w600))])),
                             ],
                           ),
                         ],
@@ -1413,11 +1413,11 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                               children: [
                                 Icon(Broken.folder, size: 16, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
                                 const SizedBox(width: 6),
-                                Text('文件夹：${provider.currentFiles.where((e) => e.isDirectory).length}', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8))),
+                                Text(L10n.of(context).ui_folders_count(provider.currentFiles.where((e) => e.isDirectory).length), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8))),
                                 const SizedBox(width: 20),
                                 Icon(Broken.document, size: 16, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
                                 const SizedBox(width: 6),
-                                Text('文件：${provider.currentFiles.where((e) => !e.isDirectory).length}', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8))),
+                                Text(L10n.of(context).ui_files_count(provider.currentFiles.where((e) => !e.isDirectory).length), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8))),
                               ],
                             ),
                           ),
@@ -1445,7 +1445,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                   ),
                                   const SizedBox(height: 24),
                                   Text(
-                                    'L10n.of(context).msge9691076',
+                                    L10n.of(context).msge9691076,
                                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                           fontWeight: FontWeight.bold,
                                           color: Theme.of(context).colorScheme.onSurface,
@@ -1453,7 +1453,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    'L10n.of(context).msg551f98ba',
+                                    L10n.of(context).msg551f98ba,
                                     textAlign: TextAlign.center,
                                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                           color: Theme.of(context).colorScheme.onSurface.withOpacity(0.55),
@@ -1803,8 +1803,8 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                         ),
                                         padding: EdgeInsets.zero,
                                       ),
-                                      child: const Text(
-                                        'L10n.of(context).msg17093362',
+                                      child: Text(
+                                        L10n.of(context).msg17093362,
                                         style: TextStyle(fontSize: 13),
                                       ),
                                     ),
@@ -1860,7 +1860,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                       children: [
                         IconButton(
                           icon: const Icon(Broken.tick_square),
-                          tooltip: '选择模式',
+                          tooltip: L10n.of(context).ui_selection_mode,
                           onPressed: () {
                             if (provider.currentFiles.isNotEmpty) {
                               provider.toggleSelection(provider.currentFiles.first.path);
@@ -1869,18 +1869,18 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                         ),
                         IconButton(
                           icon: const Icon(Broken.search_normal),
-                          tooltip: 'L10n.of(context).msg681c0f39',
+                          tooltip: L10n.of(context).msg681c0f39,
                           onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => GlobalSearchScreen(searchFolderPath: provider.currentPath))),
                         ),
                         const SizedBox(width: 48), // Center dock slot for FAB
                         IconButton(
                           icon: const Icon(Broken.filter_edit),
-                          tooltip: 'L10n.of(context).msg97301f64',
+                          tooltip: L10n.of(context).msg97301f64,
                           onPressed: () => _showSortModal(context, provider),
                         ),
                         IconButton(
                           icon: const Icon(Icons.sd_storage_rounded),
-                          tooltip: '存储卷和SD卡',
+                          tooltip: L10n.of(context).ui_storage_and_sd,
                           onPressed: () => _showStorageVolumeModal(context, provider),
                         ),
                       ],
@@ -1903,27 +1903,27 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
       case FileFilterType.all:
         break;
       case FileFilterType.documents:
-        label = 'L10n.of(context).msg0c36f64f';
+        label = L10n.of(context).msg0c36f64f;
         icon = Broken.document;
         color = Colors.blueAccent;
         break;
       case FileFilterType.images:
-        label = '仅图片';
+        label = L10n.of(context).ui_images_only;
         icon = Broken.image;
         color = Colors.purpleAccent;
         break;
       case FileFilterType.audio:
-        label = 'L10n.of(context).msg26b041dd';
+        label = L10n.of(context).msg26b041dd;
         icon = Broken.music;
         color = Colors.greenAccent;
         break;
       case FileFilterType.videos:
-        label = '仅视频';
+        label = L10n.of(context).ui_videos_only;
         icon = Broken.video;
         color = Colors.redAccent;
         break;
       case FileFilterType.archives:
-        label = 'L10n.of(context).msge632ba85';
+        label = L10n.of(context).msge632ba85;
         icon = Broken.archive;
         color = Colors.brown;
         break;
@@ -1944,7 +1944,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                '$label 筛选已激活',
+                L10n.of(context).label(label),
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 13.5,
@@ -1965,7 +1965,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                 size: 15,
               ),
               label: Text(
-                provider.hideFoldersInFilter ? '显示文件夹' : 'L10n.of(context).msg0e77af8a',
+                provider.hideFoldersInFilter ? L10n.of(context).ui_show_folders : L10n.of(context).msg0e77af8a,
                 style: TextStyle(
                   color: color,
                   fontWeight: FontWeight.bold,
@@ -2093,8 +2093,8 @@ class _AnimatedTitleButtonState extends State<_AnimatedTitleButton> with SingleT
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    '文件',
+                  Text(
+                    L10n.of(context).ui_files,
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22, letterSpacing: -0.5),
                   ),
                   const SizedBox(width: 8),

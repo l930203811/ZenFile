@@ -2787,5 +2787,381 @@
   "msg2c8957dd": "已知问题",
   "msg11cb01fc": "远程服务器边缓存边播放视频",
   "msg60a4d643": "自定义图标上传后桌面图标不会更改（下版本完善）",
-  "msg9e68ea42": "保存失败，请重试"
+  "msg9e68ea42": "保存失败，请重试",
+  "cat_images": "图片",
+  "cat_videos": "视频",
+  "cat_audios": "音频",
+  "cat_documents": "文档",
+  "cat_downloads": "下载",
+  "cat_screenshots": "截图",
+  "cat_recent": "最近",
+  "cat_network": "网络",
+  "cat_apps": "应用",
+  "cat_settings": "设置",
+  "cat_storage": "存储",
+  "cat_service": "服务",
+  "cat_manage": "管理",
+  "cat_config": "配置",
+  "cat_analyze": "分析",
+  "cat_quick_categories": "快捷分类",
+  "ui_nav": "导航",
+  "ui_home": "主页",
+  "ui_recycle_bin": "回收站",
+  "ui_dark_mode": "深色模式",
+  "ui_personalize_settings": "个性化和设置",
+  "ui_compress": "压缩",
+  "ui_copy": "复制",
+  "ui_cut": "剪切",
+  "ui_delete": "删除",
+  "ui_select_all": "全选",
+  "ui_cancel": "取消",
+  "ui_confirm": "确定",
+  "ui_share": "分享",
+  "ui_move_here": "移动到此处",
+  "ui_properties": "属性",
+  "ui_info": "信息",
+  "ui_open": "打开",
+  "ui_close": "关闭",
+  "ui_more": "更多",
+  "ui_appearance_theme": "外观与主题",
+  "ui_list_layout_style": "列表与布局样式",
+  "ui_media_preferences": "媒体偏好",
+  "ui_file_actions_viewers": "文件操作与查看器",
+  "ui_no_settings_found": "未找到设置",
+  "ui_show_floating_button": "显示浮动按钮",
+  "ui_use_24h_format": "使用24小时制",
+  "ui_show_folder_contents_count": "显示文件夹内容计数",
+  "ui_show_folder_size": "显示文件夹大小",
+  "ui_show_bottom_action_bar": "显示底部导航栏",
+  "ui_hide_action_text": "隐藏操作栏文字标签",
+  "ui_show_media_previews": "显示媒体预览",
+  "ui_adaptive_multiline_names": "自适应多行文件名",
+  "ui_hide_action_menu_buttons": "隐藏三点操作按钮",
+  "ui_enable_drag_drop": "启用拖放",
+  "ui_confirm_drag_drop": "确认拖放操作",
+  "ui_enable_multi_tabs": "启用多标签页",
+  "ui_enable_split_screen": "启用分屏",
+  "ui_app_icon": "应用图标",
+  "ui_emerald_green": "翠绿",
+  "ui_deep_red": "深红",
+  "ui_square": "方形",
+  "ui_circle": "圆形",
+  "ui_1_day_after": "1 天后",
+  "ui_no_auto_clean": "不自动清理",
+  "ui_daily": "每天",
+  "ui_weekly": "每周",
+  "ui_monthly": "每月",
+  "ui_every_n_days": "每{days}天",
+  "@ui_every_n_days": {
+    "description": "ui\\screens\\more_settings_screen.dart",
+    "type": "text"
+  },
+  "ui_clear_cache_failed": "清除缓存失败: {e}",
+  "@ui_clear_cache_failed": {
+    "description": "ui\\screens\\more_settings_screen.dart",
+    "type": "text"
+  },
+  "ui_clear_remote_cache": "清除远程缓存",
+  "ui_view_cache_dir": "查看缓存目录",
+  "ui_remote_media_thumbnail": "远程媒体缩略图",
+  "ui_auto_clean_remote_cache": "定期自动清理远程服务器缓存文件: {label}",
+  "@ui_auto_clean_remote_cache": {
+    "description": "ui\\screens\\more_settings_screen.dart",
+    "type": "text"
+  },
+  "ui_custom_font_with_name": "自定义字体（{name}）",
+  "@ui_custom_font_with_name": {
+    "description": "ui\\screens\\more_settings_screen.dart",
+    "type": "text"
+  },
+  "ui_import_custom_font": "导入自定义字体文件 (.ttf/.otf)",
+  "ui_custom_font_applied": "自定义字体\"{name}\"已成功应用！",
+  "@ui_custom_font_applied": {
+    "description": "ui\\screens\\more_settings_screen.dart",
+    "type": "text"
+  },
+  "ui_invalid_file_type": "无效的文件类型",
+  "ui_language": "语言",
+  "ui_hide_nav_labels": "隐藏底部导航标签",
+  "ui_reset_default_viewers": "重置默认文件查看器",
+  "ui_trailing_info_when_hidden": "三点禁用尾部信息",
+  "ui_go_up": "上一级",
+  "@ui_go_up": {
+    "description": "directory_screen.dart"
+  },
+  "ui_cut_copy_items": "{prefix} · {count} 项",
+  "@ui_cut_copy_items": {
+    "description": "directory_screen.dart",
+    "placeholders": {
+      "prefix": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_clear": "清除",
+  "@ui_clear": {
+    "description": "directory_screen.dart"
+  },
+  "ui_paste": "粘贴",
+  "@ui_paste": {
+    "description": "directory_screen.dart"
+  },
+  "ui_file_name": "文件名",
+  "@ui_file_name": {
+    "description": "directory_screen.dart"
+  },
+  "ui_create": "创建",
+  "@ui_create": {
+    "description": "directory_screen.dart"
+  },
+  "ui_create_new_directory": "创建新目录",
+  "@ui_create_new_directory": {
+    "description": "directory_screen.dart"
+  },
+  "ui_layout_mode": "布局模式",
+  "@ui_layout_mode": {
+    "description": "directory_screen.dart"
+  },
+  "ui_grid_view": "网格视图",
+  "@ui_grid_view": {
+    "description": "directory_screen.dart"
+  },
+  "ui_name_asc": "名称 (A-Z)",
+  "@ui_name_asc": {
+    "description": "directory_screen.dart"
+  },
+  "ui_newest": "最新",
+  "@ui_newest": {
+    "description": "directory_screen.dart"
+  },
+  "ui_oldest": "最旧",
+  "@ui_oldest": {
+    "description": "directory_screen.dart"
+  },
+  "ui_size_small": "大小（小）",
+  "@ui_size_small": {
+    "description": "directory_screen.dart"
+  },
+  "ui_type": "类型",
+  "@ui_type": {
+    "description": "ui widgets"
+  },
+  "ui_storage_volume": "存储卷",
+  "@ui_storage_volume": {
+    "description": "directory_screen.dart"
+  },
+  "ui_browse": "浏览",
+  "@ui_browse": {
+    "description": "directory_screen.dart"
+  },
+  "ui_new": "新建",
+  "@ui_new": {
+    "description": "directory_screen.dart"
+  },
+  "ui_folders_count": "文件夹：{count}",
+  "@ui_folders_count": {
+    "description": "directory_screen.dart",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_files_count": "文件：{count}",
+  "@ui_files_count": {
+    "description": "directory_screen.dart",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_selection_mode": "选择模式",
+  "@ui_selection_mode": {
+    "description": "directory_screen.dart"
+  },
+  "ui_storage_and_sd": "存储卷和SD卡",
+  "@ui_storage_and_sd": {
+    "description": "directory_screen.dart"
+  },
+  "ui_images_only": "仅图片",
+  "@ui_images_only": {
+    "description": "ui widgets"
+  },
+  "ui_videos_only": "仅视频",
+  "@ui_videos_only": {
+    "description": "ui widgets"
+  },
+  "ui_show_folders": "显示文件夹",
+  "@ui_show_folders": {
+    "description": "directory_screen.dart"
+  },
+  "ui_files": "文件",
+  "@ui_files": {
+    "description": "directory_screen.dart"
+  },
+  "ui_delete_file_confirm": "确定要删除此文件吗？此操作无法撤销。",
+  "@ui_delete_file_confirm": {
+    "description": "directory_screen.dart"
+  },
+  "ui_done": "完成",
+  "@ui_done": {
+    "description": "ui widgets"
+  },
+  "ui_name": "名称",
+  "@ui_name": {
+    "description": "ui widgets"
+  },
+  "ui_path": "路径",
+  "@ui_path": {
+    "description": "ui widgets"
+  },
+  "ui_size": "大小",
+  "@ui_size": {
+    "description": "ui widgets"
+  },
+  "ui_permissions": "权限",
+  "@ui_permissions": {
+    "description": "ui widgets"
+  },
+  "ui_contains": "包含",
+  "@ui_contains": {
+    "description": "ui widgets"
+  },
+  "ui_extract": "解压",
+  "@ui_extract": {
+    "description": "ui widgets"
+  },
+  "ui_pin_to_top": "置顶",
+  "@ui_pin_to_top": {
+    "description": "ui widgets"
+  },
+  "ui_pinned_selected": "已将所选项目置顶",
+  "@ui_pinned_selected": {
+    "description": "ui widgets"
+  },
+  "ui_filter_by_type": "按类型筛选文件",
+  "@ui_filter_by_type": {
+    "description": "ui widgets"
+  },
+  "ui_default_scan_locations": "默认扫描位置：",
+  "@ui_default_scan_locations": {
+    "description": "ui widgets"
+  },
+  "ui_exclude_location": "排除位置",
+  "@ui_exclude_location": {
+    "description": "ui widgets"
+  },
+  "ui_add_custom_path": "添加自定义路径",
+  "@ui_add_custom_path": {
+    "description": "ui widgets"
+  },
+  "ui_added_custom_paths": "已添加 {count} 个自定义路径",
+  "@ui_added_custom_paths": {
+    "description": "ui widgets",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_close_tab": "关闭标签页",
+  "@ui_close_tab": {
+    "description": "ui widgets"
+  },
+  "ui_not_found_title": "未找到 {title}",
+  "@ui_not_found_title": {
+    "description": "ui widgets",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_oldest_first": "最旧优先",
+  "@ui_oldest_first": {
+    "description": "ui widgets"
+  },
+  "ui_sort_options": "排序选项",
+  "@ui_sort_options": {
+    "description": "ui widgets"
+  },
+  "ui_refresh": "刷新",
+  "@ui_refresh": {
+    "description": "ui widgets"
+  },
+  "ui_selected_count": "{count} 已选择",
+  "@ui_selected_count": {
+    "description": "ui widgets",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_permanently_delete_name": "永久删除\"{name}\"？",
+  "@ui_permanently_delete_name": {
+    "description": "ui widgets",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_copied_count": "已复制 {count} 个项目到剪贴板",
+  "@ui_copied_count": {
+    "description": "ui widgets",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_cut_count": "已剪切 {count} 个项目到剪贴板",
+  "@ui_cut_count": {
+    "description": "ui widgets",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_read": "读取",
+  "@ui_read": {
+    "description": "ui widgets"
+  },
+  "ui_write": "写入",
+  "@ui_write": {
+    "description": "ui widgets"
+  },
+  "ui_file": "文件",
+  "@ui_file": {
+    "description": "ui widgets"
+  },
+  "ui_backup_settings": "备份设置",
+  "ui_restore_settings": "恢复设置",
+  "ui_backup_info": "备份信息",
+  "ui_backup_file": "备份文件",
+  "ui_no_backup_file": "暂无备份文件",
+  "ui_remote_connection": "远程连接",
+  "ui_step_n_of_3": "第 {step} / 3 步",
+  "ui_choose_network_service": "选择网络服务",
+  "ui_connection_name": "连接名称",
+  "ui_protocol": "协议",
+  "ui_port": "端口",
+  "ui_path_label": "路径",
+  "ui_username_optional": "用户名（可选）",
+  "ui_back": "返回",
+  "ui_connect": "连接",
+  "ui_web_share": "网页共享",
+  "ui_network": "网络",
+  "log_i18n_full": "全面国际化中英文界面",
+  "log_fix_selection_count": "修复文件选择数量不显示的问题",
+  "log_fix_remote_title": "修复远程连接页面标题显示异常",
+  "log_svg_thumbnail_category": "SVG 缩略图在分类页面中正常显示",
+  "log_language_btn_top": "语言切换按钮移至设置页顶部",
+  "log_fix_category_missing": "修复英文模式下部分分类不显示"
 }

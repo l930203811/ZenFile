@@ -100,7 +100,7 @@ class AppOptionsSheet extends StatelessWidget {
             _buildBottomSheetActionItem(
               theme: theme,
               icon: Broken.play,
-              label: 'L10n.of(context).msg753cdb55',
+              label: L10n.of(context).msg753cdb55,
               color: theme.colorScheme.primary,
               onTap: () {
                 Navigator.pop(context);
@@ -120,12 +120,12 @@ class AppOptionsSheet extends StatelessWidget {
             _buildBottomSheetActionItem(
               theme: theme,
               icon: Broken.document_download,
-              label: 'L10n.of(context).apk3',
+              label: L10n.of(context).apk3,
               color: Colors.orangeAccent,
               onTap: () async {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('L10n.of(context).apk4')),
+                  SnackBar(content: Text(L10n.of(context).apk4)),
                 );
                 final success = await AppManagerService.backupApp(app);
                 if (context.mounted) {
@@ -134,7 +134,7 @@ class AppOptionsSheet extends StatelessWidget {
                       content: Text(
                         success
                             ? 'APK backed up successfully to ZenFile/Backups/Apps/'
-                            : 'L10n.of(context).apk5',
+                            : L10n.of(context).apk5,
                       ),
                     ),
                   );
@@ -145,7 +145,7 @@ class AppOptionsSheet extends StatelessWidget {
             _buildBottomSheetActionItem(
               theme: theme,
               icon: Broken.export_1,
-              label: 'L10n.of(context).apk6',
+              label: L10n.of(context).apk6,
               color: Colors.teal,
               onTap: () {
                 Navigator.pop(context);
@@ -156,7 +156,7 @@ class AppOptionsSheet extends StatelessWidget {
               _buildBottomSheetActionItem(
                 theme: theme,
                 icon: Broken.trash,
-                label: 'L10n.of(context).msgeb3d7d70',
+                label: L10n.of(context).msgeb3d7d70,
                 color: Colors.redAccent,
                 onTap: () {
                   Navigator.pop(context);

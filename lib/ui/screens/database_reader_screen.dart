@@ -157,7 +157,7 @@ class _DatabaseReaderScreenState extends State<DatabaseReaderScreen> with Single
     try {
       if (columns.isEmpty || rows.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('L10n.of(context).msg917fd6ef')),
+          SnackBar(content: Text(L10n.of(context).msg917fd6ef)),
         );
         return;
       }
@@ -224,7 +224,7 @@ class _DatabaseReaderScreenState extends State<DatabaseReaderScreen> with Single
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             Text(
-              'L10n.of(context).sqlite',
+              L10n.of(context).sqlite,
               style: TextStyle(fontSize: 11.5, color: theme.colorScheme.onSurface.withOpacity(0.5)),
             ),
           ],
@@ -235,7 +235,7 @@ class _DatabaseReaderScreenState extends State<DatabaseReaderScreen> with Single
           labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
           tabs: const [
             Tab(text: '浏览数据', icon: Icon(Broken.document, size: 20)),
-            Tab(text: 'L10n.of(context).msg03a0d224', icon: Icon(Broken.info_circle, size: 20)),
+            Tab(text: '表结构', icon: Icon(Broken.info_circle, size: 20)),
             Tab(text: 'SQL控制台', icon: Icon(Broken.code, size: 20)),
           ],
         ),
@@ -252,7 +252,7 @@ class _DatabaseReaderScreenState extends State<DatabaseReaderScreen> with Single
                         Icon(Broken.danger, size: 48, color: theme.colorScheme.error),
                         const SizedBox(height: 16),
                         Text(
-                          'L10n.of(context).msge2f0fe67',
+                          L10n.of(context).msge2f0fe67,
                           style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 8),
@@ -279,7 +279,7 @@ class _DatabaseReaderScreenState extends State<DatabaseReaderScreen> with Single
   Widget _buildBrowseTab(ThemeData theme) {
     if (_tables.isEmpty) {
       return Center(
-        child: Text('L10n.of(context).msg8bb11da4', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5))),
+        child: Text(L10n.of(context).msg8bb11da4, style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5))),
       );
     }
 
@@ -365,7 +365,7 @@ class _DatabaseReaderScreenState extends State<DatabaseReaderScreen> with Single
                         controller: _searchController,
                         style: const TextStyle(fontSize: 13.5),
                         decoration: InputDecoration(
-                          hintText: 'L10n.of(context).msg7796aa3e',
+                          hintText: L10n.of(context).msg7796aa3e,
                           prefixIcon: const Icon(Broken.search_normal, size: 16),
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -410,7 +410,7 @@ class _DatabaseReaderScreenState extends State<DatabaseReaderScreen> with Single
                         children: [
                           Icon(Broken.info_circle, size: 36, color: theme.colorScheme.onSurface.withOpacity(0.3)),
                           const SizedBox(height: 8),
-                          Text('L10n.of(context).msg15f26697', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5))),
+                          Text(L10n.of(context).msg15f26697, style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5))),
                         ],
                       ),
                     )
@@ -508,7 +508,7 @@ class _DatabaseReaderScreenState extends State<DatabaseReaderScreen> with Single
   Widget _buildSchemaTab(ThemeData theme) {
     if (_schemaColumns.isEmpty) {
       return Center(
-        child: Text('L10n.of(context).msg0eaa935b', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5))),
+        child: Text(L10n.of(context).msg0eaa935b, style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5))),
       );
     }
 
@@ -605,12 +605,12 @@ class _DatabaseReaderScreenState extends State<DatabaseReaderScreen> with Single
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('L10n.of(context).sql1', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: theme.colorScheme.primary)),
+                      Text(L10n.of(context).sql1, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: theme.colorScheme.primary)),
                       Row(
                         children: [
                           TextButton(
                             style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-                            child: const Text('L10n.of(context).select', style: TextStyle(fontSize: 12)),
+                            child: Text(L10n.of(context).select, style: TextStyle(fontSize: 12)),
                             onPressed: () {
                               if (_selectedTable != null) {
                                 _sqlController.text = "SELECT * FROM '$_selectedTable' LIMIT 10;";
@@ -650,7 +650,7 @@ class _DatabaseReaderScreenState extends State<DatabaseReaderScreen> with Single
                         IconButton(
                           icon: const Icon(Broken.import, size: 20),
                           onPressed: () => _exportToCsv(_sqlResultColumns, _sqlResultRows, 'query'),
-                          tooltip: 'L10n.of(context).csv',
+                          tooltip: L10n.of(context).csv,
                         ),
                         const SizedBox(width: 8),
                       ],
@@ -706,7 +706,7 @@ class _DatabaseReaderScreenState extends State<DatabaseReaderScreen> with Single
               : _sqlResultRows.isEmpty
                   ? Center(
                       child: Text(
-                        _sqlErrorMessage == null ? 'L10n.of(context).select1' : 'L10n.of(context).msgd1ad9002',
+                        _sqlErrorMessage == null ? L10n.of(context).select1 : L10n.of(context).msgd1ad9002,
                         style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.4), fontSize: 13),
                       ),
                     )

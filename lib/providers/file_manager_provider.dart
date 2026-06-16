@@ -1,4 +1,4 @@
-﻿import 'package:zenfile/l10n/generated/app_localizations.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 import 'dart:io';
 import 'dart:async';
@@ -156,7 +156,7 @@ class FileManagerProvider extends ChangeNotifier {
     if (_totalStorageBytes > 0) {
       _storageVolumes = [
         StorageVolume(
-          name: 'L10n.of(context).msg21cefa9b',
+          name: '内部存储',
           path: '/storage/emulated/0',
           isInternal: true,
           totalBytes: _totalStorageBytes,
@@ -1017,7 +1017,7 @@ class FileManagerProvider extends ChangeNotifier {
           host: conn.host, port: conn.port, username: conn.username, password: conn.password,
           protocol: conn.protocol, rootPath: conn.rootPath,
         );
-      case 'L10n.of(context).smb':
+      case '局域网/SMB':
         return LanClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
       case 'saf':
         return SafRemoteClient(rootUri: conn.rootPath);
@@ -1394,7 +1394,7 @@ class FileManagerProvider extends ChangeNotifier {
   Future<void> _detectStorageVolumes() async {
     final volumes = <StorageVolume>[];
     if (Platform.isAndroid) {
-      volumes.add(StorageVolume(name: 'L10n.of(context).msg21cefa9b', path: '/storage/emulated/0', isInternal: true));
+      volumes.add(StorageVolume(name: '内部存储', path: '/storage/emulated/0', isInternal: true));
 
       try {
         final extDirs = await getExternalStorageDirectories();
@@ -1944,7 +1944,7 @@ class FileManagerProvider extends ChangeNotifier {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(_isCut ? 'L10n.of(context).msg05d3c93c' : '成功复制项目'),
+              content: Text(_isCut ? '成功移动项目' : '成功复制项目'),
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -1954,7 +1954,7 @@ class FileManagerProvider extends ChangeNotifier {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('传输失败：$e'),
+              content: Text('传输失败：{e}'),
               backgroundColor: Colors.redAccent,
               behavior: SnackBarBehavior.floating,
             ),
@@ -1983,7 +1983,7 @@ class FileManagerProvider extends ChangeNotifier {
           if (context.mounted) {
             await FileActionDialogs.showWarningDialog(
               context,
-              title: 'L10n.of(context).msga45bac47',
+              title: '操作已取消',
               content: 'Cannot cut and paste a file into the same folder.',
             );
           }
@@ -2343,7 +2343,7 @@ class FileManagerProvider extends ChangeNotifier {
         protocol: conn.protocol,
         rootPath: conn.rootPath,
       );
-    } else if (conn.type == 'L10n.of(context).smb') {
+    } else if (conn.type == '局域网/SMB') {
       client = LanClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
     } else if (conn.type == 'saf') {
       client = SafRemoteClient(rootUri: conn.rootPath);
@@ -2376,7 +2376,7 @@ class FileManagerProvider extends ChangeNotifier {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('连接远程服务器失败：$e'),
+            content: Text('连接远程服务器失败：{e}'),
             backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
           ),
@@ -2452,7 +2452,7 @@ class FileManagerProvider extends ChangeNotifier {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString().contains('Cancelled') ? 'L10n.of(context).msga45bac47' : '传输失败：$e'),
+            content: Text(e.toString().contains('Cancelled') ? '操作已取消' : '传输失败：{e}'),
             backgroundColor: e.toString().contains('Cancelled') ? null : Colors.redAccent,
             behavior: SnackBarBehavior.floating,
           ),
@@ -2554,7 +2554,7 @@ class FileManagerProvider extends ChangeNotifier {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString().contains('Cancelled') ? 'L10n.of(context).msga45bac47' : '传输失败：$e'),
+            content: Text(e.toString().contains('Cancelled') ? '操作已取消' : '传输失败：{e}'),
             backgroundColor: e.toString().contains('Cancelled') ? null : Colors.redAccent,
             behavior: SnackBarBehavior.floating,
           ),
@@ -2807,7 +2807,7 @@ class FileManagerProvider extends ChangeNotifier {
       await loadDirectory(currentPath, showLoading: false, clearCache: true);
       return finalName;
     } catch (e) {
-      debugPrint('创建文件夹出错：$e');
+      debugPrint('创建文件夹出错：{e}');
       return null;
     }
   }
@@ -2887,7 +2887,7 @@ class FileManagerProvider extends ChangeNotifier {
         if (context != null && context.mounted) {
           await FileActionDialogs.showWarningDialog(
             context,
-            title: 'L10n.of(context).msg3df5ef6c',
+            title: '压缩超出限制',
             content: 'TAR.ZSTD and TAR.LZ4 formats are highly memory-intensive and optimized for files under 600MB. Please use the ZIP or TAR format for larger files.',
           );
         }
@@ -3037,8 +3037,8 @@ class FileManagerProvider extends ChangeNotifier {
             '_id': i,
             '_data': file.path,
             'title': p.basenameWithoutExtension(file.path),
-            'artist': 'L10n.of(context).msg5e32276d',
-            'album': 'L10n.of(context).msg497ec49d',
+            'artist': '未知艺术家',
+            'album': '本地文件夹',
             'duration': 0,
             'size': file.size,
             'display_name': p.basename(file.path),
@@ -3131,7 +3131,7 @@ class FileManagerProvider extends ChangeNotifier {
         }
         targetPath = cachePath;
       } catch (e) {
-        debugPrint('下载远程文件失败: $e');
+        debugPrint('下载远程文件失败: {e}');
       }
     }
 
@@ -3213,7 +3213,7 @@ class FileManagerProvider extends ChangeNotifier {
 
     if (sourcePath == destPath || destFolderPath.startsWith(sourcePath + p.separator)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('L10n.of(context).msg6b9ca1dd')),
+        const SnackBar(content: Text('无法将文件夹移动到自身或相同位置')),
       );
       return;
     }
@@ -3268,7 +3268,7 @@ class FileManagerProvider extends ChangeNotifier {
       debugPrint('Error moving item: $e');
       if (showToast) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('移动项目失败：$e')),
+          SnackBar(content: Text('移动项目失败：{e}')),
         );
       }
     }
@@ -3313,7 +3313,7 @@ class FileManagerProvider extends ChangeNotifier {
 
     if (sourcePath == destPath || destFolderPath.startsWith(sourcePath + p.separator)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('L10n.of(context).msg5238524c')),
+        const SnackBar(content: Text('无法将文件夹复制到自身或相同位置')),
       );
       return;
     }
@@ -3358,7 +3358,7 @@ class FileManagerProvider extends ChangeNotifier {
       debugPrint('Error copying item: $e');
       if (showToast) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('复制项目失败：$e')),
+          SnackBar(content: Text('复制项目失败：{e}')),
         );
       }
     }

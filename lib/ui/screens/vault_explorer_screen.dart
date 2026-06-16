@@ -70,7 +70,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('加载保险箱出错：$e')),
+          SnackBar(content: Text('加载保险箱出错：{e}')),
         );
       }
     }
@@ -533,7 +533,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'L10n.of(context).msgbb590f19',
+                      L10n.of(context).msgbb590f19,
                       style: theme.textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.5,
@@ -624,7 +624,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
         elevation: 4,
         icon: const Icon(Broken.add_square),
         label: const Text(
-          'L10n.of(context).msg4828116a',
+          '隐藏文件',
           style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.3),
         ),
       ),
@@ -759,7 +759,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
             Text(
               _searchQuery.isNotEmpty
                   ? '请尝试修改搜索文本以查找隐藏项目。'
-                  : 'XOR混淆签名混淆使文件完全无法打开，并从系统扫描器数据库中隐藏。点击下方的"隐藏文件"来保护它们。',
+                  : 'XOR混淆签名混淆使文件完全无法打开，并从系统扫描器数据库中隐藏。点击下方的L10n.of(context).msg4828116a来保护它们。',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
@@ -827,7 +827,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
               child: Row(
                 children: [
                   Text(
-                    rec.isFolder ? 'L10n.of(context).msg1f4c1042' : FileUtils.formatBytes(rec.size, 1),
+                    rec.isFolder ? L10n.of(context).msg1f4c1042 : FileUtils.formatBytes(rec.size, 1),
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -905,7 +905,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
                       Icon(Broken.trash, size: 18, color: theme.colorScheme.error),
                       const SizedBox(width: 10),
                       Text(
-                        'L10n.of(context).msg96d2b75f',
+                        L10n.of(context).msg96d2b75f,
                         style: TextStyle(
                           fontSize: 13.5,
                           fontWeight: FontWeight.w600,

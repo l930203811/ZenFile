@@ -82,7 +82,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
         protocol: conn.protocol,
         rootPath: conn.rootPath,
       );
-    } else if (conn.type == 'L10n.of(context).smb') {
+    } else if (conn.type == L10n.of(context).smb) {
       _client = LanClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
     } else if (conn.type == 'saf') {
       _client = SafRemoteClient(rootUri: conn.rootPath);
@@ -161,7 +161,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       _isTransferring = true;
       _transferProgress = 0.0;
       _transferFileName = item.name;
-      _transferLabel = isText ? 'L10n.of(context).msgc44a57b6' : (isImage ? '正在缓存图片...' : 'L10n.of(context).msgd6d8292d');
+      _transferLabel = isText ? L10n.of(context).msgc44a57b6 : (isImage ? '正在缓存图片...' : L10n.of(context).msgd6d8292d);
     });
     
     try {
@@ -187,7 +187,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
         }).catchError((e) {
           if (mounted) {
             setState(() => _isTransferring = false);
-            _showSnack('下载失败：$e', isError: true);
+            _showSnack(L10n.of(context).e16(e), isError: true);
           }
         });
         
@@ -216,7 +216,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
           final provider = context.read<FileManagerProvider>();
           await provider.openFile(context, localPath);
         } else {
-          _showSnack('L10n.of(context).msg66d723c5', isError: true);
+          _showSnack(L10n.of(context).msg66d723c5, isError: true);
         }
       } else {
         // 文本和图片：完整下载后打开
@@ -233,7 +233,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isTransferring = false);
-        _showSnack('下载失败：$e', isError: true);
+        _showSnack(L10n.of(context).e16(e), isError: true);
       }
     }
   }
@@ -311,7 +311,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
           : '$_currentPath/${item.name}';
 
       if (destPath == item.path) {
-        _showSnack('L10n.of(context).msg53082c55');
+        _showSnack(L10n.of(context).msg53082c55);
         return;
       }
 
@@ -319,7 +319,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
         _isTransferring = true;
         _transferProgress = 0.0;
         _transferFileName = item.name;
-        _transferLabel = isCut ? '正在移动...' : 'L10n.of(context).msg108feeed';
+        _transferLabel = isCut ? '正在移动...' : L10n.of(context).msg108feeed;
       });
 
       try {
@@ -355,7 +355,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
         _isTransferring = false;
       });
       if (isCut) provider.clearClipboard();
-      _showSnack('L10n.of(context).msg2d4b44ec');
+      _showSnack(L10n.of(context).msg2d4b44ec);
       await _loadDirectoryContents(_currentPath);
     }
   }
@@ -401,7 +401,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       } catch (e) {
         if (mounted) {
           setState(() => _isTransferring = false);
-          _showSnack('上传"$fileName"失败：$e', isError: true);
+          _showSnack(L10n.of(context).filenamee(e, fileName), isError: true);
           return;
         }
       }
@@ -477,12 +477,12 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('L10n.of(context).msgc8ce4b36', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(L10n.of(context).msgc8ce4b36, style: TextStyle(fontWeight: FontWeight.bold)),
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(
-            hintText: 'L10n.of(context).msgf139c5cf',
+          decoration: InputDecoration(
+             hintText: L10n.of(context).msgf139c5cf,
             border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
           ),
         ),
@@ -495,7 +495,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
             onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: const Text('L10n.of(context).msgc8ce4b36'),
+            child: Text(L10n.of(context).msgc8ce4b36),
           ),
         ],
       ),
@@ -507,7 +507,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       final parentPath = item.path.substring(0, item.path.length - item.name.length);
       final newPath = parentPath + newName;
       await _client!.rename(item.path, newPath);
-      _showSnack('已重命名为 "$newName"');
+      _showSnack(L10n.of(context).newname(newName));
       await _loadDirectoryContents(_currentPath);
     } catch (e) {
       _showSnack('重命名失败: $e', isError: true);
@@ -520,7 +520,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       builder: (ctx) {
         final theme = Theme.of(ctx);
         return AlertDialog(
-          title: const Text('L10n.of(context).msg4b342999', style: TextStyle(fontFamily: 'LexendDeca', fontWeight: FontWeight.bold)),
+          title: Text(L10n.of(context).msg4b342999, style: TextStyle(fontFamily: 'LexendDeca', fontWeight: FontWeight.bold)),
           content: Text('从服务器永久删除"${item.name}"？'),
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
@@ -541,7 +541,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       await _loadDirectoryContents(_currentPath);
       _showSnack('已删除"${item.name}"');
     } catch (e) {
-      _showSnack('删除失败：$e', isError: true);
+      _showSnack(L10n.of(context).e17(e), isError: true);
       setState(() => _isLoading = false);
     }
   }
@@ -558,16 +558,16 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text(
-            'L10n.of(context).msg79d7fef7',
-            style: TextStyle(fontFamily: 'LexendDeca', fontSize: 18, fontWeight: FontWeight.bold),
+          title: Text(
+            L10n.of(context).msg79d7fef7,
+            style: const TextStyle(fontFamily: 'LexendDeca', fontSize: 18, fontWeight: FontWeight.bold),
           ),
           content: TextField(
             controller: controller,
             autofocus: true,
             style: const TextStyle(fontSize: 14),
             decoration: InputDecoration(
-              hintText: 'L10n.of(context).msga98473f2',
+              hintText: L10n.of(context).msga98473f2,
               hintStyle: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.35)),
               prefixIcon: Icon(Broken.folder_open, size: 18, color: theme.colorScheme.primary),
               filled: true,
@@ -595,7 +595,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
                     await _loadDirectoryContents(_currentPath);
                   } catch (e) {
                     if (mounted) {
-                      _showSnack('创建文件夹失败：$e', isError: true);
+                      _showSnack(L10n.of(context).e18(e), isError: true);
                       setState(() => _isLoading = false);
                     }
                   }
@@ -667,7 +667,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
                           style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca'),
                           overflow: TextOverflow.ellipsis),
                         Text(
-                          item.isDirectory ? 'L10n.of(context).msg5ca05a9b' : item.formattedSize,
+                          item.isDirectory ? L10n.of(context).msg5ca05a9b : item.formattedSize,
                           style: TextStyle(fontSize: 11.5, color: theme.colorScheme.onSurface.withOpacity(0.5)),
                         ),
                       ],
@@ -696,7 +696,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
 
               // Rename
               _buildActionTile(
-                ctx, icon: Broken.edit, label: 'L10n.of(context).msgc8ce4b36',
+                ctx, icon: Broken.edit, label: L10n.of(context).msgc8ce4b36,
                 color: const Color(0xFF0D9488),
                 onTap: () { Navigator.pop(ctx); _renameRemoteItem(item); },
               ),
@@ -704,8 +704,8 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
               // Copy to local device (downloads file and puts in local clipboard)
               if (!item.isDirectory)
                 _buildActionTile(
-                  ctx, icon: Icons.download_for_offline_rounded, label: 'L10n.of(context).msga636c09d',
-                  subtitle: 'L10n.of(context).msga4c461a4',
+                  ctx, icon: Icons.download_for_offline_rounded, label: L10n.of(context).msga636c09d,
+                  subtitle: L10n.of(context).msga4c461a4,
                   color: const Color(0xFF0D9488),
                   onTap: () { Navigator.pop(ctx); _downloadToLocalClipboard(item, isCut: false); },
                 ),
@@ -714,7 +714,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
               if (!item.isDirectory)
                 _buildActionTile(
                   ctx, icon: Icons.drive_file_move_rtl_rounded, label: '移动到本地设备',
-                  subtitle: 'L10n.of(context).msg425502fa',
+                  subtitle: L10n.of(context).msg425502fa,
                   color: const Color(0xFF7C3AED),
                   onTap: () { Navigator.pop(ctx); _downloadToLocalClipboard(item, isCut: true); },
                 ),
@@ -799,7 +799,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
     List<String> pathUris = [];
     
     if (isSaf) {
-      pathNodes.add('L10n.of(context).msgc2b9f4b9');
+      pathNodes.add(L10n.of(context).msgc2b9f4b9);
       pathUris.add(rootPath);
       
       final docIndex = _currentPath.indexOf('/document/');
@@ -832,8 +832,8 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       if (relativePath.isEmpty || relativePath == '/') relativePath = '';
 
       pathNodes = relativePath.isEmpty
-          ? ['L10n.of(context).msgc2b9f4b9']
-          : ['L10n.of(context).msgc2b9f4b9', ...relativePath.split('/').where((n) => n.isNotEmpty)];
+          ? [L10n.of(context).msgc2b9f4b9]
+          : [L10n.of(context).msgc2b9f4b9, ...relativePath.split('/').where((n) => n.isNotEmpty)];
     }
 
     final hasLocalClipboard = provider.clipboardPaths.isNotEmpty;
@@ -885,7 +885,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
                     ),
                     IconButton(
                       icon: Icon(Broken.category, color: theme.colorScheme.primary),
-                      tooltip: 'L10n.of(context).msg6e0f9cef',
+                      tooltip: L10n.of(context).msg6e0f9cef,
                       onPressed: () {
                         Navigator.of(context).popUntil((route) => route.isFirst);
                         context.read<MediaProvider>().refreshMediaBackground();
@@ -952,7 +952,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
                 // 更多操作
                 PopupMenuButton<String>(
                   icon: const Icon(Broken.more, size: 20),
-                  tooltip: 'L10n.of(context).msgfff96ede',
+                  tooltip: L10n.of(context).msgfff96ede,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   position: PopupMenuPosition.under,
                   onSelected: (value) async {
@@ -988,7 +988,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
                         ),
                       ],
                     ),
-                    tooltip: 'L10n.of(context).msg2f7cd487',
+                    tooltip: L10n.of(context).msg2f7cd487,
                     onPressed: _uploadFromLocalClipboard,
                   ),
                 // 粘贴远程剪贴板
@@ -1005,12 +1005,12 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
                         ),
                       ],
                     ),
-                    tooltip: provider.isCut ? '移动到此处' : 'L10n.of(context).msg905c34fa',
+                    tooltip: provider.isCut ? '移动到此处' : L10n.of(context).msg905c34fa,
                     onPressed: _pasteRemoteClipboard,
                   ),
                 IconButton(
                   icon: const Icon(Broken.folder_add, size: 20),
-                  tooltip: 'L10n.of(context).msgf3a485df',
+                  tooltip: L10n.of(context).msgf3a485df,
                   onPressed: _showAddFolderDialog,
                 ),
               ],
@@ -1031,7 +1031,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
                   children: [
                     const Icon(Broken.info_circle, size: 64, color: Colors.redAccent),
                     const SizedBox(height: 16),
-                    Text('L10n.of(context).msg8439c155', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    Text(L10n.of(context).msg8439c155, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     Text(_errorMsg, textAlign: TextAlign.center,
                       style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5))),
@@ -1047,7 +1047,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
                         _initClient();
                       },
                       icon: const Icon(Icons.refresh_rounded),
-                      label: const Text('L10n.of(context).msgda43df27'),
+                      label: Text(L10n.of(context).msgda43df27),
                     ),
                   ],
                 ),
@@ -1113,7 +1113,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
                             children: [
                               Icon(Broken.folder_open, size: 56, color: theme.colorScheme.onSurface.withOpacity(0.2)),
                               const SizedBox(height: 14),
-                              Text('L10n.of(context).msga21f6ab1',
+                              Text(L10n.of(context).msga21f6ab1,
                                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold,
                                   color: theme.colorScheme.onSurface.withOpacity(0.4))),
                               if (hasLocalClipboard) ...[
@@ -1121,7 +1121,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
                                 ElevatedButton.icon(
                                   onPressed: _uploadFromLocalClipboard,
                                   icon: const Icon(Icons.upload_rounded, size: 16),
-                                  label: const Text('L10n.of(context).msge1c538b8'),
+                                  label: Text(L10n.of(context).msge1c538b8),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: theme.colorScheme.primary, foregroundColor: Colors.white,
                                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -1156,7 +1156,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
                                   overflow: TextOverflow.ellipsis),
                                 subtitle: Text(
                                   item.isDirectory
-                                      ? 'L10n.of(context).msg1f4c1042'
+                                      ? L10n.of(context).msg1f4c1042
                                       : '${item.formattedSize} • ${item.modified.toLocal().toString().substring(0, 10)}',
                                   style: TextStyle(fontSize: 11.5, color: theme.colorScheme.onSurface.withOpacity(0.4)),
                                 ),
@@ -1192,9 +1192,9 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
                                           const PopupMenuDivider(),
                                           _popItem('copy', Broken.copy, '复制', theme.colorScheme.primary),
                                           _popItem('cut', Broken.scissor, '剪切', Colors.orange),
-                                          _popItem('rename', Broken.edit, 'L10n.of(context).msgc8ce4b36', const Color(0xFF0D9488)),
+                                          _popItem('rename', Broken.edit, L10n.of(context).msgc8ce4b36, Color(0xFF0D9488)),
                                           if (hasRemoteClipboard)
-                                            _popItem('paste', Icons.content_paste_rounded, 'L10n.of(context).msg419be096', const Color(0xFF0D9488)),
+                                            _popItem('paste', Icons.content_paste_rounded, L10n.of(context).msg419be096, Color(0xFF0D9488)),
                                           const PopupMenuDivider(),
                                           _popItem('delete', Broken.trash, '删除', Colors.redAccent),
                                         ],
@@ -1421,7 +1421,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       }
     } catch (e) {
       if (mounted) {
-        _showSnack('下载失败: $e', isError: true);
+        _showSnack(L10n.of(context).e19(e), isError: true);
       }
     } finally {
       if (mounted) {
@@ -1471,8 +1471,8 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('L10n.of(context).msg50eaf94d'),
-        content: Text('确定要删除 ${_selectedPaths.length} 个项目吗？此操作无法撤销。'),
+        title: Text(L10n.of(context).msg50eaf94d),
+        content: Text(L10n.of(context).selectedcount2(_selectedPaths.length)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
           TextButton(
@@ -1487,7 +1487,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
 
     setState(() {
       _isTransferring = true;
-      _transferLabel = 'L10n.of(context).msgcb0da17b';
+      _transferLabel = L10n.of(context).msgcb0da17b;
       _transferProgress = 0.0;
     });
 

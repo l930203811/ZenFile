@@ -62,7 +62,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
 
   final List<String> _filters = [
     '全部',
-    'L10n.of(context).msg1f4c1042',
+    '文件夹',
     '图片',
     '视频',
     '音频',
@@ -213,7 +213,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
           bool matchFilter = false;
           if (_selectedFilter == '全部') {
             matchFilter = true;
-          } else if (_selectedFilter == 'L10n.of(context).msg1f4c1042' && isDir) {
+          } else if (_selectedFilter == L10n.of(context).msg1f4c1042 && isDir) {
             matchFilter = true;
           } else if (_selectedFilter == '图片' && !isDir && _isImage(name)) {
             matchFilter = true;
@@ -336,7 +336,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     if (_selectedPaths.isEmpty) return;
     final confirm = await FileActionDialogs.showConfirmDialog(
       context,
-      title: 'L10n.of(context).msgcd0b9aca',
+      title: L10n.of(context).msgcd0b9aca,
       content: 'Are you sure you want to delete ${_selectedPaths.length} selected item(s)? This cannot be undone.',
     );
 
@@ -350,7 +350,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         });
       }
       _clearSelection();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('L10n.of(context).msg45326802')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).msg45326802)));
     }
   }
 
@@ -371,11 +371,11 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         break;
       case 'copy':
         provider.copyFile(path);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('L10n.of(context).msg4fb42e6e')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).msg4fb42e6e)));
         break;
       case 'cut':
         provider.cutFile(path);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('L10n.of(context).msge5212c58')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).msge5212c58)));
         break;
       case 'rename':
         final isMulti = _selectedPaths.isNotEmpty && _selectedPaths.contains(path);
@@ -394,10 +394,10 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
           final currentName = p.basename(path);
           final newName = await FileActionDialogs.showTextInputDialog(
             context,
-            title: 'L10n.of(context).msgc8ce4b36',
-            hint: 'L10n.of(context).msgf139c5cf',
+            title: L10n.of(context).msgc8ce4b36,
+            hint: L10n.of(context).msgf139c5cf,
             initialValue: currentName,
-            actionText: 'L10n.of(context).msgc8ce4b36',
+            actionText: L10n.of(context).msgc8ce4b36,
           );
           if (newName != null && newName.isNotEmpty) {
             await provider.renameFile(path, newName);
@@ -412,7 +412,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         final isMulti = _selectedPaths.isNotEmpty && _selectedPaths.contains(path);
         final confirm = await FileActionDialogs.showConfirmDialog(
           context,
-          title: isMulti ? 'L10n.of(context).msgcd0b9aca' : 'L10n.of(context).msg53518c22',
+          title: isMulti ? L10n.of(context).msgcd0b9aca : L10n.of(context).msg53518c22,
           content: isMulti
               ? 'Are you sure you want to delete ${_selectedPaths.length} selected item(s)? This cannot be undone.'
               : 'Are you sure you want to delete this item? This cannot be undone.',
@@ -471,7 +471,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                 onChanged: _onSearchChanged,
                 style: theme.textTheme.titleMedium,
                 decoration: InputDecoration(
-                  hintText: isGlobal ? '全局搜索...' : 'L10n.of(context).msgf2ef53c0',
+                  hintText: isGlobal ? '全局搜索...' : L10n.of(context).msgf2ef53c0,
                   hintStyle: TextStyle(color: theme.colorScheme.onSurface.withAlpha(102)),
                   border: InputBorder.none,
                   suffixIcon: _query.isNotEmpty
@@ -502,7 +502,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                 ),
                 IconButton(
                   icon: const Icon(Broken.edit),
-                  tooltip: 'L10n.of(context).msgc8ce4b36',
+                  tooltip: L10n.of(context).msgc8ce4b36,
                   onPressed: _handleRenameSelected,
                 ),
                 IconButton(
@@ -512,7 +512,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                 ),
                 PopupMenuButton<String>(
                   icon: const Icon(Broken.more),
-                  tooltip: 'L10n.of(context).msgfff96ede',
+                  tooltip: L10n.of(context).msgfff96ede,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   position: PopupMenuPosition.under,
                   elevation: 8,
@@ -663,7 +663,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                 ? _buildEmptyState(
                     theme,
                     Broken.search_normal_1,
-                    isGlobal ? 'L10n.of(context).msg88e45bb8' : '搜索此文件夹',
+                    isGlobal ? L10n.of(context).msg88e45bb8 : '搜索此文件夹',
                     isGlobal
                         ? 'Find any file, folder, document or media instantly across your device'
                         : '搜索文件和子文件夹于：${_searchFolderPath!.split("/").last}',

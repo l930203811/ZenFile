@@ -43,7 +43,7 @@ class SelectionContextBottomSheet extends StatelessWidget {
     final theme = Theme.of(context);
     final selectedCount = provider.selectedPaths.length;
     final isSingle = selectedCount == 1;
-    final displayTitle = isSingle ? p.basename(targetPath) : '已选择 $selectedCount 个项目';
+    final displayTitle = isSingle ? p.basename(targetPath) : L10n.of(context).selectedcount3(provider.selectedPaths.length);
     final isFolder = Directory(targetPath).existsSync() || 
         provider.currentFiles.firstWhere((e) => e.path == targetPath, orElse: () => provider.currentFiles.first).isDirectory;
 
@@ -122,7 +122,7 @@ class SelectionContextBottomSheet extends StatelessWidget {
                           ),
                           if (isSingle)
                             Text(
-                              isFolder ? 'L10n.of(context).msg1f4c1042' : 'L10n.of(context).msg8b73264b',
+                              isFolder ? L10n.of(context).msg1f4c1042 : L10n.of(context).msg8b73264b,
                               style: TextStyle(
                                 fontSize: 12,
                                 color: theme.colorScheme.onSurface.withOpacity(0.5),
@@ -145,7 +145,7 @@ class SelectionContextBottomSheet extends StatelessWidget {
             _buildMenuItem(
               context: context,
               icon: Broken.document_copy,
-              label: 'L10n.of(context).msgc5c0646c',
+              label: L10n.of(context).msgc5c0646c,
               onTap: () {
                 Navigator.pop(context);
                 provider.copySelected();
@@ -157,7 +157,7 @@ class SelectionContextBottomSheet extends StatelessWidget {
             _buildMenuItem(
               context: context,
               icon: Broken.scissor,
-              label: 'L10n.of(context).msg8e6d4604',
+              label: L10n.of(context).msg8e6d4604,
               onTap: () {
                 Navigator.pop(context);
                 provider.cutSelected();
@@ -170,16 +170,16 @@ class SelectionContextBottomSheet extends StatelessWidget {
               _buildMenuItem(
                 context: context,
                 icon: Broken.edit,
-                label: 'L10n.of(context).msgc8ce4b36',
+                label: L10n.of(context).msgc8ce4b36,
                 onTap: () async {
                   Navigator.pop(context);
                   final currentName = p.basename(targetPath);
                   final newName = await FileActionDialogs.showTextInputDialog(
                     context,
-                    title: 'L10n.of(context).msgc8ce4b36',
-                    hint: 'L10n.of(context).msgf139c5cf',
+                    title: L10n.of(context).msgc8ce4b36,
+                    hint: L10n.of(context).msgf139c5cf,
                     initialValue: currentName,
-                    actionText: 'L10n.of(context).msgc8ce4b36',
+                    actionText: L10n.of(context).msgc8ce4b36,
                   );
                   if (newName != null && newName.isNotEmpty) {
                     await provider.renameFile(targetPath, newName);
@@ -191,7 +191,7 @@ class SelectionContextBottomSheet extends StatelessWidget {
               _buildMenuItem(
                 context: context,
                 icon: Broken.edit,
-                label: 'L10n.of(context).msgc8ce4b36',
+                label: L10n.of(context).msgc8ce4b36,
                 onTap: () async {
                   Navigator.pop(context);
                   await BatchRenameDialog.show(context, provider);
@@ -201,7 +201,7 @@ class SelectionContextBottomSheet extends StatelessWidget {
               _buildMenuItem(
                 context: context,
                 icon: Broken.eye,
-                label: 'L10n.of(context).msg2a4cfb07',
+                label: L10n.of(context).msg2a4cfb07,
                 onTap: () {
                   Navigator.pop(context);
                   provider.openFile(context, targetPath, forceOpenWith: true);
@@ -210,7 +210,7 @@ class SelectionContextBottomSheet extends StatelessWidget {
             _buildMenuItem(
               context: context,
               icon: Broken.box_add,
-              label: '压缩',
+              label: L10n.of(context).ui_compress,
               onTap: () async {
                 Navigator.pop(context);
                 final res = await CreateArchiveDialog.show(
@@ -237,7 +237,7 @@ class SelectionContextBottomSheet extends StatelessWidget {
             _buildMenuItem(
               context: context,
               icon: Icons.share_outlined,
-              label: '分享',
+              label: L10n.of(context).ui_share,
               onTap: () async {
                 Navigator.pop(context);
                 final selectedPaths = provider.selectedPaths.toList();
@@ -247,7 +247,7 @@ class SelectionContextBottomSheet extends StatelessWidget {
             _buildMenuItem(
               context: context,
               icon: Broken.info_circle,
-              label: 'L10n.of(context).msg1058354c',
+              label: L10n.of(context).msg1058354c,
               onTap: () {
                 Navigator.pop(context);
                 showDialog(
@@ -263,14 +263,14 @@ class SelectionContextBottomSheet extends StatelessWidget {
             _buildMenuItem(
               context: context,
               icon: Broken.trash,
-              label: 'L10n.of(context).msgcd0b9aca',
+              label: L10n.of(context).msgcd0b9aca,
               color: Colors.redAccent,
               onTap: () async {
                 Navigator.pop(context);
                 final confirm = await FileActionDialogs.showConfirmDialog(
                   context,
-                  title: 'L10n.of(context).msgcd0b9aca',
-                  content: '确定要删除 $selectedCount 个项目吗？此操作无法撤销。',
+                  title: L10n.of(context).msgcd0b9aca,
+                  content: L10n.of(context).selectedcount2(selectedCount),
                 );
                 if (confirm) {
                   await provider.deleteSelected();

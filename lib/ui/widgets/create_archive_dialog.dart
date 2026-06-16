@@ -95,7 +95,7 @@ class _CreateArchiveDialogState extends State<CreateArchiveDialog> {
                   ),
                   const SizedBox(width: 16),
                   Text(
-                    'L10n.of(context).msg25f747ce',
+                    L10n.of(context).msg25f747ce,
                     style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -119,7 +119,7 @@ class _CreateArchiveDialogState extends State<CreateArchiveDialog> {
               DropdownButtonFormField<String>(
                 value: _format,
                 decoration: InputDecoration(
-                  labelText: 'L10n.of(context).msged5f808e',
+                  labelText: L10n.of(context).msged5f808e,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   prefixIcon: const Icon(Broken.document_code),
                 ),
@@ -169,7 +169,7 @@ class _CreateArchiveDialogState extends State<CreateArchiveDialog> {
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
-                    labelText: 'L10n.of(context).msgeec70cd2',
+                    labelText: L10n.of(context).msgeec70cd2,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     prefixIcon: const Icon(Broken.lock),
                     suffixIcon: IconButton(
@@ -186,8 +186,8 @@ class _CreateArchiveDialogState extends State<CreateArchiveDialog> {
                 controller: _splitController,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  labelText: 'L10n.of(context).mb',
-                  helperText: 'L10n.of(context).msgac52af6a',
+                  labelText: L10n.of(context).mb,
+                  helperText: L10n.of(context).msgac52af6a,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   prefixIcon: const Icon(Broken.scissor),
                 ),
@@ -211,7 +211,7 @@ class _CreateArchiveDialogState extends State<CreateArchiveDialog> {
               if (widget.isMultiSelection)
                 CheckboxListTile(
                   value: _separateArchives,
-                  title: const Text('L10n.of(context).msgdf2ef7f5'),
+                  title: Text(L10n.of(context).msgdf2ef7f5),
                   controlAffinity: ListTileControlAffinity.leading,
                   contentPadding: EdgeInsets.zero,
                   onChanged: (val) {
@@ -251,7 +251,7 @@ class _CreateArchiveDialogState extends State<CreateArchiveDialog> {
                         ),
                       );
                     },
-                    child: const Text('L10n.of(context).msg25f747ce'),
+                    child: Text(L10n.of(context).msg25f747ce),
                   ),
                 ],
               ),

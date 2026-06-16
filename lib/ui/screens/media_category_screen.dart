@@ -17,6 +17,7 @@ import 'audio_player/audio_player_screen.dart';
 import 'document_viewer_screen.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../widgets/file_action_dialogs.dart';
 import '../widgets/batch_rename_dialog.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
@@ -96,21 +97,21 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     }
     switch (widget.mediaType) {
       case MediaType.images:
-        return '图片';
+        return L10n.of(context).cat_images;
       case MediaType.videos:
-        return '视频';
+        return L10n.of(context).cat_videos;
       case MediaType.audios:
-        return '音频';
+        return L10n.of(context).cat_audios;
       case MediaType.documents:
-        return '文档';
+        return L10n.of(context).cat_documents;
       case MediaType.archives:
-        return 'L10n.of(context).msgc806d0fa';
+        return L10n.of(context).msgc806d0fa;
       case MediaType.downloads:
-        return '下载';
+        return L10n.of(context).cat_downloads;
       case MediaType.apks:
-        return 'L10n.of(context).msg03070d08';
+        return L10n.of(context).msg03070d08;
       case MediaType.screenshots:
-        return '截图';
+        return L10n.of(context).cat_screenshots;
     }
   }
 
@@ -206,7 +207,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     if (paths.isNotEmpty && mounted) {
       context.read<FileManagerProvider>().setClipboard(paths, isCut: isCut);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(isCut ? '已剪切 ${paths.length} 个项目到剪贴板' : '已复制 ${paths.length} 个项目到剪贴板')),
+        SnackBar(content: Text(isCut ? L10n.of(context).ui_cut_count(paths.length) : L10n.of(context).ui_copied_count(paths.length))),
       );
       _clearSelection();
     }
@@ -219,14 +220,14 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('L10n.of(context).msg631cd220'),
-        content: Text('确定要永久删除选中的 $count 个项目吗？'),
+        title: Text(L10n.of(context).msg631cd220),
+        content: Text(L10n.of(context).count1(count)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(L10n.of(context).ui_cancel)),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('删除'),
+            child: Text(L10n.of(context).ui_delete),
           ),
         ],
       ),
@@ -250,7 +251,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
 
       await mediaProvider.deleteMediaItems(filePaths: filePaths, assetIds: assetIds);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('已成功删除 $count 个项目')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).count2(count))));
         _clearSelection();
       }
     }
@@ -285,7 +286,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     }
 
     fm.clearClipboard();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('已粘贴 $pastedCount 个项目到 $destDir')));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).pastedcountdestdir(pastedCount, destDir))));
     await context.read<MediaProvider>().loadMedia(forceRefresh: true);
   }
 
@@ -319,14 +320,14 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('分享出错：$e')),
+            SnackBar(content: Text(L10n.of(context).e10(e))),
           );
         }
       }
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('L10n.of(context).msgfadbb0bc')),
+          SnackBar(content: Text(L10n.of(context).msgfadbb0bc)),
         );
       }
     }
@@ -370,7 +371,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     if (filePaths.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('L10n.of(context).msg3ad97542')),
+          SnackBar(content: Text(L10n.of(context).msg3ad97542)),
         );
       }
       return;
@@ -382,10 +383,10 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         final currentName = path_helper.basename(filePath);
         final newName = await FileActionDialogs.showTextInputDialog(
           context,
-          title: 'L10n.of(context).msgc8ce4b36',
-          hint: 'L10n.of(context).msgf139c5cf',
+          title: L10n.of(context).msgc8ce4b36,
+          hint: L10n.of(context).msgf139c5cf,
           initialValue: currentName,
-          actionText: 'L10n.of(context).msgc8ce4b36',
+          actionText: L10n.of(context).msgc8ce4b36,
         );
         if (newName != null && newName.isNotEmpty && mounted) {
           await context.read<FileManagerProvider>().renameFile(filePath, newName);
@@ -532,7 +533,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           children: [
             Icon(Broken.info_circle, color: theme.colorScheme.primary),
             const SizedBox(width: 10),
-            const Text('属性', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            Text(L10n.of(context).ui_properties, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
           ],
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -542,22 +543,22 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (count == 1) ...[
-                _buildCopyableRow('名称', nameDisplay, ctx),
-                _buildCopyableRow('路径', fullPath, ctx),
-                _buildCopyableRow('大小', '${FileUtils.formatBytes(totalBytes, 2)} ($totalBytes bytes)', ctx),
-                if (lastMod != null) _buildCopyableRow('L10n.of(context).msg1303e638', FileUtils.formatDate(lastMod), ctx),
-                if (mimeType.isNotEmpty && mimeType != 'file/') _buildCopyableRow('类型', mimeType, ctx),
-                if (dimensionsOrDuration.isNotEmpty) _buildCopyableRow('L10n.of(context).msg5bab3781', dimensionsOrDuration, ctx),
-                if (permissionsStr.isNotEmpty) _buildCopyableRow('权限', permissionsStr, ctx),
+                _buildCopyableRow(L10n.of(context).ui_name, nameDisplay, ctx),
+                _buildCopyableRow(L10n.of(context).ui_path, fullPath, ctx),
+                _buildCopyableRow(L10n.of(context).ui_size, '${FileUtils.formatBytes(totalBytes, 2)} ($totalBytes bytes)', ctx),
+                if (lastMod != null) _buildCopyableRow(L10n.of(context).msg1303e638, FileUtils.formatDate(lastMod), ctx),
+                if (mimeType.isNotEmpty && mimeType != 'file/') _buildCopyableRow(L10n.of(context).ui_type, mimeType, ctx),
+                if (dimensionsOrDuration.isNotEmpty) _buildCopyableRow(L10n.of(context).msg5bab3781, dimensionsOrDuration, ctx),
+                if (permissionsStr.isNotEmpty) _buildCopyableRow(L10n.of(context).ui_permissions, permissionsStr, ctx),
               ] else ...[
-                _buildCopyableRow('L10n.of(context).msg880a18f3', '$count items', ctx),
-                _buildCopyableRow('L10n.of(context).msgea9ecb93', '${FileUtils.formatBytes(totalBytes, 2)} ($totalBytes bytes)', ctx),
+                _buildCopyableRow(L10n.of(context).msg880a18f3, '$count items', ctx),
+                _buildCopyableRow(L10n.of(context).msgea9ecb93, '${FileUtils.formatBytes(totalBytes, 2)} ($totalBytes bytes)', ctx),
               ],
             ],
           ),
         ),
         actions: [
-          FilledButton(onPressed: () => Navigator.pop(ctx), child: const Text('完成')),
+          FilledButton(onPressed: () => Navigator.pop(ctx), child: Text(L10n.of(context).ui_done)),
         ],
       ),
     );
@@ -601,7 +602,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                       if (filePath != null) ...[
                         const SizedBox(height: 4),
                         Text(
-                          'L10n.of(context).msg5556baa3',
+                          L10n.of(context).msg5556baa3,
                           style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.4)),
                         ),
                       ],
@@ -613,7 +614,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               if (filePath != null && FileUtils.isArchive(filePath))
                 ListTile(
                   leading: Icon(Broken.archive, color: theme.colorScheme.primary),
-                  title: const Text('解压'),
+                  title: Text(L10n.of(context).ui_extract),
                   onTap: () {
                     Navigator.pop(ctx);
                     context.read<FileManagerProvider>().extractArchiveDirectly(context, filePath);
@@ -621,7 +622,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                 ),
               ListTile(
                 leading: Icon(Broken.document_copy, color: theme.colorScheme.primary),
-                title: const Text('复制'),
+                title: Text(L10n.of(context).ui_copy),
                 onTap: () async {
                   Navigator.pop(ctx);
                   String? target = filePath;
@@ -642,7 +643,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               ),
               ListTile(
                 leading: Icon(Broken.scissor, color: theme.colorScheme.primary),
-                title: const Text('剪切'),
+                title: Text(L10n.of(context).ui_cut),
                 onTap: () async {
                   Navigator.pop(ctx);
                   String? target = filePath;
@@ -663,20 +664,20 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               ),
               ListTile(
                 leading: const Icon(Broken.trash, color: Colors.red),
-                title: const Text('删除', style: TextStyle(color: Colors.red)),
+                title: Text(L10n.of(context).ui_delete, style: TextStyle(color: Colors.red)),
                 onTap: () async {
                   Navigator.pop(ctx);
                   final confirm = await showDialog<bool>(
                     context: context,
                     builder: (c) => AlertDialog(
-                      title: const Text('L10n.of(context).msg631cd220'),
-                      content: Text('永久删除"$name"？'),
+                      title: Text(L10n.of(context).msg631cd220),
+                      content: Text(L10n.of(context).ui_permanently_delete_name(name)),
                       actions: [
-                        TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
+                        TextButton(onPressed: () => Navigator.pop(c, false), child: Text(L10n.of(context).ui_cancel)),
                         FilledButton(
                           style: FilledButton.styleFrom(backgroundColor: Colors.red),
                           onPressed: () => Navigator.pop(c, true),
-                          child: const Text('删除'),
+                          child: Text(L10n.of(context).ui_delete),
                         ),
                       ],
                     ),
@@ -695,7 +696,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                     }
                     await mediaProvider.deleteMediaItems(filePaths: files, assetIds: assetId != null ? [assetId] : []);
                     if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('已删除 $name')));
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).name(name))));
                     }
                   }
                 },
@@ -703,7 +704,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               if (filePath != null)
                 ListTile(
                   leading: Icon(Broken.folder_open, color: theme.colorScheme.primary),
-                  title: const Text('L10n.of(context).msgcd8264f1'),
+                  title: Text(L10n.of(context).msgcd8264f1),
                   onTap: () {
                     context.read<FileManagerProvider>().showFileInLocation(filePath);
                     Navigator.pop(ctx);
@@ -714,16 +715,16 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               if (filePath != null)
                 ListTile(
                   leading: Icon(Broken.edit, color: theme.colorScheme.primary),
-                  title: const Text('L10n.of(context).msgc8ce4b36'),
+                  title: Text(L10n.of(context).msgc8ce4b36),
                   onTap: () async {
                     Navigator.pop(ctx);
                     final currentName = path_helper.basename(filePath);
                     final newName = await FileActionDialogs.showTextInputDialog(
                       context,
-                      title: 'L10n.of(context).msgc8ce4b36',
-                      hint: 'L10n.of(context).msgf139c5cf',
+                      title: L10n.of(context).msgc8ce4b36,
+                      hint: L10n.of(context).msgf139c5cf,
                       initialValue: currentName,
-                      actionText: 'L10n.of(context).msgc8ce4b36',
+                      actionText: L10n.of(context).msgc8ce4b36,
                     );
                     if (newName != null && newName.isNotEmpty && mounted) {
                       await context.read<FileManagerProvider>().renameFile(filePath, newName);
@@ -734,7 +735,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               if (filePath != null)
                 ListTile(
                   leading: Icon(Broken.eye, color: theme.colorScheme.primary),
-                  title: const Text('L10n.of(context).msg2a4cfb07'),
+                  title: Text(L10n.of(context).msg2a4cfb07),
                   onTap: () {
                     Navigator.pop(ctx);
                     context.read<FileManagerProvider>().openFile(context, filePath, forceOpenWith: true);
@@ -742,7 +743,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                 ),
               ListTile(
                 leading: Icon(Broken.info_circle, color: theme.colorScheme.primary),
-                title: const Text('属性'),
+                title: Text(L10n.of(context).ui_properties),
                 onTap: () {
                   Navigator.pop(ctx);
                   _showPropertiesDialog(singleFilePath: filePath, singleAssetId: assetId, explicitName: name);
@@ -750,7 +751,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               ),
               ListTile(
                 leading: Icon(Icons.share_outlined, color: theme.colorScheme.primary),
-                title: const Text('分享'),
+                title: Text(L10n.of(context).ui_share),
                 onTap: () async {
                   Navigator.pop(ctx);
                   String? target = filePath;
@@ -769,14 +770,14 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                     } catch (e) {
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('分享出错：$e')),
+                          SnackBar(content: Text(L10n.of(context).e10(e))),
                         );
                       }
                     }
                   } else {
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('L10n.of(context).msg8bf52387')),
+                        SnackBar(content: Text(L10n.of(context).msg8bf52387)),
                       );
                     }
                   }
@@ -799,7 +800,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(_isSelectionMode ? '${_selectedFilePaths.length + _selectedAssetIds.length} 已选择' : _title),
+        title: Text(_isSelectionMode ? L10n.of(context).ui_selected_count(_selectedFilePaths.length + _selectedAssetIds.length) : _title),
         leading: _isSelectionMode
             ? IconButton(icon: const Icon(Broken.close_square), onPressed: _clearSelection)
             : null,
@@ -808,7 +809,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             Consumer<MediaProvider>(
               builder: (context, provider, child) => IconButton(
                 icon: const Icon(Broken.task_square),
-                tooltip: '全选',
+                tooltip: L10n.of(context).ui_select_all,
                 onPressed: () => _selectAll(provider),
               ),
             )
@@ -816,40 +817,40 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             if (canPaste)
               IconButton(
                 icon: const Icon(Broken.clipboard),
-                tooltip: 'L10n.of(context).msg419be096',
+                tooltip: L10n.of(context).msg419be096,
                 onPressed: _handlePaste,
               ),
             Consumer<MediaProvider>(
               builder: (context, provider, child) {
                 return PopupMenuButton<MediaSortOrder>(
                   icon: const Icon(Icons.sort),
-                  tooltip: '排序选项',
+                  tooltip: L10n.of(context).ui_sort_options,
                   onSelected: (order) => provider.setSortOrder(order),
                   itemBuilder: (context) => [
                     CheckedPopupMenuItem(
                       value: MediaSortOrder.newest,
                       checked: provider.sortOrder == MediaSortOrder.newest,
-                      child: const Text('L10n.of(context).msg5093bc80'),
+                      child: Text(L10n.of(context).msg5093bc80),
                     ),
                     CheckedPopupMenuItem(
                       value: MediaSortOrder.oldest,
                       checked: provider.sortOrder == MediaSortOrder.oldest,
-                      child: const Text('最旧优先'),
+                      child: Text(L10n.of(context).ui_oldest_first),
                     ),
                     CheckedPopupMenuItem(
                       value: MediaSortOrder.dateWise,
                       checked: provider.sortOrder == MediaSortOrder.dateWise,
-                      child: const Text('L10n.of(context).msgbc74b5a8'),
+                      child: Text(L10n.of(context).msgbc74b5a8),
                     ),
                     CheckedPopupMenuItem(
                       value: MediaSortOrder.newestGrouped,
                       checked: provider.sortOrder == MediaSortOrder.newestGrouped,
-                      child: const Text('L10n.of(context).msgef7ae768'),
+                      child: Text(L10n.of(context).msgef7ae768),
                     ),
                     CheckedPopupMenuItem(
                       value: MediaSortOrder.oldestGrouped,
                       checked: provider.sortOrder == MediaSortOrder.oldestGrouped,
-                      child: const Text('L10n.of(context).msgb8140039'),
+                      child: Text(L10n.of(context).msgb8140039),
                     ),
                     CheckedPopupMenuItem(
                       value: MediaSortOrder.sizeLargest,
@@ -870,7 +871,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                 return IconButton(
                   icon: const Icon(Icons.refresh),
                   onPressed: () => provider.loadMedia(forceRefresh: true),
-                  tooltip: '刷新',
+                  tooltip: L10n.of(context).ui_refresh,
                 );
               },
             ),
@@ -1002,12 +1003,12 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildActionItem(theme, icon: Broken.document_copy, label: '复制', onTap: () => _handleCopyCut(false)),
-              _buildActionItem(theme, icon: Broken.scissor, label: '剪切', onTap: () => _handleCopyCut(true)),
-              _buildActionItem(theme, icon: Broken.edit, label: 'L10n.of(context).msgc8ce4b36', onTap: _handleBatchRename),
-              _buildActionItem(theme, icon: Broken.trash, label: '删除', color: Colors.red, onTap: _handleDelete),
-              _buildActionItem(theme, icon: Icons.share_outlined, label: '分享', onTap: _handleShare),
-              _buildActionItem(theme, icon: Broken.info_circle, label: '信息', onTap: () => _showPropertiesDialog()),
+              _buildActionItem(theme, icon: Broken.document_copy, label: L10n.of(context).ui_copy, onTap: () => _handleCopyCut(false)),
+              _buildActionItem(theme, icon: Broken.scissor, label: L10n.of(context).ui_cut, onTap: () => _handleCopyCut(true)),
+              _buildActionItem(theme, icon: Broken.edit, label: L10n.of(context).msgc8ce4b36, onTap: _handleBatchRename),
+              _buildActionItem(theme, icon: Broken.trash, label: L10n.of(context).ui_delete, color: Colors.red, onTap: _handleDelete),
+              _buildActionItem(theme, icon: Icons.share_outlined, label: L10n.of(context).ui_share, onTap: _handleShare),
+              _buildActionItem(theme, icon: Broken.info_circle, label: L10n.of(context).ui_info, onTap: () => _showPropertiesDialog()),
             ],
           ),
         ),
@@ -1246,16 +1247,27 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             onLongPress: () => _toggleSelection(path, null),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: Image.file(
-                File(path),
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  color: Colors.grey.withOpacity(0.1),
-                  child: const Center(child: Icon(Broken.image, size: 24, color: Colors.grey)),
-                ),
-              ),
+              child: path.toLowerCase().endsWith('.svg')
+                  ? SvgPicture.file(
+                      File(path),
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                      placeholderBuilder: (context) => Container(
+                        color: Colors.grey.withOpacity(0.1),
+                        child: const Center(child: Icon(Broken.image, size: 24, color: Colors.grey)),
+                      ),
+                    )
+                  : Image.file(
+                      File(path),
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: Colors.grey.withOpacity(0.1),
+                        child: const Center(child: Icon(Broken.image, size: 24, color: Colors.grey)),
+                      ),
+                    ),
             ),
           ),
         if (showDate)
@@ -1558,7 +1570,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               pageBuilder: (context, animation, secondaryAnimation) => AudioPlayerScreen(
                 audioPath: path,
                 title: audio.title,
-                artist: audio.artist ?? 'L10n.of(context).msg5e32276d',
+                artist: audio.artist ?? L10n.of(context).msg5e32276d,
                 allSongs: audios,
                 initialIndex: index,
               ),
@@ -1602,8 +1614,8 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       title: Text(audio.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
       subtitle: Text(
         showDate
-            ? '${audio.artist ?? "未知艺术家"} • $dateStr'
-            : audio.artist ?? "未知艺术家",
+            ? '${audio.artist ?? L10n.of(context).msg5e32276d} • $dateStr'
+            : audio.artist ?? L10n.of(context).msg5e32276d,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.55), fontSize: 11),
@@ -1632,7 +1644,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           try {
             modified = File(path).statSync().modified;
           } catch (_) {}
-          final dateStr = modified != null ? FileUtils.formatDate(modified) : 'L10n.of(context).msg424a0110';
+          final dateStr = modified != null ? FileUtils.formatDate(modified) : L10n.of(context).msg424a0110;
           final index = audios.indexOf(audio);
           return _buildAudioTile(audio, theme, isSelected, showDate, dateStr, index, audios);
         },
@@ -1649,7 +1661,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         try {
           modified = File(path).statSync().modified;
         } catch (_) {}
-        final dateStr = modified != null ? FileUtils.formatDate(modified) : 'L10n.of(context).msg424a0110';
+        final dateStr = modified != null ? FileUtils.formatDate(modified) : L10n.of(context).msg424a0110;
         return _buildAudioTile(audio, theme, isSelected, isDateWise, dateStr, index, audios);
       },
     );
@@ -1785,7 +1797,16 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             decoration: BoxDecoration(color: iconColor.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
             child: isApk
                 ? _ApkThumbnail(path: path, iconColor: iconColor)
-                : Icon(FileUtils.getIconForFile(name), color: iconColor, size: 22),
+                : path.toLowerCase().endsWith('.svg')
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: SvgPicture.file(
+                          File(path),
+                          fit: BoxFit.cover,
+                          placeholderBuilder: (context) => Icon(FileUtils.getIconForFile(name), color: iconColor, size: 22),
+                        ),
+                      )
+                    : Icon(FileUtils.getIconForFile(name), color: iconColor, size: 22),
           ),
           if (_isSelectionMode || isSelected)
             Positioned(
@@ -1882,7 +1903,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         children: [
           Icon(_emptyIcon, size: 72, color: theme.colorScheme.onSurface.withOpacity(0.2)),
           const SizedBox(height: 16),
-          Text('未找到 ${_title.toLowerCase()}', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5), fontSize: 16)),
+          Text(L10n.of(context).ui_not_found_title(_title.toLowerCase()), style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5), fontSize: 16)),
         ],
       ),
     );
@@ -1921,7 +1942,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    'L10n.of(context).msgb19671d6',
+                    L10n.of(context).msgb19671d6,
                     style: TextStyle(
                       color: !_showFoldersMode ? theme.colorScheme.onPrimary : theme.colorScheme.onSurfaceVariant,
                       fontSize: 13,
@@ -1945,7 +1966,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    'L10n.of(context).msg1f4c1042',
+                    L10n.of(context).msg1f4c1042,
                     style: TextStyle(
                       color: _showFoldersMode ? theme.colorScheme.onPrimary : theme.colorScheme.onSurfaceVariant,
                       fontSize: 13,
@@ -2058,6 +2079,8 @@ class _CachedImageTileState extends State<_CachedImageTile> {
 
   @override
   Widget build(BuildContext context) {
+    final title = widget.asset.title ?? '';
+    final isSvg = title.toLowerCase().endsWith('.svg');
     return GestureDetector(
       onTap: widget.onTap,
       onLongPress: widget.onLongPress,
@@ -2065,20 +2088,37 @@ class _CachedImageTileState extends State<_CachedImageTile> {
         borderRadius: BorderRadius.circular(10),
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
-          child: _loaded && _thumbnail != null
-              ? Image.memory(
-                  _thumbnail!,
-                  key: const ValueKey('img'),
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
-                  gaplessPlayback: true,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    color: Colors.grey.withOpacity(0.1),
-                    child: const Center(child: Icon(Broken.image, size: 24, color: Colors.grey)),
-                  ),
+          child: isSvg
+              ? FutureBuilder<File?>(
+                  future: widget.asset.file,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData && snapshot.data != null) {
+                      return SvgPicture.file(
+                        snapshot.data!,
+                        key: const ValueKey('svg'),
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        placeholderBuilder: (context) => const _ThumbnailShimmerPlaceholder(key: ValueKey('shimmer')),
+                      );
+                    }
+                    return const _ThumbnailShimmerPlaceholder(key: ValueKey('shimmer'));
+                  },
                 )
-              : const _ThumbnailShimmerPlaceholder(key: ValueKey('shimmer')),
+              : _loaded && _thumbnail != null
+                  ? Image.memory(
+                      _thumbnail!,
+                      key: const ValueKey('img'),
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                      gaplessPlayback: true,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: Colors.grey.withOpacity(0.1),
+                        child: const Center(child: Icon(Broken.image, size: 24, color: Colors.grey)),
+                      ),
+                    )
+                  : const _ThumbnailShimmerPlaceholder(key: ValueKey('shimmer')),
         ),
       ),
     );

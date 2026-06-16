@@ -260,7 +260,7 @@ class _AudioArtworkWidgetState extends State<AudioArtworkWidget>
           Icon(Icons.music_note_rounded, size: size * 0.3, color: widget.accentColor.withOpacity(0.8)),
           const SizedBox(height: 12),
           Text(
-            'L10n.of(context).msg5bf1fb72',
+            L10n.of(context).msg5bf1fb72,
             style: TextStyle(
                color: widget.accentColor.withOpacity(0.6),
               fontSize: 16,

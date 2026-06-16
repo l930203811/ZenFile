@@ -95,7 +95,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('加载出错：$e')),
+          SnackBar(content: Text('加载出错：{e}')),
         );
       }
     } finally {
@@ -205,7 +205,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
             final doc = XmlDocument.parse(contentStr);
             final textNodes = doc.findAllElements('a:t');
             final slideText = textNodes.map((node) => node.innerText).where((t) => t.trim().isNotEmpty).join('\n');
-            slideMap[slideNum] = slideText.isEmpty ? 'L10n.of(context).msg5937f822' : slideText;
+            slideMap[slideNum] = slideText.isEmpty ? L10n.of(context).msg5937f822 : slideText;
           }
         }
       }
@@ -227,7 +227,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('L10n.of(context).msg360d0b37'),
+            content: Text('保存成功 ✓'),
             duration: Duration(seconds: 2),
           ),
         );
@@ -326,7 +326,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                               ),
                               const SizedBox(width: 10),
                               Text(
-                                'L10n.of(context).pdf',
+                                L10n.of(context).pdf,
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 18,
@@ -342,7 +342,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'L10n.of(context).msg09c933bf',
+                        L10n.of(context).msg09c933bf,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurface.withOpacity(0.6),
                         ),
@@ -377,8 +377,8 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                                 Expanded(
                                   child: _buildPresetButton(
                                     context: context,
-                                    label: 'L10n.of(context).msg701a85d4',
-                                    subtitle: 'L10n.of(context).msg2722d1a7',
+                                    label: L10n.of(context).msg701a85d4,
+                                    subtitle: L10n.of(context).msg2722d1a7,
                                     isActive: _pdfLayoutMode == PdfPageLayoutMode.continuous && _pdfEnableTextSelection,
                                     onTap: () {
                                       setModalState(() {
@@ -395,7 +395,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                                   child: _buildPresetButton(
                                     context: context,
                                     label: '流畅模式',
-                                    subtitle: 'L10n.of(context).msgb2b08d54',
+                                    subtitle: L10n.of(context).msgb2b08d54,
                                     isActive: _pdfLayoutMode == PdfPageLayoutMode.single && !_pdfEnableTextSelection,
                                     onTap: () {
                                       setModalState(() {
@@ -424,9 +424,9 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                       // Page Layout Option
                       _buildTuningOption(
                         context: context,
-                        title: 'L10n.of(context).msg8b519c02',
+                        title: L10n.of(context).msg8b519c02,
                         subtitle: _pdfLayoutMode == PdfPageLayoutMode.continuous
-                            ? 'L10n.of(context).msg7f2cd152'
+                            ? L10n.of(context).msg7f2cd152
                             : '单页（逐页滑动）',
                         child: SegmentedButton<PdfPageLayoutMode>(
                           showSelectedIcon: false,
@@ -465,9 +465,9 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                       // Scroll Direction Option
                       _buildTuningOption(
                         context: context,
-                        title: 'L10n.of(context).msg151ea324',
+                        title: L10n.of(context).msg151ea324,
                         subtitle: _pdfScrollDirection == PdfScrollDirection.vertical
-                            ? 'L10n.of(context).msg7d45ded6'
+                            ? L10n.of(context).msg7d45ded6
                             : '水平（从左到右滑动）',
                         child: SegmentedButton<PdfScrollDirection>(
                           showSelectedIcon: false,
@@ -511,9 +511,9 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                             Icons.text_format_rounded,
                             color: theme.colorScheme.primary,
                           ),
-                          title: const Text('L10n.of(context).msg176ef589', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          title: Text(L10n.of(context).msg176ef589, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                           subtitle: const Text(
-                            'L10n.of(context).msg864f8706',
+                            '关闭可显著提升页面渲染速度并消除滚动卡顿。',
                             style: TextStyle(fontSize: 12),
                           ),
                           value: _pdfEnableTextSelection,
@@ -714,7 +714,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
               IconButton(
                 icon: const Icon(Icons.note_add_rounded),
                 onPressed: _createNewFile,
-                tooltip: 'L10n.of(context).msgd28847a2',
+                tooltip: L10n.of(context).msgd28847a2,
               ),
           ],
           if (_isPdf)
@@ -726,7 +726,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
           if (_isText)
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert),
-              tooltip: 'L10n.of(context).msg3007c452',
+              tooltip: L10n.of(context).msg3007c452,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               position: PopupMenuPosition.under,
               elevation: 8,
@@ -743,7 +743,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                   child: Row(children: [
                     Icon(_wordWrap ? Icons.check_box_rounded : Icons.check_box_outline_blank, size: 20),
                     const SizedBox(width: 12),
-                    const Text('L10n.of(context).msg452dba7c', style: TextStyle(fontWeight: FontWeight.w500)),
+                    Text(L10n.of(context).msg452dba7c, style: TextStyle(fontWeight: FontWeight.w500)),
                   ]),
                 ),
                 PopupMenuItem(
@@ -751,7 +751,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                   child: Row(children: [
                     Icon(_showLineNumbers ? Icons.check_box_rounded : Icons.check_box_outline_blank, size: 20),
                     const SizedBox(width: 12),
-                    const Text('L10n.of(context).msgc31f9440', style: TextStyle(fontWeight: FontWeight.w500)),
+                    Text(L10n.of(context).msgc31f9440, style: TextStyle(fontWeight: FontWeight.w500)),
                   ]),
                 ),
               ],
@@ -759,7 +759,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
           IconButton(
             icon: const Icon(Icons.open_in_new_rounded),
             onPressed: _openExternal,
-            tooltip: 'L10n.of(context).msg1d93c30b',
+            tooltip: L10n.of(context).msg1d93c30b,
           ),
         ],
       ),
@@ -1062,7 +1062,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
     }
 
     // 只读模式
-    final textContent = _textController.text.isEmpty ? 'L10n.of(context).msgace80573' : _textController.text;
+    final textContent = _textController.text.isEmpty ? L10n.of(context).msgace80573 : _textController.text;
 
     Widget textWidget = SelectableText(
       textContent,
@@ -1202,7 +1202,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
             width: double.infinity,
             child: FilledButton.icon(
               icon: const Icon(Icons.open_in_new_rounded),
-              label: const Text('L10n.of(context).msg030f48bd'),
+              label: Text(L10n.of(context).msg030f48bd),
               style: FilledButton.styleFrom(
                 backgroundColor: fileColor,
                 foregroundColor: Colors.white,
@@ -1227,7 +1227,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
               ),
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('L10n.of(context).msgfd96af00')),
+                  SnackBar(content: Text(L10n.of(context).msgfd96af00)),
                 );
               },
             ),

@@ -91,7 +91,7 @@ class PremiumStorageOverview extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'L10n.of(context).msg21cefa9b',
+                              '内部存储',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
@@ -103,7 +103,7 @@ class PremiumStorageOverview extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'L10n.of(context).msg959429a5',
+                              L10n.of(context).msg959429a5,
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.8),
                                 fontSize: 11.5,

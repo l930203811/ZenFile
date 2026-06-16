@@ -8,14 +8,30 @@
 
 ---
 
+## 🌐 语言切换指南
+
+**首次使用 ZenFile？** 应用默认界面为中文。切换到英文只需4步：
+
+1. 进入 **设置**
+2. 点击 **更多设置**
+3. 选择 **语言 (Language)**
+4. 选择 **English**
+
+> 💡 语言偏好自动保存，下次启动自动恢复。
+
+---
+
 ## 🚀 v1.0.3 更新亮点
 
-**SVG 文件完整支持** — ZenFile 现已全面支持 `.svg` 矢量图形的缩略图预览和全屏查看，同时保留对图片、视频、音频、压缩包等格式的完整支持。
+**SVG 支持 & 多语言国际化** — ZenFile 现已全面支持 `.svg` 矢量图形缩略图预览和全屏查看，并新增 **中文 / 英文** 双语界面支持。
 
 | | |
 |---|---|
 | 🖼️ **SVG 缩略图** | 浏览页网格/列表视图均支持 SVG 文件缩略图展示 |
 | 🔍 **SVG 查看器** | 全屏查看器完美渲染矢量图形，支持缩放 |
+| 🌐 **双语界面** | 700+ 界面字符串全面覆盖中英文 |
+| 🔄 **即时语言切换** | 设置 → 语言 一键切换，无需重启 |
+| 💾 **记忆偏好** | 语言设置自动保存，下次启动自动恢复 |
 | 🎨 **压缩包颜色** | 不同压缩格式显示专属颜色（zip 橙色 / rar 红色 / 7z 紫色 / tar 棕色 / gz 绿色） |
 | 🌐 **远程文件播放** | 远程服务器文件先下载到本地再播放，支持远程缩略图预览 |
 | 🐛 **多项修复** | 修复解压后页面卡死、远程文件无法打开等 BUG |
@@ -70,9 +86,17 @@
 
 ## 📸 截图
 
+**中文界面：**
+
 | | | | |
 |:---:|:---:|:---:|:---:|
-|<img src="https://raw.githubusercontent.com/l930203811/ZenFile/main/assets/screenshots/screenshot_4.jpg" width="200"> | <img src="https://raw.githubusercontent.com/l930203811/ZenFile/main/assets/screenshots/screenshot_2.jpg" width="200"> | <img src="https://raw.githubusercontent.com/l930203811/ZenFile/main/assets/screenshots/screenshot_3.jpg" width="200"> | <img src="https://raw.githubusercontent.com/l930203811/ZenFile/main/assets/screenshots/screenshot_1.png" width="200"> |
+|<img src="https://raw.githubusercontent.com/l930203811/ZenFile/main/assets/screenshots/screenshot_1.jpg" width="200"> | <img src="https://raw.githubusercontent.com/l930203811/ZenFile/main/assets/screenshots/screenshot_2.jpg" width="200"> | <img src="https://raw.githubusercontent.com/l930203811/ZenFile/main/assets/screenshots/screenshot_3.jpg" width="200"> | <img src="https://raw.githubusercontent.com/l930203811/ZenFile/main/assets/screenshots/screenshot_4.jpg" width="200"> |
+
+**英文界面：**
+
+| | | | |
+|:---:|:---:|:---:|:---:|
+|<img src="https://raw.githubusercontent.com/l930203811/ZenFile/main/assets/screenshots/en_screenshot_1.jpg" width="200"> | <img src="https://raw.githubusercontent.com/l930203811/ZenFile/main/assets/screenshots/en_screenshot_2.jpg" width="200"> | <img src="https://raw.githubusercontent.com/l930203811/ZenFile/main/assets/screenshots/en_screenshot_3.jpg" width="200"> | <img src="https://raw.githubusercontent.com/l930203811/ZenFile/main/assets/screenshots/en_screenshot_4.jpg" width="200"> |
 
 ---
 

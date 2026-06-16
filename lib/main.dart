@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,6 +25,7 @@ import 'package:audio_service/audio_service.dart';
 import 'ui/screens/home_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<_ZenFileAppState> appStateKey = GlobalKey<_ZenFileAppState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -79,7 +80,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => FileManagerProvider()),
         ChangeNotifierProvider(create: (_) => MediaProvider()),
       ],
-      child: const ZenFileApp(),
+      child: ZenFileApp(key: appStateKey),
     ),
   );
 }
@@ -300,7 +301,7 @@ class _ZenFileAppState extends State<ZenFileApp> {
   Locale _getLocale() => _locale;
 
 
-  void _setLocale(String localeCode) {
+  void setLocale(String localeCode) {
     setState(() {
       _locale = localeCode == 'en' ? const Locale('en', 'US') : const Locale('zh', 'CN');
     });
@@ -334,7 +335,13 @@ class _ZenFileAppState extends State<ZenFileApp> {
               locale: _getLocale(),
               localeResolutionCallback: (locale, supportedLocales) {
                 if (locale == null) return const Locale('zh', 'CN');
-                return supportedLocales.contains(locale) ? locale : const Locale('zh', 'CN');
+                // Match by languageCode only, not full locale (to handle Locale('en', 'US'))
+                for (final supported in supportedLocales) {
+                  if (supported.languageCode == locale.languageCode) {
+                    return supported;
+                  }
+                }
+                return const Locale('zh', 'CN');
               },
               theme: AppTheme.getAppTheme(light: true, seed: baseSeedColor, customScheme: activeLightScheme, fontFamily: fileManager.fontFamilyOption),
               darkTheme: AppTheme.getAppTheme(light: false, pitchBlack: fileManager.amoledMode, seed: baseSeedColor, customScheme: activeDarkScheme, fontFamily: fileManager.fontFamilyOption),
@@ -434,7 +441,7 @@ class _IntentLoadingScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              'L10n.of(context).msg6f3e533a',
+              L10n.of(context).msg6f3e533a,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
                 color: theme.colorScheme.onSurface.withOpacity(0.8),
@@ -442,7 +449,7 @@ class _IntentLoadingScreen extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              'L10n.of(context).msgbca59325',
+              L10n.of(context).msgbca59325,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurface.withOpacity(0.5),
               ),
@@ -481,7 +488,7 @@ class _StoragePermissionShield extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'L10n.of(context).zenfile',
+                  L10n.of(context).zenfile,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
                 ),
@@ -536,7 +543,7 @@ void _autoCleanRemoteCache() {
           }
         }
       } catch (e) {
-        debugPrint('清理缓存目录失败: $e');
+        debugPrint('清理缓存目录失败: {e}');
       }
     }
 

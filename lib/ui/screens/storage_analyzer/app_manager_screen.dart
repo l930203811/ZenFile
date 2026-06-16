@@ -169,7 +169,7 @@ class _AppManagerScreenState extends State<AppManagerScreen> with SingleTickerPr
                 style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               )
             : Text(
-                'L10n.of(context).msg4805c385',
+                L10n.of(context).msg4805c385,
                 style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
         actions: [
@@ -188,7 +188,7 @@ class _AppManagerScreenState extends State<AppManagerScreen> with SingleTickerPr
                   _backupTabKey = UniqueKey();
                 });
               },
-              tooltip: 'L10n.of(context).msg93bc1f09',
+              tooltip: L10n.of(context).msg93bc1f09,
             ),
         ],
         bottom: TabBar(
@@ -199,9 +199,9 @@ class _AppManagerScreenState extends State<AppManagerScreen> with SingleTickerPr
           labelColor: theme.colorScheme.primary,
           unselectedLabelColor: theme.textTheme.bodyMedium?.color?.withOpacity(0.5),
           tabs: const [
-            Tab(text: 'L10n.of(context).msg32e490fe'),
+            Tab(text: '已安装的用户应用'),
             Tab(text: '系统包'),
-            Tab(text: 'L10n.of(context).apk2'),
+            Tab(text: '已备份的APK'),
           ],
         ),
       ),
@@ -239,7 +239,7 @@ class _AppManagerScreenState extends State<AppManagerScreen> with SingleTickerPr
                               decoration: InputDecoration(
                                 hintText: _tabController.index == 2
                                     ? '搜索备份...'
-                                    : 'L10n.of(context).msg8936ded6',
+                                    : L10n.of(context).msg8936ded6,
                                 hintStyle: TextStyle(
                                   color: theme.textTheme.bodyMedium?.color?.withOpacity(0.4),
                                 ),
@@ -272,17 +272,17 @@ class _AppManagerScreenState extends State<AppManagerScreen> with SingleTickerPr
                       CheckedPopupMenuItem(
                         value: 'size',
                         checked: _sortBy == 'size',
-                        child: const Text('L10n.of(context).msgd8b3fc58'),
+                        child: Text(L10n.of(context).msgd8b3fc58),
                       ),
                       CheckedPopupMenuItem(
                         value: 'name',
                         checked: _sortBy == 'name',
-                        child: const Text('L10n.of(context).msgbe1399f0'),
+                        child: Text(L10n.of(context).msgbe1399f0),
                       ),
                       CheckedPopupMenuItem(
                         value: 'date',
                         checked: _sortBy == 'date',
-                        child: Text(_tabController.index == 2 ? 'L10n.of(context).msg9ad67f11' : '按安装日期排序'),
+                        child: Text(_tabController.index == 2 ? L10n.of(context).msg9ad67f11 : '按安装日期排序'),
                       ),
                     ],
                   ),
@@ -357,7 +357,7 @@ class _AppManagerScreenState extends State<AppManagerScreen> with SingleTickerPr
               const SizedBox(width: 8),
               const Expanded(
                 child: Text(
-                  'L10n.of(context).msgb0681bd4',
+                  '精确存储计算',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                 ),
               ),
@@ -390,7 +390,7 @@ class _AppManagerScreenState extends State<AppManagerScreen> with SingleTickerPr
                 });
               },
               child: const Text(
-                'L10n.of(context).msg34cd846c',
+                '授予使用情况访问权限',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
               ),
             ),

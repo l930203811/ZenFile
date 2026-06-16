@@ -375,7 +375,7 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         try { await File(tempPath).delete(); } catch (_) {}
       }
     } catch (e) {
-      debugPrint('远程缩略图加载失败: $e');
+      debugPrint('远程缩略图加载失败: {e}');
     }
   }
 
@@ -706,7 +706,7 @@ class _TrailingInfoWidget extends StatelessWidget {
             final count = snapshot.data;
             String label = '...';
             if (count != null && count >= 0) {
-              label = count == 1 ? 'L10n.of(context).msg32a1bd25' : '$count 项';
+              label = count == 1 ? '1 项' : '{count} 项';
             }
             return Padding(
               padding: const EdgeInsets.only(left: 8.0),

@@ -34,7 +34,7 @@ class AppBatchActionBar extends StatelessWidget {
         return AlertDialog(
           backgroundColor: theme.colorScheme.surface,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text('L10n.of(context).msgeb3d7d70', style: TextStyle(fontWeight: FontWeight.bold)),
+          title: Text(L10n.of(context).msgeb3d7d70, style: TextStyle(fontWeight: FontWeight.bold)),
           content: Text('确定要卸载选中的 ${selectedPackages.length} 个应用吗？'),
           actions: [
             TextButton(
@@ -81,7 +81,7 @@ class AppBatchActionBar extends StatelessWidget {
           children: [
             CircularProgressIndicator(),
             SizedBox(width: 20),
-            Expanded(child: Text('L10n.of(context).msg6eb319a1')),
+            Expanded(child: Text('正在备份所选应用...')),
           ],
         ),
       ),

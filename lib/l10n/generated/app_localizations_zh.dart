@@ -2245,4 +2245,490 @@ class L10nZh extends L10n {
 
   @override
   String get msg9e68ea42 => '保存失败，请重试';
+
+  @override
+  String get cat_images => '图片';
+
+  @override
+  String get cat_videos => '视频';
+
+  @override
+  String get cat_audios => '音频';
+
+  @override
+  String get cat_documents => '文档';
+
+  @override
+  String get cat_downloads => '下载';
+
+  @override
+  String get cat_screenshots => '截图';
+
+  @override
+  String get cat_recent => '最近';
+
+  @override
+  String get cat_network => '网络';
+
+  @override
+  String get cat_apps => '应用';
+
+  @override
+  String get cat_settings => '设置';
+
+  @override
+  String get cat_storage => '存储';
+
+  @override
+  String get cat_service => '服务';
+
+  @override
+  String get cat_manage => '管理';
+
+  @override
+  String get cat_config => '配置';
+
+  @override
+  String get cat_analyze => '分析';
+
+  @override
+  String get cat_quick_categories => '快捷分类';
+
+  @override
+  String get ui_nav => '导航';
+
+  @override
+  String get ui_home => '主页';
+
+  @override
+  String get ui_recycle_bin => '回收站';
+
+  @override
+  String get ui_dark_mode => '深色模式';
+
+  @override
+  String get ui_personalize_settings => '个性化和设置';
+
+  @override
+  String get ui_compress => '压缩';
+
+  @override
+  String get ui_copy => '复制';
+
+  @override
+  String get ui_cut => '剪切';
+
+  @override
+  String get ui_delete => '删除';
+
+  @override
+  String get ui_select_all => '全选';
+
+  @override
+  String get ui_cancel => '取消';
+
+  @override
+  String get ui_confirm => '确定';
+
+  @override
+  String get ui_share => '分享';
+
+  @override
+  String get ui_move_here => '移动到此处';
+
+  @override
+  String get ui_properties => '属性';
+
+  @override
+  String get ui_info => '信息';
+
+  @override
+  String get ui_open => '打开';
+
+  @override
+  String get ui_close => '关闭';
+
+  @override
+  String get ui_more => '更多';
+
+  @override
+  String get ui_appearance_theme => '外观与主题';
+
+  @override
+  String get ui_list_layout_style => '列表与布局样式';
+
+  @override
+  String get ui_media_preferences => '媒体偏好';
+
+  @override
+  String get ui_file_actions_viewers => '文件操作与查看器';
+
+  @override
+  String get ui_no_settings_found => '未找到设置';
+
+  @override
+  String get ui_show_floating_button => '显示浮动按钮';
+
+  @override
+  String get ui_use_24h_format => '使用24小时制';
+
+  @override
+  String get ui_show_folder_contents_count => '显示文件夹内容计数';
+
+  @override
+  String get ui_show_folder_size => '显示文件夹大小';
+
+  @override
+  String get ui_show_bottom_action_bar => '显示底部导航栏';
+
+  @override
+  String get ui_hide_action_text => '隐藏操作栏文字标签';
+
+  @override
+  String get ui_show_media_previews => '显示媒体预览';
+
+  @override
+  String get ui_adaptive_multiline_names => '自适应多行文件名';
+
+  @override
+  String get ui_hide_action_menu_buttons => '隐藏三点操作按钮';
+
+  @override
+  String get ui_enable_drag_drop => '启用拖放';
+
+  @override
+  String get ui_confirm_drag_drop => '确认拖放操作';
+
+  @override
+  String get ui_enable_multi_tabs => '启用多标签页';
+
+  @override
+  String get ui_enable_split_screen => '启用分屏';
+
+  @override
+  String get ui_app_icon => '应用图标';
+
+  @override
+  String get ui_emerald_green => '翠绿';
+
+  @override
+  String get ui_deep_red => '深红';
+
+  @override
+  String get ui_square => '方形';
+
+  @override
+  String get ui_circle => '圆形';
+
+  @override
+  String get ui_1_day_after => '1 天后';
+
+  @override
+  String get ui_no_auto_clean => '不自动清理';
+
+  @override
+  String get ui_daily => '每天';
+
+  @override
+  String get ui_weekly => '每周';
+
+  @override
+  String get ui_monthly => '每月';
+
+  @override
+  String ui_every_n_days(Object days) {
+    return '每$days天';
+  }
+
+  @override
+  String ui_clear_cache_failed(Object e) {
+    return '清除缓存失败: $e';
+  }
+
+  @override
+  String get ui_clear_remote_cache => '清除远程缓存';
+
+  @override
+  String get ui_view_cache_dir => '查看缓存目录';
+
+  @override
+  String get ui_remote_media_thumbnail => '远程媒体缩略图';
+
+  @override
+  String ui_auto_clean_remote_cache(Object label) {
+    return '定期自动清理远程服务器缓存文件: $label';
+  }
+
+  @override
+  String ui_custom_font_with_name(Object name) {
+    return '自定义字体（$name）';
+  }
+
+  @override
+  String get ui_import_custom_font => '导入自定义字体文件 (.ttf/.otf)';
+
+  @override
+  String ui_custom_font_applied(Object name) {
+    return '自定义字体\"$name\"已成功应用！';
+  }
+
+  @override
+  String get ui_invalid_file_type => '无效的文件类型';
+
+  @override
+  String get ui_language => '语言';
+
+  @override
+  String get ui_hide_nav_labels => '隐藏底部导航标签';
+
+  @override
+  String get ui_reset_default_viewers => '重置默认文件查看器';
+
+  @override
+  String get ui_trailing_info_when_hidden => '三点禁用尾部信息';
+
+  @override
+  String get ui_go_up => '上一级';
+
+  @override
+  String ui_cut_copy_items(String prefix, int count) {
+    return '$prefix · $count 项';
+  }
+
+  @override
+  String get ui_clear => '清除';
+
+  @override
+  String get ui_paste => '粘贴';
+
+  @override
+  String get ui_file_name => '文件名';
+
+  @override
+  String get ui_create => '创建';
+
+  @override
+  String get ui_create_new_directory => '创建新目录';
+
+  @override
+  String get ui_layout_mode => '布局模式';
+
+  @override
+  String get ui_grid_view => '网格视图';
+
+  @override
+  String get ui_name_asc => '名称 (A-Z)';
+
+  @override
+  String get ui_newest => '最新';
+
+  @override
+  String get ui_oldest => '最旧';
+
+  @override
+  String get ui_size_small => '大小（小）';
+
+  @override
+  String get ui_type => '类型';
+
+  @override
+  String get ui_storage_volume => '存储卷';
+
+  @override
+  String get ui_browse => '浏览';
+
+  @override
+  String get ui_new => '新建';
+
+  @override
+  String ui_folders_count(int count) {
+    return '文件夹：$count';
+  }
+
+  @override
+  String ui_files_count(int count) {
+    return '文件：$count';
+  }
+
+  @override
+  String get ui_selection_mode => '选择模式';
+
+  @override
+  String get ui_storage_and_sd => '存储卷和SD卡';
+
+  @override
+  String get ui_images_only => '仅图片';
+
+  @override
+  String get ui_videos_only => '仅视频';
+
+  @override
+  String get ui_show_folders => '显示文件夹';
+
+  @override
+  String get ui_files => '文件';
+
+  @override
+  String get ui_delete_file_confirm => '确定要删除此文件吗？此操作无法撤销。';
+
+  @override
+  String get ui_done => '完成';
+
+  @override
+  String get ui_name => '名称';
+
+  @override
+  String get ui_path => '路径';
+
+  @override
+  String get ui_size => '大小';
+
+  @override
+  String get ui_permissions => '权限';
+
+  @override
+  String get ui_contains => '包含';
+
+  @override
+  String get ui_extract => '解压';
+
+  @override
+  String get ui_pin_to_top => '置顶';
+
+  @override
+  String get ui_pinned_selected => '已将所选项目置顶';
+
+  @override
+  String get ui_filter_by_type => '按类型筛选文件';
+
+  @override
+  String get ui_default_scan_locations => '默认扫描位置：';
+
+  @override
+  String get ui_exclude_location => '排除位置';
+
+  @override
+  String get ui_add_custom_path => '添加自定义路径';
+
+  @override
+  String ui_added_custom_paths(int count) {
+    return '已添加 $count 个自定义路径';
+  }
+
+  @override
+  String get ui_close_tab => '关闭标签页';
+
+  @override
+  String ui_not_found_title(String title) {
+    return '未找到 $title';
+  }
+
+  @override
+  String get ui_oldest_first => '最旧优先';
+
+  @override
+  String get ui_sort_options => '排序选项';
+
+  @override
+  String get ui_refresh => '刷新';
+
+  @override
+  String ui_selected_count(int count) {
+    return '$count 已选择';
+  }
+
+  @override
+  String ui_permanently_delete_name(String name) {
+    return '永久删除\"$name\"？';
+  }
+
+  @override
+  String ui_copied_count(int count) {
+    return '已复制 $count 个项目到剪贴板';
+  }
+
+  @override
+  String ui_cut_count(int count) {
+    return '已剪切 $count 个项目到剪贴板';
+  }
+
+  @override
+  String get ui_read => '读取';
+
+  @override
+  String get ui_write => '写入';
+
+  @override
+  String get ui_file => '文件';
+
+  @override
+  String get ui_backup_settings => '备份设置';
+
+  @override
+  String get ui_restore_settings => '恢复设置';
+
+  @override
+  String get ui_backup_info => '备份信息';
+
+  @override
+  String get ui_backup_file => '备份文件';
+
+  @override
+  String get ui_no_backup_file => '暂无备份文件';
+
+  @override
+  String get ui_remote_connection => '远程连接';
+
+  @override
+  String ui_step_n_of_3(Object step) {
+    return '第 $step / 3 步';
+  }
+
+  @override
+  String get ui_choose_network_service => '选择网络服务';
+
+  @override
+  String get ui_connection_name => '连接名称';
+
+  @override
+  String get ui_protocol => '协议';
+
+  @override
+  String get ui_port => '端口';
+
+  @override
+  String get ui_path_label => '路径';
+
+  @override
+  String get ui_username_optional => '用户名（可选）';
+
+  @override
+  String get ui_back => '返回';
+
+  @override
+  String get ui_connect => '连接';
+
+  @override
+  String get ui_web_share => '网页共享';
+
+  @override
+  String get ui_network => '网络';
+
+  @override
+  String get log_i18n_full => '全面国际化中英文界面';
+
+  @override
+  String get log_fix_selection_count => '修复文件选择数量不显示的问题';
+
+  @override
+  String get log_fix_remote_title => '修复远程连接页面标题显示异常';
+
+  @override
+  String get log_svg_thumbnail_category => 'SVG 缩略图在分类页面中正常显示';
+
+  @override
+  String get log_language_btn_top => '语言切换按钮移至设置页顶部';
+
+  @override
+  String get log_fix_category_missing => '修复英文模式下部分分类不显示';
 }

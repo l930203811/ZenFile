@@ -13,12 +13,12 @@ class AboutZenFileScreen extends StatelessWidget {
     final Uri url = Uri.parse(urlString);
     try {
       if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-        throw Exception('无法打开链接 $url');
+        throw Exception(L10n.of(context).url);
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('无法打开链接：$urlString')),
+          SnackBar(content: Text('无法打开链接：{urlString}')),
         );
       }
     }
@@ -54,7 +54,7 @@ class AboutZenFileScreen extends StatelessWidget {
             flexibleSpace: FlexibleSpaceBar(
               centerTitle: true,
               title: Text(
-                'L10n.of(context).zenfile1',
+                L10n.of(context).zenfile1,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 20,
@@ -172,7 +172,7 @@ class AboutZenFileScreen extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'L10n.of(context).v103',
+                            L10n.of(context).v103,
                             style: TextStyle(
                               color: theme.colorScheme.primary,
                               fontSize: 12.5,
@@ -198,7 +198,7 @@ class AboutZenFileScreen extends StatelessWidget {
                       border: Border.all(color: borderCol),
                     ),
                     child: Text(
-                      'L10n.of(context).zenfileflutter',
+                      L10n.of(context).zenfileflutter,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: theme.colorScheme.onSurface.withOpacity(0.85),
@@ -216,7 +216,7 @@ class AboutZenFileScreen extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.only(left: 4.0),
                       child: Text(
-                        'L10n.of(context).msg30d17f96',
+                        L10n.of(context).msg30d17f96,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -239,26 +239,26 @@ class AboutZenFileScreen extends StatelessWidget {
                       _buildFeatureTile(
                         context,
                         icon: Broken.flash,
-                        title: 'L10n.of(context).msga12ebf50',
-                        subtitle: 'L10n.of(context).msgfccb5a01',
+                        title: L10n.of(context).msga12ebf50,
+                        subtitle: L10n.of(context).msgfccb5a01,
                       ),
                       _buildFeatureTile(
                         context,
                         icon: Broken.lock,
-                        title: 'L10n.of(context).msgaba638c4',
-                        subtitle: 'L10n.of(context).msg6d8fbdac',
+                        title: L10n.of(context).msgaba638c4,
+                        subtitle: L10n.of(context).msg6d8fbdac,
                       ),
                       _buildFeatureTile(
                         context,
                         icon: Broken.wifi_square,
-                        title: 'L10n.of(context).msgd309e9ea',
-                        subtitle: 'L10n.of(context).ftpsftpwebdav',
+                        title: L10n.of(context).msgd309e9ea,
+                        subtitle: L10n.of(context).ftpsftpwebdav,
                       ),
                       _buildFeatureTile(
                         context,
                         icon: Broken.magicpen,
-                        title: 'L10n.of(context).msge8f352b9',
-                        subtitle: 'L10n.of(context).amoled',
+                        title: L10n.of(context).msge8f352b9,
+                        subtitle: L10n.of(context).amoled,
                       ),
                     ],
                   ),
@@ -270,7 +270,7 @@ class AboutZenFileScreen extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.only(left: 4.0),
                       child: Text(
-                        'L10n.of(context).msg4a5f936c',
+                        L10n.of(context).msg4a5f936c,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -285,25 +285,25 @@ class AboutZenFileScreen extends StatelessWidget {
                   _buildSocialAction(
                     context,
                     icon: Broken.magic_star,
-                    label: 'L10n.of(context).msge8069659',
+                    label: L10n.of(context).msge8069659,
                     onTap: () => _launchUrl(context, 'https://github.com/l930203811/ZenFile'),
                   ),
                   const SizedBox(height: 10),
                   _buildSocialAction(
                     context,
                     icon: Icons.send_rounded,
-                    label: 'L10n.of(context).telegram',
+                    label: L10n.of(context).telegram,
                     onTap: () => _launchUrl(context, 'https://t.me/+47n76Au6mhg0MDA1'),
                   ),
                   const SizedBox(height: 10),
                   _buildSocialAction(
                     context,
                     icon: Broken.send,
-                    label: 'L10n.of(context).msg5f84adea',
+                    label: L10n.of(context).msg5f84adea,
                     onTap: () {
                       Share.share(
-                        'L10n.of(context).zenfilehttpsgithubcoml930203811zenfilereleases',
-                        subject: 'L10n.of(context).msg4d48a010',
+                        L10n.of(context).zenfilehttpsgithubcoml930203811zenfilereleases,
+                        subject: L10n.of(context).msg4d48a010,
                       );
                     },
                   ),
@@ -311,20 +311,20 @@ class AboutZenFileScreen extends StatelessWidget {
                   _buildSocialAction(
                     context,
                     icon: Icons.code_rounded,
-                    label: 'L10n.of(context).github',
+                    label: L10n.of(context).github,
                     onTap: () => _launchUrl(context, 'https://github.com/l930203811/ZenFile'),
                   ),
                   const SizedBox(height: 10),
                   _buildSocialAction(
                     context,
                     icon: Icons.email_rounded,
-                    label: 'L10n.of(context).sequeldpdnsorg',
+                    label: L10n.of(context).sequeldpdnsorg,
                     onTap: () {},
                     onLongPress: () {
                       Clipboard.setData(const ClipboardData(text: '1@sequel.dpdns.org'));
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('L10n.of(context).msged8518d7'),
+                          content: Text('邮箱已复制到剪贴板'),
                           behavior: SnackBarBehavior.floating,
                         ),
                       );
@@ -340,7 +340,7 @@ class AboutZenFileScreen extends StatelessWidget {
                       Clipboard.setData(const ClipboardData(text: '792408214'));
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('L10n.of(context).qq'),
+                          content: Text('QQ 群号已复制到剪贴板'),
                           behavior: SnackBarBehavior.floating,
                         ),
                       );
@@ -350,7 +350,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   _buildSocialAction(
                     context,
                     icon: Icons.favorite_rounded,
-                    label: 'L10n.of(context).msg1f4c0192',
+                    label: L10n.of(context).msg1f4c0192,
                     onTap: () => _showDonationDialog(context, theme),
                   ),
 
@@ -358,7 +358,7 @@ class AboutZenFileScreen extends StatelessWidget {
 
                   // ── Elegant Footer Tribute ──
                   Text(
-                    'L10n.of(context).bysequel',
+                    L10n.of(context).bysequel,
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -368,7 +368,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'L10n.of(context).zenfile2',
+                    L10n.of(context).zenfile2,
                     style: TextStyle(
                       fontSize: 11,
                       color: theme.colorScheme.onSurface.withOpacity(0.35),
@@ -507,10 +507,10 @@ class AboutZenFileScreen extends StatelessWidget {
                 Center(
                   child: Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 16), decoration: BoxDecoration(color: Colors.grey.withOpacity(0.3), borderRadius: BorderRadius.circular(2))),
                 ),
-                Text('L10n.of(context).msg2eceaa85', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                Text(L10n.of(context).msg2eceaa85, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 Text(
-                  'L10n.of(context).msg138d3725',
+                  L10n.of(context).msg138d3725,
                   style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withOpacity(0.6)),
                 ),
                 const SizedBox(height: 24),
@@ -548,7 +548,7 @@ class AboutZenFileScreen extends StatelessWidget {
                             children: [
                               Icon(Icons.payment, size: 16, color: theme.colorScheme.primary),
                               const SizedBox(width: 6),
-                              Text('L10n.of(context).msgccd097a7', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withOpacity(0.85))),
+                              Text(L10n.of(context).msgccd097a7, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withOpacity(0.85))),
                             ],
                           ),
                         ],
@@ -587,7 +587,7 @@ class AboutZenFileScreen extends StatelessWidget {
                             children: [
                               Icon(Icons.chat_bubble_outline, size: 16, color: theme.colorScheme.primary),
                               const SizedBox(width: 6),
-                              Text('L10n.of(context).msgbffe28c8', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withOpacity(0.85))),
+                              Text(L10n.of(context).msgbffe28c8, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withOpacity(0.85))),
                             ],
                           ),
                         ],
@@ -609,7 +609,7 @@ class AboutZenFileScreen extends StatelessWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'L10n.of(context).msg0537b04e',
+                          L10n.of(context).msg0537b04e,
                           style: TextStyle(fontSize: 12.5, height: 1.4, color: theme.colorScheme.onSurface.withOpacity(0.65)),
                         ),
                       ),
@@ -648,7 +648,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   Center(
                     child: Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 16), decoration: BoxDecoration(color: Colors.grey.withOpacity(0.3), borderRadius: BorderRadius.circular(2))),
                   ),
-                  Text('L10n.of(context).msg305734ce', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                  Text(L10n.of(context).msg305734ce, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 20),
 
                   // ── 下载链接（置顶）──
@@ -674,85 +674,85 @@ class AboutZenFileScreen extends StatelessWidget {
                           children: [
                             Icon(Icons.download_rounded, size: 18, color: theme.colorScheme.primary),
                             const SizedBox(width: 8),
-                            Text('L10n.of(context).zenfilev103', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withOpacity(0.9))),
+                            Text(L10n.of(context).zenfilev103, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withOpacity(0.9))),
                           ],
                         ),
                         const SizedBox(height: 12),
-                        _buildDownloadLink(ctx, theme, 'L10n.of(context).msg9d287020', 'https://1820255615.share.123pan.cn/123pan/WrRojv-JHpnA?pwd=hBR2', Icons.cloud_outlined),
+                        _buildDownloadLink(ctx, theme, L10n.of(context).msg9d287020, 'https://1820255615.share.123pan.cn/123pan/WrRojv-JHpnA?pwd=hBR2', Icons.cloud_outlined),
                         const SizedBox(height: 8),
-                        _buildDownloadLink(ctx, theme, 'L10n.of(context).msgb2b41b6a', 'https://115cdn.com/s/swsho4j3hc6?password=m490', Icons.cloud_queue),
+                        _buildDownloadLink(ctx, theme, L10n.of(context).msgb2b41b6a, 'https://115cdn.com/s/swsho4j3hc6?password=m490', Icons.cloud_queue),
                         const SizedBox(height: 8),
-                        _buildDownloadLink(ctx, theme, 'L10n.of(context).msg77ee718b', 'https://pan.baidu.com/s/1kYSfzTriRXwQPRL_c5Awig?pwd=xg94', Icons.cloud_circle),
+                        _buildDownloadLink(ctx, theme, L10n.of(context).msg77ee718b, 'https://pan.baidu.com/s/1kYSfzTriRXwQPRL_c5Awig?pwd=xg94', Icons.cloud_circle),
                         const SizedBox(height: 8),
-                        _buildDownloadLink(ctx, theme, 'L10n.of(context).msgbff1432a', 'https://pan.quark.cn/s/e6081a88d463', Icons.cloud),
+                        _buildDownloadLink(ctx, theme, L10n.of(context).msgbff1432a, 'https://pan.quark.cn/s/e6081a88d463', Icons.cloud),
                         const SizedBox(height: 8),
-                        _buildDownloadLink(ctx, theme, 'L10n.of(context).msge03395d0', 'https://share.feijipan.com/s/5JcEKP4C', Icons.flight),
+                        _buildDownloadLink(ctx, theme, L10n.of(context).msge03395d0, 'https://share.feijipan.com/s/5JcEKP4C', Icons.flight),
                       ],
                     ),
                   ),
 
-                  _buildVersionSection(ctx, theme, 'v1.0.4', '2026-06-15', [
-                    'L10n.of(context).msg305734ce',
-                    'L10n.of(context).msg2eceaa85',
-                    'L10n.of(context).msg4a5f936c',
-                  ]),
-                  const SizedBox(height: 16),
-                  _buildVersionSection(ctx, theme, 'v1.0.3', '2026-06-15', [
-                    'L10n.of(context).svg',
-                    'L10n.of(context).ziprar7ztargz',
-                    'L10n.of(context).msg09a6e11b',
-                    'L10n.of(context).msg1c80891a',
-                    'L10n.of(context).msg1c3206b8',
-                    'L10n.of(context).msg212f8f9e',
-                    'L10n.of(context).msgb1e4da91',
-                    'L10n.of(context).yyyymmdd',
-                    'L10n.of(context).msg4c425252',
-                    'L10n.of(context).msgd0cf310e',
+                  _buildVersionSection(ctx, theme, 'v1.0.3', '2026-06-16', [
+                    L10n.of(context).log_i18n_full,
+                    L10n.of(context).log_fix_selection_count,
+                    L10n.of(context).log_fix_remote_title,
+                    L10n.of(context).log_svg_thumbnail_category,
+                    L10n.of(context).log_language_btn_top,
+                    L10n.of(context).log_fix_category_missing,
+                    L10n.of(context).svg,
+                    L10n.of(context).ziprar7ztargz,
+                    L10n.of(context).msg09a6e11b,
+                    L10n.of(context).msg1c80891a,
+                    L10n.of(context).msg1c3206b8,
+                    L10n.of(context).msg212f8f9e,
+                    L10n.of(context).msgb1e4da91,
+                    L10n.of(context).yyyymmdd,
+                    L10n.of(context).msg4c425252,
+                    L10n.of(context).msgd0cf310e,
                   ]),
                   const SizedBox(height: 16),
                   _buildVersionSection(ctx, theme, 'v1.0.2', '2026-06-11', [
-                    'L10n.of(context).msg1eaf4abb',
-                    'L10n.of(context).msgd3381817',
-                    'L10n.of(context).msg342688b2',
-                    'L10n.of(context).msg8954452f',
-                    'L10n.of(context).msgac5a0315',
-                    'L10n.of(context).msg072f2022',
-                    'L10n.of(context).msg1904388e',
-                    'L10n.of(context).msg2762c070',
-                    'L10n.of(context).msg48dca69a',
-                    'L10n.of(context).msg66517dc4',
-                    'L10n.of(context).windows',
-                    'L10n.of(context).msg65eefc98',
-                    'L10n.of(context).msg96a6856a',
-                    'L10n.of(context).msgacad92c8',
+                    L10n.of(context).msg1eaf4abb,
+                    L10n.of(context).msgd3381817,
+                    L10n.of(context).msg342688b2,
+                    L10n.of(context).msg8954452f,
+                    L10n.of(context).msgac5a0315,
+                    L10n.of(context).msg072f2022,
+                    L10n.of(context).msg1904388e,
+                    L10n.of(context).msg2762c070,
+                    L10n.of(context).msg48dca69a,
+                    L10n.of(context).msg66517dc4,
+                    L10n.of(context).windows,
+                    L10n.of(context).msg65eefc98,
+                    L10n.of(context).msg96a6856a,
+                    '移除"阻止左侧返回手势打开抽屉"功能',
                   ]),
                   const SizedBox(height: 16),
                   _buildVersionSection(ctx, theme, 'v1.0.1', '2026-06-10', [
-                    'L10n.of(context).msg250213fd',
-                    'L10n.of(context).msg7f53e8b1',
-                    'L10n.of(context).msg051469b5',
-                    'L10n.of(context).msge4c4d5e2',
-                    'L10n.of(context).msga33dbb51',
-                    'L10n.of(context).msg09d0e1b6',
-                    'L10n.of(context).msge6c84f11',
-                    'L10n.of(context).msg46b8ca8f',
-                    'L10n.of(context).msgb3dea5f5',
-                    'L10n.of(context).msg2d1872c8',
-                    'L10n.of(context).msga4c92214',
-                    'L10n.of(context).msg32854144',
-                    'L10n.of(context).msg3a93e257',
+                    L10n.of(context).msg250213fd,
+                    L10n.of(context).msg7f53e8b1,
+                    L10n.of(context).msg051469b5,
+                    L10n.of(context).msge4c4d5e2,
+                    L10n.of(context).msga33dbb51,
+                    L10n.of(context).msg09d0e1b6,
+                    L10n.of(context).msge6c84f11,
+                    L10n.of(context).msg46b8ca8f,
+                    L10n.of(context).msgb3dea5f5,
+                    L10n.of(context).msg2d1872c8,
+                    L10n.of(context).msga4c92214,
+                    L10n.of(context).msg32854144,
+                    L10n.of(context).msg3a93e257,
                   ]),
                   const SizedBox(height: 16),
                   _buildVersionSection(ctx, theme, 'v1.0.0', '2026-06-01', [
-                    'L10n.of(context).zenfile3',
-                    'L10n.of(context).msg2e35eef7',
-                    'L10n.of(context).msg47b760ed',
-                    'L10n.of(context).ftpsftpwebdavsmb',
-                    'L10n.of(context).msge96aa2cd',
-                    'L10n.of(context).msg4b736dfb',
-                    'L10n.of(context).ftpwebdav',
-                    'L10n.of(context).msg49a6c41e',
-                    'L10n.of(context).msg03257c2d',
+                    L10n.of(context).zenfile3,
+                    L10n.of(context).msg2e35eef7,
+                    L10n.of(context).msg47b760ed,
+                    L10n.of(context).ftpsftpwebdavsmb,
+                    L10n.of(context).msge96aa2cd,
+                    L10n.of(context).msg4b736dfb,
+                    L10n.of(context).ftpwebdav,
+                    L10n.of(context).msg49a6c41e,
+                    L10n.of(context).msg03257c2d,
                   ]),
                   const SizedBox(height: 24),
 
@@ -768,12 +768,12 @@ class AboutZenFileScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('L10n.of(context).msg4d82be7c', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
+                        Text(L10n.of(context).msg4d82be7c, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
                         const SizedBox(height: 10),
                         ...[
-                          'L10n.of(context).msg5cce42e6',
-                          'L10n.of(context).msg11cb01fc',
-                          'L10n.of(context).msg074f1ce7',
+                          L10n.of(context).msg5cce42e6,
+                          L10n.of(context).msg11cb01fc,
+                          L10n.of(context).msg074f1ce7,
                         ].map((item) => Padding(
                           padding: const EdgeInsets.only(bottom: 6),
                           child: Row(
@@ -789,11 +789,11 @@ class AboutZenFileScreen extends StatelessWidget {
                           ),
                         )),
                         const SizedBox(height: 16),
-                        Text('L10n.of(context).msg2c8957dd', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
+                        Text(L10n.of(context).msg2c8957dd, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
                         const SizedBox(height: 10),
                         ...[
-                          'L10n.of(context).msg5c66ffab',
-                          'L10n.of(context).msg60a4d643',
+                          L10n.of(context).msg5c66ffab,
+                          L10n.of(context).msg60a4d643,
                         ].map((item) => Padding(
                           padding: const EdgeInsets.only(bottom: 6),
                           child: Row(
@@ -821,7 +821,7 @@ class AboutZenFileScreen extends StatelessWidget {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  'L10n.of(context).bug1sequeldpdnsorgqq792408214',
+                                  L10n.of(context).bug1sequeldpdnsorgqq792408214,
                                   style: TextStyle(fontSize: 12.5, height: 1.4, color: theme.colorScheme.onSurface.withOpacity(0.65)),
                                 ),
                               ),
@@ -899,7 +899,7 @@ class AboutZenFileScreen extends StatelessWidget {
               icon: const Icon(Icons.close, color: Colors.white),
               onPressed: () => Navigator.of(ctx).pop(),
             ),
-            title: const Text('L10n.of(context).msgd054a84c', style: TextStyle(color: Colors.white, fontSize: 14)),
+            title: Text(L10n.of(context).msgd054a84c, style: TextStyle(color: Colors.white, fontSize: 14)),
             centerTitle: true,
           ),
           body: Center(
@@ -919,7 +919,7 @@ class AboutZenFileScreen extends StatelessWidget {
                         children: [
                           Icon(Icons.broken_image, color: Colors.white54, size: 64),
                           SizedBox(height: 16),
-                          Text('L10n.of(context).msgb3b83e12', style: TextStyle(color: Colors.white54)),
+                          Text('图片加载失败', style: TextStyle(color: Colors.white54)),
                         ],
                       ),
                     );
@@ -942,7 +942,7 @@ class AboutZenFileScreen extends StatelessWidget {
       if (!ps.isAuth) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('L10n.of(context).msgc2790d54')),
+            SnackBar(content: Text(L10n.of(context).msgc2790d54)),
           );
         }
         return;
@@ -958,14 +958,14 @@ class AboutZenFileScreen extends StatelessWidget {
       if (result != null && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('L10n.of(context).msg1292d351'),
+            content: Text('图片已保存到相册'),
             behavior: SnackBarBehavior.floating,
           ),
         );
       } else if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('L10n.of(context).msg9e68ea42'),
+            content: Text('保存失败，请重试'),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -975,7 +975,7 @@ class AboutZenFileScreen extends StatelessWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('保存失败: $e'),
+            content: Text('保存失败: {e}'),
             behavior: SnackBarBehavior.floating,
           ),
         );

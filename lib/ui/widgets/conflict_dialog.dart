@@ -102,7 +102,7 @@ class _ConflictDialogState extends State<ConflictDialog> {
           const SizedBox(width: 12),
           const Expanded(
             child: Text(
-              'L10n.of(context).msgde88d67a',
+              '文件已存在',
               style: TextStyle(fontWeight: FontWeight.bold),
               overflow: TextOverflow.ellipsis,
             ),
@@ -144,7 +144,7 @@ class _ConflictDialogState extends State<ConflictDialog> {
                   Expanded(
                     child: _buildFileComparisonCard(
                       theme: theme,
-                      title: 'L10n.of(context).msge48a7157',
+                      title: L10n.of(context).msge48a7157,
                       size: _sourceStat.size,
                       modified: _sourceStat.modified,
                       isNewer: _sourceStat.modified.isAfter(_destStat.modified),
@@ -181,7 +181,7 @@ class _ConflictDialogState extends State<ConflictDialog> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'L10n.of(context).msge59e35b5',
+                        L10n.of(context).msge59e35b5,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                           color: theme.colorScheme.onSurface.withOpacity(0.8),
@@ -228,7 +228,7 @@ class _ConflictDialogState extends State<ConflictDialog> {
                   style: OutlinedButton.styleFrom(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text('L10n.of(context).msgc8ce4b36'),
+                  child: Text(L10n.of(context).msgc8ce4b36),
                 ),
                 OutlinedButton(
                   onPressed: () => Navigator.pop(
@@ -248,7 +248,7 @@ class _ConflictDialogState extends State<ConflictDialog> {
                   style: OutlinedButton.styleFrom(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text('L10n.of(context).msg27dfaae5'),
+                  child: Text(L10n.of(context).msg27dfaae5),
                 ),
                 FilledButton(
                   onPressed: () => Navigator.pop(
@@ -342,7 +342,7 @@ class _ConflictDialogState extends State<ConflictDialog> {
     return showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('L10n.of(context).msg6cfbf05d'),
+        title: Text(L10n.of(context).msg6cfbf05d),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         content: TextField(
           controller: controller,
@@ -359,7 +359,7 @@ class _ConflictDialogState extends State<ConflictDialog> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: const Text('L10n.of(context).msgc8ce4b36'),
+            child: Text(L10n.of(context).msgc8ce4b36),
           ),
         ],
       ),

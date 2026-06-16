@@ -96,7 +96,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
       if (mounted) Navigator.pop(context); // Dismiss loading
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('恢复项目出错：$e'),
+          content: Text('恢复项目出错：{e}'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -155,7 +155,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
       if (mounted) Navigator.pop(context); // Dismiss loading
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('删除项目出错：$e'),
+          content: Text('删除项目出错：{e}'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -173,7 +173,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('清空回收站？'),
-        content: const Text('L10n.of(context).msg62187f1b'),
+        content: Text(L10n.of(context).msg62187f1b),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -182,7 +182,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('L10n.of(context).msg8cd6bc18'),
+            child: Text(L10n.of(context).msg8cd6bc18),
           ),
         ],
       ),
@@ -203,7 +203,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
       
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('L10n.of(context).msga4dfc0c6'),
+          content: Text('回收站已成功清空'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -236,7 +236,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
                     controller: _searchController,
                     autofocus: true,
                     decoration: const InputDecoration(
-                      hintText: 'L10n.of(context).msg07d80ac5',
+                      hintText: '搜索已删除文件...',
                       border: InputBorder.none,
                     ),
                     style: theme.textTheme.titleMedium,
@@ -283,7 +283,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
             IconButton(
               icon: const Icon(Broken.trash, color: Colors.redAccent),
               onPressed: _allItems.isEmpty ? null : _emptyRecycleBin,
-              tooltip: 'L10n.of(context).msg8cd6bc18',
+              tooltip: L10n.of(context).msg8cd6bc18,
             ),
           ],
         ],
@@ -426,7 +426,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
                                               Icon(Broken.trash,
                                                   size: 20, color: Colors.redAccent),
                                               SizedBox(width: 12),
-                                              Text('L10n.of(context).msg96d2b75f',
+                                              Text('永久删除',
                                                   style: TextStyle(
                                                       color: Colors.redAccent,
                                                       fontWeight: FontWeight.w500)),
@@ -516,7 +516,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              'L10n.of(context).msg0d824a24',
+              L10n.of(context).msg0d824a24,
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -555,10 +555,10 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 16),
-              _buildDetailRow('L10n.of(context).msg4c478216', item.originalPath),
+              _buildDetailRow(L10n.of(context).msg4c478216, item.originalPath),
               _buildDetailRow('回收日期', FileUtils.formatDate(item.deletedAt)),
-              _buildDetailRow('L10n.of(context).msg396b7d3f', FileUtils.formatBytes(item.size, 2)),
-              _buildDetailRow('类型', item.isDirectory ? 'L10n.of(context).msg1f4c1042' : '文件'),
+              _buildDetailRow(L10n.of(context).msg396b7d3f, FileUtils.formatBytes(item.size, 2)),
+              _buildDetailRow('类型', item.isDirectory ? L10n.of(context).msg1f4c1042 : '文件'),
               const SizedBox(height: 24),
               Row(
                 children: [
@@ -591,7 +591,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
                         _selectedIds.add(item.id);
                         await _deleteSelectedPermanently();
                       },
-                      child: const Text('L10n.of(context).msg96d2b75f'),
+                      child: Text(L10n.of(context).msg96d2b75f),
                     ),
                   ),
                 ],

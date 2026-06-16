@@ -1,4 +1,4 @@
-﻿import 'package:zenfile/l10n/generated/app_localizations.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 import 'dart:convert';
 import 'dart:io';
@@ -34,7 +34,7 @@ class SettingsBackupService {
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('L10n.of(context).zenfilebackupssettings')),
+          SnackBar(content: Text('设置已备份到 ZenFile/Backups/Settings/')),
         );
       }
       return true;
@@ -54,7 +54,7 @@ class SettingsBackupService {
       if (!filePath.toLowerCase().endsWith('.json')) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('L10n.of(context).json')),
+            const SnackBar(content: Text('请选择有效的 .json 设置备份文件')),
           );
         }
         return false;
@@ -64,7 +64,7 @@ class SettingsBackupService {
       if (!await file.exists()) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('L10n.of(context).json')),
+            const SnackBar(content: Text('请选择有效的 .json 设置备份文件')),
           );
         }
         return false;
@@ -105,7 +105,7 @@ class SettingsBackupService {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('设置恢复失败: $e')),
+          SnackBar(content: Text('设置恢复失败: {e}')),
         );
       }
       return false;

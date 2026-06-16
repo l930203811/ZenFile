@@ -24,7 +24,7 @@ class _VaultLockScreenState extends State<VaultLockScreen> with SingleTickerProv
   
   // Input State
   String _inputBuffer = '';
-  String _message = 'L10n.of(context).msg3bf31dfe';
+  String _message = '输入密码解锁';
   bool _isError = false;
 
   late final AnimationController _shakeController;
@@ -51,7 +51,7 @@ class _VaultLockScreenState extends State<VaultLockScreen> with SingleTickerProv
       setState(() {
         _isPasswordSet = isSet;
         _checkingPasswordStatus = false;
-        _message = isSet ? 'L10n.of(context).pin' : 'L10n.of(context).pin1';
+        _message = isSet ? L10n.of(context).pin : L10n.of(context).pin1;
       });
     }
   }
@@ -71,7 +71,7 @@ class _VaultLockScreenState extends State<VaultLockScreen> with SingleTickerProv
           _tempPassword = _inputBuffer;
           _inputBuffer = '';
           _isConfirmMode = true;
-          _message = 'L10n.of(context).pin2';
+          _message = L10n.of(context).pin2;
         });
       });
     } else if (_inputBuffer.length == 4 && !_isPasswordSet && _isConfirmMode) {
@@ -219,7 +219,7 @@ class _VaultLockScreenState extends State<VaultLockScreen> with SingleTickerProv
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'L10n.of(context).msgbb590f19',
+                    L10n.of(context).msgbb590f19,
                     style: theme.textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.5,
@@ -328,7 +328,7 @@ class _VaultLockScreenState extends State<VaultLockScreen> with SingleTickerProv
               _buildActionKeyButton(
                 icon: Icons.clear_rounded,
                 onPressed: _onClear,
-                tooltip: 'L10n.of(context).msgaa43fa46',
+                tooltip: L10n.of(context).msgaa43fa46,
               ),
               _buildKeyButton('0'),
               _buildActionKeyButton(

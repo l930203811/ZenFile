@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -127,7 +127,7 @@ class _ZenFileAddressBarState extends State<ZenFileAddressBar> {
       }
     } else {
       // Fallback: Absolute path segments
-      list.add(BreadcrumbSegment(name: 'L10n.of(context).msgc2b9f4b9', path: '/'));
+      list.add(BreadcrumbSegment(name: L10n.of(context).msgc2b9f4b9, path: '/'));
       final parts = path.split('/').where((e) => e.isNotEmpty).toList();
       String current = '';
       for (final part in parts) {
@@ -272,7 +272,7 @@ class _ZenFileAddressBarState extends State<ZenFileAddressBar> {
                           ? Padding(
                               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
                               child: Text(
-                                'L10n.of(context).msg7d6c1284',
+                                L10n.of(context).msg7d6c1284,
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   color: theme.colorScheme.onSurface.withOpacity(0.6),
                                   fontStyle: FontStyle.italic,
@@ -378,7 +378,7 @@ class _ZenFileAddressBarState extends State<ZenFileAddressBar> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('路径不存在: $path'),
+                content: Text('路径不存在: {path}'),
                 behavior: SnackBarBehavior.floating,
                 backgroundColor: Theme.of(context).colorScheme.error,
               ),
@@ -457,7 +457,7 @@ class _ZenFileAddressBarState extends State<ZenFileAddressBar> {
                         border: InputBorder.none,
                         isDense: true,
                         contentPadding: EdgeInsets.symmetric(vertical: 12),
-                        hintText: 'L10n.of(context).msg6cbbf7d9',
+                        hintText: '输入绝对路径...',
                       ),
                       textInputAction: TextInputAction.go,
                       keyboardType: TextInputType.text,

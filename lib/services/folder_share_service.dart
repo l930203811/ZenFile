@@ -1,4 +1,4 @@
-﻿import 'package:zenfile/l10n/generated/app_localizations.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -83,7 +83,7 @@ class FolderShareService {
       } else {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('L10n.of(context).msg88d150c7')),
+            const SnackBar(content: Text('未找到可分享的项目。')),
           );
         }
       }

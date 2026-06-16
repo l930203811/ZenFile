@@ -217,7 +217,7 @@ class AudioControlsWidget extends StatelessWidget {
                       iconSize: 22,
                       constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
                       padding: EdgeInsets.zero,
-                      tooltip: 'L10n.of(context).msg47cab5ae',
+                      tooltip: L10n.of(context).msg47cab5ae,
                       color: theme.colorScheme.onSurface.withOpacity(0.8),
                       onPressed: onShowSleepTimer,
                     ),

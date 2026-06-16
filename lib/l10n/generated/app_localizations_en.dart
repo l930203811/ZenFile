@@ -9,2236 +9,2818 @@ class L10nEn extends L10n {
   L10nEn([String locale = 'en']) : super(locale);
 
   @override
-  String get msg6f3e533a => 'msg6f3e533a';
+  String get msg6f3e533a => 'Opening shared document...';
 
   @override
-  String get msgbca59325 => 'msgbca59325';
+  String get msgbca59325 => 'Parsing secure content stream';
 
   @override
-  String get zenfile => 'zenfile';
+  String get zenfile =>
+      'ZenFile needs storage permission to seamlessly manage, organize, and display your media files.';
 
   @override
   String e(Object e) {
-    return 'e';
+    return 'Failed to clear cache directory: $e';
   }
 
   @override
-  String get msg21cefa9b => 'msg21cefa9b';
+  String get msg21cefa9b => 'Internal Storage';
 
   @override
-  String get smb => 'smb';
+  String get smb => 'LAN/SMB';
 
   @override
-  String get msg05d3c93c => 'msg05d3c93c';
+  String get msg05d3c93c => 'Items moved successfully';
 
   @override
   String e1(Object e) {
-    return 'e1';
+    return 'Transfer failed: $e';
   }
 
   @override
-  String get msga45bac47 => 'msga45bac47';
+  String get msga45bac47 => 'Operation cancelled';
 
   @override
   String e2(Object e) {
-    return 'e2';
+    return 'Failed to connect to remote server: $e';
   }
 
   @override
   String e3(Object e) {
-    return 'e3';
+    return 'Error creating folder: $e';
   }
 
   @override
-  String get msg3df5ef6c => 'msg3df5ef6c';
+  String get msg3df5ef6c => 'Compression limit exceeded';
 
   @override
-  String get msg5e32276d => 'msg5e32276d';
+  String get msg5e32276d => 'Unknown Artist';
 
   @override
-  String get msg497ec49d => 'msg497ec49d';
+  String get msg497ec49d => 'Local Folders';
 
   @override
   String e4(Object e) {
-    return 'e4';
+    return 'Failed to download remote file: $e';
   }
 
   @override
-  String get msg6b9ca1dd => 'msg6b9ca1dd';
+  String get msg6b9ca1dd => 'Cannot move folder to itself or same location';
 
   @override
   String e5(Object e) {
-    return 'e5';
+    return 'Failed to move items: $e';
   }
 
   @override
-  String get msg5238524c => 'msg5238524c';
+  String get msg5238524c => 'Cannot copy folder to itself or same location';
 
   @override
   String e6(Object e) {
-    return 'e6';
+    return 'Failed to copy items: $e';
   }
 
   @override
-  String get msgc806d0fa => 'msgc806d0fa';
+  String get msgc806d0fa => 'Archive';
 
   @override
-  String get msg03070d08 => 'msg03070d08';
+  String get msg03070d08 => 'APK';
 
   @override
-  String get ftp => 'ftp';
+  String get ftp => 'FTP Share';
 
   @override
-  String get web => 'web';
+  String get web => 'Web Share';
 
   @override
-  String get msge86bd662 => 'msge86bd662';
+  String get msge86bd662 => 'Device Gallery (Auto)';
 
   @override
-  String get msg16166a01 => 'msg16166a01';
+  String get msg16166a01 => 'Device Audio Library (Auto)';
 
   @override
-  String get msgbb34b7ec => 'msgbb34b7ec';
+  String get msgbb34b7ec => 'Internal Storage (Scan All Folders)';
 
   @override
-  String get msg26a1f2d9 => 'msg26a1f2d9';
+  String get msg26a1f2d9 => 'Device Gallery (Screenshots)';
 
   @override
-  String get msg39e11368 => 'msg39e11368';
+  String get msg39e11368 => 'Extracting APK package...';
 
   @override
-  String get apk => 'apk';
+  String get apk => 'No installable APK found in package';
 
   @override
-  String get apk1 => 'apk1';
+  String get apk1 => 'Cannot launch split APK installer';
 
   @override
-  String get msg2f0138ad => 'msg2f0138ad';
+  String get msg2f0138ad => 'Compressing files';
 
   @override
-  String get msga2292820 => 'msga2292820';
+  String get msga2292820 => 'Archive created successfully';
 
   @override
-  String get msg0683ca6b => 'msg0683ca6b';
+  String get msg0683ca6b => 'Extracting archive';
 
   @override
-  String get msg1f216eda => 'msg1f216eda';
+  String get msg1f216eda => 'Archive extracted successfully';
 
   @override
-  String get msg5fa802be => 'msg5fa802be';
+  String get msg5fa802be => 'Operation failed';
 
   @override
-  String get msg8fccf382 => 'msg8fccf382';
+  String get msg8fccf382 => 'Yes/No';
 
   @override
-  String get msgc18fb099 => 'msgc18fb099';
+  String get msgc18fb099 => 'Extraction successful. Open location?';
 
   @override
-  String get msg4367e85a => 'msg4367e85a';
+  String get msg4367e85a => 'No compressible files found';
 
   @override
-  String get msg60a4545d => 'msg60a4545d';
+  String get msg60a4545d => 'Unsupported format';
 
   @override
-  String get msg226519e7 => 'msg226519e7';
+  String get msg226519e7 => 'No archive files found';
 
   @override
-  String get msg88d150c7 => 'msg88d150c7';
+  String get msg88d150c7 => 'No items to share.';
 
   @override
   String e7(Object e) {
-    return 'e7';
+    return 'Error reading shared file: $e';
   }
 
   @override
   String get zenfilesmbvirtualstoragebridgen =>
-      'zenfilesmbvirtualstoragebridgen';
+      'ZenFile LAN/SMB Virtual Storage Bridge\n';
 
   @override
-  String get msgf3a485df => 'msgf3a485df';
+  String get msgf3a485df => 'New Folder';
 
   @override
-  String get msge48a7157 => 'msge48a7157';
+  String get msge48a7157 => 'New File';
 
   @override
-  String get zenfilebackupssettings => 'zenfilebackupssettings';
+  String get zenfilebackupssettings =>
+      'Settings backed up to ZenFile/Backups/Settings/';
 
   @override
-  String get json => 'json';
+  String get json => 'Please select a valid .json settings backup file';
 
   @override
   String e8(Object e) {
-    return 'e8';
+    return 'Settings restore failed: $e';
   }
 
   @override
   String url(Object url) {
-    return 'url';
+    return 'Cannot open link $url';
   }
 
   @override
-  String get zenfile1 => 'zenfile1';
+  String get zenfile1 => 'About ZenFile';
 
   @override
-  String get v103 => 'v103';
+  String get v103 => 'v1.0.3 (View)';
 
   @override
-  String get zenfileflutter => 'zenfileflutter';
+  String get zenfileflutter =>
+      'ZenFile is a beautiful, smooth, open-source file manager and offline media center built with Flutter. Designed for ultimate performance, clean glassmorphism aesthetics, and seamless user experience.';
 
   @override
-  String get msga12ebf50 => 'msga12ebf50';
+  String get msga12ebf50 => 'Blazing Fast';
 
   @override
-  String get msgfccb5a01 => 'msgfccb5a01';
+  String get msgfccb5a01 => 'Stateless caching & async scanning';
 
   @override
-  String get msg6d8fbdac => 'msg6d8fbdac';
+  String get msg6d8fbdac => 'Encrypted Secure Workspace';
 
   @override
-  String get ftpsftpwebdav => 'ftpsftpwebdav';
+  String get ftpsftpwebdav => 'Supports FTP, LAN, SFTP and WebDAV';
 
   @override
-  String get msge8f352b9 => 'msge8f352b9';
+  String get msge8f352b9 => 'Beautiful Interface';
 
   @override
-  String get amoled => 'amoled';
+  String get amoled => 'AMOLED Pure Black & Vibrant Themes';
 
   @override
-  String get msge8069659 => 'msge8069659';
+  String get msge8069659 => 'Star on Repository';
 
   @override
-  String get telegram => 'telegram';
+  String get telegram => 'Join Telegram Channel';
 
   @override
-  String get msg5f84adea => 'msg5f84adea';
+  String get msg5f84adea => 'Share App with Friends';
 
   @override
   String get zenfilehttpsgithubcoml930203811zenfilereleases =>
-      'zenfilehttpsgithubcoml930203811zenfilereleases';
+      'Recommend ZenFile, a beautiful offline file manager and media center: https://github.com/l930203811/ZenFile/releases';
 
   @override
-  String get github => 'github';
+  String get github => 'View GitHub Source';
 
   @override
-  String get sequeldpdnsorg => 'sequeldpdnsorg';
+  String get sequeldpdnsorg => 'Contact: 1@sequel.dpdns.org';
 
   @override
-  String get msged8518d7 => 'msged8518d7';
+  String get msged8518d7 => 'Email copied to clipboard';
 
   @override
-  String get qq => 'qq';
+  String get qq => 'QQ group number copied to clipboard';
 
   @override
-  String get bysequel => 'bysequel';
+  String get bysequel => 'Crafted with ❤️ by Sequel';
 
   @override
-  String get zenfile2 => 'zenfile2';
+  String get zenfile2 => 'Copyright © 2026 ZenFile. All rights reserved.';
 
   @override
-  String get msg138d3725 => 'msg138d3725';
+  String get msg138d3725 => 'Your support keeps me going ❤️';
 
   @override
-  String get msgccd097a7 => 'msgccd097a7';
+  String get msgccd097a7 => 'Alipay';
 
   @override
-  String get msgbffe28c8 => 'msgbffe28c8';
+  String get msgbffe28c8 => 'WeChat Pay';
 
   @override
-  String get msg0537b04e => 'msg0537b04e';
+  String get msg0537b04e =>
+      'Long press image to save to gallery. Thank you for your support!';
 
   @override
-  String get zenfilev103 => 'zenfilev103';
+  String get zenfilev103 => 'Download ZenFile v1.0.3';
 
   @override
-  String get msg9d287020 => 'msg9d287020';
+  String get msg9d287020 => '123 Cloud Drive';
 
   @override
-  String get msgb2b41b6a => 'msgb2b41b6a';
+  String get msgb2b41b6a => '115 Cloud Drive';
 
   @override
-  String get msg77ee718b => 'msg77ee718b';
+  String get msg77ee718b => 'Baidu Netdisk';
 
   @override
-  String get msgbff1432a => 'msgbff1432a';
+  String get msgbff1432a => 'Quark Cloud Drive';
 
   @override
-  String get msge03395d0 => 'msge03395d0';
+  String get msge03395d0 => 'Small Plane Cloud Drive';
 
   @override
-  String get svg => 'svg';
+  String get svg => 'Added full SVG support (thumbnail preview & viewing)';
 
   @override
-  String get ziprar7ztargz => 'ziprar7ztargz';
+  String get ziprar7ztargz =>
+      'Added archive format color coding (zip/rar/7z/tar/gz each have unique colors)';
 
   @override
-  String get msg09a6e11b => 'msg09a6e11b';
+  String get msg09a6e11b => 'Added remote file download-before-play feature';
 
   @override
-  String get msg1c3206b8 => 'msg1c3206b8';
+  String get msg1c3206b8 =>
+      'Fixed issue where extraction couldn\'t jump to browse page from category page';
 
   @override
-  String get msgb1e4da91 => 'msgb1e4da91';
+  String get msgb1e4da91 =>
+      'Fixed page freeze issues with \'View Cache Directory\' and \'Open Location After Extraction\'';
 
   @override
-  String get yyyymmdd => 'yyyymmdd';
+  String get yyyymmdd => 'Optimized file date format to yyyy-MM-dd';
 
   @override
-  String get msg4c425252 => 'msg4c425252';
+  String get msg4c425252 => 'Optimized default 24-hour time display';
 
   @override
-  String get msg1eaf4abb => 'msg1eaf4abb';
+  String get msg1eaf4abb =>
+      'Fully optimized path bar (more compact breadcrumb buttons and arrow styles)';
 
   @override
-  String get msgd3381817 => 'msgd3381817';
+  String get msgd3381817 =>
+      'Tab bar and path bar moved up to give more space for file list';
 
   @override
-  String get msg342688b2 => 'msg342688b2';
+  String get msg342688b2 =>
+      'Dual-window header area streamlined (height reduced by 30%)';
 
   @override
-  String get msg8954452f => 'msg8954452f';
+  String get msg8954452f =>
+      'Remote server replaces inactive tab in dual-window mode';
 
   @override
-  String get msgac5a0315 => 'msgac5a0315';
+  String get msgac5a0315 =>
+      'Back gesture optimized: returns clear selection instead of exiting page when items selected';
 
   @override
-  String get msg1904388e => 'msg1904388e';
+  String get msg1904388e =>
+      'Two-finger right swipe opens drawer, two-finger left swipe switches category/browse page';
 
   @override
-  String get msg2762c070 => 'msg2762c070';
+  String get msg2762c070 =>
+      'Added two-finger swipe toggle (can be disabled in General & Behavior settings)';
 
   @override
-  String get msg48dca69a => 'msg48dca69a';
+  String get msg48dca69a =>
+      'Progress bar changed to circular ring style with percentage in center';
 
   @override
-  String get windows => 'windows';
+  String get windows =>
+      'Remote path compatibility fix (Windows platform path separator issue)';
 
   @override
-  String get msg65eefc98 => 'msg65eefc98';
+  String get msg65eefc98 =>
+      'Address bar toggle now controls styled path breadcrumbs';
 
   @override
-  String get msg96a6856a => 'msg96a6856a';
+  String get msg96a6856a =>
+      'Default home page setting (choose category or browse page as startup)';
 
   @override
-  String get msg250213fd => 'msg250213fd';
+  String get msg250213fd => 'New app installer icon (natural Zen style)';
 
   @override
-  String get msg7f53e8b1 => 'msg7f53e8b1';
+  String get msg7f53e8b1 =>
+      'Circular percentage progress bar (shown during copy/move)';
 
   @override
-  String get msg051469b5 => 'msg051469b5';
+  String get msg051469b5 =>
+      'Progress bar auto-closes after successful operation, no manual confirmation needed';
 
   @override
-  String get msge4c4d5e2 => 'msge4c4d5e2';
+  String get msge4c4d5e2 =>
+      'File operation menu changed to bottom popup (no longer covers tab bar)';
 
   @override
-  String get msga33dbb51 => 'msga33dbb51';
+  String get msga33dbb51 =>
+      'Selection mode action bar moved to bottom (with selected count indicator)';
 
   @override
-  String get msge6c84f11 => 'msge6c84f11';
+  String get msge6c84f11 =>
+      'Fixed: click to enter app details after switching icon';
 
   @override
-  String get msg46b8ca8f => 'msg46b8ca8f';
+  String get msg46b8ca8f =>
+      'Fixed: abnormal local page switch after remote copy';
 
   @override
-  String get msgb3dea5f5 => 'msgb3dea5f5';
+  String get msgb3dea5f5 =>
+      'Text viewer long-press menu supports copy and select all';
 
   @override
-  String get msga4c92214 => 'msga4c92214';
+  String get msga4c92214 =>
+      'Drag-and-drop popup layout optimized (more compact)';
 
   @override
-  String get msg32854144 => 'msg32854144';
+  String get msg32854144 =>
+      'Category page icons support circle/square background toggle';
 
   @override
-  String get msg3a93e257 => 'msg3a93e257';
+  String get msg3a93e257 =>
+      'Category icon shape setting (switch in Appearance & Theme)';
 
   @override
-  String get zenfile3 => 'zenfile3';
+  String get zenfile3 => 'ZenFile First Release';
 
   @override
-  String get msg47b760ed => 'msg47b760ed';
+  String get msg47b760ed => 'Multi-tab Support';
 
   @override
-  String get ftpsftpwebdavsmb => 'ftpsftpwebdavsmb';
+  String get ftpsftpwebdavsmb =>
+      'Remote Server Connection (FTP/SFTP/WebDAV/SMB)';
 
   @override
-  String get msg4b736dfb => 'msg4b736dfb';
+  String get msg4b736dfb => 'File Encryption Vault';
 
   @override
-  String get ftpwebdav => 'ftpwebdav';
+  String get ftpwebdav => 'FTP/WebDAV Server Features';
 
   @override
-  String get msg03257c2d => 'msg03257c2d';
+  String get msg03257c2d => 'Custom Theme & Appearance Settings';
 
   @override
-  String get msg5cce42e6 => 'msg5cce42e6';
+  String get msg5cce42e6 =>
+      'Remote server file drag-and-drop operation optimization';
 
   @override
-  String get msg074f1ce7 => 'msg074f1ce7';
+  String get msg074f1ce7 => 'Custom app desktop icon feature improved';
 
   @override
-  String get msg5c66ffab => 'msg5c66ffab';
+  String get msg5c66ffab =>
+      'Long press in remote server file list may trigger drag-and-drop popup (will be fixed in next version)';
 
   @override
-  String get bug1sequeldpdnsorgqq792408214 => 'bug1sequeldpdnsorgqq792408214';
+  String get bug1sequeldpdnsorgqq792408214 =>
+      'If you have any suggestions or find bugs, please feedback via email 1@sequel.dpdns.org or QQ group 792408214.';
 
   @override
-  String get msgd054a84c => 'msgd054a84c';
+  String get msgd054a84c => 'Long press to save image';
 
   @override
-  String get msgb3b83e12 => 'msgb3b83e12';
+  String get msgb3b83e12 => 'Image load failed';
 
   @override
-  String get msgc2790d54 => 'msgc2790d54';
+  String get msgc2790d54 => 'Storage permission required to save image';
 
   @override
-  String get msg1292d351 => 'msg1292d351';
+  String get msg1292d351 => 'Image saved to gallery';
 
   @override
   String e9(Object e) {
-    return 'e9';
+    return 'Save failed: $e';
   }
 
   @override
-  String get msg7a4ee0c7 => 'msg7a4ee0c7';
+  String get msg7a4ee0c7 => 'No files to share';
 
   @override
-  String get msg45326802 => 'msg45326802';
+  String get msg45326802 => 'Items deleted successfully';
 
   @override
   String e10(Object e) {
-    return 'e10';
+    return 'Share error: $e';
   }
 
   @override
-  String get msg4fb42e6e => 'msg4fb42e6e';
+  String get msg4fb42e6e => 'Copied to clipboard';
 
   @override
-  String get msge5212c58 => 'msge5212c58';
+  String get msge5212c58 => 'Cut to clipboard';
 
   @override
-  String get msgc8ce4b36 => 'msgc8ce4b36';
+  String get msgc8ce4b36 => 'Rename';
 
   @override
-  String get msgf139c5cf => 'msgf139c5cf';
+  String get msgf139c5cf => 'Enter new name';
 
   @override
-  String get msg53518c22 => 'msg53518c22';
+  String get msg53518c22 => 'Delete File';
 
   @override
-  String get msg47809e5d => 'msg47809e5d';
+  String get msg47809e5d => 'No recent files';
 
   @override
-  String get msg7a7e6c25 => 'msg7a7e6c25';
+  String get msg7a7e6c25 =>
+      'Newly created or downloaded files will appear here.';
 
   @override
-  String get msg765d1698 => 'msg765d1698';
+  String get msg765d1698 => 'Delete Selected Items';
 
   @override
-  String get msg365f2f0a => 'msg365f2f0a';
+  String get msg365f2f0a => 'Items deleted successfully ✓';
 
   @override
   String successcount(Object successCount) {
-    return 'successcount';
+    return 'Successfully added $successCount items to archive ✓';
   }
 
   @override
   String count(Object count) {
-    return 'count';
+    return 'Pasted $count items to archive ✓';
   }
 
   @override
-  String get msg39cb3352 => 'msg39cb3352';
+  String get msg39cb3352 => 'Cannot read archive';
 
   @override
-  String get msg99abedc6 => 'msg99abedc6';
+  String get msg99abedc6 => 'Extract to Current Folder';
 
   @override
-  String get msg8d0cfb58 => 'msg8d0cfb58';
+  String get msg8d0cfb58 => 'Add Files';
 
   @override
-  String get msg5bf1fb72 => 'msg5bf1fb72';
+  String get msg5bf1fb72 => 'Lossless Audio';
 
   @override
-  String get msg47cab5ae => 'msg47cab5ae';
+  String get msg47cab5ae => 'Sleep Timer';
 
   @override
-  String get msg50c1b248 => 'msg50c1b248';
+  String get msg50c1b248 => 'Background playback stopped';
 
   @override
-  String get msg6d16d396 => 'msg6d16d396';
+  String get msg6d16d396 => 'Background playback enabled';
 
   @override
-  String get msg3038d9b8 => 'msg3038d9b8';
+  String get msg3038d9b8 => 'Shuffle: Off';
 
   @override
-  String get msg29eed1da => 'msg29eed1da';
+  String get msg29eed1da => 'Background Playback';
 
   @override
-  String get msg4aa059f7 => 'msg4aa059f7';
+  String get msg4aa059f7 => 'Tap to stop background playback';
 
   @override
-  String get msg8f7f4490 => 'msg8f7f4490';
+  String get msg8f7f4490 => 'Show notification with controls';
 
   @override
-  String get msgb7c87215 => 'msgb7c87215';
+  String get msgb7c87215 => 'Sound Effects & Equalizer';
 
   @override
-  String get msgfc449780 => 'msgfc449780';
+  String get msgfc449780 => 'Audio File Info';
 
   @override
-  String get msgb4fbc92c => 'msgb4fbc92c';
+  String get msgb4fbc92c => 'Backup & Restore';
 
   @override
-  String get zenfilebackupssettings1 => 'zenfilebackupssettings1';
+  String get zenfilebackupssettings1 =>
+      'Save all current settings to ZenFile/Backups/Settings/';
 
   @override
-  String get json1 => 'json1';
+  String get json1 => 'Select and restore settings from JSON backup file';
 
   @override
-  String get msg534c621a => 'msg534c621a';
+  String get msg534c621a => 'Backup Directory';
 
   @override
-  String get msg396b7d3f => 'msg396b7d3f';
+  String get msg396b7d3f => 'File Size';
 
   @override
-  String get msgc047ee32 => 'msgc047ee32';
+  String get msgc047ee32 => 'Last Backup Time';
 
   @override
-  String get msg917fd6ef => 'msg917fd6ef';
+  String get msg917fd6ef => 'No data to export.';
 
   @override
-  String get sqlite => 'sqlite';
+  String get sqlite => 'SQLite Database Reader';
 
   @override
-  String get msg03a0d224 => 'msg03a0d224';
+  String get msg03a0d224 => 'Table Structure';
 
   @override
-  String get sql => 'sql';
+  String get sql => 'SQL Console';
 
   @override
-  String get msge2f0fe67 => 'msge2f0fe67';
+  String get msge2f0fe67 => 'Failed to open database';
 
   @override
-  String get msg8bb11da4 => 'msg8bb11da4';
+  String get msg8bb11da4 => 'No tables found in this database.';
 
   @override
-  String get msg7796aa3e => 'msg7796aa3e';
+  String get msg7796aa3e => 'Search rows...';
 
   @override
-  String get msg15f26697 => 'msg15f26697';
+  String get msg15f26697 => 'No rows found';
 
   @override
-  String get msg0eaa935b => 'msg0eaa935b';
+  String get msg0eaa935b => 'Structure details not loaded.';
 
   @override
-  String get sql1 => 'sql1';
+  String get sql1 => 'SQL Editor';
 
   @override
-  String get select => 'select';
+  String get select => 'SELECT Template';
 
   @override
-  String get csv => 'csv';
+  String get csv => 'Export results as CSV';
 
   @override
-  String get select1 => 'select1';
+  String get select1 => 'Execute SELECT query to view results.';
 
   @override
-  String get msgd1ad9002 => 'msgd1ad9002';
+  String get msgd1ad9002 => 'Error executing query.';
 
   @override
   String targetpath(Object targetPath) {
-    return 'targetpath';
+    return 'Path copied: $targetPath';
   }
 
   @override
-  String get msg6ed14da7 => 'msg6ed14da7';
+  String get msg6ed14da7 => 'Next Level';
 
   @override
-  String get msgcd0b9aca => 'msgcd0b9aca';
+  String get msgcd0b9aca => 'Delete Selected';
 
   @override
-  String get msgee14ee27 => 'msgee14ee27';
+  String get msgee14ee27 =>
+      'Are you sure you want to delete this item? This action cannot be undone.';
 
   @override
   String filenamecreatedname(Object createdName, Object fileName) {
-    return 'filenamecreatedname';
+    return '\"$fileName\" already exists, created \"$createdName\".';
   }
 
   @override
   String foldernamecreatedname(Object createdName, Object folderName) {
-    return 'foldernamecreatedname';
+    return '\"$folderName\" already exists, created \"$createdName\".';
   }
 
   @override
-  String get msgbd165c40 => 'msgbd165c40';
+  String get msgbd165c40 => 'Create new blank text document';
 
   @override
-  String get msg68ac91eb => 'msg68ac91eb';
+  String get msg68ac91eb => 'New Archive';
 
   @override
-  String get msg881f6a80 => 'msg881f6a80';
+  String get msg881f6a80 => 'Compress current folder contents';
 
   @override
-  String get msg97301f64 => 'msg97301f64';
+  String get msg97301f64 => 'View & Sort Options';
 
   @override
-  String get msg829cb1dd => 'msg829cb1dd';
+  String get msg829cb1dd => 'List View';
 
   @override
-  String get msg0a4ebb8d => 'msg0a4ebb8d';
+  String get msg0a4ebb8d => 'Size & Spacing Options';
 
   @override
-  String get msg88062f93 => 'msg88062f93';
+  String get msg88062f93 => 'Icon & Folder Size';
 
   @override
-  String get msga7c781f5 => 'msga7c781f5';
+  String get msga7c781f5 => 'Size & Spacing';
 
   @override
-  String get msga2946a1a => 'msga2946a1a';
+  String get msga2946a1a => 'Sort By';
 
   @override
-  String get za => 'za';
+  String get za => 'Name (Z-A)';
 
   @override
-  String get msg2e2a26bb => 'msg2e2a26bb';
+  String get msg2e2a26bb => 'Size (Large)';
 
   @override
-  String get msgf437ace4 => 'msgf437ace4';
+  String get msgf437ace4 => 'This Folder Only';
 
   @override
-  String get msg4dfc167a => 'msg4dfc167a';
+  String get msg4dfc167a => 'Enable custom sort for this folder';
 
   @override
-  String get msge4c84f81 => 'msge4c84f81';
+  String get msge4c84f81 => 'Add Shortcut';
 
   @override
-  String get msgd730e478 => 'msgd730e478';
+  String get msgd730e478 => 'System Root';
 
   @override
-  String get msg35546526 => 'msg35546526';
+  String get msg35546526 => 'Network Connections';
 
   @override
-  String get msg67a6ea5e => 'msg67a6ea5e';
+  String get msg67a6ea5e => 'Add Network Connection';
 
   @override
-  String get msgcc51d6c2 => 'msgcc51d6c2';
+  String get msgcc51d6c2 => 'Remove Connection';
 
   @override
-  String get msg6e0f9cef => 'msg6e0f9cef';
+  String get msg6e0f9cef => 'Home Categories';
 
   @override
-  String get msge9691076 => 'msge9691076';
+  String get msge9691076 => 'Empty Folder';
 
   @override
-  String get msg551f98ba => 'msg551f98ba';
+  String get msg551f98ba => 'This directory contains no files or subfolders.';
 
   @override
-  String get msg17093362 => 'msg17093362';
+  String get msg17093362 => 'Cancel Operation';
 
   @override
-  String get msg681c0f39 => 'msg681c0f39';
+  String get msg681c0f39 => 'Global Search';
 
   @override
-  String get msg0c36f64f => 'msg0c36f64f';
+  String get msg0c36f64f => 'Documents Only';
 
   @override
-  String get msg26b041dd => 'msg26b041dd';
+  String get msg26b041dd => 'Audio Only';
 
   @override
-  String get msge632ba85 => 'msge632ba85';
+  String get msge632ba85 => 'Archives Only';
 
   @override
   String label(Object label) {
-    return 'label';
+    return '$label filter activated';
   }
 
   @override
-  String get msg0e77af8a => 'msg0e77af8a';
+  String get msg0e77af8a => 'Hidden Folders';
 
   @override
   String e11(Object e) {
-    return 'e11';
+    return 'Load error: $e';
   }
 
   @override
-  String get msg5937f822 => 'msg5937f822';
+  String get msg5937f822 => '(Blank Slide)';
 
   @override
-  String get msg360d0b37 => 'msg360d0b37';
+  String get msg360d0b37 => 'Saved successfully ✓';
 
   @override
-  String get pdf => 'pdf';
+  String get pdf => 'PDF Display Settings';
 
   @override
-  String get msg09c933bf => 'msg09c933bf';
+  String get msg09c933bf =>
+      'Optimize rendering performance for large, complex, or scanned documents.';
 
   @override
-  String get msg701a85d4 => 'msg701a85d4';
+  String get msg701a85d4 => 'Standard Mode';
 
   @override
-  String get msg2722d1a7 => 'msg2722d1a7';
+  String get msg2722d1a7 => 'Best for text documents';
 
   @override
-  String get msgb2b08d54 => 'msgb2b08d54';
+  String get msgb2b08d54 => 'Suitable for brochures and photos';
 
   @override
-  String get msg8b519c02 => 'msg8b519c02';
+  String get msg8b519c02 => 'Page Layout';
 
   @override
-  String get msg7f2cd152 => 'msg7f2cd152';
+  String get msg7f2cd152 => 'Continuous (vertical scroll list)';
 
   @override
-  String get msg151ea324 => 'msg151ea324';
+  String get msg151ea324 => 'Scroll Direction';
 
   @override
-  String get msg7d45ded6 => 'msg7d45ded6';
+  String get msg7d45ded6 => 'Vertical (scroll top to bottom)';
 
   @override
-  String get msg176ef589 => 'msg176ef589';
+  String get msg176ef589 => 'Enable Text Selection';
 
   @override
-  String get msg864f8706 => 'msg864f8706';
+  String get msg864f8706 =>
+      'Disabling can significantly improve page rendering speed and eliminate scroll lag.';
 
   @override
-  String get msgd28847a2 => 'msgd28847a2';
+  String get msgd28847a2 => 'New Document';
 
   @override
-  String get msg3007c452 => 'msg3007c452';
+  String get msg3007c452 => 'More Options';
 
   @override
-  String get msg452dba7c => 'msg452dba7c';
+  String get msg452dba7c => 'Word Wrap';
 
   @override
-  String get msgc31f9440 => 'msgc31f9440';
+  String get msgc31f9440 => 'Show Line Numbers';
 
   @override
-  String get msg1d93c30b => 'msg1d93c30b';
+  String get msg1d93c30b => 'Open with Other App';
 
   @override
-  String get msgace80573 => 'msgace80573';
+  String get msgace80573 => '(Empty File)';
 
   @override
-  String get msg030f48bd => 'msg030f48bd';
+  String get msg030f48bd => 'Open with App';
 
   @override
-  String get msgfd96af00 => 'msgfd96af00';
+  String get msgfd96af00 => 'Share feature coming soon';
 
   @override
-  String get ftp1 => 'ftp1';
+  String get ftp1 => 'FTP server stopped successfully';
 
   @override
   String ftpe(Object e) {
-    return 'ftpe';
+    return 'Error starting FTP server: $e';
   }
 
   @override
-  String get msg5c202e56 => 'msg5c202e56';
+  String get msg5c202e56 =>
+      'Please stop the server before changing configuration';
 
   @override
-  String get msgfca29cb3 => 'msgfca29cb3';
+  String get msgfca29cb3 => 'Change Port';
 
   @override
-  String get msg8a0b5bf5 => 'msg8a0b5bf5';
+  String get msg8a0b5bf5 => 'Invalid port number';
 
   @override
-  String get msg3bce2199 => 'msg3bce2199';
+  String get msg3bce2199 => 'Set Username';
 
   @override
-  String get msg0b62b5ce => 'msg0b62b5ce';
+  String get msg0b62b5ce => 'Username cannot be empty';
 
   @override
-  String get ftp2 => 'ftp2';
+  String get ftp2 => 'FTP Server';
 
   @override
-  String get msg5ab96a6d => 'msg5ab96a6d';
+  String get msg5ab96a6d => 'Please stop the server before editing settings';
 
   @override
-  String get msgc400f106 => 'msgc400f106';
+  String get msgc400f106 => 'Change Directory';
 
   @override
-  String get msgb5eb59fc => 'msgb5eb59fc';
+  String get msgb5eb59fc => 'Set User';
 
   @override
-  String get msg70c53afb => 'msg70c53afb';
+  String get msg70c53afb => 'Anonymous Access';
 
   @override
-  String get msg8e2021aa => 'msg8e2021aa';
+  String get msg8e2021aa => 'Create Shortcut';
 
   @override
-  String get msgd70e9bdf => 'msgd70e9bdf';
+  String get msgd70e9bdf => 'Inactive';
 
   @override
-  String get msg7ae644e4 => 'msg7ae644e4';
+  String get msg7ae644e4 => 'Network Status';
 
   @override
-  String get msg5d57821d => 'msg5d57821d';
+  String get msg5d57821d => 'Server Address';
 
   @override
-  String get msgfefea1b3 => 'msgfefea1b3';
+  String get msgfefea1b3 => 'Home Directory';
 
   @override
-  String get msg124d9054 => 'msg124d9054';
+  String get msg124d9054 => 'Show Hidden Files';
 
   @override
-  String get tlsftp => 'tlsftp';
+  String get tlsftp => 'Secure FTP connection based on explicit TLS';
 
   @override
-  String get msg1f4c1042 => 'msg1f4c1042';
+  String get msg1f4c1042 => 'Folder';
 
   @override
-  String get msgf2ef53c0 => 'msgf2ef53c0';
+  String get msgf2ef53c0 => 'Search in this folder...';
 
   @override
-  String get msgfff96ede => 'msgfff96ede';
+  String get msgfff96ede => 'More Actions';
 
   @override
-  String get msg88e45bb8 => 'msg88e45bb8';
+  String get msg88e45bb8 => 'Search your storage';
 
   @override
   String query(Object _query) {
-    return 'query';
+    return 'No matches found for \"$_query\"';
   }
 
   @override
-  String get msge109d1ea => 'msge109d1ea';
+  String get msge109d1ea => 'Dashboard refreshed successfully';
 
   @override
-  String get msg05cea075 => 'msg05cea075';
+  String get msg05cea075 => 'Press again to exit app';
 
   @override
-  String get msg7498c202 => 'msg7498c202';
+  String get msg7498c202 => 'Exit App';
 
   @override
-  String get msg03247b17 => 'msg03247b17';
+  String get msg03247b17 =>
+      'Are you sure you want to exit? Press back again or tap exit to close the app.';
 
   @override
-  String get msg354c1c9a => 'msg354c1c9a';
+  String get msg354c1c9a => 'Refresh Dashboard';
 
   @override
-  String get msg19021d08 => 'msg19021d08';
+  String get msg19021d08 => 'Custom Quick Categories';
 
   @override
-  String get html => 'html';
+  String get html => 'HTML Preview';
 
   @override
-  String get msgfba1f416 => 'msgfba1f416';
+  String get msgfba1f416 => 'Enter folder name';
 
   @override
-  String get msg33b0b21c => 'msg33b0b21c';
+  String get msg33b0b21c => 'Select and pin folder';
 
   @override
-  String get msgff3200cc => 'msgff3200cc';
+  String get msgff3200cc => 'Clear Selection';
 
   @override
-  String get msg4614630a => 'msg4614630a';
+  String get msg4614630a => 'Folder is empty';
 
   @override
-  String get msg5dc1fa7b => 'msg5dc1fa7b';
+  String get msg5dc1fa7b => 'Pin this folder';
 
   @override
-  String get markdown => 'markdown';
+  String get markdown => 'Markdown Preview';
 
   @override
   String count1(Object count) {
-    return 'count1';
+    return 'Are you sure you want to permanently delete $count selected items?';
   }
 
   @override
   String count2(Object count) {
-    return 'count2';
+    return 'Successfully deleted $count items';
   }
 
   @override
   String pastedcountdestdir(Object destDir, Object pastedCount) {
-    return 'pastedcountdestdir';
+    return 'Pasted $pastedCount items to $destDir';
   }
 
   @override
-  String get msgfadbb0bc => 'msgfadbb0bc';
+  String get msgfadbb0bc => 'No files to share.';
 
   @override
-  String get msg3ad97542 => 'msg3ad97542';
+  String get msg3ad97542 => 'No physical files found to rename';
 
   @override
-  String get msg1303e638 => 'msg1303e638';
+  String get msg1303e638 => 'Modified Time';
 
   @override
-  String get msg5bab3781 => 'msg5bab3781';
+  String get msg5bab3781 => 'Media Info';
 
   @override
-  String get msg880a18f3 => 'msg880a18f3';
+  String get msg880a18f3 => 'Items Selected';
 
   @override
-  String get msgea9ecb93 => 'msgea9ecb93';
+  String get msgea9ecb93 => 'Total Size';
 
   @override
-  String get msg5556baa3 => 'msg5556baa3';
+  String get msg5556baa3 => 'Long press to open with...';
 
   @override
-  String get msg631cd220 => 'msg631cd220';
+  String get msg631cd220 => 'Confirm Delete';
 
   @override
   String name(Object name) {
-    return 'name';
+    return 'Deleted $name';
   }
 
   @override
-  String get msgcd8264f1 => 'msgcd8264f1';
+  String get msgcd8264f1 => 'Show in Location';
 
   @override
-  String get msg2a4cfb07 => 'msg2a4cfb07';
+  String get msg2a4cfb07 => 'Open with...';
 
   @override
-  String get msg8bf52387 => 'msg8bf52387';
+  String get msg8bf52387 => 'File not found or cannot be shared.';
 
   @override
-  String get msg419be096 => 'msg419be096';
+  String get msg419be096 => 'Paste Here';
 
   @override
-  String get msg5093bc80 => 'msg5093bc80';
+  String get msg5093bc80 => 'Newest First';
 
   @override
-  String get msgbc74b5a8 => 'msgbc74b5a8';
+  String get msgbc74b5a8 => 'By Date';
 
   @override
-  String get msgef7ae768 => 'msgef7ae768';
+  String get msgef7ae768 => 'Newest First (grouped by month)';
 
   @override
-  String get msgb8140039 => 'msgb8140039';
+  String get msgb8140039 => 'Oldest First (grouped by month)';
 
   @override
-  String get msg424a0110 => 'msg424a0110';
+  String get msg424a0110 => 'Unknown Date';
 
   @override
-  String get msgb19671d6 => 'msgb19671d6';
+  String get msgb19671d6 => 'All Items';
 
   @override
-  String get msg11fea612 => 'msg11fea612';
+  String get msg11fea612 => 'Date & Time';
 
   @override
-  String get msg12e86877 => 'msg12e86877';
+  String get msg12e86877 => 'File Size / Item Count';
 
   @override
-  String get msg7908038f => 'msg7908038f';
+  String get msg7908038f => 'None / Hidden';
 
   @override
-  String get msg9136d4dc => 'msg9136d4dc';
+  String get msg9136d4dc => 'Do not show extra info on the right';
 
   @override
-  String get msg84986f91 => 'msg84986f91';
+  String get msg84986f91 => 'Show last modified date and time';
 
   @override
-  String get msgfc000737 => 'msgfc000737';
+  String get msgfc000737 => 'Files show size, folders show item count';
 
   @override
-  String get msg83de16cc => 'msg83de16cc';
+  String get msg83de16cc => 'Choose trailing info style';
 
   @override
-  String get msgaa2a18a1 => 'msgaa2a18a1';
+  String get msgaa2a18a1 =>
+      'Choose what is displayed on the right side of files and folders when the three-dot action button is hidden.';
 
   @override
-  String get msg26e4c5d6 => 'msg26e4c5d6';
+  String get msg26e4c5d6 => 'Show Address Bar';
 
   @override
-  String get windows1 => 'windows1';
+  String get windows1 =>
+      'Show editable Windows Explorer-style address bar at top of file list';
 
   @override
-  String get msg74e86197 => 'msg74e86197';
+  String get msg74e86197 =>
+      'Open image/video shortcuts directly in folder (gallery) preferred view';
 
   @override
-  String get msga1fbf3c6 => 'msga1fbf3c6';
+  String get msga1fbf3c6 => 'Hide Android Navigation Bar';
 
   @override
-  String get msg02dddc02 => 'msg02dddc02';
+  String get msg02dddc02 =>
+      'Hide bottom nav bar to maximize screen space (swipe up to show)';
 
   @override
-  String get msg50923c95 => 'msg50923c95';
+  String get msg50923c95 => 'Clear all remembered \'Open With\' associations';
 
   @override
-  String get msg6fdc09ac => 'msg6fdc09ac';
+  String get msg6fdc09ac => 'Skip \'Open With\' dialog';
 
   @override
-  String get msg0a4b0442 => 'msg0a4b0442';
+  String get msg0a4b0442 =>
+      'Bypass app selection dialog, open files directly with default viewer';
 
   @override
-  String get msge1157984 => 'msge1157984';
+  String get msge1157984 => 'Choose to start in category or browse page';
 
   @override
-  String get msgae1854a2 => 'msgae1854a2';
+  String get msgae1854a2 => 'Choose single or two-finger swipe to switch pages';
 
   @override
-  String get msg11b1ec65 => 'msg11b1ec65';
+  String get msg11b1ec65 =>
+      'Enable quick create (+) button at bottom of browse page';
 
   @override
-  String get msg7e7765b6 => 'msg7e7765b6';
+  String get msg7e7765b6 =>
+      'Show system files and folders starting with dot(.)';
 
   @override
-  String get msg86f3d70f => 'msg86f3d70f';
+  String get msg86f3d70f => 'Show folder and file count headers';
 
   @override
-  String get msg40e9c325 => 'msg40e9c325';
+  String get msg40e9c325 =>
+      'Show total folder and file count under storage header';
 
   @override
-  String get ampm24 => 'ampm24';
+  String get ampm24 =>
+      'Toggle between 12-hour (AM/PM) and 24-hour time format in list';
 
   @override
-  String get msg25ee6612 => 'msg25ee6612';
+  String get msg25ee6612 => 'Hide time and date in list';
 
   @override
-  String get msg337359a6 => 'msg337359a6';
+  String get msg337359a6 =>
+      'Completely hide modification date and time for files and folders';
 
   @override
-  String get msga517863e => 'msga517863e';
+  String get msga517863e =>
+      'Calculate and display total file and folder count in directory';
 
   @override
-  String get msg59a24fcb => 'msg59a24fcb';
+  String get msg59a24fcb =>
+      'Calculate and display total size of all files in directory (may affect list performance)';
 
   @override
-  String get msg309e2a28 => 'msg309e2a28';
+  String get msg309e2a28 => 'Enable bottom action bar in browse page';
 
   @override
-  String get msg9b7639ac => 'msg9b7639ac';
+  String get msg9b7639ac =>
+      'Show only icons in selection action bar on browse and media pages';
 
   @override
-  String get msgdd69671b => 'msgdd69671b';
+  String get msgdd69671b =>
+      'Brief flash and scroll to exited folder when going back';
 
   @override
-  String get msg57736228 => 'msg57736228';
+  String get msg57736228 =>
+      'Show actual image and video thumbnails instead of generic file icons';
 
   @override
-  String get msg1eda8a50 => 'msg1eda8a50';
+  String get msg1eda8a50 =>
+      'Allow file names to wrap to 3 lines instead of truncating';
 
   @override
-  String get msgc7196afd => 'msgc7196afd';
+  String get msgc7196afd =>
+      'Hide three-dot menu button next to folders and files';
 
   @override
-  String get msgad54815d => 'msgad54815d';
+  String get msgad54815d =>
+      'Long press and drag folders or files to move them to other folders';
 
   @override
-  String get msg5dff8f2d => 'msg5dff8f2d';
+  String get msg5dff8f2d =>
+      'Show options popup when dragging and dropping files (copy, move, compress)';
 
   @override
-  String get msg4b0a7063 => 'msg4b0a7063';
+  String get msg4b0a7063 =>
+      'Allow opening multiple folders in separate tabs for quick navigation';
 
   @override
-  String get msgf04ac00d => 'msgf04ac00d';
+  String get msgf04ac00d =>
+      'Browse two directories side by side and easily transfer files';
 
   @override
-  String get msgd1591ba4 => 'msgd1591ba4';
+  String get msgd1591ba4 => 'Open last browsed folder when starting app';
 
   @override
-  String get msg25792550 => 'msg25792550';
+  String get msg25792550 =>
+      'Move deleted files and folders to hidden recycle bin instead of permanent deletion';
 
   @override
-  String get msg1b9633fe => 'msg1b9633fe';
+  String get msg1b9633fe => 'Theme Color / Dynamic Theme';
 
   @override
-  String get msg64db4c2d => 'msg64db4c2d';
+  String get msg64db4c2d => 'Folder Icon Style';
 
   @override
-  String get msgece44aa5 => 'msgece44aa5';
+  String get msgece44aa5 => 'App Drawer Button Style';
 
   @override
-  String get amoled1 => 'amoled1';
+  String get amoled1 => 'AMOLED Pure Black Mode';
 
   @override
-  String get amoled2 => 'amoled2';
+  String get amoled2 =>
+      'Use pure black background for AMOLED screens in dark mode';
 
   @override
-  String get msg5228b59f => 'msg5228b59f';
+  String get msg5228b59f => 'App Typography / Font';
 
   @override
-  String get msge7d18d73 => 'msge7d18d73';
+  String get msge7d18d73 => 'Custom Shortcuts';
 
   @override
-  String get msg036fe6a4 => 'msg036fe6a4';
+  String get msg036fe6a4 =>
+      'Rearrange and toggle visibility of quick category items';
 
   @override
-  String get msgead3e5c5 => 'msgead3e5c5';
+  String get msgead3e5c5 => 'Search settings...';
 
   @override
-  String get msg2590095f => 'msg2590095f';
+  String get msg2590095f => 'Settings Categories';
 
   @override
-  String get msgfdae44c3 => 'msgfdae44c3';
+  String get msgfdae44c3 => 'General & Behavior';
 
   @override
-  String get msgeae34685 => 'msgeae34685';
+  String get msgeae34685 => 'Default screen, navigation controls and shortcuts';
 
   @override
-  String get msg91b228b8 => 'msg91b228b8';
+  String get msg91b228b8 => 'Theme, app icon, folder style and typography';
 
   @override
-  String get msgad6e8bb8 => 'msgad6e8bb8';
+  String get msgad6e8bb8 => 'File Browser Options';
 
   @override
-  String get msg8ddc4963 => 'msg8ddc4963';
+  String get msg8ddc4963 => 'Address bar, hidden files, tabs and drag-and-drop';
 
   @override
-  String get msg45db4e2a => 'msg45db4e2a';
+  String get msg45db4e2a => 'Folder size, count and time/date format';
 
   @override
-  String get msg09ca4d86 => 'msg09ca4d86';
+  String get msg09ca4d86 => 'Default gallery view and thumbnail preview';
 
   @override
-  String get msgeb3693fb => 'msgeb3693fb';
+  String get msgeb3693fb => 'Open actions and default viewer configuration';
 
   @override
-  String get msg3a6a39ae => 'msg3a6a39ae';
+  String get msg3a6a39ae => 'Recycle bin toggle and auto-delete duration';
 
   @override
-  String get msg9edfaff3 => 'msg9edfaff3';
+  String get msg9edfaff3 => 'Backup or restore all app settings';
 
   @override
-  String get msg99c9cc56 => 'msg99c9cc56';
+  String get msg99c9cc56 => 'Try searching other keywords';
 
   @override
-  String get msga432d127 => 'msga432d127';
+  String get msga432d127 => 'Default Home Page';
 
   @override
-  String get msg226fc6ae => 'msg226fc6ae';
+  String get msg226fc6ae => 'Category Page';
 
   @override
-  String get msgd48a082d => 'msgd48a082d';
+  String get msgd48a082d => 'Swipe to Switch Pages';
 
   @override
-  String get msgaac01f32 => 'msgaac01f32';
+  String get msgaac01f32 => 'Single Finger Swipe';
 
   @override
-  String get msg59c7debc => 'msg59c7debc';
+  String get msg59c7debc => 'Remember Last Opened Folder';
 
   @override
-  String get msgce732d8a => 'msgce732d8a';
+  String get msgce732d8a =>
+      'Hide text labels in bottom bar (Home/Browse) for cleaner, more compact look';
 
   @override
-  String get msg1cfeaace => 'msg1cfeaace';
+  String get msg1cfeaace => 'File Browser & Navigation';
 
   @override
-  String get msgd33e3082 => 'msgd33e3082';
+  String get msgd33e3082 => 'Highlight Exited Folder';
 
   @override
-  String get msga4333788 => 'msga4333788';
+  String get msga4333788 => 'Media & Default Actions';
 
   @override
-  String get msg20c87c8e => 'msg20c87c8e';
+  String get msg20c87c8e => 'Default Gallery Preferred View';
 
   @override
-  String get msg72b1f919 => 'msg72b1f919';
+  String get msg72b1f919 => 'All default viewer selections have been reset';
 
   @override
-  String get msge99f4762 => 'msge99f4762';
+  String get msge99f4762 => 'Enable Recycle Bin';
 
   @override
-  String get msg2c8a394a => 'msg2c8a394a';
+  String get msg2c8a394a => 'Browse Page';
 
   @override
-  String get msg2c3c5a35 => 'msg2c3c5a35';
+  String get msg2c3c5a35 => 'Category Icon Shape';
 
   @override
-  String get msg267fcd86 => 'msg267fcd86';
+  String get msg267fcd86 => 'Every 3 days';
 
   @override
-  String get msg9104c0c5 => 'msg9104c0c5';
+  String get msg9104c0c5 => 'Every 2 weeks';
 
   @override
   String days(Object days) {
-    return 'days';
+    return 'Every $days days';
   }
 
   @override
-  String get msg673ad9d4 => 'msg673ad9d4';
+  String get msg673ad9d4 => 'Remote server cache cleared';
 
   @override
-  String get msgd9f142c4 => 'msgd9f142c4';
+  String get msgd9f142c4 => 'Auto Clean Cache';
 
   @override
-  String get msg5472ef41 => 'msg5472ef41';
+  String get msg5472ef41 =>
+      'Clear cached files downloaded from network servers immediately';
 
   @override
-  String get msgac7687d9 => 'msgac7687d9';
+  String get msgac7687d9 => 'Browse remote server cache file directory';
 
   @override
-  String get msg225f6249 => 'msg225f6249';
+  String get msg225f6249 =>
+      'Show thumbnail previews for images and videos on network servers';
 
   @override
-  String get materialyou => 'materialyou';
+  String get materialyou => 'Material You (Dynamic Wallpaper Color)';
 
   @override
-  String get msg05cff3ad => 'msg05cff3ad';
+  String get msg05cff3ad => 'Vibrant Orange';
 
   @override
-  String get msg5ed35657 => 'msg5ed35657';
+  String get msg5ed35657 => 'Royal Purple';
 
   @override
-  String get msge74a7283 => 'msge74a7283';
+  String get msge74a7283 => 'Amber Gold';
 
   @override
-  String get msg3904ba87 => 'msg3904ba87';
+  String get msg3904ba87 => 'Cyber Pink';
 
   @override
-  String get msgd58d230a => 'msgd58d230a';
+  String get msgd58d230a => 'Sapphire Blue';
 
   @override
-  String get msg508b005e => 'msg508b005e';
+  String get msg508b005e => 'Forest Green';
 
   @override
-  String get msgefdde083 => 'msgefdde083';
+  String get msgefdde083 => 'Sunset Peach';
 
   @override
-  String get msg628e73a9 => 'msg628e73a9';
+  String get msg628e73a9 => 'Default Blue (Signature Blue)';
 
   @override
-  String get msg8244d240 => 'msg8244d240';
+  String get msg8244d240 => 'Classic Solid';
 
   @override
-  String get msgf08d9b15 => 'msgf08d9b15';
+  String get msgf08d9b15 => 'Modern Rounded';
 
   @override
-  String get msge5fba3dd => 'msge5fba3dd';
+  String get msge5fba3dd => 'Star Special';
 
   @override
-  String get msgfe4254dc => 'msgfe4254dc';
+  String get msgfe4254dc => 'Document Fragment';
 
   @override
-  String get msg84719fd5 => 'msg84719fd5';
+  String get msg84719fd5 => 'Minimal Outline';
 
   @override
-  String get zenfile4 => 'zenfile4';
+  String get zenfile4 => 'ZenFile Broken Line Outline';
 
   @override
-  String get vuesax => 'vuesax';
+  String get vuesax => 'Category Grid / Vuesax Grid';
 
   @override
-  String get msg5dc988f4 => 'msg5dc988f4';
+  String get msg5dc988f4 => 'Hamburger Menu / Classic Menu';
 
   @override
-  String get msgd06ba04f => 'msgd06ba04f';
+  String get msgd06ba04f => 'Minimalist';
 
   @override
-  String get msg5090469e => 'msg5090469e';
+  String get msg5090469e => 'Glassmorphism';
 
   @override
-  String get d => 'd';
+  String get d => '3D Cute';
 
   @override
-  String get msg67836b24 => 'msg67836b24';
+  String get msg67836b24 => 'Cyberpunk';
 
   @override
-  String get msgf08c8dc4 => 'msgf08c8dc4';
+  String get msgf08c8dc4 => 'Natural Zen';
 
   @override
-  String get msg7372dc9f => 'msg7372dc9f';
+  String get msg7372dc9f => 'Custom Icon';
 
   @override
-  String get msg3004e40a => 'msg3004e40a';
+  String get msg3004e40a => 'Default Logo (Natural Zen)';
 
   @override
-  String get msgc540e940 => 'msgc540e940';
+  String get msgc540e940 => 'Dot Matrix & Sans Serif';
 
   @override
-  String get msg00ea5776 => 'msg00ea5776';
+  String get msg00ea5776 => 'Ofit Modern Sans Serif';
 
   @override
-  String get msg7bdbfaa5 => 'msg7bdbfaa5';
+  String get msg7bdbfaa5 => 'Jienao Tech Monospace';
 
   @override
-  String get msgdcb4082d => 'msgdcb4082d';
+  String get msgdcb4082d => 'Mont Urban Sans Serif';
 
   @override
-  String get msg9d7001d9 => 'msg9d7001d9';
+  String get msg9d7001d9 => 'Custom Imported Font';
 
   @override
-  String get msgc2f5e9e4 => 'msgc2f5e9e4';
+  String get msgc2f5e9e4 => 'Signature Default';
 
   @override
-  String get msg6a7c758f => 'msg6a7c758f';
+  String get msg6a7c758f => 'Never (Disable Auto-Delete)';
 
   @override
   String days1(Object days) {
-    return 'days1';
+    return 'After $days days';
   }
 
   @override
-  String get msgfe76ae54 => 'msgfe76ae54';
+  String get msgfe76ae54 => 'Choose default page displayed when launching app';
 
   @override
-  String get msg8af2412a => 'msg8af2412a';
+  String get msg8af2412a => 'Show quick category page on startup';
 
   @override
-  String get msg245c3258 => 'msg245c3258';
+  String get msg245c3258 => 'Show file browse page on startup';
 
   @override
-  String get msg4439669d => 'msg4439669d';
+  String get msg4439669d => 'Choose single or two-finger swipe to switch pages';
 
   @override
-  String get msg46978666 => 'msg46978666';
+  String get msg46978666 =>
+      'Single finger swipe to switch category/browse page or open drawer';
 
   @override
-  String get msgbc9bf336 => 'msgbc9bf336';
+  String get msgbc9bf336 => 'Two-Finger Swipe';
 
   @override
-  String get msg563871d3 => 'msg563871d3';
+  String get msg563871d3 =>
+      'Two-finger swipe to switch category/browse page or open drawer';
 
   @override
-  String get msgca71ac0c => 'msgca71ac0c';
+  String get msgca71ac0c => 'Choose Theme Color';
 
   @override
-  String get msg732630c1 => 'msg732630c1';
+  String get msg732630c1 => 'Choose Folder Icon Style';
 
   @override
-  String get msgf9224d98 => 'msgf9224d98';
+  String get msgf9224d98 => 'Choose Drawer Button Style';
 
   @override
-  String get msgc337ecfa => 'msgc337ecfa';
+  String get msgc337ecfa => 'Choose Category Icon Shape';
 
   @override
-  String get msgf18bc3d9 => 'msgf18bc3d9';
+  String get msgf18bc3d9 => 'App Launcher Icon';
 
   @override
-  String get logo => 'logo';
+  String get logo =>
+      'Choose a custom logo for the app launcher icon. Note some launchers may take a few seconds to update.';
 
   @override
-  String get msg64a6476a => 'msg64a6476a';
+  String get msg64a6476a => 'Default Logo';
 
   @override
   String title(Object title) {
-    return 'title';
+    return 'App icon switched to $title';
   }
 
   @override
-  String get msgad76161f => 'msgad76161f';
+  String get msgad76161f => 'Choose Custom Icon';
 
   @override
-  String get pngjpgwebp => 'pngjpgwebp';
+  String get pngjpgwebp => 'Please select image file (PNG/JPG/WEBP)';
 
   @override
-  String get msgb06c5c34 => 'msgb06c5c34';
+  String get msgb06c5c34 => 'Custom icon applied';
 
   @override
   String e12(Object e) {
-    return 'e12';
+    return 'Failed to apply custom icon: $e';
   }
 
   @override
-  String get msg375c9eb8 => 'msg375c9eb8';
+  String get msg375c9eb8 => 'Raw Minimalist Geometric Style';
 
   @override
-  String get msg817e321b => 'msg817e321b';
+  String get msg817e321b => 'High-tech Retro Dot Matrix Title + Clean Body';
 
   @override
-  String get msg3c2a24cc => 'msg3c2a24cc';
+  String get msg3c2a24cc =>
+      'Ultra-smooth, minimalist and premium geometric aesthetic';
 
   @override
-  String get msg978f8d11 => 'msg978f8d11';
+  String get msg978f8d11 => 'Clean and futuristic developer monospace style';
 
   @override
-  String get msg93b657aa => 'msg93b657aa';
+  String get msg93b657aa => 'Bold, modern and eye-catching typography';
 
   @override
-  String get msg9db40ad6 => 'msg9db40ad6';
+  String get msg9db40ad6 => 'Your loaded custom font file';
 
   @override
-  String get zenfile5 => 'zenfile5';
+  String get zenfile5 =>
+      'Choose a beautiful font to customize ZenFile\'s overall visual theme';
 
   @override
-  String get msg7372efa5 => 'msg7372efa5';
+  String get msg7372efa5 => 'Replace Custom Font File';
 
   @override
-  String get msg3186839b => 'msg3186839b';
+  String get msg3186839b => 'Failed to load selected font file.';
 
   @override
-  String get opentypeotftruetypettf => 'opentypeotftruetypettf';
+  String get opentypeotftruetypettf =>
+      'Please select a valid OpenType (.otf) or TrueType (.ttf) font file.';
 
   @override
-  String get msgcf42dedc => 'msgcf42dedc';
+  String get msgcf42dedc => 'Remove Custom Font';
 
   @override
-  String get msg2b9abfaa => 'msg2b9abfaa';
+  String get msg2b9abfaa => 'Custom font removed.';
 
   @override
-  String get msgfdef8c23 => 'msgfdef8c23';
+  String get msgfdef8c23 => '7 Days';
 
   @override
-  String get msg25436ba3 => 'msg25436ba3';
+  String get msg25436ba3 => '15 Days';
 
   @override
-  String get msg85e7f60c => 'msg85e7f60c';
+  String get msg85e7f60c => '30 Days (Recommended)';
 
   @override
-  String get msgd61e706f => 'msgd61e706f';
+  String get msgd61e706f => 'Never (Manual Clean)';
 
   @override
-  String get msgf0ef894a => 'msgf0ef894a';
+  String get msgf0ef894a => 'Auto-Delete Recycle Bin Duration';
 
   @override
-  String get msg1200d6b7 => 'msg1200d6b7';
+  String get msg1200d6b7 =>
+      'Items in recycle bin will be permanently deleted after this duration.';
 
   @override
-  String get msg432fbb31 => 'msg432fbb31';
+  String get msg432fbb31 => 'Delete Connection';
 
   @override
-  String get msg3358aa10 => 'msg3358aa10';
+  String get msg3358aa10 => 'Add Connection';
 
   @override
-  String get msgc9c900d0 => 'msgc9c900d0';
+  String get msgc9c900d0 => 'No remote connections yet';
 
   @override
-  String get ftpsftpwebdavsmb1 => 'ftpsftpwebdavsmb1';
+  String get ftpsftpwebdavsmb1 => 'Add FTP, SFTP, WebDav or SMB connection';
 
   @override
   String e13(Object e) {
-    return 'e13';
+    return 'Connection failed: $e';
   }
 
   @override
-  String get msgb5bc0bf1 => 'msgb5bc0bf1';
+  String get msgb5bc0bf1 => 'Resolving host address...';
 
   @override
-  String get msg3005ba4d => 'msg3005ba4d';
+  String get msg3005ba4d => 'Verifying credentials...';
 
   @override
-  String get msgab36a8c6 => 'msgab36a8c6';
+  String get msgab36a8c6 => 'Mounting storage volume...';
 
   @override
   String name1(Object name) {
-    return 'name1';
+    return '\"$name\" added successfully!';
   }
 
   @override
-  String get msgdf434415 => 'msgdf434415';
+  String get msgdf434415 => 'System app disabled';
 
   @override
-  String get documentsui => 'documentsui';
+  String get documentsui =>
+      'Your device does not have the default system file/document app (DocumentsUI) enabled,';
 
   @override
-  String get androidnn => 'androidnn';
+  String get androidnn =>
+      'This is required for Android to select and mount directories.\n\n';
 
   @override
-  String get msgb2af4e30 => 'msgb2af4e30';
+  String get msgb2af4e30 =>
+      'Please check if the \'Files\' or \'Documents\' system app is disabled in device settings,';
 
   @override
   String safe(Object e) {
-    return 'safe';
+    return 'Failed to request SAF folder: $e';
   }
 
   @override
-  String get msg65c7ecb6 => 'msg65c7ecb6';
+  String get msg65c7ecb6 => 'Please enter connection name';
 
   @override
-  String get msg69e3963c => 'msg69e3963c';
+  String get msg69e3963c => 'Please enter server address/hostname';
 
   @override
-  String get msgce1ec2ce => 'msgce1ec2ce';
+  String get msgce1ec2ce => 'Remote Connection';
 
   @override
-  String get msg25557d1f => 'msg25557d1f';
+  String get msg25557d1f => 'Standard File Transfer Protocol';
 
   @override
-  String get ssh => 'ssh';
+  String get ssh => 'SSH Secure File Transfer Server';
 
   @override
-  String get http => 'http';
+  String get http => 'HTTP Web Distributed Authoring';
 
   @override
-  String get androidsd => 'androidsd';
+  String get androidsd =>
+      'Android Storage Access Framework (SD Card / External Storage)';
 
   @override
-  String get msg8486035b => 'msg8486035b';
+  String get msg8486035b => 'Choose Network Service';
 
   @override
-  String get naszenfile => 'naszenfile';
+  String get naszenfile =>
+      'Mount remote server or NAS share as dynamic drive in ZenFile storage list.';
 
   @override
   String selectedtype(Object _selectedType) {
-    return 'selectedtype';
+    return '$_selectedType Settings';
   }
 
   @override
-  String get msg5c808d9a => 'msg5c808d9a';
+  String get msg5c808d9a =>
+      'Enter connection details to link this network storage volume.';
 
   @override
-  String get nas => 'nas';
+  String get nas => 'Example: Office NAS, Home Share';
 
   @override
-  String get dav => 'dav';
+  String get dav => 'Example: 192.168.1.100 or 192.168.1.100/dav';
 
   @override
-  String get naslocal => 'naslocal';
+  String get naslocal => 'Example: 192.168.1.100 or nas.local';
 
   @override
-  String get dav1 => 'dav1';
+  String get dav1 => 'Example: /dav or /';
 
   @override
-  String get anonymousadmin => 'anonymousadmin';
+  String get anonymousadmin => 'Example: anonymous or admin';
 
   @override
-  String get msgeec70cd2 => 'msgeec70cd2';
+  String get msgeec70cd2 => 'Password (Optional)';
 
   @override
-  String get msgf1fa9d44 => 'msgf1fa9d44';
+  String get msgf1fa9d44 => 'Creating mount point...';
 
   @override
   String selectedtype1(Object _selectedType) {
-    return 'selectedtype1';
+    return 'Please wait, we are establishing a reliable connection to the $_selectedType server.';
   }
 
   @override
   String e14(Object e) {
-    return 'e14';
+    return 'Error restoring item: $e';
   }
 
   @override
   String e15(Object e) {
-    return 'e15';
+    return 'Error deleting item: $e';
   }
 
   @override
-  String get msg62187f1b => 'msg62187f1b';
+  String get msg62187f1b =>
+      'Are you sure you want to permanently delete all items in recycle bin? This action is irreversible.';
 
   @override
-  String get msg8cd6bc18 => 'msg8cd6bc18';
+  String get msg8cd6bc18 => 'Empty Recycle Bin';
 
   @override
-  String get msga4dfc0c6 => 'msga4dfc0c6';
+  String get msga4dfc0c6 => 'Recycle bin emptied successfully';
 
   @override
-  String get msg07d80ac5 => 'msg07d80ac5';
+  String get msg07d80ac5 => 'Searching deleted files...';
 
   @override
-  String get msg96d2b75f => 'msg96d2b75f';
+  String get msg96d2b75f => 'Permanently Delete';
 
   @override
-  String get msg0d824a24 => 'msg0d824a24';
+  String get msg0d824a24 => 'Recycle bin is empty';
 
   @override
-  String get msg4c478216 => 'msg4c478216';
+  String get msg4c478216 => 'Original Location';
 
   @override
-  String get msgc44a57b6 => 'msgc44a57b6';
+  String get msgc44a57b6 => 'Downloading text...';
 
   @override
-  String get msgd6d8292d => 'msgd6d8292d';
+  String get msgd6d8292d => 'Buffering media...';
 
   @override
   String e16(Object e) {
-    return 'e16';
+    return 'Download failed: $e';
   }
 
   @override
-  String get msg66d723c5 => 'msg66d723c5';
+  String get msg66d723c5 => 'Buffer timeout, please check network connection';
 
   @override
-  String get msg53082c55 => 'msg53082c55';
+  String get msg53082c55 => 'Cannot paste to same location';
 
   @override
-  String get msg108feeed => 'msg108feeed';
+  String get msg108feeed => 'Copying...';
 
   @override
-  String get msg2d4b44ec => 'msg2d4b44ec';
+  String get msg2d4b44ec => 'Items pasted successfully';
 
   @override
   String filenamee(Object e, Object fileName) {
-    return 'filenamee';
+    return 'Upload \"$fileName\" failed: $e';
   }
 
   @override
   String newname(Object newName) {
-    return 'newname';
+    return 'Renamed to \"$newName\"';
   }
 
   @override
-  String get msg4b342999 => 'msg4b342999';
+  String get msg4b342999 => 'Delete Item';
 
   @override
   String e17(Object e) {
-    return 'e17';
+    return 'Delete failed: $e';
   }
 
   @override
-  String get msg79d7fef7 => 'msg79d7fef7';
+  String get msg79d7fef7 => 'New Remote Folder';
 
   @override
-  String get msga98473f2 => 'msga98473f2';
+  String get msga98473f2 => 'Folder Name';
 
   @override
   String e18(Object e) {
-    return 'e18';
+    return 'Failed to create folder: $e';
   }
 
   @override
-  String get msg5ca05a9b => 'msg5ca05a9b';
+  String get msg5ca05a9b => 'Remote Directory';
 
   @override
-  String get msga636c09d => 'msga636c09d';
+  String get msga636c09d => 'Copy to Local Device';
 
   @override
-  String get msga4c461a4 => 'msga4c461a4';
+  String get msga4c461a4 => 'Download file to local clipboard';
 
   @override
-  String get msg425502fa => 'msg425502fa';
+  String get msg425502fa => 'Download and delete from server';
 
   @override
-  String get msgc2b9f4b9 => 'msgc2b9f4b9';
+  String get msgc2b9f4b9 => 'Root Directory';
 
   @override
-  String get msg2f7cd487 => 'msg2f7cd487';
+  String get msg2f7cd487 => 'Upload local clipboard to server';
 
   @override
-  String get msg905c34fa => 'msg905c34fa';
+  String get msg905c34fa => 'Paste Remote Clipboard';
 
   @override
-  String get msg8439c155 => 'msg8439c155';
+  String get msg8439c155 => 'Connection disconnected';
 
   @override
-  String get msgda43df27 => 'msgda43df27';
+  String get msgda43df27 => 'Retry Connection';
 
   @override
-  String get msga21f6ab1 => 'msga21f6ab1';
+  String get msga21f6ab1 => 'Empty Directory';
 
   @override
-  String get msge1c538b8 => 'msge1c538b8';
+  String get msge1c538b8 => 'Upload clipboard content here';
 
   @override
   String e19(Object e) {
-    return 'e19';
+    return 'Download failed: $e';
   }
 
   @override
-  String get msg50eaf94d => 'msg50eaf94d';
+  String get msg50eaf94d => 'Delete Confirmation';
 
   @override
-  String get msgcb0da17b => 'msgcb0da17b';
+  String get msgcb0da17b => 'Deleting...';
 
   @override
-  String get msg4805c385 => 'msg4805c385';
+  String get msg4805c385 => 'App Management';
 
   @override
-  String get msg93bc1f09 => 'msg93bc1f09';
+  String get msg93bc1f09 => 'Refresh List';
 
   @override
-  String get msg32e490fe => 'msg32e490fe';
+  String get msg32e490fe => 'Installed User Apps';
 
   @override
-  String get apk2 => 'apk2';
+  String get apk2 => 'Backed-up APKs';
 
   @override
-  String get msg8936ded6 => 'msg8936ded6';
+  String get msg8936ded6 => 'Search package name or app name...';
 
   @override
-  String get msgd8b3fc58 => 'msgd8b3fc58';
+  String get msgd8b3fc58 => 'Sort by Size';
 
   @override
-  String get msgbe1399f0 => 'msgbe1399f0';
+  String get msgbe1399f0 => 'Sort Alphabetically';
 
   @override
-  String get msg9ad67f11 => 'msg9ad67f11';
+  String get msg9ad67f11 => 'Sort by Backup Date';
 
   @override
-  String get msgb0681bd4 => 'msgb0681bd4';
+  String get msgb0681bd4 => 'Precise Storage Calculation';
 
   @override
-  String get msg34cd846c => 'msg34cd846c';
+  String get msg34cd846c => 'Grant Usage Access Permission';
 
   @override
-  String get msga22ddaae => 'msga22ddaae';
+  String get msga22ddaae => 'Storage Analysis';
 
   @override
-  String get msgaae779d4 => 'msgaae779d4';
+  String get msgaae779d4 => 'Rescan Storage';
 
   @override
-  String get msg7ae97495 => 'msg7ae97495';
+  String get msg7ae97495 => 'Scanning device storage';
 
   @override
-  String get msga5e5bf71 => 'msga5e5bf71';
+  String get msga5e5bf71 => 'Total Storage';
 
   @override
-  String get msg652be256 => 'msg652be256';
+  String get msg652be256 => 'Category Breakdown';
 
   @override
-  String get msgeb3d7d70 => 'msgeb3d7d70';
+  String get msgeb3d7d70 => 'Uninstall App';
 
   @override
-  String get msg6eb319a1 => 'msg6eb319a1';
+  String get msg6eb319a1 => 'Backing up selected app...';
 
   @override
-  String get msg7fbfdce6 => 'msg7fbfdce6';
+  String get msg7fbfdce6 => 'No apps found';
 
   @override
-  String get msg753cdb55 => 'msg753cdb55';
+  String get msg753cdb55 => 'Launch App';
 
   @override
-  String get apk3 => 'apk3';
+  String get apk3 => 'Backup APK';
 
   @override
-  String get apk4 => 'apk4';
+  String get apk4 => 'Backing up APK...';
 
   @override
-  String get apk5 => 'apk5';
+  String get apk5 => 'APK backup failed';
 
   @override
-  String get apk6 => 'apk6';
+  String get apk6 => 'Share APK File';
 
   @override
-  String get msga0b18169 => 'msga0b18169';
+  String get msga0b18169 => 'Share Backup File';
 
   @override
-  String get msgb443cd06 => 'msgb443cd06';
+  String get msgb443cd06 => 'Delete Backup File';
 
   @override
   String e20(Object e) {
-    return 'e20';
+    return 'Error loading file: $e';
   }
 
   @override
-  String get msg24c6ab0f => 'msg24c6ab0f';
+  String get msg24c6ab0f => 'File saved successfully';
 
   @override
   String count3(Object count) {
-    return 'count3';
+    return 'Replaced $count occurrences';
   }
 
   @override
-  String get msgffb01e5b => 'msgffb01e5b';
+  String get msgffb01e5b => 'Plain Text';
 
   @override
-  String get msg7902d9c0 => 'msg7902d9c0';
+  String get msg7902d9c0 => 'Choose Syntax';
 
   @override
-  String get msgc856a077 => 'msgc856a077';
+  String get msgc856a077 => 'Find / Replace';
 
   @override
-  String get msg7f2c95cd => 'msg7f2c95cd';
+  String get msg7f2c95cd => 'Save File';
 
   @override
-  String get msg084e9388 => 'msg084e9388';
+  String get msg084e9388 => 'Unlock Zoom';
 
   @override
-  String get msgf387265a => 'msgf387265a';
+  String get msgf387265a => 'Word Wrap: On';
 
   @override
-  String get msg1045ba75 => 'msg1045ba75';
+  String get msg1045ba75 => 'Word Wrap: Off';
 
   @override
-  String get msg96f0ad7d => 'msg96f0ad7d';
+  String get msg96f0ad7d => 'Edit Lock: On';
 
   @override
-  String get msg349ab61d => 'msg349ab61d';
+  String get msg349ab61d => 'Edit Lock: Off';
 
   @override
-  String get msg0cee3cd1 => 'msg0cee3cd1';
+  String get msg0cee3cd1 => 'Hide Line Numbers';
 
   @override
   String selectedlanguage(Object _selectedLanguage) {
-    return 'selectedlanguage';
+    return 'Syntax ($_selectedLanguage)';
   }
 
   @override
-  String get msg0dac421f => 'msg0dac421f';
+  String get msg0dac421f => 'Replace with...';
 
   @override
-  String get msg52709ae1 => 'msg52709ae1';
+  String get msg52709ae1 => 'Replace All';
 
   @override
-  String get msg4ecba8f6 => 'msg4ecba8f6';
+  String get msg4ecba8f6 => 'Tab';
 
   @override
   String e21(Object e) {
-    return 'e21';
+    return 'Error loading vault: $e';
   }
 
   @override
-  String get msg4828116a => 'msg4828116a';
+  String get msg4828116a => 'Hidden Files';
 
   @override
-  String get msg3bf31dfe => 'msg3bf31dfe';
+  String get msg3bf31dfe => 'Enter password to unlock';
 
   @override
-  String get pin => 'pin';
+  String get pin => 'Enter PIN to unlock wallet';
 
   @override
-  String get pin1 => 'pin1';
+  String get pin1 => 'Set your 4-digit wallet PIN';
 
   @override
-  String get pin2 => 'pin2';
+  String get pin2 => 'Confirm your 4-digit PIN';
 
   @override
-  String get msgbb590f19 => 'msgbb590f19';
+  String get msgbb590f19 => 'Private Vault';
 
   @override
-  String get msgaa43fa46 => 'msgaa43fa46';
+  String get msgaa43fa46 => 'Clear All';
 
   @override
-  String get msgc16eed0e => 'msgc16eed0e';
+  String get msgc16eed0e => 'Playback Speed';
 
   @override
-  String get msg8f106217 => 'msg8f106217';
+  String get msg8f106217 => 'Lock Controls';
 
   @override
-  String get msg1f41f25d => 'msg1f41f25d';
+  String get msg1f41f25d => 'Repeat Mode';
 
   @override
-  String get msg4d2abc8c => 'msg4d2abc8c';
+  String get msg4d2abc8c => 'Media path copied to clipboard.';
 
   @override
-  String get http1 => 'http1';
+  String get http1 => 'Local HTTP share server stopped.';
 
   @override
-  String get msg2904d894 => 'msg2904d894';
+  String get msg2904d894 => 'Establishing secure proxy relay...';
 
   @override
-  String get msg2c146598 => 'msg2c146598';
+  String get msg2c146598 =>
+      'Internet cloud tunnel online! Temporary link activated.';
 
   @override
-  String get msg4a5d26f4 => 'msg4a5d26f4';
+  String get msg4a5d26f4 => 'Link copied to clipboard!';
 
   @override
   String type(Object type) {
-    return 'type';
+    return 'Scan with another device to open $type immediately.';
   }
 
   @override
-  String get msgc8390d74 => 'msgc8390d74';
+  String get msgc8390d74 => 'Web Share Center';
 
   @override
-  String get msg5345cdce => 'msg5345cdce';
+  String get msg5345cdce => 'Internet Share Link';
 
   @override
-  String get http2 => 'http2';
+  String get http2 => 'HTTP Local Share Server';
 
   @override
-  String get wifi => 'wifi';
+  String get wifi =>
+      'Allow other devices on the same Wi-Fi to access, view and stream your files via web browser.';
 
   @override
-  String get msg73c512df => 'msg73c512df';
+  String get msg73c512df => 'Server online and streaming';
 
   @override
-  String get url1 => 'url1';
+  String get url1 => 'Copy URL';
 
   @override
-  String get msg22b03c02 => 'msg22b03c02';
+  String get msg22b03c02 => 'QR Code';
 
   @override
   String sharedir(Object shareDir) {
-    return 'sharedir';
+    return 'Share Directory: $shareDir';
   }
 
   @override
-  String get msge6a29aa4 => 'msge6a29aa4';
+  String get msge6a29aa4 => 'Server idle';
 
   @override
-  String get wifi1 => 'wifi1';
+  String get wifi1 =>
+      'Please ensure other devices are on the same Wi-Fi network, then start the server.';
 
   @override
-  String get msg974465c1 => 'msg974465c1';
+  String get msg974465c1 => 'Start Web Server';
 
   @override
-  String get msg27d5bd3c => 'msg27d5bd3c';
+  String get msg27d5bd3c =>
+      'Generate a secure temporary public tunnel link. Share this link with anyone anywhere on the internet to let them download files at high speed, regardless of file size.';
 
   @override
-  String get msg66a09a42 => 'msg66a09a42';
+  String get msg66a09a42 => 'Temporary share link (valid for 24 hours):';
 
   @override
-  String get msg879058ce => 'msg879058ce';
+  String get msg879058ce => 'Copy Link';
 
   @override
-  String get msg7ed199f8 => 'msg7ed199f8';
+  String get msg7ed199f8 => 'Connected Browser Clients';
 
   @override
-  String get msgb77e4adf => 'msgb77e4adf';
+  String get msgb77e4adf => 'Waiting for incoming internet downloads...';
 
   @override
-  String get msga61778bc => 'msga61778bc';
+  String get msga61778bc => 'Internet sharing not activated';
 
   @override
-  String get msga3c80551 => 'msga3c80551';
+  String get msga3c80551 => 'Deactivate Cloud Sharing';
 
   @override
-  String get msg6466e61e => 'msg6466e61e';
+  String get msg6466e61e => 'Activate Internet Share Link';
 
   @override
-  String get msg67bd9375 => 'msg67bd9375';
+  String get msg67bd9375 => 'Processing...';
 
   @override
-  String get msg3fa72416 => 'msg3fa72416';
+  String get msg3fa72416 => 'Renaming files...';
 
   @override
-  String get msg7dbbef0e => 'msg7dbbef0e';
+  String get msg7dbbef0e => 'Please wait, updating folder contents';
 
   @override
-  String get msg1a2d9a44 => 'msg1a2d9a44';
+  String get msg1a2d9a44 => 'Original Name (%)';
 
   @override
-  String get msgcb029197 => 'msgcb029197';
+  String get msgcb029197 => 'Sequential Number (#)';
 
   @override
-  String get msgb6d8a14f => 'msgb6d8a14f';
+  String get msgb6d8a14f => 'Three-digit Sequential Number (###)';
 
   @override
   String n(Object n) {
-    return 'n';
+    return 'Filename without extension ($n)';
   }
 
   @override
   String de(Object de) {
-    return 'de';
+    return 'Extension with dot ($de)';
   }
 
   @override
   String e22(Object e) {
-    return 'e22';
+    return 'Extension without dot ($e)';
   }
 
   @override
   String n1(Object N) {
-    return 'n1';
+    return 'Full filename with extension ($N)';
   }
 
   @override
-  String get msg0e9dc63a => 'msg0e9dc63a';
+  String get msg0e9dc63a => 'Name Pattern';
 
   @override
-  String get msg4a63edba => 'msg4a63edba';
+  String get msg4a63edba => 'Extension';
 
   @override
-  String get msga420ad79 => 'msga420ad79';
+  String get msga420ad79 => 'Start Number';
 
   @override
-  String get msg9857973d => 'msg9857973d';
+  String get msg9857973d => 'Find Text';
 
   @override
-  String get msg1605701e => 'msg1605701e';
+  String get msg1605701e => 'Replace With';
 
   @override
-  String get msgd35f80c8 => 'msgd35f80c8';
+  String get msgd35f80c8 => 'Replace Content';
 
   @override
-  String get msg32c61dab => 'msg32c61dab';
+  String get msg32c61dab => 'Rename Preview';
 
   @override
-  String get msg92642e0e => 'msg92642e0e';
+  String get msg92642e0e => 'Back to Edit';
 
   @override
-  String get msgde88d67a => 'msgde88d67a';
+  String get msgde88d67a => 'File Already Exists';
 
   @override
-  String get msge59e35b5 => 'msge59e35b5';
+  String get msge59e35b5 => 'Apply to All Remaining Conflicts';
 
   @override
-  String get msg27dfaae5 => 'msg27dfaae5';
+  String get msg27dfaae5 => 'Keep Both';
 
   @override
-  String get msg6cfbf05d => 'msg6cfbf05d';
+  String get msg6cfbf05d => 'Rename File';
 
   @override
-  String get msg25f747ce => 'msg25f747ce';
+  String get msg25f747ce => 'Create Archive';
 
   @override
-  String get msged5f808e => 'msged5f808e';
+  String get msged5f808e => 'Compression Format';
 
   @override
-  String get mb => 'mb';
+  String get mb => 'Split Size (MB, optional)';
 
   @override
-  String get msgac52af6a => 'msgac52af6a';
+  String get msgac52af6a => 'Leave empty to create single archive';
 
   @override
-  String get msgdf2ef7f5 => 'msgdf2ef7f5';
+  String get msgdf2ef7f5 => 'Create separate archive for each file';
 
   @override
-  String get msgb52d4a73 => 'msgb52d4a73';
+  String get msgb52d4a73 => 'New Tab';
 
   @override
-  String get msg4e9c344a => 'msg4e9c344a';
+  String get msg4e9c344a => 'Duplicate Tab';
 
   @override
-  String get msg7716532d => 'msg7716532d';
+  String get msg7716532d => 'Close Other Tabs';
 
   @override
-  String get msgd78603eb => 'msgd78603eb';
+  String get msgd78603eb => 'Double-tap to Close Tab';
 
   @override
   String selectedcount(Object selectedCount) {
-    return 'selectedcount';
+    return '$selectedCount items';
   }
 
   @override
   String e23(Object e) {
-    return 'e23';
+    return 'Failed to create archive: $e';
   }
 
   @override
-  String get msgc4d7eece => 'msgc4d7eece';
+  String get msgc4d7eece => 'Extract Archive';
 
   @override
-  String get msgf15821d0 => 'msgf15821d0';
+  String get msgf15821d0 => 'Extract to Folder';
 
   @override
-  String get msgff69affd => 'msgff69affd';
+  String get msgff69affd => 'Password (if encrypted)';
 
   @override
-  String get msg67eda5e6 => 'msg67eda5e6';
+  String get msg67eda5e6 => 'All Files';
 
   @override
-  String get msg8b2fcb31 => 'msg8b2fcb31';
+  String get msg8b2fcb31 => 'Show all files and folders in this directory';
 
   @override
-  String get pdfword => 'pdfword';
+  String get pdfword => 'PDF, Word docs, spreadsheets, text and e-books';
 
   @override
-  String get jpegpngwebp => 'jpegpngwebp';
+  String get jpegpngwebp => 'JPEG, PNG, WebP and raw photo formats';
 
   @override
-  String get mp3wavaac => 'mp3wavaac';
+  String get mp3wavaac => 'MP3, WAV, AAC and high-fidelity audio';
 
   @override
-  String get mp4mkvwebm => 'mp4mkvwebm';
+  String get mp4mkvwebm => 'MP4, MKV, WebM and high-resolution video clips';
 
   @override
-  String get zip7zrar => 'zip7zrar';
+  String get zip7zrar => 'ZIP, 7Z, RAR and other compressed files';
 
   @override
-  String get msg6d3e48cc => 'msg6d3e48cc';
+  String get msg6d3e48cc => 'Choose a category to show only matching files';
 
   @override
   String e24(Object e) {
-    return 'e24';
+    return 'Remote thumbnail load failed: $e';
   }
 
   @override
-  String get msg32a1bd25 => 'msg32a1bd25';
+  String get msg32a1bd25 => '1 item';
 
   @override
   String count4(Object count) {
-    return 'count4';
+    return '$count items';
   }
 
   @override
-  String get msg9d69d7a0 => 'msg9d69d7a0';
+  String get msg9d69d7a0 => 'Moving files...';
 
   @override
-  String get zenfile6 => 'zenfile6';
+  String get zenfile6 => 'ZenFile Custom Native Experience';
 
   @override
-  String get msg42be43e6 => 'msg42be43e6';
+  String get msg42be43e6 => 'System External App';
 
   @override
-  String get msgd1fca831 => 'msgd1fca831';
+  String get msgd1fca831 => 'Open with third-party app on device';
 
   @override
-  String get msgdb75b769 => 'msgdb75b769';
+  String get msgdb75b769 => 'Just Once';
 
   @override
-  String get msg959429a5 => 'msg959429a5';
+  String get msg959429a5 => 'Browse Device Files';
 
   @override
-  String get msgc31116e3 => 'msgc31116e3';
+  String get msgc31116e3 => 'Add New Connection';
 
   @override
-  String get msgf1d4ff50 => 'msgf1d4ff50';
+  String get msgf1d4ff50 => 'Custom';
 
   @override
-  String get msg490ac572 => 'msg490ac572';
+  String get msg490ac572 => 'No pinned shortcuts. Tap customize to add.';
 
   @override
-  String get msg445a43cb => 'msg445a43cb';
+  String get msg445a43cb => 'Drag handle (=) to rearrange home page icons.';
 
   @override
-  String get msg944d5ecd => 'msg944d5ecd';
+  String get msg944d5ecd => 'Add Folder/File Shortcut';
 
   @override
-  String get msg4f356348 => 'msg4f356348';
+  String get msg4f356348 => 'Custom Path';
 
   @override
-  String get msg94733bec => 'msg94733bec';
+  String get msg94733bec => 'Delete Shortcut';
 
   @override
-  String get msg5c29ad2f => 'msg5c29ad2f';
+  String get msg5c29ad2f => 'Restore Location';
 
   @override
-  String get msg21de5dd7 => 'msg21de5dd7';
+  String get msg21de5dd7 => 'Custom scan location:';
 
   @override
-  String get msg4bb81f99 => 'msg4bb81f99';
+  String get msg4bb81f99 => 'No custom paths added.';
 
   @override
-  String get msgf544c399 => 'msgf544c399';
+  String get msgf544c399 => 'October';
 
   @override
-  String get msgc0615eb3 => 'msgc0615eb3';
+  String get msgc0615eb3 => 'December';
 
   @override
-  String get msg54355dd8 => 'msg54355dd8';
+  String get msg54355dd8 => 'Recent Files';
 
   @override
-  String get msgd5eac3a3 => 'msgd5eac3a3';
+  String get msgd5eac3a3 => 'Restricted System Folders';
 
   @override
   String get android11androiddataandroidobbzenfile =>
-      'android11androiddataandroidobbzenfile';
+      'Android 11+ restricts standard access to Android/data and Android/obb folders to protect app data. To view and modify these files, ZenFile needs advanced permissions.';
 
   @override
-  String get root => 'root';
+  String get root => 'Use Root Access (Superuser)';
 
   @override
-  String get shizukuroot => 'shizukuroot';
+  String get shizukuroot => 'Grant Shizuku Access (No Root Required)';
 
   @override
   String selectedcount1(Object selectedCount) {
-    return 'selectedcount1';
+    return '$selectedCount items selected';
   }
 
   @override
   String selectedcount2(Object selectedCount) {
-    return 'selectedcount2';
+    return 'Are you sure you want to delete $selectedCount items? This action cannot be undone.';
   }
 
   @override
-  String get msga9b87614 => 'msga9b87614';
+  String get msga9b87614 => 'Unpinned selected items';
 
   @override
-  String get msg84e4fac9 => 'msg84e4fac9';
+  String get msg84e4fac9 => 'Unpin';
 
   @override
-  String get msg3be9abab => 'msg3be9abab';
+  String get msg3be9abab => 'Calculating size...';
 
   @override
-  String get msg7704aa2c => 'msg7704aa2c';
+  String get msg7704aa2c => 'Selected path:';
 
   @override
   String label1(Object label) {
-    return 'label1';
+    return 'Copied $label to clipboard';
   }
 
   @override
   String selectedcount3(Object selectedCount) {
-    return 'selectedcount3';
+    return '$selectedCount items selected';
   }
 
   @override
-  String get msg8b73264b => 'msg8b73264b';
+  String get msg8b73264b => 'Files (long press to choose open with)';
 
   @override
-  String get msgc5c0646c => 'msgc5c0646c';
+  String get msgc5c0646c => 'Copy Selected';
 
   @override
-  String get msg8e6d4604 => 'msg8e6d4604';
+  String get msg8e6d4604 => 'Cut Selected';
 
   @override
-  String get msg1058354c => 'msg1058354c';
+  String get msg1058354c => 'Properties & Info';
 
   @override
   String usedstoragestr(Object usedStorageStr) {
-    return 'usedstoragestr';
+    return 'Used $usedStorageStr';
   }
 
   @override
   String freestoragestr(Object freeStorageStr) {
-    return 'freestoragestr';
+    return '$freeStorageStr available';
   }
 
   @override
-  String get msgc823e21b => 'msgc823e21b';
+  String get msgc823e21b => 'Unpin Tab';
 
   @override
-  String get msg7d6c1284 => 'msg7d6c1284';
+  String get msg7d6c1284 => 'No matching directories or files found';
 
   @override
   String path(Object path) {
-    return 'path';
+    return 'Path does not exist: $path';
   }
 
   @override
-  String get msg6cbbf7d9 => 'msg6cbbf7d9';
+  String get msg6cbbf7d9 => 'Enter absolute path...';
 
   @override
-  String get msgf13fc21c => 'msgf13fc21c';
+  String get msgf13fc21c => 'Servers & Tools';
 
   @override
-  String get msg41e625d1 => 'msg41e625d1';
+  String get msg41e625d1 => 'Add Remote Connection';
 
   @override
-  String get msg8755e992 => 'msg8755e992';
+  String get msg8755e992 => 'Light Mode';
 
   @override
-  String get msg1cf6fcd3 => 'msg1cf6fcd3';
+  String get msg1cf6fcd3 => 'More Settings';
 
   @override
-  String get msgeef7e30c => 'msgeef7e30c';
+  String get msgeef7e30c => 'Premium Media Suite';
 
   @override
   String msg2ad64aa7(Object urlString) {
-    return '无法打开链接：$urlString';
+    return 'Cannot open link: $urlString';
   }
 
   @override
-  String get msg30d17f96 => '核心亮点';
+  String get msg30d17f96 => 'Key Highlights';
 
   @override
-  String get msgaba638c4 => '保险箱安全';
+  String get msgaba638c4 => 'Vault Security';
 
   @override
-  String get msgd309e9ea => '服务器中心';
+  String get msgd309e9ea => 'Server Center';
 
   @override
-  String get msg4a5f936c => '联系与分享';
+  String get msg4a5f936c => 'Contact & Share';
 
   @override
-  String get msg4d48a010 => 'ZenFile - 精美文件管理器';
+  String get msg4d48a010 => 'ZenFile - Beautiful File Manager';
 
   @override
-  String get msg1f4c0192 => '请作者喝杯咖啡 ☕';
+  String get msg1f4c0192 => 'Buy the author a coffee';
 
   @override
-  String get msg2eceaa85 => '打赏作者';
+  String get msg2eceaa85 => 'Tip the Author';
 
   @override
-  String get msg305734ce => '更新日志';
+  String get msg305734ce => 'Changelog';
 
   @override
-  String get msg1c80891a => '新增浏览页远程文件缩略图预览';
+  String get msg1c80891a =>
+      'Added remote file thumbnail preview in browse page';
 
   @override
-  String get msg212f8f9e => '修复远程文件无法打开播放的问题';
+  String get msg212f8f9e => 'Fixed remote file cannot open/play issue';
 
   @override
-  String get msgd0cf310e => '优化远程文件缓存目录统一管理';
+  String get msgd0cf310e =>
+      'Optimized unified remote file cache directory management';
 
   @override
-  String get msg072f2022 => '单指滑动切换页面改为双指滑动（避免误触返回手势）';
+  String get msg072f2022 =>
+      'Single-finger swipe changed to two-finger swipe (to avoid accidental back gesture)';
 
   @override
-  String get msg66517dc4 => '字体选项标题全面汉化';
+  String get msg66517dc4 => 'Font option titles fully localized';
 
   @override
-  String get msgacad92c8 => '移除\"阻止左侧返回手势打开抽屉\"功能';
+  String get msgacad92c8 =>
+      'Removed \'Prevent left back gesture from opening drawer\' feature';
 
   @override
-  String get msg09d0e1b6 => '修复：备用图标切换不生效';
+  String get msg09d0e1b6 => 'Fixed: alternate icon switch not working';
 
   @override
-  String get msg2d1872c8 => '文本编辑器菜单全面汉化';
+  String get msg2d1872c8 => 'Text editor menu fully localized';
 
   @override
-  String get msg2e35eef7 => '双面板文件浏览器';
+  String get msg2e35eef7 => 'Dual-panel File Browser';
 
   @override
-  String get msge96aa2cd => '内置媒体播放器';
+  String get msge96aa2cd => 'Built-in Media Player';
 
   @override
-  String get msg49a6c41e => '应用图标切换（多种风格可选）';
+  String get msg49a6c41e => 'App Icon Switch (multiple styles available)';
 
   @override
-  String get msg4d82be7c => '下版本更新计划';
+  String get msg4d82be7c => 'Next Version Update Plan';
 
   @override
-  String get msg2c8957dd => '已知问题';
+  String get msg2c8957dd => 'Known Issues';
 
   @override
-  String get msg11cb01fc => '远程服务器边缓存边播放视频';
+  String get msg11cb01fc => 'Remote server video playback while caching';
 
   @override
-  String get msg60a4d643 => '自定义图标上传后桌面图标不会更改（下版本完善）';
+  String get msg60a4d643 =>
+      'Custom icon won\'t change desktop icon after upload (will be improved next version)';
 
   @override
-  String get msg9e68ea42 => '保存失败，请重试';
+  String get msg9e68ea42 => 'Save failed, please try again';
+
+  @override
+  String get cat_images => 'Images';
+
+  @override
+  String get cat_videos => 'Videos';
+
+  @override
+  String get cat_audios => 'Audio';
+
+  @override
+  String get cat_documents => 'Documents';
+
+  @override
+  String get cat_downloads => 'Downloads';
+
+  @override
+  String get cat_screenshots => 'Screenshots';
+
+  @override
+  String get cat_recent => 'Recent';
+
+  @override
+  String get cat_network => 'Network';
+
+  @override
+  String get cat_apps => 'Apps';
+
+  @override
+  String get cat_settings => 'Settings';
+
+  @override
+  String get cat_storage => 'Storage';
+
+  @override
+  String get cat_service => 'Service';
+
+  @override
+  String get cat_manage => 'Manage';
+
+  @override
+  String get cat_config => 'Config';
+
+  @override
+  String get cat_analyze => 'Analyze';
+
+  @override
+  String get cat_quick_categories => 'Quick Categories';
+
+  @override
+  String get ui_nav => 'Navigation';
+
+  @override
+  String get ui_home => 'Home';
+
+  @override
+  String get ui_recycle_bin => 'Recycle Bin';
+
+  @override
+  String get ui_dark_mode => 'Dark Mode';
+
+  @override
+  String get ui_personalize_settings => 'Personalize & Settings';
+
+  @override
+  String get ui_compress => 'Compress';
+
+  @override
+  String get ui_copy => 'Copy';
+
+  @override
+  String get ui_cut => 'Cut';
+
+  @override
+  String get ui_delete => 'Delete';
+
+  @override
+  String get ui_select_all => 'Select All';
+
+  @override
+  String get ui_cancel => 'Cancel';
+
+  @override
+  String get ui_confirm => 'Confirm';
+
+  @override
+  String get ui_share => 'Share';
+
+  @override
+  String get ui_move_here => 'Move Here';
+
+  @override
+  String get ui_properties => 'Properties';
+
+  @override
+  String get ui_info => 'Info';
+
+  @override
+  String get ui_open => 'Open';
+
+  @override
+  String get ui_close => 'Close';
+
+  @override
+  String get ui_more => 'More';
+
+  @override
+  String get ui_appearance_theme => 'Appearance & Theme';
+
+  @override
+  String get ui_list_layout_style => 'List & Layout Style';
+
+  @override
+  String get ui_media_preferences => 'Media Preferences';
+
+  @override
+  String get ui_file_actions_viewers => 'File Actions & Viewers';
+
+  @override
+  String get ui_no_settings_found => 'No settings found';
+
+  @override
+  String get ui_show_floating_button => 'Show Floating Button';
+
+  @override
+  String get ui_use_24h_format => 'Use 24-Hour Format';
+
+  @override
+  String get ui_show_folder_contents_count => 'Show Folder Contents Count';
+
+  @override
+  String get ui_show_folder_size => 'Show Folder Size';
+
+  @override
+  String get ui_show_bottom_action_bar => 'Show Bottom Action Bar';
+
+  @override
+  String get ui_hide_action_text => 'Hide Action Bar Text Labels';
+
+  @override
+  String get ui_show_media_previews => 'Show Media Previews';
+
+  @override
+  String get ui_adaptive_multiline_names => 'Adaptive Multi-line File Names';
+
+  @override
+  String get ui_hide_action_menu_buttons => 'Hide Action Menu Buttons';
+
+  @override
+  String get ui_enable_drag_drop => 'Enable Drag & Drop';
+
+  @override
+  String get ui_confirm_drag_drop => 'Confirm Drag & Drop';
+
+  @override
+  String get ui_enable_multi_tabs => 'Enable Multiple Tabs';
+
+  @override
+  String get ui_enable_split_screen => 'Enable Split Screen';
+
+  @override
+  String get ui_app_icon => 'App Icon';
+
+  @override
+  String get ui_emerald_green => 'Emerald Green';
+
+  @override
+  String get ui_deep_red => 'Deep Red';
+
+  @override
+  String get ui_square => 'Square';
+
+  @override
+  String get ui_circle => 'Circle';
+
+  @override
+  String get ui_1_day_after => '1 day later';
+
+  @override
+  String get ui_no_auto_clean => 'No auto clean';
+
+  @override
+  String get ui_daily => 'Daily';
+
+  @override
+  String get ui_weekly => 'Weekly';
+
+  @override
+  String get ui_monthly => 'Monthly';
+
+  @override
+  String ui_every_n_days(Object days) {
+    return 'Every $days days';
+  }
+
+  @override
+  String ui_clear_cache_failed(Object e) {
+    return 'Failed to clear cache: $e';
+  }
+
+  @override
+  String get ui_clear_remote_cache => 'Clear Remote Cache';
+
+  @override
+  String get ui_view_cache_dir => 'View Cache Directory';
+
+  @override
+  String get ui_remote_media_thumbnail => 'Remote Media Thumbnails';
+
+  @override
+  String ui_auto_clean_remote_cache(Object label) {
+    return 'Auto clean remote server cache periodically: $label';
+  }
+
+  @override
+  String ui_custom_font_with_name(Object name) {
+    return 'Custom Font ($name)';
+  }
+
+  @override
+  String get ui_import_custom_font => 'Import Custom Font File (.ttf/.otf)';
+
+  @override
+  String ui_custom_font_applied(Object name) {
+    return 'Custom font \"$name\" applied successfully!';
+  }
+
+  @override
+  String get ui_invalid_file_type => 'Invalid File Type';
+
+  @override
+  String get ui_language => 'Language';
+
+  @override
+  String get ui_hide_nav_labels => 'Hide Bottom Nav Labels';
+
+  @override
+  String get ui_reset_default_viewers => 'Reset Default File Viewers';
+
+  @override
+  String get ui_trailing_info_when_hidden => 'Trailing Info When Menu Hidden';
+
+  @override
+  String get ui_go_up => 'Go Up';
+
+  @override
+  String ui_cut_copy_items(String prefix, int count) {
+    return '$prefix · $count items';
+  }
+
+  @override
+  String get ui_clear => 'Clear';
+
+  @override
+  String get ui_paste => 'Paste';
+
+  @override
+  String get ui_file_name => 'File name';
+
+  @override
+  String get ui_create => 'Create';
+
+  @override
+  String get ui_create_new_directory => 'Create new directory';
+
+  @override
+  String get ui_layout_mode => 'Layout Mode';
+
+  @override
+  String get ui_grid_view => 'Grid View';
+
+  @override
+  String get ui_name_asc => 'Name (A-Z)';
+
+  @override
+  String get ui_newest => 'Newest';
+
+  @override
+  String get ui_oldest => 'Oldest';
+
+  @override
+  String get ui_size_small => 'Size (Small)';
+
+  @override
+  String get ui_type => 'Type';
+
+  @override
+  String get ui_storage_volume => 'Storage Volume';
+
+  @override
+  String get ui_browse => 'Browse';
+
+  @override
+  String get ui_new => 'New';
+
+  @override
+  String ui_folders_count(int count) {
+    return 'Folders: $count';
+  }
+
+  @override
+  String ui_files_count(int count) {
+    return 'Files: $count';
+  }
+
+  @override
+  String get ui_selection_mode => 'Selection Mode';
+
+  @override
+  String get ui_storage_and_sd => 'Storage & SD Card';
+
+  @override
+  String get ui_images_only => 'Images Only';
+
+  @override
+  String get ui_videos_only => 'Videos Only';
+
+  @override
+  String get ui_show_folders => 'Show Folders';
+
+  @override
+  String get ui_files => 'Files';
+
+  @override
+  String get ui_delete_file_confirm =>
+      'Are you sure you want to delete this file? This action cannot be undone.';
+
+  @override
+  String get ui_done => 'Done';
+
+  @override
+  String get ui_name => 'Name';
+
+  @override
+  String get ui_path => 'Path';
+
+  @override
+  String get ui_size => 'Size';
+
+  @override
+  String get ui_permissions => 'Permissions';
+
+  @override
+  String get ui_contains => 'Contains';
+
+  @override
+  String get ui_extract => 'Extract';
+
+  @override
+  String get ui_pin_to_top => 'Pin to Top';
+
+  @override
+  String get ui_pinned_selected => 'Pinned selected items';
+
+  @override
+  String get ui_filter_by_type => 'Filter Files by Type';
+
+  @override
+  String get ui_default_scan_locations => 'Default scan locations:';
+
+  @override
+  String get ui_exclude_location => 'Exclude Location';
+
+  @override
+  String get ui_add_custom_path => 'Add Custom Path';
+
+  @override
+  String ui_added_custom_paths(int count) {
+    return 'Added $count custom paths';
+  }
+
+  @override
+  String get ui_close_tab => 'Close Tab';
+
+  @override
+  String ui_not_found_title(String title) {
+    return 'No $title found';
+  }
+
+  @override
+  String get ui_oldest_first => 'Oldest First';
+
+  @override
+  String get ui_sort_options => 'Sort Options';
+
+  @override
+  String get ui_refresh => 'Refresh';
+
+  @override
+  String ui_selected_count(int count) {
+    return '$count Selected';
+  }
+
+  @override
+  String ui_permanently_delete_name(String name) {
+    return 'Permanently delete \"$name\"?';
+  }
+
+  @override
+  String ui_copied_count(int count) {
+    return 'Copied $count items to clipboard';
+  }
+
+  @override
+  String ui_cut_count(int count) {
+    return 'Cut $count items to clipboard';
+  }
+
+  @override
+  String get ui_read => 'Read';
+
+  @override
+  String get ui_write => 'Write';
+
+  @override
+  String get ui_file => 'File';
+
+  @override
+  String get ui_backup_settings => 'Backup Settings';
+
+  @override
+  String get ui_restore_settings => 'Restore Settings';
+
+  @override
+  String get ui_backup_info => 'Backup Info';
+
+  @override
+  String get ui_backup_file => 'Backup File';
+
+  @override
+  String get ui_no_backup_file => 'No backup file';
+
+  @override
+  String get ui_remote_connection => 'Remote Connection';
+
+  @override
+  String ui_step_n_of_3(Object step) {
+    return 'Step $step / 3';
+  }
+
+  @override
+  String get ui_choose_network_service => 'Choose Network Service';
+
+  @override
+  String get ui_connection_name => 'Connection Name';
+
+  @override
+  String get ui_protocol => 'Protocol';
+
+  @override
+  String get ui_port => 'Port';
+
+  @override
+  String get ui_path_label => 'Path';
+
+  @override
+  String get ui_username_optional => 'Username (Optional)';
+
+  @override
+  String get ui_back => 'Back';
+
+  @override
+  String get ui_connect => 'Connect';
+
+  @override
+  String get ui_web_share => 'Web Share';
+
+  @override
+  String get ui_network => 'Network';
+
+  @override
+  String get log_i18n_full =>
+      'Full internationalization for Chinese/English UI';
+
+  @override
+  String get log_fix_selection_count =>
+      'Fixed file selection count not displaying';
+
+  @override
+  String get log_fix_remote_title =>
+      'Fixed remote connection page title display issue';
+
+  @override
+  String get log_svg_thumbnail_category =>
+      'SVG thumbnails now display in category pages';
+
+  @override
+  String get log_language_btn_top =>
+      'Language switch button moved to top of settings';
+
+  @override
+  String get log_fix_category_missing =>
+      'Fixed some categories not showing in English mode';
 }

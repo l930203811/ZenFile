@@ -44,7 +44,7 @@ class _OpenWithSheetState extends State<OpenWithSheet> {
               ),
               const SizedBox(height: 20),
               Text(
-                'L10n.of(context).msg2a4cfb07',
+                L10n.of(context).msg2a4cfb07,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
@@ -117,7 +117,7 @@ class _OpenWithSheetState extends State<OpenWithSheet> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'L10n.of(context).zenfile6',
+                              L10n.of(context).zenfile6,
                               style: TextStyle(
                                 fontSize: 12,
                                 color: theme.colorScheme.onSurface.withOpacity(0.6),
@@ -179,7 +179,7 @@ class _OpenWithSheetState extends State<OpenWithSheet> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'L10n.of(context).msg42be43e6',
+                              L10n.of(context).msg42be43e6,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: _selectedType == 'external'
@@ -189,7 +189,7 @@ class _OpenWithSheetState extends State<OpenWithSheet> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'L10n.of(context).msgd1fca831',
+                              L10n.of(context).msgd1fca831,
                               style: TextStyle(
                                 fontSize: 12,
                                 color: theme.colorScheme.onSurface.withOpacity(0.6),
@@ -218,7 +218,7 @@ class _OpenWithSheetState extends State<OpenWithSheet> {
                       onPressed: () {
                         Navigator.pop(context, 'just_once_$_selectedType');
                       },
-                      child: const Text('L10n.of(context).msgdb75b769'),
+                      child: Text(L10n.of(context).msgdb75b769),
                     ),
                   ),
                   const SizedBox(width: 12),

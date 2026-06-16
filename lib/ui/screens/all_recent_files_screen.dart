@@ -226,11 +226,11 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
         await Share.shareXFiles(shareFiles);
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('分享出错：$e')));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('分享出错：{e}')));
         }
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('L10n.of(context).msg7a4ee0c7')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).msg7a4ee0c7)));
     }
     _clearSelection();
   }
@@ -239,7 +239,7 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
     if (_selectedPaths.isEmpty) return;
     final confirm = await FileActionDialogs.showConfirmDialog(
       context,
-      title: 'L10n.of(context).msgcd0b9aca',
+      title: L10n.of(context).msgcd0b9aca,
       content: 'Are you sure you want to delete ${_selectedPaths.length} selected item(s)? This cannot be undone.',
     );
 
@@ -253,7 +253,7 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
         });
       }
       _clearSelection();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('L10n.of(context).msg45326802')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).msg45326802)));
     }
   }
 
@@ -271,27 +271,27 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
             await Share.shareXFiles([XFile(path)]);
           } catch (e) {
             if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('分享出错：$e')));
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('分享出错：{e}')));
             }
           }
         }
         break;
       case 'copy':
         provider.copyFile(path);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('L10n.of(context).msg4fb42e6e')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).msg4fb42e6e)));
         break;
       case 'cut':
         provider.cutFile(path);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('L10n.of(context).msge5212c58')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).msge5212c58)));
         break;
       case 'rename':
         final currentName = p.basename(path);
         final newName = await FileActionDialogs.showTextInputDialog(
           context,
-          title: 'L10n.of(context).msgc8ce4b36',
-          hint: 'L10n.of(context).msgf139c5cf',
+          title: L10n.of(context).msgc8ce4b36,
+          hint: L10n.of(context).msgf139c5cf,
           initialValue: currentName,
-          actionText: 'L10n.of(context).msgc8ce4b36',
+          actionText: L10n.of(context).msgc8ce4b36,
         );
         if (newName != null && newName.isNotEmpty) {
           await provider.renameFile(path, newName);
@@ -301,7 +301,7 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
       case 'delete':
         final confirm = await FileActionDialogs.showConfirmDialog(
           context,
-          title: 'L10n.of(context).msg53518c22',
+          title: L10n.of(context).msg53518c22,
           content: 'Are you sure you want to delete this item? This cannot be undone.',
         );
         if (confirm) {
@@ -386,10 +386,10 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
                           child: Icon(Broken.document_filter, size: 64, color: theme.colorScheme.primary),
                         ),
                         const SizedBox(height: 24),
-                        Text('L10n.of(context).msg47809e5d', style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+                        Text(L10n.of(context).msg47809e5d, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 8),
                         Text(
-                          'L10n.of(context).msg7a7e6c25',
+                          L10n.of(context).msg7a7e6c25,
                           textAlign: TextAlign.center,
                           style: TextStyle(color: theme.colorScheme.onSurface.withAlpha(127), fontSize: 15),
                         ),

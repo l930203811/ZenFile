@@ -23,7 +23,7 @@ class BackupSettingsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: scaffoldBg,
       appBar: AppBar(
-        title: const Text('L10n.of(context).msgb4fbc92c'),
+        title: Text(L10n.of(context).msgb4fbc92c),
         backgroundColor: scaffoldBg,
         elevation: 0,
         iconTheme: IconThemeData(color: theme.colorScheme.onSurface),
@@ -43,8 +43,8 @@ class BackupSettingsScreen extends StatelessWidget {
             borderCol: borderCol,
             icon: Icons.backup,
             iconColor: Colors.blue,
-            title: '备份设置',
-            subtitle: 'L10n.of(context).zenfilebackupssettings1',
+            title: L10n.of(context).ui_backup_settings,
+            subtitle: L10n.of(context).zenfilebackupssettings1,
             onTap: () async {
               await SettingsBackupService.backupSettings(context);
             },
@@ -60,8 +60,8 @@ class BackupSettingsScreen extends StatelessWidget {
             borderCol: borderCol,
             icon: Icons.restore,
             iconColor: Colors.orange,
-            title: '恢复设置',
-            subtitle: 'L10n.of(context).json1',
+            title: L10n.of(context).ui_restore_settings,
+            subtitle: L10n.of(context).json1,
             onTap: () async {
               final pickedPaths = await InternalFilePickerScreen.show(
                 context,
@@ -79,7 +79,7 @@ class BackupSettingsScreen extends StatelessWidget {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: const Text('L10n.of(context).json'),
+                        content: Text(L10n.of(context).json),
                         behavior: SnackBarBehavior.floating,
                         backgroundColor: theme.colorScheme.error,
                       ),
@@ -193,7 +193,7 @@ class BackupSettingsScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '备份信息',
+              L10n.of(context).ui_backup_info,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
                 color: theme.colorScheme.onSurface,
@@ -202,13 +202,13 @@ class BackupSettingsScreen extends StatelessWidget {
             const SizedBox(height: 12),
             _buildInfoRow(
               theme: theme,
-              label: 'L10n.of(context).msg534c621a',
+              label: L10n.of(context).msg534c621a,
               value: SettingsBackupService.backupDirPath,
             ),
             const SizedBox(height: 8),
             _buildInfoRow(
               theme: theme,
-              label: '备份文件',
+              label: L10n.of(context).ui_backup_file,
               value: SettingsBackupService.backupFilePath,
             ),
             const SizedBox(height: 12),
@@ -228,13 +228,13 @@ class BackupSettingsScreen extends StatelessWidget {
                           children: [
                             _buildInfoRow(
                               theme: theme,
-                              label: 'L10n.of(context).msg396b7d3f',
+                              label: L10n.of(context).msg396b7d3f,
                               value: _formatFileSize(size),
                             ),
                             const SizedBox(height: 8),
                             _buildInfoRow(
                               theme: theme,
-                              label: 'L10n.of(context).msgc047ee32',
+                              label: L10n.of(context).msgc047ee32,
                               value: _formatDateTime(modified),
                             ),
                           ],
@@ -245,7 +245,7 @@ class BackupSettingsScreen extends StatelessWidget {
                   );
                 }
                 return Text(
-                  '暂无备份文件',
+                  L10n.of(context).ui_no_backup_file,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurface.withOpacity(0.5),
                   ),

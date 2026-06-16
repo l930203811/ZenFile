@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -38,7 +38,7 @@ class IntentHandlerService {
         debugPrint('Error resolving content URI: $e');
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('读取共享文件出错：$e')),
+            SnackBar(content: Text('读取共享文件出错：{e}')),
           );
         }
         return;

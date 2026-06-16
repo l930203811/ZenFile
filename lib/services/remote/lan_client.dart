@@ -8,7 +8,7 @@ import 'package:zenfile/l10n/generated/app_localizations.dart';
 class LanDiscoveredServer {
   final String host;
   final int port;
-  final String type; // 'FTP', 'SFTP', 'L10n.of(context).smb', 'WebDav'
+  final String type; // 'FTP', 'SFTP', '局域网/SMB', 'WebDav'
   final String name;
 
   LanDiscoveredServer({
@@ -68,7 +68,7 @@ class LanClient implements RemoteClient {
     final targetPorts = {
       21: 'FTP',
       22: 'SFTP',
-      445: 'L10n.of(context).smb',
+      445: '局域网/SMB',
       80: 'WebDav',
       8080: 'WebDav',
     };
@@ -273,7 +273,7 @@ class LanClient implements RemoteClient {
     
     // Write mock content
     final sink = localFile.openWrite();
-    final text = 'L10n.of(context).zenfilesmbvirtualstoragebridgen'
+    final text = 'ZenFile 局域网/SMB Virtual Storage Bridge\n'
         'File: ${item.name}\n'
         'Path: ${item.path}\n'
         'Size: ${item.size} bytes\n'

@@ -8,14 +8,30 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 ---
 
+## 🌍 Language Settings
+
+**First time using ZenFile?** The app defaults to Chinese. To switch to English:
+
+1. Go to **Settings (设置)**
+2. Tap **More Settings (更多设置)**
+3. Select **Language**
+4. Choose **English**
+
+> 💡 Your language preference is saved automatically and will be restored on the next launch.
+
+---
+
 ## 🚀 What's New in v1.0.3
 
-**Full SVG Support** — ZenFile now fully supports `.svg` vector graphics with thumbnail previews and full-screen viewing, while maintaining complete support for images, videos, audio, and archives.
+**SVG Support & i18n Multi-Language** — ZenFile now fully supports `.svg` vector graphics with thumbnail previews and full-screen viewing, and adds **Chinese & English** bilingual interface support.
 
 | | |
 |---|---|
 | 🖼️ **SVG Thumbnails** | Grid and list views both support SVG thumbnail rendering |
 | 🔍 **SVG Viewer** | Full-screen viewer renders vector graphics perfectly with zoom support |
+| 🌐 **i18n Bilingual UI** | Full Chinese & English support across all 700+ UI strings |
+| 🔄 **Instant Language Switch** | Change language on-the-fly in Settings → Language |
+| 💾 **Persistent Preference** | Selected language is saved and restored on next launch |
 | 🎨 **Archive Colors** | Different compression formats display with their own color (zip orange / rar red / 7z purple / tar brown / gz green) |
 | 🌐 **Remote File Playback** | Remote server files are downloaded locally before playback, with remote thumbnail preview support |
 | 🐛 **Bug Fixes** | Fixed page freeze after extraction, remote file open failure and other issues |
@@ -70,9 +86,17 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 ## 📸 Screenshots
 
+**中文界面：**
+
 | | | | |
 |:---:|:---:|:---:|:---:|
-|<img src="https://raw.githubusercontent.com/l930203811/ZenFile/main/assets/screenshots/screenshot_4.jpg" width="200"> | <img src="https://raw.githubusercontent.com/l930203811/ZenFile/main/assets/screenshots/screenshot_2.jpg" width="200"> | <img src="https://raw.githubusercontent.com/l930203811/ZenFile/main/assets/screenshots/screenshot_3.jpg" width="200"> | <img src="https://raw.githubusercontent.com/l930203811/ZenFile/main/assets/screenshots/screenshot_1.png" width="200"> |
+|<img src="https://raw.githubusercontent.com/l930203811/ZenFile/main/assets/screenshots/screenshot_1.jpg" width="200"> | <img src="https://raw.githubusercontent.com/l930203811/ZenFile/main/assets/screenshots/screenshot_2.jpg" width="200"> | <img src="https://raw.githubusercontent.com/l930203811/ZenFile/main/assets/screenshots/screenshot_3.jpg" width="200"> | <img src="https://raw.githubusercontent.com/l930203811/ZenFile/main/assets/screenshots/screenshot_4.jpg" width="200"> |
+
+**English Interface：**
+
+| | | | |
+|:---:|:---:|:---:|:---:|
+|<img src="https://raw.githubusercontent.com/l930203811/ZenFile/main/assets/screenshots/en_screenshot_1.jpg" width="200"> | <img src="https://raw.githubusercontent.com/l930203811/ZenFile/main/assets/screenshots/en_screenshot_2.jpg" width="200"> | <img src="https://raw.githubusercontent.com/l930203811/ZenFile/main/assets/screenshots/en_screenshot_3.jpg" width="200"> | <img src="https://raw.githubusercontent.com/l930203811/ZenFile/main/assets/screenshots/en_screenshot_4.jpg" width="200"> |
 
 ---
 

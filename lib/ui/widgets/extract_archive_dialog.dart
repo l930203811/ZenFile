@@ -79,7 +79,7 @@ class _ExtractArchiveDialogState extends State<ExtractArchiveDialog> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'L10n.of(context).msgc4d7eece',
+                          L10n.of(context).msgc4d7eece,
                           style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         Text(
@@ -99,7 +99,7 @@ class _ExtractArchiveDialogState extends State<ExtractArchiveDialog> {
               TextField(
                 controller: _destController,
                 decoration: InputDecoration(
-                  labelText: 'L10n.of(context).msgf15821d0',
+                  labelText: L10n.of(context).msgf15821d0,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   prefixIcon: const Icon(Broken.folder_open),
                 ),
@@ -111,7 +111,7 @@ class _ExtractArchiveDialogState extends State<ExtractArchiveDialog> {
                 controller: _passwordController,
                 obscureText: _obscurePassword,
                 decoration: InputDecoration(
-                  labelText: 'L10n.of(context).msgff69affd',
+                  labelText: L10n.of(context).msgff69affd,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   prefixIcon: const Icon(Broken.lock),
                   suffixIcon: IconButton(

@@ -36,7 +36,7 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
 
   IconData _getIconForType(String type) {
     switch (type) {
-      case 'L10n.of(context).smb':
+      case '局域网/SMB':
         return Icons.dns_rounded;
       case 'FTP':
         return Icons.swap_horizontal_circle_rounded;
@@ -51,7 +51,7 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
 
   Color _getColorForType(String type) {
     switch (type) {
-      case 'L10n.of(context).smb':
+      case '局域网/SMB':
         return const Color(0xFF5B21B6);
       case 'FTP':
         return const Color(0xFFF97316);
@@ -69,7 +69,7 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('L10n.of(context).msg432fbb31', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(L10n.of(context).msg432fbb31, style: TextStyle(fontWeight: FontWeight.bold)),
         content: Text('确定要删除 "${conn.name}" 吗？'),
         actions: [
           TextButton(
@@ -102,11 +102,14 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
           icon: const Icon(Broken.arrow_left),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('网络', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          L10n.of(context).ui_network,
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Broken.add),
-            tooltip: 'L10n.of(context).msg3358aa10',
+            tooltip: L10n.of(context).msg3358aa10,
             onPressed: () async {
               await Navigator.push(
                 context,
@@ -127,7 +130,7 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
                       Icon(Broken.wifi, size: 64, color: theme.colorScheme.onSurface.withOpacity(0.15)),
                       const SizedBox(height: 20),
                       Text(
-                        'L10n.of(context).msgc9c900d0',
+                        L10n.of(context).msgc9c900d0,
                         style: theme.textTheme.titleMedium?.copyWith(
                           color: theme.colorScheme.onSurface.withOpacity(0.5),
                           fontWeight: FontWeight.bold,
@@ -135,7 +138,7 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'L10n.of(context).ftpsftpwebdavsmb1',
+                        L10n.of(context).ftpsftpwebdavsmb1,
                         style: TextStyle(
                           color: theme.colorScheme.onSurface.withOpacity(0.4),
                           fontSize: 14,
@@ -151,7 +154,7 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
                           _loadConnections();
                         },
                         icon: const Icon(Broken.add),
-                        label: const Text('L10n.of(context).msg3358aa10'),
+                        label: Text(L10n.of(context).msg3358aa10),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -236,7 +239,7 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
                           } catch (e) {
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('连接失败：$e'), backgroundColor: Colors.redAccent),
+                                SnackBar(content: Text('连接失败：{e}'), backgroundColor: Colors.redAccent),
                               );
                             }
                           }

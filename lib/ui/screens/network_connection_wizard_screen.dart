@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/icon_fonts/broken_icons.dart';
@@ -37,10 +37,10 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
   bool _isTesting = false;
   int _testStepIndex = 0;
   final List<String> _testSteps = [
-    'L10n.of(context).msgb5bc0bf1',
+    '正在解析主机地址...',
     '正在检查端口状态...',
-    'L10n.of(context).msg3005ba4d',
-    'L10n.of(context).msgab36a8c6',
+    '正在验证凭据...',
+    '正在挂载存储卷...',
   ];
 
   @override
@@ -115,7 +115,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
         _portController.text = '21';
       } else if (protocol == 'SFTP') {
         _portController.text = '22';
-      } else if (protocol == 'L10n.of(context).smb') {
+      } else if (protocol == L10n.of(context).smb) {
         _portController.text = '445';
       } else if (protocol == 'WebDav') {
         _webdavProtocol = 'http';
@@ -184,13 +184,13 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                 children: [
                   Icon(Icons.warning_amber_rounded, color: Colors.orange),
                   SizedBox(width: 8),
-                  Text('L10n.of(context).msgdf434415', style: TextStyle(fontFamily: 'LexendDeca', fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text('系统应用已禁用', style: TextStyle(fontFamily: 'LexendDeca', fontSize: 18, fontWeight: FontWeight.bold)),
                 ],
               ),
               content: const Text(
-                'L10n.of(context).documentsui'
-                'L10n.of(context).androidnn'
-                'L10n.of(context).msgb2af4e30'
+                '您的设备没有启用默认的系统文件/文档应用（DocumentsUI），'
+                '这是 Android 选择和挂载目录所必需的。\n\n'
+                '请检查"文件"或"文档"系统应用是否在设备设置中被禁用，'
                 '或启用它以使用 SAF 目录功能。',
                 style: TextStyle(fontSize: 14),
               ),
@@ -205,7 +205,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('请求 SAF 文件夹失败：$e'),
+              content: Text('请求 SAF 文件夹失败：{e}'),
               backgroundColor: Colors.redAccent,
               behavior: SnackBarBehavior.floating,
             ),
@@ -223,14 +223,14 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
 
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('L10n.of(context).msg65c7ecb6')),
+        SnackBar(content: Text(L10n.of(context).msg65c7ecb6)),
       );
       return;
     }
 
     if (_hostController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('L10n.of(context).msg69e3963c')),
+        SnackBar(content: Text(L10n.of(context).msg69e3963c)),
       );
       return;
     }
@@ -271,7 +271,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
           protocol: _webdavProtocol,
           rootPath: path,
         );
-      } else if (_selectedType == 'L10n.of(context).smb') {
+      } else if (_selectedType == L10n.of(context).smb) {
         client = LanClient(host: host, port: port, username: username, password: password);
       }
 
@@ -333,7 +333,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
         _prevStep(); // Go back to credentials input
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('连接失败：$e'),
+            content: Text('连接失败：{e}'),
             backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
           ),
@@ -353,8 +353,8 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: _prevStep,
         ),
-        title: const Text(
-          'L10n.of(context).msgce1ec2ce',
+        title: Text(
+          L10n.of(context).ui_remote_connection,
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
@@ -362,7 +362,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Center(
               child: Text(
-                '第 ${_currentStep + 1} / 3 步',
+            L10n.of(context).ui_step_n_of_3(_currentStep + 1),
                 style: TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w600,
@@ -424,11 +424,11 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
   // --- Step 1: Protocol Grid Selection ---
   Widget _buildProtocolSelectionStep(ThemeData theme) {
     final protocols = [
-      {'name': 'L10n.of(context).smb', 'desc': 'Local Area Network & SMB NAS Share', 'color': const Color(0xFF5B21B6)},
-      {'name': 'FTP', 'desc': 'L10n.of(context).msg25557d1f', 'color': const Color(0xFFF97316)},
-      {'name': 'SFTP', 'desc': 'L10n.of(context).ssh', 'color': const Color(0xFF0D9488)},
-      {'name': 'WebDav', 'desc': 'L10n.of(context).http', 'color': const Color(0xFFE11D48)},
-      {'name': 'SAF Folder', 'desc': 'L10n.of(context).androidsd', 'color': const Color(0xFF0284C7)},
+      {'name': L10n.of(context).smb, 'desc': 'Local Area Network & SMB NAS Share', 'color': Color(0xFF5B21B6)},
+      {'name': 'FTP', 'desc': L10n.of(context).msg25557d1f, 'color': Color(0xFFF97316)},
+      {'name': 'SFTP', 'desc': L10n.of(context).ssh, 'color': Color(0xFF0D9488)},
+      {'name': 'WebDav', 'desc': L10n.of(context).http, 'color': Color(0xFFE11D48)},
+      {'name': 'SAF Folder', 'desc': L10n.of(context).androidsd, 'color': Color(0xFF0284C7)},
     ];
 
     return ScrollConfiguration(
@@ -436,13 +436,13 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
       child: ListView(
         padding: const EdgeInsets.all(20.0),
         children: [
-          const Text(
-            'L10n.of(context).msg8486035b',
+          Text(
+            L10n.of(context).ui_choose_network_service,
             style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca'),
           ),
           const SizedBox(height: 6),
           Text(
-            'L10n.of(context).naszenfile',
+            L10n.of(context).naszenfile,
             style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withOpacity(0.6)),
           ),
           const SizedBox(height: 24),
@@ -543,7 +543,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '$_selectedType 设置',
+                      '$_selectedType ${L10n.of(context).cat_settings}',
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -551,7 +551,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                       ),
                     ),
                     Text(
-                      'L10n.of(context).msg5c808d9a',
+                      L10n.of(context).msg5c808d9a,
                       style: TextStyle(
                         fontSize: 12.5,
                         color: theme.colorScheme.onSurface.withOpacity(0.5),
@@ -565,16 +565,16 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
           const SizedBox(height: 28),
 
           // Connection Nickname
-          _buildInputLabel('连接名称'),
+          _buildInputLabel(L10n.of(context).ui_connection_name),
           _buildTextField(
             controller: _nameController,
-            hint: '例如：办公室 NAS、家庭共享',
+            hint: L10n.of(context).nas,
             icon: Broken.tag,
           ),
           const SizedBox(height: 18),
 
           if (_selectedType == 'WebDav') ...[
-            _buildInputLabel('协议'),
+            _buildInputLabel(L10n.of(context).ui_protocol),
             _buildProtocolToggle(theme),
             const SizedBox(height: 18),
           ],
@@ -583,13 +583,13 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
           _buildTextField(
             controller: _hostController,
             hint: _selectedType == 'WebDav'
-                ? 'L10n.of(context).dav'
-                : 'L10n.of(context).naslocal',
+                ? L10n.of(context).dav
+                : L10n.of(context).naslocal,
             icon: Broken.global,
           ),
           const SizedBox(height: 18),
 
-          _buildInputLabel('端口'),
+          _buildInputLabel(L10n.of(context).ui_port),
           _buildTextField(
             controller: _portController,
             hint: _selectedType == 'WebDav' ? '80' : '21',
@@ -599,24 +599,24 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
           const SizedBox(height: 18),
 
           if (_selectedType == 'WebDav') ...[
-            _buildInputLabel('路径'),
-            _buildTextField(
+            _buildInputLabel(L10n.of(context).ui_path_label),
+          _buildTextField(
             controller: _pathController,
-            hint: 'L10n.of(context).dav1',
+            hint: L10n.of(context).dav1,
             icon: Broken.folder_open,
           ),
             const SizedBox(height: 18),
           ],
 
-          _buildInputLabel('用户名（可选）'),
+          _buildInputLabel(L10n.of(context).ui_username_optional),
           _buildTextField(
             controller: _usernameController,
-            hint: 'L10n.of(context).anonymousadmin',
+            hint: L10n.of(context).anonymousadmin,
             icon: Broken.user,
           ),
           const SizedBox(height: 18),
 
-          _buildInputLabel('L10n.of(context).msgeec70cd2'),
+          _buildInputLabel(L10n.of(context).msgeec70cd2),
           _buildTextField(
             controller: _passwordController,
             hint: '••••••••',
@@ -637,7 +637,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
                   onPressed: _prevStep,
-                  child: const Text('返回'),
+                  child: Text(L10n.of(context).ui_back),
                 ),
               ),
               const SizedBox(width: 14),
@@ -654,7 +654,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('连接'),
+                      Text(L10n.of(context).ui_connect),
                       const SizedBox(width: 6),
                       Icon(Icons.arrow_forward_rounded, size: 16, color: Colors.white.withOpacity(0.9)),
                     ],
@@ -707,7 +707,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
           const SizedBox(height: 32),
 
           Text(
-            'L10n.of(context).msgf1fa9d44',
+            L10n.of(context).msgf1fa9d44,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -717,7 +717,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
           ),
           const SizedBox(height: 8),
           Text(
-            '请稍候，我们正在建立与 $_selectedType 服务器的可靠连接。',
+            '请稍候，我们正在建立与 {_selectedType} 服务器的可靠连接。',
             style: TextStyle(
               fontSize: 12.5,
               color: theme.colorScheme.onSurface.withOpacity(0.5),
@@ -853,7 +853,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
     Color color;
 
     switch (name) {
-      case 'L10n.of(context).smb':
+      case '局域网/SMB':
         iconData = Icons.dns_rounded;
         color = const Color(0xFF5B21B6);
         break;

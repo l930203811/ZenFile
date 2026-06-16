@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -102,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('L10n.of(context).msge109d1ea'),
+            content: Text('仪表盘刷新成功'),
             behavior: SnackBarBehavior.floating,
             duration: Duration(seconds: 1),
           ),
@@ -122,7 +122,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('L10n.of(context).msg05cea075', style: TextStyle(fontSize: 14)),
+          content: Text(L10n.of(context).msg05cea075, style: TextStyle(fontSize: 14)),
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 2),
           margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -175,13 +175,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'L10n.of(context).msg7498c202',
+                      L10n.of(context).msg7498c202,
                       style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
                 content: const Text(
-                  'L10n.of(context).msg03247b17',
+                  '确定要退出吗？再次按返回键或点击退出以关闭应用。',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 15, height: 1.4),
                 ),
@@ -433,7 +433,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                         _switchTab(0);
                         context.read<MediaProvider>().refreshMediaBackground();
                       },
-                      tooltip: 'L10n.of(context).msg6e0f9cef',
+                      tooltip: L10n.of(context).msg6e0f9cef,
                       icon: Icon(
                         Broken.category,
                         color: theme.colorScheme.primary,
@@ -458,7 +458,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                   children: [
                     IconButton(
                       onPressed: _handleRefresh,
-                      tooltip: 'L10n.of(context).msg354c1c9a',
+                      tooltip: L10n.of(context).msg354c1c9a,
                       icon: RotationTransition(
                         turns: _refreshIconController,
                         child: Icon(Broken.refresh, color: theme.colorScheme.primary),
@@ -473,7 +473,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                     ),
                     IconButton(
                       onPressed: () => QuickCategoriesGrid.showCustomizeDialog(context, (index) => setState(() => _currentIndex = index)),
-                      tooltip: 'L10n.of(context).msg19021d08',
+                      tooltip: L10n.of(context).msg19021d08,
                       icon: Icon(Broken.edit_2, color: theme.colorScheme.primary),
                     ),
                   ],

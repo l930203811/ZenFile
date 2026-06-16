@@ -71,7 +71,7 @@ class _DragDropActionDialogState extends State<DragDropActionDialog> {
     final provider = context.watch<FileManagerProvider>();
     final selectedCount = widget.sourcePaths.length;
     final isSingle = selectedCount == 1;
-    final itemName = isSingle ? p.basename(widget.sourcePaths.first) : '$selectedCount 个项目';
+    final itemName = isSingle ? p.basename(widget.sourcePaths.first) : '{selectedCount} 个项目';
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
@@ -376,7 +376,7 @@ class _DragDropActionDialogState extends State<DragDropActionDialog> {
           if (stableContext.mounted) {
             ScaffoldMessenger.of(stableContext).showSnackBar(
               SnackBar(
-                content: Text('创建压缩包失败：$e'),
+                content: Text('创建压缩包失败：{e}'),
                 backgroundColor: Colors.redAccent,
                 behavior: SnackBarBehavior.floating,
               ),

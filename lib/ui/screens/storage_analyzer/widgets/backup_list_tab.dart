@@ -170,7 +170,7 @@ class _BackupListTabState extends State<BackupListTab> {
                 _buildBottomSheetActionItem(
                   theme: theme,
                   icon: Broken.export_1,
-                  label: 'L10n.of(context).msga0b18169',
+                  label: L10n.of(context).msga0b18169,
                   color: Colors.teal,
                   onTap: () {
                     Navigator.pop(context);
@@ -191,7 +191,7 @@ class _BackupListTabState extends State<BackupListTab> {
                 _buildBottomSheetActionItem(
                   theme: theme,
                   icon: Broken.trash,
-                  label: 'L10n.of(context).msgb443cd06',
+                  label: L10n.of(context).msgb443cd06,
                   color: Colors.redAccent,
                   onTap: () async {
                     Navigator.pop(context);

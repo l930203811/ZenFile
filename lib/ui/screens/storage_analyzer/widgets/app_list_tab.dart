@@ -49,7 +49,7 @@ class AppListTab extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               const Text(
-                'L10n.of(context).msg7fbfdce6',
+                '未找到应用',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
             ],

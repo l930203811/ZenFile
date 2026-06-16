@@ -25,7 +25,7 @@ class AudioPlayerScreen extends StatefulWidget {
     super.key,
     required this.audioPath,
     required this.title,
-    this.artist = 'L10n.of(context).msg5e32276d',
+    this.artist = '未知艺术家',
     this.allSongs,
     this.initialIndex = 0,
   });
@@ -282,7 +282,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
           children: [
             Icon(Broken.timer, color: Colors.deepPurpleAccent),
             const SizedBox(width: 10),
-            Text('L10n.of(context).msg47cab5ae', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+            Text(L10n.of(context).msg47cab5ae, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
           ],
         ),
         content: Column(
@@ -326,7 +326,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('L10n.of(context).msgc16eed0e', style: TextStyle(color: Colors.white70, fontSize: 15)),
+                    Text(L10n.of(context).msgc16eed0e, style: TextStyle(color: Colors.white70, fontSize: 15)),
                     Text('${_playbackSpeed.toStringAsFixed(2)}x', style: const TextStyle(color: Colors.deepPurpleAccent, fontWeight: FontWeight.bold, fontSize: 15)),
                   ],
                 ),
@@ -475,7 +475,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('L10n.of(context).msg50c1b248'),
+            content: Text(L10n.of(context).msg50c1b248),
             backgroundColor: Colors.blueGrey,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -507,7 +507,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('L10n.of(context).msg6d16d396'),
+          content: Text(L10n.of(context).msg6d16d396),
           backgroundColor: Colors.deepPurpleAccent,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -534,7 +534,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                   color: _isShuffled ? Colors.deepPurpleAccent : Colors.white,
                 ),
                 title: Text(
-                  _isShuffled ? '随机播放: 开' : 'L10n.of(context).msg3038d9b8',
+                  _isShuffled ? '随机播放: 开' : L10n.of(context).msg3038d9b8,
                   style: TextStyle(
                     color: _isShuffled ? Colors.deepPurpleAccent : Colors.white,
                     fontWeight: FontWeight.w600,
@@ -560,7 +560,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                   color: _isBackgroundMode ? Colors.greenAccent : Colors.white,
                 ),
                 title: Text(
-                  _isBackgroundMode ? '后台：开' : 'L10n.of(context).msg29eed1da',
+                  _isBackgroundMode ? '后台：开' : L10n.of(context).msg29eed1da,
                   style: TextStyle(
                     color: _isBackgroundMode ? Colors.greenAccent : Colors.white,
                     fontWeight: FontWeight.w600,
@@ -568,8 +568,8 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                 ),
                 subtitle: Text(
                   _isBackgroundMode
-                      ? 'L10n.of(context).msg4aa059f7'
-                      : 'L10n.of(context).msg8f7f4490',
+                      ? L10n.of(context).msg4aa059f7
+                      : L10n.of(context).msg8f7f4490,
                   style: const TextStyle(color: Colors.white54, fontSize: 12),
                 ),
                 onTap: () {
@@ -588,7 +588,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
               ),
               ListTile(
                 leading: const Icon(Icons.tune_rounded, color: Colors.white),
-                title: const Text('L10n.of(context).msgb7c87215', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                title: Text(L10n.of(context).msgb7c87215, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
                 onTap: () {
                   Navigator.pop(ctx);
                   _showEqualizerDialog();
@@ -604,7 +604,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
               ),
               ListTile(
                 leading: const Icon(Icons.info_outline_rounded, color: Colors.white),
-                title: const Text('L10n.of(context).msgfc449780', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                title: Text(L10n.of(context).msgfc449780, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
                 subtitle: Text(_currentPath, style: const TextStyle(color: Colors.white54, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
                 onTap: () => Navigator.pop(ctx),
               ),

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/services.dart';
+import 'package:flutter/services.dart';
 import 'remote_client.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
@@ -42,7 +42,7 @@ class SafRemoteClient implements RemoteClient {
   Future<void> createDirectory(String path) async {
     final int lastSlash = path.lastIndexOf('/');
     final String parentUri = lastSlash != -1 ? path.substring(0, lastSlash) : '';
-    final String folderName = lastSlash != -1 ? path.substring(lastSlash + 1) : 'L10n.of(context).msgf3a485df';
+    final String folderName = lastSlash != -1 ? path.substring(lastSlash + 1) : '新建文件夹';
 
     await _channel.invokeMethod('createDirectory', {
       'rootUri': rootUri,
@@ -55,7 +55,7 @@ class SafRemoteClient implements RemoteClient {
   Future<void> createFile(String path) async {
     final int lastSlash = path.lastIndexOf('/');
     final String parentUri = lastSlash != -1 ? path.substring(0, lastSlash) : '';
-    final String fileName = lastSlash != -1 ? path.substring(lastSlash + 1) : 'L10n.of(context).msge48a7157';
+    final String fileName = lastSlash != -1 ? path.substring(lastSlash + 1) : '新建文件';
     await _channel.invokeMethod('createFile', {
       'rootUri': rootUri,
       'parentUri': parentUri,

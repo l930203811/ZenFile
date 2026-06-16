@@ -51,7 +51,7 @@ class SelectionActionBar extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  '已选择 $selectedCount 项',
+                  L10n.of(context).selectedcount(provider.selectedPaths.length),
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -66,7 +66,7 @@ class SelectionActionBar extends StatelessWidget {
               children: [
             _ActionButton(
               icon: Broken.document_copy,
-              label: '复制',
+              label: L10n.of(context).ui_copy,
               hideLabel: provider.hideActionText,
               onTap: () {
                 provider.copySelected();
@@ -77,7 +77,7 @@ class SelectionActionBar extends StatelessWidget {
             ),
             _ActionButton(
               icon: Broken.scissor,
-              label: '剪切',
+              label: L10n.of(context).ui_cut,
               hideLabel: provider.hideActionText,
               onTap: () {
                 provider.cutSelected();
@@ -88,7 +88,7 @@ class SelectionActionBar extends StatelessWidget {
             ),
             _ActionButton(
               icon: Broken.edit,
-              label: 'L10n.of(context).msgc8ce4b36',
+              label: L10n.of(context).msgc8ce4b36,
               hideLabel: provider.hideActionText,
               onTap: () async {
                 if (selectedCount == 1) {
@@ -96,10 +96,10 @@ class SelectionActionBar extends StatelessWidget {
                   final currentName = p.basename(path);
                   final newName = await FileActionDialogs.showTextInputDialog(
                     context,
-                    title: 'L10n.of(context).msgc8ce4b36',
-                    hint: 'L10n.of(context).msgf139c5cf',
+                    title: L10n.of(context).msgc8ce4b36,
+                    hint: L10n.of(context).msgf139c5cf,
                     initialValue: currentName,
-                    actionText: 'L10n.of(context).msgc8ce4b36',
+                    actionText: L10n.of(context).msgc8ce4b36,
                   );
                   if (newName != null && newName.isNotEmpty) {
                     await provider.renameFile(path, newName);
@@ -112,14 +112,14 @@ class SelectionActionBar extends StatelessWidget {
             ),
             _ActionButton(
               icon: Broken.trash,
-              label: '删除',
+              label: L10n.of(context).ui_delete,
               color: Colors.redAccent,
               hideLabel: provider.hideActionText,
               onTap: () async {
                 final confirm = await FileActionDialogs.showConfirmDialog(
                   context,
-                  title: 'L10n.of(context).msgcd0b9aca',
-                  content: '确定要删除 $selectedCount 个项目吗？此操作无法撤销。',
+                  title: L10n.of(context).msgcd0b9aca,
+                  content: L10n.of(context).selectedcount2(provider.selectedPaths.length),
                 );
                 if (confirm) {
                   await provider.deleteSelected();
@@ -128,7 +128,7 @@ class SelectionActionBar extends StatelessWidget {
             ),
             _ActionButton(
               icon: Broken.info_circle,
-              label: '属性',
+              label: L10n.of(context).ui_properties,
               hideLabel: provider.hideActionText,
               onTap: () => _showPropertiesModal(context, provider),
             ),
@@ -139,7 +139,7 @@ class SelectionActionBar extends StatelessWidget {
                   const Icon(Broken.more, size: 24),
                   if (!provider.hideActionText) ...[
                     const SizedBox(height: 4),
-                    const Text('更多', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
+                    Text(L10n.of(context).ui_more, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
                   ],
                 ],
               ),
@@ -189,7 +189,7 @@ class SelectionActionBar extends StatelessWidget {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(allPinned ? 'L10n.of(context).msga9b87614' : '已将所选项目置顶'),
+                        content: Text(allPinned ? L10n.of(context).msga9b87614 : L10n.of(context).ui_pinned_selected),
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
@@ -200,44 +200,44 @@ class SelectionActionBar extends StatelessWidget {
                 final selected = provider.selectedPaths.toList();
                 final allPinned = selected.isNotEmpty && selected.every((p) => PinService.isPinned(p));
                 return [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'archive',
                     child: Row(
                       children: [
-                        Icon(Broken.box_add, size: 20),
-                        SizedBox(width: 12),
-                        Text('压缩', style: TextStyle(fontWeight: FontWeight.w500)),
+                        const Icon(Broken.box_add, size: 20),
+                        const SizedBox(width: 12),
+                        Text(L10n.of(context).ui_compress, style: const TextStyle(fontWeight: FontWeight.w500)),
                       ],
                     ),
                   ),
                   if (hasClipboard)
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'paste',
                       child: Row(
                         children: [
-                          Icon(Broken.clipboard, size: 20),
-                          SizedBox(width: 12),
-                          Text('L10n.of(context).msg419be096', style: TextStyle(fontWeight: FontWeight.w500)),
+                          const Icon(Broken.clipboard, size: 20),
+                          const SizedBox(width: 12),
+                          Text(L10n.of(context).msg419be096, style: const TextStyle(fontWeight: FontWeight.w500)),
                         ],
                       ),
                     ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'share',
                     child: Row(
                       children: [
-                        Icon(Icons.share_outlined, size: 20),
-                        SizedBox(width: 12),
-                        Text('分享', style: TextStyle(fontWeight: FontWeight.w500)),
+                        const Icon(Icons.share_outlined, size: 20),
+                        const SizedBox(width: 12),
+                        Text(L10n.of(context).ui_share, style: const TextStyle(fontWeight: FontWeight.w500)),
                       ],
                     ),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'select_all',
                     child: Row(
                       children: [
-                        Icon(Broken.tick_square, size: 20),
-                        SizedBox(width: 12),
-                        Text('全选', style: TextStyle(fontWeight: FontWeight.w500)),
+                        const Icon(Broken.tick_square, size: 20),
+                        const SizedBox(width: 12),
+                        Text(L10n.of(context).ui_select_all, style: const TextStyle(fontWeight: FontWeight.w500)),
                       ],
                     ),
                   ),
@@ -251,7 +251,7 @@ class SelectionActionBar extends StatelessWidget {
                           color: allPinned ? Colors.orange : null,
                         ),
                         const SizedBox(width: 12),
-                        Text(allPinned ? 'L10n.of(context).msg84e4fac9' : '置顶', style: const TextStyle(fontWeight: FontWeight.w500)),
+                        Text(allPinned ? L10n.of(context).msg84e4fac9 : L10n.of(context).ui_pin_to_top, style: const TextStyle(fontWeight: FontWeight.w500)),
                       ],
                     ),
                   ),
@@ -401,19 +401,19 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
         children: [
           Icon(Broken.info_circle, color: theme.colorScheme.primary, size: 28),
           const SizedBox(width: 12),
-          const Text('属性', style: TextStyle(fontWeight: FontWeight.bold)),
+          Text(L10n.of(context).ui_properties, style: TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       content: _isLoading
-          ? const Padding(
-              padding: EdgeInsets.all(32.0),
+          ? Padding(
+              padding: const EdgeInsets.all(32.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('L10n.of(context).msg3be9abab', style: TextStyle(color: Colors.grey)),
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Text(L10n.of(context).msg3be9abab, style: TextStyle(color: Colors.grey)),
                 ],
               ),
             )
@@ -423,32 +423,32 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (isSingle) ...[
-                    _CopyablePropertyRow(label: '名称', value: nameDisplay),
-                    _CopyablePropertyRow(label: '路径', value: widget.selectedPaths.first),
+                    _CopyablePropertyRow(label: L10n.of(context).ui_name, value: nameDisplay),
+                    _CopyablePropertyRow(label: L10n.of(context).ui_path, value: widget.selectedPaths.first),
                     _CopyablePropertyRow(
-                      label: '大小',
+                      label: L10n.of(context).ui_size,
                       value: '${FileUtils.formatBytes(_totalBytes, 2)} ($_totalBytes bytes)',
                     ),
                     if (_mimeType == 'Folder / Directory')
                       _CopyablePropertyRow(
-                        label: '包含',
+                        label: L10n.of(context).ui_contains,
                         value: '${_folderCount - 1} subfolder(s), $_fileCount file(s)',
                       ),
                     if (_lastModified != null)
-                      _CopyablePropertyRow(label: 'L10n.of(context).msg1303e638', value: FileUtils.formatDate(_lastModified!)),
-                    if (_mimeType.isNotEmpty) _CopyablePropertyRow(label: '类型', value: _mimeType),
-                    if (_permissions.isNotEmpty) _CopyablePropertyRow(label: '权限', value: _permissions),
+                      _CopyablePropertyRow(label: L10n.of(context).msg1303e638, value: FileUtils.formatDate(_lastModified!)),
+                    if (_mimeType.isNotEmpty) _CopyablePropertyRow(label: L10n.of(context).ui_type, value: _mimeType),
+                    if (_permissions.isNotEmpty) _CopyablePropertyRow(label: L10n.of(context).ui_permissions, value: _permissions),
                   ] else ...[
                     _CopyablePropertyRow(
-                      label: 'L10n.of(context).msg880a18f3',
+                      label: L10n.of(context).msg880a18f3,
                       value: '$count items ($_folderCount folder(s), $_fileCount file(s))',
                     ),
                     _CopyablePropertyRow(
-                      label: 'L10n.of(context).msgea9ecb93',
+                      label: L10n.of(context).msgea9ecb93,
                       value: '${FileUtils.formatBytes(_totalBytes, 2)} ($_totalBytes bytes)',
                     ),
                     const SizedBox(height: 12),
-                    const Text('L10n.of(context).msg7704aa2c', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                    Text(L10n.of(context).msg7704aa2c, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                     const SizedBox(height: 8),
                     ConstrainedBox(
                       constraints: const BoxConstraints(maxHeight: 180),
@@ -483,7 +483,7 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
         FilledButton(
           onPressed: () => Navigator.pop(context),
           style: FilledButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-          child: const Text('完成'),
+          child: Text(L10n.of(context).ui_done),
         ),
       ],
     );
@@ -554,7 +554,7 @@ class _CopyablePropertyRow extends StatelessWidget {
         onTap: () {
           Clipboard.setData(ClipboardData(text: value));
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('已复制 $label 到剪贴板'), duration: const Duration(seconds: 1)),
+            SnackBar(content: Text(L10n.of(context).label1(label)), duration: const Duration(seconds: 1)),
           );
         },
         borderRadius: BorderRadius.circular(8),
