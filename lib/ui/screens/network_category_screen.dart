@@ -70,16 +70,16 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(L10n.of(context).msg432fbb31, style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Text('确定要删除 "${conn.name}" 吗？'),
+        content: Text(L10n.of(context).msgdeleteconn(conn.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('取消'),
+            child: Text(L10n.of(context).ui_cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
-            child: const Text('删除'),
+            child: Text(L10n.of(context).ui_delete),
           ),
         ],
       ),
@@ -113,7 +113,7 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
             onPressed: () async {
               await Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const NetworkConnectionWizardScreen()),
+                MaterialPageRoute(builder: (_) => NetworkConnectionWizardScreen(onNavigateTab: widget.onNavigateTab)),
               );
               _loadConnections();
             },
@@ -149,7 +149,7 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
                         onPressed: () async {
                           await Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const NetworkConnectionWizardScreen()),
+                            MaterialPageRoute(builder: (_) => NetworkConnectionWizardScreen(onNavigateTab: widget.onNavigateTab)),
                           );
                           _loadConnections();
                         },
@@ -239,7 +239,7 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
                           } catch (e) {
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('连接失败：{e}'), backgroundColor: Colors.redAccent),
+                                SnackBar(content: Text(L10n.of(context).e13(e.toString())), backgroundColor: Colors.redAccent),
                               );
                             }
                           }

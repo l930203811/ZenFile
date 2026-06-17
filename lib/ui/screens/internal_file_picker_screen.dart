@@ -407,7 +407,7 @@ class _InternalFilePickerScreenState extends State<InternalFilePickerScreen> {
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(widget.pickDirectory ? L10n.of(context).msg33b0b21c : '选择文件和文件夹', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text(widget.pickDirectory ? L10n.of(context).msg33b0b21c : L10n.of(context).ui_pick_files_folders, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               Text(_currentPath, style: TextStyle(fontSize: 12, color: theme.colorScheme.primary)),
             ],
           ),

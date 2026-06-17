@@ -23,7 +23,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
-        android:label="ZF管理器"
+        android:label="ZenFile"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:requestLegacyExternalStorage="true"
@@ -104,7 +104,7 @@
             android:enabled="true"
             android:exported="true"
             android:icon="@drawable/ic_launcher_default"
-            android:label="ZF管理器"
+            android:label="ZenFile"
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -117,7 +117,7 @@
             android:enabled="false"
             android:exported="true"
             android:icon="@drawable/design_1"
-            android:label="ZF管理器"
+            android:label="ZenFile"
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -130,7 +130,7 @@
             android:enabled="false"
             android:exported="true"
             android:icon="@drawable/design_2"
-            android:label="ZF管理器"
+            android:label="ZenFile"
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -143,7 +143,7 @@
             android:enabled="false"
             android:exported="true"
             android:icon="@drawable/design_3"
-            android:label="ZF管理器"
+            android:label="ZenFile"
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -156,7 +156,7 @@
             android:enabled="false"
             android:exported="true"
             android:icon="@drawable/design_4"
-            android:label="ZF管理器"
+            android:label="ZenFile"
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -169,7 +169,7 @@
             android:enabled="false"
             android:exported="true"
             android:icon="@drawable/design_5"
-            android:label="ZF管理器"
+            android:label="ZenFile"
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -182,7 +182,7 @@
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher"
-            android:label="ZF管理器"
+            android:label="ZenFile"
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

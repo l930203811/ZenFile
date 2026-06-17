@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../models/network_connection_model.dart';
+import '../../providers/file_manager_provider.dart';
 import '../../services/network_connections_service.dart';
 import '../../services/remote/remote_client.dart';
 import '../../services/remote/ftp_client.dart';
@@ -13,7 +15,8 @@ import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class NetworkConnectionWizardScreen extends StatefulWidget {
   final NetworkConnectionModel? existingConnection;
-  const NetworkConnectionWizardScreen({super.key, this.existingConnection});
+  final Function(int)? onNavigateTab;
+  const NetworkConnectionWizardScreen({super.key, this.existingConnection, this.onNavigateTab});
 
   @override
   State<NetworkConnectionWizardScreen> createState() => _NetworkConnectionWizardScreenState();
@@ -36,12 +39,6 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
   // Testing steps states
   bool _isTesting = false;
   int _testStepIndex = 0;
-  final List<String> _testSteps = [
-    '正在解析主机地址...',
-    '正在检查端口状态...',
-    '正在验证凭据...',
-    '正在挂载存储卷...',
-  ];
 
   @override
   void initState() {
@@ -171,7 +168,25 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
             backgroundColor: Theme.of(context).colorScheme.primary,
           ),
         );
-        Navigator.pop(context, true); // Return success
+        // Auto-open the remote server after successful connection
+        if (widget.onNavigateTab != null) {
+          final remoteClient = FileManagerProvider.createRemoteClient(connection);
+          try {
+            await remoteClient.connect();
+            if (mounted) {
+              final provider = context.read<FileManagerProvider>();
+              provider.openRemoteTab(remoteClient, connection);
+              widget.onNavigateTab!.call(1);
+              Navigator.pop(context, true);
+            }
+          } catch (_) {
+            if (mounted) {
+              Navigator.pop(context, true);
+            }
+          }
+        } else {
+          Navigator.pop(context, true);
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -313,7 +328,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '"${connection.name}" 连接成功！',
+                    L10n.of(context).connectedtype(connection.name),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -333,7 +348,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
         _prevStep(); // Go back to credentials input
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('连接失败：{e}'),
+            content: Text(L10n.of(context).e13(e.toString())),
             backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
           ),
@@ -717,7 +732,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
           ),
           const SizedBox(height: 8),
           Text(
-            '请稍候，我们正在建立与 {_selectedType} 服务器的可靠连接。',
+            L10n.of(context).selectedtype1(_selectedType),
             style: TextStyle(
               fontSize: 12.5,
               color: theme.colorScheme.onSurface.withOpacity(0.5),
@@ -738,9 +753,16 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
-                children: List.generate(_testSteps.length, (idx) {
+                children: List.generate(4, (idx) {
                   final active = idx == _testStepIndex;
                   final done = idx < _testStepIndex;
+                  final l10n = L10n.of(context);
+                  final stepLabels = [
+                    l10n.msgb5bc0bf1,
+                    l10n.msgc3d4e5f6,
+                    l10n.msg3005ba4d,
+                    l10n.msgab36a8c6,
+                  ];
 
                   Color itemColor;
                   IconData icon;
@@ -764,7 +786,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            _testSteps[idx],
+                            stepLabels[idx],
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: active ? FontWeight.bold : FontWeight.normal,

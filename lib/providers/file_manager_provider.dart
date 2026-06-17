@@ -156,7 +156,7 @@ class FileManagerProvider extends ChangeNotifier {
     if (_totalStorageBytes > 0) {
       _storageVolumes = [
         StorageVolume(
-          name: '内部存储',
+          name: 'Internal Storage',
           path: '/storage/emulated/0',
           isInternal: true,
           totalBytes: _totalStorageBytes,
@@ -1394,7 +1394,7 @@ class FileManagerProvider extends ChangeNotifier {
   Future<void> _detectStorageVolumes() async {
     final volumes = <StorageVolume>[];
     if (Platform.isAndroid) {
-      volumes.add(StorageVolume(name: '内部存储', path: '/storage/emulated/0', isInternal: true));
+      volumes.add(StorageVolume(name: 'Internal Storage', path: '/storage/emulated/0', isInternal: true));
 
       try {
         final extDirs = await getExternalStorageDirectories();

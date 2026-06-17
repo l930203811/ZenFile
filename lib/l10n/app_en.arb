@@ -1744,6 +1744,10 @@
     "description": "ui\\screens\\network_category_screen.dart"
   },
   "msg432fbb31": "Delete Connection",
+  "@msgdeleteconn": {
+    "type": "text"
+  },
+  "msgdeleteconn": "Are you sure you want to delete \"{name}\"?",
   "@msg3358aa10": {
     "description": "ui\\screens\\network_category_screen.dart"
   },
@@ -1764,6 +1768,13 @@
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
   "msgb5bc0bf1": "Resolving host address...",
+  "@msgb5bc0bf1": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "@msgc3d4e5f6": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msgc3d4e5f6": "Checking port status...",
   "@msg3005ba4d": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
@@ -1772,10 +1783,14 @@
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
   "msgab36a8c6": "Mounting storage volume...",
+  "name1": "\"{name}\" added successfully!",
   "@name1": {
     "type": "text"
   },
-  "name1": "\"{name}\" added successfully!",
+  "@connectedtype": {
+    "type": "text"
+  },
+  "connectedtype": "\"{name}\" connected successfully!",
   "@msgdf434415": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
@@ -2244,6 +2259,25 @@
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
   "msg2904d894": "Establishing secure proxy relay...",
+  "@msg2904d894": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "@msga1b2c3d4": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
+  "msga1b2c3d4": "Go Back to Parent",
+  "@msga1b2c3d5": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
+  "msga1b2c3d5": "How to Setup Shizuku?",
+  "@msga1b2c3d6": {
+    "description": "ui\\main.dart"
+  },
+  "msga1b2c3d6": "Storage Permission Required",
+  "@msga1b2c3d7": {
+    "description": "ui\\main.dart"
+  },
+  "msga1b2c3d7": "Grant Permission",
   "@msg2c146598": {
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
@@ -3104,5 +3138,46 @@
   "log_fix_remote_title": "Fixed remote connection page title display issue",
   "log_svg_thumbnail_category": "SVG thumbnails now display in category pages",
   "log_language_btn_top": "Language switch button moved to top of settings",
-  "log_fix_category_missing": "Fixed some categories not showing in English mode"
+  "log_fix_category_missing": "Fixed some categories not showing in English mode",
+  "ui_username": "Username",
+  "ui_anonymous": "Anonymous",
+  "ui_start": "Start",
+  "ui_stop": "Stop",
+  "ui_connected": "Connected",
+  "ui_activated": "Activated",
+  "ui_web_sharing_center": "Web Sharing Center",
+  "ui_local_web_share": "Local Web Share",
+  "ui_http_local_share_server": "HTTP Local Share Server",
+  "ui_server_idle": "Server Idle",
+  "ui_pick_files_folders": "Select Files and Folders",
+  "ui_secure_storage": "Secure Storage",
+  "ui_protected_total_space": "Protected Total Space",
+  "ui_hidden_files_count": "Hidden Files",
+  "ui_search_obfuscated": "Search obfuscated files...",
+  "ui_vault_empty": "Your secure vault is empty",
+  "ui_hide_files": "Hide Files",
+  "ui_global_search": "Global Search",
+  "ui_all": "All",
+  "ui_folders": "Folders",
+  "ui_images": "Images",
+  "ui_videos": "Videos",
+  "ui_audio": "Audio",
+  "ui_documents": "Documents",
+  "ui_no_matching_files": "No matching files found",
+  "ui_try_modify_search": "Try modifying your search text to find hidden items.",
+  "ui_vault_empty_desc": "XOR obfuscation signatures make files completely unopenable and hidden from the system scanner database. Click the button below to protect them.",
+  "ui_copied_n_items": "Copied {count} item(s) to clipboard",
+  "ui_cut_n_items": "Cut {count} item(s) to clipboard",
+  "ui_copy_tooltip": "Copy",
+  "ui_cut_tooltip": "Cut",
+  "ui_delete_tooltip": "Delete",
+  "ui_search_this_folder": "Search this folder",
+  "ui_search_files_subfolders_in": "Search files and subfolders in: {path}",
+  "ui_no_results": "No results found",
+  "ui_no_match_for": "No matches found for \"{query}\"",
+  "ui_n_selected": "{count} selected ({size})",
+  "ui_select_language_title": "Select Language",
+  "ui_select_language_desc": "Please select your preferred language",
+  "ui_language_chinese": "中文",
+  "ui_language_english": "English"
 }

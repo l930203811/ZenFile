@@ -1380,6 +1380,11 @@ class L10nZh extends L10n {
   String get msg432fbb31 => '删除连接';
 
   @override
+  String msgdeleteconn(Object name) {
+    return '确定要删除 \"$name\" 吗？';
+  }
+
+  @override
   String get msg3358aa10 => '添加连接';
 
   @override
@@ -1397,6 +1402,9 @@ class L10nZh extends L10n {
   String get msgb5bc0bf1 => '正在解析主机地址...';
 
   @override
+  String get msgc3d4e5f6 => '正在检查端口状态...';
+
+  @override
   String get msg3005ba4d => '正在验证凭据...';
 
   @override
@@ -1405,6 +1413,11 @@ class L10nZh extends L10n {
   @override
   String name1(Object name) {
     return '\"$name\" 添加成功！';
+  }
+
+  @override
+  String connectedtype(Object name) {
+    return '\"$name\" 连接成功！';
   }
 
   @override
@@ -1787,6 +1800,18 @@ class L10nZh extends L10n {
 
   @override
   String get msg2904d894 => '正在建立安全代理中继...';
+
+  @override
+  String get msga1b2c3d4 => '返回上一级';
+
+  @override
+  String get msga1b2c3d5 => '如何设置Shizuku？';
+
+  @override
+  String get msga1b2c3d6 => '需要存储权限';
+
+  @override
+  String get msga1b2c3d7 => '授予权限';
 
   @override
   String get msg2c146598 => '互联网云隧道已上线！临时链接已激活。';
@@ -2731,4 +2756,138 @@ class L10nZh extends L10n {
 
   @override
   String get log_fix_category_missing => '修复英文模式下部分分类不显示';
+
+  @override
+  String get ui_username => '用户名';
+
+  @override
+  String get ui_anonymous => '匿名';
+
+  @override
+  String get ui_start => '启动';
+
+  @override
+  String get ui_stop => '停止';
+
+  @override
+  String get ui_connected => '已连接';
+
+  @override
+  String get ui_activated => '已激活';
+
+  @override
+  String get ui_web_sharing_center => '网页共享中心';
+
+  @override
+  String get ui_local_web_share => '本地网页共享';
+
+  @override
+  String get ui_http_local_share_server => 'HTTP本地共享服务器';
+
+  @override
+  String get ui_server_idle => '服务器空闲';
+
+  @override
+  String get ui_pick_files_folders => '选择文件和文件夹';
+
+  @override
+  String get ui_secure_storage => '安全存储';
+
+  @override
+  String get ui_protected_total_space => '已保护总空间';
+
+  @override
+  String get ui_hidden_files_count => '已隐藏文件';
+
+  @override
+  String get ui_search_obfuscated => '搜索混淆文件...';
+
+  @override
+  String get ui_vault_empty => '您的安全保险箱为空';
+
+  @override
+  String get ui_hide_files => '隐藏文件';
+
+  @override
+  String get ui_global_search => '全局搜索';
+
+  @override
+  String get ui_all => '全部';
+
+  @override
+  String get ui_folders => '文件夹';
+
+  @override
+  String get ui_images => '图片';
+
+  @override
+  String get ui_videos => '视频';
+
+  @override
+  String get ui_audio => '音频';
+
+  @override
+  String get ui_documents => '文档';
+
+  @override
+  String get ui_no_matching_files => '未找到匹配文件';
+
+  @override
+  String get ui_try_modify_search => '请尝试修改搜索文本以查找隐藏项目。';
+
+  @override
+  String get ui_vault_empty_desc =>
+      'XOR混淆签名混淆使文件完全无法打开，并从系统扫描器数据库中隐藏。点击下方的按钮来保护它们。';
+
+  @override
+  String ui_copied_n_items(Object count) {
+    return '已复制 $count 个项目到剪贴板';
+  }
+
+  @override
+  String ui_cut_n_items(Object count) {
+    return '已剪切 $count 个项目到剪贴板';
+  }
+
+  @override
+  String get ui_copy_tooltip => '复制';
+
+  @override
+  String get ui_cut_tooltip => '剪切';
+
+  @override
+  String get ui_delete_tooltip => '删除';
+
+  @override
+  String get ui_search_this_folder => '搜索此文件夹';
+
+  @override
+  String ui_search_files_subfolders_in(Object path) {
+    return '搜索文件和子文件夹于：$path';
+  }
+
+  @override
+  String get ui_no_results => '未找到结果';
+
+  @override
+  String ui_no_match_for(Object query) {
+    return '未找到匹配 \"$query\" 的内容';
+  }
+
+  @override
+  String ui_n_selected(Object count, Object size) {
+    return '$count 已选择 ($size)';
+  }
+
+  @override
+  String get ui_select_language_title => '选择语言';
+
+  @override
+  String get ui_select_language_desc => '请选择您偏好的语言';
+
+  @override
+  String get ui_language_chinese => '中文';
+
+  @override
+  String get ui_language_english => 'English';
 }

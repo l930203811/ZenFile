@@ -125,7 +125,7 @@ class ZenFileApp extends StatefulWidget {
 
 class _ZenFileAppState extends State<ZenFileApp> {
   ThemeMode _themeMode = ThemeMode.system;
-  Locale _locale = const Locale('zh', 'CN');
+  Locale _locale = const Locale('en', 'US');
   bool? _hasPermission;
   bool _sharingObserverSetup = false;
   bool _isResolvingIntent = false;
@@ -152,7 +152,7 @@ class _ZenFileAppState extends State<ZenFileApp> {
     });
     _themeMode = PreferencesService.getThemeMode();
     final savedLocale = PreferencesService.getAppLocale();
-    _locale = savedLocale == 'en' ? const Locale('en', 'US') : const Locale('zh', 'CN');
+    _locale = savedLocale == 'zh' ? const Locale('zh', 'CN') : const Locale('en', 'US');
     // Setup sharing observer immediately to catch incoming intents at the earliest possible frame!
     _setupSharingIntentObserver();
     _initializeApplication();
@@ -166,6 +166,131 @@ class _ZenFileAppState extends State<ZenFileApp> {
 
   Future<void> _initializeApplication() async {
     await _checkStoragePermission();
+    // Show language picker on first launch
+    if (!PreferencesService.hasSelectedLanguage() && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showFirstTimeLanguagePicker();
+      });
+    }
+  }
+
+  void _showFirstTimeLanguagePicker() {
+    final context = navigatorKey.currentContext;
+    if (context == null || !context.mounted) return;
+
+    String selectedLocale = 'zh';
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        final theme = Theme.of(ctx);
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: Column(
+                children: [
+                  Text(
+                    L10n.of(ctx).ui_select_language_title,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Select Language / 选择语言',
+                    style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    L10n.of(ctx).ui_select_language_desc,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                  ),
+                  const SizedBox(height: 20),
+                  _buildLanguageOption(ctx, 'zh', '中文', 'Chinese', selectedLocale == 'zh', (val) {
+                    setDialogState(() => selectedLocale = val);
+                  }),
+                  const SizedBox(height: 12),
+                  _buildLanguageOption(ctx, 'en', 'English', '英文', selectedLocale == 'en', (val) {
+                    setDialogState(() => selectedLocale = val);
+                  }),
+                ],
+              ),
+              actions: [
+                FilledButton(
+                  onPressed: () {
+                    setLocale(selectedLocale);
+                    PreferencesService.setHasSelectedLanguage(true);
+                    Navigator.of(ctx).pop();
+                  },
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 48),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('确定 / Confirm', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildLanguageOption(BuildContext ctx, String locale, String label, String subtitle, bool isSelected, ValueChanged<String> onTap) {
+    final theme = Theme.of(ctx);
+    return InkWell(
+      onTap: () => onTap(locale),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: isSelected ? theme.colorScheme.primary.withOpacity(0.1) : theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? theme.colorScheme.primary : theme.dividerColor.withOpacity(0.3),
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+              color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.4),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: theme.colorScheme.onSurface.withOpacity(0.5),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _checkStoragePermission() async {
@@ -303,7 +428,7 @@ class _ZenFileAppState extends State<ZenFileApp> {
 
   void setLocale(String localeCode) {
     setState(() {
-      _locale = localeCode == 'en' ? const Locale('en', 'US') : const Locale('zh', 'CN');
+      _locale = localeCode == 'zh' ? const Locale('zh', 'CN') : const Locale('en', 'US');
     });
     PreferencesService.saveAppLocale(localeCode);
   }
@@ -334,14 +459,14 @@ class _ZenFileAppState extends State<ZenFileApp> {
               supportedLocales: L10n.supportedLocales,
               locale: _getLocale(),
               localeResolutionCallback: (locale, supportedLocales) {
-                if (locale == null) return const Locale('zh', 'CN');
+                if (locale == null) return const Locale('en', 'US');
                 // Match by languageCode only, not full locale (to handle Locale('en', 'US'))
                 for (final supported in supportedLocales) {
                   if (supported.languageCode == locale.languageCode) {
                     return supported;
                   }
                 }
-                return const Locale('zh', 'CN');
+                return const Locale('en', 'US');
               },
               theme: AppTheme.getAppTheme(light: true, seed: baseSeedColor, customScheme: activeLightScheme, fontFamily: fileManager.fontFamilyOption),
               darkTheme: AppTheme.getAppTheme(light: false, pitchBlack: fileManager.amoledMode, seed: baseSeedColor, customScheme: activeDarkScheme, fontFamily: fileManager.fontFamilyOption),
@@ -483,7 +608,7 @@ class _StoragePermissionShield extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  '需要存储权限',
+                  L10n.of(context).msga1b2c3d6,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 12),
@@ -500,7 +625,7 @@ class _StoragePermissionShield extends StatelessWidget {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
                   icon: const Icon(Broken.shield_tick),
-                  label: const Text('授予权限', style: TextStyle(fontWeight: FontWeight.bold)),
+                  label: Text(L10n.of(context).msga1b2c3d7, style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ],
             ),

@@ -502,7 +502,7 @@ class PreferencesService {
   static const String _keyAdaptiveMultiLineNames = 'adaptive_multiline_names';
 
   static bool getAdaptiveMultiLineNames() {
-    return _prefs?.getBool(_keyAdaptiveMultiLineNames) ?? false;
+    return _prefs?.getBool(_keyAdaptiveMultiLineNames) ?? true;
   }
 
   static Future<void> saveAdaptiveMultiLineNames(bool val) async {
@@ -705,5 +705,15 @@ class PreferencesService {
 
   static Future<void> saveAppLocale(String val) async {
     await _prefs?.setString(_keyAppLocale, val);
+  }
+
+  static const String _keyHasSelectedLanguage = 'has_selected_language';
+
+  static bool hasSelectedLanguage() {
+    return _prefs?.getBool(_keyHasSelectedLanguage) ?? false;
+  }
+
+  static Future<void> setHasSelectedLanguage(bool val) async {
+    await _prefs?.setBool(_keyHasSelectedLanguage, val);
   }
 }

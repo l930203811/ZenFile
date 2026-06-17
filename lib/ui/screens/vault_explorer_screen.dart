@@ -546,13 +546,13 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
                         color: Colors.green.withOpacity(0.12),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Broken.security_card, color: Colors.green, size: 16),
-                          SizedBox(width: 6),
+                          const Icon(Broken.security_card, color: Colors.green, size: 16),
+                          const SizedBox(width: 6),
                           Text(
-                            '已激活',
+                            L10n.of(context).ui_activated,
                             style: TextStyle(
                               color: Colors.green,
                               fontWeight: FontWeight.bold,
@@ -575,7 +575,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: '搜索混淆文件...',
+                    hintText: L10n.of(context).ui_search_obfuscated,
                     prefixIcon: const Icon(Broken.search_normal),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
@@ -623,8 +623,8 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
         foregroundColor: Colors.white,
         elevation: 4,
         icon: const Icon(Broken.add_square),
-        label: const Text(
-          '隐藏文件',
+        label: Text(
+          L10n.of(context).ui_hide_files,
           style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.3),
         ),
       ),
@@ -669,7 +669,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '安全存储',
+                L10n.of(context).ui_secure_storage,
                 style: TextStyle(
                   fontSize: 10.5,
                   fontWeight: FontWeight.bold,
@@ -687,7 +687,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                '已保护总空间',
+                L10n.of(context).ui_protected_total_space,
                 style: TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w500,
@@ -714,7 +714,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '已隐藏文件',
+                  L10n.of(context).ui_hidden_files_count,
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
@@ -752,14 +752,15 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              _searchQuery.isNotEmpty ? '未找到匹配文件' : '您的安全保险箱为空',
+              _searchQuery.isNotEmpty
+                  ? L10n.of(context).ui_no_matching_files : L10n.of(context).ui_vault_empty,
               style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Text(
               _searchQuery.isNotEmpty
-                  ? '请尝试修改搜索文本以查找隐藏项目。'
-                  : 'XOR混淆签名混淆使文件完全无法打开，并从系统扫描器数据库中隐藏。点击下方的L10n.of(context).msg4828116a来保护它们。',
+                  ? L10n.of(context).ui_try_modify_search
+                  : L10n.of(context).ui_vault_empty_desc,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,

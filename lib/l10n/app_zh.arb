@@ -1773,6 +1773,10 @@
   "@msg432fbb31": {
     "description": "ui\\screens\\network_category_screen.dart"
   },
+  "@msgdeleteconn": {
+    "type": "text"
+  },
+  "msgdeleteconn": "确定要删除 \"{name}\" 吗？",
   "msg3358aa10": "添加连接",
   "@msg3358aa10": {
     "description": "ui\\screens\\network_category_screen.dart"
@@ -1794,6 +1798,10 @@
   "@msgb5bc0bf1": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
+  "@msgc3d4e5f6": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msgc3d4e5f6": "正在检查端口状态...",
   "msg3005ba4d": "正在验证凭据...",
   "@msg3005ba4d": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
@@ -1804,9 +1812,12 @@
   },
   "name1": "\"{name}\" 添加成功！",
   "@name1": {
-    "description": "ui\\screens\\network_connection_wizard_screen.dart",
     "type": "text"
   },
+  "@connectedtype": {
+    "type": "text"
+  },
+  "connectedtype": "\"{name}\" 连接成功！",
   "msgdf434415": "系统应用已禁用",
   "@msgdf434415": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
@@ -2290,8 +2301,27 @@
   "@msg2904d894": {
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
-  "msg2c146598": "互联网云隧道已上线！临时链接已激活。",
+  "@msga1b2c3d4": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
+  "msga1b2c3d4": "返回上一级",
+  "@msga1b2c3d5": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
+  "msga1b2c3d5": "如何设置Shizuku？",
+  "@msga1b2c3d6": {
+    "description": "ui\\main.dart"
+  },
+  "msga1b2c3d6": "需要存储权限",
+  "@msga1b2c3d7": {
+    "description": "ui\\main.dart"
+  },
+  "msga1b2c3d7": "授予权限",
   "@msg2c146598": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg2c146598": "互联网云隧道已上线！临时链接已激活。",
+  "@msg4a5d26f4": {
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
   "msg4a5d26f4": "链接已复制到剪贴板！",
@@ -3163,5 +3193,46 @@
   "log_fix_remote_title": "修复远程连接页面标题显示异常",
   "log_svg_thumbnail_category": "SVG 缩略图在分类页面中正常显示",
   "log_language_btn_top": "语言切换按钮移至设置页顶部",
-  "log_fix_category_missing": "修复英文模式下部分分类不显示"
+  "log_fix_category_missing": "修复英文模式下部分分类不显示",
+  "ui_username": "用户名",
+  "ui_anonymous": "匿名",
+  "ui_start": "启动",
+  "ui_stop": "停止",
+  "ui_connected": "已连接",
+  "ui_activated": "已激活",
+  "ui_web_sharing_center": "网页共享中心",
+  "ui_local_web_share": "本地网页共享",
+  "ui_http_local_share_server": "HTTP本地共享服务器",
+  "ui_server_idle": "服务器空闲",
+  "ui_pick_files_folders": "选择文件和文件夹",
+  "ui_secure_storage": "安全存储",
+  "ui_protected_total_space": "已保护总空间",
+  "ui_hidden_files_count": "已隐藏文件",
+  "ui_search_obfuscated": "搜索混淆文件...",
+  "ui_vault_empty": "您的安全保险箱为空",
+  "ui_hide_files": "隐藏文件",
+  "ui_global_search": "全局搜索",
+  "ui_all": "全部",
+  "ui_folders": "文件夹",
+  "ui_images": "图片",
+  "ui_videos": "视频",
+  "ui_audio": "音频",
+  "ui_documents": "文档",
+  "ui_no_matching_files": "未找到匹配文件",
+  "ui_try_modify_search": "请尝试修改搜索文本以查找隐藏项目。",
+  "ui_vault_empty_desc": "XOR混淆签名混淆使文件完全无法打开，并从系统扫描器数据库中隐藏。点击下方的按钮来保护它们。",
+  "ui_copied_n_items": "已复制 {count} 个项目到剪贴板",
+  "ui_cut_n_items": "已剪切 {count} 个项目到剪贴板",
+  "ui_copy_tooltip": "复制",
+  "ui_cut_tooltip": "剪切",
+  "ui_delete_tooltip": "删除",
+  "ui_search_this_folder": "搜索此文件夹",
+  "ui_search_files_subfolders_in": "搜索文件和子文件夹于：{path}",
+  "ui_no_results": "未找到结果",
+  "ui_no_match_for": "未找到匹配 \"{query}\" 的内容",
+  "ui_n_selected": "{count} 已选择 ({size})",
+  "ui_select_language_title": "选择语言",
+  "ui_select_language_desc": "请选择您偏好的语言",
+  "ui_language_chinese": "中文",
+  "ui_language_english": "English"
 }

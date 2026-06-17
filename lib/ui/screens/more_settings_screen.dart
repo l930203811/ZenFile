@@ -380,7 +380,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                 ),
                 SettingsTile(
                   icon: Broken.language_circle,
-                  title: '语言 / Language',
+                  title: L10n.of(context).ui_language,
                   subtitle: PreferencesService.getAppLocale() == 'en' ? 'English' : '中文',
                   trailing: Icon(Icons.chevron_right_rounded, color: theme.colorScheme.onSurface.withOpacity(0.4)),
                   onTap: () => _showLanguagePickerDialog(context),

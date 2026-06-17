@@ -37,8 +37,8 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
     if (_ftpService.isActive) {
       _ftpService.stop();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('FTP服务器已成功停止'),
+        SnackBar(
+          content: Text(L10n.of(context).msgfca29cb3 + ' ' + L10n.of(context).msgd70e9bdf),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -60,7 +60,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('启动FTP服务器出错：{e}'),
+            content: Text(L10n.of(context).ftp2 + ' ' + L10n.of(context).msg8a0b5bf5),
             behavior: SnackBarBehavior.floating,
             backgroundColor: Colors.redAccent,
           ),
@@ -72,8 +72,8 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
   Future<void> _pickHomeDirectory() async {
     if (_ftpService.isActive) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('请在更改配置前停止服务器'),
+        SnackBar(
+          content: Text(L10n.of(context).msg8a0b5bf5),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -116,7 +116,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
             controller: controller,
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
-              labelText: '端口号',
+              labelText: L10n.of(context).msg5d57821d,
               hintText: 'e.g., 9999',
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             ),
@@ -124,7 +124,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('取消'),
+              child: Text(L10n.of(context).msg96d2b75f),
             ),
             ElevatedButton(
               onPressed: () {
@@ -144,7 +144,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
-              child: const Text('保存'),
+              child: Text(L10n.of(context).msgc8ce4b36),
             ),
           ],
         );
@@ -175,14 +175,14 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
           content: TextField(
             controller: controller,
             decoration: InputDecoration(
-              labelText: '用户名',
+              labelText: L10n.of(context).ui_username,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('取消'),
+              child: Text(L10n.of(context).msg96d2b75f),
             ),
             ElevatedButton(
               onPressed: () {
@@ -201,7 +201,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
-              child: const Text('保存'),
+              child: Text(L10n.of(context).msgc8ce4b36),
             ),
           ],
         );
@@ -268,33 +268,33 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
               }
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'cwd',
                 child: Row(
                   children: [
-                    Icon(Broken.folder, size: 18),
-                    SizedBox(width: 10),
-                    Text('更改目录'),
+                    const Icon(Broken.folder, size: 18),
+                    const SizedBox(width: 10),
+                    Text(L10n.of(context).msgfefea1b3),
                   ],
                 ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'port',
                 child: Row(
                   children: [
-                    Icon(Icons.numbers_rounded, size: 18),
-                    SizedBox(width: 10),
-                    Text('更改端口'),
+                    const Icon(Icons.numbers_rounded, size: 18),
+                    const SizedBox(width: 10),
+                    Text(L10n.of(context).msg5d57821d),
                   ],
                 ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'user',
                 child: Row(
                   children: [
-                    Icon(Icons.person_outline_rounded, size: 18),
-                    SizedBox(width: 10),
-                    Text('设置用户'),
+                    const Icon(Icons.person_outline_rounded, size: 18),
+                    const SizedBox(width: 10),
+                    Text(L10n.of(context).msg3bce2199),
                   ],
                 ),
               ),
@@ -312,13 +312,13 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
                   ],
                 ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'shortcut',
                 child: Row(
                   children: [
-                    Icon(Icons.add_to_home_screen_rounded, size: 18),
-                    SizedBox(width: 10),
-                    Text('创建快捷方式'),
+                    const Icon(Icons.add_to_home_screen_rounded, size: 18),
+                    const SizedBox(width: 10),
+                    Text(L10n.of(context).msg3bce2199),
                   ],
                 ),
               ),
@@ -366,7 +366,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
                                 ),
                                 const SizedBox(width: 12),
                                 Text(
-                                  isActive ? '已激活' : L10n.of(context).msgd70e9bdf,
+                                  isActive ? L10n.of(context).ui_activated : L10n.of(context).msgd70e9bdf,
                                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                                 ),
                               ],
@@ -379,8 +379,8 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
                                   L10n.of(context).msg7ae644e4,
                                   style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6), fontWeight: FontWeight.w500),
                                 ),
-                                const Text(
-                                  '已连接',
+                                Text(
+                                  L10n.of(context).ui_connected,
                                   style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
                                 ),
                               ],
@@ -438,9 +438,9 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
 
                             // User Name Row
                             ListTile(
-                              title: const Text('用户名', style: TextStyle(fontWeight: FontWeight.w500)),
+                              title: Text(L10n.of(context).ui_username, style: const TextStyle(fontWeight: FontWeight.w500)),
                               trailing: Text(
-                                _ftpService.anonymous ? '匿名' : _ftpService.username,
+                                _ftpService.anonymous ? L10n.of(context).ui_anonymous : _ftpService.username,
                                 style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6), fontWeight: FontWeight.bold),
                               ),
                               onTap: _showUserDialog,
@@ -496,7 +496,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
                     elevation: 2,
                   ),
                   child: Text(
-                    isActive ? '停止' : '启动',
+                    isActive ? L10n.of(context).ui_stop : L10n.of(context).ui_start,
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 0.5),
                   ),
                 ),

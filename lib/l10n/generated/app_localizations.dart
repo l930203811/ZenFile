@@ -2713,6 +2713,12 @@ abstract class L10n {
   /// **'删除连接'**
   String get msg432fbb31;
 
+  /// No description provided for @msgdeleteconn.
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要删除 \"{name}\" 吗？'**
+  String msgdeleteconn(Object name);
+
   /// ui\screens\network_category_screen.dart
   ///
   /// In zh, this message translates to:
@@ -2746,6 +2752,12 @@ abstract class L10n {
   /// ui\screens\network_connection_wizard_screen.dart
   ///
   /// In zh, this message translates to:
+  /// **'正在检查端口状态...'**
+  String get msgc3d4e5f6;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
   /// **'正在验证凭据...'**
   String get msg3005ba4d;
 
@@ -2755,11 +2767,17 @@ abstract class L10n {
   /// **'正在挂载存储卷...'**
   String get msgab36a8c6;
 
-  /// ui\screens\network_connection_wizard_screen.dart
+  /// No description provided for @name1.
   ///
   /// In zh, this message translates to:
   /// **'\"{name}\" 添加成功！'**
   String name1(Object name);
+
+  /// No description provided for @connectedtype.
+  ///
+  /// In zh, this message translates to:
+  /// **'\"{name}\" 连接成功！'**
+  String connectedtype(Object name);
 
   /// ui\screens\network_connection_wizard_screen.dart
   ///
@@ -3462,6 +3480,30 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'正在建立安全代理中继...'**
   String get msg2904d894;
+
+  /// ui\widgets\restricted_folder_banner.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'返回上一级'**
+  String get msga1b2c3d4;
+
+  /// ui\widgets\restricted_folder_banner.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'如何设置Shizuku？'**
+  String get msga1b2c3d5;
+
+  /// ui\main.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'需要存储权限'**
+  String get msga1b2c3d6;
+
+  /// ui\main.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'授予权限'**
+  String get msga1b2c3d7;
 
   /// ui\screens\web_sharing_screen.dart
   ///
@@ -5214,6 +5256,252 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'修复英文模式下部分分类不显示'**
   String get log_fix_category_missing;
+
+  /// No description provided for @ui_username.
+  ///
+  /// In zh, this message translates to:
+  /// **'用户名'**
+  String get ui_username;
+
+  /// No description provided for @ui_anonymous.
+  ///
+  /// In zh, this message translates to:
+  /// **'匿名'**
+  String get ui_anonymous;
+
+  /// No description provided for @ui_start.
+  ///
+  /// In zh, this message translates to:
+  /// **'启动'**
+  String get ui_start;
+
+  /// No description provided for @ui_stop.
+  ///
+  /// In zh, this message translates to:
+  /// **'停止'**
+  String get ui_stop;
+
+  /// No description provided for @ui_connected.
+  ///
+  /// In zh, this message translates to:
+  /// **'已连接'**
+  String get ui_connected;
+
+  /// No description provided for @ui_activated.
+  ///
+  /// In zh, this message translates to:
+  /// **'已激活'**
+  String get ui_activated;
+
+  /// No description provided for @ui_web_sharing_center.
+  ///
+  /// In zh, this message translates to:
+  /// **'网页共享中心'**
+  String get ui_web_sharing_center;
+
+  /// No description provided for @ui_local_web_share.
+  ///
+  /// In zh, this message translates to:
+  /// **'本地网页共享'**
+  String get ui_local_web_share;
+
+  /// No description provided for @ui_http_local_share_server.
+  ///
+  /// In zh, this message translates to:
+  /// **'HTTP本地共享服务器'**
+  String get ui_http_local_share_server;
+
+  /// No description provided for @ui_server_idle.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器空闲'**
+  String get ui_server_idle;
+
+  /// No description provided for @ui_pick_files_folders.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择文件和文件夹'**
+  String get ui_pick_files_folders;
+
+  /// No description provided for @ui_secure_storage.
+  ///
+  /// In zh, this message translates to:
+  /// **'安全存储'**
+  String get ui_secure_storage;
+
+  /// No description provided for @ui_protected_total_space.
+  ///
+  /// In zh, this message translates to:
+  /// **'已保护总空间'**
+  String get ui_protected_total_space;
+
+  /// No description provided for @ui_hidden_files_count.
+  ///
+  /// In zh, this message translates to:
+  /// **'已隐藏文件'**
+  String get ui_hidden_files_count;
+
+  /// No description provided for @ui_search_obfuscated.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索混淆文件...'**
+  String get ui_search_obfuscated;
+
+  /// No description provided for @ui_vault_empty.
+  ///
+  /// In zh, this message translates to:
+  /// **'您的安全保险箱为空'**
+  String get ui_vault_empty;
+
+  /// No description provided for @ui_hide_files.
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏文件'**
+  String get ui_hide_files;
+
+  /// No description provided for @ui_global_search.
+  ///
+  /// In zh, this message translates to:
+  /// **'全局搜索'**
+  String get ui_global_search;
+
+  /// No description provided for @ui_all.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部'**
+  String get ui_all;
+
+  /// No description provided for @ui_folders.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件夹'**
+  String get ui_folders;
+
+  /// No description provided for @ui_images.
+  ///
+  /// In zh, this message translates to:
+  /// **'图片'**
+  String get ui_images;
+
+  /// No description provided for @ui_videos.
+  ///
+  /// In zh, this message translates to:
+  /// **'视频'**
+  String get ui_videos;
+
+  /// No description provided for @ui_audio.
+  ///
+  /// In zh, this message translates to:
+  /// **'音频'**
+  String get ui_audio;
+
+  /// No description provided for @ui_documents.
+  ///
+  /// In zh, this message translates to:
+  /// **'文档'**
+  String get ui_documents;
+
+  /// No description provided for @ui_no_matching_files.
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到匹配文件'**
+  String get ui_no_matching_files;
+
+  /// No description provided for @ui_try_modify_search.
+  ///
+  /// In zh, this message translates to:
+  /// **'请尝试修改搜索文本以查找隐藏项目。'**
+  String get ui_try_modify_search;
+
+  /// No description provided for @ui_vault_empty_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'XOR混淆签名混淆使文件完全无法打开，并从系统扫描器数据库中隐藏。点击下方的按钮来保护它们。'**
+  String get ui_vault_empty_desc;
+
+  /// No description provided for @ui_copied_n_items.
+  ///
+  /// In zh, this message translates to:
+  /// **'已复制 {count} 个项目到剪贴板'**
+  String ui_copied_n_items(Object count);
+
+  /// No description provided for @ui_cut_n_items.
+  ///
+  /// In zh, this message translates to:
+  /// **'已剪切 {count} 个项目到剪贴板'**
+  String ui_cut_n_items(Object count);
+
+  /// No description provided for @ui_copy_tooltip.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制'**
+  String get ui_copy_tooltip;
+
+  /// No description provided for @ui_cut_tooltip.
+  ///
+  /// In zh, this message translates to:
+  /// **'剪切'**
+  String get ui_cut_tooltip;
+
+  /// No description provided for @ui_delete_tooltip.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除'**
+  String get ui_delete_tooltip;
+
+  /// No description provided for @ui_search_this_folder.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索此文件夹'**
+  String get ui_search_this_folder;
+
+  /// No description provided for @ui_search_files_subfolders_in.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索文件和子文件夹于：{path}'**
+  String ui_search_files_subfolders_in(Object path);
+
+  /// No description provided for @ui_no_results.
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到结果'**
+  String get ui_no_results;
+
+  /// No description provided for @ui_no_match_for.
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到匹配 \"{query}\" 的内容'**
+  String ui_no_match_for(Object query);
+
+  /// No description provided for @ui_n_selected.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 已选择 ({size})'**
+  String ui_n_selected(Object count, Object size);
+
+  /// No description provided for @ui_select_language_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择语言'**
+  String get ui_select_language_title;
+
+  /// No description provided for @ui_select_language_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'请选择您偏好的语言'**
+  String get ui_select_language_desc;
+
+  /// No description provided for @ui_language_chinese.
+  ///
+  /// In zh, this message translates to:
+  /// **'中文'**
+  String get ui_language_chinese;
+
+  /// No description provided for @ui_language_english.
+  ///
+  /// In zh, this message translates to:
+  /// **'English'**
+  String get ui_language_english;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

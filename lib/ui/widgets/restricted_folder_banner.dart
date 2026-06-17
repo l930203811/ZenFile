@@ -78,7 +78,7 @@ class RestrictedFolderBanner extends StatelessWidget {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
                     ),
                     icon: Icon(Broken.arrow_right_3, size: 20, color: theme.colorScheme.primary),
-                    label: Text('返回上一级', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: theme.colorScheme.primary)),
+                    label: Text(L10n.of(context).msga1b2c3d4, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: theme.colorScheme.primary)),
                     onPressed: onGoBack,
                   ),
                 if (onGoBack != null) const SizedBox(height: 16),
@@ -112,7 +112,7 @@ class RestrictedFolderBanner extends StatelessWidget {
                 const SizedBox(height: 20),
                 TextButton.icon(
                   icon: Icon(Broken.info_circle, size: 18, color: theme.colorScheme.primary),
-                  label: Text('如何设置Shizuku？', style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.w600)),
+                  label: Text(L10n.of(context).msga1b2c3d5, style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.w600)),
                   onPressed: () async {
                     final url = Uri.parse('https://shizuku.rikka.app/guide/setup/');
                     try {

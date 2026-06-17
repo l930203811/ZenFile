@@ -56,7 +56,7 @@ class StorageOverviewCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                '内部存储',
+                'Internal Storage',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,

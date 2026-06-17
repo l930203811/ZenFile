@@ -29,7 +29,7 @@ class GlobalSearchScreen extends StatefulWidget {
 class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _query = '';
-  String _selectedFilter = '全部'; // 全部, 文件夹, 图片, 视频, 音频, 文档
+  late String _selectedFilter; // All, Folders, Images, Videos, Audio, Documents
   
   List<FileItemModel> _results = [];
   bool _isSearching = false;
@@ -60,13 +60,13 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   String? _searchFolderPath;
   String? _lastActivePath;
 
-  final List<String> _filters = [
-    '全部',
-    '文件夹',
-    '图片',
-    '视频',
-    '音频',
-    '文档',
+  List<String> get _filters => [
+    L10n.of(context).ui_all,
+    L10n.of(context).ui_folders,
+    L10n.of(context).ui_images,
+    L10n.of(context).ui_videos,
+    L10n.of(context).ui_audio,
+    L10n.of(context).ui_documents,
   ];
 
   @override
@@ -148,7 +148,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         : _searchFolderPath!;
     
     // 1. Instant check from MediaProvider indexes if matching filter
-    if (_selectedFilter == '全部' || _selectedFilter == '文档') {
+    if (_selectedFilter == L10n.of(context).ui_all || _selectedFilter == L10n.of(context).ui_documents) {
       final matchingDocs = <FileSystemEntity>[];
       for (final doc in mediaProvider.documents) {
         if (!isGlobal && !doc.path.startsWith(rootPath)) continue;
@@ -169,7 +169,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
       }
     }
 
-    if (_selectedFilter == '全部' || _selectedFilter == '音频') {
+    if (_selectedFilter == L10n.of(context).ui_all || _selectedFilter == L10n.of(context).ui_audio) {
       for (final song in mediaProvider.audios) {
         final path = song.data;
         if (!isGlobal && !path.startsWith(rootPath)) continue;
@@ -211,17 +211,17 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
           final isDir = entity is Directory;
           
           bool matchFilter = false;
-          if (_selectedFilter == '全部') {
+          if (_selectedFilter == L10n.of(context).ui_all) {
             matchFilter = true;
           } else if (_selectedFilter == L10n.of(context).msg1f4c1042 && isDir) {
             matchFilter = true;
-          } else if (_selectedFilter == '图片' && !isDir && _isImage(name)) {
+          } else if (_selectedFilter == L10n.of(context).ui_images && !isDir && _isImage(name)) {
             matchFilter = true;
-          } else if (_selectedFilter == '视频' && !isDir && _isVideo(name)) {
+          } else if (_selectedFilter == L10n.of(context).ui_videos && !isDir && _isVideo(name)) {
             matchFilter = true;
-          } else if (_selectedFilter == '音频' && !isDir && _isAudio(name)) {
+          } else if (_selectedFilter == L10n.of(context).ui_audio && !isDir && _isAudio(name)) {
             matchFilter = true;
-          } else if (_selectedFilter == '文档' && !isDir && _isDoc(name)) {
+          } else if (_selectedFilter == L10n.of(context).ui_documents && !isDir && _isDoc(name)) {
             matchFilter = true;
           }
 
@@ -297,7 +297,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     if (_selectedPaths.isEmpty) return;
     context.read<FileManagerProvider>().setClipboard(_selectedPaths.toList(), isCut: false);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('已复制 ${_selectedPaths.length} 个项目到剪贴板')),
+      SnackBar(content: Text(L10n.of(context).ui_copied_n_items(_selectedPaths.length))),
     );
     _clearSelection();
   }
@@ -306,7 +306,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     if (_selectedPaths.isEmpty) return;
     context.read<FileManagerProvider>().setClipboard(_selectedPaths.toList(), isCut: true);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('已剪切 ${_selectedPaths.length} 个项目到剪贴板')),
+      SnackBar(content: Text(L10n.of(context).ui_cut_n_items(_selectedPaths.length))),
     );
     _clearSelection();
   }
@@ -462,7 +462,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
               ),
         title: _isSelectionMode
             ? Text(
-                '${_selectedPaths.length} 已选择 (${FileUtils.formatBytes(_totalSelectedSize, 1)})',
+                L10n.of(context).ui_n_selected(_selectedPaths.length, FileUtils.formatBytes(_totalSelectedSize, 1)),
                 style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               )
             : TextField(
@@ -471,7 +471,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                 onChanged: _onSearchChanged,
                 style: theme.textTheme.titleMedium,
                 decoration: InputDecoration(
-                  hintText: isGlobal ? '全局搜索...' : L10n.of(context).msgf2ef53c0,
+                  hintText: isGlobal ? L10n.of(context).ui_global_search : L10n.of(context).msgf2ef53c0,
                   hintStyle: TextStyle(color: theme.colorScheme.onSurface.withAlpha(102)),
                   border: InputBorder.none,
                   suffixIcon: _query.isNotEmpty
@@ -492,12 +492,12 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
             ? [
                 IconButton(
                   icon: const Icon(Broken.document_copy),
-                  tooltip: '复制',
+                  tooltip: L10n.of(context).ui_copy_tooltip,
                   onPressed: _handleCopySelected,
                 ),
                 IconButton(
                   icon: const Icon(Broken.scissor),
-                  tooltip: '剪切',
+                  tooltip: L10n.of(context).ui_cut_tooltip,
                   onPressed: _handleCutSelected,
                 ),
                 IconButton(
@@ -507,7 +507,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                 ),
                 IconButton(
                   icon: const Icon(Broken.trash, color: Colors.red),
-                  tooltip: '删除',
+                  tooltip: L10n.of(context).ui_delete_tooltip,
                   onPressed: _handleDeleteSelected,
                 ),
                 PopupMenuButton<String>(
@@ -532,33 +532,33 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                     }
                   },
                   itemBuilder: (context) => [
-                    const PopupMenuItem<String>(
+                    PopupMenuItem<String>(
                       value: 'select_all',
                       child: Row(
                         children: [
-                          Icon(Broken.tick_square, size: 20),
-                          SizedBox(width: 12),
-                          Text('全选', style: TextStyle(fontWeight: FontWeight.w500)),
+                          const Icon(Broken.tick_square, size: 20),
+                          const SizedBox(width: 12),
+                          Text(L10n.of(context).ui_select_all, style: const TextStyle(fontWeight: FontWeight.w500)),
                         ],
                       ),
                     ),
-                    const PopupMenuItem<String>(
+                    PopupMenuItem<String>(
                       value: 'share',
                       child: Row(
                         children: [
-                          Icon(Icons.share_outlined, size: 20),
-                          SizedBox(width: 12),
-                          Text('分享', style: TextStyle(fontWeight: FontWeight.w500)),
+                          const Icon(Icons.share_outlined, size: 20),
+                          const SizedBox(width: 12),
+                          Text(L10n.of(context).ui_share, style: const TextStyle(fontWeight: FontWeight.w500)),
                         ],
                       ),
                     ),
-                    const PopupMenuItem<String>(
+                    PopupMenuItem<String>(
                       value: 'properties',
                       child: Row(
                         children: [
-                          Icon(Broken.info_circle, size: 20),
-                          SizedBox(width: 12),
-                          Text('属性', style: TextStyle(fontWeight: FontWeight.w500)),
+                          const Icon(Broken.info_circle, size: 20),
+                          const SizedBox(width: 12),
+                          Text(L10n.of(context).ui_properties, style: const TextStyle(fontWeight: FontWeight.w500)),
                         ],
                       ),
                     ),
@@ -663,17 +663,17 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                 ? _buildEmptyState(
                     theme,
                     Broken.search_normal_1,
-                    isGlobal ? L10n.of(context).msg88e45bb8 : '搜索此文件夹',
+                    isGlobal ? L10n.of(context).msg88e45bb8 : L10n.of(context).ui_search_this_folder,
                     isGlobal
                         ? 'Find any file, folder, document or media instantly across your device'
-                        : '搜索文件和子文件夹于：${_searchFolderPath!.split("/").last}',
+                        : L10n.of(context).ui_search_files_subfolders_in(_searchFolderPath!.split("/").last),
                   )
                 : _results.isEmpty && !_isSearching
                     ? _buildEmptyState(
                         theme,
                         Broken.document_filter,
-                        '未找到结果',
-                        '未找到匹配 "$_query" 的内容',
+                        L10n.of(context).ui_no_results,
+                        L10n.of(context).ui_no_match_for(_query),
                       )
                     : ListView.builder(
                         physics: const BouncingScrollPhysics(),

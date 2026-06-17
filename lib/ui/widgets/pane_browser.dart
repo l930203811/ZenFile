@@ -57,8 +57,8 @@ class _PaneBrowserState extends State<PaneBrowser> {
     }
   }
 
-  String _clipboardLabel(FileManagerProvider provider) {
-    final prefix = provider.isCut ? '剪切' : '复制';
+  String _clipboardLabel(FileManagerProvider provider, BuildContext context) {
+    final prefix = provider.isCut ? L10n.of(context).ui_cut : L10n.of(context).ui_copy;
     if (provider.isRemoteClipboard) {
       final items = provider.remoteClipboardItems;
       if (items.isEmpty) return prefix;
@@ -84,7 +84,8 @@ class _PaneBrowserState extends State<PaneBrowser> {
         itemNames.add(p.basename(path));
       }
     }
-    final prefix = provider.isCut ? '剪切' : '复制';
+    final l10n = L10n.of(context);
+    final prefix = provider.isCut ? l10n.ui_cut : l10n.ui_copy;
     final maxItemHeight = 200.0;
 
     showDialog(
@@ -128,7 +129,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '$prefix · ${itemNames.length} 项',
+                    l10n.ui_cut_copy_items(prefix, itemNames.length),
                     style: theme.textTheme.labelMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: provider.isCut ? Colors.orange : theme.colorScheme.primary,
@@ -190,7 +191,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
-                      child: const Text('清除', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                      child: Text(l10n.ui_clear, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -203,7 +204,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                         await provider.pasteFile(context, clearAfterPaste: true);
                       },
                       icon: const Icon(Icons.content_paste, size: 16),
-                      label: const Text('粘贴', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                      label: Text(l10n.ui_paste, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: theme.colorScheme.primary,
                         foregroundColor: theme.colorScheme.onPrimary,
@@ -310,7 +311,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
           context,
           title: isMulti ? L10n.of(context).msgcd0b9aca : L10n.of(context).msg4b342999,
           content: isMulti
-              ? '确定要删除 ${provider.selectedPaths.length} 个项目吗？此操作无法撤销。'
+              ? L10n.of(context).count1(provider.selectedPaths.length)
               : L10n.of(context).msgee14ee27,
         );
         if (confirm) {
@@ -449,7 +450,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                   ),
                                   const SizedBox(width: 3),
                                   Text(
-                                    _clipboardLabel(provider),
+                                    _clipboardLabel(provider, context),
                                     style: TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.bold,
@@ -814,8 +815,8 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                     ),
                                     padding: EdgeInsets.zero,
                                   ),
-                                  child: const Text(
-                                    '取消操作',
+                                  child: Text(
+                                    L10n.of(context).msg17093362,
                                     style: TextStyle(fontSize: 12),
                                   ),
                                 ),

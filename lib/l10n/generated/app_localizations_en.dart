@@ -1450,6 +1450,11 @@ class L10nEn extends L10n {
   String get msg432fbb31 => 'Delete Connection';
 
   @override
+  String msgdeleteconn(Object name) {
+    return 'Are you sure you want to delete \"$name\"?';
+  }
+
+  @override
   String get msg3358aa10 => 'Add Connection';
 
   @override
@@ -1467,6 +1472,9 @@ class L10nEn extends L10n {
   String get msgb5bc0bf1 => 'Resolving host address...';
 
   @override
+  String get msgc3d4e5f6 => 'Checking port status...';
+
+  @override
   String get msg3005ba4d => 'Verifying credentials...';
 
   @override
@@ -1475,6 +1483,11 @@ class L10nEn extends L10n {
   @override
   String name1(Object name) {
     return '\"$name\" added successfully!';
+  }
+
+  @override
+  String connectedtype(Object name) {
+    return '\"$name\" connected successfully!';
   }
 
   @override
@@ -1864,6 +1877,18 @@ class L10nEn extends L10n {
 
   @override
   String get msg2904d894 => 'Establishing secure proxy relay...';
+
+  @override
+  String get msga1b2c3d4 => 'Go Back to Parent';
+
+  @override
+  String get msga1b2c3d5 => 'How to Setup Shizuku?';
+
+  @override
+  String get msga1b2c3d6 => 'Storage Permission Required';
+
+  @override
+  String get msga1b2c3d7 => 'Grant Permission';
 
   @override
   String get msg2c146598 =>
@@ -2823,4 +2848,139 @@ class L10nEn extends L10n {
   @override
   String get log_fix_category_missing =>
       'Fixed some categories not showing in English mode';
+
+  @override
+  String get ui_username => 'Username';
+
+  @override
+  String get ui_anonymous => 'Anonymous';
+
+  @override
+  String get ui_start => 'Start';
+
+  @override
+  String get ui_stop => 'Stop';
+
+  @override
+  String get ui_connected => 'Connected';
+
+  @override
+  String get ui_activated => 'Activated';
+
+  @override
+  String get ui_web_sharing_center => 'Web Sharing Center';
+
+  @override
+  String get ui_local_web_share => 'Local Web Share';
+
+  @override
+  String get ui_http_local_share_server => 'HTTP Local Share Server';
+
+  @override
+  String get ui_server_idle => 'Server Idle';
+
+  @override
+  String get ui_pick_files_folders => 'Select Files and Folders';
+
+  @override
+  String get ui_secure_storage => 'Secure Storage';
+
+  @override
+  String get ui_protected_total_space => 'Protected Total Space';
+
+  @override
+  String get ui_hidden_files_count => 'Hidden Files';
+
+  @override
+  String get ui_search_obfuscated => 'Search obfuscated files...';
+
+  @override
+  String get ui_vault_empty => 'Your secure vault is empty';
+
+  @override
+  String get ui_hide_files => 'Hide Files';
+
+  @override
+  String get ui_global_search => 'Global Search';
+
+  @override
+  String get ui_all => 'All';
+
+  @override
+  String get ui_folders => 'Folders';
+
+  @override
+  String get ui_images => 'Images';
+
+  @override
+  String get ui_videos => 'Videos';
+
+  @override
+  String get ui_audio => 'Audio';
+
+  @override
+  String get ui_documents => 'Documents';
+
+  @override
+  String get ui_no_matching_files => 'No matching files found';
+
+  @override
+  String get ui_try_modify_search =>
+      'Try modifying your search text to find hidden items.';
+
+  @override
+  String get ui_vault_empty_desc =>
+      'XOR obfuscation signatures make files completely unopenable and hidden from the system scanner database. Click the button below to protect them.';
+
+  @override
+  String ui_copied_n_items(Object count) {
+    return 'Copied $count item(s) to clipboard';
+  }
+
+  @override
+  String ui_cut_n_items(Object count) {
+    return 'Cut $count item(s) to clipboard';
+  }
+
+  @override
+  String get ui_copy_tooltip => 'Copy';
+
+  @override
+  String get ui_cut_tooltip => 'Cut';
+
+  @override
+  String get ui_delete_tooltip => 'Delete';
+
+  @override
+  String get ui_search_this_folder => 'Search this folder';
+
+  @override
+  String ui_search_files_subfolders_in(Object path) {
+    return 'Search files and subfolders in: $path';
+  }
+
+  @override
+  String get ui_no_results => 'No results found';
+
+  @override
+  String ui_no_match_for(Object query) {
+    return 'No matches found for \"$query\"';
+  }
+
+  @override
+  String ui_n_selected(Object count, Object size) {
+    return '$count selected ($size)';
+  }
+
+  @override
+  String get ui_select_language_title => 'Select Language';
+
+  @override
+  String get ui_select_language_desc => 'Please select your preferred language';
+
+  @override
+  String get ui_language_chinese => '中文';
+
+  @override
+  String get ui_language_english => 'English';
 }

@@ -60,8 +60,8 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
     if (_webService.isLocalActive) {
       await _webService.stopLocalServer();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('本地 HTTP 共享服务器已停止。'),
+        SnackBar(
+          content: Text(L10n.of(context).msg5345cdce + ' ' + L10n.of(context).msgd70e9bdf),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -71,7 +71,7 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
         await _webService.startLocalServer(rootPath);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('本地 HTTP 共享服务器已启动！URL: ${_webService.localServerUrl}'),
+            content: Text(L10n.of(context).msg5345cdce + ' ' + L10n.of(context).msgd70e9bdf + ' URL: ${_webService.localServerUrl}'),
             behavior: SnackBarBehavior.floating,
             backgroundColor: Theme.of(context).colorScheme.primary,
           ),
@@ -79,7 +79,7 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('启动 HTTP 服务器出错：$e'),
+            content: Text(L10n.of(context).msg5345cdce + ' ' + L10n.of(context).msg8a0b5bf5),
             behavior: SnackBarBehavior.floating,
             backgroundColor: Colors.redAccent,
           ),
@@ -103,15 +103,15 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
         context: context,
         barrierDismissible: false,
         builder: (context) {
-          return const AlertDialog(
+          return AlertDialog(
             content: Row(
               children: [
-                CircularProgressIndicator(),
-                SizedBox(width: 20),
+                const CircularProgressIndicator(),
+                const SizedBox(width: 20),
                 Expanded(
                   child: Text(
-                    '正在建立安全代理中继...',
-                    style: TextStyle(fontFamily: 'LexendDeca', fontSize: 14),
+                    L10n.of(context).msg2904d894,
+                    style: const TextStyle(fontFamily: 'LexendDeca', fontSize: 14),
                   ),
                 ),
               ],
@@ -136,7 +136,7 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
         } catch (e) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('启动云端共享失败：$e'),
+              content: Text(L10n.of(context).msg8a0b5bf5),
               behavior: SnackBarBehavior.floating,
               backgroundColor: Colors.redAccent,
             ),
@@ -149,8 +149,8 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
   void _copyToClipboard(String text) {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('链接已复制到剪贴板！'),
+      SnackBar(
+        content: Text(L10n.of(context).msg4fb42e6e),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -267,8 +267,8 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          '网页共享中心',
+        title: Text(
+          L10n.of(context).ui_web_sharing_center,
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
@@ -348,7 +348,7 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
                               )
                             : null,
                         child: Text(
-                          '本地网页共享',
+                          L10n.of(context).ui_local_web_share,
                           style: TextStyle(
                             fontSize: 13.5,
                             fontWeight: FontWeight.bold,
@@ -407,8 +407,8 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.all(20.0),
       children: [
-        const Text(
-          'HTTP本地共享服务器',
+        Text(
+          L10n.of(context).ui_http_local_share_server,
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca'),
         ),
         const SizedBox(height: 4),
@@ -444,15 +444,15 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
                         child: const Icon(Icons.circle, color: Colors.green, size: 10),
                       ),
                       const SizedBox(width: 8),
-                      const Text(
-                        '服务器在线并流式传输中',
+                      Text(
+                        L10n.of(context).msgd70e9bdf,
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.green),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    '直接浏览器 URL：',
+                    L10n.of(context).msg22b03c02,
                     style: TextStyle(fontSize: 11.5, color: theme.colorScheme.onSurface.withOpacity(0.4), fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
@@ -508,7 +508,7 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                    '共享目录：{shareDir}',
+                    L10n.of(context).msgfefea1b3 + ': ' + shareDir,
                     style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6), fontWeight: FontWeight.w600),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -532,8 +532,8 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
                     color: theme.colorScheme.onSurface.withOpacity(0.2),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    '服务器空闲',
+                  Text(
+                    L10n.of(context).ui_server_idle,
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
@@ -562,7 +562,7 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
           onPressed: () => _toggleLocalServer(shareDir),
           icon: Icon(_webService.isLocalActive ? Icons.stop_rounded : Icons.play_arrow_rounded),
           label: Text(
-            _webService.isLocalActive ? '停止网页服务器' : L10n.of(context).msg974465c1,
+            _webService.isLocalActive ? L10n.of(context).msga3c80551 : L10n.of(context).msg974465c1,
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
           ),
         ),
@@ -577,8 +577,8 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.all(20.0),
       children: [
-        const Text(
-          '互联网分享隧道',
+        Text(
+          L10n.of(context).msg2c146598,
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca'),
         ),
         const SizedBox(height: 4),
@@ -614,8 +614,8 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
                         child: Icon(Icons.cloud_done, color: theme.colorScheme.primary, size: 16),
                       ),
                       const SizedBox(width: 8),
-                      const Text(
-                        '云隧道已激活',
+                      Text(
+                        L10n.of(context).msgd70e9bdf,
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.blueAccent),
                       ),
                     ],
@@ -672,8 +672,8 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
           const SizedBox(height: 24),
 
           // Dynamic Active Speedometer Counter Clients
-          const Text(
-            '已连接的浏览器客户端',
+          Text(
+            L10n.of(context).msgb77e4adf,
             style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca'),
           ),
           const SizedBox(height: 8),
@@ -776,13 +776,13 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
                     color: theme.colorScheme.onSurface.withOpacity(0.2),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    '互联网共享未激活',
+                  Text(
+                    L10n.of(context).msgd70e9bdf,
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Activate the tunnel to establish a secure link that works beyond local Wi-Fi.',
+                    L10n.of(context).msg27d5bd3c,
                     style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.5), height: 1.3),
                     textAlign: TextAlign.center,
                   ),

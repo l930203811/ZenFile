@@ -247,7 +247,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
                       });
                     },
                   )
-                : const Text('回收站'),
+                : Text(L10n.of(context).ui_recycle_bin),
         leading: _isSelectionMode
             ? IconButton(
                 icon: const Icon(Icons.close_rounded),
