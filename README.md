@@ -8,19 +8,6 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 ---
 
-## 🌍 Language Settings
-
-**First time using ZenFile?** The app defaults to Chinese. To switch to English:
-
-1. Go to **Settings (设置)**
-2. Tap **More Settings (更多设置)**
-3. Select **Language**
-4. Choose **English**
-
-> 💡 Your language preference is saved automatically and will be restored on the next launch.
-
----
-
 ## 🚀 What's New in v1.0.3
 
 **SVG Support & i18n Multi-Language** — ZenFile now fully supports `.svg` vector graphics with thumbnail previews and full-screen viewing, and adds **Chinese & English** bilingual interface support.
