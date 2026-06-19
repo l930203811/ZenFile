@@ -5,7 +5,14 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
+import 'app_localizations_ar.dart';
+import 'app_localizations_de.dart';
 import 'app_localizations_en.dart';
+import 'app_localizations_es.dart';
+import 'app_localizations_fr.dart';
+import 'app_localizations_ja.dart';
+import 'app_localizations_ko.dart';
+import 'app_localizations_ru.dart';
 import 'app_localizations_zh.dart';
 
 // ignore_for_file: type=lint
@@ -93,8 +100,16 @@ abstract class L10n {
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
+    Locale('ar'),
+    Locale('de'),
     Locale('en'),
+    Locale('es'),
+    Locale('fr'),
+    Locale('ja'),
+    Locale('ko'),
+    Locale('ru'),
     Locale('zh'),
+    Locale('zh', 'TW'),
   ];
 
   /// main.dart
@@ -400,8 +415,8 @@ abstract class L10n {
   /// ui\screens\about_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'v1.0.3 (查看)'**
-  String get v103;
+  /// **'v1.0.4 (查看)'**
+  String get v104;
 
   /// ui\screens\about_screen.dart
   ///
@@ -532,8 +547,8 @@ abstract class L10n {
   /// ui\screens\about_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'下载 ZenFile v1.0.3'**
-  String get zenfilev103;
+  /// **'下载 ZenFile v1.0.4'**
+  String get zenfilev104;
 
   /// ui\screens\about_screen.dart
   ///
@@ -5257,6 +5272,36 @@ abstract class L10n {
   /// **'修复英文模式下部分分类不显示'**
   String get log_fix_category_missing;
 
+  /// No description provided for @log_text_editor.
+  ///
+  /// In zh, this message translates to:
+  /// **'新增文本编辑器功能：新建文件、另存为、撤销/重做'**
+  String get log_text_editor;
+
+  /// No description provided for @log_text_editor_settings.
+  ///
+  /// In zh, this message translates to:
+  /// **'文本编辑器设置持久化（自动换行、行号、阅读模式）'**
+  String get log_text_editor_settings;
+
+  /// No description provided for @log_10_languages.
+  ///
+  /// In zh, this message translates to:
+  /// **'支持10种多国语言（中文、英语、日语、韩语、德语、法语、西班牙语、俄语、阿拉伯语）'**
+  String get log_10_languages;
+
+  /// No description provided for @log_fix_l10n_hardcode.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复多处 l10n 硬编码问题'**
+  String get log_fix_l10n_hardcode;
+
+  /// No description provided for @log_language_scroll.
+  ///
+  /// In zh, this message translates to:
+  /// **'优化语言选择界面支持滚动'**
+  String get log_language_scroll;
+
   /// No description provided for @ui_username.
   ///
   /// In zh, this message translates to:
@@ -5502,6 +5547,102 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'English'**
   String get ui_language_english;
+
+  /// No description provided for @msgDefaultZoom.
+  ///
+  /// In zh, this message translates to:
+  /// **'默认缩放 ({fontSize}pt)'**
+  String msgDefaultZoom(Object fontSize);
+
+  /// No description provided for @msgLockZoom.
+  ///
+  /// In zh, this message translates to:
+  /// **'锁定缩放'**
+  String get msgLockZoom;
+
+  /// No description provided for @ui_background.
+  ///
+  /// In zh, this message translates to:
+  /// **'后台'**
+  String get ui_background;
+
+  /// No description provided for @ui_overall_progress.
+  ///
+  /// In zh, this message translates to:
+  /// **'总体进度'**
+  String get ui_overall_progress;
+
+  /// No description provided for @ui_archive_name.
+  ///
+  /// In zh, this message translates to:
+  /// **'压缩包名称'**
+  String get ui_archive_name;
+
+  /// No description provided for @ui_compression_level.
+  ///
+  /// In zh, this message translates to:
+  /// **'压缩级别'**
+  String get ui_compression_level;
+
+  /// No description provided for @ui_delete_source_after.
+  ///
+  /// In zh, this message translates to:
+  /// **'完成后删除源文件'**
+  String get ui_delete_source_after;
+
+  /// No description provided for @ui_no_compression.
+  ///
+  /// In zh, this message translates to:
+  /// **'无（仅存储）'**
+  String get ui_no_compression;
+
+  /// No description provided for @ui_fast.
+  ///
+  /// In zh, this message translates to:
+  /// **'快速'**
+  String get ui_fast;
+
+  /// No description provided for @ui_standard.
+  ///
+  /// In zh, this message translates to:
+  /// **'标准'**
+  String get ui_standard;
+
+  /// No description provided for @ui_maximum.
+  ///
+  /// In zh, this message translates to:
+  /// **'最大'**
+  String get ui_maximum;
+
+  /// No description provided for @ui_new_txt.
+  ///
+  /// In zh, this message translates to:
+  /// **'新建文本'**
+  String get ui_new_txt;
+
+  /// No description provided for @ui_save_as.
+  ///
+  /// In zh, this message translates to:
+  /// **'另存为'**
+  String get ui_save_as;
+
+  /// No description provided for @ui_undo.
+  ///
+  /// In zh, this message translates to:
+  /// **'撤销'**
+  String get ui_undo;
+
+  /// No description provided for @ui_redo.
+  ///
+  /// In zh, this message translates to:
+  /// **'重做'**
+  String get ui_redo;
+
+  /// No description provided for @ui_add_selected.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加所选 ({count})'**
+  String ui_add_selected(Object count);
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {
@@ -5513,18 +5654,53 @@ class _L10nDelegate extends LocalizationsDelegate<L10n> {
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'zh'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>[
+    'ar',
+    'de',
+    'en',
+    'es',
+    'fr',
+    'ja',
+    'ko',
+    'ru',
+    'zh',
+  ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_L10nDelegate old) => false;
 }
 
 L10n lookupL10n(Locale locale) {
+  // Lookup logic when language+country codes are specified.
+  switch (locale.languageCode) {
+    case 'zh':
+      {
+        switch (locale.countryCode) {
+          case 'TW':
+            return L10nZhTw();
+        }
+        break;
+      }
+  }
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
+    case 'ar':
+      return L10nAr();
+    case 'de':
+      return L10nDe();
     case 'en':
       return L10nEn();
+    case 'es':
+      return L10nEs();
+    case 'fr':
+      return L10nFr();
+    case 'ja':
+      return L10nJa();
+    case 'ko':
+      return L10nKo();
+    case 'ru':
+      return L10nRu();
     case 'zh':
       return L10nZh();
   }

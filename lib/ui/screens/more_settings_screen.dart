@@ -381,7 +381,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                 SettingsTile(
                   icon: Broken.language_circle,
                   title: L10n.of(context).ui_language,
-                  subtitle: PreferencesService.getAppLocale() == 'en' ? 'English' : '中文',
+                  subtitle: _getCurrentLocaleName(PreferencesService.getAppLocale()),
                   trailing: Icon(Icons.chevron_right_rounded, color: theme.colorScheme.onSurface.withOpacity(0.4)),
                   onTap: () => _showLanguagePickerDialog(context),
                 ),
@@ -1987,6 +1987,21 @@ void _showDefaultHomeDialog(BuildContext context, FileManagerProvider fileManage
   );
 }
 
+String _getCurrentLocaleName(String locale) {
+  switch (locale) {
+    case 'en': return 'English';
+    case 'zh_TW': return '繁體中文';
+    case 'ja': return '日本語';
+    case 'ko': return '한국어';
+    case 'de': return 'Deutsch';
+    case 'fr': return 'Français';
+    case 'es': return 'Español';
+    case 'ru': return 'Русский';
+    case 'ar': return 'العربية';
+    default: return '简体中文';
+  }
+}
+
 void _showLanguagePickerDialog(BuildContext context) {
   final theme = Theme.of(context);
   final currentLocale = PreferencesService.getAppLocale();
@@ -2021,8 +2036,25 @@ void _showLanguagePickerDialog(BuildContext context) {
                 ),
               ),
               const SizedBox(height: 16),
-              _buildLanguageOption(ctx, theme, currentLocale, 'zh', '中文', 'Chinese'),
-              _buildLanguageOption(ctx, theme, currentLocale, 'en', 'English', 'English'),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildLanguageOption(ctx, theme, currentLocale, 'zh', '简体中文', 'Simplified Chinese'),
+                      _buildLanguageOption(ctx, theme, currentLocale, 'en', 'English', 'English'),
+                      _buildLanguageOption(ctx, theme, currentLocale, 'zh_TW', '繁體中文', 'Traditional Chinese'),
+                      _buildLanguageOption(ctx, theme, currentLocale, 'ja', '日本語', 'Japanese'),
+                      _buildLanguageOption(ctx, theme, currentLocale, 'ko', '한국어', 'Korean'),
+                      _buildLanguageOption(ctx, theme, currentLocale, 'de', 'Deutsch', 'German'),
+                      _buildLanguageOption(ctx, theme, currentLocale, 'fr', 'Français', 'French'),
+                      _buildLanguageOption(ctx, theme, currentLocale, 'es', 'Español', 'Spanish'),
+                      _buildLanguageOption(ctx, theme, currentLocale, 'ru', 'Русский', 'Russian'),
+                      _buildLanguageOption(ctx, theme, currentLocale, 'ar', 'العربية', 'Arabic'),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),

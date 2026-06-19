@@ -1011,8 +1011,6 @@ class _PaneBrowserState extends State<PaneBrowser> {
                       context,
                       (action) => _handleAction(context, action, folder.path),
                       isArchive: false,
-                      showShare: true,
-                      showInLocation: true,
                     );
                   },
                 ),
@@ -1141,8 +1139,6 @@ class _PaneBrowserState extends State<PaneBrowser> {
                       context,
                       (action) => _handleAction(context, action, file.path),
                       isArchive: FileUtils.isArchive(file.path),
-                      showShare: true,
-                      showInLocation: true,
                     );
                   },
                 ),

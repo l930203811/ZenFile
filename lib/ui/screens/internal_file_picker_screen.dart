@@ -545,7 +545,7 @@ class _InternalFilePickerScreenState extends State<InternalFilePickerScreen> {
                     backgroundColor: theme.colorScheme.primary,
                     foregroundColor: theme.colorScheme.onPrimary,
                     icon: const Icon(Broken.add),
-                    label: Text('添加所选 (${_selectedPaths.length})'),
+                    label: Text(L10n.of(context).ui_add_selected(_selectedPaths.length)),
                   )
                 : null,
       ),

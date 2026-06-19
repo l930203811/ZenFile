@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
+import '../../services/preferences_service.dart';
 import 'package:provider/provider.dart';
 import 'package:charset/charset.dart';
 import '../../core/icon_fonts/broken_icons.dart';
@@ -11,6 +12,7 @@ import 'html_viewer_screen.dart';
 import 'markdown_viewer_screen.dart';
 import '../../services/intent_handler_service.dart';
 import '../../services/root_shizuku_service.dart';
+import 'internal_file_picker_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class CodeTextEditingController extends TextEditingController {
@@ -154,9 +156,9 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
   bool _isModified = false;
 
   bool _showFindReplace = false;
-  bool _wordWrap = false;
-  bool _readOnly = false;
-  bool _showLineNumbers = true;
+  bool _wordWrap = PreferencesService.getEditorWordWrap();
+  bool _readOnly = PreferencesService.getEditorReadOnly();
+  bool _showLineNumbers = PreferencesService.getEditorShowLineNumbers();
   String _selectedLanguage = 'auto'; // auto, plain, html, xml, json, dart, java, js, python, cpp, css, smali, markdown
   int _currentLineCount = 1;
 
@@ -172,7 +174,8 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
     '\t', '{', '}', '[', ']', '(', ')', '<', '>', '/', '\\', '=', '"', '\x27', ':', ';', ',', '.', '+', '-', '*', '&', '|', '!'
   ];
 
-  late final String _normalizedPath;
+  late final String _initialPath;
+  late String _currentFilePath;
 
   @override
   void initState() {
@@ -182,7 +185,8 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
     if (widget.filePath.startsWith('/') && !norm.startsWith('/')) {
       norm = '/$norm';
     }
-    _normalizedPath = norm;
+    _initialPath = norm;
+    _currentFilePath = norm;
 
     _controller = CodeTextEditingController(fontSize: _fontSize);
     _detectLanguage();
@@ -201,7 +205,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
   }
 
   void _detectLanguage() {
-    final ext = p.extension(_normalizedPath).toLowerCase();
+    final ext = p.extension(_currentFilePath).toLowerCase();
     switch (ext) {
       case '.html':
       case '.htm':
@@ -309,19 +313,19 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
     try {
       final provider = context.read<FileManagerProvider>();
       String content;
-      if (provider.isRestrictedPath(_normalizedPath)) {
+      if (provider.isRestrictedPath(_currentFilePath)) {
         final tempDir = Directory('/storage/emulated/0/.nfile_temp');
         if (!tempDir.existsSync()) {
           tempDir.createSync(recursive: true);
         }
         final tempFile = File(p.join(tempDir.path, 'temp_read_${DateTime.now().millisecondsSinceEpoch}.txt'));
-        await RootShizukuService.copyItem(_normalizedPath, tempFile.path, useRoot: provider.useRootMode);
+        await RootShizukuService.copyItem(_currentFilePath, tempFile.path, useRoot: provider.useRootMode);
         content = _decodeBytesWithFallback(await tempFile.readAsBytes());
         try {
           await tempFile.delete();
         } catch (_) {}
       } else {
-        final file = File(_normalizedPath);
+        final file = File(_currentFilePath);
         content = _decodeBytesWithFallback(await file.readAsBytes());
       }
       
@@ -362,30 +366,30 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
     setState(() => _isSaving = true);
     try {
       final provider = context.read<FileManagerProvider>();
-      if (provider.isRestrictedPath(_normalizedPath)) {
+      if (provider.isRestrictedPath(_currentFilePath)) {
         final tempDir = Directory('/storage/emulated/0/.nfile_temp');
         if (!tempDir.existsSync()) {
           tempDir.createSync(recursive: true);
         }
         final tempFile = File(p.join(tempDir.path, 'temp_save_${DateTime.now().millisecondsSinceEpoch}.txt'));
         await tempFile.writeAsString(_controller.text);
-        await RootShizukuService.copyItem(tempFile.path, _normalizedPath, useRoot: provider.useRootMode);
+        await RootShizukuService.copyItem(tempFile.path, _currentFilePath, useRoot: provider.useRootMode);
         try {
           await tempFile.delete();
         } catch (_) {}
       } else {
-        final file = File(_normalizedPath);
+        final file = File(_currentFilePath);
         await file.writeAsString(_controller.text);
       }
 
       try {
         if (mounted) {
-          context.read<FileManagerProvider>().updateFileInList(_normalizedPath);
+          context.read<FileManagerProvider>().updateFileInList(_currentFilePath);
         }
       } catch (_) {}
 
-      if (IntentHandlerService.isIncomingCacheFile(_normalizedPath)) {
-        final success = await IntentHandlerService.saveContentUriFile(_normalizedPath, _controller.text);
+      if (IntentHandlerService.isIncomingCacheFile(_currentFilePath)) {
+        final success = await IntentHandlerService.saveContentUriFile(_currentFilePath, _controller.text);
         if (!success) {
           throw Exception("Failed to save changes back to external storage.");
         }
@@ -402,6 +406,132 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
+      }
+    }
+  }
+
+  Future<void> _createNewFile() async {
+    final currentDir = p.dirname(_currentFilePath);
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final newPath = p.join(currentDir, 'untitled_$timestamp.txt');
+
+    try {
+      final file = File(newPath);
+      await file.writeAsString('');
+      if (mounted) {
+        _controller.removeListener(_onTextChanged);
+        setState(() {
+          _currentFilePath = newPath;
+          _controller.text = '';
+          _currentLineCount = 1;
+          _isModified = false;
+          _history.clear();
+          _redoHistory.clear();
+          _history.add('');
+          _readOnly = false;
+          _wordWrap = false;
+          _showLineNumbers = true;
+          _selectedLanguage = 'plain';
+          _controller.language = 'plain';
+        });
+        _controller.addListener(_onTextChanged);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(L10n.of(context).ui_new_txt)),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
+  }
+
+  Future<void> _saveAsFile() async {
+    try {
+      // 弹窗让用户选择保存目录
+      final selectedDir = await InternalFilePickerScreen.show(
+        context,
+        rootPath: p.dirname(_currentFilePath),
+        pickDirectory: true,
+      );
+      if (selectedDir == null || selectedDir.isEmpty || !mounted) return;
+
+      final destDir = selectedDir.first;
+      final defaultName = p.basenameWithoutExtension(_currentFilePath);
+
+      // 弹窗让用户输入文件名
+      final fileNameController = TextEditingController(text: defaultName);
+      final fileName = await showDialog<String>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(L10n.of(context).ui_save_as),
+          content: TextField(
+            controller: fileNameController,
+            autofocus: true,
+            decoration: InputDecoration(
+              labelText: L10n.of(context).ui_file_name,
+              hintText: defaultName,
+              suffixText: '.txt',
+            ),
+            onSubmitted: (value) => Navigator.pop(ctx, value.trim()),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(L10n.of(context).ui_cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, fileNameController.text.trim()),
+              child: Text(L10n.of(context).ui_confirm),
+            ),
+          ],
+        ),
+      );
+      fileNameController.dispose();
+
+      if (fileName == null || fileName.isEmpty || !mounted) return;
+
+      var newPath = p.join(destDir, '$fileName.txt');
+
+      // 如果目标文件已存在，自动重命名
+      int counter = 1;
+      while (File(newPath).existsSync()) {
+        newPath = p.join(destDir, '$fileName($counter).txt');
+        counter++;
+      }
+
+      final provider = context.read<FileManagerProvider>();
+      if (provider.isRestrictedPath(newPath)) {
+        final tempDir = Directory('/storage/emulated/0/.nfile_temp');
+        if (!tempDir.existsSync()) {
+          tempDir.createSync(recursive: true);
+        }
+        final tempFile = File(p.join(tempDir.path, 'temp_saveas_${DateTime.now().millisecondsSinceEpoch}.txt'));
+        await tempFile.writeAsString(_controller.text);
+        await RootShizukuService.copyItem(tempFile.path, newPath, useRoot: provider.useRootMode);
+        try {
+          await tempFile.delete();
+        } catch (_) {}
+      } else {
+        final file = File(newPath);
+        await file.writeAsString(_controller.text);
+      }
+
+      if (mounted) {
+        setState(() {
+          _currentFilePath = newPath;
+          _isModified = false;
+        });
+        try {
+          context.read<FileManagerProvider>().updateFileInList(newPath);
+        } catch (_) {}
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${L10n.of(context).ui_save_as}: $destDir')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -534,7 +664,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
     final lineCount = _currentLineCount;
     final bool isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
 
-    final lowerPath = _normalizedPath.toLowerCase();
+    final lowerPath = _currentFilePath.toLowerCase();
     final isHtml = lowerPath.endsWith('.html') || lowerPath.endsWith('.htm');
     final isMd = lowerPath.endsWith('.md') || lowerPath.endsWith('.markdown');
 
@@ -543,24 +673,46 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
       appBar: AppBar(
         backgroundColor: theme.colorScheme.surface,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Broken.arrow_left),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              p.basename(_normalizedPath),
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            Text(
-              '$_selectedLanguage • $lineCount 行${_isModified ? ' (已修改)' : ''}',
-              style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
-            ),
-          ],
+        automaticallyImplyLeading: false,
+        title: Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                p.basename(_currentFilePath),
+                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                overflow: TextOverflow.ellipsis,
+              ),
+              Text(
+                '$_selectedLanguage • $lineCount 行${_isModified ? ' (已修改)' : ''}',
+                style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
         actions: [
+          const SizedBox(width: 12),
+          IconButton(
+            icon: const Icon(Broken.rotate_left),
+            tooltip: L10n.of(context).ui_undo,
+            onPressed: _history.length > 1 ? _undo : null,
+          ),
+          IconButton(
+            icon: const Icon(Broken.rotate_right_1),
+            tooltip: L10n.of(context).ui_redo,
+            onPressed: _redoHistory.isNotEmpty ? _redo : null,
+          ),
+          IconButton(
+            icon: const Icon(Broken.add_circle),
+            tooltip: L10n.of(context).ui_new_txt,
+            onPressed: _createNewFile,
+          ),
+          IconButton(
+            icon: const Icon(Broken.document_copy),
+            tooltip: L10n.of(context).ui_save_as,
+            onPressed: _saveAsFile,
+          ),
           IconButton(
             icon: Icon(_showFindReplace ? Broken.search_zoom_out : Broken.search_normal),
             tooltip: L10n.of(context).msgc856a077,
@@ -591,7 +743,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                     context,
                     MaterialPageRoute(
                       builder: (_) => HtmlViewerScreen(
-                        filePath: _normalizedPath,
+                        filePath: _currentFilePath,
                         initialContent: _controller.text,
                       ),
                     ),
@@ -603,7 +755,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                     context,
                     MaterialPageRoute(
                       builder: (_) => MarkdownViewerScreen(
-                        filePath: _normalizedPath,
+                        filePath: _currentFilePath,
                         initialContent: _controller.text,
                       ),
                     ),
@@ -618,10 +770,20 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                 setState(() => _zoomLocked = !_zoomLocked);
               } else if (value == 'word_wrap') {
                 setState(() => _wordWrap = !_wordWrap);
+                PreferencesService.saveEditorWordWrap(_wordWrap);
               } else if (value == 'read_only') {
-                setState(() => _readOnly = !_readOnly);
+                setState(() {
+                  _readOnly = !_readOnly;
+                  // 阅读模式：开启自动换行、隐藏行号；编辑模式：关闭自动换行、显示行号
+                  _wordWrap = _readOnly;
+                  _showLineNumbers = !_readOnly;
+                });
+                PreferencesService.saveEditorReadOnly(_readOnly);
+                PreferencesService.saveEditorWordWrap(_wordWrap);
+                PreferencesService.saveEditorShowLineNumbers(_showLineNumbers);
               } else if (value == 'toggle_line_numbers') {
                 setState(() => _showLineNumbers = !_showLineNumbers);
+                PreferencesService.saveEditorShowLineNumbers(_showLineNumbers);
               } else if (value == 'syntax') {
                 _showSyntaxPicker();
               }
@@ -633,17 +795,17 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                   child: Row(children: [Icon(Broken.global, size: 18, color: Colors.blueAccent), SizedBox(width: 12), Text('HTML 预览', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent))]),
                 ),
               if (isMd)
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'md_preview',
-                  child: Row(children: [Icon(Broken.document_text, size: 18, color: Colors.blueAccent), SizedBox(width: 12), Text('Markdown 预览', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent))]),
+                  child: Row(children: [Icon(Broken.document_text, size: 18, color: Colors.blueAccent), const SizedBox(width: 12), Text(L10n.of(context).markdown, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent))]),
                 ),
               PopupMenuItem(
                 value: 'reset_zoom',
-                child: Row(children: [const Icon(Broken.search_zoom_in_1, size: 18), const SizedBox(width: 12), Text('默认缩放 (${_fontSize.toInt()}pt)')]),
+                child: Row(children: [const Icon(Broken.search_zoom_in_1, size: 18), const SizedBox(width: 12), Text(L10n.of(context).msgDefaultZoom(_fontSize.toInt()))]),
               ),
               PopupMenuItem(
                 value: 'lock_zoom',
-                child: Row(children: [Icon(_zoomLocked ? Broken.lock_1 : Broken.unlock, size: 18), SizedBox(width: 12), Text(_zoomLocked ? L10n.of(context).msg084e9388 : '锁定缩放')]),
+                child: Row(children: [Icon(_zoomLocked ? Broken.lock_1 : Broken.unlock, size: 18), SizedBox(width: 12), Text(_zoomLocked ? L10n.of(context).msg084e9388 : L10n.of(context).msgLockZoom)]),
               ),
               PopupMenuItem(
                 value: 'word_wrap',
@@ -659,7 +821,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
               ),
               PopupMenuItem(
                 value: 'syntax',
-                child: Row(children: [Icon(Broken.code, size: 18), SizedBox(width: 12), Text('语法 ({_selectedLanguage})')]),
+                child: Row(children: [Icon(Broken.code, size: 18), const SizedBox(width: 12), Text(L10n.of(context).selectedlanguage(_selectedLanguage))]),
               ),
             ],
           ),
@@ -798,16 +960,6 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
                     color: theme.colorScheme.surface,
                     child: Row(
                       children: [
-                        IconButton(
-                          icon: const Icon(Broken.rotate_left, size: 18),
-                          tooltip: '撤销',
-                          onPressed: _history.length > 1 ? _undo : null,
-                        ),
-                        IconButton(
-                          icon: const Icon(Broken.rotate_right_1, size: 18),
-                          tooltip: '重做',
-                          onPressed: _redoHistory.isNotEmpty ? _redo : null,
-                        ),
                         Container(width: 1, height: 24, color: theme.dividerColor.withValues(alpha: 0.2)),
                         Expanded(
                           child: ListView.builder(

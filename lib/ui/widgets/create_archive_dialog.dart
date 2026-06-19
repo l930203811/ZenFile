@@ -107,7 +107,7 @@ class _CreateArchiveDialogState extends State<CreateArchiveDialog> {
                 TextField(
                   controller: _nameController,
                   decoration: InputDecoration(
-                    labelText: '压缩包名称',
+                    labelText: L10n.of(context).ui_archive_name,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     prefixIcon: const Icon(Broken.box),
                   ),
@@ -146,7 +146,7 @@ class _CreateArchiveDialogState extends State<CreateArchiveDialog> {
 
               // Compression Level
               Text(
-                '压缩级别：${_getCompressionLabel(_compressionLevel)}',
+                '${L10n.of(context).ui_compression_level}${_getCompressionLabel(context, _compressionLevel)}',
                 style: theme.textTheme.titleSmall,
               ),
               Slider(
@@ -154,7 +154,7 @@ class _CreateArchiveDialogState extends State<CreateArchiveDialog> {
                 min: 0,
                 max: 9,
                 divisions: 3,
-                label: _getCompressionLabel(_compressionLevel),
+                label: _getCompressionLabel(context, _compressionLevel),
                 onChanged: (val) {
                   setState(() {
                     _compressionLevel = val.toInt();
@@ -197,7 +197,7 @@ class _CreateArchiveDialogState extends State<CreateArchiveDialog> {
               // Checkbox: Delete Source Files
               CheckboxListTile(
                 value: _deleteSource,
-                title: const Text('完成后删除源文件'),
+                title: Text(L10n.of(context).ui_delete_source_after),
                 controlAffinity: ListTileControlAffinity.leading,
                 contentPadding: EdgeInsets.zero,
                 onChanged: (val) {
@@ -227,7 +227,7 @@ class _CreateArchiveDialogState extends State<CreateArchiveDialog> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('取消'),
+                    child: Text(L10n.of(context).ui_cancel),
                   ),
                   const SizedBox(width: 12),
                   FilledButton(
@@ -262,10 +262,11 @@ class _CreateArchiveDialogState extends State<CreateArchiveDialog> {
     );
   }
 
-  String _getCompressionLabel(int level) {
-    if (level == 0) return '无（仅存储）';
-    if (level == 3) return '快速';
-    if (level == 6) return '标准';
-    return '最大';
+  String _getCompressionLabel(BuildContext context, int level) {
+    final l10n = L10n.of(context);
+    if (level == 0) return l10n.ui_no_compression;
+    if (level == 3) return l10n.ui_fast;
+    if (level == 6) return l10n.ui_standard;
+    return l10n.ui_maximum;
   }
 }

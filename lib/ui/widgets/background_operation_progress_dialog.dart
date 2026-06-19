@@ -147,7 +147,7 @@ class BackgroundOperationProgressDialog extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  '总体进度',
+                                  L10n.of(context).ui_overall_progress,
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     fontWeight: FontWeight.bold,
                                     color: theme.colorScheme.onSurface.withOpacity(0.55),
@@ -201,7 +201,7 @@ class BackgroundOperationProgressDialog extends StatelessWidget {
                                   service.cancelOperation();
                                 },
                                 icon: const Icon(Broken.close_square, size: 18),
-                                label: const Text('取消', style: TextStyle(fontWeight: FontWeight.bold)),
+                                label: Text(L10n.of(context).ui_cancel, style: const TextStyle(fontWeight: FontWeight.bold)),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: Colors.redAccent,
                                   side: BorderSide(color: Colors.redAccent.withOpacity(0.4)),
@@ -222,7 +222,7 @@ class BackgroundOperationProgressDialog extends StatelessWidget {
                                   }
                                 },
                                 icon: const Icon(Broken.send, size: 18),
-                                label: const Text('后台', style: TextStyle(fontWeight: FontWeight.bold)),
+                                label: Text(L10n.of(context).ui_background, style: const TextStyle(fontWeight: FontWeight.bold)),
                                 style: FilledButton.styleFrom(
                                   backgroundColor: theme.colorScheme.primary,
                                   foregroundColor: theme.colorScheme.onPrimary,

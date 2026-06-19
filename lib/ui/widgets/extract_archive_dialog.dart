@@ -127,7 +127,7 @@ class _ExtractArchiveDialogState extends State<ExtractArchiveDialog> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('取消'),
+                    child: Text(L10n.of(context).ui_cancel),
                   ),
                   const SizedBox(width: 12),
                   FilledButton(
@@ -143,7 +143,7 @@ class _ExtractArchiveDialogState extends State<ExtractArchiveDialog> {
                         ),
                       );
                     },
-                    child: const Text('解压'),
+                    child: Text(L10n.of(context).ui_extract),
                   ),
                 ],
               ),

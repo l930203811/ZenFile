@@ -151,7 +151,7 @@ class FileActionSheet {
                 if (showShare)
                   _buildTile(ctx, theme, icon: Icons.share_outlined, title: L10n.of(context).ui_share, value: 'share', onAction: onAction),
                 if (isArchive)
-                  _buildTile(ctx, theme, icon: Broken.archive, title: '解压', value: 'extract', onAction: onAction),
+                  _buildTile(ctx, theme, icon: Broken.archive, title: L10n.of(ctx).ui_extract, value: 'extract', onAction: onAction),
                 _buildTile(ctx, theme, icon: Broken.box_add, title: L10n.of(context).ui_compress, value: 'archive', onAction: onAction),
                 _buildTile(ctx, theme, icon: Broken.document_copy, title: L10n.of(context).ui_copy, value: 'copy', onAction: onAction),
                 _buildTile(ctx, theme, icon: Broken.scissor, title: L10n.of(context).ui_cut, value: 'cut', onAction: onAction),

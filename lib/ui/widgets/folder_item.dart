@@ -225,8 +225,6 @@ class FolderItem extends StatelessWidget {
                     FileActionSheet.show(
                       context,
                       onAction,
-                      showShare: showShowInLocationOption,
-                      showInLocation: showShowInLocationOption,
                     );
                   },
                 ),

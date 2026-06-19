@@ -8,6 +8,20 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 ---
 
+## 🚀 What's New in v1.0.4
+
+**Text Editor & Multi-Language Expansion** — ZenFile adds a full-featured text editor with file creation, save-as, undo/redo, and persistent settings. Multi-language support is expanded to 10 languages.
+
+| | |
+|---|---|
+| 📝 **Text Editor** | Create new files, save-as, undo/redo in the built-in text editor |
+| 💾 **Editor Settings Persistence** | Word wrap, line numbers, and read mode preferences are saved automatically |
+| 🌍 **10-Language Support** | Simplified Chinese, English, Traditional Chinese, Japanese, Korean, German, French, Spanish, Russian, and Arabic |
+| 🐛 **l10n Hardcode Fixes** | Fixed multiple hardcoded strings that were not properly localized |
+| 📜 **Scrollable Language Picker** | Language selection UI now supports scrolling for better usability |
+
+---
+
 ## 🚀 What's New in v1.0.3
 
 **SVG Support & i18n Multi-Language** — ZenFile now fully supports `.svg` vector graphics with thumbnail previews and full-screen viewing, and adds **Chinese & English** bilingual interface support.
@@ -30,26 +44,6 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 ---
 
-## 🚀 What's New in v1.0.2
-
-**Remote Browser Rebuilt** — The biggest architectural change yet. The remote server browser now uses the same `DirectoryScreen` component as local browsing, completely eliminating the stale UI bug when switching between remote and local views.
-
-| | |
-|---|---|
-| 🔄 **Unified Browser** | Remote (FTP/SFTP/WebDAV/SMB) now shares the same UI engine as local browsing |
-| 🪟 **Dual-Pane Remote** | Browse local + remote side by side, drag files freely between panes |
-| 📋 **Global Clipboard** | Copy/cut from remote, paste to local — no separate clipboard |
-| 🗑️ **Full File Ops** | Delete, rename, create folders on remote servers, same gestures as local |
-| 🐛 **Crash Fix** | Fixed the bug where navigating back from remote caused local file list to disappear |
-
-**Other v1.0.2 improvements:**
-- **Swipe Navigation** — Swipe left/right to switch between Category and Browse tabs
-- **Compact UI** — Slimmed breadcrumb bar, tab headers — 30% more screen space
-- **Ring Progress** — Elegant circular progress indicator during file transfers
-- **Cross-Platform Path Fix** — Fixed remote path parsing on Windows for drag-and-drop
-
----
-
 ## ✨ Features
 
 - **Beautiful UI/UX** — Modern glassmorphism design with textures and transparency
@@ -68,6 +62,7 @@ A beautifully crafted, open-source file manager and offline media center for And
 - **Dual-Pane Browsing** — Two directories side-by-side with drag-and-drop transfers
 - **Multi-Tab Support** — Open multiple folders in tabs for quick navigation
 - **Encrypted Vault** — Protect sensitive files with built-in encryption
+- 🌍 **Multi-language Support**: Supports 10 languages including Simplified Chinese, English, Traditional Chinese, Japanese, Korean, German, French, Spanish, Russian, and Arabic.
 
 ---
 

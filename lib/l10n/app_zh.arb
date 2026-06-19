@@ -210,8 +210,8 @@
   "@zenfile1": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "v103": "v1.0.3 (查看)",
-  "@v103": {
+  "v104": "v1.0.4 (查看)",
+  "@v104": {
     "description": "ui\\screens\\about_screen.dart"
   },
   "zenfileflutter": "ZenFile 是一款基于 Flutter 构建的精美、流畅、开源的文件管理器和离线媒体中心。专为极致性能、干净的毛玻璃美学和无缝用户体验而设计。",
@@ -298,8 +298,8 @@
   "@msg0537b04e": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfilev103": "下载 ZenFile v1.0.3",
-  "@zenfilev103": {
+  "zenfilev104": "下载 ZenFile v1.0.4",
+  "@zenfilev104": {
     "description": "ui\\screens\\about_screen.dart"
   },
   "msg9d287020": "123云盘",
@@ -3194,6 +3194,11 @@
   "log_svg_thumbnail_category": "SVG 缩略图在分类页面中正常显示",
   "log_language_btn_top": "语言切换按钮移至设置页顶部",
   "log_fix_category_missing": "修复英文模式下部分分类不显示",
+  "log_text_editor": "新增文本编辑器功能：新建文件、另存为、撤销/重做",
+  "log_text_editor_settings": "文本编辑器设置持久化（自动换行、行号、阅读模式）",
+  "log_10_languages": "支持10种多国语言（中文、英语、日语、韩语、德语、法语、西班牙语、俄语、阿拉伯语）",
+  "log_fix_l10n_hardcode": "修复多处 l10n 硬编码问题",
+  "log_language_scroll": "优化语言选择界面支持滚动",
   "ui_username": "用户名",
   "ui_anonymous": "匿名",
   "ui_start": "启动",
@@ -3234,5 +3239,21 @@
   "ui_select_language_title": "选择语言",
   "ui_select_language_desc": "请选择您偏好的语言",
   "ui_language_chinese": "中文",
-  "ui_language_english": "English"
+  "ui_language_english": "English",
+  "msgDefaultZoom": "默认缩放 ({fontSize}pt)",
+  "msgLockZoom": "锁定缩放",
+  "ui_background": "后台",
+  "ui_overall_progress": "总体进度",
+  "ui_archive_name": "压缩包名称",
+  "ui_compression_level": "压缩级别",
+  "ui_delete_source_after": "完成后删除源文件",
+  "ui_no_compression": "无（仅存储）",
+  "ui_fast": "快速",
+  "ui_standard": "标准",
+  "ui_maximum": "最大",
+  "ui_new_txt": "新建文本",
+  "ui_save_as": "另存为",
+  "ui_undo": "撤销",
+  "ui_redo": "重做",
+  "ui_add_selected": "添加所选 ({count})"
 }

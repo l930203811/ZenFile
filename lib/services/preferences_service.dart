@@ -26,6 +26,9 @@ class PreferencesService {
   static const String _keyHideActionText = 'hide_action_text';
   static const String _keyMenuIconStyle = 'menu_icon_style';
   static const String _keyRememberLastFolder = 'remember_last_folder';
+  static const String _keyEditorWordWrap = 'editor_word_wrap';
+  static const String _keyEditorShowLineNumbers = 'editor_show_line_numbers';
+  static const String _keyEditorReadOnly = 'editor_read_only';
 
   static SharedPreferences? _prefs;
 
@@ -715,5 +718,30 @@ class PreferencesService {
 
   static Future<void> setHasSelectedLanguage(bool val) async {
     await _prefs?.setBool(_keyHasSelectedLanguage, val);
+  }
+
+  // --- Text Editor Settings ---
+  static bool getEditorWordWrap() {
+    return _prefs?.getBool(_keyEditorWordWrap) ?? true;
+  }
+
+  static Future<void> saveEditorWordWrap(bool val) async {
+    await _prefs?.setBool(_keyEditorWordWrap, val);
+  }
+
+  static bool getEditorShowLineNumbers() {
+    return _prefs?.getBool(_keyEditorShowLineNumbers) ?? false;
+  }
+
+  static Future<void> saveEditorShowLineNumbers(bool val) async {
+    await _prefs?.setBool(_keyEditorShowLineNumbers, val);
+  }
+
+  static bool getEditorReadOnly() {
+    return _prefs?.getBool(_keyEditorReadOnly) ?? true;
+  }
+
+  static Future<void> saveEditorReadOnly(bool val) async {
+    await _prefs?.setBool(_keyEditorReadOnly, val);
   }
 }

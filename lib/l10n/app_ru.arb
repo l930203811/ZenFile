@@ -1,0 +1,3198 @@
+{
+  "@@locale": "ru",
+  "@msg6f3e533a": {
+    "description": "main.dart"
+  },
+  "msg6f3e533a": "Открытие общего документа...",
+  "@msgbca59325": {
+    "description": "main.dart"
+  },
+  "msgbca59325": "Анализ потока защищённого содержимого",
+  "@zenfile": {
+    "description": "main.dart"
+  },
+  "zenfile": "ZenFile требует разрешения на доступ к хранилищу для бесперебойного управления, организации и отображения ваших медиафайлов.",
+  "@e": {
+    "type": "text"
+  },
+  "e": "Не удалось очистить каталог кэша: {e}",
+  "@msg21cefa9b": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "msg21cefa9b": "Внутреннее Хранилище",
+  "@smb": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "smb": "LAN/SMB",
+  "@msg05d3c93c": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "msg05d3c93c": "Элементы успешно перемещены",
+  "@e1": {
+    "type": "text"
+  },
+  "e1": "Ошибка передачи: {e}",
+  "@msga45bac47": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "msga45bac47": "Операция отменена",
+  "@e2": {
+    "type": "text"
+  },
+  "e2": "Не удалось подключиться к удалённому серверу: {e}",
+  "@e3": {
+    "type": "text"
+  },
+  "e3": "Ошибка создания папки: {e}",
+  "@msg3df5ef6c": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "msg3df5ef6c": "Лимит сжатия превышен",
+  "@msg5e32276d": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "msg5e32276d": "Неизвестный Исполнитель",
+  "@msg497ec49d": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "msg497ec49d": "Локальные Папки",
+  "@e4": {
+    "type": "text"
+  },
+  "e4": "Не удалось загрузить удалённый файл: {e}",
+  "@msg6b9ca1dd": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "msg6b9ca1dd": "Невозможно переместить папку в саму себя или то же место",
+  "@e5": {
+    "type": "text"
+  },
+  "e5": "Не удалось переместить элементы: {e}",
+  "@msg5238524c": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "msg5238524c": "Невозможно скопировать папку в саму себя или то же место",
+  "@e6": {
+    "type": "text"
+  },
+  "e6": "Не удалось скопировать элементы: {e}",
+  "@msgc806d0fa": {
+    "description": "providers\\media_provider.dart"
+  },
+  "msgc806d0fa": "Архив",
+  "@msg03070d08": {
+    "description": "providers\\media_provider.dart"
+  },
+  "msg03070d08": "APK",
+  "@ftp": {
+    "description": "providers\\media_provider.dart"
+  },
+  "ftp": "FTP Доступ",
+  "@web": {
+    "description": "providers\\media_provider.dart"
+  },
+  "web": "Веб Доступ",
+  "@msge86bd662": {
+    "description": "providers\\media_provider.dart"
+  },
+  "msge86bd662": "Галерея Устройства (Авто)",
+  "@msg16166a01": {
+    "description": "providers\\media_provider.dart"
+  },
+  "msg16166a01": "Библиотека Аудио Устройства (Авто)",
+  "@msgbb34b7ec": {
+    "description": "providers\\media_provider.dart"
+  },
+  "msgbb34b7ec": "Внутреннее Хранилище (Сканировать Все Папки)",
+  "@msg26a1f2d9": {
+    "description": "providers\\media_provider.dart"
+  },
+  "msg26a1f2d9": "Галерея Устройства (Скриншоты)",
+  "@msg39e11368": {
+    "description": "services\\apk_installer_service.dart"
+  },
+  "msg39e11368": "Извлечение APK пакета...",
+  "@apk": {
+    "description": "services\\apk_installer_service.dart"
+  },
+  "apk": "Устанавливаемый APK не найден в пакете",
+  "@apk1": {
+    "description": "services\\apk_installer_service.dart"
+  },
+  "apk1": "Невозможно запустить установщик разделённого APK",
+  "@msg2f0138ad": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msg2f0138ad": "Сжатие файлов",
+  "@msga2292820": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msga2292820": "Архив успешно создан",
+  "@msg0683ca6b": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msg0683ca6b": "Распаковка архива",
+  "@msg1f216eda": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msg1f216eda": "Архив успешно распакован",
+  "@msg5fa802be": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msg5fa802be": "Операция не удалась",
+  "@msg8fccf382": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msg8fccf382": "Да/Нет",
+  "@msgc18fb099": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msgc18fb099": "Распаковка успешна. Открыть расположение?",
+  "@msg4367e85a": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msg4367e85a": "Не найдено файлов для сжатия",
+  "@msg60a4545d": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msg60a4545d": "Неподдерживаемый формат",
+  "@msg226519e7": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msg226519e7": "Архивные файлы не найдены",
+  "@msg88d150c7": {
+    "description": "services\\folder_share_service.dart"
+  },
+  "msg88d150c7": "Нет элементов для обмена.",
+  "@e7": {
+    "type": "text"
+  },
+  "e7": "Ошибка чтения общего файла: {e}",
+  "@zenfilesmbvirtualstoragebridgen": {
+    "description": "services\\remote\\lan_client.dart"
+  },
+  "zenfilesmbvirtualstoragebridgen": "Мост виртуального хранилища ZenFile LAN/SMB\n",
+  "@msgf3a485df": {
+    "description": "services\\remote\\saf_client.dart"
+  },
+  "msgf3a485df": "Новая Папка",
+  "@msge48a7157": {
+    "description": "services\\remote\\saf_client.dart"
+  },
+  "msge48a7157": "Новый Файл",
+  "@zenfilebackupssettings": {
+    "description": "services\\settings_backup_service.dart"
+  },
+  "zenfilebackupssettings": "Настройки сохранены в ZenFile/Backups/Settings/",
+  "@json": {
+    "description": "services\\settings_backup_service.dart"
+  },
+  "json": "Пожалуйста, выберите действительный файл резервной копии настроек .json",
+  "@e8": {
+    "type": "text"
+  },
+  "e8": "Ошибка восстановления настроек: {e}",
+  "@url": {
+    "type": "text"
+  },
+  "url": "Невозможно открыть ссылку {url}",
+  "@zenfile1": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "zenfile1": "О ZenFile",
+  "@v104": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "v104": "v1.0.4 (Просмотр)",
+  "@zenfileflutter": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "zenfileflutter": "ZenFile — это красивый, плавный файловый менеджер и офлайн медиацентр с открытым исходным кодом, созданный на Flutter. Разработан для максимальной производительности, чистой эстетики glassmorphism и бесшовного пользовательского опыта.",
+  "@msga12ebf50": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msga12ebf50": "Молниеносно Быстрый",
+  "@msgfccb5a01": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgfccb5a01": "Кэширование без состояния и асинхронное сканирование",
+  "@msg6d8fbdac": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg6d8fbdac": "Зашированное Безопасное Рабочее Пространство",
+  "@ftpsftpwebdav": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "ftpsftpwebdav": "Поддержка FTP, LAN, SFTP и WebDAV",
+  "@msge8f352b9": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msge8f352b9": "Красивый Интерфейс",
+  "@amoled": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "amoled": "AMOLED Чистый Чёрный и Яркие Темы",
+  "@msge8069659": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msge8069659": "Звезда в Репозитории",
+  "@telegram": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "telegram": "Присоединиться к Каналу Telegram",
+  "@msg5f84adea": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg5f84adea": "Поделиться Приложением с Друзьями",
+  "@zenfilehttpsgithubcoml930203811zenfilereleases": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "zenfilehttpsgithubcoml930203811zenfilereleases": "Рекомендуйте ZenFile, красивый офлайн файловый менеджер и медиацентр: https://github.com/l930203811/ZenFile/releases",
+  "@github": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "github": "Просмотреть Исходный Код на GitHub",
+  "@sequeldpdnsorg": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "sequeldpdnsorg": "Контакт: 1@sequel.dpdns.org",
+  "@msged8518d7": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msged8518d7": "Электронная почта скопирована в буфер обмена",
+  "@qq": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "qq": "Номер группы QQ скопирован в буфер обмена",
+  "@bysequel": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "bysequel": "Создано с ❤️ от Sequel",
+  "@zenfile2": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "zenfile2": "Copyright © 2026 ZenFile. Все права защищены.",
+  "@msg138d3725": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg138d3725": "Ваша поддержка помогает мне двигаться дальше ❤️",
+  "@msgccd097a7": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgccd097a7": "Alipay",
+  "@msgbffe28c8": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgbffe28c8": "WeChat Pay",
+  "@msg0537b04e": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg0537b04e": "Нажмите и удерживайте изображение, чтобы сохранить в галерею. Спасибо за вашу поддержку!",
+  "@zenfilev104": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "zenfilev104": "Скачать ZenFile v1.0.4",
+  "@msg9d287020": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg9d287020": "123 Cloud Drive",
+  "@msgb2b41b6a": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgb2b41b6a": "115 Cloud Drive",
+  "@msg77ee718b": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg77ee718b": "Baidu Netdisk",
+  "@msgbff1432a": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgbff1432a": "Quark Cloud Drive",
+  "@msge03395d0": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msge03395d0": "Small Plane Cloud Drive",
+  "@svg": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "svg": "Добавлена полная поддержка SVG (предпросмотр миниатюр и просмотр)",
+  "@ziprar7ztargz": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "ziprar7ztargz": "Добавлено цветовое кодирование форматов архивов (zip/rar/7z/tar/gz имеют уникальные цвета)",
+  "@msg09a6e11b": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg09a6e11b": "Добавлена функция загрузки-перед-воспроизведением для удалённых файлов",
+  "@msg1c3206b8": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg1c3206b8": "Исправлено: извлечение не могло перейти на страницу обзора со страницы категорий",
+  "@msgb1e4da91": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgb1e4da91": "Исправлено: зависание страницы при 'Просмотр Каталога Кэша' и 'Открыть Расположение После Извлечения'",
+  "@yyyymmdd": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "yyyymmdd": "Оптимизирован формат даты файла до yyyy-MM-dd",
+  "@msg4c425252": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg4c425252": "Оптимизировано отображение времени по умолчанию в 24-часовом формате",
+  "@msg1eaf4abb": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg1eaf4abb": "Полностью оптимизирована панель пути (более компактные кнопки навигации и стили стрелок)",
+  "@msgd3381817": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgd3381817": "Панель вкладок и панель пути перемещены вверх для большего пространства списка файлов",
+  "@msg342688b2": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg342688b2": "Область заголовка двойного окна упрощена (высота уменьшена на 30%)",
+  "@msg8954452f": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg8954452f": "Удалённый сервер заменяет неактивную вкладку в режиме двойного окна",
+  "@msgac5a0315": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgac5a0315": "Жест возврата оптимизирован: возвращает к снятию выделения вместо выхода из страницы при выбранных элементах",
+  "@msg1904388e": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg1904388e": "Свайп двумя пальцами вправо открывает боковое меню, свайп двумя пальцами влево переключает страницу категорий/обзора",
+  "@msg2762c070": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg2762c070": "Добавлено переключение свайпа двумя пальцами (можно отключить в Настройках Общего и Поведения)",
+  "@msg48dca69a": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg48dca69a": "Индикатор прогресса изменён на кольцевой стиль с процентами в центре",
+  "@windows": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "windows": "Исправление совместимости удалённого пути (проблема разделителя пути на платформе Windows)",
+  "@msg65eefc98": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg65eefc98": "Переключатель адресной строки теперь управляет стилизованными навигационными цепочками",
+  "@msg96a6856a": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg96a6856a": "Настройка домашней страницы по умолчанию (выберите категорию или страницу обзора при запуске)",
+  "@msg250213fd": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg250213fd": "Новый значок установщика приложений (естественный стиль Zen)",
+  "@msg7f53e8b1": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg7f53e8b1": "Кольцевой процентный индикатор прогресса (отображается при копировании/перемещении)",
+  "@msg051469b5": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg051469b5": "Индикатор прогресса автоматически закрывается после успешной операции, ручное подтверждение не требуется",
+  "@msge4c4d5e2": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msge4c4d5e2": "Меню операций с файлами изменено на нижнее всплывающее (больше не перекрывает панель вкладок)",
+  "@msga33dbb51": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msga33dbb51": "Панель действий режима выбора перемещена вниз (с индикатором количества выбранных)",
+  "@msge6c84f11": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msge6c84f11": "Исправлено: нажатие для входа в детали приложения после смены значка",
+  "@msg46b8ca8f": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg46b8ca8f": "Исправлено: аномальное переключение локальной страницы после удалённого копирования",
+  "@msgb3dea5f5": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgb3dea5f5": "Меню длительного нажатия в просмотрщике текста поддерживает копирование и выбор всех",
+  "@msga4c92214": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msga4c92214": "Макет всплывающего окна перетаскивания оптимизирован (более компактный)",
+  "@msg32854144": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg32854144": "Значки страницы категорий поддерживают переключение круглого/квадратного фона",
+  "@msg3a93e257": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg3a93e257": "Настройка формы значка категории (переключение в Внешний вид и Тема)",
+  "@zenfile3": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "zenfile3": "Первый Релиз ZenFile",
+  "@msg47b760ed": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg47b760ed": "Поддержка Множества Вкладок",
+  "@ftpsftpwebdavsmb": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "ftpsftpwebdavsmb": "Подключение к Удалённому Серверу (FTP/SFTP/WebDAV/SMB)",
+  "@msg4b736dfb": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg4b736dfb": "Шифрованное Хранилище Файлов",
+  "@ftpwebdav": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "ftpwebdav": "Функции FTP/WebDAV Сервера",
+  "@msg03257c2d": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg03257c2d": "Настройка Темы и Внешнего вида",
+  "@msg5cce42e6": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg5cce42e6": "Оптимизация операций перетаскивания файлов на удалённом сервере",
+  "@msg074f1ce7": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg074f1ce7": "Улучшена функция пользовательского значка рабочего стола приложения",
+  "@msg5c66ffab": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg5c66ffab": "Длительное нажатие в списке файлов удалённого сервера может вызвать всплывающее окно перетаскивания (будет исправлено в следующей версии)",
+  "@bug1sequeldpdnsorgqq792408214": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "bug1sequeldpdnsorgqq792408214": "Если у вас есть предложения или вы нашли ошибки, пожалуйста, отправьте отзыв по электронной почте 1@sequel.dpdns.org или в группе QQ 792408214.",
+  "@msgd054a84c": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgd054a84c": "Нажмите и удерживайте для сохранения изображения",
+  "@msgb3b83e12": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgb3b83e12": "Не удалось загрузить изображение",
+  "@msgc2790d54": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgc2790d54": "Требуется разрешение на хранилище для сохранения изображения",
+  "@msg1292d351": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg1292d351": "Изображение сохранено в галерею",
+  "@e9": {
+    "type": "text"
+  },
+  "e9": "Ошибка сохранения: {e}",
+  "@msg7a4ee0c7": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msg7a4ee0c7": "Нет файлов для обмена",
+  "@msg45326802": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msg45326802": "Элементы успешно удалены",
+  "@e10": {
+    "type": "text"
+  },
+  "e10": "Ошибка обмена: {e}",
+  "@msg4fb42e6e": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msg4fb42e6e": "Скопировано в буфер обмена",
+  "@msge5212c58": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msge5212c58": "Вырезано в буфер обмена",
+  "@msgc8ce4b36": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msgc8ce4b36": "Переименовать",
+  "@msgf139c5cf": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msgf139c5cf": "Введите новое имя",
+  "@msg53518c22": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msg53518c22": "Удалить Файл",
+  "@msg47809e5d": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msg47809e5d": "Нет недавних файлов",
+  "@msg7a7e6c25": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msg7a7e6c25": "Новосозданные или загруженные файлы появятся здесь.",
+  "@msg765d1698": {
+    "description": "ui\\screens\\archive_viewer_screen.dart"
+  },
+  "msg765d1698": "Удалить Выбранные Элементы",
+  "@msg365f2f0a": {
+    "description": "ui\\screens\\archive_viewer_screen.dart"
+  },
+  "msg365f2f0a": "Элементы успешно удалены ✓",
+  "@successcount": {
+    "type": "text"
+  },
+  "successcount": "Успешно добавлено {successCount} элементов в архив ✓",
+  "@count": {
+    "type": "text"
+  },
+  "count": "Вставлено {count} элементов в архив ✓",
+  "@msg39cb3352": {
+    "description": "ui\\screens\\archive_viewer_screen.dart"
+  },
+  "msg39cb3352": "Невозможно прочитать архив",
+  "@msg99abedc6": {
+    "description": "ui\\screens\\archive_viewer_screen.dart"
+  },
+  "msg99abedc6": "Извлечь в Текущую Папку",
+  "@msg8d0cfb58": {
+    "description": "ui\\screens\\archive_viewer_screen.dart"
+  },
+  "msg8d0cfb58": "Добавить Файлы",
+  "@msg5bf1fb72": {
+    "description": "ui\\screens\\audio_player\\audio_artwork_widget.dart"
+  },
+  "msg5bf1fb72": "Аудио без Потерь",
+  "@msg47cab5ae": {
+    "description": "ui\\screens\\audio_player\\audio_controls_widget.dart"
+  },
+  "msg47cab5ae": "Таймер Сна",
+  "@msg50c1b248": {
+    "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+  },
+  "msg50c1b248": "Фоновое воспроизведение остановлено",
+  "@msg6d16d396": {
+    "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+  },
+  "msg6d16d396": "Фоновое воспроизведение включено",
+  "@msg3038d9b8": {
+    "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+  },
+  "msg3038d9b8": "Перемешивание: Выкл",
+  "@msg29eed1da": {
+    "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+  },
+  "msg29eed1da": "Фоновое Воспроизведение",
+  "@msg4aa059f7": {
+    "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+  },
+  "msg4aa059f7": "Нажмите для остановки фонового воспроизведения",
+  "@msg8f7f4490": {
+    "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+  },
+  "msg8f7f4490": "Показать уведомление с элементами управления",
+  "@msgb7c87215": {
+    "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+  },
+  "msgb7c87215": "Звуковые Эффекты и Эквалайзер",
+  "@msgfc449780": {
+    "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+  },
+  "msgfc449780": "Информация об Аудиофайле",
+  "@msgb4fbc92c": {
+    "description": "ui\\screens\\backup_settings_screen.dart"
+  },
+  "msgb4fbc92c": "Резервное Копирование и Восстановление",
+  "@zenfilebackupssettings1": {
+    "description": "ui\\screens\\backup_settings_screen.dart"
+  },
+  "zenfilebackupssettings1": "Сохранить все текущие настройки в ZenFile/Backups/Settings/",
+  "@json1": {
+    "description": "ui\\screens\\backup_settings_screen.dart"
+  },
+  "json1": "Выбрать и восстановить настройки из файла резервной копии JSON",
+  "@msg534c621a": {
+    "description": "ui\\screens\\backup_settings_screen.dart"
+  },
+  "msg534c621a": "Каталог Резервных Копий",
+  "@msg396b7d3f": {
+    "description": "ui\\screens\\backup_settings_screen.dart"
+  },
+  "msg396b7d3f": "Размер Файла",
+  "@msgc047ee32": {
+    "description": "ui\\screens\\backup_settings_screen.dart"
+  },
+  "msgc047ee32": "Время Последнего Резервного Копирования",
+  "@msg917fd6ef": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "msg917fd6ef": "Нет данных для экспорта.",
+  "@sqlite": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "sqlite": "Читатель Баз Данных SQLite",
+  "@msg03a0d224": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "msg03a0d224": "Структура Таблицы",
+  "@sql": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "sql": "Консоль SQL",
+  "@msge2f0fe67": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "msge2f0fe67": "Не удалось открыть базу данных",
+  "@msg8bb11da4": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "msg8bb11da4": "Таблицы в этой базе данных не найдены.",
+  "@msg7796aa3e": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "msg7796aa3e": "Поиск строк...",
+  "@msg15f26697": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "msg15f26697": "Строки не найдены",
+  "@msg0eaa935b": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "msg0eaa935b": "Данные о структуре не загружены.",
+  "@sql1": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "sql1": "Редактор SQL",
+  "@select": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "select": "Шаблон SELECT",
+  "@csv": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "csv": "Экспортировать результаты как CSV",
+  "@select1": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "select1": "Выполните запрос SELECT для просмотра результатов.",
+  "@msgd1ad9002": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "msgd1ad9002": "Ошибка выполнения запроса.",
+  "@targetpath": {
+    "type": "text"
+  },
+  "targetpath": "Путь скопирован: {targetPath}",
+  "@msg6ed14da7": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg6ed14da7": "Следующий Уровень",
+  "@msgcd0b9aca": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msgcd0b9aca": "Удалить Выбранные",
+  "@msgee14ee27": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msgee14ee27": "Вы уверены, что хотите удалить этот элемент? Это действие нельзя отменить.",
+  "@filenamecreatedname": {
+    "type": "text"
+  },
+  "filenamecreatedname": "\"{fileName}\" уже существует, создано \"{createdName}\".",
+  "@foldernamecreatedname": {
+    "type": "text"
+  },
+  "foldernamecreatedname": "\"{folderName}\" уже существует, создано \"{createdName}\".",
+  "@msgbd165c40": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msgbd165c40": "Создать новый пустой текстовый документ",
+  "@msg68ac91eb": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg68ac91eb": "Новый Архив",
+  "@msg881f6a80": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg881f6a80": "Сжать содержимое текущей папки",
+  "@msg97301f64": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg97301f64": "Параметры Просмотра и Сортировки",
+  "@msg829cb1dd": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg829cb1dd": "Список",
+  "@msg0a4ebb8d": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg0a4ebb8d": "Параметры Размера и Интервалов",
+  "@msg88062f93": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg88062f93": "Размер Значка и Папки",
+  "@msga7c781f5": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msga7c781f5": "Размер и Интервалы",
+  "@msga2946a1a": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msga2946a1a": "Сортировать По",
+  "@za": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "za": "Имя (Я-А)",
+  "@msg2e2a26bb": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg2e2a26bb": "Размер (Большой)",
+  "@msgf437ace4": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msgf437ace4": "Только Эта Папка",
+  "@msg4dfc167a": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg4dfc167a": "Включить пользовательскую сортировку для этой папки",
+  "@msge4c84f81": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msge4c84f81": "Добавить Ярлык",
+  "@msgd730e478": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msgd730e478": "Системный Корень",
+  "@msg35546526": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg35546526": "Сетевые Подключения",
+  "@msg67a6ea5e": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg67a6ea5e": "Добавить Сетевое Подключение",
+  "@msgcc51d6c2": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msgcc51d6c2": "Удалить Подключение",
+  "@msg6e0f9cef": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg6e0f9cef": "Домашние Категории",
+  "@msge9691076": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msge9691076": "Пустая Папка",
+  "@msg551f98ba": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg551f98ba": "Этот каталог не содержит файлов или подпапок.",
+  "@msg17093362": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg17093362": "Отменить Операцию",
+  "@msg681c0f39": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg681c0f39": "Глобальный Поиск",
+  "@msg0c36f64f": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg0c36f64f": "Только Документы",
+  "@msg26b041dd": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg26b041dd": "Только Аудио",
+  "@msge632ba85": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msge632ba85": "Только Архивы",
+  "@label": {
+    "type": "text"
+  },
+  "label": "Фильтр {label} активирован",
+  "@msg0e77af8a": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg0e77af8a": "Скрытые Папки",
+  "@e11": {
+    "type": "text"
+  },
+  "e11": "Ошибка загрузки: {e}",
+  "@msg5937f822": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg5937f822": "(Пустой Слайд)",
+  "@msg360d0b37": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg360d0b37": "Успешно сохранено ✓",
+  "@pdf": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "pdf": "Настройки Отображения PDF",
+  "@msg09c933bf": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg09c933bf": "Оптимизировать производительность рендеринга для больших, сложных или отсканированных документов.",
+  "@msg701a85d4": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg701a85d4": "Стандартный Режим",
+  "@msg2722d1a7": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg2722d1a7": "Лучше всего для текстовых документов",
+  "@msgb2b08d54": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msgb2b08d54": "Подходит для брошюр и фотографий",
+  "@msg8b519c02": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg8b519c02": "Макет Страницы",
+  "@msg7f2cd152": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg7f2cd152": "Непрерывный (вертикальный список прокрутки)",
+  "@msg151ea324": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg151ea324": "Направление Прокрутки",
+  "@msg7d45ded6": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg7d45ded6": "Вертикальное (прокрутка сверху вниз)",
+  "@msg176ef589": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg176ef589": "Включить Выделение Текста",
+  "@msg864f8706": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg864f8706": "Отключение может значительно улучшить скорость рендеринга страниц и устранить задержку прокрутки.",
+  "@msgd28847a2": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msgd28847a2": "Новый Документ",
+  "@msg3007c452": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg3007c452": "Дополнительные Параметры",
+  "@msg452dba7c": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg452dba7c": "Перенос Слов",
+  "@msgc31f9440": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msgc31f9440": "Показать Номера Строк",
+  "@msg1d93c30b": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg1d93c30b": "Открыть в Другом Приложении",
+  "@msgace80573": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msgace80573": "(Пустой Файл)",
+  "@msg030f48bd": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg030f48bd": "Открыть в Приложении",
+  "@msgfd96af00": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msgfd96af00": "Функция обмена скоро появится",
+  "@ftp1": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "ftp1": "FTP сервер успешно остановлен",
+  "@ftpe": {
+    "type": "text"
+  },
+  "ftpe": "Ошибка запуска FTP сервера: {e}",
+  "@msg5c202e56": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg5c202e56": "Пожалуйста, остановите сервер перед изменением конфигурации",
+  "@msgfca29cb3": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msgfca29cb3": "Изменить Порт",
+  "@msg8a0b5bf5": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg8a0b5bf5": "Недопустимый номер порта",
+  "@msg3bce2199": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg3bce2199": "Установить Имя Пользователя",
+  "@msg0b62b5ce": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg0b62b5ce": "Имя пользователя не может быть пустым",
+  "@ftp2": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "ftp2": "FTP Сервер",
+  "@msg5ab96a6d": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg5ab96a6d": "Пожалуйста, остановите сервер перед редактированием настроек",
+  "@msgc400f106": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msgc400f106": "Изменить Каталог",
+  "@msgb5eb59fc": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msgb5eb59fc": "Установить Пользователя",
+  "@msg70c53afb": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg70c53afb": "Анонимный Доступ",
+  "@msg8e2021aa": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg8e2021aa": "Создать Ярлык",
+  "@msgd70e9bdf": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msgd70e9bdf": "Неактивен",
+  "@msg7ae644e4": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg7ae644e4": "Статус Сети",
+  "@msg5d57821d": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg5d57821d": "Адрес Сервера",
+  "@msgfefea1b3": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msgfefea1b3": "Домашний Каталог",
+  "@msg124d9054": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg124d9054": "Показать Скрытые Файлы",
+  "@tlsftp": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "tlsftp": "Безопасное FTP соединение на основе явного TLS",
+  "@msg1f4c1042": {
+    "description": "ui\\screens\\global_search_screen.dart"
+  },
+  "msg1f4c1042": "Папка",
+  "@msgf2ef53c0": {
+    "description": "ui\\screens\\global_search_screen.dart"
+  },
+  "msgf2ef53c0": "Поиск в этой папке...",
+  "@msgfff96ede": {
+    "description": "ui\\screens\\global_search_screen.dart"
+  },
+  "msgfff96ede": "Дополнительные Действия",
+  "@msg88e45bb8": {
+    "description": "ui\\screens\\global_search_screen.dart"
+  },
+  "msg88e45bb8": "Поиск по вашему хранилищу",
+  "@query": {
+    "type": "text"
+  },
+  "query": "Не найдено результатов для \"{_query}\"",
+  "@msge109d1ea": {
+    "description": "ui\\screens\\home_screen.dart"
+  },
+  "msge109d1ea": "Панель управления успешно обновлена",
+  "@msg05cea075": {
+    "description": "ui\\screens\\home_screen.dart"
+  },
+  "msg05cea075": "Нажмите ещё раз для выхода из приложения",
+  "@msg7498c202": {
+    "description": "ui\\screens\\home_screen.dart"
+  },
+  "msg7498c202": "Выйти из Приложения",
+  "@msg03247b17": {
+    "description": "ui\\screens\\home_screen.dart"
+  },
+  "msg03247b17": "Вы уверены, что хотите выйти? Нажмите назад ещё раз или нажмите выйти для закрытия приложения.",
+  "@msg354c1c9a": {
+    "description": "ui\\screens\\home_screen.dart"
+  },
+  "msg354c1c9a": "Обновить Панель",
+  "@msg19021d08": {
+    "description": "ui\\screens\\home_screen.dart"
+  },
+  "msg19021d08": "Пользовательские Быстрые Категории",
+  "@html": {
+    "description": "ui\\screens\\html_viewer_screen.dart"
+  },
+  "html": "Предпросмотр HTML",
+  "@msgfba1f416": {
+    "description": "ui\\screens\\internal_file_picker_screen.dart"
+  },
+  "msgfba1f416": "Введите имя папки",
+  "@msg33b0b21c": {
+    "description": "ui\\screens\\internal_file_picker_screen.dart"
+  },
+  "msg33b0b21c": "Выбрать и закрепить папку",
+  "@msgff3200cc": {
+    "description": "ui\\screens\\internal_file_picker_screen.dart"
+  },
+  "msgff3200cc": "Очистить Выбор",
+  "@msg4614630a": {
+    "description": "ui\\screens\\internal_file_picker_screen.dart"
+  },
+  "msg4614630a": "Папка пуста",
+  "@msg5dc1fa7b": {
+    "description": "ui\\screens\\internal_file_picker_screen.dart"
+  },
+  "msg5dc1fa7b": "Закрепить эту папку",
+  "@markdown": {
+    "description": "ui\\screens\\markdown_viewer_screen.dart"
+  },
+  "markdown": "Предпросмотр Markdown",
+  "@count1": {
+    "type": "text"
+  },
+  "count1": "Вы уверены, что хотите окончательно удалить {count} выбранных элементов?",
+  "@count2": {
+    "type": "text"
+  },
+  "count2": "Успешно удалено {count} элементов",
+  "@pastedcountdestdir": {
+    "type": "text"
+  },
+  "pastedcountdestdir": "Вставлено {pastedCount} элементов в {destDir}",
+  "@msgfadbb0bc": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msgfadbb0bc": "Нет файлов для обмена.",
+  "@msg3ad97542": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg3ad97542": "Не найдено физических файлов для переименования",
+  "@msg1303e638": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg1303e638": "Дата Изменения",
+  "@msg5bab3781": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg5bab3781": "Информация о Медиа",
+  "@msg880a18f3": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg880a18f3": "Выбрано Элементов",
+  "@msgea9ecb93": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msgea9ecb93": "Общий Размер",
+  "@msg5556baa3": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg5556baa3": "Долгое нажатие для открытия с помощью...",
+  "@msg631cd220": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg631cd220": "Подтвердить Удаление",
+  "@name": {
+    "type": "text"
+  },
+  "name": "Удалено {name}",
+  "@msgcd8264f1": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msgcd8264f1": "Показать в Расположении",
+  "@msg2a4cfb07": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg2a4cfb07": "Открыть с помощью...",
+  "@msg8bf52387": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg8bf52387": "Файл не найден или не может быть предоставлен для обмена.",
+  "@msg419be096": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg419be096": "Вставить Сюда",
+  "@msg5093bc80": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg5093bc80": "Сначала Новые",
+  "@msgbc74b5a8": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msgbc74b5a8": "По Дате",
+  "@msgef7ae768": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msgef7ae768": "Сначала Новые (сгруппировано по месяцам)",
+  "@msgb8140039": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msgb8140039": "Сначала Старые (сгруппировано по месяцам)",
+  "@msg424a0110": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg424a0110": "Неизвестная Дата",
+  "@msgb19671d6": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msgb19671d6": "Все Элементы",
+  "@msg11fea612": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg11fea612": "Дата и Время",
+  "@msg12e86877": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg12e86877": "Размер Файла / Количество Элементов",
+  "@msg7908038f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg7908038f": "Нет / Скрыто",
+  "@msg9136d4dc": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg9136d4dc": "Не показывать дополнительную информацию справа",
+  "@msg84986f91": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg84986f91": "Показать дату и время последнего изменения",
+  "@msgfc000737": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgfc000737": "Файлы показывают размер, папки показывают количество элементов",
+  "@msg83de16cc": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg83de16cc": "Выберите стиль конечной информации",
+  "@msgaa2a18a1": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgaa2a18a1": "Выберите, что отображается справа от файлов и папок, когда кнопка действий с тремя точками скрыта.",
+  "@msg26e4c5d6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg26e4c5d6": "Показать Адресную Строку",
+  "@windows1": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "windows1": "Показать редактируемую адресную строку в стиле Проводника Windows вверху списка файлов",
+  "@msg74e86197": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg74e86197": "Открывать ярлыки изображений/видео напрямую в предпочтительном виде папки (галерея)",
+  "@msga1fbf3c6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msga1fbf3c6": "Скрыть Панель Навигации Android",
+  "@msg02dddc02": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg02dddc02": "Скрыть нижнюю панель навигации для максимизации пространства экрана (смахните вверх для показа)",
+  "@msg50923c95": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg50923c95": "Очистить все запомненные ассоциации 'Открыть с помощью'",
+  "@msg6fdc09ac": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg6fdc09ac": "Пропустить Диалог 'Открыть с помощью'",
+  "@msg0a4b0442": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg0a4b0442": "Пропустить диалог выбора приложения, открывать файлы напрямую в программе просмотра по умолчанию",
+  "@msge1157984": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msge1157984": "Выберите запуск на странице категорий или обзора",
+  "@msgae1854a2": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgae1854a2": "Выберите свайп одним или двумя пальцами для переключения страниц",
+  "@msg11b1ec65": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg11b1ec65": "Включить кнопку быстрого создания (+) внизу страницы обзора",
+  "@msg7e7765b6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg7e7765b6": "Показывать системные файлы и папки, начинающиеся с точки(.)",
+  "@msg86f3d70f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg86f3d70f": "Показывать заголовки с количеством папок и файлов",
+  "@msg40e9c325": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg40e9c325": "Показывать общее количество папок и файлов под заголовком хранилища",
+  "@ampm24": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "ampm24": "Переключение между 12-часовым (AM/PM) и 24-часовым форматом времени в списке",
+  "@msg25ee6612": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg25ee6612": "Скрыть время и дату в списке",
+  "@msg337359a6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg337359a6": "Полностью скрыть дату и время изменения для файлов и папок",
+  "@msga517863e": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msga517863e": "Вычислять и отображать общее количество файлов и папок в каталоге",
+  "@msg59a24fcb": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg59a24fcb": "Вычислять и отображать общий размер всех файлов в каталоге (может повлиять на производительность списка)",
+  "@msg309e2a28": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg309e2a28": "Включить нижнюю панель действий на странице обзора",
+  "@msg9b7639ac": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg9b7639ac": "Показывать только значки в панели действий выбора на страницах обзора и медиа",
+  "@msgdd69671b": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdd69671b": "Краткая вспышка и прокрутка к выходу из папки при возврате",
+  "@msg57736228": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg57736228": "Показывать реальные миниатюры изображений и видео вместо стандартных значков файлов",
+  "@msg1eda8a50": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg1eda8a50": "Разрешить имена файлов переноситься на 3 строки вместо обрезки",
+  "@msgc7196afd": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgc7196afd": "Скрыть кнопку меню с тремя точками рядом с папками и файлами",
+  "@msgad54815d": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgad54815d": "Долгое нажатие и перетаскивание папок или файлов для перемещения в другие папки",
+  "@msg5dff8f2d": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5dff8f2d": "Показывать всплывающее окно параметров при перетаскивании файлов (копировать, перемещать, сжимать)",
+  "@msg4b0a7063": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg4b0a7063": "Разрешить открытие нескольких папок в отдельных вкладках для быстрой навигации",
+  "@msgf04ac00d": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgf04ac00d": "Просматривать два каталога рядом и легко передавать файлы",
+  "@msgd1591ba4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgd1591ba4": "Открывать последнюю просмотренную папку при запуске приложения",
+  "@msg25792550": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg25792550": "Перемещать удалённые файлы и папки в скрытую корзину вместо окончательного удаления",
+  "@msg1b9633fe": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg1b9633fe": "Цвет Темы / Динамическая Тема",
+  "@msg64db4c2d": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg64db4c2d": "Стиль Значка Папки",
+  "@msgece44aa5": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgece44aa5": "Стиль Кнопки Бокового Меню Приложения",
+  "@amoled1": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "amoled1": "Режим Чистого Чёрного AMOLED",
+  "@amoled2": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "amoled2": "Использовать чистый чёрный фон для AMOLED экранов в тёмном режиме",
+  "@msg5228b59f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5228b59f": "Типографика Приложения / Шрифт",
+  "@msge7d18d73": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msge7d18d73": "Пользовательские Ярлыки",
+  "@msg036fe6a4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg036fe6a4": "Переставить и переключать видимость элементов быстрых категорий",
+  "@msgead3e5c5": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgead3e5c5": "Поиск настроек...",
+  "@msg2590095f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg2590095f": "Категории Настроек",
+  "@msgfdae44c3": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgfdae44c3": "Общее и Поведение",
+  "@msgeae34685": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgeae34685": "Экран по умолчанию, элементы управления навигацией и ярлыки",
+  "@msg91b228b8": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg91b228b8": "Тема, значок приложения, стиль папки и типографика",
+  "@msgad6e8bb8": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgad6e8bb8": "Параметры Файлового Браузера",
+  "@msg8ddc4963": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg8ddc4963": "Адресная строка, скрытые файлы, вкладки и перетаскивание",
+  "@msg45db4e2a": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg45db4e2a": "Размер папки, количество и формат даты/времени",
+  "@msg09ca4d86": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg09ca4d86": "Просмотр галереи по умолчанию и предпросмотр миниатюр",
+  "@msgeb3693fb": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgeb3693fb": "Настройка действий открытия и программы просмотра по умолчанию",
+  "@msg3a6a39ae": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg3a6a39ae": "Переключатель корзины и длительность автоматического удаления",
+  "@msg9edfaff3": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg9edfaff3": "Резервное копирование или восстановление всех настроек приложения",
+  "@msg99c9cc56": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg99c9cc56": "Попробуйте поискать по другим ключевым словам",
+  "@msga432d127": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msga432d127": "Домашняя Страница по Умолчанию",
+  "@msg226fc6ae": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg226fc6ae": "Страница Категорий",
+  "@msgd48a082d": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgd48a082d": "Свайп для Переключения Страниц",
+  "@msgaac01f32": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgaac01f32": "Свайп Одним Пальцем",
+  "@msg59c7debc": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg59c7debc": "Запомнить Последнюю Открытую Папку",
+  "@msgce732d8a": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgce732d8a": "Скрыть текстовые метки в нижней панели (Главная/Обзор) для более чистого, компактного вида",
+  "@msg1cfeaace": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg1cfeaace": "Файловый Браузер и Навигация",
+  "@msgd33e3082": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgd33e3082": "Подсветить Выходящую Папку",
+  "@msga4333788": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msga4333788": "Медиа и Действия по Умолчанию",
+  "@msg20c87c8e": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg20c87c8e": "Предпочтительный Вид Галереи по Умолчанию",
+  "@msg72b1f919": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg72b1f919": "Все выбора программы просмотра по умолчанию сброшены",
+  "@msge99f4762": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msge99f4762": "Включить Корзину",
+  "@msg2c8a394a": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg2c8a394a": "Страница Обзора",
+  "@msg2c3c5a35": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg2c3c5a35": "Форма Значка Категории",
+  "@msg267fcd86": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg267fcd86": "Каждые 3 дня",
+  "@msg9104c0c5": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg9104c0c5": "Каждые 2 недели",
+  "@days": {
+    "type": "text"
+  },
+  "days": "Каждые {days} дней",
+  "@msg673ad9d4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg673ad9d4": "Кэш удалённого сервера очищен",
+  "@msgd9f142c4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgd9f142c4": "Автоочистка Кэша",
+  "@msg5472ef41": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5472ef41": "Немедленно очистить кэшированные файлы, загруженные с сетевых серверов",
+  "@msgac7687d9": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgac7687d9": "Просмотр каталога кэшированных файлов удалённого сервера",
+  "@msg225f6249": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg225f6249": "Показывать предпросмотр миниатюр для изображений и видео на сетевых серверах",
+  "@materialyou": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "materialyou": "Material You (Динамический Цвет Обоев)",
+  "@msg05cff3ad": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg05cff3ad": "Ярко-Оранжевый",
+  "@msg5ed35657": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5ed35657": "Королевский Пурпурный",
+  "@msge74a7283": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msge74a7283": "Янтарно-Золотой",
+  "@msg3904ba87": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg3904ba87": "Кибер-Розовый",
+  "@msgd58d230a": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgd58d230a": "Сапфирово-Синий",
+  "@msg508b005e": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg508b005e": "Лесно-Зелёный",
+  "@msgefdde083": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgefdde083": "Персиковый Закат",
+  "@msg628e73a9": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg628e73a9": "Синий по Умолчанию (Фирменный Синий)",
+  "@msg8244d240": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg8244d240": "Классический Сплошной",
+  "@msgf08d9b15": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgf08d9b15": "Современный Скруглённый",
+  "@msge5fba3dd": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msge5fba3dd": "Звёздный Специальный",
+  "@msgfe4254dc": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgfe4254dc": "Фрагмент Документа",
+  "@msg84719fd5": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg84719fd5": "Минималистичный Контур",
+  "@zenfile4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "zenfile4": "Контур Пунктирной Линии ZenFile",
+  "@vuesax": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "vuesax": "Сетка Категорий / Сетка Vuesax",
+  "@msg5dc988f4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5dc988f4": "Гамбургер Меню / Классическое Меню",
+  "@msgd06ba04f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgd06ba04f": "Минималистичный",
+  "@msg5090469e": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5090469e": "Glassmorphism",
+  "@d": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "d": "3D Милый",
+  "@msg67836b24": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg67836b24": "Киберпанк",
+  "@msgf08c8dc4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgf08c8dc4": "Естественный Дзен",
+  "@msg7372dc9f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg7372dc9f": "Пользовательский Значок",
+  "@msg3004e40a": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg3004e40a": "Логотип по Умолчанию (Естественный Дзен)",
+  "@msgc540e940": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgc540e940": "Точечная Матрица и Sans Serif",
+  "@msg00ea5776": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg00ea5776": "Ofit Современный Sans Serif",
+  "@msg7bdbfaa5": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg7bdbfaa5": "Jienao Tech Моноширинный",
+  "@msgdcb4082d": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdcb4082d": "Mont Urban Sans Serif",
+  "@msg9d7001d9": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg9d7001d9": "Пользовательский Импортированный Шрифт",
+  "@msgc2f5e9e4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgc2f5e9e4": "Фирменный по Умолчанию",
+  "@msg6a7c758f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg6a7c758f": "Никогда (Отключить Автоудаление)",
+  "@days1": {
+    "type": "text"
+  },
+  "days1": "Через {days} дней",
+  "@msgfe76ae54": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgfe76ae54": "Выберите страницу по умолчанию при запуске приложения",
+  "@msg8af2412a": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg8af2412a": "Показывать страницу быстрых категорий при запуске",
+  "@msg245c3258": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg245c3258": "Показывать страницу обзора файлов при запуске",
+  "@msg4439669d": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg4439669d": "Выберите свайп одним или двумя пальцами для переключения страниц",
+  "@msg46978666": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg46978666": "Свайп одним пальцем для переключения страницы категорий/обзора или открытия бокового меню",
+  "@msgbc9bf336": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgbc9bf336": "Свайп Двумя Пальцами",
+  "@msg563871d3": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg563871d3": "Свайп двумя пальцами для переключения страницы категорий/обзора или открытия бокового меню",
+  "@msgca71ac0c": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgca71ac0c": "Выберите Цвет Темы",
+  "@msg732630c1": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg732630c1": "Выберите Стиль Значка Папки",
+  "@msgf9224d98": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgf9224d98": "Выберите Стиль Кнопки Бокового Меню",
+  "@msgc337ecfa": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgc337ecfa": "Выберите Форму Значка Категории",
+  "@msgf18bc3d9": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgf18bc3d9": "Значок Лаунчера Приложений",
+  "@logo": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "logo": "Выберите пользовательский логотип для значка лаунчера приложений. Некоторые лаунчеры могут обновляться с задержкой в несколько секунд.",
+  "@msg64a6476a": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg64a6476a": "Логотип по Умолчанию",
+  "@title": {
+    "type": "text"
+  },
+  "title": "Значок приложения изменён на {title}",
+  "@msgad76161f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgad76161f": "Выбрать Пользовательский Значок",
+  "@pngjpgwebp": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "pngjpgwebp": "Пожалуйста, выберите файл изображения (PNG/JPG/WEBP)",
+  "@msgb06c5c34": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgb06c5c34": "Пользовательский значок применён",
+  "@e12": {
+    "type": "text"
+  },
+  "e12": "Не удалось применить пользовательский значок: {e}",
+  "@msg375c9eb8": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg375c9eb8": "Сырой Минималистичный Геометрический Стиль",
+  "@msg817e321b": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg817e321b": "Ретро Заголовок Точечной Матрицы Высоких Технологий + Чистое Основное Тело",
+  "@msg3c2a24cc": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg3c2a24cc": "Ультрагладкая, минималистичная и премиальная геометрическая эстетика",
+  "@msg978f8d11": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg978f8d11": "Чистый и футуристичный моноширинный стиль разработчика",
+  "@msg93b657aa": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg93b657aa": "Строгая, современная и привлекающая внимание типографика",
+  "@msg9db40ad6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg9db40ad6": "Ваш загруженный пользовательский файл шрифта",
+  "@zenfile5": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "zenfile5": "Выберите красивый шрифт для настройки общей визуальной темы ZenFile",
+  "@msg7372efa5": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg7372efa5": "Заменить Файл Пользовательского Шрифта",
+  "@msg3186839b": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg3186839b": "Не удалось загрузить выбранный файл шрифта.",
+  "@opentypeotftruetypettf": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "opentypeotftruetypettf": "Пожалуйста, выберите действительный файл шрифта OpenType (.otf) или TrueType (.ttf).",
+  "@msgcf42dedc": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgcf42dedc": "Удалить Пользовательский Шрифт",
+  "@msg2b9abfaa": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg2b9abfaa": "Пользовательский шрифт удалён.",
+  "@msgfdef8c23": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgfdef8c23": "7 Дней",
+  "@msg25436ba3": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg25436ba3": "15 Дней",
+  "@msg85e7f60c": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg85e7f60c": "30 Дней (Рекомендуется)",
+  "@msgd61e706f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgd61e706f": "Никогда (Ручная Очистка)",
+  "@msgf0ef894a": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgf0ef894a": "Длительность Автоудаления Корзины",
+  "@msg1200d6b7": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg1200d6b7": "Элементы в корзине будут окончательно удалены по истечении этого срока.",
+  "@msg432fbb31": {
+    "description": "ui\\screens\\network_category_screen.dart"
+  },
+  "msg432fbb31": "Удалить Подключение",
+  "@msgdeleteconn": {
+    "type": "text"
+  },
+  "msgdeleteconn": "Вы уверены, что хотите удалить \"{name}\"?",
+  "@msg3358aa10": {
+    "description": "ui\\screens\\network_category_screen.dart"
+  },
+  "msg3358aa10": "Добавить Подключение",
+  "@msgc9c900d0": {
+    "description": "ui\\screens\\network_category_screen.dart"
+  },
+  "msgc9c900d0": "Удалённых подключений пока нет",
+  "@ftpsftpwebdavsmb1": {
+    "description": "ui\\screens\\network_category_screen.dart"
+  },
+  "ftpsftpwebdavsmb1": "Добавить подключение FTP, SFTP, WebDav или SMB",
+  "@e13": {
+    "type": "text"
+  },
+  "e13": "Ошибка подключения: {e}",
+  "@msgb5bc0bf1": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msgb5bc0bf1": "Разрешение адреса хоста...",
+  "@msgc3d4e5f6": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msgc3d4e5f6": "Проверка статуса порта...",
+  "@msg3005ba4d": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msg3005ba4d": "Проверка учётных данных...",
+  "@msgab36a8c6": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msgab36a8c6": "Монтирование тома хранилища...",
+  "name1": "\"{name}\" успешно добавлено!",
+  "@name1": {
+    "type": "text"
+  },
+  "@connectedtype": {
+    "type": "text"
+  },
+  "connectedtype": "\"{name}\" успешно подключено!",
+  "@msgdf434415": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msgdf434415": "Системное приложение отключено",
+  "@documentsui": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "documentsui": "На вашем устройстве не включено стандартное системное приложение файлов/документов (DocumentsUI),",
+  "@androidnn": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "androidnn": "Это необходимо для Android, чтобы выбирать и монтировать каталоги.\n\n",
+  "@msgb2af4e30": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msgb2af4e30": "Пожалуйста, проверьте, отключено ли системное приложение 'Файлы' или 'Документы' в настройках устройства,",
+  "@safe": {
+    "type": "text"
+  },
+  "safe": "Не удалось запросить папку SAF: {e}",
+  "@msg65c7ecb6": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msg65c7ecb6": "Пожалуйста, введите имя подключения",
+  "@msg69e3963c": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msg69e3963c": "Пожалуйста, введите адрес сервера/имя хоста",
+  "@msgce1ec2ce": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msgce1ec2ce": "Удалённое Подключение",
+  "@msg25557d1f": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msg25557d1f": "Стандартный Протокол Передачи Файлов",
+  "@ssh": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "ssh": "Сервер Безопасной Передачи Файлов SSH",
+  "@http": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "http": "HTTP Web Distributed Authoring",
+  "@androidsd": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "androidsd": "Фреймворк Доступа к Хранилищу Android (SD Карта / Внешнее Хранилище)",
+  "@msg8486035b": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msg8486035b": "Выберите Сетевую Службу",
+  "@naszenfile": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "naszenfile": "Монтировать удалённый сервер или NAS ресурс как динамический диск в списке хранилищ ZenFile.",
+  "@selectedtype": {
+    "type": "text"
+  },
+  "selectedtype": "Настройки {_selectedType}",
+  "@msg5c808d9a": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msg5c808d9a": "Введите данные подключения для связи этого тома сетевого хранилища.",
+  "@nas": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "nas": "Пример: Офисный NAS, Домашний Ресурс",
+  "@dav": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "dav": "Пример: 192.168.1.100 или 192.168.1.100/dav",
+  "@naslocal": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "naslocal": "Пример: 192.168.1.100 или nas.local",
+  "@dav1": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "dav1": "Пример: /dav или /",
+  "@anonymousadmin": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "anonymousadmin": "Пример: anonymous или admin",
+  "@msgeec70cd2": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msgeec70cd2": "Пароль (Необязательно)",
+  "@msgf1fa9d44": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msgf1fa9d44": "Создание точки монтирования...",
+  "@selectedtype1": {
+    "type": "text"
+  },
+  "selectedtype1": "Пожалуйста, подождите, мы устанавливаем надёжное соединение с сервером {_selectedType}.",
+  "@e14": {
+    "type": "text"
+  },
+  "e14": "Ошибка восстановления элемента: {e}",
+  "@e15": {
+    "type": "text"
+  },
+  "e15": "Ошибка удаления элемента: {e}",
+  "@msg62187f1b": {
+    "description": "ui\\screens\\recycle_bin_screen.dart"
+  },
+  "msg62187f1b": "Вы уверены, что хотите окончательно удалить все элементы в корзине? Это действие необратимо.",
+  "@msg8cd6bc18": {
+    "description": "ui\\screens\\recycle_bin_screen.dart"
+  },
+  "msg8cd6bc18": "Очистить Корзину",
+  "@msga4dfc0c6": {
+    "description": "ui\\screens\\recycle_bin_screen.dart"
+  },
+  "msga4dfc0c6": "Корзина успешно очищена",
+  "@msg07d80ac5": {
+    "description": "ui\\screens\\recycle_bin_screen.dart"
+  },
+  "msg07d80ac5": "Поиск удалённых файлов...",
+  "@msg96d2b75f": {
+    "description": "ui\\screens\\recycle_bin_screen.dart"
+  },
+  "msg96d2b75f": "Окончательно Удалить",
+  "@msg0d824a24": {
+    "description": "ui\\screens\\recycle_bin_screen.dart"
+  },
+  "msg0d824a24": "Корзина пуста",
+  "@msg4c478216": {
+    "description": "ui\\screens\\recycle_bin_screen.dart"
+  },
+  "msg4c478216": "Исходное Расположение",
+  "@msgc44a57b6": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msgc44a57b6": "Загрузка текста...",
+  "@msgd6d8292d": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msgd6d8292d": "Буферизация медиа...",
+  "@e16": {
+    "type": "text"
+  },
+  "e16": "Ошибка загрузки: {e}",
+  "@msg66d723c5": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg66d723c5": "Тайм-аут буферизации, проверьте сетевое подключение",
+  "@msg53082c55": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg53082c55": "Невозможно вставить в то же расположение",
+  "@msg108feeed": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg108feeed": "Копирование...",
+  "@msg2d4b44ec": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg2d4b44ec": "Элементы успешно вставлены",
+  "@filenamee": {
+    "type": "text"
+  },
+  "filenamee": "Ошибка загрузки \"{fileName}\": {e}",
+  "@newname": {
+    "type": "text"
+  },
+  "newname": "Переименовано в \"{newName}\"",
+  "@msg4b342999": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg4b342999": "Удалить Элемент",
+  "@e17": {
+    "type": "text"
+  },
+  "e17": "Ошибка удаления: {e}",
+  "@msg79d7fef7": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg79d7fef7": "Новая Удалённая Папка",
+  "@msga98473f2": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msga98473f2": "Имя Папки",
+  "@e18": {
+    "type": "text"
+  },
+  "e18": "Не удалось создать папку: {e}",
+  "@msg5ca05a9b": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg5ca05a9b": "Удалённый Каталог",
+  "@msga636c09d": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msga636c09d": "Копировать на Локальное Устройство",
+  "@msga4c461a4": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msga4c461a4": "Загрузить файл в локальный буфер обмена",
+  "@msg425502fa": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg425502fa": "Загрузить и удалить с сервера",
+  "@msgc2b9f4b9": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msgc2b9f4b9": "Корневой Каталог",
+  "@msg2f7cd487": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg2f7cd487": "Загрузить локальный буфер обмена на сервер",
+  "@msg905c34fa": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg905c34fa": "Вставить Удалённый Буфер Обмена",
+  "@msg8439c155": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg8439c155": "Подключение разорвано",
+  "@msgda43df27": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msgda43df27": "Повторить Подключение",
+  "@msga21f6ab1": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msga21f6ab1": "Пустой Каталог",
+  "@msge1c538b8": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msge1c538b8": "Загрузить содержимое буфера обмена сюда",
+  "@e19": {
+    "type": "text"
+  },
+  "e19": "Ошибка загрузки: {e}",
+  "@msg50eaf94d": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg50eaf94d": "Подтверждение Удаления",
+  "@msgcb0da17b": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msgcb0da17b": "Удаление...",
+  "@msg4805c385": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msg4805c385": "Управление Приложениями",
+  "@msg93bc1f09": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msg93bc1f09": "Обновить Список",
+  "@msg32e490fe": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msg32e490fe": "Установленные Пользовательские Приложения",
+  "@apk2": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "apk2": "Резервные Копии APK",
+  "@msg8936ded6": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msg8936ded6": "Поиск имени пакета или приложения...",
+  "@msgd8b3fc58": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msgd8b3fc58": "Сортировать по Размеру",
+  "@msgbe1399f0": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msgbe1399f0": "Сортировать по Алфавиту",
+  "@msg9ad67f11": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msg9ad67f11": "Сортировать по Дате Резервного Копирования",
+  "@msgb0681bd4": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msgb0681bd4": "Точный Расчёт Хранилища",
+  "@msg34cd846c": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msg34cd846c": "Предоставить Разрешение на Доступ к Использованию",
+  "@msga22ddaae": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msga22ddaae": "Анализ Хранилища",
+  "@msgaae779d4": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msgaae779d4": "Пересканировать Хранилище",
+  "@msg7ae97495": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msg7ae97495": "Сканирование хранилища устройства",
+  "@msga5e5bf71": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msga5e5bf71": "Общее Хранилище",
+  "@msg652be256": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msg652be256": "Разбивка по Категориям",
+  "@msgeb3d7d70": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\app_batch_action_bar.dart"
+  },
+  "msgeb3d7d70": "Удалить Приложение",
+  "@msg6eb319a1": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\app_batch_action_bar.dart"
+  },
+  "msg6eb319a1": "Резервное копирование выбранного приложения...",
+  "@msg7fbfdce6": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\app_list_tab.dart"
+  },
+  "msg7fbfdce6": "Приложения не найдены",
+  "@msg753cdb55": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
+  },
+  "msg753cdb55": "Запустить Приложение",
+  "@apk3": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
+  },
+  "apk3": "Резервная Копия APK",
+  "@apk4": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
+  },
+  "apk4": "Создание резервной копии APK...",
+  "@apk5": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
+  },
+  "apk5": "Ошибка резервного копирования APK",
+  "@apk6": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
+  },
+  "apk6": "Поделиться Файлом APK",
+  "@msga0b18169": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\backup_list_tab.dart"
+  },
+  "msga0b18169": "Поделиться Файлом Резервной Копии",
+  "@msgb443cd06": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\backup_list_tab.dart"
+  },
+  "msgb443cd06": "Удалить Файл Резервной Копии",
+  "@e20": {
+    "type": "text"
+  },
+  "e20": "Ошибка загрузки файла: {e}",
+  "@msg24c6ab0f": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg24c6ab0f": "Файл успешно сохранён",
+  "@count3": {
+    "type": "text"
+  },
+  "count3": "Заменено {count} вхождений",
+  "@msgffb01e5b": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msgffb01e5b": "Простой Текст",
+  "@msg7902d9c0": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg7902d9c0": "Выберите Синтаксис",
+  "@msgc856a077": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msgc856a077": "Найти / Заменить",
+  "@msg7f2c95cd": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg7f2c95cd": "Сохранить Файл",
+  "@msg084e9388": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg084e9388": "Разблокировать Масштаб",
+  "@msgf387265a": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msgf387265a": "Перенос Слов: Вкл",
+  "@msg1045ba75": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg1045ba75": "Перенос Слов: Выкл",
+  "@msg96f0ad7d": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg96f0ad7d": "Блокировка Редактирования: Вкл",
+  "@msg349ab61d": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg349ab61d": "Блокировка Редактирования: Выкл",
+  "@msg0cee3cd1": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg0cee3cd1": "Скрыть Номера Строк",
+  "@selectedlanguage": {
+    "type": "text"
+  },
+  "selectedlanguage": "Синтаксис ({_selectedLanguage})",
+  "@msg0dac421f": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg0dac421f": "Заменить на...",
+  "@msg52709ae1": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg52709ae1": "Заменить Все",
+  "@msg4ecba8f6": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg4ecba8f6": "Табуляция",
+  "@e21": {
+    "type": "text"
+  },
+  "e21": "Ошибка загрузки хранилища: {e}",
+  "@msg4828116a": {
+    "description": "ui\\screens\\vault_explorer_screen.dart"
+  },
+  "msg4828116a": "Скрытые Файлы",
+  "@msg3bf31dfe": {
+    "description": "ui\\screens\\vault_lock_screen.dart"
+  },
+  "msg3bf31dfe": "Введите пароль для разблокировки",
+  "@pin": {
+    "description": "ui\\screens\\vault_lock_screen.dart"
+  },
+  "pin": "Введите PIN для разблокировки кошелька",
+  "@pin1": {
+    "description": "ui\\screens\\vault_lock_screen.dart"
+  },
+  "pin1": "Установите ваш 4-значный PIN кошелька",
+  "@pin2": {
+    "description": "ui\\screens\\vault_lock_screen.dart"
+  },
+  "pin2": "Подтвердите ваш 4-значный PIN",
+  "@msgbb590f19": {
+    "description": "ui\\screens\\vault_lock_screen.dart"
+  },
+  "msgbb590f19": "Приватное Хранилище",
+  "@msgaa43fa46": {
+    "description": "ui\\screens\\vault_lock_screen.dart"
+  },
+  "msgaa43fa46": "Очистить Всё",
+  "@msgc16eed0e": {
+    "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
+  },
+  "msgc16eed0e": "Скорость Воспроизведения",
+  "@msg8f106217": {
+    "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
+  },
+  "msg8f106217": "Заблокировать Управление",
+  "@msg1f41f25d": {
+    "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
+  },
+  "msg1f41f25d": "Режим Повтора",
+  "@msg4d2abc8c": {
+    "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
+  },
+  "msg4d2abc8c": "Путь медиа скопирован в буфер обмена.",
+  "@http1": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "http1": "Локальный сервер HTTP доступа остановлен.",
+  "@msg2904d894": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg2904d894": "Установка безопасного прокси-реле...",
+  "@msga1b2c3d4": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
+  "msga1b2c3d4": "Вернуться к Родительской Папке",
+  "@msga1b2c3d5": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
+  "msga1b2c3d5": "Как Настроить Shizuku?",
+  "@msga1b2c3d6": {
+    "description": "ui\\main.dart"
+  },
+  "msga1b2c3d6": "Требуется Разрешение на Хранилище",
+  "@msga1b2c3d7": {
+    "description": "ui\\main.dart"
+  },
+  "msga1b2c3d7": "Предоставить Разрешение",
+  "@msg2c146598": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg2c146598": "Облачный интернет-туннель активен! Временная ссылка активирована.",
+  "@msg4a5d26f4": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg4a5d26f4": "Ссылка скопирована в буфер обмена!",
+  "@type": {
+    "type": "text"
+  },
+  "type": "Отсканируйте другим устройством для немедленного открытия {type}.",
+  "@msgc8390d74": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msgc8390d74": "Центр Веб Доступа",
+  "@msg5345cdce": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg5345cdce": "Ссылка Интернет Доступа",
+  "@http2": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "http2": "Локальный Сервер HTTP Доступа",
+  "@wifi": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "wifi": "Разрешить другим устройствам в той же Wi-Fi сети получать доступ, просматривать и транслировать ваши файлы через веб-браузер.",
+  "@msg73c512df": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg73c512df": "Сервер в сети и транслирует",
+  "@url1": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "url1": "Копировать URL",
+  "@msg22b03c02": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg22b03c02": "QR Код",
+  "@sharedir": {
+    "type": "text"
+  },
+  "sharedir": "Каталог Доступа: {shareDir}",
+  "@msge6a29aa4": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msge6a29aa4": "Сервер неактивен",
+  "@wifi1": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "wifi1": "Пожалуйста, убедитесь, что другие устройства находятся в той же Wi-Fi сети, затем запустите сервер.",
+  "@msg974465c1": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg974465c1": "Запустить Веб Сервер",
+  "@msg27d5bd3c": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg27d5bd3c": "Создать безопасную временную публичную ссылку туннеля. Поделитесь этой ссылкой с любым человеком в интернете для загрузки файлов на высокой скорости, независимо от размера файла.",
+  "@msg66a09a42": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg66a09a42": "Временная ссылка доступа (действительна 24 часа):",
+  "@msg879058ce": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg879058ce": "Копировать Ссылку",
+  "@msg7ed199f8": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg7ed199f8": "Подключённые Клиенты Браузера",
+  "@msgb77e4adf": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msgb77e4adf": "Ожидание входящих интернет-загрузок...",
+  "@msga61778bc": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msga61778bc": "Интернет доступ не активирован",
+  "@msga3c80551": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msga3c80551": "Деактивировать Облачный Доступ",
+  "@msg6466e61e": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg6466e61e": "Активировать Ссылку Интернет Доступа",
+  "@msg67bd9375": {
+    "description": "ui\\widgets\\background_operation_progress_dialog.dart"
+  },
+  "msg67bd9375": "Обработка...",
+  "@msg3fa72416": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg3fa72416": "Переименование файлов...",
+  "@msg7dbbef0e": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg7dbbef0e": "Пожалуйста, подождите, обновление содержимого папки",
+  "@msg1a2d9a44": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg1a2d9a44": "Оригинальное Имя (%)",
+  "@msgcb029197": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msgcb029197": "Последовательный Номер (#)",
+  "@msgb6d8a14f": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msgb6d8a14f": "Трёхзначный Последовательный Номер (###)",
+  "@n": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "n": "Имя файла без расширения ({n})",
+  "@de": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "de": "Расширение с точкой ({de})",
+  "@e22": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "e22": "Расширение без точки ({e})",
+  "@n1": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "n1": "Полное имя файла с расширением ({N})",
+  "@msg0e9dc63a": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg0e9dc63a": "Шаблон Имени",
+  "@msg4a63edba": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg4a63edba": "Расширение",
+  "@msga420ad79": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msga420ad79": "Начальный Номер",
+  "@msg9857973d": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg9857973d": "Найти Текст",
+  "@msg1605701e": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg1605701e": "Заменить На",
+  "@msgd35f80c8": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msgd35f80c8": "Заменить Содержимое",
+  "@msg32c61dab": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg32c61dab": "Предпросмотр Переименования",
+  "@msg92642e0e": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg92642e0e": "Вернуться к Редактированию",
+  "@msgde88d67a": {
+    "description": "ui\\widgets\\conflict_dialog.dart"
+  },
+  "msgde88d67a": "Файл Уже Существует",
+  "@msge59e35b5": {
+    "description": "ui\\widgets\\conflict_dialog.dart"
+  },
+  "msge59e35b5": "Применить ко Всем Оставшимся Конфликтам",
+  "@msg27dfaae5": {
+    "description": "ui\\widgets\\conflict_dialog.dart"
+  },
+  "msg27dfaae5": "Сохранить Оба",
+  "@msg6cfbf05d": {
+    "description": "ui\\widgets\\conflict_dialog.dart"
+  },
+  "msg6cfbf05d": "Переименовать Файл",
+  "@msg25f747ce": {
+    "description": "ui\\widgets\\create_archive_dialog.dart"
+  },
+  "msg25f747ce": "Создать Архив",
+  "@msged5f808e": {
+    "description": "ui\\widgets\\create_archive_dialog.dart"
+  },
+  "msged5f808e": "Формат Сжатия",
+  "@mb": {
+    "description": "ui\\widgets\\create_archive_dialog.dart"
+  },
+  "mb": "Размер Разделения (МБ, необязательно)",
+  "@msgac52af6a": {
+    "description": "ui\\widgets\\create_archive_dialog.dart"
+  },
+  "msgac52af6a": "Оставьте пустым для создания одного архива",
+  "@msgdf2ef7f5": {
+    "description": "ui\\widgets\\create_archive_dialog.dart"
+  },
+  "msgdf2ef7f5": "Создать отдельный архив для каждого файла",
+  "@msgb52d4a73": {
+    "description": "ui\\widgets\\directory_tab_bar.dart"
+  },
+  "msgb52d4a73": "Новая Вкладка",
+  "@msg4e9c344a": {
+    "description": "ui\\widgets\\directory_tab_bar.dart"
+  },
+  "msg4e9c344a": "Дублировать Вкладку",
+  "@msg7716532d": {
+    "description": "ui\\widgets\\directory_tab_bar.dart"
+  },
+  "msg7716532d": "Закрыть Другие Вкладки",
+  "@msgd78603eb": {
+    "description": "ui\\widgets\\directory_tab_bar.dart"
+  },
+  "msgd78603eb": "Двойное нажатие для Закрытия Вкладки",
+  "@selectedcount": {
+    "type": "text"
+  },
+  "selectedcount": "{selectedCount} элементов",
+  "@e23": {
+    "type": "text"
+  },
+  "e23": "Не удалось создать архив: {e}",
+  "@msgc4d7eece": {
+    "description": "ui\\widgets\\extract_archive_dialog.dart"
+  },
+  "msgc4d7eece": "Извлечь Архив",
+  "@msgf15821d0": {
+    "description": "ui\\widgets\\extract_archive_dialog.dart"
+  },
+  "msgf15821d0": "Извлечь в Папку",
+  "@msgff69affd": {
+    "description": "ui\\widgets\\extract_archive_dialog.dart"
+  },
+  "msgff69affd": "Пароль (если зашифрован)",
+  "@msg67eda5e6": {
+    "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+  },
+  "msg67eda5e6": "Все Файлы",
+  "@msg8b2fcb31": {
+    "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+  },
+  "msg8b2fcb31": "Показать все файлы и папки в этом каталоге",
+  "@pdfword": {
+    "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+  },
+  "pdfword": "PDF, документы Word, таблицы, текст и электронные книги",
+  "@jpegpngwebp": {
+    "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+  },
+  "jpegpngwebp": "JPEG, PNG, WebP и форматы raw фотографий",
+  "@mp3wavaac": {
+    "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+  },
+  "mp3wavaac": "MP3, WAV, AAC и аудио высокой точности",
+  "@mp4mkvwebm": {
+    "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+  },
+  "mp4mkvwebm": "MP4, MKV, WebM и видеоклипы высокого разрешения",
+  "@zip7zrar": {
+    "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+  },
+  "zip7zrar": "ZIP, 7Z, RAR и другие сжатые файлы",
+  "@msg6d3e48cc": {
+    "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+  },
+  "msg6d3e48cc": "Выберите категорию для показа только соответствующих файлов",
+  "@e24": {
+    "type": "text"
+  },
+  "e24": "Ошибка загрузки удалённой миниатюры: {e}",
+  "@msg32a1bd25": {
+    "description": "ui\\widgets\\file_item.dart"
+  },
+  "msg32a1bd25": "1 элемент",
+  "@count4": {
+    "type": "text"
+  },
+  "count4": "{count} элементов",
+  "@msg9d69d7a0": {
+    "description": "ui\\widgets\\file_operation_progress_dialog.dart"
+  },
+  "msg9d69d7a0": "Перемещение файлов...",
+  "@zenfile6": {
+    "description": "ui\\widgets\\open_with_sheet.dart"
+  },
+  "zenfile6": "Пользовательский Нативный Опыт ZenFile",
+  "@msg42be43e6": {
+    "description": "ui\\widgets\\open_with_sheet.dart"
+  },
+  "msg42be43e6": "Внешнее Системное Приложение",
+  "@msgd1fca831": {
+    "description": "ui\\widgets\\open_with_sheet.dart"
+  },
+  "msgd1fca831": "Открыть в стороннем приложении на устройстве",
+  "@msgdb75b769": {
+    "description": "ui\\widgets\\open_with_sheet.dart"
+  },
+  "msgdb75b769": "Только Один Раз",
+  "@msg959429a5": {
+    "description": "ui\\widgets\\premium_storage_overview.dart"
+  },
+  "msg959429a5": "Просмотр Файлов Устройства",
+  "@msgc31116e3": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msgc31116e3": "Добавить Новое Подключение",
+  "@msgf1d4ff50": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msgf1d4ff50": "Пользовательский",
+  "@msg490ac572": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msg490ac572": "Нет закреплённых ярлыков. Нажмите настроить для добавления.",
+  "@msg445a43cb": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msg445a43cb": "Перетащите маркер (=) для перестановки значков на домашней странице.",
+  "@msg944d5ecd": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msg944d5ecd": "Добавить Ярлык Папки/Файла",
+  "@msg4f356348": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msg4f356348": "Пользовательский Путь",
+  "@msg94733bec": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msg94733bec": "Удалить Ярлык",
+  "@msg5c29ad2f": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msg5c29ad2f": "Восстановить Расположение",
+  "@msg21de5dd7": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msg21de5dd7": "Пользовательское расположение сканирования:",
+  "@msg4bb81f99": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msg4bb81f99": "Пользовательские пути не добавлены.",
+  "@msgf544c399": {
+    "description": "ui\\widgets\\recent_files_section.dart"
+  },
+  "msgf544c399": "Октябрь",
+  "@msgc0615eb3": {
+    "description": "ui\\widgets\\recent_files_section.dart"
+  },
+  "msgc0615eb3": "Декабрь",
+  "@msg54355dd8": {
+    "description": "ui\\widgets\\recent_files_section.dart"
+  },
+  "msg54355dd8": "Недавние Файлы",
+  "@msgd5eac3a3": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
+  "msgd5eac3a3": "Ограниченные Системные Папки",
+  "@android11androiddataandroidobbzenfile": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
+  "android11androiddataandroidobbzenfile": "Android 11+ ограничивает стандартный доступ к папкам Android/data и Android/obb для защиты данных приложений. Для просмотра и изменения этих файлов ZenFile требует расширенных разрешений.",
+  "@root": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
+  "root": "Использовать Root Доступ (Суперпользователь)",
+  "@shizukuroot": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
+  "shizukuroot": "Предоставить Доступ к Shizuku (Root Не Требуется)",
+  "@selectedcount1": {
+    "type": "text"
+  },
+  "selectedcount1": "{selectedCount} элементов выбрано",
+  "@selectedcount2": {
+    "type": "text"
+  },
+  "selectedcount2": "Вы уверены, что хотите удалить {selectedCount} элементов? Это действие нельзя отменить.",
+  "@msga9b87614": {
+    "description": "ui\\widgets\\selection_action_bar.dart"
+  },
+  "msga9b87614": "Выбранные элементы откреплены",
+  "@msg84e4fac9": {
+    "description": "ui\\widgets\\selection_action_bar.dart"
+  },
+  "msg84e4fac9": "Открепить",
+  "@msg3be9abab": {
+    "description": "ui\\widgets\\selection_action_bar.dart"
+  },
+  "msg3be9abab": "Вычисление размера...",
+  "@msg7704aa2c": {
+    "description": "ui\\widgets\\selection_action_bar.dart"
+  },
+  "msg7704aa2c": "Выбранный путь:",
+  "@label1": {
+    "type": "text"
+  },
+  "label1": "{label} скопировано в буфер обмена",
+  "@selectedcount3": {
+    "type": "text"
+  },
+  "selectedcount3": "{selectedCount} элементов выбрано",
+  "@msg8b73264b": {
+    "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
+  },
+  "msg8b73264b": "Файлы (долгое нажатие для выбора открытия с помощью)",
+  "@msgc5c0646c": {
+    "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
+  },
+  "msgc5c0646c": "Копировать Выбранные",
+  "@msg8e6d4604": {
+    "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
+  },
+  "msg8e6d4604": "Вырезать Выбранные",
+  "@msg1058354c": {
+    "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
+  },
+  "msg1058354c": "Свойства и Информация",
+  "@usedstoragestr": {
+    "type": "text"
+  },
+  "usedstoragestr": "Использовано {usedStorageStr}",
+  "@freestoragestr": {
+    "type": "text"
+  },
+  "freestoragestr": "{freeStorageStr} доступно",
+  "@msgc823e21b": {
+    "description": "ui\\widgets\\tab_options_sheet.dart"
+  },
+  "msgc823e21b": "Открепить Вкладку",
+  "@msg7d6c1284": {
+    "description": "ui\\widgets\\zenfile_address_bar.dart"
+  },
+  "msg7d6c1284": "Соответствующие каталоги или файлы не найдены",
+  "@path": {
+    "type": "text"
+  },
+  "path": "Путь не существует: {path}",
+  "@msg6cbbf7d9": {
+    "description": "ui\\widgets\\zenfile_address_bar.dart"
+  },
+  "msg6cbbf7d9": "Введите абсолютный путь...",
+  "@msgf13fc21c": {
+    "description": "ui\\widgets\\zenfile_drawer.dart"
+  },
+  "msgf13fc21c": "Серверы и Инструменты",
+  "@msg41e625d1": {
+    "description": "ui\\widgets\\zenfile_drawer.dart"
+  },
+  "msg41e625d1": "Добавить Удалённое Подключение",
+  "@msg8755e992": {
+    "description": "ui\\widgets\\zenfile_drawer.dart"
+  },
+  "msg8755e992": "Светлый Режим",
+  "@msg1cf6fcd3": {
+    "description": "ui\\widgets\\zenfile_drawer.dart"
+  },
+  "msg1cf6fcd3": "Дополнительные Настройки",
+  "@msgeef7e30c": {
+    "description": "ui\\widgets\\zenfile_drawer.dart"
+  },
+  "msgeef7e30c": "Премиальная Медиа Сюита",
+  "msg2ad64aa7": "Невозможно открыть ссылку: {urlString}",
+  "msg30d17f96": "Ключевые Особенности",
+  "msgaba638c4": "Безопасность Хранилища",
+  "msgd309e9ea": "Центр Серверов",
+  "msg4a5f936c": "Контакт и Обмен",
+  "msg4d48a010": "ZenFile — Красивый Файловый Менеджер",
+  "msg1f4c0192": "Угостите автора кофе",
+  "msg2eceaa85": "Оставить Чаевые Автору",
+  "msg305734ce": "Список Изменений",
+  "msg1c80891a": "Добавлен предпросмотр миниатюр удалённых файлов на странице обзора",
+  "msg212f8f9e": "Исправлено: удалённые файлы не могут быть открыты/воспроизведены",
+  "msgd0cf310e": "Оптимизировано единое управление каталогом кэша удалённых файлов",
+  "msg072f2022": "Свайп одним пальцем изменён на свайп двумя пальцами (для предотвращения случайного жеста возврата)",
+  "msg66517dc4": "Названия параметров шрифта полностью локализованы",
+  "msgacad92c8": "Удалена функция 'Предотвращать открытие бокового меню жестом возврата влево'",
+  "msg09d0e1b6": "Исправлено: переключение альтернативного значка не работает",
+  "msg2d1872c8": "Меню текстового редактора полностью локализовано",
+  "msg2e35eef7": "Двухпанельный Файловый Браузер",
+  "msge96aa2cd": "Встроенный Медиаплеер",
+  "msg49a6c41e": "Переключение Значка Приложения (несколько стилей)",
+  "msg4d82be7c": "План Обновления Следующей Версии",
+  "msg2c8957dd": "Известные Проблемы",
+  "msg11cb01fc": "Воспроизведение видео с удалённого сервера при кэшировании",
+  "msg60a4d643": "Пользовательский значок не изменит значок рабочего стола после загрузки (будет улучшено в следующей версии)",
+  "msg9e68ea42": "Ошибка сохранения, попробуйте снова",
+  "cat_images": "Изображения",
+  "cat_videos": "Видео",
+  "cat_audios": "Аудио",
+  "cat_documents": "Документы",
+  "cat_downloads": "Загрузки",
+  "cat_screenshots": "Скриншоты",
+  "cat_recent": "Недавние",
+  "cat_network": "Сеть",
+  "cat_apps": "Приложения",
+  "cat_settings": "Настройки",
+  "cat_storage": "Хранилище",
+  "cat_service": "Сервис",
+  "cat_manage": "Управление",
+  "cat_config": "Конфигурация",
+  "cat_analyze": "Анализ",
+  "cat_quick_categories": "Быстрые Категории",
+  "ui_nav": "Навигация",
+  "ui_home": "Главная",
+  "ui_recycle_bin": "Корзина",
+  "ui_dark_mode": "Тёмный Режим",
+  "ui_personalize_settings": "Персонализация и Настройки",
+  "ui_compress": "Сжать",
+  "ui_copy": "Копировать",
+  "ui_cut": "Вырезать",
+  "ui_delete": "Удалить",
+  "ui_select_all": "Выбрать Все",
+  "ui_cancel": "Отмена",
+  "ui_confirm": "Подтвердить",
+  "ui_share": "Поделиться",
+  "ui_move_here": "Переместить Сюда",
+  "ui_properties": "Свойства",
+  "ui_info": "Информация",
+  "ui_open": "Открыть",
+  "ui_close": "Закрыть",
+  "ui_more": "Ещё",
+  "ui_appearance_theme": "Внешний Вид и Тема",
+  "ui_list_layout_style": "Стиль Списка и Макета",
+  "ui_media_preferences": "Параметры Медиа",
+  "ui_file_actions_viewers": "Действия с Файлами и Просмотрщики",
+  "ui_no_settings_found": "Настройки не найдены",
+  "ui_show_floating_button": "Показать Плавающую Кнопку",
+  "ui_use_24h_format": "Использовать 24-Часовой Формат",
+  "ui_show_folder_contents_count": "Показывать Содержимое Папок",
+  "ui_show_folder_size": "Показывать Размер Папки",
+  "ui_show_bottom_action_bar": "Показать Нижнюю Панель Действий",
+  "ui_hide_action_text": "Скрыть Текстовые Метки Панели Действий",
+  "ui_show_media_previews": "Показывать Предпросмотр Медиа",
+  "ui_adaptive_multiline_names": "Адаптивные Многострочные Имена Файлов",
+  "ui_hide_action_menu_buttons": "Скрыть Кнопки Меню Действий",
+  "ui_enable_drag_drop": "Включить Перетаскивание",
+  "ui_confirm_drag_drop": "Подтверждать Перетаскивание",
+  "ui_enable_multi_tabs": "Включить Несколько Вкладок",
+  "ui_enable_split_screen": "Включить Разделённый Экран",
+  "ui_app_icon": "Значок Приложения",
+  "ui_emerald_green": "Изумрудно-Зелёный",
+  "ui_deep_red": "Глубокий Красный",
+  "ui_square": "Квадрат",
+  "ui_circle": "Круг",
+  "ui_1_day_after": "Через 1 день",
+  "ui_no_auto_clean": "Без автоочистки",
+  "ui_daily": "Ежедневно",
+  "ui_weekly": "Еженедельно",
+  "ui_monthly": "Ежемесячно",
+  "ui_every_n_days": "Каждые {days} дней",
+  "@ui_every_n_days": {
+    "description": "ui\\screens\\more_settings_screen.dart",
+    "type": "text"
+  },
+  "ui_clear_cache_failed": "Не удалось очистить кэш: {e}",
+  "@ui_clear_cache_failed": {
+    "description": "ui\\screens\\more_settings_screen.dart",
+    "type": "text"
+  },
+  "ui_clear_remote_cache": "Очистить Удалённый Кэш",
+  "ui_view_cache_dir": "Просмотреть Каталог Кэша",
+  "ui_remote_media_thumbnail": "Удалённые Медиа Миниатюры",
+  "ui_auto_clean_remote_cache": "Автоочистка кэша удалённого сервера периодически: {label}",
+  "@ui_auto_clean_remote_cache": {
+    "description": "ui\\screens\\more_settings_screen.dart",
+    "type": "text"
+  },
+  "ui_custom_font_with_name": "Пользовательский Шрифт ({name})",
+  "@ui_custom_font_with_name": {
+    "description": "ui\\screens\\more_settings_screen.dart",
+    "type": "text"
+  },
+  "ui_import_custom_font": "Импортировать Пользовательский Шрифт (.ttf/.otf)",
+  "ui_custom_font_applied": "Пользовательский шрифт \"{name}\" успешно применён!",
+  "@ui_custom_font_applied": {
+    "description": "ui\\screens\\more_settings_screen.dart",
+    "type": "text"
+  },
+  "ui_invalid_file_type": "Недопустимый Тип Файла",
+  "ui_language": "Язык",
+  "ui_hide_nav_labels": "Скрыть Метки Нижней Навигации",
+  "ui_reset_default_viewers": "Сбросить Просмотрщики по Умолчанию",
+  "ui_trailing_info_when_hidden": "Конечная Информация При Скрытом Меню",
+  "ui_go_up": "Вверх",
+  "@ui_go_up": {
+    "description": "directory_screen.dart"
+  },
+  "ui_cut_copy_items": "{prefix} · {count} элементов",
+  "@ui_cut_copy_items": {
+    "description": "directory_screen.dart",
+    "placeholders": {
+      "prefix": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_clear": "Очистить",
+  "@ui_clear": {
+    "description": "directory_screen.dart"
+  },
+  "ui_paste": "Вставить",
+  "@ui_paste": {
+    "description": "directory_screen.dart"
+  },
+  "ui_file_name": "Имя файла",
+  "@ui_file_name": {
+    "description": "directory_screen.dart"
+  },
+  "ui_create": "Создать",
+  "@ui_create": {
+    "description": "directory_screen.dart"
+  },
+  "ui_create_new_directory": "Создать новый каталог",
+  "@ui_create_new_directory": {
+    "description": "directory_screen.dart"
+  },
+  "ui_layout_mode": "Режим Макета",
+  "@ui_layout_mode": {
+    "description": "directory_screen.dart"
+  },
+  "ui_grid_view": "Сетка",
+  "@ui_grid_view": {
+    "description": "directory_screen.dart"
+  },
+  "ui_name_asc": "Имя (А-Я)",
+  "@ui_name_asc": {
+    "description": "directory_screen.dart"
+  },
+  "ui_newest": "Новейшие",
+  "@ui_newest": {
+    "description": "directory_screen.dart"
+  },
+  "ui_oldest": "Старейшие",
+  "@ui_oldest": {
+    "description": "directory_screen.dart"
+  },
+  "ui_size_small": "Размер (Маленький)",
+  "@ui_size_small": {
+    "description": "directory_screen.dart"
+  },
+  "ui_type": "Тип",
+  "@ui_type": {
+    "description": "ui widgets"
+  },
+  "ui_storage_volume": "Том Хранилища",
+  "@ui_storage_volume": {
+    "description": "directory_screen.dart"
+  },
+  "ui_browse": "Обзор",
+  "@ui_browse": {
+    "description": "directory_screen.dart"
+  },
+  "ui_new": "Новый",
+  "@ui_new": {
+    "description": "directory_screen.dart"
+  },
+  "ui_folders_count": "Папки: {count}",
+  "@ui_folders_count": {
+    "description": "directory_screen.dart",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_files_count": "Файлы: {count}",
+  "@ui_files_count": {
+    "description": "directory_screen.dart",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_selection_mode": "Режим Выделения",
+  "@ui_selection_mode": {
+    "description": "directory_screen.dart"
+  },
+  "ui_storage_and_sd": "Хранилище и SD Карта",
+  "@ui_storage_and_sd": {
+    "description": "directory_screen.dart"
+  },
+  "ui_images_only": "Только Изображения",
+  "@ui_images_only": {
+    "description": "ui widgets"
+  },
+  "ui_videos_only": "Только Видео",
+  "@ui_videos_only": {
+    "description": "ui widgets"
+  },
+  "ui_show_folders": "Показать Папки",
+  "@ui_show_folders": {
+    "description": "directory_screen.dart"
+  },
+  "ui_files": "Файлы",
+  "@ui_files": {
+    "description": "directory_screen.dart"
+  },
+  "ui_delete_file_confirm": "Вы уверены, что хотите удалить этот файл? Это действие нельзя отменить.",
+  "@ui_delete_file_confirm": {
+    "description": "directory_screen.dart"
+  },
+  "ui_done": "Готово",
+  "@ui_done": {
+    "description": "ui widgets"
+  },
+  "ui_name": "Имя",
+  "@ui_name": {
+    "description": "ui widgets"
+  },
+  "ui_path": "Путь",
+  "@ui_path": {
+    "description": "ui widgets"
+  },
+  "ui_size": "Размер",
+  "@ui_size": {
+    "description": "ui widgets"
+  },
+  "ui_permissions": "Разрешения",
+  "@ui_permissions": {
+    "description": "ui widgets"
+  },
+  "ui_contains": "Содержит",
+  "@ui_contains": {
+    "description": "ui widgets"
+  },
+  "ui_extract": "Извлечь",
+  "@ui_extract": {
+    "description": "ui widgets"
+  },
+  "ui_pin_to_top": "Закрепить Наверху",
+  "@ui_pin_to_top": {
+    "description": "ui widgets"
+  },
+  "ui_pinned_selected": "Выбранные элементы закреплены",
+  "@ui_pinned_selected": {
+    "description": "ui widgets"
+  },
+  "ui_filter_by_type": "Фильтровать Файлы по Типу",
+  "@ui_filter_by_type": {
+    "description": "ui widgets"
+  },
+  "ui_default_scan_locations": "Расположения сканирования по умолчанию:",
+  "@ui_default_scan_locations": {
+    "description": "ui widgets"
+  },
+  "ui_exclude_location": "Исключить Расположение",
+  "@ui_exclude_location": {
+    "description": "ui widgets"
+  },
+  "ui_add_custom_path": "Добавить Пользовательский Путь",
+  "@ui_add_custom_path": {
+    "description": "ui widgets"
+  },
+  "ui_added_custom_paths": "Добавлено {count} пользовательских путей",
+  "@ui_added_custom_paths": {
+    "description": "ui widgets",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_close_tab": "Закрыть Вкладку",
+  "@ui_close_tab": {
+    "description": "ui widgets"
+  },
+  "ui_not_found_title": "{title} не найдено",
+  "@ui_not_found_title": {
+    "description": "ui widgets",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_oldest_first": "Сначала Старые",
+  "@ui_oldest_first": {
+    "description": "ui widgets"
+  },
+  "ui_sort_options": "Параметры Сортировки",
+  "@ui_sort_options": {
+    "description": "ui widgets"
+  },
+  "ui_refresh": "Обновить",
+  "@ui_refresh": {
+    "description": "ui widgets"
+  },
+  "ui_selected_count": "{count} Выбрано",
+  "@ui_selected_count": {
+    "description": "ui widgets",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_permanently_delete_name": "Окончательно удалить \"{name}\"?",
+  "@ui_permanently_delete_name": {
+    "description": "ui widgets",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_copied_count": "{count} элементов скопировано в буфер обмена",
+  "@ui_copied_count": {
+    "description": "ui widgets",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_cut_count": "{count} элементов вырезано в буфер обмена",
+  "@ui_cut_count": {
+    "description": "ui widgets",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_read": "Чтение",
+  "@ui_read": {
+    "description": "ui widgets"
+  },
+  "ui_write": "Запись",
+  "@ui_write": {
+    "description": "ui widgets"
+  },
+  "ui_file": "Файл",
+  "@ui_file": {
+    "description": "ui widgets"
+  },
+  "ui_backup_settings": "Резервное Копирование Настроек",
+  "ui_restore_settings": "Восстановление Настроек",
+  "ui_backup_info": "Информация о Резервной Копии",
+  "ui_backup_file": "Файл Резервной Копии",
+  "ui_no_backup_file": "Нет файла резервной копии",
+  "ui_remote_connection": "Удалённое Подключение",
+  "ui_step_n_of_3": "Шаг {step} / 3",
+  "ui_choose_network_service": "Выберите Сетевую Службу",
+  "ui_connection_name": "Имя Подключения",
+  "ui_protocol": "Протокол",
+  "ui_port": "Порт",
+  "ui_path_label": "Путь",
+  "ui_username_optional": "Имя Пользователя (Необязательно)",
+  "ui_back": "Назад",
+  "ui_connect": "Подключить",
+  "ui_web_share": "Веб Доступ",
+  "ui_network": "Сеть",
+  "log_i18n_full": "Полная интернационализация для китайского/английского интерфейса",
+  "log_fix_selection_count": "Исправлено: количество выбранных файлов не отображается",
+  "log_fix_remote_title": "Исправлено: проблема отображения заголовка страницы удалённого подключения",
+  "log_svg_thumbnail_category": "Миниатюры SVG теперь отображаются на страницах категорий",
+  "log_language_btn_top": "Кнопка переключения языка перемещена наверх настроек",
+  "log_fix_category_missing": "Исправлено: некоторые категории не отображаются в английском режиме",
+  "log_text_editor": "Новые функции текстового редактора: создать файл, сохранить как, отменить/повторить",
+  "log_text_editor_settings": "Сохранение настроек текстового редактора (перенос слов, номера строк, режим чтения)",
+  "log_10_languages": "Поддержка 10 языков (китайский, английский, японский, корейский, немецкий, французский, испанский, русский, арабский)",
+  "log_fix_l10n_hardcode": "Исправлены множественные проблемы с жестко заданным текстом l10n",
+  "log_language_scroll": "Оптимизирован диалог выбора языка с поддержкой прокрутки",
+  "ui_username": "Имя Пользователя",
+  "ui_anonymous": "Анонимный",
+  "ui_start": "Запустить",
+  "ui_stop": "Остановить",
+  "ui_connected": "Подключено",
+  "ui_activated": "Активировано",
+  "ui_web_sharing_center": "Центр Веб Доступа",
+  "ui_local_web_share": "Локальный Веб Доступ",
+  "ui_http_local_share_server": "Локальный Сервер HTTP Доступа",
+  "ui_server_idle": "Сервер Неактивен",
+  "ui_pick_files_folders": "Выбрать Файлы и Папки",
+  "ui_secure_storage": "Безопасное Хранилище",
+  "ui_protected_total_space": "Защищённое Общее Пространство",
+  "ui_hidden_files_count": "Скрытые Файлы",
+  "ui_search_obfuscated": "Поиск обфусцированных файлов...",
+  "ui_vault_empty": "Ваше безопасное хранилище пусто",
+  "ui_hide_files": "Скрыть Файлы",
+  "ui_global_search": "Глобальный Поиск",
+  "ui_all": "Все",
+  "ui_folders": "Папки",
+  "ui_images": "Изображения",
+  "ui_videos": "Видео",
+  "ui_audio": "Аудио",
+  "ui_documents": "Документы",
+  "ui_no_matching_files": "Соответствующие файлы не найдены",
+  "ui_try_modify_search": "Попробуйте изменить текст поиска для поиска скрытых элементов.",
+  "ui_vault_empty_desc": "Подписи XOR-обфускации делают файлы полностью непригодными для открытия и скрытыми от базы данных сканера системы. Нажмите кнопку ниже для их защиты.",
+  "ui_copied_n_items": "{count} элемент(ов) скопировано в буфер обмена",
+  "ui_cut_n_items": "{count} элемент(ов) вырезано в буфер обмена",
+  "ui_copy_tooltip": "Копировать",
+  "ui_cut_tooltip": "Вырезать",
+  "ui_delete_tooltip": "Удалить",
+  "ui_search_this_folder": "Поиск в этой папке",
+  "ui_search_files_subfolders_in": "Поиск файлов и подпапок в: {path}",
+  "ui_no_results": "Результаты не найдены",
+  "ui_no_match_for": "Не найдено результатов для \"{query}\"",
+  "ui_n_selected": "{count} выбрано ({size})",
+  "ui_select_language_title": "Выберите Язык",
+  "ui_select_language_desc": "Пожалуйста, выберите предпочитаемый язык",
+  "ui_language_chinese": "中文",
+  "ui_language_english": "Английский",
+  "msgDefaultZoom": "Масштаб по Умолчанию ({fontSize}pt)",
+  "msgLockZoom": "Заблокировать Масштаб",
+  "ui_background": "Фон",
+  "ui_overall_progress": "Общий Прогресс",
+  "ui_archive_name": "Имя Архива",
+  "ui_compression_level": "Уровень Сжатия",
+  "ui_delete_source_after": "Удалить исходные файлы после завершения",
+  "ui_no_compression": "Нет (Только хранение)",
+  "ui_fast": "Быстрый",
+  "ui_standard": "Стандартный",
+  "ui_maximum": "Максимальный",
+  "ui_new_txt": "Новый Текстовый Файл",
+  "ui_save_as": "Сохранить Как",
+  "ui_undo": "Отменить",
+  "ui_redo": "Повторить",
+  "ui_add_selected": "Добавить Выбранные ({count})"
+}

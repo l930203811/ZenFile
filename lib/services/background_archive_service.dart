@@ -1,5 +1,6 @@
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
+import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:path/path.dart' as p;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:archive/archive_io.dart';
 import 'package:dart_lz4/dart_lz4.dart';
+import 'package:charset/charset.dart';
 import 'package:just_zstd/just_zstd.dart';
 import '../providers/file_manager_provider.dart';
 import 'package:provider/provider.dart';
@@ -57,6 +59,7 @@ class BackgroundArchiveService {
 
   Isolate? _activeIsolate;
   ReceivePort? _receivePort;
+  StreamSubscription? _portSubscription;
 
   Future<void> startCompression({
     required BuildContext context,
@@ -69,7 +72,7 @@ class BackgroundArchiveService {
     final archiveName = p.basename(destinationPath);
     final operation = BackgroundOperation(
       id: 'compress_${DateTime.now().millisecondsSinceEpoch}',
-      title: '正在压缩文件',
+      title: L10n.of(context).msg2f0138ad,
       archiveName: archiveName,
       isCompression: true,
     );
@@ -93,7 +96,7 @@ class BackgroundArchiveService {
       },
     );
 
-    _receivePort!.listen((message) {
+    _portSubscription = _receivePort!.listen((message) {
       if (message is Map<String, dynamic>) {
         final status = message['status'] as String;
         if (status == 'progress') {
@@ -110,7 +113,7 @@ class BackgroundArchiveService {
             _updateNotification(operation);
           }
         } else if (status == 'completed') {
-          _onOperationComplete(context, operation, '压缩包创建成功');
+          _onOperationComplete(context, operation, L10n.of(context).msga2292820);
         } else if (status == 'error') {
           final error = message['error'] as String;
           _onOperationComplete(context, operation, 'Compression failed: $error', isError: true);
@@ -128,7 +131,7 @@ class BackgroundArchiveService {
     final archiveName = p.basename(archivePath);
     final operation = BackgroundOperation(
       id: 'extract_${DateTime.now().millisecondsSinceEpoch}',
-      title: '正在解压压缩包',
+      title: L10n.of(context).msg0683ca6b,
       archiveName: archiveName,
       isCompression: false,
       destinationDir: destinationDir,
@@ -150,7 +153,7 @@ class BackgroundArchiveService {
       },
     );
 
-    _receivePort!.listen((message) {
+    _portSubscription = _receivePort!.listen((message) {
       if (message is Map<String, dynamic>) {
         final status = message['status'] as String;
         if (status == 'progress') {
@@ -167,7 +170,7 @@ class BackgroundArchiveService {
             _updateNotification(operation);
           }
         } else if (status == 'completed') {
-          _onOperationComplete(context, operation, '压缩包解压成功');
+          _onOperationComplete(context, operation, L10n.of(context).msg1f216eda);
         } else if (status == 'error') {
           final error = message['error'] as String;
           _onOperationComplete(context, operation, 'Extraction failed: $error', isError: true);
@@ -179,6 +182,8 @@ class BackgroundArchiveService {
   void cancelOperation() {
     _activeIsolate?.kill(priority: Isolate.beforeNextEvent);
     _activeIsolate = null;
+    _portSubscription?.cancel();
+    _portSubscription = null;
     _receivePort?.close();
     _receivePort = null;
 
@@ -234,15 +239,30 @@ class BackgroundArchiveService {
 
   void _onOperationComplete(BuildContext context, BackgroundOperation operation, String message, {bool isError = false}) async {
     _activeIsolate = null;
+    _portSubscription?.cancel();
+    _portSubscription = null;
     _receivePort?.close();
     _receivePort = null;
+
+    // 关闭进度对话框
+    try {
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+    } catch (_) {}
+
+    // 等待对话框关闭完成
+    await Future.delayed(const Duration(milliseconds: 50));
+
+    // 清理 activeOperation
+    activeOperation.value = null;
 
     if (operation.isRunningInBackground) {
       if (Platform.isAndroid) {
         final id = operation.id.hashCode;
         await _channel.invokeMethod('showProgressNotification', {
           'id': id,
-          'title': isError ? '操作失败' : '成功',
+          'title': isError ? 'Operation failed' : 'Success',
           'message': isError ? 'Compression/extraction failed.' : '${operation.archiveName} processed successfully.',
           'progress': 100,
           'max': 100,
@@ -256,11 +276,12 @@ class BackgroundArchiveService {
 
     // 解压成功：显示'是/否'弹窗提示，不自动跳转
     if (!isError && !operation.isCompression && operation.destinationDir != null) {
+      final l10n = L10n.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
             children: [
-              const Expanded(child: Text('解压成功，是否打开所在位置？')),
+              Expanded(child: Text(l10n.msgc18fb099)),
               TextButton(
                 onPressed: () {
                   ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -274,13 +295,13 @@ class BackgroundArchiveService {
                     provider.setNavigateToBrowseTab(true);
                   } catch (_) {}
                 },
-                child: const Text('是', style: TextStyle(color: Colors.white)),
+                child: Text(l10n.ui_confirm, style: const TextStyle(color: Colors.white)),
               ),
               TextButton(
                 onPressed: () {
                   ScaffoldMessenger.of(context).hideCurrentSnackBar();
                 },
-                child: const Text('否', style: TextStyle(color: Colors.white70)),
+                child: Text(l10n.ui_cancel, style: const TextStyle(color: Colors.white70)),
               ),
             ],
           ),
@@ -301,7 +322,13 @@ class BackgroundArchiveService {
       );
     }
 
-    activeOperation.value = null;
+    // 压缩/解压成功后刷新当前浏览页面
+    if (!isError && context.mounted) {
+      try {
+        final provider = Provider.of<FileManagerProvider>(context, listen: false);
+        provider.loadDirectory(provider.activeTab.currentPath, showLoading: false);
+      } catch (_) {}
+    }
   }
 
   static void _compressIsolateTask(Map<String, dynamic> args) async {
@@ -316,6 +343,7 @@ class BackgroundArchiveService {
       sendPort.send({'status': 'progress', 'progress': 0.0, 'currentFile': 'Scanning files...'});
 
       final allFiles = <_FileEntry>[];
+      final emptyDirs = <String>[];
       for (final path in sourcePaths) {
         final entityType = FileSystemEntity.typeSync(path);
         if (entityType == FileSystemEntityType.file) {
@@ -324,18 +352,28 @@ class BackgroundArchiveService {
           final dir = Directory(path);
           if (dir.existsSync()) {
             final list = dir.listSync(recursive: true);
+            bool hasFiles = false;
             for (final sub in list) {
               if (sub is File) {
+                hasFiles = true;
                 final relPath = p.relative(sub.path, from: p.dirname(path));
                 allFiles.add(_FileEntry(sub.path, relPath));
+              } else if (sub is Directory) {
+                // 记录子目录（包括空目录）
+                final relDirPath = p.relative(sub.path, from: p.dirname(path));
+                emptyDirs.add(relDirPath);
               }
+            }
+            // 如果目录本身为空，记录该目录
+            if (!hasFiles && list.isEmpty) {
+              emptyDirs.add(p.basename(path));
             }
           }
         }
       }
 
-      if (allFiles.isEmpty) {
-        sendPort.send({'status': 'error', 'error': '未找到可压缩的文件'});
+      if (allFiles.isEmpty && emptyDirs.isEmpty) {
+        sendPort.send({'status': 'error', 'error': 'No files to compress'});
         return;
       }
 
@@ -351,6 +389,13 @@ class BackgroundArchiveService {
 
         final bytes = File(entry.fullPath).readAsBytesSync();
         archive.addFile(ArchiveFile(entry.relPath, bytes.length, bytes));
+      }
+
+      // 添加空目录条目
+      for (final dirPath in emptyDirs) {
+        // 确保路径以 / 结尾表示目录
+        final normalizedDir = dirPath.endsWith('/') ? dirPath : '$dirPath/';
+        archive.addFile(ArchiveFile(normalizedDir, 0, <int>[]));
       }
 
       sendPort.send({
@@ -383,7 +428,7 @@ class BackgroundArchiveService {
       }
 
       if (encodedBytes == null) {
-        sendPort.send({'status': 'error', 'error': '不支持的格式'});
+        sendPort.send({'status': 'error', 'error': 'Unsupported format'});
         return;
       }
 
@@ -411,13 +456,40 @@ class BackgroundArchiveService {
       sendPort.send({
         'status': 'progress',
         'progress': 1.0,
-        'currentFile': '压缩包创建成功',
+        'currentFile': 'Archive created successfully',
       });
       await Future.delayed(const Duration(milliseconds: 300));
 
       sendPort.send({'status': 'completed'});
     } catch (e) {
       sendPort.send({'status': 'error', 'error': e.toString()});
+    }
+  }
+
+  /// 修复 ZIP 文件中非 UTF-8 编码的文件名（如 GBK 编码的中文文件名）
+  /// ZIP 规范中，如果文件名包含非 ASCII 字符且没有 UTF-8 标志位，
+  /// 解码器可能将原始字节当作 Latin-1 解码，导致中文乱码。
+  /// 此方法检测这种情况并尝试用 GBK 解码还原正确文件名。
+  static String _fixZipFilename(String name) {
+    // 检查是否包含乱码特征：Latin-1 范围内的高位字符（0x80-0xFF）
+    // 但不是有效的 UTF-8 序列
+    bool hasGarbled = false;
+    for (int i = 0; i < name.length; i++) {
+      final codeUnit = name.codeUnitAt(i);
+      if (codeUnit >= 0x80 && codeUnit <= 0xFF) {
+        hasGarbled = true;
+        break;
+      }
+    }
+    if (!hasGarbled) return name;
+
+    // 将字符串按 Latin-1 编码回字节，然后用 GBK 解码
+    try {
+      final bytes = name.codeUnits;
+      final decoded = gbk.decode(bytes);
+      return decoded;
+    } catch (_) {
+      return name;
     }
   }
 
@@ -432,7 +504,7 @@ class BackgroundArchiveService {
 
       final file = File(archivePath);
       if (!file.existsSync()) {
-        sendPort.send({'status': 'error', 'error': '未找到压缩包文件'});
+        sendPort.send({'status': 'error', 'error': 'Archive file not found'});
         return;
       }
       final bytes = file.readAsBytesSync();
@@ -495,31 +567,55 @@ class BackgroundArchiveService {
 
       sendPort.send({'status': 'progress', 'progress': 0.3, 'currentFile': 'Extracting files...'});
 
+      // 检查压缩包根目录是否已有文件夹
+      // 如果根目录没有文件夹（所有文件都在根层级），则自动创建以压缩包名称命名的文件夹
+      bool hasRootFolder = false;
+      for (int i = 0; i < archive.length; i++) {
+        final name = _fixZipFilename(archive[i].name);
+        if (!archive[i].isFile && !name.contains('/')) {
+          hasRootFolder = true;
+          break;
+        }
+        // 检查是否有子目录（路径中包含 /）
+        if (name.contains('/')) {
+          hasRootFolder = true;
+          break;
+        }
+      }
+
+      String actualDestDir = destinationDir;
+      if (!hasRootFolder) {
+        // 根目录没有文件夹，创建以压缩包名称命名的子文件夹
+        final archiveBaseName = p.basenameWithoutExtension(archivePath);
+        actualDestDir = p.join(destinationDir, archiveBaseName);
+        Directory(actualDestDir).createSync(recursive: true);
+      }
+
       final totalFiles = archive.length;
       for (int i = 0; i < totalFiles; i++) {
         final file = archive[i];
+        var filename = _fixZipFilename(file.name);
         final progress = 0.3 + (i / totalFiles) * 0.7;
         sendPort.send({
           'status': 'progress',
           'progress': progress,
-          'currentFile': file.name,
+          'currentFile': filename,
         });
 
-        final filename = file.name;
         if (file.isFile) {
           final data = file.content as List<int>;
-          final destFile = File(p.join(destinationDir, filename));
+          final destFile = File(p.join(actualDestDir, filename));
           destFile.createSync(recursive: true);
           destFile.writeAsBytesSync(data);
         } else {
-          Directory(p.join(destinationDir, filename)).createSync(recursive: true);
+          Directory(p.join(actualDestDir, filename)).createSync(recursive: true);
         }
       }
 
       sendPort.send({
         'status': 'progress',
         'progress': 1.0,
-        'currentFile': '压缩包解压成功',
+        'currentFile': 'Archive extracted successfully',
       });
       await Future.delayed(const Duration(milliseconds: 300));
 

@@ -152,7 +152,7 @@ class _ZenFileAppState extends State<ZenFileApp> {
     });
     _themeMode = PreferencesService.getThemeMode();
     final savedLocale = PreferencesService.getAppLocale();
-    _locale = savedLocale == 'zh' ? const Locale('zh', 'CN') : const Locale('en', 'US');
+    _locale = _localeFromCode(savedLocale);
     // Setup sharing observer immediately to catch incoming intents at the earliest possible frame!
     _setupSharingIntentObserver();
     _initializeApplication();
@@ -204,30 +204,72 @@ class _ZenFileAppState extends State<ZenFileApp> {
                   ),
                 ],
               ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    L10n.of(ctx).ui_select_language_desc,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6)),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        L10n.of(ctx).ui_select_language_desc,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                      ),
+                      const SizedBox(height: 20),
+                      _buildLanguageOption(ctx, 'zh', '简体中文', 'Simplified Chinese', selectedLocale == 'zh', (val) {
+                        setDialogState(() => selectedLocale = val);
+                      }),
+                      const SizedBox(height: 12),
+                      _buildLanguageOption(ctx, 'en', 'English', 'English', selectedLocale == 'en', (val) {
+                        setDialogState(() => selectedLocale = val);
+                      }),
+                      const SizedBox(height: 12),
+                      _buildLanguageOption(ctx, 'zh_TW', '繁體中文', 'Traditional Chinese', selectedLocale == 'zh_TW', (val) {
+                        setDialogState(() => selectedLocale = val);
+                      }),
+                      const SizedBox(height: 12),
+                      _buildLanguageOption(ctx, 'ja', '日本語', 'Japanese', selectedLocale == 'ja', (val) {
+                        setDialogState(() => selectedLocale = val);
+                      }),
+                      const SizedBox(height: 12),
+                      _buildLanguageOption(ctx, 'ko', '한국어', 'Korean', selectedLocale == 'ko', (val) {
+                        setDialogState(() => selectedLocale = val);
+                      }),
+                      const SizedBox(height: 12),
+                      _buildLanguageOption(ctx, 'de', 'Deutsch', 'German', selectedLocale == 'de', (val) {
+                        setDialogState(() => selectedLocale = val);
+                      }),
+                      const SizedBox(height: 12),
+                      _buildLanguageOption(ctx, 'fr', 'Français', 'French', selectedLocale == 'fr', (val) {
+                        setDialogState(() => selectedLocale = val);
+                      }),
+                      const SizedBox(height: 12),
+                      _buildLanguageOption(ctx, 'es', 'Español', 'Spanish', selectedLocale == 'es', (val) {
+                        setDialogState(() => selectedLocale = val);
+                      }),
+                      const SizedBox(height: 12),
+                      _buildLanguageOption(ctx, 'ru', 'Русский', 'Russian', selectedLocale == 'ru', (val) {
+                        setDialogState(() => selectedLocale = val);
+                      }),
+                      const SizedBox(height: 12),
+                      _buildLanguageOption(ctx, 'ar', 'العربية', 'Arabic', selectedLocale == 'ar', (val) {
+                        setDialogState(() => selectedLocale = val);
+                      }),
+                    ],
                   ),
-                  const SizedBox(height: 20),
-                  _buildLanguageOption(ctx, 'zh', '中文', 'Chinese', selectedLocale == 'zh', (val) {
-                    setDialogState(() => selectedLocale = val);
-                  }),
-                  const SizedBox(height: 12),
-                  _buildLanguageOption(ctx, 'en', 'English', '英文', selectedLocale == 'en', (val) {
-                    setDialogState(() => selectedLocale = val);
-                  }),
-                ],
+                ),
               ),
               actions: [
                 FilledButton(
                   onPressed: () {
-                    setLocale(selectedLocale);
+                    PreferencesService.saveAppLocale(selectedLocale);
                     PreferencesService.setHasSelectedLanguage(true);
                     Navigator.of(ctx).pop();
+                    if (mounted) {
+                      setState(() {
+                        _locale = _localeFromCode(selectedLocale);
+                      });
+                    }
                   },
                   style: FilledButton.styleFrom(
                     minimumSize: const Size(double.infinity, 48),
@@ -426,9 +468,24 @@ class _ZenFileAppState extends State<ZenFileApp> {
   Locale _getLocale() => _locale;
 
 
+  Locale _localeFromCode(String code) {
+    switch (code) {
+      case 'en': return const Locale('en', 'US');
+      case 'zh_TW': return const Locale('zh', 'TW');
+      case 'ja': return const Locale('ja', 'JP');
+      case 'ko': return const Locale('ko', 'KR');
+      case 'de': return const Locale('de', 'DE');
+      case 'fr': return const Locale('fr', 'FR');
+      case 'es': return const Locale('es', 'ES');
+      case 'ru': return const Locale('ru', 'RU');
+      case 'ar': return const Locale('ar', 'SA');
+      default: return const Locale('zh', 'CN');
+    }
+  }
+
   void setLocale(String localeCode) {
     setState(() {
-      _locale = localeCode == 'zh' ? const Locale('zh', 'CN') : const Locale('en', 'US');
+      _locale = _localeFromCode(localeCode);
     });
     PreferencesService.saveAppLocale(localeCode);
   }

@@ -179,8 +179,6 @@ class FileItem extends StatelessWidget {
                       context,
                       onAction,
                       isArchive: isArchive,
-                      showShare: showShowInLocationOption,
-                      showInLocation: showShowInLocationOption,
                     );
                   },
                 ),

@@ -182,7 +182,7 @@ class L10nEn extends L10n {
   String get zenfile1 => 'About ZenFile';
 
   @override
-  String get v103 => 'v1.0.3 (View)';
+  String get v104 => 'v1.0.4 (View)';
 
   @override
   String get zenfileflutter =>
@@ -251,7 +251,7 @@ class L10nEn extends L10n {
       'Long press image to save to gallery. Thank you for your support!';
 
   @override
-  String get zenfilev103 => 'Download ZenFile v1.0.3';
+  String get zenfilev104 => 'Download ZenFile v1.0.4';
 
   @override
   String get msg9d287020 => '123 Cloud Drive';
@@ -2850,6 +2850,26 @@ class L10nEn extends L10n {
       'Fixed some categories not showing in English mode';
 
   @override
+  String get log_text_editor =>
+      'New text editor features: create new files, save as, undo/redo';
+
+  @override
+  String get log_text_editor_settings =>
+      'Text editor settings persistence (word wrap, line numbers, read-only mode)';
+
+  @override
+  String get log_10_languages =>
+      'Support for 10 languages (Chinese, English, Japanese, Korean, German, French, Spanish, Russian, Arabic)';
+
+  @override
+  String get log_fix_l10n_hardcode =>
+      'Fixed multiple l10n hardcoded text issues';
+
+  @override
+  String get log_language_scroll =>
+      'Optimized language selection dialog with scroll support';
+
+  @override
   String get ui_username => 'Username';
 
   @override
@@ -2983,4 +3003,56 @@ class L10nEn extends L10n {
 
   @override
   String get ui_language_english => 'English';
+
+  @override
+  String msgDefaultZoom(Object fontSize) {
+    return 'Default Zoom (${fontSize}pt)';
+  }
+
+  @override
+  String get msgLockZoom => 'Lock Zoom';
+
+  @override
+  String get ui_background => 'Background';
+
+  @override
+  String get ui_overall_progress => 'Overall Progress';
+
+  @override
+  String get ui_archive_name => 'Archive Name';
+
+  @override
+  String get ui_compression_level => 'Compression Level';
+
+  @override
+  String get ui_delete_source_after => 'Delete source files after completion';
+
+  @override
+  String get ui_no_compression => 'None (Store only)';
+
+  @override
+  String get ui_fast => 'Fast';
+
+  @override
+  String get ui_standard => 'Standard';
+
+  @override
+  String get ui_maximum => 'Maximum';
+
+  @override
+  String get ui_new_txt => 'New Text File';
+
+  @override
+  String get ui_save_as => 'Save As';
+
+  @override
+  String get ui_undo => 'Undo';
+
+  @override
+  String get ui_redo => 'Redo';
+
+  @override
+  String ui_add_selected(Object count) {
+    return 'Add Selected ($count)';
+  }
 }

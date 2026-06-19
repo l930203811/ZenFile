@@ -2902,7 +2902,13 @@ class FileManagerProvider extends ChangeNotifier {
 
     if (context != null) {
       selectedPaths.clear();
-      final destinationPath = p.join(currentPath, '$archiveName.$format');
+      var destinationPath = p.join(currentPath, '$archiveName.$format');
+      // 如果目标路径已存在，自动重命名（快手.zip → 快手(1).zip → 快手(2).zip）
+      int counter = 1;
+      while (File(destinationPath).existsSync()) {
+        destinationPath = p.join(currentPath, '$archiveName($counter).$format');
+        counter++;
+      }
       await BackgroundArchiveService.instance.startCompression(
         context: context,
         sourcePaths: paths,

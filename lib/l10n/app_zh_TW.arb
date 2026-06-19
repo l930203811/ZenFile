@@ -1,2870 +1,2922 @@
 {
-  "@@locale": "en",
+  "@@locale": "zh_TW",
+  "msg6f3e533a": "正在開啟共享文件...",
   "@msg6f3e533a": {
     "description": "main.dart"
   },
-  "msg6f3e533a": "Opening shared document...",
+  "msgbca59325": "正在解析安全內容流",
   "@msgbca59325": {
     "description": "main.dart"
   },
-  "msgbca59325": "Parsing secure content stream",
+  "zenfile": "ZenFile 需要儲存許可權才能無縫管理、組織和顯示您的媒體檔案。",
   "@zenfile": {
     "description": "main.dart"
   },
-  "zenfile": "ZenFile needs storage permission to seamlessly manage, organize, and display your media files.",
+  "e": "清理快取目錄失敗: {e}",
   "@e": {
+    "description": "main.dart",
     "type": "text"
   },
-  "e": "Failed to clear cache directory: {e}",
+  "msg21cefa9b": "內部儲存",
   "@msg21cefa9b": {
     "description": "providers\\file_manager_provider.dart"
   },
-  "msg21cefa9b": "Internal Storage",
+  "smb": "區域網/SMB",
   "@smb": {
     "description": "providers\\file_manager_provider.dart"
   },
-  "smb": "LAN/SMB",
+  "msg05d3c93c": "成功移動專案",
   "@msg05d3c93c": {
     "description": "providers\\file_manager_provider.dart"
   },
-  "msg05d3c93c": "Items moved successfully",
+  "e1": "傳輸失敗：{e}",
   "@e1": {
+    "description": "providers\\file_manager_provider.dart",
     "type": "text"
   },
-  "e1": "Transfer failed: {e}",
+  "msga45bac47": "操作已取消",
   "@msga45bac47": {
     "description": "providers\\file_manager_provider.dart"
   },
-  "msga45bac47": "Operation cancelled",
+  "e2": "連線遠端伺服器失敗：{e}",
   "@e2": {
+    "description": "providers\\file_manager_provider.dart",
     "type": "text"
   },
-  "e2": "Failed to connect to remote server: {e}",
+  "e3": "建立資料夾出錯：{e}",
   "@e3": {
+    "description": "providers\\file_manager_provider.dart",
     "type": "text"
   },
-  "e3": "Error creating folder: {e}",
+  "msg3df5ef6c": "壓縮超出限制",
   "@msg3df5ef6c": {
     "description": "providers\\file_manager_provider.dart"
   },
-  "msg3df5ef6c": "Compression limit exceeded",
+  "msg5e32276d": "未知藝術家",
   "@msg5e32276d": {
     "description": "providers\\file_manager_provider.dart"
   },
-  "msg5e32276d": "Unknown Artist",
+  "msg497ec49d": "本地資料夾",
   "@msg497ec49d": {
     "description": "providers\\file_manager_provider.dart"
   },
-  "msg497ec49d": "Local Folders",
+  "e4": "下載遠端檔案失敗: {e}",
   "@e4": {
+    "description": "providers\\file_manager_provider.dart",
     "type": "text"
   },
-  "e4": "Failed to download remote file: {e}",
+  "msg6b9ca1dd": "無法將資料夾移動到自身或相同位置",
   "@msg6b9ca1dd": {
     "description": "providers\\file_manager_provider.dart"
   },
-  "msg6b9ca1dd": "Cannot move folder to itself or same location",
+  "e5": "移動專案失敗：{e}",
   "@e5": {
+    "description": "providers\\file_manager_provider.dart",
     "type": "text"
   },
-  "e5": "Failed to move items: {e}",
+  "msg5238524c": "無法將資料夾複製到自身或相同位置",
   "@msg5238524c": {
     "description": "providers\\file_manager_provider.dart"
   },
-  "msg5238524c": "Cannot copy folder to itself or same location",
+  "e6": "複製專案失敗：{e}",
   "@e6": {
+    "description": "providers\\file_manager_provider.dart",
     "type": "text"
   },
-  "e6": "Failed to copy items: {e}",
+  "msgc806d0fa": "壓縮包",
   "@msgc806d0fa": {
     "description": "providers\\media_provider.dart"
   },
-  "msgc806d0fa": "Archive",
+  "msg03070d08": "安裝包",
   "@msg03070d08": {
     "description": "providers\\media_provider.dart"
   },
-  "msg03070d08": "APK",
+  "ftp": "FTP共享",
   "@ftp": {
     "description": "providers\\media_provider.dart"
   },
-  "ftp": "FTP Share",
+  "web": "Web共享",
   "@web": {
     "description": "providers\\media_provider.dart"
   },
-  "web": "Web Share",
+  "msge86bd662": "裝置相簿（自動）",
   "@msge86bd662": {
     "description": "providers\\media_provider.dart"
   },
-  "msge86bd662": "Device Gallery (Auto)",
+  "msg16166a01": "裝置音訊庫（自動）",
   "@msg16166a01": {
     "description": "providers\\media_provider.dart"
   },
-  "msg16166a01": "Device Audio Library (Auto)",
+  "msgbb34b7ec": "內部儲存（掃描所有資料夾）",
   "@msgbb34b7ec": {
     "description": "providers\\media_provider.dart"
   },
-  "msgbb34b7ec": "Internal Storage (Scan All Folders)",
+  "msg26a1f2d9": "裝置相簿（截圖）",
   "@msg26a1f2d9": {
     "description": "providers\\media_provider.dart"
   },
-  "msg26a1f2d9": "Device Gallery (Screenshots)",
+  "msg39e11368": "正在解壓安裝包...",
   "@msg39e11368": {
     "description": "services\\apk_installer_service.dart"
   },
-  "msg39e11368": "Extracting APK package...",
+  "apk": "安裝包中未找到可安裝的APK",
   "@apk": {
     "description": "services\\apk_installer_service.dart"
   },
-  "apk": "No installable APK found in package",
+  "apk1": "無法啟動分包APK安裝器",
   "@apk1": {
     "description": "services\\apk_installer_service.dart"
   },
-  "apk1": "Cannot launch split APK installer",
+  "msg2f0138ad": "正在壓縮檔案",
   "@msg2f0138ad": {
     "description": "services\\background_archive_service.dart"
   },
-  "msg2f0138ad": "Compressing files",
+  "msga2292820": "壓縮包建立成功",
   "@msga2292820": {
     "description": "services\\background_archive_service.dart"
   },
-  "msga2292820": "Archive created successfully",
+  "msg0683ca6b": "正在解壓壓縮包",
   "@msg0683ca6b": {
     "description": "services\\background_archive_service.dart"
   },
-  "msg0683ca6b": "Extracting archive",
+  "msg1f216eda": "壓縮包解壓成功",
   "@msg1f216eda": {
     "description": "services\\background_archive_service.dart"
   },
-  "msg1f216eda": "Archive extracted successfully",
+  "msg5fa802be": "操作失敗",
   "@msg5fa802be": {
     "description": "services\\background_archive_service.dart"
   },
-  "msg5fa802be": "Operation failed",
+  "msg8fccf382": "是/否",
   "@msg8fccf382": {
     "description": "services\\background_archive_service.dart"
   },
-  "msg8fccf382": "Yes/No",
+  "msgc18fb099": "解壓成功，是否開啟所在位置？",
   "@msgc18fb099": {
     "description": "services\\background_archive_service.dart"
   },
-  "msgc18fb099": "Extraction successful. Open location?",
+  "msg4367e85a": "未找到可壓縮的檔案",
   "@msg4367e85a": {
     "description": "services\\background_archive_service.dart"
   },
-  "msg4367e85a": "No compressible files found",
+  "msg60a4545d": "不支援的格式",
   "@msg60a4545d": {
     "description": "services\\background_archive_service.dart"
   },
-  "msg60a4545d": "Unsupported format",
+  "msg226519e7": "未找到壓縮包檔案",
   "@msg226519e7": {
     "description": "services\\background_archive_service.dart"
   },
-  "msg226519e7": "No archive files found",
+  "msg88d150c7": "未找到可分享的專案。",
   "@msg88d150c7": {
     "description": "services\\folder_share_service.dart"
   },
-  "msg88d150c7": "No items to share.",
+  "e7": "讀取共享檔案出錯：{e}",
   "@e7": {
+    "description": "services\\intent_handler_service.dart",
     "type": "text"
   },
-  "e7": "Error reading shared file: {e}",
+  "zenfilesmbvirtualstoragebridgen": "ZenFile 區域網/SMB Virtual Storage Bridge\\n",
   "@zenfilesmbvirtualstoragebridgen": {
     "description": "services\\remote\\lan_client.dart"
   },
-  "zenfilesmbvirtualstoragebridgen": "ZenFile LAN/SMB Virtual Storage Bridge\n",
+  "msgf3a485df": "新建資料夾",
   "@msgf3a485df": {
     "description": "services\\remote\\saf_client.dart"
   },
-  "msgf3a485df": "New Folder",
+  "msge48a7157": "新建檔案",
   "@msge48a7157": {
     "description": "services\\remote\\saf_client.dart"
   },
-  "msge48a7157": "New File",
+  "zenfilebackupssettings": "設定已備份到 ZenFile/Backups/Settings/",
   "@zenfilebackupssettings": {
     "description": "services\\settings_backup_service.dart"
   },
-  "zenfilebackupssettings": "Settings backed up to ZenFile/Backups/Settings/",
+  "json": "請選擇有效的 .json 設定備份檔案",
   "@json": {
     "description": "services\\settings_backup_service.dart"
   },
-  "json": "Please select a valid .json settings backup file",
+  "e8": "設定恢復失敗: {e}",
   "@e8": {
+    "description": "services\\settings_backup_service.dart",
     "type": "text"
   },
-  "e8": "Settings restore failed: {e}",
+  "url": "無法開啟連結 {url}",
   "@url": {
+    "description": "ui\\screens\\about_screen.dart",
     "type": "text"
   },
-  "url": "Cannot open link {url}",
+  "zenfile1": "關於 ZenFile",
   "@zenfile1": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfile1": "About ZenFile",
+  "v104": "v1.0.4 (檢視)",
   "@v104": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "v104": "v1.0.4 (View)",
+  "zenfileflutter": "ZenFile 是一款基於 Flutter 構建的精美、流暢、開源的檔案管理器和離線媒體中心。專為極致效能、乾淨的毛玻璃美學和無縫使用者體驗而設計。",
   "@zenfileflutter": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfileflutter": "ZenFile is a beautiful, smooth, open-source file manager and offline media center built with Flutter. Designed for ultimate performance, clean glassmorphism aesthetics, and seamless user experience.",
+  "msga12ebf50": "極速體驗",
   "@msga12ebf50": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msga12ebf50": "Blazing Fast",
+  "msgfccb5a01": "無狀態快取與非同步掃描",
   "@msgfccb5a01": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msgfccb5a01": "Stateless caching & async scanning",
+  "msg6d8fbdac": "加密安全工作區",
   "@msg6d8fbdac": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg6d8fbdac": "Encrypted Secure Workspace",
+  "ftpsftpwebdav": "支援 FTP、區域網、SFTP 和 WebDAV",
   "@ftpsftpwebdav": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "ftpsftpwebdav": "Supports FTP, LAN, SFTP and WebDAV",
+  "msge8f352b9": "精美介面",
   "@msge8f352b9": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msge8f352b9": "Beautiful Interface",
+  "amoled": "AMOLED 純黑 & 絢麗主題",
   "@amoled": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "amoled": "AMOLED Pure Black & Vibrant Themes",
+  "msge8069659": "在倉庫中加星",
   "@msge8069659": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msge8069659": "Star on Repository",
+  "telegram": "加入 Telegram 頻道",
   "@telegram": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "telegram": "Join Telegram Channel",
+  "msg5f84adea": "與好友分享應用",
   "@msg5f84adea": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg5f84adea": "Share App with Friends",
+  "zenfilehttpsgithubcoml930203811zenfilereleases": "推薦 ZenFile，一款精美的離線檔案管理器和媒體中心：https://github.com/l930203811/ZenFile/releases",
   "@zenfilehttpsgithubcoml930203811zenfilereleases": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfilehttpsgithubcoml930203811zenfilereleases": "Recommend ZenFile, a beautiful offline file manager and media center: https://github.com/l930203811/ZenFile/releases",
+  "github": "檢視 GitHub 原始碼",
   "@github": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "github": "View GitHub Source",
+  "sequeldpdnsorg": "聯絡郵箱：1@sequel.dpdns.org",
   "@sequeldpdnsorg": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "sequeldpdnsorg": "Contact: 1@sequel.dpdns.org",
+  "msged8518d7": "郵箱已複製到剪貼簿",
   "@msged8518d7": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msged8518d7": "Email copied to clipboard",
+  "qq": "QQ 群號已複製到剪貼簿",
   "@qq": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "qq": "QQ group number copied to clipboard",
+  "bysequel": "用心打造 ❤️ by Sequel",
   "@bysequel": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "bysequel": "Crafted with ❤️ by Sequel",
+  "zenfile2": "版權所有 © 2026 ZenFile。保留所有權利。",
   "@zenfile2": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfile2": "Copyright © 2026 ZenFile. All rights reserved.",
+  "msg138d3725": "您的支援是我持續更新的動力 ❤️",
   "@msg138d3725": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg138d3725": "Your support keeps me going ❤️",
+  "msgccd097a7": "支付寶",
   "@msgccd097a7": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msgccd097a7": "Alipay",
+  "msgbffe28c8": "微信支付",
   "@msgbffe28c8": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msgbffe28c8": "WeChat Pay",
+  "msg0537b04e": "長按圖片可儲存到相簿，感謝您的支援！",
   "@msg0537b04e": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg0537b04e": "Long press image to save to gallery. Thank you for your support!",
+  "zenfilev104": "下載 ZenFile v1.0.4",
   "@zenfilev104": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfilev104": "Download ZenFile v1.0.4",
+  "msg9d287020": "123雲盤",
   "@msg9d287020": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg9d287020": "123 Cloud Drive",
+  "msgb2b41b6a": "115網盤",
   "@msgb2b41b6a": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msgb2b41b6a": "115 Cloud Drive",
+  "msg77ee718b": "百度網盤",
   "@msg77ee718b": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg77ee718b": "Baidu Netdisk",
+  "msgbff1432a": "夸克網盤",
   "@msgbff1432a": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msgbff1432a": "Quark Cloud Drive",
+  "msge03395d0": "小飛機網盤",
   "@msge03395d0": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msge03395d0": "Small Plane Cloud Drive",
+  "svg": "新增 SVG 檔案完整支援（縮圖預覽與檢視）",
   "@svg": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "svg": "Added full SVG support (thumbnail preview & viewing)",
+  "ziprar7ztargz": "新增壓縮包格式顏色區分（zip/rar/7z/tar/gz 各有專屬顏色）",
   "@ziprar7ztargz": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "ziprar7ztargz": "Added archive format color coding (zip/rar/7z/tar/gz each have unique colors)",
+  "msg09a6e11b": "新增遠端檔案先下載再播放功能",
   "@msg09a6e11b": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg09a6e11b": "Added remote file download-before-play feature",
+  "msg1c3206b8": "修復分類頁解壓後無法跳轉到瀏覽頁的問題",
   "@msg1c3206b8": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg1c3206b8": "Fixed issue where extraction couldn't jump to browse page from category page",
+  "msgb1e4da91": "修復「檢視快取目錄」和「解壓後開啟所在位置」導致頁面卡死的問題",
   "@msgb1e4da91": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msgb1e4da91": "Fixed page freeze issues with 'View Cache Directory' and 'Open Location After Extraction'",
+  "yyyymmdd": "最佳化檔案日期格式為 yyyy-MM-dd",
   "@yyyymmdd": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "yyyymmdd": "Optimized file date format to yyyy-MM-dd",
+  "msg4c425252": "最佳化預設啟用 24 小時制時間顯示",
   "@msg4c425252": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg4c425252": "Optimized default 24-hour time display",
+  "msg1eaf4abb": "路徑欄全面最佳化（更緊湊的麵包屑按鈕和箭頭樣式）",
   "@msg1eaf4abb": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg1eaf4abb": "Fully optimized path bar (more compact breadcrumb buttons and arrow styles)",
+  "msgd3381817": "標籤欄和路徑欄整體上移，為檔案列表留出更多空間",
   "@msgd3381817": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msgd3381817": "Tab bar and path bar moved up to give more space for file list",
+  "msg342688b2": "雙視窗頭部區域精簡（高度縮減30%）",
   "@msg342688b2": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg342688b2": "Dual-window header area streamlined (height reduced by 30%)",
+  "msg8954452f": "雙視窗模式下遠端伺服器替換未啟用標籤頁",
   "@msg8954452f": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg8954452f": "Remote server replaces inactive tab in dual-window mode",
+  "msgac5a0315": "返回手勢最佳化：選中狀態下返回清除選中而非退出頁面",
   "@msgac5a0315": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msgac5a0315": "Back gesture optimized: returns clear selection instead of exiting page when items selected",
+  "msg1904388e": "雙指右滑開啟抽屜頁，雙指左滑切換分類/瀏覽頁",
   "@msg1904388e": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg1904388e": "Two-finger right swipe opens drawer, two-finger left swipe switches category/browse page",
+  "msg2762c070": "新增雙指滑動開關（常規與行為設定中可關閉）",
   "@msg2762c070": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg2762c070": "Added two-finger swipe toggle (can be disabled in General & Behavior settings)",
+  "msg48dca69a": "進度條改為圓環線條樣式，中心顯示百分比數字",
   "@msg48dca69a": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg48dca69a": "Progress bar changed to circular ring style with percentage in center",
+  "windows": "遠端路徑相容性修復（Windows平臺路徑分隔符問題）",
   "@windows": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "windows": "Remote path compatibility fix (Windows platform path separator issue)",
+  "msg65eefc98": "位址列開關改為控制美化後的路徑麵包屑",
   "@msg65eefc98": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg65eefc98": "Address bar toggle now controls styled path breadcrumbs",
+  "msg96a6856a": "預設主頁設定（可選擇分類頁或瀏覽頁作為啟動頁）",
   "@msg96a6856a": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg96a6856a": "Default home page setting (choose category or browse page as startup)",
+  "msg250213fd": "全新安裝包圖示（自然禪意風格）",
   "@msg250213fd": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg250213fd": "New app installer icon (natural Zen style)",
+  "msg7f53e8b1": "圓形百分比進度條（複製/移動檔案時顯示）",
   "@msg7f53e8b1": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg7f53e8b1": "Circular percentage progress bar (shown during copy/move)",
+  "msg051469b5": "操作成功後自動關閉進度條，無需手動確認",
   "@msg051469b5": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg051469b5": "Progress bar auto-closes after successful operation, no manual confirmation needed",
+  "msge4c4d5e2": "檔案操作選單改為底部彈出（不再遮擋標籤欄）",
   "@msge4c4d5e2": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msge4c4d5e2": "File operation menu changed to bottom popup (no longer covers tab bar)",
+  "msga33dbb51": "選擇模式操作欄移至螢幕底部（含已選數量指示器）",
   "@msga33dbb51": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msga33dbb51": "Selection mode action bar moved to bottom (with selected count indicator)",
+  "msge6c84f11": "修復：切換圖示後點選進入應用詳情",
   "@msge6c84f11": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msge6c84f11": "Fixed: click to enter app details after switching icon",
+  "msg46b8ca8f": "修復：遠端複製後切換本地頁面異常",
   "@msg46b8ca8f": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg46b8ca8f": "Fixed: abnormal local page switch after remote copy",
+  "msgb3dea5f5": "文字檢視器長按選單支援複製和全選（已漢化）",
   "@msgb3dea5f5": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msgb3dea5f5": "Text viewer long-press menu supports copy and select all",
+  "msga4c92214": "拖放彈窗佈局最佳化（更緊湊）",
   "@msga4c92214": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msga4c92214": "Drag-and-drop popup layout optimized (more compact)",
+  "msg32854144": "分類頁圖示支援圓形/方形背景切換",
   "@msg32854144": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg32854144": "Category page icons support circle/square background toggle",
+  "msg3a93e257": "分類圖示形狀設定（外觀與主題中切換）",
   "@msg3a93e257": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg3a93e257": "Category icon shape setting (switch in Appearance & Theme)",
+  "zenfile3": "ZenFile 首次釋出",
   "@zenfile3": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfile3": "ZenFile First Release",
+  "msg47b760ed": "多標籤頁支援",
   "@msg47b760ed": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg47b760ed": "Multi-tab Support",
+  "ftpsftpwebdavsmb": "遠端伺服器連線（FTP/SFTP/WebDAV/SMB）",
   "@ftpsftpwebdavsmb": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "ftpsftpwebdavsmb": "Remote Server Connection (FTP/SFTP/WebDAV/SMB)",
+  "msg4b736dfb": "檔案加密保險櫃",
   "@msg4b736dfb": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg4b736dfb": "File Encryption Vault",
+  "ftpwebdav": "FTP/WebDAV 伺服器功能",
   "@ftpwebdav": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "ftpwebdav": "FTP/WebDAV Server Features",
+  "msg03257c2d": "自定義主題與外觀設定",
   "@msg03257c2d": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg03257c2d": "Custom Theme & Appearance Settings",
+  "msg5cce42e6": "遠端伺服器檔案拖放操作最佳化",
   "@msg5cce42e6": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg5cce42e6": "Remote server file drag-and-drop operation optimization",
+  "msg074f1ce7": "自定義應用桌面圖示功能完善",
   "@msg074f1ce7": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg074f1ce7": "Custom app desktop icon feature improved",
+  "msg5c66ffab": "遠端伺服器檔案列表中長按可能觸發拖放操作彈窗（下版本修復）",
   "@msg5c66ffab": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg5c66ffab": "Long press in remote server file list may trigger drag-and-drop popup (will be fixed in next version)",
+  "bug1sequeldpdnsorgqq792408214": "如果您有任何最佳化建議或發現Bug，歡迎透過郵箱 1@sequel.dpdns.org 或QQ群 792408214 反饋給我們。",
   "@bug1sequeldpdnsorgqq792408214": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "bug1sequeldpdnsorgqq792408214": "If you have any suggestions or find bugs, please feedback via email 1@sequel.dpdns.org or QQ group 792408214.",
+  "msgd054a84c": "長按儲存圖片",
   "@msgd054a84c": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msgd054a84c": "Long press to save image",
+  "msgb3b83e12": "圖片載入失敗",
   "@msgb3b83e12": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msgb3b83e12": "Image load failed",
+  "msgc2790d54": "需要儲存許可權才能儲存圖片",
   "@msgc2790d54": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msgc2790d54": "Storage permission required to save image",
+  "msg1292d351": "圖片已儲存到相簿",
   "@msg1292d351": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "msg1292d351": "Image saved to gallery",
+  "e9": "儲存失敗: {e}",
   "@e9": {
+    "description": "ui\\screens\\about_screen.dart",
     "type": "text"
   },
-  "e9": "Save failed: {e}",
+  "msg7a4ee0c7": "沒有可分享的檔案",
   "@msg7a4ee0c7": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
   },
-  "msg7a4ee0c7": "No files to share",
+  "msg45326802": "成功刪除專案",
   "@msg45326802": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
   },
-  "msg45326802": "Items deleted successfully",
+  "e10": "分享出錯：{e}",
   "@e10": {
+    "description": "ui\\screens\\all_recent_files_screen.dart",
     "type": "text"
   },
-  "e10": "Share error: {e}",
+  "msg4fb42e6e": "已複製到剪貼簿",
   "@msg4fb42e6e": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
   },
-  "msg4fb42e6e": "Copied to clipboard",
+  "msge5212c58": "已剪下到剪貼簿",
   "@msge5212c58": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
   },
-  "msge5212c58": "Cut to clipboard",
+  "msgc8ce4b36": "重新命名",
   "@msgc8ce4b36": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
   },
-  "msgc8ce4b36": "Rename",
+  "msgf139c5cf": "輸入新名稱",
   "@msgf139c5cf": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
   },
-  "msgf139c5cf": "Enter new name",
+  "msg53518c22": "刪除檔案",
   "@msg53518c22": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
   },
-  "msg53518c22": "Delete File",
+  "msg47809e5d": "無最近檔案",
   "@msg47809e5d": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
   },
-  "msg47809e5d": "No recent files",
+  "msg7a7e6c25": "新建立或下載的檔案將顯示在這裡。",
   "@msg7a7e6c25": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
   },
-  "msg7a7e6c25": "Newly created or downloaded files will appear here.",
+  "msg765d1698": "刪除所選專案",
   "@msg765d1698": {
     "description": "ui\\screens\\archive_viewer_screen.dart"
   },
-  "msg765d1698": "Delete Selected Items",
+  "msg365f2f0a": "專案刪除成功 ✓",
   "@msg365f2f0a": {
     "description": "ui\\screens\\archive_viewer_screen.dart"
   },
-  "msg365f2f0a": "Items deleted successfully ✓",
+  "successcount": "已成功新增 {successCount} 個專案到壓縮包 ✓",
   "@successcount": {
+    "description": "ui\\screens\\archive_viewer_screen.dart",
     "type": "text"
   },
-  "successcount": "Successfully added {successCount} items to archive ✓",
+  "count": "已貼上 {count} 個專案到壓縮包 ✓",
   "@count": {
+    "description": "ui\\screens\\archive_viewer_screen.dart",
     "type": "text"
   },
-  "count": "Pasted {count} items to archive ✓",
+  "msg39cb3352": "無法讀取壓縮包",
   "@msg39cb3352": {
     "description": "ui\\screens\\archive_viewer_screen.dart"
   },
-  "msg39cb3352": "Cannot read archive",
+  "msg99abedc6": "解壓到當前資料夾",
   "@msg99abedc6": {
     "description": "ui\\screens\\archive_viewer_screen.dart"
   },
-  "msg99abedc6": "Extract to Current Folder",
+  "msg8d0cfb58": "新增檔案",
   "@msg8d0cfb58": {
     "description": "ui\\screens\\archive_viewer_screen.dart"
   },
-  "msg8d0cfb58": "Add Files",
+  "msg5bf1fb72": "無損音訊",
   "@msg5bf1fb72": {
     "description": "ui\\screens\\audio_player\\audio_artwork_widget.dart"
   },
-  "msg5bf1fb72": "Lossless Audio",
+  "msg47cab5ae": "定時關閉",
   "@msg47cab5ae": {
     "description": "ui\\screens\\audio_player\\audio_controls_widget.dart"
   },
-  "msg47cab5ae": "Sleep Timer",
+  "msg50c1b248": "後臺播放已停止",
   "@msg50c1b248": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
   },
-  "msg50c1b248": "Background playback stopped",
+  "msg6d16d396": "後臺播放已啟用",
   "@msg6d16d396": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
   },
-  "msg6d16d396": "Background playback enabled",
+  "msg3038d9b8": "隨機播放: 關",
   "@msg3038d9b8": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
   },
-  "msg3038d9b8": "Shuffle: Off",
+  "msg29eed1da": "後臺播放",
   "@msg29eed1da": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
   },
-  "msg29eed1da": "Background Playback",
+  "msg4aa059f7": "點選停止後臺播放",
   "@msg4aa059f7": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
   },
-  "msg4aa059f7": "Tap to stop background playback",
+  "msg8f7f4490": "顯示帶控制按鈕的通知",
   "@msg8f7f4490": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
   },
-  "msg8f7f4490": "Show notification with controls",
+  "msgb7c87215": "音效與均衡器",
   "@msgb7c87215": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
   },
-  "msgb7c87215": "Sound Effects & Equalizer",
+  "msgfc449780": "音訊檔案資訊",
   "@msgfc449780": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
   },
-  "msgfc449780": "Audio File Info",
+  "msgb4fbc92c": "備份與恢復",
   "@msgb4fbc92c": {
     "description": "ui\\screens\\backup_settings_screen.dart"
   },
-  "msgb4fbc92c": "Backup & Restore",
+  "zenfilebackupssettings1": "將所有當前設定儲存到 ZenFile/Backups/Settings/",
   "@zenfilebackupssettings1": {
     "description": "ui\\screens\\backup_settings_screen.dart"
   },
-  "zenfilebackupssettings1": "Save all current settings to ZenFile/Backups/Settings/",
+  "json1": "選擇並恢復 JSON 備份檔案中的設定",
   "@json1": {
     "description": "ui\\screens\\backup_settings_screen.dart"
   },
-  "json1": "Select and restore settings from JSON backup file",
+  "msg534c621a": "備份目錄",
   "@msg534c621a": {
     "description": "ui\\screens\\backup_settings_screen.dart"
   },
-  "msg534c621a": "Backup Directory",
+  "msg396b7d3f": "檔案大小",
   "@msg396b7d3f": {
     "description": "ui\\screens\\backup_settings_screen.dart"
   },
-  "msg396b7d3f": "File Size",
+  "msgc047ee32": "最後備份時間",
   "@msgc047ee32": {
     "description": "ui\\screens\\backup_settings_screen.dart"
   },
-  "msgc047ee32": "Last Backup Time",
+  "msg917fd6ef": "沒有可匯出的資料。",
   "@msg917fd6ef": {
     "description": "ui\\screens\\database_reader_screen.dart"
   },
-  "msg917fd6ef": "No data to export.",
+  "sqlite": "SQLite資料庫閱讀器",
   "@sqlite": {
     "description": "ui\\screens\\database_reader_screen.dart"
   },
-  "sqlite": "SQLite Database Reader",
+  "msg03a0d224": "表結構",
   "@msg03a0d224": {
     "description": "ui\\screens\\database_reader_screen.dart"
   },
-  "msg03a0d224": "Table Structure",
+  "sql": "SQL控制檯",
   "@sql": {
     "description": "ui\\screens\\database_reader_screen.dart"
   },
-  "sql": "SQL Console",
+  "msge2f0fe67": "開啟資料庫失敗",
   "@msge2f0fe67": {
     "description": "ui\\screens\\database_reader_screen.dart"
   },
-  "msge2f0fe67": "Failed to open database",
+  "msg8bb11da4": "此資料庫中未找到表。",
   "@msg8bb11da4": {
     "description": "ui\\screens\\database_reader_screen.dart"
   },
-  "msg8bb11da4": "No tables found in this database.",
+  "msg7796aa3e": "搜尋行...",
   "@msg7796aa3e": {
     "description": "ui\\screens\\database_reader_screen.dart"
   },
-  "msg7796aa3e": "Search rows...",
+  "msg15f26697": "未找到行",
   "@msg15f26697": {
     "description": "ui\\screens\\database_reader_screen.dart"
   },
-  "msg15f26697": "No rows found",
+  "msg0eaa935b": "未載入結構詳情。",
   "@msg0eaa935b": {
     "description": "ui\\screens\\database_reader_screen.dart"
   },
-  "msg0eaa935b": "Structure details not loaded.",
+  "sql1": "SQL 編輯器",
   "@sql1": {
     "description": "ui\\screens\\database_reader_screen.dart"
   },
-  "sql1": "SQL Editor",
+  "select": "SELECT模板",
   "@select": {
     "description": "ui\\screens\\database_reader_screen.dart"
   },
-  "select": "SELECT Template",
+  "csv": "匯出結果為CSV",
   "@csv": {
     "description": "ui\\screens\\database_reader_screen.dart"
   },
-  "csv": "Export results as CSV",
+  "select1": "執行SELECT查詢以檢視結果。",
   "@select1": {
     "description": "ui\\screens\\database_reader_screen.dart"
   },
-  "select1": "Execute SELECT query to view results.",
+  "msgd1ad9002": "執行查詢出錯。",
   "@msgd1ad9002": {
     "description": "ui\\screens\\database_reader_screen.dart"
   },
-  "msgd1ad9002": "Error executing query.",
+  "targetpath": "已複製路徑: {targetPath}",
   "@targetpath": {
+    "description": "ui\\screens\\directory_screen.dart",
     "type": "text"
   },
-  "targetpath": "Path copied: {targetPath}",
+  "msg6ed14da7": "下一級",
   "@msg6ed14da7": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msg6ed14da7": "Next Level",
+  "msgcd0b9aca": "刪除選中",
   "@msgcd0b9aca": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msgcd0b9aca": "Delete Selected",
+  "msgee14ee27": "確定要刪除此專案嗎？此操作無法撤銷。",
   "@msgee14ee27": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msgee14ee27": "Are you sure you want to delete this item? This action cannot be undone.",
+  "filenamecreatedname": "\"{fileName}\" 已存在，已建立 \"{createdName}\"。",
   "@filenamecreatedname": {
+    "description": "ui\\screens\\directory_screen.dart",
     "type": "text"
   },
-  "filenamecreatedname": "\"{fileName}\" already exists, created \"{createdName}\".",
+  "foldernamecreatedname": "\"{folderName}\" 已存在，已建立 \"{createdName}\"。",
   "@foldernamecreatedname": {
+    "description": "ui\\screens\\directory_screen.dart",
     "type": "text"
   },
-  "foldernamecreatedname": "\"{folderName}\" already exists, created \"{createdName}\".",
+  "msgbd165c40": "建立新的空白文字文件",
   "@msgbd165c40": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msgbd165c40": "Create new blank text document",
+  "msg68ac91eb": "新建壓縮包",
   "@msg68ac91eb": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msg68ac91eb": "New Archive",
+  "msg881f6a80": "壓縮當前資料夾內容",
   "@msg881f6a80": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msg881f6a80": "Compress current folder contents",
+  "msg97301f64": "檢視和排序選項",
   "@msg97301f64": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msg97301f64": "View & Sort Options",
+  "msg829cb1dd": "列表檢視",
   "@msg829cb1dd": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msg829cb1dd": "List View",
+  "msg0a4ebb8d": "大小和間距選項",
   "@msg0a4ebb8d": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msg0a4ebb8d": "Size & Spacing Options",
+  "msg88062f93": "圖示和資料夾大小",
   "@msg88062f93": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msg88062f93": "Icon & Folder Size",
+  "msga7c781f5": "大小和間距",
   "@msga7c781f5": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msga7c781f5": "Size & Spacing",
+  "msga2946a1a": "排序方式",
   "@msga2946a1a": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msga2946a1a": "Sort By",
+  "za": "名稱 (Z-A)",
   "@za": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "za": "Name (Z-A)",
+  "msg2e2a26bb": "大小（大）",
   "@msg2e2a26bb": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msg2e2a26bb": "Size (Large)",
+  "msgf437ace4": "僅此資料夾",
   "@msgf437ace4": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msgf437ace4": "This Folder Only",
+  "msg4dfc167a": "啟用此資料夾的自定義排序",
   "@msg4dfc167a": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msg4dfc167a": "Enable custom sort for this folder",
+  "msge4c84f81": "新增快捷方式",
   "@msge4c84f81": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msge4c84f81": "Add Shortcut",
+  "msgd730e478": "系統根目錄",
   "@msgd730e478": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msgd730e478": "System Root",
+  "msg35546526": "網路連線",
   "@msg35546526": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msg35546526": "Network Connections",
+  "msg67a6ea5e": "新增網路連線",
   "@msg67a6ea5e": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msg67a6ea5e": "Add Network Connection",
+  "msgcc51d6c2": "移除連線",
   "@msgcc51d6c2": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msgcc51d6c2": "Remove Connection",
+  "msg6e0f9cef": "首頁分類",
   "@msg6e0f9cef": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msg6e0f9cef": "Home Categories",
+  "msge9691076": "空資料夾",
   "@msge9691076": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msge9691076": "Empty Folder",
+  "msg551f98ba": "此目錄不包含任何檔案或子資料夾。",
   "@msg551f98ba": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msg551f98ba": "This directory contains no files or subfolders.",
+  "msg17093362": "取消操作",
   "@msg17093362": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msg17093362": "Cancel Operation",
+  "msg681c0f39": "全域性搜尋",
   "@msg681c0f39": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msg681c0f39": "Global Search",
+  "msg0c36f64f": "僅文件",
   "@msg0c36f64f": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msg0c36f64f": "Documents Only",
+  "msg26b041dd": "僅音訊",
   "@msg26b041dd": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msg26b041dd": "Audio Only",
+  "msge632ba85": "僅壓縮包",
   "@msge632ba85": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msge632ba85": "Archives Only",
+  "label": "{label} 篩選已啟用",
   "@label": {
+    "description": "ui\\screens\\directory_screen.dart",
     "type": "text"
   },
-  "label": "{label} filter activated",
+  "msg0e77af8a": "隱藏資料夾",
   "@msg0e77af8a": {
     "description": "ui\\screens\\directory_screen.dart"
   },
-  "msg0e77af8a": "Hidden Folders",
+  "e11": "載入出錯：{e}",
   "@e11": {
+    "description": "ui\\screens\\document_viewer_screen.dart",
     "type": "text"
   },
-  "e11": "Load error: {e}",
+  "msg5937f822": "（空白幻燈片）",
   "@msg5937f822": {
     "description": "ui\\screens\\document_viewer_screen.dart"
   },
-  "msg5937f822": "(Blank Slide)",
+  "msg360d0b37": "儲存成功 ✓",
   "@msg360d0b37": {
     "description": "ui\\screens\\document_viewer_screen.dart"
   },
-  "msg360d0b37": "Saved successfully ✓",
+  "pdf": "PDF顯示設定",
   "@pdf": {
     "description": "ui\\screens\\document_viewer_screen.dart"
   },
-  "pdf": "PDF Display Settings",
+  "msg09c933bf": "最佳化大型、設計複雜或掃描文件的渲染效能。",
   "@msg09c933bf": {
     "description": "ui\\screens\\document_viewer_screen.dart"
   },
-  "msg09c933bf": "Optimize rendering performance for large, complex, or scanned documents.",
+  "msg701a85d4": "標準模式",
   "@msg701a85d4": {
     "description": "ui\\screens\\document_viewer_screen.dart"
   },
-  "msg701a85d4": "Standard Mode",
+  "msg2722d1a7": "最適合文字文件",
   "@msg2722d1a7": {
     "description": "ui\\screens\\document_viewer_screen.dart"
   },
-  "msg2722d1a7": "Best for text documents",
+  "msgb2b08d54": "適合宣傳冊和照片",
   "@msgb2b08d54": {
     "description": "ui\\screens\\document_viewer_screen.dart"
   },
-  "msgb2b08d54": "Suitable for brochures and photos",
+  "msg8b519c02": "頁面佈局",
   "@msg8b519c02": {
     "description": "ui\\screens\\document_viewer_screen.dart"
   },
-  "msg8b519c02": "Page Layout",
+  "msg7f2cd152": "連續（垂直滾動列表）",
   "@msg7f2cd152": {
     "description": "ui\\screens\\document_viewer_screen.dart"
   },
-  "msg7f2cd152": "Continuous (vertical scroll list)",
+  "msg151ea324": "滾動方向",
   "@msg151ea324": {
     "description": "ui\\screens\\document_viewer_screen.dart"
   },
-  "msg151ea324": "Scroll Direction",
+  "msg7d45ded6": "垂直（從上到下滾動）",
   "@msg7d45ded6": {
     "description": "ui\\screens\\document_viewer_screen.dart"
   },
-  "msg7d45ded6": "Vertical (scroll top to bottom)",
+  "msg176ef589": "啟用文字選擇",
   "@msg176ef589": {
     "description": "ui\\screens\\document_viewer_screen.dart"
   },
-  "msg176ef589": "Enable Text Selection",
+  "msg864f8706": "關閉可顯著提升頁面渲染速度並消除滾動卡頓。",
   "@msg864f8706": {
     "description": "ui\\screens\\document_viewer_screen.dart"
   },
-  "msg864f8706": "Disabling can significantly improve page rendering speed and eliminate scroll lag.",
+  "msgd28847a2": "新建文件",
   "@msgd28847a2": {
     "description": "ui\\screens\\document_viewer_screen.dart"
   },
-  "msgd28847a2": "New Document",
+  "msg3007c452": "更多選項",
   "@msg3007c452": {
     "description": "ui\\screens\\document_viewer_screen.dart"
   },
-  "msg3007c452": "More Options",
+  "msg452dba7c": "自動換行",
   "@msg452dba7c": {
     "description": "ui\\screens\\document_viewer_screen.dart"
   },
-  "msg452dba7c": "Word Wrap",
+  "msgc31f9440": "顯示行號",
   "@msgc31f9440": {
     "description": "ui\\screens\\document_viewer_screen.dart"
   },
-  "msgc31f9440": "Show Line Numbers",
+  "msg1d93c30b": "用其他應用開啟",
   "@msg1d93c30b": {
     "description": "ui\\screens\\document_viewer_screen.dart"
   },
-  "msg1d93c30b": "Open with Other App",
+  "msgace80573": "（空檔案）",
   "@msgace80573": {
     "description": "ui\\screens\\document_viewer_screen.dart"
   },
-  "msgace80573": "(Empty File)",
+  "msg030f48bd": "用應用開啟",
   "@msg030f48bd": {
     "description": "ui\\screens\\document_viewer_screen.dart"
   },
-  "msg030f48bd": "Open with App",
+  "msgfd96af00": "分享功能即將推出",
   "@msgfd96af00": {
     "description": "ui\\screens\\document_viewer_screen.dart"
   },
-  "msgfd96af00": "Share feature coming soon",
+  "ftp1": "FTP伺服器已成功停止",
   "@ftp1": {
     "description": "ui\\screens\\ftp_server_screen.dart"
   },
-  "ftp1": "FTP server stopped successfully",
+  "ftpe": "啟動FTP伺服器出錯：{e}",
   "@ftpe": {
+    "description": "ui\\screens\\ftp_server_screen.dart",
     "type": "text"
   },
-  "ftpe": "Error starting FTP server: {e}",
+  "msg5c202e56": "請在更改配置前停止伺服器",
   "@msg5c202e56": {
     "description": "ui\\screens\\ftp_server_screen.dart"
   },
-  "msg5c202e56": "Please stop the server before changing configuration",
+  "msgfca29cb3": "更改埠",
   "@msgfca29cb3": {
     "description": "ui\\screens\\ftp_server_screen.dart"
   },
-  "msgfca29cb3": "Change Port",
+  "msg8a0b5bf5": "無效的埠號",
   "@msg8a0b5bf5": {
     "description": "ui\\screens\\ftp_server_screen.dart"
   },
-  "msg8a0b5bf5": "Invalid port number",
+  "msg3bce2199": "設定使用者名稱",
   "@msg3bce2199": {
     "description": "ui\\screens\\ftp_server_screen.dart"
   },
-  "msg3bce2199": "Set Username",
+  "msg0b62b5ce": "使用者名稱不能為空",
   "@msg0b62b5ce": {
     "description": "ui\\screens\\ftp_server_screen.dart"
   },
-  "msg0b62b5ce": "Username cannot be empty",
+  "ftp2": "FTP 伺服器",
   "@ftp2": {
     "description": "ui\\screens\\ftp_server_screen.dart"
   },
-  "ftp2": "FTP Server",
+  "msg5ab96a6d": "編輯設定前請先停止伺服器",
   "@msg5ab96a6d": {
     "description": "ui\\screens\\ftp_server_screen.dart"
   },
-  "msg5ab96a6d": "Please stop the server before editing settings",
+  "msgc400f106": "更改目錄",
   "@msgc400f106": {
     "description": "ui\\screens\\ftp_server_screen.dart"
   },
-  "msgc400f106": "Change Directory",
+  "msgb5eb59fc": "設定使用者",
   "@msgb5eb59fc": {
     "description": "ui\\screens\\ftp_server_screen.dart"
   },
-  "msgb5eb59fc": "Set User",
+  "msg70c53afb": "匿名訪問",
   "@msg70c53afb": {
     "description": "ui\\screens\\ftp_server_screen.dart"
   },
-  "msg70c53afb": "Anonymous Access",
+  "msg8e2021aa": "建立快捷方式",
   "@msg8e2021aa": {
     "description": "ui\\screens\\ftp_server_screen.dart"
   },
-  "msg8e2021aa": "Create Shortcut",
+  "msgd70e9bdf": "未啟用",
   "@msgd70e9bdf": {
     "description": "ui\\screens\\ftp_server_screen.dart"
   },
-  "msgd70e9bdf": "Inactive",
+  "msg7ae644e4": "網路狀態",
   "@msg7ae644e4": {
     "description": "ui\\screens\\ftp_server_screen.dart"
   },
-  "msg7ae644e4": "Network Status",
+  "msg5d57821d": "伺服器地址",
   "@msg5d57821d": {
     "description": "ui\\screens\\ftp_server_screen.dart"
   },
-  "msg5d57821d": "Server Address",
+  "msgfefea1b3": "主目錄",
   "@msgfefea1b3": {
     "description": "ui\\screens\\ftp_server_screen.dart"
   },
-  "msgfefea1b3": "Home Directory",
+  "msg124d9054": "顯示隱藏檔案",
   "@msg124d9054": {
     "description": "ui\\screens\\ftp_server_screen.dart"
   },
-  "msg124d9054": "Show Hidden Files",
+  "tlsftp": "基於顯式 TLS 的安全 FTP 連線",
   "@tlsftp": {
     "description": "ui\\screens\\ftp_server_screen.dart"
   },
-  "tlsftp": "Secure FTP connection based on explicit TLS",
+  "msg1f4c1042": "資料夾",
   "@msg1f4c1042": {
     "description": "ui\\screens\\global_search_screen.dart"
   },
-  "msg1f4c1042": "Folder",
+  "msgf2ef53c0": "在此資料夾中搜尋...",
   "@msgf2ef53c0": {
     "description": "ui\\screens\\global_search_screen.dart"
   },
-  "msgf2ef53c0": "Search in this folder...",
+  "msgfff96ede": "更多操作",
   "@msgfff96ede": {
     "description": "ui\\screens\\global_search_screen.dart"
   },
-  "msgfff96ede": "More Actions",
+  "msg88e45bb8": "搜尋您的儲存",
   "@msg88e45bb8": {
     "description": "ui\\screens\\global_search_screen.dart"
   },
-  "msg88e45bb8": "Search your storage",
+  "query": "未找到匹配 \"{_query}\" 的內容",
   "@query": {
+    "description": "ui\\screens\\global_search_screen.dart",
     "type": "text"
   },
-  "query": "No matches found for \"{_query}\"",
+  "msge109d1ea": "儀表盤重新整理成功",
   "@msge109d1ea": {
     "description": "ui\\screens\\home_screen.dart"
   },
-  "msge109d1ea": "Dashboard refreshed successfully",
+  "msg05cea075": "再按一次退出應用",
   "@msg05cea075": {
     "description": "ui\\screens\\home_screen.dart"
   },
-  "msg05cea075": "Press again to exit app",
+  "msg7498c202": "退出應用",
   "@msg7498c202": {
     "description": "ui\\screens\\home_screen.dart"
   },
-  "msg7498c202": "Exit App",
+  "msg03247b17": "確定要退出嗎？再次按返回鍵或點選退出以關閉應用。",
   "@msg03247b17": {
     "description": "ui\\screens\\home_screen.dart"
   },
-  "msg03247b17": "Are you sure you want to exit? Press back again or tap exit to close the app.",
+  "msg354c1c9a": "重新整理儀表盤",
   "@msg354c1c9a": {
     "description": "ui\\screens\\home_screen.dart"
   },
-  "msg354c1c9a": "Refresh Dashboard",
+  "msg19021d08": "自定義快捷分類",
   "@msg19021d08": {
     "description": "ui\\screens\\home_screen.dart"
   },
-  "msg19021d08": "Custom Quick Categories",
+  "html": "HTML 預覽",
   "@html": {
     "description": "ui\\screens\\html_viewer_screen.dart"
   },
-  "html": "HTML Preview",
+  "msgfba1f416": "輸入資料夾名稱",
   "@msgfba1f416": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msgfba1f416": "Enter folder name",
+  "msg33b0b21c": "選擇並固定資料夾",
   "@msg33b0b21c": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg33b0b21c": "Select and pin folder",
+  "msgff3200cc": "清除選擇",
   "@msgff3200cc": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msgff3200cc": "Clear Selection",
+  "msg4614630a": "資料夾為空",
   "@msg4614630a": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg4614630a": "Folder is empty",
+  "msg5dc1fa7b": "固定此資料夾",
   "@msg5dc1fa7b": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
-  "msg5dc1fa7b": "Pin this folder",
+  "markdown": "Markdown 預覽",
   "@markdown": {
     "description": "ui\\screens\\markdown_viewer_screen.dart"
   },
-  "markdown": "Markdown Preview",
+  "count1": "確定要永久刪除選中的 {count} 個專案嗎？",
   "@count1": {
+    "description": "ui\\screens\\media_category_screen.dart",
     "type": "text"
   },
-  "count1": "Are you sure you want to permanently delete {count} selected items?",
+  "count2": "已成功刪除 {count} 個專案",
   "@count2": {
+    "description": "ui\\screens\\media_category_screen.dart",
     "type": "text"
   },
-  "count2": "Successfully deleted {count} items",
+  "pastedcountdestdir": "已貼上 {pastedCount} 個專案到 {destDir}",
   "@pastedcountdestdir": {
+    "description": "ui\\screens\\media_category_screen.dart",
     "type": "text"
   },
-  "pastedcountdestdir": "Pasted {pastedCount} items to {destDir}",
+  "msgfadbb0bc": "沒有可分享的檔案。",
   "@msgfadbb0bc": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "msgfadbb0bc": "No files to share.",
+  "msg3ad97542": "未找到可重新命名的物理檔案",
   "@msg3ad97542": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "msg3ad97542": "No physical files found to rename",
+  "msg1303e638": "修改時間",
   "@msg1303e638": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "msg1303e638": "Modified Time",
+  "msg5bab3781": "媒體資訊",
   "@msg5bab3781": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "msg5bab3781": "Media Info",
+  "msg880a18f3": "已選擇專案",
   "@msg880a18f3": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "msg880a18f3": "Items Selected",
+  "msgea9ecb93": "總大小",
   "@msgea9ecb93": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "msgea9ecb93": "Total Size",
+  "msg5556baa3": "長按開啟方式...",
   "@msg5556baa3": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "msg5556baa3": "Long press to open with...",
+  "msg631cd220": "確認刪除",
   "@msg631cd220": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "msg631cd220": "Confirm Delete",
+  "name": "已刪除 {name}",
   "@name": {
+    "description": "ui\\screens\\media_category_screen.dart",
     "type": "text"
   },
-  "name": "Deleted {name}",
+  "msgcd8264f1": "在位置中顯示",
   "@msgcd8264f1": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "msgcd8264f1": "Show in Location",
+  "msg2a4cfb07": "開啟方式...",
   "@msg2a4cfb07": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "msg2a4cfb07": "Open with...",
+  "msg8bf52387": "檔案未找到或不可分享。",
   "@msg8bf52387": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "msg8bf52387": "File not found or cannot be shared.",
+  "msg419be096": "貼上到此處",
   "@msg419be096": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "msg419be096": "Paste Here",
+  "msg5093bc80": "最新優先",
   "@msg5093bc80": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "msg5093bc80": "Newest First",
+  "msgbc74b5a8": "按日期",
   "@msgbc74b5a8": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "msgbc74b5a8": "By Date",
+  "msgef7ae768": "最新優先（按月分組）",
   "@msgef7ae768": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "msgef7ae768": "Newest First (grouped by month)",
+  "msgb8140039": "最舊優先（按月分組）",
   "@msgb8140039": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "msgb8140039": "Oldest First (grouped by month)",
+  "msg424a0110": "未知日期",
   "@msg424a0110": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "msg424a0110": "Unknown Date",
+  "msgb19671d6": "全部專案",
   "@msgb19671d6": {
     "description": "ui\\screens\\media_category_screen.dart"
   },
-  "msgb19671d6": "All Items",
+  "msg11fea612": "日期和時間",
   "@msg11fea612": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg11fea612": "Date & Time",
+  "msg12e86877": "檔案大小 / 專案數",
   "@msg12e86877": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg12e86877": "File Size / Item Count",
+  "msg7908038f": "無 / 隱藏資訊",
   "@msg7908038f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg7908038f": "None / Hidden",
+  "msg9136d4dc": "不在右側顯示額外資訊",
   "@msg9136d4dc": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg9136d4dc": "Do not show extra info on the right",
+  "msg84986f91": "顯示最後修改日期和時間",
   "@msg84986f91": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg84986f91": "Show last modified date and time",
+  "msgfc000737": "檔案顯示大小，資料夾顯示專案數",
   "@msgfc000737": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgfc000737": "Files show size, folders show item count",
+  "msg83de16cc": "選擇尾部資訊樣式",
   "@msg83de16cc": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg83de16cc": "Choose trailing info style",
+  "msgaa2a18a1": "選擇當三點操作按鈕隱藏時，檔案和資料夾右側顯示的內容。",
   "@msgaa2a18a1": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgaa2a18a1": "Choose what is displayed on the right side of files and folders when the three-dot action button is hidden.",
+  "msg26e4c5d6": "顯示位址列",
   "@msg26e4c5d6": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg26e4c5d6": "Show Address Bar",
+  "windows1": "在檔案列表頂部顯示可編輯的Windows資源管理器風格位址列",
   "@windows1": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "windows1": "Show editable Windows Explorer-style address bar at top of file list",
+  "msg74e86197": "直接以資料夾（相簿）首選檢視開啟圖片/影片快捷分類",
   "@msg74e86197": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg74e86197": "Open image/video shortcuts directly in folder (gallery) preferred view",
+  "msga1fbf3c6": "隱藏安卓導航欄",
   "@msga1fbf3c6": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msga1fbf3c6": "Hide Android Navigation Bar",
+  "msg02dddc02": "隱藏底部導航欄以最大化螢幕空間（上滑可顯示）",
   "@msg02dddc02": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg02dddc02": "Hide bottom nav bar to maximize screen space (swipe up to show)",
+  "msg50923c95": "清除所有已記住的\"開啟方式\"關聯",
   "@msg50923c95": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg50923c95": "Clear all remembered 'Open With' associations",
+  "msg6fdc09ac": "跳過\"開啟方式\"對話方塊",
   "@msg6fdc09ac": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg6fdc09ac": "Skip 'Open With' dialog",
+  "msg0a4b0442": "繞過應用選擇對話方塊，直接使用預設檢視器開啟檔案",
   "@msg0a4b0442": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg0a4b0442": "Bypass app selection dialog, open files directly with default viewer",
+  "msge1157984": "選擇啟動時進入分類頁或瀏覽頁",
   "@msge1157984": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msge1157984": "Choose to start in category or browse page",
+  "msgae1854a2": "選擇單指或雙指左右滑動切換頁面",
   "@msgae1854a2": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgae1854a2": "Choose single or two-finger swipe to switch pages",
+  "msg11b1ec65": "在瀏覽頁底部啟用快速建立（+）按鈕",
   "@msg11b1ec65": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg11b1ec65": "Enable quick create (+) button at bottom of browse page",
+  "msg7e7765b6": "顯示以點(.)開頭的系統檔案和資料夾",
   "@msg7e7765b6": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg7e7765b6": "Show system files and folders starting with dot(.)",
+  "msg86f3d70f": "顯示資料夾和檔案計數標題",
   "@msg86f3d70f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg86f3d70f": "Show folder and file count headers",
+  "msg40e9c325": "在儲存標題欄下顯示資料夾和檔案總數",
   "@msg40e9c325": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg40e9c325": "Show total folder and file count under storage header",
+  "ampm24": "在列表中切換12小時（AM/PM）和24小時時間格式",
   "@ampm24": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "ampm24": "Toggle between 12-hour (AM/PM) and 24-hour time format in list",
+  "msg25ee6612": "在列表中隱藏時間和日期",
   "@msg25ee6612": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg25ee6612": "Hide time and date in list",
+  "msg337359a6": "完全隱藏檔案和資料夾的修改日期和時間",
   "@msg337359a6": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg337359a6": "Completely hide modification date and time for files and folders",
+  "msga517863e": "計算並顯示目錄中的檔案和資料夾總數",
   "@msga517863e": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msga517863e": "Calculate and display total file and folder count in directory",
+  "msg59a24fcb": "計算並顯示目錄中所有檔案的總大小（可能影響列表效能）",
   "@msg59a24fcb": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg59a24fcb": "Calculate and display total size of all files in directory (may affect list performance)",
+  "msg309e2a28": "在瀏覽頁啟用底部操作欄",
   "@msg309e2a28": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg309e2a28": "Enable bottom action bar in browse page",
+  "msg9b7639ac": "在瀏覽和媒體頁面的選擇操作欄中僅顯示圖示",
   "@msg9b7639ac": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg9b7639ac": "Show only icons in selection action bar on browse and media pages",
+  "msgdd69671b": "返回時短暫閃爍並滾動到剛退出的資料夾",
   "@msgdd69671b": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdd69671b": "Brief flash and scroll to exited folder when going back",
+  "msg57736228": "顯示實際的圖片和影片縮圖而非通用檔案圖示",
   "@msg57736228": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg57736228": "Show actual image and video thumbnails instead of generic file icons",
+  "msg1eda8a50": "允許檔名換行顯示3行而非截斷",
   "@msg1eda8a50": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg1eda8a50": "Allow file names to wrap to 3 lines instead of truncating",
+  "msgc7196afd": "隱藏資料夾和檔案旁邊的三點選單按鈕",
   "@msgc7196afd": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgc7196afd": "Hide three-dot menu button next to folders and files",
+  "msgad54815d": "長按並拖動資料夾或檔案將其移動到其他資料夾",
   "@msgad54815d": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgad54815d": "Long press and drag folders or files to move them to other folders",
+  "msg5dff8f2d": "拖放檔案時顯示選項彈窗（複製、移動、壓縮）",
   "@msg5dff8f2d": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg5dff8f2d": "Show options popup when dragging and dropping files (copy, move, compress)",
+  "msg4b0a7063": "允許在單獨的標籤頁中開啟多個資料夾以便快速導航",
   "@msg4b0a7063": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg4b0a7063": "Allow opening multiple folders in separate tabs for quick navigation",
+  "msgf04ac00d": "並排瀏覽兩個目錄並輕鬆傳輸檔案",
   "@msgf04ac00d": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgf04ac00d": "Browse two directories side by side and easily transfer files",
+  "msgd1591ba4": "啟動應用時開啟上次瀏覽的資料夾",
   "@msgd1591ba4": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgd1591ba4": "Open last browsed folder when starting app",
+  "msg25792550": "將刪除的檔案和資料夾移至隱藏的回收站而非永久刪除",
   "@msg25792550": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg25792550": "Move deleted files and folders to hidden recycle bin instead of permanent deletion",
+  "msg1b9633fe": "主題色 / 動態主題",
   "@msg1b9633fe": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg1b9633fe": "Theme Color / Dynamic Theme",
+  "msg64db4c2d": "資料夾圖示樣式",
   "@msg64db4c2d": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg64db4c2d": "Folder Icon Style",
+  "msgece44aa5": "應用抽屜按鈕樣式",
   "@msgece44aa5": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgece44aa5": "App Drawer Button Style",
+  "amoled1": "AMOLED 純黑模式",
   "@amoled1": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "amoled1": "AMOLED Pure Black Mode",
+  "amoled2": "在深色模式下為AMOLED螢幕使用純黑背景",
   "@amoled2": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "amoled2": "Use pure black background for AMOLED screens in dark mode",
+  "msg5228b59f": "應用排版 / 字型",
   "@msg5228b59f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg5228b59f": "App Typography / Font",
+  "msge7d18d73": "自定義快捷方式",
   "@msge7d18d73": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msge7d18d73": "Custom Shortcuts",
+  "msg036fe6a4": "重新排列和切換快捷分類專案的可見性",
   "@msg036fe6a4": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg036fe6a4": "Rearrange and toggle visibility of quick category items",
+  "msgead3e5c5": "搜尋設定...",
   "@msgead3e5c5": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgead3e5c5": "Search settings...",
+  "msg2590095f": "設定分類",
   "@msg2590095f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg2590095f": "Settings Categories",
+  "msgfdae44c3": "常規與行為",
   "@msgfdae44c3": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgfdae44c3": "General & Behavior",
+  "msgeae34685": "預設螢幕、導航控制和快捷方式",
   "@msgeae34685": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgeae34685": "Default screen, navigation controls and shortcuts",
+  "msg91b228b8": "主題、應用圖示、資料夾樣式和排版",
   "@msg91b228b8": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg91b228b8": "Theme, app icon, folder style and typography",
+  "msgad6e8bb8": "檔案瀏覽器選項",
   "@msgad6e8bb8": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgad6e8bb8": "File Browser Options",
+  "msg8ddc4963": "位址列、隱藏檔案、標籤頁和拖放",
   "@msg8ddc4963": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg8ddc4963": "Address bar, hidden files, tabs and drag-and-drop",
+  "msg45db4e2a": "資料夾大小、計數和時間/日期格式",
   "@msg45db4e2a": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg45db4e2a": "Folder size, count and time/date format",
+  "msg09ca4d86": "預設相簿檢視和縮圖預覽",
   "@msg09ca4d86": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg09ca4d86": "Default gallery view and thumbnail preview",
+  "msgeb3693fb": "開啟操作和預設檢視器配置",
   "@msgeb3693fb": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgeb3693fb": "Open actions and default viewer configuration",
+  "msg3a6a39ae": "回收站開關和自動刪除時長",
   "@msg3a6a39ae": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg3a6a39ae": "Recycle bin toggle and auto-delete duration",
+  "msg9edfaff3": "備份或恢復所有應用設定",
   "@msg9edfaff3": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg9edfaff3": "Backup or restore all app settings",
+  "msg99c9cc56": "嘗試搜尋其他關鍵詞",
   "@msg99c9cc56": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg99c9cc56": "Try searching other keywords",
+  "msga432d127": "預設主頁",
   "@msga432d127": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msga432d127": "Default Home Page",
+  "msg226fc6ae": "分類頁",
   "@msg226fc6ae": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg226fc6ae": "Category Page",
+  "msgd48a082d": "滑動切換頁面",
   "@msgd48a082d": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgd48a082d": "Swipe to Switch Pages",
+  "msgaac01f32": "單指滑動",
   "@msgaac01f32": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgaac01f32": "Single Finger Swipe",
+  "msg59c7debc": "記住上次開啟的資料夾",
   "@msg59c7debc": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg59c7debc": "Remember Last Opened Folder",
+  "msgce732d8a": "隱藏底部欄（首頁/瀏覽）的文字標籤，更簡潔緊湊",
   "@msgce732d8a": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgce732d8a": "Hide text labels in bottom bar (Home/Browse) for cleaner, more compact look",
+  "msg1cfeaace": "檔案瀏覽器與導航",
   "@msg1cfeaace": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg1cfeaace": "File Browser & Navigation",
+  "msgd33e3082": "高亮退出資料夾",
   "@msgd33e3082": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgd33e3082": "Highlight Exited Folder",
+  "msga4333788": "媒體與預設操作",
   "@msga4333788": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msga4333788": "Media & Default Actions",
+  "msg20c87c8e": "預設相簿首選檢視",
   "@msg20c87c8e": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg20c87c8e": "Default Gallery Preferred View",
+  "msg72b1f919": "所有預設檢視器選擇已重置",
   "@msg72b1f919": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg72b1f919": "All default viewer selections have been reset",
+  "msge99f4762": "啟用回收站",
   "@msge99f4762": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msge99f4762": "Enable Recycle Bin",
+  "msg2c8a394a": "瀏覽頁",
   "@msg2c8a394a": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg2c8a394a": "Browse Page",
+  "msg2c3c5a35": "分類圖示形狀",
   "@msg2c3c5a35": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg2c3c5a35": "Category Icon Shape",
+  "msg267fcd86": "每3天",
   "@msg267fcd86": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg267fcd86": "Every 3 days",
+  "msg9104c0c5": "每兩週",
   "@msg9104c0c5": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg9104c0c5": "Every 2 weeks",
+  "days": "每{days}天",
   "@days": {
+    "description": "ui\\screens\\more_settings_screen.dart",
     "type": "text"
   },
-  "days": "Every {days} days",
+  "msg673ad9d4": "遠端伺服器快取已清除",
   "@msg673ad9d4": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg673ad9d4": "Remote server cache cleared",
+  "msgd9f142c4": "自動清理快取",
   "@msgd9f142c4": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgd9f142c4": "Auto Clean Cache",
+  "msg5472ef41": "立即清除網路伺服器下載的快取檔案",
   "@msg5472ef41": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg5472ef41": "Clear cached files downloaded from network servers immediately",
+  "msgac7687d9": "瀏覽遠端伺服器快取檔案所在目錄",
   "@msgac7687d9": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgac7687d9": "Browse remote server cache file directory",
+  "msg225f6249": "為網路伺服器上的圖片和影片顯示縮圖預覽",
   "@msg225f6249": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg225f6249": "Show thumbnail previews for images and videos on network servers",
+  "materialyou": "Material You（動態桌布取色）",
   "@materialyou": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "materialyou": "Material You (Dynamic Wallpaper Color)",
+  "msg05cff3ad": "活力橙",
   "@msg05cff3ad": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg05cff3ad": "Vibrant Orange",
+  "msg5ed35657": "皇家紫",
   "@msg5ed35657": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg5ed35657": "Royal Purple",
+  "msge74a7283": "琥珀金",
   "@msge74a7283": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msge74a7283": "Amber Gold",
+  "msg3904ba87": "賽博粉",
   "@msg3904ba87": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg3904ba87": "Cyber Pink",
+  "msgd58d230a": "藍寶石",
   "@msgd58d230a": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgd58d230a": "Sapphire Blue",
+  "msg508b005e": "森林綠",
   "@msg508b005e": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg508b005e": "Forest Green",
+  "msgefdde083": "日落桃",
   "@msgefdde083": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgefdde083": "Sunset Peach",
+  "msg628e73a9": "預設藍（標誌性藍色）",
   "@msg628e73a9": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg628e73a9": "Default Blue (Signature Blue)",
+  "msg8244d240": "經典實心",
   "@msg8244d240": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg8244d240": "Classic Solid",
+  "msgf08d9b15": "現代圓角",
   "@msgf08d9b15": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgf08d9b15": "Modern Rounded",
+  "msge5fba3dd": "星標特別",
   "@msge5fba3dd": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msge5fba3dd": "Star Special",
+  "msgfe4254dc": "文件片段",
   "@msgfe4254dc": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgfe4254dc": "Document Fragment",
+  "msg84719fd5": "極簡描邊",
   "@msg84719fd5": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg84719fd5": "Minimal Outline",
+  "zenfile4": "ZenFile 斷線描邊",
   "@zenfile4": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "zenfile4": "ZenFile Broken Line Outline",
+  "vuesax": "分類網格 / Vuesax 網格",
   "@vuesax": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "vuesax": "Category Grid / Vuesax Grid",
+  "msg5dc988f4": "漢堡選單 / 經典選單",
   "@msg5dc988f4": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg5dc988f4": "Hamburger Menu / Classic Menu",
+  "msgd06ba04f": "極簡風",
   "@msgd06ba04f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgd06ba04f": "Minimalist",
+  "msg5090469e": "玻璃擬態",
   "@msg5090469e": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg5090469e": "Glassmorphism",
+  "d": "3D 可愛",
   "@d": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "d": "3D Cute",
+  "msg67836b24": "賽博朋克",
   "@msg67836b24": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg67836b24": "Cyberpunk",
+  "msgf08c8dc4": "自然禪意",
   "@msgf08c8dc4": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgf08c8dc4": "Natural Zen",
+  "msg7372dc9f": "自定義圖示",
   "@msg7372dc9f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg7372dc9f": "Custom Icon",
+  "msg3004e40a": "預設標誌（自然禪意）",
   "@msg3004e40a": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg3004e40a": "Default Logo (Natural Zen)",
+  "msgc540e940": "點陣與無襯線",
   "@msgc540e940": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgc540e940": "Dot Matrix & Sans Serif",
+  "msg00ea5776": "歐菲特現代無襯線",
   "@msg00ea5776": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg00ea5776": "Ofit Modern Sans Serif",
+  "msg7bdbfaa5": "捷腦科技等寬",
   "@msg7bdbfaa5": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg7bdbfaa5": "Jienao Tech Monospace",
+  "msgdcb4082d": "蒙特都市無襯線",
   "@msgdcb4082d": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdcb4082d": "Mont Urban Sans Serif",
+  "msg9d7001d9": "自定義匯入字型",
   "@msg9d7001d9": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg9d7001d9": "Custom Imported Font",
+  "msgc2f5e9e4": "標誌性預設",
   "@msgc2f5e9e4": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgc2f5e9e4": "Signature Default",
+  "msg6a7c758f": "從不（禁用自動刪除）",
   "@msg6a7c758f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg6a7c758f": "Never (Disable Auto-Delete)",
+  "days1": "{days} 天后",
   "@days1": {
+    "description": "ui\\screens\\more_settings_screen.dart",
     "type": "text"
   },
-  "days1": "After {days} days",
+  "msgfe76ae54": "選擇啟動應用時預設顯示的頁面",
   "@msgfe76ae54": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgfe76ae54": "Choose default page displayed when launching app",
+  "msg8af2412a": "啟動時顯示快捷分類頁面",
   "@msg8af2412a": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg8af2412a": "Show quick category page on startup",
+  "msg245c3258": "啟動時顯示檔案瀏覽頁面",
   "@msg245c3258": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg245c3258": "Show file browse page on startup",
+  "msg4439669d": "選擇用單指或雙指左右滑動切換頁面",
   "@msg4439669d": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg4439669d": "Choose single or two-finger swipe to switch pages",
+  "msg46978666": "單指左右滑動切換分類頁、瀏覽頁或開啟抽屜",
   "@msg46978666": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg46978666": "Single finger swipe to switch category/browse page or open drawer",
+  "msgbc9bf336": "雙指滑動",
   "@msgbc9bf336": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgbc9bf336": "Two-Finger Swipe",
+  "msg563871d3": "雙指左右滑動切換分類頁、瀏覽頁或開啟抽屜",
   "@msg563871d3": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg563871d3": "Two-finger swipe to switch category/browse page or open drawer",
+  "msgca71ac0c": "選擇主題色",
   "@msgca71ac0c": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgca71ac0c": "Choose Theme Color",
+  "msg732630c1": "選擇資料夾圖示樣式",
   "@msg732630c1": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg732630c1": "Choose Folder Icon Style",
+  "msgf9224d98": "選擇抽屜按鈕樣式",
   "@msgf9224d98": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgf9224d98": "Choose Drawer Button Style",
+  "msgc337ecfa": "選擇分類圖示形狀",
   "@msgc337ecfa": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgc337ecfa": "Choose Category Icon Shape",
+  "msgf18bc3d9": "應用啟動器圖示",
   "@msgf18bc3d9": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgf18bc3d9": "App Launcher Icon",
+  "logo": "為應用啟動器圖示選擇一個自定義Logo。注意某些啟動器可能需要幾秒鐘才能更新。",
   "@logo": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "logo": "Choose a custom logo for the app launcher icon. Note some launchers may take a few seconds to update.",
+  "msg64a6476a": "預設標誌",
   "@msg64a6476a": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg64a6476a": "Default Logo",
+  "title": "應用圖示已切換為 {title}",
   "@title": {
+    "description": "ui\\screens\\more_settings_screen.dart",
     "type": "text"
   },
-  "title": "App icon switched to {title}",
+  "msgad76161f": "選擇自定義圖示",
   "@msgad76161f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgad76161f": "Choose Custom Icon",
+  "pngjpgwebp": "請選擇圖片檔案（PNG/JPG/WEBP）",
   "@pngjpgwebp": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "pngjpgwebp": "Please select image file (PNG/JPG/WEBP)",
+  "msgb06c5c34": "自定義圖示已應用",
   "@msgb06c5c34": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgb06c5c34": "Custom icon applied",
+  "e12": "應用自定義圖示失敗: {e}",
   "@e12": {
+    "description": "ui\\screens\\more_settings_screen.dart",
     "type": "text"
   },
-  "e12": "Failed to apply custom icon: {e}",
+  "msg375c9eb8": "原始簡潔幾何風格",
   "@msg375c9eb8": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg375c9eb8": "Raw Minimalist Geometric Style",
+  "msg817e321b": "高科技復古點陣標題 + 簡潔正文",
   "@msg817e321b": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg817e321b": "High-tech Retro Dot Matrix Title + Clean Body",
+  "msg3c2a24cc": "超流暢、極簡且高階的幾何美學",
   "@msg3c2a24cc": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg3c2a24cc": "Ultra-smooth, minimalist and premium geometric aesthetic",
+  "msg978f8d11": "乾淨且未來感的開發者等寬風格",
   "@msg978f8d11": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg978f8d11": "Clean and futuristic developer monospace style",
+  "msg93b657aa": "大膽、現代且醒目的字型排版",
   "@msg93b657aa": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg93b657aa": "Bold, modern and eye-catching typography",
+  "msg9db40ad6": "您載入的自定義字型檔案",
   "@msg9db40ad6": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg9db40ad6": "Your loaded custom font file",
+  "zenfile5": "選擇一種精美的字型來自定義ZenFile的整體視覺主題",
   "@zenfile5": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "zenfile5": "Choose a beautiful font to customize ZenFile's overall visual theme",
+  "msg7372efa5": "替換自定義字型檔案",
   "@msg7372efa5": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg7372efa5": "Replace Custom Font File",
+  "msg3186839b": "載入所選字型檔案失敗。",
   "@msg3186839b": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg3186839b": "Failed to load selected font file.",
+  "opentypeotftruetypettf": "請選擇有效的 OpenType (.otf) 或 TrueType (.ttf) 字型檔案.",
   "@opentypeotftruetypettf": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "opentypeotftruetypettf": "Please select a valid OpenType (.otf) or TrueType (.ttf) font file.",
+  "msgcf42dedc": "移除自定義字型",
   "@msgcf42dedc": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgcf42dedc": "Remove Custom Font",
+  "msg2b9abfaa": "自定義字型已移除。",
   "@msg2b9abfaa": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg2b9abfaa": "Custom font removed.",
+  "msgfdef8c23": "7 天",
   "@msgfdef8c23": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgfdef8c23": "7 Days",
+  "msg25436ba3": "15 天",
   "@msg25436ba3": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg25436ba3": "15 Days",
+  "msg85e7f60c": "30 天（推薦）",
   "@msg85e7f60c": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg85e7f60c": "30 Days (Recommended)",
+  "msgd61e706f": "從不（手動清理）",
   "@msgd61e706f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgd61e706f": "Never (Manual Clean)",
+  "msgf0ef894a": "自動刪除回收站時長",
   "@msgf0ef894a": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgf0ef894a": "Auto-Delete Recycle Bin Duration",
+  "msg1200d6b7": "回收站中的專案將在此時長後被永久刪除。",
   "@msg1200d6b7": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg1200d6b7": "Items in recycle bin will be permanently deleted after this duration.",
+  "msg432fbb31": "刪除連線",
   "@msg432fbb31": {
     "description": "ui\\screens\\network_category_screen.dart"
   },
-  "msg432fbb31": "Delete Connection",
   "@msgdeleteconn": {
     "type": "text"
   },
-  "msgdeleteconn": "Are you sure you want to delete \"{name}\"?",
+  "msgdeleteconn": "確定要刪除 \"{name}\" 嗎？",
+  "msg3358aa10": "新增連線",
   "@msg3358aa10": {
     "description": "ui\\screens\\network_category_screen.dart"
   },
-  "msg3358aa10": "Add Connection",
+  "msgc9c900d0": "暫無遠端連線",
   "@msgc9c900d0": {
     "description": "ui\\screens\\network_category_screen.dart"
   },
-  "msgc9c900d0": "No remote connections yet",
+  "ftpsftpwebdavsmb1": "新增 FTP、SFTP、WebDav 或 SMB 連線",
   "@ftpsftpwebdavsmb1": {
     "description": "ui\\screens\\network_category_screen.dart"
   },
-  "ftpsftpwebdavsmb1": "Add FTP, SFTP, WebDav or SMB connection",
+  "e13": "連線失敗：{e}",
   "@e13": {
+    "description": "ui\\screens\\network_category_screen.dart",
     "type": "text"
   },
-  "e13": "Connection failed: {e}",
-  "@msgb5bc0bf1": {
-    "description": "ui\\screens\\network_connection_wizard_screen.dart"
-  },
-  "msgb5bc0bf1": "Resolving host address...",
+  "msgb5bc0bf1": "正在解析主機地址...",
   "@msgb5bc0bf1": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
   "@msgc3d4e5f6": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "msgc3d4e5f6": "Checking port status...",
+  "msgc3d4e5f6": "正在檢查埠狀態...",
+  "msg3005ba4d": "正在驗證憑據...",
   "@msg3005ba4d": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "msg3005ba4d": "Verifying credentials...",
+  "msgab36a8c6": "正在掛載儲存卷...",
   "@msgab36a8c6": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "msgab36a8c6": "Mounting storage volume...",
-  "name1": "\"{name}\" added successfully!",
+  "name1": "\"{name}\" 新增成功！",
   "@name1": {
     "type": "text"
   },
   "@connectedtype": {
     "type": "text"
   },
-  "connectedtype": "\"{name}\" connected successfully!",
+  "connectedtype": "\"{name}\" 連線成功！",
+  "msgdf434415": "系統應用已禁用",
   "@msgdf434415": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "msgdf434415": "System app disabled",
+  "documentsui": "您的裝置沒有啟用預設的系統檔案/文件應用（DocumentsUI），",
   "@documentsui": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "documentsui": "Your device does not have the default system file/document app (DocumentsUI) enabled,",
+  "androidnn": "這是 Android 選擇和掛載目錄所必需的。\\n\\n",
   "@androidnn": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "androidnn": "This is required for Android to select and mount directories.\n\n",
+  "msgb2af4e30": "請檢查\"檔案\"或\"文件\"系統應用是否在裝置設定中被禁用，",
   "@msgb2af4e30": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "msgb2af4e30": "Please check if the 'Files' or 'Documents' system app is disabled in device settings,",
+  "safe": "請求 SAF 資料夾失敗：{e}",
   "@safe": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart",
     "type": "text"
   },
-  "safe": "Failed to request SAF folder: {e}",
+  "msg65c7ecb6": "請輸入連線名稱",
   "@msg65c7ecb6": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "msg65c7ecb6": "Please enter connection name",
+  "msg69e3963c": "請輸入伺服器地址/主機名",
   "@msg69e3963c": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "msg69e3963c": "Please enter server address/hostname",
+  "msgce1ec2ce": "遠端連線",
   "@msgce1ec2ce": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "msgce1ec2ce": "Remote Connection",
+  "msg25557d1f": "標準檔案傳輸協議",
   "@msg25557d1f": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "msg25557d1f": "Standard File Transfer Protocol",
+  "ssh": "SSH安全檔案傳輸伺服器",
   "@ssh": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "ssh": "SSH Secure File Transfer Server",
+  "http": "HTTP網頁分散式創作",
   "@http": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "http": "HTTP Web Distributed Authoring",
+  "androidsd": "Android 儲存訪問框架 (SD 卡 / 外部儲存)",
   "@androidsd": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "androidsd": "Android Storage Access Framework (SD Card / External Storage)",
+  "msg8486035b": "選擇網路服務",
   "@msg8486035b": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "msg8486035b": "Choose Network Service",
+  "naszenfile": "將遠端伺服器或 NAS 共享掛載為 ZenFile 儲存列表中的動態驅動器。",
   "@naszenfile": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "naszenfile": "Mount remote server or NAS share as dynamic drive in ZenFile storage list.",
+  "selectedtype": "{_selectedType} 設定",
   "@selectedtype": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart",
     "type": "text"
   },
-  "selectedtype": "{_selectedType} Settings",
+  "msg5c808d9a": "輸入連線詳情以連結此網路儲存卷。",
   "@msg5c808d9a": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "msg5c808d9a": "Enter connection details to link this network storage volume.",
+  "nas": "例如：辦公室 NAS、家庭共享",
   "@nas": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "nas": "Example: Office NAS, Home Share",
+  "dav": "例如：192.168.1.100 或 192.168.1.100/dav",
   "@dav": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "dav": "Example: 192.168.1.100 or 192.168.1.100/dav",
+  "naslocal": "例如：192.168.1.100 或 nas.local",
   "@naslocal": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "naslocal": "Example: 192.168.1.100 or nas.local",
+  "dav1": "例如：/dav 或 /",
   "@dav1": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "dav1": "Example: /dav or /",
+  "anonymousadmin": "例如：anonymous 或 admin",
   "@anonymousadmin": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "anonymousadmin": "Example: anonymous or admin",
+  "msgeec70cd2": "密碼（可選）",
   "@msgeec70cd2": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "msgeec70cd2": "Password (Optional)",
+  "msgf1fa9d44": "正在建立掛載點...",
   "@msgf1fa9d44": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
-  "msgf1fa9d44": "Creating mount point...",
+  "selectedtype1": "請稍候，我們正在建立與 {_selectedType} 伺服器的可靠連線。",
   "@selectedtype1": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart",
     "type": "text"
   },
-  "selectedtype1": "Please wait, we are establishing a reliable connection to the {_selectedType} server.",
+  "e14": "恢復專案出錯：{e}",
   "@e14": {
+    "description": "ui\\screens\\recycle_bin_screen.dart",
     "type": "text"
   },
-  "e14": "Error restoring item: {e}",
+  "e15": "刪除專案出錯：{e}",
   "@e15": {
+    "description": "ui\\screens\\recycle_bin_screen.dart",
     "type": "text"
   },
-  "e15": "Error deleting item: {e}",
+  "msg62187f1b": "確定要永久刪除回收站中的所有專案嗎？此操作不可逆。",
   "@msg62187f1b": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
   },
-  "msg62187f1b": "Are you sure you want to permanently delete all items in recycle bin? This action is irreversible.",
+  "msg8cd6bc18": "清空回收站",
   "@msg8cd6bc18": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
   },
-  "msg8cd6bc18": "Empty Recycle Bin",
+  "msga4dfc0c6": "回收站已成功清空",
   "@msga4dfc0c6": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
   },
-  "msga4dfc0c6": "Recycle bin emptied successfully",
+  "msg07d80ac5": "搜尋已刪除檔案...",
   "@msg07d80ac5": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
   },
-  "msg07d80ac5": "Searching deleted files...",
+  "msg96d2b75f": "永久刪除",
   "@msg96d2b75f": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
   },
-  "msg96d2b75f": "Permanently Delete",
+  "msg0d824a24": "回收站為空",
   "@msg0d824a24": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
   },
-  "msg0d824a24": "Recycle bin is empty",
+  "msg4c478216": "原始位置",
   "@msg4c478216": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
   },
-  "msg4c478216": "Original Location",
+  "msgc44a57b6": "正在下載文字...",
   "@msgc44a57b6": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
   },
-  "msgc44a57b6": "Downloading text...",
+  "msgd6d8292d": "正在緩衝媒體...",
   "@msgd6d8292d": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
   },
-  "msgd6d8292d": "Buffering media...",
+  "e16": "下載失敗：{e}",
   "@e16": {
+    "description": "ui\\screens\\remote_explorer_screen.dart",
     "type": "text"
   },
-  "e16": "Download failed: {e}",
+  "msg66d723c5": "緩衝超時，請檢查網路連線",
   "@msg66d723c5": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
   },
-  "msg66d723c5": "Buffer timeout, please check network connection",
+  "msg53082c55": "無法貼上到相同位置",
   "@msg53082c55": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
   },
-  "msg53082c55": "Cannot paste to same location",
+  "msg108feeed": "正在複製...",
   "@msg108feeed": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
   },
-  "msg108feeed": "Copying...",
+  "msg2d4b44ec": "成功貼上專案",
   "@msg2d4b44ec": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
   },
-  "msg2d4b44ec": "Items pasted successfully",
+  "filenamee": "上傳\"{fileName}\"失敗：{e}",
   "@filenamee": {
+    "description": "ui\\screens\\remote_explorer_screen.dart",
     "type": "text"
   },
-  "filenamee": "Upload \"{fileName}\" failed: {e}",
+  "newname": "已重新命名為 \"{newName}\"",
   "@newname": {
+    "description": "ui\\screens\\remote_explorer_screen.dart",
     "type": "text"
   },
-  "newname": "Renamed to \"{newName}\"",
+  "msg4b342999": "刪除專案",
   "@msg4b342999": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
   },
-  "msg4b342999": "Delete Item",
+  "e17": "刪除失敗：{e}",
   "@e17": {
+    "description": "ui\\screens\\remote_explorer_screen.dart",
     "type": "text"
   },
-  "e17": "Delete failed: {e}",
+  "msg79d7fef7": "新建遠端資料夾",
   "@msg79d7fef7": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
   },
-  "msg79d7fef7": "New Remote Folder",
+  "msga98473f2": "資料夾名稱",
   "@msga98473f2": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
   },
-  "msga98473f2": "Folder Name",
+  "e18": "建立資料夾失敗：{e}",
   "@e18": {
+    "description": "ui\\screens\\remote_explorer_screen.dart",
     "type": "text"
   },
-  "e18": "Failed to create folder: {e}",
+  "msg5ca05a9b": "遠端目錄",
   "@msg5ca05a9b": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
   },
-  "msg5ca05a9b": "Remote Directory",
+  "msga636c09d": "複製到本地裝置",
   "@msga636c09d": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
   },
-  "msga636c09d": "Copy to Local Device",
+  "msga4c461a4": "下載檔案到本地剪貼簿",
   "@msga4c461a4": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
   },
-  "msga4c461a4": "Download file to local clipboard",
+  "msg425502fa": "下載並從伺服器刪除",
   "@msg425502fa": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
   },
-  "msg425502fa": "Download and delete from server",
+  "msgc2b9f4b9": "根目錄",
   "@msgc2b9f4b9": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
   },
-  "msgc2b9f4b9": "Root Directory",
+  "msg2f7cd487": "上傳本地剪貼簿到伺服器",
   "@msg2f7cd487": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
   },
-  "msg2f7cd487": "Upload local clipboard to server",
+  "msg905c34fa": "貼上遠端剪貼簿",
   "@msg905c34fa": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
   },
-  "msg905c34fa": "Paste Remote Clipboard",
+  "msg8439c155": "連線已斷開",
   "@msg8439c155": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
   },
-  "msg8439c155": "Connection disconnected",
+  "msgda43df27": "重試連線",
   "@msgda43df27": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
   },
-  "msgda43df27": "Retry Connection",
+  "msga21f6ab1": "空目錄",
   "@msga21f6ab1": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
   },
-  "msga21f6ab1": "Empty Directory",
+  "msge1c538b8": "在此上傳剪貼簿內容",
   "@msge1c538b8": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
   },
-  "msge1c538b8": "Upload clipboard content here",
+  "e19": "下載失敗: {e}",
   "@e19": {
+    "description": "ui\\screens\\remote_explorer_screen.dart",
     "type": "text"
   },
-  "e19": "Download failed: {e}",
+  "msg50eaf94d": "刪除確認",
   "@msg50eaf94d": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
   },
-  "msg50eaf94d": "Delete Confirmation",
+  "msgcb0da17b": "正在刪除...",
   "@msgcb0da17b": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
   },
-  "msgcb0da17b": "Deleting...",
+  "msg4805c385": "應用管理",
   "@msg4805c385": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
   },
-  "msg4805c385": "App Management",
+  "msg93bc1f09": "重新整理列表",
   "@msg93bc1f09": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
   },
-  "msg93bc1f09": "Refresh List",
+  "msg32e490fe": "已安裝的使用者應用",
   "@msg32e490fe": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
   },
-  "msg32e490fe": "Installed User Apps",
+  "apk2": "已備份的APK",
   "@apk2": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
   },
-  "apk2": "Backed-up APKs",
+  "msg8936ded6": "搜尋包名或名稱...",
   "@msg8936ded6": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
   },
-  "msg8936ded6": "Search package name or app name...",
+  "msgd8b3fc58": "按大小排序",
   "@msgd8b3fc58": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
   },
-  "msgd8b3fc58": "Sort by Size",
+  "msgbe1399f0": "按字母排序",
   "@msgbe1399f0": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
   },
-  "msgbe1399f0": "Sort Alphabetically",
+  "msg9ad67f11": "按備份日期排序",
   "@msg9ad67f11": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
   },
-  "msg9ad67f11": "Sort by Backup Date",
+  "msgb0681bd4": "精確儲存計算",
   "@msgb0681bd4": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
   },
-  "msgb0681bd4": "Precise Storage Calculation",
+  "msg34cd846c": "授予使用情況訪問許可權",
   "@msg34cd846c": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
   },
-  "msg34cd846c": "Grant Usage Access Permission",
+  "msga22ddaae": "儲存分析",
   "@msga22ddaae": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
   },
-  "msga22ddaae": "Storage Analysis",
+  "msgaae779d4": "重新掃描儲存",
   "@msgaae779d4": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
   },
-  "msgaae779d4": "Rescan Storage",
+  "msg7ae97495": "正在掃描裝置儲存",
   "@msg7ae97495": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
   },
-  "msg7ae97495": "Scanning device storage",
+  "msga5e5bf71": "總儲存",
   "@msga5e5bf71": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
   },
-  "msga5e5bf71": "Total Storage",
+  "msg652be256": "分類明細",
   "@msg652be256": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
   },
-  "msg652be256": "Category Breakdown",
+  "msgeb3d7d70": "解除安裝應用",
   "@msgeb3d7d70": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_batch_action_bar.dart"
   },
-  "msgeb3d7d70": "Uninstall App",
+  "msg6eb319a1": "正在備份所選應用...",
   "@msg6eb319a1": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_batch_action_bar.dart"
   },
-  "msg6eb319a1": "Backing up selected app...",
+  "msg7fbfdce6": "未找到應用",
   "@msg7fbfdce6": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_list_tab.dart"
   },
-  "msg7fbfdce6": "No apps found",
+  "msg753cdb55": "啟動應用",
   "@msg753cdb55": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
   },
-  "msg753cdb55": "Launch App",
+  "apk3": "備份APK",
   "@apk3": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
   },
-  "apk3": "Backup APK",
+  "apk4": "正在備份APK...",
   "@apk4": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
   },
-  "apk4": "Backing up APK...",
+  "apk5": "備份APK失敗",
   "@apk5": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
   },
-  "apk5": "APK backup failed",
+  "apk6": "分享APK檔案",
   "@apk6": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
   },
-  "apk6": "Share APK File",
+  "msga0b18169": "分享備份檔案",
   "@msga0b18169": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\backup_list_tab.dart"
   },
-  "msga0b18169": "Share Backup File",
+  "msgb443cd06": "刪除備份檔案",
   "@msgb443cd06": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\backup_list_tab.dart"
   },
-  "msgb443cd06": "Delete Backup File",
+  "e20": "載入檔案出錯：{e}",
   "@e20": {
+    "description": "ui\\screens\\text_editor_screen.dart",
     "type": "text"
   },
-  "e20": "Error loading file: {e}",
+  "msg24c6ab0f": "檔案儲存成功",
   "@msg24c6ab0f": {
     "description": "ui\\screens\\text_editor_screen.dart"
   },
-  "msg24c6ab0f": "File saved successfully",
+  "count3": "已替換 {count} 處",
   "@count3": {
+    "description": "ui\\screens\\text_editor_screen.dart",
     "type": "text"
   },
-  "count3": "Replaced {count} occurrences",
+  "msgffb01e5b": "純文字",
   "@msgffb01e5b": {
     "description": "ui\\screens\\text_editor_screen.dart"
   },
-  "msgffb01e5b": "Plain Text",
+  "msg7902d9c0": "選擇語法",
   "@msg7902d9c0": {
     "description": "ui\\screens\\text_editor_screen.dart"
   },
-  "msg7902d9c0": "Choose Syntax",
+  "msgc856a077": "查詢 / 替換",
   "@msgc856a077": {
     "description": "ui\\screens\\text_editor_screen.dart"
   },
-  "msgc856a077": "Find / Replace",
+  "msg7f2c95cd": "儲存檔案",
   "@msg7f2c95cd": {
     "description": "ui\\screens\\text_editor_screen.dart"
   },
-  "msg7f2c95cd": "Save File",
+  "msg084e9388": "解鎖縮放",
   "@msg084e9388": {
     "description": "ui\\screens\\text_editor_screen.dart"
   },
-  "msg084e9388": "Unlock Zoom",
+  "msgf387265a": "自動換行: 開",
   "@msgf387265a": {
     "description": "ui\\screens\\text_editor_screen.dart"
   },
-  "msgf387265a": "Word Wrap: On",
+  "msg1045ba75": "自動換行: 關",
   "@msg1045ba75": {
     "description": "ui\\screens\\text_editor_screen.dart"
   },
-  "msg1045ba75": "Word Wrap: Off",
+  "msg96f0ad7d": "編輯鎖定: 開",
   "@msg96f0ad7d": {
     "description": "ui\\screens\\text_editor_screen.dart"
   },
-  "msg96f0ad7d": "Edit Lock: On",
+  "msg349ab61d": "編輯鎖定: 關",
   "@msg349ab61d": {
     "description": "ui\\screens\\text_editor_screen.dart"
   },
-  "msg349ab61d": "Edit Lock: Off",
+  "msg0cee3cd1": "隱藏行號",
   "@msg0cee3cd1": {
     "description": "ui\\screens\\text_editor_screen.dart"
   },
-  "msg0cee3cd1": "Hide Line Numbers",
+  "selectedlanguage": "語法 ({_selectedLanguage})",
   "@selectedlanguage": {
+    "description": "ui\\screens\\text_editor_screen.dart",
     "type": "text"
   },
-  "selectedlanguage": "Syntax ({_selectedLanguage})",
+  "msg0dac421f": "替換為...",
   "@msg0dac421f": {
     "description": "ui\\screens\\text_editor_screen.dart"
   },
-  "msg0dac421f": "Replace with...",
+  "msg52709ae1": "全部替換",
   "@msg52709ae1": {
     "description": "ui\\screens\\text_editor_screen.dart"
   },
-  "msg52709ae1": "Replace All",
+  "msg4ecba8f6": "製表符",
   "@msg4ecba8f6": {
     "description": "ui\\screens\\text_editor_screen.dart"
   },
-  "msg4ecba8f6": "Tab",
+  "e21": "載入保險箱出錯：{e}",
   "@e21": {
+    "description": "ui\\screens\\vault_explorer_screen.dart",
     "type": "text"
   },
-  "e21": "Error loading vault: {e}",
+  "msg4828116a": "隱藏檔案",
   "@msg4828116a": {
     "description": "ui\\screens\\vault_explorer_screen.dart"
   },
-  "msg4828116a": "Hidden Files",
+  "msg3bf31dfe": "輸入密碼解鎖",
   "@msg3bf31dfe": {
     "description": "ui\\screens\\vault_lock_screen.dart"
   },
-  "msg3bf31dfe": "Enter password to unlock",
+  "pin": "輸入PIN碼解鎖錢包",
   "@pin": {
     "description": "ui\\screens\\vault_lock_screen.dart"
   },
-  "pin": "Enter PIN to unlock wallet",
+  "pin1": "設定您的4位錢包PIN碼",
   "@pin1": {
     "description": "ui\\screens\\vault_lock_screen.dart"
   },
-  "pin1": "Set your 4-digit wallet PIN",
+  "pin2": "確認您的4位PIN碼",
   "@pin2": {
     "description": "ui\\screens\\vault_lock_screen.dart"
   },
-  "pin2": "Confirm your 4-digit PIN",
+  "msgbb590f19": "私人保險箱",
   "@msgbb590f19": {
     "description": "ui\\screens\\vault_lock_screen.dart"
   },
-  "msgbb590f19": "Private Vault",
+  "msgaa43fa46": "全部清除",
   "@msgaa43fa46": {
     "description": "ui\\screens\\vault_lock_screen.dart"
   },
-  "msgaa43fa46": "Clear All",
+  "msgc16eed0e": "播放速度",
   "@msgc16eed0e": {
     "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
   },
-  "msgc16eed0e": "Playback Speed",
+  "msg8f106217": "鎖定控制",
   "@msg8f106217": {
     "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
   },
-  "msg8f106217": "Lock Controls",
+  "msg1f41f25d": "重複模式",
   "@msg1f41f25d": {
     "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
   },
-  "msg1f41f25d": "Repeat Mode",
+  "msg4d2abc8c": "媒體路徑已複製到剪貼簿。",
   "@msg4d2abc8c": {
     "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
   },
-  "msg4d2abc8c": "Media path copied to clipboard.",
+  "http1": "本地 HTTP 共享伺服器已停止。",
   "@http1": {
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
-  "http1": "Local HTTP share server stopped.",
-  "@msg2904d894": {
-    "description": "ui\\screens\\web_sharing_screen.dart"
-  },
-  "msg2904d894": "Establishing secure proxy relay...",
+  "msg2904d894": "正在建立安全代理中繼...",
   "@msg2904d894": {
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
   "@msga1b2c3d4": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
   },
-  "msga1b2c3d4": "Go Back to Parent",
+  "msga1b2c3d4": "返回上一級",
   "@msga1b2c3d5": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
   },
-  "msga1b2c3d5": "How to Setup Shizuku?",
+  "msga1b2c3d5": "如何設定Shizuku？",
   "@msga1b2c3d6": {
     "description": "ui\\main.dart"
   },
-  "msga1b2c3d6": "Storage Permission Required",
+  "msga1b2c3d6": "需要儲存許可權",
   "@msga1b2c3d7": {
     "description": "ui\\main.dart"
   },
-  "msga1b2c3d7": "Grant Permission",
+  "msga1b2c3d7": "授予許可權",
   "@msg2c146598": {
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
-  "msg2c146598": "Internet cloud tunnel online! Temporary link activated.",
+  "msg2c146598": "網際網路雲隧道已上線！臨時連結已啟用。",
   "@msg4a5d26f4": {
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
-  "msg4a5d26f4": "Link copied to clipboard!",
+  "msg4a5d26f4": "連結已複製到剪貼簿！",
+  "type": "使用其他裝置掃描以立即開啟 {type}。",
   "@type": {
+    "description": "ui\\screens\\web_sharing_screen.dart",
     "type": "text"
   },
-  "type": "Scan with another device to open {type} immediately.",
+  "msgc8390d74": "網頁共享中心",
   "@msgc8390d74": {
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
-  "msgc8390d74": "Web Share Center",
+  "msg5345cdce": "網際網路分享連結",
   "@msg5345cdce": {
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
-  "msg5345cdce": "Internet Share Link",
+  "http2": "HTTP本地共享伺服器",
   "@http2": {
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
-  "http2": "HTTP Local Share Server",
+  "wifi": "允許同一 Wi-Fi 下的其他裝置透過網頁瀏覽器訪問、檢視和流式傳輸您的檔案。",
   "@wifi": {
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
-  "wifi": "Allow other devices on the same Wi-Fi to access, view and stream your files via web browser.",
+  "msg73c512df": "伺服器線上並流式傳輸中",
   "@msg73c512df": {
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
-  "msg73c512df": "Server online and streaming",
+  "url1": "複製 URL",
   "@url1": {
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
-  "url1": "Copy URL",
+  "msg22b03c02": "二維碼",
   "@msg22b03c02": {
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
-  "msg22b03c02": "QR Code",
+  "sharedir": "共享目錄：{shareDir}",
   "@sharedir": {
+    "description": "ui\\screens\\web_sharing_screen.dart",
     "type": "text"
   },
-  "sharedir": "Share Directory: {shareDir}",
+  "msge6a29aa4": "伺服器空閒",
   "@msge6a29aa4": {
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
-  "msge6a29aa4": "Server idle",
+  "wifi1": "請確保其他裝置與此裝置處於同一 Wi-Fi 網路，然後啟動伺服器。",
   "@wifi1": {
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
-  "wifi1": "Please ensure other devices are on the same Wi-Fi network, then start the server.",
+  "msg974465c1": "啟動網頁伺服器",
   "@msg974465c1": {
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
-  "msg974465c1": "Start Web Server",
+  "msg27d5bd3c": "生成一個安全的臨時公共隧道連結。與網際網路上任何地方的任何人分享此連結，讓他們高速下載檔案，無論檔案大小。",
   "@msg27d5bd3c": {
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
-  "msg27d5bd3c": "Generate a secure temporary public tunnel link. Share this link with anyone anywhere on the internet to let them download files at high speed, regardless of file size.",
+  "msg66a09a42": "臨時分享連結（有效期 24 小時）：",
   "@msg66a09a42": {
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
-  "msg66a09a42": "Temporary share link (valid for 24 hours):",
+  "msg879058ce": "複製連結",
   "@msg879058ce": {
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
-  "msg879058ce": "Copy Link",
+  "msg7ed199f8": "已連線的瀏覽器客戶端",
   "@msg7ed199f8": {
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
-  "msg7ed199f8": "Connected Browser Clients",
+  "msgb77e4adf": "等待傳入的網際網路下載...",
   "@msgb77e4adf": {
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
-  "msgb77e4adf": "Waiting for incoming internet downloads...",
+  "msga61778bc": "網際網路共享未啟用",
   "@msga61778bc": {
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
-  "msga61778bc": "Internet sharing not activated",
+  "msga3c80551": "停用雲共享",
   "@msga3c80551": {
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
-  "msga3c80551": "Deactivate Cloud Sharing",
+  "msg6466e61e": "啟用網際網路分享連結",
   "@msg6466e61e": {
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
-  "msg6466e61e": "Activate Internet Share Link",
+  "msg67bd9375": "正在處理...",
   "@msg67bd9375": {
     "description": "ui\\widgets\\background_operation_progress_dialog.dart"
   },
-  "msg67bd9375": "Processing...",
+  "msg3fa72416": "正在重新命名檔案...",
   "@msg3fa72416": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
-  "msg3fa72416": "Renaming files...",
+  "msg7dbbef0e": "請稍候，正在更新資料夾內容",
   "@msg7dbbef0e": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
-  "msg7dbbef0e": "Please wait, updating folder contents",
+  "msg1a2d9a44": "原始名稱 (%)",
   "@msg1a2d9a44": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
-  "msg1a2d9a44": "Original Name (%)",
+  "msgcb029197": "順序編號 (#)",
   "@msgcb029197": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
-  "msgcb029197": "Sequential Number (#)",
+  "msgb6d8a14f": "三位順序編號 (###)",
   "@msgb6d8a14f": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
-  "msgb6d8a14f": "Three-digit Sequential Number (###)",
+  "n": "不帶副檔名的檔名 ({n})",
   "@n": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
-  "n": "Filename without extension ({n})",
+  "de": "帶點的副檔名 ({de})",
   "@de": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
-  "de": "Extension with dot ({de})",
+  "e22": "不帶點的副檔名 ({e})",
   "@e22": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
-  "e22": "Extension without dot ({e})",
+  "n1": "帶副檔名的完整檔名 ({N})",
   "@n1": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
-  "n1": "Full filename with extension ({N})",
+  "msg0e9dc63a": "名稱模式",
   "@msg0e9dc63a": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
-  "msg0e9dc63a": "Name Pattern",
+  "msg4a63edba": "副檔名",
   "@msg4a63edba": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
-  "msg4a63edba": "Extension",
+  "msga420ad79": "起始編號",
   "@msga420ad79": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
-  "msga420ad79": "Start Number",
+  "msg9857973d": "查詢文字",
   "@msg9857973d": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
-  "msg9857973d": "Find Text",
+  "msg1605701e": "替換為",
   "@msg1605701e": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
-  "msg1605701e": "Replace With",
+  "msgd35f80c8": "替換內容",
   "@msgd35f80c8": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
-  "msgd35f80c8": "Replace Content",
+  "msg32c61dab": "重新命名預覽",
   "@msg32c61dab": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
-  "msg32c61dab": "Rename Preview",
+  "msg92642e0e": "返回編輯",
   "@msg92642e0e": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
-  "msg92642e0e": "Back to Edit",
+  "msgde88d67a": "檔案已存在",
   "@msgde88d67a": {
     "description": "ui\\widgets\\conflict_dialog.dart"
   },
-  "msgde88d67a": "File Already Exists",
+  "msge59e35b5": "應用於所有剩餘衝突",
   "@msge59e35b5": {
     "description": "ui\\widgets\\conflict_dialog.dart"
   },
-  "msge59e35b5": "Apply to All Remaining Conflicts",
+  "msg27dfaae5": "保留兩者",
   "@msg27dfaae5": {
     "description": "ui\\widgets\\conflict_dialog.dart"
   },
-  "msg27dfaae5": "Keep Both",
+  "msg6cfbf05d": "重新命名檔案",
   "@msg6cfbf05d": {
     "description": "ui\\widgets\\conflict_dialog.dart"
   },
-  "msg6cfbf05d": "Rename File",
+  "msg25f747ce": "建立壓縮包",
   "@msg25f747ce": {
     "description": "ui\\widgets\\create_archive_dialog.dart"
   },
-  "msg25f747ce": "Create Archive",
+  "msged5f808e": "壓縮格式",
   "@msged5f808e": {
     "description": "ui\\widgets\\create_archive_dialog.dart"
   },
-  "msged5f808e": "Compression Format",
+  "mb": "分卷大小（MB，可選）",
   "@mb": {
     "description": "ui\\widgets\\create_archive_dialog.dart"
   },
-  "mb": "Split Size (MB, optional)",
+  "msgac52af6a": "留空則建立單個壓縮包",
   "@msgac52af6a": {
     "description": "ui\\widgets\\create_archive_dialog.dart"
   },
-  "msgac52af6a": "Leave empty to create single archive",
+  "msgdf2ef7f5": "為每個檔案建立單獨的壓縮包",
   "@msgdf2ef7f5": {
     "description": "ui\\widgets\\create_archive_dialog.dart"
   },
-  "msgdf2ef7f5": "Create separate archive for each file",
+  "msgb52d4a73": "新建標籤頁",
   "@msgb52d4a73": {
     "description": "ui\\widgets\\directory_tab_bar.dart"
   },
-  "msgb52d4a73": "New Tab",
+  "msg4e9c344a": "複製標籤頁",
   "@msg4e9c344a": {
     "description": "ui\\widgets\\directory_tab_bar.dart"
   },
-  "msg4e9c344a": "Duplicate Tab",
+  "msg7716532d": "關閉其他標籤頁",
   "@msg7716532d": {
     "description": "ui\\widgets\\directory_tab_bar.dart"
   },
-  "msg7716532d": "Close Other Tabs",
+  "msgd78603eb": "雙擊關閉標籤頁",
   "@msgd78603eb": {
     "description": "ui\\widgets\\directory_tab_bar.dart"
   },
-  "msgd78603eb": "Double-tap to Close Tab",
+  "selectedcount": "{selectedCount} 個專案",
   "@selectedcount": {
+    "description": "ui\\widgets\\drag_drop_action_dialog.dart",
     "type": "text"
   },
-  "selectedcount": "{selectedCount} items",
+  "e23": "建立壓縮包失敗：{e}",
   "@e23": {
+    "description": "ui\\widgets\\drag_drop_action_dialog.dart",
     "type": "text"
   },
-  "e23": "Failed to create archive: {e}",
+  "msgc4d7eece": "解壓壓縮包",
   "@msgc4d7eece": {
     "description": "ui\\widgets\\extract_archive_dialog.dart"
   },
-  "msgc4d7eece": "Extract Archive",
+  "msgf15821d0": "解壓到資料夾",
   "@msgf15821d0": {
     "description": "ui\\widgets\\extract_archive_dialog.dart"
   },
-  "msgf15821d0": "Extract to Folder",
+  "msgff69affd": "密碼（如果已加密）",
   "@msgff69affd": {
     "description": "ui\\widgets\\extract_archive_dialog.dart"
   },
-  "msgff69affd": "Password (if encrypted)",
+  "msg67eda5e6": "全部檔案",
   "@msg67eda5e6": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
   },
-  "msg67eda5e6": "All Files",
+  "msg8b2fcb31": "顯示此目錄中的所有檔案和資料夾",
   "@msg8b2fcb31": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
   },
-  "msg8b2fcb31": "Show all files and folders in this directory",
+  "pdfword": "PDF、Word 文件、電子表格、文字和電子書",
   "@pdfword": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
   },
-  "pdfword": "PDF, Word docs, spreadsheets, text and e-books",
+  "jpegpngwebp": "JPEG、PNG、WebP 和原始照片格式",
   "@jpegpngwebp": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
   },
-  "jpegpngwebp": "JPEG, PNG, WebP and raw photo formats",
+  "mp3wavaac": "MP3、WAV、AAC 和高保真音訊",
   "@mp3wavaac": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
   },
-  "mp3wavaac": "MP3, WAV, AAC and high-fidelity audio",
+  "mp4mkvwebm": "MP4、MKV、WebM 和高解析度影片片段",
   "@mp4mkvwebm": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
   },
-  "mp4mkvwebm": "MP4, MKV, WebM and high-resolution video clips",
+  "zip7zrar": "ZIP、7Z、RAR 和其他壓縮檔案",
   "@zip7zrar": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
   },
-  "zip7zrar": "ZIP, 7Z, RAR and other compressed files",
+  "msg6d3e48cc": "選擇一個類別以僅顯示匹配的檔案",
   "@msg6d3e48cc": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
   },
-  "msg6d3e48cc": "Choose a category to show only matching files",
+  "e24": "遠端縮圖載入失敗: {e}",
   "@e24": {
+    "description": "ui\\widgets\\file_item.dart",
     "type": "text"
   },
-  "e24": "Remote thumbnail load failed: {e}",
+  "msg32a1bd25": "1 項",
   "@msg32a1bd25": {
     "description": "ui\\widgets\\file_item.dart"
   },
-  "msg32a1bd25": "1 item",
+  "count4": "{count} 項",
   "@count4": {
+    "description": "ui\\widgets\\file_item.dart",
     "type": "text"
   },
-  "count4": "{count} items",
+  "msg9d69d7a0": "正在移動檔案...",
   "@msg9d69d7a0": {
     "description": "ui\\widgets\\file_operation_progress_dialog.dart"
   },
-  "msg9d69d7a0": "Moving files...",
+  "zenfile6": "ZenFile 自定義原生體驗",
   "@zenfile6": {
     "description": "ui\\widgets\\open_with_sheet.dart"
   },
-  "zenfile6": "ZenFile Custom Native Experience",
+  "msg42be43e6": "系統外部應用",
   "@msg42be43e6": {
     "description": "ui\\widgets\\open_with_sheet.dart"
   },
-  "msg42be43e6": "System External App",
+  "msgd1fca831": "使用裝置上的第三方應用開啟",
   "@msgd1fca831": {
     "description": "ui\\widgets\\open_with_sheet.dart"
   },
-  "msgd1fca831": "Open with third-party app on device",
+  "msgdb75b769": "僅一次",
   "@msgdb75b769": {
     "description": "ui\\widgets\\open_with_sheet.dart"
   },
-  "msgdb75b769": "Just Once",
+  "msg959429a5": "瀏覽裝置檔案",
   "@msg959429a5": {
     "description": "ui\\widgets\\premium_storage_overview.dart"
   },
-  "msg959429a5": "Browse Device Files",
+  "msgc31116e3": "新增新連線",
   "@msgc31116e3": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
   },
-  "msgc31116e3": "Add New Connection",
+  "msgf1d4ff50": "自定義",
   "@msgf1d4ff50": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
   },
-  "msgf1d4ff50": "Custom",
+  "msg490ac572": "未固定快捷方式。點選自定義新增。",
   "@msg490ac572": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
   },
-  "msg490ac572": "No pinned shortcuts. Tap customize to add.",
+  "msg445a43cb": "拖動手柄 (=) 可重新排列首頁圖示。",
   "@msg445a43cb": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
   },
-  "msg445a43cb": "Drag handle (=) to rearrange home page icons.",
+  "msg944d5ecd": "新增資料夾/檔案快捷方式",
   "@msg944d5ecd": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
   },
-  "msg944d5ecd": "Add Folder/File Shortcut",
+  "msg4f356348": "自定義路徑",
   "@msg4f356348": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
   },
-  "msg4f356348": "Custom Path",
+  "msg94733bec": "刪除快捷方式",
   "@msg94733bec": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
   },
-  "msg94733bec": "Delete Shortcut",
+  "msg5c29ad2f": "恢復位置",
   "@msg5c29ad2f": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
   },
-  "msg5c29ad2f": "Restore Location",
+  "msg21de5dd7": "自定義掃描位置：",
   "@msg21de5dd7": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
   },
-  "msg21de5dd7": "Custom scan location:",
+  "msg4bb81f99": "未新增自定義路徑。",
   "@msg4bb81f99": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
   },
-  "msg4bb81f99": "No custom paths added.",
+  "msgf544c399": "10月",
   "@msgf544c399": {
     "description": "ui\\widgets\\recent_files_section.dart"
   },
-  "msgf544c399": "October",
+  "msgc0615eb3": "12月",
   "@msgc0615eb3": {
     "description": "ui\\widgets\\recent_files_section.dart"
   },
-  "msgc0615eb3": "December",
+  "msg54355dd8": "最近檔案",
   "@msg54355dd8": {
     "description": "ui\\widgets\\recent_files_section.dart"
   },
-  "msg54355dd8": "Recent Files",
+  "msgd5eac3a3": "受限系統資料夾",
   "@msgd5eac3a3": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
   },
-  "msgd5eac3a3": "Restricted System Folders",
+  "android11androiddataandroidobbzenfile": "Android 11+ 限制了對 Android/data 和 Android/obb 資料夾的標準訪問，以保護應用資料。要檢視和修改這些檔案，ZenFile 需要高階許可權。",
   "@android11androiddataandroidobbzenfile": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
   },
-  "android11androiddataandroidobbzenfile": "Android 11+ restricts standard access to Android/data and Android/obb folders to protect app data. To view and modify these files, ZenFile needs advanced permissions.",
+  "root": "使用 Root 訪問（超級使用者）",
   "@root": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
   },
-  "root": "Use Root Access (Superuser)",
+  "shizukuroot": "授予Shizuku訪問許可權（無需Root）",
   "@shizukuroot": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
   },
-  "shizukuroot": "Grant Shizuku Access (No Root Required)",
+  "selectedcount1": "已選擇 {selectedCount} 項",
   "@selectedcount1": {
+    "description": "ui\\widgets\\selection_action_bar.dart",
     "type": "text"
   },
-  "selectedcount1": "{selectedCount} items selected",
+  "selectedcount2": "確定要刪除 {selectedCount} 個專案嗎？此操作無法撤銷。",
   "@selectedcount2": {
+    "description": "ui\\widgets\\selection_action_bar.dart",
     "type": "text"
   },
-  "selectedcount2": "Are you sure you want to delete {selectedCount} items? This action cannot be undone.",
+  "msga9b87614": "已取消置頂所選專案",
   "@msga9b87614": {
     "description": "ui\\widgets\\selection_action_bar.dart"
   },
-  "msga9b87614": "Unpinned selected items",
+  "msg84e4fac9": "取消置頂",
   "@msg84e4fac9": {
     "description": "ui\\widgets\\selection_action_bar.dart"
   },
-  "msg84e4fac9": "Unpin",
+  "msg3be9abab": "正在計算大小...",
   "@msg3be9abab": {
     "description": "ui\\widgets\\selection_action_bar.dart"
   },
-  "msg3be9abab": "Calculating size...",
+  "msg7704aa2c": "已選擇路徑：",
   "@msg7704aa2c": {
     "description": "ui\\widgets\\selection_action_bar.dart"
   },
-  "msg7704aa2c": "Selected path:",
+  "label1": "已複製 {label} 到剪貼簿",
   "@label1": {
+    "description": "ui\\widgets\\selection_action_bar.dart",
     "type": "text"
   },
-  "label1": "Copied {label} to clipboard",
+  "selectedcount3": "已選擇 {selectedCount} 個專案",
   "@selectedcount3": {
+    "description": "ui\\widgets\\selection_context_bottom_sheet.dart",
     "type": "text"
   },
-  "selectedcount3": "{selectedCount} items selected",
+  "msg8b73264b": "檔案（長按選擇開啟方式）",
   "@msg8b73264b": {
     "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
   },
-  "msg8b73264b": "Files (long press to choose open with)",
+  "msgc5c0646c": "複製所選",
   "@msgc5c0646c": {
     "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
   },
-  "msgc5c0646c": "Copy Selected",
+  "msg8e6d4604": "剪下所選",
   "@msg8e6d4604": {
     "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
   },
-  "msg8e6d4604": "Cut Selected",
+  "msg1058354c": "屬性與資訊",
   "@msg1058354c": {
     "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
   },
-  "msg1058354c": "Properties & Info",
+  "usedstoragestr": "已使用 {usedStorageStr}",
   "@usedstoragestr": {
+    "description": "ui\\widgets\\storage_overview.dart",
     "type": "text"
   },
-  "usedstoragestr": "Used {usedStorageStr}",
+  "freestoragestr": "{freeStorageStr} 可用",
   "@freestoragestr": {
+    "description": "ui\\widgets\\swipable_storage_overview.dart",
     "type": "text"
   },
-  "freestoragestr": "{freeStorageStr} available",
+  "msgc823e21b": "取消固定標籤頁",
   "@msgc823e21b": {
     "description": "ui\\widgets\\tab_options_sheet.dart"
   },
-  "msgc823e21b": "Unpin Tab",
+  "msg7d6c1284": "未找到匹配的目錄或檔案",
   "@msg7d6c1284": {
     "description": "ui\\widgets\\zenfile_address_bar.dart"
   },
-  "msg7d6c1284": "No matching directories or files found",
+  "path": "路徑不存在: {path}",
   "@path": {
+    "description": "ui\\widgets\\zenfile_address_bar.dart",
     "type": "text"
   },
-  "path": "Path does not exist: {path}",
+  "msg6cbbf7d9": "輸入絕對路徑...",
   "@msg6cbbf7d9": {
     "description": "ui\\widgets\\zenfile_address_bar.dart"
   },
-  "msg6cbbf7d9": "Enter absolute path...",
+  "msgf13fc21c": "伺服器與工具",
   "@msgf13fc21c": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
   },
-  "msgf13fc21c": "Servers & Tools",
+  "msg41e625d1": "新增遠端連線",
   "@msg41e625d1": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
   },
-  "msg41e625d1": "Add Remote Connection",
+  "msg8755e992": "淺色模式",
   "@msg8755e992": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
   },
-  "msg8755e992": "Light Mode",
+  "msg1cf6fcd3": "更多設定",
   "@msg1cf6fcd3": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
   },
-  "msg1cf6fcd3": "More Settings",
+  "msgeef7e30c": "精品媒體套件",
   "@msgeef7e30c": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
   },
-  "msgeef7e30c": "Premium Media Suite",
-  "msg2ad64aa7": "Cannot open link: {urlString}",
-  "msg30d17f96": "Key Highlights",
-  "msgaba638c4": "Vault Security",
-  "msgd309e9ea": "Server Center",
-  "msg4a5f936c": "Contact & Share",
-  "msg4d48a010": "ZenFile - Beautiful File Manager",
-  "msg1f4c0192": "Buy the author a coffee",
-  "msg2eceaa85": "Tip the Author",
-  "msg305734ce": "Changelog",
-  "msg1c80891a": "Added remote file thumbnail preview in browse page",
-  "msg212f8f9e": "Fixed remote file cannot open/play issue",
-  "msgd0cf310e": "Optimized unified remote file cache directory management",
-  "msg072f2022": "Single-finger swipe changed to two-finger swipe (to avoid accidental back gesture)",
-  "msg66517dc4": "Font option titles fully localized",
-  "msgacad92c8": "Removed 'Prevent left back gesture from opening drawer' feature",
-  "msg09d0e1b6": "Fixed: alternate icon switch not working",
-  "msg2d1872c8": "Text editor menu fully localized",
-  "msg2e35eef7": "Dual-panel File Browser",
-  "msge96aa2cd": "Built-in Media Player",
-  "msg49a6c41e": "App Icon Switch (multiple styles available)",
-  "msg4d82be7c": "Next Version Update Plan",
-  "msg2c8957dd": "Known Issues",
-  "msg11cb01fc": "Remote server video playback while caching",
-  "msg60a4d643": "Custom icon won't change desktop icon after upload (will be improved next version)",
-  "msg9e68ea42": "Save failed, please try again",
-  "cat_images": "Images",
-  "cat_videos": "Videos",
-  "cat_audios": "Audio",
-  "cat_documents": "Documents",
-  "cat_downloads": "Downloads",
-  "cat_screenshots": "Screenshots",
-  "cat_recent": "Recent",
-  "cat_network": "Network",
-  "cat_apps": "Apps",
-  "cat_settings": "Settings",
-  "cat_storage": "Storage",
-  "cat_service": "Service",
-  "cat_manage": "Manage",
-  "cat_config": "Config",
-  "cat_analyze": "Analyze",
-  "cat_quick_categories": "Quick Categories",
-  "ui_nav": "Navigation",
-  "ui_home": "Home",
-  "ui_recycle_bin": "Recycle Bin",
-  "ui_dark_mode": "Dark Mode",
-  "ui_personalize_settings": "Personalize & Settings",
-  "ui_compress": "Compress",
-  "ui_copy": "Copy",
-  "ui_cut": "Cut",
-  "ui_delete": "Delete",
-  "ui_select_all": "Select All",
-  "ui_cancel": "Cancel",
-  "ui_confirm": "Confirm",
-  "ui_share": "Share",
-  "ui_move_here": "Move Here",
-  "ui_properties": "Properties",
-  "ui_info": "Info",
-  "ui_open": "Open",
-  "ui_close": "Close",
-  "ui_more": "More",
-  "ui_appearance_theme": "Appearance & Theme",
-  "ui_list_layout_style": "List & Layout Style",
-  "ui_media_preferences": "Media Preferences",
-  "ui_file_actions_viewers": "File Actions & Viewers",
-  "ui_no_settings_found": "No settings found",
-  "ui_show_floating_button": "Show Floating Button",
-  "ui_use_24h_format": "Use 24-Hour Format",
-  "ui_show_folder_contents_count": "Show Folder Contents Count",
-  "ui_show_folder_size": "Show Folder Size",
-  "ui_show_bottom_action_bar": "Show Bottom Action Bar",
-  "ui_hide_action_text": "Hide Action Bar Text Labels",
-  "ui_show_media_previews": "Show Media Previews",
-  "ui_adaptive_multiline_names": "Adaptive Multi-line File Names",
-  "ui_hide_action_menu_buttons": "Hide Action Menu Buttons",
-  "ui_enable_drag_drop": "Enable Drag & Drop",
-  "ui_confirm_drag_drop": "Confirm Drag & Drop",
-  "ui_enable_multi_tabs": "Enable Multiple Tabs",
-  "ui_enable_split_screen": "Enable Split Screen",
-  "ui_app_icon": "App Icon",
-  "ui_emerald_green": "Emerald Green",
-  "ui_deep_red": "Deep Red",
-  "ui_square": "Square",
-  "ui_circle": "Circle",
-  "ui_1_day_after": "1 day later",
-  "ui_no_auto_clean": "No auto clean",
-  "ui_daily": "Daily",
-  "ui_weekly": "Weekly",
-  "ui_monthly": "Monthly",
-  "ui_every_n_days": "Every {days} days",
+  "msg2ad64aa7": "無法開啟連結：{urlString}",
+  "msg30d17f96": "核心亮點",
+  "msgaba638c4": "保險箱安全",
+  "msgd309e9ea": "伺服器中心",
+  "msg4a5f936c": "聯絡與分享",
+  "msg4d48a010": "ZenFile - 精美檔案管理器",
+  "msg1f4c0192": "請作者喝杯咖啡 ☕",
+  "msg2eceaa85": "打賞作者",
+  "msg305734ce": "更新日誌",
+  "msg1c80891a": "新增瀏覽頁遠端檔案縮圖預覽",
+  "msg212f8f9e": "修復遠端檔案無法開啟播放的問題",
+  "msgd0cf310e": "最佳化遠端檔案快取目錄統一管理",
+  "msg072f2022": "單指滑動切換頁面改為雙指滑動（避免誤觸返回手勢）",
+  "msg66517dc4": "字型選項標題全面漢化",
+  "msgacad92c8": "移除\"阻止左側返回手勢開啟抽屜\"功能",
+  "msg09d0e1b6": "修復：備用圖示切換不生效",
+  "msg2d1872c8": "文字編輯器選單全面漢化",
+  "msg2e35eef7": "雙面板檔案瀏覽器",
+  "msge96aa2cd": "內建媒體播放器",
+  "msg49a6c41e": "應用圖示切換（多種風格可選）",
+  "msg4d82be7c": "下版本更新計劃",
+  "msg2c8957dd": "已知問題",
+  "msg11cb01fc": "遠端伺服器邊快取邊播放影片",
+  "msg60a4d643": "自定義圖示上傳後桌面圖示不會更改（下版本完善）",
+  "msg9e68ea42": "儲存失敗，請重試",
+  "cat_images": "圖片",
+  "cat_videos": "影片",
+  "cat_audios": "音訊",
+  "cat_documents": "文件",
+  "cat_downloads": "下載",
+  "cat_screenshots": "截圖",
+  "cat_recent": "最近",
+  "cat_network": "網路",
+  "cat_apps": "應用",
+  "cat_settings": "設定",
+  "cat_storage": "儲存",
+  "cat_service": "服務",
+  "cat_manage": "管理",
+  "cat_config": "配置",
+  "cat_analyze": "分析",
+  "cat_quick_categories": "快捷分類",
+  "ui_nav": "導航",
+  "ui_home": "主頁",
+  "ui_recycle_bin": "回收站",
+  "ui_dark_mode": "深色模式",
+  "ui_personalize_settings": "個性化和設定",
+  "ui_compress": "壓縮",
+  "ui_copy": "複製",
+  "ui_cut": "剪下",
+  "ui_delete": "刪除",
+  "ui_select_all": "全選",
+  "ui_cancel": "取消",
+  "ui_confirm": "確定",
+  "ui_share": "分享",
+  "ui_move_here": "移動到此處",
+  "ui_properties": "屬性",
+  "ui_info": "資訊",
+  "ui_open": "開啟",
+  "ui_close": "關閉",
+  "ui_more": "更多",
+  "ui_appearance_theme": "外觀與主題",
+  "ui_list_layout_style": "列表與佈局樣式",
+  "ui_media_preferences": "媒體偏好",
+  "ui_file_actions_viewers": "檔案操作與檢視器",
+  "ui_no_settings_found": "未找到設定",
+  "ui_show_floating_button": "顯示浮動按鈕",
+  "ui_use_24h_format": "使用24小時制",
+  "ui_show_folder_contents_count": "顯示資料夾內容計數",
+  "ui_show_folder_size": "顯示資料夾大小",
+  "ui_show_bottom_action_bar": "顯示底部導航欄",
+  "ui_hide_action_text": "隱藏操作欄文字標籤",
+  "ui_show_media_previews": "顯示媒體預覽",
+  "ui_adaptive_multiline_names": "自適應多行檔名",
+  "ui_hide_action_menu_buttons": "隱藏三點操作按鈕",
+  "ui_enable_drag_drop": "啟用拖放",
+  "ui_confirm_drag_drop": "確認拖放操作",
+  "ui_enable_multi_tabs": "啟用多標籤頁",
+  "ui_enable_split_screen": "啟用分屏",
+  "ui_app_icon": "應用圖示",
+  "ui_emerald_green": "翠綠",
+  "ui_deep_red": "深紅",
+  "ui_square": "方形",
+  "ui_circle": "圓形",
+  "ui_1_day_after": "1 天后",
+  "ui_no_auto_clean": "不自動清理",
+  "ui_daily": "每天",
+  "ui_weekly": "每週",
+  "ui_monthly": "每月",
+  "ui_every_n_days": "每{days}天",
   "@ui_every_n_days": {
     "description": "ui\\screens\\more_settings_screen.dart",
     "type": "text"
   },
-  "ui_clear_cache_failed": "Failed to clear cache: {e}",
+  "ui_clear_cache_failed": "清除快取失敗: {e}",
   "@ui_clear_cache_failed": {
     "description": "ui\\screens\\more_settings_screen.dart",
     "type": "text"
   },
-  "ui_clear_remote_cache": "Clear Remote Cache",
-  "ui_view_cache_dir": "View Cache Directory",
-  "ui_remote_media_thumbnail": "Remote Media Thumbnails",
-  "ui_auto_clean_remote_cache": "Auto clean remote server cache periodically: {label}",
+  "ui_clear_remote_cache": "清除遠端快取",
+  "ui_view_cache_dir": "檢視快取目錄",
+  "ui_remote_media_thumbnail": "遠端媒體縮圖",
+  "ui_auto_clean_remote_cache": "定期自動清理遠端伺服器快取檔案: {label}",
   "@ui_auto_clean_remote_cache": {
     "description": "ui\\screens\\more_settings_screen.dart",
     "type": "text"
   },
-  "ui_custom_font_with_name": "Custom Font ({name})",
+  "ui_custom_font_with_name": "自定義字型（{name}）",
   "@ui_custom_font_with_name": {
     "description": "ui\\screens\\more_settings_screen.dart",
     "type": "text"
   },
-  "ui_import_custom_font": "Import Custom Font File (.ttf/.otf)",
-  "ui_custom_font_applied": "Custom font \"{name}\" applied successfully!",
+  "ui_import_custom_font": "匯入自定義字型檔案 (.ttf/.otf)",
+  "ui_custom_font_applied": "自定義字型\"{name}\"已成功應用！",
   "@ui_custom_font_applied": {
     "description": "ui\\screens\\more_settings_screen.dart",
     "type": "text"
   },
-  "ui_invalid_file_type": "Invalid File Type",
-  "ui_language": "Language",
-  "ui_hide_nav_labels": "Hide Bottom Nav Labels",
-  "ui_reset_default_viewers": "Reset Default File Viewers",
-  "ui_trailing_info_when_hidden": "Trailing Info When Menu Hidden",
-  "ui_go_up": "Go Up",
+  "ui_invalid_file_type": "無效的檔案型別",
+  "ui_language": "語言",
+  "ui_hide_nav_labels": "隱藏底部導航標籤",
+  "ui_reset_default_viewers": "重置預設檔案檢視器",
+  "ui_trailing_info_when_hidden": "三點禁用尾部資訊",
+  "ui_go_up": "上一級",
   "@ui_go_up": {
     "description": "directory_screen.dart"
   },
-  "ui_cut_copy_items": "{prefix} · {count} items",
+  "ui_cut_copy_items": "{prefix} · {count} 項",
   "@ui_cut_copy_items": {
     "description": "directory_screen.dart",
     "placeholders": {
@@ -2876,67 +2928,67 @@
       }
     }
   },
-  "ui_clear": "Clear",
+  "ui_clear": "清除",
   "@ui_clear": {
     "description": "directory_screen.dart"
   },
-  "ui_paste": "Paste",
+  "ui_paste": "貼上",
   "@ui_paste": {
     "description": "directory_screen.dart"
   },
-  "ui_file_name": "File name",
+  "ui_file_name": "檔名",
   "@ui_file_name": {
     "description": "directory_screen.dart"
   },
-  "ui_create": "Create",
+  "ui_create": "建立",
   "@ui_create": {
     "description": "directory_screen.dart"
   },
-  "ui_create_new_directory": "Create new directory",
+  "ui_create_new_directory": "建立新目錄",
   "@ui_create_new_directory": {
     "description": "directory_screen.dart"
   },
-  "ui_layout_mode": "Layout Mode",
+  "ui_layout_mode": "佈局模式",
   "@ui_layout_mode": {
     "description": "directory_screen.dart"
   },
-  "ui_grid_view": "Grid View",
+  "ui_grid_view": "網格檢視",
   "@ui_grid_view": {
     "description": "directory_screen.dart"
   },
-  "ui_name_asc": "Name (A-Z)",
+  "ui_name_asc": "名稱 (A-Z)",
   "@ui_name_asc": {
     "description": "directory_screen.dart"
   },
-  "ui_newest": "Newest",
+  "ui_newest": "最新",
   "@ui_newest": {
     "description": "directory_screen.dart"
   },
-  "ui_oldest": "Oldest",
+  "ui_oldest": "最舊",
   "@ui_oldest": {
     "description": "directory_screen.dart"
   },
-  "ui_size_small": "Size (Small)",
+  "ui_size_small": "大小（小）",
   "@ui_size_small": {
     "description": "directory_screen.dart"
   },
-  "ui_type": "Type",
+  "ui_type": "型別",
   "@ui_type": {
     "description": "ui widgets"
   },
-  "ui_storage_volume": "Storage Volume",
+  "ui_storage_volume": "儲存卷",
   "@ui_storage_volume": {
     "description": "directory_screen.dart"
   },
-  "ui_browse": "Browse",
+  "ui_browse": "瀏覽",
   "@ui_browse": {
     "description": "directory_screen.dart"
   },
-  "ui_new": "New",
+  "ui_new": "新建",
   "@ui_new": {
     "description": "directory_screen.dart"
   },
-  "ui_folders_count": "Folders: {count}",
+  "ui_folders_count": "資料夾：{count}",
   "@ui_folders_count": {
     "description": "directory_screen.dart",
     "placeholders": {
@@ -2945,7 +2997,7 @@
       }
     }
   },
-  "ui_files_count": "Files: {count}",
+  "ui_files_count": "檔案：{count}",
   "@ui_files_count": {
     "description": "directory_screen.dart",
     "placeholders": {
@@ -2954,87 +3006,87 @@
       }
     }
   },
-  "ui_selection_mode": "Selection Mode",
+  "ui_selection_mode": "選擇模式",
   "@ui_selection_mode": {
     "description": "directory_screen.dart"
   },
-  "ui_storage_and_sd": "Storage & SD Card",
+  "ui_storage_and_sd": "儲存卷和SD卡",
   "@ui_storage_and_sd": {
     "description": "directory_screen.dart"
   },
-  "ui_images_only": "Images Only",
+  "ui_images_only": "僅圖片",
   "@ui_images_only": {
     "description": "ui widgets"
   },
-  "ui_videos_only": "Videos Only",
+  "ui_videos_only": "僅影片",
   "@ui_videos_only": {
     "description": "ui widgets"
   },
-  "ui_show_folders": "Show Folders",
+  "ui_show_folders": "顯示資料夾",
   "@ui_show_folders": {
     "description": "directory_screen.dart"
   },
-  "ui_files": "Files",
+  "ui_files": "檔案",
   "@ui_files": {
     "description": "directory_screen.dart"
   },
-  "ui_delete_file_confirm": "Are you sure you want to delete this file? This action cannot be undone.",
+  "ui_delete_file_confirm": "確定要刪除此檔案嗎？此操作無法撤銷。",
   "@ui_delete_file_confirm": {
     "description": "directory_screen.dart"
   },
-  "ui_done": "Done",
+  "ui_done": "完成",
   "@ui_done": {
     "description": "ui widgets"
   },
-  "ui_name": "Name",
+  "ui_name": "名稱",
   "@ui_name": {
     "description": "ui widgets"
   },
-  "ui_path": "Path",
+  "ui_path": "路徑",
   "@ui_path": {
     "description": "ui widgets"
   },
-  "ui_size": "Size",
+  "ui_size": "大小",
   "@ui_size": {
     "description": "ui widgets"
   },
-  "ui_permissions": "Permissions",
+  "ui_permissions": "許可權",
   "@ui_permissions": {
     "description": "ui widgets"
   },
-  "ui_contains": "Contains",
+  "ui_contains": "包含",
   "@ui_contains": {
     "description": "ui widgets"
   },
-  "ui_extract": "Extract",
+  "ui_extract": "解壓",
   "@ui_extract": {
     "description": "ui widgets"
   },
-  "ui_pin_to_top": "Pin to Top",
+  "ui_pin_to_top": "置頂",
   "@ui_pin_to_top": {
     "description": "ui widgets"
   },
-  "ui_pinned_selected": "Pinned selected items",
+  "ui_pinned_selected": "已將所選專案置頂",
   "@ui_pinned_selected": {
     "description": "ui widgets"
   },
-  "ui_filter_by_type": "Filter Files by Type",
+  "ui_filter_by_type": "按型別篩選檔案",
   "@ui_filter_by_type": {
     "description": "ui widgets"
   },
-  "ui_default_scan_locations": "Default scan locations:",
+  "ui_default_scan_locations": "預設掃描位置：",
   "@ui_default_scan_locations": {
     "description": "ui widgets"
   },
-  "ui_exclude_location": "Exclude Location",
+  "ui_exclude_location": "排除位置",
   "@ui_exclude_location": {
     "description": "ui widgets"
   },
-  "ui_add_custom_path": "Add Custom Path",
+  "ui_add_custom_path": "新增自定義路徑",
   "@ui_add_custom_path": {
     "description": "ui widgets"
   },
-  "ui_added_custom_paths": "Added {count} custom paths",
+  "ui_added_custom_paths": "已新增 {count} 個自定義路徑",
   "@ui_added_custom_paths": {
     "description": "ui widgets",
     "placeholders": {
@@ -3043,11 +3095,11 @@
       }
     }
   },
-  "ui_close_tab": "Close Tab",
+  "ui_close_tab": "關閉標籤頁",
   "@ui_close_tab": {
     "description": "ui widgets"
   },
-  "ui_not_found_title": "No {title} found",
+  "ui_not_found_title": "未找到 {title}",
   "@ui_not_found_title": {
     "description": "ui widgets",
     "placeholders": {
@@ -3056,19 +3108,19 @@
       }
     }
   },
-  "ui_oldest_first": "Oldest First",
+  "ui_oldest_first": "最舊優先",
   "@ui_oldest_first": {
     "description": "ui widgets"
   },
-  "ui_sort_options": "Sort Options",
+  "ui_sort_options": "排序選項",
   "@ui_sort_options": {
     "description": "ui widgets"
   },
-  "ui_refresh": "Refresh",
+  "ui_refresh": "重新整理",
   "@ui_refresh": {
     "description": "ui widgets"
   },
-  "ui_selected_count": "{count} Selected",
+  "ui_selected_count": "{count} 已選擇",
   "@ui_selected_count": {
     "description": "ui widgets",
     "placeholders": {
@@ -3077,7 +3129,7 @@
       }
     }
   },
-  "ui_permanently_delete_name": "Permanently delete \"{name}\"?",
+  "ui_permanently_delete_name": "永久刪除\"{name}\"？",
   "@ui_permanently_delete_name": {
     "description": "ui widgets",
     "placeholders": {
@@ -3086,7 +3138,7 @@
       }
     }
   },
-  "ui_copied_count": "Copied {count} items to clipboard",
+  "ui_copied_count": "已複製 {count} 個專案到剪貼簿",
   "@ui_copied_count": {
     "description": "ui widgets",
     "placeholders": {
@@ -3095,7 +3147,7 @@
       }
     }
   },
-  "ui_cut_count": "Cut {count} items to clipboard",
+  "ui_cut_count": "已剪下 {count} 個專案到剪貼簿",
   "@ui_cut_count": {
     "description": "ui widgets",
     "placeholders": {
@@ -3104,101 +3156,101 @@
       }
     }
   },
-  "ui_read": "Read",
+  "ui_read": "讀取",
   "@ui_read": {
     "description": "ui widgets"
   },
-  "ui_write": "Write",
+  "ui_write": "寫入",
   "@ui_write": {
     "description": "ui widgets"
   },
-  "ui_file": "File",
+  "ui_file": "檔案",
   "@ui_file": {
     "description": "ui widgets"
   },
-  "ui_backup_settings": "Backup Settings",
-  "ui_restore_settings": "Restore Settings",
-  "ui_backup_info": "Backup Info",
-  "ui_backup_file": "Backup File",
-  "ui_no_backup_file": "No backup file",
-  "ui_remote_connection": "Remote Connection",
-  "ui_step_n_of_3": "Step {step} / 3",
-  "ui_choose_network_service": "Choose Network Service",
-  "ui_connection_name": "Connection Name",
-  "ui_protocol": "Protocol",
-  "ui_port": "Port",
-  "ui_path_label": "Path",
-  "ui_username_optional": "Username (Optional)",
-  "ui_back": "Back",
-  "ui_connect": "Connect",
-  "ui_web_share": "Web Share",
-  "ui_network": "Network",
-  "log_i18n_full": "Full internationalization for Chinese/English UI",
-  "log_fix_selection_count": "Fixed file selection count not displaying",
-  "log_fix_remote_title": "Fixed remote connection page title display issue",
-  "log_svg_thumbnail_category": "SVG thumbnails now display in category pages",
-  "log_language_btn_top": "Language switch button moved to top of settings",
-  "log_fix_category_missing": "Fixed some categories not showing in English mode",
-  "log_text_editor": "New text editor features: create new files, save as, undo/redo",
-  "log_text_editor_settings": "Text editor settings persistence (word wrap, line numbers, read-only mode)",
-  "log_10_languages": "Support for 10 languages (Chinese, English, Japanese, Korean, German, French, Spanish, Russian, Arabic)",
-  "log_fix_l10n_hardcode": "Fixed multiple l10n hardcoded text issues",
-  "log_language_scroll": "Optimized language selection dialog with scroll support",
-  "ui_username": "Username",
-  "ui_anonymous": "Anonymous",
-  "ui_start": "Start",
-  "ui_stop": "Stop",
-  "ui_connected": "Connected",
-  "ui_activated": "Activated",
-  "ui_web_sharing_center": "Web Sharing Center",
-  "ui_local_web_share": "Local Web Share",
-  "ui_http_local_share_server": "HTTP Local Share Server",
-  "ui_server_idle": "Server Idle",
-  "ui_pick_files_folders": "Select Files and Folders",
-  "ui_secure_storage": "Secure Storage",
-  "ui_protected_total_space": "Protected Total Space",
-  "ui_hidden_files_count": "Hidden Files",
-  "ui_search_obfuscated": "Search obfuscated files...",
-  "ui_vault_empty": "Your secure vault is empty",
-  "ui_hide_files": "Hide Files",
-  "ui_global_search": "Global Search",
-  "ui_all": "All",
-  "ui_folders": "Folders",
-  "ui_images": "Images",
-  "ui_videos": "Videos",
-  "ui_audio": "Audio",
-  "ui_documents": "Documents",
-  "ui_no_matching_files": "No matching files found",
-  "ui_try_modify_search": "Try modifying your search text to find hidden items.",
-  "ui_vault_empty_desc": "XOR obfuscation signatures make files completely unopenable and hidden from the system scanner database. Click the button below to protect them.",
-  "ui_copied_n_items": "Copied {count} item(s) to clipboard",
-  "ui_cut_n_items": "Cut {count} item(s) to clipboard",
-  "ui_copy_tooltip": "Copy",
-  "ui_cut_tooltip": "Cut",
-  "ui_delete_tooltip": "Delete",
-  "ui_search_this_folder": "Search this folder",
-  "ui_search_files_subfolders_in": "Search files and subfolders in: {path}",
-  "ui_no_results": "No results found",
-  "ui_no_match_for": "No matches found for \"{query}\"",
-  "ui_n_selected": "{count} selected ({size})",
-  "ui_select_language_title": "Select Language",
-  "ui_select_language_desc": "Please select your preferred language",
+  "ui_backup_settings": "備份設定",
+  "ui_restore_settings": "恢復設定",
+  "ui_backup_info": "備份資訊",
+  "ui_backup_file": "備份檔案",
+  "ui_no_backup_file": "暫無備份檔案",
+  "ui_remote_connection": "遠端連線",
+  "ui_step_n_of_3": "第 {step} / 3 步",
+  "ui_choose_network_service": "選擇網路服務",
+  "ui_connection_name": "連線名稱",
+  "ui_protocol": "協議",
+  "ui_port": "埠",
+  "ui_path_label": "路徑",
+  "ui_username_optional": "使用者名稱（可選）",
+  "ui_back": "返回",
+  "ui_connect": "連線",
+  "ui_web_share": "網頁共享",
+  "ui_network": "網路",
+  "log_i18n_full": "全面國際化中英文介面",
+  "log_fix_selection_count": "修復檔案選擇數量不顯示的問題",
+  "log_fix_remote_title": "修復遠端連線頁面標題顯示異常",
+  "log_svg_thumbnail_category": "SVG 縮圖在分類頁面中正常顯示",
+  "log_language_btn_top": "語言切換按鈕移至設定頁頂部",
+  "log_fix_category_missing": "修復英文模式下部分分類不顯示",
+  "log_text_editor": "新增文字編輯器功能：新建檔案、另存為、撤銷/重做",
+  "log_text_editor_settings": "文字編輯器設定持久化（自動換行、行號、閱讀模式）",
+  "log_10_languages": "支援10種多國語言（中文、英語、日語、韓語、德語、法語、西班牙語、俄語、阿拉伯語）",
+  "log_fix_l10n_hardcode": "修復多處 l10n 硬編碼問題",
+  "log_language_scroll": "優化語言選擇介面支援滾動",
+  "ui_username": "使用者名稱",
+  "ui_anonymous": "匿名",
+  "ui_start": "啟動",
+  "ui_stop": "停止",
+  "ui_connected": "已連線",
+  "ui_activated": "已啟用",
+  "ui_web_sharing_center": "網頁共享中心",
+  "ui_local_web_share": "本地網頁共享",
+  "ui_http_local_share_server": "HTTP本地共享伺服器",
+  "ui_server_idle": "伺服器空閒",
+  "ui_pick_files_folders": "選擇檔案和資料夾",
+  "ui_secure_storage": "安全儲存",
+  "ui_protected_total_space": "已保護總空間",
+  "ui_hidden_files_count": "已隱藏檔案",
+  "ui_search_obfuscated": "搜尋混淆檔案...",
+  "ui_vault_empty": "您的安全保險箱為空",
+  "ui_hide_files": "隱藏檔案",
+  "ui_global_search": "全域性搜尋",
+  "ui_all": "全部",
+  "ui_folders": "資料夾",
+  "ui_images": "圖片",
+  "ui_videos": "影片",
+  "ui_audio": "音訊",
+  "ui_documents": "文件",
+  "ui_no_matching_files": "未找到匹配檔案",
+  "ui_try_modify_search": "請嘗試修改搜尋文字以查詢隱藏專案。",
+  "ui_vault_empty_desc": "XOR混淆簽名混淆使檔案完全無法開啟，並從系統掃描器資料庫中隱藏。點選下方的按鈕來保護它們。",
+  "ui_copied_n_items": "已複製 {count} 個專案到剪貼簿",
+  "ui_cut_n_items": "已剪下 {count} 個專案到剪貼簿",
+  "ui_copy_tooltip": "複製",
+  "ui_cut_tooltip": "剪下",
+  "ui_delete_tooltip": "刪除",
+  "ui_search_this_folder": "搜尋此資料夾",
+  "ui_search_files_subfolders_in": "搜尋檔案和子資料夾於：{path}",
+  "ui_no_results": "未找到結果",
+  "ui_no_match_for": "未找到匹配 \"{query}\" 的內容",
+  "ui_n_selected": "{count} 已選擇 ({size})",
+  "ui_select_language_title": "選擇語言",
+  "ui_select_language_desc": "請選擇您偏好的語言",
   "ui_language_chinese": "中文",
   "ui_language_english": "English",
-  "msgDefaultZoom": "Default Zoom ({fontSize}pt)",
-  "msgLockZoom": "Lock Zoom",
-  "ui_background": "Background",
-  "ui_overall_progress": "Overall Progress",
-  "ui_archive_name": "Archive Name",
-  "ui_compression_level": "Compression Level",
-  "ui_delete_source_after": "Delete source files after completion",
-  "ui_no_compression": "None (Store only)",
-  "ui_fast": "Fast",
-  "ui_standard": "Standard",
-  "ui_maximum": "Maximum",
-  "ui_new_txt": "New Text File",
-  "ui_save_as": "Save As",
-  "ui_undo": "Undo",
-  "ui_redo": "Redo",
-  "ui_add_selected": "Add Selected ({count})"
+  "msgDefaultZoom": "預設縮放 ({fontSize}pt)",
+  "msgLockZoom": "鎖定縮放",
+  "ui_background": "後臺",
+  "ui_overall_progress": "總體進度",
+  "ui_archive_name": "壓縮包名稱",
+  "ui_compression_level": "壓縮級別",
+  "ui_delete_source_after": "完成後刪除原始檔",
+  "ui_no_compression": "無（僅儲存）",
+  "ui_fast": "快速",
+  "ui_standard": "標準",
+  "ui_maximum": "最大",
+  "ui_new_txt": "新建文字",
+  "ui_save_as": "另存為",
+  "ui_undo": "撤銷",
+  "ui_redo": "重做",
+  "ui_add_selected": "新增所選 ({count})"
 }

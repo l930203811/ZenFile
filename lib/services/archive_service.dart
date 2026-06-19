@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:archive/archive_io.dart';
 import 'package:dart_lz4/dart_lz4.dart';
+import 'package:charset/charset.dart';
 import 'package:just_zstd/just_zstd.dart';
 
 class ArchiveService {
@@ -257,6 +258,38 @@ class ArchiveService {
     return compute(_readArchiveTask, {'archivePath': archivePath, 'password': password});
   }
 
+  /// 修复压缩包中非 UTF-8 编码的文件名（如 GBK 编码的中文文件名）
+  static void _fixArchiveFilenames(Archive archive) {
+    for (int i = 0; i < archive.length; i++) {
+      final file = archive[i];
+      final fixedName = _fixZipFilename(file.name);
+      if (fixedName != file.name) {
+        final content = file.content as List<int>;
+        archive[i] = ArchiveFile(fixedName, content.length, content);
+      }
+    }
+  }
+
+  /// 修复单个 ZIP 文件名编码
+  static String _fixZipFilename(String name) {
+    bool hasGarbled = false;
+    for (int i = 0; i < name.length; i++) {
+      final codeUnit = name.codeUnitAt(i);
+      if (codeUnit >= 0x80 && codeUnit <= 0xFF) {
+        hasGarbled = true;
+        break;
+      }
+    }
+    if (!hasGarbled) return name;
+
+    try {
+      final bytes = name.codeUnits;
+      return gbk.decode(bytes);
+    } catch (_) {
+      return name;
+    }
+  }
+
   static Archive? _readArchiveTask(Map<String, dynamic> args) {
     final archivePath = args['archivePath'] as String;
     final password = args['password'] as String?;
@@ -268,25 +301,30 @@ class ArchiveService {
       final lowerPath = archivePath.toLowerCase();
 
       try {
+        Archive archive;
         if (lowerPath.endsWith('.zip') || lowerPath.contains('.zip.')) {
-          return ZipDecoder().decodeBytes(bytes, password: password != null && password.isNotEmpty ? password : null);
+          archive = ZipDecoder().decodeBytes(bytes, password: password != null && password.isNotEmpty ? password : null);
         } else if (lowerPath.endsWith('.tar.gz') || lowerPath.endsWith('.tgz')) {
           final tarBytes = GZipDecoder().decodeBytes(bytes);
-          return TarDecoder().decodeBytes(tarBytes);
+          archive = TarDecoder().decodeBytes(tarBytes);
         } else if (lowerPath.endsWith('.tar.bz2') || lowerPath.endsWith('.tbz2')) {
           final tarBytes = BZip2Decoder().decodeBytes(bytes);
-          return TarDecoder().decodeBytes(tarBytes);
+          archive = TarDecoder().decodeBytes(tarBytes);
         } else if (lowerPath.endsWith('.tar.lz4') || lowerPath.endsWith('.tlz4')) {
           final tarBytes = lz4FrameDecode(bytes);
-          return TarDecoder().decodeBytes(Uint8List.fromList(tarBytes));
+          archive = TarDecoder().decodeBytes(Uint8List.fromList(tarBytes));
         } else if (lowerPath.endsWith('.tar.zst') || lowerPath.endsWith('.tzst')) {
           final tarBytes = const ZstdDecoder().decodeBytes(bytes);
-          return TarDecoder().decodeBytes(Uint8List.fromList(tarBytes));
+          archive = TarDecoder().decodeBytes(Uint8List.fromList(tarBytes));
         } else if (lowerPath.endsWith('.tar')) {
-          return TarDecoder().decodeBytes(bytes);
+          archive = TarDecoder().decodeBytes(bytes);
         } else {
-          return ZipDecoder().decodeBytes(bytes, password: password != null && password.isNotEmpty ? password : null);
+          archive = ZipDecoder().decodeBytes(bytes, password: password != null && password.isNotEmpty ? password : null);
         }
+
+        // 修复 ZIP 文件中非 UTF-8 编码的文件名（如 GBK 编码的中文文件名）
+        _fixArchiveFilenames(archive);
+        return archive;
       } catch (_) {
         return Archive();
       }

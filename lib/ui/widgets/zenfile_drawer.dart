@@ -69,7 +69,7 @@ class ZenFileDrawer extends StatelessWidget {
                       _buildDrawerTile(
                         context,
                         icon: vol.isInternal ? Broken.folder_open : Icons.sd_storage_rounded,
-                        title: vol.name,
+                        title: _getLocalizedVolumeName(context, vol),
                         isSelected: fileManager.rootPath == vol.path,
                         onTap: () {
                           Navigator.pop(context);
@@ -314,7 +314,7 @@ class ZenFileDrawer extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12.0),
               child: Text(
-                'ZenFile v1.0.3',
+                'ZenFile v1.0.4',
                 style: TextStyle(fontSize: 11.5, color: theme.colorScheme.onSurface.withOpacity(0.4), fontWeight: FontWeight.w600),
               ),
             ),
@@ -392,6 +392,18 @@ class ZenFileDrawer extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _getLocalizedVolumeName(BuildContext context, StorageVolume vol) {
+    final l10n = L10n.of(context);
+    if (vol.isInternal) {
+      return l10n.msg21cefa9b; // "内部存储" / "Internal Storage"
+    }
+    // SD Card / USB volumes
+    if (vol.name.startsWith('SD Card')) {
+      return l10n.msgbb34b7ec; // fallback if no specific SD card l10n
+    }
+    return vol.name;
   }
 
   Widget _buildDrawerTile(
