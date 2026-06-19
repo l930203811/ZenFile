@@ -150,8 +150,9 @@ class FtpRemoteClient implements RemoteClient {
     }
 
     final localFile = File(localPath);
-    if (localFile.existsSync()) {
-      localFile.deleteSync();
+    // Ensure parent directory exists
+    if (!localFile.parent.existsSync()) {
+      localFile.parent.createSync(recursive: true);
     }
 
     onProgress(0.0);
@@ -203,4 +204,7 @@ class FtpRemoteClient implements RemoteClient {
     if (!ok) throw Exception('Upload failed for: $localPath');
     onProgress(1.0);
   }
+
+  @override
+  String? getStreamUrl(String remotePath) => null;
 }

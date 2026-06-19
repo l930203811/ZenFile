@@ -2870,6 +2870,24 @@ class L10nEn extends L10n {
       'Optimized language selection dialog with scroll support';
 
   @override
+  String get log_remote_media_cache =>
+      'Remote media files now open player immediately with background caching progress';
+
+  @override
+  String get log_remote_to_remote => 'Added copy/cut between remote servers';
+
+  @override
+  String get log_remote_cut_progress =>
+      'Fixed remote cut operation progress bar display issue';
+
+  @override
+  String get log_audio_scan_stable =>
+      'Improved audio category scanning stability';
+
+  @override
+  String get ui_caching => 'Caching, please wait...';
+
+  @override
   String get ui_username => 'Username';
 
   @override

@@ -106,4 +106,7 @@ class SafRemoteClient implements RemoteClient {
     });
     onProgress(1.0);
   }
+
+  @override
+  String? getStreamUrl(String remotePath) => null;
 }

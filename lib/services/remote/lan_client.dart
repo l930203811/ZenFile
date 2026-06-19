@@ -325,4 +325,7 @@ class LanClient implements RemoteClient {
     await _saveStructure();
     onProgress(1.0);
   }
+
+  @override
+  String? getStreamUrl(String remotePath) => null;
 }

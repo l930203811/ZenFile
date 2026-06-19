@@ -2934,6 +2934,25 @@ class L10nFr extends L10n {
       'Optimisation du dialogue de sélection de langue avec support du défilement';
 
   @override
+  String get log_remote_media_cache =>
+      'Les médias distants s\'ouvrent immédiatement dans le lecteur avec mise en cache en arrière-plan';
+
+  @override
+  String get log_remote_to_remote =>
+      'Ajout de la copie/coupe entre serveurs distants';
+
+  @override
+  String get log_remote_cut_progress =>
+      'Correction de la barre de progression pour les opérations de coupe distante';
+
+  @override
+  String get log_audio_scan_stable =>
+      'Amélioration de la stabilité du scan de la catégorie audio';
+
+  @override
+  String get ui_caching => 'Mise en cache, veuillez patienter...';
+
+  @override
   String get ui_username => 'Nom d\'utilisateur';
 
   @override

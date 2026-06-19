@@ -2912,6 +2912,25 @@ class L10nDe extends L10n {
       'Sprachauswahldialog mit Bildlaufunterstützung optimiert';
 
   @override
+  String get log_remote_media_cache =>
+      'Remote-Medien werden sofort im Player geöffnet mit Hintergrund-Caching-Fortschritt';
+
+  @override
+  String get log_remote_to_remote =>
+      'Kopieren/Ausschneiden zwischen Remote-Servern hinzugefügt';
+
+  @override
+  String get log_remote_cut_progress =>
+      'Fortschrittsanzeige für Remote-Ausschneiden behoben';
+
+  @override
+  String get log_audio_scan_stable =>
+      'Stabilität der Audio-Kategoriescanverbessert';
+
+  @override
+  String get ui_caching => 'Zwischenspeicherung, bitte warten...';
+
+  @override
   String get ui_username => 'Benutzername';
 
   @override

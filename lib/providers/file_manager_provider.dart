@@ -1914,7 +1914,12 @@ class FileManagerProvider extends ChangeNotifier {
 
     try {
       if (_isRemoteClipboard) {
-        await _pasteFromRemoteToLocal(context, clearAfterPaste);
+        // 远程剪贴板粘贴到远程目录：先下载到本地临时目录，再上传到目标远程
+        if (currIsRemote && activeTab.remoteClient != null) {
+          await _pasteRemoteToRemote(context, clearAfterPaste);
+        } else {
+          await _pasteFromRemoteToLocal(context, clearAfterPaste);
+        }
         return;
       }
 
@@ -2580,6 +2585,154 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> _pasteRemoteToRemote(BuildContext context, bool clearAfterPaste) async {
+    final sourceClient = await _createRemoteClient(_remoteClipboardConnection!);
+    final targetClient = activeTab.remoteClient;
+    if (sourceClient == null || targetClient == null) return;
+
+    _isOperationCancelled = false;
+    _isPasting = true;
+    activeTab.isLoading = true;
+    notifyListeners();
+
+    final tempDir = Directory('/storage/emulated/0/Download/ZenFile_Remote/.temp_${DateTime.now().millisecondsSinceEpoch}');
+    if (!tempDir.existsSync()) tempDir.createSync(recursive: true);
+
+    try {
+      await sourceClient.connect();
+      final totalFiles = _remoteClipboardItems.length;
+
+      for (int i = 0; i < _remoteClipboardItems.length; i++) {
+        if (_isOperationCancelled) throw Exception('Cancelled');
+
+        final remoteItem = _remoteClipboardItems[i];
+        final tempPath = p.join(tempDir.path, remoteItem.name);
+        final destPath = _buildRemotePath(currentPath, remoteItem.name);
+
+        progressNotifier.value = FileOperationProgress(
+          totalFiles: totalFiles,
+          currentFileIndex: i + 1,
+          currentFileName: remoteItem.name,
+          percentage: i / totalFiles,
+          speedMBs: 0.0,
+          eta: Duration.zero,
+          totalBytes: totalFiles,
+          bytesProcessed: i,
+        );
+
+        // Step 1: Download from source remote to local temp
+        if (remoteItem.isDirectory) {
+          await _downloadRemoteDirectory(sourceClient, remoteItem.path, tempPath);
+          // Step 2: Upload from local temp to target remote
+          await _uploadLocalDirectory(targetClient, tempPath, destPath);
+        } else {
+          await sourceClient.downloadFile(remoteItem.path, tempPath, (prog) {
+            progressNotifier.value = FileOperationProgress(
+              totalFiles: totalFiles,
+              currentFileIndex: i + 1,
+              currentFileName: remoteItem.name,
+              percentage: (i + prog * 0.5) / totalFiles, // download is 50% of the operation
+              speedMBs: 0.0,
+              eta: Duration.zero,
+              totalBytes: totalFiles,
+              bytesProcessed: i,
+            );
+          });
+          await targetClient.uploadFile(tempPath, destPath, (prog) {
+            progressNotifier.value = FileOperationProgress(
+              totalFiles: totalFiles,
+              currentFileIndex: i + 1,
+              currentFileName: remoteItem.name,
+              percentage: (i + 0.5 + prog * 0.5) / totalFiles, // upload is the other 50%
+              speedMBs: 0.0,
+              eta: Duration.zero,
+              totalBytes: totalFiles,
+              bytesProcessed: i,
+            );
+          });
+        }
+
+        // Step 3: Delete source if cut
+        if (_isCut) {
+          try {
+            await sourceClient.delete(remoteItem.path, remoteItem.isDirectory);
+          } catch (e) {
+            debugPrint('Failed to delete remote source item after cut: $e');
+          }
+        }
+      }
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_isCut ? '成功移动项目' : '成功复制项目'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error pasting remote to remote: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().contains('Cancelled') ? '操作已取消' : '传输失败：{e}'),
+            backgroundColor: e.toString().contains('Cancelled') ? null : Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      try {
+        await sourceClient.disconnect();
+      } catch (_) {}
+      // Clean up temp directory
+      try {
+        if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
+      } catch (_) {}
+      progressNotifier.value = null;
+      if (clearAfterPaste) clearClipboard();
+      await loadDirectory(currentPath, showLoading: false, clearCache: true);
+      // Refresh source tab if cut
+      if (_isCut && _remoteClipboardItems.isNotEmpty) {
+        final sourceDir = p.dirname(_remoteClipboardItems.first.path);
+        for (int i = 0; i < _tabs.length; i++) {
+          if (_tabs[i].isRemote && _tabs[i].currentPath == sourceDir) {
+            try {
+              final tabClient = createRemoteClient(_tabs[i].remoteConnection!);
+              await tabClient.connect();
+              _tabs[i].remoteClient = tabClient;
+              await loadDirectoryForTab(i, sourceDir, showLoading: false, clearCache: true);
+            } catch (e) {
+              debugPrint('Failed to refresh remote source tab: $e');
+            }
+            break;
+          }
+        }
+      }
+      activeTab.isLoading = false;
+      _isPasting = false;
+      notifyListeners();
+    }
+  }
+
+  Future<RemoteClient?> _createRemoteClient(NetworkConnectionModel conn) async {
+    if (conn.type == 'FTP') {
+      return FtpRemoteClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
+    } else if (conn.type == 'SFTP') {
+      return SftpRemoteClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
+    } else if (conn.type == 'WebDav') {
+      return WebDavRemoteClient(
+        host: conn.host, port: conn.port, username: conn.username, password: conn.password,
+        protocol: conn.protocol, rootPath: conn.rootPath,
+      );
+    } else if (conn.type == '局域网/SMB') {
+      return LanClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
+    } else if (conn.type == 'saf') {
+      return SafRemoteClient(rootUri: conn.rootPath);
+    }
+    return null;
+  }
+
   Future<void> _uploadLocalDirectory(RemoteClient client, String localDirPath, String remoteDirPath) async {
     await client.createDirectory(remoteDirPath);
     final localDir = Directory(localDirPath);
@@ -3024,6 +3177,7 @@ class FileManagerProvider extends ChangeNotifier {
             videoPath: path,
             playlist: folderVideoFiles.isNotEmpty ? folderVideoFiles : [path],
             initialIndex: initialIndex,
+            isRemote: activeTab.isRemote,
           ),
         ),
       );
@@ -3066,6 +3220,7 @@ class FileManagerProvider extends ChangeNotifier {
             title: p.basename(path),
             allSongs: allSongs,
             initialIndex: initialIndex,
+            isRemote: activeTab.isRemote,
           ),
         ),
       );
@@ -3107,7 +3262,7 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> openFile(BuildContext context, String path, {bool showOpenWithPopup = false, bool forceOpenWith = false}) async {
+  Future<void> openFile(BuildContext context, String path, {bool showOpenWithPopup = false, bool forceOpenWith = false, bool isRemoteStream = false}) async {
     _highlightedPaths.clear();
     _highlightedPaths.add(path);
     notifyListeners();
@@ -3121,21 +3276,67 @@ class FileManagerProvider extends ChangeNotifier {
     
     String targetPath = path;
 
-    // 远程文件：先下载到本地缓存，再打开
+    // Remote streaming URL (WebDAV HTTP URL): open directly with isRemote flag
+    if (isRemoteStream) {
+      final streamExt = p.extension(path).toLowerCase();
+      final streamMime = lookupMimeType(streamExt) ?? '';
+      if (streamMime.startsWith('video/')) {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(videoPath: path, isRemote: true)));
+      } else if (streamMime.startsWith('audio/')) {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => AudioPlayerScreen(audioPath: path, title: p.basenameWithoutExtension(path), isRemote: true)));
+      } else {
+        await openFileNatively(context, targetPath);
+      }
+      return;
+    }
+
+    // 远程文件：立即打开播放器，后台下载到本地缓存
     if (activeTab.isRemote && activeTab.remoteClient != null) {
       try {
         final cacheDir = Directory('/storage/emulated/0/Download/ZenFile_Remote');
         if (!cacheDir.existsSync()) cacheDir.createSync(recursive: true);
         final cachePath = p.join(cacheDir.path, p.basename(path));
         if (!File(cachePath).existsSync()) {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('正在下载 ${p.basename(path)}...'), duration: const Duration(seconds: 2)),
-            );
+          // 立即打开播放器（播放器会显示缓存提示），后台下载
+          final fileMime = lookupMimeType(ext) ?? '';
+          final isVideoFile = fileMime.startsWith('video/');
+          final isAudioFile = fileMime.startsWith('audio/');
+          if (isVideoFile || isAudioFile) {
+            // 创建空文件占位，播放器打开本地路径
+            File(cachePath).createSync(recursive: true);
+            if (isVideoFile) {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(videoPath: cachePath, isRemote: true)));
+            } else {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => AudioPlayerScreen(audioPath: cachePath, title: p.basenameWithoutExtension(path), isRemote: true)));
+            }
+            // 后台下载到临时文件，完成后重命名替换占位文件
+            final partialPath = '$cachePath.partial';
+            activeTab.remoteClient!.downloadFile(path, partialPath, (progress) {}).then((_) {
+              // 下载完成后重命名临时文件为正式文件
+              try {
+                final partial = File(partialPath);
+                final target = File(cachePath);
+                if (partial.existsSync()) {
+                  if (target.existsSync()) target.deleteSync();
+                  partial.renameSync(cachePath);
+                }
+                debugPrint('远程文件下载完成: $cachePath');
+              } catch (e) {
+                debugPrint('重命名临时文件失败: $e');
+              }
+            }).catchError((e) {
+              debugPrint('远程文件下载失败: $e');
+              // 清理临时文件
+              try { File(partialPath).deleteSync(); } catch (_) {}
+            });
+            return;
           }
+          // 非媒体文件（图片、文本等）：完整下载后打开
           await activeTab.remoteClient!.downloadFile(path, cachePath, (progress) {});
+          targetPath = cachePath;
+        } else {
+          targetPath = cachePath;
         }
-        targetPath = cachePath;
       } catch (e) {
         debugPrint('下载远程文件失败: {e}');
       }

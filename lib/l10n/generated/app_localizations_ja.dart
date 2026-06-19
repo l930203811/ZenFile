@@ -2782,6 +2782,22 @@ class L10nJa extends L10n {
   String get log_language_scroll => '言語選択ダイアログのスクロールサポートを最適化';
 
   @override
+  String get log_remote_media_cache =>
+      'リモートメディアファイルをクリック後すぐにプレーヤーを開き、バックグラウンドでキャッシュ';
+
+  @override
+  String get log_remote_to_remote => 'リモートサーバー間のコピー/カット機能を追加';
+
+  @override
+  String get log_remote_cut_progress => 'リモートカット操作のプログレスバー表示を修正';
+
+  @override
+  String get log_audio_scan_stable => 'オーディオカテゴリのスキャン安定性を改善';
+
+  @override
+  String get ui_caching => 'キャッシュ中、しばらくお待ちください...';
+
+  @override
   String get ui_username => 'ユーザー名';
 
   @override

@@ -517,7 +517,14 @@ class _ZenFileAppState extends State<ZenFileApp> {
               locale: _getLocale(),
               localeResolutionCallback: (locale, supportedLocales) {
                 if (locale == null) return const Locale('en', 'US');
-                // Match by languageCode only, not full locale (to handle Locale('en', 'US'))
+                // 优先精确匹配 languageCode + countryCode（如 zh_TW）
+                for (final supported in supportedLocales) {
+                  if (supported.languageCode == locale.languageCode &&
+                      supported.countryCode == locale.countryCode) {
+                    return supported;
+                  }
+                }
+                // 回退：仅匹配 languageCode
                 for (final supported in supportedLocales) {
                   if (supported.languageCode == locale.languageCode) {
                     return supported;

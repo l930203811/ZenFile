@@ -5302,6 +5302,36 @@ abstract class L10n {
   /// **'优化语言选择界面支持滚动'**
   String get log_language_scroll;
 
+  /// No description provided for @log_remote_media_cache.
+  ///
+  /// In zh, this message translates to:
+  /// **'远程媒体文件点击后立即打开播放器，后台缓存并显示进度'**
+  String get log_remote_media_cache;
+
+  /// No description provided for @log_remote_to_remote.
+  ///
+  /// In zh, this message translates to:
+  /// **'新增远程服务器到远程服务器的复制/剪切功能'**
+  String get log_remote_to_remote;
+
+  /// No description provided for @log_remote_cut_progress.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复远程剪切操作进度条显示异常'**
+  String get log_remote_cut_progress;
+
+  /// No description provided for @log_audio_scan_stable.
+  ///
+  /// In zh, this message translates to:
+  /// **'优化音频分类扫描稳定性'**
+  String get log_audio_scan_stable;
+
+  /// No description provided for @ui_caching.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在缓存中，请稍后...'**
+  String get ui_caching;
+
   /// No description provided for @ui_username.
   ///
   /// In zh, this message translates to:

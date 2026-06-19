@@ -2773,6 +2773,21 @@ class L10nZh extends L10n {
   String get log_language_scroll => '优化语言选择界面支持滚动';
 
   @override
+  String get log_remote_media_cache => '远程媒体文件点击后立即打开播放器，后台缓存并显示进度';
+
+  @override
+  String get log_remote_to_remote => '新增远程服务器到远程服务器的复制/剪切功能';
+
+  @override
+  String get log_remote_cut_progress => '修复远程剪切操作进度条显示异常';
+
+  @override
+  String get log_audio_scan_stable => '优化音频分类扫描稳定性';
+
+  @override
+  String get ui_caching => '正在缓存中，请稍后...';
+
+  @override
   String get ui_username => '用户名';
 
   @override
@@ -5726,6 +5741,21 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get log_language_scroll => '優化語言選擇介面支援滾動';
+
+  @override
+  String get log_remote_media_cache => '遠端媒體檔案點擊後立即開啟播放器，後台快取並顯示進度';
+
+  @override
+  String get log_remote_to_remote => '新增遠端伺服器到遠端伺服器的複製/剪下功能';
+
+  @override
+  String get log_remote_cut_progress => '修復遠端剪下操作進度條顯示異常';
+
+  @override
+  String get log_audio_scan_stable => '優化音訊分類掃描穩定性';
+
+  @override
+  String get ui_caching => '正在緩存中，請稍後...';
 
   @override
   String get ui_username => '使用者名稱';

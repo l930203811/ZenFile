@@ -692,6 +692,10 @@ class AboutZenFileScreen extends StatelessWidget {
                   ),
 
                   _buildVersionSection(ctx, theme, 'v1.0.4', '2026-06-19', [
+                    L10n.of(context).log_remote_media_cache,
+                    L10n.of(context).log_remote_to_remote,
+                    L10n.of(context).log_remote_cut_progress,
+                    L10n.of(context).log_audio_scan_stable,
                     L10n.of(context).log_text_editor,
                     L10n.of(context).log_text_editor_settings,
                     L10n.of(context).log_10_languages,

@@ -38,4 +38,8 @@ abstract class RemoteClient {
   Future<void> rename(String oldPath, String newPath);
   Future<void> downloadFile(String remotePath, String localPath, Function(double progress) onProgress);
   Future<void> uploadFile(String localPath, String remotePath, Function(double progress) onProgress);
+
+  /// Returns a URL that can be used for streaming playback, or null if streaming is not supported.
+  /// Currently only WebDAV supports this (returns HTTP URL with Basic Auth).
+  String? getStreamUrl(String remotePath);
 }

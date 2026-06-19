@@ -6,6 +6,7 @@ import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:zenfile/core/icon_fonts/broken_icons.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 import 'package:zenfile/services/preferences_service.dart';
 import 'video_loading_indicator.dart';
 import 'video_seek_indicator.dart';
@@ -17,6 +18,7 @@ class VideoPlayerScreen extends StatefulWidget {
   final List<dynamic>? playlist;
   final List<AssetEntity>? assetPlaylist;
   final int? initialIndex;
+  final bool isRemote;
 
   const VideoPlayerScreen({
     super.key,
@@ -24,6 +26,7 @@ class VideoPlayerScreen extends StatefulWidget {
     this.playlist,
     this.assetPlaylist,
     this.initialIndex,
+    this.isRemote = false,
   });
 
   @override
@@ -48,6 +51,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   bool _isLocked = false;
   double _playbackSpeed = 1.0;
   bool _isBuffering = false;
+  bool _isWaitingForCache = false;
+  Timer? _cacheCheckTimer;
 
   // Swipes for Volume & Brightness
   double _volume = 0.8; // 0.0 to 1.0
@@ -112,9 +117,46 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     );
 
     _initListeners();
-    player.open(Media(widget.videoPath));
+    _startPlayback();
     player.setVolume(_volume * 100.0);
     _startHideTimer();
+  }
+
+  void _startPlayback() {
+    // For remote files that are being cached, wait until the download completes
+    // (download goes to .partial file, then renames to the actual file)
+    if (widget.isRemote && !widget.videoPath.startsWith('http')) {
+      final file = File(widget.videoPath);
+      final initialSize = file.existsSync() ? file.lengthSync() : 0;
+      // If file is empty or very small (placeholder), wait for download to complete
+      if (initialSize < 1024) { // less than 1KB = placeholder file
+        setState(() => _isWaitingForCache = true);
+        _cacheCheckTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
+          if (!mounted) {
+            timer.cancel();
+            return;
+          }
+          try {
+            if (!file.existsSync()) return;
+            final currentSize = file.lengthSync();
+            // File size significantly increased = download complete (renamed from .partial)
+            if (currentSize > 1024 && currentSize != initialSize) {
+              timer.cancel();
+              if (mounted) {
+                setState(() => _isWaitingForCache = false);
+                _openMediaWithRetry();
+              }
+            }
+          } catch (_) {}
+        });
+        return;
+      }
+    }
+    _openMediaWithRetry();
+  }
+
+  void _openMediaWithRetry() {
+    player.open(Media(widget.videoPath));
   }
 
   void _initListeners() {
@@ -362,6 +404,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _hideTimer?.cancel();
     _seekIndicatorTimer?.cancel();
     _sliderTimer?.cancel();
+    _cacheCheckTimer?.cancel();
     _controlsAnimController.dispose();
     player.dispose();
     final hideNav = PreferencesService.getHideNavigationBar();
@@ -414,9 +457,19 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
           ),
 
           // Animated Buffering / Asset Resolution Indicator
-          if (_isBuffering || _isResolvingAsset)
-            const Center(
-              child: VideoLoadingIndicator(),
+          if (_isBuffering || _isResolvingAsset || _isWaitingForCache)
+            Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const VideoLoadingIndicator(),
+                  const SizedBox(height: 16),
+                  Text(
+                    (widget.isRemote && (_isWaitingForCache || _isBuffering)) ? L10n.of(context).ui_caching : '',
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                ],
+              ),
             ),
 
           // Gesture Zones (Left/Right Drag, Double Tap & Long Press)

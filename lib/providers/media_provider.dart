@@ -736,7 +736,7 @@ class MediaProvider extends ChangeNotifier {
       futures.add(_loadImagesAndVideos());
     }
     if (hasAudioPermission || isStorageGranted) {
-      futures.add(_loadAudios());
+      futures.add(_loadAudios(hasPermission: hasAudioPermission || isStorageGranted));
     }
     futures.add(_loadDocuments());
     futures.add(_loadArchivesDownloadsAndApks());
@@ -833,7 +833,7 @@ class MediaProvider extends ChangeNotifier {
       futures.add(_loadImagesAndVideos());
     }
     if (hasAudioPermission || isStorageGranted) {
-      futures.add(_loadAudios());
+      futures.add(_loadAudios(hasPermission: hasAudioPermission || isStorageGranted));
     }
     futures.add(_loadDocuments());
     futures.add(_loadArchivesDownloadsAndApks());
@@ -931,12 +931,16 @@ class MediaProvider extends ChangeNotifier {
     } catch (_) {}
   }
 
-  Future<void> _loadAudios() async {
+  Future<void> _loadAudios({bool hasPermission = true}) async {
     try {
-      final hasPerm = await _audioQuery.permissionsStatus();
-      if (!hasPerm) {
-        _audios = [];
-        return;
+      if (!hasPermission) {
+        // Double-check with on_audio_query's own permission check
+        final hasPerm = await _audioQuery.permissionsStatus();
+        if (!hasPerm) {
+          debugPrint('_loadAudios: no audio permission');
+          _audios = [];
+          return;
+        }
       }
       _audios = await _audioQuery.querySongs(
         sortType: null,
@@ -944,7 +948,9 @@ class MediaProvider extends ChangeNotifier {
         uriType: UriType.EXTERNAL,
         ignoreCase: true,
       );
-    } catch (_) {
+      debugPrint('_loadAudios: loaded ${_audios.length} songs');
+    } catch (e) {
+      debugPrint('_loadAudios error: $e');
       _audios = [];
     }
   }

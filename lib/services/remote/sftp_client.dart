@@ -107,9 +107,6 @@ class SftpRemoteClient implements RemoteClient {
     final totalSize = stat.size ?? 0;
     
     final localFile = File(localPath);
-    if (localFile.existsSync()) {
-      localFile.deleteSync();
-    }
     final sink = localFile.openWrite();
     
     int downloaded = 0;
@@ -166,4 +163,7 @@ class SftpRemoteClient implements RemoteClient {
 
     onProgress(1.0);
   }
+
+  @override
+  String? getStreamUrl(String remotePath) => null;
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
@@ -20,6 +22,7 @@ class AudioPlayerScreen extends StatefulWidget {
   final String artist;
   final List<SongModel>? allSongs;
   final int initialIndex;
+  final bool isRemote;
 
   const AudioPlayerScreen({
     super.key,
@@ -28,6 +31,7 @@ class AudioPlayerScreen extends StatefulWidget {
     this.artist = '未知艺术家',
     this.allSongs,
     this.initialIndex = 0,
+    this.isRemote = false,
   });
 
   @override
@@ -42,6 +46,9 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   Duration position = Duration.zero;
   Duration duration = Duration.zero;
   bool isSeeking = false;
+  bool isBuffering = false;
+  bool _isWaitingForCache = false;
+  Timer? _cacheCheckTimer;
 
   late int _currentIndex;
   List<SongModel> get _allSongs => widget.allSongs ?? [];
@@ -119,6 +126,10 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       if (!completed || !mounted) return;
       _onTrackComplete();
     });
+    player.stream.buffering.listen((buffering) {
+      if (!mounted) return;
+      setState(() => isBuffering = buffering);
+    });
   }
 
   void _onTrackComplete() {
@@ -131,6 +142,37 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   }
 
   void _openTrack() {
+    // For remote files that are being cached, wait until the download completes
+    // (download goes to .partial file, then renames to the actual file)
+    if (widget.isRemote && !_currentPath.startsWith('http')) {
+      final file = File(_currentPath);
+      final initialSize = file.existsSync() ? file.lengthSync() : 0;
+      if (initialSize < 1024) { // less than 1KB = placeholder file
+        setState(() => _isWaitingForCache = true);
+        _cacheCheckTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
+          if (!mounted) {
+            timer.cancel();
+            return;
+          }
+          try {
+            if (!file.existsSync()) return;
+            final currentSize = file.lengthSync();
+            // File size significantly increased = download complete (renamed from .partial)
+            if (currentSize > 1024 && currentSize != initialSize) {
+              timer.cancel();
+              if (mounted) {
+                setState(() => _isWaitingForCache = false);
+                player.open(Media(_currentPath), play: true);
+                player.setRate(_playbackSpeed);
+                player.setPitch(_pitch);
+                _resetFade();
+              }
+            }
+          } catch (_) {}
+        });
+        return;
+      }
+    }
     player.open(Media(_currentPath), play: true);
     player.setRate(_playbackSpeed);
     player.setPitch(_pitch);
@@ -189,6 +231,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
 
   @override
   void dispose() {
+    _cacheCheckTimer?.cancel();
     _fadeController.dispose();
     if (_isBackgroundMode) {
       // Let audio keep playing in background — don't dispose player
@@ -718,13 +761,34 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         // Large Premium Rounded Rectangular Artwork matching Screenshot 2
-                        AudioArtworkWidget(
-                          audioId: _currentId,
-                          audioPath: _currentPath,
-                          accentColor: accent,
-                          isPlaying: isPlaying,
-                          onDoubleTap: _showLyricsDialog,
-                          onLongPress: _showEqualizerDialog,
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            AudioArtworkWidget(
+                              audioId: _currentId,
+                              audioPath: _currentPath,
+                              accentColor: accent,
+                              isPlaying: isPlaying,
+                              onDoubleTap: _showLyricsDialog,
+                              onLongPress: _showEqualizerDialog,
+                            ),
+                            if ((isBuffering || _isWaitingForCache) && widget.isRemote)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.black54,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+                                    const SizedBox(width: 8),
+                                    Text(L10n.of(context).ui_caching, style: const TextStyle(color: Colors.white, fontSize: 13)),
+                                  ],
+                                ),
+                              ),
+                          ],
                         ),
                         // Title row with Favorite Heart icon on right matching Screenshot 2
                         Padding(

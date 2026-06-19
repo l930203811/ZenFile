@@ -157,6 +157,23 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
     
     if (_isTransferring) return; // 防止重复点击
     
+    // For video/audio, try streaming first (WebDAV supports HTTP streaming)
+    if (isVideo || isAudio) {
+      final streamUrl = _client!.getStreamUrl(item.path);
+      if (streamUrl != null) {
+        // Direct streaming playback — no download needed
+        if (!mounted) return;
+        final provider = context.read<FileManagerProvider>();
+        await provider.openFile(context, streamUrl, isRemoteStream: true);
+        return;
+      }
+      // Non-streaming protocols: delegate to openFile which handles caching
+      if (!mounted) return;
+      final provider = context.read<FileManagerProvider>();
+      await provider.openFile(context, item.path);
+      return;
+    }
+    
     setState(() {
       _isTransferring = true;
       _transferProgress = 0.0;
@@ -165,7 +182,6 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
     });
     
     try {
-      // 使用与 _downloadToLocalClipboard 完全相同的路径（已验证可用）
       Directory? downloadDir = Directory('/storage/emulated/0/Download');
       if (!downloadDir.existsSync()) {
         downloadDir = await getExternalStorageDirectory();
@@ -177,59 +193,16 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       
       final localPath = p.join(nfileDir.path, item.name);
       
-      if (isVideo || isAudio) {
-        // 音视频：边缓存边播放
-        // 启动下载（不等待），使用与 _downloadToLocalClipboard 相同的调用方式
-        _client!.downloadFile(item.path, localPath, (prog) {
-          if (mounted) setState(() => _transferProgress = prog);
-        }).then((_) {
-          if (mounted && _transferProgress < 1.0) setState(() => _transferProgress = 1.0);
-        }).catchError((e) {
-          if (mounted) {
-            setState(() => _isTransferring = false);
-            _showSnack(L10n.of(context).e16(e), isError: true);
-          }
-        });
-        
-        // 等待文件达到最小缓冲
-        final minBuffer = isAudio ? 2 * 1024 * 1024 : 5 * 1024 * 1024;
-        final localFile = File(localPath);
-        bool bufferReady = false;
-        for (int i = 0; i < 120 && mounted && _isTransferring; i++) {
-          await Future.delayed(const Duration(milliseconds: 250));
-          try {
-            if (await localFile.exists()) {
-              final size = await localFile.length();
-              if (size >= minBuffer || _transferProgress >= 1.0) {
-                bufferReady = true;
-                break;
-              }
-            }
-          } catch (_) {}
-        }
-        
-        if (!mounted) return;
-        setState(() => _isTransferring = false);
-        
-        if (bufferReady || await localFile.exists()) {
-          if (!mounted) return;
-          final provider = context.read<FileManagerProvider>();
-          await provider.openFile(context, localPath);
-        } else {
-          _showSnack(L10n.of(context).msg66d723c5, isError: true);
-        }
-      } else {
-        // 文本和图片：完整下载后打开
-        await _client!.downloadFile(item.path, localPath, (prog) {
-          if (mounted) setState(() => _transferProgress = prog);
-        });
-        
-        if (!mounted) return;
-        setState(() => _isTransferring = false);
-        
-        final provider = context.read<FileManagerProvider>();
-        await provider.openFile(context, localPath);
-      }
+      // 文本和图片：完整下载后打开
+      await _client!.downloadFile(item.path, localPath, (prog) {
+        if (mounted) setState(() => _transferProgress = prog);
+      });
+      
+      if (!mounted) return;
+      setState(() => _isTransferring = false);
+      
+      final provider = context.read<FileManagerProvider>();
+      await provider.openFile(context, localPath);
     } catch (e) {
       if (mounted) {
         setState(() => _isTransferring = false);

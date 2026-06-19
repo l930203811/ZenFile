@@ -269,9 +269,6 @@ class WebDavRemoteClient implements RemoteClient {
 
     final totalSize = response.contentLength;
     final file = File(localPath);
-    if (file.existsSync()) {
-      file.deleteSync();
-    }
     final sink = file.openWrite();
     int downloaded = 0;
 
@@ -330,5 +327,24 @@ class WebDavRemoteClient implements RemoteClient {
       throw Exception('WebDAV upload error: ${response.statusCode}');
     }
     onProgress(1.0);
+  }
+
+  @override
+  String? getStreamUrl(String remotePath) {
+    // WebDAV supports HTTP streaming: construct URL with Basic Auth embedded
+    var normalizedPath = remotePath;
+    if (!normalizedPath.startsWith('/')) normalizedPath = '/$normalizedPath';
+    final url = '$_baseUrl${Uri.encodeFull(normalizedPath)}';
+    final auth = _authHeader();
+    if (auth.isEmpty) return url;
+    // Embed credentials in URL for media_kit (format: http://user:pass@host:port/path)
+    final sanitizedHost = host.trim();
+    final cleanHost = sanitizedHost
+        .replaceFirst('http://', '')
+        .replaceFirst('https://', '')
+        .split('/').first;
+    final credBase64 = base64.encode(utf8.encode('$username:$password'));
+    // media_kit / libmpv supports HTTP Basic Auth via URL credentials
+    return '$protocol://$username:$password@$cleanHost:$port${Uri.encodeFull(normalizedPath)}';
   }
 }

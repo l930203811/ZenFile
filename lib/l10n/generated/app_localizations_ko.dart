@@ -2781,6 +2781,22 @@ class L10nKo extends L10n {
   String get log_language_scroll => '언어 선택 대화상자 스크롤 지원 최적화';
 
   @override
+  String get log_remote_media_cache =>
+      '원격 미디어 파일 클릭 후 즉시 플레이어 열기, 백그라운드 캐싱 진행률 표시';
+
+  @override
+  String get log_remote_to_remote => '원격 서버 간 복사/잘라내기 기능 추가';
+
+  @override
+  String get log_remote_cut_progress => '원격 잘라내기 작업 진행률 표시 수정';
+
+  @override
+  String get log_audio_scan_stable => '오디오 카테고리 스캔 안정성 개선';
+
+  @override
+  String get ui_caching => '캐싱 중입니다, 잠시만 기다려 주세요...';
+
+  @override
   String get ui_username => '사용자 이름';
 
   @override

@@ -2866,6 +2866,23 @@ class L10nAr extends L10n {
       'تحسين مربع حوار اختيار اللغة مع دعم التمرير';
 
   @override
+  String get log_remote_media_cache =>
+      'يتم فتح الملفات البعيدة فوراً مع تقدم التخزين المؤقت في الخلفية';
+
+  @override
+  String get log_remote_to_remote => 'إضافة نسخ/قص بين الخوادم البعيدة';
+
+  @override
+  String get log_remote_cut_progress =>
+      'إصلاح شريط التقدم لعمليات القص البعيدة';
+
+  @override
+  String get log_audio_scan_stable => 'تحسين استقرار فحص فئة الصوت';
+
+  @override
+  String get ui_caching => 'جاري التخزين المؤقت، يرجى الانتظار...';
+
+  @override
   String get ui_username => 'اسم المستخدم';
 
   @override

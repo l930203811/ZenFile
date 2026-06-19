@@ -2932,6 +2932,25 @@ class L10nEs extends L10n {
       'Optimizado el diálogo de selección de idioma con soporte de desplazamiento';
 
   @override
+  String get log_remote_media_cache =>
+      'Archivos multimedia remotos se abren inmediatamente con progreso de caché en segundo plano';
+
+  @override
+  String get log_remote_to_remote =>
+      'Añadida función de copiar/cortar entre servidores remotos';
+
+  @override
+  String get log_remote_cut_progress =>
+      'Corregida la barra de progreso de operaciones de corte remoto';
+
+  @override
+  String get log_audio_scan_stable =>
+      'Mejorada la estabilidad del escaneo de categoría de audio';
+
+  @override
+  String get ui_caching => 'Almacenando en caché, por favor espere...';
+
+  @override
   String get ui_username => 'Nombre de Usuario';
 
   @override

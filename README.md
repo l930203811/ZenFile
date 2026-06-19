@@ -10,10 +10,14 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 ## 🚀 What's New in v1.0.4
 
-**Text Editor & Multi-Language Expansion** — ZenFile adds a full-featured text editor with file creation, save-as, undo/redo, and persistent settings. Multi-language support is expanded to 10 languages.
+**Remote Media Streaming & Server-to-Server Transfer** — ZenFile now opens remote media files instantly with the player, caching in the background. Server-to-server copy/cut is also supported, along with improved audio scanning stability.
 
 | | |
 |---|---|
+| 🎬 **Remote Media Instant Play** | Remote video/audio files open the player immediately with background caching and progress indicator |
+| 📂 **Remote-to-Remote Transfer** | Copy/cut files between remote servers (same or different connections) |
+| 📊 **Remote Cut Progress** | Fixed progress bar display for remote cut operations |
+| 🎵 **Audio Scan Stability** | Improved audio category scanning reliability |
 | 📝 **Text Editor** | Create new files, save-as, undo/redo in the built-in text editor |
 | 💾 **Editor Settings Persistence** | Word wrap, line numbers, and read mode preferences are saved automatically |
 | 🌍 **10-Language Support** | Simplified Chinese, English, Traditional Chinese, Japanese, Korean, German, French, Spanish, Russian, and Arabic |

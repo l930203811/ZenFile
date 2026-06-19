@@ -2919,6 +2919,25 @@ class L10nRu extends L10n {
       'Оптимизирован диалог выбора языка с поддержкой прокрутки';
 
   @override
+  String get log_remote_media_cache =>
+      'Удаленные медиафайлы теперь открываются в плеере с фоновым кэшированием';
+
+  @override
+  String get log_remote_to_remote =>
+      'Добавлена функция копирования/вырезания между удалёнными серверами';
+
+  @override
+  String get log_remote_cut_progress =>
+      'Исправлено отображение прогресса при вырезании на удалённом сервере';
+
+  @override
+  String get log_audio_scan_stable =>
+      'Улучшена стабильность сканирования аудиокатегории';
+
+  @override
+  String get ui_caching => 'Кэширование, пожалуйста, подождите...';
+
+  @override
   String get ui_username => 'Имя Пользователя';
 
   @override
