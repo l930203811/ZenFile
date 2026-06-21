@@ -100,9 +100,9 @@ class _ConflictDialogState extends State<ConflictDialog> {
         children: [
           Icon(Broken.warning_2, color: Colors.orange, size: 28),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Text(
-              '文件已存在',
+              L10n.of(context).msg_file_exists,
               style: TextStyle(fontWeight: FontWeight.bold),
               overflow: TextOverflow.ellipsis,
             ),
@@ -117,7 +117,7 @@ class _ConflictDialogState extends State<ConflictDialog> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              '目标文件夹中已存在同名文件"${widget.fileName}"。您想怎么处理？',
+              L10n.of(context).msg_file_exists_desc(widget.fileName),
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurface.withOpacity(0.8),
               ),
@@ -133,7 +133,7 @@ class _ConflictDialogState extends State<ConflictDialog> {
                   Expanded(
                     child: _buildFileComparisonCard(
                       theme: theme,
-                      title: '现有文件',
+                      title: L10n.of(context).msg_existing_file,
                       size: _destStat.size,
                       modified: _destStat.modified,
                       isNewer: _destStat.modified.isAfter(_sourceStat.modified),
@@ -194,71 +194,95 @@ class _ConflictDialogState extends State<ConflictDialog> {
             ),
             const SizedBox(height: 20),
 
-            // Responsive Action Buttons Wrap
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              alignment: WrapAlignment.end,
-              crossAxisAlignment: WrapCrossAlignment.center,
+            // Action Buttons Layout
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                TextButton(
-                  onPressed: () => Navigator.pop(
-                    context,
-                    ConflictDialogResponse(result: ConflictResult.cancel, applyToAll: false),
-                  ),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.redAccent,
-                  ),
-                  child: const Text('取消粘贴', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-                OutlinedButton(
-                  onPressed: () async {
-                    final newName = await _showRenameDialog(context, widget.fileName);
-                    if (newName != null && newName.isNotEmpty && context.mounted) {
-                      Navigator.pop(
-                        context,
-                        ConflictDialogResponse(
-                          result: ConflictResult.rename,
-                          applyToAll: _applyToAll,
-                          customName: newName,
+                // Row 1: Skip + Overwrite
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(
+                          context,
+                          ConflictDialogResponse(result: ConflictResult.skip, applyToAll: _applyToAll),
                         ),
-                      );
-                    }
-                  },
-                  style: OutlinedButton.styleFrom(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: Text(L10n.of(context).msgc8ce4b36),
+                        style: OutlinedButton.styleFrom(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text(L10n.of(context).msg_skip_file),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(
+                          context,
+                          ConflictDialogResponse(result: ConflictResult.overwrite, applyToAll: _applyToAll),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text(L10n.of(context).msg_overwrite_file),
+                      ),
+                    ),
+                  ],
                 ),
-                OutlinedButton(
-                  onPressed: () => Navigator.pop(
-                    context,
-                    ConflictDialogResponse(result: ConflictResult.skip, applyToAll: _applyToAll),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: const Text('跳过'),
+                const SizedBox(height: 8),
+                // Row 2: Keep Both + Rename
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(
+                          context,
+                          ConflictDialogResponse(result: ConflictResult.keepBoth, applyToAll: _applyToAll),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text(L10n.of(context).msg27dfaae5),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () async {
+                          final newName = await _showRenameDialog(context, widget.fileName);
+                          if (newName != null && newName.isNotEmpty && context.mounted) {
+                            Navigator.pop(
+                              context,
+                              ConflictDialogResponse(
+                                result: ConflictResult.rename,
+                                applyToAll: _applyToAll,
+                                customName: newName,
+                              ),
+                            );
+                          }
+                        },
+                        style: OutlinedButton.styleFrom(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text(L10n.of(context).msgc8ce4b36),
+                      ),
+                    ),
+                  ],
                 ),
-                OutlinedButton(
-                  onPressed: () => Navigator.pop(
-                    context,
-                    ConflictDialogResponse(result: ConflictResult.keepBoth, applyToAll: _applyToAll),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: Text(L10n.of(context).msg27dfaae5),
-                ),
-                FilledButton(
-                  onPressed: () => Navigator.pop(
-                    context,
-                    ConflictDialogResponse(result: ConflictResult.overwrite, applyToAll: _applyToAll),
-                  ),
-                  style: FilledButton.styleFrom(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: const Text('替换'),
+                const SizedBox(height: 12),
+                // Row 3: Cancel (left aligned)
+                Row(
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(
+                        context,
+                        ConflictDialogResponse(result: ConflictResult.cancel, applyToAll: false),
+                      ),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.redAccent,
+                      ),
+                      child: Text(L10n.of(context).msg_cancel_paste, style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -309,7 +333,7 @@ class _ConflictDialogState extends State<ConflictDialog> {
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
-                    '较新',
+                    L10n.of(context).msg_newer,
                     style: TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.bold,
@@ -347,8 +371,8 @@ class _ConflictDialogState extends State<ConflictDialog> {
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(
-            labelText: '新文件名',
+          decoration: InputDecoration(
+            labelText: L10n.of(context).msg_new_file_name,
             border: OutlineInputBorder(),
           ),
         ),

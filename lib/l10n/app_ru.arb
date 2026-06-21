@@ -200,10 +200,10 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "zenfile1": "О ZenFile",
-  "@v104": {
+  "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "v104": "v1.0.4 (Просмотр)",
+  "v1041": "v1.0.41 (Просмотр)",
   "@zenfileflutter": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -288,10 +288,10 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "msg0537b04e": "Нажмите и удерживайте изображение, чтобы сохранить в галерею. Спасибо за вашу поддержку!",
-  "@zenfilev104": {
+  "@zenfilev1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfilev104": "Скачать ZenFile v1.0.4",
+  "zenfilev1041": "Скачать ZenFile v1.0.41",
   "@msg9d287020": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -2503,6 +2503,18 @@
   "@msgff69affd": {
     "description": "ui\\widgets\\extract_archive_dialog.dart"
   },
+  "msg_extract_to": "Извлечь в…",
+  "@msg_extract_to": {
+    "description": "Extract archive dialog title"
+  },
+  "ui_current_directory": "Текущая папка",
+  "@ui_current_directory": {
+    "description": "Extract to current directory checkbox"
+  },
+  "ui_custom_directory": "Пользовательская папка",
+  "@ui_custom_directory": {
+    "description": "Extract to custom directory checkbox"
+  },
   "msgff69affd": "Пароль (если зашифрован)",
   "@msg67eda5e6": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
@@ -2772,6 +2784,8 @@
   "cat_manage": "Управление",
   "cat_config": "Конфигурация",
   "cat_analyze": "Анализ",
+  "cat_vault": "Сейф",
+  "cat_vault_desc": "Безопасное хранение",
   "cat_quick_categories": "Быстрые Категории",
   "ui_nav": "Навигация",
   "ui_home": "Главная",
@@ -3142,6 +3156,50 @@
   "log_remote_to_remote": "Добавлена функция копирования/вырезания между удалёнными серверами",
   "log_remote_cut_progress": "Исправлено отображение прогресса при вырезании на удалённом сервере",
   "log_audio_scan_stable": "Улучшена стабильность сканирования аудиокатегории",
+  "log_extract_dialog_redesign": "Диалог распаковки переработан с выбором текущего/пользовательского каталога",
+  "log_vault_quick_category": "Ярлык хранилища добавлен в быстрые категории (по умолчанию выключен)",
+  "log_vault_l10n_fix": "Исправлены захардкоженные английские тексты и зависание при добавлении нескольких файлов в хранилище",
+  "log_compression_path_fix": "Унифицированы пути сжатия для кнопки с тремя точками и меню долгого нажатия",
+  "log_compression_progress": "Улучшен диалог прогресса сжатия с многоэтапным отображением и надёжным автозакрытием",
+  "log_web_share_category": "Веб-портал общего доступа теперь отображает файлы по категориям (папки, видео, аудио, изображения, документы, прочее)",
+  "log_web_share_l10n": "Веб-портал общего доступа теперь поддерживает многоязычный интерфейс на основе языка приложения",
+  "msg_file_exists": "Файл уже существует",
+  "@msg_file_exists": {
+    "description": "Conflict dialog title"
+  },
+  "msg_file_exists_desc": "В целевой папке уже существует файл с именем \"{fileName}\". Как вы хотите поступить?",
+  "@msg_file_exists_desc": {
+    "description": "Conflict dialog description",
+    "placeholders": {
+      "fileName": { "type": "String" }
+    }
+  },
+  "msg_existing_file": "Существующий файл",
+  "@msg_existing_file": {
+    "description": "Existing file label in conflict dialog"
+  },
+  "msg_cancel_paste": "Отменить вставку",
+  "@msg_cancel_paste": {
+    "description": "Cancel paste button"
+  },
+  "msg_skip_file": "Пропустить",
+  "@msg_skip_file": {
+    "description": "Skip file button in conflict dialog"
+  },
+  "msg_overwrite_file": "Заменить",
+  "@msg_overwrite_file": {
+    "description": "Overwrite file button in conflict dialog"
+  },
+  "msg_newer": "Новее",
+  "@msg_newer": {
+    "description": "Newer badge in conflict dialog"
+  },
+  "msg_new_file_name": "Новое имя файла",
+  "@msg_new_file_name": {
+    "description": "New file name label in rename dialog"
+  },
+  "ui_extract": "Извлечь",
+  "msg_remember_choice": "Запомнить этот выбор для будущих операций",
   "ui_caching": "Кэширование, пожалуйста, подождите...",
   "ui_username": "Имя Пользователя",
   "ui_anonymous": "Анонимный",
@@ -3199,5 +3257,76 @@
   "ui_save_as": "Сохранить Как",
   "ui_undo": "Отменить",
   "ui_redo": "Повторить",
-  "ui_add_selected": "Добавить Выбранные ({count})"
+  "ui_add_selected": "Добавить Выбранные ({count})",
+  "msg_vault_choose_mode": "Выбрать режим защиты",
+  "msg_vault_mode_desc": "Выберите, как защитить выбранные файлы. Защищенные файлы мгновенно шифруются с помощью XOR.",
+  "ui_secure_import": "Безопасный импорт (Песочница)",
+  "ui_in_place_scramble": "Перемешивание на месте (Быстро)",
+  "msg_scrambling": "Перемешивание и защита...",
+  "msg_protected_count": "Успешно защищено {successCount} элементов.",
+  "msg_protect_failed_count": "Не удалось заблокировать {failCount} элементов.",
+  "msg_restored": "「{name}」восстановлен в исходное местоположение.",
+  "msg_restore_failed": "Ошибка восстановления файла: {error}",
+  "msg_decrypting": "Безопасное расшифрование...",
+  "msg_security_details": "Сведения о безопасности",
+  "ui_restore_unhide": "Восстановить (Показать)",
+  "msg_permanent_delete": "Удалить навсегда?",
+  "msg_permanent_delete_content": "Вы уверены, что хотите навсегда удалить 「{name}」? Это действие нельзя отменить.",
+  "msg_file_deleted": "Файл удален навсегда.",
+  "msg_delete_failed": "Ошибка удаления файла: {error}",
+  "msg_original_name": "Исходное имя",
+  "msg_original_path": "Исходный путь",
+  "msg_scrambled_path": "Зашифрованный путь",
+  "msg_size_label": "Размер",
+  "msg_locked_at": "Заблокировано",
+  "msg_protection_mode": "Режим защиты",
+  "msg_in_place_scrambling": "Перемешивание на месте",
+  "msg_isolated_move": "Изолированное перемещение (Песочница)",
+  "web_share_search": "Поиск файлов и папок...",
+  "web_share_upload": "Загрузить",
+  "web_share_drop_title": "Перетащите файлы сюда для загрузки",
+  "web_share_drop_desc": "Ваши файлы будут мгновенно загружены в эту общую папку",
+  "web_share_empty_search": "Нет элементов, соответствующих вашему запросу",
+  "web_share_empty_desc": "Проверьте правописание или попробуйте другой поисковый запрос",
+  "web_share_copy_link": "Копировать ссылку",
+  "web_share_download": "Скачать",
+  "web_share_uploading": "Загрузка {name}...",
+  "@web_share_uploading": {
+    "description": "Upload progress title",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "web_share_upload_success": "Загрузка успешно завершена",
+  "web_share_upload_failed": "Ошибка загрузки {name}",
+  "@web_share_upload_failed": {
+    "description": "Upload failed message",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "web_share_preview_unsupported": "Предпросмотр не поддерживается для этого типа файла",
+  "web_share_preview_download": "Нажмите Скачать ниже, чтобы сохранить на вашем устройстве",
+  "web_share_footer": "Безопасный обмен файлами и потоковая передача через ZenFile",
+  "web_share_parent_dir": "Родительский каталог",
+  "web_share_go_up": "Перейти на уровень вверх",
+  "web_share_items_count": "{count} элементов",
+  "@web_share_items_count": {
+    "description": "Item count display",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "web_share_link_copied": "Ссылка скопирована в буфер обмена",
+  "web_share_copy_failed": "Не удалось скопировать ссылку",
+  "web_share_local": "Локальный Wi-Fi обмен",
+  "web_share_internet": "Интернет-обмен",
+  "web_share_category_folders": "Папки",
+  "web_share_category_videos": "Видео",
+  "web_share_category_audio": "Аудио",
+  "web_share_category_images": "Изображения",
+  "web_share_category_documents": "Документы",
+  "web_share_category_others": "Другое",
+  "web_share_loading_preview": "Загрузка предпросмотра...",
+  "web_share_preview_error": "Не удалось транслировать документ. Вы можете скачать его напрямую."
 }

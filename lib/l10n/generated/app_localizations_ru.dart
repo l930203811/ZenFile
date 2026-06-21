@@ -185,7 +185,7 @@ class L10nRu extends L10n {
   String get zenfile1 => 'О ZenFile';
 
   @override
-  String get v104 => 'v1.0.4 (Просмотр)';
+  String get v1041 => 'v1.0.41 (Просмотр)';
 
   @override
   String get zenfileflutter =>
@@ -255,7 +255,7 @@ class L10nRu extends L10n {
       'Нажмите и удерживайте изображение, чтобы сохранить в галерею. Спасибо за вашу поддержку!';
 
   @override
-  String get zenfilev104 => 'Скачать ZenFile v1.0.4';
+  String get zenfilev1041 => 'Скачать ZenFile v1.0.41';
 
   @override
   String get msg9d287020 => '123 Cloud Drive';
@@ -2119,6 +2119,15 @@ class L10nRu extends L10n {
   String get msgf15821d0 => 'Извлечь в Папку';
 
   @override
+  String get msg_extract_to => 'Извлечь в…';
+
+  @override
+  String get ui_current_directory => 'Текущая папка';
+
+  @override
+  String get ui_custom_directory => 'Пользовательская папка';
+
+  @override
   String get msgff69affd => 'Пароль (если зашифрован)';
 
   @override
@@ -2445,6 +2454,12 @@ class L10nRu extends L10n {
 
   @override
   String get cat_analyze => 'Анализ';
+
+  @override
+  String get cat_vault => 'Сейф';
+
+  @override
+  String get cat_vault_desc => 'Безопасное хранение';
 
   @override
   String get cat_quick_categories => 'Быстрые Категории';
@@ -2935,6 +2950,37 @@ class L10nRu extends L10n {
       'Улучшена стабильность сканирования аудиокатегории';
 
   @override
+  String get log_extract_dialog_redesign =>
+      'Диалог распаковки переработан с выбором текущего/пользовательского каталога';
+
+  @override
+  String get log_vault_quick_category =>
+      'Ярлык хранилища добавлен в быстрые категории (по умолчанию выключен)';
+
+  @override
+  String get log_vault_l10n_fix =>
+      'Исправлены захардкоженные английские тексты и зависание при добавлении нескольких файлов в хранилище';
+
+  @override
+  String get log_compression_path_fix =>
+      'Унифицированы пути сжатия для кнопки с тремя точками и меню долгого нажатия';
+
+  @override
+  String get log_compression_progress =>
+      'Улучшен диалог прогресса сжатия с многоэтапным отображением и надёжным автозакрытием';
+
+  @override
+  String get log_web_share_category =>
+      'Веб-портал общего доступа теперь отображает файлы по категориям (папки, видео, аудио, изображения, документы, прочее)';
+
+  @override
+  String get log_web_share_l10n =>
+      'Веб-портал общего доступа теперь поддерживает многоязычный интерфейс на основе языка приложения';
+
+  @override
+  String get msg_remember_choice => 'Запомнить этот выбор для будущих операций';
+
+  @override
   String get ui_caching => 'Кэширование, пожалуйста, подождите...';
 
   @override
@@ -3125,4 +3171,215 @@ class L10nRu extends L10n {
   String ui_add_selected(Object count) {
     return 'Добавить Выбранные ($count)';
   }
+
+  @override
+  String get msg_file_exists => 'Файл уже существует';
+
+  @override
+  String msg_file_exists_desc(String fileName) {
+    return 'В целевой папке уже существует файл с именем \"$fileName\". Как вы хотите поступить?';
+  }
+
+  @override
+  String get msg_existing_file => 'Существующий файл';
+
+  @override
+  String get msg_cancel_paste => 'Отменить вставку';
+
+  @override
+  String get msg_skip_file => 'Пропустить';
+
+  @override
+  String get msg_overwrite_file => 'Заменить';
+
+  @override
+  String get msg_newer => 'Новее';
+
+  @override
+  String get msg_new_file_name => 'Новое имя файла';
+
+  @override
+  String get msg_vault_choose_mode => 'Выбрать режим защиты';
+
+  @override
+  String get msg_vault_mode_desc =>
+      'Выберите, как защитить выбранные файлы. Защищенные файлы мгновенно шифруются с помощью XOR.';
+
+  @override
+  String get ui_secure_import => 'Безопасный импорт (Песочница)';
+
+  @override
+  String get ui_in_place_scramble => 'Перемешивание на месте (Быстро)';
+
+  @override
+  String get msg_scrambling => 'Перемешивание и защита...';
+
+  @override
+  String msg_protected_count(Object successCount) {
+    return 'Успешно защищено $successCount элементов.';
+  }
+
+  @override
+  String msg_protect_failed_count(Object failCount) {
+    return 'Не удалось заблокировать $failCount элементов.';
+  }
+
+  @override
+  String msg_restored(Object name) {
+    return '「$name」восстановлен в исходное местоположение.';
+  }
+
+  @override
+  String msg_restore_failed(Object error) {
+    return 'Ошибка восстановления файла: $error';
+  }
+
+  @override
+  String get msg_decrypting => 'Безопасное расшифрование...';
+
+  @override
+  String get msg_security_details => 'Сведения о безопасности';
+
+  @override
+  String get ui_restore_unhide => 'Восстановить (Показать)';
+
+  @override
+  String get msg_permanent_delete => 'Удалить навсегда?';
+
+  @override
+  String msg_permanent_delete_content(Object name) {
+    return 'Вы уверены, что хотите навсегда удалить 「$name」? Это действие нельзя отменить.';
+  }
+
+  @override
+  String get msg_file_deleted => 'Файл удален навсегда.';
+
+  @override
+  String msg_delete_failed(Object error) {
+    return 'Ошибка удаления файла: $error';
+  }
+
+  @override
+  String get msg_original_name => 'Исходное имя';
+
+  @override
+  String get msg_original_path => 'Исходный путь';
+
+  @override
+  String get msg_scrambled_path => 'Зашифрованный путь';
+
+  @override
+  String get msg_size_label => 'Размер';
+
+  @override
+  String get msg_locked_at => 'Заблокировано';
+
+  @override
+  String get msg_protection_mode => 'Режим защиты';
+
+  @override
+  String get msg_in_place_scrambling => 'Перемешивание на месте';
+
+  @override
+  String get msg_isolated_move => 'Изолированное перемещение (Песочница)';
+
+  @override
+  String get web_share_search => 'Поиск файлов и папок...';
+
+  @override
+  String get web_share_upload => 'Загрузить';
+
+  @override
+  String get web_share_drop_title => 'Перетащите файлы сюда для загрузки';
+
+  @override
+  String get web_share_drop_desc =>
+      'Ваши файлы будут мгновенно загружены в эту общую папку';
+
+  @override
+  String get web_share_empty_search =>
+      'Нет элементов, соответствующих вашему запросу';
+
+  @override
+  String get web_share_empty_desc =>
+      'Проверьте правописание или попробуйте другой поисковый запрос';
+
+  @override
+  String get web_share_copy_link => 'Копировать ссылку';
+
+  @override
+  String get web_share_download => 'Скачать';
+
+  @override
+  String web_share_uploading(String name) {
+    return 'Загрузка $name...';
+  }
+
+  @override
+  String get web_share_upload_success => 'Загрузка успешно завершена';
+
+  @override
+  String web_share_upload_failed(String name) {
+    return 'Ошибка загрузки $name';
+  }
+
+  @override
+  String get web_share_preview_unsupported =>
+      'Предпросмотр не поддерживается для этого типа файла';
+
+  @override
+  String get web_share_preview_download =>
+      'Нажмите Скачать ниже, чтобы сохранить на вашем устройстве';
+
+  @override
+  String get web_share_footer =>
+      'Безопасный обмен файлами и потоковая передача через ZenFile';
+
+  @override
+  String get web_share_parent_dir => 'Родительский каталог';
+
+  @override
+  String get web_share_go_up => 'Перейти на уровень вверх';
+
+  @override
+  String web_share_items_count(int count) {
+    return '$count элементов';
+  }
+
+  @override
+  String get web_share_link_copied => 'Ссылка скопирована в буфер обмена';
+
+  @override
+  String get web_share_copy_failed => 'Не удалось скопировать ссылку';
+
+  @override
+  String get web_share_local => 'Локальный Wi-Fi обмен';
+
+  @override
+  String get web_share_internet => 'Интернет-обмен';
+
+  @override
+  String get web_share_category_folders => 'Папки';
+
+  @override
+  String get web_share_category_videos => 'Видео';
+
+  @override
+  String get web_share_category_audio => 'Аудио';
+
+  @override
+  String get web_share_category_images => 'Изображения';
+
+  @override
+  String get web_share_category_documents => 'Документы';
+
+  @override
+  String get web_share_category_others => 'Другое';
+
+  @override
+  String get web_share_loading_preview => 'Загрузка предпросмотра...';
+
+  @override
+  String get web_share_preview_error =>
+      'Не удалось транслировать документ. Вы можете скачать его напрямую.';
 }

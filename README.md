@@ -2,9 +2,25 @@
 
 # ZenFile
 
-A beautifully crafted, open-source file manager and offline media center for Android. Built with Flutter for极致 performance and stunning glassmorphism aesthetics.
+A beautifully crafted, open-source file manager and offline media center for Android. Built with Flutter for极致性能 and stunning glassmorphism aesthetics.
 
 > **Note**: This project is a fork of [Senzme/NFile](https://github.com/Senzme/NFile). Thanks to the original author!
+
+---
+
+## 🚀 What's New in v1.0.41
+
+**Web Sharing Portal Upgrade & Compression Improvements** — The web sharing portal now displays files in categorized sections with multi-language support. Compression workflow improvements include unified paths, multi-stage progress, and reliable auto-close.
+
+| | |
+|---|---|
+| 📦 **Extract Dialog Redesign** | Redesigned with current directory / custom directory selection options |
+| 🔒 **Vault Quick Category** | Added vault shortcut to quick categories (default off) |
+| 🐛 **Vault l10n Fix** | Fixed vault screen hardcoded English text and multi-file freeze issue |
+| 🗜️ **Compression Path Fix** | Unified compression paths for three-dot button and long-press menu, fixed archive name error |
+| 📊 **Compression Progress** | Improved progress dialog with multi-stage progress display and reliable auto-close |
+| 🌐 **Web Share Categories** | Web sharing portal now displays files in categorized sections (folders, videos, audio, images, documents, others) |
+| 🌍 **Web Share l10n** | Web sharing portal supports multi-language display based on app locale |
 
 ---
 
@@ -23,28 +39,6 @@ A beautifully crafted, open-source file manager and offline media center for And
 | 🌍 **10-Language Support** | Simplified Chinese, English, Traditional Chinese, Japanese, Korean, German, French, Spanish, Russian, and Arabic |
 | 🐛 **l10n Hardcode Fixes** | Fixed multiple hardcoded strings that were not properly localized |
 | 📜 **Scrollable Language Picker** | Language selection UI now supports scrolling for better usability |
-
----
-
-## 🚀 What's New in v1.0.3
-
-**SVG Support & i18n Multi-Language** — ZenFile now fully supports `.svg` vector graphics with thumbnail previews and full-screen viewing, and adds **Chinese & English** bilingual interface support.
-
-| | |
-|---|---|
-| 🖼️ **SVG Thumbnails** | Grid and list views both support SVG thumbnail rendering |
-| 🔍 **SVG Viewer** | Full-screen viewer renders vector graphics perfectly with zoom support |
-| 🌐 **i18n Bilingual UI** | Full Chinese & English support across all 700+ UI strings |
-| 🔄 **Instant Language Switch** | Change language on-the-fly in Settings → Language |
-| 💾 **Persistent Preference** | Selected language is saved and restored on next launch |
-| 🎨 **Archive Colors** | Different compression formats display with their own color (zip orange / rar red / 7z purple / tar brown / gz green) |
-| 🌐 **Remote File Playback** | Remote server files are downloaded locally before playback, with remote thumbnail preview support |
-| 🐛 **Bug Fixes** | Fixed page freeze after extraction, remote file open failure and other issues |
-
-**Other v1.0.3 improvements:**
-- **Date Format** — Unified to `yyyy-MM-dd`
-- **Time Format** — 24-hour format enabled by default
-- **Cache Consolidation** — Remote file cache unified to `Download/ZenFile_Remote`
 
 ---
 

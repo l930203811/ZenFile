@@ -200,10 +200,10 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "zenfile1": "ZenFile 정보",
-  "@v104": {
+  "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "v104": "v1.0.4 (보기)",
+  "v1041": "v1.0.41 (보기)",
   "@zenfileflutter": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -288,10 +288,10 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "msg0537b04e": "이미지를 길게 눌러 갤러리에 저장하세요. 지원해 주셔서 감사합니다!",
-  "@zenfilev104": {
+  "@zenfilev1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfilev104": "ZenFile v1.0.4 다운로드",
+  "zenfilev1041": "ZenFile v1.0.41 다운로드",
   "@msg9d287020": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -2499,9 +2499,21 @@
   "@msgf15821d0": {
     "description": "ui\\widgets\\extract_archive_dialog.dart"
   },
-  "msgf15821d0": "폴더에 압축 해제",
+  "msgf15821d0": "폴에 압축 해제",
   "@msgff69affd": {
     "description": "ui\\widgets\\extract_archive_dialog.dart"
+  },
+  "msg_extract_to": "압축 해제 위치…",
+  "@msg_extract_to": {
+    "description": "Extract archive dialog title"
+  },
+  "ui_current_directory": "현재 폴",
+  "@ui_current_directory": {
+    "description": "Extract to current directory checkbox"
+  },
+  "ui_custom_directory": "사용자 지정 폴",
+  "@ui_custom_directory": {
+    "description": "Extract to custom directory checkbox"
   },
   "msgff69affd": "비밀번호 (암호화된 경우)",
   "@msg67eda5e6": {
@@ -2772,6 +2784,8 @@
   "cat_manage": "관리",
   "cat_config": "구성",
   "cat_analyze": "분석",
+  "cat_vault": "금고",
+  "cat_vault_desc": "안전 저장",
   "cat_quick_categories": "빠른 카테고리",
   "ui_nav": "내비게이션",
   "ui_home": "홈",
@@ -3142,6 +3156,50 @@
   "log_remote_to_remote": "원격 서버 간 복사/잘라내기 기능 추가",
   "log_remote_cut_progress": "원격 잘라내기 작업 진행률 표시 수정",
   "log_audio_scan_stable": "오디오 카테고리 스캔 안정성 개선",
+  "log_extract_dialog_redesign": "압축 해제 대화상자 재설계 - 현재/사용자 지정 디렉토리 선택 지원",
+  "log_vault_quick_category": "빠른 카테고리에 금고 바로가기 추가 (기본 꺼짐)",
+  "log_vault_l10n_fix": "금고 화면 영어 하드코딩 및 다중 파일 추가 시 멈춤 현상 수정",
+  "log_compression_path_fix": "3점 버튼과 길게 누르기 메뉴의 압축 경로 통일 및 압축 파일명 오류 수정",
+  "log_compression_progress": "압축 진행률 대화상자 개선 - 다단계 진행률 표시 및 안정적인 자동 닫기",
+  "log_web_share_category": "웹 공유 포털이 파일을 분류하여 표시 (폴더, 동영상, 오디오, 이미지, 문서, 기타)",
+  "log_web_share_l10n": "웹 공유 포털이 앱 로케일에 따라 다국어 표시를 지원",
+  "msg_file_exists": "파일이 이미 존재합니다",
+  "@msg_file_exists": {
+    "description": "Conflict dialog title"
+  },
+  "msg_file_exists_desc": "대상 폴더에 동일한 이름의 파일\"{fileName}\"이(가) 이미 존재합니다. 어떻게 처리하시겠습니까?",
+  "@msg_file_exists_desc": {
+    "description": "Conflict dialog description",
+    "placeholders": {
+      "fileName": { "type": "String" }
+    }
+  },
+  "msg_existing_file": "기존 파일",
+  "@msg_existing_file": {
+    "description": "Existing file label in conflict dialog"
+  },
+  "msg_cancel_paste": "붙여넣기 취소",
+  "@msg_cancel_paste": {
+    "description": "Cancel paste button"
+  },
+  "msg_skip_file": "건너뛰기",
+  "@msg_skip_file": {
+    "description": "Skip file button in conflict dialog"
+  },
+  "msg_overwrite_file": "덮어쓰기",
+  "@msg_overwrite_file": {
+    "description": "Overwrite file button in conflict dialog"
+  },
+  "msg_newer": "최신",
+  "@msg_newer": {
+    "description": "Newer badge in conflict dialog"
+  },
+  "msg_new_file_name": "새 파일 이름",
+  "@msg_new_file_name": {
+    "description": "New file name label in rename dialog"
+  },
+  "ui_extract": "압축 해제",
+  "msg_remember_choice": "이 선택을 기억하여 향후 작업에 적용",
   "ui_caching": "캐싱 중입니다, 잠시만 기다려 주세요...",
   "ui_username": "사용자 이름",
   "ui_anonymous": "익명",
@@ -3199,5 +3257,76 @@
   "ui_save_as": "다른 이름으로 저장",
   "ui_undo": "실행 취소",
   "ui_redo": "다시 실행",
-  "ui_add_selected": "선택 항목 추가 ({count})"
+  "ui_add_selected": "선택 항목 추가 ({count})",
+  "msg_vault_choose_mode": "보호 모드 선택",
+  "msg_vault_mode_desc": "선택한 파일을 보호할 방법을 선택하세요. 보안 파일은 즉시 XOR 스크램블됩니다.",
+  "ui_secure_import": "보안 가져오기(샌드박스)",
+  "ui_in_place_scramble": "제자리 스크램블(빠름)",
+  "msg_scrambling": "스크램블 및 보호 중...",
+  "msg_protected_count": "{successCount}개 항목을 성공적으로 보호했습니다.",
+  "msg_protect_failed_count": "{failCount}개 항목 잠금에 실패했습니다.",
+  "msg_restored": "「{name}」을(를) 원래 위치로 복원했습니다.",
+  "msg_restore_failed": "파일 복원 실패: {error}",
+  "msg_decrypting": "안전하게 복호화 중...",
+  "msg_security_details": "보안 세부정보",
+  "ui_restore_unhide": "복원(숨김 해제)",
+  "msg_permanent_delete": "영구 삭제?",
+  "msg_permanent_delete_content": "「{name}」을(를) 영구 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+  "msg_file_deleted": "파일이 영구 삭제되었습니다.",
+  "msg_delete_failed": "파일 삭제 실패: {error}",
+  "msg_original_name": "원본 이름",
+  "msg_original_path": "원본 경로",
+  "msg_scrambled_path": "스크램블 경로",
+  "msg_size_label": "크기",
+  "msg_locked_at": "잠금 시간",
+  "msg_protection_mode": "보호 모드",
+  "msg_in_place_scrambling": "제자리 스크램블",
+  "msg_isolated_move": "분리 이동(샌드박스)",
+  "web_share_search": "파일 및 폴더 검색...",
+  "web_share_upload": "업로드",
+  "web_share_drop_title": "파일을 여기에 드롭하여 업로드",
+  "web_share_drop_desc": "파일이 이 공유 폴더에 즉시 업로드됩니다",
+  "web_share_empty_search": "일치하는 항목이 없습니다",
+  "web_share_empty_desc": "철자를 확인하거나 다른 검색어를 시도하세요",
+  "web_share_copy_link": "링크 복사",
+  "web_share_download": "다운로드",
+  "web_share_uploading": "{name} 업로드 중...",
+  "@web_share_uploading": {
+    "description": "Upload progress title",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "web_share_upload_success": "업로드가 완료되었습니다",
+  "web_share_upload_failed": "{name} 업로드 실패",
+  "@web_share_upload_failed": {
+    "description": "Upload failed message",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "web_share_preview_unsupported": "이 파일 형식의 미리보기는 지원되지 않습니다",
+  "web_share_preview_download": "아래 다운로드 버튼을 클릭하여 기기에 저장",
+  "web_share_footer": "ZenFile을 통해 파일을 안전하게 공유 및 스트리밍",
+  "web_share_parent_dir": "상위 디렉토리",
+  "web_share_go_up": "한 단계 위로 이동",
+  "web_share_items_count": "{count}개 항목",
+  "@web_share_items_count": {
+    "description": "Item count display",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "web_share_link_copied": "링크가 클립보드에 복사되었습니다",
+  "web_share_copy_failed": "링크 복사 실패",
+  "web_share_local": "로컬 Wi-Fi 공유",
+  "web_share_internet": "인터넷 공유",
+  "web_share_category_folders": "폴더",
+  "web_share_category_videos": "동영상",
+  "web_share_category_audio": "오디오",
+  "web_share_category_images": "이미지",
+  "web_share_category_documents": "문서",
+  "web_share_category_others": "기타",
+  "web_share_loading_preview": "미리보기 로드 중...",
+  "web_share_preview_error": "문서를 스트리밍할 수 없습니다. 직접 다운로드할 수 있습니다."
 }

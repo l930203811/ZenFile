@@ -182,7 +182,7 @@ class L10nAr extends L10n {
   String get zenfile1 => 'حول ZenFile';
 
   @override
-  String get v104 => 'v1.0.4 (عرض)';
+  String get v1041 => 'v1.0.41 (عرض)';
 
   @override
   String get zenfileflutter =>
@@ -251,7 +251,7 @@ class L10nAr extends L10n {
       'اضغط مطولاً على الصورة لحفظها في المعرض. شكراً لدعمك!';
 
   @override
-  String get zenfilev104 => 'تنزيل ZenFile v1.0.4';
+  String get zenfilev1041 => 'تحميل ZenFile v1.0.41';
 
   @override
   String get msg9d287020 => '123 Cloud Drive';
@@ -2076,6 +2076,15 @@ class L10nAr extends L10n {
   String get msgf15821d0 => 'استخراج إلى المجلد';
 
   @override
+  String get msg_extract_to => 'استخراج إلى…';
+
+  @override
+  String get ui_current_directory => 'المجلد الحالي';
+
+  @override
+  String get ui_custom_directory => 'مجلد مخصص';
+
+  @override
   String get msgff69affd => 'كلمة المرور (إذا كانت مشفرة)';
 
   @override
@@ -2396,6 +2405,12 @@ class L10nAr extends L10n {
 
   @override
   String get cat_analyze => 'التحليل';
+
+  @override
+  String get cat_vault => 'خزنة';
+
+  @override
+  String get cat_vault_desc => 'تخزين آمن';
 
   @override
   String get cat_quick_categories => 'الفئات السريعة';
@@ -2880,6 +2895,37 @@ class L10nAr extends L10n {
   String get log_audio_scan_stable => 'تحسين استقرار فحص فئة الصوت';
 
   @override
+  String get log_extract_dialog_redesign =>
+      'إعادة تصميم مربع حوار فك الضغط مع اختيار الدليل الحالي/المخصص';
+
+  @override
+  String get log_vault_quick_category =>
+      'تمت إضافة اختصار الخزنة إلى الفئات السريعة (إيقاف افتراضي)';
+
+  @override
+  String get log_vault_l10n_fix =>
+      'إصلاح النصوص الإنجليزية الثابتة وتجميد إضافة ملفات متعددة في الخزنة';
+
+  @override
+  String get log_compression_path_fix =>
+      'توحيد مسارات الضغط لزر النقاط الثلاث وقائمة الضغط المطول';
+
+  @override
+  String get log_compression_progress =>
+      'تحسين مربع حوار تقدم الضغط مع عرض متعدد المراحل وإغلاق تلقائي موثوق';
+
+  @override
+  String get log_web_share_category =>
+      'بوابة مشاركة الويب تعرض الملفات في أقسام مصنفة (مجلدات، فيديو، صوت، صور، مستندات، أخرى)';
+
+  @override
+  String get log_web_share_l10n =>
+      'بوابة مشاركة الويب تدعم الآن العرض متعدد اللغات بناءً على لغة التطبيق';
+
+  @override
+  String get msg_remember_choice => 'تذكر هذا الاختيار للعمليات المستقبلية';
+
+  @override
   String get ui_caching => 'جاري التخزين المؤقت، يرجى الانتظار...';
 
   @override
@@ -3068,4 +3114,212 @@ class L10nAr extends L10n {
   String ui_add_selected(Object count) {
     return 'إضافة المحدد ($count)';
   }
+
+  @override
+  String get msg_file_exists => 'الملف موجود بالفعل';
+
+  @override
+  String msg_file_exists_desc(String fileName) {
+    return 'يوجد ملف بنفس الاسم \"$fileName\" في المجلد الهدف بالفعل. كيف تريد المتابعة؟';
+  }
+
+  @override
+  String get msg_existing_file => 'الملف الموجود';
+
+  @override
+  String get msg_cancel_paste => 'إلغاء اللصق';
+
+  @override
+  String get msg_skip_file => 'تخطي';
+
+  @override
+  String get msg_overwrite_file => 'استبدال';
+
+  @override
+  String get msg_newer => 'أحدث';
+
+  @override
+  String get msg_new_file_name => 'اسم الملف الجديد';
+
+  @override
+  String get msg_vault_choose_mode => 'اختر وضع الحماية';
+
+  @override
+  String get msg_vault_mode_desc =>
+      'اختر كيفية حماية ملفاتك المحددة. يتم تشفير الملفات الآمنة فورًا باستخدام XOR.';
+
+  @override
+  String get ui_secure_import => 'استيراد آمن (صندوق عزل)';
+
+  @override
+  String get ui_in_place_scramble => 'التشويش في المكان (سريع)';
+
+  @override
+  String get msg_scrambling => 'جاري التشويش والحماية...';
+
+  @override
+  String msg_protected_count(Object successCount) {
+    return 'تم حماية $successCount عنصر بنجاح.';
+  }
+
+  @override
+  String msg_protect_failed_count(Object failCount) {
+    return 'فشل قفل $failCount عنصر.';
+  }
+
+  @override
+  String msg_restored(Object name) {
+    return 'تم استعادة 「$name」 إلى موقعه الأصلي.';
+  }
+
+  @override
+  String msg_restore_failed(Object error) {
+    return 'فشل استعادة الملف: $error';
+  }
+
+  @override
+  String get msg_decrypting => 'جاري فك التشفير بأمان...';
+
+  @override
+  String get msg_security_details => 'تفاصيل الأمان';
+
+  @override
+  String get ui_restore_unhide => 'استعادة (إظهار)';
+
+  @override
+  String get msg_permanent_delete => 'حذف نهائي؟';
+
+  @override
+  String msg_permanent_delete_content(Object name) {
+    return 'هل أنت متأكد من أنك تريد حذف 「$name」 نهائيًا؟ لا يمكن التراجع عن هذا الإجراء.';
+  }
+
+  @override
+  String get msg_file_deleted => 'تم حذف الملف نهائيًا.';
+
+  @override
+  String msg_delete_failed(Object error) {
+    return 'فشل حذف الملف: $error';
+  }
+
+  @override
+  String get msg_original_name => 'الاسم الأصلي';
+
+  @override
+  String get msg_original_path => 'المسار الأصلي';
+
+  @override
+  String get msg_scrambled_path => 'المسار المشفر';
+
+  @override
+  String get msg_size_label => 'الحجم';
+
+  @override
+  String get msg_locked_at => 'وقت القفل';
+
+  @override
+  String get msg_protection_mode => 'وضع الحماية';
+
+  @override
+  String get msg_in_place_scrambling => 'التشويش في المكان';
+
+  @override
+  String get msg_isolated_move => 'النقل المعزول (صندوق عزل)';
+
+  @override
+  String get web_share_search => 'البحث عن الملفات والمجلدات...';
+
+  @override
+  String get web_share_upload => 'رفع';
+
+  @override
+  String get web_share_drop_title => 'أسحب الملفات هنا للرفع';
+
+  @override
+  String get web_share_drop_desc =>
+      'سيتم رفع ملفاتك فوراً إلى هذا المجلد المشترك';
+
+  @override
+  String get web_share_empty_search => 'لا توجد عناصر تطابق بحثك';
+
+  @override
+  String get web_share_empty_desc => 'تحقق من الإملاء أو جرب مصطلح بحث مختلف';
+
+  @override
+  String get web_share_copy_link => 'نسخ الرابط';
+
+  @override
+  String get web_share_download => 'تحميل';
+
+  @override
+  String web_share_uploading(String name) {
+    return 'جاري رفع $name...';
+  }
+
+  @override
+  String get web_share_upload_success => 'اكتمل الرفع بنجاح';
+
+  @override
+  String web_share_upload_failed(String name) {
+    return 'فشل رفع $name';
+  }
+
+  @override
+  String get web_share_preview_unsupported =>
+      'المعاينة غير مدعومة لنوع الملف هذا';
+
+  @override
+  String get web_share_preview_download =>
+      'انقر على تحميل أدناه لحفظه على جهازك';
+
+  @override
+  String get web_share_footer => 'مشاركة وبث الملفات بأمان عبر ZenFile';
+
+  @override
+  String get web_share_parent_dir => 'الدليل الأصلي';
+
+  @override
+  String get web_share_go_up => 'الانتقال إلى المستوى الأعلى';
+
+  @override
+  String web_share_items_count(int count) {
+    return '$count عناصر';
+  }
+
+  @override
+  String get web_share_link_copied => 'تم نسخ الرابط إلى الحافظة';
+
+  @override
+  String get web_share_copy_failed => 'فشل نسخ الرابط';
+
+  @override
+  String get web_share_local => 'مشاركة Wi-Fi المحلية';
+
+  @override
+  String get web_share_internet => 'مشاركة الإنترنت';
+
+  @override
+  String get web_share_category_folders => 'مجلدات';
+
+  @override
+  String get web_share_category_videos => 'مقاطع الفيديو';
+
+  @override
+  String get web_share_category_audio => 'صوت';
+
+  @override
+  String get web_share_category_images => 'صور';
+
+  @override
+  String get web_share_category_documents => 'مستندات';
+
+  @override
+  String get web_share_category_others => 'أخرى';
+
+  @override
+  String get web_share_loading_preview => 'جاري تحميل المعاينة...';
+
+  @override
+  String get web_share_preview_error =>
+      'تعذر بث المستند. يمكنك still تحميله مباشرة.';
 }

@@ -180,7 +180,7 @@ class L10nZh extends L10n {
   String get zenfile1 => '关于 ZenFile';
 
   @override
-  String get v104 => 'v1.0.4 (查看)';
+  String get v1041 => 'v1.0.41 (查看)';
 
   @override
   String get zenfileflutter =>
@@ -248,7 +248,7 @@ class L10nZh extends L10n {
   String get msg0537b04e => '长按图片可保存到相册，感谢您的支持！';
 
   @override
-  String get zenfilev104 => '下载 ZenFile v1.0.4';
+  String get zenfilev1041 => '下载 ZenFile v1.0.41';
 
   @override
   String get msg9d287020 => '123云盘';
@@ -2002,6 +2002,15 @@ class L10nZh extends L10n {
   String get msgf15821d0 => '解压到文件夹';
 
   @override
+  String get msg_extract_to => '解压到…';
+
+  @override
+  String get ui_current_directory => '当前目录';
+
+  @override
+  String get ui_custom_directory => '自定义目录';
+
+  @override
   String get msgff69affd => '密码（如果已加密）';
 
   @override
@@ -2315,6 +2324,12 @@ class L10nZh extends L10n {
 
   @override
   String get cat_analyze => '分析';
+
+  @override
+  String get cat_vault => '保险箱';
+
+  @override
+  String get cat_vault_desc => '安全存储';
 
   @override
   String get cat_quick_categories => '快捷分类';
@@ -2785,6 +2800,30 @@ class L10nZh extends L10n {
   String get log_audio_scan_stable => '优化音频分类扫描稳定性';
 
   @override
+  String get log_extract_dialog_redesign => '重新设计解压对话框，支持当前目录/自定义目录选择';
+
+  @override
+  String get log_vault_quick_category => '将保险箱快捷方式添加到快捷分类（默认关闭）';
+
+  @override
+  String get log_vault_l10n_fix => '修复保险箱页面英文硬编码和添加多文件时卡死的问题';
+
+  @override
+  String get log_compression_path_fix => '统一三点按钮和长按菜单的压缩路径，修复压缩包名称错误';
+
+  @override
+  String get log_compression_progress => '优化压缩进度对话框，支持多阶段进度显示和可靠自动关闭';
+
+  @override
+  String get log_web_share_category => '网页共享门户支持分类显示文件（文件夹、视频、音频、图片、文档、其他）';
+
+  @override
+  String get log_web_share_l10n => '网页共享门户支持根据 App 语言自动切换多语言显示';
+
+  @override
+  String get msg_remember_choice => '记住此选择，后续操作默认使用';
+
+  @override
   String get ui_caching => '正在缓存中，请稍后...';
 
   @override
@@ -2972,6 +3011,209 @@ class L10nZh extends L10n {
   String ui_add_selected(Object count) {
     return '添加所选 ($count)';
   }
+
+  @override
+  String get msg_file_exists => '文件已存在';
+
+  @override
+  String msg_file_exists_desc(String fileName) {
+    return '目标文件夹中已存在同名文件\"$fileName\"。您想怎么处理？';
+  }
+
+  @override
+  String get msg_existing_file => '现有文件';
+
+  @override
+  String get msg_cancel_paste => '取消粘贴';
+
+  @override
+  String get msg_skip_file => '跳过';
+
+  @override
+  String get msg_overwrite_file => '替换';
+
+  @override
+  String get msg_newer => '较新';
+
+  @override
+  String get msg_new_file_name => '新文件名';
+
+  @override
+  String get msg_vault_choose_mode => '选择保护模式';
+
+  @override
+  String get msg_vault_mode_desc => '选择如何保护选中的文件。安全文件将立即进行 XOR 混淆加密。';
+
+  @override
+  String get ui_secure_import => '安全导入（沙盒）';
+
+  @override
+  String get ui_in_place_scramble => '原地混淆（快速）';
+
+  @override
+  String get msg_scrambling => '正在混淆加密...';
+
+  @override
+  String msg_protected_count(Object successCount) {
+    return '成功保护 $successCount 个项目。';
+  }
+
+  @override
+  String msg_protect_failed_count(Object failCount) {
+    return '失败锁定 $failCount 个项目。';
+  }
+
+  @override
+  String msg_restored(Object name) {
+    return '已将「$name」恢复到原始位置。';
+  }
+
+  @override
+  String msg_restore_failed(Object error) {
+    return '恢复文件失败：$error';
+  }
+
+  @override
+  String get msg_decrypting => '正在安全解密...';
+
+  @override
+  String get msg_security_details => '安全详情';
+
+  @override
+  String get ui_restore_unhide => '恢复（取消隐藏）';
+
+  @override
+  String get msg_permanent_delete => '永久删除？';
+
+  @override
+  String msg_permanent_delete_content(Object name) {
+    return '确定要永久删除「$name」吗？此操作无法撤销。';
+  }
+
+  @override
+  String get msg_file_deleted => '文件已永久删除。';
+
+  @override
+  String msg_delete_failed(Object error) {
+    return '删除文件失败：$error';
+  }
+
+  @override
+  String get msg_original_name => '原始名称';
+
+  @override
+  String get msg_original_path => '原始路径';
+
+  @override
+  String get msg_scrambled_path => '混淆路径';
+
+  @override
+  String get msg_size_label => '大小';
+
+  @override
+  String get msg_locked_at => '锁定时间';
+
+  @override
+  String get msg_protection_mode => '保护模式';
+
+  @override
+  String get msg_in_place_scrambling => '原地混淆';
+
+  @override
+  String get msg_isolated_move => '隔离移动（沙盒）';
+
+  @override
+  String get web_share_search => '搜索文件和文件夹...';
+
+  @override
+  String get web_share_upload => '上传';
+
+  @override
+  String get web_share_drop_title => '拖拽文件到此处上传';
+
+  @override
+  String get web_share_drop_desc => '文件将立即上传到此共享文件夹';
+
+  @override
+  String get web_share_empty_search => '没有匹配的项目';
+
+  @override
+  String get web_share_empty_desc => '检查拼写或尝试不同的搜索词';
+
+  @override
+  String get web_share_copy_link => '复制链接';
+
+  @override
+  String get web_share_download => '下载';
+
+  @override
+  String web_share_uploading(String name) {
+    return '正在上传 $name...';
+  }
+
+  @override
+  String get web_share_upload_success => '上传成功';
+
+  @override
+  String web_share_upload_failed(String name) {
+    return '上传 $name 失败';
+  }
+
+  @override
+  String get web_share_preview_unsupported => '不支持预览此文件类型';
+
+  @override
+  String get web_share_preview_download => '点击下方下载按钮保存到您的设备';
+
+  @override
+  String get web_share_footer => '通过 ZenFile 安全共享和流式传输文件';
+
+  @override
+  String get web_share_parent_dir => '上级目录';
+
+  @override
+  String get web_share_go_up => '返回上一级';
+
+  @override
+  String web_share_items_count(int count) {
+    return '$count 个项目';
+  }
+
+  @override
+  String get web_share_link_copied => '链接已复制到剪贴板';
+
+  @override
+  String get web_share_copy_failed => '复制链接失败';
+
+  @override
+  String get web_share_local => '本地 Wi-Fi 共享';
+
+  @override
+  String get web_share_internet => '互联网共享';
+
+  @override
+  String get web_share_category_folders => '文件夹';
+
+  @override
+  String get web_share_category_videos => '视频';
+
+  @override
+  String get web_share_category_audio => '音频';
+
+  @override
+  String get web_share_category_images => '图片';
+
+  @override
+  String get web_share_category_documents => '文档';
+
+  @override
+  String get web_share_category_others => '其他';
+
+  @override
+  String get web_share_loading_preview => '正在加载预览...';
+
+  @override
+  String get web_share_preview_error => '无法流式传输文档。您仍然可以直接下载。';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -3150,7 +3392,7 @@ class L10nZhTw extends L10nZh {
   String get zenfile1 => '關於 ZenFile';
 
   @override
-  String get v104 => 'v1.0.4 (檢視)';
+  String get v1041 => 'v1.0.41 (檢視)';
 
   @override
   String get zenfileflutter =>
@@ -3218,7 +3460,7 @@ class L10nZhTw extends L10nZh {
   String get msg0537b04e => '長按圖片可儲存到相簿，感謝您的支援！';
 
   @override
-  String get zenfilev104 => '下載 ZenFile v1.0.4';
+  String get zenfilev1041 => '下載 ZenFile v1.0.41';
 
   @override
   String get msg9d287020 => '123雲盤';
@@ -4972,6 +5214,15 @@ class L10nZhTw extends L10nZh {
   String get msgf15821d0 => '解壓到資料夾';
 
   @override
+  String get msg_extract_to => '解壓縮到…';
+
+  @override
+  String get ui_current_directory => '目前目錄';
+
+  @override
+  String get ui_custom_directory => '自訂目錄';
+
+  @override
   String get msgff69affd => '密碼（如果已加密）';
 
   @override
@@ -5287,6 +5538,12 @@ class L10nZhTw extends L10nZh {
   String get cat_analyze => '分析';
 
   @override
+  String get cat_vault => '保險箱';
+
+  @override
+  String get cat_vault_desc => '安全儲存';
+
+  @override
   String get cat_quick_categories => '快捷分類';
 
   @override
@@ -5585,7 +5842,7 @@ class L10nZhTw extends L10nZh {
   String get ui_contains => '包含';
 
   @override
-  String get ui_extract => '解壓';
+  String get ui_extract => '解壓縮';
 
   @override
   String get ui_pin_to_top => '置頂';
@@ -5753,6 +6010,30 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get log_audio_scan_stable => '優化音訊分類掃描穩定性';
+
+  @override
+  String get log_extract_dialog_redesign => '重新設計解壓對話框，支援當前目錄/自訂目錄選擇';
+
+  @override
+  String get log_vault_quick_category => '將保險箱快捷方式新增到快捷分類（預設關閉）';
+
+  @override
+  String get log_vault_l10n_fix => '修復保險箱頁面英文硬編碼和新增多檔案時卡死的問題';
+
+  @override
+  String get log_compression_path_fix => '統一三點按鈕和長按選單的壓縮路徑，修復壓縮包名稱錯誤';
+
+  @override
+  String get log_compression_progress => '優化壓縮進度對話框，支援多階段進度顯示和可靠自動關閉';
+
+  @override
+  String get log_web_share_category => '網頁共享入口支援分類顯示檔案（資料夾、影片、音訊、圖片、文件、其他）';
+
+  @override
+  String get log_web_share_l10n => '網頁共享入口支援根據 App 語言自動切換多語言顯示';
+
+  @override
+  String get msg_remember_choice => '記住此選擇，後續操作預設使用';
 
   @override
   String get ui_caching => '正在緩存中，請稍後...';
@@ -5942,4 +6223,207 @@ class L10nZhTw extends L10nZh {
   String ui_add_selected(Object count) {
     return '新增所選 ($count)';
   }
+
+  @override
+  String get msg_file_exists => '檔案已存在';
+
+  @override
+  String msg_file_exists_desc(String fileName) {
+    return '目標資料夾中已存在同名檔案\"$fileName\"。您想怎麼處理？';
+  }
+
+  @override
+  String get msg_existing_file => '現有檔案';
+
+  @override
+  String get msg_cancel_paste => '取消貼上';
+
+  @override
+  String get msg_skip_file => '跳過';
+
+  @override
+  String get msg_overwrite_file => '替換';
+
+  @override
+  String get msg_newer => '較新';
+
+  @override
+  String get msg_new_file_name => '新檔案名稱';
+
+  @override
+  String get msg_vault_choose_mode => '選擇保護模式';
+
+  @override
+  String get msg_vault_mode_desc => '選擇如何保護選中的檔案。安全檔案將立即進行 XOR 混淆加密。';
+
+  @override
+  String get ui_secure_import => '安全匯入（沙盒）';
+
+  @override
+  String get ui_in_place_scramble => '原地混淆（快速）';
+
+  @override
+  String get msg_scrambling => '正在混淆加密...';
+
+  @override
+  String msg_protected_count(Object successCount) {
+    return '成功保護 $successCount 個項目。';
+  }
+
+  @override
+  String msg_protect_failed_count(Object failCount) {
+    return '失敗鎖定 $failCount 個項目。';
+  }
+
+  @override
+  String msg_restored(Object name) {
+    return '已將「$name」恢復到原始位置。';
+  }
+
+  @override
+  String msg_restore_failed(Object error) {
+    return '恢復檔案失敗：$error';
+  }
+
+  @override
+  String get msg_decrypting => '正在安全解密...';
+
+  @override
+  String get msg_security_details => '安全詳情';
+
+  @override
+  String get ui_restore_unhide => '恢復（取消隱藏）';
+
+  @override
+  String get msg_permanent_delete => '永久刪除？';
+
+  @override
+  String msg_permanent_delete_content(Object name) {
+    return '確定要永久刪除「$name」嗎？此操作無法撤銷。';
+  }
+
+  @override
+  String get msg_file_deleted => '檔案已永久刪除。';
+
+  @override
+  String msg_delete_failed(Object error) {
+    return '刪除檔案失敗：$error';
+  }
+
+  @override
+  String get msg_original_name => '原始名稱';
+
+  @override
+  String get msg_original_path => '原始路徑';
+
+  @override
+  String get msg_scrambled_path => '混淆路徑';
+
+  @override
+  String get msg_size_label => '大小';
+
+  @override
+  String get msg_locked_at => '鎖定時間';
+
+  @override
+  String get msg_protection_mode => '保護模式';
+
+  @override
+  String get msg_in_place_scrambling => '原地混淆';
+
+  @override
+  String get msg_isolated_move => '隔離移動（沙盒）';
+
+  @override
+  String get web_share_search => '搜尋檔案和資料夾...';
+
+  @override
+  String get web_share_upload => '上傳';
+
+  @override
+  String get web_share_drop_title => '拖曳檔案到此處上傳';
+
+  @override
+  String get web_share_drop_desc => '檔案將立即上傳到此共享資料夾';
+
+  @override
+  String get web_share_empty_search => '沒有匹配的項目';
+
+  @override
+  String get web_share_empty_desc => '檢查拼寫或嘗試不同的搜尋詞';
+
+  @override
+  String get web_share_copy_link => '複製連結';
+
+  @override
+  String get web_share_download => '下載';
+
+  @override
+  String web_share_uploading(String name) {
+    return '正在上傳 $name...';
+  }
+
+  @override
+  String get web_share_upload_success => '上傳成功';
+
+  @override
+  String web_share_upload_failed(String name) {
+    return '上傳 $name 失敗';
+  }
+
+  @override
+  String get web_share_preview_unsupported => '不支援預覽此檔案類型';
+
+  @override
+  String get web_share_preview_download => '點擊下方下載按鈕儲存到您的裝置';
+
+  @override
+  String get web_share_footer => '透過 ZenFile 安全共享和串流傳輸檔案';
+
+  @override
+  String get web_share_parent_dir => '上級目錄';
+
+  @override
+  String get web_share_go_up => '返回上一級';
+
+  @override
+  String web_share_items_count(int count) {
+    return '$count 個項目';
+  }
+
+  @override
+  String get web_share_link_copied => '連結已複製到剪貼簿';
+
+  @override
+  String get web_share_copy_failed => '複製連結失敗';
+
+  @override
+  String get web_share_local => '本地 Wi-Fi 共享';
+
+  @override
+  String get web_share_internet => '網際網路共享';
+
+  @override
+  String get web_share_category_folders => '資料夾';
+
+  @override
+  String get web_share_category_videos => '影片';
+
+  @override
+  String get web_share_category_audio => '音訊';
+
+  @override
+  String get web_share_category_images => '圖片';
+
+  @override
+  String get web_share_category_documents => '文件';
+
+  @override
+  String get web_share_category_others => '其他';
+
+  @override
+  String get web_share_loading_preview => '正在載入預覽...';
+
+  @override
+  String get web_share_preview_error => '無法串流傳輸文件。您仍然可以直接下載。';
 }

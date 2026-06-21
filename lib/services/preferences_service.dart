@@ -515,7 +515,7 @@ class PreferencesService {
   static const String _keyHideActionMenuButtons = 'hide_action_menu_buttons';
 
   static bool getHideActionMenuButtons() {
-    return _prefs?.getBool(_keyHideActionMenuButtons) ?? false;
+    return _prefs?.getBool(_keyHideActionMenuButtons) ?? true;
   }
 
   static Future<void> saveHideActionMenuButtons(bool val) async {
@@ -743,5 +743,17 @@ class PreferencesService {
 
   static Future<void> saveEditorReadOnly(bool val) async {
     await _prefs?.setBool(_keyEditorReadOnly, val);
+  }
+
+  static String? getDefaultConflictResolution() {
+    return _prefs?.getString('default_conflict_resolution');
+  }
+
+  static void saveDefaultConflictResolution(String? value) {
+    if (value == null) {
+      _prefs?.remove('default_conflict_resolution');
+    } else {
+      _prefs?.setString('default_conflict_resolution', value);
+    }
   }
 }

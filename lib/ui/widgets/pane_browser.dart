@@ -579,10 +579,10 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                           sliver: provider.isGridView
                                               ? SliverGrid(
                                                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                                    crossAxisCount: (MediaQuery.of(context).size.width / (2 * 110 * provider.iconScale)).floor().clamp(1, 3),
-                                                    mainAxisSpacing: (8 * provider.itemPaddingMultiplier).clamp(4.0, 16.0),
-                                                    crossAxisSpacing: (8 * provider.itemPaddingMultiplier).clamp(4.0, 16.0),
-                                                    childAspectRatio: 0.75,
+                                                    crossAxisCount: (MediaQuery.of(context).size.width / (2 * 110 * provider.iconScale)).floor().clamp(1, 4),
+                                                    mainAxisSpacing: (12 * provider.itemPaddingMultiplier).clamp(4.0, 24.0),
+                                                    crossAxisSpacing: (12 * provider.itemPaddingMultiplier).clamp(4.0, 24.0),
+                                                    childAspectRatio: 0.75 / provider.iconScale.clamp(0.7, 1.5),
                                                   ),
                                                   delegate: SliverChildBuilderDelegate(
                                                     (context, index) {

@@ -415,8 +415,8 @@ abstract class L10n {
   /// ui\screens\about_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'v1.0.4 (查看)'**
-  String get v104;
+  /// **'v1.0.41 (查看)'**
+  String get v1041;
 
   /// ui\screens\about_screen.dart
   ///
@@ -547,8 +547,8 @@ abstract class L10n {
   /// ui\screens\about_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'下载 ZenFile v1.0.4'**
-  String get zenfilev104;
+  /// **'下载 ZenFile v1.0.41'**
+  String get zenfilev1041;
 
   /// ui\screens\about_screen.dart
   ///
@@ -3862,6 +3862,24 @@ abstract class L10n {
   /// **'解压到文件夹'**
   String get msgf15821d0;
 
+  /// Extract archive dialog title
+  ///
+  /// In zh, this message translates to:
+  /// **'解压到…'**
+  String get msg_extract_to;
+
+  /// Extract to current directory checkbox
+  ///
+  /// In zh, this message translates to:
+  /// **'当前目录'**
+  String get ui_current_directory;
+
+  /// Extract to custom directory checkbox
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义目录'**
+  String get ui_custom_directory;
+
   /// ui\widgets\extract_archive_dialog.dart
   ///
   /// In zh, this message translates to:
@@ -4449,6 +4467,18 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'分析'**
   String get cat_analyze;
+
+  /// Vault shortcut category label
+  ///
+  /// In zh, this message translates to:
+  /// **'保险箱'**
+  String get cat_vault;
+
+  /// Vault shortcut category description
+  ///
+  /// In zh, this message translates to:
+  /// **'安全存储'**
+  String get cat_vault_desc;
 
   /// No description provided for @cat_quick_categories.
   ///
@@ -5326,6 +5356,54 @@ abstract class L10n {
   /// **'优化音频分类扫描稳定性'**
   String get log_audio_scan_stable;
 
+  /// No description provided for @log_extract_dialog_redesign.
+  ///
+  /// In zh, this message translates to:
+  /// **'重新设计解压对话框，支持当前目录/自定义目录选择'**
+  String get log_extract_dialog_redesign;
+
+  /// No description provided for @log_vault_quick_category.
+  ///
+  /// In zh, this message translates to:
+  /// **'将保险箱快捷方式添加到快捷分类（默认关闭）'**
+  String get log_vault_quick_category;
+
+  /// No description provided for @log_vault_l10n_fix.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复保险箱页面英文硬编码和添加多文件时卡死的问题'**
+  String get log_vault_l10n_fix;
+
+  /// No description provided for @log_compression_path_fix.
+  ///
+  /// In zh, this message translates to:
+  /// **'统一三点按钮和长按菜单的压缩路径，修复压缩包名称错误'**
+  String get log_compression_path_fix;
+
+  /// No description provided for @log_compression_progress.
+  ///
+  /// In zh, this message translates to:
+  /// **'优化压缩进度对话框，支持多阶段进度显示和可靠自动关闭'**
+  String get log_compression_progress;
+
+  /// No description provided for @log_web_share_category.
+  ///
+  /// In zh, this message translates to:
+  /// **'网页共享门户支持分类显示文件（文件夹、视频、音频、图片、文档、其他）'**
+  String get log_web_share_category;
+
+  /// No description provided for @log_web_share_l10n.
+  ///
+  /// In zh, this message translates to:
+  /// **'网页共享门户支持根据 App 语言自动切换多语言显示'**
+  String get log_web_share_l10n;
+
+  /// No description provided for @msg_remember_choice.
+  ///
+  /// In zh, this message translates to:
+  /// **'记住此选择，后续操作默认使用'**
+  String get msg_remember_choice;
+
   /// No description provided for @ui_caching.
   ///
   /// In zh, this message translates to:
@@ -5673,6 +5751,372 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'添加所选 ({count})'**
   String ui_add_selected(Object count);
+
+  /// Title shown when a file conflict is detected
+  ///
+  /// In zh, this message translates to:
+  /// **'文件已存在'**
+  String get msg_file_exists;
+
+  /// Description shown when a file conflict is detected
+  ///
+  /// In zh, this message translates to:
+  /// **'目标文件夹中已存在同名文件\"{fileName}\"。您想怎么处理？'**
+  String msg_file_exists_desc(String fileName);
+
+  /// Label for the existing file in conflict dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'现有文件'**
+  String get msg_existing_file;
+
+  /// Button to cancel paste operation in conflict dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'取消粘贴'**
+  String get msg_cancel_paste;
+
+  /// Button to skip file in conflict dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'跳过'**
+  String get msg_skip_file;
+
+  /// Button to overwrite file in conflict dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'替换'**
+  String get msg_overwrite_file;
+
+  /// Badge indicating a file is newer in conflict dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'较新'**
+  String get msg_newer;
+
+  /// Label for new file name input in rename dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'新文件名'**
+  String get msg_new_file_name;
+
+  /// Vault protection mode dialog title
+  ///
+  /// In zh, this message translates to:
+  /// **'选择保护模式'**
+  String get msg_vault_choose_mode;
+
+  /// Vault protection mode dialog description
+  ///
+  /// In zh, this message translates to:
+  /// **'选择如何保护选中的文件。安全文件将立即进行 XOR 混淆加密。'**
+  String get msg_vault_mode_desc;
+
+  /// Vault sandbox import button
+  ///
+  /// In zh, this message translates to:
+  /// **'安全导入（沙盒）'**
+  String get ui_secure_import;
+
+  /// Vault in-place scramble button
+  ///
+  /// In zh, this message translates to:
+  /// **'原地混淆（快速）'**
+  String get ui_in_place_scramble;
+
+  /// Vault scrambling progress text
+  ///
+  /// In zh, this message translates to:
+  /// **'正在混淆加密...'**
+  String get msg_scrambling;
+
+  /// Vault protected success message
+  ///
+  /// In zh, this message translates to:
+  /// **'成功保护 {successCount} 个项目。'**
+  String msg_protected_count(Object successCount);
+
+  /// Vault protect failed message
+  ///
+  /// In zh, this message translates to:
+  /// **'失败锁定 {failCount} 个项目。'**
+  String msg_protect_failed_count(Object failCount);
+
+  /// Vault restore success message
+  ///
+  /// In zh, this message translates to:
+  /// **'已将「{name}」恢复到原始位置。'**
+  String msg_restored(Object name);
+
+  /// Vault restore failed message
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复文件失败：{error}'**
+  String msg_restore_failed(Object error);
+
+  /// Vault decrypting progress text
+  ///
+  /// In zh, this message translates to:
+  /// **'正在安全解密...'**
+  String get msg_decrypting;
+
+  /// Vault security details dialog title
+  ///
+  /// In zh, this message translates to:
+  /// **'安全详情'**
+  String get msg_security_details;
+
+  /// Vault restore menu item
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复（取消隐藏）'**
+  String get ui_restore_unhide;
+
+  /// Vault permanent delete confirm title
+  ///
+  /// In zh, this message translates to:
+  /// **'永久删除？'**
+  String get msg_permanent_delete;
+
+  /// Vault permanent delete confirm content
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要永久删除「{name}」吗？此操作无法撤销。'**
+  String msg_permanent_delete_content(Object name);
+
+  /// Vault file deleted message
+  ///
+  /// In zh, this message translates to:
+  /// **'文件已永久删除。'**
+  String get msg_file_deleted;
+
+  /// Vault delete failed message
+  ///
+  /// In zh, this message translates to:
+  /// **'删除文件失败：{error}'**
+  String msg_delete_failed(Object error);
+
+  /// Vault original name label
+  ///
+  /// In zh, this message translates to:
+  /// **'原始名称'**
+  String get msg_original_name;
+
+  /// Vault original path label
+  ///
+  /// In zh, this message translates to:
+  /// **'原始路径'**
+  String get msg_original_path;
+
+  /// Vault scrambled path label
+  ///
+  /// In zh, this message translates to:
+  /// **'混淆路径'**
+  String get msg_scrambled_path;
+
+  /// Vault size label
+  ///
+  /// In zh, this message translates to:
+  /// **'大小'**
+  String get msg_size_label;
+
+  /// Vault locked at label
+  ///
+  /// In zh, this message translates to:
+  /// **'锁定时间'**
+  String get msg_locked_at;
+
+  /// Vault protection mode label
+  ///
+  /// In zh, this message translates to:
+  /// **'保护模式'**
+  String get msg_protection_mode;
+
+  /// Vault in-place scrambling mode
+  ///
+  /// In zh, this message translates to:
+  /// **'原地混淆'**
+  String get msg_in_place_scrambling;
+
+  /// Vault isolated move mode
+  ///
+  /// In zh, this message translates to:
+  /// **'隔离移动（沙盒）'**
+  String get msg_isolated_move;
+
+  /// No description provided for @web_share_search.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索文件和文件夹...'**
+  String get web_share_search;
+
+  /// No description provided for @web_share_upload.
+  ///
+  /// In zh, this message translates to:
+  /// **'上传'**
+  String get web_share_upload;
+
+  /// No description provided for @web_share_drop_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'拖拽文件到此处上传'**
+  String get web_share_drop_title;
+
+  /// No description provided for @web_share_drop_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件将立即上传到此共享文件夹'**
+  String get web_share_drop_desc;
+
+  /// No description provided for @web_share_empty_search.
+  ///
+  /// In zh, this message translates to:
+  /// **'没有匹配的项目'**
+  String get web_share_empty_search;
+
+  /// No description provided for @web_share_empty_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'检查拼写或尝试不同的搜索词'**
+  String get web_share_empty_desc;
+
+  /// No description provided for @web_share_copy_link.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制链接'**
+  String get web_share_copy_link;
+
+  /// No description provided for @web_share_download.
+  ///
+  /// In zh, this message translates to:
+  /// **'下载'**
+  String get web_share_download;
+
+  /// Upload progress title
+  ///
+  /// In zh, this message translates to:
+  /// **'正在上传 {name}...'**
+  String web_share_uploading(String name);
+
+  /// No description provided for @web_share_upload_success.
+  ///
+  /// In zh, this message translates to:
+  /// **'上传成功'**
+  String get web_share_upload_success;
+
+  /// Upload failed message
+  ///
+  /// In zh, this message translates to:
+  /// **'上传 {name} 失败'**
+  String web_share_upload_failed(String name);
+
+  /// No description provided for @web_share_preview_unsupported.
+  ///
+  /// In zh, this message translates to:
+  /// **'不支持预览此文件类型'**
+  String get web_share_preview_unsupported;
+
+  /// No description provided for @web_share_preview_download.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击下方下载按钮保存到您的设备'**
+  String get web_share_preview_download;
+
+  /// No description provided for @web_share_footer.
+  ///
+  /// In zh, this message translates to:
+  /// **'通过 ZenFile 安全共享和流式传输文件'**
+  String get web_share_footer;
+
+  /// No description provided for @web_share_parent_dir.
+  ///
+  /// In zh, this message translates to:
+  /// **'上级目录'**
+  String get web_share_parent_dir;
+
+  /// No description provided for @web_share_go_up.
+  ///
+  /// In zh, this message translates to:
+  /// **'返回上一级'**
+  String get web_share_go_up;
+
+  /// Item count display
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 个项目'**
+  String web_share_items_count(int count);
+
+  /// No description provided for @web_share_link_copied.
+  ///
+  /// In zh, this message translates to:
+  /// **'链接已复制到剪贴板'**
+  String get web_share_link_copied;
+
+  /// No description provided for @web_share_copy_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制链接失败'**
+  String get web_share_copy_failed;
+
+  /// No description provided for @web_share_local.
+  ///
+  /// In zh, this message translates to:
+  /// **'本地 Wi-Fi 共享'**
+  String get web_share_local;
+
+  /// No description provided for @web_share_internet.
+  ///
+  /// In zh, this message translates to:
+  /// **'互联网共享'**
+  String get web_share_internet;
+
+  /// No description provided for @web_share_category_folders.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件夹'**
+  String get web_share_category_folders;
+
+  /// No description provided for @web_share_category_videos.
+  ///
+  /// In zh, this message translates to:
+  /// **'视频'**
+  String get web_share_category_videos;
+
+  /// No description provided for @web_share_category_audio.
+  ///
+  /// In zh, this message translates to:
+  /// **'音频'**
+  String get web_share_category_audio;
+
+  /// No description provided for @web_share_category_images.
+  ///
+  /// In zh, this message translates to:
+  /// **'图片'**
+  String get web_share_category_images;
+
+  /// No description provided for @web_share_category_documents.
+  ///
+  /// In zh, this message translates to:
+  /// **'文档'**
+  String get web_share_category_documents;
+
+  /// No description provided for @web_share_category_others.
+  ///
+  /// In zh, this message translates to:
+  /// **'其他'**
+  String get web_share_category_others;
+
+  /// No description provided for @web_share_loading_preview.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在加载预览...'**
+  String get web_share_loading_preview;
+
+  /// No description provided for @web_share_preview_error.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法流式传输文档。您仍然可以直接下载。'**
+  String get web_share_preview_error;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

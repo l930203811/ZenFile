@@ -179,7 +179,7 @@ class L10nKo extends L10n {
   String get zenfile1 => 'ZenFile 정보';
 
   @override
-  String get v104 => 'v1.0.4 (보기)';
+  String get v1041 => 'v1.0.41 (보기)';
 
   @override
   String get zenfileflutter =>
@@ -247,7 +247,7 @@ class L10nKo extends L10n {
   String get msg0537b04e => '이미지를 길게 눌러 갤러리에 저장하세요. 지원해 주셔서 감사합니다!';
 
   @override
-  String get zenfilev104 => 'ZenFile v1.0.4 다운로드';
+  String get zenfilev1041 => 'ZenFile v1.0.41 다운로드';
 
   @override
   String get msg9d287020 => '123 클라우드 드라이브';
@@ -2003,7 +2003,16 @@ class L10nKo extends L10n {
   String get msgc4d7eece => '압축 파일 압축 해제';
 
   @override
-  String get msgf15821d0 => '폴더에 압축 해제';
+  String get msgf15821d0 => '폴에 압축 해제';
+
+  @override
+  String get msg_extract_to => '압축 해제 위치…';
+
+  @override
+  String get ui_current_directory => '현재 폴';
+
+  @override
+  String get ui_custom_directory => '사용자 지정 폴';
 
   @override
   String get msgff69affd => '비밀번호 (암호화된 경우)';
@@ -2320,6 +2329,12 @@ class L10nKo extends L10n {
 
   @override
   String get cat_analyze => '분석';
+
+  @override
+  String get cat_vault => '금고';
+
+  @override
+  String get cat_vault_desc => '안전 저장';
 
   @override
   String get cat_quick_categories => '빠른 카테고리';
@@ -2794,6 +2809,34 @@ class L10nKo extends L10n {
   String get log_audio_scan_stable => '오디오 카테고리 스캔 안정성 개선';
 
   @override
+  String get log_extract_dialog_redesign =>
+      '압축 해제 대화상자 재설계 - 현재/사용자 지정 디렉토리 선택 지원';
+
+  @override
+  String get log_vault_quick_category => '빠른 카테고리에 금고 바로가기 추가 (기본 꺼짐)';
+
+  @override
+  String get log_vault_l10n_fix => '금고 화면 영어 하드코딩 및 다중 파일 추가 시 멈춤 현상 수정';
+
+  @override
+  String get log_compression_path_fix =>
+      '3점 버튼과 길게 누르기 메뉴의 압축 경로 통일 및 압축 파일명 오류 수정';
+
+  @override
+  String get log_compression_progress =>
+      '압축 진행률 대화상자 개선 - 다단계 진행률 표시 및 안정적인 자동 닫기';
+
+  @override
+  String get log_web_share_category =>
+      '웹 공유 포털이 파일을 분류하여 표시 (폴더, 동영상, 오디오, 이미지, 문서, 기타)';
+
+  @override
+  String get log_web_share_l10n => '웹 공유 포털이 앱 로케일에 따라 다국어 표시를 지원';
+
+  @override
+  String get msg_remember_choice => '이 선택을 기억하여 향후 작업에 적용';
+
+  @override
   String get ui_caching => '캐싱 중입니다, 잠시만 기다려 주세요...';
 
   @override
@@ -2981,4 +3024,208 @@ class L10nKo extends L10n {
   String ui_add_selected(Object count) {
     return '선택 항목 추가 ($count)';
   }
+
+  @override
+  String get msg_file_exists => '파일이 이미 존재합니다';
+
+  @override
+  String msg_file_exists_desc(String fileName) {
+    return '대상 폴더에 동일한 이름의 파일\"$fileName\"이(가) 이미 존재합니다. 어떻게 처리하시겠습니까?';
+  }
+
+  @override
+  String get msg_existing_file => '기존 파일';
+
+  @override
+  String get msg_cancel_paste => '붙여넣기 취소';
+
+  @override
+  String get msg_skip_file => '건너뛰기';
+
+  @override
+  String get msg_overwrite_file => '덮어쓰기';
+
+  @override
+  String get msg_newer => '최신';
+
+  @override
+  String get msg_new_file_name => '새 파일 이름';
+
+  @override
+  String get msg_vault_choose_mode => '보호 모드 선택';
+
+  @override
+  String get msg_vault_mode_desc =>
+      '선택한 파일을 보호할 방법을 선택하세요. 보안 파일은 즉시 XOR 스크램블됩니다.';
+
+  @override
+  String get ui_secure_import => '보안 가져오기(샌드박스)';
+
+  @override
+  String get ui_in_place_scramble => '제자리 스크램블(빠름)';
+
+  @override
+  String get msg_scrambling => '스크램블 및 보호 중...';
+
+  @override
+  String msg_protected_count(Object successCount) {
+    return '$successCount개 항목을 성공적으로 보호했습니다.';
+  }
+
+  @override
+  String msg_protect_failed_count(Object failCount) {
+    return '$failCount개 항목 잠금에 실패했습니다.';
+  }
+
+  @override
+  String msg_restored(Object name) {
+    return '「$name」을(를) 원래 위치로 복원했습니다.';
+  }
+
+  @override
+  String msg_restore_failed(Object error) {
+    return '파일 복원 실패: $error';
+  }
+
+  @override
+  String get msg_decrypting => '안전하게 복호화 중...';
+
+  @override
+  String get msg_security_details => '보안 세부정보';
+
+  @override
+  String get ui_restore_unhide => '복원(숨김 해제)';
+
+  @override
+  String get msg_permanent_delete => '영구 삭제?';
+
+  @override
+  String msg_permanent_delete_content(Object name) {
+    return '「$name」을(를) 영구 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.';
+  }
+
+  @override
+  String get msg_file_deleted => '파일이 영구 삭제되었습니다.';
+
+  @override
+  String msg_delete_failed(Object error) {
+    return '파일 삭제 실패: $error';
+  }
+
+  @override
+  String get msg_original_name => '원본 이름';
+
+  @override
+  String get msg_original_path => '원본 경로';
+
+  @override
+  String get msg_scrambled_path => '스크램블 경로';
+
+  @override
+  String get msg_size_label => '크기';
+
+  @override
+  String get msg_locked_at => '잠금 시간';
+
+  @override
+  String get msg_protection_mode => '보호 모드';
+
+  @override
+  String get msg_in_place_scrambling => '제자리 스크램블';
+
+  @override
+  String get msg_isolated_move => '분리 이동(샌드박스)';
+
+  @override
+  String get web_share_search => '파일 및 폴더 검색...';
+
+  @override
+  String get web_share_upload => '업로드';
+
+  @override
+  String get web_share_drop_title => '파일을 여기에 드롭하여 업로드';
+
+  @override
+  String get web_share_drop_desc => '파일이 이 공유 폴더에 즉시 업로드됩니다';
+
+  @override
+  String get web_share_empty_search => '일치하는 항목이 없습니다';
+
+  @override
+  String get web_share_empty_desc => '철자를 확인하거나 다른 검색어를 시도하세요';
+
+  @override
+  String get web_share_copy_link => '링크 복사';
+
+  @override
+  String get web_share_download => '다운로드';
+
+  @override
+  String web_share_uploading(String name) {
+    return '$name 업로드 중...';
+  }
+
+  @override
+  String get web_share_upload_success => '업로드가 완료되었습니다';
+
+  @override
+  String web_share_upload_failed(String name) {
+    return '$name 업로드 실패';
+  }
+
+  @override
+  String get web_share_preview_unsupported => '이 파일 형식의 미리보기는 지원되지 않습니다';
+
+  @override
+  String get web_share_preview_download => '아래 다운로드 버튼을 클릭하여 기기에 저장';
+
+  @override
+  String get web_share_footer => 'ZenFile을 통해 파일을 안전하게 공유 및 스트리밍';
+
+  @override
+  String get web_share_parent_dir => '상위 디렉토리';
+
+  @override
+  String get web_share_go_up => '한 단계 위로 이동';
+
+  @override
+  String web_share_items_count(int count) {
+    return '$count개 항목';
+  }
+
+  @override
+  String get web_share_link_copied => '링크가 클립보드에 복사되었습니다';
+
+  @override
+  String get web_share_copy_failed => '링크 복사 실패';
+
+  @override
+  String get web_share_local => '로컬 Wi-Fi 공유';
+
+  @override
+  String get web_share_internet => '인터넷 공유';
+
+  @override
+  String get web_share_category_folders => '폴더';
+
+  @override
+  String get web_share_category_videos => '동영상';
+
+  @override
+  String get web_share_category_audio => '오디오';
+
+  @override
+  String get web_share_category_images => '이미지';
+
+  @override
+  String get web_share_category_documents => '문서';
+
+  @override
+  String get web_share_category_others => '기타';
+
+  @override
+  String get web_share_loading_preview => '미리보기 로드 중...';
+
+  @override
+  String get web_share_preview_error => '문서를 스트리밍할 수 없습니다. 직접 다운로드할 수 있습니다.';
 }

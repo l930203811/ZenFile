@@ -181,7 +181,7 @@ class L10nJa extends L10n {
   String get zenfile1 => 'ZenFileについて';
 
   @override
-  String get v104 => 'v1.0.4 (查看)';
+  String get v1041 => 'v1.0.41 (查看)';
 
   @override
   String get zenfileflutter =>
@@ -249,7 +249,7 @@ class L10nJa extends L10n {
   String get msg0537b04e => '画像を長押ししてギャラリーに保存できます。ご支援ありがとうございます！';
 
   @override
-  String get zenfilev104 => 'ZenFile v1.0.4をダウンロード';
+  String get zenfilev1041 => 'ZenFile v1.0.41 をダウンロード';
 
   @override
   String get msg9d287020 => '123クラウド';
@@ -2010,6 +2010,15 @@ class L10nJa extends L10n {
   String get msgf15821d0 => 'フォルダに展開';
 
   @override
+  String get msg_extract_to => '展開先…';
+
+  @override
+  String get ui_current_directory => '現在のフォルダ';
+
+  @override
+  String get ui_custom_directory => 'カスタムフォルダ';
+
+  @override
   String get msgff69affd => 'パスワード（暗号化されている場合）';
 
   @override
@@ -2323,6 +2332,12 @@ class L10nJa extends L10n {
 
   @override
   String get cat_analyze => '分析';
+
+  @override
+  String get cat_vault => '金庫';
+
+  @override
+  String get cat_vault_desc => '安全な保存';
 
   @override
   String get cat_quick_categories => 'ショートカットカテゴリ';
@@ -2795,6 +2810,33 @@ class L10nJa extends L10n {
   String get log_audio_scan_stable => 'オーディオカテゴリのスキャン安定性を改善';
 
   @override
+  String get log_extract_dialog_redesign =>
+      '解凍ダイアログを再設計し、現在のディレクトリ/カスタムディレクトリ選択をサポート';
+
+  @override
+  String get log_vault_quick_category => 'クイックカテゴリに金庫ショートカットを追加（デフォルトオフ）';
+
+  @override
+  String get log_vault_l10n_fix => '金庫画面の英語ハードコードと複数ファイル追加時のフリーズを修正';
+
+  @override
+  String get log_compression_path_fix =>
+      '3点ボタンと長押しメニューの圧縮パスを統一し、圧縮ファイル名のエラーを修正';
+
+  @override
+  String get log_compression_progress => '圧縮進度ダイアログを改善し、多段階進度表示と確実な自動終了をサポート';
+
+  @override
+  String get log_web_share_category =>
+      'Web共有ポータルがファイルを分類表示（フォルダ、動画、オーディオ、画像、ドキュメント、その他）';
+
+  @override
+  String get log_web_share_l10n => 'Web共有ポータルがアプリのロケールに基づいて多言語表示をサポート';
+
+  @override
+  String get msg_remember_choice => '今後の操作でもこの選択を記憶する';
+
+  @override
   String get ui_caching => 'キャッシュ中、しばらくお待ちください...';
 
   @override
@@ -2982,4 +3024,208 @@ class L10nJa extends L10n {
   String ui_add_selected(Object count) {
     return '選択を追加 ($count)';
   }
+
+  @override
+  String get msg_file_exists => 'ファイルが存在します';
+
+  @override
+  String msg_file_exists_desc(String fileName) {
+    return '対象フォルダに同名ファイル\"$fileName\"が既に存在します。どう処理しますか？';
+  }
+
+  @override
+  String get msg_existing_file => '既存ファイル';
+
+  @override
+  String get msg_cancel_paste => '貼り付けをキャンセル';
+
+  @override
+  String get msg_skip_file => 'スキップ';
+
+  @override
+  String get msg_overwrite_file => '上書き';
+
+  @override
+  String get msg_newer => ' newer';
+
+  @override
+  String get msg_new_file_name => '新しいファイル名';
+
+  @override
+  String get msg_vault_choose_mode => '保護モードを選択';
+
+  @override
+  String get msg_vault_mode_desc =>
+      '選択したファイルの保護方法を選択してください。セキュアファイルは即座にXORスクランブルされます。';
+
+  @override
+  String get ui_secure_import => 'セキュアインポート（サンドボックス）';
+
+  @override
+  String get ui_in_place_scramble => 'インプレーススクランブル（高速）';
+
+  @override
+  String get msg_scrambling => 'スクランブルと保護中...';
+
+  @override
+  String msg_protected_count(Object successCount) {
+    return '$successCount 個の項目を正常に保護しました。';
+  }
+
+  @override
+  String msg_protect_failed_count(Object failCount) {
+    return '$failCount 個の項目のロックに失敗しました。';
+  }
+
+  @override
+  String msg_restored(Object name) {
+    return '「$name」を元の位置に復元しました。';
+  }
+
+  @override
+  String msg_restore_failed(Object error) {
+    return 'ファイルの復元に失敗しました：$error';
+  }
+
+  @override
+  String get msg_decrypting => '安全に復号中...';
+
+  @override
+  String get msg_security_details => 'セキュリティ詳細';
+
+  @override
+  String get ui_restore_unhide => '復元（非表示解除）';
+
+  @override
+  String get msg_permanent_delete => '永久に削除しますか？';
+
+  @override
+  String msg_permanent_delete_content(Object name) {
+    return '「$name」を永久に削除してもよろしいですか？この操作は元に戻せません。';
+  }
+
+  @override
+  String get msg_file_deleted => 'ファイルは永久に削除されました。';
+
+  @override
+  String msg_delete_failed(Object error) {
+    return 'ファイルの削除に失敗しました：$error';
+  }
+
+  @override
+  String get msg_original_name => '元の名前';
+
+  @override
+  String get msg_original_path => '元のパス';
+
+  @override
+  String get msg_scrambled_path => 'スクランブルパス';
+
+  @override
+  String get msg_size_label => 'サイズ';
+
+  @override
+  String get msg_locked_at => 'ロック日時';
+
+  @override
+  String get msg_protection_mode => '保護モード';
+
+  @override
+  String get msg_in_place_scrambling => 'インプレーススクランブル';
+
+  @override
+  String get msg_isolated_move => '分離移動（サンドボックス）';
+
+  @override
+  String get web_share_search => 'ファイルとフォルダを検索...';
+
+  @override
+  String get web_share_upload => 'アップロード';
+
+  @override
+  String get web_share_drop_title => 'ファイルをここにドラッグしてアップロード';
+
+  @override
+  String get web_share_drop_desc => 'ファイルはこの共有フォルダに即座にアップロードされます';
+
+  @override
+  String get web_share_empty_search => '一致する項目がありません';
+
+  @override
+  String get web_share_empty_desc => 'スペルを確認するか、別の検索語を試してください';
+
+  @override
+  String get web_share_copy_link => 'リンクをコピー';
+
+  @override
+  String get web_share_download => 'ダウンロード';
+
+  @override
+  String web_share_uploading(String name) {
+    return '$name をアップロード中...';
+  }
+
+  @override
+  String get web_share_upload_success => 'アップロードが完了しました';
+
+  @override
+  String web_share_upload_failed(String name) {
+    return '$name のアップロードに失敗しました';
+  }
+
+  @override
+  String get web_share_preview_unsupported => 'このファイルタイプのプレビューはサポートされていません';
+
+  @override
+  String get web_share_preview_download => '下のダウンロードボタンをクリックしてデバイスに保存';
+
+  @override
+  String get web_share_footer => 'ZenFile を介してファイルを安全に共有およびストリーミング';
+
+  @override
+  String get web_share_parent_dir => '親ディレクトリ';
+
+  @override
+  String get web_share_go_up => '1つ上の階層に戻る';
+
+  @override
+  String web_share_items_count(int count) {
+    return '$count 項目';
+  }
+
+  @override
+  String get web_share_link_copied => 'リンクをクリップボードにコピーしました';
+
+  @override
+  String get web_share_copy_failed => 'リンクのコピーに失敗しました';
+
+  @override
+  String get web_share_local => 'ローカル Wi-Fi 共有';
+
+  @override
+  String get web_share_internet => 'インターネット共有';
+
+  @override
+  String get web_share_category_folders => 'フォルダ';
+
+  @override
+  String get web_share_category_videos => '動画';
+
+  @override
+  String get web_share_category_audio => 'オーディオ';
+
+  @override
+  String get web_share_category_images => '画像';
+
+  @override
+  String get web_share_category_documents => 'ドキュメント';
+
+  @override
+  String get web_share_category_others => 'その他';
+
+  @override
+  String get web_share_loading_preview => 'プレビューを読み込み中...';
+
+  @override
+  String get web_share_preview_error => 'ドキュメントをストリーミングできません。直接ダウンロードできます。';
 }

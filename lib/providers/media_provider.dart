@@ -160,6 +160,10 @@ class MediaProvider extends ChangeNotifier {
         _categoryOrder.add('Web共享');
         orderUpdated = true;
       }
+      if (!_categoryOrder.contains('保险箱')) {
+        _categoryOrder.add('保险箱');
+        orderUpdated = true;
+      }
       if (orderUpdated) {
         PreferencesService.saveCategoryOrder(_categoryOrder);
       }
@@ -201,6 +205,10 @@ class MediaProvider extends ChangeNotifier {
       }
       if (!_activeCategories.contains('Web共享')) {
         _activeCategories.add('Web共享');
+        activeUpdated = true;
+      }
+      if (!_activeCategories.contains('保险箱')) {
+        _activeCategories.add('保险箱');
         activeUpdated = true;
       }
       if (activeUpdated) {
@@ -254,6 +262,7 @@ class MediaProvider extends ChangeNotifier {
     '设置',
     '最近',
     '存储',
+    '保险箱',
   ];
 
   List<String> _activeCategories = [
@@ -272,6 +281,7 @@ class MediaProvider extends ChangeNotifier {
     '设置',
     '最近',
     '存储',
+    '保险箱',
   ];
 
 
@@ -537,6 +547,7 @@ class MediaProvider extends ChangeNotifier {
         case '设置': return 0;
         case '网络': return NetworkConnectionsService.getConnections().length;
         case '最近': return _recentFiles.length;
+        case '保险箱': return 0;
       }
     }
     return PreferencesService.getCategoryCount(category);
@@ -611,6 +622,9 @@ class MediaProvider extends ChangeNotifier {
           }
           if (!_activeCategories.contains('安装包')) {
             _activeCategories.add('安装包');
+          }
+          if (!_activeCategories.contains('保险箱')) {
+            _activeCategories.add('保险箱');
           }
         }
 

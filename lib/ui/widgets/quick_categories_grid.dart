@@ -18,6 +18,8 @@ import '../screens/all_recent_files_screen.dart';
 import '../screens/ftp_server_screen.dart';
 import '../screens/web_sharing_screen.dart';
 import '../screens/storage_analyzer/storage_analyzer_screen.dart';
+import '../screens/vault_lock_screen.dart';
+import '../../services/vault_service.dart';
 
 class QuickCategoriesGrid extends StatelessWidget {
   final Function(int) onNavigateTab;
@@ -148,6 +150,14 @@ class QuickCategoriesGrid extends StatelessWidget {
         'count': l10n.cat_analyze,
         'isCustom': false,
         'action': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StorageAnalyzerScreen())),
+      },
+      '保险箱': {
+        'label': l10n.cat_vault,
+        'icon': Broken.security_safe,
+        'color': isDark ? Colors.yellowAccent : const Color(0xFFFFB300),
+        'count': l10n.cat_vault_desc,
+        'isCustom': false,
+        'action': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const VaultLockScreen())),
       },
     };
 
@@ -694,6 +704,7 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
       '最近',
       'FTP共享',
       'Web共享',
+      '保险箱',
     ].contains(label);
 
     final customPaths = widget.provider.customCategoryPaths[label] ?? [];

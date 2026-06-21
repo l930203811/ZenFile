@@ -200,10 +200,10 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "zenfile1": "Über ZenFile",
-  "@v104": {
+  "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "v104": "v1.0.4 (Anzeigen)",
+  "v1041": "v1.0.41 (Anzeigen)",
   "@zenfileflutter": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -288,10 +288,10 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "msg0537b04e": "Bild lange drücken, um in Galerie zu speichern. Vielen Dank für Ihre Unterstützung!",
-  "@zenfilev104": {
+  "@zenfilev1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfilev104": "ZenFile v1.0.4 herunterladen",
+  "zenfilev1041": "ZenFile v1.0.41 herunterladen",
   "@msg9d287020": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -2503,6 +2503,18 @@
   "@msgff69affd": {
     "description": "ui\\widgets\\extract_archive_dialog.dart"
   },
+  "msg_extract_to": "Entpacken nach…",
+  "@msg_extract_to": {
+    "description": "Extract archive dialog title"
+  },
+  "ui_current_directory": "Aktuelles Verzeichnis",
+  "@ui_current_directory": {
+    "description": "Extract to current directory checkbox"
+  },
+  "ui_custom_directory": "Benutzerdefiniertes Verzeichnis",
+  "@ui_custom_directory": {
+    "description": "Extract to custom directory checkbox"
+  },
   "msgff69affd": "Passwort (falls verschlüsselt)",
   "@msg67eda5e6": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
@@ -2772,6 +2784,8 @@
   "cat_manage": "Verwalten",
   "cat_config": "Konfiguration",
   "cat_analyze": "Analysieren",
+  "cat_vault": "Tresor",
+  "cat_vault_desc": "Sicherer Speicher",
   "cat_quick_categories": "Schnellkategorien",
   "ui_nav": "Navigation",
   "ui_home": "Start",
@@ -3142,6 +3156,50 @@
   "log_remote_to_remote": "Kopieren/Ausschneiden zwischen Remote-Servern hinzugefügt",
   "log_remote_cut_progress": "Fortschrittsanzeige für Remote-Ausschneiden behoben",
   "log_audio_scan_stable": "Stabilität der Audio-Kategoriescanverbessert",
+  "log_extract_dialog_redesign": "Entpack-Dialog neu gestaltet mit aktueller/benutzerdefinierter Verzeichnisauswahl",
+  "log_vault_quick_category": "Tresor-Verknüpfung zu Schnellkategorien hinzugefügt (standardmäßig deaktiviert)",
+  "log_vault_l10n_fix": "Hardcodierte englische Texte und Einfrieren bei mehreren Dateien im Tresor behoben",
+  "log_compression_path_fix": "Komprimierungspfade für Drei-Punkte-Button und Langdruck-Menü vereinheitlicht",
+  "log_compression_progress": "Komprimierungsfortschritts-Dialog verbessert mit mehrstufiger Anzeige und zuverlässigem Auto-Schließen",
+  "log_web_share_category": "Web-Freigabe-Portal zeigt Dateien jetzt in Kategorien (Ordner, Videos, Audio, Bilder, Dokumente, Sonstiges)",
+  "log_web_share_l10n": "Web-Freigabe-Portal unterstützt jetzt mehrsprachige Anzeige basierend auf der App-Sprache",
+  "msg_file_exists": "Datei existiert bereits",
+  "@msg_file_exists": {
+    "description": "Conflict dialog title"
+  },
+  "msg_file_exists_desc": "Im Zielordner existiert bereits eine Datei mit dem Namen \"{fileName}\". Wie möchten Sie vorgehen?",
+  "@msg_file_exists_desc": {
+    "description": "Conflict dialog description",
+    "placeholders": {
+      "fileName": { "type": "String" }
+    }
+  },
+  "msg_existing_file": "Vorhandene Datei",
+  "@msg_existing_file": {
+    "description": "Existing file label in conflict dialog"
+  },
+  "msg_cancel_paste": "Einfügen abbrechen",
+  "@msg_cancel_paste": {
+    "description": "Cancel paste button"
+  },
+  "msg_skip_file": "Überspringen",
+  "@msg_skip_file": {
+    "description": "Skip file button in conflict dialog"
+  },
+  "msg_overwrite_file": "Ersetzen",
+  "@msg_overwrite_file": {
+    "description": "Overwrite file button in conflict dialog"
+  },
+  "msg_newer": "Neuer",
+  "@msg_newer": {
+    "description": "Newer badge in conflict dialog"
+  },
+  "msg_new_file_name": "Neuer Dateiname",
+  "@msg_new_file_name": {
+    "description": "New file name label in rename dialog"
+  },
+  "ui_extract": "Entpacken",
+  "msg_remember_choice": "Diese Auswahl für zukünftige Vorgänge merken",
   "ui_caching": "Zwischenspeicherung, bitte warten...",
   "ui_username": "Benutzername",
   "ui_anonymous": "Anonym",
@@ -3199,5 +3257,76 @@
   "ui_save_as": "Speichern unter",
   "ui_undo": "Rückgängig",
   "ui_redo": "Wiederholen",
-  "ui_add_selected": "Auswahl hinzufügen ({count})"
+  "ui_add_selected": "Auswahl hinzufügen ({count})",
+  "msg_vault_choose_mode": "Schutzmodus wählen",
+  "msg_vault_mode_desc": "Wählen Sie, wie Sie Ihre ausgewählten Dateien schützen möchten. Sichere Dateien werden sofort XOR-verschlüsselt.",
+  "ui_secure_import": "Sicherer Import (Sandbox)",
+  "ui_in_place_scramble": "In-Place-Scramble (Schnell)",
+  "msg_scrambling": "Scramble & Schutz...",
+  "msg_protected_count": "{successCount} Elemente erfolgreich geschützt.",
+  "msg_protect_failed_count": "Fehler beim Sperren von {failCount} Elementen.",
+  "msg_restored": "「{name}」wurde an den ursprünglichen Speicherort wiederhergestellt.",
+  "msg_restore_failed": "Fehler beim Wiederherstellen der Datei: {error}",
+  "msg_decrypting": "Sichere Entschlüsselung...",
+  "msg_security_details": "Sicherheitsdetails",
+  "ui_restore_unhide": "Wiederherstellen (Einblenden)",
+  "msg_permanent_delete": "Dauerhaft löschen?",
+  "msg_permanent_delete_content": "Sind Sie sicher, dass Sie 「{name}」dauerhaft löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+  "msg_file_deleted": "Datei wurde dauerhaft gelöscht.",
+  "msg_delete_failed": "Fehler beim Löschen der Datei: {error}",
+  "msg_original_name": "Ursprünglicher Name",
+  "msg_original_path": "Ursprünglicher Pfad",
+  "msg_scrambled_path": "Verschlüsselter Pfad",
+  "msg_size_label": "Größe",
+  "msg_locked_at": "Gesperrt am",
+  "msg_protection_mode": "Schutzmodus",
+  "msg_in_place_scrambling": "In-Place-Scramble",
+  "msg_isolated_move": "Isolierte Verschiebung (Sandbox)",
+  "web_share_search": "Dateien & Ordner suchen...",
+  "web_share_upload": "Hochladen",
+  "web_share_drop_title": "Dateien hier ablegen zum Hochladen",
+  "web_share_drop_desc": "Ihre Dateien werden sofort in diesen freigegebenen Ordner hochgeladen",
+  "web_share_empty_search": "Keine Elemente entsprechen Ihrer Suche",
+  "web_share_empty_desc": "Überprüfen Sie die Schreibweise oder versuchen Sie einen anderen Suchbegriff",
+  "web_share_copy_link": "Link kopieren",
+  "web_share_download": "Herunterladen",
+  "web_share_uploading": "{name} wird hochgeladen...",
+  "@web_share_uploading": {
+    "description": "Upload progress title",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "web_share_upload_success": "Upload erfolgreich abgeschlossen",
+  "web_share_upload_failed": "Hochladen von {name} fehlgeschlagen",
+  "@web_share_upload_failed": {
+    "description": "Upload failed message",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "web_share_preview_unsupported": "Vorschau für diesen Dateityp nicht unterstützt",
+  "web_share_preview_download": "Klicken Sie unten auf Herunterladen, um es auf Ihrem Gerät zu speichern",
+  "web_share_footer": "Sicheres Teilen und Streamen von Dateien über ZenFile",
+  "web_share_parent_dir": "Übergeordnetes Verzeichnis",
+  "web_share_go_up": "Eine Ebene nach oben gehen",
+  "web_share_items_count": "{count} Elemente",
+  "@web_share_items_count": {
+    "description": "Item count display",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "web_share_link_copied": "Link in die Zwischenablage kopiert",
+  "web_share_copy_failed": "Link konnte nicht kopiert werden",
+  "web_share_local": "Lokale Wi-Fi-Freigabe",
+  "web_share_internet": "Internet-Freigabe",
+  "web_share_category_folders": "Ordner",
+  "web_share_category_videos": "Videos",
+  "web_share_category_audio": "Audio",
+  "web_share_category_images": "Bilder",
+  "web_share_category_documents": "Dokumente",
+  "web_share_category_others": "Sonstiges",
+  "web_share_loading_preview": "Vorschau wird geladen...",
+  "web_share_preview_error": "Dokument kann nicht gestreamt werden. Sie können es direkt herunterladen."
 }

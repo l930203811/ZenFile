@@ -10,6 +10,7 @@ import '../../services/app_manager_service.dart';
 import 'package:path/path.dart' as p;
 import 'dart:typed_data';
 import 'file_action_dialogs.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class FolderItem extends StatelessWidget {
   final FileItemModel folder;
@@ -187,7 +188,9 @@ class FolderItem extends StatelessWidget {
 
                                   final parts = <String>[];
                                   if (count != null) {
-                                    parts.add(count == 1 ? '1 item' : '$count items');
+                                    parts.add(count == 1
+                                      ? L10n.of(context).msg32a1bd25
+                                      : L10n.of(context).count4(count));
                                   }
                                   if (size != null) {
                                     parts.add(FileUtils.formatBytes(size, 1));

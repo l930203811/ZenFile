@@ -186,7 +186,7 @@ class L10nEs extends L10n {
   String get zenfile1 => 'Acerca de ZenFile';
 
   @override
-  String get v104 => 'v1.0.4 (Ver)';
+  String get v1041 => 'v1.0.41 (Ver)';
 
   @override
   String get zenfileflutter =>
@@ -256,7 +256,7 @@ class L10nEs extends L10n {
       'Mantén presionada la imagen para guardar en la galería. ¡Gracias por tu apoyo!';
 
   @override
-  String get zenfilev104 => 'Descargar ZenFile v1.0.4';
+  String get zenfilev1041 => 'Descargar ZenFile v1.0.41';
 
   @override
   String get msg9d287020 => '123 Cloud Drive';
@@ -2125,6 +2125,15 @@ class L10nEs extends L10n {
   String get msgf15821d0 => 'Extraer a Carpeta';
 
   @override
+  String get msg_extract_to => 'Extraer a…';
+
+  @override
+  String get ui_current_directory => 'Directorio actual';
+
+  @override
+  String get ui_custom_directory => 'Directorio personalizado';
+
+  @override
   String get msgff69affd => 'Contraseña (si está cifrado)';
 
   @override
@@ -2455,6 +2464,12 @@ class L10nEs extends L10n {
 
   @override
   String get cat_analyze => 'Analizar';
+
+  @override
+  String get cat_vault => 'Caja fuerte';
+
+  @override
+  String get cat_vault_desc => 'Almacenamiento seguro';
 
   @override
   String get cat_quick_categories => 'Categorías Rápidas';
@@ -2948,6 +2963,38 @@ class L10nEs extends L10n {
       'Mejorada la estabilidad del escaneo de categoría de audio';
 
   @override
+  String get log_extract_dialog_redesign =>
+      'Diálogo de extracción rediseñado con selección de directorio actual/personalizado';
+
+  @override
+  String get log_vault_quick_category =>
+      'Acceso directo a la caja fuerte añadido a categorías rápidas (desactivado por defecto)';
+
+  @override
+  String get log_vault_l10n_fix =>
+      'Corregidos textos en inglés codificados y congelación al agregar múltiples archivos en la caja fuerte';
+
+  @override
+  String get log_compression_path_fix =>
+      'Unificados los caminos de compresión para el botón de tres puntos y el menú de pulsación larga';
+
+  @override
+  String get log_compression_progress =>
+      'Mejorado el diálogo de progreso de compresión con indicación multi-etapa y cierre automático confiable';
+
+  @override
+  String get log_web_share_category =>
+      'El portal de uso compartido web ahora muestra archivos en secciones categorizadas (carpetas, videos, audio, imágenes, documentos, otros)';
+
+  @override
+  String get log_web_share_l10n =>
+      'El portal de uso compartido web ahora soporta visualización multiidioma según el idioma de la aplicación';
+
+  @override
+  String get msg_remember_choice =>
+      'Recordar esta elección para operaciones futuras';
+
+  @override
   String get ui_caching => 'Almacenando en caché, por favor espere...';
 
   @override
@@ -3138,4 +3185,216 @@ class L10nEs extends L10n {
   String ui_add_selected(Object count) {
     return 'Añadir Seleccionados ($count)';
   }
+
+  @override
+  String get msg_file_exists => 'El archivo ya existe';
+
+  @override
+  String msg_file_exists_desc(String fileName) {
+    return 'Ya existe un archivo con el mismo nombre \"$fileName\" en la carpeta de destino. ¿Cómo desea proceder?';
+  }
+
+  @override
+  String get msg_existing_file => 'Archivo existente';
+
+  @override
+  String get msg_cancel_paste => 'Cancelar pegado';
+
+  @override
+  String get msg_skip_file => 'Omitir';
+
+  @override
+  String get msg_overwrite_file => 'Reemplazar';
+
+  @override
+  String get msg_newer => 'Más reciente';
+
+  @override
+  String get msg_new_file_name => 'Nuevo nombre de archivo';
+
+  @override
+  String get msg_vault_choose_mode => 'Elegir modo de protección';
+
+  @override
+  String get msg_vault_mode_desc =>
+      'Elija cómo proteger sus archivos seleccionados. Los archivos seguros se cifran con XOR instantáneamente.';
+
+  @override
+  String get ui_secure_import => 'Importación segura (Sandbox)';
+
+  @override
+  String get ui_in_place_scramble => 'Confusión in situ (Rápido)';
+
+  @override
+  String get msg_scrambling => 'Confusión y protección...';
+
+  @override
+  String msg_protected_count(Object successCount) {
+    return '$successCount elementos protegidos con éxito.';
+  }
+
+  @override
+  String msg_protect_failed_count(Object failCount) {
+    return 'Error al bloquear $failCount elementos.';
+  }
+
+  @override
+  String msg_restored(Object name) {
+    return '「$name」se ha restaurado a su ubicación original.';
+  }
+
+  @override
+  String msg_restore_failed(Object error) {
+    return 'Error al restaurar el archivo: $error';
+  }
+
+  @override
+  String get msg_decrypting => 'Descifrado seguro...';
+
+  @override
+  String get msg_security_details => 'Detalles de seguridad';
+
+  @override
+  String get ui_restore_unhide => 'Restaurar (Mostrar)';
+
+  @override
+  String get msg_permanent_delete => '¿Eliminar permanentemente?';
+
+  @override
+  String msg_permanent_delete_content(Object name) {
+    return '¿Está seguro de que desea eliminar permanentemente 「$name」? Esta acción no se puede deshacer.';
+  }
+
+  @override
+  String get msg_file_deleted =>
+      'El archivo ha sido eliminado permanentemente.';
+
+  @override
+  String msg_delete_failed(Object error) {
+    return 'Error al eliminar el archivo: $error';
+  }
+
+  @override
+  String get msg_original_name => 'Nombre original';
+
+  @override
+  String get msg_original_path => 'Ruta original';
+
+  @override
+  String get msg_scrambled_path => 'Ruta confusa';
+
+  @override
+  String get msg_size_label => 'Tamaño';
+
+  @override
+  String get msg_locked_at => 'Bloqueado el';
+
+  @override
+  String get msg_protection_mode => 'Modo de protección';
+
+  @override
+  String get msg_in_place_scrambling => 'Confusión in situ';
+
+  @override
+  String get msg_isolated_move => 'Movimiento aislado (Sandbox)';
+
+  @override
+  String get web_share_search => 'Buscar archivos y carpetas...';
+
+  @override
+  String get web_share_upload => 'Subir';
+
+  @override
+  String get web_share_drop_title => 'Suelte los archivos aquí para subirlos';
+
+  @override
+  String get web_share_drop_desc =>
+      'Sus archivos se subirán instantáneamente a esta carpeta compartida';
+
+  @override
+  String get web_share_empty_search =>
+      'Ningún elemento coincide con su búsqueda';
+
+  @override
+  String get web_share_empty_desc =>
+      'Verifique la ortografía o intente un término de búsqueda diferente';
+
+  @override
+  String get web_share_copy_link => 'Copiar enlace';
+
+  @override
+  String get web_share_download => 'Descargar';
+
+  @override
+  String web_share_uploading(String name) {
+    return 'Subiendo $name...';
+  }
+
+  @override
+  String get web_share_upload_success => 'Carga completada con éxito';
+
+  @override
+  String web_share_upload_failed(String name) {
+    return 'Error al subir $name';
+  }
+
+  @override
+  String get web_share_preview_unsupported =>
+      'La vista previa no es compatible con este tipo de archivo';
+
+  @override
+  String get web_share_preview_download =>
+      'Haga clic en Descargar a continuación para guardarlo en su dispositivo';
+
+  @override
+  String get web_share_footer =>
+      'Compartir y transmitir archivos de forma segura a través de ZenFile';
+
+  @override
+  String get web_share_parent_dir => 'Directorio principal';
+
+  @override
+  String get web_share_go_up => 'Subir un nivel';
+
+  @override
+  String web_share_items_count(int count) {
+    return '$count elementos';
+  }
+
+  @override
+  String get web_share_link_copied => 'Enlace copiado al portapapeles';
+
+  @override
+  String get web_share_copy_failed => 'Error al copiar el enlace';
+
+  @override
+  String get web_share_local => 'Compartir Wi-Fi local';
+
+  @override
+  String get web_share_internet => 'Compartir por Internet';
+
+  @override
+  String get web_share_category_folders => 'Carpetas';
+
+  @override
+  String get web_share_category_videos => 'Videos';
+
+  @override
+  String get web_share_category_audio => 'Audio';
+
+  @override
+  String get web_share_category_images => 'Imágenes';
+
+  @override
+  String get web_share_category_documents => 'Documentos';
+
+  @override
+  String get web_share_category_others => 'Otros';
+
+  @override
+  String get web_share_loading_preview => 'Cargando vista previa...';
+
+  @override
+  String get web_share_preview_error =>
+      'No se puede transmitir el documento. Aún puede descargarlo directamente.';
 }

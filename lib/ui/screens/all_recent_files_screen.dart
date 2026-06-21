@@ -10,6 +10,7 @@ import '../../models/file_item_model.dart';
 import '../widgets/file_item.dart';
 import '../widgets/folder_item.dart';
 import '../widgets/file_action_dialogs.dart';
+import '../widgets/selection_context_bottom_sheet.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class AllRecentFilesScreen extends StatefulWidget {
@@ -23,13 +24,34 @@ class AllRecentFilesScreen extends StatefulWidget {
 class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
   List<FileItemModel> _recentFiles = [];
   bool _isLoading = true;
-  final Set<String> _selectedPaths = {};
 
-  bool get _isSelectionMode => _selectedPaths.isNotEmpty;
+  bool get _isSelectionMode {
+    try {
+      return context.read<FileManagerProvider>().selectedPaths.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Set<String> get _selectedPaths {
+    try {
+      return context.read<FileManagerProvider>().selectedPaths;
+    } catch (_) {
+      return {};
+    }
+  }
 
   @override
   void initState() {
     super.initState();
+    // 清除可能残留的全局选择状态
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        try {
+          context.read<FileManagerProvider>().clearSelection();
+        } catch (_) {}
+      }
+    });
     _loadRecentFiles();
   }
 
@@ -172,27 +194,23 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
   }
 
   void _toggleSelection(String path) {
-    setState(() {
-      if (_selectedPaths.contains(path)) {
-        _selectedPaths.remove(path);
-      } else {
-        _selectedPaths.add(path);
-      }
-    });
+    final provider = context.read<FileManagerProvider>();
+    provider.toggleSelection(path);
+    setState(() {});
   }
 
   void _selectAll() {
-    setState(() {
-      for (final item in _recentFiles) {
-        _selectedPaths.add(item.path);
-      }
-    });
+    final provider = context.read<FileManagerProvider>();
+    for (final item in _recentFiles) {
+      provider.toggleSelection(item.path);
+    }
+    setState(() {});
   }
 
   void _clearSelection() {
-    setState(() {
-      _selectedPaths.clear();
-    });
+    final provider = context.read<FileManagerProvider>();
+    provider.clearSelection();
+    setState(() {});
   }
 
   void _handleCopySelected() {
@@ -201,7 +219,6 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('已复制 ${_selectedPaths.length} 个项目到剪贴板')),
     );
-    _clearSelection();
   }
 
   void _handleCutSelected() {
@@ -210,7 +227,6 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('已剪切 ${_selectedPaths.length} 个项目到剪贴板')),
     );
-    _clearSelection();
   }
 
   Future<void> _handleShareSelected() async {
@@ -232,7 +248,6 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).msg7a4ee0c7)));
     }
-    _clearSelection();
   }
 
   Future<void> _handleDeleteSelected() async {
@@ -240,7 +255,7 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
     final confirm = await FileActionDialogs.showConfirmDialog(
       context,
       title: L10n.of(context).msgcd0b9aca,
-      content: 'Are you sure you want to delete ${_selectedPaths.length} selected item(s)? This cannot be undone.',
+      content: L10n.of(context).selectedcount2(_selectedPaths.length),
     );
 
     if (confirm) {
@@ -252,7 +267,6 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
           _recentFiles.removeWhere((e) => e.path == path);
         });
       }
-      _clearSelection();
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).msg45326802)));
     }
   }
@@ -302,7 +316,7 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
         final confirm = await FileActionDialogs.showConfirmDialog(
           context,
           title: L10n.of(context).msg53518c22,
-          content: 'Are you sure you want to delete this item? This cannot be undone.',
+          content: L10n.of(context).msgee14ee27,
         );
         if (confirm) {
           await provider.deleteFile(path);
@@ -416,7 +430,13 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
                             provider.loadDirectory(item.path);
                           }
                         },
-                        onLongPress: () => _toggleSelection(item.path),
+                        onLongPress: () {
+                          if (_isSelectionMode && isItemSelected) {
+                            SelectionContextBottomSheet.show(context, provider, item.path);
+                          } else {
+                            _toggleSelection(item.path);
+                          }
+                        },
                         onAction: (action) => _handleAction(context, action, item.path),
                       );
                     } else {
@@ -431,7 +451,13 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
                             provider.openFile(context, item.path);
                           }
                         },
-                        onLongPress: () => _toggleSelection(item.path),
+                        onLongPress: () {
+                          if (_isSelectionMode && isItemSelected) {
+                            SelectionContextBottomSheet.show(context, provider, item.path);
+                          } else {
+                            _toggleSelection(item.path);
+                          }
+                        },
                         onAction: (action) => _handleAction(context, action, item.path),
                       );
                     }

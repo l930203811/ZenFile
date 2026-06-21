@@ -200,10 +200,10 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "zenfile1": "About ZenFile",
-  "@v104": {
+  "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "v104": "v1.0.4 (View)",
+  "v1041": "v1.0.41 (View)",
   "@zenfileflutter": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -288,10 +288,10 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "msg0537b04e": "Long press image to save to gallery. Thank you for your support!",
-  "@zenfilev104": {
+  "@zenfilev1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfilev104": "Download ZenFile v1.0.4",
+  "zenfilev1041": "Download ZenFile v1.0.41",
   "@msg9d287020": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -2509,6 +2509,18 @@
   "@msgff69affd": {
     "description": "ui\\widgets\\extract_archive_dialog.dart"
   },
+  "msg_extract_to": "Extract to…",
+  "@msg_extract_to": {
+    "description": "Extract archive dialog title"
+  },
+  "ui_current_directory": "Current Directory",
+  "@ui_current_directory": {
+    "description": "Extract to current directory checkbox"
+  },
+  "ui_custom_directory": "Custom Directory",
+  "@ui_custom_directory": {
+    "description": "Extract to custom directory checkbox"
+  },
   "msgff69affd": "Password (if encrypted)",
   "@msg67eda5e6": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
@@ -2778,6 +2790,8 @@
   "cat_manage": "Manage",
   "cat_config": "Config",
   "cat_analyze": "Analyze",
+  "cat_vault": "Vault",
+  "cat_vault_desc": "Secure Storage",
   "cat_quick_categories": "Quick Categories",
   "ui_nav": "Navigation",
   "ui_home": "Home",
@@ -3148,6 +3162,14 @@
   "log_remote_to_remote": "Added copy/cut between remote servers",
   "log_remote_cut_progress": "Fixed remote cut operation progress bar display issue",
   "log_audio_scan_stable": "Improved audio category scanning stability",
+  "log_extract_dialog_redesign": "Redesigned extract dialog with current/custom directory selection",
+  "log_vault_quick_category": "Added vault shortcut to quick categories (default off)",
+  "log_vault_l10n_fix": "Fixed vault screen hardcoded English text and multi-file freeze",
+  "log_compression_path_fix": "Unified compression paths for three-dot button and long-press menu",
+  "log_compression_progress": "Improved compression progress dialog with multi-stage progress and reliable auto-close",
+  "log_web_share_category": "Web sharing portal now displays files in categorized sections (folders, videos, audio, images, documents, others)",
+  "log_web_share_l10n": "Web sharing portal now supports multi-language display based on app locale",
+  "msg_remember_choice": "Remember this choice for future operations",
   "ui_caching": "Caching, please wait...",
   "ui_username": "Username",
   "ui_anonymous": "Anonymous",
@@ -3205,5 +3227,115 @@
   "ui_save_as": "Save As",
   "ui_undo": "Undo",
   "ui_redo": "Redo",
-  "ui_add_selected": "Add Selected ({count})"
+  "ui_add_selected": "Add Selected ({count})",
+  "msg_file_exists": "File Already Exists",
+  "@msg_file_exists": {
+    "description": "Title shown when a file conflict is detected"
+  },
+  "msg_file_exists_desc": "A file with the same name \"{fileName}\" already exists in the destination folder. How would you like to proceed?",
+  "@msg_file_exists_desc": {
+    "description": "Description shown when a file conflict is detected",
+    "placeholders": {
+      "fileName": {
+        "type": "String",
+        "example": "document.txt"
+      }
+    }
+  },
+  "msg_existing_file": "Existing File",
+  "@msg_existing_file": {
+    "description": "Label for the existing file in conflict dialog"
+  },
+  "msg_cancel_paste": "Cancel Paste",
+  "@msg_cancel_paste": {
+    "description": "Button to cancel paste operation in conflict dialog"
+  },
+  "msg_skip_file": "Skip",
+  "@msg_skip_file": {
+    "description": "Button to skip file in conflict dialog"
+  },
+  "msg_overwrite_file": "Overwrite",
+  "@msg_overwrite_file": {
+    "description": "Button to overwrite file in conflict dialog"
+  },
+  "msg_newer": "Newer",
+  "@msg_newer": {
+    "description": "Badge indicating a file is newer in conflict dialog"
+  },
+  "msg_new_file_name": "New File Name",
+  "@msg_new_file_name": {
+    "description": "Label for new file name input in rename dialog"
+  },
+  "ui_extract": "Extract",
+  "msg_vault_choose_mode": "Choose Protection Mode",
+  "msg_vault_mode_desc": "Choose how you want to protect your selected files. Secured files are XOR scrambled instantly.",
+  "ui_secure_import": "Secure Import (Sandbox)",
+  "ui_in_place_scramble": "In-Place Scramble (Fast)",
+  "msg_scrambling": "Scrambling & Protecting...",
+  "msg_protected_count": "Protected {successCount} items successfully.",
+  "msg_protect_failed_count": "Failed to lock {failCount} items.",
+  "msg_restored": "Restored \"{name}\" to its original location.",
+  "msg_restore_failed": "Failed to restore file: {error}",
+  "msg_decrypting": "Decrypting securely...",
+  "msg_security_details": "Security Details",
+  "ui_restore_unhide": "Restore (Unhide)",
+  "msg_permanent_delete": "Permanently Delete?",
+  "msg_permanent_delete_content": "Are you sure you want to permanently delete \"{name}\"? This action cannot be undone.",
+  "msg_file_deleted": "File has been permanently deleted.",
+  "msg_delete_failed": "Failed to delete file: {error}",
+  "msg_original_name": "Original Name",
+  "msg_original_path": "Original Path",
+  "msg_scrambled_path": "Scrambled Path",
+  "msg_size_label": "Size",
+  "msg_locked_at": "Locked At",
+  "msg_protection_mode": "Protection Mode",
+  "msg_in_place_scrambling": "In-Place Scrambling",
+  "msg_isolated_move": "Isolated Move (Sandbox)",
+  "web_share_search": "Search files & folders...",
+  "web_share_upload": "Upload",
+  "web_share_drop_title": "Drop files here to upload",
+  "web_share_drop_desc": "Your files will be uploaded instantly to this shared folder",
+  "web_share_empty_search": "No items match your search",
+  "web_share_empty_desc": "Check the spelling or try a different search term",
+  "web_share_copy_link": "Copy Link",
+  "web_share_download": "Download",
+  "web_share_uploading": "Uploading {name}...",
+  "@web_share_uploading": {
+    "description": "Upload progress title",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "web_share_upload_success": "Upload completed successfully",
+  "web_share_upload_failed": "Failed to upload {name}",
+  "@web_share_upload_failed": {
+    "description": "Upload failed message",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "web_share_preview_unsupported": "Preview is not supported for this file type",
+  "web_share_preview_download": "Click Download below to save it on your system",
+  "web_share_footer": "Securely sharing and streaming files via ZenFile",
+  "web_share_parent_dir": "Parent Directory",
+  "web_share_go_up": "Go up one level",
+  "web_share_items_count": "{count} items",
+  "@web_share_items_count": {
+    "description": "Item count display",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "web_share_link_copied": "Link copied to clipboard",
+  "web_share_copy_failed": "Failed to copy link",
+  "web_share_local": "Local Wi-Fi Share",
+  "web_share_internet": "Internet Share",
+  "web_share_category_folders": "Folders",
+  "web_share_category_videos": "Videos",
+  "web_share_category_audio": "Audio",
+  "web_share_category_images": "Images",
+  "web_share_category_documents": "Documents",
+  "web_share_category_others": "Others",
+  "web_share_loading_preview": "Loading preview...",
+  "web_share_preview_error": "Failed to stream document. You can still download it directly."
 }

@@ -172,7 +172,7 @@ class AboutZenFileScreen extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            L10n.of(context).v104,
+                            L10n.of(context).v1041,
                             style: TextStyle(
                               color: theme.colorScheme.primary,
                               fontSize: 12.5,
@@ -674,7 +674,7 @@ class AboutZenFileScreen extends StatelessWidget {
                           children: [
                             Icon(Icons.download_rounded, size: 18, color: theme.colorScheme.primary),
                             const SizedBox(width: 8),
-                            Text(L10n.of(context).zenfilev104, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withOpacity(0.9))),
+                            Text(L10n.of(context).zenfilev1041, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withOpacity(0.9))),
                           ],
                         ),
                         const SizedBox(height: 12),
@@ -691,6 +691,16 @@ class AboutZenFileScreen extends StatelessWidget {
                     ),
                   ),
 
+                  _buildVersionSection(ctx, theme, 'v1.0.41', '2026-06-21', [
+                    L10n.of(context).log_extract_dialog_redesign,
+                    L10n.of(context).log_vault_quick_category,
+                    L10n.of(context).log_vault_l10n_fix,
+                    L10n.of(context).log_compression_path_fix,
+                    L10n.of(context).log_compression_progress,
+                    L10n.of(context).log_web_share_category,
+                    L10n.of(context).log_web_share_l10n,
+                  ]),
+                  const SizedBox(height: 16),
                   _buildVersionSection(ctx, theme, 'v1.0.4', '2026-06-19', [
                     L10n.of(context).log_remote_media_cache,
                     L10n.of(context).log_remote_to_remote,
@@ -701,25 +711,6 @@ class AboutZenFileScreen extends StatelessWidget {
                     L10n.of(context).log_10_languages,
                     L10n.of(context).log_fix_l10n_hardcode,
                     L10n.of(context).log_language_scroll,
-                  ]),
-                  const SizedBox(height: 16),
-                  _buildVersionSection(ctx, theme, 'v1.0.3', '2026-06-16', [
-                    L10n.of(context).log_i18n_full,
-                    L10n.of(context).log_fix_selection_count,
-                    L10n.of(context).log_fix_remote_title,
-                    L10n.of(context).log_svg_thumbnail_category,
-                    L10n.of(context).log_language_btn_top,
-                    L10n.of(context).log_fix_category_missing,
-                    L10n.of(context).svg,
-                    L10n.of(context).ziprar7ztargz,
-                    L10n.of(context).msg09a6e11b,
-                    L10n.of(context).msg1c80891a,
-                    L10n.of(context).msg1c3206b8,
-                    L10n.of(context).msg212f8f9e,
-                    L10n.of(context).msgb1e4da91,
-                    L10n.of(context).yyyymmdd,
-                    L10n.of(context).msg4c425252,
-                    L10n.of(context).msgd0cf310e,
                   ]),
                   const SizedBox(height: 24),
 

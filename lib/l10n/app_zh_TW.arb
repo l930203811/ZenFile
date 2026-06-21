@@ -210,8 +210,8 @@
   "@zenfile1": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "v104": "v1.0.4 (檢視)",
-  "@v104": {
+  "v1041": "v1.0.41 (檢視)",
+  "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
   "zenfileflutter": "ZenFile 是一款基於 Flutter 構建的精美、流暢、開源的檔案管理器和離線媒體中心。專為極致效能、乾淨的毛玻璃美學和無縫使用者體驗而設計。",
@@ -298,8 +298,8 @@
   "@msg0537b04e": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfilev104": "下載 ZenFile v1.0.4",
-  "@zenfilev104": {
+  "zenfilev1041": "下載 ZenFile v1.0.41",
+  "@zenfilev1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
   "msg9d287020": "123雲盤",
@@ -2549,6 +2549,18 @@
   "@msgf15821d0": {
     "description": "ui\\widgets\\extract_archive_dialog.dart"
   },
+  "msg_extract_to": "解壓縮到…",
+  "@msg_extract_to": {
+    "description": "Extract archive dialog title"
+  },
+  "ui_current_directory": "目前目錄",
+  "@ui_current_directory": {
+    "description": "Extract to current directory checkbox"
+  },
+  "ui_custom_directory": "自訂目錄",
+  "@ui_custom_directory": {
+    "description": "Extract to custom directory checkbox"
+  },
   "msgff69affd": "密碼（如果已加密）",
   "@msgff69affd": {
     "description": "ui\\widgets\\extract_archive_dialog.dart"
@@ -2830,6 +2842,8 @@
   "cat_manage": "管理",
   "cat_config": "配置",
   "cat_analyze": "分析",
+  "cat_vault": "保險箱",
+  "cat_vault_desc": "安全儲存",
   "cat_quick_categories": "快捷分類",
   "ui_nav": "導航",
   "ui_home": "主頁",
@@ -3200,6 +3214,50 @@
   "log_remote_to_remote": "新增遠端伺服器到遠端伺服器的複製/剪下功能",
   "log_remote_cut_progress": "修復遠端剪下操作進度條顯示異常",
   "log_audio_scan_stable": "優化音訊分類掃描穩定性",
+  "log_extract_dialog_redesign": "重新設計解壓對話框，支援當前目錄/自訂目錄選擇",
+  "log_vault_quick_category": "將保險箱快捷方式新增到快捷分類（預設關閉）",
+  "log_vault_l10n_fix": "修復保險箱頁面英文硬編碼和新增多檔案時卡死的問題",
+  "log_compression_path_fix": "統一三點按鈕和長按選單的壓縮路徑，修復壓縮包名稱錯誤",
+  "log_compression_progress": "優化壓縮進度對話框，支援多階段進度顯示和可靠自動關閉",
+  "log_web_share_category": "網頁共享入口支援分類顯示檔案（資料夾、影片、音訊、圖片、文件、其他）",
+  "log_web_share_l10n": "網頁共享入口支援根據 App 語言自動切換多語言顯示",
+  "msg_file_exists": "檔案已存在",
+  "@msg_file_exists": {
+    "description": "Conflict dialog title"
+  },
+  "msg_file_exists_desc": "目標資料夾中已存在同名檔案\"{fileName}\"。您想怎麼處理？",
+  "@msg_file_exists_desc": {
+    "description": "Conflict dialog description",
+    "placeholders": {
+      "fileName": { "type": "String" }
+    }
+  },
+  "msg_existing_file": "現有檔案",
+  "@msg_existing_file": {
+    "description": "Existing file label in conflict dialog"
+  },
+  "msg_cancel_paste": "取消貼上",
+  "@msg_cancel_paste": {
+    "description": "Cancel paste button"
+  },
+  "msg_skip_file": "跳過",
+  "@msg_skip_file": {
+    "description": "Skip file button in conflict dialog"
+  },
+  "msg_overwrite_file": "替換",
+  "@msg_overwrite_file": {
+    "description": "Overwrite file button in conflict dialog"
+  },
+  "msg_newer": "較新",
+  "@msg_newer": {
+    "description": "Newer badge in conflict dialog"
+  },
+  "msg_new_file_name": "新檔案名稱",
+  "@msg_new_file_name": {
+    "description": "New file name label in rename dialog"
+  },
+  "ui_extract": "解壓縮",
+  "msg_remember_choice": "記住此選擇，後續操作預設使用",
   "ui_caching": "正在緩存中，請稍後...",
   "ui_username": "使用者名稱",
   "ui_anonymous": "匿名",
@@ -3257,5 +3315,76 @@
   "ui_save_as": "另存為",
   "ui_undo": "撤銷",
   "ui_redo": "重做",
-  "ui_add_selected": "新增所選 ({count})"
+  "ui_add_selected": "新增所選 ({count})",
+  "msg_vault_choose_mode": "選擇保護模式",
+  "msg_vault_mode_desc": "選擇如何保護選中的檔案。安全檔案將立即進行 XOR 混淆加密。",
+  "ui_secure_import": "安全匯入（沙盒）",
+  "ui_in_place_scramble": "原地混淆（快速）",
+  "msg_scrambling": "正在混淆加密...",
+  "msg_protected_count": "成功保護 {successCount} 個項目。",
+  "msg_protect_failed_count": "失敗鎖定 {failCount} 個項目。",
+  "msg_restored": "已將「{name}」恢復到原始位置。",
+  "msg_restore_failed": "恢復檔案失敗：{error}",
+  "msg_decrypting": "正在安全解密...",
+  "msg_security_details": "安全詳情",
+  "ui_restore_unhide": "恢復（取消隱藏）",
+  "msg_permanent_delete": "永久刪除？",
+  "msg_permanent_delete_content": "確定要永久刪除「{name}」嗎？此操作無法撤銷。",
+  "msg_file_deleted": "檔案已永久刪除。",
+  "msg_delete_failed": "刪除檔案失敗：{error}",
+  "msg_original_name": "原始名稱",
+  "msg_original_path": "原始路徑",
+  "msg_scrambled_path": "混淆路徑",
+  "msg_size_label": "大小",
+  "msg_locked_at": "鎖定時間",
+  "msg_protection_mode": "保護模式",
+  "msg_in_place_scrambling": "原地混淆",
+  "msg_isolated_move": "隔離移動（沙盒）",
+  "web_share_search": "搜尋檔案和資料夾...",
+  "web_share_upload": "上傳",
+  "web_share_drop_title": "拖曳檔案到此處上傳",
+  "web_share_drop_desc": "檔案將立即上傳到此共享資料夾",
+  "web_share_empty_search": "沒有匹配的項目",
+  "web_share_empty_desc": "檢查拼寫或嘗試不同的搜尋詞",
+  "web_share_copy_link": "複製連結",
+  "web_share_download": "下載",
+  "web_share_uploading": "正在上傳 {name}...",
+  "@web_share_uploading": {
+    "description": "Upload progress title",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "web_share_upload_success": "上傳成功",
+  "web_share_upload_failed": "上傳 {name} 失敗",
+  "@web_share_upload_failed": {
+    "description": "Upload failed message",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "web_share_preview_unsupported": "不支援預覽此檔案類型",
+  "web_share_preview_download": "點擊下方下載按鈕儲存到您的裝置",
+  "web_share_footer": "透過 ZenFile 安全共享和串流傳輸檔案",
+  "web_share_parent_dir": "上級目錄",
+  "web_share_go_up": "返回上一級",
+  "web_share_items_count": "{count} 個項目",
+  "@web_share_items_count": {
+    "description": "Item count display",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "web_share_link_copied": "連結已複製到剪貼簿",
+  "web_share_copy_failed": "複製連結失敗",
+  "web_share_local": "本地 Wi-Fi 共享",
+  "web_share_internet": "網際網路共享",
+  "web_share_category_folders": "資料夾",
+  "web_share_category_videos": "影片",
+  "web_share_category_audio": "音訊",
+  "web_share_category_images": "圖片",
+  "web_share_category_documents": "文件",
+  "web_share_category_others": "其他",
+  "web_share_loading_preview": "正在載入預覽...",
+  "web_share_preview_error": "無法串流傳輸文件。您仍然可以直接下載。"
 }

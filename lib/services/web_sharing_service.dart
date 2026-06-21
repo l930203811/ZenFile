@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -45,6 +45,36 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
   final Map<String, ActiveClient> _clientsMap = {};
   Timer? _speedTimer;
 
+  /// Current locale for web sharing HTML pages (e.g., 'en', 'zh', 'zh_TW', 'ja', etc.)
+  String _webLocale = 'en';
+
+  /// Set the locale for web sharing HTML pages with normalization
+  /// Maps Flutter locale codes to web translation keys
+  void setWebLocale(String locale) {
+    // Normalize locale codes to match web translation dictionary keys
+    final normalized = _normalizeLocale(locale);
+    _webLocale = normalized;
+  }
+
+  String get webLocale => _webLocale;
+
+  /// Normalize Flutter locale code to web translation key
+  static String _normalizeLocale(String locale) {
+    final lower = locale.toLowerCase();
+    // Map various locale formats to translation keys
+    if (lower == 'zh' || lower == 'zh_cn' || lower == 'zh_hans') return 'zh';
+    if (lower == 'zh_tw' || lower == 'zh_hant') return 'zh_TW';
+    if (lower == 'ja' || lower == 'jp') return 'ja';
+    if (lower == 'ko' || lower == 'kr') return 'ko';
+    if (lower == 'de') return 'de';
+    if (lower == 'fr') return 'fr';
+    if (lower == 'es') return 'es';
+    if (lower == 'ru') return 'ru';
+    if (lower == 'ar') return 'ar';
+    if (lower == 'en' || lower == 'en_us' || lower == 'en_gb') return 'en';
+    return 'en'; // fallback
+  }
+
   List<Map<String, dynamic>> get activeClients {
     return _clientsMap.values.map((client) {
       final double progress = client.totalBytes > 0
@@ -73,6 +103,11 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
   // Real HTTP Local Server lifecycle
   Future<void> startLocalServer(String rootDir) async {
     if (_isLocalActive) return;
+
+    // 如果 rootDir 为空，使用默认的内部存储根目录
+    if (rootDir.isEmpty) {
+      rootDir = '/storage/emulated/0';
+    }
 
     try {
       // 1. Resolve local Wi-Fi IP address
@@ -191,7 +226,16 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
       _trackClientActivity(request, targetPath, 0);
       // 1. Serve beautifully designed dark HTML Directory Explorer
       final dir = Directory(targetPath);
-      final items = dir.listSync();
+      List<FileSystemEntity> items = [];
+      try {
+        items = dir.listSync();
+      } catch (e) {
+        debugPrint('WebSharing: listSync failed for $targetPath: $e');
+      }
+      debugPrint('WebSharing: listed ${items.length} items in $targetPath');
+      for (final item in items.take(5)) {
+        debugPrint('WebSharing: item = ${item.path} (type: ${item is Directory ? "dir" : "file"})');
+      }
       items.sort((a, b) {
         final aIsDir = a is Directory;
         final bIsDir = b is Directory;
@@ -301,18 +345,157 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
 
   // --- Beautiful served Dark HTML Page Builder ---
   String _generateExplorerHtml(String currentPath, List<FileSystemEntity> items, String rootDir, bool isInternet) {
-    final title = currentPath == '/' ? 'Root' : p.posix.basename(currentPath);
+    // 优先使用 App 设置的语言（通过 setWebLocale 设置），确保跟随 App 语言切换
+    // _webLocale 默认为 'en'，在 startLocalServer 时会被设为 App 当前语言
+    final lang = _webLocale;
+
+    // Dart-side translation map for HTML generation
+    const _translations = <String, Map<String, String>>{
+      'en': {
+        'root': 'Root', 'parentDir': '.. (Parent Directory)', 'goUp': 'Go up one level',
+        'folders': 'Folders', 'videos': 'Videos', 'audio': 'Audio', 'images': 'Images',
+        'documents': 'Documents', 'others': 'Others', 'items': 'items',
+        'noItems': 'No items in this category', 'search': 'Search files & folders...',
+        'upload': 'Upload', 'emptySearch': 'No items match your search',
+        'emptyDesc': 'Check the spelling or try a different search term.',
+        'fileName': 'File Name', 'fileMeta': 'Size \u2022 Modified Date',
+        'dropTitle': 'Drop files here to upload',
+        'dropDesc': 'Your files will be uploaded instantly to this shared folder',
+        'footer': 'Securely sharing and streaming files via ZenFile',
+        'download': 'Download', 'copyLink': 'Copy Link',
+      },
+      'zh': {
+        'root': '\u6839\u76ee\u5f55', 'parentDir': '.. (\u4e0a\u7ea7\u76ee\u5f55)', 'goUp': '\u8fd4\u56de\u4e0a\u4e00\u7ea7',
+        'folders': '\u6587\u4ef6\u5939', 'videos': '\u89c6\u9891', 'audio': '\u97f3\u9891', 'images': '\u56fe\u7247',
+        'documents': '\u6587\u6863', 'others': '\u5176\u4ed6', 'items': '\u4e2a\u9879\u76ee',
+        'noItems': '\u6b64\u5206\u7c7b\u4e2d\u6ca1\u6709\u9879\u76ee', 'search': '\u641c\u7d22\u6587\u4ef6\u548c\u6587\u4ef6\u5939...',
+        'upload': '\u4e0a\u4f20', 'emptySearch': '\u6ca1\u6709\u5339\u914d\u7684\u9879\u76ee',
+        'emptyDesc': '\u68c0\u67e5\u62fc\u5199\u6216\u5c1d\u8bd5\u4e0d\u540c\u7684\u641c\u7d22\u8bcd\u3002',
+        'fileName': '\u6587\u4ef6\u540d', 'fileMeta': '\u5927\u5c0f \u2022 \u4fee\u6539\u65e5\u671f',
+        'dropTitle': '\u62d6\u62fd\u6587\u4ef6\u5230\u6b64\u5904\u4e0a\u4f20',
+        'dropDesc': '\u6587\u4ef6\u5c06\u7acb\u5373\u4e0a\u4f20\u5230\u6b64\u5171\u4eab\u6587\u4ef6\u5939',
+        'footer': '\u901a\u8fc7 ZenFile \u5b89\u5168\u5171\u4eab\u548c\u6d41\u5f0f\u4f20\u8f93\u6587\u4ef6',
+        'download': '\u4e0b\u8f7d', 'copyLink': '\u590d\u5236\u94fe\u63a5',
+      },
+      'zh_TW': {
+        'root': '\u6839\u76ee\u9304', 'parentDir': '.. (\u4e0a\u7d1a\u76ee\u9304)', 'goUp': '\u8fd4\u56de\u4e0a\u4e00\u7d1a',
+        'folders': '\u8cc7\u6599\u593e', 'videos': '\u5f71\u7247', 'audio': '\u97f3\u8a0a', 'images': '\u5716\u7247',
+        'documents': '\u6587\u4ef6', 'others': '\u5176\u4ed6', 'items': '\u500b\u9805\u76ee',
+        'noItems': '\u6b64\u5206\u985e\u4e2d\u6c92\u6709\u9805\u76ee', 'search': '\u641c\u5c0b\u6a94\u6848\u548c\u8cc7\u6599\u593e...',
+        'upload': '\u4e0a\u50b3', 'emptySearch': '\u6c92\u6709\u5339\u914d\u7684\u9805\u76ee',
+        'emptyDesc': '\u6aa2\u67e5\u62fc\u5beb\u6216\u5617\u8a66\u4e0d\u540c\u7684\u641c\u5c0b\u8a5e\u3002',
+        'fileName': '\u6a94\u6848\u540d', 'fileMeta': '\u5927\u5c0f \u2022 \u4fee\u6539\u65e5\u671f',
+        'dropTitle': '\u62d6\u66f3\u6a94\u6848\u5230\u6b64\u8655\u4e0a\u50b3',
+        'dropDesc': '\u6a94\u6848\u5c07\u7acb\u5373\u4e0a\u50b3\u5230\u6b64\u5171\u4eab\u8cc0\u6599\u593e',
+        'footer': '\u900f\u904e ZenFile \u5b89\u5168\u5171\u4eab\u548c\u4e32\u6d41\u50b3\u8f38\u6a94\u6848',
+        'download': '\u4e0b\u8f09', 'copyLink': '\u8907\u88fd\u9023\u7d50',
+      },
+      'ja': {
+        'root': '\u30eb\u30fc\u30c8', 'parentDir': '.. (\u89aa\u30c7\u30a3\u30ec\u30af\u30c8\u30ea)', 'goUp': '1\u3064\u4e0a\u306e\u968e\u5c64\u306b\u623b\u308b',
+        'folders': '\u30d5\u30a9\u30eb\u30c0', 'videos': '\u52d5\u753b', 'audio': '\u97f3\u697d', 'images': '\u753b\u50cf',
+        'documents': '\u30c9\u30ad\u30e5\u30e1\u30f3\u30c8', 'others': '\u305d\u306e\u4ed6', 'items': '\u9805\u76ee',
+        'noItems': '\u3053\u306e\u30ab\u30c6\u30b4\u30ea\u306b\u9805\u76ee\u306f\u3042\u308a\u307e\u305b\u3093', 'search': '\u30d5\u30a1\u30a4\u30eb\u3068\u30d5\u30a9\u30eb\u30c0\u3092\u691c\u7d22...',
+        'upload': '\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9', 'emptySearch': '\u4e00\u81f4\u3059\u308b\u9805\u76ee\u304c\u3042\u308a\u307e\u305b\u3093',
+        'emptyDesc': '\u30b9\u30da\u30eb\u3092\u78ba\u8a8d\u3059\u308b\u304b\u3001\u5225\u306e\u691c\u7d22\u8a9e\u3092\u8a66\u3057\u3066\u304f\u3060\u3055\u3044\u3002',
+        'fileName': '\u30d5\u30a1\u30a4\u30eb\u540d', 'fileMeta': '\u30b5\u30a4\u30ba \u2022 \u66f4\u65b0\u65e5\u6642',
+        'dropTitle': '\u30d5\u30a1\u30a4\u30eb\u3092\u3053\u3053\u306b\u30c9\u30e9\u30c3\u30b0\u3057\u3066\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9',
+        'dropDesc': '\u30d5\u30a1\u30a4\u30eb\u306f\u3053\u306e\u5171\u6709\u30d5\u30a9\u30eb\u30c0\u306b\u5373\u5ea7\u306b\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9\u3055\u308c\u307e\u3059',
+        'footer': 'ZenFile \u3092\u4ecb\u3057\u3066\u30d5\u30a1\u30a4\u30eb\u3092\u5b89\u5168\u306b\u5171\u6709\u304a\u3088\u3073\u30b9\u30c8\u30ea\u30fc\u30df\u30f3\u30b0',
+        'download': '\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9', 'copyLink': '\u30ea\u30f3\u30af\u3092\u30b3\u30d4\u30fc',
+      },
+      'ko': {
+        'root': '\ub8e8\ud2b8', 'parentDir': '.. (\uc0c1\uc704 \ub514\ub809\ud1a0\ub9ac)', 'goUp': '\ud55c \ub2e8\uacc4 \uc704\ub85c \uc774\ub3d9',
+        'folders': '\ud3f4\ub354', 'videos': '\ub3d9\uc601\uc0c1', 'audio': '\uc624\ub514\uc624', 'images': '\uc774\ubbf8\uc9c0',
+        'documents': '\ubb38\uc11c', 'others': '\uae30\ud0c0', 'items': '\uac1c \ud56d\ubaa9',
+        'noItems': '\uc774 \ubd84\ub958\uc5d0 \ud56d\ubaa9\uc774 \uc5c6\uc2b5\ub2c8\ub2e4', 'search': '\ud30c\uc77c \ubc0f \ud3f4\ub354 \uac80\uc0c9...',
+        'upload': '\uc5c5\ub85c\ub4dc', 'emptySearch': '\uc77c\uce58\ud558\ub294 \ud56d\ubaa9\uc774 \uc5c6\uc2b5\ub2c8\ub2e4',
+        'emptyDesc': '\ucca0\uc790\ub97c \ud655\uc778\ud558\uac70\ub098 \ub2e4\ub978 \uac80\uc0c9\uc5b4\ub97c \uc2dc\ub3c4\ud558\uc138\uc694.',
+        'fileName': '\ud30c\uc77c \uc774\ub984', 'fileMeta': '\ud06c\uae30 \u2022 \uc218\uc815 \ub0a0\uc9dc',
+        'dropTitle': '\ud30c\uc77c\uc744 \uc5ec\uae30\uc5d0 \ub4dc\ub86d\ud558\uc5ec \uc5c5\ub85c\ub4dc',
+        'dropDesc': '\ud30c\uc77c\uc774 \uc774 \uacf5\uc720 \ud3f4\ub354\uc5d0 \uc989\uc2dc \uc5c5\ub85c\ub4dc\ub429\ub2c8\ub2e4',
+        'footer': 'ZenFile\uc744 \ud1b5\ud574 \ud30c\uc77c\uc744 \uc548\uc804\ud558\uac8c \uacf5\uc720 \ubc0f \uc2a4\ud2b8\ub9ac\ubc0d',
+        'download': '\ub2e4\uc6b4\ub85c\ub4dc', 'copyLink': '\ub9c1\ud06c \ubcf5\uc0ac',
+      },
+      'de': {
+        'root': 'Stammverzeichnis', 'parentDir': '.. (\u00dcbergeordnetes Verzeichnis)', 'goUp': 'Eine Ebene nach oben',
+        'folders': 'Ordner', 'videos': 'Videos', 'audio': 'Audio', 'images': 'Bilder',
+        'documents': 'Dokumente', 'others': 'Sonstiges', 'items': 'Elemente',
+        'noItems': 'Keine Elemente in dieser Kategorie', 'search': 'Dateien & Ordner suchen...',
+        'upload': 'Hochladen', 'emptySearch': 'Keine Elemente entsprechen Ihrer Suche',
+        'emptyDesc': '\u00dcberpr\u00fcfen Sie die Schreibweise oder versuchen Sie einen anderen Suchbegriff.',
+        'fileName': 'Dateiname', 'fileMeta': 'Gr\u00f6\u00dfe \u2022 \u00c4nderungsdatum',
+        'dropTitle': 'Dateien hier ablegen zum Hochladen',
+        'dropDesc': 'Ihre Dateien werden sofort in diesen freigegebenen Ordner hochgeladen',
+        'footer': 'Sicheres Teilen und Streamen von Dateien \u00fcber ZenFile',
+        'download': 'Herunterladen', 'copyLink': 'Link kopieren',
+      },
+      'fr': {
+        'root': 'Racine', 'parentDir': '.. (R\u00e9pertoire parent)', 'goUp': 'Remonter d\'un niveau',
+        'folders': 'Dossiers', 'videos': 'Vid\u00e9os', 'audio': 'Audio', 'images': 'Images',
+        'documents': 'Documents', 'others': 'Autres', 'items': '\u00e9l\u00e9ments',
+        'noItems': 'Aucun \u00e9l\u00e9ment dans cette cat\u00e9gorie', 'search': 'Rechercher des fichiers et dossiers...',
+        'upload': 'T\u00e9l\u00e9charger', 'emptySearch': 'Aucun \u00e9l\u00e9ment ne correspond \u00e0 votre recherche',
+        'emptyDesc': 'V\u00e9rifiez l\'orthographe ou essayez un terme de recherche diff\u00e9rent.',
+        'fileName': 'Nom du fichier', 'fileMeta': 'Taille \u2022 Date de modification',
+        'dropTitle': 'D\u00e9posez les fichiers ici pour les t\u00e9l\u00e9charger',
+        'dropDesc': 'Vos fichiers seront instantan\u00e9ment t\u00e9l\u00e9charg\u00e9s dans ce dossier partag\u00e9',
+        'footer': 'Partage et diffusion s\u00e9curis\u00e9s de fichiers via ZenFile',
+        'download': 'T\u00e9l\u00e9charger', 'copyLink': 'Copier le lien',
+      },
+      'es': {
+        'root': 'Ra\u00edz', 'parentDir': '.. (Directorio principal)', 'goUp': 'Subir un nivel',
+        'folders': 'Carpetas', 'videos': 'V\u00eddeos', 'audio': 'Audio', 'images': 'Im\u00e1genes',
+        'documents': 'Documentos', 'others': 'Otros', 'items': 'elementos',
+        'noItems': 'No hay elementos en esta categor\u00eda', 'search': 'Buscar archivos y carpetas...',
+        'upload': 'Subir', 'emptySearch': 'Ning\u00fan elemento coincide con su b\u00fasqueda',
+        'emptyDesc': 'Verifique la ortograf\u00eda o intente un t\u00e9rmino de b\u00fasqueda diferente.',
+        'fileName': 'Nombre del archivo', 'fileMeta': 'Tama\u00f1o \u2022 Fecha de modificaci\u00f3n',
+        'dropTitle': 'Suelte los archivos aqu\u00ed para subirlos',
+        'dropDesc': 'Sus archivos se subir\u00e1n instant\u00e1neamente a esta carpeta compartida',
+        'footer': 'Compartir y transmitir archivos de forma segura a trav\u00e9s de ZenFile',
+        'download': 'Descargar', 'copyLink': 'Copiar enlace',
+      },
+      'ru': {
+        'root': '\u041a\u043e\u0440\u043d\u0435\u0432\u043e\u0439 \u043a\u0430\u0442\u0430\u043b\u043e\u0433', 'parentDir': '.. (\u0420\u043e\u0434\u0438\u0442\u0435\u043b\u044c\u0441\u043a\u0438\u0439 \u043a\u0430\u0442\u0430\u043b\u043e\u0433)', 'goUp': '\u041f\u0435\u0440\u0435\u0439\u0442\u0438 \u043d\u0430 \u0443\u0440\u043e\u0432\u0435\u043d\u044c \u0432\u044b\u0448\u0435',
+        'folders': '\u041f\u0430\u043f\u043a\u0438', 'videos': '\u0412\u0438\u0434\u0435\u043e', 'audio': '\u0410\u0443\u0434\u0438\u043e', 'images': '\u0418\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f',
+        'documents': '\u0414\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u044b', 'others': '\u041f\u0440\u043e\u0447\u0435\u0435', 'items': '\u044d\u043b\u0435\u043c\u0435\u043d\u0442\u043e\u0432',
+        'noItems': '\u041d\u0435\u0442 \u044d\u043b\u0435\u043c\u0435\u043d\u0442\u043e\u0432 \u0432 \u044d\u0442\u043e\u0439 \u043a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u0438', 'search': '\u041f\u043e\u0438\u0441\u043a \u0444\u0430\u0439\u043b\u043e\u0432 \u0438 \u043f\u0430\u043f\u043e\u043a...',
+        'upload': '\u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c', 'emptySearch': '\u041d\u0435\u0442 \u044d\u043b\u0435\u043c\u0435\u043d\u0442\u043e\u0432, \u0441\u043e\u043e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0443\u044e\u0449\u0438\u0445 \u0432\u0430\u0448\u0435\u043c\u0443 \u0437\u0430\u043f\u0440\u043e\u0441\u0443',
+        'emptyDesc': '\u041f\u0440\u043e\u0432\u0435\u0440\u044c\u0442\u0435 \u043f\u0440\u0430\u0432\u043e\u043f\u0438\u0441\u0430\u043d\u0438\u0435 \u0438\u043b\u0438 \u043f\u043e\u043f\u0440\u043e\u0431\u0443\u0439\u0442\u0435 \u0434\u0440\u0443\u0433\u043e\u0439 \u043f\u043e\u0438\u0441\u043a\u043e\u0432\u044b\u0439 \u0437\u0430\u043f\u0440\u043e\u0441.',
+        'fileName': '\u0418\u043c\u044f \u0444\u0430\u0439\u043b\u0430', 'fileMeta': '\u0420\u0430\u0437\u043c\u0435\u0440 \u2022 \u0414\u0430\u0442\u0430 \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u044f',
+        'dropTitle': '\u041f\u0435\u0440\u0435\u0442\u0430\u0449\u0438\u0442\u0435 \u0444\u0430\u0439\u043b\u044b \u0441\u044e\u0434\u0430 \u0434\u043b\u044f \u0437\u0430\u0433\u0440\u0443\u0437\u043a\u0438',
+        'dropDesc': '\u0412\u0430\u0448\u0438 \u0444\u0430\u0439\u043b\u044b \u0431\u0443\u0434\u0443\u0442 \u043c\u0433\u043d\u043e\u0432\u0435\u043d\u043d\u043e \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u044b \u0432 \u044d\u0442\u0443 \u043e\u0431\u0449\u0443\u044e \u043f\u0430\u043f\u043a\u0443',
+        'footer': '\u0411\u0435\u0437\u043e\u043f\u0430\u0441\u043d\u043e\u0435 \u0441\u043e\u0432\u043c\u0435\u0441\u0442\u043d\u043e\u0435 \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u043d\u0438\u0435 \u0438 \u0441\u0442\u0440\u0438\u043c\u0438\u043d\u0433 \u0444\u0430\u0439\u043b\u043e\u0432 \u0447\u0435\u0440\u0435\u0437 ZenFile',
+        'download': '\u0421\u043a\u0430\u0447\u0430\u0442\u044c', 'copyLink': '\u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0441\u0441\u044b\u043b\u043a\u0443',
+      },
+      'ar': {
+        'root': '\u0627\u0644\u062c\u0630\u0631', 'parentDir': '.. (\u0627\u0644\u062f\u0644\u064a\u0644 \u0627\u0644\u0623\u0635\u0644\u064a)', 'goUp': '\u0627\u0644\u0627\u0646\u062a\u0642\u0627\u0644 \u0644\u0644\u0623\u0639\u0644\u0649',
+        'folders': '\u0627\u0644\u0645\u062c\u0644\u062f\u0627\u062a', 'videos': '\u0627\u0644\u0641\u064a\u062f\u064a\u0648', 'audio': '\u0627\u0644\u0635\u0648\u062a', 'images': '\u0627\u0644\u0635\u0648\u0631',
+        'documents': '\u0627\u0644\u0645\u0633\u062a\u0646\u062f\u0627\u062a', 'others': '\u0623\u062e\u0631\u0649', 'items': '\u0639\u0646\u0635\u0631',
+        'noItems': '\u0644\u0627 \u062a\u0648\u062c\u062f \u0639\u0646\u0627\u0635\u0631 \u0641\u064a \u0647\u0630\u0647 \u0627\u0644\u0641\u0626\u0629', 'search': '\u0627\u0644\u0628\u062d\u062b \u0639\u0646 \u0627\u0644\u0645\u0644\u0641\u0627\u062a \u0648\u0627\u0644\u0645\u062c\u0644\u062f\u0627\u062a...',
+        'upload': '\u0631\u0641\u0639', 'emptySearch': '\u0644\u0627 \u062a\u0648\u062c\u062f \u0639\u0646\u0627\u0635\u0631 \u062a\u0637\u0627\u0628\u0642 \u0628\u062d\u062b\u0643',
+        'emptyDesc': '\u062a\u062d\u0642\u0642 \u0645\u0646 \u0627\u0644\u0625\u0645\u0644\u0627\u0621 \u0623\u0648 \u062c\u0631\u0628 \u0645\u0635\u0637\u0644\u062d\u0627\u062d \u0622\u062e\u0631.',
+        'fileName': '\u0627\u0633\u0645 \u0627\u0644\u0645\u0644\u0641', 'fileMeta': '\u0627\u0644\u062d\u062c\u0645 \u2022 \u062a\u0627\u0631\u064a\u062e \u0627\u0644\u062a\u0639\u062f\u064a\u0644',
+        'dropTitle': '\u0623\u0633\u062d\u0628 \u0627\u0644\u0645\u0644\u0641\u0627\u062a \u0647\u0646\u0627 \u0644\u0644\u0631\u0641\u0639',
+        'dropDesc': '\u0633\u062a\u0645 \u0631\u0641\u0639 \u0645\u0644\u0641\u0627\u062a\u0643 \u0641\u0648\u0631\u0627\u064b \u0625\u0644\u0649 \u0647\u0630\u0627 \u0627\u0644\u0645\u062c\u0644\u062f \u0627\u0644\u0645\u0634\u062a\u0631\u0643',
+        'footer': '\u0645\u0634\u0627\u0631\u0643\u0629 \u0648\u0628\u062b \u0627\u0644\u0645\u0644\u0641\u0627\u062a \u0628\u0623\u0645\u0627\u0646 \u0639\u0628\u0631 ZenFile',
+        'download': '\u062a\u062d\u0645\u064a\u0644', 'copyLink': '\u0646\u0633\u062e \u0627\u0644\u0631\u0627\u0628\u0637',
+      },
+    };
+    final tr = _translations[lang] ?? _translations['en']!;
+
+    final title = currentPath == '/' ? tr['root']! : p.posix.basename(currentPath);
 
     // Build breadcrumbs list
     final parts = currentPath.split('/').where((p) => p.isNotEmpty).toList();
-    var breadcrumbsHtml = '<a href="/">Root</a>';
+    var breadcrumbsHtml = '<a href="/">${tr['root']}</a>';
     var pathAccumulator = '';
     for (int i = 0; i < parts.length; i++) {
       pathAccumulator += '/${parts[i]}';
       breadcrumbsHtml += ' <span class="arrow">&gt;</span> <a href="$pathAccumulator">${parts[i]}</a>';
     }
 
-    // Build directories list & files lists
+    // Build directories list & files lists - categorized
     var listHtml = '';
 
     // Standard high-fidelity SVGs to avoid emojis and offer a premium, modern layout
@@ -325,27 +508,74 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
     const backSvg = '<svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"></polyline><path d="M20 20v-7a4 4 0 0 0-4-4H4"></path></svg>';
     const downloadSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>';
 
-    if (currentPath != '/') {
-      final parentPath = p.posix.dirname(currentPath);
-      final parentUrl = parentPath == '.' || parentPath == '' ? '/' : parentPath;
-      listHtml += '''
-        <div class="explorer-item parent-dir" onclick="window.location.href='$parentUrl'">
-          <div class="item-icon-wrapper dir-icon">$backSvg</div>
-          <div class="item-details">
-            <div class="item-name">.. (Parent Directory)</div>
-            <div class="item-meta">Go up one level</div>
-          </div>
-        </div>
-      ''';
+    // Categorize items
+    final folders = <FileSystemEntity>[];
+    final videos = <FileSystemEntity>[];
+    final audios = <FileSystemEntity>[];
+    final images = <FileSystemEntity>[];
+    final documents = <FileSystemEntity>[];
+    final others = <FileSystemEntity>[];
+
+    // Helper to categorize a file by extension
+    void _categorizeFile(FileSystemEntity item, List<FileSystemEntity> vids, List<FileSystemEntity> auds, List<FileSystemEntity> imgs, List<FileSystemEntity> docs, List<FileSystemEntity> oth) {
+      final ext = p.extension(item.path).toLowerCase();
+      if (['.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.3gp', '.ts', '.m4v', '.rmvb', '.rm', '.asf', '.f4v'].contains(ext)) {
+        vids.add(item);
+      } else if (['.mp3', '.wav', '.flac', '.m4a', '.ogg', '.wma', '.aac', '.opus', '.amr', '.mid', '.midi'].contains(ext)) {
+        auds.add(item);
+      } else if (['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg', '.ico', '.tiff', '.tif', '.heic', '.heif', '.avif', '.raw'].contains(ext)) {
+        imgs.add(item);
+      } else if (['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt', '.csv', '.rtf', '.odt', '.ods', '.odp', '.md', '.json', '.xml', '.html', '.htm', '.log', '.conf', '.cfg', '.ini', '.yaml', '.yml', '.toml'].contains(ext)) {
+        docs.add(item);
+      } else {
+        oth.add(item);
+      }
     }
 
     for (final item in items) {
       final name = p.basename(item.path);
-      // Skip hidden files
       if (name.startsWith('.')) continue;
+      if (item is Directory) {
+        folders.add(item);
+      } else {
+        _categorizeFile(item, videos, audios, images, documents, others);
+      }
+    }
 
+    // Recursively scan subdirectories for media/document files (limited depth)
+    void scanSubdirs(Directory dir, int depth) {
+      if (depth > 3) return; // limit recursion depth to prevent performance issues
+      try {
+        for (final sub in dir.listSync()) {
+          final subName = p.basename(sub.path);
+          if (subName.startsWith('.')) continue;
+          if (sub is Directory) {
+            scanSubdirs(sub, depth + 1);
+          } else if (sub is File) {
+            _categorizeFile(sub, videos, audios, images, documents, others);
+          }
+        }
+      } catch (e) {
+        // Skip directories we can't read (permission denied, etc.)
+      }
+    }
+
+    // Scan each immediate subdirectory for media/document files
+    for (final folder in folders) {
+      if (folder is Directory) {
+        scanSubdirs(folder, 1);
+      }
+    }
+
+    debugPrint('WebSharing HTML: folders=${folders.length}, videos=${videos.length}, audios=${audios.length}, images=${images.length}, documents=${documents.length}, others=${others.length}');
+    debugPrint('WebSharing HTML: currentPath=$currentPath, rootDir=$rootDir, totalItems=${items.length}');
+
+    // Helper to generate a single item HTML
+    String generateItemHtml(FileSystemEntity item) {
+      final name = p.basename(item.path);
       final isDir = item is Directory;
-      final relativeUrl = p.posix.join(currentPath, name);
+      // Calculate correct URL relative to rootDir (important for recursively scanned files)
+      final relativeUrl = '/' + p.posix.relative(item.path, from: rootDir);
 
       String sizeStr = '-';
       String dateStr = '-';
@@ -357,6 +587,7 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         iconClass = 'dir-icon';
         svgIcon = folderSvg;
       } else {
+        try {
         final stat = item.statSync();
         final sizeBytes = stat.size;
         dateStr = stat.modified.toString().substring(0, 16);
@@ -368,21 +599,26 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         } else {
           sizeStr = '${(sizeBytes / 1024).toStringAsFixed(0)} KB';
         }
+        } catch (e) {
+          debugPrint('Error reading stat for ${item.path}: $e');
+          sizeStr = '?';
+          dateStr = '?';
+        }
 
         final ext = p.extension(item.path).toLowerCase();
-        if (['.mp4', '.mkv', '.avi', '.mov'].contains(ext)) {
+        if (['.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.3gp', '.ts', '.m4v', '.rmvb', '.rm', '.asf', '.f4v'].contains(ext)) {
           iconClass = 'video-icon';
           mimeType = 'video/mp4';
           svgIcon = videoSvg;
-        } else if (['.mp3', '.wav', '.flac', '.m4a'].contains(ext)) {
+        } else if (['.mp3', '.wav', '.flac', '.m4a', '.ogg', '.wma', '.aac', '.opus', '.amr', '.mid', '.midi'].contains(ext)) {
           iconClass = 'audio-icon';
           mimeType = 'audio/mpeg';
           svgIcon = audioSvg;
-        } else if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].contains(ext)) {
+        } else if (['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg', '.ico', '.tiff', '.tif', '.heic', '.heif', '.avif', '.raw'].contains(ext)) {
           iconClass = 'image-icon';
           mimeType = 'image/png';
           svgIcon = imageSvg;
-        } else if (['.pdf'].contains(ext)) {
+        } else if (['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt', '.csv', '.rtf', '.odt', '.ods', '.odp', '.md', '.json', '.xml', '.html', '.htm', '.log', '.conf', '.cfg', '.ini', '.yaml', '.yml', '.toml'].contains(ext)) {
           iconClass = 'pdf-icon';
           mimeType = 'application/pdf';
           svgIcon = pdfSvg;
@@ -393,8 +629,7 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
       }
 
       if (isDir) {
-        // Folders render completely clean without copy button, action overlays, size or dates
-        listHtml += '''
+        return '''
         <div class="explorer-item folder-item" data-name="${name.replaceAll('"', '&quot;')}" data-type="directory" data-url="$relativeUrl" onclick="handleItemClick(this)">
           <div class="item-icon-wrapper dir-icon">$svgIcon</div>
           <div class="item-details">
@@ -403,7 +638,6 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         </div>
         ''';
       } else {
-        // Files render with clean hover download actions and explicit item metadata details
         final actionsHtml = '''
           <div class="item-actions">
             <button class="action-btn download-btn" onclick="downloadFile('$relativeUrl', '${name.replaceAll("'", "\\'")}', event)" title="Download File">
@@ -412,14 +646,14 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
           </div>
         ''';
 
-        listHtml += '''
+        return '''
         <div class="explorer-item file-item" data-name="${name.replaceAll('"', '&quot;')}" data-type="file" data-url="$relativeUrl" data-size="$sizeStr" data-modified="$dateStr" data-mime="$mimeType" onclick="handleItemClick(this)">
           <div class="item-icon-wrapper $iconClass">$svgIcon</div>
           <div class="item-details">
             <div class="item-name" title="${name.replaceAll('"', '&quot;')}">$name</div>
             <div class="item-meta">
               <span class="item-size">$sizeStr</span>
-              <span class="item-sep">•</span>
+              <span class="item-sep">&#8226;</span>
               <span class="item-date">$dateStr</span>
             </div>
           </div>
@@ -429,12 +663,81 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
       }
     }
 
+    // Parent directory item (if not root)
+    if (currentPath != '/') {
+      final parentPath = p.posix.dirname(currentPath);
+      final parentUrl = parentPath == '.' || parentPath == '' ? '/' : parentPath;
+      listHtml += '''
+        <div class="explorer-item parent-dir" onclick="window.location.href='$parentUrl'">
+          <div class="item-icon-wrapper dir-icon">$backSvg</div>
+          <div class="item-details">
+            <div class="item-name">${tr['parentDir']}</div>
+            <div class="item-meta">${tr['goUp']}</div>
+          </div>
+        </div>
+      ''';
+    }
+
+    // Helper to generate a category section
+    String generateCategorySection(String catKey, String catName, String iconClass, String svgIcon, List<FileSystemEntity> catItems, {bool defaultCollapsed = false}) {
+      final collapsedClass = (catItems.isEmpty || defaultCollapsed) ? 'collapsed' : '';
+      if (catItems.isEmpty) {
+        return '''
+        <section class="category-section $collapsedClass" id="cat-section-$catKey">
+          <div class="category-header" onclick="toggleCategory('$catKey')">
+            <div class="category-icon $iconClass">$svgIcon</div>
+            <div class="category-title">$catName</div>
+            <div class="category-count">0 ${tr['items']}</div>
+            <div class="category-toggle">&#9660;</div>
+          </div>
+          <div class="category-items" id="cat-$catKey">
+            <div class="category-empty">${tr['noItems']}</div>
+          </div>
+        </section>
+        ''';
+      }
+
+      var itemsHtml = '';
+      for (final item in catItems) {
+        try {
+          itemsHtml += generateItemHtml(item);
+        } catch (e) {
+          debugPrint('Error generating HTML for item ${item.path}: $e');
+        }
+      }
+
+      return '''
+        <section class="category-section $collapsedClass" id="cat-section-$catKey">
+          <div class="category-header" onclick="toggleCategory('$catKey')">
+            <div class="category-icon $iconClass">$svgIcon</div>
+            <div class="category-title">$catName</div>
+            <div class="category-count">${catItems.length} ${tr['items']}</div>
+            <div class="category-toggle">&#9660;</div>
+          </div>
+          <div class="category-items" id="cat-$catKey">
+            $itemsHtml
+          </div>
+        </section>
+        ''';
+    }
+
+    // Generate category sections in order
+    // Folders section defaults to collapsed only at root path, subdirectories default to expanded
+    // Media/document categories default to collapsed (content is from recursive scan)
+    final isRoot = currentPath == '/';
+    listHtml += generateCategorySection('folders', tr['folders']!, 'cat-folders', folderSvg, folders, defaultCollapsed: isRoot);
+    listHtml += generateCategorySection('videos', tr['videos']!, 'cat-videos', videoSvg, videos, defaultCollapsed: true);
+    listHtml += generateCategorySection('audio', tr['audio']!, 'cat-audio', audioSvg, audios, defaultCollapsed: true);
+    listHtml += generateCategorySection('images', tr['images']!, 'cat-images', imageSvg, images, defaultCollapsed: true);
+    listHtml += generateCategorySection('documents', tr['documents']!, 'cat-documents', pdfSvg, documents, defaultCollapsed: true);
+    listHtml += generateCategorySection('others', tr['others']!, 'cat-others', fileSvg, others, defaultCollapsed: true);
+
     final badgeHtml = '''
       <div class="header-actions">
         <span class="status-indicator ${isInternet ? 'cloud' : 'local'}" title="${isInternet ? 'Secure Internet Share' : 'Local High-Speed Wi-Fi Share'}"></span>
         <button class="header-upload-btn" onclick="triggerFileInput()" title="Upload Files to this Folder">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-          <span>Upload</span>
+          <span id="uploadBtnText">${tr['upload']}</span>
         </button>
       </div>
     ''';
@@ -1446,6 +1749,92 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
       margin: 40px auto 0 auto;
     }
 
+    /* Category Section Styling */
+    .category-section {
+      margin-bottom: 28px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      overflow: hidden;
+      background: var(--card);
+      transition: all 0.3s ease;
+    }
+    .category-header {
+      display: flex;
+      align-items: center;
+      padding: 14px 20px;
+      cursor: pointer;
+      gap: 14px;
+      border-bottom: 1px solid transparent;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    .category-section.expanded .category-header {
+      border-bottom-color: var(--border);
+    }
+    .category-header:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .category-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .category-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+    .category-icon.cat-folders { background: rgba(16, 185, 129, 0.12); color: #10B981; }
+    .category-icon.cat-videos { background: rgba(59, 130, 246, 0.12); color: #3B82F6; }
+    .category-icon.cat-audio { background: rgba(139, 92, 246, 0.12); color: #8B5CF6; }
+    .category-icon.cat-images { background: rgba(236, 72, 153, 0.12); color: #EC4899; }
+    .category-icon.cat-documents { background: rgba(239, 68, 68, 0.12); color: #EF4444; }
+    .category-icon.cat-others { background: rgba(107, 114, 128, 0.12); color: #6B7280; }
+    .category-title {
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--text);
+      flex: 1;
+    }
+    .category-count {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+    .category-toggle {
+      font-size: 12px;
+      color: var(--text-muted);
+      transition: transform 0.3s ease;
+      width: 20px;
+      text-align: center;
+    }
+    .category-section.collapsed .category-toggle {
+      transform: rotate(-90deg);
+    }
+    .category-items {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 12px 16px;
+      transition: all 0.3s ease;
+    }
+    .category-section.collapsed .category-items {
+      display: none;
+    }
+    .category-empty {
+      padding: 8px 0;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-style: italic;
+    }
+
     /* Mobile Responsive Optimizations */
     @media (max-width: 640px) {
       .header-content {
@@ -1508,7 +1897,7 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
     <div class="toolbar">
       <div class="search-wrapper">
         <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-        <input type="text" id="searchInput" class="search-input" placeholder="Search files & folders...">
+        <input type="text" id="searchInput" class="search-input" placeholder="${tr['search']}">
       </div>
       
       <div class="view-toggles">
@@ -1527,8 +1916,8 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
 
     <div class="empty-state" id="emptyState" style="display: none;">
       <div class="empty-icon">🔍</div>
-      <h3>No items match your search</h3>
-      <p>Check the spelling or try a different search term.</p>
+      <h3 id="emptySearchTitle">${tr['emptySearch']}</h3>
+      <p id="emptySearchDesc">${tr['emptyDesc']}</p>
     </div>
   </div>
 
@@ -1542,8 +1931,8 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
       <div class="modal-header">
         <div class="modal-icon-wrapper" id="modalIcon"></div>
         <div class="modal-title-wrapper">
-          <h3 id="modalTitle">File Name</h3>
-          <p id="modalMeta">Size • Modified Date</p>
+          <h3 id="modalTitle">${tr['fileName']}</h3>
+          <p id="modalMeta">${tr['fileMeta']}</p>
         </div>
       </div>
       
@@ -1554,11 +1943,11 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
       <div class="modal-footer">
         <button class="btn btn-secondary" id="modalCopyBtn" onclick="copyModalLink()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px; margin-right:8px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-          Copy Link
+          <span id="modalCopyBtnText">${tr['copyLink']}</span>
         </button>
         <a class="btn btn-primary" id="modalDownloadBtn" href="" download>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px; margin-right:8px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-          Download
+          <span id="modalDownloadBtnText">${tr['download']}</span>
         </a>
       </div>
     </div>
@@ -1572,8 +1961,8 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
     <div class="drag-overlay-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
     </div>
-    <h2>Drop files here to upload</h2>
-    <p>Your files will be uploaded instantly to this shared folder</p>
+    <h2 id="dropTitle">${tr['dropTitle']}</h2>
+    <p id="dropDesc">${tr['dropDesc']}</p>
   </div>
 
   <!-- Floating Progress indicator card -->
@@ -1590,15 +1979,43 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
   </div>
 
   <footer>
-    Securely sharing and streaming files via ZenFile Server
+    <span id="footerText">${tr['footer']}</span>
   </footer>
 
   <script>
-    // Search Filtering logic
+    // Translation dictionary (lang is set from Dart)
+    const lang = '${lang}';
+    const L = {
+      en: { search: 'Search files & folders...', upload: 'Upload', dropTitle: 'Drop files here to upload', dropDesc: 'Your files will be uploaded instantly to this shared folder', emptySearch: 'No items match your search', emptyDesc: 'Check the spelling or try a different search term', copyLink: 'Copy Link', download: 'Download', uploading: 'Uploading', uploadSuccess: 'Upload completed successfully!', uploadFailed: 'Failed to upload', previewUnsupported: 'Preview is not supported for this file type', previewDownload: 'Click Download below to save it on your system', footer: 'Securely sharing and streaming files via ZenFile', parentDir: 'Parent Directory', goUp: 'Go up one level', itemsCount: 'items', linkCopied: 'Link copied to clipboard!', copyFailed: 'Failed to copy link', loadingPreview: 'Loading preview...', previewError: 'Failed to stream document. You can still download it directly.', catFolders: 'Folders', catVideos: 'Videos', catAudio: 'Audio', catImages: 'Images', catDocuments: 'Documents', catOthers: 'Others' },
+      zh: { search: '\u641c\u7d22\u6587\u4ef6\u548c\u6587\u4ef6\u5939...', upload: '\u4e0a\u4f20', dropTitle: '\u62d6\u62fd\u6587\u4ef6\u5230\u6b64\u5904\u4e0a\u4f20', dropDesc: '\u6587\u4ef6\u5c06\u7acb\u5373\u4e0a\u4f20\u5230\u6b64\u5171\u4eab\u6587\u4ef6\u5939', emptySearch: '\u6ca1\u6709\u5339\u914d\u7684\u9879\u76ee', emptyDesc: '\u68c0\u67e5\u62fc\u5199\u6216\u5c1d\u8bd5\u4e0d\u540c\u7684\u641c\u7d22\u8bcd', copyLink: '\u590d\u5236\u94fe\u63a5', download: '\u4e0b\u8f7d', uploading: '\u6b63\u5728\u4e0a\u4f20', uploadSuccess: '\u4e0a\u4f20\u6210\u529f\uff01', uploadFailed: '\u4e0a\u4f20\u5931\u8d25', previewUnsupported: '\u4e0d\u652f\u6301\u9884\u89c8\u6b64\u6587\u4ef6\u7c7b\u578b', previewDownload: '\u70b9\u51fb\u4e0b\u65b9\u4e0b\u8f7d\u6309\u94ae\u4fdd\u5b58\u5230\u60a8\u7684\u8bbe\u5907', footer: '\u901a\u8fc7 ZenFile \u5b89\u5168\u5171\u4eab\u548c\u6d41\u5f0f\u4f20\u8f93\u6587\u4ef6', parentDir: '\u4e0a\u7ea7\u76ee\u5f55', goUp: '\u8fd4\u56de\u4e0a\u4e00\u7ea7', itemsCount: '\u4e2a\u9879\u76ee', linkCopied: '\u94fe\u63a5\u5df2\u590d\u5236\u5230\u526a\u8d34\u677f\uff01', copyFailed: '\u590d\u5236\u94fe\u63a5\u5931\u8d25', loadingPreview: '\u6b63\u5728\u52a0\u8f7d\u9884\u89c8...', previewError: '\u65e0\u6cd5\u6d41\u5f0f\u4f20\u8f93\u6587\u6863\u3002\u60a8\u4ecd\u7136\u53ef\u4ee5\u76f4\u63a5\u4e0b\u8f7d\u3002', catFolders: '\u6587\u4ef6\u5939', catVideos: '\u89c6\u9891', catAudio: '\u97f3\u9891', catImages: '\u56fe\u7247', catDocuments: '\u6587\u6863', catOthers: '\u5176\u4ed6' },
+      zh_TW: { search: '\u641c\u5c0b\u6a94\u6848\u548c\u8cc7\u6599\u593e...', upload: '\u4e0a\u50b3', dropTitle: '\u62d6\u66f3\u6a94\u6848\u5230\u6b64\u8655\u4e0a\u50b3', dropDesc: '\u6a94\u6848\u5c07\u7acb\u5373\u4e0a\u50b3\u5230\u6b64\u5171\u4eab\u8cc7\u6599\u593e', emptySearch: '\u6c92\u6709\u5339\u914d\u7684\u9805\u76ee', emptyDesc: '\u6aa2\u67e5\u62fc\u5beb\u6216\u5617\u8a66\u4e0d\u540c\u7684\u641c\u5c0b\u8a5e', copyLink: '\u8907\u88fd\u9023\u7d50', download: '\u4e0b\u8f09', uploading: '\u6b63\u5728\u4e0a\u50b3', uploadSuccess: '\u4e0a\u50b3\u6210\u529f\uff01', uploadFailed: '\u4e0a\u50b3\u5931\u6557', previewUnsupported: '\u4e0d\u652f\u63f4\u9810\u89bd\u6b64\u6a94\u6848\u985e\u578b', previewDownload: '\u9ede\u64ca\u4e0b\u65b9\u4e0b\u8f09\u6309\u9215\u5132\u5b58\u5230\u60a8\u7684\u88dd\u7f6e', footer: '\u900f\u904e ZenFile \u5b89\u5168\u5171\u4eab\u548c\u4e32\u6d41\u50b3\u8f38\u6a94\u6848', parentDir: '\u4e0a\u7d1a\u76ee\u9304', goUp: '\u8fd4\u56de\u4e0a\u4e00\u7d1a', itemsCount: '\u500b\u9805\u76ee', linkCopied: '\u9023\u7d50\u5df2\u8907\u88fd\u5230\u526a\u8cbc\u7c3f\uff01', copyFailed: '\u8907\u88fd\u9023\u7d50\u5931\u6557', loadingPreview: '\u6b63\u5728\u8f09\u5165\u9810\u89bd...', previewError: '\u7121\u6cd5\u4e32\u6d41\u50b3\u8f38\u6587\u4ef6\u3002\u60a8\u4ecd\u7136\u53ef\u4ee5\u76f4\u63a5\u4e0b\u8f09\u3002', catFolders: '\u8cc7\u6599\u593e', catVideos: '\u5f71\u7247', catAudio: '\u97f3\u8a0a', catImages: '\u5716\u7247', catDocuments: '\u6587\u4ef6', catOthers: '\u5176\u4ed6' },
+      ja: { search: '\u30d5\u30a1\u30a4\u30eb\u3068\u30d5\u30a9\u30eb\u30c0\u3092\u691c\u7d22...', upload: '\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9', dropTitle: '\u30d5\u30a1\u30a4\u30eb\u3092\u3053\u3053\u306b\u30c9\u30e9\u30c3\u30b0\u3057\u3066\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9', dropDesc: '\u30d5\u30a1\u30a4\u30eb\u306f\u3053\u306e\u5171\u6709\u30d5\u30a9\u30eb\u30c0\u306b\u5373\u5ea7\u306b\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9\u3055\u308c\u307e\u3059', emptySearch: '\u4e00\u81f4\u3059\u308b\u9805\u76ee\u304c\u3042\u308a\u307e\u305b\u3093', emptyDesc: '\u30b9\u30da\u30eb\u3092\u78ba\u8a8d\u3059\u308b\u304b\u3001\u5225\u306e\u691c\u7d22\u8a9e\u3092\u8a66\u3057\u3066\u304f\u3060\u3055\u3044', copyLink: '\u30ea\u30f3\u30af\u3092\u30b3\u30d4\u30fc', download: '\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9', uploading: '\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9\u4e2d', uploadSuccess: '\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9\u304c\u5b8c\u4e86\u3057\u307e\u3057\u305f\uff01', uploadFailed: '\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9\u306b\u5931\u6557\u3057\u307e\u3057\u305f', previewUnsupported: '\u3053\u306e\u30d5\u30a1\u30a4\u30eb\u30bf\u30a4\u30d7\u306e\u30d7\u30ec\u30d3\u30e5\u30fc\u306f\u30b5\u30dd\u30fc\u30c8\u3055\u308c\u3066\u3044\u307e\u305b\u3093', previewDownload: '\u4e0b\u306e\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9\u30dc\u30bf\u30f3\u3092\u30af\u30ea\u30c3\u30af\u3057\u3066\u30c7\u30d0\u30a4\u30b9\u306b\u4fdd\u5b58', footer: 'ZenFile \u3092\u4ecb\u3057\u3066\u30d5\u30a1\u30a4\u30eb\u3092\u5b89\u5168\u306b\u5171\u6709\u304a\u3088\u3073\u30b9\u30c8\u30ea\u30fc\u30df\u30f3\u30b0', parentDir: '\u89aa\u30c7\u30a3\u30ec\u30af\u30c8\u30ea', goUp: '1\u3064\u4e0a\u306e\u968e\u5c64\u306b\u623b\u308b', itemsCount: '\u9805\u76ee', linkCopied: '\u30ea\u30f3\u30af\u3092\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u306b\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f\uff01', copyFailed: '\u30ea\u30f3\u30af\u306e\u30b3\u30d4\u30fc\u306b\u5931\u6557\u3057\u307e\u3057\u305f', loadingPreview: '\u30d7\u30ec\u30d3\u30e5\u30fc\u3092\u8aad\u307f\u8fbc\u307f\u4e2d...', previewError: '\u30c9\u30ad\u30e5\u30e1\u30f3\u30c8\u3092\u30b9\u30c8\u30ea\u30fc\u30df\u30f3\u30b0\u3067\u304d\u307e\u305b\u3093\u3002\u76f4\u63a5\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9\u3067\u304d\u307e\u3059\u3002', catFolders: '\u30d5\u30a9\u30eb\u30c0', catVideos: '\u52d5\u753b', catAudio: '\u30aa\u30fc\u30c7\u30a3\u30aa', catImages: '\u753b\u50cf', catDocuments: '\u30c9\u30ad\u30e5\u30e1\u30f3\u30c8', catOthers: '\u305d\u306e\u4ed6' },
+      ko: { search: '\ud30c\uc77c \ubc0f \ud3f4\ub354 \uac80\uc0c9...', upload: '\uc5c5\ub85c\ub4dc', dropTitle: '\ud30c\uc77c\uc744 \uc5ec\uae30\uc5d0 \ub4dc\ub86d\ud558\uc5ec \uc5c5\ub85c\ub4dc', dropDesc: '\ud30c\uc77c\uc774 \uc774 \uacf5\uc720 \ud3f4\ub354\uc5d0 \uc989\uc2dc \uc5c5\ub85c\ub4dc\ub429\ub2c8\ub2e4', emptySearch: '\uc77c\uce58\ud558\ub294 \ud56d\ubaa9\uc774 \uc5c6\uc2b5\ub2c8\ub2e4', emptyDesc: '\ucca0\uc790\ub97c \ud655\uc778\ud558거\ub098 \ub2e4\ub978 \uac80\uc0c9\uc5b4\ub97c \uc2dc\ub3c4\ud558\uc138\uc694', copyLink: '\ub9c1\ud06c \ubcf5\uc0ac', download: '\ub2e4\uc6b4\ub85c\ub4dc', uploading: '\uc5c5\ub85c\ub4dc \uc911', uploadSuccess: '\uc5c5\ub85c\ub4dc\uac00 \uc644\ub8cc\ub418\uc5c8\uc2b5\ub2c8\ub2e4!', uploadFailed: '\uc5c5\ub85c\ub4dc\uc5d0 \uc2e4\ud328\ud588\uc2b5\ub2c8\ub2e4', previewUnsupported: '\uc774 \ud30c\uc77c \ud615\uc2dd\uc758 \ubbf8\ub9ac\ubcf4\uae30\ub294 \uc9c0\uc6d0\ub418\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4', previewDownload: '\uc544\ub798\uc758 \ub2e4\uc6b4\ub85c\ub4dc\ub97c \ud074\ub9ad\ud558\uc5ec \uae30\uae30\uc5d0 \uc800\uc7a5', footer: 'ZenFile\uc744 \ud1b5\ud574 \ud30c\uc77c\uc744 \uc548\uc804\ud558\uac8c \uacf5\uc720 \ubc0f \uc2a4\ud2b8\ub9ac\ubc0d', parentDir: '\uc0c1\uc704 \ub514\ub809\ud1a0\ub9ac', goUp: '\ud55c \ub2e8\uacc4 \uc704\ub85c \uc774\ub3d9', itemsCount: '\uac1c \ud56d\ubaa9', linkCopied: '\ub9c1\ud06c\uac00 \ud074\ub9bd\ubcf4\ub4dc\uc5d0 \ubcf5\uc0ac\ub418\uc5c8\uc2b5\ub2c8\ub2e4!', copyFailed: '\ub9c1\ud06c \ubcf5\uc0ac \uc2e4\ud328', loadingPreview: '\ubbf8\ub9ac\ubcf4\uae30 \ub85c\ub4dc \uc911...', previewError: '\ubb38\uc11c\ub97c \uc2a4\ud2b8\ub9ac\ubc0d\ud560 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4. \uc9c1\uc811 \ub2e4\uc6b4\ub85c\ub4dc\ud560 \uc218 \uc788\uc2b5\ub2c8\ub2e4.', catFolders: '\ud3f4\ub354', catVideos: '\ub3d9\uc601\uc0c1', catAudio: '\uc624\ub514\uc624', catImages: '\uc774\ubbf8\uc9c0', catDocuments: '\ubb38\uc11c', catOthers: '\uae30\ud0c0' },
+      de: { search: 'Dateien & Ordner suchen...', upload: 'Hochladen', dropTitle: 'Dateien hier ablegen zum Hochladen', dropDesc: 'Ihre Dateien werden sofort in diesen freigegebenen Ordner hochgeladen', emptySearch: 'Keine Elemente entsprechen Ihrer Suche', emptyDesc: 'Uberprufen Sie die Schreibweise oder versuchen Sie einen anderen Suchbegriff', copyLink: 'Link kopieren', download: 'Herunterladen', uploading: 'Hochladen', uploadSuccess: 'Upload erfolgreich abgeschlossen!', uploadFailed: 'Hochladen fehlgeschlagen', previewUnsupported: 'Vorschau fur diesen Dateityp nicht unterstutzt', previewDownload: 'Klicken Sie unten auf Herunterladen, um es auf Ihrem Gerat zu speichern', footer: 'Sicheres Teilen und Streamen von Dateien uber ZenFile', parentDir: 'Ubergeordnetes Verzeichnis', goUp: 'Eine Ebene nach oben gehen', itemsCount: 'Elemente', linkCopied: 'Link in die Zwischenablage kopiert!', copyFailed: 'Link konnte nicht kopiert werden', loadingPreview: 'Vorschau wird geladen...', previewError: 'Dokument kann nicht gestreamt werden. Sie konnen es direkt herunterladen.', catFolders: 'Ordner', catVideos: 'Videos', catAudio: 'Audio', catImages: 'Bilder', catDocuments: 'Dokumente', catOthers: 'Sonstiges' },
+      fr: { search: 'Rechercher des fichiers et dossiers...', upload: 'Telecharger', dropTitle: 'Deposez les fichiers ici pour les telecharger', dropDesc: 'Vos fichiers seront instantanement telecharges dans ce dossier partage', emptySearch: 'Aucun element ne correspond a votre recherche', emptyDesc: 'Verifiez l\u2019orthographe ou essayez un terme de recherche different', copyLink: 'Copier le lien', download: 'Telecharger', uploading: 'Telechargement', uploadSuccess: 'Telechargement termine avec succes!', uploadFailed: 'Echec du telechargement', previewUnsupported: 'L\u2019aper\u00e7u n\u2019est pas pris en charge pour ce type de fichier', previewDownload: 'Cliquez sur Telecharger ci-dessous pour l\u2019enregistrer sur votre appareil', footer: 'Partage et diffusion securises de fichiers via ZenFile', parentDir: 'Repertoire parent', goUp: 'Remonter d\u2019un niveau', itemsCount: 'elements', linkCopied: 'Lien copie dans le presse-papiers!', copyFailed: 'Echec de la copie du lien', loadingPreview: 'Chargement de l\u2019aper\u00e7u...', previewError: 'Impossible de diffuser le document. Vous pouvez toujours le telecharger directement.', catFolders: 'Dossiers', catVideos: 'Videos', catAudio: 'Audio', catImages: 'Images', catDocuments: 'Documents', catOthers: 'Autres' },
+      es: { search: 'Buscar archivos y carpetas...', upload: 'Subir', dropTitle: 'Suelte los archivos aqui para subirlos', dropDesc: 'Sus archivos se subiran instantaneamente a esta carpeta compartida', emptySearch: 'Ningun elemento coincide con su busqueda', emptyDesc: 'Verifique la ortografia o intente un termino de busqueda diferente', copyLink: 'Copiar enlace', download: 'Descargar', uploading: 'Subiendo', uploadSuccess: 'Carga completada con exito!', uploadFailed: 'Error al subir', previewUnsupported: 'La vista previa no es compatible con este tipo de archivo', previewDownload: 'Haga clic en Descargar a continuacion para guardarlo en su dispositivo', footer: 'Compartir y transmitir archivos de forma segura a traves de ZenFile', parentDir: 'Directorio principal', goUp: 'Subir un nivel', itemsCount: 'elementos', linkCopied: 'Enlace copiado al portapapeles!', copyFailed: 'Error al copiar el enlace', loadingPreview: 'Cargando vista previa...', previewError: 'No se puede transmitir el documento. Aun puede descargarlo directamente.', catFolders: 'Carpetas', catVideos: 'Videos', catAudio: 'Audio', catImages: 'Imagenes', catDocuments: 'Documentos', catOthers: 'Otros' },
+      ru: { search: '\u041f\u043e\u0438\u0441\u043a \u0444\u0430\u0439\u043b\u043e\u0432 \u0438 \u043f\u0430\u043f\u043e\u043a...', upload: '\u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c', dropTitle: '\u041f\u0435\u0440\u0435\u0442\u0430\u0449\u0438\u0442\u0435 \u0444\u0430\u0439\u043b\u044b \u0441\u044e\u0434\u0430 \u0434\u043b\u044f \u0437\u0430\u0433\u0440\u0443\u0437\u043a\u0438', dropDesc: '\u0412\u0430\u0448\u0438 \u0444\u0430\u0439\u043b\u044b \u0431\u0443\u0434\u0443\u0442 \u043c\u0433\u043d\u043e\u0432\u0435\u043d\u043d\u043e \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u044b \u0432 \u044d\u0442\u0443 \u043e\u0431\u0449\u0443\u044e \u043f\u0430\u043f\u043a\u0443', emptySearch: '\u041d\u0435\u0442 \u044d\u043b\u0435\u043c\u0435\u043d\u0442\u043e\u0432, \u0441\u043e\u043e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0443\u044e\u0449\u0438\u0445 \u0432\u0430\u0448\u0435\u043c\u0443 \u0437\u0430\u043f\u0440\u043e\u0441\u0443', emptyDesc: '\u041f\u0440\u043e\u0432\u0435\u0440\u044c\u0442\u0435 \u043f\u0440\u0430\u0432\u043e\u043f\u0438\u0441\u0430\u043d\u0438\u0435 \u0438\u043b\u0438 \u043f\u043e\u043f\u0440\u043e\u0431\u0443\u0439\u0442\u0435 \u0434\u0440\u0443\u0433\u043e\u0439 \u043f\u043e\u0438\u0441\u043a\u043e\u0432\u044b\u0439 \u0437\u0430\u043f\u0440\u043e\u0441', copyLink: '\u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0441\u0441\u044b\u043b\u043a\u0443', download: '\u0421\u043a\u0430\u0447\u0430\u0442\u044c', uploading: '\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430', uploadSuccess: '\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u0430!', uploadFailed: '\u041e\u0448\u0438\u0431\u043a\u0430 \u0437\u0430\u0433\u0440\u0443\u0437\u043a\u0438', previewUnsupported: '\u041f\u0440\u0435\u0434\u043f\u0440\u043e\u0441\u043c\u043e\u0442\u0440 \u043d\u0435 \u043f\u043e\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0435\u0442\u0441\u044f \u0434\u043b\u044f \u044d\u0442\u043e\u0433\u043e \u0442\u0438\u043f\u0430 \u0444\u0430\u0439\u043b\u0430', previewDownload: '\u041d\u0430\u0436\u043c\u0438\u0442\u0435 \u0421\u043a\u0430\u0447\u0430\u0442\u044c \u043d\u0438\u0436\u0435, \u0447\u0442\u0e43\u0431\u044b \u0441\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c \u043d\u0430 \u0432\u0430\u0448\u0435\u043c \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u0435', footer: '\u0411\u0435\u0437\u043e\u043f\u0430\u0441\u043d\u044b\u0439 \u043e\u0431\u043c\u0435\u043d \u0444\u0430\u0439\u043b\u0430\u043c\u0438 \u0438 \u043f\u043e\u0442\u043e\u043a\u043e\u0432\u0430\u044f \u043f\u0435\u0440\u0435\u0434\u0430\u0447\u0430 \u0447\u0435\u0440\u0435\u0437 ZenFile', parentDir: '\u0420\u043e\u0434\u0438\u0442\u0435\u043b\u044c\u0441\u043a\u0438\u0439 \u043a\u0430\u0442\u0430\u043b\u043e\u0433', goUp: '\u041f\u0435\u0440\u0435\u0439\u0442\u0438 \u043d\u0430 \u0443\u0440\u043e\u0432\u0435\u043d\u044c \u0432\u0432\u0435\u0440\u0445', itemsCount: '\u044d\u043b\u0435\u043c\u0435\u043d\u0442\u043e\u0432', linkCopied: '\u0421\u0441\u044b\u043b\u043a\u0430 \u0441\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u0430 \u0432 \u0431\u0443\u0444\u0435\u0440 \u043e\u0431\u043c\u0435\u043d\u0430!', copyFailed: '\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0441\u0441\u044b\u043b\u043a\u0443', loadingPreview: '\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u043f\u0440\u0435\u0434\u043f\u0440\u043e\u0441\u043c\u043e\u0442\u0440\u0430...', previewError: '\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0442\u0440\u0430\u043d\u0441\u043b\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442. \u0412\u044b \u043c\u043e\u0436\u0435\u0442\u0435 \u0441\u043a\u0430\u0447\u0430\u0442\u044c \u0435\u0433\u043e \u043d\u0430\u043f\u0440\u044f\u043c\u0443\u044e.', catFolders: '\u041f\u0430\u043f\u043a\u0438', catVideos: '\u0412\u0438\u0434\u0435\u043e', catAudio: '\u0410\u0443\u0434\u0438\u043e', catImages: '\u0418\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f', catDocuments: '\u0414\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u044b', catOthers: '\u0414\u0440\u0443\u0433\u043e\u0435' },
+      ar: { search: '\u0627\u0644\u0628\u062d\u062b \u0639\u0646 \u0627\u0644\u0645\u0644\u0641\u0627\u062a \u0648\u0627\u0644\u0645\u062c\u0644\u062f\u0627\u062a...', upload: '\u0631\u0641\u0639', dropTitle: '\u0623\u0633\u062d\u0628 \u0627\u0644\u0645\u0644\u0641\u0627\u062a \u0647\u0646\u0627 \u0644\u0644\u0631\u0641\u0639', dropDesc: '\u0633\u062a\u0645 \u0631\u0641\u0639 \u0645\u0644\u0641\u0627\u062a\u0643 \u0641\u0648\u0631\u0627\u064b \u0625\u0644\u0649 \u0647\u0630\u0627 \u0627\u0644\u0645\u062c\u0644\u062f \u0627\u0644\u0645\u0634\u062a\u0631\u0643', emptySearch: '\u0644\u0627 \u062a\u0648\u062c\u062f \u0639\u0646\u0627\u0635\u0631 \u062a\u0637\u0627\u0628\u0642 \u0628\u062d\u062b\u0643', emptyDesc: '\u062a\u062d\u0642\u0642 \u0645\u0646 \u0627\u0644\u0625\u0645\u0644\u0627\u0621 \u0623\u0648 \u062c\u0631\u0628 \u0645\u0635\u0637\u062d\u0627\u062d \u0622\u062e\u0631', copyLink: '\u0646\u0633\u062e \u0627\u0644\u0631\u0627\u0628\u0637', download: '\u062a\u062d\u0645\u064a\u0644', uploading: '\u062c\u0627\u0631\u064a \u0627\u0644\u0631\u0641\u0639', uploadSuccess: '\u0627\u0643\u062a\u0645\u0644 \u0627\u0644\u0631\u0641\u0639 \u0628\u0646\u062c\u0627\u062d!', uploadFailed: '\u0641\u0634\u0644 \u0627\u0644\u0631\u0641\u0639', previewUnsupported: '\u0627\u0644\u0645\u0639\u0627\u064a\u0646\u0629 \u063a\u064a\u0631 \u0645\u062f\u0639\u0648\u0645\u0629 \u0644\u0647\u0630\u0627 \u0627\u0644\u0646\u0648\u0639 \u0645\u0646 \u0627\u0644\u0645\u0644\u0641', previewDownload: '\u0627\u0646\u0642\u0631 \u0639\u0644\u0649 \u062a\u062d\u0645\u064a\u0644 \u0623\u062f\u0646\u0627\u0647 \u0644\u062d\u0641\u0638\u0647 \u0639\u0644\u0649 \u062c\u0647\u0627\u0632\u0643', footer: '\u0645\u0634\u0627\u0631\u0643\u0629 \u0648\u0628\u062b \u0627\u0644\u0645\u0644\u0641\u0627\u062a \u0628\u0623\u0645\u0627\u0646 \u0639\u0628\u0631 ZenFile', parentDir: '\u0627\u0644\u062f\u0644\u064a\u0644 \u0627\u0644\u0623\u0635\u0644\u064a', goUp: '\u0627\u0644\u0627\u0646\u062a\u0642\u0627\u0644 \u0625\u0644\u0649 \u0627\u0644\u0645\u0633\u062a\u0648\u0649 \u0627\u0644\u0623\u0639\u0644\u0649', itemsCount: '\u0639\u0646\u0627\u0635\u0631', linkCopied: '\u062a\u0645 \u0646\u0633\u062e \u0627\u0644\u0631\u0627\u0628\u0637 \u0625\u0644\u0649 \u0627\u0644\u062d\u0627\u0641\u0638\u0629!', copyFailed: '\u0641\u0634\u0644 \u0646\u0633\u062e \u0627\u0644\u0631\u0627\u0628\u0637', loadingPreview: '\u062c\u0627\u0631\u064a \u062a\u062d\u0645\u064a\u0644 \u0627\u0644\u0645\u0639\u0627\u064a\u0646\u0629...', previewError: '\u062a\u0639\u0630\u0631 \u0628\u062b \u0627\u0644\u0645\u0633\u062a\u0646\u062f. \u064a\u0645\u0643\u0646\u0643 \u062a\u062d\u0645\u064a\u0644\u0647 \u0645\u0628\u0627\u0634\u0631\u0629.', catFolders: '\u0645\u062c\u0644\u062f\u0627\u062a', catVideos: '\u0645\u0642\u0627\u0637\u0639 \u0627\u0644\u0641\u064a\u062f\u064a\u0648', catAudio: '\u0635\u0648\u062a', catImages: '\u0635\u0648\u0631', catDocuments: '\u0645\u0633\u062a\u0646\u062f\u0627\u062a', catOthers: '\u0623\u062e\u0631\u0649' },
+    };
+    const t = L[lang] || L['en'];
+
+    function toggleCategory(catKey) {
+      const section = document.getElementById('cat-section-' + catKey);
+      if (section) {
+        section.classList.toggle('collapsed');
+      }
+    }
+
+    // Get DOM elements and set localized texts
     const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.placeholder = t.search;
+
+    // Search Filtering logic with category support
+    if (searchInput) {
     searchInput.addEventListener('input', (e) => {
       const query = e.target.value.toLowerCase().trim();
       const items = document.querySelectorAll('.explorer-item:not(.parent-dir)');
+      const sections = document.querySelectorAll('.category-section');
       let visibleCount = 0;
       
       items.forEach(item => {
@@ -1611,41 +2028,67 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         }
       });
       
+      // Show/hide category sections based on visible items
+      sections.forEach(section => {
+        const catItems = section.querySelector('.category-items');
+        if (catItems) {
+          let hasVisible = false;
+          catItems.querySelectorAll('.explorer-item').forEach(child => {
+            if (child.style.display !== 'none') hasVisible = true;
+          });
+          if (query && !hasVisible) {
+            section.style.display = 'none';
+          } else {
+            section.style.display = '';
+          }
+        }
+      });
+      
       const emptyState = document.getElementById('emptyState');
-      if (visibleCount === 0 && items.length > 0) {
-        emptyState.style.display = 'flex';
-      } else {
-        emptyState.style.display = 'none';
+      if (emptyState) {
+        if (visibleCount === 0 && items.length > 0) {
+          emptyState.style.display = 'flex';
+        } else {
+          emptyState.style.display = 'none';
+        }
       }
     });
+    } // end if (searchInput)
 
     // List vs Grid View Toggle logic
-    const viewToggleList = document.getElementById('viewToggleList');
-    const viewToggleGrid = document.getElementById('viewToggleGrid');
-    const itemsContainer = document.getElementById('itemsContainer');
 
     function setViewMode(mode) {
+      const ic = document.getElementById('itemsContainer');
+      const gl = document.getElementById('viewToggleGrid');
+      const ll = document.getElementById('viewToggleList');
+      if (!ic || !gl || !ll) return;
       if (mode === 'grid') {
-        itemsContainer.classList.remove('list-mode');
-        itemsContainer.classList.add('grid-mode');
-        viewToggleGrid.classList.add('active');
-        viewToggleList.classList.remove('active');
+        ic.classList.remove('list-mode');
+        ic.classList.add('grid-mode');
+        gl.classList.add('active');
+        ll.classList.remove('active');
       } else {
-        itemsContainer.classList.remove('grid-mode');
-        itemsContainer.classList.add('list-mode');
-        viewToggleList.classList.add('active');
-        viewToggleGrid.classList.remove('active');
+        ic.classList.remove('grid-mode');
+        ic.classList.add('list-mode');
+        ll.classList.add('active');
+        gl.classList.remove('active');
       }
-      localStorage.setItem('nfile-view-mode', mode);
+      try {
+        localStorage.setItem('nfile-view-mode', mode);
+      } catch (e) { /* localStorage may be disabled */ }
     }
 
     // Default view is list
-    const savedMode = localStorage.getItem('nfile-view-mode') || 'list';
+    let savedMode = 'list';
+    try {
+      savedMode = localStorage.getItem('nfile-view-mode') || 'list';
+    } catch (e) { /* localStorage may be disabled */ }
     setViewMode(savedMode);
 
     // File Upload triggering and selection
     function triggerFileInput() {
-      document.getElementById('fileInputElement').click();
+      const input = document.getElementById('fileInputElement');
+      if (input) input.click();
     }
 
     async function handleFileSelection(input) {
@@ -1657,27 +2100,27 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
       const percent = document.getElementById('uploadPercent');
       const bar = document.getElementById('uploadBar');
       
-      overlay.classList.add('active');
+      if (overlay) overlay.classList.add('active');
       
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        title.textContent = `Uploading \${file.name}...`;
-        percent.textContent = '0%';
-        bar.style.width = '0%';
+        if (title) title.textContent = t.uploading + `: \${file.name}...`;
+        if (percent) percent.textContent = '0%';
+        if (bar) bar.style.width = '0%';
         
         try {
           await uploadSingleFile(file, (p) => {
-            percent.textContent = `\${p}%`;
-            bar.style.width = `\${p}%`;
+            if (percent) percent.textContent = `\${p}%`;
+            if (bar) bar.style.width = `\${p}%`;
           });
         } catch (err) {
-          showToast(`Failed to upload \${file.name}`);
+          showToast(t.uploadFailed + `: \${file.name}`);
           console.error(err);
         }
       }
       
-      overlay.classList.remove('active');
-      showToast("Upload completed successfully!");
+      if (overlay) overlay.classList.remove('active');
+      showToast(t.uploadSuccess);
       setTimeout(() => {
         window.location.reload();
       }, 800);
@@ -1716,14 +2159,14 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
     window.addEventListener('dragenter', (e) => {
       e.preventDefault();
       dragCounter++;
-      dragOverlay.classList.add('active');
+      if (dragOverlay) dragOverlay.classList.add('active');
     });
 
     window.addEventListener('dragleave', (e) => {
       e.preventDefault();
       dragCounter--;
       if (dragCounter === 0) {
-        dragOverlay.classList.remove('active');
+        if (dragOverlay) dragOverlay.classList.remove('active');
       }
     });
 
@@ -1734,13 +2177,15 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
     window.addEventListener('drop', (e) => {
       e.preventDefault();
       dragCounter = 0;
-      dragOverlay.classList.remove('active');
+      if (dragOverlay) dragOverlay.classList.remove('active');
       
       const files = e.dataTransfer.files;
       if (files.length > 0) {
         const input = document.getElementById('fileInputElement');
-        input.files = files;
-        handleFileSelection(input);
+        if (input) {
+          input.files = files;
+          handleFileSelection(input);
+        }
       }
     });
 
@@ -1748,38 +2193,48 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
     let currentModalUrl = '';
 
     function handleItemClick(el) {
+      if (!el) return;
       const type = el.getAttribute('data-type');
       const url = el.getAttribute('data-url');
-      const name = el.getAttribute('data-name');
-      const size = el.getAttribute('data-size');
-      const modified = el.getAttribute('data-modified');
-      const mime = el.getAttribute('data-mime');
+      const name = el.getAttribute('data-name') || '';
+      const size = el.getAttribute('data-size') || '-';
+      const modified = el.getAttribute('data-modified') || '-';
+      const mime = el.getAttribute('data-mime') || 'application/octet-stream';
       
       if (type === 'directory') {
-        window.location.href = url;
+        if (url) window.location.href = url;
         return;
       }
       
       currentModalUrl = url;
       
       // Update basic fields
-      document.getElementById('modalTitle').textContent = name;
-      document.getElementById('modalMeta').textContent = `\${size} • \${modified}`;
-      document.getElementById('modalDownloadBtn').href = url;
-      document.getElementById('modalDownloadBtn').setAttribute('download', name);
+      const modalTitle = document.getElementById('modalTitle');
+      const modalMeta = document.getElementById('modalMeta');
+      const modalDownloadBtn = document.getElementById('modalDownloadBtn');
+      if (modalTitle) modalTitle.textContent = name;
+      if (modalMeta) modalMeta.textContent = `\${size} \u2022 \${modified}`;
+      if (modalDownloadBtn) {
+        modalDownloadBtn.href = url;
+        modalDownloadBtn.setAttribute('download', name);
+      }
       
       // Dynamic Icon wrapper styling
       const iconWrapper = document.getElementById('modalIcon');
-      iconWrapper.className = 'modal-icon-wrapper ' + el.querySelector('.item-icon-wrapper').className.split(' ')[1];
-      iconWrapper.innerHTML = el.querySelector('.item-icon-wrapper').innerHTML;
+      const itemIconWrapper = el.querySelector('.item-icon-wrapper');
+      if (iconWrapper && itemIconWrapper) {
+        iconWrapper.className = 'modal-icon-wrapper ' + (itemIconWrapper.className.split(' ')[1] || '');
+        iconWrapper.innerHTML = itemIconWrapper.innerHTML;
+      }
       
       // Render dedicated preview content
       const body = document.getElementById('modalBody');
+      if (!body) return;
       body.innerHTML = '';
       
       const ext = name.split('.').pop().toLowerCase();
       
-      if (['mp4', 'mkv', 'avi', 'mov'].includes(ext)) {
+      if (['mp4', 'mkv', 'avi', 'mov', 'wmv', 'flv', 'webm', '3gp', 'ts', 'm4v', 'rmvb', 'rm', 'asf', 'f4v'].includes(ext)) {
         body.innerHTML = `
           <div class="video-container">
             <video controls autoplay class="preview-video">
@@ -1788,7 +2243,7 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
             </video>
           </div>
         `;
-      } else if (['mp3', 'wav', 'flac', 'm4a'].includes(ext)) {
+      } else if (['mp3', 'wav', 'flac', 'm4a', 'ogg', 'wma', 'aac', 'opus', 'amr', 'mid', 'midi'].includes(ext)) {
         body.innerHTML = `
           <div class="audio-container">
             <div class="audio-art-disc">🎵</div>
@@ -1798,7 +2253,7 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
             </audio>
           </div>
         `;
-      } else if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+      } else if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'ico', 'tiff', 'tif', 'heic', 'heif', 'avif', 'raw'].includes(ext)) {
         body.innerHTML = `
           <div class="image-container">
             <img src="\${url}" class="preview-image" alt="\${name}">
@@ -1808,8 +2263,8 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         body.innerHTML = `
           <iframe src="\${url}" class="preview-pdf"></iframe>
         `;
-      } else if (['txt', 'log', 'json', 'md', 'xml', 'js', 'css', 'html'].includes(ext)) {
-        body.innerHTML = `<div class="preview-text-loading">Loading preview...</div>`;
+      } else if (['txt', 'log', 'json', 'md', 'xml', 'js', 'css', 'html', 'htm', 'csv', 'rtf', 'yaml', 'yml', 'toml', 'conf', 'cfg', 'ini', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp'].includes(ext)) {
+        body.innerHTML = `<div class="preview-text-loading">\${t.loadingPreview}</div>`;
         fetch(url)
           .then(res => res.text())
           .then(text => {
@@ -1817,36 +2272,40 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
             body.innerHTML = `<pre class="preview-text"><code>\${escaped}</code></pre>`;
           })
           .catch(() => {
-            body.innerHTML = `<div class="preview-text-error">Failed to stream document. You can still download it directly.</div>`;
+            body.innerHTML = `<div class="preview-text-error">\${t.previewError}</div>`;
           });
       } else {
+        const genericIcon = iconWrapper ? iconWrapper.innerHTML : '<svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>';
         body.innerHTML = `
           <div class="generic-container">
-            <div class="generic-preview-icon">\${iconWrapper.innerHTML}</div>
-            <p class="generic-preview-text">Preview is not supported for this file type</p>
-            <p class="generic-preview-subtext">Click Download below to save it on your system.</p>
+            <div class="generic-preview-icon">\${genericIcon}</div>
+            <p class="generic-preview-text" id="previewUnsupported">\${t.previewUnsupported}</p>
+            <p class="generic-preview-subtext" id="previewDownload">\${t.previewDownload}</p>
           </div>
         `;
       }
       
       const modal = document.getElementById('previewModal');
+      if (!modal) return;
       modal.classList.add('active');
       document.body.style.overflow = 'hidden';
     }
 
     function closeModal(event) {
       const modal = document.getElementById('previewModal');
+      if (!modal) return;
       modal.classList.remove('active');
       document.body.style.overflow = '';
       
       // Stop playing video or audio immediately on close
       const body = document.getElementById('modalBody');
-      const video = body.querySelector('video');
-      if (video) video.pause();
-      const audio = body.querySelector('audio');
-      if (audio) audio.pause();
-      
-      body.innerHTML = '';
+      if (body) {
+        const video = body.querySelector('video');
+        if (video) video.pause();
+        const audio = body.querySelector('audio');
+        if (audio) audio.pause();
+        body.innerHTML = '';
+      }
     }
 
     // Download & Share operations
@@ -1863,12 +2322,12 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
     function copyFileLink(url, event) {
       if (event) event.stopPropagation();
       const absoluteUrl = new URL(url, window.location.href).href;
-      copyToClipboard(absoluteUrl, "Link copied to clipboard!");
+      copyToClipboard(absoluteUrl, t.linkCopied);
     }
 
     function copyModalLink() {
       const absoluteUrl = new URL(currentModalUrl, window.location.href).href;
-      copyToClipboard(absoluteUrl, "Link copied to clipboard!");
+      copyToClipboard(absoluteUrl, t.linkCopied);
     }
 
     function copyToClipboard(text, successMsg) {
@@ -1885,7 +2344,7 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
           document.execCommand('copy');
           showToast(successMsg);
         } catch (e) {
-          showToast("Failed to copy link.");
+          showToast(t.copyFailed);
         }
         document.body.removeChild(textarea);
       });
@@ -1913,6 +2372,53 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         }, 300);
       }, 2500);
     }
+  
+    // Initialize localized text
+    (function() {
+      try {
+        const si = document.getElementById('searchInput');
+        if (si) si.placeholder = t.search;
+        const uploadBtnText = document.getElementById('uploadBtnText');
+        if (uploadBtnText) uploadBtnText.textContent = t.upload;
+        const emptySearchTitle = document.getElementById('emptySearchTitle');
+        if (emptySearchTitle) emptySearchTitle.textContent = t.emptySearch;
+        const emptySearchDesc = document.getElementById('emptySearchDesc');
+        if (emptySearchDesc) emptySearchDesc.textContent = t.emptyDesc;
+        const modalCopyBtnText = document.getElementById('modalCopyBtnText');
+        if (modalCopyBtnText) modalCopyBtnText.textContent = t.copyLink;
+        const modalDownloadBtnText = document.getElementById('modalDownloadBtnText');
+        if (modalDownloadBtnText) modalDownloadBtnText.textContent = t.download;
+        const dropTitle = document.getElementById('dropTitle');
+        if (dropTitle) dropTitle.textContent = t.dropTitle;
+        const dropDesc = document.getElementById('dropDesc');
+        if (dropDesc) dropDesc.textContent = t.dropDesc;
+        const footerText = document.getElementById('footerText');
+        if (footerText) footerText.textContent = t.footer;
+        const previewUnsupported = document.getElementById('previewUnsupported');
+        if (previewUnsupported) previewUnsupported.textContent = t.previewUnsupported;
+        const previewDownload = document.getElementById('previewDownload');
+        if (previewDownload) previewDownload.textContent = t.previewDownload;
+        // Update category titles
+        document.querySelectorAll('.category-title').forEach(el => {
+          const section = el.closest('.category-section');
+          if (section) {
+            const catKey = section.id.replace('cat-section-', '');
+            const keyMap = { folders: 'catFolders', videos: 'catVideos', audio: 'catAudio', images: 'catImages', documents: 'catDocuments', others: 'catOthers' };
+            if (keyMap[catKey] && t[keyMap[catKey]]) el.textContent = t[keyMap[catKey]];
+          }
+        });
+        // Update category empty text
+        document.querySelectorAll('.category-empty').forEach(el => {
+          const section = el.closest('.category-section');
+          if (section) {
+            const catKey = section.id.replace('cat-section-', '');
+            const keyMap = { folders: 'catFolders', videos: 'catVideos', audio: 'catAudio', images: 'catImages', documents: 'catDocuments', others: 'catOthers' };
+            if (keyMap[catKey] && t[keyMap[catKey]]) el.textContent = 'No ' + t[keyMap[catKey]].toLowerCase();
+          }
+        });
+      } catch(e) { console.error('Localization init error:', e); }
+    })();
+
   </script>
 </body>
 </html>

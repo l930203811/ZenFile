@@ -360,11 +360,9 @@ class VaultService {
     final originalPath = directory.path;
     final originalName = p.basename(originalPath);
 
-    // List all files recursively
-    final list = directory.listSync(recursive: true);
+    // List all files recursively (async to avoid blocking UI)
     final archive = Archive();
-
-    for (final entity in list) {
+    await for (final entity in directory.list(recursive: true)) {
       if (entity is File) {
         // Calculate relative path from the parent of the directory being zipped
         // So that the zipped file path starts with the folder name itself (e.g. "myfolder/file.txt")
@@ -399,8 +397,7 @@ class VaultService {
 
       // Clean up original directory contents (or keep folder for in-place)
       if (inPlace) {
-        final children = directory.listSync();
-        for (final child in children) {
+        await for (final child in directory.list()) {
           if (child.path != record.scrambledPath) {
             await child.delete(recursive: true);
           }

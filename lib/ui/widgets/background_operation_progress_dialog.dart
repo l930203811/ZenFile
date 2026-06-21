@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../services/background_archive_service.dart';
 import '../../core/icon_fonts/broken_icons.dart';
@@ -17,10 +16,20 @@ class BackgroundOperationProgressDialog extends StatelessWidget {
       context: context,
       barrierDismissible: false,
       barrierColor: Colors.black.withOpacity(0.4),
-      builder: (context) => PopScope(
-        canPop: false, // Prevent dismissing via standard back button
-        child: BackgroundOperationProgressDialog(service: service),
-      ),
+      builder: (dialogContext) {
+        // 存储对话框的 BuildContext，用于 _onOperationComplete 中强制关闭
+        service.setActiveDialogContext(dialogContext);
+        // 注册对话框关闭回调作为安全兜底
+        service.dialogCloseCallback = () {
+          if (Navigator.canPop(dialogContext)) {
+            Navigator.pop(dialogContext);
+          }
+        };
+        return PopScope(
+          canPop: false, // Prevent dismissing via standard back button
+          child: BackgroundOperationProgressDialog(service: service),
+        );
+      },
     );
   }
 
@@ -29,13 +38,12 @@ class BackgroundOperationProgressDialog extends StatelessWidget {
     final theme = Theme.of(context);
     final size = MediaQuery.of(context).size;
 
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-      child: Center(
-        child: ValueListenableBuilder<BackgroundOperation?>(
+    return Center(
+      child: ValueListenableBuilder<BackgroundOperation?>(
           valueListenable: service.activeOperation,
           builder: (context, operation, child) {
             if (operation == null) {
+              // 安全关闭对话框（兼容 Navigator.pop 后的静默重入）
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (Navigator.canPop(context)) {
                   Navigator.pop(context);
@@ -45,6 +53,7 @@ class BackgroundOperationProgressDialog extends StatelessWidget {
             }
 
             final percent = operation.progress.clamp(0.0, 1.0);
+
             final progressPercentText = '${(percent * 100).toStringAsFixed(0)}%';
 
             return Card(
@@ -243,7 +252,6 @@ class BackgroundOperationProgressDialog extends StatelessWidget {
             );
           },
         ),
-      ),
     );
   }
 }

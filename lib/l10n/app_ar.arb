@@ -200,10 +200,10 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "zenfile1": "حول ZenFile",
-  "@v104": {
+  "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "v104": "v1.0.4 (عرض)",
+  "v1041": "v1.0.41 (عرض)",
   "@zenfileflutter": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -288,10 +288,10 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "msg0537b04e": "اضغط مطولاً على الصورة لحفظها في المعرض. شكراً لدعمك!",
-  "@zenfilev104": {
+  "@zenfilev1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfilev104": "تنزيل ZenFile v1.0.4",
+  "zenfilev1041": "تحميل ZenFile v1.0.41",
   "@msg9d287020": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -2503,6 +2503,18 @@
   "@msgff69affd": {
     "description": "ui\\widgets\\extract_archive_dialog.dart"
   },
+  "msg_extract_to": "استخراج إلى…",
+  "@msg_extract_to": {
+    "description": "Extract archive dialog title"
+  },
+  "ui_current_directory": "المجلد الحالي",
+  "@ui_current_directory": {
+    "description": "Extract to current directory checkbox"
+  },
+  "ui_custom_directory": "مجلد مخصص",
+  "@ui_custom_directory": {
+    "description": "Extract to custom directory checkbox"
+  },
   "msgff69affd": "كلمة المرور (إذا كانت مشفرة)",
   "@msg67eda5e6": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
@@ -2772,6 +2784,8 @@
   "cat_manage": "الإدارة",
   "cat_config": "التكوين",
   "cat_analyze": "التحليل",
+  "cat_vault": "خزنة",
+  "cat_vault_desc": "تخزين آمن",
   "cat_quick_categories": "الفئات السريعة",
   "ui_nav": "التنقل",
   "ui_home": "الرئيسية",
@@ -3142,6 +3156,50 @@
   "log_remote_to_remote": "إضافة نسخ/قص بين الخوادم البعيدة",
   "log_remote_cut_progress": "إصلاح شريط التقدم لعمليات القص البعيدة",
   "log_audio_scan_stable": "تحسين استقرار فحص فئة الصوت",
+  "log_extract_dialog_redesign": "إعادة تصميم مربع حوار فك الضغط مع اختيار الدليل الحالي/المخصص",
+  "log_vault_quick_category": "تمت إضافة اختصار الخزنة إلى الفئات السريعة (إيقاف افتراضي)",
+  "log_vault_l10n_fix": "إصلاح النصوص الإنجليزية الثابتة وتجميد إضافة ملفات متعددة في الخزنة",
+  "log_compression_path_fix": "توحيد مسارات الضغط لزر النقاط الثلاث وقائمة الضغط المطول",
+  "log_compression_progress": "تحسين مربع حوار تقدم الضغط مع عرض متعدد المراحل وإغلاق تلقائي موثوق",
+  "log_web_share_category": "بوابة مشاركة الويب تعرض الملفات في أقسام مصنفة (مجلدات، فيديو، صوت، صور، مستندات، أخرى)",
+  "log_web_share_l10n": "بوابة مشاركة الويب تدعم الآن العرض متعدد اللغات بناءً على لغة التطبيق",
+  "msg_file_exists": "الملف موجود بالفعل",
+  "@msg_file_exists": {
+    "description": "Conflict dialog title"
+  },
+  "msg_file_exists_desc": "يوجد ملف بنفس الاسم \"{fileName}\" في المجلد الهدف بالفعل. كيف تريد المتابعة؟",
+  "@msg_file_exists_desc": {
+    "description": "Conflict dialog description",
+    "placeholders": {
+      "fileName": { "type": "String" }
+    }
+  },
+  "msg_existing_file": "الملف الموجود",
+  "@msg_existing_file": {
+    "description": "Existing file label in conflict dialog"
+  },
+  "msg_cancel_paste": "إلغاء اللصق",
+  "@msg_cancel_paste": {
+    "description": "Cancel paste button"
+  },
+  "msg_skip_file": "تخطي",
+  "@msg_skip_file": {
+    "description": "Skip file button in conflict dialog"
+  },
+  "msg_overwrite_file": "استبدال",
+  "@msg_overwrite_file": {
+    "description": "Overwrite file button in conflict dialog"
+  },
+  "msg_newer": "أحدث",
+  "@msg_newer": {
+    "description": "Newer badge in conflict dialog"
+  },
+  "msg_new_file_name": "اسم الملف الجديد",
+  "@msg_new_file_name": {
+    "description": "New file name label in rename dialog"
+  },
+  "ui_extract": "استخراج",
+  "msg_remember_choice": "تذكر هذا الاختيار للعمليات المستقبلية",
   "ui_caching": "جاري التخزين المؤقت، يرجى الانتظار...",
   "ui_username": "اسم المستخدم",
   "ui_anonymous": "مجهول",
@@ -3199,5 +3257,76 @@
   "ui_save_as": "حفظ باسم",
   "ui_undo": "تراجع",
   "ui_redo": "إعادة",
-  "ui_add_selected": "إضافة المحدد ({count})"
+  "ui_add_selected": "إضافة المحدد ({count})",
+  "msg_vault_choose_mode": "اختر وضع الحماية",
+  "msg_vault_mode_desc": "اختر كيفية حماية ملفاتك المحددة. يتم تشفير الملفات الآمنة فورًا باستخدام XOR.",
+  "ui_secure_import": "استيراد آمن (صندوق عزل)",
+  "ui_in_place_scramble": "التشويش في المكان (سريع)",
+  "msg_scrambling": "جاري التشويش والحماية...",
+  "msg_protected_count": "تم حماية {successCount} عنصر بنجاح.",
+  "msg_protect_failed_count": "فشل قفل {failCount} عنصر.",
+  "msg_restored": "تم استعادة 「{name}」 إلى موقعه الأصلي.",
+  "msg_restore_failed": "فشل استعادة الملف: {error}",
+  "msg_decrypting": "جاري فك التشفير بأمان...",
+  "msg_security_details": "تفاصيل الأمان",
+  "ui_restore_unhide": "استعادة (إظهار)",
+  "msg_permanent_delete": "حذف نهائي؟",
+  "msg_permanent_delete_content": "هل أنت متأكد من أنك تريد حذف 「{name}」 نهائيًا؟ لا يمكن التراجع عن هذا الإجراء.",
+  "msg_file_deleted": "تم حذف الملف نهائيًا.",
+  "msg_delete_failed": "فشل حذف الملف: {error}",
+  "msg_original_name": "الاسم الأصلي",
+  "msg_original_path": "المسار الأصلي",
+  "msg_scrambled_path": "المسار المشفر",
+  "msg_size_label": "الحجم",
+  "msg_locked_at": "وقت القفل",
+  "msg_protection_mode": "وضع الحماية",
+  "msg_in_place_scrambling": "التشويش في المكان",
+  "msg_isolated_move": "النقل المعزول (صندوق عزل)",
+  "web_share_search": "البحث عن الملفات والمجلدات...",
+  "web_share_upload": "رفع",
+  "web_share_drop_title": "أسحب الملفات هنا للرفع",
+  "web_share_drop_desc": "سيتم رفع ملفاتك فوراً إلى هذا المجلد المشترك",
+  "web_share_empty_search": "لا توجد عناصر تطابق بحثك",
+  "web_share_empty_desc": "تحقق من الإملاء أو جرب مصطلح بحث مختلف",
+  "web_share_copy_link": "نسخ الرابط",
+  "web_share_download": "تحميل",
+  "web_share_uploading": "جاري رفع {name}...",
+  "@web_share_uploading": {
+    "description": "Upload progress title",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "web_share_upload_success": "اكتمل الرفع بنجاح",
+  "web_share_upload_failed": "فشل رفع {name}",
+  "@web_share_upload_failed": {
+    "description": "Upload failed message",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "web_share_preview_unsupported": "المعاينة غير مدعومة لنوع الملف هذا",
+  "web_share_preview_download": "انقر على تحميل أدناه لحفظه على جهازك",
+  "web_share_footer": "مشاركة وبث الملفات بأمان عبر ZenFile",
+  "web_share_parent_dir": "الدليل الأصلي",
+  "web_share_go_up": "الانتقال إلى المستوى الأعلى",
+  "web_share_items_count": "{count} عناصر",
+  "@web_share_items_count": {
+    "description": "Item count display",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "web_share_link_copied": "تم نسخ الرابط إلى الحافظة",
+  "web_share_copy_failed": "فشل نسخ الرابط",
+  "web_share_local": "مشاركة Wi-Fi المحلية",
+  "web_share_internet": "مشاركة الإنترنت",
+  "web_share_category_folders": "مجلدات",
+  "web_share_category_videos": "مقاطع الفيديو",
+  "web_share_category_audio": "صوت",
+  "web_share_category_images": "صور",
+  "web_share_category_documents": "مستندات",
+  "web_share_category_others": "أخرى",
+  "web_share_loading_preview": "جاري تحميل المعاينة...",
+  "web_share_preview_error": "تعذر بث المستند. يمكنك still تحميله مباشرة."
 }

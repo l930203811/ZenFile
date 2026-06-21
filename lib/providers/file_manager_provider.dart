@@ -2505,13 +2505,54 @@ class FileManagerProvider extends ChangeNotifier {
 
     try {
       final totalFiles = _clipboardPaths.length;
+      ConflictResult? cachedResolution;
       for (int i = 0; i < _clipboardPaths.length; i++) {
         if (_isOperationCancelled) throw Exception('Cancelled');
 
         final srcPath = _clipboardPaths[i];
         final name = p.basename(srcPath);
-        final destPath = _buildRemotePath(currentPath, name);
+        String destPath = _buildRemotePath(currentPath, name);
         final isDir = FileSystemEntity.typeSync(srcPath) == FileSystemEntityType.directory;
+
+        // Check conflict with existing remote files
+        final destExists = activeTab.currentFiles.any((f) => f.name == name);
+        if (destExists) {
+          ConflictResult? resolution = cachedResolution;
+          if (resolution == null) {
+            if (!context.mounted) throw Exception('Cancelled');
+            final response = await ConflictDialog.show(
+              context,
+              fileName: name,
+              sourceFile: File(srcPath),
+              destFile: File(''), // remote file, no local path
+            );
+            if (response == null || response.result == ConflictResult.cancel) {
+              throw Exception('Cancelled');
+            }
+            resolution = response.result;
+            if (response.applyToAll &&
+                (resolution == ConflictResult.overwrite ||
+                 resolution == ConflictResult.keepBoth ||
+                 resolution == ConflictResult.skip)) {
+              cachedResolution = resolution;
+            }
+          }
+          if (resolution == ConflictResult.skip) {
+            continue; // skip this file
+          } else if (resolution == ConflictResult.keepBoth) {
+            // Generate unique name
+            String uniqueName = name;
+            int counter = 1;
+            while (activeTab.currentFiles.any((f) => f.name == uniqueName)) {
+              final baseName = p.basenameWithoutExtension(name);
+              final ext = p.extension(name);
+              uniqueName = '$baseName ($counter)$ext';
+              counter++;
+            }
+            destPath = _buildRemotePath(currentPath, uniqueName);
+          }
+          // overwrite: do nothing, keep destPath as is
+        }
 
         progressNotifier.value = FileOperationProgress(
           totalFiles: totalFiles,
@@ -2601,13 +2642,52 @@ class FileManagerProvider extends ChangeNotifier {
     try {
       await sourceClient.connect();
       final totalFiles = _remoteClipboardItems.length;
+      ConflictResult? cachedResolution;
 
       for (int i = 0; i < _remoteClipboardItems.length; i++) {
         if (_isOperationCancelled) throw Exception('Cancelled');
 
         final remoteItem = _remoteClipboardItems[i];
         final tempPath = p.join(tempDir.path, remoteItem.name);
-        final destPath = _buildRemotePath(currentPath, remoteItem.name);
+        String destPath = _buildRemotePath(currentPath, remoteItem.name);
+
+        // Check conflict with existing remote files
+        final destExists = activeTab.currentFiles.any((f) => f.name == remoteItem.name);
+        if (destExists) {
+          ConflictResult? resolution = cachedResolution;
+          if (resolution == null) {
+            if (!context.mounted) throw Exception('Cancelled');
+            final response = await ConflictDialog.show(
+              context,
+              fileName: remoteItem.name,
+              sourceFile: File(''), // remote file
+              destFile: File(''), // remote file
+            );
+            if (response == null || response.result == ConflictResult.cancel) {
+              throw Exception('Cancelled');
+            }
+            resolution = response.result;
+            if (response.applyToAll &&
+                (resolution == ConflictResult.overwrite ||
+                 resolution == ConflictResult.keepBoth ||
+                 resolution == ConflictResult.skip)) {
+              cachedResolution = resolution;
+            }
+          }
+          if (resolution == ConflictResult.skip) {
+            continue;
+          } else if (resolution == ConflictResult.keepBoth) {
+            String uniqueName = remoteItem.name;
+            int counter = 1;
+            while (activeTab.currentFiles.any((f) => f.name == uniqueName)) {
+              final baseName = p.basenameWithoutExtension(remoteItem.name);
+              final ext = p.extension(remoteItem.name);
+              uniqueName = '$baseName ($counter)$ext';
+              counter++;
+            }
+            destPath = _buildRemotePath(currentPath, uniqueName);
+          }
+        }
 
         progressNotifier.value = FileOperationProgress(
           totalFiles: totalFiles,
@@ -3053,7 +3133,7 @@ class FileManagerProvider extends ChangeNotifier {
     activeTab.isLoading = true;
     notifyListeners();
 
-    if (context != null) {
+    if (context != null && context.mounted) {
       selectedPaths.clear();
       var destinationPath = p.join(currentPath, '$archiveName.$format');
       // 如果目标路径已存在，自动重命名（快手.zip → 快手(1).zip → 快手(2).zip）
@@ -3062,6 +3142,8 @@ class FileManagerProvider extends ChangeNotifier {
         destinationPath = p.join(currentPath, '$archiveName($counter).$format');
         counter++;
       }
+      // 保存当前路径用于完成后刷新，避免依赖可能失效的 context
+      final targetDir = currentPath;
       await BackgroundArchiveService.instance.startCompression(
         context: context,
         sourcePaths: paths,
@@ -3069,6 +3151,10 @@ class FileManagerProvider extends ChangeNotifier {
         format: format,
         level: compressionLevel,
         deleteSource: deleteSource,
+        targetRefreshDir: targetDir,
+        onComplete: () {
+          loadDirectory(targetDir, showLoading: false, clearCache: true);
+        },
       );
     } else {
       try {
@@ -3115,9 +3201,13 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   Future<void> extractArchiveDirectly(BuildContext context, String path) async {
-    // 解压到压缩包所在目录（dirname(path)），而非浏览页当前路径
-    final destDir = p.join(p.dirname(path), p.basenameWithoutExtension(path));
-    final res = await ExtractArchiveDialog.show(context, archiveName: p.basename(path), defaultDestDir: destDir);
+    // 默认解压到当前浏览目录
+    final currentDir = currentPath;
+    final res = await ExtractArchiveDialog.show(
+      context,
+      archiveName: p.basename(path),
+      currentDir: currentDir,
+    );
     if (res != null && context.mounted) {
       await BackgroundArchiveService.instance.startExtraction(
         context: context,

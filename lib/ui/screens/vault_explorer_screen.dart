@@ -138,15 +138,15 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    '选择保护模式',
+                    L10n.of(context).msg_vault_choose_mode,
                     style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
-              content: const Text(
-                'Choose how you want to protect your selected files. Secured files are XOR scrambled instantly.',
+              content: Text(
+                L10n.of(context).msg_vault_mode_desc,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14.5, height: 1.4),
+                style: const TextStyle(fontSize: 14.5, height: 1.4),
               ),
               actionsAlignment: MainAxisAlignment.center,
               actionsPadding: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
@@ -163,12 +163,12 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
                         elevation: 0,
                       ),
                       onPressed: () => Navigator.pop(context, true), // true = Sandbox move
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Broken.lock, size: 20),
-                          SizedBox(width: 8),
-                          Text('Secure Import (Sandbox)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          const Icon(Broken.lock, size: 20),
+                          const SizedBox(width: 8),
+                          Text(L10n.of(context).ui_secure_import, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                         ],
                       ),
                     ),
@@ -182,12 +182,12 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),
                       onPressed: () => Navigator.pop(context, false), // false = In-place scramble
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Broken.flash_1, size: 20),
-                          SizedBox(width: 8),
-                          Text('In-Place Scramble (Fast)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          const Icon(Broken.flash_1, size: 20),
+                          const SizedBox(width: 8),
+                          Text(L10n.of(context).ui_in_place_scramble, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                         ],
                       ),
                     ),
@@ -207,18 +207,18 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(
+      builder: (context) => Center(
         child: Card(
           elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
+            padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 20),
-                Text('Scrambling & Protecting...', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                const CircularProgressIndicator(),
+                const SizedBox(height: 20),
+                Text(L10n.of(context).msg_scrambling, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
               ],
             ),
           ),
@@ -229,7 +229,8 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     int successCount = 0;
     int failCount = 0;
 
-    for (final path in selectedPaths) {
+    for (int i = 0; i < selectedPaths.length; i++) {
+      final path = selectedPaths[i];
       try {
         if (FileSystemEntity.isDirectorySync(path)) {
           final dir = Directory(path);
@@ -256,6 +257,10 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
         debugPrint('Error locking entity $path: $e');
         failCount++;
       }
+      // 每处理一个文件让出UI线程，避免卡死
+      if (i % 2 == 0) {
+        await Future.delayed(Duration.zero);
+      }
     }
 
     Navigator.pop(context); // Dismiss loading dialog
@@ -265,7 +270,9 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Protected $successCount items successfully.${failCount > 0 ? " Failed to lock $failCount items." : ""}',
+            failCount > 0
+              ? '${L10n.of(context).msg_protected_count(successCount)} ${L10n.of(context).msg_protect_failed_count(failCount)}'
+              : L10n.of(context).msg_protected_count(successCount),
           ),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -289,7 +296,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('已将"${record.originalName}"恢复到原始位置。'),
+            content: Text(L10n.of(context).msg_restored(record.originalName)),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
@@ -299,7 +306,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
       Navigator.pop(context);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('恢复文件失败：$e')),
+          SnackBar(content: Text(L10n.of(context).msg_restore_failed(e.toString()))),
         );
       }
     }
@@ -309,18 +316,18 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('永久删除？'),
-        content: Text('确定要永久删除"${record.originalName}"吗？此操作无法撤销。'),
+        title: Text(L10n.of(context).msg_permanent_delete),
+        content: Text(L10n.of(context).msg_permanent_delete_content(record.originalName)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('删除'),
-          ),
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(L10n.of(context).ui_cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: Text(L10n.of(context).msg96d2b75f),
+            ),
         ],
       ),
     );
@@ -338,13 +345,13 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
       await _loadVaultData();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('文件已永久删除。')),
+          SnackBar(content: Text(L10n.of(context).msg_file_deleted)),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('删除文件失败：$e')),
+          SnackBar(content: Text(L10n.of(context).msg_delete_failed(e.toString()))),
         );
       }
     }
@@ -354,16 +361,16 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(
+      builder: (context) => Center(
         child: Card(
           child: Padding(
-            padding: EdgeInsets.all(20),
+            padding: const EdgeInsets.all(20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('正在安全解密...', style: TextStyle(fontWeight: FontWeight.bold)),
+                const CircularProgressIndicator(),
+                const SizedBox(height: 16),
+                Text(L10n.of(context).msg_decrypting, style: const TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
           ),
@@ -435,11 +442,11 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
         final theme = Theme.of(context);
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Row(
+          title: Row(
             children: [
-              Icon(Broken.info_circle, color: Colors.blueAccent),
-              SizedBox(width: 8),
-              Text('安全详情', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Icon(Broken.info_circle, color: Colors.blueAccent),
+              const SizedBox(width: 8),
+              Text(L10n.of(context).msg_security_details, style: const TextStyle(fontWeight: FontWeight.bold)),
             ],
           ),
           content: SingleChildScrollView(
@@ -447,14 +454,14 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildInfoTile('原始名称', record.originalName, theme),
-                _buildInfoTile('原始路径', record.originalPath, theme),
-                _buildInfoTile('混淆路径', record.scrambledPath, theme),
-                _buildInfoTile('大小', FileUtils.formatBytes(record.size, 2), theme),
-                _buildInfoTile('锁定时间', record.lockedAt, theme),
+                _buildInfoTile(L10n.of(context).msg_original_name, record.originalName, theme),
+                _buildInfoTile(L10n.of(context).msg_original_path, record.originalPath, theme),
+                _buildInfoTile(L10n.of(context).msg_scrambled_path, record.scrambledPath, theme),
+                _buildInfoTile(L10n.of(context).msg_size_label, FileUtils.formatBytes(record.size, 2), theme),
+                _buildInfoTile(L10n.of(context).msg_locked_at, record.lockedAt, theme),
                 _buildInfoTile(
-                  '保护模式',
-                  record.isInPlace ? '⚡ In-Place Scrambling' : '🔒 Isolated Move (Sandbox)',
+                  L10n.of(context).msg_protection_mode,
+                  record.isInPlace ? L10n.of(context).msg_in_place_scrambling : L10n.of(context).msg_isolated_move,
                   theme,
                   valueColor: record.isInPlace ? Colors.orangeAccent : Colors.greenAccent,
                 ),
@@ -464,7 +471,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('关闭', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(L10n.of(context).ui_close, style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         );
@@ -878,23 +885,23 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
                 }
               },
               itemBuilder: (context) => [
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'unlock',
                   child: Row(
                     children: [
-                      Icon(Broken.unlock, size: 18),
-                      SizedBox(width: 10),
-                      Text('Restore (Unhide)', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
+                      const Icon(Broken.unlock, size: 18),
+                      const SizedBox(width: 10),
+                      Text(L10n.of(context).ui_restore_unhide, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
                     ],
                   ),
                 ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'info',
                   child: Row(
                     children: [
-                      Icon(Broken.info_circle, size: 18),
-                      SizedBox(width: 10),
-                      Text('详情', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
+                      const Icon(Broken.info_circle, size: 18),
+                      const SizedBox(width: 10),
+                      Text(L10n.of(context).msg1058354c, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
                     ],
                   ),
                 ),

@@ -288,10 +288,10 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "msg0537b04e": "画像を長押ししてギャラリーに保存できます。ご支援ありがとうございます！",
-  "@zenfilev104": {
+  "@zenfilev1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfilev104": "ZenFile v1.0.4をダウンロード",
+  "zenfilev1041": "ZenFile v1.0.41 をダウンロード",
   "@msg9d287020": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -2503,6 +2503,18 @@
   "@msgff69affd": {
     "description": "ui\\widgets\\extract_archive_dialog.dart"
   },
+  "msg_extract_to": "展開先…",
+  "@msg_extract_to": {
+    "description": "Extract archive dialog title"
+  },
+  "ui_current_directory": "現在のフォルダ",
+  "@ui_current_directory": {
+    "description": "Extract to current directory checkbox"
+  },
+  "ui_custom_directory": "カスタムフォルダ",
+  "@ui_custom_directory": {
+    "description": "Extract to custom directory checkbox"
+  },
   "msgff69affd": "パスワード（暗号化されている場合）",
   "@msg67eda5e6": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
@@ -2772,6 +2784,8 @@
   "cat_manage": "管理",
   "cat_config": "設定",
   "cat_analyze": "分析",
+  "cat_vault": "金庫",
+  "cat_vault_desc": "安全な保存",
   "cat_quick_categories": "ショートカットカテゴリ",
   "ui_nav": "ナビゲーション",
   "ui_home": "ホーム",
@@ -3142,6 +3156,49 @@
   "log_remote_to_remote": "リモートサーバー間のコピー/カット機能を追加",
   "log_remote_cut_progress": "リモートカット操作のプログレスバー表示を修正",
   "log_audio_scan_stable": "オーディオカテゴリのスキャン安定性を改善",
+  "log_extract_dialog_redesign": "解凍ダイアログを再設計し、現在のディレクトリ/カスタムディレクトリ選択をサポート",
+  "log_vault_quick_category": "クイックカテゴリに金庫ショートカットを追加（デフォルトオフ）",
+  "log_vault_l10n_fix": "金庫画面の英語ハードコードと複数ファイル追加時のフリーズを修正",
+  "log_compression_path_fix": "3点ボタンと長押しメニューの圧縮パスを統一し、圧縮ファイル名のエラーを修正",
+  "log_compression_progress": "圧縮進度ダイアログを改善し、多段階進度表示と確実な自動終了をサポート",
+  "log_web_share_category": "Web共有ポータルがファイルを分類表示（フォルダ、動画、オーディオ、画像、ドキュメント、その他）",
+  "log_web_share_l10n": "Web共有ポータルがアプリのロケールに基づいて多言語表示をサポート",
+  "msg_file_exists": "ファイルが存在します",
+  "@msg_file_exists": {
+    "description": "Conflict dialog title"
+  },
+  "msg_file_exists_desc": "対象フォルダに同名ファイル\"{fileName}\"が既に存在します。どう処理しますか？",
+  "@msg_file_exists_desc": {
+    "description": "Conflict dialog description",
+    "placeholders": {
+      "fileName": { "type": "String" }
+    }
+  },
+  "msg_existing_file": "既存ファイル",
+  "@msg_existing_file": {
+    "description": "Existing file label in conflict dialog"
+  },
+  "msg_cancel_paste": "貼り付けをキャンセル",
+  "@msg_cancel_paste": {
+    "description": "Cancel paste button"
+  },
+  "msg_skip_file": "スキップ",
+  "@msg_skip_file": {
+    "description": "Skip file button in conflict dialog"
+  },
+  "msg_overwrite_file": "上書き",
+  "@msg_overwrite_file": {
+    "description": "Overwrite file button in conflict dialog"
+  },
+  "msg_newer": " newer",
+  "@msg_newer": {
+    "description": "Newer badge in conflict dialog"
+  },
+  "msg_new_file_name": "新しいファイル名",
+  "@msg_new_file_name": {
+    "description": "New file name label in rename dialog"
+  },
+  "msg_remember_choice": "今後の操作でもこの選択を記憶する",
   "ui_caching": "キャッシュ中、しばらくお待ちください...",
   "ui_username": "ユーザー名",
   "ui_anonymous": "匿名",
@@ -3199,5 +3256,76 @@
   "ui_save_as": "名前を付けて保存",
   "ui_undo": "元に戻す",
   "ui_redo": "やり直す",
-  "ui_add_selected": "選択を追加 ({count})"
+  "ui_add_selected": "選択を追加 ({count})",
+  "msg_vault_choose_mode": "保護モードを選択",
+  "msg_vault_mode_desc": "選択したファイルの保護方法を選択してください。セキュアファイルは即座にXORスクランブルされます。",
+  "ui_secure_import": "セキュアインポート（サンドボックス）",
+  "ui_in_place_scramble": "インプレーススクランブル（高速）",
+  "msg_scrambling": "スクランブルと保護中...",
+  "msg_protected_count": "{successCount} 個の項目を正常に保護しました。",
+  "msg_protect_failed_count": "{failCount} 個の項目のロックに失敗しました。",
+  "msg_restored": "「{name}」を元の位置に復元しました。",
+  "msg_restore_failed": "ファイルの復元に失敗しました：{error}",
+  "msg_decrypting": "安全に復号中...",
+  "msg_security_details": "セキュリティ詳細",
+  "ui_restore_unhide": "復元（非表示解除）",
+  "msg_permanent_delete": "永久に削除しますか？",
+  "msg_permanent_delete_content": "「{name}」を永久に削除してもよろしいですか？この操作は元に戻せません。",
+  "msg_file_deleted": "ファイルは永久に削除されました。",
+  "msg_delete_failed": "ファイルの削除に失敗しました：{error}",
+  "msg_original_name": "元の名前",
+  "msg_original_path": "元のパス",
+  "msg_scrambled_path": "スクランブルパス",
+  "msg_size_label": "サイズ",
+  "msg_locked_at": "ロック日時",
+  "msg_protection_mode": "保護モード",
+  "msg_in_place_scrambling": "インプレーススクランブル",
+  "msg_isolated_move": "分離移動（サンドボックス）",
+  "web_share_search": "ファイルとフォルダを検索...",
+  "web_share_upload": "アップロード",
+  "web_share_drop_title": "ファイルをここにドラッグしてアップロード",
+  "web_share_drop_desc": "ファイルはこの共有フォルダに即座にアップロードされます",
+  "web_share_empty_search": "一致する項目がありません",
+  "web_share_empty_desc": "スペルを確認するか、別の検索語を試してください",
+  "web_share_copy_link": "リンクをコピー",
+  "web_share_download": "ダウンロード",
+  "web_share_uploading": "{name} をアップロード中...",
+  "@web_share_uploading": {
+    "description": "Upload progress title",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "web_share_upload_success": "アップロードが完了しました",
+  "web_share_upload_failed": "{name} のアップロードに失敗しました",
+  "@web_share_upload_failed": {
+    "description": "Upload failed message",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "web_share_preview_unsupported": "このファイルタイプのプレビューはサポートされていません",
+  "web_share_preview_download": "下のダウンロードボタンをクリックしてデバイスに保存",
+  "web_share_footer": "ZenFile を介してファイルを安全に共有およびストリーミング",
+  "web_share_parent_dir": "親ディレクトリ",
+  "web_share_go_up": "1つ上の階層に戻る",
+  "web_share_items_count": "{count} 項目",
+  "@web_share_items_count": {
+    "description": "Item count display",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "web_share_link_copied": "リンクをクリップボードにコピーしました",
+  "web_share_copy_failed": "リンクのコピーに失敗しました",
+  "web_share_local": "ローカル Wi-Fi 共有",
+  "web_share_internet": "インターネット共有",
+  "web_share_category_folders": "フォルダ",
+  "web_share_category_videos": "動画",
+  "web_share_category_audio": "オーディオ",
+  "web_share_category_images": "画像",
+  "web_share_category_documents": "ドキュメント",
+  "web_share_category_others": "その他",
+  "web_share_loading_preview": "プレビューを読み込み中...",
+  "web_share_preview_error": "ドキュメントをストリーミングできません。直接ダウンロードできます。"
 }

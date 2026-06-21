@@ -68,7 +68,7 @@ const ZH_TO_EN = {
   '远程文件先下载再播放功能': 'remote file download-then-play',
   '修复': 'fixed', '分类页解压后无法跳转到浏览页的问题': 'category extract not jumping to browse',
   '查看缓存目录和解压后打开所在位置导致页面卡死的问题': '"view cache dir" and "open location" causing freeze',
-  'ZenFile': 'ZenFile', 'v104': 'v1.0.4',
+  'ZenFile': 'ZenFile', 'v1041': 'v1.0.41',
 };
 
 // Very rough MT for demo - replace with actual translations

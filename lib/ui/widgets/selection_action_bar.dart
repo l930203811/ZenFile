@@ -147,7 +147,16 @@ class SelectionActionBar extends StatelessWidget {
               position: PopupMenuPosition.under,
               elevation: 8,
               onSelected: (action) async {
-                if (action == 'archive') {
+                if (action == 'extract') {
+                  final selectedPaths = provider.selectedPaths.toList();
+                  final archivePath = selectedPaths.firstWhere((p) => FileUtils.isArchive(p), orElse: () => '');
+                  if (archivePath.isNotEmpty) {
+                    await provider.extractArchiveDirectly(
+                      context,
+                      archivePath,
+                    );
+                  }
+                } else if (action == 'archive') {
                   final res = await CreateArchiveDialog.show(
                     context,
                     initialName: p.basename(provider.currentPath).isEmpty ? 'archive' : p.basename(provider.currentPath),
@@ -199,7 +208,19 @@ class SelectionActionBar extends StatelessWidget {
               itemBuilder: (context) {
                 final selected = provider.selectedPaths.toList();
                 final allPinned = selected.isNotEmpty && selected.every((p) => PinService.isPinned(p));
+                final hasArchive = selected.any((p) => FileUtils.isArchive(p));
                 return [
+                  if (hasArchive)
+                    PopupMenuItem(
+                      value: 'extract',
+                      child: Row(
+                        children: [
+                          const Icon(Broken.box, size: 20),
+                          const SizedBox(width: 12),
+                          Text(L10n.of(context).ui_extract, style: const TextStyle(fontWeight: FontWeight.w500)),
+                        ],
+                      ),
+                    ),
                   PopupMenuItem(
                     value: 'archive',
                     child: Row(

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import '../../providers/file_manager_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
+import '../../core/utils.dart';
 import 'selection_action_bar.dart'; // To access PropertiesModalDialog
 import 'file_action_dialogs.dart';
 import 'create_archive_dialog.dart';
@@ -15,11 +16,13 @@ import 'package:zenfile/l10n/generated/app_localizations.dart';
 class SelectionContextBottomSheet extends StatelessWidget {
   final FileManagerProvider provider;
   final String targetPath; // The path of the specific item that was long pressed
+  final BuildContext? outerContext; // The context from the caller (outside the bottom sheet)
 
   const SelectionContextBottomSheet({
     super.key,
     required this.provider,
     required this.targetPath,
+    this.outerContext,
   });
 
   static Future<void> show(BuildContext context, FileManagerProvider provider, String targetPath) {
@@ -31,9 +34,10 @@ class SelectionContextBottomSheet extends StatelessWidget {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => SelectionContextBottomSheet(
+      builder: (innerContext) => SelectionContextBottomSheet(
         provider: provider,
         targetPath: targetPath,
+        outerContext: context,
       ),
     );
   }
@@ -172,10 +176,11 @@ class SelectionContextBottomSheet extends StatelessWidget {
                 icon: Broken.edit,
                 label: L10n.of(context).msgc8ce4b36,
                 onTap: () async {
+                  final effectiveContext = outerContext ?? context;
                   Navigator.pop(context);
                   final currentName = p.basename(targetPath);
                   final newName = await FileActionDialogs.showTextInputDialog(
-                    context,
+                    effectiveContext,
                     title: L10n.of(context).msgc8ce4b36,
                     hint: L10n.of(context).msgf139c5cf,
                     initialValue: currentName,
@@ -193,8 +198,9 @@ class SelectionContextBottomSheet extends StatelessWidget {
                 icon: Broken.edit,
                 label: L10n.of(context).msgc8ce4b36,
                 onTap: () async {
+                  final effectiveContext = outerContext ?? context;
                   Navigator.pop(context);
-                  await BatchRenameDialog.show(context, provider);
+                  await BatchRenameDialog.show(effectiveContext, provider);
                 },
               ),
             if (isSingle && !isFolder)
@@ -203,8 +209,20 @@ class SelectionContextBottomSheet extends StatelessWidget {
                 icon: Broken.eye,
                 label: L10n.of(context).msg2a4cfb07,
                 onTap: () {
+                  final effectiveContext = outerContext ?? context;
                   Navigator.pop(context);
-                  provider.openFile(context, targetPath, forceOpenWith: true);
+                  provider.openFile(effectiveContext, targetPath, forceOpenWith: true);
+                },
+              ),
+            if (isSingle && !isFolder && FileUtils.isArchive(targetPath))
+              _buildMenuItem(
+                context: context,
+                icon: Broken.box,
+                label: L10n.of(context).ui_extract,
+                onTap: () async {
+                  final effectiveContext = outerContext ?? context;
+                  Navigator.pop(context);
+                  await provider.extractArchiveDirectly(effectiveContext, targetPath);
                 },
               ),
             _buildMenuItem(
@@ -212,10 +230,15 @@ class SelectionContextBottomSheet extends StatelessWidget {
               icon: Broken.box_add,
               label: L10n.of(context).ui_compress,
               onTap: () async {
+                final effectiveContext = outerContext ?? context;
                 Navigator.pop(context);
+                // 压缩选中项：默认名称使用第一个选中项的名字，而非当前目录名
+                final firstSelected = provider.selectedPaths.isNotEmpty
+                    ? p.basename(provider.selectedPaths.first)
+                    : 'archive';
                 final res = await CreateArchiveDialog.show(
-                  context,
-                  initialName: p.basename(provider.currentPath).isEmpty ? 'archive' : p.basename(provider.currentPath),
+                  effectiveContext,
+                  initialName: firstSelected,
                   isMultiSelection: selectedCount > 1,
                 );
                 if (res != null) {
@@ -228,7 +251,7 @@ class SelectionContextBottomSheet extends StatelessWidget {
                     deleteSource: res.deleteSource,
                     separateArchives: res.separateArchives,
                     targetPaths: provider.selectedPaths.toList(),
-                    context: context,
+                    context: effectiveContext,
                   );
                   provider.clearSelection();
                 }
@@ -239,9 +262,10 @@ class SelectionContextBottomSheet extends StatelessWidget {
               icon: Icons.share_outlined,
               label: L10n.of(context).ui_share,
               onTap: () async {
+                final effectiveContext = outerContext ?? context;
                 Navigator.pop(context);
                 final selectedPaths = provider.selectedPaths.toList();
-                await FolderShareService.sharePaths(context, selectedPaths);
+                await FolderShareService.sharePaths(effectiveContext, selectedPaths);
               },
             ),
             _buildMenuItem(
@@ -249,9 +273,10 @@ class SelectionContextBottomSheet extends StatelessWidget {
               icon: Broken.info_circle,
               label: L10n.of(context).msg1058354c,
               onTap: () {
+                final effectiveContext = outerContext ?? context;
                 Navigator.pop(context);
                 showDialog(
-                  context: context,
+                  context: effectiveContext,
                   builder: (context) => PropertiesModalDialog(
                     selectedPaths: provider.selectedPaths.toList(),
                     provider: provider,
@@ -266,9 +291,10 @@ class SelectionContextBottomSheet extends StatelessWidget {
               label: L10n.of(context).msgcd0b9aca,
               color: Colors.redAccent,
               onTap: () async {
+                final effectiveContext = outerContext ?? context;
                 Navigator.pop(context);
                 final confirm = await FileActionDialogs.showConfirmDialog(
-                  context,
+                  effectiveContext,
                   title: L10n.of(context).msgcd0b9aca,
                   content: L10n.of(context).selectedcount2(selectedCount),
                 );

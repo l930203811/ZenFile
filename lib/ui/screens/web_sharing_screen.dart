@@ -68,6 +68,7 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
     } else {
       try {
         await Permission.notification.request();
+        _webService.setWebLocale(Localizations.localeOf(context).languageCode);
         await _webService.startLocalServer(rootPath);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -258,6 +259,11 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
     final isDark = theme.brightness == Brightness.dark;
     final fileManager = context.watch<FileManagerProvider>();
     final shareDir = fileManager.rootPath;
+
+    // 每次重建时同步 App 当前语言到 Web 共享服务，确保语言切换后立即生效
+    if (_webService.isLocalActive || _webService.isInternetActive) {
+      _webService.setWebLocale(Localizations.localeOf(context).languageCode);
+    }
 
     final isActive = _activeTab == 0 ? _webService.isLocalActive : _webService.isInternetActive;
 

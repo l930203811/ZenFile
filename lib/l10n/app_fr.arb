@@ -200,10 +200,10 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "zenfile1": "À propos de ZenFile",
-  "@v104": {
+  "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "v104": "v1.0.4 (Voir)",
+  "v1041": "v1.0.41 (Voir)",
   "@zenfileflutter": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -288,10 +288,10 @@
     "description": "ui\\screens\\about_screen.dart"
   },
   "msg0537b04e": "Appuyez longuement sur l'image pour la sauvegarder dans la galerie. Merci pour votre soutien !",
-  "@zenfilev104": {
+  "@zenfilev1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfilev104": "Télécharger ZenFile v1.0.4",
+  "zenfilev1041": "Télécharger ZenFile v1.0.41",
   "@msg9d287020": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -2503,6 +2503,18 @@
   "@msgff69affd": {
     "description": "ui\\widgets\\extract_archive_dialog.dart"
   },
+  "msg_extract_to": "Extraire vers…",
+  "@msg_extract_to": {
+    "description": "Extract archive dialog title"
+  },
+  "ui_current_directory": "Répertoire actuel",
+  "@ui_current_directory": {
+    "description": "Extract to current directory checkbox"
+  },
+  "ui_custom_directory": "Répertoire personnalisé",
+  "@ui_custom_directory": {
+    "description": "Extract to custom directory checkbox"
+  },
   "msgff69affd": "Mot de passe (si chiffré)",
   "@msg67eda5e6": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
@@ -2772,6 +2784,8 @@
   "cat_manage": "Gérer",
   "cat_config": "Configuration",
   "cat_analyze": "Analyser",
+  "cat_vault": "Coffre-fort",
+  "cat_vault_desc": "Stockage sécurisé",
   "cat_quick_categories": "Catégories rapides",
   "ui_nav": "Navigation",
   "ui_home": "Accueil",
@@ -3142,6 +3156,50 @@
   "log_remote_to_remote": "Ajout de la copie/coupe entre serveurs distants",
   "log_remote_cut_progress": "Correction de la barre de progression pour les opérations de coupe distante",
   "log_audio_scan_stable": "Amélioration de la stabilité du scan de la catégorie audio",
+  "log_extract_dialog_redesign": "Dialogue d'extraction redessiné avec sélection du répertoire actuel/personnalisé",
+  "log_vault_quick_category": "Raccourci coffre-fort ajouté aux catégories rapides (désactivé par défaut)",
+  "log_vault_l10n_fix": "Correction du texte anglais codé en dur et du gel lors de l'ajout de plusieurs fichiers dans le coffre-fort",
+  "log_compression_path_fix": "Unification des chemins de compression pour le bouton 3 points et le menu appui long",
+  "log_compression_progress": "Amélioration du dialogue de progression avec affichage multi-étapes et fermeture automatique fiable",
+  "log_web_share_category": "Le portail de partage Web affiche les fichiers par catégories (dossiers, vidéos, audio, images, documents, autres)",
+  "log_web_share_l10n": "Le portail de partage Web prend en charge l'affichage multilingue selon la langue de l'application",
+  "msg_file_exists": "Le fichier existe déjà",
+  "@msg_file_exists": {
+    "description": "Conflict dialog title"
+  },
+  "msg_file_exists_desc": "Un fichier du même nom \"{fileName}\" existe déjà dans le dossier de destination. Comment souhaitez-vous procéder ?",
+  "@msg_file_exists_desc": {
+    "description": "Conflict dialog description",
+    "placeholders": {
+      "fileName": { "type": "String" }
+    }
+  },
+  "msg_existing_file": "Fichier existant",
+  "@msg_existing_file": {
+    "description": "Existing file label in conflict dialog"
+  },
+  "msg_cancel_paste": "Annuler le collage",
+  "@msg_cancel_paste": {
+    "description": "Cancel paste button"
+  },
+  "msg_skip_file": "Ignorer",
+  "@msg_skip_file": {
+    "description": "Skip file button in conflict dialog"
+  },
+  "msg_overwrite_file": "Remplacer",
+  "@msg_overwrite_file": {
+    "description": "Overwrite file button in conflict dialog"
+  },
+  "msg_newer": "Plus récent",
+  "@msg_newer": {
+    "description": "Newer badge in conflict dialog"
+  },
+  "msg_new_file_name": "Nouveau nom de fichier",
+  "@msg_new_file_name": {
+    "description": "New file name label in rename dialog"
+  },
+  "ui_extract": "Extraire",
+  "msg_remember_choice": "Se souvenir de ce choix pour les opérations futures",
   "ui_caching": "Mise en cache, veuillez patienter...",
   "ui_username": "Nom d'utilisateur",
   "ui_anonymous": "Anonyme",
@@ -3199,5 +3257,76 @@
   "ui_save_as": "Enregistrer sous",
   "ui_undo": "Annuler",
   "ui_redo": "Rétablir",
-  "ui_add_selected": "Ajouter la sélection ({count})"
+  "ui_add_selected": "Ajouter la sélection ({count})",
+  "msg_vault_choose_mode": "Choisir le mode de protection",
+  "msg_vault_mode_desc": "Choisissez comment protéger vos fichiers sélectionnés. Les fichiers sécurisés sont instantanément brouillés par XOR.",
+  "ui_secure_import": "Importation sécurisée (Sandbox)",
+  "ui_in_place_scramble": "Brouillage sur place (Rapide)",
+  "msg_scrambling": "Brouillage et protection...",
+  "msg_protected_count": "{successCount} éléments protégés avec succès.",
+  "msg_protect_failed_count": "Échec du verrouillage de {failCount} éléments.",
+  "msg_restored": "「{name}」a été restauré à son emplacement d'origine.",
+  "msg_restore_failed": "Échec de la restauration du fichier : {error}",
+  "msg_decrypting": "Déchiffrement sécurisé...",
+  "msg_security_details": "Détails de sécurité",
+  "ui_restore_unhide": "Restaurer (Afficher)",
+  "msg_permanent_delete": "Supprimer définitivement ?",
+  "msg_permanent_delete_content": "Êtes-vous sûr de vouloir supprimer définitivement 「{name}」? Cette action est irréversible.",
+  "msg_file_deleted": "Le fichier a été supprimé définitivement.",
+  "msg_delete_failed": "Échec de la suppression du fichier : {error}",
+  "msg_original_name": "Nom d'origine",
+  "msg_original_path": "Chemin d'origine",
+  "msg_scrambled_path": "Chemin brouillé",
+  "msg_size_label": "Taille",
+  "msg_locked_at": "Verrouillé le",
+  "msg_protection_mode": "Mode de protection",
+  "msg_in_place_scrambling": "Brouillage sur place",
+  "msg_isolated_move": "Déplacement isolé (Sandbox)",
+  "web_share_search": "Rechercher des fichiers et dossiers...",
+  "web_share_upload": "Télécharger",
+  "web_share_drop_title": "Déposez les fichiers ici pour les télécharger",
+  "web_share_drop_desc": "Vos fichiers seront instantanément téléchargés dans ce dossier partagé",
+  "web_share_empty_search": "Aucun élément ne correspond à votre recherche",
+  "web_share_empty_desc": "Vérifiez l'orthographe ou essayez un terme de recherche différent",
+  "web_share_copy_link": "Copier le lien",
+  "web_share_download": "Télécharger",
+  "web_share_uploading": "Téléchargement de {name}...",
+  "@web_share_uploading": {
+    "description": "Upload progress title",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "web_share_upload_success": "Téléchargement terminé avec succès",
+  "web_share_upload_failed": "Échec du téléchargement de {name}",
+  "@web_share_upload_failed": {
+    "description": "Upload failed message",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "web_share_preview_unsupported": "L'aperçu n'est pas pris en charge pour ce type de fichier",
+  "web_share_preview_download": "Cliquez sur Télécharger ci-dessous pour l'enregistrer sur votre appareil",
+  "web_share_footer": "Partage et diffusion sécurisés de fichiers via ZenFile",
+  "web_share_parent_dir": "Répertoire parent",
+  "web_share_go_up": "Remonter d'un niveau",
+  "web_share_items_count": "{count} éléments",
+  "@web_share_items_count": {
+    "description": "Item count display",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "web_share_link_copied": "Lien copié dans le presse-papiers",
+  "web_share_copy_failed": "Échec de la copie du lien",
+  "web_share_local": "Partage Wi-Fi local",
+  "web_share_internet": "Partage Internet",
+  "web_share_category_folders": "Dossiers",
+  "web_share_category_videos": "Vidéos",
+  "web_share_category_audio": "Audio",
+  "web_share_category_images": "Images",
+  "web_share_category_documents": "Documents",
+  "web_share_category_others": "Autres",
+  "web_share_loading_preview": "Chargement de l'aperçu...",
+  "web_share_preview_error": "Impossible de diffuser le document. Vous pouvez toujours le télécharger directement."
 }

@@ -210,8 +210,8 @@
   "@zenfile1": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "v104": "v1.0.4 (查看)",
-  "@v104": {
+  "v1041": "v1.0.41 (查看)",
+  "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
   "zenfileflutter": "ZenFile 是一款基于 Flutter 构建的精美、流畅、开源的文件管理器和离线媒体中心。专为极致性能、干净的毛玻璃美学和无缝用户体验而设计。",
@@ -298,8 +298,8 @@
   "@msg0537b04e": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfilev104": "下载 ZenFile v1.0.4",
-  "@zenfilev104": {
+  "zenfilev1041": "下载 ZenFile v1.0.41",
+  "@zenfilev1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
   "msg9d287020": "123云盘",
@@ -2552,6 +2552,18 @@
   "@msgf15821d0": {
     "description": "ui\\widgets\\extract_archive_dialog.dart"
   },
+  "msg_extract_to": "解压到…",
+  "@msg_extract_to": {
+    "description": "Extract archive dialog title"
+  },
+  "ui_current_directory": "当前目录",
+  "@ui_current_directory": {
+    "description": "Extract to current directory checkbox"
+  },
+  "ui_custom_directory": "自定义目录",
+  "@ui_custom_directory": {
+    "description": "Extract to custom directory checkbox"
+  },
   "msgff69affd": "密码（如果已加密）",
   "@msgff69affd": {
     "description": "ui\\widgets\\extract_archive_dialog.dart"
@@ -2833,6 +2845,14 @@
   "cat_manage": "管理",
   "cat_config": "配置",
   "cat_analyze": "分析",
+  "cat_vault": "保险箱",
+  "@cat_vault": {
+    "description": "Vault shortcut category label"
+  },
+  "cat_vault_desc": "安全存储",
+  "@cat_vault_desc": {
+    "description": "Vault shortcut category description"
+  },
   "cat_quick_categories": "快捷分类",
   "ui_nav": "导航",
   "ui_home": "主页",
@@ -3203,6 +3223,14 @@
   "log_remote_to_remote": "新增远程服务器到远程服务器的复制/剪切功能",
   "log_remote_cut_progress": "修复远程剪切操作进度条显示异常",
   "log_audio_scan_stable": "优化音频分类扫描稳定性",
+  "log_extract_dialog_redesign": "重新设计解压对话框，支持当前目录/自定义目录选择",
+  "log_vault_quick_category": "将保险箱快捷方式添加到快捷分类（默认关闭）",
+  "log_vault_l10n_fix": "修复保险箱页面英文硬编码和添加多文件时卡死的问题",
+  "log_compression_path_fix": "统一三点按钮和长按菜单的压缩路径，修复压缩包名称错误",
+  "log_compression_progress": "优化压缩进度对话框，支持多阶段进度显示和可靠自动关闭",
+  "log_web_share_category": "网页共享门户支持分类显示文件（文件夹、视频、音频、图片、文档、其他）",
+  "log_web_share_l10n": "网页共享门户支持根据 App 语言自动切换多语言显示",
+  "msg_remember_choice": "记住此选择，后续操作默认使用",
   "ui_caching": "正在缓存中，请稍后...",
   "ui_username": "用户名",
   "ui_anonymous": "匿名",
@@ -3260,5 +3288,205 @@
   "ui_save_as": "另存为",
   "ui_undo": "撤销",
   "ui_redo": "重做",
-  "ui_add_selected": "添加所选 ({count})"
+  "ui_add_selected": "添加所选 ({count})",
+  "msg_file_exists": "文件已存在",
+  "@msg_file_exists": {
+    "description": "Title shown when a file conflict is detected"
+  },
+  "msg_file_exists_desc": "目标文件夹中已存在同名文件\"{fileName}\"。您想怎么处理？",
+  "@msg_file_exists_desc": {
+    "description": "Description shown when a file conflict is detected",
+    "placeholders": {
+      "fileName": {
+        "type": "String",
+        "example": "document.txt"
+      }
+    }
+  },
+  "msg_existing_file": "现有文件",
+  "@msg_existing_file": {
+    "description": "Label for the existing file in conflict dialog"
+  },
+  "msg_cancel_paste": "取消粘贴",
+  "@msg_cancel_paste": {
+    "description": "Button to cancel paste operation in conflict dialog"
+  },
+  "msg_skip_file": "跳过",
+  "@msg_skip_file": {
+    "description": "Button to skip file in conflict dialog"
+  },
+  "msg_overwrite_file": "替换",
+  "@msg_overwrite_file": {
+    "description": "Button to overwrite file in conflict dialog"
+  },
+  "msg_newer": "较新",
+  "@msg_newer": {
+    "description": "Badge indicating a file is newer in conflict dialog"
+  },
+  "msg_new_file_name": "新文件名",
+  "@msg_new_file_name": {
+    "description": "Label for new file name input in rename dialog"
+  },
+  "ui_extract": "解压",
+  "msg_vault_choose_mode": "选择保护模式",
+  "@msg_vault_choose_mode": {
+    "description": "Vault protection mode dialog title"
+  },
+  "msg_vault_mode_desc": "选择如何保护选中的文件。安全文件将立即进行 XOR 混淆加密。",
+  "@msg_vault_mode_desc": {
+    "description": "Vault protection mode dialog description"
+  },
+  "ui_secure_import": "安全导入（沙盒）",
+  "@ui_secure_import": {
+    "description": "Vault sandbox import button"
+  },
+  "ui_in_place_scramble": "原地混淆（快速）",
+  "@ui_in_place_scramble": {
+    "description": "Vault in-place scramble button"
+  },
+  "msg_scrambling": "正在混淆加密...",
+  "@msg_scrambling": {
+    "description": "Vault scrambling progress text"
+  },
+  "msg_protected_count": "成功保护 {successCount} 个项目。",
+  "@msg_protected_count": {
+    "description": "Vault protected success message",
+    "placeholders": {
+      "successCount": {}
+    }
+  },
+  "msg_protect_failed_count": "失败锁定 {failCount} 个项目。",
+  "@msg_protect_failed_count": {
+    "description": "Vault protect failed message",
+    "placeholders": {
+      "failCount": {}
+    }
+  },
+  "msg_restored": "已将「{name}」恢复到原始位置。",
+  "@msg_restored": {
+    "description": "Vault restore success message",
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "msg_restore_failed": "恢复文件失败：{error}",
+  "@msg_restore_failed": {
+    "description": "Vault restore failed message",
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "msg_decrypting": "正在安全解密...",
+  "@msg_decrypting": {
+    "description": "Vault decrypting progress text"
+  },
+  "msg_security_details": "安全详情",
+  "@msg_security_details": {
+    "description": "Vault security details dialog title"
+  },
+  "ui_restore_unhide": "恢复（取消隐藏）",
+  "@ui_restore_unhide": {
+    "description": "Vault restore menu item"
+  },
+  "msg_permanent_delete": "永久删除？",
+  "@msg_permanent_delete": {
+    "description": "Vault permanent delete confirm title"
+  },
+  "msg_permanent_delete_content": "确定要永久删除「{name}」吗？此操作无法撤销。",
+  "@msg_permanent_delete_content": {
+    "description": "Vault permanent delete confirm content",
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "msg_file_deleted": "文件已永久删除。",
+  "@msg_file_deleted": {
+    "description": "Vault file deleted message"
+  },
+  "msg_delete_failed": "删除文件失败：{error}",
+  "@msg_delete_failed": {
+    "description": "Vault delete failed message",
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "msg_original_name": "原始名称",
+  "@msg_original_name": {
+    "description": "Vault original name label"
+  },
+  "msg_original_path": "原始路径",
+  "@msg_original_path": {
+    "description": "Vault original path label"
+  },
+  "msg_scrambled_path": "混淆路径",
+  "@msg_scrambled_path": {
+    "description": "Vault scrambled path label"
+  },
+  "msg_size_label": "大小",
+  "@msg_size_label": {
+    "description": "Vault size label"
+  },
+  "msg_locked_at": "锁定时间",
+  "@msg_locked_at": {
+    "description": "Vault locked at label"
+  },
+  "msg_protection_mode": "保护模式",
+  "@msg_protection_mode": {
+    "description": "Vault protection mode label"
+  },
+  "msg_in_place_scrambling": "原地混淆",
+  "@msg_in_place_scrambling": {
+    "description": "Vault in-place scrambling mode"
+  },
+  "msg_isolated_move": "隔离移动（沙盒）",
+  "@msg_isolated_move": {
+    "description": "Vault isolated move mode"
+  },
+  "web_share_search": "搜索文件和文件夹...",
+  "web_share_upload": "上传",
+  "web_share_drop_title": "拖拽文件到此处上传",
+  "web_share_drop_desc": "文件将立即上传到此共享文件夹",
+  "web_share_empty_search": "没有匹配的项目",
+  "web_share_empty_desc": "检查拼写或尝试不同的搜索词",
+  "web_share_copy_link": "复制链接",
+  "web_share_download": "下载",
+  "web_share_uploading": "正在上传 {name}...",
+  "@web_share_uploading": {
+    "description": "Upload progress title",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "web_share_upload_success": "上传成功",
+  "web_share_upload_failed": "上传 {name} 失败",
+  "@web_share_upload_failed": {
+    "description": "Upload failed message",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "web_share_preview_unsupported": "不支持预览此文件类型",
+  "web_share_preview_download": "点击下方下载按钮保存到您的设备",
+  "web_share_footer": "通过 ZenFile 安全共享和流式传输文件",
+  "web_share_parent_dir": "上级目录",
+  "web_share_go_up": "返回上一级",
+  "web_share_items_count": "{count} 个项目",
+  "@web_share_items_count": {
+    "description": "Item count display",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "web_share_link_copied": "链接已复制到剪贴板",
+  "web_share_copy_failed": "复制链接失败",
+  "web_share_local": "本地 Wi-Fi 共享",
+  "web_share_internet": "互联网共享",
+  "web_share_category_folders": "文件夹",
+  "web_share_category_videos": "视频",
+  "web_share_category_audio": "音频",
+  "web_share_category_images": "图片",
+  "web_share_category_documents": "文档",
+  "web_share_category_others": "其他",
+  "web_share_loading_preview": "正在加载预览...",
+  "web_share_preview_error": "无法流式传输文档。您仍然可以直接下载。"
 }
