@@ -224,19 +224,36 @@ class FileManagerProvider extends ChangeNotifier {
     _activeAppIcon = val;
     await PreferencesService.saveActiveAppIcon(val);
 
+    // Custom icons are handled via home screen shortcut (Option B), not via
+    // activity-alias, because Android cannot reference a runtime image file
+    // from an alias android:icon attribute.
+    if (val == 'custom') {
+      notifyListeners();
+      return;
+    }
+
     String alias = 'com.sequl.zenfile.MainActivityDefault';
-    if (val == 'design1') {
-      alias = 'com.sequl.zenfile.MainActivityDesign1';
-    } else if (val == 'design2') {
-      alias = 'com.sequl.zenfile.MainActivityDesign2';
-    } else if (val == 'design3') {
-      alias = 'com.sequl.zenfile.MainActivityDesign3';
-    } else if (val == 'design4') {
-      alias = 'com.sequl.zenfile.MainActivityDesign4';
-    } else if (val == 'design5') {
-      alias = 'com.sequl.zenfile.MainActivityDesign5';
-    } else if (val == 'custom') {
-      alias = 'com.sequl.zenfile.MainActivityCustom';
+    switch (val) {
+      case 'design1':
+        alias = 'com.sequl.zenfile.MainActivityDesign1';
+      case 'design2':
+        alias = 'com.sequl.zenfile.MainActivityDesign2';
+      case 'design3':
+        alias = 'com.sequl.zenfile.MainActivityDesign3';
+      case 'design4':
+        alias = 'com.sequl.zenfile.MainActivityDesign4';
+      case 'design5':
+        alias = 'com.sequl.zenfile.MainActivityDesign5';
+      case 'design6':
+        alias = 'com.sequl.zenfile.MainActivityDesign6';
+      case 'design7':
+        alias = 'com.sequl.zenfile.MainActivityDesign7';
+      case 'design8':
+        alias = 'com.sequl.zenfile.MainActivityDesign8';
+      case 'design9':
+        alias = 'com.sequl.zenfile.MainActivityDesign9';
+      case 'design10':
+        alias = 'com.sequl.zenfile.MainActivityDesign10';
     }
 
     await AppManagerService.changeAppIcon(alias);
@@ -3155,6 +3172,7 @@ class FileManagerProvider extends ChangeNotifier {
         onComplete: () {
           loadDirectory(targetDir, showLoading: false, clearCache: true);
         },
+        provider: this,
       );
     } else {
       try {

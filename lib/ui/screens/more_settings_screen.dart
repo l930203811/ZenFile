@@ -6,8 +6,10 @@ import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/utils.dart';
 import '../widgets/quick_categories_grid.dart';
 import '../../services/preferences_service.dart';
+import '../../services/app_manager_service.dart';
 import '../../services/recycle_bin_service.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'internal_file_picker_screen.dart';
 import 'backup_settings_screen.dart';
 import '../../services/settings_backup_service.dart';
@@ -1920,6 +1922,11 @@ String _getAppIconLabel(BuildContext context, String option) {
     case 'design3': return L10n.of(context).d;
     case 'design4': return L10n.of(context).msg67836b24;
     case 'design5': return L10n.of(context).msgf08c8dc4;
+    case 'design6': return L10n.of(context).msgdesign6;
+    case 'design7': return L10n.of(context).msgdesign7;
+    case 'design8': return L10n.of(context).msgdesign8;
+    case 'design9': return L10n.of(context).msgdesign9;
+    case 'design10': return L10n.of(context).msgdesign10;
     case 'custom': return L10n.of(context).msg7372dc9f;
     case 'default':
     default:
@@ -2525,119 +2532,166 @@ void _showCategoryIconShapePickerDialog(BuildContext context, FileManagerProvide
 }
 
 void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileManager, ThemeData theme) {
+  final rootContext = context;
   showGeneralDialog(
     context: context,
     barrierDismissible: true,
     barrierLabel: 'App Icon Picker',
     barrierColor: Colors.black.withOpacity(0.55),
     transitionDuration: const Duration(milliseconds: 250),
-    pageBuilder: (context, anim1, anim2) => const SizedBox.shrink(),
-    transitionBuilder: (context, anim1, anim2, child) {
+    pageBuilder: (dialogContext, anim1, anim2) => const SizedBox.shrink(),
+    transitionBuilder: (dialogContext, anim1, anim2, child) {
       return ScaleTransition(
         scale: CurvedAnimation(parent: anim1, curve: Curves.easeOutBack),
         child: FadeTransition(
           opacity: anim1,
-          child: AlertDialog(
-            backgroundColor: theme.colorScheme.surface,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-            title: Row(
-              children: [
-                Icon(Broken.category, color: theme.colorScheme.primary, size: 26),
-                const SizedBox(width: 12),
-                Text(L10n.of(context).msgf18bc3d9, style: TextStyle(fontWeight: FontWeight.bold)),
-              ],
-            ),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    L10n.of(context).logo,
-                    style: TextStyle(fontSize: 13, height: 1.3, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 20),
-                  Flexible(
-                    child: SingleChildScrollView(
-                      child: GridView.count(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 0.85,
-                        children: [
-                          _buildIconOptionCard(
-                            context,
-                            fileManager,
-                            theme,
-                            id: 'default',
-                            title: L10n.of(context).msg64a6476a,
-                            imagePath: 'assets/logo/design_5_nature.jpg',
-                          ),
-                          _buildIconOptionCard(
-                            context,
-                            fileManager,
-                            theme,
-                            id: 'design1',
-                            title: L10n.of(context).msgd06ba04f,
-                            imagePath: 'assets/logo/design_1_minimalist.jpg',
-                          ),
-                          _buildIconOptionCard(
-                            context,
-                            fileManager,
-                            theme,
-                            id: 'design2',
-                            title: L10n.of(context).msg5090469e,
-                            imagePath: 'assets/logo/design_2_glassmorphism.jpg',
-                          ),
-                          _buildIconOptionCard(
-                            context,
-                            fileManager,
-                            theme,
-                            id: 'design3',
-                            title: L10n.of(context).d,
-                            imagePath: 'assets/logo/design_3_3d_cute.jpg',
-                          ),
-                          _buildIconOptionCard(
-                            context,
-                            fileManager,
-                            theme,
-                            id: 'design4',
-                            title: L10n.of(context).msg67836b24,
-                            imagePath: 'assets/logo/design_4_cyberpunk.jpg',
-                          ),
-                          _buildIconOptionCard(
-                            context,
-                            fileManager,
-                            theme,
-                            id: 'design5',
-                            title: L10n.of(context).msgf08c8dc4,
-                            imagePath: 'assets/logo/design_5_nature.jpg',
-                          ),
-                          _buildCustomIconOptionCard(
-                            context,
-                            fileManager,
-                            theme,
-                          ),
-                        ],
+          child: AnimatedBuilder(
+            animation: fileManager,
+            builder: (context, child) {
+              return AlertDialog(
+                backgroundColor: theme.colorScheme.surface,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                title: Row(
+                  children: [
+                    Icon(Broken.category, color: theme.colorScheme.primary, size: 26),
+                    const SizedBox(width: 12),
+                    Text(L10n.of(context).msgf18bc3d9, style: TextStyle(fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                content: SizedBox(
+                  width: double.maxFinite,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        L10n.of(context).logo,
+                        style: TextStyle(fontSize: 13, height: 1.3, color: Colors.grey),
                       ),
-                    ),
+                      const SizedBox(height: 20),
+                      Flexible(
+                        child: SingleChildScrollView(
+                          child: GridView.count(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                            childAspectRatio: 0.85,
+                            children: [
+                              _buildIconOptionCard(
+                                context,
+                                fileManager,
+                                theme,
+                                id: 'default',
+                                title: L10n.of(context).msg64a6476a,
+                                imagePath: 'assets/logo/design_5_nature.jpg',
+                              ),
+                              _buildIconOptionCard(
+                                context,
+                                fileManager,
+                                theme,
+                                id: 'design1',
+                                title: L10n.of(context).msgd06ba04f,
+                                imagePath: 'assets/logo/design_1_minimalist.jpg',
+                              ),
+                              _buildIconOptionCard(
+                                context,
+                                fileManager,
+                                theme,
+                                id: 'design2',
+                                title: L10n.of(context).msg5090469e,
+                                imagePath: 'assets/logo/design_2_glassmorphism.jpg',
+                              ),
+                              _buildIconOptionCard(
+                                context,
+                                fileManager,
+                                theme,
+                                id: 'design3',
+                                title: L10n.of(context).d,
+                                imagePath: 'assets/logo/design_3_3d_cute.jpg',
+                              ),
+                              _buildIconOptionCard(
+                                context,
+                                fileManager,
+                                theme,
+                                id: 'design4',
+                                title: L10n.of(context).msg67836b24,
+                                imagePath: 'assets/logo/design_4_cyberpunk.jpg',
+                              ),
+                              _buildIconOptionCard(
+                                context,
+                                fileManager,
+                                theme,
+                                id: 'design5',
+                                title: L10n.of(context).msgf08c8dc4,
+                                imagePath: 'assets/logo/design_5_nature.jpg',
+                              ),
+                              _buildIconOptionCard(
+                                context,
+                                fileManager,
+                                theme,
+                                id: 'design6',
+                                title: L10n.of(context).msgdesign6,
+                                imagePath: 'assets/logo/design_6.png',
+                              ),
+                              _buildIconOptionCard(
+                                context,
+                                fileManager,
+                                theme,
+                                id: 'design7',
+                                title: L10n.of(context).msgdesign7,
+                                imagePath: 'assets/logo/design_7.png',
+                              ),
+                              _buildIconOptionCard(
+                                context,
+                                fileManager,
+                                theme,
+                                id: 'design8',
+                                title: L10n.of(context).msgdesign8,
+                                imagePath: 'assets/logo/design_8.png',
+                              ),
+                              _buildIconOptionCard(
+                                context,
+                                fileManager,
+                                theme,
+                                id: 'design9',
+                                title: L10n.of(context).msgdesign9,
+                                imagePath: 'assets/logo/design_9.png',
+                              ),
+                              _buildIconOptionCard(
+                                context,
+                                fileManager,
+                                theme,
+                                id: 'design10',
+                                title: L10n.of(context).msgdesign10,
+                                imagePath: 'assets/logo/design_10.png',
+                              ),
+                              _buildCustomIconOptionCard(
+                                context,
+                                fileManager,
+                                theme,
+                                rootContext,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(L10n.of(context).ui_close),
                   ),
                 ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(L10n.of(context).ui_close),
-              ),
-            ],
-          ),
-        ),
-      );
-    },
+              );
+        },
+      ),
+    ),
   );
+},
+);
 }
 
 Widget _buildIconOptionCard(
@@ -2713,55 +2767,66 @@ Widget _buildCustomIconOptionCard(
   BuildContext context,
   FileManagerProvider fileManager,
   ThemeData theme,
+  BuildContext rootContext,
 ) {
-  final isSelected = fileManager.activeAppIcon == 'custom';
-  final customIconPath = PreferencesService.getCustomAppIconPath();
-  final hasCustomIcon = customIconPath != null && File(customIconPath).existsSync();
+  return StatefulBuilder(
+    builder: (context, setState) {
+      final customIconPath = PreferencesService.getCustomAppIconPath();
+      final hasCustomIcon = customIconPath != null && File(customIconPath).existsSync();
+      final isSelected = fileManager.activeAppIcon == 'custom';
 
-  return Card(
-    color: isSelected ? theme.colorScheme.primaryContainer.withOpacity(0.4) : theme.colorScheme.surfaceVariant.withOpacity(0.15),
-    elevation: 0,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(16),
-      side: BorderSide(
-        color: isSelected ? theme.colorScheme.primary : theme.dividerColor.withOpacity(0.08),
-        width: isSelected ? 2.0 : 1.0,
-      ),
-    ),
-    child: InkWell(
-      onTap: () => _pickCustomIcon(context, fileManager, theme),
-      borderRadius: BorderRadius.circular(16),
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: hasCustomIcon
-                  ? Image.file(
-                      File(customIconPath!),
-                      width: 56,
-                      height: 56,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _buildCustomIconPlaceholder(theme),
-                    )
-                  : _buildCustomIconPlaceholder(theme),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              isSelected ? L10n.of(context).msg7372dc9f : L10n.of(context).msgad76161f,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+      return Card(
+        color: isSelected ? theme.colorScheme.primaryContainer.withOpacity(0.4) : theme.colorScheme.surfaceVariant.withOpacity(0.15),
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: isSelected ? theme.colorScheme.primary : theme.dividerColor.withOpacity(0.08),
+            width: isSelected ? 2.0 : 1.0,
+          ),
         ),
-      ),
-    ),
+        child: InkWell(
+          onTap: () {
+            if (hasCustomIcon && !isSelected) {
+              _activateCustomIcon(context, fileManager, theme, rootContext, setState);
+            } else {
+              _pickCustomIcon(context, fileManager, theme, rootContext, setState);
+            }
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: hasCustomIcon
+                      ? Image.file(
+                          File(customIconPath),
+                          width: 56,
+                          height: 56,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _buildCustomIconPlaceholder(theme),
+                        )
+                      : _buildCustomIconPlaceholder(theme),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  hasCustomIcon ? L10n.of(context).msg_custom_shortcut : L10n.of(context).msg_add_custom_shortcut,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                    color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
   );
 }
 
@@ -2786,60 +2851,162 @@ Widget _buildCustomIconPlaceholder(ThemeData theme) {
   );
 }
 
-Future<void> _pickCustomIcon(BuildContext context, FileManagerProvider fileManager, ThemeData theme) async {
+Future<void> _pickCustomIcon(
+  BuildContext context,
+  FileManagerProvider fileManager,
+  ThemeData theme,
+  BuildContext rootContext, [
+  StateSetter? setCardState,
+]) async {
   final result = await InternalFilePickerScreen.show(
     context,
     rootPath: '/storage/emulated/0',
   );
 
-  if (result != null && result.isNotEmpty) {
-    final selectedPath = result.first;
-    final ext = p.extension(selectedPath).toLowerCase();
-    const validExts = ['.png', '.jpg', '.jpeg', '.webp'];
-    
-    if (!validExts.contains(ext)) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(L10n.of(context).pngjpgwebp),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-      return;
+  if (result == null || result.isEmpty) {
+    debugPrint('Custom icon picker: cancelled or empty result');
+    return;
+  }
+
+  final selectedPath = result.first;
+  debugPrint('Custom icon picker: selected $selectedPath');
+  final ext = p.extension(selectedPath).toLowerCase();
+  const validExts = ['.png', '.jpg', '.jpeg', '.webp'];
+
+  if (!validExts.contains(ext)) {
+    debugPrint('Custom icon picker: invalid extension $ext');
+    if (context.mounted) {
+      Navigator.of(context).pop();
     }
-    
-    final file = File(selectedPath);
-    if (await file.exists()) {
-      try {
-        // Copy to app private directory
-        final appDir = await Directory('/storage/emulated/0/Android/data/com.sequl.zenfile/files/custom_icons').create(recursive: true);
-        final destPath = p.join(appDir.path, 'custom_app_icon.png');
-        await file.copy(destPath);
-        
-        await PreferencesService.saveCustomAppIconPath(destPath);
-        await fileManager.setActiveAppIcon('custom');
-        
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(L10n.of(context).msgb06c5c34),
-              behavior: SnackBarBehavior.floating,
-              duration: Duration(seconds: 2),
-            ),
-          );
-        }
-      } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(L10n.of(context).e12(e)),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
-      }
+    if (rootContext.mounted) {
+      ScaffoldMessenger.of(rootContext).showSnackBar(
+        SnackBar(
+          content: Text(L10n.of(rootContext).pngjpgwebp),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
+    return;
+  }
+
+  final file = File(selectedPath);
+  if (!await file.exists()) {
+    debugPrint('Custom icon picker: selected file does not exist');
+    if (context.mounted) {
+      Navigator.of(context).pop();
+    }
+    if (rootContext.mounted) {
+      ScaffoldMessenger.of(rootContext).showSnackBar(
+        SnackBar(
+          content: Text(L10n.of(rootContext).msg_shortcut_failed),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+    return;
+  }
+
+  try {
+    // Copy to app private directory using path_provider for reliability.
+    // Use getApplicationDocumentsDirectory() so the path matches the native
+    // filesDir, which is always accessible to the app.
+    final appDir = await getApplicationDocumentsDirectory();
+    final customDir = await Directory(p.join(appDir.path, 'custom_icons')).create(recursive: true);
+    final destPath = p.join(customDir.path, 'custom_app_icon.png');
+    debugPrint('Custom icon picker: copying to $destPath');
+    await file.copy(destPath);
+    await Future.delayed(const Duration(milliseconds: 100)); // ensure file is written
+
+    await PreferencesService.saveCustomAppIconPath(destPath);
+    debugPrint('Custom icon picker: saved path to preferences');
+
+    // Refresh the custom icon card preview so it shows the newly selected image.
+    setCardState?.call(() {});
+
+    // Set active icon to custom so the UI reflects the selection and
+    // preset icon cards are no longer highlighted.
+    await fileManager.setActiveAppIcon('custom');
+
+    // Option B: Add custom icon as a home screen shortcut (Android launcher
+    // icon replacement via activity-alias is not feasible for runtime images).
+    debugPrint('Custom icon picker: requesting home screen shortcut');
+    final shortcutSuccess = await AppManagerService.addHomeScreenShortcut(path: destPath)
+        .timeout(const Duration(seconds: 5), onTimeout: () {
+      debugPrint('Custom icon picker: native shortcut timed out');
+      return false;
+    });
+    debugPrint('Custom icon picker: shortcut success=$shortcutSuccess');
+
+    // Close the icon picker dialog so the SnackBar is visible on the parent screen.
+    if (context.mounted) {
+      Navigator.of(context).pop();
+    }
+    if (rootContext.mounted) {
+      ScaffoldMessenger.of(rootContext).showSnackBar(
+        SnackBar(
+          content: Text(shortcutSuccess
+              ? L10n.of(rootContext).msg_shortcut_added
+              : L10n.of(rootContext).msg_shortcut_failed),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  } catch (e, stack) {
+    debugPrint('Custom icon picker error: $e');
+    debugPrint('$stack');
+    if (context.mounted) {
+      Navigator.of(context).pop();
+    }
+    if (rootContext.mounted) {
+      ScaffoldMessenger.of(rootContext).showSnackBar(
+        SnackBar(
+          content: Text(L10n.of(rootContext).e12(e)),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+}
+
+Future<void> _activateCustomIcon(
+  BuildContext context,
+  FileManagerProvider fileManager,
+  ThemeData theme,
+  BuildContext rootContext,
+  StateSetter setCardState,
+) async {
+  final customIconPath = PreferencesService.getCustomAppIconPath();
+  if (customIconPath == null || !File(customIconPath).existsSync()) {
+    // Fallback to picker if the saved file no longer exists.
+    await _pickCustomIcon(context, fileManager, theme, rootContext, setCardState);
+    return;
+  }
+
+  await fileManager.setActiveAppIcon('custom');
+  setCardState(() {});
+
+  debugPrint('Activate custom icon: requesting home screen shortcut');
+  final shortcutSuccess = await AppManagerService.addHomeScreenShortcut(path: customIconPath)
+      .timeout(const Duration(seconds: 5), onTimeout: () {
+    debugPrint('Activate custom icon: native shortcut timed out');
+    return false;
+  });
+  debugPrint('Activate custom icon: shortcut success=$shortcutSuccess');
+
+  if (context.mounted) {
+    Navigator.of(context).pop();
+  }
+  if (rootContext.mounted) {
+    ScaffoldMessenger.of(rootContext).showSnackBar(
+      SnackBar(
+        content: Text(shortcutSuccess
+            ? L10n.of(rootContext).msg_shortcut_added
+            : L10n.of(rootContext).msg_shortcut_failed),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 }
 

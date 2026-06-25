@@ -112,6 +112,18 @@ class AppManagerService {
     }
   }
 
+  static Future<bool> addHomeScreenShortcut({String? path}) async {
+    try {
+      final bool? success = await _channel.invokeMethod<bool>(
+        'addHomeScreenShortcut',
+        {'path': path},
+      );
+      return success ?? false;
+    } catch (e) {
+      return false;
+    }
+  }
+
   // --- New APK Backup, Share, Restore, and Batch Features ---
 
   static Future<bool> backupApp(AppInfoModel app) async {

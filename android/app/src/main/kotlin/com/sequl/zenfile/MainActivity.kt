@@ -3,6 +3,8 @@ package com.sequl.zenfile
 import android.content.pm.PackageManager
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInstaller
+import android.content.pm.ShortcutInfo
+import android.content.pm.ShortcutManager
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -12,6 +14,7 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import android.provider.DocumentsContract
+import android.graphics.drawable.Icon
 import com.ryanheise.audioservice.AudioServiceFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -413,31 +416,13 @@ class MainActivity : AudioServiceFragmentActivity() {
                                 "com.sequl.zenfile.MainActivityDesign3",
                                 "com.sequl.zenfile.MainActivityDesign4",
                                 "com.sequl.zenfile.MainActivityDesign5",
+                                "com.sequl.zenfile.MainActivityDesign6",
+                                "com.sequl.zenfile.MainActivityDesign7",
+                                "com.sequl.zenfile.MainActivityDesign8",
+                                "com.sequl.zenfile.MainActivityDesign9",
+                                "com.sequl.zenfile.MainActivityDesign10",
                                 "com.sequl.zenfile.MainActivityCustom"
                             )
-
-                            // For custom icon, try to load user-provided icon
-                            if (iconAlias == "com.sequl.zenfile.MainActivityCustom") {
-                                try {
-                                    val customIconFile = File(applicationContext.getExternalFilesDir(null), "custom_icons/custom_app_icon.png")
-                                    if (customIconFile.exists()) {
-                                        val bitmap = android.graphics.BitmapFactory.decodeFile(customIconFile.absolutePath)
-                                        if (bitmap != null) {
-                                            // Scale bitmap to standard icon size
-                                            val scaledBitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, 192, 192, true)
-                                            // Save scaled bitmap to app's cache directory for launcher to pick up
-                                            val cacheDir = File(applicationContext.cacheDir, "custom_icon")
-                                            cacheDir.mkdirs()
-                                            val cacheFile = File(cacheDir, "icon.png")
-                                            FileOutputStream(cacheFile).use { out ->
-                                                scaledBitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, out)
-                                            }
-                                        }
-                                    }
-                                } catch (e: Exception) {
-                                    android.util.Log.w("ZenFile", "Failed to load custom icon: ${e.message}")
-                                }
-                            }
 
                             for (alias in aliases) {
                                 val componentName = android.content.ComponentName(packageName, alias)
@@ -453,28 +438,84 @@ class MainActivity : AudioServiceFragmentActivity() {
                                 )
                             }
                             
-                            // For custom icon, force refresh by toggling the component
-                            if (iconAlias == "com.sequl.zenfile.MainActivityCustom") {
-                                val customComponent = android.content.ComponentName(packageName, "com.sequl.zenfile.MainActivityCustom")
-                                val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                    PackageManager.DONT_KILL_APP or PackageManager.SYNCHRONOUS
-                                } else {
-                                    PackageManager.DONT_KILL_APP
-                                }
-                                packageManager.setComponentEnabledSetting(
-                                    customComponent,
-                                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                                    flags
-                                )
-                                Thread.sleep(200)
-                                packageManager.setComponentEnabledSetting(
-                                    customComponent,
-                                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                                    flags
-                                )
-                            }
-                            
                             runOnUiThread { result.success(true) }
+                        } catch (e: Exception) {
+                            runOnUiThread { result.error("ICON_ERROR", e.message, null) }
+                        }
+                    }
+                }
+                "addHomeScreenShortcut" -> {
+                    executor.execute {
+                        try {
+                            val pathArg = call.argument<String>("path")
+                            val customIconFile = if (!pathArg.isNullOrEmpty()) {
+                                File(pathArg)
+                            } else {
+                                File(applicationContext.filesDir, "custom_icons/custom_app_icon.png")
+                            }
+                            if (!customIconFile.exists()) {
+                                runOnUiThread { result.error("ICON_ERROR", "Custom icon not found", null) }
+                                return@execute
+                            }
+
+                            val bitmap = android.graphics.BitmapFactory.decodeFile(customIconFile.absolutePath)
+                            if (bitmap == null) {
+                                runOnUiThread { result.error("ICON_ERROR", "Failed to decode custom icon", null) }
+                                return@execute
+                            }
+
+                            runOnUiThread {
+                                try {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                        val shortcutManager = getSystemService(Context.SHORTCUT_SERVICE) as? ShortcutManager
+                                    if (shortcutManager != null && shortcutManager.isRequestPinShortcutSupported) {
+                                        val intent = Intent(this@MainActivity, MainActivity::class.java).apply {
+                                            action = Intent.ACTION_MAIN
+                                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                                        }
+                                        val icon = Icon.createWithBitmap(bitmap)
+                                        val shortcutInfo = ShortcutInfo.Builder(this@MainActivity, "zenfile_custom_shortcut")
+                                            .setShortLabel("ZenFile")
+                                            .setLongLabel("ZenFile")
+                                            .setIcon(icon)
+                                            .setIntent(intent)
+                                            .build()
+                                        shortcutManager.requestPinShortcut(shortcutInfo, null)
+                                        result.success(true)
+                                    } else {
+                                        // Fallback for launchers that do not support pin shortcuts
+                                        try {
+                                            val shortcutIntent = Intent(this@MainActivity, MainActivity::class.java).apply {
+                                                action = Intent.ACTION_MAIN
+                                            }
+                                            val intent = Intent("com.android.launcher.action.INSTALL_SHORTCUT").apply {
+                                                putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent)
+                                                putExtra(Intent.EXTRA_SHORTCUT_NAME, "ZenFile")
+                                                putExtra(Intent.EXTRA_SHORTCUT_ICON, bitmap)
+                                            }
+                                            sendBroadcast(intent)
+                                            result.success(true)
+                                        } catch (e: Exception) {
+                                            result.error("NOT_SUPPORTED", "Launcher does not support shortcut pinning", null)
+                                        }
+                                    }
+                                    } else {
+                                        // Fallback for older Android using broadcast
+                                        val shortcutIntent = Intent(this@MainActivity, MainActivity::class.java).apply {
+                                            action = Intent.ACTION_MAIN
+                                        }
+                                        val intent = Intent("com.android.launcher.action.INSTALL_SHORTCUT").apply {
+                                            putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent)
+                                            putExtra(Intent.EXTRA_SHORTCUT_NAME, "ZenFile")
+                                            putExtra(Intent.EXTRA_SHORTCUT_ICON, bitmap)
+                                        }
+                                        sendBroadcast(intent)
+                                        result.success(true)
+                                    }
+                                } catch (e: Exception) {
+                                    result.error("SHORTCUT_ERROR", e.message, null)
+                                }
+                            }
                         } catch (e: Exception) {
                             runOnUiThread { result.error("ICON_ERROR", e.message, null) }
                         }
