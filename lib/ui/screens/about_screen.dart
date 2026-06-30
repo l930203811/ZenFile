@@ -691,6 +691,18 @@ class AboutZenFileScreen extends StatelessWidget {
                     ),
                   ),
 
+                  _buildVersionSection(ctx, theme, 'v1.0.42', '2026-06-30', [
+                    L10n.of(context).log_music_lyrics_fullscreen_removed,
+                    L10n.of(context).log_music_lyrics_centered,
+                    L10n.of(context).log_music_player_button,
+                    L10n.of(context).log_music_remember_progress,
+                    L10n.of(context).log_image_icon_redesign,
+                    L10n.of(context).log_doc_icon_redesign,
+                    L10n.of(context).log_archive_icon_redesign,
+                    L10n.of(context).log_music_lrc_lyrics,
+                    L10n.of(context).log_remote_copy_paste_fix,
+                  ]),
+                  const SizedBox(height: 16),
                   _buildVersionSection(ctx, theme, 'v1.0.41', '2026-06-21', [
                     L10n.of(context).log_extract_dialog_redesign,
                     L10n.of(context).log_vault_quick_category,
@@ -712,83 +724,6 @@ class AboutZenFileScreen extends StatelessWidget {
                     L10n.of(context).log_fix_l10n_hardcode,
                     L10n.of(context).log_language_scroll,
                   ]),
-                  const SizedBox(height: 24),
-
-                  // ── 更新计划与已知问题 ──
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withOpacity(0.06),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: theme.colorScheme.primary.withOpacity(0.12)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(L10n.of(context).msg4d82be7c, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
-                        const SizedBox(height: 10),
-                        ...[
-                          L10n.of(context).msg5cce42e6,
-                          L10n.of(context).msg11cb01fc,
-                          L10n.of(context).msg074f1ce7,
-                        ].map((item) => Padding(
-                          padding: const EdgeInsets.only(bottom: 6),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(top: 6),
-                                child: Container(width: 5, height: 5, decoration: BoxDecoration(shape: BoxShape.circle, color: theme.colorScheme.primary.withOpacity(0.5))),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(child: Text(item, style: TextStyle(fontSize: 13, height: 1.4, color: theme.colorScheme.onSurface.withOpacity(0.75)))),
-                            ],
-                          ),
-                        )),
-                        const SizedBox(height: 16),
-                        Text(L10n.of(context).msg2c8957dd, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
-                        const SizedBox(height: 10),
-                        ...[
-                          L10n.of(context).msg5c66ffab,
-                          L10n.of(context).msg60a4d643,
-                        ].map((item) => Padding(
-                          padding: const EdgeInsets.only(bottom: 6),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(top: 6),
-                                child: Container(width: 5, height: 5, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.orange.withOpacity(0.7))),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(child: Text(item, style: TextStyle(fontSize: 13, height: 1.4, color: theme.colorScheme.onSurface.withOpacity(0.75)))),
-                            ],
-                          ),
-                        )),
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(Icons.lightbulb_outline, size: 16, color: theme.colorScheme.primary.withOpacity(0.7)),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  L10n.of(context).bug1sequeldpdnsorgqq792408214,
-                                  style: TextStyle(fontSize: 12.5, height: 1.4, color: theme.colorScheme.onSurface.withOpacity(0.65)),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                   const SizedBox(height: 40),
                 ],
               ),

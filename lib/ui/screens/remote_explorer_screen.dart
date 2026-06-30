@@ -16,6 +16,7 @@ import '../../services/remote/ftp_client.dart';
 import '../../services/remote/sftp_client.dart';
 import '../../services/remote/webdav_client.dart';
 import '../../services/remote/lan_client.dart';
+import '../../services/remote_streaming_service.dart';
 import '../../services/remote/saf_client.dart';
 import '../widgets/zenfile_drawer.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
@@ -158,17 +159,27 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
     
     if (_isTransferring) return; // 防止重复点击
     
-    // For video/audio, try streaming first (WebDAV supports HTTP streaming)
+    // For video/audio, use streaming (WebDAV direct HTTP, FTP/SFTP via local proxy)
     if (isVideo || isAudio) {
       final streamUrl = _client!.getStreamUrl(item.path);
       if (streamUrl != null) {
-        // Direct streaming playback — no download needed
+        // Direct streaming playback (WebDAV) — no download needed
         if (!mounted) return;
         final provider = context.read<FileManagerProvider>();
         await provider.openFile(context, streamUrl, isRemoteStream: true);
         return;
       }
-      // Non-streaming protocols: delegate to openFile which handles caching
+      // Non-HTTP protocols (FTP/SFTP): use local streaming proxy
+      try {
+        final proxyUrl = await RemoteStreamingService.instance.startStreaming(_client!, item.path, item.name);
+        if (!mounted) return;
+        final provider = context.read<FileManagerProvider>();
+        await provider.openFile(context, proxyUrl, isRemoteStream: true);
+        return;
+      } catch (e) {
+        debugPrint('Streaming proxy failed, falling back to download: $e');
+      }
+      // Fallback: delegate to openFile which handles download
       if (!mounted) return;
       final provider = context.read<FileManagerProvider>();
       await provider.openFile(context, item.path);

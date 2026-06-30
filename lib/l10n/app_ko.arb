@@ -203,7 +203,7 @@
   "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "v1041": "v1.0.41 (보기)",
+  "v1041": "v1.0.42 (보기)",
   "@zenfileflutter": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -291,7 +291,7 @@
   "@zenfilev1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfilev1041": "ZenFile v1.0.41 다운로드",
+  "zenfilev1041": "ZenFile v1.0.42 다운로드",
   "@msg9d287020": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -3183,6 +3183,15 @@
   "log_compression_progress": "압축 진행률 대화상자 개선 - 다단계 진행률 표시 및 안정적인 자동 닫기",
   "log_web_share_category": "웹 공유 포털이 파일을 분류하여 표시 (폴더, 동영상, 오디오, 이미지, 문서, 기타)",
   "log_web_share_l10n": "웹 공유 포털이 앱 로케일에 따라 다국어 표시를 지원",
+    "log_music_lyrics_fullscreen_removed": "음악 플레이어에서 가사 전체화면 패널 제거",
+    "log_music_lyrics_centered": "음악 플레이어 현재 가사 표시를 중앙 정렬로 변경",
+    "log_music_player_button": "음악 카테고리 상단에 음악 플레이어 버튼 추가",
+    "log_music_remember_progress": "음악 플레이어가 재생 위치를 기억하고 다음에 자동 재생",
+    "log_image_icon_redesign": "이미지 파일 아이콘 재설계, 포맷 라벨(jpg, png 등) 표시",
+    "log_doc_icon_redesign": "문서 파일 아이콘 재설계, 포맷 라벨 표시",
+    "log_archive_icon_redesign": "압축 파일 아이콘 재설계, 포맷 라벨(zip, 7z, rar 등) 표시",
+    "log_music_lrc_lyrics": "LRC 가사 자동 로드 및 수동 가사 파일 선택 지원",
+      "log_remote_copy_paste_fix": "원격 서버에서 로컬로 복사 시 진행률 표시줄이 0%이고 파일이 나타나지 않는 문제 수정",
   "msg_file_exists": "파일이 이미 존재합니다",
   "@msg_file_exists": {
     "description": "Conflict dialog title"

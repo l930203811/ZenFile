@@ -182,7 +182,7 @@ class L10nEn extends L10n {
   String get zenfile1 => 'About ZenFile';
 
   @override
-  String get v1041 => 'v1.0.41 (View)';
+  String get v1041 => 'v1.0.42 (View)';
 
   @override
   String get zenfileflutter =>
@@ -251,7 +251,7 @@ class L10nEn extends L10n {
       'Long press image to save to gallery. Thank you for your support!';
 
   @override
-  String get zenfilev1041 => 'Download ZenFile v1.0.41';
+  String get zenfilev1041 => 'Download ZenFile v1.0.42';
 
   @override
   String get msg9d287020 => '123 Cloud Drive';
@@ -2941,6 +2941,42 @@ class L10nEn extends L10n {
   @override
   String get log_web_share_l10n =>
       'Web sharing portal now supports multi-language display based on app locale';
+
+  @override
+  String get log_music_lyrics_fullscreen_removed =>
+      'Removed lyrics fullscreen panel from music player menu';
+
+  @override
+  String get log_music_lyrics_centered =>
+      'Centered current lyrics display in music player';
+
+  @override
+  String get log_music_player_button =>
+      'Added music player button at top of music category for quick resume';
+
+  @override
+  String get log_music_remember_progress =>
+      'Music player now remembers playback position and resumes automatically';
+
+  @override
+  String get log_image_icon_redesign =>
+      'Redesigned image file icons showing format label (jpg, png, etc.)';
+
+  @override
+  String get log_doc_icon_redesign =>
+      'Redesigned document file icons showing format label';
+
+  @override
+  String get log_archive_icon_redesign =>
+      'Redesigned archive icons showing format label (zip, 7z, rar, etc.)';
+
+  @override
+  String get log_music_lrc_lyrics =>
+      'Added LRC lyrics auto-loading and manual lyrics file selection';
+
+  @override
+  String get log_remote_copy_paste_fix =>
+      'Fixed remote server copy to local showing 0% progress and files not appearing';
 
   @override
   String get msg_remember_choice =>

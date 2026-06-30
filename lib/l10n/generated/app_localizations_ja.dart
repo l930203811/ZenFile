@@ -181,7 +181,7 @@ class L10nJa extends L10n {
   String get zenfile1 => 'ZenFileについて';
 
   @override
-  String get v1041 => 'v1.0.41 (查看)';
+  String get v1041 => 'v1.0.42 (查看)';
 
   @override
   String get zenfileflutter =>
@@ -249,7 +249,7 @@ class L10nJa extends L10n {
   String get msg0537b04e => '画像を長押ししてギャラリーに保存できます。ご支援ありがとうございます！';
 
   @override
-  String get zenfilev1041 => 'ZenFile v1.0.41 をダウンロード';
+  String get zenfilev1041 => 'ZenFile v1.0.42 をダウンロード';
 
   @override
   String get msg9d287020 => '123クラウド';
@@ -2847,6 +2847,36 @@ class L10nJa extends L10n {
 
   @override
   String get log_web_share_l10n => 'Web共有ポータルがアプリのロケールに基づいて多言語表示をサポート';
+
+  @override
+  String get log_music_lyrics_fullscreen_removed =>
+      'ミュージックプレーヤーから歌詞フルスクリーンパネルを削除';
+
+  @override
+  String get log_music_lyrics_centered => 'ミュージックプレーヤーの現在の歌詞表示を中央揃えに変更';
+
+  @override
+  String get log_music_player_button => '音楽カテゴリページ上部にミュージックプレーヤーボタンを追加';
+
+  @override
+  String get log_music_remember_progress => 'ミュージックプレーヤーが再生位置を記憶し、次回自動再開';
+
+  @override
+  String get log_image_icon_redesign => '画像ファイルアイコンを再デザイン、形式ラベル（jpg、png等）を表示';
+
+  @override
+  String get log_doc_icon_redesign => 'ドキュメントファイルアイコンを再デザイン、形式ラベルを表示';
+
+  @override
+  String get log_archive_icon_redesign =>
+      '圧縮ファイルアイコンを再デザイン、形式ラベル（zip、7z、rar等）を表示';
+
+  @override
+  String get log_music_lrc_lyrics => 'LRC歌詞の自動読み込みと手動歌詞ファイル選択をサポート';
+
+  @override
+  String get log_remote_copy_paste_fix =>
+      'リモートサーバーからローカルへのコピー時にプログレスバーが0%のままファイルが表示されない問題を修正';
 
   @override
   String get msg_remember_choice => '今後の操作でもこの選択を記憶する';

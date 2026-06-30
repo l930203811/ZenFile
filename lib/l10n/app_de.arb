@@ -203,7 +203,7 @@
   "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "v1041": "v1.0.41 (Anzeigen)",
+  "v1041": "v1.0.42 (Anzeigen)",
   "@zenfileflutter": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -291,7 +291,7 @@
   "@zenfilev1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfilev1041": "ZenFile v1.0.41 herunterladen",
+  "zenfilev1041": "ZenFile v1.0.42 herunterladen",
   "@msg9d287020": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -3183,6 +3183,15 @@
   "log_compression_progress": "Komprimierungsfortschritts-Dialog verbessert mit mehrstufiger Anzeige und zuverlässigem Auto-Schließen",
   "log_web_share_category": "Web-Freigabe-Portal zeigt Dateien jetzt in Kategorien (Ordner, Videos, Audio, Bilder, Dokumente, Sonstiges)",
   "log_web_share_l10n": "Web-Freigabe-Portal unterstützt jetzt mehrsprachige Anzeige basierend auf der App-Sprache",
+    "log_music_lyrics_fullscreen_removed": "Vollbild-Lyrics-Panel aus dem Musikplayer-Menü entfernt",
+    "log_music_lyrics_centered": "Aktuelle Liedtextanzeige im Musikplayer zentriert",
+    "log_music_player_button": "Musikplayer-Button oben in der Musik-Kategorie hinzugefügt",
+    "log_music_remember_progress": "Musikplayer merkt sich die Wiedergabeposition und setzt automatisch fort",
+    "log_image_icon_redesign": "Bild-Dateisymbole neu gestaltet mit Format-Label (jpg, png usw.)",
+    "log_doc_icon_redesign": "Dokument-Dateisymbole neu gestaltet mit Format-Label",
+    "log_archive_icon_redesign": "Archiv-Symbole neu gestaltet mit Format-Label (zip, 7z, rar usw.)",
+    "log_music_lrc_lyrics": "LRC-Lyrics werden automatisch geladen und manuelle Lyrics-Dateiauswahl unterstützt",
+      "log_remote_copy_paste_fix": "Behoben: Kopieren vom Remote-Server zeigt 0% Fortschritt und Dateien erscheinen nicht",
   "msg_file_exists": "Datei existiert bereits",
   "@msg_file_exists": {
     "description": "Conflict dialog title"

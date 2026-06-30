@@ -203,7 +203,7 @@
   "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "v1041": "v1.0.41 (Voir)",
+  "v1041": "v1.0.42 (Voir)",
   "@zenfileflutter": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -291,7 +291,7 @@
   "@zenfilev1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfilev1041": "Télécharger ZenFile v1.0.41",
+  "zenfilev1041": "Télécharger ZenFile v1.0.42",
   "@msg9d287020": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -3183,6 +3183,15 @@
   "log_compression_progress": "Amélioration du dialogue de progression avec affichage multi-étapes et fermeture automatique fiable",
   "log_web_share_category": "Le portail de partage Web affiche les fichiers par catégories (dossiers, vidéos, audio, images, documents, autres)",
   "log_web_share_l10n": "Le portail de partage Web prend en charge l'affichage multilingue selon la langue de l'application",
+    "log_music_lyrics_fullscreen_removed": "Panneau plein écran des paroles supprimé du menu du lecteur musical",
+    "log_music_lyrics_centered": "Affichage des paroles actuelles centré dans le lecteur musical",
+    "log_music_player_button": "Bouton du lecteur musical ajouté en haut de la catégorie Musique",
+    "log_music_remember_progress": "Le lecteur musical mémorise la position de lecture et reprend automatiquement",
+    "log_image_icon_redesign": "Icônes de fichiers image redesignées avec étiquette de format (jpg, png, etc.)",
+    "log_doc_icon_redesign": "Icônes de fichiers document redesignées avec étiquette de format",
+    "log_archive_icon_redesign": "Icônes d'archives redesignées avec étiquette de format (zip, 7z, rar, etc.)",
+    "log_music_lrc_lyrics": "Chargement automatique des paroles LRC et sélection manuelle de fichiers de paroles",
+      "log_remote_copy_paste_fix": "Correction de la copie depuis le serveur distant: progression à 0% et fichiers absents",
   "msg_file_exists": "Le fichier existe déjà",
   "@msg_file_exists": {
     "description": "Conflict dialog title"

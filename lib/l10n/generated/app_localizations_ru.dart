@@ -185,7 +185,7 @@ class L10nRu extends L10n {
   String get zenfile1 => 'О ZenFile';
 
   @override
-  String get v1041 => 'v1.0.41 (Просмотр)';
+  String get v1041 => 'v1.0.42 (Просмотр)';
 
   @override
   String get zenfileflutter =>
@@ -255,7 +255,7 @@ class L10nRu extends L10n {
       'Нажмите и удерживайте изображение, чтобы сохранить в галерею. Спасибо за вашу поддержку!';
 
   @override
-  String get zenfilev1041 => 'Скачать ZenFile v1.0.41';
+  String get zenfilev1041 => 'Скачать ZenFile v1.0.42';
 
   @override
   String get msg9d287020 => '123 Cloud Drive';
@@ -2991,6 +2991,42 @@ class L10nRu extends L10n {
   @override
   String get log_web_share_l10n =>
       'Веб-портал общего доступа теперь поддерживает многоязычный интерфейс на основе языка приложения';
+
+  @override
+  String get log_music_lyrics_fullscreen_removed =>
+      'Удалена полноэкранная панель текста песен из меню музыкального плеера';
+
+  @override
+  String get log_music_lyrics_centered =>
+      'Текущий текст песни в музыкальном плеере теперь по центру';
+
+  @override
+  String get log_music_player_button =>
+      'Добавлена кнопка музыкального плеера вверху категории музыки';
+
+  @override
+  String get log_music_remember_progress =>
+      'Музыкальный плеер запоминает позицию воспроизведения';
+
+  @override
+  String get log_image_icon_redesign =>
+      'Переработаны иконки изображений с меткой формата (jpg, png и т.д.)';
+
+  @override
+  String get log_doc_icon_redesign =>
+      'Переработаны иконки документов с меткой формата';
+
+  @override
+  String get log_archive_icon_redesign =>
+      'Переработаны иконки архивов с меткой формата (zip, 7z, rar и т.д.)';
+
+  @override
+  String get log_music_lrc_lyrics =>
+      'Добавлена автозагрузка текстов LRC и ручной выбор файлов текстов';
+
+  @override
+  String get log_remote_copy_paste_fix =>
+      'Исправлена проблема с копированием с удалённого сервера: прогресс 0% и файлы не появляются';
 
   @override
   String get msg_remember_choice => 'Запомнить этот выбор для будущих операций';

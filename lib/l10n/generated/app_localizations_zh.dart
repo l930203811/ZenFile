@@ -180,7 +180,7 @@ class L10nZh extends L10n {
   String get zenfile1 => '关于 ZenFile';
 
   @override
-  String get v1041 => 'v1.0.41 (查看)';
+  String get v1041 => 'v1.0.42 (查看)';
 
   @override
   String get zenfileflutter =>
@@ -248,7 +248,7 @@ class L10nZh extends L10n {
   String get msg0537b04e => '长按图片可保存到相册，感谢您的支持！';
 
   @override
-  String get zenfilev1041 => '下载 ZenFile v1.0.41';
+  String get zenfilev1041 => '下载 ZenFile v1.0.42';
 
   @override
   String get msg9d287020 => '123云盘';
@@ -2836,6 +2836,33 @@ class L10nZh extends L10n {
   String get log_web_share_l10n => '网页共享门户支持根据 App 语言自动切换多语言显示';
 
   @override
+  String get log_music_lyrics_fullscreen_removed => '音乐播放器移除歌词全屏面板功能';
+
+  @override
+  String get log_music_lyrics_centered => '音乐播放器当前歌词改为居中对齐显示';
+
+  @override
+  String get log_music_player_button => '音乐分类页顶部添加音乐播放器快捷按钮，方便继续收听';
+
+  @override
+  String get log_music_remember_progress => '音乐播放器记住播放进度，下次自动续播';
+
+  @override
+  String get log_image_icon_redesign => '重新设计图片文件图标，显示格式标签（jpg、png 等）';
+
+  @override
+  String get log_doc_icon_redesign => '重新设计文档文件图标，显示格式标签';
+
+  @override
+  String get log_archive_icon_redesign => '重新设计压缩包图标，显示格式标签（zip、7z、rar 等）';
+
+  @override
+  String get log_music_lrc_lyrics => '音乐播放器支持自动加载 LRC 歌词及手动选择歌词文件';
+
+  @override
+  String get log_remote_copy_paste_fix => '修复远程服务器复制文件到本地粘贴时进度条无响应且文件未出现的问题';
+
+  @override
   String get msg_remember_choice => '记住此选择，后续操作默认使用';
 
   @override
@@ -3530,7 +3557,7 @@ class L10nZhTw extends L10nZh {
   String get zenfile1 => '關於 ZenFile';
 
   @override
-  String get v1041 => 'v1.0.41 (檢視)';
+  String get v1041 => 'v1.0.42 (檢視)';
 
   @override
   String get zenfileflutter =>
@@ -3598,7 +3625,7 @@ class L10nZhTw extends L10nZh {
   String get msg0537b04e => '長按圖片可儲存到相簿，感謝您的支援！';
 
   @override
-  String get zenfilev1041 => '下載 ZenFile v1.0.41';
+  String get zenfilev1041 => '下載 ZenFile v1.0.42';
 
   @override
   String get msg9d287020 => '123雲盤';
@@ -6184,6 +6211,33 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get log_web_share_l10n => '網頁共享入口支援根據 App 語言自動切換多語言顯示';
+
+  @override
+  String get log_music_lyrics_fullscreen_removed => '音樂播放器移除歌詞全屏面板功能';
+
+  @override
+  String get log_music_lyrics_centered => '音樂播放器當前歌詞改為居中對齊顯示';
+
+  @override
+  String get log_music_player_button => '音樂分類頁頂部添加音樂播放器快捷按鈕，方便繼續收聽';
+
+  @override
+  String get log_music_remember_progress => '音樂播放器記住播放進度，下次自動續播';
+
+  @override
+  String get log_image_icon_redesign => '重新設計圖片文件圖標，顯示格式標籤（jpg、png 等）';
+
+  @override
+  String get log_doc_icon_redesign => '重新設計文档文件圖標，顯示格式標籤';
+
+  @override
+  String get log_archive_icon_redesign => '重新設計壓縮包圖標，顯示格式標籤（zip、7z、rar 等）';
+
+  @override
+  String get log_music_lrc_lyrics => '音樂播放器支援自動載入 LRC 歌詞及手動選擇歌詞文件';
+
+  @override
+  String get log_remote_copy_paste_fix => '修復遠端伺服器複製檔案到本機貼上時進度條無回應且檔案未出現的問題';
 
   @override
   String get msg_remember_choice => '記住此選擇，後續操作預設使用';

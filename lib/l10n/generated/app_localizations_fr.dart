@@ -185,7 +185,7 @@ class L10nFr extends L10n {
   String get zenfile1 => 'À propos de ZenFile';
 
   @override
-  String get v1041 => 'v1.0.41 (Voir)';
+  String get v1041 => 'v1.0.42 (Voir)';
 
   @override
   String get zenfileflutter =>
@@ -254,7 +254,7 @@ class L10nFr extends L10n {
       'Appuyez longuement sur l\'image pour la sauvegarder dans la galerie. Merci pour votre soutien !';
 
   @override
-  String get zenfilev1041 => 'Télécharger ZenFile v1.0.41';
+  String get zenfilev1041 => 'Télécharger ZenFile v1.0.42';
 
   @override
   String get msg9d287020 => 'Cloud Drive 123';
@@ -3006,6 +3006,42 @@ class L10nFr extends L10n {
   @override
   String get log_web_share_l10n =>
       'Le portail de partage Web prend en charge l\'affichage multilingue selon la langue de l\'application';
+
+  @override
+  String get log_music_lyrics_fullscreen_removed =>
+      'Panneau plein écran des paroles supprimé du menu du lecteur musical';
+
+  @override
+  String get log_music_lyrics_centered =>
+      'Affichage des paroles actuelles centré dans le lecteur musical';
+
+  @override
+  String get log_music_player_button =>
+      'Bouton du lecteur musical ajouté en haut de la catégorie Musique';
+
+  @override
+  String get log_music_remember_progress =>
+      'Le lecteur musical mémorise la position de lecture et reprend automatiquement';
+
+  @override
+  String get log_image_icon_redesign =>
+      'Icônes de fichiers image redesignées avec étiquette de format (jpg, png, etc.)';
+
+  @override
+  String get log_doc_icon_redesign =>
+      'Icônes de fichiers document redesignées avec étiquette de format';
+
+  @override
+  String get log_archive_icon_redesign =>
+      'Icônes d\'archives redesignées avec étiquette de format (zip, 7z, rar, etc.)';
+
+  @override
+  String get log_music_lrc_lyrics =>
+      'Chargement automatique des paroles LRC et sélection manuelle de fichiers de paroles';
+
+  @override
+  String get log_remote_copy_paste_fix =>
+      'Correction de la copie depuis le serveur distant: progression à 0% et fichiers absents';
 
   @override
   String get msg_remember_choice =>

@@ -186,7 +186,7 @@ class L10nEs extends L10n {
   String get zenfile1 => 'Acerca de ZenFile';
 
   @override
-  String get v1041 => 'v1.0.41 (Ver)';
+  String get v1041 => 'v1.0.42 (Ver)';
 
   @override
   String get zenfileflutter =>
@@ -256,7 +256,7 @@ class L10nEs extends L10n {
       'Mantén presionada la imagen para guardar en la galería. ¡Gracias por tu apoyo!';
 
   @override
-  String get zenfilev1041 => 'Descargar ZenFile v1.0.41';
+  String get zenfilev1041 => 'Descargar ZenFile v1.0.42';
 
   @override
   String get msg9d287020 => '123 Cloud Drive';
@@ -3004,6 +3004,42 @@ class L10nEs extends L10n {
   @override
   String get log_web_share_l10n =>
       'El portal de uso compartido web ahora soporta visualización multiidioma según el idioma de la aplicación';
+
+  @override
+  String get log_music_lyrics_fullscreen_removed =>
+      'Eliminado el panel de letras a pantalla completa del menú del reproductor de música';
+
+  @override
+  String get log_music_lyrics_centered =>
+      'La visualización de la letra actual en el reproductor de música ahora está centrada';
+
+  @override
+  String get log_music_player_button =>
+      'Añadido botón del reproductor de música en la parte superior de la categoría de música';
+
+  @override
+  String get log_music_remember_progress =>
+      'El reproductor de música recuerda la posición de reproducción y se reanuda automáticamente';
+
+  @override
+  String get log_image_icon_redesign =>
+      'Rediseñados los iconos de archivos de imagen con etiqueta de formato (jpg, png, etc.)';
+
+  @override
+  String get log_doc_icon_redesign =>
+      'Rediseñados los iconos de archivos de documento con etiqueta de formato';
+
+  @override
+  String get log_archive_icon_redesign =>
+      'Rediseñados los iconos de archivos con etiqueta de formato (zip, 7z, rar, etc.)';
+
+  @override
+  String get log_music_lrc_lyrics =>
+      'Carga automática de letras LRC y selección manual de archivos de letras';
+
+  @override
+  String get log_remote_copy_paste_fix =>
+      'Corregido: copiar desde servidor remoto muestra 0% de progreso y los archivos no aparecen';
 
   @override
   String get msg_remember_choice =>

@@ -203,7 +203,7 @@
   "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "v1041": "v1.0.41 (Ver)",
+  "v1041": "v1.0.42 (Ver)",
   "@zenfileflutter": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -291,7 +291,7 @@
   "@zenfilev1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfilev1041": "Descargar ZenFile v1.0.41",
+  "zenfilev1041": "Descargar ZenFile v1.0.42",
   "@msg9d287020": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -3183,6 +3183,15 @@
   "log_compression_progress": "Mejorado el diálogo de progreso de compresión con indicación multi-etapa y cierre automático confiable",
   "log_web_share_category": "El portal de uso compartido web ahora muestra archivos en secciones categorizadas (carpetas, videos, audio, imágenes, documentos, otros)",
   "log_web_share_l10n": "El portal de uso compartido web ahora soporta visualización multiidioma según el idioma de la aplicación",
+    "log_music_lyrics_fullscreen_removed": "Eliminado el panel de letras a pantalla completa del menú del reproductor de música",
+    "log_music_lyrics_centered": "La visualización de la letra actual en el reproductor de música ahora está centrada",
+    "log_music_player_button": "Añadido botón del reproductor de música en la parte superior de la categoría de música",
+    "log_music_remember_progress": "El reproductor de música recuerda la posición de reproducción y se reanuda automáticamente",
+    "log_image_icon_redesign": "Rediseñados los iconos de archivos de imagen con etiqueta de formato (jpg, png, etc.)",
+    "log_doc_icon_redesign": "Rediseñados los iconos de archivos de documento con etiqueta de formato",
+    "log_archive_icon_redesign": "Rediseñados los iconos de archivos con etiqueta de formato (zip, 7z, rar, etc.)",
+    "log_music_lrc_lyrics": "Carga automática de letras LRC y selección manual de archivos de letras",
+      "log_remote_copy_paste_fix": "Corregido: copiar desde servidor remoto muestra 0% de progreso y los archivos no aparecen",
   "msg_file_exists": "El archivo ya existe",
   "@msg_file_exists": {
     "description": "Conflict dialog title"

@@ -2471,7 +2471,15 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
       }
 
       // 2. Connect to localhost.run SSH server
-      final socket = await SSHSocket.connect('localhost.run', 22, timeout: const Duration(seconds: 15));
+      SSHSocket socket;
+      try {
+        socket = await SSHSocket.connect('localhost.run', 22, timeout: const Duration(seconds: 15));
+      } catch (e) {
+        debugPrint('SSH connection to localhost.run failed: $e');
+        _internetShareLink = localServerUrl;
+        notifyListeners();
+        rethrow;
+      }
       final keys = SSHKeyPair.fromPem(_ed25519PrivateKeyPem);
       _sshClient = SSHClient(
         socket,
@@ -2481,8 +2489,17 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
       await _sshClient!.authenticated;
 
       // 3. Request remote port forwarding
-      _sshForward = await _sshClient!.forwardRemote(port: 80);
+      try {
+        _sshForward = await _sshClient!.forwardRemote(port: 80);
+      } catch (e) {
+        debugPrint('Remote port forwarding failed: $e');
+        _internetShareLink = localServerUrl;
+        notifyListeners();
+        rethrow;
+      }
       if (_sshForward == null) {
+        _internetShareLink = localServerUrl;
+        notifyListeners();
         throw Exception('Remote port forwarding request denied by proxy server.');
       }
 
@@ -2523,19 +2540,62 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
       // 5. Start a session to obtain the allocated dynamic domain name from stdout
       final session = await _sshClient!.execute('');
       var stdoutBuffer = '';
-      session.stdout.cast<List<int>>().transform(utf8.decoder).listen((data) async {
-        debugPrint('Localhost.run Banner: $data');
+      bool linkResolved = false;
+
+      // Timeout fallback: if no domain is resolved within 30 seconds, use local URL
+      Future.delayed(const Duration(seconds: 30), () {
+        if (!_isInternetActive || linkResolved) return;
+        // Fallback: show local server URL so user can still use it
+        _internetShareLink = localServerUrl;
+        notifyListeners();
+        try {
+          _channel.invokeMethod('startWebSharingService', {
+            'url': _internetShareLink,
+            'isInternet': true,
+          });
+        } catch (_) {}
+      });
+
+      // Helper function to try matching URL patterns in combined output
+      void tryMatchUrl(String data) {
         stdoutBuffer += data;
-        final regExp = RegExp(r'([a-zA-Z0-9.-]+\.(localhost\.run|lhr\.life))');
-        final match = regExp.firstMatch(stdoutBuffer);
-        if (match != null) {
-          final domain = match.group(1)!;
-          _internetShareLink = 'https://$domain';
+        if (linkResolved) return;
+
+        debugPrint('Localhost.run output: $data');
+
+        // Try multiple regex patterns to match various localhost.run output formats
+        final patterns = [
+          // Standard domain pattern: xxx.localhost.run or xxx.lhr.life
+          RegExp(r'(https?://[a-zA-Z0-9.-]+\.(localhost\.run|lhr\.life))'),
+          // Domain without protocol
+          RegExp(r'([a-zA-Z0-9-]+\.(localhost\.run|lhr\.life))'),
+          // Any https URL in the output
+          RegExp(r'(https://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})'),
+          // Generic URL pattern
+          RegExp(r'(https?://[^\s]+)'),
+        ];
+
+        String? matchedUrl;
+        for (final pattern in patterns) {
+          final match = pattern.firstMatch(stdoutBuffer);
+          if (match != null) {
+            matchedUrl = match.group(1)!;
+            // Ensure URL starts with https://
+            if (!matchedUrl.startsWith('http')) {
+              matchedUrl = 'https://$matchedUrl';
+            }
+            break;
+          }
+        }
+
+        if (matchedUrl != null) {
+          linkResolved = true;
+          _internetShareLink = matchedUrl;
           notifyListeners();
 
           // Update Foreground Service with real public URL!
           try {
-            await _channel.invokeMethod('startWebSharingService', {
+            _channel.invokeMethod('startWebSharingService', {
               'url': _internetShareLink,
               'isInternet': true,
             });
@@ -2543,6 +2603,16 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
             debugPrint('Failed to update native web sharing service with link: $e');
           }
         }
+      }
+
+      // Listen to stdout for URL
+      session.stdout.cast<List<int>>().transform(utf8.decoder).listen((data) {
+        tryMatchUrl(data);
+      });
+
+      // Also listen to stderr (some servers output URL there)
+      session.stderr.cast<List<int>>().transform(utf8.decoder).listen((data) {
+        tryMatchUrl(data);
       });
 
       // Start client real traffic speed timer

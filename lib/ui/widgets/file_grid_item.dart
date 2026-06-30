@@ -415,6 +415,12 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
         // 图片直接复制作为缩略图
         if (['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.heic'].contains(ext)) {
           await File(tempPath).copy(thumbPath);
+          // 读取缩略图字节并更新UI
+          final bytes = await thumbFile.readAsBytes();
+          if (mounted && bytes.isNotEmpty) {
+            setState(() => _remoteThumb = bytes);
+          }
+          return;
         } else if (FileUtils.isVideo(widget.file.path)) {
           // 视频缩略图：通过原生 MediaMetadataRetriever 生成
           final thumbBytes = await MediaThumbnailService.generateVideoThumbnail(tempPath);
@@ -519,6 +525,16 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
       if (widget.file.path.toLowerCase().endsWith('.avif')) {
         return AvifImage.file(
           File(widget.file.path),
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+          errorBuilder: (context, error, stackTrace) => FileTypeIcon(icon: Broken.image, label: FileUtils.getImageTypeLabel(widget.file.path), color: widget.iconColor, iconScale: widget.iconScale),
+        );
+      }
+      // 远程图片优先使用已下载的缩略图缓存
+      if (widget.file.isRemote && _remoteThumb != null) {
+        return Image.memory(
+          _remoteThumb!,
           fit: BoxFit.cover,
           width: double.infinity,
           height: double.infinity,

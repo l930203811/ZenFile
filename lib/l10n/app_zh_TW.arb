@@ -210,7 +210,7 @@
   "@zenfile1": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "v1041": "v1.0.41 (檢視)",
+  "v1041": "v1.0.42 (檢視)",
   "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -298,7 +298,7 @@
   "@msg0537b04e": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfilev1041": "下載 ZenFile v1.0.41",
+  "zenfilev1041": "下載 ZenFile v1.0.42",
   "@zenfilev1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -3241,6 +3241,15 @@
   "log_compression_progress": "優化壓縮進度對話框，支援多階段進度顯示和可靠自動關閉",
   "log_web_share_category": "網頁共享入口支援分類顯示檔案（資料夾、影片、音訊、圖片、文件、其他）",
   "log_web_share_l10n": "網頁共享入口支援根據 App 語言自動切換多語言顯示",
+    "log_music_lyrics_fullscreen_removed": "音樂播放器移除歌詞全屏面板功能",
+    "log_music_lyrics_centered": "音樂播放器當前歌詞改為居中對齊顯示",
+    "log_music_player_button": "音樂分類頁頂部添加音樂播放器快捷按鈕，方便繼續收聽",
+    "log_music_remember_progress": "音樂播放器記住播放進度，下次自動續播",
+    "log_image_icon_redesign": "重新設計圖片文件圖標，顯示格式標籤（jpg、png 等）",
+    "log_doc_icon_redesign": "重新設計文档文件圖標，顯示格式標籤",
+    "log_archive_icon_redesign": "重新設計壓縮包圖標，顯示格式標籤（zip、7z、rar 等）",
+    "log_music_lrc_lyrics": "音樂播放器支援自動載入 LRC 歌詞及手動選擇歌詞文件",
+      "log_remote_copy_paste_fix": "修復遠端伺服器複製檔案到本機貼上時進度條無回應且檔案未出現的問題",
   "msg_file_exists": "檔案已存在",
   "@msg_file_exists": {
     "description": "Conflict dialog title"

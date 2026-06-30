@@ -182,7 +182,7 @@ class L10nAr extends L10n {
   String get zenfile1 => 'حول ZenFile';
 
   @override
-  String get v1041 => 'v1.0.41 (عرض)';
+  String get v1041 => 'v1.0.42 (عرض)';
 
   @override
   String get zenfileflutter =>
@@ -251,7 +251,7 @@ class L10nAr extends L10n {
       'اضغط مطولاً على الصورة لحفظها في المعرض. شكراً لدعمك!';
 
   @override
-  String get zenfilev1041 => 'تحميل ZenFile v1.0.41';
+  String get zenfilev1041 => 'تحميل ZenFile v1.0.42';
 
   @override
   String get msg9d287020 => '123 Cloud Drive';
@@ -2936,6 +2936,42 @@ class L10nAr extends L10n {
   @override
   String get log_web_share_l10n =>
       'بوابة مشاركة الويب تدعم الآن العرض متعدد اللغات بناءً على لغة التطبيق';
+
+  @override
+  String get log_music_lyrics_fullscreen_removed =>
+      'إزالة لوحة歌词 الكاملة من قائمة مشغل الموسيقى';
+
+  @override
+  String get log_music_lyrics_centered =>
+      'توسيط عرض الكلمات الحالية في مشغل الموسيقى';
+
+  @override
+  String get log_music_player_button =>
+      'إضافة زر مشغل الموسيقى أعلى فئة الموسيقى';
+
+  @override
+  String get log_music_remember_progress =>
+      'مشغل الموسيقى يتذكر موضع التشغيل ويستأنف تلقائياً';
+
+  @override
+  String get log_image_icon_redesign =>
+      'إعادة تصميم أيقونات ملفات الصور مع تسمية التنسيق (jpg, png, إلخ)';
+
+  @override
+  String get log_doc_icon_redesign =>
+      'إعادة تصميم أيقونات ملفات المستندات مع تسمية التنسيق';
+
+  @override
+  String get log_archive_icon_redesign =>
+      'إعادة تصميم أيقونات الأرشيف مع تسمية التنسيق (zip, 7z, rar, إلخ)';
+
+  @override
+  String get log_music_lrc_lyrics =>
+      'دعم التحميل التلقائي لكلمات LRC واختيار ملف الكلمات يدوياً';
+
+  @override
+  String get log_remote_copy_paste_fix =>
+      'إصلاح مشكلة النسخ من الخادم البعيد: شريط التقدم 0% والملفات لا تظهر';
 
   @override
   String get msg_remember_choice => 'تذكر هذا الاختيار للعمليات المستقبلية';

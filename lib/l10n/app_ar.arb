@@ -203,7 +203,7 @@
   "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "v1041": "v1.0.41 (عرض)",
+  "v1041": "v1.0.42 (عرض)",
   "@zenfileflutter": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -291,7 +291,7 @@
   "@zenfilev1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfilev1041": "تحميل ZenFile v1.0.41",
+  "zenfilev1041": "تحميل ZenFile v1.0.42",
   "@msg9d287020": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -3183,6 +3183,15 @@
   "log_compression_progress": "تحسين مربع حوار تقدم الضغط مع عرض متعدد المراحل وإغلاق تلقائي موثوق",
   "log_web_share_category": "بوابة مشاركة الويب تعرض الملفات في أقسام مصنفة (مجلدات، فيديو، صوت، صور، مستندات، أخرى)",
   "log_web_share_l10n": "بوابة مشاركة الويب تدعم الآن العرض متعدد اللغات بناءً على لغة التطبيق",
+    "log_music_lyrics_fullscreen_removed": "إزالة لوحة歌词 الكاملة من قائمة مشغل الموسيقى",
+    "log_music_lyrics_centered": "توسيط عرض الكلمات الحالية في مشغل الموسيقى",
+    "log_music_player_button": "إضافة زر مشغل الموسيقى أعلى فئة الموسيقى",
+    "log_music_remember_progress": "مشغل الموسيقى يتذكر موضع التشغيل ويستأنف تلقائياً",
+    "log_image_icon_redesign": "إعادة تصميم أيقونات ملفات الصور مع تسمية التنسيق (jpg, png, إلخ)",
+    "log_doc_icon_redesign": "إعادة تصميم أيقونات ملفات المستندات مع تسمية التنسيق",
+    "log_archive_icon_redesign": "إعادة تصميم أيقونات الأرشيف مع تسمية التنسيق (zip, 7z, rar, إلخ)",
+    "log_music_lrc_lyrics": "دعم التحميل التلقائي لكلمات LRC واختيار ملف الكلمات يدوياً",
+      "log_remote_copy_paste_fix": "إصلاح مشكلة النسخ من الخادم البعيد: شريط التقدم 0% والملفات لا تظهر",
   "msg_file_exists": "الملف موجود بالفعل",
   "@msg_file_exists": {
     "description": "Conflict dialog title"

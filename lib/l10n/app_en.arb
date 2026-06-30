@@ -203,7 +203,7 @@
   "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "v1041": "v1.0.41 (View)",
+  "v1041": "v1.0.42 (View)",
   "@zenfileflutter": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -291,7 +291,7 @@
   "@zenfilev1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfilev1041": "Download ZenFile v1.0.41",
+  "zenfilev1041": "Download ZenFile v1.0.42",
   "@msg9d287020": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -3183,6 +3183,15 @@
   "log_compression_progress": "Improved compression progress dialog with multi-stage progress and reliable auto-close",
   "log_web_share_category": "Web sharing portal now displays files in categorized sections (folders, videos, audio, images, documents, others)",
   "log_web_share_l10n": "Web sharing portal now supports multi-language display based on app locale",
+    "log_music_lyrics_fullscreen_removed": "Removed lyrics fullscreen panel from music player menu",
+    "log_music_lyrics_centered": "Centered current lyrics display in music player",
+    "log_music_player_button": "Added music player button at top of music category for quick resume",
+    "log_music_remember_progress": "Music player now remembers playback position and resumes automatically",
+    "log_image_icon_redesign": "Redesigned image file icons showing format label (jpg, png, etc.)",
+    "log_doc_icon_redesign": "Redesigned document file icons showing format label",
+    "log_archive_icon_redesign": "Redesigned archive icons showing format label (zip, 7z, rar, etc.)",
+    "log_music_lrc_lyrics": "Added LRC lyrics auto-loading and manual lyrics file selection",
+      "log_remote_copy_paste_fix": "Fixed remote server copy to local showing 0% progress and files not appearing",
   "msg_remember_choice": "Remember this choice for future operations",
   "ui_caching": "Caching, please wait...",
   "ui_username": "Username",

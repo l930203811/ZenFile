@@ -203,7 +203,7 @@
   "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "v1041": "v1.0.41 (Просмотр)",
+  "v1041": "v1.0.42 (Просмотр)",
   "@zenfileflutter": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -291,7 +291,7 @@
   "@zenfilev1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfilev1041": "Скачать ZenFile v1.0.41",
+  "zenfilev1041": "Скачать ZenFile v1.0.42",
   "@msg9d287020": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -3183,6 +3183,15 @@
   "log_compression_progress": "Улучшен диалог прогресса сжатия с многоэтапным отображением и надёжным автозакрытием",
   "log_web_share_category": "Веб-портал общего доступа теперь отображает файлы по категориям (папки, видео, аудио, изображения, документы, прочее)",
   "log_web_share_l10n": "Веб-портал общего доступа теперь поддерживает многоязычный интерфейс на основе языка приложения",
+    "log_music_lyrics_fullscreen_removed": "Удалена полноэкранная панель текста песен из меню музыкального плеера",
+    "log_music_lyrics_centered": "Текущий текст песни в музыкальном плеере теперь по центру",
+    "log_music_player_button": "Добавлена кнопка музыкального плеера вверху категории музыки",
+    "log_music_remember_progress": "Музыкальный плеер запоминает позицию воспроизведения",
+    "log_image_icon_redesign": "Переработаны иконки изображений с меткой формата (jpg, png и т.д.)",
+    "log_doc_icon_redesign": "Переработаны иконки документов с меткой формата",
+    "log_archive_icon_redesign": "Переработаны иконки архивов с меткой формата (zip, 7z, rar и т.д.)",
+    "log_music_lrc_lyrics": "Добавлена автозагрузка текстов LRC и ручной выбор файлов текстов",
+      "log_remote_copy_paste_fix": "Исправлена проблема с копированием с удалённого сервера: прогресс 0% и файлы не появляются",
   "msg_file_exists": "Файл уже существует",
   "@msg_file_exists": {
     "description": "Conflict dialog title"

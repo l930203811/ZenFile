@@ -41,6 +41,8 @@ import '../services/remote/sftp_client.dart';
 import '../services/remote/webdav_client.dart';
 import '../services/remote/lan_client.dart';
 import '../services/remote/saf_client.dart';
+import '../services/remote_streaming_service.dart';
+import '../services/network_connections_service.dart';
 import '../services/remote/saf_client.dart';
 
 enum FileSortType {
@@ -2412,6 +2414,16 @@ class FileManagerProvider extends ChangeNotifier {
 
     try {
       final totalFiles = _remoteClipboardItems.length;
+
+      // 计算总字节数用于精确进度跟踪
+      int totalBytes = 0;
+      for (final item in _remoteClipboardItems) {
+        if (!item.isDirectory && item.size > 0) {
+          totalBytes += item.size;
+        }
+      }
+      final useByteProgress = totalBytes > 0;
+
       progressNotifier.value = FileOperationProgress(
         totalFiles: totalFiles,
         currentFileIndex: 1,
@@ -2419,11 +2431,13 @@ class FileManagerProvider extends ChangeNotifier {
         percentage: 0.0,
         speedMBs: 0.0,
         eta: Duration.zero,
-        totalBytes: 1,
+        totalBytes: useByteProgress ? totalBytes : totalFiles,
         bytesProcessed: 0,
       );
 
       final targetPath = currentPath;
+      int bytesProcessedTotal = 0;
+      final stopwatch = Stopwatch()..start();
 
       for (int i = 0; i < _remoteClipboardItems.length; i++) {
         if (_isOperationCancelled) {
@@ -2433,32 +2447,70 @@ class FileManagerProvider extends ChangeNotifier {
         final remoteItem = _remoteClipboardItems[i];
         final destPath = p.join(targetPath, remoteItem.name);
 
-        progressNotifier.value = FileOperationProgress(
-          totalFiles: totalFiles,
-          currentFileIndex: i + 1,
-          currentFileName: remoteItem.name,
-          percentage: (i / totalFiles),
-          speedMBs: 0.0,
-          eta: Duration.zero,
-          totalBytes: totalFiles,
-          bytesProcessed: i,
-        );
+        if (useByteProgress) {
+          final itemSize = remoteItem.size > 0 ? remoteItem.size : 0;
+          progressNotifier.value = FileOperationProgress(
+            totalFiles: totalFiles,
+            currentFileIndex: i + 1,
+            currentFileName: remoteItem.name,
+            percentage: totalBytes > 0 ? bytesProcessedTotal / totalBytes : (i / totalFiles),
+            speedMBs: 0.0,
+            eta: Duration.zero,
+            totalBytes: totalBytes,
+            bytesProcessed: bytesProcessedTotal,
+          );
+        } else {
+          progressNotifier.value = FileOperationProgress(
+            totalFiles: totalFiles,
+            currentFileIndex: i + 1,
+            currentFileName: remoteItem.name,
+            percentage: (i / totalFiles),
+            speedMBs: 0.0,
+            eta: Duration.zero,
+            totalBytes: totalFiles,
+            bytesProcessed: i,
+          );
+        }
 
         if (remoteItem.isDirectory) {
           await _downloadRemoteDirectory(client, remoteItem.path, destPath);
         } else {
           await client.downloadFile(remoteItem.path, destPath, (prog) {
-            progressNotifier.value = FileOperationProgress(
-              totalFiles: totalFiles,
-              currentFileIndex: i + 1,
-              currentFileName: remoteItem.name,
-              percentage: (i + prog) / totalFiles,
-              speedMBs: 0.0,
-              eta: Duration.zero,
-              totalBytes: totalFiles,
-              bytesProcessed: i,
-            );
+            if (useByteProgress && remoteItem.size > 0) {
+              final currentBytes = (prog * remoteItem.size).toInt();
+              final totalProcessed = bytesProcessedTotal + currentBytes;
+              final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
+              final speed = elapsedSeconds > 0 ? (totalProcessed / (1024 * 1024)) / elapsedSeconds : 0.0;
+              final remainingBytes = totalBytes - totalProcessed;
+              final etaSeconds = speed > 0 ? (remainingBytes / (1024 * 1024)) / speed : 0.0;
+
+              progressNotifier.value = FileOperationProgress(
+                totalFiles: totalFiles,
+                currentFileIndex: i + 1,
+                currentFileName: remoteItem.name,
+                percentage: totalBytes > 0 ? totalProcessed / totalBytes : 0.0,
+                speedMBs: speed,
+                eta: Duration(seconds: etaSeconds.round()),
+                totalBytes: totalBytes,
+                bytesProcessed: totalProcessed,
+              );
+            } else {
+              progressNotifier.value = FileOperationProgress(
+                totalFiles: totalFiles,
+                currentFileIndex: i + 1,
+                currentFileName: remoteItem.name,
+                percentage: (i + prog) / totalFiles,
+                speedMBs: 0.0,
+                eta: Duration.zero,
+                totalBytes: totalFiles,
+                bytesProcessed: i,
+              );
+            }
           });
+          // 下载完成后累加字节数
+          if (remoteItem.size > 0) {
+            bytesProcessedTotal += remoteItem.size;
+          }
         }
 
         if (_isCut) {
@@ -2469,6 +2521,7 @@ class FileManagerProvider extends ChangeNotifier {
           }
         }
       }
+      stopwatch.stop();
     } catch (e) {
       debugPrint('Error pasting from remote: $e');
       if (context.mounted) {
@@ -3398,55 +3451,118 @@ class FileManagerProvider extends ChangeNotifier {
       return;
     }
 
-    // 远程文件：立即打开播放器，后台下载到本地缓存
+    // 处理 remote:// 格式的远程路径（来自自定义快捷方式扫描的媒体文件）
+    if (path.startsWith('remote://')) {
+      try {
+        final uriPart = path.substring('remote://'.length);
+        final separatorIndex = uriPart.indexOf('|');
+        if (separatorIndex < 0) return;
+        final connectionId = uriPart.substring(0, separatorIndex);
+        final remotePath = uriPart.substring(separatorIndex + 1);
+        final fileName = p.basename(remotePath);
+        final fileExt = p.extension(fileName).toLowerCase();
+        final fileMime = lookupMimeType(fileExt) ?? '';
+        final isVideoFile = fileMime.startsWith('video/');
+        final isAudioFile = fileMime.startsWith('audio/');
+
+        final connections = NetworkConnectionsService.getConnections();
+        final conn = connections.where((c) => c.id == connectionId).firstOrNull;
+        if (conn == null) {
+          debugPrint('远程连接未找到: $connectionId');
+          return;
+        }
+
+        final remoteClient = createRemoteClient(conn);
+        await remoteClient.connect();
+
+        if (isVideoFile || isAudioFile) {
+          // 优先尝试直接流式 URL（WebDAV 支持 HTTP 流）
+          final streamUrl = remoteClient.getStreamUrl(remotePath);
+          if (streamUrl != null) {
+            // WebDAV 流式播放：保持连接直到播放完成（由 GC 清理）
+            if (isVideoFile) {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(videoPath: streamUrl, isRemote: true)));
+            } else {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => AudioPlayerScreen(audioPath: streamUrl, title: p.basenameWithoutExtension(fileName), isRemote: true)));
+            }
+            return;
+          }
+
+          // 非 HTTP 流协议（FTP/SFTP 等）：通过本地代理服务器
+          try {
+            final proxyUrl = await RemoteStreamingService.instance.startStreaming(remoteClient, remotePath, fileName);
+            // 代理服务器持有客户端引用，不 disconnect
+            if (isVideoFile) {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(videoPath: proxyUrl, isRemote: true)));
+            } else {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => AudioPlayerScreen(audioPath: proxyUrl, title: p.basenameWithoutExtension(fileName), isRemote: true)));
+            }
+            return;
+          } catch (e) {
+            debugPrint('远程流式代理启动失败，回退到下载模式: $e');
+          }
+        }
+
+        // 非媒体文件或流式失败：完整下载后打开
+        final cacheDir = Directory('/storage/emulated/0/Download/ZenFile_Remote');
+        if (!cacheDir.existsSync()) cacheDir.createSync(recursive: true);
+        final cachePath = p.join(cacheDir.path, fileName);
+        if (!File(cachePath).existsSync()) {
+          await remoteClient.downloadFile(remotePath, cachePath, (progress) {});
+        }
+        targetPath = cachePath;
+        // 下载完成后断开连接
+        await remoteClient.disconnect();
+      } catch (e) {
+        debugPrint('远程路径文件打开失败: $e');
+      }
+    }
+
+    // 远程文件：使用流式播放代理服务器实现边缓存边播放
     if (activeTab.isRemote && activeTab.remoteClient != null) {
       try {
+        final fileMime = lookupMimeType(ext) ?? '';
+        final isVideoFile = fileMime.startsWith('video/');
+        final isAudioFile = fileMime.startsWith('audio/');
+        final remoteClient = activeTab.remoteClient!;
+
+        if (isVideoFile || isAudioFile) {
+          // 优先尝试直接流式 URL（WebDAV 支持 HTTP 流）
+          final streamUrl = remoteClient.getStreamUrl(path);
+          if (streamUrl != null) {
+            // 直接流式播放 — 无需下载
+            if (isVideoFile) {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(videoPath: streamUrl, isRemote: true)));
+            } else {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => AudioPlayerScreen(audioPath: streamUrl, title: p.basenameWithoutExtension(path), isRemote: true)));
+            }
+            return;
+          }
+
+          // 非 HTTP 流协议（FTP/SFTP 等）：通过本地代理服务器实现边缓存边播放
+          try {
+            final proxyUrl = await RemoteStreamingService.instance.startStreaming(remoteClient, path, p.basename(path));
+            if (isVideoFile) {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(videoPath: proxyUrl, isRemote: true)));
+            } else {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => AudioPlayerScreen(audioPath: proxyUrl, title: p.basenameWithoutExtension(path), isRemote: true)));
+            }
+            return;
+          } catch (e) {
+            debugPrint('流式代理启动失败，回退到下载模式: $e');
+          }
+        }
+
+        // 非媒体文件或流式失败：完整下载后打开
         final cacheDir = Directory('/storage/emulated/0/Download/ZenFile_Remote');
         if (!cacheDir.existsSync()) cacheDir.createSync(recursive: true);
         final cachePath = p.join(cacheDir.path, p.basename(path));
         if (!File(cachePath).existsSync()) {
-          // 立即打开播放器（播放器会显示缓存提示），后台下载
-          final fileMime = lookupMimeType(ext) ?? '';
-          final isVideoFile = fileMime.startsWith('video/');
-          final isAudioFile = fileMime.startsWith('audio/');
-          if (isVideoFile || isAudioFile) {
-            // 创建空文件占位，播放器打开本地路径
-            File(cachePath).createSync(recursive: true);
-            if (isVideoFile) {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(videoPath: cachePath, isRemote: true)));
-            } else {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => AudioPlayerScreen(audioPath: cachePath, title: p.basenameWithoutExtension(path), isRemote: true)));
-            }
-            // 后台下载到临时文件，完成后重命名替换占位文件
-            final partialPath = '$cachePath.partial';
-            activeTab.remoteClient!.downloadFile(path, partialPath, (progress) {}).then((_) {
-              // 下载完成后重命名临时文件为正式文件
-              try {
-                final partial = File(partialPath);
-                final target = File(cachePath);
-                if (partial.existsSync()) {
-                  if (target.existsSync()) target.deleteSync();
-                  partial.renameSync(cachePath);
-                }
-                debugPrint('远程文件下载完成: $cachePath');
-              } catch (e) {
-                debugPrint('重命名临时文件失败: $e');
-              }
-            }).catchError((e) {
-              debugPrint('远程文件下载失败: $e');
-              // 清理临时文件
-              try { File(partialPath).deleteSync(); } catch (_) {}
-            });
-            return;
-          }
-          // 非媒体文件（图片、文本等）：完整下载后打开
-          await activeTab.remoteClient!.downloadFile(path, cachePath, (progress) {});
-          targetPath = cachePath;
-        } else {
-          targetPath = cachePath;
+          await remoteClient.downloadFile(path, cachePath, (progress) {});
         }
+        targetPath = cachePath;
       } catch (e) {
-        debugPrint('下载远程文件失败: {e}');
+        debugPrint('下载远程文件失败: $e');
       }
     }
 

@@ -179,7 +179,7 @@ class L10nKo extends L10n {
   String get zenfile1 => 'ZenFile 정보';
 
   @override
-  String get v1041 => 'v1.0.41 (보기)';
+  String get v1041 => 'v1.0.42 (보기)';
 
   @override
   String get zenfileflutter =>
@@ -247,7 +247,7 @@ class L10nKo extends L10n {
   String get msg0537b04e => '이미지를 길게 눌러 갤러리에 저장하세요. 지원해 주셔서 감사합니다!';
 
   @override
-  String get zenfilev1041 => 'ZenFile v1.0.41 다운로드';
+  String get zenfilev1041 => 'ZenFile v1.0.42 다운로드';
 
   @override
   String get msg9d287020 => '123 클라우드 드라이브';
@@ -2847,6 +2847,35 @@ class L10nKo extends L10n {
 
   @override
   String get log_web_share_l10n => '웹 공유 포털이 앱 로케일에 따라 다국어 표시를 지원';
+
+  @override
+  String get log_music_lyrics_fullscreen_removed => '음악 플레이어에서 가사 전체화면 패널 제거';
+
+  @override
+  String get log_music_lyrics_centered => '음악 플레이어 현재 가사 표시를 중앙 정렬로 변경';
+
+  @override
+  String get log_music_player_button => '음악 카테고리 상단에 음악 플레이어 버튼 추가';
+
+  @override
+  String get log_music_remember_progress => '음악 플레이어가 재생 위치를 기억하고 다음에 자동 재생';
+
+  @override
+  String get log_image_icon_redesign => '이미지 파일 아이콘 재설계, 포맷 라벨(jpg, png 등) 표시';
+
+  @override
+  String get log_doc_icon_redesign => '문서 파일 아이콘 재설계, 포맷 라벨 표시';
+
+  @override
+  String get log_archive_icon_redesign =>
+      '압축 파일 아이콘 재설계, 포맷 라벨(zip, 7z, rar 등) 표시';
+
+  @override
+  String get log_music_lrc_lyrics => 'LRC 가사 자동 로드 및 수동 가사 파일 선택 지원';
+
+  @override
+  String get log_remote_copy_paste_fix =>
+      '원격 서버에서 로컬로 복사 시 진행률 표시줄이 0%이고 파일이 나타나지 않는 문제 수정';
 
   @override
   String get msg_remember_choice => '이 선택을 기억하여 향후 작업에 적용';

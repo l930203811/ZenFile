@@ -5,9 +5,14 @@ import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:path/path.dart' as p;
 import 'package:zenfile/core/icon_fonts/broken_icons.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import 'package:zenfile/services/preferences_service.dart';
+import 'package:zenfile/services/remote/remote_client.dart';
+import 'package:zenfile/services/remote_streaming_service.dart';
+import 'package:zenfile/services/network_connections_service.dart';
+import 'package:zenfile/providers/file_manager_provider.dart';
 import 'video_loading_indicator.dart';
 import 'video_seek_indicator.dart';
 import 'video_controls_overlay.dart';
@@ -53,6 +58,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   bool _isBuffering = false;
   bool _isWaitingForCache = false;
   Timer? _cacheCheckTimer;
+
+  // 远程流式播放
+  String? _currentStreamUrl;
 
   // Swipes for Volume & Brightness
   double _volume = 0.8; // 0.0 to 1.0
@@ -236,13 +244,33 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       _isBuffering = true;
     });
 
+    // 清理上一次的远程流式会话
+    await _stopCurrentStream();
+
     if (widget.playlist != null) {
       final item = widget.playlist![index];
+      String playPath;
       if (item is String) {
-        player.open(Media(item));
+        playPath = item;
       } else if (item is FileSystemEntity) {
-        player.open(Media(item.path));
-      } else if (item is AssetEntity) {
+        playPath = item.path;
+      } else {
+        playPath = '';
+      }
+
+      // 处理 remote:// 路径
+      if (playPath.startsWith('remote://')) {
+        final resolved = await _resolveRemotePath(playPath);
+        if (resolved == null) {
+          debugPrint('远程路径解析失败: $playPath');
+          if (mounted) setState(() => _isBuffering = false);
+          return;
+        }
+        _currentStreamUrl = resolved;
+        playPath = resolved;
+      }
+
+      if (item is AssetEntity) {
         setState(() => _isResolvingAsset = true);
         try {
           final file = await item.file;
@@ -254,6 +282,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         } finally {
           if (mounted) setState(() => _isResolvingAsset = false);
         }
+      } else {
+        player.open(Media(playPath));
       }
     } else if (widget.assetPlaylist != null) {
       setState(() => _isResolvingAsset = true);
@@ -270,6 +300,63 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       }
     }
     _startHideTimer();
+  }
+
+  /// 停止当前远程流式播放会话
+  Future<void> _stopCurrentStream() async {
+    if (_currentStreamUrl != null) {
+      await RemoteStreamingService.instance.stopStreaming(_currentStreamUrl!);
+      _currentStreamUrl = null;
+    }
+  }
+
+  /// 解析 remote://{connectionId}|{remotePath} 为可播放的流式 URL
+  Future<String?> _resolveRemotePath(String remotePathStr) async {
+    try {
+      final uriPart = remotePathStr.substring('remote://'.length);
+      final separatorIndex = uriPart.indexOf('|');
+      if (separatorIndex < 0) return null;
+      final connectionId = uriPart.substring(0, separatorIndex);
+      final remoteFilePath = uriPart.substring(separatorIndex + 1);
+      final fileName = p.basename(remoteFilePath);
+
+      final connections = NetworkConnectionsService.getConnections();
+      final conn = connections.where((c) => c.id == connectionId).firstOrNull;
+      if (conn == null) {
+        debugPrint('远程连接未找到: $connectionId');
+        return null;
+      }
+
+      final remoteClient = FileManagerProvider.createRemoteClient(conn);
+      await remoteClient.connect();
+
+      // 优先尝试直接流式 URL（WebDAV 支持 HTTP 流）
+      final streamUrl = remoteClient.getStreamUrl(remoteFilePath);
+      if (streamUrl != null) {
+        return streamUrl;
+      }
+
+      // 非 HTTP 流协议（FTP/SFTP 等）：通过本地代理服务器
+      try {
+        final proxyUrl = await RemoteStreamingService.instance.startStreaming(remoteClient, remoteFilePath, fileName);
+        return proxyUrl;
+      } catch (e) {
+        debugPrint('远程流式代理启动失败，回退到下载模式: $e');
+      }
+
+      // 回退：完整下载后播放
+      final cacheDir = Directory('/storage/emulated/0/Download/ZenFile_Remote');
+      if (!cacheDir.existsSync()) cacheDir.createSync(recursive: true);
+      final cachePath = p.join(cacheDir.path, fileName);
+      if (!File(cachePath).existsSync()) {
+        await remoteClient.downloadFile(remoteFilePath, cachePath, (progress) {});
+      }
+      await remoteClient.disconnect();
+      return cachePath;
+    } catch (e) {
+      debugPrint('解析远程路径失败: $e');
+      return null;
+    }
   }
 
   void _onNext() {
@@ -406,6 +493,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _sliderTimer?.cancel();
     _cacheCheckTimer?.cancel();
     _controlsAnimController.dispose();
+    // 清理远程流式会话
+    _stopCurrentStream();
     player.dispose();
     final hideNav = PreferencesService.getHideNavigationBar();
     if (hideNav) {

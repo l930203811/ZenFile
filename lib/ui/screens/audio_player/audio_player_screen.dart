@@ -7,10 +7,15 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'package:path/path.dart' as p;
+import 'package:mime/mime.dart';
 import '../../../core/icon_fonts/broken_icons.dart';
 import '../../../services/audio_background_handler.dart';
 import '../../../services/preferences_service.dart';
 import '../../../services/lyric_parser.dart';
+import '../../../services/remote/remote_client.dart';
+import '../../../services/remote_streaming_service.dart';
+import '../../../services/network_connections_service.dart';
 import '../../../providers/file_manager_provider.dart';
 import '../internal_file_picker_screen.dart';
 import 'audio_artwork_widget.dart';
@@ -114,6 +119,9 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   bool _isLoadingLyrics = false;
   bool _showInlineLyrics = false; // 是否在播放器界面显示完整内联歌词
   int _lyricsLoadGeneration = 0; // 防止歌词加载竞态
+
+  // 远程流式播放
+  String? _currentStreamUrl; // 当前远程流式播放的代理 URL
 
   // 播放进度记忆
   bool _hasSeekedToSavedPosition = false;
@@ -219,7 +227,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     }
   }
 
-  void _openTrack() {
+  void _openTrack() async {
     // 重置进度恢复标记
     _hasSeekedToSavedPosition = false;
     // 保存当前播放的音频信息（用于从分类页恢复播放）
@@ -228,10 +236,24 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     // 加载歌词
     _loadLyrics();
 
+    // 处理 remote:// 路径：解析为流式播放 URL
+    String playPath = _currentPath;
+    if (_currentPath.startsWith('remote://')) {
+      // 清理上一次的远程流式会话
+      await _stopCurrentStream();
+      final resolved = await _resolveRemotePath(_currentPath);
+      if (resolved == null) {
+        debugPrint('远程路径解析失败: $_currentPath');
+        return;
+      }
+      playPath = resolved;
+      _currentStreamUrl = playPath;
+    }
+
     // For remote files that are being cached, wait until the download completes
     // (download goes to .partial file, then renames to the actual file)
-    if (widget.isRemote && !_currentPath.startsWith('http')) {
-      final file = File(_currentPath);
+    if (widget.isRemote && !playPath.startsWith('http') && !_currentPath.startsWith('remote://')) {
+      final file = File(playPath);
       final initialSize = file.existsSync() ? file.lengthSync() : 0;
       if (initialSize < 1024) { // less than 1KB = placeholder file
         setState(() => _isWaitingForCache = true);
@@ -248,7 +270,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
               timer.cancel();
               if (mounted) {
                 setState(() => _isWaitingForCache = false);
-                player.open(Media(_currentPath), play: true);
+                player.open(Media(playPath), play: true);
                 player.setRate(_playbackSpeed);
                 player.setPitch(_pitch);
                 _resetFade();
@@ -260,10 +282,69 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         return;
       }
     }
-    player.open(Media(_currentPath), play: true);
+    player.open(Media(playPath), play: true);
     player.setRate(_playbackSpeed);
     player.setPitch(_pitch);
     _resetFade();
+  }
+
+  /// 停止当前远程流式播放会话
+  Future<void> _stopCurrentStream() async {
+    if (_currentStreamUrl != null) {
+      await RemoteStreamingService.instance.stopStreaming(_currentStreamUrl!);
+      _currentStreamUrl = null;
+    }
+  }
+
+  /// 解析 remote://{connectionId}|{remotePath} 为可播放的流式 URL
+  Future<String?> _resolveRemotePath(String remotePathStr) async {
+    try {
+      final uriPart = remotePathStr.substring('remote://'.length);
+      final separatorIndex = uriPart.indexOf('|');
+      if (separatorIndex < 0) return null;
+      final connectionId = uriPart.substring(0, separatorIndex);
+      final remoteFilePath = uriPart.substring(separatorIndex + 1);
+      final fileName = p.basename(remoteFilePath);
+
+      final connections = NetworkConnectionsService.getConnections();
+      final conn = connections.where((c) => c.id == connectionId).firstOrNull;
+      if (conn == null) {
+        debugPrint('远程连接未找到: $connectionId');
+        return null;
+      }
+
+      final remoteClient = FileManagerProvider.createRemoteClient(conn);
+      await remoteClient.connect();
+
+      // 优先尝试直接流式 URL（WebDAV 支持 HTTP 流）
+      final streamUrl = remoteClient.getStreamUrl(remoteFilePath);
+      if (streamUrl != null) {
+        // WebDAV 流式播放：保持连接（由 GC 清理）
+        return streamUrl;
+      }
+
+      // 非 HTTP 流协议（FTP/SFTP 等）：通过本地代理服务器
+      try {
+        final proxyUrl = await RemoteStreamingService.instance.startStreaming(remoteClient, remoteFilePath, fileName);
+        // 代理服务器持有客户端引用，不 disconnect
+        return proxyUrl;
+      } catch (e) {
+        debugPrint('远程流式代理启动失败，回退到下载模式: $e');
+      }
+
+      // 回退：完整下载后播放
+      final cacheDir = Directory('/storage/emulated/0/Download/ZenFile_Remote');
+      if (!cacheDir.existsSync()) cacheDir.createSync(recursive: true);
+      final cachePath = p.join(cacheDir.path, fileName);
+      if (!File(cachePath).existsSync()) {
+        await remoteClient.downloadFile(remoteFilePath, cachePath, (progress) {});
+      }
+      await remoteClient.disconnect();
+      return cachePath;
+    } catch (e) {
+      debugPrint('解析远程路径失败: $e');
+      return null;
+    }
   }
 
   void _resetFade() {
@@ -322,6 +403,8 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     _cacheCheckTimer?.cancel();
     _sleepTimer?.cancel();
     _fadeController.dispose();
+    // 清理远程流式会话
+    _stopCurrentStream();
     if (_isBackgroundMode) {
       // Let audio keep playing in background — don't dispose player
       getAudioHandler().setSkipCallback(null);
