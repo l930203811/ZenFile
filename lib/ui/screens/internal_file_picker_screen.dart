@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../services/root_shizuku_service.dart';
 import '../widgets/file_action_dialogs.dart';
+import '../widgets/archive_type_icon.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class InternalFilePickerScreen extends StatefulWidget {
@@ -289,7 +290,7 @@ class _InternalFilePickerScreenState extends State<InternalFilePickerScreen> {
                             ),
                           ),
                           title: Text(
-                            vol.name,
+                            vol.isInternal ? L10n.of(context).msg21cefa9b : vol.name,
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 15,
@@ -478,11 +479,13 @@ class _InternalFilePickerScreenState extends State<InternalFilePickerScreen> {
                                       color: isSelected ? theme.colorScheme.primary : (item.isDirectory ? theme.colorScheme.primary.withOpacity(0.1) : iconColor.withOpacity(0.1)),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
-                                    child: Icon(
-                                      isSelected ? Broken.tick_circle : (item.isDirectory ? FileUtils.getFolderIcon(context.read<FileManagerProvider>().folderIconOption) : FileUtils.getIconForFile(item.name)),
-                                      color: isSelected ? theme.colorScheme.onPrimary : iconColor,
-                                      size: 28,
-                                    ),
+                                    child: (!isSelected && !item.isDirectory && FileUtils.isArchive(item.name))
+                                      ? ArchiveTypeIcon(label: FileUtils.getArchiveTypeLabel(item.name), color: iconColor)
+                                      : Icon(
+                                          isSelected ? Broken.tick_circle : (item.isDirectory ? FileUtils.getFolderIcon(context.read<FileManagerProvider>().folderIconOption) : FileUtils.getIconForFile(item.name)),
+                                          color: isSelected ? theme.colorScheme.onPrimary : iconColor,
+                                          size: 28,
+                                        ),
                                   ),
                                 ),
                                 const SizedBox(width: 16),

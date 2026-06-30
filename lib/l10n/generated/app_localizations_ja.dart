@@ -1233,6 +1233,21 @@ class L10nJa extends L10n {
   String get msgf08c8dc4 => 'ナチュラル禅';
 
   @override
+  String get msgdesign6 => 'AIデザイン 1';
+
+  @override
+  String get msgdesign7 => 'AIデザイン 2';
+
+  @override
+  String get msgdesign8 => 'AIデザイン 3';
+
+  @override
+  String get msgdesign9 => 'AIデザイン 4';
+
+  @override
+  String get msgdesign10 => 'AIデザイン 5';
+
+  @override
   String get msg7372dc9f => 'カスタムアイコン';
 
   @override
@@ -3228,4 +3243,127 @@ class L10nJa extends L10n {
 
   @override
   String get web_share_preview_error => 'ドキュメントをストリーミングできません。直接ダウンロードできます。';
+
+  @override
+  String get msg_custom_shortcut => 'カスタムアイコン';
+
+  @override
+  String get msg_add_custom_shortcut => 'ホーム画面に追加';
+
+  @override
+  String get msg_shortcut_added => 'ホーム画面に追加しました';
+
+  @override
+  String get msg_shortcut_failed => '追加に失敗しました';
+
+  @override
+  String get ui_lyrics_loaded => '歌詞を読み込みました';
+
+  @override
+  String get ui_lyrics_load_failed => 'この歌詞ファイルを解析できません';
+
+  @override
+  String get ui_select_lyrics_file => '歌詞ファイルを選択';
+
+  @override
+  String get ui_no_lyrics_found => '歌詞が見つかりません';
+
+  @override
+  String get ui_lyrics_auto_load_hint =>
+      '.lrc 歌詞ファイルを音楽と同じフォルダに\n（ファイル名も同じにして）置くと自動読み込みされます';
+
+  @override
+  String get ui_lyrics_panel => '歌詞パネル';
+
+  @override
+  String get ui_show_lyrics => '歌詞を表示';
+
+  @override
+  String get ui_hide_lyrics => '歌詞を隠す';
+
+  @override
+  String get ui_sound_effects_speed => 'サウンドエフェクトと再生速度';
+
+  @override
+  String get ui_pitch_adjustment => '音調調整';
+
+  @override
+  String get ui_restore_default => 'デフォルトに戻す';
+
+  @override
+  String get ui_sound_effects => 'サウンドエフェクト';
+
+  @override
+  String get ui_playback_queue => '再生キュー';
+
+  @override
+  String get ui_repeat_off => 'リピート：オフ';
+
+  @override
+  String get ui_repeat_one => 'リピート：1曲';
+
+  @override
+  String get ui_repeat_all => 'リピート：全曲';
+
+  @override
+  String get ui_shuffle_on => 'シャッフル：オン';
+
+  @override
+  String ui_minutes_format(int minutes) {
+    return '$minutes分';
+  }
+
+  @override
+  String ui_sleep_timer_set(int minutes) {
+    return 'スリープタイマーを $minutes 分に設定しました。';
+  }
+
+  @override
+  String get ui_enter_minutes => '分を入力';
+
+  @override
+  String get ui_sleep_timer_end => 'タイマーが終了し、再生を一時停止しました';
+
+  @override
+  String get ui_close_player => 'プレーヤーを閉じる';
+
+  @override
+  String get ui_open_player => 'プレーヤーを開く';
+
+  @override
+  String get ui_now_playing => '再生中';
+
+  @override
+  String get ui_resume_playback => '再生を再開';
+
+  @override
+  String get ui_single => 'シングル';
+
+  @override
+  String get ui_add_remote_path => 'リモートパスを追加';
+
+  @override
+  String get ui_select_remote_server => 'リモートサーバーを選択';
+
+  @override
+  String get ui_no_remote_connections => 'リモート接続がありません。ネットワーク接続を追加してください';
+
+  @override
+  String get ui_retry => '再試行';
+
+  @override
+  String get ui_no_subfolders => 'サブフォルダがありません';
+
+  @override
+  String get ui_select_this_folder => 'このフォルダを選択';
+
+  @override
+  String ui_downloading_file(String file) {
+    return 'ダウンロード中: $file';
+  }
+
+  @override
+  String ui_sent(String amount) {
+    return '送信済み: $amount';
+  }
 }

@@ -22,6 +22,8 @@ import 'folder_item.dart';
 import 'file_grid_item.dart';
 import 'folder_grid_item.dart';
 import 'drag_drop_handler.dart';
+import 'archive_type_icon.dart';
+import 'file_type_icon.dart';
 import 'restricted_folder_banner.dart';
 import 'selection_context_bottom_sheet.dart';
 import 'file_action_dialogs.dart';
@@ -1375,7 +1377,34 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
       return Icon(Broken.tick_circle, color: Theme.of(context).colorScheme.onPrimary, size: 18);
     }
 
+    // 压缩包：显示带格式标签的自定义图标
+    if (FileUtils.isArchive(widget.file.path)) {
+      return ArchiveTypeIcon(
+        label: FileUtils.getArchiveTypeLabel(widget.file.path),
+        color: widget.iconColor,
+        iconScale: 18 / 28,
+      );
+    }
+
+    // 文档：显示带格式标签的自定义图标
+    if (FileUtils.isDocument(widget.file.path)) {
+      return FileTypeIcon(
+        icon: FileUtils.getIconForFile(widget.file.path),
+        label: FileUtils.getDocumentTypeLabel(widget.file.path),
+        color: widget.iconColor,
+        iconScale: 18 / 28,
+      );
+    }
+
     if (!showMediaPreviews) {
+      if (isImg) {
+        return FileTypeIcon(
+          icon: Broken.image,
+          label: FileUtils.getImageTypeLabel(widget.file.path),
+          color: widget.iconColor,
+          iconScale: 18 / 28,
+        );
+      }
       return Icon(
         FileUtils.getIconForFile(widget.file.path),
         color: widget.iconColor,
@@ -1400,7 +1429,7 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
           fit: BoxFit.cover,
           width: double.infinity,
           height: double.infinity,
-          errorBuilder: (context, error, stackTrace) => Icon(Broken.image, color: widget.iconColor, size: 18),
+          errorBuilder: (context, error, stackTrace) => FileTypeIcon(icon: Broken.image, label: FileUtils.getImageTypeLabel(widget.file.path), color: widget.iconColor, iconScale: 18 / 28),
         );
       }
       return Image.file(
@@ -1409,7 +1438,7 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
         width: double.infinity,
         height: double.infinity,
         cacheWidth: 80,
-        errorBuilder: (context, error, stackTrace) => Icon(Broken.image, color: widget.iconColor, size: 18),
+        errorBuilder: (context, error, stackTrace) => FileTypeIcon(icon: Broken.image, label: FileUtils.getImageTypeLabel(widget.file.path), color: widget.iconColor, iconScale: 18 / 28),
       );
     }
 

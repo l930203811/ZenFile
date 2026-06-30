@@ -6,20 +6,23 @@ import 'package:provider/provider.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:intl/intl.dart';
+import 'package:audio_service/audio_service.dart';
 import '../../providers/media_provider.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../services/preferences_service.dart';
+import '../../services/audio_background_handler.dart';
 import '../../core/utils.dart';
 import '../../services/app_manager_service.dart';
 import 'image_viewer_screen.dart';
 import 'video_player/video_player_screen.dart';
 import 'audio_player/audio_player_screen.dart';
-import 'document_viewer_screen.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../widgets/file_action_dialogs.dart';
 import '../widgets/batch_rename_dialog.dart';
+import '../widgets/archive_type_icon.dart';
+import '../widgets/file_type_icon.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 enum MediaType { images, videos, audios, documents, archives, downloads, apks, screenshots }
@@ -855,12 +858,12 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                     CheckedPopupMenuItem(
                       value: MediaSortOrder.sizeLargest,
                       checked: provider.sortOrder == MediaSortOrder.sizeLargest,
-                      child: const Text('Size (Large First)'),
+                      child: Text(L10n.of(context).msg2e2a26bb),
                     ),
                     CheckedPopupMenuItem(
                       value: MediaSortOrder.sizeSmallest,
                       checked: provider.sortOrder == MediaSortOrder.sizeSmallest,
-                      child: const Text('Size (Small First)'),
+                      child: Text(L10n.of(context).ui_size_small),
                     ),
                   ],
                 );
@@ -882,6 +885,8 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         children: [
           if (widget.album == null && (widget.mediaType == MediaType.images || widget.mediaType == MediaType.videos))
             _buildFoldersToggle(theme),
+          if (widget.album == null && widget.mediaType == MediaType.audios)
+            _buildResumePlayerButton(theme),
           Expanded(
             child: Consumer<MediaProvider>(
               builder: (context, provider, child) {
@@ -1570,7 +1575,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               pageBuilder: (context, animation, secondaryAnimation) => AudioPlayerScreen(
                 audioPath: path,
                 title: audio.title,
-                artist: audio.artist ?? L10n.of(context).msg5e32276d,
+                artist: (audio.artist == null || audio.artist!.isEmpty) ? L10n.of(context).msg5e32276d : audio.artist!,
                 allSongs: audios,
                 initialIndex: index,
               ),
@@ -1614,8 +1619,8 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       title: Text(audio.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
       subtitle: Text(
         showDate
-            ? '${audio.artist ?? L10n.of(context).msg5e32276d} • $dateStr'
-            : audio.artist ?? L10n.of(context).msg5e32276d,
+            ? '${(audio.artist == null || audio.artist!.isEmpty) ? L10n.of(context).msg5e32276d : audio.artist!} • $dateStr'
+            : (audio.artist == null || audio.artist!.isEmpty) ? L10n.of(context).msg5e32276d : audio.artist!,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.55), fontSize: 11),
@@ -1697,7 +1702,14 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             width: 44,
             height: 44,
             decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
-            child: Icon(icon, color: color, size: 22),
+            child: Center(
+              child: FileTypeIcon(
+                icon: icon,
+                label: FileUtils.getDocumentTypeLabel(path),
+                color: color,
+                iconScale: 1.0,
+              ),
+            ),
           ),
           if (_isSelectionMode || isSelected)
             Positioned(
@@ -1806,7 +1818,22 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                           placeholderBuilder: (context) => Icon(FileUtils.getIconForFile(name), color: iconColor, size: 22),
                         ),
                       )
-                    : Icon(FileUtils.getIconForFile(name), color: iconColor, size: 22),
+                    : FileUtils.isArchive(path)
+                        ? ArchiveTypeIcon(
+                            label: FileUtils.getArchiveTypeLabel(path),
+                            color: iconColor,
+                            iconScale: 1.0,
+                          )
+                        : FileUtils.isDocument(path)
+                            ? Center(
+                                child: FileTypeIcon(
+                                  icon: FileUtils.getIconForFile(name),
+                                  label: FileUtils.getDocumentTypeLabel(path),
+                                  color: iconColor,
+                                  iconScale: 1.0,
+                                ),
+                              )
+                            : Icon(FileUtils.getIconForFile(name), color: iconColor, size: 22),
           ),
           if (_isSelectionMode || isSelected)
             Positioned(
@@ -1980,6 +2007,283 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         ),
       ),
     );
+  }
+
+  Widget _buildResumePlayerButton(ThemeData theme) {
+    final handler = getAudioHandler();
+    final lastPlayed = PreferencesService.getLastPlayedAudio();
+
+    String formatDuration(Duration d) {
+      final h = d.inHours;
+      final m = d.inMinutes % 60;
+      final s = d.inSeconds % 60;
+      if (h > 0) {
+        return '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+      }
+      return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: StreamBuilder<PlaybackState>(
+        stream: handler.playbackState,
+        builder: (context, playingSnapshot) {
+          final isPlaying = playingSnapshot.data?.playing ?? false;
+          return StreamBuilder<MediaItem?>(
+            stream: handler.mediaItem,
+            builder: (context, itemSnapshot) {
+              // 优先使用后台播放器的当前曲目，确保切歌后按钮立即同步
+              final activeItem = handler.hasActivePlayer
+                  ? (itemSnapshot.data ?? handler.currentMediaItem)
+                  : null;
+              final Map<String, String>? info;
+              if (activeItem != null) {
+                info = {
+                  'path': activeItem.id,
+                  'title': activeItem.title,
+                  'artist': activeItem.artist ?? '',
+                };
+              } else if (lastPlayed != null) {
+                info = lastPlayed;
+              } else {
+                return const SizedBox.shrink();
+              }
+
+              // 检查文件是否还存在
+              final file = File(info['path']!);
+              if (!file.existsSync()) return const SizedBox.shrink();
+
+              final path = info['path']!;
+              final title = info['title']!;
+              final artist = info['artist']!;
+              final isCurrentTrack = handler.isPlayingPath(path);
+              final position = playingSnapshot.data?.updatePosition ?? Duration.zero;
+              final duration = itemSnapshot.data?.duration ?? Duration.zero;
+              final savedMs = PreferencesService.getPlaybackPosition(path);
+              final savedPosition = savedMs != null ? Duration(milliseconds: savedMs) : Duration.zero;
+
+              String subtitle;
+              if (isCurrentTrack && isPlaying && duration > Duration.zero) {
+                subtitle = '${formatDuration(position)} / ${formatDuration(duration)}';
+              } else if (isCurrentTrack && !isPlaying && duration > Duration.zero) {
+                subtitle = '${formatDuration(position)} / ${formatDuration(duration)} · ${L10n.of(context).ui_resume_playback}';
+              } else if (savedPosition.inSeconds > 0) {
+                subtitle = '${L10n.of(context).ui_resume_playback} · ${formatDuration(savedPosition)}';
+              } else {
+                subtitle = artist.isEmpty ? L10n.of(context).msg5e32276d : artist;
+              }
+
+              final progress = duration.inMilliseconds > 0
+                  ? (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0)
+                  : 0.0;
+
+              return Stack(
+                children: [
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: _RoundedRectProgressPainter(
+                        progress: progress,
+                        strokeWidth: 3,
+                        radius: 16,
+                        color: theme.colorScheme.primary,
+                        backgroundColor: theme.colorScheme.onSurface.withOpacity(0.1),
+                      ),
+                    ),
+                  ),
+                  Material(
+                    color: theme.colorScheme.primaryContainer.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(13),
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(13),
+                      onTap: () => _openAudioPlayerFromResume(path, title, artist),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 40,
+                              height: 40,
+                              child: Material(
+                                color: theme.colorScheme.primary,
+                                shape: const CircleBorder(),
+                                child: InkWell(
+                                  customBorder: const CircleBorder(),
+                                  onTap: () => _toggleResumePlayback(path, title, artist),
+                                  child: Icon(
+                                    isCurrentTrack && isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                                    color: theme.colorScheme.onPrimary,
+                                    size: 24,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    isCurrentTrack && isPlaying ? L10n.of(context).ui_now_playing : L10n.of(context).ui_resume_playback,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    title,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: theme.colorScheme.onSurface,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    subtitle,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              Icons.chevron_right_rounded,
+                              color: theme.colorScheme.onSurface.withOpacity(0.4),
+                              size: 24,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  void _openAudioPlayerFromResume(String path, String title, String artist) {
+    final handler = getAudioHandler();
+    final isSamePlaying = handler.isPlayingPath(path) && handler.hasActivePlayer;
+
+    if (!isSamePlaying && handler.hasActivePlayer) {
+      // 正在播放其他歌曲，先停止后台播放器，避免与新播放器同时出声
+      handler.stop();
+    }
+
+    final provider = context.read<MediaProvider>();
+    final audios = provider.audios;
+    final index = audios.indexWhere((s) => s.data == path);
+
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => AudioPlayerScreen(
+          audioPath: path,
+          title: title,
+          artist: artist,
+          allSongs: index >= 0 ? audios : null,
+          initialIndex: index >= 0 ? index : 0,
+          existingPlayer: isSamePlaying ? handler.currentPlayer : null,
+        ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
+          position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+          child: child,
+        ),
+        transitionDuration: const Duration(milliseconds: 400),
+      ),
+    );
+  }
+
+  Future<void> _toggleResumePlayback(String path, String title, String artist) async {
+    final handler = getAudioHandler();
+    final isCurrentTrack = handler.isPlayingPath(path);
+
+    if (!handler.hasActivePlayer || !isCurrentTrack) {
+      // 没有播放器或播放的不是当前歌曲：打开播放器并开始播放
+      _openAudioPlayerFromResume(path, title, artist);
+      return;
+    }
+
+    if (handler.playbackState.value.playing) {
+      await handler.pause();
+    } else {
+      await handler.play();
+    }
+  }
+}
+
+class _RoundedRectProgressPainter extends CustomPainter {
+  final double progress;
+  final double strokeWidth;
+  final double radius;
+  final Color color;
+  final Color backgroundColor;
+
+  _RoundedRectProgressPainter({
+    required this.progress,
+    required this.strokeWidth,
+    required this.radius,
+    required this.color,
+    required this.backgroundColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Rect.fromLTWH(
+      strokeWidth / 2,
+      strokeWidth / 2,
+      size.width - strokeWidth,
+      size.height - strokeWidth,
+    );
+    final rrect = RRect.fromRectAndRadius(rect, Radius.circular(radius));
+
+    final bgPaint = Paint()
+      ..color = backgroundColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    final fgPaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    final path = Path()..addRRect(rrect);
+
+    // 绘制背景轨道
+    canvas.drawPath(path, bgPaint);
+
+    // 根据进度绘制前景
+    if (progress > 0) {
+      final metrics = path.computeMetrics().first;
+      final drawLength = metrics.length * progress;
+      final extractedPath = metrics.extractPath(0, drawLength);
+      canvas.drawPath(extractedPath, fgPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _RoundedRectProgressPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.strokeWidth != strokeWidth ||
+        oldDelegate.radius != radius ||
+        oldDelegate.color != color ||
+        oldDelegate.backgroundColor != backgroundColor;
   }
 }
 

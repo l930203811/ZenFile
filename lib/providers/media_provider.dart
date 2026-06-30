@@ -15,7 +15,10 @@ import '../services/preferences_service.dart';
 import '../services/network_connections_service.dart';
 import '../models/custom_shortcut_model.dart';
 import '../models/file_item_model.dart';
+import '../models/network_connection_model.dart';
 import '../core/utils.dart';
+import '../services/remote/remote_client.dart';
+import 'file_manager_provider.dart';
 
 enum MediaSortOrder {
   newest,
@@ -1181,17 +1184,25 @@ class MediaProvider extends ChangeNotifier {
       final file = customAudFiles[i];
       if (!existingAudioPaths.contains(file.path)) {
         try {
-          final stat = file.statSync();
+          int fileSize = 0;
+          if (!file.path.startsWith('remote://')) {
+            try {
+              fileSize = file.statSync().size;
+            } catch (_) {}
+          }
+          final fileName = file.path.startsWith('remote://')
+              ? file.path.split('|').last.split('/').last
+              : p.basename(file.path);
           final songMap = {
             '_id': 900000 + i,
             '_data': file.path,
-            'title': p.basenameWithoutExtension(file.path),
-            'artist': 'Unknown Artist',
-            'album': 'Custom Folder',
+            'title': fileName.contains('.') ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName,
+            'artist': '',
+            'album': '',
             'duration': 0,
-            'size': stat.size,
-            'display_name': p.basename(file.path),
-            'display_name_wo_ext': p.basenameWithoutExtension(file.path),
+            'size': fileSize,
+            'display_name': fileName,
+            'display_name_wo_ext': fileName.contains('.') ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName,
             'is_music': true,
           };
           _audios.add(SongModel(songMap));
@@ -1203,7 +1214,7 @@ class MediaProvider extends ChangeNotifier {
     final docPaths = _customCategoryPaths['文档'] ?? [];
     final customDocs = await _scanCustomPaths(docPaths, (ext) => _docExtensions.contains(ext));
     _documents.removeWhere((entity) {
-      final isInCustomPath = docPaths.any((dir) => p.isWithin(dir, entity.path));
+      final isInCustomPath = docPaths.any((dir) => _isPathWithin(dir, entity.path));
       if (isInCustomPath) {
         return !customDocs.any((f) => f.path == entity.path);
       }
@@ -1219,7 +1230,7 @@ class MediaProvider extends ChangeNotifier {
     final archPaths = _customCategoryPaths['压缩包'] ?? [];
     final customArch = await _scanCustomPaths(archPaths, (ext) => _archiveExtensions.contains(ext));
     _archives.removeWhere((entity) {
-      final isInCustomPath = archPaths.any((dir) => p.isWithin(dir, entity.path));
+      final isInCustomPath = archPaths.any((dir) => _isPathWithin(dir, entity.path));
       if (isInCustomPath) {
         return !customArch.any((f) => f.path == entity.path);
       }
@@ -1235,7 +1246,7 @@ class MediaProvider extends ChangeNotifier {
     final apkPaths = _customCategoryPaths['安装包'] ?? [];
     final customApks = await _scanCustomPaths(apkPaths, (ext) => _apkExtensions.contains(ext));
     _apks.removeWhere((entity) {
-      final isInCustomPath = apkPaths.any((dir) => p.isWithin(dir, entity.path));
+      final isInCustomPath = apkPaths.any((dir) => _isPathWithin(dir, entity.path));
       if (isInCustomPath) {
         return !customApks.any((f) => f.path == entity.path);
       }
@@ -1251,19 +1262,47 @@ class MediaProvider extends ChangeNotifier {
     final customDlPaths = _customCategoryPaths['下载'] ?? [];
     final customDls = <File>[];
     for (final dirPath in customDlPaths) {
-      final dir = Directory(dirPath);
-      if (await dir.exists()) {
+      if (dirPath.startsWith('remote://')) {
+        // 远程下载路径扫描（非递归）
         try {
-          await for (final entity in dir.list(recursive: false)) {
-            if (entity is File) {
-              customDls.add(entity);
+          final uriPart = dirPath.substring('remote://'.length);
+          final separatorIndex = uriPart.indexOf('|');
+          if (separatorIndex < 0) continue;
+          final connectionId = uriPart.substring(0, separatorIndex);
+          final remoteBasePath = uriPart.substring(separatorIndex + 1);
+          final connections = NetworkConnectionsService.getConnections();
+          final conn = connections.where((c) => c.id == connectionId).firstOrNull;
+          if (conn == null) continue;
+          final client = FileManagerProvider.createRemoteClient(conn);
+          await client.connect();
+          try {
+            final items = await client.listDirectory(remoteBasePath);
+            for (final item in items) {
+              if (!item.isDirectory) {
+                customDls.add(File('remote://$connectionId|${item.path}'));
+              }
             }
+          } finally {
+            await client.disconnect();
           }
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('[ZenFile] Remote downloads scan error: $e');
+        }
+      } else {
+        final dir = Directory(dirPath);
+        if (await dir.exists()) {
+          try {
+            await for (final entity in dir.list(recursive: false)) {
+              if (entity is File) {
+                customDls.add(entity);
+              }
+            }
+          } catch (_) {}
+        }
       }
     }
     _downloads.removeWhere((entity) {
-      final isInCustomPath = customDlPaths.any((dir) => p.isWithin(dir, entity.path));
+      final isInCustomPath = customDlPaths.any((dir) => _isPathWithin(dir, entity.path));
       if (isInCustomPath) {
         return !customDls.any((f) => f.path == entity.path);
       }
@@ -1276,10 +1315,23 @@ class MediaProvider extends ChangeNotifier {
     }
   }
 
+  /// 检查文件路径是否在给定的自定义路径范围内，支持本地路径和 `remote://` 远程路径。
+  static bool _isPathWithin(String customPath, String filePath) {
+    if (customPath.startsWith('remote://')) {
+      // 远程路径前缀匹配
+      return filePath.startsWith('$customPath/') || filePath == customPath;
+    }
+    return p.isWithin(customPath, filePath);
+  }
+
   Future<List<File>> _scanCustomPaths(List<String> paths, bool Function(String path) filter) async {
     final files = <File>[];
     for (final path in paths) {
-      if (await Directory(path).exists()) {
+      if (path.startsWith('remote://')) {
+        // 远程服务器路径扫描
+        final remoteFiles = await _scanRemotePath(path, filter);
+        files.addAll(remoteFiles);
+      } else if (await Directory(path).exists()) {
         await _scanDirectoryRecursively(
           path,
           filter,
@@ -1288,6 +1340,62 @@ class MediaProvider extends ChangeNotifier {
       }
     }
     return files;
+  }
+
+  /// 扫描远程服务器路径，返回以 `remote://{connectionId}|{remotePath}` 为路径的 File 对象列表。
+  Future<List<File>> _scanRemotePath(String remotePathStr, bool Function(String path) filter) async {
+    final files = <File>[];
+    try {
+      // 解析 remote://{connectionId}|{path} 格式
+      final uriPart = remotePathStr.substring('remote://'.length);
+      final separatorIndex = uriPart.indexOf('|');
+      if (separatorIndex < 0) return files;
+      final connectionId = uriPart.substring(0, separatorIndex);
+      final remoteBasePath = uriPart.substring(separatorIndex + 1);
+
+      // 查找连接
+      final connections = NetworkConnectionsService.getConnections();
+      final conn = connections.where((c) => c.id == connectionId).firstOrNull;
+      if (conn == null) return files;
+
+      // 创建远程客户端并连接
+      final client = FileManagerProvider.createRemoteClient(conn);
+      await client.connect();
+
+      try {
+        await _scanRemoteDirectoryRecursively(client, remoteBasePath, filter, (remoteFilePath) {
+          files.add(File('remote://$connectionId|$remoteFilePath'));
+        });
+      } finally {
+        await client.disconnect();
+      }
+    } catch (e) {
+      debugPrint('[ZenFile] Remote scan error: $e');
+    }
+    return files;
+  }
+
+  /// 递归扫描远程目录，收集匹配过滤条件的文件。
+  Future<void> _scanRemoteDirectoryRecursively(
+    RemoteClient client,
+    String path,
+    bool Function(String path) filter,
+    void Function(String remoteFilePath) onFileFound, {
+    int depth = 0,
+  }) async {
+    if (depth > 5) return; // 限制递归深度防止过深扫描
+    try {
+      final items = await client.listDirectory(path);
+      for (final item in items) {
+        if (item.isDirectory) {
+          await _scanRemoteDirectoryRecursively(client, item.path, filter, onFileFound, depth: depth + 1);
+        } else if (filter(item.name)) {
+          onFileFound(item.path);
+        }
+      }
+    } catch (e) {
+      debugPrint('[ZenFile] Remote dir scan error at $path: $e');
+    }
   }
 
   void addCustomCategoryPath(String category, String path) {

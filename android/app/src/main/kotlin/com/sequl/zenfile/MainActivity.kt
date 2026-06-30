@@ -13,6 +13,7 @@ import android.os.StatFs
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
+import android.graphics.BitmapFactory
 import android.provider.DocumentsContract
 import android.graphics.drawable.Icon
 import com.ryanheise.audioservice.AudioServiceFragmentActivity
@@ -40,6 +41,7 @@ import android.app.AppOpsManager
 import android.os.storage.StorageManager
 import android.os.Process
 
+import android.media.MediaMetadataRetriever
 class MainActivity : AudioServiceFragmentActivity() {
     private val CHANNEL = "com.sequl.zenfile/root_shizuku"
     private val SHIZUKU_REQUEST_CODE = 10001
@@ -444,8 +446,44 @@ class MainActivity : AudioServiceFragmentActivity() {
                         }
                     }
                 }
-                "addHomeScreenShortcut" -> {
+                "generateMediaThumbnail" -> {
+                    val filePath = call.argument<String>("filePath") ?: ""
+                    val isVideo = call.argument<Boolean>("isVideo") ?: false
                     executor.execute {
+                        try {
+                            val retriever = MediaMetadataRetriever()
+                            retriever.setDataSource(filePath)
+                            var bitmap: Bitmap? = null
+                            if (isVideo) {
+                                bitmap = retriever.getFrameAtTime(1000000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+                            } else {
+                                val embeddedPicture = retriever.embeddedPicture
+                                if (embeddedPicture != null) {
+                                    bitmap = BitmapFactory.decodeByteArray(embeddedPicture, 0, embeddedPicture.size)
+                                }
+                            }
+                            retriever.release()
+                            if (bitmap != null) {
+                                val scaledBitmap = if (bitmap.width > 300 || bitmap.height > 300) {
+                                    val scale = 300f / maxOf(bitmap.width, bitmap.height)
+                                    Bitmap.createScaledBitmap(bitmap, (bitmap.width * scale).toInt(), (bitmap.height * scale).toInt(), true)
+                                } else {
+                                    bitmap
+                                }
+                                val stream = ByteArrayOutputStream()
+                                scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream)
+                                val bytes = stream.toByteArray()
+                                runOnUiThread { result.success(bytes) }
+                            } else {
+                                runOnUiThread { result.success(null) }
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            runOnUiThread { result.success(null) }
+                        }
+                    }
+                }
+                "addHomeScreenShortcut" -> {                    executor.execute {
                         try {
                             val pathArg = call.argument<String>("path")
                             val customIconFile = if (!pathArg.isNullOrEmpty()) {

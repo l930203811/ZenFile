@@ -15,6 +15,7 @@ import 'audio_player/audio_player_screen.dart';
 import 'text_editor_screen.dart';
 import 'internal_file_picker_screen.dart';
 import 'archive_viewer_screen.dart';
+import '../widgets/archive_type_icon.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class VaultExplorerScreen extends StatefulWidget {
@@ -815,11 +816,13 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
                 color: fileColor.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(
-                fileIcon,
-                color: fileColor,
-                size: 24,
-              ),
+              child: !rec.isFolder && FileUtils.isArchive(rec.originalName)
+                  ? ArchiveTypeIcon(label: FileUtils.getArchiveTypeLabel(rec.originalName), color: fileColor, iconScale: 24 / 28)
+                  : Icon(
+                      fileIcon,
+                      color: fileColor,
+                      size: 24,
+                    ),
             ),
             title: Text(
               rec.originalName,

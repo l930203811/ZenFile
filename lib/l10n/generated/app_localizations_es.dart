@@ -1327,6 +1327,21 @@ class L10nEs extends L10n {
   String get msgf08c8dc4 => 'Zen Natural';
 
   @override
+  String get msgdesign6 => 'Diseño de IA 1';
+
+  @override
+  String get msgdesign7 => 'Diseño de IA 2';
+
+  @override
+  String get msgdesign8 => 'Diseño de IA 3';
+
+  @override
+  String get msgdesign9 => 'Diseño de IA 4';
+
+  @override
+  String get msgdesign10 => 'Diseño de IA 5';
+
+  @override
   String get msg7372dc9f => 'Icono Personalizado';
 
   @override
@@ -3397,4 +3412,130 @@ class L10nEs extends L10n {
   @override
   String get web_share_preview_error =>
       'No se puede transmitir el documento. Aún puede descargarlo directamente.';
+
+  @override
+  String get msg_custom_shortcut => 'Icono personalizado';
+
+  @override
+  String get msg_add_custom_shortcut => 'Añadir a pantalla de inicio';
+
+  @override
+  String get msg_shortcut_added => 'Añadido a pantalla de inicio';
+
+  @override
+  String get msg_shortcut_failed => 'Error al añadir';
+
+  @override
+  String get ui_lyrics_loaded => 'Letra cargada';
+
+  @override
+  String get ui_lyrics_load_failed =>
+      'No se puede analizar este archivo de letra';
+
+  @override
+  String get ui_select_lyrics_file => 'Seleccionar archivo de letra';
+
+  @override
+  String get ui_no_lyrics_found => 'No se encontró letra';
+
+  @override
+  String get ui_lyrics_auto_load_hint =>
+      'Coloca el archivo .lrc en la misma carpeta que el audio\n(con el mismo nombre) para cargarlo automáticamente';
+
+  @override
+  String get ui_lyrics_panel => 'Panel de letras';
+
+  @override
+  String get ui_show_lyrics => 'Mostrar letra';
+
+  @override
+  String get ui_hide_lyrics => 'Ocultar letra';
+
+  @override
+  String get ui_sound_effects_speed => 'Efectos de sonido y velocidad';
+
+  @override
+  String get ui_pitch_adjustment => 'Ajuste de tono';
+
+  @override
+  String get ui_restore_default => 'Restaurar predeterminado';
+
+  @override
+  String get ui_sound_effects => 'Efectos de sonido';
+
+  @override
+  String get ui_playback_queue => 'Cola de reproducción';
+
+  @override
+  String get ui_repeat_off => 'Repetir: Apagado';
+
+  @override
+  String get ui_repeat_one => 'Repetir: Una';
+
+  @override
+  String get ui_repeat_all => 'Repetir: Todo';
+
+  @override
+  String get ui_shuffle_on => 'Aleatorio: Encendido';
+
+  @override
+  String ui_minutes_format(int minutes) {
+    return '$minutes minutos';
+  }
+
+  @override
+  String ui_sleep_timer_set(int minutes) {
+    return 'Temporizador de apagado configurado para $minutes minutos.';
+  }
+
+  @override
+  String get ui_enter_minutes => 'Ingresar minutos';
+
+  @override
+  String get ui_sleep_timer_end =>
+      'El temporizador terminó, reproducción pausada';
+
+  @override
+  String get ui_close_player => 'Cerrar reproductor';
+
+  @override
+  String get ui_open_player => 'Abrir reproductor';
+
+  @override
+  String get ui_now_playing => 'Reproduciendo';
+
+  @override
+  String get ui_resume_playback => 'Reanudar reproducción';
+
+  @override
+  String get ui_single => 'Sencillo';
+
+  @override
+  String get ui_add_remote_path => 'Añadir ruta remota';
+
+  @override
+  String get ui_select_remote_server => 'Seleccionar servidor remoto';
+
+  @override
+  String get ui_no_remote_connections =>
+      'Sin conexiones remotas, añada una conexión de red primero';
+
+  @override
+  String get ui_retry => 'Reintentar';
+
+  @override
+  String get ui_no_subfolders => 'Sin subcarpetas';
+
+  @override
+  String get ui_select_this_folder => 'Seleccionar esta carpeta';
+
+  @override
+  String ui_downloading_file(String file) {
+    return 'Descargando: $file';
+  }
+
+  @override
+  String ui_sent(String amount) {
+    return 'Enviado: $amount';
+  }
 }

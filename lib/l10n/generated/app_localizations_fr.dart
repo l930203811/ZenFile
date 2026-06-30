@@ -1323,6 +1323,21 @@ class L10nFr extends L10n {
   String get msgf08c8dc4 => 'Zen naturel';
 
   @override
+  String get msgdesign6 => 'Design IA 1';
+
+  @override
+  String get msgdesign7 => 'Design IA 2';
+
+  @override
+  String get msgdesign8 => 'Design IA 3';
+
+  @override
+  String get msgdesign9 => 'Design IA 4';
+
+  @override
+  String get msgdesign10 => 'Design IA 5';
+
+  @override
   String get msg7372dc9f => 'Icône personnalisée';
 
   @override
@@ -3399,4 +3414,129 @@ class L10nFr extends L10n {
   @override
   String get web_share_preview_error =>
       'Impossible de diffuser le document. Vous pouvez toujours le télécharger directement.';
+
+  @override
+  String get msg_custom_shortcut => 'Icône personnalisée';
+
+  @override
+  String get msg_add_custom_shortcut => 'Ajouter à l\'écran d\'accueil';
+
+  @override
+  String get msg_shortcut_added => 'Ajouté à l\'écran d\'accueil';
+
+  @override
+  String get msg_shortcut_failed => 'Échec de l\'ajout';
+
+  @override
+  String get ui_lyrics_loaded => 'Paroles chargées';
+
+  @override
+  String get ui_lyrics_load_failed =>
+      'Impossible d\'analyser ce fichier de paroles';
+
+  @override
+  String get ui_select_lyrics_file => 'Sélectionner un fichier de paroles';
+
+  @override
+  String get ui_no_lyrics_found => 'Aucune parole trouvée';
+
+  @override
+  String get ui_lyrics_auto_load_hint =>
+      'Placez le fichier .lrc dans le même dossier que l\'audio\n(avec le même nom de fichier) pour le charger automatiquement';
+
+  @override
+  String get ui_lyrics_panel => 'Panneau des paroles';
+
+  @override
+  String get ui_show_lyrics => 'Afficher les paroles';
+
+  @override
+  String get ui_hide_lyrics => 'Masquer les paroles';
+
+  @override
+  String get ui_sound_effects_speed => 'Effets sonores et vitesse';
+
+  @override
+  String get ui_pitch_adjustment => 'Réglage de la tonalité';
+
+  @override
+  String get ui_restore_default => 'Restaurer par défaut';
+
+  @override
+  String get ui_sound_effects => 'Effets sonores';
+
+  @override
+  String get ui_playback_queue => 'File de lecture';
+
+  @override
+  String get ui_repeat_off => 'Répéter : Désactivé';
+
+  @override
+  String get ui_repeat_one => 'Répéter : Un titre';
+
+  @override
+  String get ui_repeat_all => 'Répéter : Tous';
+
+  @override
+  String get ui_shuffle_on => 'Lecture aléatoire : Activée';
+
+  @override
+  String ui_minutes_format(int minutes) {
+    return '$minutes minutes';
+  }
+
+  @override
+  String ui_sleep_timer_set(int minutes) {
+    return 'Minuterie de sommeil réglée sur $minutes minutes.';
+  }
+
+  @override
+  String get ui_enter_minutes => 'Entrer les minutes';
+
+  @override
+  String get ui_sleep_timer_end => 'Minuterie terminée, lecture en pause';
+
+  @override
+  String get ui_close_player => 'Fermer le lecteur';
+
+  @override
+  String get ui_open_player => 'Ouvrir le lecteur';
+
+  @override
+  String get ui_now_playing => 'Lecture en cours';
+
+  @override
+  String get ui_resume_playback => 'Reprendre la lecture';
+
+  @override
+  String get ui_single => 'Single';
+
+  @override
+  String get ui_add_remote_path => 'Ajouter un chemin distant';
+
+  @override
+  String get ui_select_remote_server => 'Sélectionner un serveur distant';
+
+  @override
+  String get ui_no_remote_connections =>
+      'Aucune connexion distante, veuillez d\'abord ajouter une connexion réseau';
+
+  @override
+  String get ui_retry => 'Réessayer';
+
+  @override
+  String get ui_no_subfolders => 'Aucun sous-dossier';
+
+  @override
+  String get ui_select_this_folder => 'Sélectionner ce dossier';
+
+  @override
+  String ui_downloading_file(String file) {
+    return 'Téléchargement: $file';
+  }
+
+  @override
+  String ui_sent(String amount) {
+    return 'Envoyé: $amount';
+  }
 }

@@ -90,9 +90,9 @@ class PremiumStorageOverview extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Internal Storage',
-                              style: TextStyle(
+                            Text(
+                              L10n.of(context).msg21cefa9b,
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,

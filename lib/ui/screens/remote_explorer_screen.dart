@@ -10,6 +10,7 @@ import '../../models/network_connection_model.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../providers/media_provider.dart';
 import '../../services/preferences_service.dart';
+import '../../services/media_thumbnail_service.dart';
 import '../../services/remote/remote_client.dart';
 import '../../services/remote/ftp_client.dart';
 import '../../services/remote/sftp_client.dart';
@@ -1220,6 +1221,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
     final ext = p.extension(item.name).toLowerCase();
     final isImage = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.heic', '.svg'].contains(ext);
     final isVideo = ['.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.m4v', '.3gp'].contains(ext);
+    final isAudio = ['.mp3', '.aac', '.wav', '.flac', '.m4a', '.ogg', '.opus', '.wma', '.amr'].contains(ext);
     final enableThumbnail = PreferencesService.getRemoteMediaThumbnailPreview();
 
     if (item.isDirectory) {
@@ -1235,7 +1237,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       );
     }
 
-    if (!enableThumbnail || (!isImage && !isVideo)) {
+    if (!enableThumbnail || (!isImage && !isVideo && !isAudio)) {
       // 默认文件图标
       IconData iconData = Broken.document;
       if (isVideo) iconData = Broken.video;
@@ -1339,8 +1341,20 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
 
       // 如果是图片，直接复制作为缩略图
       final ext = p.extension(item.name).toLowerCase();
-      if (['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'].contains(ext)) {
+      if (['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.heic'].contains(ext)) {
         await File(tempPath).copy(thumbPath);
+      } else if (['.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.m4v', '.3gp'].contains(ext)) {
+        // 视频缩略图：通过原生 MediaMetadataRetriever 生成
+        final thumbBytes = await MediaThumbnailService.generateVideoThumbnail(tempPath);
+        if (thumbBytes != null && thumbBytes.isNotEmpty) {
+          await thumbFile.writeAsBytes(thumbBytes, flush: true);
+        }
+      } else if (['.mp3', '.aac', '.wav', '.flac', '.m4a', '.ogg', '.opus', '.wma', '.amr'].contains(ext)) {
+        // 音频缩略图：通过原生 MediaMetadataRetriever 提取内嵌封面
+        final thumbBytes = await MediaThumbnailService.generateAudioThumbnail(tempPath);
+        if (thumbBytes != null && thumbBytes.isNotEmpty) {
+          await thumbFile.writeAsBytes(thumbBytes, flush: true);
+        }
       }
 
       // 清理临时文件

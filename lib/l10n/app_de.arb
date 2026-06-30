@@ -1552,6 +1552,26 @@
     "description": "ui\\screens\\more_settings_screen.dart"
   },
   "msgf08c8dc4": "Natürliches Zen",
+  "msgdesign6": "KI-Design 1",
+  "@msgdesign6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign7": "KI-Design 2",
+  "@msgdesign7": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign8": "KI-Design 3",
+  "@msgdesign8": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign9": "KI-Design 4",
+  "@msgdesign9": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign10": "KI-Design 5",
+  "@msgdesign10": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
   "@msg7372dc9f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -3014,7 +3034,7 @@
   "@ui_contains": {
     "description": "ui widgets"
   },
-  "ui_extract": "Extrahieren",
+  "ui_extract": "Entpacken",
   "@ui_extract": {
     "description": "ui widgets"
   },
@@ -3171,7 +3191,9 @@
   "@msg_file_exists_desc": {
     "description": "Conflict dialog description",
     "placeholders": {
-      "fileName": { "type": "String" }
+      "fileName": {
+        "type": "String"
+      }
     }
   },
   "msg_existing_file": "Vorhandene Datei",
@@ -3198,7 +3220,6 @@
   "@msg_new_file_name": {
     "description": "New file name label in rename dialog"
   },
-  "ui_extract": "Entpacken",
   "msg_remember_choice": "Diese Auswahl für zukünftige Vorgänge merken",
   "ui_caching": "Zwischenspeicherung, bitte warten...",
   "ui_username": "Benutzername",
@@ -3294,7 +3315,9 @@
   "@web_share_uploading": {
     "description": "Upload progress title",
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "web_share_upload_success": "Upload erfolgreich abgeschlossen",
@@ -3302,7 +3325,9 @@
   "@web_share_upload_failed": {
     "description": "Upload failed message",
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "web_share_preview_unsupported": "Vorschau für diesen Dateityp nicht unterstützt",
@@ -3314,7 +3339,9 @@
   "@web_share_items_count": {
     "description": "Item count display",
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "web_share_link_copied": "Link in die Zwischenablage kopiert",
@@ -3328,5 +3355,73 @@
   "web_share_category_documents": "Dokumente",
   "web_share_category_others": "Sonstiges",
   "web_share_loading_preview": "Vorschau wird geladen...",
-  "web_share_preview_error": "Dokument kann nicht gestreamt werden. Sie können es direkt herunterladen."
+  "web_share_preview_error": "Dokument kann nicht gestreamt werden. Sie können es direkt herunterladen.",
+  "msg_custom_shortcut": "Benutzerdefiniertes Symbol",
+  "msg_add_custom_shortcut": "Zum Startbildschirm hinzufügen",
+  "msg_shortcut_added": "Zum Startbildschirm hinzugefügt",
+  "msg_shortcut_failed": "Hinzufügen fehlgeschlagen",
+  "ui_lyrics_loaded": "Liedtext geladen",
+  "ui_lyrics_load_failed": "Liedtextdatei kann nicht analysiert werden",
+  "ui_select_lyrics_file": "Liedtextdatei auswählen",
+  "ui_no_lyrics_found": "Kein Liedtext gefunden",
+  "ui_lyrics_auto_load_hint": "Legen Sie die .lrc-Datei im selben Ordner wie die Audiodatei ab\n(mit dem gleichen Dateinamen) für automatisches Laden",
+  "ui_lyrics_panel": "Liedtext-Panel",
+  "ui_show_lyrics": "Liedtext anzeigen",
+  "ui_hide_lyrics": "Liedtext ausblenden",
+  "ui_sound_effects_speed": "Soundeffekte & Geschwindigkeit",
+  "ui_pitch_adjustment": "Tonhöhenanpassung",
+  "ui_restore_default": "Standard wiederherstellen",
+  "ui_sound_effects": "Soundeffekte",
+  "ui_playback_queue": "Wiedergabeliste",
+  "ui_repeat_off": "Wiederholen: Aus",
+  "ui_repeat_one": "Wiederholen: Einzeln",
+  "ui_repeat_all": "Wiederholen: Alle",
+  "ui_shuffle_on": "Zufallswiedergabe: An",
+  "ui_minutes_format": "{minutes} Minuten",
+  "ui_sleep_timer_set": "Schlaf-Timer auf {minutes} Minuten eingestellt.",
+  "ui_enter_minutes": "Minuten eingeben",
+  "ui_sleep_timer_end": "Schlaf-Timer abgelaufen, Wiedergabe pausiert",
+  "ui_close_player": "Player schließen",
+  "ui_open_player": "Player öffnen",
+  "ui_now_playing": "Wird wiedergegeben",
+  "ui_resume_playback": "Wiedergabe fortsetzen",
+  "ui_single": "Single",
+  "ui_add_remote_path": "Remote-Pfad hinzufügen",
+  "ui_select_remote_server": "Remote-Server auswählen",
+  "ui_no_remote_connections": "Keine Remote-Verbindungen, bitte zuerst eine Netzwerkverbindung hinzufügen",
+  "ui_retry": "Wiederholen",
+  "ui_no_subfolders": "Keine Unterordner",
+  "ui_select_this_folder": "Diesen Ordner auswählen",
+  "ui_downloading_file": "Wird heruntergeladen: {file}",
+  "@ui_downloading_file": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_sent": "Gesendet: {amount}",
+  "@ui_sent": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@ui_minutes_format": {
+    "description": "Minutes format for sleep timer options",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@ui_sleep_timer_set": {
+    "description": "Sleep timer set confirmation",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  }
 }

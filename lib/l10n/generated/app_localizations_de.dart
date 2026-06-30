@@ -1317,6 +1317,21 @@ class L10nDe extends L10n {
   String get msgf08c8dc4 => 'Natürliches Zen';
 
   @override
+  String get msgdesign6 => 'KI-Design 1';
+
+  @override
+  String get msgdesign7 => 'KI-Design 2';
+
+  @override
+  String get msgdesign8 => 'KI-Design 3';
+
+  @override
+  String get msgdesign9 => 'KI-Design 4';
+
+  @override
+  String get msgdesign10 => 'KI-Design 5';
+
+  @override
   String get msg7372dc9f => 'Benutzerdefiniertes Symbol';
 
   @override
@@ -3374,4 +3389,130 @@ class L10nDe extends L10n {
   @override
   String get web_share_preview_error =>
       'Dokument kann nicht gestreamt werden. Sie können es direkt herunterladen.';
+
+  @override
+  String get msg_custom_shortcut => 'Benutzerdefiniertes Symbol';
+
+  @override
+  String get msg_add_custom_shortcut => 'Zum Startbildschirm hinzufügen';
+
+  @override
+  String get msg_shortcut_added => 'Zum Startbildschirm hinzugefügt';
+
+  @override
+  String get msg_shortcut_failed => 'Hinzufügen fehlgeschlagen';
+
+  @override
+  String get ui_lyrics_loaded => 'Liedtext geladen';
+
+  @override
+  String get ui_lyrics_load_failed =>
+      'Liedtextdatei kann nicht analysiert werden';
+
+  @override
+  String get ui_select_lyrics_file => 'Liedtextdatei auswählen';
+
+  @override
+  String get ui_no_lyrics_found => 'Kein Liedtext gefunden';
+
+  @override
+  String get ui_lyrics_auto_load_hint =>
+      'Legen Sie die .lrc-Datei im selben Ordner wie die Audiodatei ab\n(mit dem gleichen Dateinamen) für automatisches Laden';
+
+  @override
+  String get ui_lyrics_panel => 'Liedtext-Panel';
+
+  @override
+  String get ui_show_lyrics => 'Liedtext anzeigen';
+
+  @override
+  String get ui_hide_lyrics => 'Liedtext ausblenden';
+
+  @override
+  String get ui_sound_effects_speed => 'Soundeffekte & Geschwindigkeit';
+
+  @override
+  String get ui_pitch_adjustment => 'Tonhöhenanpassung';
+
+  @override
+  String get ui_restore_default => 'Standard wiederherstellen';
+
+  @override
+  String get ui_sound_effects => 'Soundeffekte';
+
+  @override
+  String get ui_playback_queue => 'Wiedergabeliste';
+
+  @override
+  String get ui_repeat_off => 'Wiederholen: Aus';
+
+  @override
+  String get ui_repeat_one => 'Wiederholen: Einzeln';
+
+  @override
+  String get ui_repeat_all => 'Wiederholen: Alle';
+
+  @override
+  String get ui_shuffle_on => 'Zufallswiedergabe: An';
+
+  @override
+  String ui_minutes_format(int minutes) {
+    return '$minutes Minuten';
+  }
+
+  @override
+  String ui_sleep_timer_set(int minutes) {
+    return 'Schlaf-Timer auf $minutes Minuten eingestellt.';
+  }
+
+  @override
+  String get ui_enter_minutes => 'Minuten eingeben';
+
+  @override
+  String get ui_sleep_timer_end =>
+      'Schlaf-Timer abgelaufen, Wiedergabe pausiert';
+
+  @override
+  String get ui_close_player => 'Player schließen';
+
+  @override
+  String get ui_open_player => 'Player öffnen';
+
+  @override
+  String get ui_now_playing => 'Wird wiedergegeben';
+
+  @override
+  String get ui_resume_playback => 'Wiedergabe fortsetzen';
+
+  @override
+  String get ui_single => 'Single';
+
+  @override
+  String get ui_add_remote_path => 'Remote-Pfad hinzufügen';
+
+  @override
+  String get ui_select_remote_server => 'Remote-Server auswählen';
+
+  @override
+  String get ui_no_remote_connections =>
+      'Keine Remote-Verbindungen, bitte zuerst eine Netzwerkverbindung hinzufügen';
+
+  @override
+  String get ui_retry => 'Wiederholen';
+
+  @override
+  String get ui_no_subfolders => 'Keine Unterordner';
+
+  @override
+  String get ui_select_this_folder => 'Diesen Ordner auswählen';
+
+  @override
+  String ui_downloading_file(String file) {
+    return 'Wird heruntergeladen: $file';
+  }
+
+  @override
+  String ui_sent(String amount) {
+    return 'Gesendet: $amount';
+  }
 }

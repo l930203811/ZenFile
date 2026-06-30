@@ -12,10 +12,13 @@ import '../../core/icon_fonts/broken_icons.dart';
 import '../../services/pin_service.dart';
 import '../../services/app_manager_service.dart';
 import '../../services/preferences_service.dart';
+import '../../services/media_thumbnail_service.dart';
 import '../../providers/media_provider.dart';
 import '../../providers/file_manager_provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'file_action_dialogs.dart';
+import 'archive_type_icon.dart';
+import 'file_type_icon.dart';
 
 class FileGridItem extends StatelessWidget {
   final FileItemModel file;
@@ -412,8 +415,19 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
         // 图片直接复制作为缩略图
         if (['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.heic'].contains(ext)) {
           await File(tempPath).copy(thumbPath);
+        } else if (FileUtils.isVideo(widget.file.path)) {
+          // 视频缩略图：通过原生 MediaMetadataRetriever 生成
+          final thumbBytes = await MediaThumbnailService.generateVideoThumbnail(tempPath);
+          if (thumbBytes != null && thumbBytes.isNotEmpty) {
+            await thumbFile.writeAsBytes(thumbBytes, flush: true);
+          }
+        } else if (FileUtils.isAudio(widget.file.path)) {
+          // 音频缩略图：通过原生 MediaMetadataRetriever 提取内嵌封面
+          final thumbBytes = await MediaThumbnailService.generateAudioThumbnail(tempPath);
+          if (thumbBytes != null && thumbBytes.isNotEmpty) {
+            await thumbFile.writeAsBytes(thumbBytes, flush: true);
+          }
         }
-        // 视频需要生成缩略图（简化处理：暂不实现视频远程缩略图）
         
         if (await thumbFile.exists()) {
           final bytes = await thumbFile.readAsBytes();
@@ -440,7 +454,34 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
       return Icon(Broken.tick_circle, color: Theme.of(context).colorScheme.onPrimary, size: 28 * widget.iconScale);
     }
 
+    // 压缩包：显示带格式标签的自定义图标
+    if (FileUtils.isArchive(widget.file.path)) {
+      return ArchiveTypeIcon(
+        label: FileUtils.getArchiveTypeLabel(widget.file.path),
+        color: widget.iconColor,
+        iconScale: widget.iconScale,
+      );
+    }
+
+    // 文档：显示带格式标签的自定义图标
+    if (FileUtils.isDocument(widget.file.path)) {
+      return FileTypeIcon(
+        icon: FileUtils.getIconForFile(widget.file.path),
+        label: FileUtils.getDocumentTypeLabel(widget.file.path),
+        color: widget.iconColor,
+        iconScale: widget.iconScale,
+      );
+    }
+
     if (!showMediaPreviews) {
+      if (isImg) {
+        return FileTypeIcon(
+          icon: Broken.image,
+          label: FileUtils.getImageTypeLabel(widget.file.path),
+          color: widget.iconColor,
+          iconScale: widget.iconScale,
+        );
+      }
       return Icon(
         FileUtils.getIconForFile(widget.file.path),
         color: widget.iconColor,
@@ -466,13 +507,13 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
           return SvgPicture.memory(
             _remoteThumb!,
             fit: BoxFit.cover,
-            placeholderBuilder: (context) => Icon(Broken.image, color: widget.iconColor, size: 28 * widget.iconScale),
+            placeholderBuilder: (context) => FileTypeIcon(icon: Broken.image, label: FileUtils.getImageTypeLabel(widget.file.path), color: widget.iconColor, iconScale: widget.iconScale),
           );
         }
         return SvgPicture.file(
           File(widget.file.path),
           fit: BoxFit.cover,
-          placeholderBuilder: (context) => Icon(Broken.image, color: widget.iconColor, size: 28 * widget.iconScale),
+          placeholderBuilder: (context) => FileTypeIcon(icon: Broken.image, label: FileUtils.getImageTypeLabel(widget.file.path), color: widget.iconColor, iconScale: widget.iconScale),
         );
       }
       if (widget.file.path.toLowerCase().endsWith('.avif')) {
@@ -481,7 +522,7 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
           fit: BoxFit.cover,
           width: double.infinity,
           height: double.infinity,
-          errorBuilder: (context, error, stackTrace) => Icon(Broken.image, color: widget.iconColor, size: 28 * widget.iconScale),
+          errorBuilder: (context, error, stackTrace) => FileTypeIcon(icon: Broken.image, label: FileUtils.getImageTypeLabel(widget.file.path), color: widget.iconColor, iconScale: widget.iconScale),
         );
       }
       return Image.file(
@@ -490,7 +531,7 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
         width: double.infinity,
         height: double.infinity,
         cacheWidth: 160,
-        errorBuilder: (context, error, stackTrace) => Icon(Broken.image, color: widget.iconColor, size: 28 * widget.iconScale),
+        errorBuilder: (context, error, stackTrace) => FileTypeIcon(icon: Broken.image, label: FileUtils.getImageTypeLabel(widget.file.path), color: widget.iconColor, iconScale: widget.iconScale),
       );
     }
 
@@ -500,13 +541,13 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
         return SvgPicture.memory(
           _remoteThumb!,
           fit: BoxFit.cover,
-          placeholderBuilder: (context) => Icon(Broken.image, color: widget.iconColor, size: 28 * widget.iconScale),
+          placeholderBuilder: (context) => FileTypeIcon(icon: Broken.image, label: FileUtils.getImageTypeLabel(widget.file.path), color: widget.iconColor, iconScale: widget.iconScale),
         );
       }
       return SvgPicture.file(
         File(widget.file.path),
         fit: BoxFit.cover,
-        placeholderBuilder: (context) => Icon(Broken.image, color: widget.iconColor, size: 28 * widget.iconScale),
+        placeholderBuilder: (context) => FileTypeIcon(icon: Broken.image, label: FileUtils.getImageTypeLabel(widget.file.path), color: widget.iconColor, iconScale: widget.iconScale),
       );
     }
 

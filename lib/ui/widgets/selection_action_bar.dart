@@ -157,9 +157,14 @@ class SelectionActionBar extends StatelessWidget {
                     );
                   }
                 } else if (action == 'archive') {
+                  // 缓存选中路径，避免弹窗异步过程中 selectedPaths 被其他操作修改
+                  final selectedPaths = provider.selectedPaths.toList();
+                  final initialName = selectedPaths.length == 1
+                      ? p.basename(selectedPaths.first)
+                      : (p.basename(provider.currentPath).isEmpty ? 'archive' : p.basename(provider.currentPath));
                   final res = await CreateArchiveDialog.show(
                     context,
-                    initialName: p.basename(provider.currentPath).isEmpty ? 'archive' : p.basename(provider.currentPath),
+                    initialName: initialName,
                     isMultiSelection: selectedCount > 1,
                   );
                   if (res != null) {
@@ -171,9 +176,11 @@ class SelectionActionBar extends StatelessWidget {
                       splitSizeMB: res.splitSizeMB,
                       deleteSource: res.deleteSource,
                       separateArchives: res.separateArchives,
-                      targetPaths: provider.selectedPaths.toList(),
+                      targetPaths: selectedPaths,
                       context: context,
                     );
+                    // 压缩完成后无论内部刷新是否成功，都再强制刷新一次当前目录
+                    provider.loadDirectory(provider.currentPath, showLoading: false, clearCache: true);
                   }
                 } else if (action == 'paste') {
                   await provider.pasteFile(context);

@@ -1575,6 +1575,26 @@
     "description": "ui\\screens\\more_settings_screen.dart"
   },
   "msgf08c8dc4": "自然禪意",
+  "msgdesign6": "AI 設計 1",
+  "@msgdesign6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign7": "AI 設計 2",
+  "@msgdesign7": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign8": "AI 設計 3",
+  "@msgdesign8": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign9": "AI 設計 4",
+  "@msgdesign9": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign10": "AI 設計 5",
+  "@msgdesign10": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
   "@msgf08c8dc4": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -3072,7 +3092,7 @@
   "@ui_contains": {
     "description": "ui widgets"
   },
-  "ui_extract": "解壓",
+  "ui_extract": "解壓縮",
   "@ui_extract": {
     "description": "ui widgets"
   },
@@ -3229,7 +3249,9 @@
   "@msg_file_exists_desc": {
     "description": "Conflict dialog description",
     "placeholders": {
-      "fileName": { "type": "String" }
+      "fileName": {
+        "type": "String"
+      }
     }
   },
   "msg_existing_file": "現有檔案",
@@ -3256,7 +3278,6 @@
   "@msg_new_file_name": {
     "description": "New file name label in rename dialog"
   },
-  "ui_extract": "解壓縮",
   "msg_remember_choice": "記住此選擇，後續操作預設使用",
   "ui_caching": "正在緩存中，請稍後...",
   "ui_username": "使用者名稱",
@@ -3352,7 +3373,9 @@
   "@web_share_uploading": {
     "description": "Upload progress title",
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "web_share_upload_success": "上傳成功",
@@ -3360,7 +3383,9 @@
   "@web_share_upload_failed": {
     "description": "Upload failed message",
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "web_share_preview_unsupported": "不支援預覽此檔案類型",
@@ -3372,7 +3397,9 @@
   "@web_share_items_count": {
     "description": "Item count display",
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "web_share_link_copied": "連結已複製到剪貼簿",
@@ -3386,5 +3413,73 @@
   "web_share_category_documents": "文件",
   "web_share_category_others": "其他",
   "web_share_loading_preview": "正在載入預覽...",
-  "web_share_preview_error": "無法串流傳輸文件。您仍然可以直接下載。"
+  "web_share_preview_error": "無法串流傳輸文件。您仍然可以直接下載。",
+  "msg_custom_shortcut": "自訂圖示",
+  "msg_add_custom_shortcut": "加入主畫面",
+  "msg_shortcut_added": "已加入主畫面",
+  "msg_shortcut_failed": "加入失敗，請重試",
+  "ui_lyrics_loaded": "歌詞已載入",
+  "ui_lyrics_load_failed": "無法解析此歌詞檔案",
+  "ui_select_lyrics_file": "選擇歌詞檔案",
+  "ui_no_lyrics_found": "未找到歌詞",
+  "ui_lyrics_auto_load_hint": "將 .lrc 歌詞檔案放在音訊同目錄下\n（檔名與音訊相同）即可自動載入",
+  "ui_lyrics_panel": "歌詞全螢幕面板",
+  "ui_show_lyrics": "顯示歌詞",
+  "ui_hide_lyrics": "隱藏歌詞",
+  "ui_sound_effects_speed": "音效與播放速度",
+  "ui_pitch_adjustment": "音調調節",
+  "ui_restore_default": "恢復預設",
+  "ui_sound_effects": "音效",
+  "ui_playback_queue": "播放佇列",
+  "ui_repeat_off": "循環：關閉",
+  "ui_repeat_one": "循環：單曲",
+  "ui_repeat_all": "循環：全部",
+  "ui_shuffle_on": "隨機播放：開",
+  "ui_minutes_format": "{minutes} 分鐘",
+  "ui_sleep_timer_set": "睡眠定時器已設定為 {minutes} 分鐘。",
+  "ui_enter_minutes": "輸入分鐘數",
+  "ui_sleep_timer_end": "定時時間到，已暫停播放",
+  "ui_close_player": "關閉播放器",
+  "ui_open_player": "打開播放器",
+  "ui_now_playing": "正在播放",
+  "ui_resume_playback": "繼續播放",
+  "ui_single": "單曲",
+  "ui_add_remote_path": "新增遠端路徑",
+  "ui_select_remote_server": "選擇遠端伺服器",
+  "ui_no_remote_connections": "暫無遠端連線，請先新增網路連線",
+  "ui_retry": "重試",
+  "ui_no_subfolders": "無子資料夾",
+  "ui_select_this_folder": "選擇此資料夾",
+  "ui_downloading_file": "下載中: {file}",
+  "@ui_downloading_file": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_sent": "已傳送: {amount}",
+  "@ui_sent": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@ui_minutes_format": {
+    "description": "Minutes format for sleep timer options",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@ui_sleep_timer_set": {
+    "description": "Sleep timer set confirmation",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  }
 }

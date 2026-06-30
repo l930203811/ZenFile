@@ -5,6 +5,7 @@ import 'package:media_kit/media_kit.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/foundation.dart';
 import '../ui/screens/audio_player/audio_artwork_widget.dart';
+import 'preferences_service.dart';
 
 /// Global singleton handler instance
 ZenFileAudioHandler? _audioHandlerInstance;
@@ -44,6 +45,30 @@ class ZenFileAudioHandler extends BaseAudioHandler
 
   Player? _player;
   final List<StreamSubscription<dynamic>> _subs = [];
+  Timer? _positionSaveTimer;
+
+  /// 当前关联的播放器（后台播放时可用于恢复界面）
+  Player? get currentPlayer => _player;
+
+  /// 当前播放的媒体项
+  MediaItem? get currentMediaItem => mediaItem.value;
+
+  /// 当前播放路径（来自 MediaItem.id）
+  String? get currentPath => mediaItem.value?.id;
+
+  /// 是否有活跃的播放器实例
+  bool get hasActivePlayer => _player != null;
+
+  /// 判断指定路径是否正在当前播放器中播放
+  bool isPlayingPath(String path) => _player != null && mediaItem.value?.id == path;
+
+  /// 将当前 MediaItem 持久化为 lastPlayedAudio，确保后台切歌或界面销毁后仍能恢复
+  void _persistCurrentMediaItem() {
+    final item = mediaItem.value;
+    if (item != null && item.id.isNotEmpty) {
+      PreferencesService.saveLastPlayedAudio(item.id, item.title, item.artist ?? '');
+    }
+  }
 
   // ─── Attach / detach ────────────────────────────────────────────────────
 
@@ -72,6 +97,7 @@ class ZenFileAudioHandler extends BaseAudioHandler
     this.queue.add(queue);
     if (queue.isNotEmpty) {
       mediaItem.add(queue[currentIndex]);
+      _persistCurrentMediaItem();
     }
 
     // Mirror playing state
@@ -98,9 +124,21 @@ class ZenFileAudioHandler extends BaseAudioHandler
         _emitPlaybackState(playing: _player!.state.playing);
       }
     });
+
+    // 后台播放期间定期保存进度，即使界面被销毁也能记住位置
+    _positionSaveTimer?.cancel();
+    _positionSaveTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      final path = mediaItem.value?.id;
+      final pos = _player?.state.position;
+      if (path != null && pos != null && pos.inMilliseconds > 1000) {
+        PreferencesService.savePlaybackPosition(path, pos.inMilliseconds);
+      }
+    });
   }
 
   void detach() {
+    _positionSaveTimer?.cancel();
+    _positionSaveTimer = null;
     for (final s in _subs) {
       s.cancel();
     }
@@ -122,6 +160,8 @@ class ZenFileAudioHandler extends BaseAudioHandler
 
   @override
   Future<void> stop() async {
+    _positionSaveTimer?.cancel();
+    _positionSaveTimer = null;
     playbackState.add(PlaybackState(
       controls: [],
       playing: false,
@@ -166,6 +206,7 @@ class ZenFileAudioHandler extends BaseAudioHandler
     final nextIdx = (idx + 1) % q.length;
     final nextItem = q[nextIdx];
     mediaItem.add(nextItem);
+    _persistCurrentMediaItem();
 
     if (_onSkipCallback != null) {
       _onSkipCallback?.call(nextIdx);
@@ -185,6 +226,7 @@ class ZenFileAudioHandler extends BaseAudioHandler
     final prevIdx = (idx - 1 + q.length) % q.length;
     final prevItem = q[prevIdx];
     mediaItem.add(prevItem);
+    _persistCurrentMediaItem();
 
     if (_onSkipCallback != null) {
       _onSkipCallback?.call(prevIdx);
@@ -206,6 +248,7 @@ class ZenFileAudioHandler extends BaseAudioHandler
   /// Update the current media item displayed in the notification.
   void updateCurrentItem(MediaItem item) {
     mediaItem.add(item);
+    _persistCurrentMediaItem();
   }
 
   // ─── Private helpers ─────────────────────────────────────────────────────

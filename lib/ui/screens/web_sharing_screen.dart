@@ -61,7 +61,7 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
       await _webService.stopLocalServer();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(L10n.of(context).msg5345cdce + ' ' + L10n.of(context).msgd70e9bdf),
+          content: Text(L10n.of(context).ui_local_web_share + ' ' + L10n.of(context).msgd70e9bdf),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -72,7 +72,7 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
         await _webService.startLocalServer(rootPath);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(L10n.of(context).msg5345cdce + ' ' + L10n.of(context).msgd70e9bdf + ' URL: ${_webService.localServerUrl}'),
+            content: Text(L10n.of(context).ui_local_web_share + ' ' + L10n.of(context).ui_activated + ' URL: ${_webService.localServerUrl}'),
             behavior: SnackBarBehavior.floating,
             backgroundColor: Theme.of(context).colorScheme.primary,
           ),
@@ -80,7 +80,7 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(L10n.of(context).msg5345cdce + ' ' + L10n.of(context).msg8a0b5bf5),
+            content: Text(L10n.of(context).ui_local_web_share + ' ' + L10n.of(context).msg8a0b5bf5),
             behavior: SnackBarBehavior.floating,
             backgroundColor: Colors.redAccent,
           ),
@@ -93,8 +93,8 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
     if (_webService.isInternetActive) {
       _webService.stopInternetTunnel();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Internet Share Tunnel deactivated.'),
+        SnackBar(
+          content: Text(L10n.of(context).msg5345cdce + ' ' + L10n.of(context).msgd70e9bdf),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -174,7 +174,7 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '扫描二维码',
+                  L10n.of(context).msg22b03c02,
                   style: TextStyle(
                     fontFamily: 'LexendDeca',
                     fontSize: 20,
@@ -184,7 +184,7 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  '使用其他设备扫描以立即打开 {type}。',
+                  L10n.of(context).type(type),
                   style: TextStyle(
                     fontSize: 12,
                     color: theme.colorScheme.onSurface.withOpacity(0.5),
@@ -242,7 +242,7 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
                       elevation: 0,
                     ),
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('关闭', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: Text(L10n.of(context).ui_close, style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
@@ -451,7 +451,7 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        L10n.of(context).msgd70e9bdf,
+                        L10n.of(context).ui_activated,
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.green),
                       ),
                     ],
@@ -621,7 +621,7 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        L10n.of(context).msgd70e9bdf,
+                        L10n.of(context).ui_activated,
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.blueAccent),
                       ),
                     ],
@@ -738,13 +738,13 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
                         children: [
                           Expanded(
                             child: Text(
-                              'Downloading: ${client['file']}',
+                              L10n.of(context).ui_downloading_file(client['file'] as String),
                               style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.5)),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           Text(
-                            'Sent: ${client['transferred']}',
+                            L10n.of(context).ui_sent(client['transferred'] as String),
                             style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.5)),
                           ),
                         ],

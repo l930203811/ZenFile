@@ -7,7 +7,7 @@
   "@msgbca59325": {
     "description": "main.dart"
   },
-  "msgbca59325": "Analyse du flux de contenu s\u00e9curis\u00e9",
+  "msgbca59325": "Analyse du flux de contenu sécurisé",
   "@zenfile": {
     "description": "main.dart"
   },
@@ -1552,6 +1552,26 @@
     "description": "ui\\screens\\more_settings_screen.dart"
   },
   "msgf08c8dc4": "Zen naturel",
+  "msgdesign6": "Design IA 1",
+  "@msgdesign6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign7": "Design IA 2",
+  "@msgdesign7": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign8": "Design IA 3",
+  "@msgdesign8": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign9": "Design IA 4",
+  "@msgdesign9": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign10": "Design IA 5",
+  "@msgdesign10": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
   "@msg7372dc9f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -3171,7 +3191,9 @@
   "@msg_file_exists_desc": {
     "description": "Conflict dialog description",
     "placeholders": {
-      "fileName": { "type": "String" }
+      "fileName": {
+        "type": "String"
+      }
     }
   },
   "msg_existing_file": "Fichier existant",
@@ -3198,7 +3220,6 @@
   "@msg_new_file_name": {
     "description": "New file name label in rename dialog"
   },
-  "ui_extract": "Extraire",
   "msg_remember_choice": "Se souvenir de ce choix pour les opérations futures",
   "ui_caching": "Mise en cache, veuillez patienter...",
   "ui_username": "Nom d'utilisateur",
@@ -3294,7 +3315,9 @@
   "@web_share_uploading": {
     "description": "Upload progress title",
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "web_share_upload_success": "Téléchargement terminé avec succès",
@@ -3302,7 +3325,9 @@
   "@web_share_upload_failed": {
     "description": "Upload failed message",
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "web_share_preview_unsupported": "L'aperçu n'est pas pris en charge pour ce type de fichier",
@@ -3314,7 +3339,9 @@
   "@web_share_items_count": {
     "description": "Item count display",
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "web_share_link_copied": "Lien copié dans le presse-papiers",
@@ -3328,5 +3355,73 @@
   "web_share_category_documents": "Documents",
   "web_share_category_others": "Autres",
   "web_share_loading_preview": "Chargement de l'aperçu...",
-  "web_share_preview_error": "Impossible de diffuser le document. Vous pouvez toujours le télécharger directement."
+  "web_share_preview_error": "Impossible de diffuser le document. Vous pouvez toujours le télécharger directement.",
+  "msg_custom_shortcut": "Icône personnalisée",
+  "msg_add_custom_shortcut": "Ajouter à l'écran d'accueil",
+  "msg_shortcut_added": "Ajouté à l'écran d'accueil",
+  "msg_shortcut_failed": "Échec de l'ajout",
+  "ui_lyrics_loaded": "Paroles chargées",
+  "ui_lyrics_load_failed": "Impossible d'analyser ce fichier de paroles",
+  "ui_select_lyrics_file": "Sélectionner un fichier de paroles",
+  "ui_no_lyrics_found": "Aucune parole trouvée",
+  "ui_lyrics_auto_load_hint": "Placez le fichier .lrc dans le même dossier que l'audio\n(avec le même nom de fichier) pour le charger automatiquement",
+  "ui_lyrics_panel": "Panneau des paroles",
+  "ui_show_lyrics": "Afficher les paroles",
+  "ui_hide_lyrics": "Masquer les paroles",
+  "ui_sound_effects_speed": "Effets sonores et vitesse",
+  "ui_pitch_adjustment": "Réglage de la tonalité",
+  "ui_restore_default": "Restaurer par défaut",
+  "ui_sound_effects": "Effets sonores",
+  "ui_playback_queue": "File de lecture",
+  "ui_repeat_off": "Répéter : Désactivé",
+  "ui_repeat_one": "Répéter : Un titre",
+  "ui_repeat_all": "Répéter : Tous",
+  "ui_shuffle_on": "Lecture aléatoire : Activée",
+  "ui_minutes_format": "{minutes} minutes",
+  "ui_sleep_timer_set": "Minuterie de sommeil réglée sur {minutes} minutes.",
+  "ui_enter_minutes": "Entrer les minutes",
+  "ui_sleep_timer_end": "Minuterie terminée, lecture en pause",
+  "ui_close_player": "Fermer le lecteur",
+  "ui_open_player": "Ouvrir le lecteur",
+  "ui_now_playing": "Lecture en cours",
+  "ui_resume_playback": "Reprendre la lecture",
+  "ui_single": "Single",
+  "ui_add_remote_path": "Ajouter un chemin distant",
+  "ui_select_remote_server": "Sélectionner un serveur distant",
+  "ui_no_remote_connections": "Aucune connexion distante, veuillez d'abord ajouter une connexion réseau",
+  "ui_retry": "Réessayer",
+  "ui_no_subfolders": "Aucun sous-dossier",
+  "ui_select_this_folder": "Sélectionner ce dossier",
+  "ui_downloading_file": "Téléchargement: {file}",
+  "@ui_downloading_file": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_sent": "Envoyé: {amount}",
+  "@ui_sent": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@ui_minutes_format": {
+    "description": "Minutes format for sleep timer options",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@ui_sleep_timer_set": {
+    "description": "Sleep timer set confirmation",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  }
 }

@@ -1229,6 +1229,21 @@ class L10nZh extends L10n {
   String get msgf08c8dc4 => '自然禅意';
 
   @override
+  String get msgdesign6 => 'AI 设计 1';
+
+  @override
+  String get msgdesign7 => 'AI 设计 2';
+
+  @override
+  String get msgdesign8 => 'AI 设计 3';
+
+  @override
+  String get msgdesign9 => 'AI 设计 4';
+
+  @override
+  String get msgdesign10 => 'AI 设计 5';
+
+  @override
   String get msg7372dc9f => '自定义图标';
 
   @override
@@ -3214,6 +3229,129 @@ class L10nZh extends L10n {
 
   @override
   String get web_share_preview_error => '无法流式传输文档。您仍然可以直接下载。';
+
+  @override
+  String get msg_custom_shortcut => '自定义图标';
+
+  @override
+  String get msg_add_custom_shortcut => '添加到主屏幕';
+
+  @override
+  String get msg_shortcut_added => '已添加到主屏幕';
+
+  @override
+  String get msg_shortcut_failed => '添加失败，请重试';
+
+  @override
+  String get ui_lyrics_loaded => '歌词已加载';
+
+  @override
+  String get ui_lyrics_load_failed => '无法解析该歌词文件';
+
+  @override
+  String get ui_select_lyrics_file => '选择歌词文件';
+
+  @override
+  String get ui_no_lyrics_found => '未找到歌词';
+
+  @override
+  String get ui_lyrics_auto_load_hint =>
+      '将 .lrc 歌词文件放在音频同目录下\n（文件名与音频相同）即可自动加载';
+
+  @override
+  String get ui_lyrics_panel => '歌词全屏面板';
+
+  @override
+  String get ui_show_lyrics => '显示歌词';
+
+  @override
+  String get ui_hide_lyrics => '隐藏歌词';
+
+  @override
+  String get ui_sound_effects_speed => '音效与播放速度';
+
+  @override
+  String get ui_pitch_adjustment => '音调调节';
+
+  @override
+  String get ui_restore_default => '恢复默认';
+
+  @override
+  String get ui_sound_effects => '音效';
+
+  @override
+  String get ui_playback_queue => '播放队列';
+
+  @override
+  String get ui_repeat_off => '循环：关闭';
+
+  @override
+  String get ui_repeat_one => '循环：单曲';
+
+  @override
+  String get ui_repeat_all => '循环：全部';
+
+  @override
+  String get ui_shuffle_on => '随机播放：开';
+
+  @override
+  String ui_minutes_format(int minutes) {
+    return '$minutes 分钟';
+  }
+
+  @override
+  String ui_sleep_timer_set(int minutes) {
+    return '睡眠定时器已设置为 $minutes 分钟。';
+  }
+
+  @override
+  String get ui_enter_minutes => '输入分钟数';
+
+  @override
+  String get ui_sleep_timer_end => '定时时间到，已暂停播放';
+
+  @override
+  String get ui_close_player => '关闭播放器';
+
+  @override
+  String get ui_open_player => '打开播放器';
+
+  @override
+  String get ui_now_playing => '正在播放';
+
+  @override
+  String get ui_resume_playback => '继续播放';
+
+  @override
+  String get ui_single => '单曲';
+
+  @override
+  String get ui_add_remote_path => '添加远程路径';
+
+  @override
+  String get ui_select_remote_server => '选择远程服务器';
+
+  @override
+  String get ui_no_remote_connections => '暂无远程连接，请先添加网络连接';
+
+  @override
+  String get ui_retry => '重试';
+
+  @override
+  String get ui_no_subfolders => '无子文件夹';
+
+  @override
+  String get ui_select_this_folder => '选择此文件夹';
+
+  @override
+  String ui_downloading_file(String file) {
+    return '下载中: $file';
+  }
+
+  @override
+  String ui_sent(String amount) {
+    return '已发送: $amount';
+  }
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -4439,6 +4577,21 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get msgf08c8dc4 => '自然禪意';
+
+  @override
+  String get msgdesign6 => 'AI 設計 1';
+
+  @override
+  String get msgdesign7 => 'AI 設計 2';
+
+  @override
+  String get msgdesign8 => 'AI 設計 3';
+
+  @override
+  String get msgdesign9 => 'AI 設計 4';
+
+  @override
+  String get msgdesign10 => 'AI 設計 5';
 
   @override
   String get msg7372dc9f => '自定義圖示';
@@ -6426,4 +6579,126 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get web_share_preview_error => '無法串流傳輸文件。您仍然可以直接下載。';
+
+  @override
+  String get msg_custom_shortcut => '自訂圖示';
+
+  @override
+  String get msg_add_custom_shortcut => '加入主畫面';
+
+  @override
+  String get msg_shortcut_added => '已加入主畫面';
+
+  @override
+  String get msg_shortcut_failed => '加入失敗，請重試';
+
+  @override
+  String get ui_lyrics_loaded => '歌詞已載入';
+
+  @override
+  String get ui_lyrics_load_failed => '無法解析此歌詞檔案';
+
+  @override
+  String get ui_select_lyrics_file => '選擇歌詞檔案';
+
+  @override
+  String get ui_no_lyrics_found => '未找到歌詞';
+
+  @override
+  String get ui_lyrics_auto_load_hint => '將 .lrc 歌詞檔案放在音訊同目錄下\n（檔名與音訊相同）即可自動載入';
+
+  @override
+  String get ui_lyrics_panel => '歌詞全螢幕面板';
+
+  @override
+  String get ui_show_lyrics => '顯示歌詞';
+
+  @override
+  String get ui_hide_lyrics => '隱藏歌詞';
+
+  @override
+  String get ui_sound_effects_speed => '音效與播放速度';
+
+  @override
+  String get ui_pitch_adjustment => '音調調節';
+
+  @override
+  String get ui_restore_default => '恢復預設';
+
+  @override
+  String get ui_sound_effects => '音效';
+
+  @override
+  String get ui_playback_queue => '播放佇列';
+
+  @override
+  String get ui_repeat_off => '循環：關閉';
+
+  @override
+  String get ui_repeat_one => '循環：單曲';
+
+  @override
+  String get ui_repeat_all => '循環：全部';
+
+  @override
+  String get ui_shuffle_on => '隨機播放：開';
+
+  @override
+  String ui_minutes_format(int minutes) {
+    return '$minutes 分鐘';
+  }
+
+  @override
+  String ui_sleep_timer_set(int minutes) {
+    return '睡眠定時器已設定為 $minutes 分鐘。';
+  }
+
+  @override
+  String get ui_enter_minutes => '輸入分鐘數';
+
+  @override
+  String get ui_sleep_timer_end => '定時時間到，已暫停播放';
+
+  @override
+  String get ui_close_player => '關閉播放器';
+
+  @override
+  String get ui_open_player => '打開播放器';
+
+  @override
+  String get ui_now_playing => '正在播放';
+
+  @override
+  String get ui_resume_playback => '繼續播放';
+
+  @override
+  String get ui_single => '單曲';
+
+  @override
+  String get ui_add_remote_path => '新增遠端路徑';
+
+  @override
+  String get ui_select_remote_server => '選擇遠端伺服器';
+
+  @override
+  String get ui_no_remote_connections => '暫無遠端連線，請先新增網路連線';
+
+  @override
+  String get ui_retry => '重試';
+
+  @override
+  String get ui_no_subfolders => '無子資料夾';
+
+  @override
+  String get ui_select_this_folder => '選擇此資料夾';
+
+  @override
+  String ui_downloading_file(String file) {
+    return '下載中: $file';
+  }
+
+  @override
+  String ui_sent(String amount) {
+    return '已傳送: $amount';
+  }
 }

@@ -16,6 +16,8 @@ class AudioControlsWidget extends StatelessWidget {
   final int repeatMode; // 0=none, 1=one, 2=all
   final VoidCallback onToggleRepeat;
   final Color accentColor;
+  final bool hasLyrics;
+  final bool isShowingLyrics;
 
   const AudioControlsWidget({
     super.key,
@@ -32,6 +34,8 @@ class AudioControlsWidget extends StatelessWidget {
     required this.repeatMode,
     required this.onToggleRepeat,
     required this.accentColor,
+    this.hasLyrics = false,
+    this.isShowingLyrics = false,
   });
 
   String _formatDuration(Duration d) {
@@ -187,7 +191,7 @@ class AudioControlsWidget extends StatelessWidget {
                       iconSize: 22,
                       constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
                       padding: EdgeInsets.zero,
-                      tooltip: repeatMode == 0 ? 'Repeat: Off' : repeatMode == 1 ? 'Repeat: One' : 'Repeat: All',
+                      tooltip: repeatMode == 0 ? L10n.of(context).ui_repeat_off : repeatMode == 1 ? L10n.of(context).ui_repeat_one : L10n.of(context).ui_repeat_all,
                       color: repeatMode != 0 ? accentColor : theme.colorScheme.onSurface.withOpacity(0.6),
                       onPressed: onToggleRepeat,
                     ),
@@ -197,18 +201,24 @@ class AudioControlsWidget extends StatelessWidget {
                       iconSize: 22,
                       constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
                       padding: EdgeInsets.zero,
-                      tooltip: '音效',
+                      tooltip: L10n.of(context).ui_sound_effects,
                       color: theme.colorScheme.onSurface.withOpacity(0.8),
                       onPressed: onShowEqualizer,
                     ),
                     // Lyrics
                     IconButton(
-                      icon: const Icon(Broken.document),
+                      icon: Icon(
+                        isShowingLyrics ? Broken.document : Broken.document,
+                      ),
                       iconSize: 22,
                       constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
                       padding: EdgeInsets.zero,
-                      tooltip: '歌词',
-                      color: theme.colorScheme.onSurface.withOpacity(0.8),
+                      tooltip: isShowingLyrics ? L10n.of(context).ui_hide_lyrics : L10n.of(context).ui_show_lyrics,
+                      color: isShowingLyrics
+                          ? accentColor
+                          : hasLyrics
+                              ? accentColor.withOpacity(0.7)
+                              : theme.colorScheme.onSurface.withOpacity(0.8),
                       onPressed: onShowLyrics,
                     ),
                     // Sleep Timer
@@ -227,7 +237,7 @@ class AudioControlsWidget extends StatelessWidget {
                       iconSize: 22,
                       constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
                       padding: EdgeInsets.zero,
-                      tooltip: '播放队列',
+                      tooltip: L10n.of(context).ui_playback_queue,
                       color: theme.colorScheme.onSurface.withOpacity(0.8),
                       onPressed: onShowQueue,
                     ),

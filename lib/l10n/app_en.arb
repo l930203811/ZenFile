@@ -1552,6 +1552,26 @@
     "description": "ui\\screens\\more_settings_screen.dart"
   },
   "msgf08c8dc4": "Natural Zen",
+  "msgdesign6": "AI Design 1",
+  "@msgdesign6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign7": "AI Design 2",
+  "@msgdesign7": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign8": "AI Design 3",
+  "@msgdesign8": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign9": "AI Design 4",
+  "@msgdesign9": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign10": "AI Design 5",
+  "@msgdesign10": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
   "@msg7372dc9f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -1768,9 +1788,6 @@
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
   "msgb5bc0bf1": "Resolving host address...",
-  "@msgb5bc0bf1": {
-    "description": "ui\\screens\\network_connection_wizard_screen.dart"
-  },
   "@msgc3d4e5f6": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
   },
@@ -2259,9 +2276,6 @@
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
   "msg2904d894": "Establishing secure proxy relay...",
-  "@msg2904d894": {
-    "description": "ui\\screens\\web_sharing_screen.dart"
-  },
   "@msga1b2c3d4": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
   },
@@ -3266,7 +3280,6 @@
   "@msg_new_file_name": {
     "description": "Label for new file name input in rename dialog"
   },
-  "ui_extract": "Extract",
   "msg_vault_choose_mode": "Choose Protection Mode",
   "msg_vault_mode_desc": "Choose how you want to protect your selected files. Secured files are XOR scrambled instantly.",
   "ui_secure_import": "Secure Import (Sandbox)",
@@ -3303,7 +3316,9 @@
   "@web_share_uploading": {
     "description": "Upload progress title",
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "web_share_upload_success": "Upload completed successfully",
@@ -3311,7 +3326,9 @@
   "@web_share_upload_failed": {
     "description": "Upload failed message",
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "web_share_preview_unsupported": "Preview is not supported for this file type",
@@ -3323,7 +3340,9 @@
   "@web_share_items_count": {
     "description": "Item count display",
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "web_share_link_copied": "Link copied to clipboard",
@@ -3337,5 +3356,73 @@
   "web_share_category_documents": "Documents",
   "web_share_category_others": "Others",
   "web_share_loading_preview": "Loading preview...",
-  "web_share_preview_error": "Failed to stream document. You can still download it directly."
+  "web_share_preview_error": "Failed to stream document. You can still download it directly.",
+  "msg_custom_shortcut": "Custom Icon",
+  "msg_add_custom_shortcut": "Add to Home Screen",
+  "msg_shortcut_added": "Added to home screen",
+  "msg_shortcut_failed": "Failed to add shortcut",
+  "ui_lyrics_loaded": "Lyrics loaded",
+  "ui_lyrics_load_failed": "Cannot parse this lyrics file",
+  "ui_select_lyrics_file": "Select lyrics file",
+  "ui_no_lyrics_found": "No lyrics found",
+  "ui_lyrics_auto_load_hint": "Place an .lrc file in the same folder as the audio\n(with the same filename) to auto-load",
+  "ui_lyrics_panel": "Lyrics panel",
+  "ui_show_lyrics": "Show lyrics",
+  "ui_hide_lyrics": "Hide lyrics",
+  "ui_sound_effects_speed": "Sound Effects & Speed",
+  "ui_pitch_adjustment": "Pitch adjustment",
+  "ui_restore_default": "Restore default",
+  "ui_sound_effects": "Sound effects",
+  "ui_playback_queue": "Playback queue",
+  "ui_repeat_off": "Repeat: Off",
+  "ui_repeat_one": "Repeat: One",
+  "ui_repeat_all": "Repeat: All",
+  "ui_shuffle_on": "Shuffle: On",
+  "ui_minutes_format": "{minutes} minutes",
+  "ui_sleep_timer_set": "Sleep timer set for {minutes} minutes.",
+  "ui_enter_minutes": "Enter minutes",
+  "ui_sleep_timer_end": "Sleep timer ended, playback paused",
+  "ui_close_player": "Close player",
+  "ui_open_player": "Open Player",
+  "ui_now_playing": "Now Playing",
+  "ui_resume_playback": "Resume Playback",
+  "ui_single": "Single",
+  "ui_add_remote_path": "Add Remote Path",
+  "ui_select_remote_server": "Select Remote Server",
+  "ui_no_remote_connections": "No remote connections, please add a network connection first",
+  "ui_retry": "Retry",
+  "ui_no_subfolders": "No subfolders",
+  "ui_select_this_folder": "Select This Folder",
+  "ui_downloading_file": "Downloading: {file}",
+  "@ui_downloading_file": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_sent": "Sent: {amount}",
+  "@ui_sent": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@ui_minutes_format": {
+    "description": "Minutes format for sleep timer options",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@ui_sleep_timer_set": {
+    "description": "Sleep timer set confirmation",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  }
 }

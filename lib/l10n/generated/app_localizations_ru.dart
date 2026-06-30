@@ -1321,6 +1321,21 @@ class L10nRu extends L10n {
   String get msgf08c8dc4 => 'Естественный Дзен';
 
   @override
+  String get msgdesign6 => 'AI-дизайн 1';
+
+  @override
+  String get msgdesign7 => 'AI-дизайн 2';
+
+  @override
+  String get msgdesign8 => 'AI-дизайн 3';
+
+  @override
+  String get msgdesign9 => 'AI-дизайн 4';
+
+  @override
+  String get msgdesign10 => 'AI-дизайн 5';
+
+  @override
   String get msg7372dc9f => 'Пользовательский Значок';
 
   @override
@@ -3382,4 +3397,129 @@ class L10nRu extends L10n {
   @override
   String get web_share_preview_error =>
       'Не удалось транслировать документ. Вы можете скачать его напрямую.';
+
+  @override
+  String get msg_custom_shortcut => 'Пользовательская иконка';
+
+  @override
+  String get msg_add_custom_shortcut => 'Добавить на главный экран';
+
+  @override
+  String get msg_shortcut_added => 'Добавлено на главный экран';
+
+  @override
+  String get msg_shortcut_failed => 'Ошибка добавления';
+
+  @override
+  String get ui_lyrics_loaded => 'Текст песни загружен';
+
+  @override
+  String get ui_lyrics_load_failed => 'Не удалось разобрать файл текста';
+
+  @override
+  String get ui_select_lyrics_file => 'Выбрать файл текста';
+
+  @override
+  String get ui_no_lyrics_found => 'Текст песни не найден';
+
+  @override
+  String get ui_lyrics_auto_load_hint =>
+      'Поместите файл .lrc в ту же папку, что и аудио\n(с тем же именем файла), чтобы автоматически загрузить';
+
+  @override
+  String get ui_lyrics_panel => 'Панель текста';
+
+  @override
+  String get ui_show_lyrics => 'Показать текст';
+
+  @override
+  String get ui_hide_lyrics => 'Скрыть текст';
+
+  @override
+  String get ui_sound_effects_speed => 'Звуковые эффекты и скорость';
+
+  @override
+  String get ui_pitch_adjustment => 'Регулировка тона';
+
+  @override
+  String get ui_restore_default => 'Восстановить по умолчанию';
+
+  @override
+  String get ui_sound_effects => 'Звуковые эффекты';
+
+  @override
+  String get ui_playback_queue => 'Очередь воспроизведения';
+
+  @override
+  String get ui_repeat_off => 'Повтор: Выкл';
+
+  @override
+  String get ui_repeat_one => 'Повтор: Один трек';
+
+  @override
+  String get ui_repeat_all => 'Повтор: Все';
+
+  @override
+  String get ui_shuffle_on => 'Случайный порядок: Вкл';
+
+  @override
+  String ui_minutes_format(int minutes) {
+    return '$minutes минут';
+  }
+
+  @override
+  String ui_sleep_timer_set(int minutes) {
+    return 'Таймер сна установлен на $minutes минут.';
+  }
+
+  @override
+  String get ui_enter_minutes => 'Введите минуты';
+
+  @override
+  String get ui_sleep_timer_end =>
+      'Таймер сработал, воспроизведение приостановлено';
+
+  @override
+  String get ui_close_player => 'Закрыть плеер';
+
+  @override
+  String get ui_open_player => 'Открыть плеер';
+
+  @override
+  String get ui_now_playing => 'Сейчас играет';
+
+  @override
+  String get ui_resume_playback => 'Возобновить';
+
+  @override
+  String get ui_single => 'Сингл';
+
+  @override
+  String get ui_add_remote_path => 'Добавить удалённый путь';
+
+  @override
+  String get ui_select_remote_server => 'Выбрать удалённый сервер';
+
+  @override
+  String get ui_no_remote_connections =>
+      'Нет удалённых подключений, сначала добавьте сетевое подключение';
+
+  @override
+  String get ui_retry => 'Повторить';
+
+  @override
+  String get ui_no_subfolders => 'Нет подпапок';
+
+  @override
+  String get ui_select_this_folder => 'Выбрать эту папку';
+
+  @override
+  String ui_downloading_file(String file) {
+    return 'Загрузка: $file';
+  }
+
+  @override
+  String ui_sent(String amount) {
+    return 'Отправлено: $amount';
+  }
 }

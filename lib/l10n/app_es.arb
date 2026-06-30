@@ -1552,6 +1552,26 @@
     "description": "ui\\screens\\more_settings_screen.dart"
   },
   "msgf08c8dc4": "Zen Natural",
+  "msgdesign6": "Diseño de IA 1",
+  "@msgdesign6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign7": "Diseño de IA 2",
+  "@msgdesign7": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign8": "Diseño de IA 3",
+  "@msgdesign8": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign9": "Diseño de IA 4",
+  "@msgdesign9": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign10": "Diseño de IA 5",
+  "@msgdesign10": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
   "@msg7372dc9f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -3171,7 +3191,9 @@
   "@msg_file_exists_desc": {
     "description": "Conflict dialog description",
     "placeholders": {
-      "fileName": { "type": "String" }
+      "fileName": {
+        "type": "String"
+      }
     }
   },
   "msg_existing_file": "Archivo existente",
@@ -3198,7 +3220,6 @@
   "@msg_new_file_name": {
     "description": "New file name label in rename dialog"
   },
-  "ui_extract": "Extraer",
   "msg_remember_choice": "Recordar esta elección para operaciones futuras",
   "ui_caching": "Almacenando en caché, por favor espere...",
   "ui_username": "Nombre de Usuario",
@@ -3294,7 +3315,9 @@
   "@web_share_uploading": {
     "description": "Upload progress title",
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "web_share_upload_success": "Carga completada con éxito",
@@ -3302,7 +3325,9 @@
   "@web_share_upload_failed": {
     "description": "Upload failed message",
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "web_share_preview_unsupported": "La vista previa no es compatible con este tipo de archivo",
@@ -3314,7 +3339,9 @@
   "@web_share_items_count": {
     "description": "Item count display",
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "web_share_link_copied": "Enlace copiado al portapapeles",
@@ -3328,5 +3355,73 @@
   "web_share_category_documents": "Documentos",
   "web_share_category_others": "Otros",
   "web_share_loading_preview": "Cargando vista previa...",
-  "web_share_preview_error": "No se puede transmitir el documento. Aún puede descargarlo directamente."
+  "web_share_preview_error": "No se puede transmitir el documento. Aún puede descargarlo directamente.",
+  "msg_custom_shortcut": "Icono personalizado",
+  "msg_add_custom_shortcut": "Añadir a pantalla de inicio",
+  "msg_shortcut_added": "Añadido a pantalla de inicio",
+  "msg_shortcut_failed": "Error al añadir",
+  "ui_lyrics_loaded": "Letra cargada",
+  "ui_lyrics_load_failed": "No se puede analizar este archivo de letra",
+  "ui_select_lyrics_file": "Seleccionar archivo de letra",
+  "ui_no_lyrics_found": "No se encontró letra",
+  "ui_lyrics_auto_load_hint": "Coloca el archivo .lrc en la misma carpeta que el audio\n(con el mismo nombre) para cargarlo automáticamente",
+  "ui_lyrics_panel": "Panel de letras",
+  "ui_show_lyrics": "Mostrar letra",
+  "ui_hide_lyrics": "Ocultar letra",
+  "ui_sound_effects_speed": "Efectos de sonido y velocidad",
+  "ui_pitch_adjustment": "Ajuste de tono",
+  "ui_restore_default": "Restaurar predeterminado",
+  "ui_sound_effects": "Efectos de sonido",
+  "ui_playback_queue": "Cola de reproducción",
+  "ui_repeat_off": "Repetir: Apagado",
+  "ui_repeat_one": "Repetir: Una",
+  "ui_repeat_all": "Repetir: Todo",
+  "ui_shuffle_on": "Aleatorio: Encendido",
+  "ui_minutes_format": "{minutes} minutos",
+  "ui_sleep_timer_set": "Temporizador de apagado configurado para {minutes} minutos.",
+  "ui_enter_minutes": "Ingresar minutos",
+  "ui_sleep_timer_end": "El temporizador terminó, reproducción pausada",
+  "ui_close_player": "Cerrar reproductor",
+  "ui_open_player": "Abrir reproductor",
+  "ui_now_playing": "Reproduciendo",
+  "ui_resume_playback": "Reanudar reproducción",
+  "ui_single": "Sencillo",
+  "ui_add_remote_path": "Añadir ruta remota",
+  "ui_select_remote_server": "Seleccionar servidor remoto",
+  "ui_no_remote_connections": "Sin conexiones remotas, añada una conexión de red primero",
+  "ui_retry": "Reintentar",
+  "ui_no_subfolders": "Sin subcarpetas",
+  "ui_select_this_folder": "Seleccionar esta carpeta",
+  "ui_downloading_file": "Descargando: {file}",
+  "@ui_downloading_file": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_sent": "Enviado: {amount}",
+  "@ui_sent": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@ui_minutes_format": {
+    "description": "Minutes format for sleep timer options",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@ui_sleep_timer_set": {
+    "description": "Sleep timer set confirmation",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  }
 }

@@ -1002,7 +1002,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                         ),
                         child: Icon(vol.isInternal ? Broken.folder_open : Icons.sd_storage_rounded, color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface, size: 24),
                       ),
-                      title: Text(vol.name, style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.w600, fontSize: 16)),
+                      title: Text(vol.isInternal ? L10n.of(context).msg21cefa9b : vol.name, style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.w600, fontSize: 16)),
                       subtitle: Text(vol.path, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6))),
                       trailing: isSelected ? Icon(Icons.check_circle, color: theme.colorScheme.primary) : null,
                       onTap: () {

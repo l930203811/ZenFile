@@ -1288,6 +1288,21 @@ class L10nAr extends L10n {
   String get msgf08c8dc4 => 'Zen الطبيعي';
 
   @override
+  String get msgdesign6 => 'تصميم AI 1';
+
+  @override
+  String get msgdesign7 => 'تصميم AI 2';
+
+  @override
+  String get msgdesign8 => 'تصميم AI 3';
+
+  @override
+  String get msgdesign9 => 'تصميم AI 4';
+
+  @override
+  String get msgdesign10 => 'تصميم AI 5';
+
+  @override
   String get msg7372dc9f => 'أيقونة مخصصة';
 
   @override
@@ -3322,4 +3337,128 @@ class L10nAr extends L10n {
   @override
   String get web_share_preview_error =>
       'تعذر بث المستند. يمكنك still تحميله مباشرة.';
+
+  @override
+  String get msg_custom_shortcut => 'أيقونة مخصصة';
+
+  @override
+  String get msg_add_custom_shortcut => 'إضافة إلى الشاشة الرئيسية';
+
+  @override
+  String get msg_shortcut_added => 'تمت الإضافة إلى الشاشة الرئيسية';
+
+  @override
+  String get msg_shortcut_failed => 'فشل الإضافة';
+
+  @override
+  String get ui_lyrics_loaded => 'تم تحميل كلمات الأغنية';
+
+  @override
+  String get ui_lyrics_load_failed => 'تعذر تحليل ملف كلمات الأغنية';
+
+  @override
+  String get ui_select_lyrics_file => 'اختيار ملف كلمات الأغنية';
+
+  @override
+  String get ui_no_lyrics_found => 'لم يتم العثور على كلمات الأغنية';
+
+  @override
+  String get ui_lyrics_auto_load_hint =>
+      'ضع ملف .lrc في نفس مجلد الملف الصوتي\n(بنفس الاسم) لتحميله تلقائيًا';
+
+  @override
+  String get ui_lyrics_panel => 'لوحة كلمات الأغنية';
+
+  @override
+  String get ui_show_lyrics => 'إظهار كلمات الأغنية';
+
+  @override
+  String get ui_hide_lyrics => 'إخفاء كلمات الأغنية';
+
+  @override
+  String get ui_sound_effects_speed => 'المؤثرات الصوتية والسرعة';
+
+  @override
+  String get ui_pitch_adjustment => 'ضبط النغمة';
+
+  @override
+  String get ui_restore_default => 'استعادة الافتراضي';
+
+  @override
+  String get ui_sound_effects => 'المؤثرات الصوتية';
+
+  @override
+  String get ui_playback_queue => 'قائمة الانتظار';
+
+  @override
+  String get ui_repeat_off => 'التكرار: إيقاف';
+
+  @override
+  String get ui_repeat_one => 'التكرار: واحد';
+
+  @override
+  String get ui_repeat_all => 'التكرار: الكل';
+
+  @override
+  String get ui_shuffle_on => 'العشوائي: تشغيل';
+
+  @override
+  String ui_minutes_format(int minutes) {
+    return '$minutes دقيقة';
+  }
+
+  @override
+  String ui_sleep_timer_set(int minutes) {
+    return 'تم ضبط مؤقت النوم على $minutes دقيقة.';
+  }
+
+  @override
+  String get ui_enter_minutes => 'أدخل الدقائق';
+
+  @override
+  String get ui_sleep_timer_end => 'انتهى المؤقت، تم إيقاف التشغيل مؤقتًا';
+
+  @override
+  String get ui_close_player => 'إغلاق المشغل';
+
+  @override
+  String get ui_open_player => 'فتح المشغل';
+
+  @override
+  String get ui_now_playing => 'يتم التشغيل الآن';
+
+  @override
+  String get ui_resume_playback => 'استئناف التشغيل';
+
+  @override
+  String get ui_single => 'فردي';
+
+  @override
+  String get ui_add_remote_path => 'إضافة مسار بعيد';
+
+  @override
+  String get ui_select_remote_server => 'تحديد الخادم البعيد';
+
+  @override
+  String get ui_no_remote_connections =>
+      'لا توجد اتصالات بعيدة، يرجى إضافة اتصال شبكة أولاً';
+
+  @override
+  String get ui_retry => 'إعادة المحاولة';
+
+  @override
+  String get ui_no_subfolders => 'لا توجد مجلدات فرعية';
+
+  @override
+  String get ui_select_this_folder => 'تحديد هذا المجلد';
+
+  @override
+  String ui_downloading_file(String file) {
+    return 'جارٍ التنزيل: $file';
+  }
+
+  @override
+  String ui_sent(String amount) {
+    return 'تم الإرسال: $amount';
+  }
 }

@@ -232,9 +232,11 @@ class SelectionContextBottomSheet extends StatelessWidget {
               onTap: () async {
                 final effectiveContext = outerContext ?? context;
                 Navigator.pop(context);
+                // 缓存选中路径，避免弹窗异步过程中 selectedPaths 被其他操作修改
+                final selectedPaths = provider.selectedPaths.toList();
                 // 压缩选中项：默认名称使用第一个选中项的名字，而非当前目录名
-                final firstSelected = provider.selectedPaths.isNotEmpty
-                    ? p.basename(provider.selectedPaths.first)
+                final firstSelected = selectedPaths.isNotEmpty
+                    ? p.basename(selectedPaths.first)
                     : 'archive';
                 final res = await CreateArchiveDialog.show(
                   effectiveContext,
@@ -250,9 +252,11 @@ class SelectionContextBottomSheet extends StatelessWidget {
                     splitSizeMB: res.splitSizeMB,
                     deleteSource: res.deleteSource,
                     separateArchives: res.separateArchives,
-                    targetPaths: provider.selectedPaths.toList(),
+                    targetPaths: selectedPaths,
                     context: effectiveContext,
                   );
+                  // 压缩完成后无论内部刷新是否成功，都再强制刷新一次当前目录
+                  provider.loadDirectory(provider.currentPath, showLoading: false, clearCache: true);
                   provider.clearSelection();
                 }
               },

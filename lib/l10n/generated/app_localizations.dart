@@ -2443,6 +2443,36 @@ abstract class L10n {
   /// ui\screens\more_settings_screen.dart
   ///
   /// In zh, this message translates to:
+  /// **'AI 设计 1'**
+  String get msgdesign6;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 设计 2'**
+  String get msgdesign7;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 设计 3'**
+  String get msgdesign8;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 设计 4'**
+  String get msgdesign9;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 设计 5'**
+  String get msgdesign10;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
   /// **'自定义图标'**
   String get msg7372dc9f;
 
@@ -6117,6 +6147,234 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'无法流式传输文档。您仍然可以直接下载。'**
   String get web_share_preview_error;
+
+  /// No description provided for @msg_custom_shortcut.
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义图标'**
+  String get msg_custom_shortcut;
+
+  /// No description provided for @msg_add_custom_shortcut.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加到主屏幕'**
+  String get msg_add_custom_shortcut;
+
+  /// No description provided for @msg_shortcut_added.
+  ///
+  /// In zh, this message translates to:
+  /// **'已添加到主屏幕'**
+  String get msg_shortcut_added;
+
+  /// No description provided for @msg_shortcut_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加失败，请重试'**
+  String get msg_shortcut_failed;
+
+  /// No description provided for @ui_lyrics_loaded.
+  ///
+  /// In zh, this message translates to:
+  /// **'歌词已加载'**
+  String get ui_lyrics_loaded;
+
+  /// No description provided for @ui_lyrics_load_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法解析该歌词文件'**
+  String get ui_lyrics_load_failed;
+
+  /// No description provided for @ui_select_lyrics_file.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择歌词文件'**
+  String get ui_select_lyrics_file;
+
+  /// No description provided for @ui_no_lyrics_found.
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到歌词'**
+  String get ui_no_lyrics_found;
+
+  /// No description provided for @ui_lyrics_auto_load_hint.
+  ///
+  /// In zh, this message translates to:
+  /// **'将 .lrc 歌词文件放在音频同目录下\n（文件名与音频相同）即可自动加载'**
+  String get ui_lyrics_auto_load_hint;
+
+  /// No description provided for @ui_lyrics_panel.
+  ///
+  /// In zh, this message translates to:
+  /// **'歌词全屏面板'**
+  String get ui_lyrics_panel;
+
+  /// No description provided for @ui_show_lyrics.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示歌词'**
+  String get ui_show_lyrics;
+
+  /// No description provided for @ui_hide_lyrics.
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏歌词'**
+  String get ui_hide_lyrics;
+
+  /// No description provided for @ui_sound_effects_speed.
+  ///
+  /// In zh, this message translates to:
+  /// **'音效与播放速度'**
+  String get ui_sound_effects_speed;
+
+  /// No description provided for @ui_pitch_adjustment.
+  ///
+  /// In zh, this message translates to:
+  /// **'音调调节'**
+  String get ui_pitch_adjustment;
+
+  /// No description provided for @ui_restore_default.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复默认'**
+  String get ui_restore_default;
+
+  /// No description provided for @ui_sound_effects.
+  ///
+  /// In zh, this message translates to:
+  /// **'音效'**
+  String get ui_sound_effects;
+
+  /// No description provided for @ui_playback_queue.
+  ///
+  /// In zh, this message translates to:
+  /// **'播放队列'**
+  String get ui_playback_queue;
+
+  /// No description provided for @ui_repeat_off.
+  ///
+  /// In zh, this message translates to:
+  /// **'循环：关闭'**
+  String get ui_repeat_off;
+
+  /// No description provided for @ui_repeat_one.
+  ///
+  /// In zh, this message translates to:
+  /// **'循环：单曲'**
+  String get ui_repeat_one;
+
+  /// No description provided for @ui_repeat_all.
+  ///
+  /// In zh, this message translates to:
+  /// **'循环：全部'**
+  String get ui_repeat_all;
+
+  /// No description provided for @ui_shuffle_on.
+  ///
+  /// In zh, this message translates to:
+  /// **'随机播放：开'**
+  String get ui_shuffle_on;
+
+  /// Minutes format for sleep timer options
+  ///
+  /// In zh, this message translates to:
+  /// **'{minutes} 分钟'**
+  String ui_minutes_format(int minutes);
+
+  /// Sleep timer set confirmation
+  ///
+  /// In zh, this message translates to:
+  /// **'睡眠定时器已设置为 {minutes} 分钟。'**
+  String ui_sleep_timer_set(int minutes);
+
+  /// No description provided for @ui_enter_minutes.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入分钟数'**
+  String get ui_enter_minutes;
+
+  /// No description provided for @ui_sleep_timer_end.
+  ///
+  /// In zh, this message translates to:
+  /// **'定时时间到，已暂停播放'**
+  String get ui_sleep_timer_end;
+
+  /// No description provided for @ui_close_player.
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭播放器'**
+  String get ui_close_player;
+
+  /// No description provided for @ui_open_player.
+  ///
+  /// In zh, this message translates to:
+  /// **'打开播放器'**
+  String get ui_open_player;
+
+  /// No description provided for @ui_now_playing.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在播放'**
+  String get ui_now_playing;
+
+  /// No description provided for @ui_resume_playback.
+  ///
+  /// In zh, this message translates to:
+  /// **'继续播放'**
+  String get ui_resume_playback;
+
+  /// No description provided for @ui_single.
+  ///
+  /// In zh, this message translates to:
+  /// **'单曲'**
+  String get ui_single;
+
+  /// No description provided for @ui_add_remote_path.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加远程路径'**
+  String get ui_add_remote_path;
+
+  /// No description provided for @ui_select_remote_server.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择远程服务器'**
+  String get ui_select_remote_server;
+
+  /// No description provided for @ui_no_remote_connections.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无远程连接，请先添加网络连接'**
+  String get ui_no_remote_connections;
+
+  /// No description provided for @ui_retry.
+  ///
+  /// In zh, this message translates to:
+  /// **'重试'**
+  String get ui_retry;
+
+  /// No description provided for @ui_no_subfolders.
+  ///
+  /// In zh, this message translates to:
+  /// **'无子文件夹'**
+  String get ui_no_subfolders;
+
+  /// No description provided for @ui_select_this_folder.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择此文件夹'**
+  String get ui_select_this_folder;
+
+  /// No description provided for @ui_downloading_file.
+  ///
+  /// In zh, this message translates to:
+  /// **'下载中: {file}'**
+  String ui_downloading_file(String file);
+
+  /// No description provided for @ui_sent.
+  ///
+  /// In zh, this message translates to:
+  /// **'已发送: {amount}'**
+  String ui_sent(String amount);
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

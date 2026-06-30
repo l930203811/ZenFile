@@ -108,6 +108,10 @@ class BackgroundArchiveService {
     }
   }
 
+  /// 直接持有 provider 引用，避免 onComplete 回调捕获时机不对导致刷新丢失
+  FileManagerProvider? _refreshProvider;
+  BuildContext? _savedContext;
+
   /// 捕获的 ScaffoldMessengerState：在显示 bottom sheet / dialog 之前尽早保存
   /// 避免在 long-press 路径中，bottom sheet 弹出后 context 失效导致 SnackBar 无法显示
   ScaffoldMessengerState? _scaffoldMessenger;
@@ -121,6 +125,7 @@ class BackgroundArchiveService {
     required bool deleteSource,
     String? targetRefreshDir,
     VoidCallback? onComplete,
+    FileManagerProvider? provider,
   }) async {
     final archiveName = p.basename(destinationPath);
     final operation = BackgroundOperation(
@@ -134,6 +139,8 @@ class BackgroundArchiveService {
     activeOperation.value = operation;
     _scaffoldMessenger ??= ScaffoldMessenger.of(context);
     _onCompleteCallback = onComplete;
+    _refreshProvider = provider;
+    _savedContext = context;
 
     // 启动定时器兜底：如果30秒后对话框仍未关闭，强制关闭
     _dialogCloseTimer?.cancel();
@@ -390,17 +397,51 @@ class BackgroundArchiveService {
       );
     }
 
-    // 压缩/解压成功后，统一通过 onComplete 回调刷新目录
-    // 不再依赖 context.mounted（长按路径中 context 可能已失效）
-    if (!isError && onComplete != null) {
-      try {
-        // 使用 addPostFrameCallback 确保对话框关闭后再刷新，避免 UI 冲突
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          try {
-            onComplete();
-          } catch (_) {}
-        });
-      } catch (_) {}
+    // 压缩/解压成功后，优先通过保存的 provider 直接刷新目录
+    // 不再依赖 onComplete 回调捕获的闭包（长按路径中可能失效）
+    if (!isError && operation.isCompression && operation.destinationDir != null) {
+      bool refreshed = false;
+
+      // 方法1：使用保存的 provider 引用直接刷新（await 确保刷新完成）
+      if (_refreshProvider != null) {
+        try {
+          await _refreshProvider!.loadDirectory(operation.destinationDir!, showLoading: false, clearCache: true);
+          refreshed = true;
+        } catch (e) {
+          debugPrint('Error refreshing via provider: $e');
+        }
+      }
+
+      // 方法2：通过保存的 context 获取 provider 刷新（兜底）
+      if (!refreshed && _savedContext != null) {
+        try {
+          final provider = Provider.of<FileManagerProvider>(_savedContext!, listen: false);
+          await provider.loadDirectory(operation.destinationDir!, showLoading: false, clearCache: true);
+          refreshed = true;
+        } catch (e) {
+          debugPrint('Error refreshing via saved context: $e');
+        }
+      }
+
+      // 方法3：通过 onComplete 回调刷新（最终兜底）
+      if (!refreshed && onComplete != null) {
+        try {
+          await Future.delayed(Duration.zero, () {
+            try {
+              onComplete();
+            } catch (_) {}
+          });
+        } catch (_) {}
+      }
+
+      // 方法4：如果以上都失败，延迟再刷新一次（确保文件系统已同步）
+      if (!refreshed) {
+        try {
+          scheduleMicrotask(() {
+            _refreshProvider?.loadDirectory(operation.destinationDir!, showLoading: false, clearCache: true);
+          });
+        } catch (_) {}
+      }
     }
   }
 

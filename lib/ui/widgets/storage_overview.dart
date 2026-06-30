@@ -55,9 +55,9 @@ class StorageOverviewCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Internal Storage',
-                style: TextStyle(
+              Text(
+                L10n.of(context).msg21cefa9b,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,

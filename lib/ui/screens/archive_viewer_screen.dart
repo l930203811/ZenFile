@@ -7,6 +7,7 @@ import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/utils.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../services/archive_service.dart';
+import '../widgets/archive_type_icon.dart';
 import 'internal_file_picker_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
@@ -509,11 +510,13 @@ class _ArchiveViewerScreenState extends State<ArchiveViewerScreen> {
                                         color: isSelected ? theme.colorScheme.primary : (item.isDirectory ? theme.colorScheme.primary.withOpacity(0.1) : iconColor.withOpacity(0.1)),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
-                                      child: Icon(
-                                        isSelected ? Broken.tick_circle : (item.isDirectory ? FileUtils.getFolderIcon(context.watch<FileManagerProvider>().folderIconOption) : FileUtils.getIconForFile(item.name)),
-                                        color: isSelected ? theme.colorScheme.onPrimary : iconColor,
-                                        size: 28,
-                                      ),
+                                      child: (!isSelected && !item.isDirectory && FileUtils.isArchive(item.name))
+                                        ? ArchiveTypeIcon(label: FileUtils.getArchiveTypeLabel(item.name), color: iconColor)
+                                        : Icon(
+                                            isSelected ? Broken.tick_circle : (item.isDirectory ? FileUtils.getFolderIcon(context.watch<FileManagerProvider>().folderIconOption) : FileUtils.getIconForFile(item.name)),
+                                            color: isSelected ? theme.colorScheme.onPrimary : iconColor,
+                                            size: 28,
+                                          ),
                                     ),
                                     const SizedBox(width: 16),
                                     Expanded(

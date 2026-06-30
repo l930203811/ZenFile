@@ -4,6 +4,7 @@ import '../../services/recycle_bin_service.dart';
 import '../../core/utils.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import 'package:path/path.dart' as p;
+import '../widgets/archive_type_icon.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class RecycleBinScreen extends StatefulWidget {
@@ -351,7 +352,9 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
                                     child: isSelected
                                         ? Icon(Broken.tick_circle,
                                             color: theme.colorScheme.onPrimary, size: 24)
-                                        : Icon(icon, color: iconColor, size: 24),
+                                        : (!item.isDirectory && FileUtils.isArchive(item.name)
+                                            ? ArchiveTypeIcon(label: FileUtils.getArchiveTypeLabel(item.name), color: iconColor, iconScale: 24 / 28)
+                                            : Icon(icon, color: iconColor, size: 24)),
                                   ),
                                   const SizedBox(width: 16),
                                   // Metadata details

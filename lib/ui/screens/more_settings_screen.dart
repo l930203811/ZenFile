@@ -2584,7 +2584,7 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
                                 theme,
                                 id: 'default',
                                 title: L10n.of(context).msg64a6476a,
-                                imagePath: 'assets/logo/design_5_nature.jpg',
+                                imagePath: 'assets/logo/design_8.png',
                               ),
                               _buildIconOptionCard(
                                 context,

@@ -1552,6 +1552,26 @@
     "description": "ui\\screens\\more_settings_screen.dart"
   },
   "msgf08c8dc4": "ナチュラル禅",
+  "msgdesign6": "AIデザイン 1",
+  "@msgdesign6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign7": "AIデザイン 2",
+  "@msgdesign7": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign8": "AIデザイン 3",
+  "@msgdesign8": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign9": "AIデザイン 4",
+  "@msgdesign9": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign10": "AIデザイン 5",
+  "@msgdesign10": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
   "@msg7372dc9f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -3171,7 +3191,9 @@
   "@msg_file_exists_desc": {
     "description": "Conflict dialog description",
     "placeholders": {
-      "fileName": { "type": "String" }
+      "fileName": {
+        "type": "String"
+      }
     }
   },
   "msg_existing_file": "既存ファイル",
@@ -3293,7 +3315,9 @@
   "@web_share_uploading": {
     "description": "Upload progress title",
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "web_share_upload_success": "アップロードが完了しました",
@@ -3301,7 +3325,9 @@
   "@web_share_upload_failed": {
     "description": "Upload failed message",
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "web_share_preview_unsupported": "このファイルタイプのプレビューはサポートされていません",
@@ -3313,7 +3339,9 @@
   "@web_share_items_count": {
     "description": "Item count display",
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "web_share_link_copied": "リンクをクリップボードにコピーしました",
@@ -3327,5 +3355,73 @@
   "web_share_category_documents": "ドキュメント",
   "web_share_category_others": "その他",
   "web_share_loading_preview": "プレビューを読み込み中...",
-  "web_share_preview_error": "ドキュメントをストリーミングできません。直接ダウンロードできます。"
+  "web_share_preview_error": "ドキュメントをストリーミングできません。直接ダウンロードできます。",
+  "msg_custom_shortcut": "カスタムアイコン",
+  "msg_add_custom_shortcut": "ホーム画面に追加",
+  "msg_shortcut_added": "ホーム画面に追加しました",
+  "msg_shortcut_failed": "追加に失敗しました",
+  "ui_lyrics_loaded": "歌詞を読み込みました",
+  "ui_lyrics_load_failed": "この歌詞ファイルを解析できません",
+  "ui_select_lyrics_file": "歌詞ファイルを選択",
+  "ui_no_lyrics_found": "歌詞が見つかりません",
+  "ui_lyrics_auto_load_hint": ".lrc 歌詞ファイルを音楽と同じフォルダに\n（ファイル名も同じにして）置くと自動読み込みされます",
+  "ui_lyrics_panel": "歌詞パネル",
+  "ui_show_lyrics": "歌詞を表示",
+  "ui_hide_lyrics": "歌詞を隠す",
+  "ui_sound_effects_speed": "サウンドエフェクトと再生速度",
+  "ui_pitch_adjustment": "音調調整",
+  "ui_restore_default": "デフォルトに戻す",
+  "ui_sound_effects": "サウンドエフェクト",
+  "ui_playback_queue": "再生キュー",
+  "ui_repeat_off": "リピート：オフ",
+  "ui_repeat_one": "リピート：1曲",
+  "ui_repeat_all": "リピート：全曲",
+  "ui_shuffle_on": "シャッフル：オン",
+  "ui_minutes_format": "{minutes}分",
+  "ui_sleep_timer_set": "スリープタイマーを {minutes} 分に設定しました。",
+  "ui_enter_minutes": "分を入力",
+  "ui_sleep_timer_end": "タイマーが終了し、再生を一時停止しました",
+  "ui_close_player": "プレーヤーを閉じる",
+  "ui_open_player": "プレーヤーを開く",
+  "ui_now_playing": "再生中",
+  "ui_resume_playback": "再生を再開",
+  "ui_single": "シングル",
+  "ui_add_remote_path": "リモートパスを追加",
+  "ui_select_remote_server": "リモートサーバーを選択",
+  "ui_no_remote_connections": "リモート接続がありません。ネットワーク接続を追加してください",
+  "ui_retry": "再試行",
+  "ui_no_subfolders": "サブフォルダがありません",
+  "ui_select_this_folder": "このフォルダを選択",
+  "ui_downloading_file": "ダウンロード中: {file}",
+  "@ui_downloading_file": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_sent": "送信済み: {amount}",
+  "@ui_sent": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@ui_minutes_format": {
+    "description": "Minutes format for sleep timer options",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@ui_sleep_timer_set": {
+    "description": "Sleep timer set confirmation",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  }
 }

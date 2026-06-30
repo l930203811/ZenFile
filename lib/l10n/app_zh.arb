@@ -1575,6 +1575,26 @@
     "description": "ui\\screens\\more_settings_screen.dart"
   },
   "msgf08c8dc4": "自然禅意",
+  "msgdesign6": "AI 设计 1",
+  "@msgdesign6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign7": "AI 设计 2",
+  "@msgdesign7": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign8": "AI 设计 3",
+  "@msgdesign8": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign9": "AI 设计 4",
+  "@msgdesign9": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign10": "AI 设计 5",
+  "@msgdesign10": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
   "@msgf08c8dc4": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -2325,9 +2345,6 @@
     "description": "ui\\screens\\web_sharing_screen.dart"
   },
   "msg4a5d26f4": "链接已复制到剪贴板！",
-  "@msg4a5d26f4": {
-    "description": "ui\\screens\\web_sharing_screen.dart"
-  },
   "type": "使用其他设备扫描以立即打开 {type}。",
   "@type": {
     "description": "ui\\screens\\web_sharing_screen.dart",
@@ -3327,7 +3344,6 @@
   "@msg_new_file_name": {
     "description": "Label for new file name input in rename dialog"
   },
-  "ui_extract": "解压",
   "msg_vault_choose_mode": "选择保护模式",
   "@msg_vault_choose_mode": {
     "description": "Vault protection mode dialog title"
@@ -3454,7 +3470,9 @@
   "@web_share_uploading": {
     "description": "Upload progress title",
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "web_share_upload_success": "上传成功",
@@ -3462,7 +3480,9 @@
   "@web_share_upload_failed": {
     "description": "Upload failed message",
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "web_share_preview_unsupported": "不支持预览此文件类型",
@@ -3474,7 +3494,9 @@
   "@web_share_items_count": {
     "description": "Item count display",
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "web_share_link_copied": "链接已复制到剪贴板",
@@ -3488,5 +3510,73 @@
   "web_share_category_documents": "文档",
   "web_share_category_others": "其他",
   "web_share_loading_preview": "正在加载预览...",
-  "web_share_preview_error": "无法流式传输文档。您仍然可以直接下载。"
+  "web_share_preview_error": "无法流式传输文档。您仍然可以直接下载。",
+  "msg_custom_shortcut": "自定义图标",
+  "msg_add_custom_shortcut": "添加到主屏幕",
+  "msg_shortcut_added": "已添加到主屏幕",
+  "msg_shortcut_failed": "添加失败，请重试",
+  "ui_lyrics_loaded": "歌词已加载",
+  "ui_lyrics_load_failed": "无法解析该歌词文件",
+  "ui_select_lyrics_file": "选择歌词文件",
+  "ui_no_lyrics_found": "未找到歌词",
+  "ui_lyrics_auto_load_hint": "将 .lrc 歌词文件放在音频同目录下\n（文件名与音频相同）即可自动加载",
+  "ui_lyrics_panel": "歌词全屏面板",
+  "ui_show_lyrics": "显示歌词",
+  "ui_hide_lyrics": "隐藏歌词",
+  "ui_sound_effects_speed": "音效与播放速度",
+  "ui_pitch_adjustment": "音调调节",
+  "ui_restore_default": "恢复默认",
+  "ui_sound_effects": "音效",
+  "ui_playback_queue": "播放队列",
+  "ui_repeat_off": "循环：关闭",
+  "ui_repeat_one": "循环：单曲",
+  "ui_repeat_all": "循环：全部",
+  "ui_shuffle_on": "随机播放：开",
+  "ui_minutes_format": "{minutes} 分钟",
+  "ui_sleep_timer_set": "睡眠定时器已设置为 {minutes} 分钟。",
+  "ui_enter_minutes": "输入分钟数",
+  "ui_sleep_timer_end": "定时时间到，已暂停播放",
+  "ui_close_player": "关闭播放器",
+  "ui_open_player": "打开播放器",
+  "ui_now_playing": "正在播放",
+  "ui_resume_playback": "继续播放",
+  "ui_single": "单曲",
+  "ui_add_remote_path": "添加远程路径",
+  "ui_select_remote_server": "选择远程服务器",
+  "ui_no_remote_connections": "暂无远程连接，请先添加网络连接",
+  "ui_retry": "重试",
+  "ui_no_subfolders": "无子文件夹",
+  "ui_select_this_folder": "选择此文件夹",
+  "ui_downloading_file": "下载中: {file}",
+  "@ui_downloading_file": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_sent": "已发送: {amount}",
+  "@ui_sent": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@ui_minutes_format": {
+    "description": "Minutes format for sleep timer options",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@ui_sleep_timer_set": {
+    "description": "Sleep timer set confirmation",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  }
 }

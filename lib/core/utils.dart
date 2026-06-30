@@ -43,6 +43,34 @@ class FileUtils {
         lower.endsWith('.001');
   }
 
+  /// 返回压缩包格式的简短标签（大写），用于图标显示。
+  /// 例如 .zip → "ZIP"，.7z → "7Z"，.tar.gz → "TAR.GZ"
+  static String getArchiveTypeLabel(String path) {
+    final lower = path.toLowerCase();
+    if (lower.endsWith('.tar.gz') || lower.endsWith('.tgz')) return 'GZ';
+    if (lower.endsWith('.tar.bz2') || lower.endsWith('.tbz2')) return 'BZ2';
+    if (lower.endsWith('.tar.lz4') || lower.endsWith('.tlz4')) return 'LZ4';
+    if (lower.endsWith('.tar.zst') || lower.endsWith('.tzst')) return 'ZST';
+    // 单扩展名
+    final ext = lower.split('.').last;
+    switch (ext) {
+      case 'zip': return 'ZIP';
+      case '7z': return '7Z';
+      case 'rar': return 'RAR';
+      case 'tar': return 'TAR';
+      case 'gz': return 'GZ';
+      case 'bz2': return 'BZ2';
+      case 'xz': return 'XZ';
+      case 'zst':
+      case 'zstd': return 'ZST';
+      case 'lz4': return 'LZ4';
+      case 'iso': return 'ISO';
+      case 'cab': return 'CAB';
+      case '001': return '001';
+      default: return ext.toUpperCase();
+    }
+  }
+
   static bool isTextOrCode(String path) {
     final lower = path.toLowerCase();
     
@@ -112,6 +140,47 @@ class FileUtils {
     if (mimeType != null && mimeType.startsWith('audio/')) return true;
     final lower = path.toLowerCase();
     return lower.endsWith('.mp3') || lower.endsWith('.wav') || lower.endsWith('.m4a') || lower.endsWith('.ogg') || lower.endsWith('.flac') || lower.endsWith('.aac') || lower.endsWith('.wma') || lower.endsWith('.opus');
+  }
+
+  /// 判断是否为文档文件（非图片/视频/音频/压缩包/APK）
+  static bool isDocument(String path) {
+    if (isImage(path) || isVideo(path) || isAudio(path) || isArchive(path)) return false;
+    final lower = path.toLowerCase();
+    final ext = lower.split('.').last;
+    const docExts = [
+      'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
+      'txt', 'md', 'json', 'xml', 'html', 'htm', 'csv',
+      'log', 'yaml', 'yml', 'ini', 'cfg', 'conf', 'properties',
+      'py', 'js', 'ts', 'dart', 'java', 'kt', 'cpp', 'c', 'h',
+      'hpp', 'cs', 'php', 'rb', 'go', 'rs', 'swift', 'sql',
+      'sh', 'bat', 'cmd', 'ps1', 'env', 'gradle',
+    ];
+    return docExts.contains(ext);
+  }
+
+  /// 返回图片格式的简短标签（大写），用于图标显示。
+  /// 例如 .jpg → "JPG"，.png → "PNG"
+  static String getImageTypeLabel(String path) {
+    final lower = path.toLowerCase();
+    if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'JPG';
+    if (lower.endsWith('.png')) return 'PNG';
+    if (lower.endsWith('.webp')) return 'WEBP';
+    if (lower.endsWith('.gif')) return 'GIF';
+    if (lower.endsWith('.bmp')) return 'BMP';
+    if (lower.endsWith('.avif')) return 'AVIF';
+    if (lower.endsWith('.heic')) return 'HEIC';
+    if (lower.endsWith('.heif')) return 'HEIF';
+    // 兜底：取扩展名大写
+    final ext = lower.split('.').last;
+    return ext.length <= 4 ? ext.toUpperCase() : ext.substring(0, 4).toUpperCase();
+  }
+
+  /// 返回文档格式的简短标签（大写），用于图标显示。
+  /// 例如 .pdf → "PDF"，.docx → "DOCX"
+  static String getDocumentTypeLabel(String path) {
+    final lower = path.toLowerCase();
+    final ext = lower.split('.').last;
+    return ext.length <= 4 ? ext.toUpperCase() : ext.substring(0, 4).toUpperCase();
   }
 
   static IconData getIconForFile(String path) {

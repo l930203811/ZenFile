@@ -130,7 +130,7 @@ class AboutZenFileScreen extends StatelessWidget {
                           child: Padding(
                             padding: const EdgeInsets.all(12.0),
                             child: Image.asset(
-                              'assets/logo/design_5_nature.jpg',
+                              'assets/logo/design_8.png',
                               fit: BoxFit.contain,
                               errorBuilder: (context, error, stackTrace) {
                                 // Fallback icon in case asset load fails

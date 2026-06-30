@@ -756,4 +756,114 @@ class PreferencesService {
       _prefs?.setString('default_conflict_resolution', value);
     }
   }
+
+  // --- Lyric File Mappings ---
+  static const String _keyLyricMappings = 'lyric_file_mappings';
+
+  /// 获取音频文件对应的歌词文件路径
+  static String? getLyricMapping(String audioPath) {
+    final json = _prefs?.getString(_keyLyricMappings);
+    if (json == null) return null;
+    try {
+      final map = jsonDecode(json) as Map<String, dynamic>;
+      return map[audioPath] as String?;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 保存音频文件与歌词文件的映射关系
+  static Future<void> saveLyricMapping(String audioPath, String lrcPath) async {
+    final json = _prefs?.getString(_keyLyricMappings);
+    Map<String, dynamic> map = {};
+    if (json != null) {
+      try {
+        map = jsonDecode(json) as Map<String, dynamic>;
+      } catch (_) {
+        map = {};
+      }
+    }
+    map[audioPath] = lrcPath;
+    await _prefs?.setString(_keyLyricMappings, jsonEncode(map));
+  }
+
+  /// 移除音频文件的歌词映射
+  static Future<void> removeLyricMapping(String audioPath) async {
+    final json = _prefs?.getString(_keyLyricMappings);
+    if (json == null) return;
+    try {
+      final map = jsonDecode(json) as Map<String, dynamic>;
+      map.remove(audioPath);
+      await _prefs?.setString(_keyLyricMappings, jsonEncode(map));
+    } catch (_) {}
+  }
+
+  // --- Audio Playback Position Memory ---
+  static const String _keyPlaybackPositions = 'audio_playback_positions';
+  static const String _keyLastPlayedAudio = 'last_played_audio';
+
+  /// 获取音频文件保存的播放进度（毫秒），返回 null 表示无记录
+  static int? getPlaybackPosition(String audioPath) {
+    final json = _prefs?.getString(_keyPlaybackPositions);
+    if (json == null) return null;
+    try {
+      final map = jsonDecode(json) as Map<String, dynamic>;
+      final pos = map[audioPath];
+      if (pos is int) return pos;
+      if (pos is num) return pos.toInt();
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 保存音频文件的播放进度（毫秒）
+  static Future<void> savePlaybackPosition(String audioPath, int positionMs) async {
+    final json = _prefs?.getString(_keyPlaybackPositions);
+    Map<String, dynamic> map = {};
+    if (json != null) {
+      try {
+        map = jsonDecode(json) as Map<String, dynamic>;
+      } catch (_) {
+        map = {};
+      }
+    }
+    map[audioPath] = positionMs;
+    await _prefs?.setString(_keyPlaybackPositions, jsonEncode(map));
+  }
+
+  /// 清除指定音频的播放进度记录
+  static Future<void> clearPlaybackPosition(String audioPath) async {
+    final json = _prefs?.getString(_keyPlaybackPositions);
+    if (json == null) return;
+    try {
+      final map = jsonDecode(json) as Map<String, dynamic>;
+      map.remove(audioPath);
+      await _prefs?.setString(_keyPlaybackPositions, jsonEncode(map));
+    } catch (_) {}
+  }
+
+  /// 获取上次播放的音频信息 {path, title, artist}
+  static Map<String, String>? getLastPlayedAudio() {
+    final json = _prefs?.getString(_keyLastPlayedAudio);
+    if (json == null) return null;
+    try {
+      final map = jsonDecode(json) as Map<String, dynamic>;
+      final path = map['path'] as String?;
+      if (path == null || path.isEmpty) return null;
+      return {
+        'path': path,
+        'title': map['title'] as String? ?? '',
+        'artist': map['artist'] as String? ?? '',
+      };
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 保存上次播放的音频信息
+  static Future<void> saveLastPlayedAudio(String path, String title, String artist) async {
+    final map = {'path': path, 'title': title, 'artist': artist};
+    await _prefs?.setString(_keyLastPlayedAudio, jsonEncode(map));
+  }
 }

@@ -1293,6 +1293,21 @@ class L10nEn extends L10n {
   String get msgf08c8dc4 => 'Natural Zen';
 
   @override
+  String get msgdesign6 => 'AI Design 1';
+
+  @override
+  String get msgdesign7 => 'AI Design 2';
+
+  @override
+  String get msgdesign8 => 'AI Design 3';
+
+  @override
+  String get msgdesign9 => 'AI Design 4';
+
+  @override
+  String get msgdesign10 => 'AI Design 5';
+
+  @override
   String get msg7372dc9f => 'Custom Icon';
 
   @override
@@ -3330,4 +3345,128 @@ class L10nEn extends L10n {
   @override
   String get web_share_preview_error =>
       'Failed to stream document. You can still download it directly.';
+
+  @override
+  String get msg_custom_shortcut => 'Custom Icon';
+
+  @override
+  String get msg_add_custom_shortcut => 'Add to Home Screen';
+
+  @override
+  String get msg_shortcut_added => 'Added to home screen';
+
+  @override
+  String get msg_shortcut_failed => 'Failed to add shortcut';
+
+  @override
+  String get ui_lyrics_loaded => 'Lyrics loaded';
+
+  @override
+  String get ui_lyrics_load_failed => 'Cannot parse this lyrics file';
+
+  @override
+  String get ui_select_lyrics_file => 'Select lyrics file';
+
+  @override
+  String get ui_no_lyrics_found => 'No lyrics found';
+
+  @override
+  String get ui_lyrics_auto_load_hint =>
+      'Place an .lrc file in the same folder as the audio\n(with the same filename) to auto-load';
+
+  @override
+  String get ui_lyrics_panel => 'Lyrics panel';
+
+  @override
+  String get ui_show_lyrics => 'Show lyrics';
+
+  @override
+  String get ui_hide_lyrics => 'Hide lyrics';
+
+  @override
+  String get ui_sound_effects_speed => 'Sound Effects & Speed';
+
+  @override
+  String get ui_pitch_adjustment => 'Pitch adjustment';
+
+  @override
+  String get ui_restore_default => 'Restore default';
+
+  @override
+  String get ui_sound_effects => 'Sound effects';
+
+  @override
+  String get ui_playback_queue => 'Playback queue';
+
+  @override
+  String get ui_repeat_off => 'Repeat: Off';
+
+  @override
+  String get ui_repeat_one => 'Repeat: One';
+
+  @override
+  String get ui_repeat_all => 'Repeat: All';
+
+  @override
+  String get ui_shuffle_on => 'Shuffle: On';
+
+  @override
+  String ui_minutes_format(int minutes) {
+    return '$minutes minutes';
+  }
+
+  @override
+  String ui_sleep_timer_set(int minutes) {
+    return 'Sleep timer set for $minutes minutes.';
+  }
+
+  @override
+  String get ui_enter_minutes => 'Enter minutes';
+
+  @override
+  String get ui_sleep_timer_end => 'Sleep timer ended, playback paused';
+
+  @override
+  String get ui_close_player => 'Close player';
+
+  @override
+  String get ui_open_player => 'Open Player';
+
+  @override
+  String get ui_now_playing => 'Now Playing';
+
+  @override
+  String get ui_resume_playback => 'Resume Playback';
+
+  @override
+  String get ui_single => 'Single';
+
+  @override
+  String get ui_add_remote_path => 'Add Remote Path';
+
+  @override
+  String get ui_select_remote_server => 'Select Remote Server';
+
+  @override
+  String get ui_no_remote_connections =>
+      'No remote connections, please add a network connection first';
+
+  @override
+  String get ui_retry => 'Retry';
+
+  @override
+  String get ui_no_subfolders => 'No subfolders';
+
+  @override
+  String get ui_select_this_folder => 'Select This Folder';
+
+  @override
+  String ui_downloading_file(String file) {
+    return 'Downloading: $file';
+  }
+
+  @override
+  String ui_sent(String amount) {
+    return 'Sent: $amount';
+  }
 }

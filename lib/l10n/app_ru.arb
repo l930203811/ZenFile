@@ -1552,6 +1552,26 @@
     "description": "ui\\screens\\more_settings_screen.dart"
   },
   "msgf08c8dc4": "Естественный Дзен",
+  "msgdesign6": "AI-дизайн 1",
+  "@msgdesign6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign7": "AI-дизайн 2",
+  "@msgdesign7": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign8": "AI-дизайн 3",
+  "@msgdesign8": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign9": "AI-дизайн 4",
+  "@msgdesign9": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign10": "AI-дизайн 5",
+  "@msgdesign10": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
   "@msg7372dc9f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -3171,7 +3191,9 @@
   "@msg_file_exists_desc": {
     "description": "Conflict dialog description",
     "placeholders": {
-      "fileName": { "type": "String" }
+      "fileName": {
+        "type": "String"
+      }
     }
   },
   "msg_existing_file": "Существующий файл",
@@ -3198,7 +3220,6 @@
   "@msg_new_file_name": {
     "description": "New file name label in rename dialog"
   },
-  "ui_extract": "Извлечь",
   "msg_remember_choice": "Запомнить этот выбор для будущих операций",
   "ui_caching": "Кэширование, пожалуйста, подождите...",
   "ui_username": "Имя Пользователя",
@@ -3294,7 +3315,9 @@
   "@web_share_uploading": {
     "description": "Upload progress title",
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "web_share_upload_success": "Загрузка успешно завершена",
@@ -3302,7 +3325,9 @@
   "@web_share_upload_failed": {
     "description": "Upload failed message",
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "web_share_preview_unsupported": "Предпросмотр не поддерживается для этого типа файла",
@@ -3314,7 +3339,9 @@
   "@web_share_items_count": {
     "description": "Item count display",
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "web_share_link_copied": "Ссылка скопирована в буфер обмена",
@@ -3328,5 +3355,73 @@
   "web_share_category_documents": "Документы",
   "web_share_category_others": "Другое",
   "web_share_loading_preview": "Загрузка предпросмотра...",
-  "web_share_preview_error": "Не удалось транслировать документ. Вы можете скачать его напрямую."
+  "web_share_preview_error": "Не удалось транслировать документ. Вы можете скачать его напрямую.",
+  "msg_custom_shortcut": "Пользовательская иконка",
+  "msg_add_custom_shortcut": "Добавить на главный экран",
+  "msg_shortcut_added": "Добавлено на главный экран",
+  "msg_shortcut_failed": "Ошибка добавления",
+  "ui_lyrics_loaded": "Текст песни загружен",
+  "ui_lyrics_load_failed": "Не удалось разобрать файл текста",
+  "ui_select_lyrics_file": "Выбрать файл текста",
+  "ui_no_lyrics_found": "Текст песни не найден",
+  "ui_lyrics_auto_load_hint": "Поместите файл .lrc в ту же папку, что и аудио\n(с тем же именем файла), чтобы автоматически загрузить",
+  "ui_lyrics_panel": "Панель текста",
+  "ui_show_lyrics": "Показать текст",
+  "ui_hide_lyrics": "Скрыть текст",
+  "ui_sound_effects_speed": "Звуковые эффекты и скорость",
+  "ui_pitch_adjustment": "Регулировка тона",
+  "ui_restore_default": "Восстановить по умолчанию",
+  "ui_sound_effects": "Звуковые эффекты",
+  "ui_playback_queue": "Очередь воспроизведения",
+  "ui_repeat_off": "Повтор: Выкл",
+  "ui_repeat_one": "Повтор: Один трек",
+  "ui_repeat_all": "Повтор: Все",
+  "ui_shuffle_on": "Случайный порядок: Вкл",
+  "ui_minutes_format": "{minutes} минут",
+  "ui_sleep_timer_set": "Таймер сна установлен на {minutes} минут.",
+  "ui_enter_minutes": "Введите минуты",
+  "ui_sleep_timer_end": "Таймер сработал, воспроизведение приостановлено",
+  "ui_close_player": "Закрыть плеер",
+  "ui_open_player": "Открыть плеер",
+  "ui_now_playing": "Сейчас играет",
+  "ui_resume_playback": "Возобновить",
+  "ui_single": "Сингл",
+  "ui_add_remote_path": "Добавить удалённый путь",
+  "ui_select_remote_server": "Выбрать удалённый сервер",
+  "ui_no_remote_connections": "Нет удалённых подключений, сначала добавьте сетевое подключение",
+  "ui_retry": "Повторить",
+  "ui_no_subfolders": "Нет подпапок",
+  "ui_select_this_folder": "Выбрать эту папку",
+  "ui_downloading_file": "Загрузка: {file}",
+  "@ui_downloading_file": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_sent": "Отправлено: {amount}",
+  "@ui_sent": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@ui_minutes_format": {
+    "description": "Minutes format for sleep timer options",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@ui_sleep_timer_set": {
+    "description": "Sleep timer set confirmation",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  }
 }

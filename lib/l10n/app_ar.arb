@@ -1552,6 +1552,26 @@
     "description": "ui\\screens\\more_settings_screen.dart"
   },
   "msgf08c8dc4": "Zen الطبيعي",
+  "msgdesign6": "تصميم AI 1",
+  "@msgdesign6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign7": "تصميم AI 2",
+  "@msgdesign7": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign8": "تصميم AI 3",
+  "@msgdesign8": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign9": "تصميم AI 4",
+  "@msgdesign9": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign10": "تصميم AI 5",
+  "@msgdesign10": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
   "@msg7372dc9f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -3171,7 +3191,9 @@
   "@msg_file_exists_desc": {
     "description": "Conflict dialog description",
     "placeholders": {
-      "fileName": { "type": "String" }
+      "fileName": {
+        "type": "String"
+      }
     }
   },
   "msg_existing_file": "الملف الموجود",
@@ -3198,7 +3220,6 @@
   "@msg_new_file_name": {
     "description": "New file name label in rename dialog"
   },
-  "ui_extract": "استخراج",
   "msg_remember_choice": "تذكر هذا الاختيار للعمليات المستقبلية",
   "ui_caching": "جاري التخزين المؤقت، يرجى الانتظار...",
   "ui_username": "اسم المستخدم",
@@ -3294,7 +3315,9 @@
   "@web_share_uploading": {
     "description": "Upload progress title",
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "web_share_upload_success": "اكتمل الرفع بنجاح",
@@ -3302,7 +3325,9 @@
   "@web_share_upload_failed": {
     "description": "Upload failed message",
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "web_share_preview_unsupported": "المعاينة غير مدعومة لنوع الملف هذا",
@@ -3314,7 +3339,9 @@
   "@web_share_items_count": {
     "description": "Item count display",
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "web_share_link_copied": "تم نسخ الرابط إلى الحافظة",
@@ -3328,5 +3355,73 @@
   "web_share_category_documents": "مستندات",
   "web_share_category_others": "أخرى",
   "web_share_loading_preview": "جاري تحميل المعاينة...",
-  "web_share_preview_error": "تعذر بث المستند. يمكنك still تحميله مباشرة."
+  "web_share_preview_error": "تعذر بث المستند. يمكنك still تحميله مباشرة.",
+  "msg_custom_shortcut": "أيقونة مخصصة",
+  "msg_add_custom_shortcut": "إضافة إلى الشاشة الرئيسية",
+  "msg_shortcut_added": "تمت الإضافة إلى الشاشة الرئيسية",
+  "msg_shortcut_failed": "فشل الإضافة",
+  "ui_lyrics_loaded": "تم تحميل كلمات الأغنية",
+  "ui_lyrics_load_failed": "تعذر تحليل ملف كلمات الأغنية",
+  "ui_select_lyrics_file": "اختيار ملف كلمات الأغنية",
+  "ui_no_lyrics_found": "لم يتم العثور على كلمات الأغنية",
+  "ui_lyrics_auto_load_hint": "ضع ملف .lrc في نفس مجلد الملف الصوتي\n(بنفس الاسم) لتحميله تلقائيًا",
+  "ui_lyrics_panel": "لوحة كلمات الأغنية",
+  "ui_show_lyrics": "إظهار كلمات الأغنية",
+  "ui_hide_lyrics": "إخفاء كلمات الأغنية",
+  "ui_sound_effects_speed": "المؤثرات الصوتية والسرعة",
+  "ui_pitch_adjustment": "ضبط النغمة",
+  "ui_restore_default": "استعادة الافتراضي",
+  "ui_sound_effects": "المؤثرات الصوتية",
+  "ui_playback_queue": "قائمة الانتظار",
+  "ui_repeat_off": "التكرار: إيقاف",
+  "ui_repeat_one": "التكرار: واحد",
+  "ui_repeat_all": "التكرار: الكل",
+  "ui_shuffle_on": "العشوائي: تشغيل",
+  "ui_minutes_format": "{minutes} دقيقة",
+  "ui_sleep_timer_set": "تم ضبط مؤقت النوم على {minutes} دقيقة.",
+  "ui_enter_minutes": "أدخل الدقائق",
+  "ui_sleep_timer_end": "انتهى المؤقت، تم إيقاف التشغيل مؤقتًا",
+  "ui_close_player": "إغلاق المشغل",
+  "ui_open_player": "فتح المشغل",
+  "ui_now_playing": "يتم التشغيل الآن",
+  "ui_resume_playback": "استئناف التشغيل",
+  "ui_single": "فردي",
+  "ui_add_remote_path": "إضافة مسار بعيد",
+  "ui_select_remote_server": "تحديد الخادم البعيد",
+  "ui_no_remote_connections": "لا توجد اتصالات بعيدة، يرجى إضافة اتصال شبكة أولاً",
+  "ui_retry": "إعادة المحاولة",
+  "ui_no_subfolders": "لا توجد مجلدات فرعية",
+  "ui_select_this_folder": "تحديد هذا المجلد",
+  "ui_downloading_file": "جارٍ التنزيل: {file}",
+  "@ui_downloading_file": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_sent": "تم الإرسال: {amount}",
+  "@ui_sent": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@ui_minutes_format": {
+    "description": "Minutes format for sleep timer options",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@ui_sleep_timer_set": {
+    "description": "Sleep timer set confirmation",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  }
 }

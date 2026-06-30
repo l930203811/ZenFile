@@ -1552,6 +1552,26 @@
     "description": "ui\\screens\\more_settings_screen.dart"
   },
   "msgf08c8dc4": "내추럴 젠",
+  "msgdesign6": "AI 디자인 1",
+  "@msgdesign6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign7": "AI 디자인 2",
+  "@msgdesign7": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign8": "AI 디자인 3",
+  "@msgdesign8": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign9": "AI 디자인 4",
+  "@msgdesign9": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign10": "AI 디자인 5",
+  "@msgdesign10": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
   "@msg7372dc9f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -3171,7 +3191,9 @@
   "@msg_file_exists_desc": {
     "description": "Conflict dialog description",
     "placeholders": {
-      "fileName": { "type": "String" }
+      "fileName": {
+        "type": "String"
+      }
     }
   },
   "msg_existing_file": "기존 파일",
@@ -3198,7 +3220,6 @@
   "@msg_new_file_name": {
     "description": "New file name label in rename dialog"
   },
-  "ui_extract": "압축 해제",
   "msg_remember_choice": "이 선택을 기억하여 향후 작업에 적용",
   "ui_caching": "캐싱 중입니다, 잠시만 기다려 주세요...",
   "ui_username": "사용자 이름",
@@ -3294,7 +3315,9 @@
   "@web_share_uploading": {
     "description": "Upload progress title",
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "web_share_upload_success": "업로드가 완료되었습니다",
@@ -3302,7 +3325,9 @@
   "@web_share_upload_failed": {
     "description": "Upload failed message",
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "web_share_preview_unsupported": "이 파일 형식의 미리보기는 지원되지 않습니다",
@@ -3314,7 +3339,9 @@
   "@web_share_items_count": {
     "description": "Item count display",
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "web_share_link_copied": "링크가 클립보드에 복사되었습니다",
@@ -3328,5 +3355,73 @@
   "web_share_category_documents": "문서",
   "web_share_category_others": "기타",
   "web_share_loading_preview": "미리보기 로드 중...",
-  "web_share_preview_error": "문서를 스트리밍할 수 없습니다. 직접 다운로드할 수 있습니다."
+  "web_share_preview_error": "문서를 스트리밍할 수 없습니다. 직접 다운로드할 수 있습니다.",
+  "msg_custom_shortcut": "사용자 지정 아이콘",
+  "msg_add_custom_shortcut": "홈 화면에 추가",
+  "msg_shortcut_added": "홈 화면에 추가됨",
+  "msg_shortcut_failed": "추가 실패",
+  "ui_lyrics_loaded": "가사를 불러왔습니다",
+  "ui_lyrics_load_failed": "이 가사 파일을 분석할 수 없습니다",
+  "ui_select_lyrics_file": "가사 파일 선택",
+  "ui_no_lyrics_found": "가사를 찾을 수 없습니다",
+  "ui_lyrics_auto_load_hint": ".lrc 가사 파일을 오디오와 같은 폴더에\n(파일명도 동일하게) 두면 자동으로 불러옵니다",
+  "ui_lyrics_panel": "가사 패널",
+  "ui_show_lyrics": "가사 표시",
+  "ui_hide_lyrics": "가사 숨기기",
+  "ui_sound_effects_speed": "음향 효과 및 재생 속도",
+  "ui_pitch_adjustment": "음정 조절",
+  "ui_restore_default": "기본값 복원",
+  "ui_sound_effects": "음향 효과",
+  "ui_playback_queue": "재생 대기열",
+  "ui_repeat_off": "반복: 끔",
+  "ui_repeat_one": "반복: 한 곡",
+  "ui_repeat_all": "반복: 전체",
+  "ui_shuffle_on": "임의 재생: 켬",
+  "ui_minutes_format": "{minutes}분",
+  "ui_sleep_timer_set": "수면 타이머가 {minutes}분으로 설정되었습니다.",
+  "ui_enter_minutes": "분 입력",
+  "ui_sleep_timer_end": "타이머가 종료되어 재생을 일시 중지했습니다",
+  "ui_close_player": "플레이어 닫기",
+  "ui_open_player": "플레이어 열기",
+  "ui_now_playing": "재생 중",
+  "ui_resume_playback": "재생 재개",
+  "ui_single": "싱글",
+  "ui_add_remote_path": "원격 경로 추가",
+  "ui_select_remote_server": "원격 서버 선택",
+  "ui_no_remote_connections": "원격 연결이 없습니다. 네트워크 연결을 먼저 추가하세요",
+  "ui_retry": "재시도",
+  "ui_no_subfolders": "하위 폴더 없음",
+  "ui_select_this_folder": "이 폴더 선택",
+  "ui_downloading_file": "다운로드 중: {file}",
+  "@ui_downloading_file": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_sent": "전송됨: {amount}",
+  "@ui_sent": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@ui_minutes_format": {
+    "description": "Minutes format for sleep timer options",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@ui_sleep_timer_set": {
+    "description": "Sleep timer set confirmation",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  }
 }

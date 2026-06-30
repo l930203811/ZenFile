@@ -1231,6 +1231,21 @@ class L10nKo extends L10n {
   String get msgf08c8dc4 => '내추럴 젠';
 
   @override
+  String get msgdesign6 => 'AI 디자인 1';
+
+  @override
+  String get msgdesign7 => 'AI 디자인 2';
+
+  @override
+  String get msgdesign8 => 'AI 디자인 3';
+
+  @override
+  String get msgdesign9 => 'AI 디자인 4';
+
+  @override
+  String get msgdesign10 => 'AI 디자인 5';
+
+  @override
   String get msg7372dc9f => '사용자 정의 아이콘';
 
   @override
@@ -3228,4 +3243,127 @@ class L10nKo extends L10n {
 
   @override
   String get web_share_preview_error => '문서를 스트리밍할 수 없습니다. 직접 다운로드할 수 있습니다.';
+
+  @override
+  String get msg_custom_shortcut => '사용자 지정 아이콘';
+
+  @override
+  String get msg_add_custom_shortcut => '홈 화면에 추가';
+
+  @override
+  String get msg_shortcut_added => '홈 화면에 추가됨';
+
+  @override
+  String get msg_shortcut_failed => '추가 실패';
+
+  @override
+  String get ui_lyrics_loaded => '가사를 불러왔습니다';
+
+  @override
+  String get ui_lyrics_load_failed => '이 가사 파일을 분석할 수 없습니다';
+
+  @override
+  String get ui_select_lyrics_file => '가사 파일 선택';
+
+  @override
+  String get ui_no_lyrics_found => '가사를 찾을 수 없습니다';
+
+  @override
+  String get ui_lyrics_auto_load_hint =>
+      '.lrc 가사 파일을 오디오와 같은 폴더에\n(파일명도 동일하게) 두면 자동으로 불러옵니다';
+
+  @override
+  String get ui_lyrics_panel => '가사 패널';
+
+  @override
+  String get ui_show_lyrics => '가사 표시';
+
+  @override
+  String get ui_hide_lyrics => '가사 숨기기';
+
+  @override
+  String get ui_sound_effects_speed => '음향 효과 및 재생 속도';
+
+  @override
+  String get ui_pitch_adjustment => '음정 조절';
+
+  @override
+  String get ui_restore_default => '기본값 복원';
+
+  @override
+  String get ui_sound_effects => '음향 효과';
+
+  @override
+  String get ui_playback_queue => '재생 대기열';
+
+  @override
+  String get ui_repeat_off => '반복: 끔';
+
+  @override
+  String get ui_repeat_one => '반복: 한 곡';
+
+  @override
+  String get ui_repeat_all => '반복: 전체';
+
+  @override
+  String get ui_shuffle_on => '임의 재생: 켬';
+
+  @override
+  String ui_minutes_format(int minutes) {
+    return '$minutes분';
+  }
+
+  @override
+  String ui_sleep_timer_set(int minutes) {
+    return '수면 타이머가 $minutes분으로 설정되었습니다.';
+  }
+
+  @override
+  String get ui_enter_minutes => '분 입력';
+
+  @override
+  String get ui_sleep_timer_end => '타이머가 종료되어 재생을 일시 중지했습니다';
+
+  @override
+  String get ui_close_player => '플레이어 닫기';
+
+  @override
+  String get ui_open_player => '플레이어 열기';
+
+  @override
+  String get ui_now_playing => '재생 중';
+
+  @override
+  String get ui_resume_playback => '재생 재개';
+
+  @override
+  String get ui_single => '싱글';
+
+  @override
+  String get ui_add_remote_path => '원격 경로 추가';
+
+  @override
+  String get ui_select_remote_server => '원격 서버 선택';
+
+  @override
+  String get ui_no_remote_connections => '원격 연결이 없습니다. 네트워크 연결을 먼저 추가하세요';
+
+  @override
+  String get ui_retry => '재시도';
+
+  @override
+  String get ui_no_subfolders => '하위 폴더 없음';
+
+  @override
+  String get ui_select_this_folder => '이 폴더 선택';
+
+  @override
+  String ui_downloading_file(String file) {
+    return '다운로드 중: $file';
+  }
+
+  @override
+  String ui_sent(String amount) {
+    return '전송됨: $amount';
+  }
 }
