@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+import '../../../core/utils.dart';
 
 class AudioQueueSheet extends StatelessWidget {
   final List<SongModel> songs;
@@ -109,7 +110,7 @@ class AudioQueueSheet extends StatelessWidget {
                     ),
                   ),
                   subtitle: Text(
-                    song.artist ?? L10n.of(context).msg5e32276d,
+                    FileUtils.isUnknownArtist(song.artist) ? L10n.of(context).msg5e32276d : song.artist!,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(

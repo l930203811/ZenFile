@@ -1981,8 +1981,32 @@ abstract class L10n {
   /// ui\screens\more_settings_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'在浏览页启用底部操作栏'**
+  /// **'在顶部或底部显示导航栏位置'**
   String get msg309e2a28;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'顶部'**
+  String get msge34c23ff;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'操作按钮显示在页面顶部'**
+  String get msg3341e3ed;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'底部'**
+  String get msg8c414b06;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'操作按钮显示在页面底部'**
+  String get msg5d2c8e7f;
 
   /// ui\screens\more_settings_screen.dart
   ///
@@ -2413,55 +2437,55 @@ abstract class L10n {
   /// ui\screens\more_settings_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'极简风'**
+  /// **'M3 表现派 1'**
   String get msgd06ba04f;
 
   /// ui\screens\more_settings_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'玻璃拟态'**
+  /// **'M3 表现派 2'**
   String get msg5090469e;
 
   /// ui\screens\more_settings_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'3D 可爱'**
+  /// **'M3 表现派 3'**
   String get d;
 
   /// ui\screens\more_settings_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'赛博朋克'**
+  /// **'极简风'**
   String get msg67836b24;
 
   /// ui\screens\more_settings_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'自然禅意'**
+  /// **'玻璃拟态'**
   String get msgf08c8dc4;
 
   /// ui\screens\more_settings_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'AI 设计 1'**
+  /// **'赛博朋克'**
   String get msgdesign6;
 
   /// ui\screens\more_settings_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'AI 设计 2'**
+  /// **'新拟态'**
   String get msgdesign7;
 
   /// ui\screens\more_settings_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'AI 设计 3'**
+  /// **'经典 2'**
   String get msgdesign8;
 
   /// ui\screens\more_settings_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'AI 设计 4'**
+  /// **'经典 3'**
   String get msgdesign9;
 
   /// ui\screens\more_settings_screen.dart
@@ -4687,7 +4711,7 @@ abstract class L10n {
   /// No description provided for @ui_show_bottom_action_bar.
   ///
   /// In zh, this message translates to:
-  /// **'显示底部导航栏'**
+  /// **'导航栏位置'**
   String get ui_show_bottom_action_bar;
 
   /// No description provided for @ui_hide_action_text.
@@ -5481,6 +5505,18 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'修复远程服务器复制文件到本地粘贴时进度条无响应且文件未出现的问题'**
   String get log_remote_copy_paste_fix;
+
+  /// No description provided for @log_navbar_position_setting.
+  ///
+  /// In zh, this message translates to:
+  /// **'新增导航栏位置设置，支持顶部或底部显示导航栏'**
+  String get log_navbar_position_setting;
+
+  /// No description provided for @log_browse_top_area_optimize.
+  ///
+  /// In zh, this message translates to:
+  /// **'启用底部导航栏时，优化浏览页顶部区域布局，增加文件列表显示空间'**
+  String get log_browse_top_area_optimize;
 
   /// No description provided for @msg_remember_choice.
   ///

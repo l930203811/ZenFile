@@ -1040,7 +1040,19 @@ class L10nAr extends L10n {
       'حساب وعرض إجمالي حجم جميع الملفات في الدليل (قد يؤثر على أداء القائمة)';
 
   @override
-  String get msg309e2a28 => 'تمكين شريط الإجراءات السفلي في صفحة التصفح';
+  String get msg309e2a28 => 'عرض شريط التنقل في الأعلى أو الأسفل';
+
+  @override
+  String get msge34c23ff => 'الأعلى';
+
+  @override
+  String get msg3341e3ed => 'أزرار الإجراءات معروضة في أعلى الصفحة';
+
+  @override
+  String get msg8c414b06 => 'الأسفل';
+
+  @override
+  String get msg5d2c8e7f => 'أزرار الإجراءات معروضة في أسفل الصفحة';
 
   @override
   String get msg9b7639ac =>
@@ -1273,31 +1285,31 @@ class L10nAr extends L10n {
   String get msg5dc988f4 => 'قائمة هامبرغر / قائمة كلاسيكية';
 
   @override
-  String get msgd06ba04f => 'بسيط';
+  String get msgd06ba04f => 'تعبيري M3 1';
 
   @override
-  String get msg5090469e => 'Glassmorphism';
+  String get msg5090469e => 'تعبيري M3 2';
 
   @override
-  String get d => '3D لطيف';
+  String get d => 'تعبيري M3 3';
 
   @override
-  String get msg67836b24 => 'Cyberpunk';
+  String get msg67836b24 => 'بسيط';
 
   @override
-  String get msgf08c8dc4 => 'Zen الطبيعي';
+  String get msgf08c8dc4 => 'زجاجي';
 
   @override
-  String get msgdesign6 => 'تصميم AI 1';
+  String get msgdesign6 => 'سايبربانك';
 
   @override
-  String get msgdesign7 => 'تصميم AI 2';
+  String get msgdesign7 => 'نيومورفيزم';
 
   @override
-  String get msgdesign8 => 'تصميم AI 3';
+  String get msgdesign8 => 'كلاسيكي 2';
 
   @override
-  String get msgdesign9 => 'تصميم AI 4';
+  String get msgdesign9 => 'كلاسيكي 3';
 
   @override
   String get msgdesign10 => 'تصميم AI 5';
@@ -1377,7 +1389,7 @@ class L10nAr extends L10n {
       'اختر شعاراً مخصصاً لأيقونة مشغل التطبيقات. قد يستغرق بعض المشغلات بضع ثوانٍ للتحديث.';
 
   @override
-  String get msg64a6476a => 'الشعار الافتراضي';
+  String get msg64a6476a => 'الافتراضي';
 
   @override
   String title(Object title) {
@@ -2515,7 +2527,7 @@ class L10nAr extends L10n {
   String get ui_show_folder_size => 'إظهار حجم المجلد';
 
   @override
-  String get ui_show_bottom_action_bar => 'إظهار شريط الإجراءات السفلي';
+  String get ui_show_bottom_action_bar => 'موقع شريط التنقل';
 
   @override
   String get ui_hide_action_text => 'إخفاء تسميات نص شريط الإجراءات';
@@ -2972,6 +2984,14 @@ class L10nAr extends L10n {
   @override
   String get log_remote_copy_paste_fix =>
       'إصلاح مشكلة النسخ من الخادم البعيد: شريط التقدم 0% والملفات لا تظهر';
+
+  @override
+  String get log_navbar_position_setting =>
+      'Added navigation bar position setting, support top or bottom display';
+
+  @override
+  String get log_browse_top_area_optimize =>
+      'Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space';
 
   @override
   String get msg_remember_choice => 'تذكر هذا الاختيار للعمليات المستقبلية';

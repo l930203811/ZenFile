@@ -1269,8 +1269,24 @@
   "@msg59a24fcb": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg309e2a28": "在瀏覽頁啟用底部操作欄",
+  "msg309e2a28": "在頂部或底部顯示導航欄位置",
   "@msg309e2a28": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msge34c23ff": "頂部",
+  "@msge34c23ff": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg3341e3ed": "操作按鈕顯示在頁面頂部",
+  "@msg3341e3ed": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg8c414b06": "底部",
+  "@msg8c414b06": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5d2c8e7f": "操作按鈕顯示在頁面底部",
+  "@msg5d2c8e7f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
   "msg9b7639ac": "在瀏覽和媒體頁面的選擇操作欄中僅顯示圖示",
@@ -1558,36 +1574,36 @@
   "@msg5dc988f4": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgd06ba04f": "極簡風",
+  "msgd06ba04f": "M3 表現派 1",
   "@msgd06ba04f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg5090469e": "玻璃擬態",
+  "msg5090469e": "M3 表現派 2",
   "@msg5090469e": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "d": "3D 可愛",
+  "d": "M3 表現派 3",
   "@d": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg67836b24": "賽博朋克",
+  "msg67836b24": "極簡風",
   "@msg67836b24": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgf08c8dc4": "自然禪意",
-  "msgdesign6": "AI 設計 1",
+  "msgf08c8dc4": "玻璃擬態",
+  "msgdesign6": "賽博龐克",
   "@msgdesign6": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdesign7": "AI 設計 2",
+  "msgdesign7": "新擬態",
   "@msgdesign7": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdesign8": "AI 設計 3",
+  "msgdesign8": "經典 2",
   "@msgdesign8": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdesign9": "AI 設計 4",
+  "msgdesign9": "經典 3",
   "@msgdesign9": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -2893,7 +2909,7 @@
   "ui_use_24h_format": "使用24小時制",
   "ui_show_folder_contents_count": "顯示資料夾內容計數",
   "ui_show_folder_size": "顯示資料夾大小",
-  "ui_show_bottom_action_bar": "顯示底部導航欄",
+  "ui_show_bottom_action_bar": "導航欄位置",
   "ui_hide_action_text": "隱藏操作欄文字標籤",
   "ui_show_media_previews": "顯示媒體預覽",
   "ui_adaptive_multiline_names": "自適應多行檔名",
@@ -3250,6 +3266,8 @@
     "log_archive_icon_redesign": "重新設計壓縮包圖標，顯示格式標籤（zip、7z、rar 等）",
     "log_music_lrc_lyrics": "音樂播放器支援自動載入 LRC 歌詞及手動選擇歌詞文件",
       "log_remote_copy_paste_fix": "修復遠端伺服器複製檔案到本機貼上時進度條無回應且檔案未出現的問題",
+    "log_navbar_position_setting": "新增導覽列位置設定，支援頂部或底部顯示導覽列",
+    "log_browse_top_area_optimize": "啟用底部導覽列時，最佳化瀏覽頁頂部區域佈局，增加檔案列表顯示空間",
   "msg_file_exists": "檔案已存在",
   "@msg_file_exists": {
     "description": "Conflict dialog title"

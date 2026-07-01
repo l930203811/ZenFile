@@ -255,9 +255,8 @@ class SelectionContextBottomSheet extends StatelessWidget {
                     targetPaths: selectedPaths,
                     context: effectiveContext,
                   );
-                  // 压缩完成后无论内部刷新是否成功，都再强制刷新一次当前目录
-                  provider.loadDirectory(provider.currentPath, showLoading: false, clearCache: true);
-                  provider.clearSelection();
+                  // 刷新由 createArchive 内部通过 BackgroundArchiveService._onOperationComplete 处理
+                  // 不在此处额外调用 loadDirectory，避免与压缩 Isolate 并发 I/O 导致性能下降和刷新竞态
                 }
               },
             ),

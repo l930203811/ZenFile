@@ -506,6 +506,16 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                         trailing: Icon(Broken.arrow_right_3, size: 18, color: theme.colorScheme.onSurface.withOpacity(0.3)),
                         onTap: () => _showSwipeModeDialog(context, fileManager),
                       ),
+                    if (bottomActionBarVis)
+                      SettingsTile(
+                        icon: Broken.menu,
+                        title: L10n.of(context).ui_show_bottom_action_bar,
+                        subtitle: fileManager.showBottomActionBar
+                            ? L10n.of(context).msg8c414b06
+                            : L10n.of(context).msge34c23ff,
+                        trailing: Icon(Broken.arrow_right_3, size: 18, color: theme.colorScheme.onSurface.withOpacity(0.3)),
+                        onTap: () => _showBottomActionBarDialog(context, fileManager),
+                      ),
                     if (rememberLastFolderVis)
                       SettingsTile(
                         icon: Broken.folder_open,
@@ -549,21 +559,6 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                           ),
                         ),
                         onTap: () => fileManager.toggleHideNavigationBar(),
-                      ),
-                    if (bottomActionBarVis)
-                      SettingsTile(
-                        icon: Broken.menu,
-                        title: L10n.of(context).ui_show_bottom_action_bar,
-                        subtitle: L10n.of(context).msg309e2a28,
-                        trailing: Transform.scale(
-                          scale: 0.85,
-                          child: Switch(
-                            value: fileManager.showBottomActionBar,
-                            activeColor: theme.colorScheme.primary,
-                            onChanged: (_) => fileManager.toggleBottomActionBar(),
-                          ),
-                        ),
-                        onTap: () => fileManager.toggleBottomActionBar(),
                       ),
                     if (hideActionTextVis)
                       SettingsTile(
@@ -1113,6 +1108,15 @@ class GeneralSettingsScreen extends StatelessWidget {
               onTap: () => _showSwipeModeDialog(context, fileManager),
             ),
             SettingsTile(
+              icon: Broken.menu,
+              title: L10n.of(context).ui_show_bottom_action_bar,
+              subtitle: fileManager.showBottomActionBar
+                  ? L10n.of(context).msg8c414b06
+                  : L10n.of(context).msge34c23ff,
+              trailing: Icon(Broken.arrow_right_3, size: 18, color: theme.colorScheme.onSurface.withOpacity(0.3)),
+              onTap: () => _showBottomActionBarDialog(context, fileManager),
+            ),
+            SettingsTile(
               icon: Broken.folder_open,
               title: L10n.of(context).msg59c7debc,
               subtitle: L10n.of(context).msgd1591ba4,
@@ -1139,20 +1143,6 @@ class GeneralSettingsScreen extends StatelessWidget {
                 ),
               ),
               onTap: () => fileManager.toggleHideNavigationBar(),
-            ),
-            SettingsTile(
-              icon: Broken.menu,
-              title: L10n.of(context).ui_show_bottom_action_bar,
-              subtitle: L10n.of(context).msg309e2a28,
-              trailing: Transform.scale(
-                scale: 0.85,
-                child: Switch(
-                  value: fileManager.showBottomActionBar,
-                  activeColor: theme.colorScheme.primary,
-                  onChanged: (_) => fileManager.toggleBottomActionBar(),
-                ),
-              ),
-              onTap: () => fileManager.toggleBottomActionBar(),
             ),
             SettingsTile(
               icon: Icons.label_off_rounded,
@@ -1600,31 +1590,53 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) {
         return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 40, height: 4,
-                  decoration: BoxDecoration(color: Colors.grey.withOpacity(0.3), borderRadius: BorderRadius.circular(2)),
-                ),
-                const SizedBox(height: 16),
-                Text(L10n.of(context).msgd9f142c4, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                ...options.map((days) => ListTile(
-                  leading: Icon(
-                    _autoCleanDays == days ? Icons.check_circle_rounded : Icons.circle_outlined,
-                    color: _autoCleanDays == days ? Theme.of(ctx).colorScheme.primary : Colors.grey,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(ctx).size.height * 0.75,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40, height: 4,
+                    decoration: BoxDecoration(color: Colors.grey.withOpacity(0.3), borderRadius: BorderRadius.circular(2)),
                   ),
-                  title: Text(_getAutoCleanLabel(days)),
-                  onTap: () {
-                    setState(() => _autoCleanDays = days);
-                    PreferencesService.saveRemoteCacheAutoCleanDays(days);
-                    Navigator.pop(ctx);
-                  },
-                )),
-              ],
+                  const SizedBox(height: 16),
+                  Text(L10n.of(context).msgd9f142c4, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  ListTile(
+                    leading: Icon(Broken.trash, color: Theme.of(ctx).colorScheme.error),
+                    title: Text(L10n.of(context).ui_clear_remote_cache),
+                    subtitle: Text(L10n.of(context).msg5472ef41, style: TextStyle(fontSize: 12)),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _clearRemoteCache();
+                    },
+                  ),
+                  const Divider(height: 1),
+                  const SizedBox(height: 4),
+                  Flexible(
+                    child: ListView(
+                      shrinkWrap: true,
+                      physics: const BouncingScrollPhysics(),
+                      children: options.map((days) => ListTile(
+                        leading: Icon(
+                          _autoCleanDays == days ? Icons.check_circle_rounded : Icons.circle_outlined,
+                          color: _autoCleanDays == days ? Theme.of(ctx).colorScheme.primary : Colors.grey,
+                        ),
+                        title: Text(_getAutoCleanLabel(days)),
+                        onTap: () {
+                          setState(() => _autoCleanDays = days);
+                          PreferencesService.saveRemoteCacheAutoCleanDays(days);
+                          Navigator.pop(ctx);
+                        },
+                      )).toList(),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -1691,14 +1703,25 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
             ),
             const SizedBox(height: 8),
             SettingsTile(
-              icon: Broken.trash,
-              title: L10n.of(context).ui_clear_remote_cache,
-              subtitle: L10n.of(context).msg5472ef41,
-              trailing: IconButton(
-                icon: Icon(Broken.trash, color: theme.colorScheme.error, size: 20),
-                onPressed: _clearRemoteCache,
+              icon: Broken.image,
+              title: L10n.of(context).ui_remote_media_thumbnail,
+              subtitle: L10n.of(context).msg225f6249,
+              trailing: Transform.scale(
+                scale: 0.85,
+                child: Switch(
+                  value: _remoteThumbnailPreview,
+                  activeColor: theme.colorScheme.primary,
+                  onChanged: (val) {
+                    setState(() => _remoteThumbnailPreview = val);
+                    PreferencesService.saveRemoteMediaThumbnailPreview(val);
+                  },
+                ),
               ),
-              onTap: _clearRemoteCache,
+              onTap: () {
+                final val = !_remoteThumbnailPreview;
+                setState(() => _remoteThumbnailPreview = val);
+                PreferencesService.saveRemoteMediaThumbnailPreview(val);
+              },
             ),
             SettingsTile(
               icon: Broken.folder_open,
@@ -1720,27 +1743,6 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
               subtitle: L10n.of(context).ui_auto_clean_remote_cache(_getAutoCleanLabel(_autoCleanDays)),
               trailing: Icon(Icons.chevron_right_rounded, color: theme.colorScheme.onSurface.withOpacity(0.4)),
               onTap: _showAutoCleanPicker,
-            ),
-            SettingsTile(
-              icon: Broken.image,
-              title: L10n.of(context).ui_remote_media_thumbnail,
-              subtitle: L10n.of(context).msg225f6249,
-              trailing: Transform.scale(
-                scale: 0.85,
-                child: Switch(
-                  value: _remoteThumbnailPreview,
-                  activeColor: theme.colorScheme.primary,
-                  onChanged: (val) {
-                    setState(() => _remoteThumbnailPreview = val);
-                    PreferencesService.saveRemoteMediaThumbnailPreview(val);
-                  },
-                ),
-              ),
-              onTap: () {
-                final val = !_remoteThumbnailPreview;
-                setState(() => _remoteThumbnailPreview = val);
-                PreferencesService.saveRemoteMediaThumbnailPreview(val);
-              },
             ),
           ],
         ),
@@ -1926,7 +1928,6 @@ String _getAppIconLabel(BuildContext context, String option) {
     case 'design7': return L10n.of(context).msgdesign7;
     case 'design8': return L10n.of(context).msgdesign8;
     case 'design9': return L10n.of(context).msgdesign9;
-    case 'design10': return L10n.of(context).msgdesign10;
     case 'custom': return L10n.of(context).msg7372dc9f;
     case 'default':
     default:
@@ -2161,6 +2162,47 @@ void _showSwipeModeDialog(BuildContext context, FileManagerProvider fileManager)
               ctx, theme, Broken.arrow_swap_horizontal, L10n.of(context).msgbc9bf336, L10n.of(context).msg563871d3,
               selected: fileManager.swipeMode == 'dual',
               onTap: () { Navigator.pop(ctx); fileManager.setSwipeMode('dual'); },
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+void _showBottomActionBarDialog(BuildContext context, FileManagerProvider fileManager) {
+  final theme = Theme.of(context);
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: theme.scaffoldBackgroundColor,
+    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+    builder: (ctx) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(width: 36, height: 4,
+                decoration: BoxDecoration(color: theme.colorScheme.onSurface.withOpacity(0.15), borderRadius: BorderRadius.circular(2)),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(L10n.of(context).ui_show_bottom_action_bar, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+            const SizedBox(height: 6),
+            Text(L10n.of(context).msg309e2a28, style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withOpacity(0.5))),
+            const SizedBox(height: 20),
+            _buildSelectionTile(
+              ctx, theme, Broken.arrow_square_up, L10n.of(context).msge34c23ff, L10n.of(context).msg3341e3ed,
+              selected: !fileManager.showBottomActionBar,
+              onTap: () { Navigator.pop(ctx); fileManager.setBottomActionBar(false); },
+            ),
+            const SizedBox(height: 8),
+            _buildSelectionTile(
+              ctx, theme, Broken.arrow_square_down, L10n.of(context).msg8c414b06, L10n.of(context).msg5d2c8e7f,
+              selected: fileManager.showBottomActionBar,
+              onTap: () { Navigator.pop(ctx); fileManager.setBottomActionBar(true); },
             ),
           ],
         ),
@@ -2584,7 +2626,7 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
                                 theme,
                                 id: 'default',
                                 title: L10n.of(context).msg64a6476a,
-                                imagePath: 'assets/logo/design_8.png',
+                                imagePath: 'assets/logo/zf_Classic1.png',
                               ),
                               _buildIconOptionCard(
                                 context,
@@ -2592,7 +2634,7 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
                                 theme,
                                 id: 'design1',
                                 title: L10n.of(context).msgd06ba04f,
-                                imagePath: 'assets/logo/design_1_minimalist.jpg',
+                                imagePath: 'assets/logo/zf_m3_expressive_1.png',
                               ),
                               _buildIconOptionCard(
                                 context,
@@ -2600,7 +2642,7 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
                                 theme,
                                 id: 'design2',
                                 title: L10n.of(context).msg5090469e,
-                                imagePath: 'assets/logo/design_2_glassmorphism.jpg',
+                                imagePath: 'assets/logo/zf_m3_expressive_2.png',
                               ),
                               _buildIconOptionCard(
                                 context,
@@ -2608,7 +2650,7 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
                                 theme,
                                 id: 'design3',
                                 title: L10n.of(context).d,
-                                imagePath: 'assets/logo/design_3_3d_cute.jpg',
+                                imagePath: 'assets/logo/zf_m3_expressive_3.png',
                               ),
                               _buildIconOptionCard(
                                 context,
@@ -2616,7 +2658,7 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
                                 theme,
                                 id: 'design4',
                                 title: L10n.of(context).msg67836b24,
-                                imagePath: 'assets/logo/design_4_cyberpunk.jpg',
+                                imagePath: 'assets/logo/zf_minimal_flat.png',
                               ),
                               _buildIconOptionCard(
                                 context,
@@ -2624,7 +2666,7 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
                                 theme,
                                 id: 'design5',
                                 title: L10n.of(context).msgf08c8dc4,
-                                imagePath: 'assets/logo/design_5_nature.jpg',
+                                imagePath: 'assets/logo/zf_glassmorphism.png',
                               ),
                               _buildIconOptionCard(
                                 context,
@@ -2632,7 +2674,7 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
                                 theme,
                                 id: 'design6',
                                 title: L10n.of(context).msgdesign6,
-                                imagePath: 'assets/logo/design_6.png',
+                                imagePath: 'assets/logo/zf_cyberpunk.png',
                               ),
                               _buildIconOptionCard(
                                 context,
@@ -2640,7 +2682,7 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
                                 theme,
                                 id: 'design7',
                                 title: L10n.of(context).msgdesign7,
-                                imagePath: 'assets/logo/design_7.png',
+                                imagePath: 'assets/logo/zf_neumorphism.png',
                               ),
                               _buildIconOptionCard(
                                 context,
@@ -2648,7 +2690,7 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
                                 theme,
                                 id: 'design8',
                                 title: L10n.of(context).msgdesign8,
-                                imagePath: 'assets/logo/design_8.png',
+                                imagePath: 'assets/logo/zf_Classic2.png',
                               ),
                               _buildIconOptionCard(
                                 context,
@@ -2656,15 +2698,7 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
                                 theme,
                                 id: 'design9',
                                 title: L10n.of(context).msgdesign9,
-                                imagePath: 'assets/logo/design_9.png',
-                              ),
-                              _buildIconOptionCard(
-                                context,
-                                fileManager,
-                                theme,
-                                id: 'design10',
-                                title: L10n.of(context).msgdesign10,
-                                imagePath: 'assets/logo/design_10.png',
+                                imagePath: 'assets/logo/zf_Classic3.png',
                               ),
                               _buildCustomIconOptionCard(
                                 context,

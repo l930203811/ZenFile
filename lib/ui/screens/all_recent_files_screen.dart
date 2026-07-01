@@ -11,6 +11,8 @@ import '../widgets/file_item.dart';
 import '../widgets/folder_item.dart';
 import '../widgets/file_action_dialogs.dart';
 import '../widgets/selection_context_bottom_sheet.dart';
+import '../widgets/selection_action_bar.dart';
+import '../widgets/create_archive_dialog.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class AllRecentFilesScreen extends StatefulWidget {
@@ -48,11 +50,35 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         try {
-          context.read<FileManagerProvider>().clearSelection();
+          final provider = context.read<FileManagerProvider>();
+          provider.clearSelection();
+          // 监听选择状态变化，当选择被清除（操作完成）后刷新列表
+          provider.addListener(_onProviderChanged);
         } catch (_) {}
       }
     });
     _loadRecentFiles();
+  }
+
+  bool _wasSelectionMode = false;
+
+  void _onProviderChanged() {
+    if (!mounted) return;
+    final provider = context.read<FileManagerProvider>();
+    final isSelection = provider.selectedPaths.isNotEmpty;
+    // 当从选择模式退出时（操作完成），刷新最近文件列表
+    if (_wasSelectionMode && !isSelection) {
+      _loadRecentFiles();
+    }
+    _wasSelectionMode = isSelection;
+  }
+
+  @override
+  void dispose() {
+    try {
+      context.read<FileManagerProvider>().removeListener(_onProviderChanged);
+    } catch (_) {}
+    super.dispose();
   }
 
   Future<void> _loadRecentFiles() async {
@@ -213,64 +239,6 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
     setState(() {});
   }
 
-  void _handleCopySelected() {
-    if (_selectedPaths.isEmpty) return;
-    context.read<FileManagerProvider>().setClipboard(_selectedPaths.toList(), isCut: false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('已复制 ${_selectedPaths.length} 个项目到剪贴板')),
-    );
-  }
-
-  void _handleCutSelected() {
-    if (_selectedPaths.isEmpty) return;
-    context.read<FileManagerProvider>().setClipboard(_selectedPaths.toList(), isCut: true);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('已剪切 ${_selectedPaths.length} 个项目到剪贴板')),
-    );
-  }
-
-  Future<void> _handleShareSelected() async {
-    if (_selectedPaths.isEmpty) return;
-    final shareFiles = <XFile>[];
-    for (final path in _selectedPaths) {
-      if (FileSystemEntity.isFileSync(path)) {
-        shareFiles.add(XFile(path));
-      }
-    }
-    if (shareFiles.isNotEmpty) {
-      try {
-        await Share.shareXFiles(shareFiles);
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('分享出错：{e}')));
-        }
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).msg7a4ee0c7)));
-    }
-  }
-
-  Future<void> _handleDeleteSelected() async {
-    if (_selectedPaths.isEmpty) return;
-    final confirm = await FileActionDialogs.showConfirmDialog(
-      context,
-      title: L10n.of(context).msgcd0b9aca,
-      content: L10n.of(context).selectedcount2(_selectedPaths.length),
-    );
-
-    if (confirm) {
-      final provider = context.read<FileManagerProvider>();
-      final toDelete = _selectedPaths.toList();
-      for (final path in toDelete) {
-        await provider.deleteFile(path);
-        setState(() {
-          _recentFiles.removeWhere((e) => e.path == path);
-        });
-      }
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).msg45326802)));
-    }
-  }
-
   void _handleAction(BuildContext context, String action, String path) async {
     final provider = context.read<FileManagerProvider>();
     switch (action) {
@@ -298,6 +266,29 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
         provider.cutFile(path);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).msge5212c58)));
         break;
+      case 'archive':
+        final res = await CreateArchiveDialog.show(
+          context,
+          initialName: p.basename(path),
+          isMultiSelection: false,
+        );
+        if (res != null) {
+          await provider.createArchive(
+            archiveName: res.archiveName,
+            format: res.format,
+            compressionLevel: res.compressionLevel,
+            password: res.password,
+            splitSizeMB: res.splitSizeMB,
+            deleteSource: res.deleteSource,
+            separateArchives: res.separateArchives,
+            targetPaths: [path],
+            context: context,
+          );
+        }
+        break;
+      case 'extract':
+        await provider.extractArchiveDirectly(context, path);
+        break;
       case 'rename':
         final currentName = p.basename(path);
         final newName = await FileActionDialogs.showTextInputDialog(
@@ -309,7 +300,7 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
         );
         if (newName != null && newName.isNotEmpty) {
           await provider.renameFile(path, newName);
-          _loadRecentFiles(); // refresh
+          _loadRecentFiles();
         }
         break;
       case 'delete':
@@ -343,41 +334,21 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
                 onPressed: () => Navigator.pop(context),
               ),
         title: Text(
-          _isSelectionMode ? '${_selectedPaths.length} 已选择' : '全部最近文件',
+          _isSelectionMode ? '' : L10n.of(context).msg54355dd8,
           style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
         actions: _isSelectionMode
             ? [
                 IconButton(
-                  icon: const Icon(Broken.document_copy),
-                  tooltip: '复制',
-                  onPressed: _handleCopySelected,
-                ),
-                IconButton(
-                  icon: const Icon(Broken.scissor),
-                  tooltip: '剪切',
-                  onPressed: _handleCutSelected,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.share_outlined),
-                  tooltip: '分享',
-                  onPressed: _handleShareSelected,
-                ),
-                IconButton(
-                  icon: const Icon(Broken.trash, color: Colors.red),
-                  tooltip: '删除',
-                  onPressed: _handleDeleteSelected,
-                ),
-                IconButton(
-                  icon: const Icon(Broken.task_square),
-                  tooltip: '全选',
+                  icon: const Icon(Broken.tick_square),
+                  tooltip: L10n.of(context).ui_select_all,
                   onPressed: _selectAll,
                 ),
               ]
             : [
                 IconButton(
                   icon: const Icon(Icons.refresh_rounded),
-                  tooltip: '刷新',
+                  tooltip: L10n.of(context).ui_refresh,
                   onPressed: () {
                     setState(() => _isLoading = true);
                     _loadRecentFiles();
@@ -385,6 +356,9 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
                 ),
               ],
       ),
+      bottomNavigationBar: _isSelectionMode
+          ? SelectionActionBar(provider: provider)
+          : null,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _recentFiles.isEmpty

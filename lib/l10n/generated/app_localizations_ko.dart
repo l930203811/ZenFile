@@ -998,7 +998,19 @@ class L10nKo extends L10n {
   String get msg59a24fcb => '디렉토리의 모든 파일 총 크기를 계산하고 표시 (목록 성능에 영향을 줄 수 있음)';
 
   @override
-  String get msg309e2a28 => '탐색 페이지에 하단 액션 바 활성화';
+  String get msg309e2a28 => '상단 또는 하단에 탐색 막대 표시';
+
+  @override
+  String get msge34c23ff => '상단';
+
+  @override
+  String get msg3341e3ed => '작업 버튼이 페이지 상단에 표시됩니다';
+
+  @override
+  String get msg8c414b06 => '하단';
+
+  @override
+  String get msg5d2c8e7f => '작업 버튼이 페이지 하단에 표시됩니다';
 
   @override
   String get msg9b7639ac => '탐색 및 미디어 페이지의 선택 액션 바에 아이콘만 표시';
@@ -1216,31 +1228,31 @@ class L10nKo extends L10n {
   String get msg5dc988f4 => '햄버거 메뉴 / 클래식 메뉴';
 
   @override
-  String get msgd06ba04f => '미니멀리스트';
+  String get msgd06ba04f => 'M3 익스프레시브 1';
 
   @override
-  String get msg5090469e => '글라스모피즘';
+  String get msg5090469e => 'M3 익스프레시브 2';
 
   @override
-  String get d => '3D 큐트';
+  String get d => 'M3 익스프레시브 3';
 
   @override
-  String get msg67836b24 => '사이버펑크';
+  String get msg67836b24 => '미니멀';
 
   @override
-  String get msgf08c8dc4 => '내추럴 젠';
+  String get msgf08c8dc4 => '글래스모피즘';
 
   @override
-  String get msgdesign6 => 'AI 디자인 1';
+  String get msgdesign6 => '사이버펑크';
 
   @override
-  String get msgdesign7 => 'AI 디자인 2';
+  String get msgdesign7 => '뉴모피즘';
 
   @override
-  String get msgdesign8 => 'AI 디자인 3';
+  String get msgdesign8 => '클래식 2';
 
   @override
-  String get msgdesign9 => 'AI 디자인 4';
+  String get msgdesign9 => '클래식 3';
 
   @override
   String get msgdesign10 => 'AI 디자인 5';
@@ -1318,7 +1330,7 @@ class L10nKo extends L10n {
       '앱 런처 아이콘에 사용할 사용자 정의 로고를 선택하세요. 일부 런처에서 업데이트에 몇 초가 걸릴 수 있습니다.';
 
   @override
-  String get msg64a6476a => '기본 로고';
+  String get msg64a6476a => '기본';
 
   @override
   String title(Object title) {
@@ -2439,7 +2451,7 @@ class L10nKo extends L10n {
   String get ui_show_folder_size => '폴더 크기 표시';
 
   @override
-  String get ui_show_bottom_action_bar => '하단 액션 바 표시';
+  String get ui_show_bottom_action_bar => '탐색 막대 위치';
 
   @override
   String get ui_hide_action_text => '액션 바 텍스트 레이블 숨기기';
@@ -2876,6 +2888,14 @@ class L10nKo extends L10n {
   @override
   String get log_remote_copy_paste_fix =>
       '원격 서버에서 로컬로 복사 시 진행률 표시줄이 0%이고 파일이 나타나지 않는 문제 수정';
+
+  @override
+  String get log_navbar_position_setting =>
+      'Added navigation bar position setting, support top or bottom display';
+
+  @override
+  String get log_browse_top_area_optimize =>
+      'Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space';
 
   @override
   String get msg_remember_choice => '이 선택을 기억하여 향후 작업에 적용';

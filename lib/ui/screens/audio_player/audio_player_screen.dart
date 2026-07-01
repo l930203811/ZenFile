@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:mime/mime.dart';
 import '../../../core/icon_fonts/broken_icons.dart';
+import '../../../core/utils.dart';
 import '../../../services/audio_background_handler.dart';
 import '../../../services/preferences_service.dart';
 import '../../../services/lyric_parser.dart';
@@ -77,10 +78,10 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   int get _currentId => _currentSong?.id ?? 0;
   String get _currentPath => _currentSong?.data ?? widget.audioPath;
 
-  /// 返回用于界面显示的艺术家名称，空值时使用 l10n 翻译。
+  /// 返回用于界面显示的艺术家名称，空值或 "unknown" 时使用 l10n 翻译。
   String _getDisplayArtist() {
     final artist = _currentArtist;
-    if (artist.isEmpty) {
+    if (FileUtils.isUnknownArtist(artist)) {
       return L10n.of(context).msg5e32276d;
     }
     return artist;
@@ -1024,7 +1025,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     return MediaItem(
       id: song?.data ?? widget.audioPath,
       title: song?.title ?? widget.title,
-      artist: rawArtist.isEmpty ? L10n.of(context).msg5e32276d : rawArtist,
+      artist: FileUtils.isUnknownArtist(rawArtist) ? L10n.of(context).msg5e32276d : rawArtist,
       album: rawAlbum.isEmpty ? L10n.of(context).ui_single : rawAlbum,
       artUri: artUri,
       duration: songDuration,

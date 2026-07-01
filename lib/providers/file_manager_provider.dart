@@ -254,8 +254,6 @@ class FileManagerProvider extends ChangeNotifier {
         alias = 'com.sequl.zenfile.MainActivityDesign8';
       case 'design9':
         alias = 'com.sequl.zenfile.MainActivityDesign9';
-      case 'design10':
-        alias = 'com.sequl.zenfile.MainActivityDesign10';
     }
 
     await AppManagerService.changeAppIcon(alias);
@@ -754,6 +752,13 @@ class FileManagerProvider extends ChangeNotifier {
 
   void toggleBottomActionBar() {
     _showBottomActionBar = !_showBottomActionBar;
+    PreferencesService.saveShowBottomActionBar(_showBottomActionBar);
+    notifyListeners();
+  }
+
+  void setBottomActionBar(bool value) {
+    if (_showBottomActionBar == value) return;
+    _showBottomActionBar = value;
     PreferencesService.saveShowBottomActionBar(_showBottomActionBar);
     notifyListeners();
   }
@@ -3200,11 +3205,11 @@ class FileManagerProvider extends ChangeNotifier {
       }
     }
 
+    selectedPaths.clear();
     activeTab.isLoading = true;
     notifyListeners();
 
     if (context != null && context.mounted) {
-      selectedPaths.clear();
       var destinationPath = p.join(currentPath, '$archiveName.$format');
       // 如果目标路径已存在，自动重命名（快手.zip → 快手(1).zip → 快手(2).zip）
       int counter = 1;

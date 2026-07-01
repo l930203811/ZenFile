@@ -1269,8 +1269,24 @@
   "@msg59a24fcb": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg309e2a28": "在浏览页启用底部操作栏",
+  "msg309e2a28": "在顶部或底部显示导航栏位置",
   "@msg309e2a28": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msge34c23ff": "顶部",
+  "@msge34c23ff": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg3341e3ed": "操作按钮显示在页面顶部",
+  "@msg3341e3ed": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg8c414b06": "底部",
+  "@msg8c414b06": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5d2c8e7f": "操作按钮显示在页面底部",
+  "@msg5d2c8e7f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
   "msg9b7639ac": "在浏览和媒体页面的选择操作栏中仅显示图标",
@@ -1558,36 +1574,36 @@
   "@msg5dc988f4": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgd06ba04f": "极简风",
+  "msgd06ba04f": "M3 表现派 1",
   "@msgd06ba04f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg5090469e": "玻璃拟态",
+  "msg5090469e": "M3 表现派 2",
   "@msg5090469e": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "d": "3D 可爱",
+  "d": "M3 表现派 3",
   "@d": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg67836b24": "赛博朋克",
+  "msg67836b24": "极简风",
   "@msg67836b24": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgf08c8dc4": "自然禅意",
-  "msgdesign6": "AI 设计 1",
+  "msgf08c8dc4": "玻璃拟态",
+  "msgdesign6": "赛博朋克",
   "@msgdesign6": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdesign7": "AI 设计 2",
+  "msgdesign7": "新拟态",
   "@msgdesign7": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdesign8": "AI 设计 3",
+  "msgdesign8": "经典 2",
   "@msgdesign8": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdesign9": "AI 设计 4",
+  "msgdesign9": "经典 3",
   "@msgdesign9": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -2899,7 +2915,7 @@
   "ui_use_24h_format": "使用24小时制",
   "ui_show_folder_contents_count": "显示文件夹内容计数",
   "ui_show_folder_size": "显示文件夹大小",
-  "ui_show_bottom_action_bar": "显示底部导航栏",
+  "ui_show_bottom_action_bar": "导航栏位置",
   "ui_hide_action_text": "隐藏操作栏文字标签",
   "ui_show_media_previews": "显示媒体预览",
   "ui_adaptive_multiline_names": "自适应多行文件名",
@@ -3255,7 +3271,9 @@
     "log_doc_icon_redesign": "重新设计文档文件图标，显示格式标签",
     "log_archive_icon_redesign": "重新设计压缩包图标，显示格式标签（zip、7z、rar 等）",
     "log_music_lrc_lyrics": "音乐播放器支持自动加载 LRC 歌词及手动选择歌词文件",
-      "log_remote_copy_paste_fix": "修复远程服务器复制文件到本地粘贴时进度条无响应且文件未出现的问题",
+    "log_remote_copy_paste_fix": "修复远程服务器复制文件到本地粘贴时进度条无响应且文件未出现的问题",
+    "log_navbar_position_setting": "新增导航栏位置设置，支持顶部或底部显示导航栏",
+    "log_browse_top_area_optimize": "启用底部导航栏时，优化浏览页顶部区域布局，增加文件列表显示空间",
   "msg_remember_choice": "记住此选择，后续操作默认使用",
   "ui_caching": "正在缓存中，请稍后...",
   "ui_username": "用户名",

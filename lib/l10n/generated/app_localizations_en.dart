@@ -1045,7 +1045,20 @@ class L10nEn extends L10n {
       'Calculate and display total size of all files in directory (may affect list performance)';
 
   @override
-  String get msg309e2a28 => 'Enable bottom action bar in browse page';
+  String get msg309e2a28 => 'Show navigation bar at top or bottom';
+
+  @override
+  String get msge34c23ff => 'Top';
+
+  @override
+  String get msg3341e3ed => 'Action buttons displayed at the top of the page';
+
+  @override
+  String get msg8c414b06 => 'Bottom';
+
+  @override
+  String get msg5d2c8e7f =>
+      'Action buttons displayed at the bottom of the page';
 
   @override
   String get msg9b7639ac =>
@@ -1278,31 +1291,31 @@ class L10nEn extends L10n {
   String get msg5dc988f4 => 'Hamburger Menu / Classic Menu';
 
   @override
-  String get msgd06ba04f => 'Minimalist';
+  String get msgd06ba04f => 'M3 Expressive 1';
 
   @override
-  String get msg5090469e => 'Glassmorphism';
+  String get msg5090469e => 'M3 Expressive 2';
 
   @override
-  String get d => '3D Cute';
+  String get d => 'M3 Expressive 3';
 
   @override
-  String get msg67836b24 => 'Cyberpunk';
+  String get msg67836b24 => 'Minimalist';
 
   @override
-  String get msgf08c8dc4 => 'Natural Zen';
+  String get msgf08c8dc4 => 'Glassmorphism';
 
   @override
-  String get msgdesign6 => 'AI Design 1';
+  String get msgdesign6 => 'Cyberpunk';
 
   @override
-  String get msgdesign7 => 'AI Design 2';
+  String get msgdesign7 => 'Neumorphism';
 
   @override
-  String get msgdesign8 => 'AI Design 3';
+  String get msgdesign8 => 'Classic 2';
 
   @override
-  String get msgdesign9 => 'AI Design 4';
+  String get msgdesign9 => 'Classic 3';
 
   @override
   String get msgdesign10 => 'AI Design 5';
@@ -2519,7 +2532,7 @@ class L10nEn extends L10n {
   String get ui_show_folder_size => 'Show Folder Size';
 
   @override
-  String get ui_show_bottom_action_bar => 'Show Bottom Action Bar';
+  String get ui_show_bottom_action_bar => 'Navigation Bar Position';
 
   @override
   String get ui_hide_action_text => 'Hide Action Bar Text Labels';
@@ -2977,6 +2990,14 @@ class L10nEn extends L10n {
   @override
   String get log_remote_copy_paste_fix =>
       'Fixed remote server copy to local showing 0% progress and files not appearing';
+
+  @override
+  String get log_navbar_position_setting =>
+      'Added navigation bar position setting, support top or bottom display';
+
+  @override
+  String get log_browse_top_area_optimize =>
+      'Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space';
 
   @override
   String get msg_remember_choice =>

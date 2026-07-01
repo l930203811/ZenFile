@@ -71,6 +71,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   }
 
   void _switchTab(int index) {
+    if (_currentIndex == index) return;
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     setState(() => _currentIndex = index);
   }
@@ -408,97 +409,160 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
 
   Widget _buildHomeTab() {
     final theme = Theme.of(context);
-    return SafeArea(
-      child: Column(
-        children: [
-          // 固定顶部按钮栏（紧凑）
-          Padding(
-            padding: const EdgeInsets.only(left: 4.0, right: 8.0, top: 2.0, bottom: 2.0),
+    final fileManager = context.watch<FileManagerProvider>();
+    final showBottomNav = fileManager.showBottomActionBar;
+
+    // 顶部按钮（按原始顺序）：左侧抽屉/分类/浏览 + 右侧刷新/主题/自定义
+    Widget buildTopButtons() => Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // 左侧：抽屉菜单 + 分类 + 浏览
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
+              onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+            ),
+            IconButton(
+              onPressed: () {
+                _switchTab(0);
+                context.read<MediaProvider>().refreshMediaBackground();
+              },
+              tooltip: L10n.of(context).msg6e0f9cef,
+              icon: Icon(Broken.category, color: theme.colorScheme.primary),
+            ),
+            IconButton(
+              onPressed: () => _switchTab(1),
+              tooltip: L10n.of(context).ui_browse,
+              icon: Icon(Broken.folder, color: theme.colorScheme.primary),
+            ),
+          ],
+        ),
+        // 右侧：刷新 + 主题切换 + 自定义
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              onPressed: _handleRefresh,
+              tooltip: L10n.of(context).msg354c1c9a,
+              icon: RotationTransition(
+                turns: _refreshIconController,
+                child: Icon(Broken.refresh, color: theme.colorScheme.primary),
+              ),
+            ),
+            IconButton(
+              onPressed: widget.toggleTheme,
+              icon: Icon(
+                theme.brightness == Brightness.dark ? Broken.sun_1 : Broken.moon,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+            IconButton(
+              onPressed: () => QuickCategoriesGrid.showCustomizeDialog(context, (index) => setState(() => _currentIndex = index)),
+              tooltip: L10n.of(context).msg19021d08,
+              icon: Icon(Broken.edit_2, color: theme.colorScheme.primary),
+            ),
+          ],
+        ),
+      ],
+    );
+
+    // 底部导航栏（开关开启时显示，顶部按钮全部移到底部，按原顺序排列，全部使用主题色）
+    Widget? bottomNav = showBottomNav
+        ? BottomAppBar(
+            elevation: 8,
+            color: theme.colorScheme.surface,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // 左侧：抽屉菜单按钮 + 分类按钮 + 浏览按钮
+                // 左侧：抽屉菜单 + 分类 + 浏览
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Builder(
                       builder: (context) => IconButton(
                         icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
-                        onPressed: () => Scaffold.of(context).openDrawer(),
+                        onPressed: () => _scaffoldKey.currentState?.openDrawer(),
                       ),
                     ),
-                    // 分类按钮（点击切换到首页）
                     IconButton(
+                      icon: Icon(Broken.category, color: theme.colorScheme.primary),
+                      tooltip: L10n.of(context).msg6e0f9cef,
                       onPressed: () {
                         _switchTab(0);
                         context.read<MediaProvider>().refreshMediaBackground();
                       },
-                      tooltip: L10n.of(context).msg6e0f9cef,
-                      icon: Icon(
-                        Broken.category,
-                        color: theme.colorScheme.primary,
-                      ),
                     ),
-                    // 浏览按钮（点击切换到浏览页）
                     IconButton(
-                      onPressed: () {
-                        _switchTab(1);
-                      },
-                      tooltip: '浏览',
-                      icon: Icon(
-                        Broken.folder,
-                        color: theme.colorScheme.primary,
-                      ),
+                      icon: Icon(Broken.folder, color: theme.colorScheme.primary),
+                      tooltip: L10n.of(context).ui_browse,
+                      onPressed: () => _switchTab(1),
                     ),
                   ],
                 ),
-                // 右侧：刷新、主题切换、自定义按钮
+                // 右侧：刷新 + 主题切换 + 自定义
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      onPressed: _handleRefresh,
-                      tooltip: L10n.of(context).msg354c1c9a,
                       icon: RotationTransition(
                         turns: _refreshIconController,
                         child: Icon(Broken.refresh, color: theme.colorScheme.primary),
                       ),
+                      tooltip: L10n.of(context).msg354c1c9a,
+                      onPressed: _handleRefresh,
                     ),
                     IconButton(
-                      onPressed: widget.toggleTheme,
                       icon: Icon(
                         theme.brightness == Brightness.dark ? Broken.sun_1 : Broken.moon,
                         color: theme.colorScheme.primary,
                       ),
+                      onPressed: widget.toggleTheme,
                     ),
                     IconButton(
-                      onPressed: () => QuickCategoriesGrid.showCustomizeDialog(context, (index) => setState(() => _currentIndex = index)),
-                      tooltip: L10n.of(context).msg19021d08,
                       icon: Icon(Broken.edit_2, color: theme.colorScheme.primary),
+                      tooltip: L10n.of(context).msg19021d08,
+                      onPressed: () => QuickCategoriesGrid.showCustomizeDialog(context, (index) => setState(() => _currentIndex = index)),
                     ),
                   ],
                 ),
               ],
             ),
-          ),
-          // 可滚动内容区域
-          Expanded(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  QuickCategoriesGrid(
-                    onNavigateTab: (index) => _switchTab(index),
-                    showTitle: false,
-                  ),
-                  const SizedBox(height: 24),
-                ],
+          )
+        : null;
+
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // 顶部按钮栏——仅在开关关闭时显示；开关开启时清空
+            if (!showBottomNav)
+              Padding(
+                padding: const EdgeInsets.only(left: 4.0, right: 8.0, top: 2.0, bottom: 2.0),
+                child: buildTopButtons(),
+              ),
+            // 可滚动内容区域
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    QuickCategoriesGrid(
+                      onNavigateTab: (index) => _switchTab(index),
+                      showTitle: false,
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
+      bottomNavigationBar: bottomNav,
     );
   }
 

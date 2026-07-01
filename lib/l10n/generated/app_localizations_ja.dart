@@ -1000,7 +1000,19 @@ class L10nJa extends L10n {
       'ディレクトリ内のすべてのファイルの合計サイズを計算して表示（リストのパフォーマンスに影響する場合があります）';
 
   @override
-  String get msg309e2a28 => 'ブラウズページで下部アクションバーを有効にする';
+  String get msg309e2a28 => 'ナビゲーションバーを上部または下部に表示';
+
+  @override
+  String get msge34c23ff => '上部';
+
+  @override
+  String get msg3341e3ed => 'アクションボタンはページの上部に表示されます';
+
+  @override
+  String get msg8c414b06 => '下部';
+
+  @override
+  String get msg5d2c8e7f => 'アクションボタンはページの下部に表示されます';
 
   @override
   String get msg9b7639ac => 'ブラウズとメディアページの選択アクションバーにアイコンのみを表示';
@@ -1218,31 +1230,31 @@ class L10nJa extends L10n {
   String get msg5dc988f4 => 'ハンバーガーメニュー / クラシックメニュー';
 
   @override
-  String get msgd06ba04f => 'ミニマルスタイル';
+  String get msgd06ba04f => 'M3 エクスプレッシブ 1';
 
   @override
-  String get msg5090469e => 'グラスモーフィズム';
+  String get msg5090469e => 'M3 エクスプレッシブ 2';
 
   @override
-  String get d => '3Dキュート';
+  String get d => 'M3 エクスプレッシブ 3';
 
   @override
-  String get msg67836b24 => 'サイバーパンク';
+  String get msg67836b24 => 'ミニマル';
 
   @override
-  String get msgf08c8dc4 => 'ナチュラル禅';
+  String get msgf08c8dc4 => 'グラスモーフィズム';
 
   @override
-  String get msgdesign6 => 'AIデザイン 1';
+  String get msgdesign6 => 'サイバーパンク';
 
   @override
-  String get msgdesign7 => 'AIデザイン 2';
+  String get msgdesign7 => 'ニューモーフィズム';
 
   @override
-  String get msgdesign8 => 'AIデザイン 3';
+  String get msgdesign8 => 'クラシック 2';
 
   @override
-  String get msgdesign9 => 'AIデザイン 4';
+  String get msgdesign9 => 'クラシック 3';
 
   @override
   String get msgdesign10 => 'AIデザイン 5';
@@ -1319,7 +1331,7 @@ class L10nJa extends L10n {
   String get logo => 'アプリランチャーアイコンにカスタムロゴを選択してください。一部のランチャーでは更新に数秒かかる場合があります。';
 
   @override
-  String get msg64a6476a => 'デフォルトロゴ';
+  String get msg64a6476a => 'デフォルト';
 
   @override
   String title(Object title) {
@@ -2442,7 +2454,7 @@ class L10nJa extends L10n {
   String get ui_show_folder_size => 'フォルダサイズを表示';
 
   @override
-  String get ui_show_bottom_action_bar => '下部ナビゲーションバーを表示';
+  String get ui_show_bottom_action_bar => 'ナビゲーションバーの位置';
 
   @override
   String get ui_hide_action_text => 'アクションバーのテキストラベルを隠す';
@@ -2877,6 +2889,14 @@ class L10nJa extends L10n {
   @override
   String get log_remote_copy_paste_fix =>
       'リモートサーバーからローカルへのコピー時にプログレスバーが0%のままファイルが表示されない問題を修正';
+
+  @override
+  String get log_navbar_position_setting =>
+      'Added navigation bar position setting, support top or bottom display';
+
+  @override
+  String get log_browse_top_area_optimize =>
+      'Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space';
 
   @override
   String get msg_remember_choice => '今後の操作でもこの選択を記憶する';

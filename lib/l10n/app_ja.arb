@@ -1247,7 +1247,23 @@
   "@msg309e2a28": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg309e2a28": "ブラウズページで下部アクションバーを有効にする",
+  "msg309e2a28": "ナビゲーションバーを上部または下部に表示",
+  "@msge34c23ff": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msge34c23ff": "上部",
+  "@msg3341e3ed": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg3341e3ed": "アクションボタンはページの上部に表示されます",
+  "@msg8c414b06": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg8c414b06": "下部",
+  "@msg5d2c8e7f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5d2c8e7f": "アクションボタンはページの下部に表示されます",
   "@msg9b7639ac": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -1535,36 +1551,36 @@
   "@msgd06ba04f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgd06ba04f": "ミニマルスタイル",
+  "msgd06ba04f": "M3 エクスプレッシブ 1",
   "@msg5090469e": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg5090469e": "グラスモーフィズム",
+  "msg5090469e": "M3 エクスプレッシブ 2",
   "@d": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "d": "3Dキュート",
+  "d": "M3 エクスプレッシブ 3",
   "@msg67836b24": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg67836b24": "サイバーパンク",
+  "msg67836b24": "ミニマル",
   "@msgf08c8dc4": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgf08c8dc4": "ナチュラル禅",
-  "msgdesign6": "AIデザイン 1",
+  "msgf08c8dc4": "グラスモーフィズム",
+  "msgdesign6": "サイバーパンク",
   "@msgdesign6": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdesign7": "AIデザイン 2",
+  "msgdesign7": "ニューモーフィズム",
   "@msgdesign7": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdesign8": "AIデザイン 3",
+  "msgdesign8": "クラシック 2",
   "@msgdesign8": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdesign9": "AIデザイン 4",
+  "msgdesign9": "クラシック 3",
   "@msgdesign9": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -1667,7 +1683,7 @@
   "@msg64a6476a": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg64a6476a": "デフォルトロゴ",
+  "msg64a6476a": "デフォルト",
   "@title": {
     "type": "text"
   },
@@ -2835,7 +2851,7 @@
   "ui_use_24h_format": "24時間制を使用",
   "ui_show_folder_contents_count": "フォルダの内容数を表示",
   "ui_show_folder_size": "フォルダサイズを表示",
-  "ui_show_bottom_action_bar": "下部ナビゲーションバーを表示",
+  "ui_show_bottom_action_bar": "ナビゲーションバーの位置",
   "ui_hide_action_text": "アクションバーのテキストラベルを隠す",
   "ui_show_media_previews": "メディアプレビューを表示",
   "ui_adaptive_multiline_names": "アダプティブマルチラインファイル名",
@@ -3192,6 +3208,8 @@
     "log_archive_icon_redesign": "圧縮ファイルアイコンを再デザイン、形式ラベル（zip、7z、rar等）を表示",
     "log_music_lrc_lyrics": "LRC歌詞の自動読み込みと手動歌詞ファイル選択をサポート",
       "log_remote_copy_paste_fix": "リモートサーバーからローカルへのコピー時にプログレスバーが0%のままファイルが表示されない問題を修正",
+    "log_navbar_position_setting": "Added navigation bar position setting, support top or bottom display",
+    "log_browse_top_area_optimize": "Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space",
   "msg_file_exists": "ファイルが存在します",
   "@msg_file_exists": {
     "description": "Conflict dialog title"

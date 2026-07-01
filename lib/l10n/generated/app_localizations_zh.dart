@@ -996,7 +996,19 @@ class L10nZh extends L10n {
   String get msg59a24fcb => '计算并显示目录中所有文件的总大小（可能影响列表性能）';
 
   @override
-  String get msg309e2a28 => '在浏览页启用底部操作栏';
+  String get msg309e2a28 => '在顶部或底部显示导航栏位置';
+
+  @override
+  String get msge34c23ff => '顶部';
+
+  @override
+  String get msg3341e3ed => '操作按钮显示在页面顶部';
+
+  @override
+  String get msg8c414b06 => '底部';
+
+  @override
+  String get msg5d2c8e7f => '操作按钮显示在页面底部';
 
   @override
   String get msg9b7639ac => '在浏览和媒体页面的选择操作栏中仅显示图标';
@@ -1214,31 +1226,31 @@ class L10nZh extends L10n {
   String get msg5dc988f4 => '汉堡菜单 / 经典菜单';
 
   @override
-  String get msgd06ba04f => '极简风';
+  String get msgd06ba04f => 'M3 表现派 1';
 
   @override
-  String get msg5090469e => '玻璃拟态';
+  String get msg5090469e => 'M3 表现派 2';
 
   @override
-  String get d => '3D 可爱';
+  String get d => 'M3 表现派 3';
 
   @override
-  String get msg67836b24 => '赛博朋克';
+  String get msg67836b24 => '极简风';
 
   @override
-  String get msgf08c8dc4 => '自然禅意';
+  String get msgf08c8dc4 => '玻璃拟态';
 
   @override
-  String get msgdesign6 => 'AI 设计 1';
+  String get msgdesign6 => '赛博朋克';
 
   @override
-  String get msgdesign7 => 'AI 设计 2';
+  String get msgdesign7 => '新拟态';
 
   @override
-  String get msgdesign8 => 'AI 设计 3';
+  String get msgdesign8 => '经典 2';
 
   @override
-  String get msgdesign9 => 'AI 设计 4';
+  String get msgdesign9 => '经典 3';
 
   @override
   String get msgdesign10 => 'AI 设计 5';
@@ -2434,7 +2446,7 @@ class L10nZh extends L10n {
   String get ui_show_folder_size => '显示文件夹大小';
 
   @override
-  String get ui_show_bottom_action_bar => '显示底部导航栏';
+  String get ui_show_bottom_action_bar => '导航栏位置';
 
   @override
   String get ui_hide_action_text => '隐藏操作栏文字标签';
@@ -2861,6 +2873,12 @@ class L10nZh extends L10n {
 
   @override
   String get log_remote_copy_paste_fix => '修复远程服务器复制文件到本地粘贴时进度条无响应且文件未出现的问题';
+
+  @override
+  String get log_navbar_position_setting => '新增导航栏位置设置，支持顶部或底部显示导航栏';
+
+  @override
+  String get log_browse_top_area_optimize => '启用底部导航栏时，优化浏览页顶部区域布局，增加文件列表显示空间';
 
   @override
   String get msg_remember_choice => '记住此选择，后续操作默认使用';
@@ -4373,7 +4391,19 @@ class L10nZhTw extends L10nZh {
   String get msg59a24fcb => '計算並顯示目錄中所有檔案的總大小（可能影響列表效能）';
 
   @override
-  String get msg309e2a28 => '在瀏覽頁啟用底部操作欄';
+  String get msg309e2a28 => '在頂部或底部顯示導航欄位置';
+
+  @override
+  String get msge34c23ff => '頂部';
+
+  @override
+  String get msg3341e3ed => '操作按鈕顯示在頁面頂部';
+
+  @override
+  String get msg8c414b06 => '底部';
+
+  @override
+  String get msg5d2c8e7f => '操作按鈕顯示在頁面底部';
 
   @override
   String get msg9b7639ac => '在瀏覽和媒體頁面的選擇操作欄中僅顯示圖示';
@@ -4591,31 +4621,31 @@ class L10nZhTw extends L10nZh {
   String get msg5dc988f4 => '漢堡選單 / 經典選單';
 
   @override
-  String get msgd06ba04f => '極簡風';
+  String get msgd06ba04f => 'M3 表現派 1';
 
   @override
-  String get msg5090469e => '玻璃擬態';
+  String get msg5090469e => 'M3 表現派 2';
 
   @override
-  String get d => '3D 可愛';
+  String get d => 'M3 表現派 3';
 
   @override
-  String get msg67836b24 => '賽博朋克';
+  String get msg67836b24 => '極簡風';
 
   @override
-  String get msgf08c8dc4 => '自然禪意';
+  String get msgf08c8dc4 => '玻璃擬態';
 
   @override
-  String get msgdesign6 => 'AI 設計 1';
+  String get msgdesign6 => '賽博龐克';
 
   @override
-  String get msgdesign7 => 'AI 設計 2';
+  String get msgdesign7 => '新擬態';
 
   @override
-  String get msgdesign8 => 'AI 設計 3';
+  String get msgdesign8 => '經典 2';
 
   @override
-  String get msgdesign9 => 'AI 設計 4';
+  String get msgdesign9 => '經典 3';
 
   @override
   String get msgdesign10 => 'AI 設計 5';
@@ -5811,7 +5841,7 @@ class L10nZhTw extends L10nZh {
   String get ui_show_folder_size => '顯示資料夾大小';
 
   @override
-  String get ui_show_bottom_action_bar => '顯示底部導航欄';
+  String get ui_show_bottom_action_bar => '導航欄位置';
 
   @override
   String get ui_hide_action_text => '隱藏操作欄文字標籤';
@@ -6238,6 +6268,12 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get log_remote_copy_paste_fix => '修復遠端伺服器複製檔案到本機貼上時進度條無回應且檔案未出現的問題';
+
+  @override
+  String get log_navbar_position_setting => '新增導覽列位置設定，支援頂部或底部顯示導覽列';
+
+  @override
+  String get log_browse_top_area_optimize => '啟用底部導覽列時，最佳化瀏覽頁頂部區域佈局，增加檔案列表顯示空間';
 
   @override
   String get msg_remember_choice => '記住此選擇，後續操作預設使用';

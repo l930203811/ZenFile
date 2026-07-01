@@ -215,6 +215,9 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         : theme.colorScheme.onSurface.withOpacity(0.75);
     final fontWeight = isActive ? FontWeight.bold : FontWeight.w500;
     const arrowWidth = 8.0;
+    final borderColor = isActive
+        ? theme.colorScheme.primary.withOpacity(0.4)
+        : theme.colorScheme.onSurface.withOpacity(0.12);
     return ClipPath(
       clipper: _BreadcrumbClipper(
         hasLeftIndent: !isFirst,
@@ -229,6 +232,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         ),
         decoration: BoxDecoration(
           color: bgColor,
+          border: Border.all(color: borderColor, width: 1),
           boxShadow: [
             BoxShadow(
               color: isActive
@@ -1196,6 +1200,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
       builder: (context, provider, child) {
         final theme = Theme.of(context);
         final isSelectionMode = provider.isSelectionMode;
+        final showBottomActionBar = provider.showBottomActionBar;
 
         if (provider.shouldScrollToHighlight) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -1240,105 +1245,88 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
               toggleTheme: widget.toggleTheme,
               onNavigateTab: widget.onNavigateTab,
             ),
-            appBar: AppBar(
-              surfaceTintColor: Colors.transparent,
-              scrolledUnderElevation: 0,
-              titleSpacing: 0,
-              centerTitle: false,
-              actionsPadding: const EdgeInsets.only(right: 4),
-              leadingWidth: isSelectionMode ? 56 : 160,
-              title: isSelectionMode
-                  ? const SizedBox.shrink()
-                  : const SizedBox.shrink(),
-              leading: isSelectionMode
-                  ? IconButton(
-                      icon: const Icon(Broken.close_square),
-                      onPressed: () => provider.clearSelection(),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Builder(
-                          builder: (context) => IconButton(
-                            icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
-                            onPressed: () => Scaffold.of(context).openDrawer(),
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(Broken.category, color: theme.colorScheme.primary),
-                          tooltip: L10n.of(context).msg6e0f9cef,
-                          onPressed: () {
-                            widget.onNavigateTab?.call(0);
-                          },
-                        ),
-                        IconButton(
-                          icon: Icon(Broken.folder, color: theme.colorScheme.primary),
-                          tooltip: L10n.of(context).ui_browse,
-                          onPressed: () {
-                            // 已在浏览页，无需切换
-                          },
-                        ),
-                      ],
-                    ),
-              actions: isSelectionMode
-                  ? provider.showBottomActionBar
-                      ? [
-                          IconButton(
-                            icon: const Icon(Broken.tick_square),
-                            tooltip: L10n.of(context).ui_select_all,
-                            onPressed: () => provider.selectAll(),
-                          ),
-                        ]
-                      : [
-                          IconButton(
-                            icon: const Icon(Broken.tick_square),
-                            tooltip: L10n.of(context).ui_select_all,
-                            onPressed: () => provider.selectAll(),
-                          ),
-                        ]
-                  : provider.showBottomActionBar
-                      ? [
-                          PopupMenuButton<String>(
-                            icon: const Icon(Broken.add_square, size: 26),
-                            tooltip: L10n.of(context).ui_new,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            position: PopupMenuPosition.under,
-                            elevation: 8,
-                            onSelected: (val) => _handleMenuAction(context, val, provider),
-                            itemBuilder: (context) => [
-                              PopupMenuItem(value: 'file', child: Row(children: [Icon(Broken.document, size: 20), SizedBox(width: 12), Text(L10n.of(context).msge48a7157, style: TextStyle(fontWeight: FontWeight.w600))])),
-                              PopupMenuItem(value: 'folder', child: Row(children: [Icon(Broken.folder, size: 20), SizedBox(width: 12), Text(L10n.of(context).msgf3a485df, style: TextStyle(fontWeight: FontWeight.w600))])),
-                              PopupMenuItem(value: 'archive', child: Row(children: [Icon(Broken.archive, size: 20), SizedBox(width: 12), Text(L10n.of(context).msg68ac91eb, style: TextStyle(fontWeight: FontWeight.w600))])),
+            appBar: isSelectionMode || !showBottomActionBar
+                ? AppBar(
+                    surfaceTintColor: Colors.transparent,
+                    scrolledUnderElevation: 0,
+                    titleSpacing: 0,
+                    centerTitle: false,
+                    actionsPadding: const EdgeInsets.only(right: 4),
+                    leadingWidth: isSelectionMode ? 56 : 160,
+                    title: isSelectionMode
+                        ? const SizedBox.shrink()
+                        : const SizedBox.shrink(),
+                    leading: isSelectionMode
+                        ? IconButton(
+                            icon: const Icon(Broken.close_square),
+                            onPressed: () => provider.clearSelection(),
+                          )
+                        : Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Builder(
+                                builder: (context) => IconButton(
+                                  icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
+                                  onPressed: () => Scaffold.of(context).openDrawer(),
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(Broken.category, color: theme.colorScheme.primary),
+                                tooltip: L10n.of(context).msg6e0f9cef,
+                                onPressed: () {
+                                  widget.onNavigateTab?.call(0);
+                                },
+                              ),
+                              IconButton(
+                                icon: Icon(Broken.folder, color: theme.colorScheme.primary),
+                                tooltip: L10n.of(context).ui_browse,
+                                onPressed: () {
+                                  // 已在浏览页，无需切换
+                                },
+                              ),
                             ],
                           ),
-                        ]
-                      : [
-                          IconButton(
-                            icon: Icon(Broken.search_normal, color: theme.colorScheme.primary),
-                            onPressed: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => GlobalSearchScreen(searchFolderPath: provider.currentPath)));
-                            },
-                          ),
-                          IconButton(
-                            icon: Icon(Broken.filter_edit, color: theme.colorScheme.primary),
-                            tooltip: L10n.of(context).msg97301f64,
-                            onPressed: () => _showSortModal(context, provider),
-                          ),
-                          PopupMenuButton<String>(
-                            icon: Icon(Broken.add_square, size: 26, color: theme.colorScheme.primary),
-                            tooltip: L10n.of(context).ui_new,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            position: PopupMenuPosition.under,
-                            elevation: 8,
-                            onSelected: (val) => _handleMenuAction(context, val, provider),
-                            itemBuilder: (context) => [
-                              PopupMenuItem(value: 'file', child: Row(children: [Icon(Broken.document, size: 20), SizedBox(width: 12), Text(L10n.of(context).msge48a7157, style: TextStyle(fontWeight: FontWeight.w600))])),
-                              PopupMenuItem(value: 'folder', child: Row(children: [Icon(Broken.folder, size: 20), SizedBox(width: 12), Text(L10n.of(context).msgf3a485df, style: TextStyle(fontWeight: FontWeight.w600))])),
-                              PopupMenuItem(value: 'archive', child: Row(children: [Icon(Broken.archive, size: 20), SizedBox(width: 12), Text(L10n.of(context).msg68ac91eb, style: TextStyle(fontWeight: FontWeight.w600))])),
-                            ],
-                          ),
-                        ],
-            ),
+                    actions: isSelectionMode
+                        ? [
+                            IconButton(
+                              icon: const Icon(Broken.tick_square),
+                              tooltip: L10n.of(context).ui_select_all,
+                              onPressed: () => provider.selectAll(),
+                            ),
+                          ]
+                        : [
+                            IconButton(
+                              icon: Icon(Broken.search_normal, color: theme.colorScheme.primary),
+                              onPressed: () {
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => GlobalSearchScreen(searchFolderPath: provider.currentPath)));
+                              },
+                            ),
+                            IconButton(
+                              icon: Icon(Broken.filter_edit, color: theme.colorScheme.primary),
+                              tooltip: L10n.of(context).msg97301f64,
+                              onPressed: () => _showSortModal(context, provider),
+                            ),
+                            PopupMenuButton<String>(
+                              icon: Icon(Broken.add_square, size: 26, color: theme.colorScheme.primary),
+                              tooltip: L10n.of(context).ui_new,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              position: PopupMenuPosition.under,
+                              elevation: 8,
+                              onSelected: (val) => _handleMenuAction(context, val, provider),
+                              itemBuilder: (context) => [
+                                PopupMenuItem(value: 'file', child: Row(children: [Icon(Broken.document, size: 20), SizedBox(width: 12), Text(L10n.of(context).msge48a7157, style: TextStyle(fontWeight: FontWeight.w600))])),
+                                PopupMenuItem(value: 'folder', child: Row(children: [Icon(Broken.folder, size: 20), SizedBox(width: 12), Text(L10n.of(context).msgf3a485df, style: TextStyle(fontWeight: FontWeight.w600))])),
+                                PopupMenuItem(value: 'archive', child: Row(children: [Icon(Broken.archive, size: 20), SizedBox(width: 12), Text(L10n.of(context).msg68ac91eb, style: TextStyle(fontWeight: FontWeight.w600))])),
+                              ],
+                            ),
+                          ],
+                  )
+                : AppBar(
+                    automaticallyImplyLeading: false,
+                    surfaceTintColor: Colors.transparent,
+                    scrolledUnderElevation: 0,
+                    toolbarHeight: MediaQuery.of(context).padding.top,
+                  ),
             body: Column(
               children: [
                 // 顶部固定区域（标签页 + 路径面包屑）
@@ -1825,63 +1813,69 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         ),
       ],
     ),
-            floatingActionButtonLocation: isSelectionMode
-                ? null
-                : provider.showBottomActionBar
-                    ? FloatingActionButtonLocation.centerDocked
-                    : FloatingActionButtonLocation.endFloat,
-            floatingActionButton: (() {
-              if (!isSelectionMode && provider.showFloatingAddButton) {
-                return Padding(
-                  padding: EdgeInsets.only(bottom: provider.showBottomActionBar ? 0 : 16),
-                  child: FloatingActionButton(
-                    onPressed: () => _showAddBottomSheet(context, provider),
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Colors.white,
-                    elevation: 4,
-                    shape: provider.showBottomActionBar ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)) : null,
-                    child: const Icon(Broken.add, size: 28),
-                  ),
-                );
-              }
-              return null;
-            })(),
+            floatingActionButtonLocation: null,
+            floatingActionButton: null,
             bottomNavigationBar: isSelectionMode
                 ? SelectionActionBar(provider: provider)
-                : !provider.showBottomActionBar
+                : !showBottomActionBar
                     ? null
                     : BottomAppBar(
                     elevation: 8,
                     color: Theme.of(context).colorScheme.surface,
-                    shape: const CircularNotchedRectangle(),
-                    notchMargin: 8,
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        IconButton(
-                          icon: const Icon(Broken.tick_square),
-                          tooltip: L10n.of(context).ui_selection_mode,
-                          onPressed: () {
-                            if (provider.currentFiles.isNotEmpty) {
-                              provider.toggleSelection(provider.currentFiles.first.path);
-                            }
-                          },
+                        // 左侧：抽屉 + 分类 + 浏览（按顶部 leading 顺序，全部使用主题色）
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Builder(
+                              builder: (ctx) => IconButton(
+                                icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
+                                tooltip: L10n.of(context).msg6e0f9cef,
+                                onPressed: () => Scaffold.of(ctx).openDrawer(),
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(Broken.category, color: theme.colorScheme.primary),
+                              tooltip: L10n.of(context).msg6e0f9cef,
+                              onPressed: () => widget.onNavigateTab?.call(0),
+                            ),
+                            IconButton(
+                              icon: Icon(Broken.folder, color: theme.colorScheme.primary),
+                              tooltip: L10n.of(context).ui_browse,
+                              onPressed: () {},
+                            ),
+                          ],
                         ),
-                        IconButton(
-                          icon: const Icon(Broken.search_normal),
-                          tooltip: L10n.of(context).msg681c0f39,
-                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => GlobalSearchScreen(searchFolderPath: provider.currentPath))),
-                        ),
-                        const SizedBox(width: 48), // Center dock slot for FAB
-                        IconButton(
-                          icon: const Icon(Broken.filter_edit),
-                          tooltip: L10n.of(context).msg97301f64,
-                          onPressed: () => _showSortModal(context, provider),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.sd_storage_rounded),
-                          tooltip: L10n.of(context).ui_storage_and_sd,
-                          onPressed: () => _showStorageVolumeModal(context, provider),
+                        // 右侧：搜索 + 排序 + 新建（按顶部 actions 顺序，全部使用主题色）
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(Broken.search_normal, color: theme.colorScheme.primary),
+                              tooltip: L10n.of(context).msg681c0f39,
+                              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => GlobalSearchScreen(searchFolderPath: provider.currentPath))),
+                            ),
+                            IconButton(
+                              icon: Icon(Broken.filter_edit, color: theme.colorScheme.primary),
+                              tooltip: L10n.of(context).msg97301f64,
+                              onPressed: () => _showSortModal(context, provider),
+                            ),
+                            PopupMenuButton<String>(
+                              icon: Icon(Broken.add_square, size: 26, color: theme.colorScheme.primary),
+                              tooltip: L10n.of(context).ui_new,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              position: PopupMenuPosition.under,
+                              elevation: 8,
+                              onSelected: (val) => _handleMenuAction(context, val, provider),
+                              itemBuilder: (context) => [
+                                PopupMenuItem(value: 'file', child: Row(children: [Icon(Broken.document, size: 20), SizedBox(width: 12), Text(L10n.of(context).msge48a7157, style: TextStyle(fontWeight: FontWeight.w600))])),
+                                PopupMenuItem(value: 'folder', child: Row(children: [Icon(Broken.folder, size: 20), SizedBox(width: 12), Text(L10n.of(context).msgf3a485df, style: TextStyle(fontWeight: FontWeight.w600))])),
+                                PopupMenuItem(value: 'archive', child: Row(children: [Icon(Broken.archive, size: 20), SizedBox(width: 12), Text(L10n.of(context).msg68ac91eb, style: TextStyle(fontWeight: FontWeight.w600))])),
+                              ],
+                            ),
+                          ],
                         ),
                       ],
                     ),

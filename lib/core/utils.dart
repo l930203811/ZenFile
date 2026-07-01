@@ -21,6 +21,14 @@ class FileUtils {
     return DateFormat('yyyy-MM-dd  $timePattern').format(date);
   }
 
+  /// 判断艺术家字符串是否为未知（null、空、或 "unknown"/"<unknown>" 等变体）。
+  /// 音频插件 on_audio_query 在缺少元数据时会返回此类占位符。
+  static bool isUnknownArtist(String? artist) {
+    if (artist == null || artist.isEmpty) return true;
+    final normalized = artist.replaceAll('<', '').replaceAll('>', '').trim().toLowerCase();
+    return normalized == 'unknown' || normalized.isEmpty;
+  }
+
   static bool isArchive(String path) {
     final lower = path.toLowerCase();
     return lower.endsWith('.zip') ||

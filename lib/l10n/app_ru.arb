@@ -1247,7 +1247,23 @@
   "@msg309e2a28": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg309e2a28": "Включить нижнюю панель действий на странице обзора",
+  "msg309e2a28": "Показать панель навигации вверху или внизу",
+  "@msge34c23ff": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msge34c23ff": "Вверху",
+  "@msg3341e3ed": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg3341e3ed": "Кнопки действий отображаются в верхней части страницы",
+  "@msg8c414b06": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg8c414b06": "Внизу",
+  "@msg5d2c8e7f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5d2c8e7f": "Кнопки действий отображаются в нижней части страницы",
   "@msg9b7639ac": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -1535,36 +1551,36 @@
   "@msgd06ba04f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgd06ba04f": "Минималистичный",
+  "msgd06ba04f": "M3 Экспрессив 1",
   "@msg5090469e": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg5090469e": "Glassmorphism",
+  "msg5090469e": "M3 Экспрессив 2",
   "@d": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "d": "3D Милый",
+  "d": "M3 Экспрессив 3",
   "@msg67836b24": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg67836b24": "Киберпанк",
+  "msg67836b24": "Минимализм",
   "@msgf08c8dc4": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgf08c8dc4": "Естественный Дзен",
-  "msgdesign6": "AI-дизайн 1",
+  "msgf08c8dc4": "Стекломорфизм",
+  "msgdesign6": "Киберпанк",
   "@msgdesign6": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdesign7": "AI-дизайн 2",
+  "msgdesign7": "Ньюморфизм",
   "@msgdesign7": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdesign8": "AI-дизайн 3",
+  "msgdesign8": "Классика 2",
   "@msgdesign8": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdesign9": "AI-дизайн 4",
+  "msgdesign9": "Классика 3",
   "@msgdesign9": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -1667,7 +1683,7 @@
   "@msg64a6476a": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg64a6476a": "Логотип по Умолчанию",
+  "msg64a6476a": "По умолчанию",
   "@title": {
     "type": "text"
   },
@@ -2835,7 +2851,7 @@
   "ui_use_24h_format": "Использовать 24-Часовой Формат",
   "ui_show_folder_contents_count": "Показывать Содержимое Папок",
   "ui_show_folder_size": "Показывать Размер Папки",
-  "ui_show_bottom_action_bar": "Показать Нижнюю Панель Действий",
+  "ui_show_bottom_action_bar": "Положение панели навигации",
   "ui_hide_action_text": "Скрыть Текстовые Метки Панели Действий",
   "ui_show_media_previews": "Показывать Предпросмотр Медиа",
   "ui_adaptive_multiline_names": "Адаптивные Многострочные Имена Файлов",
@@ -3192,6 +3208,8 @@
     "log_archive_icon_redesign": "Переработаны иконки архивов с меткой формата (zip, 7z, rar и т.д.)",
     "log_music_lrc_lyrics": "Добавлена автозагрузка текстов LRC и ручной выбор файлов текстов",
       "log_remote_copy_paste_fix": "Исправлена проблема с копированием с удалённого сервера: прогресс 0% и файлы не появляются",
+    "log_navbar_position_setting": "Added navigation bar position setting, support top or bottom display",
+    "log_browse_top_area_optimize": "Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space",
   "msg_file_exists": "Файл уже существует",
   "@msg_file_exists": {
     "description": "Conflict dialog title"

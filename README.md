@@ -10,7 +10,7 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 ## 🚀 What's New in v1.0.42
 
-**Music Player Enhancements & Redesigned File Icons** — The music player now supports LRC lyrics loading, playback progress memory, and a quick shortcut on the music category page. File icons for images, documents, and archives have been redesigned with format labels.
+**Music Player Enhancements & Redesigned File Icons & Navigation Bar Customization** — The music player now supports LRC lyrics loading, playback progress memory, and a quick shortcut on the music category page. File icons for images, documents, and archives have been redesigned with format labels. Added navigation bar position setting with top/bottom options, plus optimized browse page layout.
 
 | | |
 |---|---|
@@ -23,6 +23,8 @@ A beautifully crafted, open-source file manager and offline media center for And
 | 🗜️ **Archive Icon Redesign** | Redesigned archive icons with format labels (zip, 7z, rar, etc.) |
 | 🎶 **LRC Lyrics Support** | Music player supports auto-loading LRC lyrics and manual lyrics file selection |
 | 🐛 **Remote Paste Fix** | Fixed remote server copy-to-local paste operation where progress bar was unresponsive and files were not appearing |
+| 📍 **Navigation Bar Position** | Added navigation bar position setting, support top or bottom display |
+| 📐 **Browse Page Layout Optimized** | Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space |
 
 ---
 

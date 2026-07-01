@@ -1065,8 +1065,21 @@ class L10nFr extends L10n {
       'Calculer et afficher la taille totale de tous les fichiers du répertoire (peut affecter les performances de la liste)';
 
   @override
-  String get msg309e2a28 =>
-      'Activer la barre d\'actions inférieure dans la page de navigation';
+  String get msg309e2a28 => 'Afficher la barre de navigation en haut ou en bas';
+
+  @override
+  String get msge34c23ff => 'En haut';
+
+  @override
+  String get msg3341e3ed =>
+      'Les boutons d\'action sont affichés en haut de la page';
+
+  @override
+  String get msg8c414b06 => 'En bas';
+
+  @override
+  String get msg5d2c8e7f =>
+      'Les boutons d\'action sont affichés en bas de la page';
 
   @override
   String get msg9b7639ac =>
@@ -1308,31 +1321,31 @@ class L10nFr extends L10n {
   String get msg5dc988f4 => 'Menu hamburger / Menu classique';
 
   @override
-  String get msgd06ba04f => 'Minimaliste';
+  String get msgd06ba04f => 'M3 Expressif 1';
 
   @override
-  String get msg5090469e => 'Glasmorphisme';
+  String get msg5090469e => 'M3 Expressif 2';
 
   @override
-  String get d => '3D mignon';
+  String get d => 'M3 Expressif 3';
 
   @override
-  String get msg67836b24 => 'Cyberpunk';
+  String get msg67836b24 => 'Minimaliste';
 
   @override
-  String get msgf08c8dc4 => 'Zen naturel';
+  String get msgf08c8dc4 => 'Glassmorphisme';
 
   @override
-  String get msgdesign6 => 'Design IA 1';
+  String get msgdesign6 => 'Cyberpunk';
 
   @override
-  String get msgdesign7 => 'Design IA 2';
+  String get msgdesign7 => 'Neumorphisme';
 
   @override
-  String get msgdesign8 => 'Design IA 3';
+  String get msgdesign8 => 'Classique 2';
 
   @override
-  String get msgdesign9 => 'Design IA 4';
+  String get msgdesign9 => 'Classique 3';
 
   @override
   String get msgdesign10 => 'Design IA 5';
@@ -1415,7 +1428,7 @@ class L10nFr extends L10n {
       'Choisissez un logo personnalisé pour l\'icône du lanceur d\'application. Certains lanceurs peuvent prendre quelques secondes pour se mettre à jour.';
 
   @override
-  String get msg64a6476a => 'Logo par défaut';
+  String get msg64a6476a => 'Par défaut';
 
   @override
   String title(Object title) {
@@ -2574,8 +2587,7 @@ class L10nFr extends L10n {
   String get ui_show_folder_size => 'Afficher la taille du dossier';
 
   @override
-  String get ui_show_bottom_action_bar =>
-      'Afficher la barre d\'actions inférieure';
+  String get ui_show_bottom_action_bar => 'Position de la barre de navigation';
 
   @override
   String get ui_hide_action_text =>
@@ -3042,6 +3054,14 @@ class L10nFr extends L10n {
   @override
   String get log_remote_copy_paste_fix =>
       'Correction de la copie depuis le serveur distant: progression à 0% et fichiers absents';
+
+  @override
+  String get log_navbar_position_setting =>
+      'Added navigation bar position setting, support top or bottom display';
+
+  @override
+  String get log_browse_top_area_optimize =>
+      'Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space';
 
   @override
   String get msg_remember_choice =>

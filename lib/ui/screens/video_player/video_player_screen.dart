@@ -130,7 +130,22 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _startHideTimer();
   }
 
-  void _startPlayback() {
+  void _startPlayback() async {
+    // 处理 remote:// 路径（从视频类别打开远程视频）
+    if (widget.videoPath.startsWith('remote://')) {
+      setState(() => _isBuffering = true);
+      final resolved = await _resolveRemotePath(widget.videoPath);
+      if (resolved == null) {
+        debugPrint('远程视频路径解析失败: ${widget.videoPath}');
+        if (mounted) setState(() => _isBuffering = false);
+        return;
+      }
+      _currentStreamUrl = resolved;
+      player.open(Media(resolved));
+      if (mounted) setState(() => _isBuffering = false);
+      return;
+    }
+
     // For remote files that are being cached, wait until the download completes
     // (download goes to .partial file, then renames to the actual file)
     if (widget.isRemote && !widget.videoPath.startsWith('http')) {

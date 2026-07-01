@@ -1062,8 +1062,21 @@ class L10nRu extends L10n {
       'Вычислять и отображать общий размер всех файлов в каталоге (может повлиять на производительность списка)';
 
   @override
-  String get msg309e2a28 =>
-      'Включить нижнюю панель действий на странице обзора';
+  String get msg309e2a28 => 'Показать панель навигации вверху или внизу';
+
+  @override
+  String get msge34c23ff => 'Вверху';
+
+  @override
+  String get msg3341e3ed =>
+      'Кнопки действий отображаются в верхней части страницы';
+
+  @override
+  String get msg8c414b06 => 'Внизу';
+
+  @override
+  String get msg5d2c8e7f =>
+      'Кнопки действий отображаются в нижней части страницы';
 
   @override
   String get msg9b7639ac =>
@@ -1306,31 +1319,31 @@ class L10nRu extends L10n {
   String get msg5dc988f4 => 'Гамбургер Меню / Классическое Меню';
 
   @override
-  String get msgd06ba04f => 'Минималистичный';
+  String get msgd06ba04f => 'M3 Экспрессив 1';
 
   @override
-  String get msg5090469e => 'Glassmorphism';
+  String get msg5090469e => 'M3 Экспрессив 2';
 
   @override
-  String get d => '3D Милый';
+  String get d => 'M3 Экспрессив 3';
 
   @override
-  String get msg67836b24 => 'Киберпанк';
+  String get msg67836b24 => 'Минимализм';
 
   @override
-  String get msgf08c8dc4 => 'Естественный Дзен';
+  String get msgf08c8dc4 => 'Стекломорфизм';
 
   @override
-  String get msgdesign6 => 'AI-дизайн 1';
+  String get msgdesign6 => 'Киберпанк';
 
   @override
-  String get msgdesign7 => 'AI-дизайн 2';
+  String get msgdesign7 => 'Ньюморфизм';
 
   @override
-  String get msgdesign8 => 'AI-дизайн 3';
+  String get msgdesign8 => 'Классика 2';
 
   @override
-  String get msgdesign9 => 'AI-дизайн 4';
+  String get msgdesign9 => 'Классика 3';
 
   @override
   String get msgdesign10 => 'AI-дизайн 5';
@@ -1412,7 +1425,7 @@ class L10nRu extends L10n {
       'Выберите пользовательский логотип для значка лаунчера приложений. Некоторые лаунчеры могут обновляться с задержкой в несколько секунд.';
 
   @override
-  String get msg64a6476a => 'Логотип по Умолчанию';
+  String get msg64a6476a => 'По умолчанию';
 
   @override
   String title(Object title) {
@@ -2564,7 +2577,7 @@ class L10nRu extends L10n {
   String get ui_show_folder_size => 'Показывать Размер Папки';
 
   @override
-  String get ui_show_bottom_action_bar => 'Показать Нижнюю Панель Действий';
+  String get ui_show_bottom_action_bar => 'Положение панели навигации';
 
   @override
   String get ui_hide_action_text => 'Скрыть Текстовые Метки Панели Действий';
@@ -3027,6 +3040,14 @@ class L10nRu extends L10n {
   @override
   String get log_remote_copy_paste_fix =>
       'Исправлена проблема с копированием с удалённого сервера: прогресс 0% и файлы не появляются';
+
+  @override
+  String get log_navbar_position_setting =>
+      'Added navigation bar position setting, support top or bottom display';
+
+  @override
+  String get log_browse_top_area_optimize =>
+      'Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space';
 
   @override
   String get msg_remember_choice => 'Запомнить этот выбор для будущих операций';

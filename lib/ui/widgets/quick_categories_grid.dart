@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
@@ -6,24 +7,21 @@ import '../../providers/file_manager_provider.dart';
 import '../../services/preferences_service.dart';
 import '../../services/network_connections_service.dart';
 import '../../models/network_connection_model.dart';
-import 'archive_type_icon.dart';
 import '../screens/media_category_screen.dart';
 import '../screens/internal_file_picker_screen.dart';
 import '../screens/storage_analyzer/app_manager_screen.dart';
 import '../screens/more_settings_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
-import '../screens/network_connection_wizard_screen.dart';
 import '../screens/network_category_screen.dart';
 import '../screens/all_recent_files_screen.dart';
 import '../screens/ftp_server_screen.dart';
 import '../screens/web_sharing_screen.dart';
 import '../screens/storage_analyzer/storage_analyzer_screen.dart';
 import '../screens/vault_lock_screen.dart';
-import '../../services/vault_service.dart';
 import '../../services/remote/remote_client.dart';
 
-class QuickCategoriesGrid extends StatelessWidget {
+class QuickCategoriesGrid extends StatefulWidget {
   final Function(int) onNavigateTab;
   final bool showTitle;
 
@@ -39,7 +37,7 @@ class QuickCategoriesGrid extends StatelessWidget {
         'color': isDark ? Colors.purpleAccent : Colors.purple,
         'count': '${mediaProvider.getCategoryItemCount("图片")}',
         'isCustom': false,
-        'action': () => Navigator.push(context, MaterialPageRoute(builder: (_) => MediaCategoryScreen(mediaType: MediaType.images, onNavigateTab: onNavigateTab))),
+        'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.images, onNavigateTab: onNavigateTab),
       },
       '视频': {
         'label': l10n.cat_videos,
@@ -47,7 +45,7 @@ class QuickCategoriesGrid extends StatelessWidget {
         'color': isDark ? Colors.redAccent : const Color(0xFFD32F2F),
         'count': '${mediaProvider.getCategoryItemCount("视频")}',
         'isCustom': false,
-        'action': () => Navigator.push(context, MaterialPageRoute(builder: (_) => MediaCategoryScreen(mediaType: MediaType.videos, onNavigateTab: onNavigateTab))),
+        'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.videos, onNavigateTab: onNavigateTab),
       },
       '音频': {
         'label': l10n.cat_audios,
@@ -55,7 +53,7 @@ class QuickCategoriesGrid extends StatelessWidget {
         'color': isDark ? Colors.orangeAccent : const Color(0xFFE65100),
         'count': '${mediaProvider.getCategoryItemCount("音频")}',
         'isCustom': false,
-        'action': () => Navigator.push(context, MaterialPageRoute(builder: (_) => MediaCategoryScreen(mediaType: MediaType.audios, onNavigateTab: onNavigateTab))),
+        'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.audios, onNavigateTab: onNavigateTab),
       },
       '文档': {
         'label': l10n.cat_documents,
@@ -63,16 +61,15 @@ class QuickCategoriesGrid extends StatelessWidget {
         'color': isDark ? Colors.blueAccent : const Color(0xFF1976D2),
         'count': '${mediaProvider.getCategoryItemCount("文档")}',
         'isCustom': false,
-        'action': () => Navigator.push(context, MaterialPageRoute(builder: (_) => MediaCategoryScreen(mediaType: MediaType.documents, onNavigateTab: onNavigateTab))),
+        'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.documents, onNavigateTab: onNavigateTab),
       },
       '压缩包': {
         'label': l10n.msgc806d0fa,
-        'icon': Broken.box,
+        'icon': Broken.archive,
         'color': isDark ? Colors.tealAccent : const Color(0xFF00796B),
         'count': '${mediaProvider.getCategoryItemCount("压缩包")}',
         'isCustom': false,
-        'isArchive': true,
-        'action': () => Navigator.push(context, MaterialPageRoute(builder: (_) => MediaCategoryScreen(mediaType: MediaType.archives, onNavigateTab: onNavigateTab))),
+        'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.archives, onNavigateTab: onNavigateTab),
       },
       '下载': {
         'label': l10n.cat_downloads,
@@ -80,7 +77,7 @@ class QuickCategoriesGrid extends StatelessWidget {
         'color': isDark ? Colors.greenAccent : const Color(0xFF2E7D32),
         'count': '${mediaProvider.getCategoryItemCount("下载")}',
         'isCustom': false,
-        'action': () => Navigator.push(context, MaterialPageRoute(builder: (_) => MediaCategoryScreen(mediaType: MediaType.downloads, onNavigateTab: onNavigateTab))),
+        'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.downloads, onNavigateTab: onNavigateTab),
       },
       '安装包': {
         'label': l10n.msg03070d08,
@@ -88,7 +85,7 @@ class QuickCategoriesGrid extends StatelessWidget {
         'color': isDark ? Colors.amber : const Color(0xFFF57C00),
         'count': '${mediaProvider.getCategoryItemCount("安装包")}',
         'isCustom': false,
-        'action': () => Navigator.push(context, MaterialPageRoute(builder: (_) => MediaCategoryScreen(mediaType: MediaType.apks, onNavigateTab: onNavigateTab))),
+        'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.apks, onNavigateTab: onNavigateTab),
       },
       '截图': {
         'label': l10n.cat_screenshots,
@@ -96,7 +93,7 @@ class QuickCategoriesGrid extends StatelessWidget {
         'color': isDark ? Colors.pinkAccent : const Color(0xFFC2185B),
         'count': '${mediaProvider.getCategoryItemCount("截图")}',
         'isCustom': false,
-        'action': () => Navigator.push(context, MaterialPageRoute(builder: (_) => MediaCategoryScreen(mediaType: MediaType.screenshots, onNavigateTab: onNavigateTab))),
+        'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.screenshots, onNavigateTab: onNavigateTab),
       },
       '最近': {
         'label': l10n.cat_recent,
@@ -104,7 +101,7 @@ class QuickCategoriesGrid extends StatelessWidget {
         'color': isDark ? Colors.indigoAccent : const Color(0xFF3F51B5),
         'count': '${mediaProvider.getCategoryItemCount("最近")}',
         'isCustom': false,
-        'action': () => Navigator.push(context, MaterialPageRoute(builder: (_) => AllRecentFilesScreen(onNavigateTab: onNavigateTab))),
+        'pageBuilder': () => AllRecentFilesScreen(onNavigateTab: onNavigateTab),
       },
       '网络': {
         'label': l10n.cat_network,
@@ -112,7 +109,7 @@ class QuickCategoriesGrid extends StatelessWidget {
         'color': isDark ? Colors.cyanAccent : const Color(0xFF00BCD4),
         'count': '${mediaProvider.getCategoryItemCount("网络")}',
         'isCustom': false,
-        'action': () => Navigator.push(context, MaterialPageRoute(builder: (_) => NetworkCategoryScreen(onNavigateTab: onNavigateTab))),
+        'pageBuilder': () => NetworkCategoryScreen(onNavigateTab: onNavigateTab),
       },
       'FTP共享': {
         'label': l10n.ftp,
@@ -120,7 +117,7 @@ class QuickCategoriesGrid extends StatelessWidget {
         'color': isDark ? Colors.orangeAccent : const Color(0xFFF57C00),
         'count': l10n.cat_service,
         'isCustom': false,
-        'action': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FtpServerScreen())),
+        'pageBuilder': () => const FtpServerScreen(),
       },
       'Web共享': {
         'label': l10n.web,
@@ -128,7 +125,7 @@ class QuickCategoriesGrid extends StatelessWidget {
         'color': isDark ? Colors.deepPurpleAccent : const Color(0xFF7B1FA2),
         'count': l10n.cat_service,
         'isCustom': false,
-        'action': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WebSharingScreen())),
+        'pageBuilder': () => const WebSharingScreen(),
       },
       '应用': {
         'label': l10n.cat_apps,
@@ -136,7 +133,7 @@ class QuickCategoriesGrid extends StatelessWidget {
         'color': isDark ? Colors.lightGreenAccent : const Color(0xFF4CAF50),
         'count': l10n.cat_manage,
         'isCustom': false,
-        'action': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AppManagerScreen())),
+        'pageBuilder': () => const AppManagerScreen(),
       },
       '设置': {
         'label': l10n.cat_settings,
@@ -144,7 +141,7 @@ class QuickCategoriesGrid extends StatelessWidget {
         'color': isDark ? Colors.blueGrey.shade300 : Colors.blueGrey,
         'count': l10n.cat_config,
         'isCustom': false,
-        'action': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MoreSettingsScreen())),
+        'pageBuilder': () => const MoreSettingsScreen(),
       },
       '存储': {
         'label': l10n.cat_storage,
@@ -152,7 +149,7 @@ class QuickCategoriesGrid extends StatelessWidget {
         'color': isDark ? Colors.cyanAccent : const Color(0xFF00ACC1),
         'count': l10n.cat_analyze,
         'isCustom': false,
-        'action': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StorageAnalyzerScreen())),
+        'pageBuilder': () => const StorageAnalyzerScreen(),
       },
       '保险箱': {
         'label': l10n.cat_vault,
@@ -160,7 +157,7 @@ class QuickCategoriesGrid extends StatelessWidget {
         'color': isDark ? Colors.yellowAccent : const Color(0xFFFFB300),
         'count': l10n.cat_vault_desc,
         'isCustom': false,
-        'action': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const VaultLockScreen())),
+        'pageBuilder': () => const VaultLockScreen(),
       },
     };
 
@@ -185,148 +182,16 @@ class QuickCategoriesGrid extends StatelessWidget {
       };
     }
 
+    // 为所有有 pageBuilder 但无 action 的项生成 action（兼容抽屉等旧调用方）
+    for (final entry in map.entries) {
+      final cat = entry.value;
+      if (cat['action'] == null && cat['pageBuilder'] != null) {
+        final pageBuilder = cat['pageBuilder'] as Widget Function();
+        cat['action'] = () => Navigator.push(context, MaterialPageRoute(builder: (_) => pageBuilder()));
+      }
+    }
+
     return map;
-  }
-
-  static void _showNetworkConnectionsSheet(BuildContext context) {
-    final theme = Theme.of(context);
-    final connections = NetworkConnectionsService.getConnections();
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: theme.scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (ctx) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.5,
-          minChildSize: 0.3,
-          maxChildSize: 0.9,
-          expand: false,
-          builder: (ctx, scrollController) {
-            return Column(
-              children: [
-                const SizedBox(height: 12),
-                Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.withOpacity(0.3), borderRadius: BorderRadius.circular(2))),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(L10n.of(context).msgce1ec2ce, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        child: Text(L10n.of(context).ui_close, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                      ),
-                    ],
-                  ),
-                ),
-                if (connections.isEmpty)
-                  Expanded(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Broken.wifi, size: 48, color: theme.colorScheme.onSurface.withOpacity(0.2)),
-                          const SizedBox(height: 16),
-                          Text(L10n.of(context).msgc9c900d0, style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5), fontSize: 15)),
-                          const SizedBox(height: 8),
-                          TextButton.icon(
-                            onPressed: () {
-                              Navigator.pop(ctx);
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const NetworkConnectionWizardScreen()));
-                            },
-                            icon: const Icon(Broken.add, size: 18),
-                            label: Text(L10n.of(context).msg3358aa10),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                else
-                  Expanded(
-                    child: ListView.builder(
-                      controller: scrollController,
-                      physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                      itemCount: connections.length + 1,
-                      itemBuilder: (context, index) {
-                        if (index == connections.length) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
-                            child: OutlinedButton.icon(
-                              onPressed: () {
-                                Navigator.pop(ctx);
-                                Navigator.push(context, MaterialPageRoute(builder: (_) => const NetworkConnectionWizardScreen()));
-                              },
-                              icon: const Icon(Broken.add, size: 18),
-                              label: Text(L10n.of(context).msgc31116e3, style: TextStyle(fontWeight: FontWeight.bold)),
-                              style: OutlinedButton.styleFrom(
-                                minimumSize: const Size.fromHeight(48),
-                                foregroundColor: theme.colorScheme.primary,
-                                side: BorderSide(color: theme.colorScheme.primary.withOpacity(0.5)),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                              ),
-                            ),
-                          );
-                        }
-                        final conn = connections[index];
-                        IconData iconData;
-                        switch (conn.type) {
-                          case '局域网/SMB':
-                            iconData = Icons.dns_rounded;
-                            break;
-                          case 'FTP':
-                            iconData = Icons.swap_horizontal_circle_rounded;
-                            break;
-                          case 'SFTP':
-                            iconData = Icons.vpn_lock_rounded;
-                            break;
-                          case 'WebDav':
-                            iconData = Icons.web_rounded;
-                            break;
-                          default:
-                            iconData = Broken.wifi;
-                        }
-                        return ListTile(
-                          leading: Container(
-                            width: 42,
-                            height: 42,
-                            decoration: BoxDecoration(color: theme.colorScheme.primary.withOpacity(0.1), shape: BoxShape.circle),
-                            child: Icon(iconData, color: theme.colorScheme.primary, size: 20),
-                          ),
-                          title: Text(conn.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
-                          subtitle: Text('${conn.type} · ${conn.host}', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.5)), maxLines: 1, overflow: TextOverflow.ellipsis),
-                          trailing: const Icon(Icons.chevron_right_rounded),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          onTap: () async {
-                            Navigator.pop(ctx);
-                            final provider = context.read<FileManagerProvider>();
-                            final client = FileManagerProvider.createRemoteClient(conn);
-                            try {
-                              await client.connect();
-                              if (context.mounted) {
-                                provider.openRemoteTab(client, conn);
-                              }
-                            } catch (e) {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text(L10n.of(context).e13(e)), backgroundColor: Colors.redAccent),
-                                );
-                              }
-                            }
-                          },
-                        );
-                      },
-                    ),
-                  ),
-              ],
-            );
-          },
-        );
-      },
-    );
   }
 
   static void showCustomizeDialog(BuildContext context, [Function(int)? onNavigateTab]) {
@@ -345,13 +210,53 @@ class QuickCategoriesGrid extends StatelessWidget {
   }
 
   @override
+  State<QuickCategoriesGrid> createState() => _QuickCategoriesGridState();
+}
+
+class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
+  /// 从图标位置扩散进入目标页面
+  void _navigateWithExpand({
+    required GlobalKey iconKey,
+    required Color color,
+    required Widget targetPage,
+  }) {
+    final renderBox = iconKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => targetPage));
+      return;
+    }
+
+    final iconPos = renderBox.localToGlobal(Offset.zero);
+    final iconSize = renderBox.size;
+    final center = Offset(
+      iconPos.dx + iconSize.width / 2,
+      iconPos.dy + iconSize.height / 2,
+    );
+
+    final screenSize = MediaQuery.of(context).size;
+    final dx = max(center.dx, screenSize.width - center.dx);
+    final dy = max(center.dy, screenSize.height - center.dy);
+    final radius = sqrt(dx * dx + dy * dy);
+
+    Navigator.push(
+      context,
+      _RadialExpandRoute(
+        center: center,
+        maxRadius: radius,
+        color: color,
+        child: targetPage,
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final mediaProvider = context.watch<MediaProvider>();
     final fileManagerProvider = context.watch<FileManagerProvider>();
 
-    final allCategoriesMap = getAllCategoriesMap(context, isDark, onNavigateTab);
+    final allCategoriesMap = QuickCategoriesGrid.getAllCategoriesMap(context, isDark, widget.onNavigateTab);
 
     final activeList = mediaProvider.categoryOrder
         .where((label) => mediaProvider.activeCategories.contains(label) && allCategoriesMap.containsKey(label))
@@ -363,7 +268,7 @@ class QuickCategoriesGrid extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (showTitle)
+          if (widget.showTitle)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -372,7 +277,7 @@ class QuickCategoriesGrid extends StatelessWidget {
                   style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 InkWell(
-                  onTap: () => showCustomizeDialog(context, onNavigateTab),
+                  onTap: () => QuickCategoriesGrid.showCustomizeDialog(context, widget.onNavigateTab),
                   borderRadius: BorderRadius.circular(16),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
@@ -424,20 +329,32 @@ class QuickCategoriesGrid extends StatelessWidget {
                   final icon = cat['icon'] as IconData;
                   final color = cat['color'] as Color;
                   final count = cat['count'] as String;
-                  final action = cat['action'] as VoidCallback;
-                  final isArchive = cat['isArchive'] == true;
+                  final pageBuilder = cat['pageBuilder'] as Widget Function()?;
+                  final action = cat['action'] as VoidCallback?;
                   final shape = fileManagerProvider.categoryIconShape;
                   final isSquare = shape == 'square';
+                  final iconKey = GlobalKey();
 
                   return Column(
                     key: ValueKey(label),
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Material(
+                        key: iconKey,
                         color: color.withOpacity(0.15),
                         shape: isSquare ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)) : const CircleBorder(),
                         child: InkWell(
-                          onTap: action,
+                          onTap: () {
+                            if (pageBuilder != null) {
+                              _navigateWithExpand(
+                                iconKey: iconKey,
+                                color: color,
+                                targetPage: pageBuilder(),
+                              );
+                            } else {
+                              action?.call();
+                            }
+                          },
                           customBorder: isSquare ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)) : const CircleBorder(),
                           splashColor: color.withOpacity(0.25),
                           highlightColor: color.withOpacity(0.15),
@@ -445,9 +362,7 @@ class QuickCategoriesGrid extends StatelessWidget {
                             width: 64,
                             height: 64,
                             alignment: Alignment.center,
-                            child: isArchive
-                                ? ArchiveTypeIcon(label: 'ZIP', color: color, iconScale: 1.15)
-                                : Icon(icon, color: color, size: 28),
+                            child: Icon(icon, color: color, size: 28),
                           ),
                         ),
                       ),
@@ -480,6 +395,95 @@ class QuickCategoriesGrid extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// 从图标中心扩散的圆形遮罩动画路由
+class _RadialExpandRoute extends PageRouteBuilder<void> {
+  final Offset center;
+  final double maxRadius;
+  final Color color;
+  final Widget child;
+
+  _RadialExpandRoute({
+    required this.center,
+    required this.maxRadius,
+    required this.color,
+    required this.child,
+  }) : super(
+    transitionDuration: const Duration(milliseconds: 400),
+    reverseTransitionDuration: const Duration(milliseconds: 350),
+    pageBuilder: (context, animation, secondaryAnimation) => child,
+    transitionsBuilder: (context, animation, secondaryAnimation, page) {
+      return _RadialTransition(
+        center: center,
+        maxRadius: maxRadius,
+        color: color,
+        animation: animation,
+        child: page,
+      );
+    },
+  );
+}
+
+class _RadialTransition extends StatelessWidget {
+  final Offset center;
+  final double maxRadius;
+  final Color color;
+  final Animation<double> animation;
+  final Widget child;
+
+  const _RadialTransition({
+    required this.center,
+    required this.maxRadius,
+    required this.color,
+    required this.animation,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, _) {
+        // 动画完成后直接显示目标页面，避免彩色蒙层遮挡内容
+        if (animation.value >= 1.0) {
+          return child;
+        }
+        // 进入时圆形从0扩展到maxRadius，退出时反向
+        final radius = animation.value * maxRadius;
+        return Stack(
+          children: [
+            // 底层：扩散的彩色圆形
+            ClipPath(
+              clipper: _CircleClipper(center: center, radius: radius),
+              child: ColoredBox(
+                color: color.withOpacity(0.15 * animation.value),
+                child: child,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _CircleClipper extends CustomClipper<Path> {
+  final Offset center;
+  final double radius;
+
+  _CircleClipper({required this.center, required this.radius});
+
+  @override
+  Path getClip(Size size) {
+    return Path()
+      ..addOval(Rect.fromCircle(center: center, radius: radius));
+  }
+
+  @override
+  bool shouldReclip(covariant _CircleClipper oldDelegate) {
+    return oldDelegate.radius != radius;
   }
 }
 
@@ -799,7 +803,6 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
     final label = widget.label;
     final color = widget.cat['color'] as Color;
     final icon = widget.cat['icon'] as IconData;
-    final isArchive = widget.cat['isArchive'] == true;
 
     final isStandardCategory = const [
       '图片',
@@ -832,9 +835,7 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
                   ? BorderRadius.circular(6)
                   : null,
             ),
-            child: isArchive
-                ? Center(child: ArchiveTypeIcon(label: 'ZIP', color: color, iconScale: 0.9))
-                : Icon(icon, color: color, size: 22),
+            child: Icon(icon, color: color, size: 22),
           ),
           title: Row(
             children: [

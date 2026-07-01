@@ -13,6 +13,7 @@ import 'package:path/path.dart' as p;
 import 'package:device_info_plus/device_info_plus.dart';
 import '../services/preferences_service.dart';
 import '../services/network_connections_service.dart';
+import '../services/media_thumbnail_service.dart';
 import '../models/custom_shortcut_model.dart';
 import '../models/file_item_model.dart';
 import '../models/network_connection_model.dart';
@@ -103,6 +104,93 @@ class ThumbnailCache {
 
   static Uint8List? getCached(String id) => _cache[id];
   static bool hasCached(String id) => _cache.containsKey(id) && _cache[id] != null;
+
+  /// 为远程视频生成缩略图（下载视频到临时文件后提取帧）
+  static Future<Uint8List?> getForRemoteVideo(String remotePathStr) async {
+    final key = 'remote_vid_${remotePathStr.hashCode}';
+    if (_cache.containsKey(key) && _cache[key] != null) return _cache[key];
+    if (_pending.containsKey(key)) return _pending[key];
+
+    final completer = Completer<Uint8List?>();
+    _pending[key] = completer.future;
+
+    try {
+      await init();
+      // 检查磁盘缓存
+      if (_cacheDir != null) {
+        final sanitizedKey = key.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
+        final cacheFile = File('$_cacheDir/$sanitizedKey.thumb');
+        if (await cacheFile.exists()) {
+          final bytes = await cacheFile.readAsBytes();
+          if (bytes.isNotEmpty) {
+            _cache[key] = bytes;
+            _pending.remove(key);
+            completer.complete(bytes);
+            return bytes;
+          }
+        }
+      }
+
+      // 解析 remote:// 路径
+      final uriPart = remotePathStr.substring('remote://'.length);
+      final separatorIndex = uriPart.indexOf('|');
+      if (separatorIndex < 0) {
+        _pending.remove(key);
+        completer.complete(null);
+        return null;
+      }
+      final connectionId = uriPart.substring(0, separatorIndex);
+      final remoteFilePath = uriPart.substring(separatorIndex + 1);
+      final fileName = p.basename(remoteFilePath);
+
+      // 查找连接并创建客户端
+      final connections = NetworkConnectionsService.getConnections();
+      final conn = connections.where((c) => c.id == connectionId).firstOrNull;
+      if (conn == null) {
+        _pending.remove(key);
+        completer.complete(null);
+        return null;
+      }
+
+      final remoteClient = FileManagerProvider.createRemoteClient(conn);
+      await remoteClient.connect();
+
+      // 下载视频到临时文件
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File(p.join(tempDir.path, 'zenfile_thumb_$key'));
+      await remoteClient.downloadFile(remoteFilePath, tempFile.path, (_) {});
+      await remoteClient.disconnect();
+
+      // 通过原生 MediaMetadataRetriever 生成远程视频缩略图
+      Uint8List? thumbnailBytes;
+      try {
+        thumbnailBytes = await MediaThumbnailService.generateVideoThumbnail(tempFile.path);
+      } catch (e) {
+        debugPrint('[ThumbnailCache] 远程视频缩略图生成失败: $e');
+      }
+
+      // 清理临时文件
+      try { await tempFile.delete(); } catch (_) {}
+
+      if (thumbnailBytes != null && thumbnailBytes.isNotEmpty) {
+        _cache[key] = thumbnailBytes;
+        // 保存到磁盘缓存
+        if (_cacheDir != null) {
+          final sanitizedKey = key.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
+          final cacheFile = File('$_cacheDir/$sanitizedKey.thumb');
+          await cacheFile.writeAsBytes(thumbnailBytes, flush: true);
+        }
+      }
+      _pending.remove(key);
+      completer.complete(thumbnailBytes);
+      return thumbnailBytes;
+    } catch (e) {
+      debugPrint('[ThumbnailCache] 远程视频缩略图失败: $e');
+      _pending.remove(key);
+      completer.complete(null);
+      return null;
+    }
+  }
 
   static void clear() {
     _cache.clear();

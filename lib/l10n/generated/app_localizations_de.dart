@@ -1062,8 +1062,21 @@ class L10nDe extends L10n {
       'Gesamtgröße aller Dateien im Verzeichnis berechnen und anzeigen (kann Listenleistung beeinträchtigen)';
 
   @override
-  String get msg309e2a28 =>
-      'Untere Aktionsleiste auf der Browse-Seite aktivieren';
+  String get msg309e2a28 => 'Navigationsleiste oben oder unten anzeigen';
+
+  @override
+  String get msge34c23ff => 'Oben';
+
+  @override
+  String get msg3341e3ed =>
+      'Aktionsschaltflächen werden oben auf der Seite angezeigt';
+
+  @override
+  String get msg8c414b06 => 'Unten';
+
+  @override
+  String get msg5d2c8e7f =>
+      'Aktionsschaltflächen werden unten auf der Seite angezeigt';
 
   @override
   String get msg9b7639ac =>
@@ -1302,31 +1315,31 @@ class L10nDe extends L10n {
   String get msg5dc988f4 => 'Hamburger-Menü / Klassisches Menü';
 
   @override
-  String get msgd06ba04f => 'Minimalistisch';
+  String get msgd06ba04f => 'M3 Expressiv 1';
 
   @override
-  String get msg5090469e => 'Glasmorphismus';
+  String get msg5090469e => 'M3 Expressiv 2';
 
   @override
-  String get d => '3D Niedlich';
+  String get d => 'M3 Expressiv 3';
 
   @override
-  String get msg67836b24 => 'Cyberpunk';
+  String get msg67836b24 => 'Minimalistisch';
 
   @override
-  String get msgf08c8dc4 => 'Natürliches Zen';
+  String get msgf08c8dc4 => 'Glasmorphismus';
 
   @override
-  String get msgdesign6 => 'KI-Design 1';
+  String get msgdesign6 => 'Cyberpunk';
 
   @override
-  String get msgdesign7 => 'KI-Design 2';
+  String get msgdesign7 => 'Neumorphismus';
 
   @override
-  String get msgdesign8 => 'KI-Design 3';
+  String get msgdesign8 => 'Klassisch 2';
 
   @override
-  String get msgdesign9 => 'KI-Design 4';
+  String get msgdesign9 => 'Klassisch 3';
 
   @override
   String get msgdesign10 => 'KI-Design 5';
@@ -1407,7 +1420,7 @@ class L10nDe extends L10n {
       'Wählen Sie ein benutzerdefiniertes Logo für das App-Startprogramm-Symbol. Hinweis: Einige Startprogramme können einige Sekunden für die Aktualisierung benötigen.';
 
   @override
-  String get msg64a6476a => 'Standard-Logo';
+  String get msg64a6476a => 'Standard';
 
   @override
   String title(Object title) {
@@ -2556,7 +2569,7 @@ class L10nDe extends L10n {
   String get ui_show_folder_size => 'Ordnergröße anzeigen';
 
   @override
-  String get ui_show_bottom_action_bar => 'Untere Aktionsleiste anzeigen';
+  String get ui_show_bottom_action_bar => 'Navigationsleistenposition';
 
   @override
   String get ui_hide_action_text =>
@@ -3020,6 +3033,14 @@ class L10nDe extends L10n {
   @override
   String get log_remote_copy_paste_fix =>
       'Behoben: Kopieren vom Remote-Server zeigt 0% Fortschritt und Dateien erscheinen nicht';
+
+  @override
+  String get log_navbar_position_setting =>
+      'Added navigation bar position setting, support top or bottom display';
+
+  @override
+  String get log_browse_top_area_optimize =>
+      'Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space';
 
   @override
   String get msg_remember_choice =>

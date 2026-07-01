@@ -1247,7 +1247,23 @@
   "@msg309e2a28": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg309e2a28": "تمكين شريط الإجراءات السفلي في صفحة التصفح",
+  "msg309e2a28": "عرض شريط التنقل في الأعلى أو الأسفل",
+  "@msge34c23ff": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msge34c23ff": "الأعلى",
+  "@msg3341e3ed": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg3341e3ed": "أزرار الإجراءات معروضة في أعلى الصفحة",
+  "@msg8c414b06": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg8c414b06": "الأسفل",
+  "@msg5d2c8e7f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5d2c8e7f": "أزرار الإجراءات معروضة في أسفل الصفحة",
   "@msg9b7639ac": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -1535,36 +1551,36 @@
   "@msgd06ba04f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgd06ba04f": "بسيط",
+  "msgd06ba04f": "تعبيري M3 1",
   "@msg5090469e": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg5090469e": "Glassmorphism",
+  "msg5090469e": "تعبيري M3 2",
   "@d": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "d": "3D لطيف",
+  "d": "تعبيري M3 3",
   "@msg67836b24": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg67836b24": "Cyberpunk",
+  "msg67836b24": "بسيط",
   "@msgf08c8dc4": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgf08c8dc4": "Zen الطبيعي",
-  "msgdesign6": "تصميم AI 1",
+  "msgf08c8dc4": "زجاجي",
+  "msgdesign6": "سايبربانك",
   "@msgdesign6": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdesign7": "تصميم AI 2",
+  "msgdesign7": "نيومورفيزم",
   "@msgdesign7": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdesign8": "تصميم AI 3",
+  "msgdesign8": "كلاسيكي 2",
   "@msgdesign8": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdesign9": "تصميم AI 4",
+  "msgdesign9": "كلاسيكي 3",
   "@msgdesign9": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -1667,7 +1683,7 @@
   "@msg64a6476a": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg64a6476a": "الشعار الافتراضي",
+  "msg64a6476a": "الافتراضي",
   "@title": {
     "type": "text"
   },
@@ -2835,7 +2851,7 @@
   "ui_use_24h_format": "استخدام تنسيق 24 ساعة",
   "ui_show_folder_contents_count": "إظهار محتويات المجلدات",
   "ui_show_folder_size": "إظهار حجم المجلد",
-  "ui_show_bottom_action_bar": "إظهار شريط الإجراءات السفلي",
+  "ui_show_bottom_action_bar": "موقع شريط التنقل",
   "ui_hide_action_text": "إخفاء تسميات نص شريط الإجراءات",
   "ui_show_media_previews": "إظهار معاينات الوسائط",
   "ui_adaptive_multiline_names": "أسماء ملفات متعددة الأسطر التكيفية",
@@ -3192,6 +3208,8 @@
     "log_archive_icon_redesign": "إعادة تصميم أيقونات الأرشيف مع تسمية التنسيق (zip, 7z, rar, إلخ)",
     "log_music_lrc_lyrics": "دعم التحميل التلقائي لكلمات LRC واختيار ملف الكلمات يدوياً",
       "log_remote_copy_paste_fix": "إصلاح مشكلة النسخ من الخادم البعيد: شريط التقدم 0% والملفات لا تظهر",
+    "log_navbar_position_setting": "Added navigation bar position setting, support top or bottom display",
+    "log_browse_top_area_optimize": "Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space",
   "msg_file_exists": "الملف موجود بالفعل",
   "@msg_file_exists": {
     "description": "Conflict dialog title"

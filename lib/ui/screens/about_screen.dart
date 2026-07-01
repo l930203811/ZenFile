@@ -130,7 +130,7 @@ class AboutZenFileScreen extends StatelessWidget {
                           child: Padding(
                             padding: const EdgeInsets.all(12.0),
                             child: Image.asset(
-                              'assets/logo/design_8.png',
+                              'assets/logo/zf_Classic1.png',
                               fit: BoxFit.contain,
                               errorBuilder: (context, error, stackTrace) {
                                 // Fallback icon in case asset load fails
@@ -701,6 +701,8 @@ class AboutZenFileScreen extends StatelessWidget {
                     L10n.of(context).log_archive_icon_redesign,
                     L10n.of(context).log_music_lrc_lyrics,
                     L10n.of(context).log_remote_copy_paste_fix,
+                    L10n.of(context).log_navbar_position_setting,
+                    L10n.of(context).log_browse_top_area_optimize,
                   ]),
                   const SizedBox(height: 16),
                   _buildVersionSection(ctx, theme, 'v1.0.41', '2026-06-21', [

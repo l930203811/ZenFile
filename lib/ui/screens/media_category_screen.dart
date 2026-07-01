@@ -42,6 +42,9 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _shimmerController;
 
+  // Helper: check if artist string is effectively empty (null, empty, or "unknown" from plugin)
+  static bool _isUnknownArtist(String? artist) => FileUtils.isUnknownArtist(artist);
+
   Set<String> _selectedFilePaths = {};
   Set<String> _selectedAssetIds = {};
 
@@ -1373,6 +1376,18 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     );
   }
 
+  Widget _RemoteVideoTile({
+    required String remotePath,
+    required VoidCallback onTap,
+    required VoidCallback onLongPress,
+  }) {
+    return _RemoteVideoTileWidget(
+      remotePath: remotePath,
+      onTap: onTap,
+      onLongPress: onLongPress,
+    );
+  }
+
   Widget _buildVideoTile(
     dynamic item,
     ThemeData theme,
@@ -1413,6 +1428,27 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               }
             },
             onLongPress: () => _toggleSelection(null, item.id),
+          )
+        else if (path.startsWith('remote://'))
+          _RemoteVideoTile(
+            remotePath: path,
+            onTap: () {
+              if (_isSelectionMode) {
+                _toggleSelection(path, null);
+              } else {
+                Navigator.push(
+                  context,
+                  _slideRoute(
+                    VideoPlayerScreen(
+                      videoPath: path,
+                      playlist: videoList,
+                      initialIndex: videoList.indexOf(item),
+                    ),
+                  ),
+                );
+              }
+            },
+            onLongPress: () => _toggleSelection(path, null),
           )
         else
           GestureDetector(
@@ -1575,7 +1611,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               pageBuilder: (context, animation, secondaryAnimation) => AudioPlayerScreen(
                 audioPath: path,
                 title: audio.title,
-                artist: (audio.artist == null || audio.artist!.isEmpty) ? L10n.of(context).msg5e32276d : audio.artist!,
+                artist: _isUnknownArtist(audio.artist) ? L10n.of(context).msg5e32276d : audio.artist!,
                 allSongs: audios,
                 initialIndex: index,
               ),
@@ -1619,8 +1655,8 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       title: Text(audio.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
       subtitle: Text(
         showDate
-            ? '${(audio.artist == null || audio.artist!.isEmpty) ? L10n.of(context).msg5e32276d : audio.artist!} • $dateStr'
-            : (audio.artist == null || audio.artist!.isEmpty) ? L10n.of(context).msg5e32276d : audio.artist!,
+            ? '${_isUnknownArtist(audio.artist) ? L10n.of(context).msg5e32276d : audio.artist!} \u2022 $dateStr'
+            : _isUnknownArtist(audio.artist) ? L10n.of(context).msg5e32276d : audio.artist!,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.55), fontSize: 11),
@@ -2070,7 +2106,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               } else if (savedPosition.inSeconds > 0) {
                 subtitle = '${L10n.of(context).ui_resume_playback} · ${formatDuration(savedPosition)}';
               } else {
-                subtitle = artist.isEmpty ? L10n.of(context).msg5e32276d : artist;
+                subtitle = _isUnknownArtist(artist) ? L10n.of(context).msg5e32276d : artist;
               }
 
               final progress = duration.inMilliseconds > 0
@@ -2423,6 +2459,95 @@ class _CachedImageTileState extends State<_CachedImageTile> {
                       ),
                     )
                   : const _ThumbnailShimmerPlaceholder(key: ValueKey('shimmer')),
+        ),
+      ),
+    );
+  }
+}
+
+/// 远程视频缩略图瓦片，通过 ThumbnailCache 加载远程视频缩略图。
+class _RemoteVideoTileWidget extends StatefulWidget {
+  final String remotePath;
+  final VoidCallback onTap;
+  final VoidCallback onLongPress;
+
+  const _RemoteVideoTileWidget({
+    required this.remotePath,
+    required this.onTap,
+    required this.onLongPress,
+  });
+
+  @override
+  State<_RemoteVideoTileWidget> createState() => _RemoteVideoTileWidgetState();
+}
+
+class _RemoteVideoTileWidgetState extends State<_RemoteVideoTileWidget> {
+  Uint8List? _thumbnail;
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadThumbnail();
+  }
+
+  Future<void> _loadThumbnail() async {
+    final data = await ThumbnailCache.getForRemoteVideo(widget.remotePath);
+    if (mounted) {
+      setState(() {
+        _thumbnail = data;
+        _loaded = true;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: widget.onTap,
+      onLongPress: widget.onLongPress,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: _loaded && _thumbnail != null
+                  ? Image.memory(
+                      _thumbnail!,
+                      key: const ValueKey('remote_vid'),
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                      gaplessPlayback: true,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: Colors.grey.withOpacity(0.1),
+                        child: const Center(child: Icon(Broken.video, size: 24, color: Colors.grey)),
+                      ),
+                    )
+                  : const _ThumbnailShimmerPlaceholder(key: ValueKey('shimmer')),
+            ),
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, Colors.black.withOpacity(0.5)],
+                  ),
+                ),
+              ),
+            ),
+            Center(
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), shape: BoxShape.circle),
+                child: const Icon(Icons.play_arrow, color: Colors.white, size: 22),
+              ),
+            ),
+          ],
         ),
       ),
     );

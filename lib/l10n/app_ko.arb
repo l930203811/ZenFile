@@ -1247,7 +1247,23 @@
   "@msg309e2a28": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg309e2a28": "탐색 페이지에 하단 액션 바 활성화",
+  "msg309e2a28": "상단 또는 하단에 탐색 막대 표시",
+  "@msge34c23ff": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msge34c23ff": "상단",
+  "@msg3341e3ed": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg3341e3ed": "작업 버튼이 페이지 상단에 표시됩니다",
+  "@msg8c414b06": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg8c414b06": "하단",
+  "@msg5d2c8e7f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5d2c8e7f": "작업 버튼이 페이지 하단에 표시됩니다",
   "@msg9b7639ac": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -1535,36 +1551,36 @@
   "@msgd06ba04f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgd06ba04f": "미니멀리스트",
+  "msgd06ba04f": "M3 익스프레시브 1",
   "@msg5090469e": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg5090469e": "글라스모피즘",
+  "msg5090469e": "M3 익스프레시브 2",
   "@d": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "d": "3D 큐트",
+  "d": "M3 익스프레시브 3",
   "@msg67836b24": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg67836b24": "사이버펑크",
+  "msg67836b24": "미니멀",
   "@msgf08c8dc4": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgf08c8dc4": "내추럴 젠",
-  "msgdesign6": "AI 디자인 1",
+  "msgf08c8dc4": "글래스모피즘",
+  "msgdesign6": "사이버펑크",
   "@msgdesign6": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdesign7": "AI 디자인 2",
+  "msgdesign7": "뉴모피즘",
   "@msgdesign7": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdesign8": "AI 디자인 3",
+  "msgdesign8": "클래식 2",
   "@msgdesign8": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdesign9": "AI 디자인 4",
+  "msgdesign9": "클래식 3",
   "@msgdesign9": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -1667,7 +1683,7 @@
   "@msg64a6476a": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg64a6476a": "기본 로고",
+  "msg64a6476a": "기본",
   "@title": {
     "type": "text"
   },
@@ -2835,7 +2851,7 @@
   "ui_use_24h_format": "24시간제 사용",
   "ui_show_folder_contents_count": "폴더 내용 수 표시",
   "ui_show_folder_size": "폴더 크기 표시",
-  "ui_show_bottom_action_bar": "하단 액션 바 표시",
+  "ui_show_bottom_action_bar": "탐색 막대 위치",
   "ui_hide_action_text": "액션 바 텍스트 레이블 숨기기",
   "ui_show_media_previews": "미디어 미리보기 표시",
   "ui_adaptive_multiline_names": "적응형 다중 줄 파일 이름",
@@ -3192,6 +3208,8 @@
     "log_archive_icon_redesign": "압축 파일 아이콘 재설계, 포맷 라벨(zip, 7z, rar 등) 표시",
     "log_music_lrc_lyrics": "LRC 가사 자동 로드 및 수동 가사 파일 선택 지원",
       "log_remote_copy_paste_fix": "원격 서버에서 로컬로 복사 시 진행률 표시줄이 0%이고 파일이 나타나지 않는 문제 수정",
+    "log_navbar_position_setting": "Added navigation bar position setting, support top or bottom display",
+    "log_browse_top_area_optimize": "Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space",
   "msg_file_exists": "파일이 이미 존재합니다",
   "@msg_file_exists": {
     "description": "Conflict dialog title"

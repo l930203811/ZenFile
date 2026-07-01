@@ -1247,7 +1247,23 @@
   "@msg309e2a28": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg309e2a28": "Enable bottom action bar in browse page",
+  "msg309e2a28": "Show navigation bar at top or bottom",
+  "@msge34c23ff": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msge34c23ff": "Top",
+  "@msg3341e3ed": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg3341e3ed": "Action buttons displayed at the top of the page",
+  "@msg8c414b06": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg8c414b06": "Bottom",
+  "@msg5d2c8e7f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5d2c8e7f": "Action buttons displayed at the bottom of the page",
   "@msg9b7639ac": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -1535,36 +1551,36 @@
   "@msgd06ba04f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgd06ba04f": "Minimalist",
+  "msgd06ba04f": "M3 Expressive 1",
   "@msg5090469e": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg5090469e": "Glassmorphism",
+  "msg5090469e": "M3 Expressive 2",
   "@d": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "d": "3D Cute",
+  "d": "M3 Expressive 3",
   "@msg67836b24": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg67836b24": "Cyberpunk",
+  "msg67836b24": "Minimalist",
   "@msgf08c8dc4": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgf08c8dc4": "Natural Zen",
-  "msgdesign6": "AI Design 1",
+  "msgf08c8dc4": "Glassmorphism",
+  "msgdesign6": "Cyberpunk",
   "@msgdesign6": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdesign7": "AI Design 2",
+  "msgdesign7": "Neumorphism",
   "@msgdesign7": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdesign8": "AI Design 3",
+  "msgdesign8": "Classic 2",
   "@msgdesign8": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdesign9": "AI Design 4",
+  "msgdesign9": "Classic 3",
   "@msgdesign9": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -2835,7 +2851,7 @@
   "ui_use_24h_format": "Use 24-Hour Format",
   "ui_show_folder_contents_count": "Show Folder Contents Count",
   "ui_show_folder_size": "Show Folder Size",
-  "ui_show_bottom_action_bar": "Show Bottom Action Bar",
+  "ui_show_bottom_action_bar": "Navigation Bar Position",
   "ui_hide_action_text": "Hide Action Bar Text Labels",
   "ui_show_media_previews": "Show Media Previews",
   "ui_adaptive_multiline_names": "Adaptive Multi-line File Names",
@@ -3192,6 +3208,8 @@
     "log_archive_icon_redesign": "Redesigned archive icons showing format label (zip, 7z, rar, etc.)",
     "log_music_lrc_lyrics": "Added LRC lyrics auto-loading and manual lyrics file selection",
       "log_remote_copy_paste_fix": "Fixed remote server copy to local showing 0% progress and files not appearing",
+    "log_navbar_position_setting": "Added navigation bar position setting, support top or bottom display",
+    "log_browse_top_area_optimize": "Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space",
   "msg_remember_choice": "Remember this choice for future operations",
   "ui_caching": "Caching, please wait...",
   "ui_username": "Username",

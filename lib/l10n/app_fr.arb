@@ -1247,7 +1247,23 @@
   "@msg309e2a28": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg309e2a28": "Activer la barre d'actions inférieure dans la page de navigation",
+  "msg309e2a28": "Afficher la barre de navigation en haut ou en bas",
+  "@msge34c23ff": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msge34c23ff": "En haut",
+  "@msg3341e3ed": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg3341e3ed": "Les boutons d'action sont affichés en haut de la page",
+  "@msg8c414b06": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg8c414b06": "En bas",
+  "@msg5d2c8e7f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5d2c8e7f": "Les boutons d'action sont affichés en bas de la page",
   "@msg9b7639ac": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -1535,36 +1551,36 @@
   "@msgd06ba04f": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgd06ba04f": "Minimaliste",
+  "msgd06ba04f": "M3 Expressif 1",
   "@msg5090469e": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg5090469e": "Glasmorphisme",
+  "msg5090469e": "M3 Expressif 2",
   "@d": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "d": "3D mignon",
+  "d": "M3 Expressif 3",
   "@msg67836b24": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg67836b24": "Cyberpunk",
+  "msg67836b24": "Minimaliste",
   "@msgf08c8dc4": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgf08c8dc4": "Zen naturel",
-  "msgdesign6": "Design IA 1",
+  "msgf08c8dc4": "Glassmorphisme",
+  "msgdesign6": "Cyberpunk",
   "@msgdesign6": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdesign7": "Design IA 2",
+  "msgdesign7": "Neumorphisme",
   "@msgdesign7": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdesign8": "Design IA 3",
+  "msgdesign8": "Classique 2",
   "@msgdesign8": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msgdesign9": "Design IA 4",
+  "msgdesign9": "Classique 3",
   "@msgdesign9": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -1667,7 +1683,7 @@
   "@msg64a6476a": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg64a6476a": "Logo par défaut",
+  "msg64a6476a": "Par défaut",
   "@title": {
     "type": "text"
   },
@@ -2835,7 +2851,7 @@
   "ui_use_24h_format": "Utiliser le format 24 heures",
   "ui_show_folder_contents_count": "Afficher le nombre de contenu du dossier",
   "ui_show_folder_size": "Afficher la taille du dossier",
-  "ui_show_bottom_action_bar": "Afficher la barre d'actions inférieure",
+  "ui_show_bottom_action_bar": "Position de la barre de navigation",
   "ui_hide_action_text": "Masquer les étiquettes de texte de la barre d'actions",
   "ui_show_media_previews": "Afficher les aperçus média",
   "ui_adaptive_multiline_names": "Noms de fichiers multilignes adaptatifs",
@@ -3192,6 +3208,8 @@
     "log_archive_icon_redesign": "Icônes d'archives redesignées avec étiquette de format (zip, 7z, rar, etc.)",
     "log_music_lrc_lyrics": "Chargement automatique des paroles LRC et sélection manuelle de fichiers de paroles",
       "log_remote_copy_paste_fix": "Correction de la copie depuis le serveur distant: progression à 0% et fichiers absents",
+    "log_navbar_position_setting": "Added navigation bar position setting, support top or bottom display",
+    "log_browse_top_area_optimize": "Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space",
   "msg_file_exists": "Le fichier existe déjà",
   "@msg_file_exists": {
     "description": "Conflict dialog title"
