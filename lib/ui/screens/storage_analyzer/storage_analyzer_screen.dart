@@ -20,7 +20,7 @@ class StorageAnalyzerScreen extends StatefulWidget {
 
 class _StorageAnalyzerScreenState extends State<StorageAnalyzerScreen> with SingleTickerProviderStateMixin {
   bool _isScanning = true;
-  String _currentScanningItem = 'Initializing...';
+  String _currentScanningItem = '';
   
   int _appsSize = 0;
   int _imagesSize = 0;
@@ -51,9 +51,10 @@ class _StorageAnalyzerScreenState extends State<StorageAnalyzerScreen> with Sing
 
   Future<void> _startStorageScan() async {
     if (!mounted) return;
+    final l10n = L10n.of(context);
     setState(() {
       _isScanning = true;
-      _currentScanningItem = 'Reading system memory...';
+      _currentScanningItem = l10n.msgb1a2c3d4;
     });
 
     final provider = context.read<FileManagerProvider>();
@@ -65,7 +66,7 @@ class _StorageAnalyzerScreenState extends State<StorageAnalyzerScreen> with Sing
 
     // 2. Fetch app sizes from App Manager Service
     setState(() {
-      _currentScanningItem = 'Calculating Apps capacity...';
+      _currentScanningItem = l10n.msgc2d3e4f5;
     });
     try {
       final userApps = await AppManagerService.getInstalledApps(includeSystem: false);
@@ -217,7 +218,7 @@ class _StorageAnalyzerScreenState extends State<StorageAnalyzerScreen> with Sing
             ),
             const SizedBox(height: 8),
             Text(
-              'Analyzing files, categorizing assets, and reading installed apps space...',
+              L10n.of(context).msge4f5a6b7,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: theme.textTheme.bodySmall?.color?.withOpacity(0.6),
@@ -263,6 +264,7 @@ class _StorageAnalyzerScreenState extends State<StorageAnalyzerScreen> with Sing
   }
 
   Widget _buildAnalyticsView(ThemeData theme, bool isDark) {
+    final l10n = L10n.of(context);
     final double usedPercent = _totalStorageSize > 0 ? (_totalUsedSize / _totalStorageSize) * 100 : 0.0;
     final int freeSize = max(0, _totalStorageSize - _totalUsedSize);
 
@@ -343,7 +345,7 @@ class _StorageAnalyzerScreenState extends State<StorageAnalyzerScreen> with Sing
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              '${FileUtils.formatBytes(freeSize, 2)} free',
+                              l10n.msgf5a6b7c8(FileUtils.formatBytes(freeSize, 2)),
                               style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12.5),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -365,7 +367,10 @@ class _StorageAnalyzerScreenState extends State<StorageAnalyzerScreen> with Sing
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              '${FileUtils.formatBytes(_totalUsedSize, 2)} used (${usedPercent.toStringAsFixed(1)}%)',
+                              l10n.msga6b7c8d9(
+                                FileUtils.formatBytes(_totalUsedSize, 2),
+                                usedPercent.toStringAsFixed(1),
+                              ),
                               style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12.5),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -396,7 +401,7 @@ class _StorageAnalyzerScreenState extends State<StorageAnalyzerScreen> with Sing
           // Category items
           _buildCategoryCard(
             context: context,
-            title: '应用程序',
+            title: L10n.of(context).cat_apps,
             size: _appsSize,
             color: const Color(0xFFEC4899), // Pink
             icon: Broken.mobile,
@@ -410,7 +415,7 @@ class _StorageAnalyzerScreenState extends State<StorageAnalyzerScreen> with Sing
           ),
           _buildCategoryCard(
             context: context,
-            title: '图片',
+            title: L10n.of(context).cat_images,
             size: _imagesSize,
             color: const Color(0xFF8B5CF6), // Violet
             icon: Broken.image,
@@ -426,7 +431,7 @@ class _StorageAnalyzerScreenState extends State<StorageAnalyzerScreen> with Sing
           ),
           _buildCategoryCard(
             context: context,
-            title: '视频',
+            title: L10n.of(context).cat_videos,
             size: _videosSize,
             color: const Color(0xFFEF4444), // Red
             icon: Broken.video,
@@ -442,7 +447,7 @@ class _StorageAnalyzerScreenState extends State<StorageAnalyzerScreen> with Sing
           ),
           _buildCategoryCard(
             context: context,
-            title: '音频',
+            title: L10n.of(context).cat_audios,
             size: _audioSize,
             color: const Color(0xFFF97316), // Orange
             icon: Broken.music,
@@ -458,7 +463,7 @@ class _StorageAnalyzerScreenState extends State<StorageAnalyzerScreen> with Sing
           ),
           _buildCategoryCard(
             context: context,
-            title: '文档',
+            title: L10n.of(context).cat_documents,
             size: _docsSize,
             color: const Color(0xFF3B82F6), // Blue
             icon: Broken.document,
@@ -474,7 +479,7 @@ class _StorageAnalyzerScreenState extends State<StorageAnalyzerScreen> with Sing
           ),
           _buildCategoryCard(
             context: context,
-            title: 'System / Other',
+            title: L10n.of(context).msgc8d9e0f1,
             size: _systemSize,
             color: const Color(0xFF64748B), // Slate
             icon: Broken.category_2,
@@ -497,6 +502,7 @@ class _StorageAnalyzerScreenState extends State<StorageAnalyzerScreen> with Sing
     required ThemeData theme,
     required VoidCallback onTap,
   }) {
+    final l10n = L10n.of(context);
     final double proportion = _totalStorageSize > 0 ? (size / _totalStorageSize) : 0.0;
     final String percentStr = (proportion * 100).toStringAsFixed(1);
 
@@ -552,7 +558,7 @@ class _StorageAnalyzerScreenState extends State<StorageAnalyzerScreen> with Sing
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '$percentStr% of total storage',
+                      l10n.msgb7c8d9e0(percentStr),
                       style: TextStyle(
                         color: theme.textTheme.bodySmall?.color?.withOpacity(0.5),
                         fontSize: 11,
@@ -561,7 +567,7 @@ class _StorageAnalyzerScreenState extends State<StorageAnalyzerScreen> with Sing
                   ],
                 ),
               ),
-              if (title != 'System / Other') ...[
+              if (title != L10n.of(context).msgc8d9e0f1) ...[
                 const SizedBox(width: 12),
                 Icon(
                   Broken.arrow_right_3,

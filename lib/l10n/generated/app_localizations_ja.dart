@@ -1705,6 +1705,66 @@ class L10nJa extends L10n {
   String get msg652be256 => 'カテゴリ別内訳';
 
   @override
+  String get msgb1a2c3d4 => 'Initializing...';
+
+  @override
+  String get msgc2d3e4f5 => 'Reading system memory...';
+
+  @override
+  String get msgd3e4f5a6 => 'Calculating app storage...';
+
+  @override
+  String get msge4f5a6b7 =>
+      'Analyzing files, categorizing assets, and reading installed apps space...';
+
+  @override
+  String msgf5a6b7c8(Object size) {
+    return '$size free';
+  }
+
+  @override
+  String msga6b7c8d9(Object size, Object percent) {
+    return '$size used ($percent%)';
+  }
+
+  @override
+  String msgb7c8d9e0(Object percent) {
+    return '$percent% of total storage';
+  }
+
+  @override
+  String get msgc8d9e0f1 => 'System / Other';
+
+  @override
+  String ui_drag_archive_created(Object name) {
+    return 'Archive \"$name\" created successfully';
+  }
+
+  @override
+  String ui_drag_archive_failed(Object error) {
+    return 'Failed to create archive: $error';
+  }
+
+  @override
+  String get ui_backup_success => '設定は ZenFile/Backups/Settings/ にバックアップされました';
+
+  @override
+  String ui_backup_failed(Object error) {
+    return 'バックアップに失敗しました: $error';
+  }
+
+  @override
+  String get ui_restore_invalid_file => '有効な .json 設定バックアップファイルを選択してください';
+
+  @override
+  String get ui_restore_success => '設定の復元に成功しました！';
+
+  @override
+  String ui_restore_failed(Object error) {
+    return '復元に失敗しました: $error';
+  }
+
+  @override
   String get msgeb3d7d70 => 'アプリをアンインストール';
 
   @override
@@ -2392,6 +2452,12 @@ class L10nJa extends L10n {
 
   @override
   String get ui_cut => '切り取り';
+
+  @override
+  String get ui_move => 'Move';
+
+  @override
+  String get ui_apply => 'Apply';
 
   @override
   String get ui_delete => '削除';
@@ -3416,4 +3482,66 @@ class L10nJa extends L10n {
   String ui_sent(String amount) {
     return '送信済み: $amount';
   }
+
+  @override
+  String ui_recycle_restore_success(int count) {
+    return '$count個の項目を正常に復元しました';
+  }
+
+  @override
+  String ui_recycle_restore_failed(String error) {
+    return '項目の復元エラー: $error';
+  }
+
+  @override
+  String get ui_recycle_perm_delete_title => '完全に削除しますか？';
+
+  @override
+  String ui_recycle_perm_delete_message(int count) {
+    return 'これらの$count個の項目を完全に削除してもよろしいですか？この操作は元に戻せません。';
+  }
+
+  @override
+  String ui_recycle_perm_delete_success(int count) {
+    return '$count個の項目を完全に削除しました';
+  }
+
+  @override
+  String ui_recycle_perm_delete_failed(String error) {
+    return '項目の削除エラー: $error';
+  }
+
+  @override
+  String get ui_recycle_empty_title => 'ごみ箱を空にしますか？';
+
+  @override
+  String ui_recycle_empty_failed(String error) {
+    return 'ごみ箱を空にするエラー: $error';
+  }
+
+  @override
+  String ui_recycle_selected_count(int count) {
+    return '$count個選択中';
+  }
+
+  @override
+  String ui_recycle_deleted_at(String date, String size) {
+    return '削除日時: $date • $size';
+  }
+
+  @override
+  String get ui_recycle_restore => '復元';
+
+  @override
+  String get ui_recycle_empty_hint =>
+      'ごみ箱が有効なときに削除した項目がここに表示されます。復元するか完全に削除することができます。';
+
+  @override
+  String get ui_recycle_deleted_date => '削除日';
+
+  @override
+  String get ui_recycle_type => '種類';
+
+  @override
+  String get ui_recycle_file => 'ファイル';
 }

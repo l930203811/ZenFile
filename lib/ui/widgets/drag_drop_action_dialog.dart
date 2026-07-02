@@ -7,6 +7,7 @@ import '../../services/archive_service.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/utils.dart';
 import 'create_archive_dialog.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class DragDropActionDialog extends StatefulWidget {
   final List<String> sourcePaths;
@@ -71,7 +72,7 @@ class _DragDropActionDialogState extends State<DragDropActionDialog> {
     final provider = context.watch<FileManagerProvider>();
     final selectedCount = widget.sourcePaths.length;
     final isSingle = selectedCount == 1;
-    final itemName = isSingle ? p.basename(widget.sourcePaths.first) : '{selectedCount} 个项目';
+    final itemName = isSingle ? p.basename(widget.sourcePaths.first) : L10n.of(context).selectedcount(selectedCount.toString());
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
@@ -136,7 +137,7 @@ class _DragDropActionDialogState extends State<DragDropActionDialog> {
                 _buildActionCard(
                   theme: theme,
                   action: 'move',
-                  title: '移动',
+                  title: L10n.of(context).ui_move,
                   icon: Broken.scissor,
                   color: Colors.orange,
                   isDisabled: widget.sourcePaths.every((path) => p.posix.dirname(path) == widget.initialTargetPath),
@@ -144,14 +145,14 @@ class _DragDropActionDialogState extends State<DragDropActionDialog> {
                 _buildActionCard(
                   theme: theme,
                   action: 'copy',
-                  title: '复制',
+                  title: L10n.of(context).ui_copy,
                   icon: Broken.document_copy,
                   color: Colors.blue,
                 ),
                 _buildActionCard(
                   theme: theme,
                   action: 'archive',
-                  title: '压缩',
+                  title: L10n.of(context).ui_compress,
                   icon: Broken.box_add,
                   color: Colors.teal,
                 ),
@@ -168,7 +169,7 @@ class _DragDropActionDialogState extends State<DragDropActionDialog> {
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                       ),
                       child: Text(
-                        '取消',
+                        L10n.of(context).ui_cancel,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: theme.colorScheme.onSurface.withOpacity(0.55),
@@ -196,8 +197,8 @@ class _DragDropActionDialogState extends State<DragDropActionDialog> {
                           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
                         ),
                         onPressed: () => _executeAction(provider),
-                        child: const Text(
-                          '应用',
+                        child: Text(
+                          L10n.of(context).ui_apply,
                           style: TextStyle(
                             fontWeight: FontWeight.w900,
                             fontSize: 14,
@@ -342,7 +343,7 @@ class _DragDropActionDialogState extends State<DragDropActionDialog> {
       provider.clearSelection();
     } else if (_selectedAction == 'archive') {
       final isSingle = widget.sourcePaths.length == 1;
-      final initialName = isSingle ? p.basename(widget.sourcePaths.first) : '压缩';
+      final initialName = isSingle ? p.basename(widget.sourcePaths.first) : L10n.of(widget.parentContext).ui_compress;
       if (!stableContext.mounted) return;
       final res = await CreateArchiveDialog.show(stableContext, initialName: initialName, isMultiSelection: !isSingle);
 
@@ -366,7 +367,7 @@ class _DragDropActionDialogState extends State<DragDropActionDialog> {
           if (stableContext.mounted) {
             ScaffoldMessenger.of(stableContext).showSnackBar(
               SnackBar(
-                content: Text('压缩包"${res.archiveName}.${res.format}"创建成功！'),
+                content: Text(L10n.of(stableContext).ui_drag_archive_created('${res.archiveName}.${res.format}')),
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -376,7 +377,7 @@ class _DragDropActionDialogState extends State<DragDropActionDialog> {
           if (stableContext.mounted) {
             ScaffoldMessenger.of(stableContext).showSnackBar(
               SnackBar(
-                content: Text('创建压缩包失败：{e}'),
+                content: Text(L10n.of(stableContext).ui_drag_archive_failed(e.toString())),
                 backgroundColor: Colors.redAccent,
                 behavior: SnackBarBehavior.floating,
               ),

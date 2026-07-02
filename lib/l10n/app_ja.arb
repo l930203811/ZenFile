@@ -1,4 +1,4 @@
-{
+﻿{
   "@@locale": "ja",
   "@msg6f3e533a": {
     "description": "main.dart"
@@ -2128,6 +2128,95 @@
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
   },
   "msg652be256": "カテゴリ別内訳",
+  "@msgb1a2c3d4": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msgb1a2c3d4": "Initializing...",
+  "@msgc2d3e4f5": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msgc2d3e4f5": "Reading system memory...",
+  "@msgd3e4f5a6": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msgd3e4f5a6": "Calculating app storage...",
+  "@msge4f5a6b7": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msge4f5a6b7": "Analyzing files, categorizing assets, and reading installed apps space...",
+  "@msgf5a6b7c8": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart",
+    "type": "text",
+    "placeholders": {
+      "size": {}
+    }
+  },
+  "msgf5a6b7c8": "{size} free",
+  "@msga6b7c8d9": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart",
+    "type": "text",
+    "placeholders": {
+      "size": {},
+      "percent": {}
+    }
+  },
+  "msga6b7c8d9": "{size} used ({percent}%)",
+  "@msgb7c8d9e0": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart",
+    "type": "text",
+    "placeholders": {
+      "percent": {}
+    }
+  },
+  "msgb7c8d9e0": "{percent}% of total storage",
+  "@msgc8d9e0f1": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msgc8d9e0f1": "System / Other",
+  "ui_drag_archive_created": "Archive \"{name}\" created successfully",
+  "@ui_drag_archive_created": {
+    "description": "Drag drop action dialog snackbar",
+    "type": "text",
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "ui_drag_archive_failed": "Failed to create archive: {error}",
+  "@ui_drag_archive_failed": {
+    "description": "Drag drop action dialog snackbar",
+    "type": "text",
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "ui_backup_success": "設定は ZenFile/Backups/Settings/ にバックアップされました",
+  "@ui_backup_success": {
+    "description": "Settings backup service snackbar"
+  },
+  "ui_backup_failed": "バックアップに失敗しました: {error}",
+  "@ui_backup_failed": {
+    "description": "Settings backup service snackbar",
+    "type": "text",
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "ui_restore_invalid_file": "有効な .json 設定バックアップファイルを選択してください",
+  "@ui_restore_invalid_file": {
+    "description": "Settings restore snackbar"
+  },
+  "ui_restore_success": "設定の復元に成功しました！",
+  "@ui_restore_success": {
+    "description": "Settings restore snackbar"
+  },
+  "ui_restore_failed": "復元に失敗しました: {error}",
+  "@ui_restore_failed": {
+    "description": "Settings restore snackbar",
+    "type": "text",
+    "placeholders": {
+      "error": {}
+    }
+  },
   "@msgeb3d7d70": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_batch_action_bar.dart"
   },
@@ -2831,6 +2920,14 @@
   "ui_compress": "圧縮",
   "ui_copy": "コピー",
   "ui_cut": "切り取り",
+  "ui_move": "Move",
+  "@ui_move": {
+    "description": "Drag drop action dialog"
+  },
+  "ui_apply": "Apply",
+  "@ui_apply": {
+    "description": "Drag drop action dialog confirm button"
+  },
   "ui_delete": "削除",
   "ui_select_all": "すべて選択",
   "ui_cancel": "キャンセル",
@@ -3450,5 +3547,108 @@
         "type": "int"
       }
     }
+  },
+  "ui_recycle_restore_success": "{count}個の項目を正常に復元しました",
+  "@ui_recycle_restore_success": {
+    "description": "Recycle bin restore success message",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_recycle_restore_failed": "項目の復元エラー: {error}",
+  "@ui_recycle_restore_failed": {
+    "description": "Recycle bin restore failed message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_recycle_perm_delete_title": "完全に削除しますか？",
+  "@ui_recycle_perm_delete_title": {
+    "description": "Recycle bin permanent delete confirm dialog title"
+  },
+  "ui_recycle_perm_delete_message": "これらの{count}個の項目を完全に削除してもよろしいですか？この操作は元に戻せません。",
+  "@ui_recycle_perm_delete_message": {
+    "description": "Recycle bin permanent delete confirm dialog message",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_recycle_perm_delete_success": "{count}個の項目を完全に削除しました",
+  "@ui_recycle_perm_delete_success": {
+    "description": "Recycle bin permanent delete success message",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_recycle_perm_delete_failed": "項目の削除エラー: {error}",
+  "@ui_recycle_perm_delete_failed": {
+    "description": "Recycle bin permanent delete failed message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_recycle_empty_title": "ごみ箱を空にしますか？",
+  "@ui_recycle_empty_title": {
+    "description": "Recycle bin empty confirm dialog title"
+  },
+  "ui_recycle_empty_failed": "ごみ箱を空にするエラー: {error}",
+  "@ui_recycle_empty_failed": {
+    "description": "Recycle bin empty failed message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_recycle_selected_count": "{count}個選択中",
+  "@ui_recycle_selected_count": {
+    "description": "Recycle bin selected items count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_recycle_deleted_at": "削除日時: {date} • {size}",
+  "@ui_recycle_deleted_at": {
+    "description": "Recycle bin item deleted date and size",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_recycle_restore": "復元",
+  "@ui_recycle_restore": {
+    "description": "Recycle bin restore action"
+  },
+  "ui_recycle_empty_hint": "ごみ箱が有効なときに削除した項目がここに表示されます。復元するか完全に削除することができます。",
+  "@ui_recycle_empty_hint": {
+    "description": "Recycle bin empty state hint"
+  },
+  "ui_recycle_deleted_date": "削除日",
+  "@ui_recycle_deleted_date": {
+    "description": "Recycle bin deleted date label"
+  },
+  "ui_recycle_type": "種類",
+  "@ui_recycle_type": {
+    "description": "Recycle bin item type label"
+  },
+  "ui_recycle_file": "ファイル",
+  "@ui_recycle_file": {
+    "description": "Recycle bin file type"
   }
 }

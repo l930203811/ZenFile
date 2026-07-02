@@ -1769,6 +1769,68 @@ class L10nAr extends L10n {
   String get msg652be256 => 'التفصيل حسب الفئات';
 
   @override
+  String get msgb1a2c3d4 => 'Initializing...';
+
+  @override
+  String get msgc2d3e4f5 => 'Reading system memory...';
+
+  @override
+  String get msgd3e4f5a6 => 'Calculating app storage...';
+
+  @override
+  String get msge4f5a6b7 =>
+      'Analyzing files, categorizing assets, and reading installed apps space...';
+
+  @override
+  String msgf5a6b7c8(Object size) {
+    return '$size free';
+  }
+
+  @override
+  String msga6b7c8d9(Object size, Object percent) {
+    return '$size used ($percent%)';
+  }
+
+  @override
+  String msgb7c8d9e0(Object percent) {
+    return '$percent% of total storage';
+  }
+
+  @override
+  String get msgc8d9e0f1 => 'System / Other';
+
+  @override
+  String ui_drag_archive_created(Object name) {
+    return 'Archive \"$name\" created successfully';
+  }
+
+  @override
+  String ui_drag_archive_failed(Object error) {
+    return 'Failed to create archive: $error';
+  }
+
+  @override
+  String get ui_backup_success =>
+      'تم حفظ الإعدادات في ZenFile/Backups/Settings/';
+
+  @override
+  String ui_backup_failed(Object error) {
+    return 'فشل النسخ الاحتياطي: $error';
+  }
+
+  @override
+  String get ui_restore_invalid_file =>
+      'يرجى تحديد ملف نسخ احتياطي للإعدادات .json صالح';
+
+  @override
+  String get ui_restore_success => 'تمت استعادة الإعدادات بنجاح!';
+
+  @override
+  String ui_restore_failed(Object error) {
+    return 'فشل الاستعادة: $error';
+  }
+
+  @override
   String get msgeb3d7d70 => 'إلغاء تثبيت التطبيق';
 
   @override
@@ -2465,6 +2527,12 @@ class L10nAr extends L10n {
 
   @override
   String get ui_cut => 'قص';
+
+  @override
+  String get ui_move => 'Move';
+
+  @override
+  String get ui_apply => 'Apply';
 
   @override
   String get ui_delete => 'حذف';
@@ -3517,4 +3585,66 @@ class L10nAr extends L10n {
   String ui_sent(String amount) {
     return 'تم الإرسال: $amount';
   }
+
+  @override
+  String ui_recycle_restore_success(int count) {
+    return 'تمت استعادة $count عنصر بنجاح';
+  }
+
+  @override
+  String ui_recycle_restore_failed(String error) {
+    return 'خطأ في استعادة العناصر: $error';
+  }
+
+  @override
+  String get ui_recycle_perm_delete_title => 'حذف نهائي؟';
+
+  @override
+  String ui_recycle_perm_delete_message(int count) {
+    return 'هل أنت متأكد من أنك تريد حذف هذه العناصر $count بشكل نهائي؟ لا يمكن التراجع عن هذا الإجراء.';
+  }
+
+  @override
+  String ui_recycle_perm_delete_success(int count) {
+    return 'تم حذف $count عنصر بشكل نهائي';
+  }
+
+  @override
+  String ui_recycle_perm_delete_failed(String error) {
+    return 'خطأ في حذف العناصر: $error';
+  }
+
+  @override
+  String get ui_recycle_empty_title => 'إفراغ سلة المحذوفات؟';
+
+  @override
+  String ui_recycle_empty_failed(String error) {
+    return 'خطأ في إفراغ سلة المحذوفات: $error';
+  }
+
+  @override
+  String ui_recycle_selected_count(int count) {
+    return 'تم تحديد $count';
+  }
+
+  @override
+  String ui_recycle_deleted_at(String date, String size) {
+    return 'تم الحذف: $date • $size';
+  }
+
+  @override
+  String get ui_recycle_restore => 'استعادة';
+
+  @override
+  String get ui_recycle_empty_hint =>
+      'ستظهر العناصر التي تحذفها عند تمكين سلة المحذوفات هنا. يمكنك استعادتها أو حذفها نهائيًا.';
+
+  @override
+  String get ui_recycle_deleted_date => 'تاريخ الحذف';
+
+  @override
+  String get ui_recycle_type => 'النوع';
+
+  @override
+  String get ui_recycle_file => 'ملف';
 }

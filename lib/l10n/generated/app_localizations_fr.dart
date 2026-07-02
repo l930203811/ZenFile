@@ -1817,6 +1817,68 @@ class L10nFr extends L10n {
   String get msg652be256 => 'Répartition par catégorie';
 
   @override
+  String get msgb1a2c3d4 => 'Initializing...';
+
+  @override
+  String get msgc2d3e4f5 => 'Reading system memory...';
+
+  @override
+  String get msgd3e4f5a6 => 'Calculating app storage...';
+
+  @override
+  String get msge4f5a6b7 =>
+      'Analyzing files, categorizing assets, and reading installed apps space...';
+
+  @override
+  String msgf5a6b7c8(Object size) {
+    return '$size free';
+  }
+
+  @override
+  String msga6b7c8d9(Object size, Object percent) {
+    return '$size used ($percent%)';
+  }
+
+  @override
+  String msgb7c8d9e0(Object percent) {
+    return '$percent% of total storage';
+  }
+
+  @override
+  String get msgc8d9e0f1 => 'System / Other';
+
+  @override
+  String ui_drag_archive_created(Object name) {
+    return 'Archive \"$name\" created successfully';
+  }
+
+  @override
+  String ui_drag_archive_failed(Object error) {
+    return 'Failed to create archive: $error';
+  }
+
+  @override
+  String get ui_backup_success =>
+      'Paramètres sauvegardés dans ZenFile/Backups/Settings/';
+
+  @override
+  String ui_backup_failed(Object error) {
+    return 'Échec de la sauvegarde : $error';
+  }
+
+  @override
+  String get ui_restore_invalid_file =>
+      'Veuillez sélectionner un fichier de sauvegarde de paramètres .json valide';
+
+  @override
+  String get ui_restore_success => 'Paramètres restaurés avec succès !';
+
+  @override
+  String ui_restore_failed(Object error) {
+    return 'Échec de la restauration : $error';
+  }
+
+  @override
   String get msgeb3d7d70 => 'Désinstaller l\'application';
 
   @override
@@ -2524,6 +2586,12 @@ class L10nFr extends L10n {
 
   @override
   String get ui_cut => 'Couper';
+
+  @override
+  String get ui_move => 'Move';
+
+  @override
+  String get ui_apply => 'Apply';
 
   @override
   String get ui_delete => 'Supprimer';
@@ -3595,4 +3663,66 @@ class L10nFr extends L10n {
   String ui_sent(String amount) {
     return 'Envoyé: $amount';
   }
+
+  @override
+  String ui_recycle_restore_success(int count) {
+    return '$count élément(s) restauré(s) avec succès';
+  }
+
+  @override
+  String ui_recycle_restore_failed(String error) {
+    return 'Erreur lors de la restauration : $error';
+  }
+
+  @override
+  String get ui_recycle_perm_delete_title => 'Supprimer définitivement ?';
+
+  @override
+  String ui_recycle_perm_delete_message(int count) {
+    return 'Êtes-vous sûr de vouloir supprimer définitivement ces $count élément(s) ? Cette action est irréversible.';
+  }
+
+  @override
+  String ui_recycle_perm_delete_success(int count) {
+    return '$count élément(s) supprimé(s) définitivement';
+  }
+
+  @override
+  String ui_recycle_perm_delete_failed(String error) {
+    return 'Erreur lors de la suppression : $error';
+  }
+
+  @override
+  String get ui_recycle_empty_title => 'Vider la corbeille ?';
+
+  @override
+  String ui_recycle_empty_failed(String error) {
+    return 'Erreur lors de la vidange de la corbeille : $error';
+  }
+
+  @override
+  String ui_recycle_selected_count(int count) {
+    return '$count sélectionné(s)';
+  }
+
+  @override
+  String ui_recycle_deleted_at(String date, String size) {
+    return 'Supprimé le : $date • $size';
+  }
+
+  @override
+  String get ui_recycle_restore => 'Restaurer';
+
+  @override
+  String get ui_recycle_empty_hint =>
+      'Les éléments que vous supprimez lorsque la corbeille est activée apparaîtront ici. Vous pouvez les restaurer ou les supprimer définitivement.';
+
+  @override
+  String get ui_recycle_deleted_date => 'Date de suppression';
+
+  @override
+  String get ui_recycle_type => 'Type';
+
+  @override
+  String get ui_recycle_file => 'Fichier';
 }

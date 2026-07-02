@@ -89,7 +89,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
       
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Restored ${itemsToRestore.length} item(s) successfully'),
+          content: Text(L10n.of(context).ui_recycle_restore_success(itemsToRestore.length)),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -97,7 +97,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
       if (mounted) Navigator.pop(context); // Dismiss loading
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('恢复项目出错：{e}'),
+          content: Text(L10n.of(context).ui_recycle_restore_failed(e.toString())),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -115,17 +115,17 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('永久删除？'),
-        content: Text('确定要永久删除这些 ${itemsToDelete.length} 个项目吗？此操作无法撤销。'),
+        title: Text(L10n.of(context).ui_recycle_perm_delete_title),
+        content: Text(L10n.of(context).ui_recycle_perm_delete_message(itemsToDelete.length)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('取消'),
+            child: Text(L10n.of(context).ui_cancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('删除'),
+            child: Text(L10n.of(context).ui_delete),
           ),
         ],
       ),
@@ -148,7 +148,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('已永久删除 ${itemsToDelete.length} 个项目'),
+          content: Text(L10n.of(context).ui_recycle_perm_delete_success(itemsToDelete.length)),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -156,7 +156,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
       if (mounted) Navigator.pop(context); // Dismiss loading
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('删除项目出错：{e}'),
+          content: Text(L10n.of(context).ui_recycle_perm_delete_failed(e.toString())),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -173,12 +173,12 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('清空回收站？'),
+        title: Text(L10n.of(context).ui_recycle_empty_title),
         content: Text(L10n.of(context).msg62187f1b),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('取消'),
+            child: Text(L10n.of(context).ui_cancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
@@ -203,8 +203,8 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
       if (mounted) Navigator.pop(context); // Dismiss loading
       
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('回收站已成功清空'),
+        SnackBar(
+          content: Text(L10n.of(context).msga4dfc0c6),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -212,7 +212,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
       if (mounted) Navigator.pop(context); // Dismiss loading
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('清空回收站出错：$e'),
+          content: Text(L10n.of(context).ui_recycle_empty_failed(e.toString())),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -231,13 +231,13 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: _isSelectionMode
-            ? Text('${_selectedIds.length} Selected')
+            ? Text(L10n.of(context).ui_recycle_selected_count(_selectedIds.length))
             : _isSearching
                 ? TextField(
                     controller: _searchController,
                     autofocus: true,
-                    decoration: const InputDecoration(
-                      hintText: '搜索已删除文件...',
+                    decoration: InputDecoration(
+                      hintText: L10n.of(context).msg07d80ac5,
                       border: InputBorder.none,
                     ),
                     style: theme.textTheme.titleMedium,
@@ -373,7 +373,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          'Original Path: ${item.originalPath}',
+                                          '${L10n.of(context).msg4c478216}: ${item.originalPath}',
                                           style: theme.textTheme.bodySmall?.copyWith(
                                             color: theme.colorScheme.onSurface.withOpacity(0.4),
                                             fontSize: 11,
@@ -383,7 +383,10 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          '已删除：${FileUtils.formatDate(item.deletedAt)} \u2022 ${FileUtils.formatBytes(item.size, 1)}',
+                                          L10n.of(context).ui_recycle_deleted_at(
+                                            FileUtils.formatDate(item.deletedAt),
+                                            FileUtils.formatBytes(item.size, 1),
+                                          ),
                                           style: theme.textTheme.bodySmall?.copyWith(
                                             color: theme.colorScheme.onSurface.withOpacity(0.6),
                                             fontSize: 11,
@@ -411,25 +414,25 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
                                         }
                                       },
                                       itemBuilder: (context) => [
-                                        const PopupMenuItem(
+                                        PopupMenuItem(
                                           value: 'restore',
                                           child: Row(
                                             children: [
                                               Icon(Icons.restore_rounded, size: 20),
                                               SizedBox(width: 12),
-                                              Text('恢复',
+                                              Text(L10n.of(context).ui_recycle_restore,
                                                   style: TextStyle(fontWeight: FontWeight.w500)),
                                             ],
                                           ),
                                         ),
-                                        const PopupMenuItem(
+                                        PopupMenuItem(
                                           value: 'delete',
                                           child: Row(
                                             children: [
                                               Icon(Broken.trash,
                                                   size: 20, color: Colors.redAccent),
                                               SizedBox(width: 12),
-                                              Text('永久删除',
+                                              Text(L10n.of(context).msg96d2b75f,
                                                   style: TextStyle(
                                                       color: Colors.redAccent,
                                                       fontWeight: FontWeight.w500)),
@@ -471,7 +474,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
                               ),
                               onPressed: _restoreSelected,
                               icon: const Icon(Icons.restore_rounded),
-                              label: const Text('恢复'),
+                              label: Text(L10n.of(context).ui_recycle_restore),
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -486,7 +489,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
                               ),
                               onPressed: _deleteSelectedPermanently,
                               icon: const Icon(Broken.trash),
-                              label: const Text('删除'),
+                              label: Text(L10n.of(context).ui_delete),
                             ),
                           ),
                         ],
@@ -527,7 +530,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Items you delete when Recycle Bin is enabled will appear here. You can restore them or permanently delete them.',
+              L10n.of(context).ui_recycle_empty_hint,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurface.withOpacity(0.5),
               ),
@@ -559,9 +562,9 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
               ),
               const SizedBox(height: 16),
               _buildDetailRow(L10n.of(context).msg4c478216, item.originalPath),
-              _buildDetailRow('回收日期', FileUtils.formatDate(item.deletedAt)),
+              _buildDetailRow(L10n.of(context).ui_recycle_deleted_date, FileUtils.formatDate(item.deletedAt)),
               _buildDetailRow(L10n.of(context).msg396b7d3f, FileUtils.formatBytes(item.size, 2)),
-              _buildDetailRow('类型', item.isDirectory ? L10n.of(context).msg1f4c1042 : '文件'),
+              _buildDetailRow(L10n.of(context).ui_recycle_type, item.isDirectory ? L10n.of(context).msg1f4c1042 : L10n.of(context).ui_recycle_file),
               const SizedBox(height: 24),
               Row(
                 children: [
@@ -577,7 +580,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
                         _selectedIds.add(item.id);
                         await _restoreSelected();
                       },
-                      child: const Text('恢复'),
+                      child: Text(L10n.of(context).ui_recycle_restore),
                     ),
                   ),
                   const SizedBox(width: 16),

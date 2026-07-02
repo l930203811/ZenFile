@@ -1698,6 +1698,65 @@ class L10nZh extends L10n {
   String get msg652be256 => '分类明细';
 
   @override
+  String get msgb1a2c3d4 => '初始化中...';
+
+  @override
+  String get msgc2d3e4f5 => '正在读取系统存储...';
+
+  @override
+  String get msgd3e4f5a6 => '正在计算应用占用空间...';
+
+  @override
+  String get msge4f5a6b7 => '正在分析文件、分类资源并读取已安装应用占用空间...';
+
+  @override
+  String msgf5a6b7c8(Object size) {
+    return '$size 可用';
+  }
+
+  @override
+  String msga6b7c8d9(Object size, Object percent) {
+    return '$size 已用（$percent%）';
+  }
+
+  @override
+  String msgb7c8d9e0(Object percent) {
+    return '占总存储的 $percent%';
+  }
+
+  @override
+  String get msgc8d9e0f1 => '系统/其他';
+
+  @override
+  String ui_drag_archive_created(Object name) {
+    return '压缩包\"$name\"创建成功';
+  }
+
+  @override
+  String ui_drag_archive_failed(Object error) {
+    return '创建压缩包失败：$error';
+  }
+
+  @override
+  String get ui_backup_success => '设置已备份到 ZenFile/Backups/Settings/';
+
+  @override
+  String ui_backup_failed(Object error) {
+    return '备份失败：$error';
+  }
+
+  @override
+  String get ui_restore_invalid_file => '请选择有效的 .json 设置备份文件';
+
+  @override
+  String get ui_restore_success => '设置恢复成功！';
+
+  @override
+  String ui_restore_failed(Object error) {
+    return '恢复失败：$error';
+  }
+
+  @override
   String get msgeb3d7d70 => '卸载应用';
 
   @override
@@ -2384,6 +2443,12 @@ class L10nZh extends L10n {
 
   @override
   String get ui_cut => '剪切';
+
+  @override
+  String get ui_move => '移动';
+
+  @override
+  String get ui_apply => '应用';
 
   @override
   String get ui_delete => '删除';
@@ -3397,6 +3462,67 @@ class L10nZh extends L10n {
   String ui_sent(String amount) {
     return '已发送: $amount';
   }
+
+  @override
+  String ui_recycle_restore_success(int count) {
+    return '已成功恢复 $count 个项目';
+  }
+
+  @override
+  String ui_recycle_restore_failed(String error) {
+    return '恢复项目出错：$error';
+  }
+
+  @override
+  String get ui_recycle_perm_delete_title => '永久删除？';
+
+  @override
+  String ui_recycle_perm_delete_message(int count) {
+    return '确定要永久删除这些 $count 个项目吗？此操作无法撤销。';
+  }
+
+  @override
+  String ui_recycle_perm_delete_success(int count) {
+    return '已永久删除 $count 个项目';
+  }
+
+  @override
+  String ui_recycle_perm_delete_failed(String error) {
+    return '删除项目出错：$error';
+  }
+
+  @override
+  String get ui_recycle_empty_title => '清空回收站？';
+
+  @override
+  String ui_recycle_empty_failed(String error) {
+    return '清空回收站出错：$error';
+  }
+
+  @override
+  String ui_recycle_selected_count(int count) {
+    return '已选择 $count 项';
+  }
+
+  @override
+  String ui_recycle_deleted_at(String date, String size) {
+    return '已删除：$date • $size';
+  }
+
+  @override
+  String get ui_recycle_restore => '恢复';
+
+  @override
+  String get ui_recycle_empty_hint => '启用回收站后删除的项目将显示在这里。您可以恢复它们或永久删除。';
+
+  @override
+  String get ui_recycle_deleted_date => '回收日期';
+
+  @override
+  String get ui_recycle_type => '类型';
+
+  @override
+  String get ui_recycle_file => '文件';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -5093,6 +5219,66 @@ class L10nZhTw extends L10nZh {
   String get msg652be256 => '分類明細';
 
   @override
+  String get msgb1a2c3d4 => 'Initializing...';
+
+  @override
+  String get msgc2d3e4f5 => 'Reading system memory...';
+
+  @override
+  String get msgd3e4f5a6 => 'Calculating app storage...';
+
+  @override
+  String get msge4f5a6b7 =>
+      'Analyzing files, categorizing assets, and reading installed apps space...';
+
+  @override
+  String msgf5a6b7c8(Object size) {
+    return '$size free';
+  }
+
+  @override
+  String msga6b7c8d9(Object size, Object percent) {
+    return '$size used ($percent%)';
+  }
+
+  @override
+  String msgb7c8d9e0(Object percent) {
+    return '$percent% of total storage';
+  }
+
+  @override
+  String get msgc8d9e0f1 => 'System / Other';
+
+  @override
+  String ui_drag_archive_created(Object name) {
+    return 'Archive \"$name\" created successfully';
+  }
+
+  @override
+  String ui_drag_archive_failed(Object error) {
+    return 'Failed to create archive: $error';
+  }
+
+  @override
+  String get ui_backup_success => '設定已備份到 ZenFile/Backups/Settings/';
+
+  @override
+  String ui_backup_failed(Object error) {
+    return '備份失敗：$error';
+  }
+
+  @override
+  String get ui_restore_invalid_file => '請選擇有效的 .json 設定備份檔案';
+
+  @override
+  String get ui_restore_success => '設定恢復成功！';
+
+  @override
+  String ui_restore_failed(Object error) {
+    return '恢復失敗：$error';
+  }
+
+  @override
   String get msgeb3d7d70 => '解除安裝應用';
 
   @override
@@ -5779,6 +5965,12 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_cut => '剪下';
+
+  @override
+  String get ui_move => 'Move';
+
+  @override
+  String get ui_apply => 'Apply';
 
   @override
   String get ui_delete => '刪除';
@@ -6791,4 +6983,65 @@ class L10nZhTw extends L10nZh {
   String ui_sent(String amount) {
     return '已傳送: $amount';
   }
+
+  @override
+  String ui_recycle_restore_success(int count) {
+    return '已成功恢復 $count 個項目';
+  }
+
+  @override
+  String ui_recycle_restore_failed(String error) {
+    return '恢復項目時出錯：$error';
+  }
+
+  @override
+  String get ui_recycle_perm_delete_title => '永久刪除？';
+
+  @override
+  String ui_recycle_perm_delete_message(int count) {
+    return '確定要永久刪除這 $count 個項目嗎？此操作無法撤銷。';
+  }
+
+  @override
+  String ui_recycle_perm_delete_success(int count) {
+    return '已永久刪除 $count 個項目';
+  }
+
+  @override
+  String ui_recycle_perm_delete_failed(String error) {
+    return '刪除項目時出錯：$error';
+  }
+
+  @override
+  String get ui_recycle_empty_title => '清空資源回收桶？';
+
+  @override
+  String ui_recycle_empty_failed(String error) {
+    return '清空資源回收桶時出錯：$error';
+  }
+
+  @override
+  String ui_recycle_selected_count(int count) {
+    return '已選取 $count 項';
+  }
+
+  @override
+  String ui_recycle_deleted_at(String date, String size) {
+    return '已刪除：$date • $size';
+  }
+
+  @override
+  String get ui_recycle_restore => '還原';
+
+  @override
+  String get ui_recycle_empty_hint => '啟用資源回收桶後刪除的項目將顯示在此處。您可以還原它們或永久刪除。';
+
+  @override
+  String get ui_recycle_deleted_date => '刪除日期';
+
+  @override
+  String get ui_recycle_type => '類型';
+
+  @override
+  String get ui_recycle_file => '檔案';
 }

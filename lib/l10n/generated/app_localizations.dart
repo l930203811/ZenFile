@@ -3304,6 +3304,96 @@ abstract class L10n {
   /// **'分类明细'**
   String get msg652be256;
 
+  /// ui\screens\storage_analyzer\storage_analyzer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'初始化中...'**
+  String get msgb1a2c3d4;
+
+  /// ui\screens\storage_analyzer\storage_analyzer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在读取系统存储...'**
+  String get msgc2d3e4f5;
+
+  /// ui\screens\storage_analyzer\storage_analyzer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在计算应用占用空间...'**
+  String get msgd3e4f5a6;
+
+  /// ui\screens\storage_analyzer\storage_analyzer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在分析文件、分类资源并读取已安装应用占用空间...'**
+  String get msge4f5a6b7;
+
+  /// ui\screens\storage_analyzer\storage_analyzer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'{size} 可用'**
+  String msgf5a6b7c8(Object size);
+
+  /// ui\screens\storage_analyzer\storage_analyzer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'{size} 已用（{percent}%）'**
+  String msga6b7c8d9(Object size, Object percent);
+
+  /// ui\screens\storage_analyzer\storage_analyzer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'占总存储的 {percent}%'**
+  String msgb7c8d9e0(Object percent);
+
+  /// ui\screens\storage_analyzer\storage_analyzer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'系统/其他'**
+  String get msgc8d9e0f1;
+
+  /// Drag drop action dialog snackbar
+  ///
+  /// In zh, this message translates to:
+  /// **'压缩包\"{name}\"创建成功'**
+  String ui_drag_archive_created(Object name);
+
+  /// Drag drop action dialog snackbar
+  ///
+  /// In zh, this message translates to:
+  /// **'创建压缩包失败：{error}'**
+  String ui_drag_archive_failed(Object error);
+
+  /// Settings backup service snackbar
+  ///
+  /// In zh, this message translates to:
+  /// **'设置已备份到 ZenFile/Backups/Settings/'**
+  String get ui_backup_success;
+
+  /// Settings backup service snackbar
+  ///
+  /// In zh, this message translates to:
+  /// **'备份失败：{error}'**
+  String ui_backup_failed(Object error);
+
+  /// Settings restore snackbar
+  ///
+  /// In zh, this message translates to:
+  /// **'请选择有效的 .json 设置备份文件'**
+  String get ui_restore_invalid_file;
+
+  /// Settings restore snackbar
+  ///
+  /// In zh, this message translates to:
+  /// **'设置恢复成功！'**
+  String get ui_restore_success;
+
+  /// Settings restore snackbar
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复失败：{error}'**
+  String ui_restore_failed(Object error);
+
   /// ui\screens\storage_analyzer\widgets\app_batch_action_bar.dart
   ///
   /// In zh, this message translates to:
@@ -4587,6 +4677,18 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'剪切'**
   String get ui_cut;
+
+  /// Drag drop action dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'移动'**
+  String get ui_move;
+
+  /// Drag drop action dialog confirm button
+  ///
+  /// In zh, this message translates to:
+  /// **'应用'**
+  String get ui_apply;
 
   /// No description provided for @ui_delete.
   ///
@@ -6465,6 +6567,96 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'已发送: {amount}'**
   String ui_sent(String amount);
+
+  /// Recycle bin restore success message
+  ///
+  /// In zh, this message translates to:
+  /// **'已成功恢复 {count} 个项目'**
+  String ui_recycle_restore_success(int count);
+
+  /// Recycle bin restore failed message
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复项目出错：{error}'**
+  String ui_recycle_restore_failed(String error);
+
+  /// Recycle bin permanent delete confirm dialog title
+  ///
+  /// In zh, this message translates to:
+  /// **'永久删除？'**
+  String get ui_recycle_perm_delete_title;
+
+  /// Recycle bin permanent delete confirm dialog message
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要永久删除这些 {count} 个项目吗？此操作无法撤销。'**
+  String ui_recycle_perm_delete_message(int count);
+
+  /// Recycle bin permanent delete success message
+  ///
+  /// In zh, this message translates to:
+  /// **'已永久删除 {count} 个项目'**
+  String ui_recycle_perm_delete_success(int count);
+
+  /// Recycle bin permanent delete failed message
+  ///
+  /// In zh, this message translates to:
+  /// **'删除项目出错：{error}'**
+  String ui_recycle_perm_delete_failed(String error);
+
+  /// Recycle bin empty confirm dialog title
+  ///
+  /// In zh, this message translates to:
+  /// **'清空回收站？'**
+  String get ui_recycle_empty_title;
+
+  /// Recycle bin empty failed message
+  ///
+  /// In zh, this message translates to:
+  /// **'清空回收站出错：{error}'**
+  String ui_recycle_empty_failed(String error);
+
+  /// Recycle bin selected items count
+  ///
+  /// In zh, this message translates to:
+  /// **'已选择 {count} 项'**
+  String ui_recycle_selected_count(int count);
+
+  /// Recycle bin item deleted date and size
+  ///
+  /// In zh, this message translates to:
+  /// **'已删除：{date} • {size}'**
+  String ui_recycle_deleted_at(String date, String size);
+
+  /// Recycle bin restore action
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复'**
+  String get ui_recycle_restore;
+
+  /// Recycle bin empty state hint
+  ///
+  /// In zh, this message translates to:
+  /// **'启用回收站后删除的项目将显示在这里。您可以恢复它们或永久删除。'**
+  String get ui_recycle_empty_hint;
+
+  /// Recycle bin deleted date label
+  ///
+  /// In zh, this message translates to:
+  /// **'回收日期'**
+  String get ui_recycle_deleted_date;
+
+  /// Recycle bin item type label
+  ///
+  /// In zh, this message translates to:
+  /// **'类型'**
+  String get ui_recycle_type;
+
+  /// Recycle bin file type
+  ///
+  /// In zh, this message translates to:
+  /// **'文件'**
+  String get ui_recycle_file;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

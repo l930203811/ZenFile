@@ -2169,6 +2169,95 @@
   "@msg652be256": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
   },
+  "@msgb1a2c3d4": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msgb1a2c3d4": "初始化中...",
+  "@msgc2d3e4f5": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msgc2d3e4f5": "正在读取系统存储...",
+  "@msgd3e4f5a6": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msgd3e4f5a6": "正在计算应用占用空间...",
+  "@msge4f5a6b7": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msge4f5a6b7": "正在分析文件、分类资源并读取已安装应用占用空间...",
+  "@msgf5a6b7c8": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart",
+    "type": "text",
+    "placeholders": {
+      "size": {}
+    }
+  },
+  "msgf5a6b7c8": "{size} 可用",
+  "@msga6b7c8d9": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart",
+    "type": "text",
+    "placeholders": {
+      "size": {},
+      "percent": {}
+    }
+  },
+  "msga6b7c8d9": "{size} 已用（{percent}%）",
+  "@msgb7c8d9e0": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart",
+    "type": "text",
+    "placeholders": {
+      "percent": {}
+    }
+  },
+  "msgb7c8d9e0": "占总存储的 {percent}%",
+  "@msgc8d9e0f1": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msgc8d9e0f1": "系统/其他",
+  "ui_drag_archive_created": "压缩包\"{name}\"创建成功",
+  "@ui_drag_archive_created": {
+    "description": "Drag drop action dialog snackbar",
+    "type": "text",
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "ui_drag_archive_failed": "创建压缩包失败：{error}",
+  "@ui_drag_archive_failed": {
+    "description": "Drag drop action dialog snackbar",
+    "type": "text",
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "ui_backup_success": "设置已备份到 ZenFile/Backups/Settings/",
+  "@ui_backup_success": {
+    "description": "Settings backup service snackbar"
+  },
+  "ui_backup_failed": "备份失败：{error}",
+  "@ui_backup_failed": {
+    "description": "Settings backup service snackbar",
+    "type": "text",
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "ui_restore_invalid_file": "请选择有效的 .json 设置备份文件",
+  "@ui_restore_invalid_file": {
+    "description": "Settings restore snackbar"
+  },
+  "ui_restore_success": "设置恢复成功！",
+  "@ui_restore_success": {
+    "description": "Settings restore snackbar"
+  },
+  "ui_restore_failed": "恢复失败：{error}",
+  "@ui_restore_failed": {
+    "description": "Settings restore snackbar",
+    "type": "text",
+    "placeholders": {
+      "error": {}
+    }
+  },
   "msgeb3d7d70": "卸载应用",
   "@msgeb3d7d70": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_batch_action_bar.dart"
@@ -2895,6 +2984,14 @@
   "ui_compress": "压缩",
   "ui_copy": "复制",
   "ui_cut": "剪切",
+  "ui_move": "移动",
+  "@ui_move": {
+    "description": "Drag drop action dialog"
+  },
+  "ui_apply": "应用",
+  "@ui_apply": {
+    "description": "Drag drop action dialog confirm button"
+  },
   "ui_delete": "删除",
   "ui_select_all": "全选",
   "ui_cancel": "取消",
@@ -3605,5 +3702,108 @@
         "type": "int"
       }
     }
+  },
+  "ui_recycle_restore_success": "已成功恢复 {count} 个项目",
+  "@ui_recycle_restore_success": {
+    "description": "Recycle bin restore success message",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_recycle_restore_failed": "恢复项目出错：{error}",
+  "@ui_recycle_restore_failed": {
+    "description": "Recycle bin restore failed message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_recycle_perm_delete_title": "永久删除？",
+  "@ui_recycle_perm_delete_title": {
+    "description": "Recycle bin permanent delete confirm dialog title"
+  },
+  "ui_recycle_perm_delete_message": "确定要永久删除这些 {count} 个项目吗？此操作无法撤销。",
+  "@ui_recycle_perm_delete_message": {
+    "description": "Recycle bin permanent delete confirm dialog message",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_recycle_perm_delete_success": "已永久删除 {count} 个项目",
+  "@ui_recycle_perm_delete_success": {
+    "description": "Recycle bin permanent delete success message",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_recycle_perm_delete_failed": "删除项目出错：{error}",
+  "@ui_recycle_perm_delete_failed": {
+    "description": "Recycle bin permanent delete failed message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_recycle_empty_title": "清空回收站？",
+  "@ui_recycle_empty_title": {
+    "description": "Recycle bin empty confirm dialog title"
+  },
+  "ui_recycle_empty_failed": "清空回收站出错：{error}",
+  "@ui_recycle_empty_failed": {
+    "description": "Recycle bin empty failed message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_recycle_selected_count": "已选择 {count} 项",
+  "@ui_recycle_selected_count": {
+    "description": "Recycle bin selected items count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_recycle_deleted_at": "已删除：{date} • {size}",
+  "@ui_recycle_deleted_at": {
+    "description": "Recycle bin item deleted date and size",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_recycle_restore": "恢复",
+  "@ui_recycle_restore": {
+    "description": "Recycle bin restore action"
+  },
+  "ui_recycle_empty_hint": "启用回收站后删除的项目将显示在这里。您可以恢复它们或永久删除。",
+  "@ui_recycle_empty_hint": {
+    "description": "Recycle bin empty state hint"
+  },
+  "ui_recycle_deleted_date": "回收日期",
+  "@ui_recycle_deleted_date": {
+    "description": "Recycle bin deleted date label"
+  },
+  "ui_recycle_type": "类型",
+  "@ui_recycle_type": {
+    "description": "Recycle bin item type label"
+  },
+  "ui_recycle_file": "文件",
+  "@ui_recycle_file": {
+    "description": "Recycle bin file type"
   }
 }

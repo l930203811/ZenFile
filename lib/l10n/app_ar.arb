@@ -1,4 +1,4 @@
-{
+﻿{
   "@@locale": "ar",
   "@msg6f3e533a": {
     "description": "main.dart"
@@ -2128,6 +2128,95 @@
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
   },
   "msg652be256": "التفصيل حسب الفئات",
+  "@msgb1a2c3d4": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msgb1a2c3d4": "Initializing...",
+  "@msgc2d3e4f5": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msgc2d3e4f5": "Reading system memory...",
+  "@msgd3e4f5a6": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msgd3e4f5a6": "Calculating app storage...",
+  "@msge4f5a6b7": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msge4f5a6b7": "Analyzing files, categorizing assets, and reading installed apps space...",
+  "@msgf5a6b7c8": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart",
+    "type": "text",
+    "placeholders": {
+      "size": {}
+    }
+  },
+  "msgf5a6b7c8": "{size} free",
+  "@msga6b7c8d9": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart",
+    "type": "text",
+    "placeholders": {
+      "size": {},
+      "percent": {}
+    }
+  },
+  "msga6b7c8d9": "{size} used ({percent}%)",
+  "@msgb7c8d9e0": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart",
+    "type": "text",
+    "placeholders": {
+      "percent": {}
+    }
+  },
+  "msgb7c8d9e0": "{percent}% of total storage",
+  "@msgc8d9e0f1": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msgc8d9e0f1": "System / Other",
+  "ui_drag_archive_created": "Archive \"{name}\" created successfully",
+  "@ui_drag_archive_created": {
+    "description": "Drag drop action dialog snackbar",
+    "type": "text",
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "ui_drag_archive_failed": "Failed to create archive: {error}",
+  "@ui_drag_archive_failed": {
+    "description": "Drag drop action dialog snackbar",
+    "type": "text",
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "ui_backup_success": "تم حفظ الإعدادات في ZenFile/Backups/Settings/",
+  "@ui_backup_success": {
+    "description": "Settings backup service snackbar"
+  },
+  "ui_backup_failed": "فشل النسخ الاحتياطي: {error}",
+  "@ui_backup_failed": {
+    "description": "Settings backup service snackbar",
+    "type": "text",
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "ui_restore_invalid_file": "يرجى تحديد ملف نسخ احتياطي للإعدادات .json صالح",
+  "@ui_restore_invalid_file": {
+    "description": "Settings restore snackbar"
+  },
+  "ui_restore_success": "تمت استعادة الإعدادات بنجاح!",
+  "@ui_restore_success": {
+    "description": "Settings restore snackbar"
+  },
+  "ui_restore_failed": "فشل الاستعادة: {error}",
+  "@ui_restore_failed": {
+    "description": "Settings restore snackbar",
+    "type": "text",
+    "placeholders": {
+      "error": {}
+    }
+  },
   "@msgeb3d7d70": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_batch_action_bar.dart"
   },
@@ -2831,6 +2920,14 @@
   "ui_compress": "ضغط",
   "ui_copy": "نسخ",
   "ui_cut": "قص",
+  "ui_move": "Move",
+  "@ui_move": {
+    "description": "Drag drop action dialog"
+  },
+  "ui_apply": "Apply",
+  "@ui_apply": {
+    "description": "Drag drop action dialog confirm button"
+  },
   "ui_delete": "حذف",
   "ui_select_all": "تحديد الكل",
   "ui_cancel": "إلغاء",
@@ -3450,5 +3547,108 @@
         "type": "int"
       }
     }
+  },
+  "ui_recycle_restore_success": "تمت استعادة {count} عنصر بنجاح",
+  "@ui_recycle_restore_success": {
+    "description": "Recycle bin restore success message",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_recycle_restore_failed": "خطأ في استعادة العناصر: {error}",
+  "@ui_recycle_restore_failed": {
+    "description": "Recycle bin restore failed message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_recycle_perm_delete_title": "حذف نهائي؟",
+  "@ui_recycle_perm_delete_title": {
+    "description": "Recycle bin permanent delete confirm dialog title"
+  },
+  "ui_recycle_perm_delete_message": "هل أنت متأكد من أنك تريد حذف هذه العناصر {count} بشكل نهائي؟ لا يمكن التراجع عن هذا الإجراء.",
+  "@ui_recycle_perm_delete_message": {
+    "description": "Recycle bin permanent delete confirm dialog message",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_recycle_perm_delete_success": "تم حذف {count} عنصر بشكل نهائي",
+  "@ui_recycle_perm_delete_success": {
+    "description": "Recycle bin permanent delete success message",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_recycle_perm_delete_failed": "خطأ في حذف العناصر: {error}",
+  "@ui_recycle_perm_delete_failed": {
+    "description": "Recycle bin permanent delete failed message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_recycle_empty_title": "إفراغ سلة المحذوفات؟",
+  "@ui_recycle_empty_title": {
+    "description": "Recycle bin empty confirm dialog title"
+  },
+  "ui_recycle_empty_failed": "خطأ في إفراغ سلة المحذوفات: {error}",
+  "@ui_recycle_empty_failed": {
+    "description": "Recycle bin empty failed message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_recycle_selected_count": "تم تحديد {count}",
+  "@ui_recycle_selected_count": {
+    "description": "Recycle bin selected items count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_recycle_deleted_at": "تم الحذف: {date} • {size}",
+  "@ui_recycle_deleted_at": {
+    "description": "Recycle bin item deleted date and size",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_recycle_restore": "استعادة",
+  "@ui_recycle_restore": {
+    "description": "Recycle bin restore action"
+  },
+  "ui_recycle_empty_hint": "ستظهر العناصر التي تحذفها عند تمكين سلة المحذوفات هنا. يمكنك استعادتها أو حذفها نهائيًا.",
+  "@ui_recycle_empty_hint": {
+    "description": "Recycle bin empty state hint"
+  },
+  "ui_recycle_deleted_date": "تاريخ الحذف",
+  "@ui_recycle_deleted_date": {
+    "description": "Recycle bin deleted date label"
+  },
+  "ui_recycle_type": "النوع",
+  "@ui_recycle_type": {
+    "description": "Recycle bin item type label"
+  },
+  "ui_recycle_file": "ملف",
+  "@ui_recycle_file": {
+    "description": "Recycle bin file type"
   }
 }

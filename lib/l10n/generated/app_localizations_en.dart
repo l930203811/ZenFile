@@ -1776,6 +1776,68 @@ class L10nEn extends L10n {
   String get msg652be256 => 'Category Breakdown';
 
   @override
+  String get msgb1a2c3d4 => 'Initializing...';
+
+  @override
+  String get msgc2d3e4f5 => 'Reading system memory...';
+
+  @override
+  String get msgd3e4f5a6 => 'Calculating app storage...';
+
+  @override
+  String get msge4f5a6b7 =>
+      'Analyzing files, categorizing assets, and reading installed apps space...';
+
+  @override
+  String msgf5a6b7c8(Object size) {
+    return '$size free';
+  }
+
+  @override
+  String msga6b7c8d9(Object size, Object percent) {
+    return '$size used ($percent%)';
+  }
+
+  @override
+  String msgb7c8d9e0(Object percent) {
+    return '$percent% of total storage';
+  }
+
+  @override
+  String get msgc8d9e0f1 => 'System / Other';
+
+  @override
+  String ui_drag_archive_created(Object name) {
+    return 'Archive \"$name\" created successfully';
+  }
+
+  @override
+  String ui_drag_archive_failed(Object error) {
+    return 'Failed to create archive: $error';
+  }
+
+  @override
+  String get ui_backup_success =>
+      'Settings backed up to ZenFile/Backups/Settings/';
+
+  @override
+  String ui_backup_failed(Object error) {
+    return 'Backup failed: $error';
+  }
+
+  @override
+  String get ui_restore_invalid_file =>
+      'Please select a valid .json settings backup file';
+
+  @override
+  String get ui_restore_success => 'Settings restored successfully!';
+
+  @override
+  String ui_restore_failed(Object error) {
+    return 'Restore failed: $error';
+  }
+
+  @override
   String get msgeb3d7d70 => 'Uninstall App';
 
   @override
@@ -2470,6 +2532,12 @@ class L10nEn extends L10n {
 
   @override
   String get ui_cut => 'Cut';
+
+  @override
+  String get ui_move => 'Move';
+
+  @override
+  String get ui_apply => 'Apply';
 
   @override
   String get ui_delete => 'Delete';
@@ -3526,4 +3594,66 @@ class L10nEn extends L10n {
   String ui_sent(String amount) {
     return 'Sent: $amount';
   }
+
+  @override
+  String ui_recycle_restore_success(int count) {
+    return 'Successfully restored $count item(s)';
+  }
+
+  @override
+  String ui_recycle_restore_failed(String error) {
+    return 'Error restoring items: $error';
+  }
+
+  @override
+  String get ui_recycle_perm_delete_title => 'Permanently delete?';
+
+  @override
+  String ui_recycle_perm_delete_message(int count) {
+    return 'Are you sure you want to permanently delete these $count items? This action cannot be undone.';
+  }
+
+  @override
+  String ui_recycle_perm_delete_success(int count) {
+    return 'Permanently deleted $count item(s)';
+  }
+
+  @override
+  String ui_recycle_perm_delete_failed(String error) {
+    return 'Error deleting items: $error';
+  }
+
+  @override
+  String get ui_recycle_empty_title => 'Empty Recycle Bin?';
+
+  @override
+  String ui_recycle_empty_failed(String error) {
+    return 'Error emptying recycle bin: $error';
+  }
+
+  @override
+  String ui_recycle_selected_count(int count) {
+    return '$count Selected';
+  }
+
+  @override
+  String ui_recycle_deleted_at(String date, String size) {
+    return 'Deleted: $date • $size';
+  }
+
+  @override
+  String get ui_recycle_restore => 'Restore';
+
+  @override
+  String get ui_recycle_empty_hint =>
+      'Items you delete when Recycle Bin is enabled will appear here. You can restore them or permanently delete them.';
+
+  @override
+  String get ui_recycle_deleted_date => 'Deleted Date';
+
+  @override
+  String get ui_recycle_type => 'Type';
+
+  @override
+  String get ui_recycle_file => 'File';
 }

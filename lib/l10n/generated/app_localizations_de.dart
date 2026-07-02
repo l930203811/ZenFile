@@ -1805,6 +1805,69 @@ class L10nDe extends L10n {
   String get msg652be256 => 'Kategorieaufschlüssel';
 
   @override
+  String get msgb1a2c3d4 => 'Initializing...';
+
+  @override
+  String get msgc2d3e4f5 => 'Reading system memory...';
+
+  @override
+  String get msgd3e4f5a6 => 'Calculating app storage...';
+
+  @override
+  String get msge4f5a6b7 =>
+      'Analyzing files, categorizing assets, and reading installed apps space...';
+
+  @override
+  String msgf5a6b7c8(Object size) {
+    return '$size free';
+  }
+
+  @override
+  String msga6b7c8d9(Object size, Object percent) {
+    return '$size used ($percent%)';
+  }
+
+  @override
+  String msgb7c8d9e0(Object percent) {
+    return '$percent% of total storage';
+  }
+
+  @override
+  String get msgc8d9e0f1 => 'System / Other';
+
+  @override
+  String ui_drag_archive_created(Object name) {
+    return 'Archive \"$name\" created successfully';
+  }
+
+  @override
+  String ui_drag_archive_failed(Object error) {
+    return 'Failed to create archive: $error';
+  }
+
+  @override
+  String get ui_backup_success =>
+      'Einstellungen in ZenFile/Backups/Settings/ gesichert';
+
+  @override
+  String ui_backup_failed(Object error) {
+    return 'Sicherung fehlgeschlagen: $error';
+  }
+
+  @override
+  String get ui_restore_invalid_file =>
+      'Bitte wählen Sie eine gültige .json Einstellungs-Sicherungsdatei aus';
+
+  @override
+  String get ui_restore_success =>
+      'Einstellungen erfolgreich wiederhergestellt!';
+
+  @override
+  String ui_restore_failed(Object error) {
+    return 'Wiederherstellung fehlgeschlagen: $error';
+  }
+
+  @override
   String get msgeb3d7d70 => 'App deinstallieren';
 
   @override
@@ -2507,6 +2570,12 @@ class L10nDe extends L10n {
 
   @override
   String get ui_cut => 'Ausschneiden';
+
+  @override
+  String get ui_move => 'Move';
+
+  @override
+  String get ui_apply => 'Apply';
 
   @override
   String get ui_delete => 'Löschen';
@@ -3572,4 +3641,66 @@ class L10nDe extends L10n {
   String ui_sent(String amount) {
     return 'Gesendet: $amount';
   }
+
+  @override
+  String ui_recycle_restore_success(int count) {
+    return '$count Element(e) erfolgreich wiederhergestellt';
+  }
+
+  @override
+  String ui_recycle_restore_failed(String error) {
+    return 'Fehler beim Wiederherstellen: $error';
+  }
+
+  @override
+  String get ui_recycle_perm_delete_title => 'Endgültig löschen?';
+
+  @override
+  String ui_recycle_perm_delete_message(int count) {
+    return 'Sind Sie sicher, dass Sie diese $count Element(e) endgültig löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.';
+  }
+
+  @override
+  String ui_recycle_perm_delete_success(int count) {
+    return '$count Element(e) endgültig gelöscht';
+  }
+
+  @override
+  String ui_recycle_perm_delete_failed(String error) {
+    return 'Fehler beim Löschen: $error';
+  }
+
+  @override
+  String get ui_recycle_empty_title => 'Papierkorb leeren?';
+
+  @override
+  String ui_recycle_empty_failed(String error) {
+    return 'Fehler beim Leeren des Papierkorbs: $error';
+  }
+
+  @override
+  String ui_recycle_selected_count(int count) {
+    return '$count ausgewählt';
+  }
+
+  @override
+  String ui_recycle_deleted_at(String date, String size) {
+    return 'Gelöscht: $date • $size';
+  }
+
+  @override
+  String get ui_recycle_restore => 'Wiederherstellen';
+
+  @override
+  String get ui_recycle_empty_hint =>
+      'Elemente, die Sie löschen, wenn der Papierkorb aktiviert ist, werden hier angezeigt. Sie können sie wiederherstellen oder endgültig löschen.';
+
+  @override
+  String get ui_recycle_deleted_date => 'Löschdatum';
+
+  @override
+  String get ui_recycle_type => 'Typ';
+
+  @override
+  String get ui_recycle_file => 'Datei';
 }

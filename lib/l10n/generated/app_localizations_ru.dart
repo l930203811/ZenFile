@@ -1812,6 +1812,68 @@ class L10nRu extends L10n {
   String get msg652be256 => 'Разбивка по Категориям';
 
   @override
+  String get msgb1a2c3d4 => 'Initializing...';
+
+  @override
+  String get msgc2d3e4f5 => 'Reading system memory...';
+
+  @override
+  String get msgd3e4f5a6 => 'Calculating app storage...';
+
+  @override
+  String get msge4f5a6b7 =>
+      'Analyzing files, categorizing assets, and reading installed apps space...';
+
+  @override
+  String msgf5a6b7c8(Object size) {
+    return '$size free';
+  }
+
+  @override
+  String msga6b7c8d9(Object size, Object percent) {
+    return '$size used ($percent%)';
+  }
+
+  @override
+  String msgb7c8d9e0(Object percent) {
+    return '$percent% of total storage';
+  }
+
+  @override
+  String get msgc8d9e0f1 => 'System / Other';
+
+  @override
+  String ui_drag_archive_created(Object name) {
+    return 'Archive \"$name\" created successfully';
+  }
+
+  @override
+  String ui_drag_archive_failed(Object error) {
+    return 'Failed to create archive: $error';
+  }
+
+  @override
+  String get ui_backup_success =>
+      'Настройки сохранены в ZenFile/Backups/Settings/';
+
+  @override
+  String ui_backup_failed(Object error) {
+    return 'Ошибка резервного копирования: $error';
+  }
+
+  @override
+  String get ui_restore_invalid_file =>
+      'Выберите допустимый файл резервной копии настроек .json';
+
+  @override
+  String get ui_restore_success => 'Настройки успешно восстановлены!';
+
+  @override
+  String ui_restore_failed(Object error) {
+    return 'Ошибка восстановления: $error';
+  }
+
+  @override
   String get msgeb3d7d70 => 'Удалить Приложение';
 
   @override
@@ -2515,6 +2577,12 @@ class L10nRu extends L10n {
 
   @override
   String get ui_cut => 'Вырезать';
+
+  @override
+  String get ui_move => 'Move';
+
+  @override
+  String get ui_apply => 'Apply';
 
   @override
   String get ui_delete => 'Удалить';
@@ -3579,4 +3647,66 @@ class L10nRu extends L10n {
   String ui_sent(String amount) {
     return 'Отправлено: $amount';
   }
+
+  @override
+  String ui_recycle_restore_success(int count) {
+    return 'Успешно восстановлено $count элемент(ов)';
+  }
+
+  @override
+  String ui_recycle_restore_failed(String error) {
+    return 'Ошибка восстановления элементов: $error';
+  }
+
+  @override
+  String get ui_recycle_perm_delete_title => 'Удалить навсегда?';
+
+  @override
+  String ui_recycle_perm_delete_message(int count) {
+    return 'Вы уверены, что хотите навсегда удалить эти $count элемент(ов)? Это действие нельзя отменить.';
+  }
+
+  @override
+  String ui_recycle_perm_delete_success(int count) {
+    return 'Навсегда удалено $count элемент(ов)';
+  }
+
+  @override
+  String ui_recycle_perm_delete_failed(String error) {
+    return 'Ошибка удаления элементов: $error';
+  }
+
+  @override
+  String get ui_recycle_empty_title => 'Очистить Корзину?';
+
+  @override
+  String ui_recycle_empty_failed(String error) {
+    return 'Ошибка очистки корзины: $error';
+  }
+
+  @override
+  String ui_recycle_selected_count(int count) {
+    return 'Выбрано: $count';
+  }
+
+  @override
+  String ui_recycle_deleted_at(String date, String size) {
+    return 'Удалено: $date • $size';
+  }
+
+  @override
+  String get ui_recycle_restore => 'Восстановить';
+
+  @override
+  String get ui_recycle_empty_hint =>
+      'Элементы, которые вы удаляете при включенной корзине, будут отображаться здесь. Вы можете восстановить их или удалить навсегда.';
+
+  @override
+  String get ui_recycle_deleted_date => 'Дата удаления';
+
+  @override
+  String get ui_recycle_type => 'Тип';
+
+  @override
+  String get ui_recycle_file => 'Файл';
 }
