@@ -19,6 +19,8 @@ import '../screens/ftp_server_screen.dart';
 import '../screens/web_sharing_screen.dart';
 import '../screens/storage_analyzer/storage_analyzer_screen.dart';
 import '../screens/vault_lock_screen.dart';
+import '../screens/recycle_bin_screen.dart';
+import '../../services/recycle_bin_service.dart';
 import '../../services/remote/remote_client.dart';
 
 class QuickCategoriesGrid extends StatefulWidget {
@@ -158,6 +160,14 @@ class QuickCategoriesGrid extends StatefulWidget {
         'count': l10n.cat_vault_desc,
         'isCustom': false,
         'pageBuilder': () => const VaultLockScreen(),
+      },
+      '回收站': {
+        'label': l10n.ui_recycle_bin,
+        'icon': Broken.trash,
+        'color': isDark ? Colors.blueGrey.shade300 : Colors.blueGrey,
+        'count': '${RecycleBinService.getTrashItems().length}',
+        'isCustom': false,
+        'pageBuilder': () => const RecycleBinScreen(),
       },
     };
 

@@ -20,7 +20,7 @@ class PreferencesService {
   // 当前迁移版本：每次新增分类需要补全到 active 列表时递增。
   // 旧版本(< 当前版本)的用户启动时才补全新分类到 active，
   // 之后不再干预用户主动关闭的分类，避免重启后被重新启用。
-  static const int kCurrentCategoriesMigratedVersion = 2;
+  static const int kCurrentCategoriesMigratedVersion = 3;
   static const String _keyShowFolderFileCount = 'show_folder_file_count';
   static const String _keyShowBottomActionBar = 'show_bottom_action_bar';
   static const String _keyEnableMultipleTabs = 'enable_multiple_tabs';

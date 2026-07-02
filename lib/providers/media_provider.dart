@@ -255,6 +255,10 @@ class MediaProvider extends ChangeNotifier {
         _categoryOrder.add('保险箱');
         orderUpdated = true;
       }
+      if (!_categoryOrder.contains('回收站')) {
+        _categoryOrder.add('回收站');
+        orderUpdated = true;
+      }
       if (orderUpdated) {
         PreferencesService.saveCategoryOrder(_categoryOrder);
       }
@@ -303,6 +307,10 @@ class MediaProvider extends ChangeNotifier {
         }
         if (!_activeCategories.contains('保险箱')) {
           _activeCategories.add('保险箱');
+          activeUpdated = true;
+        }
+        if (!_activeCategories.contains('回收站')) {
+          _activeCategories.add('回收站');
           activeUpdated = true;
         }
       }
@@ -363,6 +371,7 @@ class MediaProvider extends ChangeNotifier {
     '最近',
     '存储',
     '保险箱',
+    '回收站',
   ];
 
   List<String> _activeCategories = [
@@ -382,6 +391,7 @@ class MediaProvider extends ChangeNotifier {
     '最近',
     '存储',
     '保险箱',
+    '回收站',
   ];
 
 
