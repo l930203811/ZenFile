@@ -281,29 +281,38 @@ class MediaProvider extends ChangeNotifier {
           activeUpdated = true;
         }
       }
-      // Ensure new categories are in active list
-      if (!_activeCategories.contains('网络')) {
-        _activeCategories.add('网络');
-        activeUpdated = true;
-      }
-      if (!_activeCategories.contains('最近')) {
-        _activeCategories.add('最近');
-        activeUpdated = true;
-      }
-      if (!_activeCategories.contains('FTP共享')) {
-        _activeCategories.add('FTP共享');
-        activeUpdated = true;
-      }
-      if (!_activeCategories.contains('Web共享')) {
-        _activeCategories.add('Web共享');
-        activeUpdated = true;
-      }
-      if (!_activeCategories.contains('保险箱')) {
-        _activeCategories.add('保险箱');
-        activeUpdated = true;
+      // 仅在迁移版本低于当前版本时，补全新分类到 active 列表。
+      // 已迁移用户不再干预其 active 状态，避免用户主动关闭的分类在重启后被重新启用。
+      final migratedVersion = PreferencesService.getCategoriesMigratedVersion();
+      if (migratedVersion < PreferencesService.kCurrentCategoriesMigratedVersion) {
+        if (!_activeCategories.contains('网络')) {
+          _activeCategories.add('网络');
+          activeUpdated = true;
+        }
+        if (!_activeCategories.contains('最近')) {
+          _activeCategories.add('最近');
+          activeUpdated = true;
+        }
+        if (!_activeCategories.contains('FTP共享')) {
+          _activeCategories.add('FTP共享');
+          activeUpdated = true;
+        }
+        if (!_activeCategories.contains('Web共享')) {
+          _activeCategories.add('Web共享');
+          activeUpdated = true;
+        }
+        if (!_activeCategories.contains('保险箱')) {
+          _activeCategories.add('保险箱');
+          activeUpdated = true;
+        }
       }
       if (activeUpdated) {
         PreferencesService.saveActiveCategories(_activeCategories);
+      }
+      // 标记迁移完成（即使本次未补全，也更新版本号以跳过未来的强制补全）
+      if (migratedVersion < PreferencesService.kCurrentCategoriesMigratedVersion) {
+        PreferencesService.saveCategoriesMigratedVersion(
+            PreferencesService.kCurrentCategoriesMigratedVersion);
       }
     }
     final savedCustom = PreferencesService.getCustomShortcuts();
@@ -652,72 +661,10 @@ class MediaProvider extends ChangeNotifier {
         final jsonStr = await cacheFile.readAsString();
         final map = jsonDecode(jsonStr) as Map<String, dynamic>;
 
-        if (map.containsKey('categoryOrder')) {
-          _categoryOrder = List<String>.from(map['categoryOrder'] ?? _categoryOrder);
-          if (!_categoryOrder.contains('应用')) {
-            _categoryOrder.add('应用');
-          }
-          if (!_categoryOrder.contains('设置')) {
-            _categoryOrder.add('设置');
-          }
-          if (!_categoryOrder.contains('网络')) {
-            _categoryOrder.add('网络');
-          }
-          if (!_categoryOrder.contains('最近')) {
-            _categoryOrder.add('最近');
-          }
-          if (!_categoryOrder.contains('FTP共享')) {
-            _categoryOrder.add('FTP共享');
-          }
-          if (!_categoryOrder.contains('Web共享')) {
-            _categoryOrder.add('Web共享');
-          }
-          if (!_categoryOrder.contains('压缩包')) {
-            _categoryOrder.add('压缩包');
-          }
-          if (!_categoryOrder.contains('安装包')) {
-            _categoryOrder.add('安装包');
-          }
-          // Reorder to match the canonical default order
-          const defaultOrder = [
-            '图片', '视频', '音频', '文档', '下载', '截图',
-            '网络', 'FTP共享', 'Web共享', '应用', '压缩包', '安装包',
-            '设置', '最近', '存储',
-          ];
-          final orderMap = <String, int>{};
-          for (int i = 0; i < defaultOrder.length; i++) {
-            orderMap[defaultOrder[i]] = i;
-          }
-          _categoryOrder.sort((a, b) {
-            final aIdx = orderMap[a] ?? 999;
-            final bIdx = orderMap[b] ?? 999;
-            return aIdx.compareTo(bIdx);
-          });
-        }
-        if (map.containsKey('activeCategories')) {
-          _activeCategories = List<String>.from(map['activeCategories'] ?? _activeCategories);
-          if (!_activeCategories.contains('网络')) {
-            _activeCategories.add('网络');
-          }
-          if (!_activeCategories.contains('最近')) {
-            _activeCategories.add('最近');
-          }
-          if (!_activeCategories.contains('FTP共享')) {
-            _activeCategories.add('FTP共享');
-          }
-          if (!_activeCategories.contains('Web共享')) {
-            _activeCategories.add('Web共享');
-          }
-          if (!_activeCategories.contains('压缩包')) {
-            _activeCategories.add('压缩包');
-          }
-          if (!_activeCategories.contains('安装包')) {
-            _activeCategories.add('安装包');
-          }
-          if (!_activeCategories.contains('保险箱')) {
-            _activeCategories.add('保险箱');
-          }
-        }
+        // 注意: categoryOrder 和 activeCategories 不从磁盘缓存读取，
+        // 它们由构造函数从 SharedPreferences 读取作为唯一真相源。
+        // 否则缓存中的旧值会覆盖用户自定义的顺序和启用状态，
+        // 且强制按默认顺序排序会破坏用户的自定义排列。
 
         if (map.containsKey('documents')) {
           final docPaths = List<String>.from(map['documents'] ?? []);
