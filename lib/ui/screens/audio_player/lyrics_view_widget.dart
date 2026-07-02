@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../services/lyric_parser.dart';
 
 /// 同步歌词显示组件：根据播放位置高亮当前行并自动滚动。
+/// 支持逐字时间戳格式的卡拉OK歌词显示。
 class LyricsViewWidget extends StatefulWidget {
   final List<LyricLine> lyrics;
   final Duration position;
@@ -24,16 +25,26 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget> {
   final ScrollController _scrollController = ScrollController();
   late List<GlobalKey> _itemKeys;
   int _currentLineIndex = -1;
+  int _currentWordIndex = -1;
   bool _isUserScrolling = false;
-  int? _pendingScrollToIndex;
 
   @override
   void initState() {
     super.initState();
     _itemKeys = List.generate(widget.lyrics.length, (_) => GlobalKey());
-    _currentLineIndex = LyricParser.findCurrentLineIndex(widget.lyrics, widget.position);
-    _pendingScrollToIndex = _currentLineIndex;
+    _updateCurrentIndices();
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCurrentLine(animate: false));
+  }
+
+  void _updateCurrentIndices() {
+    _currentLineIndex = LyricParser.findCurrentLineIndex(widget.lyrics, widget.position);
+    _currentWordIndex = -1;
+    if (_currentLineIndex >= 0 && _currentLineIndex < widget.lyrics.length) {
+      _currentWordIndex = LyricParser.findCurrentWordIndex(
+        widget.lyrics[_currentLineIndex],
+        widget.position,
+      );
+    }
   }
 
   @override
@@ -41,15 +52,13 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.lyrics.length != widget.lyrics.length || oldWidget.lyrics != widget.lyrics) {
       _itemKeys = List.generate(widget.lyrics.length, (_) => GlobalKey());
-      _currentLineIndex = LyricParser.findCurrentLineIndex(widget.lyrics, widget.position);
-      _pendingScrollToIndex = _currentLineIndex;
+      _updateCurrentIndices();
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCurrentLine(animate: false));
     } else {
-      final newIndex = LyricParser.findCurrentLineIndex(widget.lyrics, widget.position);
-      if (newIndex != _currentLineIndex) {
-        _currentLineIndex = newIndex;
+      final oldLineIndex = _currentLineIndex;
+      _updateCurrentIndices();
+      if (_currentLineIndex != oldLineIndex) {
         if (!_isUserScrolling) {
-          _pendingScrollToIndex = _currentLineIndex;
           WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCurrentLine());
         }
       }
@@ -57,7 +66,6 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget> {
   }
 
   void _scrollToCurrentLine({bool animate = true}) {
-    _pendingScrollToIndex = null;
     if (!_scrollController.hasClients || _currentLineIndex < 0 || _currentLineIndex >= _itemKeys.length) {
       return;
     }
@@ -65,7 +73,6 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget> {
     final key = _itemKeys[_currentLineIndex];
     final context = key.currentContext;
     if (context == null) {
-      // 当前行尚未渲染，回退到估算滚动
       _scrollToEstimated(animate: animate);
       return;
     }
@@ -119,8 +126,75 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget> {
     super.dispose();
   }
 
+  /// 构建逐字歌词行
+  Widget _buildWordByWordLyric(LyricLine line, bool isCurrent, ThemeData theme, bool isDark) {
+    if (!line.hasWordTimestamps) {
+      return _buildNormalLyric(line, isCurrent, theme, isDark);
+    }
+
+    final words = line.words!;
+    final isPast = widget.lyrics.indexOf(line) < _currentLineIndex;
+    final currentWordIdx = isCurrent ? _currentWordIndex : -1;
+
+    return RichText(
+      textAlign: TextAlign.center,
+      text: TextSpan(
+        children: words.asMap().entries.map((entry) {
+          final idx = entry.key;
+          final word = entry.value;
+          final isHighlighted = isCurrent && idx <= currentWordIdx;
+          final isCurrentWord = isCurrent && idx == currentWordIdx;
+
+          Color textColor;
+          if (isPast) {
+            textColor = theme.colorScheme.onSurface.withValues(alpha: 0.3);
+          } else if (isHighlighted) {
+            textColor = widget.accentColor;
+          } else {
+            textColor = theme.colorScheme.onSurface.withValues(alpha: 0.6);
+          }
+
+          return TextSpan(
+            text: word.text,
+            style: TextStyle(
+              fontSize: isCurrent ? 22 : 16,
+              fontWeight: isCurrentWord ? FontWeight.bold : (isHighlighted ? FontWeight.w600 : FontWeight.w500),
+              color: textColor,
+              height: 1.5,
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  /// 构建普通歌词行
+  Widget _buildNormalLyric(LyricLine line, bool isCurrent, ThemeData theme, bool isDark) {
+    final isPast = widget.lyrics.indexOf(line) < _currentLineIndex;
+
+    return Text(
+      line.text.isEmpty ? '♪' : line.text,
+      textAlign: TextAlign.center,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
+        fontSize: isCurrent ? 22 : 16,
+        fontWeight: isCurrent ? FontWeight.bold : FontWeight.w500,
+        color: isCurrent
+            ? widget.accentColor
+            : isPast
+                ? theme.colorScheme.onSurface.withValues(alpha: 0.3)
+                : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+        height: 1.5,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final viewportHeight = constraints.maxHeight;
@@ -144,7 +218,6 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget> {
             itemBuilder: (context, index) {
               final line = widget.lyrics[index];
               final isCurrent = index == _currentLineIndex;
-              final isPast = index < _currentLineIndex;
 
               return GestureDetector(
                 key: _itemKeys[index],
@@ -164,17 +237,12 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget> {
                       fontWeight: isCurrent ? FontWeight.bold : FontWeight.w500,
                       color: isCurrent
                           ? widget.accentColor
-                          : isPast
-                              ? Theme.of(context).colorScheme.onSurface.withOpacity(0.3)
-                              : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                          : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       height: 1.5,
                     ),
-                    child: Text(
-                      line.text.isEmpty ? '♪' : line.text,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    child: line.hasWordTimestamps
+                        ? _buildWordByWordLyric(line, isCurrent, theme, isDark)
+                        : _buildNormalLyric(line, isCurrent, theme, isDark),
                   ),
                 ),
               );
