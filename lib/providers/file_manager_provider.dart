@@ -254,6 +254,8 @@ class FileManagerProvider extends ChangeNotifier {
         alias = 'com.sequl.zenfile.MainActivityDesign8';
       case 'design9':
         alias = 'com.sequl.zenfile.MainActivityDesign9';
+      case 'design10':
+        alias = 'com.sequl.zenfile.MainActivityDesign10';
     }
 
     await AppManagerService.changeAppIcon(alias);
