@@ -537,18 +537,17 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     });
   }
 
-  /// 获取当前应显示的单行歌词文本
-  String? _getCurrentLyricLineText() {
+  /// 获取当前应显示的歌词行
+  LyricLine? _getCurrentLyricLine() {
     if (_lyrics == null || _lyrics!.isEmpty) return null;
     final index = LyricParser.findCurrentLineIndex(_lyrics!, position);
     if (index < 0 || index >= _lyrics!.length) return null;
-    final text = _lyrics![index].text;
-    return text.isEmpty ? '♪' : text;
+    return _lyrics![index];
   }
 
-  /// 构建单行歌词显示
+  /// 构建单行歌词显示（支持逐字高亮）
   Widget _buildSingleLineLyrics(Color accent, ThemeData theme, bool isDark) {
-    final lineText = _getCurrentLyricLineText();
+    final line = _getCurrentLyricLine();
     return GestureDetector(
       onTap: _showLyricsPanel,
       child: SizedBox(
@@ -564,22 +563,11 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
               child: child,
             ),
           ),
-          child: lineText != null
+          child: line != null
               ? SizedBox(
-                  key: ValueKey<String>(lineText),
+                  key: ValueKey<String>(line.text),
                   width: double.infinity,
-                  child: Text(
-                    lineText,
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: accent,
-                      height: 1.4,
-                    ),
-                  ),
+                  child: _buildLyricLineText(line, accent, isDark),
                 )
               : _isLoadingLyrics
                   ? SizedBox(
@@ -609,6 +597,63 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                       ),
                     ),
         ),
+      ),
+    );
+  }
+
+  /// 构建歌词行文本（支持逐字高亮）
+  Widget _buildLyricLineText(LyricLine line, Color accent, bool isDark) {
+    if (line.text.isEmpty) {
+      return Text(
+        '♪',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          color: accent,
+          height: 1.4,
+        ),
+      );
+    }
+
+    // 检查是否有逐字时间戳
+    if (line.hasWordTimestamps) {
+      final currentWordIdx = LyricParser.findCurrentWordIndex(line, position);
+      return RichText(
+        textAlign: TextAlign.center,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        text: TextSpan(
+          children: line.words!.asMap().entries.map((entry) {
+            final idx = entry.key;
+            final word = entry.value;
+            final isHighlighted = idx <= currentWordIdx;
+
+            return TextSpan(
+              text: word.text,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.w500,
+                color: isHighlighted ? accent : (isDark ? Colors.white : Colors.black).withOpacity(0.5),
+                height: 1.4,
+              ),
+            );
+          }).toList(),
+        ),
+      );
+    }
+
+    // 普通歌词
+    return Text(
+      line.text,
+      textAlign: TextAlign.center,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w600,
+        color: accent,
+        height: 1.4,
       ),
     );
   }
@@ -1423,6 +1468,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                             onSeekStart: () => isSeeking = true,
                             onSeek: (d) {
                               isSeeking = false;
+                              setState(() => position = d);
                               player.seek(d);
                             },
                           ),
