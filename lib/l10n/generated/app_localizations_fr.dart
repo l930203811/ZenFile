@@ -1348,7 +1348,7 @@ class L10nFr extends L10n {
   String get msgdesign9 => 'Classique 3';
 
   @override
-  String get msgdesign10 => 'Design IA 5';
+  String get msgdesign10 => 'Design utilisateur 1';
 
   @override
   String get msg7372dc9f => 'Icône personnalisée';

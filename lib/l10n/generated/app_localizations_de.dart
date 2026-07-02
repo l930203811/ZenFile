@@ -1342,7 +1342,7 @@ class L10nDe extends L10n {
   String get msgdesign9 => 'Klassisch 3';
 
   @override
-  String get msgdesign10 => 'KI-Design 5';
+  String get msgdesign10 => 'Benutzerdesign 1';
 
   @override
   String get msg7372dc9f => 'Benutzerdefiniertes Symbol';

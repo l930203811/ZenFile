@@ -1255,7 +1255,7 @@ class L10nKo extends L10n {
   String get msgdesign9 => '클래식 3';
 
   @override
-  String get msgdesign10 => 'AI 디자인 5';
+  String get msgdesign10 => '사용자 디자인 1';
 
   @override
   String get msg7372dc9f => '사용자 정의 아이콘';

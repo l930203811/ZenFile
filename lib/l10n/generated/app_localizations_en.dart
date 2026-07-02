@@ -1318,7 +1318,7 @@ class L10nEn extends L10n {
   String get msgdesign9 => 'Classic 3';
 
   @override
-  String get msgdesign10 => 'AI Design 5';
+  String get msgdesign10 => 'User Design 1';
 
   @override
   String get msg7372dc9f => 'Custom Icon';

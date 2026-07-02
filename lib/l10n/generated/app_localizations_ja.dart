@@ -1257,7 +1257,7 @@ class L10nJa extends L10n {
   String get msgdesign9 => 'クラシック 3';
 
   @override
-  String get msgdesign10 => 'AIデザイン 5';
+  String get msgdesign10 => 'ユーザーデザイン 1';
 
   @override
   String get msg7372dc9f => 'カスタムアイコン';

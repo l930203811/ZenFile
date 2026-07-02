@@ -1253,7 +1253,7 @@ class L10nZh extends L10n {
   String get msgdesign9 => '经典 3';
 
   @override
-  String get msgdesign10 => 'AI 设计 5';
+  String get msgdesign10 => '用户设计 1';
 
   @override
   String get msg7372dc9f => '自定义图标';
@@ -4648,7 +4648,7 @@ class L10nZhTw extends L10nZh {
   String get msgdesign9 => '經典 3';
 
   @override
-  String get msgdesign10 => 'AI 設計 5';
+  String get msgdesign10 => '使用者設計 1';
 
   @override
   String get msg7372dc9f => '自定義圖示';

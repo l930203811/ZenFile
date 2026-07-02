@@ -1346,7 +1346,7 @@ class L10nRu extends L10n {
   String get msgdesign9 => 'Классика 3';
 
   @override
-  String get msgdesign10 => 'AI-дизайн 5';
+  String get msgdesign10 => 'Пользовательский дизайн 1';
 
   @override
   String get msg7372dc9f => 'Пользовательский Значок';

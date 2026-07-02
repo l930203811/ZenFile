@@ -2491,7 +2491,7 @@ abstract class L10n {
   /// ui\screens\more_settings_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'AI 设计 5'**
+  /// **'用户设计 1'**
   String get msgdesign10;
 
   /// ui\screens\more_settings_screen.dart

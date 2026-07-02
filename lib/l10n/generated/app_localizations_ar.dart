@@ -1312,7 +1312,7 @@ class L10nAr extends L10n {
   String get msgdesign9 => 'كلاسيكي 3';
 
   @override
-  String get msgdesign10 => 'تصميم AI 5';
+  String get msgdesign10 => 'تصميم المستخدم 1';
 
   @override
   String get msg7372dc9f => 'أيقونة مخصصة';

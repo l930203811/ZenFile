@@ -1928,6 +1928,7 @@ String _getAppIconLabel(BuildContext context, String option) {
     case 'design7': return L10n.of(context).msgdesign7;
     case 'design8': return L10n.of(context).msgdesign8;
     case 'design9': return L10n.of(context).msgdesign9;
+    case 'design10': return L10n.of(context).msgdesign10;
     case 'custom': return L10n.of(context).msg7372dc9f;
     case 'default':
     default:
@@ -2699,6 +2700,14 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
                                 id: 'design9',
                                 title: L10n.of(context).msgdesign9,
                                 imagePath: 'assets/logo/zf_Classic3.png',
+                              ),
+                              _buildIconOptionCard(
+                                context,
+                                fileManager,
+                                theme,
+                                id: 'design10',
+                                title: L10n.of(context).msgdesign10,
+                                imagePath: 'assets/logo/zf_user_design_1.png',
                               ),
                               _buildCustomIconOptionCard(
                                 context,
