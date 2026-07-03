@@ -601,7 +601,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     );
   }
 
-  /// 构建歌词行文本（支持逐字高亮）
+  /// 构建歌词行文本（支持逐字高亮 + 平滑过渡 + 放大效果）
   Widget _buildLyricLineText(LyricLine line, Color accent, bool isDark) {
     if (line.text.isEmpty) {
       return Text(
@@ -616,9 +616,11 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       );
     }
 
+    final baseColor = (isDark ? Colors.white : Colors.black).withOpacity(0.5);
+    final highlightColor = accent;
+
     // 检查是否有逐字时间戳
     if (line.hasWordTimestamps) {
-      final currentWordIdx = LyricParser.findCurrentWordIndex(line, position);
       return RichText(
         textAlign: TextAlign.center,
         maxLines: 1,
@@ -627,14 +629,30 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
           children: line.words!.asMap().entries.map((entry) {
             final idx = entry.key;
             final word = entry.value;
-            final isHighlighted = idx <= currentWordIdx;
+            final progress = _calcWordProgress(line, idx);
+
+            // 颜色插值
+            final textColor = Color.lerp(baseColor, highlightColor, progress)!;
+
+            // 字重过渡
+            FontWeight fontWeight;
+            if (progress > 0.7) {
+              fontWeight = FontWeight.w700;
+            } else if (progress > 0.3) {
+              fontWeight = FontWeight.w600;
+            } else {
+              fontWeight = FontWeight.w500;
+            }
+
+            // 放大效果：progress=0.5 时达到最大放大
+            final scaleBoost = 3.0 * _wordScaleCurve(progress);
 
             return TextSpan(
               text: word.text,
               style: TextStyle(
-                fontSize: 15,
-                fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.w500,
-                color: isHighlighted ? accent : (isDark ? Colors.white : Colors.black).withOpacity(0.5),
+                fontSize: 15.0 + scaleBoost,
+                fontWeight: fontWeight,
+                color: textColor,
                 height: 1.4,
               ),
             );
@@ -656,6 +674,46 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         height: 1.4,
       ),
     );
+  }
+
+  /// 计算单个字的高亮过渡进度 (0.0 ~ 1.0)
+  double _calcWordProgress(LyricLine line, int wordIndex) {
+    final words = line.words!;
+    final posMs = position.inMilliseconds;
+    final currentWordTs = words[wordIndex].timestamp.inMilliseconds;
+
+    if (posMs < currentWordTs) {
+      return 0.0;
+    }
+
+    // 固定过渡时长 300ms
+    const transitionDuration = 300;
+
+    // 如果不是最后一个字且间隔很短，缩短过渡时间避免重叠
+    int actualDuration = transitionDuration;
+    if (wordIndex + 1 < words.length) {
+      final nextWordTs = words[wordIndex + 1].timestamp.inMilliseconds;
+      final gapDuration = nextWordTs - currentWordTs;
+      if (gapDuration < transitionDuration) {
+        actualDuration = (gapDuration * 0.6).toInt().clamp(80, transitionDuration);
+      }
+    }
+
+    final elapsed = posMs - currentWordTs;
+    final progress = (elapsed / actualDuration).clamp(0.0, 1.0);
+    return _easeInOutCubic(progress);
+  }
+
+  /// easeInOutCubic 缓动函数
+  double _easeInOutCubic(double t) {
+    return t < 0.5
+        ? 4 * t * t * t
+        : 1 - (-2 * t + 2) * (-2 * t + 2) * (-2 * t + 2) / 2;
+  }
+
+  /// 字体放大曲线：t=0 和 t=1 时为 0，t=0.5 时为 1
+  double _wordScaleCurve(double t) {
+    return 4 * t * (1 - t);
   }
 
   /// 构建 artwork 或完整内联歌词视图

@@ -132,6 +132,10 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
     }
   }
 
+  /// 逐字高亮过渡的固定时长（毫秒）
+  /// 使用固定时长确保每个字的动画速度一致，不会因为字间距长而拖慢
+  static const int _kWordTransitionDurationMs = 300;
+
   /// 计算某个字的过渡进度 (0.0 ~ 1.0)
   /// 0.0 = 完全未高亮, 1.0 = 完全高亮
   double _wordTransitionProgress(LyricLine line, int wordIndex, bool isCurrentLine) {
@@ -151,22 +155,17 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
       return 0.0;
     }
 
-    // 找到下一个字的时间戳，用于计算过渡区间
-    int nextTs;
+    // 使用固定过渡时长，确保每个字的动画速度一致
+    // 对于非末尾字：取固定时长和到下一个字的时间中的较小值，避免和下一个字重叠
+    int transitionDuration = _kWordTransitionDurationMs;
     if (wordIndex + 1 < words.length) {
-      nextTs = words[wordIndex + 1].timestamp.inMilliseconds;
-    } else {
-      // 最后一个字：用行结束时间或当前字+500ms作为过渡区间
-      final lineIndex = widget.lyrics.indexOf(line);
-      if (lineIndex + 1 < widget.lyrics.length) {
-        nextTs = widget.lyrics[lineIndex + 1].timestamp.inMilliseconds;
-      } else {
-        nextTs = currentWordTs + 500;
+      final nextWordTs = words[wordIndex + 1].timestamp.inMilliseconds;
+      final gapDuration = nextWordTs - currentWordTs;
+      // 如果两个字间隔很短，就用间隔时间的一半作为过渡时长，避免重叠
+      if (gapDuration < _kWordTransitionDurationMs) {
+        transitionDuration = (gapDuration * 0.6).toInt().clamp(80, _kWordTransitionDurationMs);
       }
     }
-
-    final transitionDuration = nextTs - currentWordTs;
-    if (transitionDuration <= 0) return 1.0;
 
     final elapsed = posMs - currentWordTs;
     final progress = elapsed / transitionDuration;
@@ -179,6 +178,13 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
     return t < 0.5
         ? 4 * t * t * t
         : 1 - (-2 * t + 2) * (-2 * t + 2) * (-2 * t + 2) / 2;
+  }
+
+  /// 字体放大曲线：t=0 时返回0，t=0.5 时返回1（最大放大），t=1 时返回0
+  /// 用于歌词逐字过渡时对该字进行放大动画
+  double _scaleCurve(double t) {
+    // 4*t*(1-t) 近似 sin(πt)，在 t=0 和 t=1 时为 0，t=0.5 时为 1
+    return 4 * t * (1 - t);
   }
 
   @override
@@ -205,6 +211,10 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
 
     return RichText(
       textAlign: TextAlign.center,
+      // 当前行使用 strutStyle 固定行高，防止字号放大导致行高跳动
+      strutStyle: isCurrent
+          ? const StrutStyle(fontSize: 28, height: 1.5, forceStrutHeight: true)
+          : null,
       text: TextSpan(
         children: words.asMap().entries.map((entry) {
           final idx = entry.key;
@@ -237,10 +247,14 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
             fontWeight = FontWeight.w500;
           }
 
+          // 放大效果：正在过渡的字会有一个放大动画
+          // progress=0 和 1 时不放大，progress=0.5 时达到最大放大
+          final scaleBoost = isCurrent ? 6.0 * _scaleCurve(progress) : 0.0;
+
           return TextSpan(
             text: word.text,
             style: TextStyle(
-              fontSize: isCurrent ? 22 : 16,
+              fontSize: (isCurrent ? 22.0 : 16.0) + scaleBoost,
               fontWeight: fontWeight,
               color: textColor,
               height: 1.5,
