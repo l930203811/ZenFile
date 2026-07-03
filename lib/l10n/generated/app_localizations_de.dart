@@ -2581,7 +2581,7 @@ class L10nDe extends L10n {
   String get ui_delete => 'Löschen';
 
   @override
-  String get ui_select_all => 'Alle auswählen';
+  String get ui_select_all => 'Alles auswählen';
 
   @override
   String get ui_cancel => 'Abbrechen';
@@ -3703,4 +3703,88 @@ class L10nDe extends L10n {
 
   @override
   String get ui_recycle_file => 'Datei';
+
+  @override
+  String get ui_db_browse_data => 'Daten durchsuchen';
+
+  @override
+  String get ui_db_table_schema => 'Tabellenstruktur';
+
+  @override
+  String get ui_db_sql_console => 'SQL-Konsole';
+
+  @override
+  String ui_db_export_success(String fileName) {
+    return 'Erfolgreich nach $fileName exportiert';
+  }
+
+  @override
+  String ui_db_export_failed(String error) {
+    return 'Export fehlgeschlagen: $error';
+  }
+
+  @override
+  String get ui_db_export_csv => 'Tabelle als CSV exportieren';
+
+  @override
+  String get ui_db_primary_key => 'PK';
+
+  @override
+  String get ui_db_not_null => 'NOT NULL';
+
+  @override
+  String ui_db_type(String type) {
+    return 'Typ: $type';
+  }
+
+  @override
+  String ui_db_default(String value) {
+    return 'Standard: $value';
+  }
+
+  @override
+  String get ui_db_execute_query => 'Abfrage ausführen';
+
+  @override
+  String get ui_db_enter_query => 'Geben Sie hier die SELECT-Abfrage ein...';
+
+  @override
+  String ui_db_showing_range(int start, int end) {
+    return 'Zeige $start - $end';
+  }
+
+  @override
+  String ui_db_query_returned(int count) {
+    return 'Abfrage ergab $count Zeilen';
+  }
+
+  @override
+  String get ui_app_installed_user_apps => 'Installierte Benutzeranwendungen';
+
+  @override
+  String get ui_app_system_packages => 'Systempakete';
+
+  @override
+  String get ui_app_backup_apk => 'Sicherte APKs';
+
+  @override
+  String get ui_app_precise_storage => 'Präzise Speicherberechnung';
+
+  @override
+  String get ui_app_grant_usage_access => 'Verwendungsdatenzugriff gewähren';
+
+  @override
+  String get ui_app_search_backup => 'Sicherungen durchsuchen...';
+
+  @override
+  String get ui_app_sort_by_install_date => 'Nach Installationsdatum sortieren';
+
+  @override
+  String get ui_app_no_backup_found => 'Keine Sicherungen gefunden';
+
+  @override
+  String get ui_app_split_apk => 'Geteiltes APK (APKS)';
+
+  @override
+  String get ui_app_single_apk => 'Einzelnes APK';
 }

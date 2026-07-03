@@ -3656,4 +3656,88 @@ class L10nEn extends L10n {
 
   @override
   String get ui_recycle_file => 'File';
+
+  @override
+  String get ui_db_browse_data => 'Browse Data';
+
+  @override
+  String get ui_db_table_schema => 'Table Schema';
+
+  @override
+  String get ui_db_sql_console => 'SQL Console';
+
+  @override
+  String ui_db_export_success(String fileName) {
+    return 'Successfully exported to $fileName';
+  }
+
+  @override
+  String ui_db_export_failed(String error) {
+    return 'Export failed: $error';
+  }
+
+  @override
+  String get ui_db_export_csv => 'Export Table to CSV';
+
+  @override
+  String get ui_db_primary_key => 'PK';
+
+  @override
+  String get ui_db_not_null => 'NOT NULL';
+
+  @override
+  String ui_db_type(String type) {
+    return 'Type: $type';
+  }
+
+  @override
+  String ui_db_default(String value) {
+    return 'Default: $value';
+  }
+
+  @override
+  String get ui_db_execute_query => 'Execute Query';
+
+  @override
+  String get ui_db_enter_query => 'Enter SELECT query here...';
+
+  @override
+  String ui_db_showing_range(int start, int end) {
+    return 'Showing $start - $end';
+  }
+
+  @override
+  String ui_db_query_returned(int count) {
+    return 'Query returned $count rows';
+  }
+
+  @override
+  String get ui_app_installed_user_apps => 'Installed User Apps';
+
+  @override
+  String get ui_app_system_packages => 'System Packages';
+
+  @override
+  String get ui_app_backup_apk => 'Backed Up APKs';
+
+  @override
+  String get ui_app_precise_storage => 'Precise Storage Calculation';
+
+  @override
+  String get ui_app_grant_usage_access => 'Grant Usage Access';
+
+  @override
+  String get ui_app_search_backup => 'Search backups...';
+
+  @override
+  String get ui_app_sort_by_install_date => 'Sort by Install Date';
+
+  @override
+  String get ui_app_no_backup_found => 'No Backups Found';
+
+  @override
+  String get ui_app_split_apk => 'Split APK (APKS)';
+
+  @override
+  String get ui_app_single_apk => 'Single APK';
 }

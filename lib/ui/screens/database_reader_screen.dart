@@ -189,13 +189,13 @@ class _DatabaseReaderScreenState extends State<DatabaseReaderScreen> with Single
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('成功导出到 ${p.basename(exportFile.path)}'),
+          content: Text(L10n.of(context).ui_db_export_success(p.basename(exportFile.path))),
           backgroundColor: Theme.of(context).colorScheme.primary,
         ),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('导出失败：$e'), backgroundColor: Colors.redAccent),
+        SnackBar(content: Text(L10n.of(context).ui_db_export_failed(e.toString())), backgroundColor: Colors.redAccent),
       );
     }
   }
@@ -233,10 +233,10 @@ class _DatabaseReaderScreenState extends State<DatabaseReaderScreen> with Single
           controller: _tabController,
           indicatorWeight: 3,
           labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
-          tabs: const [
-            Tab(text: '浏览数据', icon: Icon(Broken.document, size: 20)),
-            Tab(text: '表结构', icon: Icon(Broken.info_circle, size: 20)),
-            Tab(text: 'SQL控制台', icon: Icon(Broken.code, size: 20)),
+          tabs: [
+            Tab(text: L10n.of(context).ui_db_browse_data, icon: const Icon(Broken.document, size: 20)),
+            Tab(text: L10n.of(context).ui_db_table_schema, icon: const Icon(Broken.info_circle, size: 20)),
+            Tab(text: L10n.of(context).ui_db_sql_console, icon: const Icon(Broken.code, size: 20)),
           ],
         ),
       ),
@@ -347,7 +347,7 @@ class _DatabaseReaderScreenState extends State<DatabaseReaderScreen> with Single
                     ),
                     icon: const Icon(Broken.import, size: 20),
                     onPressed: () => _exportToCsv(_tableColumns, _tableRows, _selectedTable ?? 'table'),
-                    tooltip: 'Export Table to CSV',
+                    tooltip: L10n.of(context).ui_db_export_csv,
                   ),
                 ],
               ),
@@ -468,7 +468,7 @@ class _DatabaseReaderScreenState extends State<DatabaseReaderScreen> with Single
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Showing ${_offset + 1} - ${_offset + _tableRows.length}',
+                L10n.of(context).ui_db_showing_range(_offset + 1, _offset + _tableRows.length),
                 style: TextStyle(fontSize: 12.5, color: theme.colorScheme.onSurface.withOpacity(0.6), fontWeight: FontWeight.w600),
               ),
               Row(
@@ -547,7 +547,7 @@ class _DatabaseReaderScreenState extends State<DatabaseReaderScreen> with Single
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      '主键',
+                      L10n.of(context).ui_db_primary_key,
                       style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: theme.colorScheme.primary),
                     ),
                   ),
@@ -560,9 +560,9 @@ class _DatabaseReaderScreenState extends State<DatabaseReaderScreen> with Single
                       color: Colors.redAccent.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Text(
-                      '非空',
-                      style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Colors.redAccent),
+                    child: Text(
+                      L10n.of(context).ui_db_not_null,
+                      style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Colors.redAccent),
                     ),
                   ),
                 ],
@@ -573,9 +573,9 @@ class _DatabaseReaderScreenState extends State<DatabaseReaderScreen> with Single
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Type: $type', style: TextStyle(fontSize: 12.5, color: theme.colorScheme.onSurface.withOpacity(0.7))),
+                  Text(L10n.of(context).ui_db_type(type), style: TextStyle(fontSize: 12.5, color: theme.colorScheme.onSurface.withOpacity(0.7))),
                   if (dfltValue != null)
-                    Text('Default: $dfltValue', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.5))),
+                    Text(L10n.of(context).ui_db_default(dfltValue.toString()), style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.5))),
                 ],
               ),
             ),
@@ -634,10 +634,10 @@ class _DatabaseReaderScreenState extends State<DatabaseReaderScreen> with Single
                       fontSize: 13.5,
                       fontWeight: FontWeight.w500,
                     ),
-                    decoration: const InputDecoration(
-                      hintText: 'Enter SELECT query here...',
+                    decoration: InputDecoration(
+                      hintText: L10n.of(context).ui_db_enter_query,
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(vertical: 8),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 8),
                     ),
                   ),
                 ),
@@ -662,7 +662,7 @@ class _DatabaseReaderScreenState extends State<DatabaseReaderScreen> with Single
                         icon: _isSqlRunning
                             ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
                             : const Icon(Broken.play, size: 16),
-                        label: const Text('执行查询', style: TextStyle(fontWeight: FontWeight.bold)),
+                        label: Text(L10n.of(context).ui_db_execute_query, style: const TextStyle(fontWeight: FontWeight.bold)),
                         onPressed: _isSqlRunning ? null : _runCustomSql,
                       ),
                     ],
@@ -716,9 +716,9 @@ class _DatabaseReaderScreenState extends State<DatabaseReaderScreen> with Single
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                           child: Text(
-                            'Query returned ${_sqlResultRows.length} rows',
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withOpacity(0.5)),
-                          ),
+                              L10n.of(context).ui_db_query_returned(_sqlResultRows.length),
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                            ),
                         ),
                         Expanded(
                           child: Scrollbar(

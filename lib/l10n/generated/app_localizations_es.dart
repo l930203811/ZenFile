@@ -2598,7 +2598,7 @@ class L10nEs extends L10n {
   String get ui_delete => 'Eliminar';
 
   @override
-  String get ui_select_all => 'Seleccionar Todo';
+  String get ui_select_all => 'Seleccionar todo';
 
   @override
   String get ui_cancel => 'Cancelar';
@@ -3725,4 +3725,88 @@ class L10nEs extends L10n {
 
   @override
   String get ui_recycle_file => 'Archivo';
+
+  @override
+  String get ui_db_browse_data => 'Explorar datos';
+
+  @override
+  String get ui_db_table_schema => 'Estructura de tabla';
+
+  @override
+  String get ui_db_sql_console => 'Consola SQL';
+
+  @override
+  String ui_db_export_success(String fileName) {
+    return 'Exportado correctamente a $fileName';
+  }
+
+  @override
+  String ui_db_export_failed(String error) {
+    return 'Error al exportar: $error';
+  }
+
+  @override
+  String get ui_db_export_csv => 'Exportar tabla a CSV';
+
+  @override
+  String get ui_db_primary_key => 'PK';
+
+  @override
+  String get ui_db_not_null => 'NOT NULL';
+
+  @override
+  String ui_db_type(String type) {
+    return 'Tipo: $type';
+  }
+
+  @override
+  String ui_db_default(String value) {
+    return 'Predeterminado: $value';
+  }
+
+  @override
+  String get ui_db_execute_query => 'Ejecutar consulta';
+
+  @override
+  String get ui_db_enter_query => 'Introduzca la consulta SELECT aquí...';
+
+  @override
+  String ui_db_showing_range(int start, int end) {
+    return 'Mostrando $start - $end';
+  }
+
+  @override
+  String ui_db_query_returned(int count) {
+    return 'La consulta devolvió $count filas';
+  }
+
+  @override
+  String get ui_app_installed_user_apps => 'Aplicaciones de usuario instaladas';
+
+  @override
+  String get ui_app_system_packages => 'Paquetes del sistema';
+
+  @override
+  String get ui_app_backup_apk => 'APK respaldados';
+
+  @override
+  String get ui_app_precise_storage => 'Cálculo preciso de almacenamiento';
+
+  @override
+  String get ui_app_grant_usage_access => 'Conceder acceso al uso';
+
+  @override
+  String get ui_app_search_backup => 'Buscar copias de seguridad...';
+
+  @override
+  String get ui_app_sort_by_install_date => 'Ordenar por fecha de instalación';
+
+  @override
+  String get ui_app_no_backup_found => 'No se encontraron copias de seguridad';
+
+  @override
+  String get ui_app_split_apk => 'APK dividido (APKS)';
+
+  @override
+  String get ui_app_single_apk => 'APK único';
 }

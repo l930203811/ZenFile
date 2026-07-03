@@ -4696,7 +4696,7 @@ abstract class L10n {
   /// **'删除'**
   String get ui_delete;
 
-  /// No description provided for @ui_select_all.
+  /// Select all items
   ///
   /// In zh, this message translates to:
   /// **'全选'**
@@ -6657,6 +6657,150 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'文件'**
   String get ui_recycle_file;
+
+  /// Database reader browse data tab
+  ///
+  /// In zh, this message translates to:
+  /// **'浏览数据'**
+  String get ui_db_browse_data;
+
+  /// Database reader table schema tab
+  ///
+  /// In zh, this message translates to:
+  /// **'表结构'**
+  String get ui_db_table_schema;
+
+  /// Database reader SQL console tab
+  ///
+  /// In zh, this message translates to:
+  /// **'SQL控制台'**
+  String get ui_db_sql_console;
+
+  /// Database reader CSV export success message
+  ///
+  /// In zh, this message translates to:
+  /// **'成功导出到 {fileName}'**
+  String ui_db_export_success(String fileName);
+
+  /// Database reader CSV export failed message
+  ///
+  /// In zh, this message translates to:
+  /// **'导出失败：{error}'**
+  String ui_db_export_failed(String error);
+
+  /// Database reader export CSV tooltip
+  ///
+  /// In zh, this message translates to:
+  /// **'导出表为CSV'**
+  String get ui_db_export_csv;
+
+  /// Database reader primary key label
+  ///
+  /// In zh, this message translates to:
+  /// **'主键'**
+  String get ui_db_primary_key;
+
+  /// Database reader not null label
+  ///
+  /// In zh, this message translates to:
+  /// **'非空'**
+  String get ui_db_not_null;
+
+  /// Database reader column type label
+  ///
+  /// In zh, this message translates to:
+  /// **'类型：{type}'**
+  String ui_db_type(String type);
+
+  /// Database reader column default value label
+  ///
+  /// In zh, this message translates to:
+  /// **'默认值：{value}'**
+  String ui_db_default(String value);
+
+  /// Database reader execute query button
+  ///
+  /// In zh, this message translates to:
+  /// **'执行查询'**
+  String get ui_db_execute_query;
+
+  /// Database reader SQL query hint text
+  ///
+  /// In zh, this message translates to:
+  /// **'在此输入SELECT查询...'**
+  String get ui_db_enter_query;
+
+  /// Database reader pagination range text
+  ///
+  /// In zh, this message translates to:
+  /// **'显示 {start} - {end}'**
+  String ui_db_showing_range(int start, int end);
+
+  /// Database reader query result row count
+  ///
+  /// In zh, this message translates to:
+  /// **'查询返回 {count} 行'**
+  String ui_db_query_returned(int count);
+
+  /// App Manager installed user apps tab
+  ///
+  /// In zh, this message translates to:
+  /// **'已安装的用户应用'**
+  String get ui_app_installed_user_apps;
+
+  /// App Manager system packages tab
+  ///
+  /// In zh, this message translates to:
+  /// **'系统包'**
+  String get ui_app_system_packages;
+
+  /// App Manager backup APKs tab
+  ///
+  /// In zh, this message translates to:
+  /// **'已备份的APK'**
+  String get ui_app_backup_apk;
+
+  /// App Manager precise storage calculation title
+  ///
+  /// In zh, this message translates to:
+  /// **'精确存储计算'**
+  String get ui_app_precise_storage;
+
+  /// App Manager grant usage access button
+  ///
+  /// In zh, this message translates to:
+  /// **'授予使用情况访问权限'**
+  String get ui_app_grant_usage_access;
+
+  /// App Manager search backup hint
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索备份...'**
+  String get ui_app_search_backup;
+
+  /// App Manager sort by install date option
+  ///
+  /// In zh, this message translates to:
+  /// **'按安装日期排序'**
+  String get ui_app_sort_by_install_date;
+
+  /// App Manager no backup found empty state title
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到备份'**
+  String get ui_app_no_backup_found;
+
+  /// App Manager split APK (APKS) label
+  ///
+  /// In zh, this message translates to:
+  /// **'分包 (APKS)'**
+  String get ui_app_split_apk;
+
+  /// App Manager single APK label
+  ///
+  /// In zh, this message translates to:
+  /// **'单个APK'**
+  String get ui_app_single_apk;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

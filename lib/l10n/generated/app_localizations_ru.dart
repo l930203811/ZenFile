@@ -2588,7 +2588,7 @@ class L10nRu extends L10n {
   String get ui_delete => 'Удалить';
 
   @override
-  String get ui_select_all => 'Выбрать Все';
+  String get ui_select_all => 'Выделить все';
 
   @override
   String get ui_cancel => 'Отмена';
@@ -3709,4 +3709,88 @@ class L10nRu extends L10n {
 
   @override
   String get ui_recycle_file => 'Файл';
+
+  @override
+  String get ui_db_browse_data => 'Просмотр данных';
+
+  @override
+  String get ui_db_table_schema => 'Структура таблицы';
+
+  @override
+  String get ui_db_sql_console => 'SQL-консоль';
+
+  @override
+  String ui_db_export_success(String fileName) {
+    return 'Успешно экспортировано в $fileName';
+  }
+
+  @override
+  String ui_db_export_failed(String error) {
+    return 'Ошибка экспорта: $error';
+  }
+
+  @override
+  String get ui_db_export_csv => 'Экспорт таблицы в CSV';
+
+  @override
+  String get ui_db_primary_key => 'PK';
+
+  @override
+  String get ui_db_not_null => 'NOT NULL';
+
+  @override
+  String ui_db_type(String type) {
+    return 'Тип: $type';
+  }
+
+  @override
+  String ui_db_default(String value) {
+    return 'По умолчанию: $value';
+  }
+
+  @override
+  String get ui_db_execute_query => 'Выполнить запрос';
+
+  @override
+  String get ui_db_enter_query => 'Введите SELECT-запрос здесь...';
+
+  @override
+  String ui_db_showing_range(int start, int end) {
+    return 'Показано $start - $end';
+  }
+
+  @override
+  String ui_db_query_returned(int count) {
+    return 'Запрос вернул $count строк';
+  }
+
+  @override
+  String get ui_app_installed_user_apps => 'Установленные приложения';
+
+  @override
+  String get ui_app_system_packages => 'Системные пакеты';
+
+  @override
+  String get ui_app_backup_apk => 'Резервные APK';
+
+  @override
+  String get ui_app_precise_storage => 'Точное вычисление хранилища';
+
+  @override
+  String get ui_app_grant_usage_access => 'Предоставить доступ к использованию';
+
+  @override
+  String get ui_app_search_backup => 'Поиск резервных копий...';
+
+  @override
+  String get ui_app_sort_by_install_date => 'Сортировать по дате установки';
+
+  @override
+  String get ui_app_no_backup_found => 'Резервные копии не найдены';
+
+  @override
+  String get ui_app_split_apk => 'Разделенный APK (APKS)';
+
+  @override
+  String get ui_app_single_apk => 'Одиночный APK';
 }

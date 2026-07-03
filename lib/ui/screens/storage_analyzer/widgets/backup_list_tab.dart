@@ -130,7 +130,7 @@ class _BackupListTabState extends State<BackupListTab> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            '${isApks ? "分包" : "单个APK"} • v${item['version']}',
+                            '${isApks ? L10n.of(context).ui_app_split_apk : L10n.of(context).ui_app_single_apk} • v${item['version']}',
                             style: TextStyle(
                               color: theme.textTheme.bodySmall?.color?.withOpacity(0.5),
                               fontSize: 12,
@@ -263,9 +263,9 @@ class _BackupListTabState extends State<BackupListTab> {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                '未找到备份',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              Text(
+                L10n.of(context).ui_app_no_backup_found,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const SizedBox(height: 4),
               Text(
@@ -343,7 +343,7 @@ class _BackupListTabState extends State<BackupListTab> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '${isApks ? "分包 (APKS)" : "单个APK"} • v${item['version']}',
+                          '${isApks ? L10n.of(context).ui_app_split_apk : L10n.of(context).ui_app_single_apk} • v${item['version']}',
                           style: TextStyle(
                             color: theme.textTheme.bodySmall?.color?.withOpacity(0.55),
                             fontSize: 11,

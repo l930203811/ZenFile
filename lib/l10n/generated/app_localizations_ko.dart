@@ -2460,7 +2460,7 @@ class L10nKo extends L10n {
   String get ui_delete => '삭제';
 
   @override
-  String get ui_select_all => '모두 선택';
+  String get ui_select_all => '전체 선택';
 
   @override
   String get ui_cancel => '취소';
@@ -3543,4 +3543,88 @@ class L10nKo extends L10n {
 
   @override
   String get ui_recycle_file => '파일';
+
+  @override
+  String get ui_db_browse_data => '데이터 탐색';
+
+  @override
+  String get ui_db_table_schema => '테이블 스키마';
+
+  @override
+  String get ui_db_sql_console => 'SQL 콘솔';
+
+  @override
+  String ui_db_export_success(String fileName) {
+    return '$fileName(으)로 성공적으로 내보냈습니다';
+  }
+
+  @override
+  String ui_db_export_failed(String error) {
+    return '내보내기 실패: $error';
+  }
+
+  @override
+  String get ui_db_export_csv => '테이블을 CSV로 내보내기';
+
+  @override
+  String get ui_db_primary_key => 'PK';
+
+  @override
+  String get ui_db_not_null => 'NOT NULL';
+
+  @override
+  String ui_db_type(String type) {
+    return '유형: $type';
+  }
+
+  @override
+  String ui_db_default(String value) {
+    return '기본값: $value';
+  }
+
+  @override
+  String get ui_db_execute_query => '쿼리 실행';
+
+  @override
+  String get ui_db_enter_query => '여기에 SELECT 쿼리를 입력하세요...';
+
+  @override
+  String ui_db_showing_range(int start, int end) {
+    return '$start - $end 표시 중';
+  }
+
+  @override
+  String ui_db_query_returned(int count) {
+    return '쿼리가 $count개의 행을 반환했습니다';
+  }
+
+  @override
+  String get ui_app_installed_user_apps => '설치된 사용자 앱';
+
+  @override
+  String get ui_app_system_packages => '시스템 패키지';
+
+  @override
+  String get ui_app_backup_apk => '백업된 APK';
+
+  @override
+  String get ui_app_precise_storage => '정확한 저장소 계산';
+
+  @override
+  String get ui_app_grant_usage_access => '사용량 액세스 권한 부여';
+
+  @override
+  String get ui_app_search_backup => '백업 검색...';
+
+  @override
+  String get ui_app_sort_by_install_date => '설치 날짜로 정렬';
+
+  @override
+  String get ui_app_no_backup_found => '백업을 찾을 수 없음';
+
+  @override
+  String get ui_app_split_apk => '분할 APK (APKS)';
+
+  @override
+  String get ui_app_single_apk => '단일 APK';
 }

@@ -1,4 +1,4 @@
-﻿{
+{
   "@@locale": "fr",
   "@msg6f3e533a": {
     "description": "main.dart"
@@ -3650,5 +3650,138 @@
   "ui_recycle_file": "Fichier",
   "@ui_recycle_file": {
     "description": "Recycle bin file type"
+  },
+  "ui_db_browse_data": "Parcourir les données",
+  "@ui_db_browse_data": {
+    "description": "Database reader browse data tab"
+  },
+  "ui_db_table_schema": "Structure de la table",
+  "@ui_db_table_schema": {
+    "description": "Database reader table schema tab"
+  },
+  "ui_db_sql_console": "Console SQL",
+  "@ui_db_sql_console": {
+    "description": "Database reader SQL console tab"
+  },
+  "ui_db_export_success": "Exporté avec succès vers {fileName}",
+  "@ui_db_export_success": {
+    "description": "Database reader CSV export success message",
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_db_export_failed": "Échec de l'export : {error}",
+  "@ui_db_export_failed": {
+    "description": "Database reader CSV export failed message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_db_export_csv": "Exporter la table en CSV",
+  "@ui_db_export_csv": {
+    "description": "Database reader export CSV tooltip"
+  },
+  "ui_db_primary_key": "PK",
+  "@ui_db_primary_key": {
+    "description": "Database reader primary key label"
+  },
+  "ui_db_not_null": "NOT NULL",
+  "@ui_db_not_null": {
+    "description": "Database reader not null label"
+  },
+  "ui_db_type": "Type : {type}",
+  "@ui_db_type": {
+    "description": "Database reader column type label",
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_db_default": "Défaut : {value}",
+  "@ui_db_default": {
+    "description": "Database reader column default value label",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_db_execute_query": "Exécuter la requête",
+  "@ui_db_execute_query": {
+    "description": "Database reader execute query button"
+  },
+  "ui_db_enter_query": "Entrez la requête SELECT ici...",
+  "@ui_db_enter_query": {
+    "description": "Database reader SQL query hint text"
+  },
+  "ui_db_showing_range": "Affichage de {start} - {end}",
+  "@ui_db_showing_range": {
+    "description": "Database reader pagination range text",
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_db_query_returned": "La requête a retourné {count} lignes",
+  "@ui_db_query_returned": {
+    "description": "Database reader query result row count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_app_installed_user_apps": "Applications utilisateur installées",
+  "@ui_app_installed_user_apps": {
+    "description": "App Manager installed user apps tab"
+  },
+  "ui_app_system_packages": "Paquets système",
+  "@ui_app_system_packages": {
+    "description": "App Manager system packages tab"
+  },
+  "ui_app_backup_apk": "APK sauvegardés",
+  "@ui_app_backup_apk": {
+    "description": "App Manager backup APKs tab"
+  },
+  "ui_app_precise_storage": "Calcul de stockage précis",
+  "@ui_app_precise_storage": {
+    "description": "App Manager precise storage calculation title"
+  },
+  "ui_app_grant_usage_access": "Accorder l'accès aux données d'utilisation",
+  "@ui_app_grant_usage_access": {
+    "description": "App Manager grant usage access button"
+  },
+  "ui_app_search_backup": "Rechercher des sauvegardes...",
+  "@ui_app_search_backup": {
+    "description": "App Manager search backup hint"
+  },
+  "ui_app_sort_by_install_date": "Trier par date d'installation",
+  "@ui_app_sort_by_install_date": {
+    "description": "App Manager sort by install date option"
+  },
+  "ui_select_all": "Tout sélectionner",
+  "@ui_select_all": {
+    "description": "Select all items"
+  },
+  "ui_app_no_backup_found": "Aucune sauvegarde trouvée",
+  "@ui_app_no_backup_found": {
+    "description": "App Manager no backup found empty state title"
+  },
+  "ui_app_split_apk": "APK fractionné (APKS)",
+  "@ui_app_split_apk": {
+    "description": "App Manager split APK (APKS) label"
+  },
+  "ui_app_single_apk": "APK unique",
+  "@ui_app_single_apk": {
+    "description": "App Manager single APK label"
   }
 }

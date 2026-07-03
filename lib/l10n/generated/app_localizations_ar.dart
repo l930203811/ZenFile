@@ -3647,4 +3647,88 @@ class L10nAr extends L10n {
 
   @override
   String get ui_recycle_file => 'ملف';
+
+  @override
+  String get ui_db_browse_data => 'استعراض البيانات';
+
+  @override
+  String get ui_db_table_schema => 'بنية الجدول';
+
+  @override
+  String get ui_db_sql_console => 'وحدة تحكم SQL';
+
+  @override
+  String ui_db_export_success(String fileName) {
+    return 'تم التصدير بنجاح إلى $fileName';
+  }
+
+  @override
+  String ui_db_export_failed(String error) {
+    return 'فشل التصدير: $error';
+  }
+
+  @override
+  String get ui_db_export_csv => 'تصدير الجدول إلى CSV';
+
+  @override
+  String get ui_db_primary_key => 'مفتاح أساسي';
+
+  @override
+  String get ui_db_not_null => 'غير فارغ';
+
+  @override
+  String ui_db_type(String type) {
+    return 'النوع: $type';
+  }
+
+  @override
+  String ui_db_default(String value) {
+    return 'الافتراضي: $value';
+  }
+
+  @override
+  String get ui_db_execute_query => 'تنفيذ الاستعلام';
+
+  @override
+  String get ui_db_enter_query => 'أدخل استعلام SELECT هنا...';
+
+  @override
+  String ui_db_showing_range(int start, int end) {
+    return 'يعرض $start - $end';
+  }
+
+  @override
+  String ui_db_query_returned(int count) {
+    return 'أرجع الاستعلام $count صفاً';
+  }
+
+  @override
+  String get ui_app_installed_user_apps => 'التطبيقات المستخدمة المثبتة';
+
+  @override
+  String get ui_app_system_packages => 'حزم النظام';
+
+  @override
+  String get ui_app_backup_apk => 'ملفات APK المحمولة';
+
+  @override
+  String get ui_app_precise_storage => 'حساب التخزين الدقيق';
+
+  @override
+  String get ui_app_grant_usage_access => 'منح صلاحية الوصول إلى الاستخدام';
+
+  @override
+  String get ui_app_search_backup => 'البحث عن نسخ احتياطي...';
+
+  @override
+  String get ui_app_sort_by_install_date => 'الفرز حسب تاريخ التثبيت';
+
+  @override
+  String get ui_app_no_backup_found => 'لم يتم العثور على نسخ احتياطية';
+
+  @override
+  String get ui_app_split_apk => 'APK مقسم (APKS)';
+
+  @override
+  String get ui_app_single_apk => 'APK واحد';
 }

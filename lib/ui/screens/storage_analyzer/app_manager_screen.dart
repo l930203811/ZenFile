@@ -177,7 +177,7 @@ class _AppManagerScreenState extends State<AppManagerScreen> with SingleTickerPr
             IconButton(
               icon: const Icon(Broken.task_square),
               onPressed: () => _selectAll(processedApps),
-              tooltip: '全选',
+              tooltip: L10n.of(context).ui_select_all,
             )
           else
             IconButton(
@@ -198,10 +198,10 @@ class _AppManagerScreenState extends State<AppManagerScreen> with SingleTickerPr
           indicatorColor: theme.colorScheme.primary,
           labelColor: theme.colorScheme.primary,
           unselectedLabelColor: theme.textTheme.bodyMedium?.color?.withOpacity(0.5),
-          tabs: const [
-            Tab(text: '已安装的用户应用'),
-            Tab(text: '系统包'),
-            Tab(text: '已备份的APK'),
+          tabs: [
+            Tab(text: L10n.of(context).ui_app_installed_user_apps),
+            Tab(text: L10n.of(context).ui_app_system_packages),
+            Tab(text: L10n.of(context).ui_app_backup_apk),
           ],
         ),
       ),
@@ -238,7 +238,7 @@ class _AppManagerScreenState extends State<AppManagerScreen> with SingleTickerPr
                               style: const TextStyle(fontSize: 14.5),
                               decoration: InputDecoration(
                                 hintText: _tabController.index == 2
-                                    ? '搜索备份...'
+                                    ? L10n.of(context).ui_app_search_backup
                                     : L10n.of(context).msg8936ded6,
                                 hintStyle: TextStyle(
                                   color: theme.textTheme.bodyMedium?.color?.withOpacity(0.4),
@@ -282,7 +282,7 @@ class _AppManagerScreenState extends State<AppManagerScreen> with SingleTickerPr
                       CheckedPopupMenuItem(
                         value: 'date',
                         checked: _sortBy == 'date',
-                        child: Text(_tabController.index == 2 ? L10n.of(context).msg9ad67f11 : '按安装日期排序'),
+                        child: Text(_tabController.index == 2 ? L10n.of(context).msg9ad67f11 : L10n.of(context).ui_app_sort_by_install_date),
                       ),
                     ],
                   ),
@@ -355,9 +355,9 @@ class _AppManagerScreenState extends State<AppManagerScreen> with SingleTickerPr
             children: [
               Icon(Broken.info_circle, color: theme.colorScheme.primary, size: 20),
               const SizedBox(width: 8),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  '精确存储计算',
+                  L10n.of(context).ui_app_precise_storage,
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                 ),
               ),
@@ -389,8 +389,8 @@ class _AppManagerScreenState extends State<AppManagerScreen> with SingleTickerPr
                   _loadApplications();
                 });
               },
-              child: const Text(
-                '授予使用情况访问权限',
+              child: Text(
+                L10n.of(context).ui_app_grant_usage_access,
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
               ),
             ),

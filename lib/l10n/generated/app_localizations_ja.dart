@@ -2463,7 +2463,7 @@ class L10nJa extends L10n {
   String get ui_delete => '削除';
 
   @override
-  String get ui_select_all => 'すべて選択';
+  String get ui_select_all => '全て選択';
 
   @override
   String get ui_cancel => 'キャンセル';
@@ -3544,4 +3544,88 @@ class L10nJa extends L10n {
 
   @override
   String get ui_recycle_file => 'ファイル';
+
+  @override
+  String get ui_db_browse_data => 'データ閲覧';
+
+  @override
+  String get ui_db_table_schema => 'テーブル構造';
+
+  @override
+  String get ui_db_sql_console => 'SQLコンソール';
+
+  @override
+  String ui_db_export_success(String fileName) {
+    return '$fileNameにエクスポートしました';
+  }
+
+  @override
+  String ui_db_export_failed(String error) {
+    return 'エクスポートに失敗しました: $error';
+  }
+
+  @override
+  String get ui_db_export_csv => 'テーブルをCSVにエクスポート';
+
+  @override
+  String get ui_db_primary_key => '主キー';
+
+  @override
+  String get ui_db_not_null => 'NOT NULL';
+
+  @override
+  String ui_db_type(String type) {
+    return 'タイプ: $type';
+  }
+
+  @override
+  String ui_db_default(String value) {
+    return 'デフォルト: $value';
+  }
+
+  @override
+  String get ui_db_execute_query => 'クエリ実行';
+
+  @override
+  String get ui_db_enter_query => 'ここにSELECTクエリを入力...';
+
+  @override
+  String ui_db_showing_range(int start, int end) {
+    return '$start - $end を表示中';
+  }
+
+  @override
+  String ui_db_query_returned(int count) {
+    return 'クエリは $count 行を返しました';
+  }
+
+  @override
+  String get ui_app_installed_user_apps => 'インストールされたユーザーアプリ';
+
+  @override
+  String get ui_app_system_packages => 'システムパッケージ';
+
+  @override
+  String get ui_app_backup_apk => 'バックアップ済みAPK';
+
+  @override
+  String get ui_app_precise_storage => '正確なストレージ計算';
+
+  @override
+  String get ui_app_grant_usage_access => '使用状況アクセス権限を付与';
+
+  @override
+  String get ui_app_search_backup => 'バックアップを検索...';
+
+  @override
+  String get ui_app_sort_by_install_date => 'インストール日付で並べ替え';
+
+  @override
+  String get ui_app_no_backup_found => 'バックアップが見つかりません';
+
+  @override
+  String get ui_app_split_apk => '分割APK (APKS)';
+
+  @override
+  String get ui_app_single_apk => 'シングルAPK';
 }

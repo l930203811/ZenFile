@@ -3725,4 +3725,90 @@ class L10nFr extends L10n {
 
   @override
   String get ui_recycle_file => 'Fichier';
+
+  @override
+  String get ui_db_browse_data => 'Parcourir les données';
+
+  @override
+  String get ui_db_table_schema => 'Structure de la table';
+
+  @override
+  String get ui_db_sql_console => 'Console SQL';
+
+  @override
+  String ui_db_export_success(String fileName) {
+    return 'Exporté avec succès vers $fileName';
+  }
+
+  @override
+  String ui_db_export_failed(String error) {
+    return 'Échec de l\'export : $error';
+  }
+
+  @override
+  String get ui_db_export_csv => 'Exporter la table en CSV';
+
+  @override
+  String get ui_db_primary_key => 'PK';
+
+  @override
+  String get ui_db_not_null => 'NOT NULL';
+
+  @override
+  String ui_db_type(String type) {
+    return 'Type : $type';
+  }
+
+  @override
+  String ui_db_default(String value) {
+    return 'Défaut : $value';
+  }
+
+  @override
+  String get ui_db_execute_query => 'Exécuter la requête';
+
+  @override
+  String get ui_db_enter_query => 'Entrez la requête SELECT ici...';
+
+  @override
+  String ui_db_showing_range(int start, int end) {
+    return 'Affichage de $start - $end';
+  }
+
+  @override
+  String ui_db_query_returned(int count) {
+    return 'La requête a retourné $count lignes';
+  }
+
+  @override
+  String get ui_app_installed_user_apps =>
+      'Applications utilisateur installées';
+
+  @override
+  String get ui_app_system_packages => 'Paquets système';
+
+  @override
+  String get ui_app_backup_apk => 'APK sauvegardés';
+
+  @override
+  String get ui_app_precise_storage => 'Calcul de stockage précis';
+
+  @override
+  String get ui_app_grant_usage_access =>
+      'Accorder l\'accès aux données d\'utilisation';
+
+  @override
+  String get ui_app_search_backup => 'Rechercher des sauvegardes...';
+
+  @override
+  String get ui_app_sort_by_install_date => 'Trier par date d\'installation';
+
+  @override
+  String get ui_app_no_backup_found => 'Aucune sauvegarde trouvée';
+
+  @override
+  String get ui_app_split_apk => 'APK fractionné (APKS)';
+
+  @override
+  String get ui_app_single_apk => 'APK unique';
 }

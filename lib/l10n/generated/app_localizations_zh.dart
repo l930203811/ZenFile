@@ -3523,6 +3523,90 @@ class L10nZh extends L10n {
 
   @override
   String get ui_recycle_file => '文件';
+
+  @override
+  String get ui_db_browse_data => '浏览数据';
+
+  @override
+  String get ui_db_table_schema => '表结构';
+
+  @override
+  String get ui_db_sql_console => 'SQL控制台';
+
+  @override
+  String ui_db_export_success(String fileName) {
+    return '成功导出到 $fileName';
+  }
+
+  @override
+  String ui_db_export_failed(String error) {
+    return '导出失败：$error';
+  }
+
+  @override
+  String get ui_db_export_csv => '导出表为CSV';
+
+  @override
+  String get ui_db_primary_key => '主键';
+
+  @override
+  String get ui_db_not_null => '非空';
+
+  @override
+  String ui_db_type(String type) {
+    return '类型：$type';
+  }
+
+  @override
+  String ui_db_default(String value) {
+    return '默认值：$value';
+  }
+
+  @override
+  String get ui_db_execute_query => '执行查询';
+
+  @override
+  String get ui_db_enter_query => '在此输入SELECT查询...';
+
+  @override
+  String ui_db_showing_range(int start, int end) {
+    return '显示 $start - $end';
+  }
+
+  @override
+  String ui_db_query_returned(int count) {
+    return '查询返回 $count 行';
+  }
+
+  @override
+  String get ui_app_installed_user_apps => '已安装的用户应用';
+
+  @override
+  String get ui_app_system_packages => '系统包';
+
+  @override
+  String get ui_app_backup_apk => '已备份的APK';
+
+  @override
+  String get ui_app_precise_storage => '精确存储计算';
+
+  @override
+  String get ui_app_grant_usage_access => '授予使用情况访问权限';
+
+  @override
+  String get ui_app_search_backup => '搜索备份...';
+
+  @override
+  String get ui_app_sort_by_install_date => '按安装日期排序';
+
+  @override
+  String get ui_app_no_backup_found => '未找到备份';
+
+  @override
+  String get ui_app_split_apk => '分包 (APKS)';
+
+  @override
+  String get ui_app_single_apk => '单个APK';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -7044,4 +7128,88 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_recycle_file => '檔案';
+
+  @override
+  String get ui_db_browse_data => '瀏覽資料';
+
+  @override
+  String get ui_db_table_schema => '資料表結構';
+
+  @override
+  String get ui_db_sql_console => 'SQL 控制台';
+
+  @override
+  String ui_db_export_success(String fileName) {
+    return '成功匯出到 $fileName';
+  }
+
+  @override
+  String ui_db_export_failed(String error) {
+    return '匯出失敗：$error';
+  }
+
+  @override
+  String get ui_db_export_csv => '匯出資料表為 CSV';
+
+  @override
+  String get ui_db_primary_key => '主鍵';
+
+  @override
+  String get ui_db_not_null => '非空';
+
+  @override
+  String ui_db_type(String type) {
+    return '類型：$type';
+  }
+
+  @override
+  String ui_db_default(String value) {
+    return '預設值：$value';
+  }
+
+  @override
+  String get ui_db_execute_query => '執行查詢';
+
+  @override
+  String get ui_db_enter_query => '在這裡輸入 SELECT 查詢...';
+
+  @override
+  String ui_db_showing_range(int start, int end) {
+    return '顯示 $start - $end';
+  }
+
+  @override
+  String ui_db_query_returned(int count) {
+    return '查詢傳回 $count 列';
+  }
+
+  @override
+  String get ui_app_installed_user_apps => '已安裝的使用者應用';
+
+  @override
+  String get ui_app_system_packages => '系統套件';
+
+  @override
+  String get ui_app_backup_apk => '已備份的APK';
+
+  @override
+  String get ui_app_precise_storage => '精確儲存計算';
+
+  @override
+  String get ui_app_grant_usage_access => '授予使用狀況存取權限';
+
+  @override
+  String get ui_app_search_backup => '搜尋備份...';
+
+  @override
+  String get ui_app_sort_by_install_date => '按安裝日期排序';
+
+  @override
+  String get ui_app_no_backup_found => '未找到備份';
+
+  @override
+  String get ui_app_split_apk => '分包 (APKS)';
+
+  @override
+  String get ui_app_single_apk => '單個APK';
 }

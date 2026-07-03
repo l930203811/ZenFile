@@ -1,4 +1,4 @@
-﻿{
+{
   "@@locale": "ja",
   "@msg6f3e533a": {
     "description": "main.dart"
@@ -3650,5 +3650,138 @@
   "ui_recycle_file": "ファイル",
   "@ui_recycle_file": {
     "description": "Recycle bin file type"
+  },
+  "ui_db_browse_data": "データ閲覧",
+  "@ui_db_browse_data": {
+    "description": "Database reader browse data tab"
+  },
+  "ui_db_table_schema": "テーブル構造",
+  "@ui_db_table_schema": {
+    "description": "Database reader table schema tab"
+  },
+  "ui_db_sql_console": "SQLコンソール",
+  "@ui_db_sql_console": {
+    "description": "Database reader SQL console tab"
+  },
+  "ui_db_export_success": "{fileName}にエクスポートしました",
+  "@ui_db_export_success": {
+    "description": "Database reader CSV export success message",
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_db_export_failed": "エクスポートに失敗しました: {error}",
+  "@ui_db_export_failed": {
+    "description": "Database reader CSV export failed message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_db_export_csv": "テーブルをCSVにエクスポート",
+  "@ui_db_export_csv": {
+    "description": "Database reader export CSV tooltip"
+  },
+  "ui_db_primary_key": "主キー",
+  "@ui_db_primary_key": {
+    "description": "Database reader primary key label"
+  },
+  "ui_db_not_null": "NOT NULL",
+  "@ui_db_not_null": {
+    "description": "Database reader not null label"
+  },
+  "ui_db_type": "タイプ: {type}",
+  "@ui_db_type": {
+    "description": "Database reader column type label",
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_db_default": "デフォルト: {value}",
+  "@ui_db_default": {
+    "description": "Database reader column default value label",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_db_execute_query": "クエリ実行",
+  "@ui_db_execute_query": {
+    "description": "Database reader execute query button"
+  },
+  "ui_db_enter_query": "ここにSELECTクエリを入力...",
+  "@ui_db_enter_query": {
+    "description": "Database reader SQL query hint text"
+  },
+  "ui_db_showing_range": "{start} - {end} を表示中",
+  "@ui_db_showing_range": {
+    "description": "Database reader pagination range text",
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_db_query_returned": "クエリは {count} 行を返しました",
+  "@ui_db_query_returned": {
+    "description": "Database reader query result row count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_app_installed_user_apps": "インストールされたユーザーアプリ",
+  "@ui_app_installed_user_apps": {
+    "description": "App Manager installed user apps tab"
+  },
+  "ui_app_system_packages": "システムパッケージ",
+  "@ui_app_system_packages": {
+    "description": "App Manager system packages tab"
+  },
+  "ui_app_backup_apk": "バックアップ済みAPK",
+  "@ui_app_backup_apk": {
+    "description": "App Manager backup APKs tab"
+  },
+  "ui_app_precise_storage": "正確なストレージ計算",
+  "@ui_app_precise_storage": {
+    "description": "App Manager precise storage calculation title"
+  },
+  "ui_app_grant_usage_access": "使用状況アクセス権限を付与",
+  "@ui_app_grant_usage_access": {
+    "description": "App Manager grant usage access button"
+  },
+  "ui_app_search_backup": "バックアップを検索...",
+  "@ui_app_search_backup": {
+    "description": "App Manager search backup hint"
+  },
+  "ui_app_sort_by_install_date": "インストール日付で並べ替え",
+  "@ui_app_sort_by_install_date": {
+    "description": "App Manager sort by install date option"
+  },
+  "ui_select_all": "全て選択",
+  "@ui_select_all": {
+    "description": "Select all items"
+  },
+  "ui_app_no_backup_found": "バックアップが見つかりません",
+  "@ui_app_no_backup_found": {
+    "description": "App Manager no backup found empty state title"
+  },
+  "ui_app_split_apk": "分割APK (APKS)",
+  "@ui_app_split_apk": {
+    "description": "App Manager split APK (APKS) label"
+  },
+  "ui_app_single_apk": "シングルAPK",
+  "@ui_app_single_apk": {
+    "description": "App Manager single APK label"
   }
 }
