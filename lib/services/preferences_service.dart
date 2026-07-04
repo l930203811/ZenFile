@@ -91,7 +91,7 @@ class PreferencesService {
   }
 
   static bool getShowFloatingAddButton() {
-    return _prefs?.getBool(_keyShowFloatingAddButton) ?? false;
+    return _prefs?.getBool(_keyShowFloatingAddButton) ?? true;
   }
 
   static Future<void> saveShowFloatingAddButton(bool val) async {
@@ -535,8 +535,31 @@ class PreferencesService {
     await _prefs?.setBool(_keyHideActionMenuButtons, val);
   }
 
+  // 显示三点操作按钮（与 hide_action_menu_buttons 语义相反，默认开启显示）
+  static const String _keyShowActionMenuButtons = 'show_action_menu_buttons';
+
+  static bool getShowActionMenuButtons() {
+    return _prefs?.getBool(_keyShowActionMenuButtons) ?? true;
+  }
+
+  static Future<void> saveShowActionMenuButtons(bool val) async {
+    await _prefs?.setBool(_keyShowActionMenuButtons, val);
+  }
+
+  // 三点按钮显示模式：'all' | 'single' | 'dual'
+  static const String _keyActionMenuDisplayMode = 'action_menu_display_mode';
+
+  static String getActionMenuDisplayMode() {
+    return _prefs?.getString(_keyActionMenuDisplayMode) ?? 'all';
+  }
+
+  static Future<void> saveActionMenuDisplayMode(String val) async {
+    await _prefs?.setString(_keyActionMenuDisplayMode, val);
+  }
+
   static const String _keyAudioBackgroundPlay = 'audio_background_play';
   static const String _keyActiveAppIcon = 'active_app_icon';
+  static const String _keyDesktopLyricEnabled = 'desktop_lyric_enabled';
 
   static bool getAudioBackgroundPlay() {
     return _prefs?.getBool(_keyAudioBackgroundPlay) ?? false;
@@ -544,6 +567,14 @@ class PreferencesService {
 
   static Future<void> saveAudioBackgroundPlay(bool val) async {
     await _prefs?.setBool(_keyAudioBackgroundPlay, val);
+  }
+
+  static bool getDesktopLyricEnabled() {
+    return _prefs?.getBool(_keyDesktopLyricEnabled) ?? false;
+  }
+
+  static Future<void> saveDesktopLyricEnabled(bool val) async {
+    await _prefs?.setBool(_keyDesktopLyricEnabled, val);
   }
 
   static String getActiveAppIcon() {

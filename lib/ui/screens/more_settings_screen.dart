@@ -205,7 +205,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
     final skipDialogVis = _shouldShow(L10n.of(context).msg6fdc09ac, L10n.of(context).msg0a4b0442);
     final defaultBrowseVis = _shouldShow(L10n.of(context).msga432d127, L10n.of(context).msge1157984);
     final swipeModeVis = _shouldShow(L10n.of(context).msgd48a082d, L10n.of(context).msgae1854a2);
-    final showFloatingVis = _shouldShow(L10n.of(context).ui_show_floating_button, L10n.of(context).msg11b1ec65);
+    final showFloatingVis = _shouldShow(L10n.of(context).ui_show_action_bar, L10n.of(context).msg11b1ec65);
     final showHiddenVis = _shouldShow(L10n.of(context).msg124d9054, L10n.of(context).msg7e7765b6);
     final folderFileCountVis = _shouldShow(L10n.of(context).msg86f3d70f, L10n.of(context).msg40e9c325);
     final use24HourVis = _shouldShow(L10n.of(context).ui_use_24h_format, L10n.of(context).ampm24);
@@ -217,7 +217,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
     final highlightFolderVis = _shouldShow(L10n.of(context).msgd33e3082, L10n.of(context).msgdd69671b);
     final mediaPreviewsVis = _shouldShow(L10n.of(context).ui_show_media_previews, L10n.of(context).msg57736228);
     final adaptiveNamesVis = _shouldShow(L10n.of(context).ui_adaptive_multiline_names, L10n.of(context).msg1eda8a50);
-    final hideActionButtonsVis = _shouldShow(L10n.of(context).ui_hide_action_menu_buttons, L10n.of(context).msgc7196afd);
+    final hideActionButtonsVis = _shouldShow(L10n.of(context).ui_show_action_menu_buttons, L10n.of(context).ui_action_menu_subtitle);
     final dragDropVis = _shouldShow(L10n.of(context).ui_enable_drag_drop, L10n.of(context).msgad54815d);
     final confirmDragVis = fileManager.enableDragDrop && _shouldShow(L10n.of(context).ui_confirm_drag_drop, L10n.of(context).msg5dff8f2d);
     final multipleTabsVis = _shouldShow(L10n.of(context).ui_enable_multi_tabs, L10n.of(context).msg4b0a7063);
@@ -658,7 +658,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                     if (showFloatingVis)
                       SettingsTile(
                         icon: Broken.add_square,
-                        title: L10n.of(context).ui_show_floating_button,
+                        title: L10n.of(context).ui_show_action_bar,
                         subtitle: L10n.of(context).msg11b1ec65,
                         trailing: Transform.scale(
                           scale: 0.85,
@@ -857,21 +857,43 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                         ),
                         onTap: () => fileManager.toggleAdaptiveMultiLineNames(),
                       ),
-                    if (hideActionButtonsVis)
+                    if (hideActionButtonsVis) ...[
                       SettingsTile(
                         icon: Icons.more_vert_rounded,
-                        title: L10n.of(context).ui_hide_action_menu_buttons,
-                        subtitle: L10n.of(context).msgc7196afd,
+                        title: L10n.of(context).ui_show_action_menu_buttons,
+                        subtitle: L10n.of(context).ui_action_menu_subtitle,
                         trailing: Transform.scale(
                           scale: 0.85,
                           child: Switch(
-                            value: fileManager.hideActionMenuButtons,
+                            value: fileManager.showActionMenuButtons,
                             activeColor: theme.colorScheme.primary,
-                            onChanged: (_) => fileManager.toggleHideActionMenuButtons(),
+                            onChanged: (val) => fileManager.setShowActionMenuButtons(val),
                           ),
                         ),
-                        onTap: () => fileManager.toggleHideActionMenuButtons(),
+                        onTap: () => fileManager.setShowActionMenuButtons(!fileManager.showActionMenuButtons),
                       ),
+                      // 当开关开启时显示三个模式选项
+                      if (fileManager.showActionMenuButtons) ...[
+                        _buildActionMenuModeTile(
+                          context, theme, fileManager,
+                          mode: 'all',
+                          title: L10n.of(context).ui_action_menu_mode_all,
+                          icon: Icons.visibility_rounded,
+                        ),
+                        _buildActionMenuModeTile(
+                          context, theme, fileManager,
+                          mode: 'single',
+                          title: L10n.of(context).ui_action_menu_mode_single,
+                          icon: Icons.looks_one_rounded,
+                        ),
+                        _buildActionMenuModeTile(
+                          context, theme, fileManager,
+                          mode: 'dual',
+                          title: L10n.of(context).ui_action_menu_mode_dual,
+                          icon: Icons.looks_two_rounded,
+                        ),
+                      ],
+                    ],
                     SettingsTile(
                       icon: Icons.info_outline_rounded,
                       title: L10n.of(context).ui_trailing_info_when_hidden,
@@ -1016,6 +1038,56 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
       ),
     );
   }
+}
+
+// ----------------------------------------------------
+// 三点操作按钮显示模式选项 tile（顶层函数，供多个设置页面复用）
+// ----------------------------------------------------
+Widget _buildActionMenuModeTile(
+  BuildContext context,
+  ThemeData theme,
+  FileManagerProvider fileManager, {
+  required String mode,
+  required String title,
+  required IconData icon,
+}) {
+  final isSelected = fileManager.actionMenuDisplayMode == mode;
+  return Card(
+    elevation: 0,
+    margin: const EdgeInsets.symmetric(vertical: 4),
+    color: isSelected
+        ? theme.colorScheme.primary.withOpacity(0.08)
+        : theme.colorScheme.surface.withOpacity(0.5),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16),
+      side: BorderSide(
+        color: isSelected
+            ? theme.colorScheme.primary.withOpacity(0.4)
+            : theme.colorScheme.outline.withOpacity(0.1),
+        width: isSelected ? 1.5 : 1.0,
+      ),
+    ),
+    child: ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 16.0),
+        child: Icon(icon, size: 20,
+          color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.5)),
+      ),
+      title: Text(title, style: TextStyle(
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+        fontSize: 15,
+        color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface,
+      )),
+      trailing: Icon(
+        isSelected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
+        color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.3),
+        size: 22,
+      ),
+      onTap: () => fileManager.setActionMenuDisplayMode(mode),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    ),
+  );
 }
 
 // ----------------------------------------------------
@@ -1286,7 +1358,7 @@ class ExplorerSettingsScreen extends StatelessWidget {
             ),
             SettingsTile(
               icon: Broken.add_square,
-              title: L10n.of(context).ui_show_floating_button,
+              title: L10n.of(context).ui_show_action_bar,
               subtitle: L10n.of(context).msg11b1ec65,
               trailing: Transform.scale(
                 scale: 0.85,
@@ -1500,18 +1572,38 @@ class LayoutSettingsScreen extends StatelessWidget {
             ),
             SettingsTile(
               icon: Icons.more_vert_rounded,
-              title: L10n.of(context).ui_hide_action_menu_buttons,
-              subtitle: L10n.of(context).msgc7196afd,
+              title: L10n.of(context).ui_show_action_menu_buttons,
+              subtitle: L10n.of(context).ui_action_menu_subtitle,
               trailing: Transform.scale(
                 scale: 0.85,
                 child: Switch(
-                  value: fileManager.hideActionMenuButtons,
+                  value: fileManager.showActionMenuButtons,
                   activeColor: theme.colorScheme.primary,
-                  onChanged: (_) => fileManager.toggleHideActionMenuButtons(),
+                  onChanged: (val) => fileManager.setShowActionMenuButtons(val),
                 ),
               ),
-              onTap: () => fileManager.toggleHideActionMenuButtons(),
+              onTap: () => fileManager.setShowActionMenuButtons(!fileManager.showActionMenuButtons),
             ),
+            if (fileManager.showActionMenuButtons) ...[
+              _buildActionMenuModeTile(
+                context, theme, fileManager,
+                mode: 'all',
+                title: L10n.of(context).ui_action_menu_mode_all,
+                icon: Icons.visibility_rounded,
+              ),
+              _buildActionMenuModeTile(
+                context, theme, fileManager,
+                mode: 'single',
+                title: L10n.of(context).ui_action_menu_mode_single,
+                icon: Icons.looks_one_rounded,
+              ),
+              _buildActionMenuModeTile(
+                context, theme, fileManager,
+                mode: 'dual',
+                title: L10n.of(context).ui_action_menu_mode_dual,
+                icon: Icons.looks_two_rounded,
+              ),
+            ],
           ],
         ),
       ),

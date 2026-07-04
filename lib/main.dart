@@ -29,7 +29,16 @@ final GlobalKey<_ZenFileAppState> appStateKey = GlobalKey<_ZenFileAppState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  MediaKit.ensureInitialized();
+  // MediaKit.ensureInitialized() loads libmpv.so. On armv7 devices where the
+  // native library may be missing (e.g. when media_kit jars for armeabi-v7a
+  // are not packaged), an uncaught error here would prevent runApp() from
+  // executing, resulting in a white screen. Wrap in try-catch so the app
+  // always launches; media playback will simply be unavailable if it fails.
+  try {
+    MediaKit.ensureInitialized();
+  } catch (e) {
+    debugPrint('[ZenFile] MediaKit.ensureInitialized failed: $e');
+  }
   await PreferencesService.init();
   await PinService.init();
   await NetworkConnectionsService.init();
@@ -65,7 +74,7 @@ void main() async {
         androidNotificationChannelName: 'ZenFile Audio Player',
         androidNotificationIcon: 'mipmap/ic_launcher',
         androidShowNotificationBadge: true,
-        androidStopForegroundOnPause: true,
+        androidStopForegroundOnPause: false,
         notificationColor: Color(0xFF6200EE),
       ),
     );

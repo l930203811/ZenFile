@@ -167,10 +167,12 @@ class FileGridItem extends StatelessWidget {
               ),
             if (!isSelected && !context.select<FileManagerProvider, bool>((p) => p.hideActionMenuButtons))
               Positioned(
-                top: 4,
-                right: 4,
+                top: 0,
+                right: 0,
                 child: IconButton(
-                  icon: const Icon(Broken.more, size: 20),
+                  icon: const Icon(Broken.more, size: 16),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
                   onPressed: () {
                     FileActionSheet.show(
                       context,

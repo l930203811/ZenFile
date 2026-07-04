@@ -109,4 +109,17 @@ class SafRemoteClient implements RemoteClient {
 
   @override
   String? getStreamUrl(String remotePath) => null;
+
+  @override
+  Future<int> getFileSize(String remotePath) async {
+    try {
+      final result = await _channel.invokeMethod<int>('getFileSize', {
+        'rootUri': rootUri,
+        'uri': remotePath,
+      });
+      return result ?? -1;
+    } catch (_) {
+      return -1;
+    }
+  }
 }

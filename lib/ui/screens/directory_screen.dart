@@ -111,6 +111,8 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     });
 
     // Stack 层叠面包屑：从右向左渲染，确保左侧项的右箭头绘制在右侧项上方
+    // overlap 必须与 _buildBreadcrumbItem 中的 arrowWidth 一致（8.0），
+    // 这样左项的右箭头凸出恰好填入右项的左凹陷，无缝隙也无覆盖。
     const overlap = 8.0;
     final itemWidgets = <Widget>[];
     // 先构建所有项
@@ -133,7 +135,8 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
       );
     }
 
-    // 计算总宽度（最右项右侧箭头需要额外空间露出）
+    // 计算总宽度：相邻项通过 overlap 重叠（左项右箭头插入右项左凹陷），
+    // 最右项右箭头需要额外 overlap 空间露出。
     double totalWidth = 0;
     final textPainter = TextPainter(textDirection: TextDirection.ltr);
     for (int i = 0; i < itemWidgets.length; i++) {
@@ -141,11 +144,11 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
       textPainter.layout();
       final textW = textPainter.width;
       final isFirst = i == 0;
-      final isRightmost = i == itemWidgets.length - 1;
       final leftPad = isFirst ? 6.0 : overlap + 3.0;
       final rightPad = overlap + 3.0;
       totalWidth += leftPad + textW + rightPad;
-      if (isRightmost) totalWidth += overlap; // 最右项右箭头露出空间
+      if (i < itemWidgets.length - 1) totalWidth -= overlap; // 与右项重叠
+      if (i == itemWidgets.length - 1) totalWidth += overlap; // 最右项右箭头露出
     }
 
     // 从右到左布局，Stack 中先添加的在下层，后添加的在上层
@@ -161,7 +164,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
       final rightPad = overlap + 3.0;
       final itemW = leftPad + textW + rightPad;
       cursor -= itemW;
-      if (!isRightmost) cursor += overlap; // 最右项无需重叠偏移，右箭头自然露出
+      if (!isRightmost) cursor += overlap; // 与右项重叠，让左项右箭头插入右项左凹陷
 
       final targetPath = '/${parts.sublist(0, i + 1).join('/')}';
       stackChildren.add(
@@ -200,6 +203,8 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   }
 
   /// 构建锥形箭头面包屑项（层叠式，所有非首项左侧凹陷、右侧凸出）
+  /// 使用 CustomPaint 的 foregroundPainter 沿 V 形路径描边，
+  /// 确保斜边（箭头凹陷/凸出）也有完整边框，而非被 ClipPath 裁掉。
   Widget _buildBreadcrumbItem(
     BuildContext context,
     ThemeData theme, {
@@ -218,37 +223,33 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     final borderColor = isActive
         ? theme.colorScheme.primary.withOpacity(0.4)
         : theme.colorScheme.onSurface.withOpacity(0.12);
-    return ClipPath(
-      clipper: _BreadcrumbClipper(
-        hasLeftIndent: !isFirst,
-        hasRightArrow: true, // 所有项右侧都有凸出箭头
-        arrowWidth: arrowWidth,
+    final clipper = _BreadcrumbClipper(
+      hasLeftIndent: !isFirst,
+      hasRightArrow: true,
+      arrowWidth: arrowWidth,
+    );
+    return CustomPaint(
+      foregroundPainter: _BreadcrumbBorderPainter(
+        clipper: clipper,
+        color: borderColor,
+        width: 1.0,
       ),
-      child: Container(
-        height: 22,
-        padding: EdgeInsets.only(
-          left: isFirst ? 6 : arrowWidth + 3,
-          right: arrowWidth + 3, // 所有项右侧都有箭头padding
-        ),
-        decoration: BoxDecoration(
-          color: bgColor,
-          border: Border.all(color: borderColor, width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: isActive
-                  ? theme.colorScheme.primary.withOpacity(0.18)
-                  : Colors.black.withOpacity(0.08),
-              blurRadius: 2,
-              offset: const Offset(0, 1),
-            ),
-          ],
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          label,
-          style: TextStyle(fontSize: 11, fontWeight: fontWeight, color: textColor),
-          overflow: TextOverflow.ellipsis,
-          maxLines: 1,
+      child: ClipPath(
+        clipper: clipper,
+        child: Container(
+          height: 22,
+          padding: EdgeInsets.only(
+            left: isFirst ? 6 : arrowWidth + 3,
+            right: arrowWidth + 3,
+          ),
+          decoration: BoxDecoration(color: bgColor),
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: TextStyle(fontSize: 11, fontWeight: fontWeight, color: textColor),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+          ),
         ),
       ),
     );
@@ -257,14 +258,22 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
 /// 构建顶部固定区域（标签页 + 路径面包屑）
   Widget _buildFixedTopArea(BuildContext context, FileManagerProvider provider) {
     final theme = Theme.of(context);
-    final hasTabs = provider.enableMultipleTabs;
+    // 双屏模式下隐藏标签页栏（含标签页切换、+ 新建标签页、三点菜单），
+    // 因为每个 PaneBrowser 内部已有自己的导航，不需要顶部标签页切换。
+    // 隐藏后，下方面包屑栏和文件列表会自然上移，充分利用屏幕空间。
+    final hasTabs = provider.enableMultipleTabs && !provider.enableSplitScreen;
     final hasAddressBar = provider.showAddressBar;
-    if (!hasTabs && !hasAddressBar) {
+    // 当底部导航栏开启时，底部已被镜像 AppBar 占用，浏览操作栏改为显示在顶部
+    // showFloatingAddButton（设置项"显示操作按钮"）控制操作栏是否显示
+    final hasTopBrowseBar = provider.showBottomActionBar && provider.showFloatingAddButton;
+    if (!hasTabs && !hasAddressBar && !hasTopBrowseBar) {
       return const SizedBox.shrink();
     }
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        // 当底部导航栏开启时，浏览操作栏显示在顶部（标签页栏上方）
+        if (hasTopBrowseBar) _buildBrowseActionBar(context, provider),
         if (hasTabs)
           DirectoryTabBar(provider: provider, scrollController: _tabScrollController),
         if (hasAddressBar)
@@ -272,28 +281,82 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             padding: const EdgeInsets.only(left: 4, right: 4),
             child: SizedBox(
               height: 22,
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: Icon(Broken.arrow_left_2, size: 14, color: provider.canGoBack ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.3)),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(minWidth: 22, minHeight: 22),
-                    onPressed: provider.canGoBack ? () => _goBack(provider) : null,
-                    tooltip: L10n.of(context).ui_go_up,
-                  ),
-                  Expanded(child: _buildPathBreadcrumb(context, provider)),
-                  IconButton(
-                    icon: Icon(Broken.arrow_right_3, size: 14, color: provider.canGoForward ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.3)),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(minWidth: 22, minHeight: 22),
-                    onPressed: provider.canGoForward ? () => provider.goForward() : null,
-                    tooltip: L10n.of(context).msg6ed14da7,
-                  ),
-                ],
-              ),
+              child: _buildPathBreadcrumb(context, provider),
             ),
           ),
       ],
+    );
+  }
+
+  /// 浏览页操作栏：后退 / 前进 / 新建 / 复制标签页 / 向上
+  ///
+  /// 位置规则：
+  /// - 当底部导航栏开启（showBottomActionBar == true）时，底部已被 BottomAppBar
+  ///   占用，此操作栏改为显示在顶部 AppBar 下方（作为 _buildFixedTopArea 的一部分）。
+  /// - 当底部导航栏关闭时，此操作栏显示在 bottomNavigationBar 位置。
+  Widget _buildBrowseActionBar(BuildContext context, FileManagerProvider provider) {
+    final theme = Theme.of(context);
+    return Container(
+      height: 44,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        border: Border(
+          top: BorderSide(color: theme.dividerColor.withOpacity(0.08), width: 0.5),
+          bottom: BorderSide(color: theme.dividerColor.withOpacity(0.08), width: 0.5),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          // 后退
+          IconButton(
+            icon: Icon(
+              Broken.arrow_left_2,
+              color: provider.canGoBack ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.3),
+            ),
+            tooltip: L10n.of(context).ui_go_up,
+            onPressed: provider.canGoBack ? () => _goBack(provider) : null,
+          ),
+          // 前进
+          IconButton(
+            icon: Icon(
+              Broken.arrow_right_3,
+              color: provider.canGoForward ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.3),
+            ),
+            tooltip: L10n.of(context).msg6ed14da7,
+            onPressed: provider.canGoForward ? () => provider.goForward() : null,
+          ),
+          // 新建（复刻 AppBar 右上角的 PopupMenuButton）
+          PopupMenuButton<String>(
+            icon: Icon(Broken.add_square, size: 26, color: theme.colorScheme.primary),
+            tooltip: L10n.of(context).ui_new,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            position: PopupMenuPosition.under,
+            elevation: 8,
+            onSelected: (val) => _handleMenuAction(context, val, provider),
+            itemBuilder: (context) => [
+              PopupMenuItem(value: 'file', child: Row(children: [Icon(Broken.document, size: 20), SizedBox(width: 12), Text(L10n.of(context).msge48a7157, style: TextStyle(fontWeight: FontWeight.w600))])),
+              PopupMenuItem(value: 'folder', child: Row(children: [Icon(Broken.folder, size: 20), SizedBox(width: 12), Text(L10n.of(context).msgf3a485df, style: TextStyle(fontWeight: FontWeight.w600))])),
+              PopupMenuItem(value: 'archive', child: Row(children: [Icon(Broken.archive, size: 20), SizedBox(width: 12), Text(L10n.of(context).msg68ac91eb, style: TextStyle(fontWeight: FontWeight.w600))])),
+            ],
+          ),
+          // 复制标签页：双屏模式下复制激活 tab 到未激活 pane；单窗口模式下新建标签页
+          IconButton(
+            icon: Icon(Broken.copy, color: theme.colorScheme.primary),
+            tooltip: L10n.of(context).msg4e9c344a,
+            onPressed: () => provider.duplicateActiveTab(),
+          ),
+          // 向上（返回上一层路径）
+          IconButton(
+            icon: Icon(
+              Broken.arrow_up_1,
+              color: provider.canGoBack ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.3),
+            ),
+            tooltip: L10n.of(context).ui_go_up,
+            onPressed: provider.canGoBack ? () => _goBack(provider) : null,
+          ),
+        ],
+      ),
     );
   }
 
@@ -1115,33 +1178,24 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                     ),
                     ...connections.map((conn) {
                       IconData iconData;
-                      switch (conn.type) {
-                        case 'Google Drive':
-                          iconData = Icons.cloud_circle_rounded;
-                          break;
-                        case 'Dropbox':
-                          iconData = Icons.folder_shared_rounded;
-                          break;
-                        case 'OneDrive':
-                          iconData = Icons.cloud_queue_rounded;
-                          break;
-                        case 'Box':
-                          iconData = Icons.all_inbox_rounded;
-                          break;
-                        case '局域网/SMB':
-                          iconData = Icons.dns_rounded;
-                          break;
-                        case 'FTP':
-                          iconData = Icons.swap_horizontal_circle_rounded;
-                          break;
-                        case 'SFTP':
-                          iconData = Icons.vpn_lock_rounded;
-                          break;
-                        case 'WebDav':
-                          iconData = Icons.web_rounded;
-                          break;
-                        default:
-                          iconData = Broken.wifi;
+                      if (FileManagerProvider.isSmbType(conn.type)) {
+                        iconData = Icons.dns_rounded;
+                      } else if (conn.type == 'Google Drive') {
+                        iconData = Icons.cloud_circle_rounded;
+                      } else if (conn.type == 'Dropbox') {
+                        iconData = Icons.folder_shared_rounded;
+                      } else if (conn.type == 'OneDrive') {
+                        iconData = Icons.cloud_queue_rounded;
+                      } else if (conn.type == 'Box') {
+                        iconData = Icons.all_inbox_rounded;
+                      } else if (conn.type == 'FTP') {
+                        iconData = Icons.swap_horizontal_circle_rounded;
+                      } else if (conn.type == 'SFTP') {
+                        iconData = Icons.vpn_lock_rounded;
+                      } else if (conn.type == 'WebDav') {
+                        iconData = Icons.web_rounded;
+                      } else {
+                        iconData = Broken.wifi;
                       }
                       return ListTile(
                         leading: Container(
@@ -1245,7 +1299,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
               toggleTheme: widget.toggleTheme,
               onNavigateTab: widget.onNavigateTab,
             ),
-            appBar: isSelectionMode || !showBottomActionBar
+            appBar: (isSelectionMode || !showBottomActionBar)
                 ? AppBar(
                     surfaceTintColor: Colors.transparent,
                     scrolledUnderElevation: 0,
@@ -1817,69 +1871,80 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             floatingActionButton: null,
             bottomNavigationBar: isSelectionMode
                 ? SelectionActionBar(provider: provider)
-                : !showBottomActionBar
-                    ? null
-                    : BottomAppBar(
-                    elevation: 8,
-                    color: Theme.of(context).colorScheme.surface,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // 左侧：抽屉 + 分类 + 浏览（按顶部 leading 顺序，全部使用主题色）
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Builder(
-                              builder: (ctx) => IconButton(
-                                icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
-                                tooltip: L10n.of(context).msg6e0f9cef,
-                                onPressed: () => Scaffold.of(ctx).openDrawer(),
+                : showBottomActionBar
+                    // 导航栏在底部：始终显示镜像 AppBar，showFloatingAddButton 只控制顶部浏览操作栏
+                    ? PreferredSize(
+                        preferredSize: Size.fromHeight(kToolbarHeight + MediaQuery.of(context).padding.bottom),
+                        child: Material(
+                          color: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
+                          elevation: 8,
+                          child: SafeArea(
+                            top: false,
+                            child: SizedBox(
+                              height: kToolbarHeight,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  // 左侧：抽屉 + 分类 + 浏览（与顶部 leading 一致）
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Builder(
+                                        builder: (ctx) => IconButton(
+                                          icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
+                                          tooltip: L10n.of(context).msg6e0f9cef,
+                                          onPressed: () => Scaffold.of(ctx).openDrawer(),
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: Icon(Broken.category, color: theme.colorScheme.primary),
+                                        tooltip: L10n.of(context).msg6e0f9cef,
+                                        onPressed: () => widget.onNavigateTab?.call(0),
+                                      ),
+                                      IconButton(
+                                        icon: Icon(Broken.folder, color: theme.colorScheme.primary),
+                                        tooltip: L10n.of(context).ui_browse,
+                                        onPressed: () {},
+                                      ),
+                                    ],
+                                  ),
+                                  // 右侧：搜索 + 排序 + 新建（与顶部 actions 一致）
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(Broken.search_normal, color: theme.colorScheme.primary),
+                                        tooltip: L10n.of(context).msg681c0f39,
+                                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => GlobalSearchScreen(searchFolderPath: provider.currentPath))),
+                                      ),
+                                      IconButton(
+                                        icon: Icon(Broken.filter_edit, color: theme.colorScheme.primary),
+                                        tooltip: L10n.of(context).msg97301f64,
+                                        onPressed: () => _showSortModal(context, provider),
+                                      ),
+                                      PopupMenuButton<String>(
+                                        icon: Icon(Broken.add_square, size: 26, color: theme.colorScheme.primary),
+                                        tooltip: L10n.of(context).ui_new,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                        position: PopupMenuPosition.under,
+                                        elevation: 8,
+                                        onSelected: (val) => _handleMenuAction(context, val, provider),
+                                        itemBuilder: (context) => [
+                                          PopupMenuItem(value: 'file', child: Row(children: [Icon(Broken.document, size: 20), SizedBox(width: 12), Text(L10n.of(context).msge48a7157, style: TextStyle(fontWeight: FontWeight.w600))])),
+                                          PopupMenuItem(value: 'folder', child: Row(children: [Icon(Broken.folder, size: 20), SizedBox(width: 12), Text(L10n.of(context).msgf3a485df, style: TextStyle(fontWeight: FontWeight.w600))])),
+                                          PopupMenuItem(value: 'archive', child: Row(children: [Icon(Broken.archive, size: 20), SizedBox(width: 12), Text(L10n.of(context).msg68ac91eb, style: TextStyle(fontWeight: FontWeight.w600))])),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
                             ),
-                            IconButton(
-                              icon: Icon(Broken.category, color: theme.colorScheme.primary),
-                              tooltip: L10n.of(context).msg6e0f9cef,
-                              onPressed: () => widget.onNavigateTab?.call(0),
-                            ),
-                            IconButton(
-                              icon: Icon(Broken.folder, color: theme.colorScheme.primary),
-                              tooltip: L10n.of(context).ui_browse,
-                              onPressed: () {},
-                            ),
-                          ],
+                          ),
                         ),
-                        // 右侧：搜索 + 排序 + 新建（按顶部 actions 顺序，全部使用主题色）
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(Broken.search_normal, color: theme.colorScheme.primary),
-                              tooltip: L10n.of(context).msg681c0f39,
-                              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => GlobalSearchScreen(searchFolderPath: provider.currentPath))),
-                            ),
-                            IconButton(
-                              icon: Icon(Broken.filter_edit, color: theme.colorScheme.primary),
-                              tooltip: L10n.of(context).msg97301f64,
-                              onPressed: () => _showSortModal(context, provider),
-                            ),
-                            PopupMenuButton<String>(
-                              icon: Icon(Broken.add_square, size: 26, color: theme.colorScheme.primary),
-                              tooltip: L10n.of(context).ui_new,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                              position: PopupMenuPosition.under,
-                              elevation: 8,
-                              onSelected: (val) => _handleMenuAction(context, val, provider),
-                              itemBuilder: (context) => [
-                                PopupMenuItem(value: 'file', child: Row(children: [Icon(Broken.document, size: 20), SizedBox(width: 12), Text(L10n.of(context).msge48a7157, style: TextStyle(fontWeight: FontWeight.w600))])),
-                                PopupMenuItem(value: 'folder', child: Row(children: [Icon(Broken.folder, size: 20), SizedBox(width: 12), Text(L10n.of(context).msgf3a485df, style: TextStyle(fontWeight: FontWeight.w600))])),
-                                PopupMenuItem(value: 'archive', child: Row(children: [Icon(Broken.archive, size: 20), SizedBox(width: 12), Text(L10n.of(context).msg68ac91eb, style: TextStyle(fontWeight: FontWeight.w600))])),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+                      )
+                    // 导航栏在顶部：showFloatingAddButton 控制浏览操作栏是否显示
+                    : (provider.showFloatingAddButton ? _buildBrowseActionBar(context, provider) : null),
           ),
         );
       },
@@ -2035,6 +2100,40 @@ class _BreadcrumbClipper extends CustomClipper<Path> {
     return hasLeftIndent != oldDelegate.hasLeftIndent ||
         hasRightArrow != oldDelegate.hasRightArrow ||
         arrowWidth != oldDelegate.arrowWidth;
+  }
+}
+
+/// 沿 V 形路径描边绘制边框，确保斜边（箭头凹陷/凸出）也有完整边框。
+/// 置于 CustomPaint 的 foregroundPainter 中，绘制在 ClipPath 上方，
+/// 不被裁剪。
+class _BreadcrumbBorderPainter extends CustomPainter {
+  final _BreadcrumbClipper clipper;
+  final Color color;
+  final double width;
+
+  _BreadcrumbBorderPainter({
+    required this.clipper,
+    required this.color,
+    required this.width,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = width
+      ..strokeJoin = StrokeJoin.round;
+    canvas.drawPath(clipper.getClip(size), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _BreadcrumbBorderPainter oldDelegate) {
+    return color != oldDelegate.color ||
+        width != oldDelegate.width ||
+        clipper.hasLeftIndent != oldDelegate.clipper.hasLeftIndent ||
+        clipper.hasRightArrow != oldDelegate.clipper.hasRightArrow ||
+        clipper.arrowWidth != oldDelegate.clipper.arrowWidth;
   }
 }
 

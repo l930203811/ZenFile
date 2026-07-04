@@ -55,6 +55,14 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
       if (existing.type == 'WebDav') {
         _webdavProtocol = existing.protocol;
       }
+      // 编辑模式: 跳过协议选择步骤，直接进入凭据输入页，
+      // 避免用户再次点击协议时触发 _selectProtocol() 重置端口/名称。
+      _currentStep = 1;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _pageController.hasClients) {
+          _pageController.jumpToPage(1);
+        }
+      });
     }
   }
 
@@ -105,7 +113,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
     }
     setState(() {
       _selectedType = protocol;
-      _nameController.text = '$protocol Connection';
+      _nameController.text = '$protocol ${L10n.of(context).ui_connection_suffix}';
 
       // Set default ports
       if (protocol == 'FTP') {
@@ -114,6 +122,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
         _portController.text = '22';
       } else if (protocol == L10n.of(context).smb) {
         _portController.text = '445';
+        _pathController.text = '';
       } else if (protocol == 'WebDav') {
         _webdavProtocol = 'http';
         _portController.text = '80';
@@ -254,7 +263,9 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
     final host = _hostController.text.trim();
     final username = _usernameController.text.trim();
     final password = _passwordController.text.trim();
-    final path = _selectedType == 'WebDav' ? _pathController.text.trim() : '/';
+    final path = (_selectedType == 'WebDav' || _selectedType == L10n.of(context).smb)
+        ? _pathController.text.trim()
+        : '/';
 
     setState(() {
       _isTesting = true;
@@ -439,7 +450,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
   // --- Step 1: Protocol Grid Selection ---
   Widget _buildProtocolSelectionStep(ThemeData theme) {
     final protocols = [
-      {'name': L10n.of(context).smb, 'desc': 'Local Area Network & SMB NAS Share', 'color': Color(0xFF5B21B6)},
+      {'name': L10n.of(context).smb, 'desc': L10n.of(context).ui_smb_desc, 'color': Color(0xFF5B21B6)},
       {'name': 'FTP', 'desc': L10n.of(context).msg25557d1f, 'color': Color(0xFFF97316)},
       {'name': 'SFTP', 'desc': L10n.of(context).ssh, 'color': Color(0xFF0D9488)},
       {'name': 'WebDav', 'desc': L10n.of(context).http, 'color': Color(0xFFE11D48)},
@@ -594,7 +605,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
             const SizedBox(height: 18),
           ],
 
-          _buildInputLabel('Server Address / IP'),
+          _buildInputLabel(L10n.of(context).msg5d57821d),
           _buildTextField(
             controller: _hostController,
             hint: _selectedType == 'WebDav'
@@ -615,11 +626,19 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
 
           if (_selectedType == 'WebDav') ...[
             _buildInputLabel(L10n.of(context).ui_path_label),
-          _buildTextField(
-            controller: _pathController,
-            hint: L10n.of(context).dav1,
-            icon: Broken.folder_open,
-          ),
+            _buildTextField(
+              controller: _pathController,
+              hint: L10n.of(context).dav1,
+              icon: Broken.folder_open,
+            ),
+            const SizedBox(height: 18),
+          ] else if (_selectedType == L10n.of(context).smb) ...[
+            _buildInputLabel(L10n.of(context).ui_share_name_optional),
+            _buildTextField(
+              controller: _pathController,
+              hint: L10n.of(context).ui_share_name_hint,
+              icon: Broken.folder_open,
+            ),
             const SizedBox(height: 18),
           ],
 
@@ -873,32 +892,26 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
   Widget _buildProtocolIcon(String name, {required double size, Color? customColor}) {
     IconData iconData;
     Color color;
+    final smbLabel = L10n.of(context).smb;
 
-    switch (name) {
-      case '局域网/SMB':
-        iconData = Icons.dns_rounded;
-        color = const Color(0xFF5B21B6);
-        break;
-      case 'FTP':
-        iconData = Icons.swap_horizontal_circle_rounded;
-        color = const Color(0xFFF97316);
-        break;
-      case 'SFTP':
-        iconData = Icons.vpn_lock_rounded;
-        color = const Color(0xFF0D9488);
-        break;
-      case 'WebDav':
-        iconData = Icons.web_rounded;
-        color = const Color(0xFFE11D48);
-        break;
-      case 'SAF Folder':
-      case 'saf':
-        iconData = Icons.sd_card_rounded;
-        color = const Color(0xFF0284C7);
-        break;
-      default:
-        iconData = Broken.wifi;
-        color = Colors.blue;
+    if (name == smbLabel) {
+      iconData = Icons.dns_rounded;
+      color = const Color(0xFF5B21B6);
+    } else if (name == 'FTP') {
+      iconData = Icons.swap_horizontal_circle_rounded;
+      color = const Color(0xFFF97316);
+    } else if (name == 'SFTP') {
+      iconData = Icons.vpn_lock_rounded;
+      color = const Color(0xFF0D9488);
+    } else if (name == 'WebDav') {
+      iconData = Icons.web_rounded;
+      color = const Color(0xFFE11D48);
+    } else if (name == 'SAF Folder' || name == 'saf') {
+      iconData = Icons.sd_card_rounded;
+      color = const Color(0xFF0284C7);
+    } else {
+      iconData = Broken.wifi;
+      color = Colors.blue;
     }
 
     return Icon(

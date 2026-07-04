@@ -103,6 +103,11 @@ class MainActivity : AudioServiceFragmentActivity() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+        try {
+            DesktopLyricService.unregister()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
         super.onDestroy()
     }
 
@@ -831,6 +836,89 @@ class MainActivity : AudioServiceFragmentActivity() {
                 else -> result.notImplemented()
             }
         }
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/smb").setMethodCallHandler { call, result ->
+            val smb = SmbService.instance
+            executor.execute {
+                try {
+                    when (call.method) {
+                        "connect" -> {
+                            val host = call.argument<String>("host") ?: ""
+                            val port = call.argument<Int>("port") ?: 445
+                            val username = call.argument<String>("username") ?: ""
+                            val password = call.argument<String>("password") ?: ""
+                            val domain = call.argument<String>("domain") ?: ""
+                            val sessionId = smb.connect(host, port, username, password, domain)
+                            runOnUiThread { result.success(sessionId) }
+                        }
+                        "listDirectory" -> {
+                            val sessionId = call.argument<String>("sessionId") ?: ""
+                            val path = call.argument<String>("path") ?: "/"
+                            val items = smb.listDirectory(sessionId, path)
+                            runOnUiThread { result.success(items) }
+                        }
+                        "createDirectory" -> {
+                            val sessionId = call.argument<String>("sessionId") ?: ""
+                            val path = call.argument<String>("path") ?: ""
+                            val res = smb.createDirectory(sessionId, path)
+                            runOnUiThread { result.success(res) }
+                        }
+                        "createFile" -> {
+                            val sessionId = call.argument<String>("sessionId") ?: ""
+                            val path = call.argument<String>("path") ?: ""
+                            val res = smb.createFile(sessionId, path)
+                            runOnUiThread { result.success(res) }
+                        }
+                        "delete" -> {
+                            val sessionId = call.argument<String>("sessionId") ?: ""
+                            val path = call.argument<String>("path") ?: ""
+                            val isDir = call.argument<Boolean>("isDir") ?: false
+                            val res = smb.delete(sessionId, path, isDir)
+                            runOnUiThread { result.success(res) }
+                        }
+                        "rename" -> {
+                            val sessionId = call.argument<String>("sessionId") ?: ""
+                            val oldPath = call.argument<String>("oldPath") ?: ""
+                            val newPath = call.argument<String>("newPath") ?: ""
+                            val res = smb.rename(sessionId, oldPath, newPath)
+                            runOnUiThread { result.success(res) }
+                        }
+                        "downloadFile" -> {
+                            val sessionId = call.argument<String>("sessionId") ?: ""
+                            val remotePath = call.argument<String>("remotePath") ?: ""
+                            val localPath = call.argument<String>("localPath") ?: ""
+                            val res = smb.downloadFile(sessionId, remotePath, localPath)
+                            runOnUiThread { result.success(res) }
+                        }
+                        "uploadFile" -> {
+                            val sessionId = call.argument<String>("sessionId") ?: ""
+                            val localPath = call.argument<String>("localPath") ?: ""
+                            val remotePath = call.argument<String>("remotePath") ?: ""
+                            val res = smb.uploadFile(sessionId, localPath, remotePath)
+                            runOnUiThread { result.success(res) }
+                        }
+                        "getFileSize" -> {
+                            val sessionId = call.argument<String>("sessionId") ?: ""
+                            val remotePath = call.argument<String>("remotePath") ?: ""
+                            val size = smb.getFileSize(sessionId, remotePath)
+                            runOnUiThread { result.success(size) }
+                        }
+                        "disconnect" -> {
+                            val sessionId = call.argument<String>("sessionId") ?: ""
+                            val res = smb.disconnect(sessionId)
+                            runOnUiThread { result.success(res) }
+                        }
+                        else -> runOnUiThread { result.notImplemented() }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    runOnUiThread { result.error("SMB_ERROR", e.message, null) }
+                }
+            }
+        }
+
+        // 桌面歌词悬浮窗服务
+        DesktopLyricService.register(this, flutterEngine.dartExecutor.binaryMessenger)
 
         notificationsChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/notifications")
         notificationsChannel?.setMethodCallHandler { call, result ->

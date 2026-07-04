@@ -117,13 +117,8 @@ class ZenFileAudioHandler extends BaseAudioHandler
       }
     }));
 
-    // Force a state transition from false to true so audio_service immediately triggers the foreground notification
-    _emitPlaybackState(playing: false);
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (_player != null) {
-        _emitPlaybackState(playing: _player!.state.playing);
-      }
-    });
+    // 直接 emit 当前播放状态，立即触发通知栏显示
+    _emitPlaybackState(playing: player.state.playing);
 
     // 后台播放期间定期保存进度，即使界面被销毁也能记住位置
     _positionSaveTimer?.cancel();

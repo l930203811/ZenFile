@@ -186,7 +186,10 @@ class L10nDe extends L10n {
   String get zenfile1 => 'Über ZenFile';
 
   @override
-  String get v1041 => 'v1.0.42 (Anzeigen)';
+  String get v1041 => 'v1.0.43 (Anzeigen)';
+
+  @override
+  String get ui_view_update => 'Updates ansehen';
 
   @override
   String get zenfileflutter =>
@@ -255,7 +258,7 @@ class L10nDe extends L10n {
       'Bild lange drücken, um in Galerie zu speichern. Vielen Dank für Ihre Unterstützung!';
 
   @override
-  String get zenfilev1041 => 'ZenFile v1.0.42 herunterladen';
+  String get zenfilev1041 => 'ZenFile v1.0.43 herunterladen';
 
   @override
   String get msg9d287020 => '123 Cloud Drive';
@@ -1029,7 +1032,7 @@ class L10nDe extends L10n {
 
   @override
   String get msg11b1ec65 =>
-      'Schnellerstellen (+) Schaltfläche unten auf der Browse-Seite aktivieren';
+      'Aktionsleiste auf der Browse-Seite anzeigen (Zurück, Vorwärts, Neu, Tab duplizieren, Hoch)';
 
   @override
   String get msg7e7765b6 =>
@@ -2626,7 +2629,7 @@ class L10nDe extends L10n {
   String get ui_no_settings_found => 'Keine Einstellungen gefunden';
 
   @override
-  String get ui_show_floating_button => 'Schwebende Schaltfläche anzeigen';
+  String get ui_show_action_bar => 'Aktionsleiste anzeigen';
 
   @override
   String get ui_use_24h_format => '24-Stunden-Format verwenden';
@@ -2653,6 +2656,23 @@ class L10nDe extends L10n {
   @override
   String get ui_hide_action_menu_buttons =>
       'Aktions-Menü-Schaltflächen ausblenden';
+
+  @override
+  String get ui_show_action_menu_buttons =>
+      'Aktions-Menü-Schaltflächen anzeigen';
+
+  @override
+  String get ui_action_menu_subtitle =>
+      'Anzeigemodus für die Drei-Punkte-Menütaste wählen. Bei Ausblendung wird kein Drei-Punkte-Knopf neben Dateien und Ordnern angezeigt.';
+
+  @override
+  String get ui_action_menu_mode_all => 'In allen Modi anzeigen';
+
+  @override
+  String get ui_action_menu_mode_single => 'Nur im Einzelfenstermodus';
+
+  @override
+  String get ui_action_menu_mode_dual => 'Nur im Doppel-Fenstermodus';
 
   @override
   String get ui_enable_drag_drop => 'Drag & Drop aktivieren';
@@ -2969,6 +2989,19 @@ class L10nDe extends L10n {
   String get ui_username_optional => 'Benutzername (Optional)';
 
   @override
+  String get ui_share_name_optional => 'Freigabename (optional)';
+
+  @override
+  String get ui_share_name_hint =>
+      'z.B. /Public oder leer lassen für automatische Erkennung';
+
+  @override
+  String get ui_smb_desc => 'Lokales Netzwerk & SMB NAS-Freigabe';
+
+  @override
+  String get ui_connection_suffix => 'Verbindung';
+
+  @override
   String get ui_back => 'Zurück';
 
   @override
@@ -3110,6 +3143,74 @@ class L10nDe extends L10n {
   @override
   String get log_browse_top_area_optimize =>
       'Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space';
+
+  @override
+  String get log_thanks_feedback =>
+      'Danke an folgende Nutzer für Feedback und Vorschläge: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose';
+
+  @override
+  String get log_smb_native_rewrite =>
+      'SMB-Client komplett neu geschrieben, verwendet native Android smbj-Bibliothek für echtes SMB-Protokoll, mit automatischer Share-Namenerkennung';
+
+  @override
+  String get log_ftp_sftp_streaming =>
+      'FTP/SFTP-Streaming-Wiedergabe repariert, verwendet rohes Socket mit unabhängiger Datenverbindung, unterstützt progressives Caching';
+
+  @override
+  String get log_remote_l10n_fix =>
+      'Hardcodierte Strings auf Remote-Verbindungsseite behoben, l10n-Keys für SMB-Protokollbeschreibung und Verbindungsnamenssuffix hinzugefügt';
+
+  @override
+  String get log_image_viewer_menu =>
+      'Bildbetrachter-Menü oben rechts in Bottom Sheet geändert, 9 Aktionen, schwarzer halbtransparenter Hintergrund für bessere Sichtbarkeit';
+
+  @override
+  String get log_breadcrumb_border =>
+      'V-förmigen kompletten Rahmen zu Breadcrumb-Buttons hinzugefügt, verwendet CustomPaint, nahtlose Verbindung und klare Grenzen';
+
+  @override
+  String get log_three_dot_button_position =>
+      'Datei/Ordner-Drei-Punkte-Aktionsbuttons in die obere rechte Ecke der Karten verschoben, um versehentliche Berührungen beim Ziehen zu vermeiden';
+
+  @override
+  String get log_three_dot_button_setting =>
+      'Drei-Punkte-Button-Einstellung in \'Drei-Punkte-Buttons anzeigen\' umbenannt, mit drei Modi: alle/nur Einzelfenster/nur Dual-Fenster';
+
+  @override
+  String get log_category_back_select =>
+      'Im Mehrfachauswahlmodus der Kategorie bricht die Zurück-Taste die Auswahl ab, anstatt die Kategorie zu verlassen';
+
+  @override
+  String get log_desktop_lyric =>
+      'Desktop-Lyric-Schwebefenster hinzugefügt, mit Berechtigungsprüfung, ziehbarer Position und Tippen zum Umschalten von Wiedergabe/Pause';
+
+  @override
+  String get log_notification_panel =>
+      'Behoben: Benachrichtigungsleiste zeigt keine Wiedergabesteuerung, Benachrichtigung bei Pause beibehalten, mit Berechtigungsablehnungs-Hinweisen';
+
+  @override
+  String get log_lyric_word_highlight =>
+      'Schwebender Lyric-Text unterstützt wortweises Hervorheben mit SpannableStringBuilder für Karaoke-Effekt';
+
+  @override
+  String get log_floating_window_resize =>
+      'Schwebendes Lyric-Fenster unterstützt Long-Press zum Anzeigen des Größenänderungsgriffs, Ziehen zum Anpassen von Fenster- und Textgröße';
+
+  @override
+  String get log_background_play_fix =>
+      'Problem behoben, dass Musik beim Aktivieren der Hintergrundwiedergabe pausiert, attach verwendet Player-Instanz ohne Unterbrechung';
+
+  @override
+  String get log_category_button_sync =>
+      'Behoben: Wiedergabe-Button auf Kategorie-Seite zeigt alte Audio-Info bei deaktivierter Hintergrundwiedergabe, wird bei Rückkehr aktualisiert';
+
+  @override
+  String get log_build_stability =>
+      'R8-Kompilierung OOM behoben, x86_64/armv7 Start-Bildschirm weiß, Gradle JVM-Speicher und ABI-Downloads angepasst';
+
+  @override
+  String get log_lyric_scale_animation =>
+      'Skalierungseffekt zur wortweisen Lyric-Übergangsanimation hinzugefügt, Sync-Probleme behoben, 300ms Übergangsdauer festgelegt';
 
   @override
   String get msg_remember_choice =>
@@ -3787,4 +3888,18 @@ class L10nDe extends L10n {
 
   @override
   String get ui_app_single_apk => 'Einzelnes APK';
+
+  @override
+  String get ui_desktop_lyric => 'Desktop-Text';
+
+  @override
+  String get msg_overlay_permission_required =>
+      'Für die Anzeige des Desktop-Textes ist die Berechtigung für schwebende Fenster erforderlich. Bitte erteilen Sie sie in den Einstellungen und versuchen Sie es erneut.';
+
+  @override
+  String get msg_notification_permission_denied =>
+      'Für die Anzeige des Wiedergabekontrollfelds ist die Berechtigung für Benachrichtigungen erforderlich. Einstellungen öffnen, um sie zu erteilen?';
+
+  @override
+  String get msg_open_settings => 'Zu den Einstellungen';
 }

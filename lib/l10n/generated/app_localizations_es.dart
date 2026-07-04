@@ -186,7 +186,10 @@ class L10nEs extends L10n {
   String get zenfile1 => 'Acerca de ZenFile';
 
   @override
-  String get v1041 => 'v1.0.42 (Ver)';
+  String get v1041 => 'v1.0.43 (Ver)';
+
+  @override
+  String get ui_view_update => 'Ver actualizaciones';
 
   @override
   String get zenfileflutter =>
@@ -256,7 +259,7 @@ class L10nEs extends L10n {
       'Mantén presionada la imagen para guardar en la galería. ¡Gracias por tu apoyo!';
 
   @override
-  String get zenfilev1041 => 'Descargar ZenFile v1.0.42';
+  String get zenfilev1041 => 'Descargar ZenFile';
 
   @override
   String get msg9d287020 => '123 Cloud Drive';
@@ -1033,7 +1036,7 @@ class L10nEs extends L10n {
 
   @override
   String get msg11b1ec65 =>
-      'Habilitar botón de creación rápida (+) en la parte inferior de la página de navegación';
+      'Mostrar barra de acciones en la página de exploración (atrás, adelante, nuevo, duplicar pestaña, arriba)';
 
   @override
   String get msg7e7765b6 =>
@@ -2643,7 +2646,7 @@ class L10nEs extends L10n {
   String get ui_no_settings_found => 'No se encontró configuración';
 
   @override
-  String get ui_show_floating_button => 'Mostrar Botón Flotante';
+  String get ui_show_action_bar => 'Mostrar Barra de Acciones';
 
   @override
   String get ui_use_24h_format => 'Usar Formato de 24 Horas';
@@ -2671,6 +2674,23 @@ class L10nEs extends L10n {
   @override
   String get ui_hide_action_menu_buttons =>
       'Ocultar Botones del Menú de Acciones';
+
+  @override
+  String get ui_show_action_menu_buttons =>
+      'Mostrar Botones del Menú de Acciones';
+
+  @override
+  String get ui_action_menu_subtitle =>
+      'Elegir modo de visualización del botón de menú de tres puntos. Al desactivar, no se muestra ningún botón junto a archivos y carpetas.';
+
+  @override
+  String get ui_action_menu_mode_all => 'Mostrar en todos los modos';
+
+  @override
+  String get ui_action_menu_mode_single => 'Solo en modo ventana única';
+
+  @override
+  String get ui_action_menu_mode_dual => 'Solo en modo ventana doble';
 
   @override
   String get ui_enable_drag_drop => 'Habilitar Arrastrar y Soltar';
@@ -2987,6 +3007,20 @@ class L10nEs extends L10n {
   String get ui_username_optional => 'Nombre de Usuario (Opcional)';
 
   @override
+  String get ui_share_name_optional =>
+      'Nombre del recurso compartido (opcional)';
+
+  @override
+  String get ui_share_name_hint =>
+      'ej. /Public o dejar vacío para autodetectar';
+
+  @override
+  String get ui_smb_desc => 'Red de área local y recurso compartido NAS SMB';
+
+  @override
+  String get ui_connection_suffix => 'Conexión';
+
+  @override
   String get ui_back => 'Atrás';
 
   @override
@@ -3129,6 +3163,74 @@ class L10nEs extends L10n {
   @override
   String get log_browse_top_area_optimize =>
       'Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space';
+
+  @override
+  String get log_thanks_feedback =>
+      'Gracias a los siguientes usuarios por sus comentarios y sugerencias: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose';
+
+  @override
+  String get log_smb_native_rewrite =>
+      'Cliente SMB completamente reescrito usando la biblioteca nativa smbj de Android para protocolo SMB real, con detección automática de nombres de recurso compartido';
+
+  @override
+  String get log_ftp_sftp_streaming =>
+      'Reproducida la transmisión FTP/SFTP usando Socket sin formato con conexión de datos independiente, soporta caché progresiva';
+
+  @override
+  String get log_remote_l10n_fix =>
+      'Corregidas cadenas codificadas en la página de conexión remota, agregadas claves l10n para descripción del protocolo SMB y sufijo de nombre de conexión';
+
+  @override
+  String get log_image_viewer_menu =>
+      'Menú superior derecho del visor de imágenes cambiado a hoja inferior, 9 elementos de acción, fondo semitransparente negro para visibilidad';
+
+  @override
+  String get log_breadcrumb_border =>
+      'Agregado borde completo en forma de V a los botones de breadcrumb usando CustomPaint, garantizando conexión perfecta y límites claros';
+
+  @override
+  String get log_three_dot_button_position =>
+      'Botones de acción de tres puntos de archivos/carpetas movidos a la esquina superior derecha de las tarjetas para evitar toques accidentales al arrastrar';
+
+  @override
+  String get log_three_dot_button_setting =>
+      'Configuración de botón de tres puntos renombrada a \'Mostrar botones de tres puntos\' con tres modos: todos/solo ventana única/solo ventana dual';
+
+  @override
+  String get log_category_back_select =>
+      'En modo de selección múltiple de categoría, el botón de retroceso ahora cancela la selección en lugar de salir de la categoría';
+
+  @override
+  String get log_desktop_lyric =>
+      'Agregada ventana flotante de letra de escritorio con verificación de permisos, posición arrastrable y toque para alternar reproducir/pausar';
+
+  @override
+  String get log_notification_panel =>
+      'Corregido el panel de notificaciones que no mostraba controles de reproducción, notificación retenida al pausar, con avisos de denegación de permisos';
+
+  @override
+  String get log_lyric_word_highlight =>
+      'La letra flotante soporta resaltado palabra por palabra usando SpannableStringBuilder para efecto karaoke';
+
+  @override
+  String get log_floating_window_resize =>
+      'La ventana flotante de letras soporta pulsación larga para mostrar el control de cambio de tamaño, arrastrar para ajustar ventana y tamaño de texto';
+
+  @override
+  String get log_background_play_fix =>
+      'Corregido que la música se pausa al activar reproducción en segundo plano, attach reutiliza la instancia del jugador sin interrupción';
+
+  @override
+  String get log_category_button_sync =>
+      'Corregido el botón de reproducción de la página de categoría que mostraba información de audio obsoleta cuando la reproducción en segundo plano está desactivada, se actualiza al volver';
+
+  @override
+  String get log_build_stability =>
+      'Corregido OOM de compilación R8, pantalla blanca de inicio x86_64/armv7, ajustada la memoria JVM de Gradle y descargas de ABI';
+
+  @override
+  String get log_lyric_scale_animation =>
+      'Agregado efecto de escala a la animación de transición de letra palabra por palabra, corregidos problemas de sincronización, fijada duración de transición de 300ms';
 
   @override
   String get msg_remember_choice =>
@@ -3809,4 +3911,18 @@ class L10nEs extends L10n {
 
   @override
   String get ui_app_single_apk => 'APK único';
+
+  @override
+  String get ui_desktop_lyric => 'Letra de escritorio';
+
+  @override
+  String get msg_overlay_permission_required =>
+      'Se requiere permiso de ventana flotante para mostrar la letra de escritorio. Concédelo en Configuración y vuelve a intentarlo.';
+
+  @override
+  String get msg_notification_permission_denied =>
+      'Se requiere permiso de notificaciones para mostrar el panel de control de reproducción. ¿Abrir Configuración para concederlo?';
+
+  @override
+  String get msg_open_settings => 'Ir a ajustes';
 }

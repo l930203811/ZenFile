@@ -182,7 +182,10 @@ class L10nEn extends L10n {
   String get zenfile1 => 'About ZenFile';
 
   @override
-  String get v1041 => 'v1.0.42 (View)';
+  String get v1041 => 'v1.0.43 (View)';
+
+  @override
+  String get ui_view_update => 'View updates';
 
   @override
   String get zenfileflutter =>
@@ -251,7 +254,7 @@ class L10nEn extends L10n {
       'Long press image to save to gallery. Thank you for your support!';
 
   @override
-  String get zenfilev1041 => 'Download ZenFile v1.0.42';
+  String get zenfilev1041 => 'Download ZenFile';
 
   @override
   String get msg9d287020 => '123 Cloud Drive';
@@ -1012,7 +1015,7 @@ class L10nEn extends L10n {
 
   @override
   String get msg11b1ec65 =>
-      'Enable quick create (+) button at bottom of browse page';
+      'Show action bar in browse page with back, forward, new, duplicate tab, up';
 
   @override
   String get msg7e7765b6 =>
@@ -2588,7 +2591,7 @@ class L10nEn extends L10n {
   String get ui_no_settings_found => 'No settings found';
 
   @override
-  String get ui_show_floating_button => 'Show Floating Button';
+  String get ui_show_action_bar => 'Show Action Bar';
 
   @override
   String get ui_use_24h_format => 'Use 24-Hour Format';
@@ -2613,6 +2616,22 @@ class L10nEn extends L10n {
 
   @override
   String get ui_hide_action_menu_buttons => 'Hide Action Menu Buttons';
+
+  @override
+  String get ui_show_action_menu_buttons => 'Show Action Menu Buttons';
+
+  @override
+  String get ui_action_menu_subtitle =>
+      'Choose display mode for the three-dot menu button. When off, no three-dot button appears beside files and folders.';
+
+  @override
+  String get ui_action_menu_mode_all => 'Show in All Modes';
+
+  @override
+  String get ui_action_menu_mode_single => 'Single Window Mode Only';
+
+  @override
+  String get ui_action_menu_mode_dual => 'Dual Window Mode Only';
 
   @override
   String get ui_enable_drag_drop => 'Enable Drag & Drop';
@@ -2925,6 +2944,19 @@ class L10nEn extends L10n {
   String get ui_username_optional => 'Username (Optional)';
 
   @override
+  String get ui_share_name_optional => 'Share Name (Optional)';
+
+  @override
+  String get ui_share_name_hint =>
+      'e.g., /Public or leave empty to auto-detect';
+
+  @override
+  String get ui_smb_desc => 'Local Area Network & SMB NAS Share';
+
+  @override
+  String get ui_connection_suffix => 'Connection';
+
+  @override
   String get ui_back => 'Back';
 
   @override
@@ -3066,6 +3098,74 @@ class L10nEn extends L10n {
   @override
   String get log_browse_top_area_optimize =>
       'Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space';
+
+  @override
+  String get log_thanks_feedback =>
+      'Thanks to the following users for feedback and suggestions: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose';
+
+  @override
+  String get log_smb_native_rewrite =>
+      'Completely rewrote SMB client using native Android smbj library for real SMB protocol, with automatic share name detection';
+
+  @override
+  String get log_ftp_sftp_streaming =>
+      'Fixed FTP/SFTP streaming playback using raw Socket with independent data connection, supporting progressive caching';
+
+  @override
+  String get log_remote_l10n_fix =>
+      'Fixed hardcoded strings in remote connection page, added l10n keys for SMB protocol description and connection name suffix';
+
+  @override
+  String get log_image_viewer_menu =>
+      'Image viewer top-right menu changed to bottom sheet with 9 action items, black semi-transparent background for visibility';
+
+  @override
+  String get log_breadcrumb_border =>
+      'Added V-shaped complete border to breadcrumb buttons using CustomPaint, ensuring seamless connection and clear boundaries';
+
+  @override
+  String get log_three_dot_button_position =>
+      'Moved file/folder three-dot action buttons to top-right corner of cards to avoid accidental touches during drag';
+
+  @override
+  String get log_three_dot_button_setting =>
+      'Renamed three-dot button setting to \'Show three-dot buttons\' with three modes: all/single-window only/dual-window only';
+
+  @override
+  String get log_category_back_select =>
+      'In category multi-select mode, back button now cancels selection instead of exiting the category';
+
+  @override
+  String get log_desktop_lyric =>
+      'Added desktop lyric floating window with permission check, draggable position, and tap to toggle play/pause';
+
+  @override
+  String get log_notification_panel =>
+      'Fixed notification panel not showing playback controls, retained notification on pause, with permission denial prompts';
+
+  @override
+  String get log_lyric_word_highlight =>
+      'Floating lyric supports word-by-word highlighting using SpannableStringBuilder for karaoke effect';
+
+  @override
+  String get log_floating_window_resize =>
+      'Floating lyric window supports long-press to show resize handle, drag to adjust window and text size';
+
+  @override
+  String get log_background_play_fix =>
+      'Fixed music pausing when enabling background play, attach reuses player instance without interruption';
+
+  @override
+  String get log_category_button_sync =>
+      'Fixed category page play button showing stale audio info when background play is off, refreshes on return';
+
+  @override
+  String get log_build_stability =>
+      'Fixed R8 compilation OOM, x86_64/armv7 startup white screen, adjusted Gradle JVM memory and ABI downloads';
+
+  @override
+  String get log_lyric_scale_animation =>
+      'Added scale effect to word-by-word lyric transition animation, fixed sync issues, fixed 300ms transition duration';
 
   @override
   String get msg_remember_choice =>
@@ -3740,4 +3840,18 @@ class L10nEn extends L10n {
 
   @override
   String get ui_app_single_apk => 'Single APK';
+
+  @override
+  String get ui_desktop_lyric => 'Desktop Lyric';
+
+  @override
+  String get msg_overlay_permission_required =>
+      'Overlay permission is required to show desktop lyrics. Please grant it in Settings and retry.';
+
+  @override
+  String get msg_notification_permission_denied =>
+      'Notification permission is required to show the playback control panel. Open Settings to grant it?';
+
+  @override
+  String get msg_open_settings => 'Go to settings';
 }

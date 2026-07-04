@@ -78,12 +78,11 @@ class FileItem extends StatelessWidget {
         onTap: onTap,
         onLongPress: onLongPress,
         borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: EdgeInsets.all((12.0 * itemPaddingMultiplier).clamp(4.0, 24.0)),
-          child: Stack(
-            alignment: Alignment.topRight,
-            children: [
-              Row(
+        child: Stack(
+          children: [
+            Padding(
+              padding: EdgeInsets.all((12.0 * itemPaddingMultiplier).clamp(4.0, 24.0)),
+              child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   GestureDetector(
@@ -165,7 +164,7 @@ class FileItem extends StatelessWidget {
                     ),
                   ),
                   if (!context.select<FileManagerProvider, bool>((p) => p.hideActionMenuButtons))
-                    const SizedBox(width: 48)
+                    const SizedBox(width: 32)
                   else
                     _TrailingInfoWidget(
                       isFolder: file.isDirectory,
@@ -174,9 +173,15 @@ class FileItem extends StatelessWidget {
                     ),
                 ],
               ),
-              if (!context.select<FileManagerProvider, bool>((p) => p.hideActionMenuButtons))
-                IconButton(
-                  icon: const Icon(Broken.more, size: 22),
+            ),
+            if (!context.select<FileManagerProvider, bool>((p) => p.hideActionMenuButtons))
+              Positioned(
+                top: 0,
+                right: 0,
+                child: IconButton(
+                  icon: const Icon(Broken.more, size: 18),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                   onPressed: () {
                     FileActionSheet.show(
                       context,
@@ -185,8 +190,8 @@ class FileItem extends StatelessWidget {
                     );
                   },
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     );

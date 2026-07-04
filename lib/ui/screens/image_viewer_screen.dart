@@ -7,8 +7,14 @@ import 'package:mime/mime.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:flutter_avif/flutter_avif.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:path/path.dart' as p;
+import 'package:provider/provider.dart';
 import '../../providers/media_provider.dart';
+import '../../providers/file_manager_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
+import '../../core/utils.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 final Uint8List _kTransparentImage = Uint8List.fromList([
   0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
@@ -150,6 +156,367 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     super.dispose();
   }
 
+  /// 获取当前图片的 File 对象
+  File? _getCurrentFile() {
+    if (widget.siblingItems != null && _currentIndex < widget.siblingItems!.length) {
+      final item = widget.siblingItems![_currentIndex];
+      if (item is AssetEntity) {
+        return _fileCache[_currentIndex];
+      } else if (item is FileSystemEntity) {
+        return File(item.path);
+      }
+    } else if (widget.siblingAssets != null && _currentIndex < widget.siblingAssets!.length) {
+      return _fileCache[_currentIndex];
+    } else if (_imageList.isNotEmpty && _currentIndex < _imageList.length) {
+      return File(_imageList[_currentIndex]);
+    }
+    return null;
+  }
+
+  void _showImageOptions() {
+    final l10n = L10n.of(context);
+    final file = _getCurrentFile();
+    final filePath = file?.path;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        final theme = Theme.of(ctx);
+        final primary = theme.colorScheme.primary;
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        file?.path.split('/').last.split('\\').last ?? 'Image',
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              if (filePath != null && FileUtils.isArchive(filePath)) ...[
+                ListTile(
+                  leading: Icon(Broken.archive, color: primary, size: 22),
+                  title: Text(l10n.ui_extract),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _extractArchive();
+                  },
+                ),
+              ],
+              ListTile(
+                leading: Icon(Broken.document_copy, color: primary, size: 22),
+                title: Text(l10n.ui_copy),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _copyToClipboard();
+                },
+              ),
+              ListTile(
+                leading: Icon(Broken.scissor, color: primary, size: 22),
+                title: Text(l10n.ui_cut),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _cutToClipboard();
+                },
+              ),
+              ListTile(
+                leading: Icon(Broken.trash, color: Colors.red, size: 22),
+                title: Text(l10n.ui_delete, style: const TextStyle(color: Colors.red)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _deleteCurrentImage();
+                },
+              ),
+              if (filePath != null) ...[
+                ListTile(
+                  leading: Icon(Broken.folder_open, color: primary, size: 22),
+                  title: Text(l10n.msgcd8264f1),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _showInLocation();
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Broken.edit, color: primary, size: 22),
+                  title: Text(l10n.msgc8ce4b36),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _renameFile();
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Broken.eye, color: primary, size: 22),
+                  title: Text(l10n.msg2a4cfb07),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _openWith();
+                  },
+                ),
+              ],
+              ListTile(
+                leading: Icon(Broken.info_circle, color: primary, size: 22),
+                title: Text(l10n.ui_properties),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showImageInfo();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.share_outlined, size: 22),
+                title: Text(l10n.ui_share),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _shareCurrentImage();
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _copyToClipboard() {
+    final file = _getCurrentFile();
+    if (file == null) return;
+    final provider = context.read<FileManagerProvider>();
+    provider.setClipboard([file.path], isCut: false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Copied ${p.basename(file.path)} to clipboard')),
+    );
+  }
+
+  void _cutToClipboard() {
+    final file = _getCurrentFile();
+    if (file == null) return;
+    final provider = context.read<FileManagerProvider>();
+    provider.setClipboard([file.path], isCut: true);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Cut ${p.basename(file.path)} to clipboard')),
+    );
+  }
+
+  void _showInLocation() {
+    final file = _getCurrentFile();
+    if (file == null) return;
+    context.read<FileManagerProvider>().showFileInLocation(file.path);
+    Navigator.pop(context);
+  }
+
+  Future<void> _renameFile() async {
+    final file = _getCurrentFile();
+    if (file == null) return;
+    final l10n = L10n.of(context);
+
+    final controller = TextEditingController(text: p.basename(file.path));
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.msgc8ce4b36),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(hintText: l10n.msgf139c5cf),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.ui_cancel)),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.msgc8ce4b36)),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    final newName = controller.text.trim();
+    if (newName.isEmpty) return;
+
+    try {
+      await context.read<FileManagerProvider>().renameFile(file.path, newName);
+      final newPath = p.join(file.parent.path, newName);
+
+      if (widget.siblingItems != null && _currentIndex < widget.siblingItems!.length) {
+        final item = widget.siblingItems![_currentIndex];
+        if (item is FileSystemEntity) {
+          widget.siblingItems![_currentIndex] = File(newPath);
+        }
+      }
+      if (_imageList.isNotEmpty && _currentIndex < _imageList.length) {
+        _imageList[_currentIndex] = newPath;
+      }
+
+      setState(() {});
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString()), backgroundColor: Colors.redAccent),
+      );
+    }
+  }
+
+  void _openWith() {
+    final file = _getCurrentFile();
+    if (file == null) return;
+    context.read<FileManagerProvider>().openFile(context, file.path, forceOpenWith: true);
+  }
+
+  void _extractArchive() {
+    final file = _getCurrentFile();
+    if (file == null) return;
+    context.read<FileManagerProvider>().extractArchiveDirectly(context, file.path);
+  }
+
+  Future<void> _shareCurrentImage() async {
+    final file = _getCurrentFile();
+    if (file != null && file.existsSync()) {
+      await Share.shareXFiles([XFile(file.path)]);
+    }
+  }
+
+  Future<void> _deleteCurrentImage() async {
+    final l10n = L10n.of(context);
+    final file = _getCurrentFile();
+
+    // 检查是否为 AssetEntity（相册图片）
+    AssetEntity? asset;
+    if (widget.siblingItems != null && _currentIndex < widget.siblingItems!.length) {
+      final item = widget.siblingItems![_currentIndex];
+      if (item is AssetEntity) asset = item;
+    } else if (widget.siblingAssets != null && _currentIndex < widget.siblingAssets!.length) {
+      asset = widget.siblingAssets![_currentIndex];
+    }
+
+    if (file == null && asset == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.ui_delete),
+        content: Text(l10n.ui_delete_file_confirm),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.ui_cancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
+            child: Text(l10n.ui_delete),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      if (asset != null) {
+        // 相册图片通过 PhotoManager 删除
+        await PhotoManager.editor.deleteWithIds([asset.id]);
+      } else if (file != null && file.existsSync()) {
+        await file.delete();
+      }
+      if (!mounted) return;
+
+      // 从列表中移除并导航
+      final total = widget.siblingItems?.length ??
+          widget.siblingAssets?.length ??
+          _imageList.length;
+      if (_imageList.isNotEmpty && _currentIndex < _imageList.length) {
+        _imageList.removeAt(_currentIndex);
+      }
+      if (total <= 1) {
+        Navigator.pop(context);
+        return;
+      }
+      // 调整索引
+      final newTotal = total - 1;
+      _currentIndex = _currentIndex.clamp(0, newTotal - 1);
+      setState(() {});
+      // 跳转到新的当前页
+      if (_pageController.hasClients) {
+        _pageController.jumpToPage(_currentIndex);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString()), backgroundColor: Colors.redAccent),
+      );
+    }
+  }
+
+  void _showImageInfo() async {
+    final l10n = L10n.of(context);
+    final file = _getCurrentFile();
+    if (file == null) return;
+
+    String fileName = file.path.split('/').last.split('\\').last;
+    String filePath = file.path;
+    String sizeStr = '-';
+    String modifiedStr = '-';
+
+    try {
+      if (file.existsSync()) {
+        final stat = await file.stat();
+        const suffixes = ['B', 'KB', 'MB', 'GB'];
+        var s = stat.size.toDouble();
+        var i = 0;
+        while (s >= 1024 && i < suffixes.length - 1) {
+          s /= 1024;
+          i++;
+        }
+        sizeStr = '${s.toStringAsFixed(1)} ${suffixes[i]}';
+        modifiedStr = stat.modified.toString().split('.').first;
+      }
+    } catch (_) {}
+
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.ui_properties),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(fileName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+            const SizedBox(height: 12),
+            _infoRow(l10n.ui_path, filePath),
+            const SizedBox(height: 8),
+            _infoRow(l10n.ui_size, sizeStr),
+            const SizedBox(height: 8),
+            _infoRow(l10n.msg1303e638, modifiedStr),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.ui_close)),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoRow(String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('$label: ', style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
+        Expanded(child: Text(value, style: const TextStyle(fontSize: 13))),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final int totalCount = widget.siblingItems != null
@@ -198,7 +565,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      currentTitle, 
+                      currentTitle,
                       style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold, letterSpacing: 0.3),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -210,6 +577,21 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                     ),
                   ],
                 ),
+                actions: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.5),
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Broken.more, color: Colors.white, size: 18),
+                        onPressed: _showImageOptions,
+                      ),
+                    ),
+                  ),
+                ],
               )
             : null,
         body: Dismissible(

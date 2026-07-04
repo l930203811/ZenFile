@@ -210,9 +210,13 @@
   "@zenfile1": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "v1041": "v1.0.42 (查看)",
+  "v1041": "v1.0.43 (查看)",
   "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
+  },
+  "ui_view_update": "查看更新",
+  "@ui_view_update": {
+    "description": "Button label to view changelog on the about screen"
   },
   "zenfileflutter": "ZenFile 是一款基于 Flutter 构建的精美、流畅、开源的文件管理器和离线媒体中心。专为极致性能、干净的毛玻璃美学和无缝用户体验而设计。",
   "@zenfileflutter": {
@@ -298,7 +302,7 @@
   "@msg0537b04e": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfilev1041": "下载 ZenFile v1.0.42",
+  "zenfilev1041": "下载 ZenFile",
   "@zenfilev1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -1233,7 +1237,7 @@
   "@msgae1854a2": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg11b1ec65": "在浏览页底部启用快速创建（+）按钮",
+  "msg11b1ec65": "在浏览页显示操作按钮栏，含后退、前进、新建、复制标签页、向上",
   "@msg11b1ec65": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -3008,7 +3012,7 @@
   "ui_media_preferences": "媒体偏好",
   "ui_file_actions_viewers": "文件操作与查看器",
   "ui_no_settings_found": "未找到设置",
-  "ui_show_floating_button": "显示浮动按钮",
+  "ui_show_action_bar": "显示操作按钮",
   "ui_use_24h_format": "使用24小时制",
   "ui_show_folder_contents_count": "显示文件夹内容计数",
   "ui_show_folder_size": "显示文件夹大小",
@@ -3017,6 +3021,11 @@
   "ui_show_media_previews": "显示媒体预览",
   "ui_adaptive_multiline_names": "自适应多行文件名",
   "ui_hide_action_menu_buttons": "隐藏三点操作按钮",
+  "ui_show_action_menu_buttons": "显示三点操作按钮",
+  "ui_action_menu_subtitle": "选择三点菜单按钮的显示模式，关闭后文件和文件夹右侧将不显示三点按钮",
+  "ui_action_menu_mode_all": "全部显示",
+  "ui_action_menu_mode_single": "仅在单窗口模式显示",
+  "ui_action_menu_mode_dual": "仅在双窗口模式显示",
   "ui_enable_drag_drop": "启用拖放",
   "ui_confirm_drag_drop": "确认拖放操作",
   "ui_enable_multi_tabs": "启用多标签页",
@@ -3334,6 +3343,10 @@
   "ui_port": "端口",
   "ui_path_label": "路径",
   "ui_username_optional": "用户名（可选）",
+  "ui_share_name_optional": "共享名（可选）",
+  "ui_share_name_hint": "如 /Public，留空则自动探测",
+  "ui_smb_desc": "局域网与 SMB NAS 共享",
+  "ui_connection_suffix": "连接",
   "ui_back": "返回",
   "ui_connect": "连接",
   "ui_web_share": "网页共享",
@@ -3371,6 +3384,23 @@
     "log_remote_copy_paste_fix": "修复远程服务器复制文件到本地粘贴时进度条无响应且文件未出现的问题",
     "log_navbar_position_setting": "新增导航栏位置设置，支持顶部或底部显示导航栏",
     "log_browse_top_area_optimize": "启用底部导航栏时，优化浏览页顶部区域布局，增加文件列表显示空间",
+    "log_thanks_feedback": "感谢以下用户反馈与建议：越界、猕猴桃、Sir Jagadeesh Chandra Bose",
+    "log_smb_native_rewrite": "SMB 客户端完全重写，通过 Android 原生 smbj 库实现真实 SMB 协议，支持自动探测共享名",
+    "log_ftp_sftp_streaming": "修复 FTP/SFTP 流式播放，使用原生 Socket 独立数据连接，支持边缓存边播放",
+    "log_remote_l10n_fix": "修复远程连接页硬编码字符串，新增 SMB 协议描述与连接名称后缀的 l10n 翻译",
+    "log_image_viewer_menu": "图片浏览器右上角菜单改为底部弹窗，9 个操作项，黑色半透明背景提升可见性",
+    "log_breadcrumb_border": "面包屑按钮新增 V 形完整边框，使用 CustomPaint 绘制，相邻按钮无缝衔接且有清晰边界",
+    "log_three_dot_button_position": "文件/文件夹三点操作按钮调整到卡片右上角，避免拖动时误触",
+    "log_three_dot_button_setting": "三点操作按钮设置项改为「显示三点操作按钮」，支持全部显示/仅单窗口/仅双窗口三种模式",
+    "log_category_back_select": "分类页多选模式下按返回键取消选择，而不是退出类别",
+    "log_desktop_lyric": "新增桌面歌词悬浮窗，支持权限检查、拖动位置、单击切换播放/暂停",
+    "log_notification_panel": "修复下拉通知栏不显示播放控制面板，暂停时保留通知，权限拒绝时提示用户",
+    "log_lyric_word_highlight": "悬浮歌词支持逐字高亮，使用 SpannableStringBuilder 实现卡拉OK效果",
+    "log_floating_window_resize": "悬浮歌词窗口支持长按显示缩放手柄，拖拽调整窗口大小与文字大小",
+    "log_background_play_fix": "修复开启后台播放时暂停音乐的问题，attach 复用 player 实例不中断播放",
+    "log_category_button_sync": "修复未开启后台播放时音频类别页播放按钮显示旧音频信息，返回时刷新按钮状态",
+    "log_build_stability": "修复 R8 编译 OOM、x86_64/armv7 启动白屏，调整 Gradle JVM 内存与 ABI 下载",
+    "log_lyric_scale_animation": "逐字歌词过渡动画新增放大效果，修复同步问题，固定 300ms 过渡时长",
   "msg_remember_choice": "记住此选择，后续操作默认使用",
   "ui_caching": "正在缓存中，请稍后...",
   "ui_username": "用户名",
@@ -3938,5 +3968,21 @@
   "ui_app_single_apk": "单个APK",
   "@ui_app_single_apk": {
     "description": "App Manager single APK label"
+  },
+  "ui_desktop_lyric": "桌面歌词",
+  "@ui_desktop_lyric": {
+    "description": "Desktop lyric floating window toggle in audio player more menu"
+  },
+  "msg_overlay_permission_required": "需要悬浮窗权限才能显示桌面歌词，请前往设置授权后重试",
+  "@msg_overlay_permission_required": {
+    "description": "Shown when overlay permission is denied while enabling desktop lyric"
+  },
+  "msg_notification_permission_denied": "需要通知权限才能显示播放控制面板，是否前往设置开启？",
+  "@msg_notification_permission_denied": {
+    "description": "Shown when notification permission is denied while enabling background playback"
+  },
+  "msg_open_settings": "去设置",
+  "@msg_open_settings": {
+    "description": "Action button on the SnackBar to open app settings when notification permission is denied"
   }
 }

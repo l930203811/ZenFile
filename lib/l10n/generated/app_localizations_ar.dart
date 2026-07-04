@@ -182,7 +182,10 @@ class L10nAr extends L10n {
   String get zenfile1 => 'حول ZenFile';
 
   @override
-  String get v1041 => 'v1.0.42 (عرض)';
+  String get v1041 => 'v1.0.43 (عرض)';
+
+  @override
+  String get ui_view_update => 'عرض التحديثات';
 
   @override
   String get zenfileflutter =>
@@ -251,7 +254,7 @@ class L10nAr extends L10n {
       'اضغط مطولاً على الصورة لحفظها في المعرض. شكراً لدعمك!';
 
   @override
-  String get zenfilev1041 => 'تحميل ZenFile v1.0.42';
+  String get zenfilev1041 => 'تحميل ZenFile';
 
   @override
   String get msg9d287020 => '123 Cloud Drive';
@@ -1008,7 +1011,8 @@ class L10nAr extends L10n {
   String get msgae1854a2 => 'اختر السحب بإصبع واحد أو اثنين لتبديل الصفحات';
 
   @override
-  String get msg11b1ec65 => 'تمكين زر الإنشاء السريع (+) في أسفل صفحة التصفح';
+  String get msg11b1ec65 =>
+      'إظهار شريط الإجراءات في صفحة التصفح (للخلف، للأمام، جديد، تكرار علامة التبويب، للأعلى)';
 
   @override
   String get msg7e7765b6 =>
@@ -2583,7 +2587,7 @@ class L10nAr extends L10n {
   String get ui_no_settings_found => 'لم يتم العثور على إعدادات';
 
   @override
-  String get ui_show_floating_button => 'إظهار الزر العائم';
+  String get ui_show_action_bar => 'إظهار شريط الإجراءات';
 
   @override
   String get ui_use_24h_format => 'استخدام تنسيق 24 ساعة';
@@ -2609,6 +2613,22 @@ class L10nAr extends L10n {
 
   @override
   String get ui_hide_action_menu_buttons => 'إخفاء أزرار قائمة الإجراءات';
+
+  @override
+  String get ui_show_action_menu_buttons => 'إظهار أزرار قائمة الإجراءات';
+
+  @override
+  String get ui_action_menu_subtitle =>
+      'اختر وضع العرض لزر القائمة ثلاثي النقاط. عند الإيقاف، لا يظهر زر بجانب الملفات والمجلدات.';
+
+  @override
+  String get ui_action_menu_mode_all => 'إظهار في كل الأوضاع';
+
+  @override
+  String get ui_action_menu_mode_single => 'وضع النافذة المنفردة فقط';
+
+  @override
+  String get ui_action_menu_mode_dual => 'وضع النافذة المزدوجة فقط';
 
   @override
   String get ui_enable_drag_drop => 'تمكين السحب والإفلات';
@@ -2922,6 +2942,19 @@ class L10nAr extends L10n {
   String get ui_username_optional => 'اسم المستخدم (اختياري)';
 
   @override
+  String get ui_share_name_optional => 'اسم المشاركة (اختياري)';
+
+  @override
+  String get ui_share_name_hint =>
+      'مثال: /Public أو اتركه فارغاً للكشف التلقائي';
+
+  @override
+  String get ui_smb_desc => 'شبكة محلية ومشاركة SMB NAS';
+
+  @override
+  String get ui_connection_suffix => 'اتصال';
+
+  @override
   String get ui_back => 'رجوع';
 
   @override
@@ -3060,6 +3093,74 @@ class L10nAr extends L10n {
   @override
   String get log_browse_top_area_optimize =>
       'Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space';
+
+  @override
+  String get log_thanks_feedback =>
+      'شكراً للمستخدمين التاليين على ملاحظاتهم واقتراحاتهم: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose';
+
+  @override
+  String get log_smb_native_rewrite =>
+      'إعادة كتابة كاملة لعميل SMB باستخدام مكتبة smbj الأصلية لأندرويد لبروتوكول SMB حقيقي، مع اكتشاف تلقائي لاسم المشاركة';
+
+  @override
+  String get log_ftp_sftp_streaming =>
+      'إصلاح تشغيل FTP/SFTP بتدفق باستخدام Socket خام مع اتصال بيانات مستقل، دعم التخزين المؤقت التدريجي';
+
+  @override
+  String get log_remote_l10n_fix =>
+      'إصلاح النصوص الثابتة في صفحة الاتصال البعيد، إضافة مفاتيح l10n لوصف بروتوكول SMB ولاحقة اسم الاتصال';
+
+  @override
+  String get log_image_viewer_menu =>
+      'تغيير قائمة عارض الصور في الزاوية اليمنى العلوية إلى ورقة سفلية مع 9 عناصر إجراء، خلفية سوداء شبه شفافة لتحسين الرؤية';
+
+  @override
+  String get log_breadcrumb_border =>
+      'إضافة حدود كاملة على شكل V لأزرار مسار التنقل باستخدام CustomPaint، ضمان اتصال سلس وحدود واضحة';
+
+  @override
+  String get log_three_dot_button_position =>
+      'نقل أزرار الإجراء ثلاثية النقاط للملفات/المجلدات إلى الزاوية اليمنى العلوية للبطاقات لتجنب اللمس العرضي أثناء السحب';
+
+  @override
+  String get log_three_dot_button_setting =>
+      'إعادة تسمية إعداد زر ثلاثي النقاط إلى \'إظهار أزرار ثلاثية النقاط\' مع ثلاثة أوضاع: الكل/نافذة واحدة فقط/نافذة مزدوجة فقط';
+
+  @override
+  String get log_category_back_select =>
+      'في وضع التحديد المتعدد للفئات، زر الرجوع الآن يلغي التحديد بدلاً من الخروج من الفئة';
+
+  @override
+  String get log_desktop_lyric =>
+      'إضافة نافذة كلمات عائمة مع فحص الإذن، موضع قابل للسحب، والنقر لتبديل التشغيل/الإيقاف المؤقت';
+
+  @override
+  String get log_notification_panel =>
+      'إصلاح لوحة الإشعارات التي لا تعرض ضوابط التشغيل، الاحتفاظ بالإشعار عند الإيقاف المؤقت، مع مطالبات رفض الإذن';
+
+  @override
+  String get log_lyric_word_highlight =>
+      'دعم الكلمات العائمة للتظليل كلمة بكلمة باستخدام SpannableStringBuilder لتأثير الكاريوكي';
+
+  @override
+  String get log_floating_window_resize =>
+      'دعم نافذة الكلمات العائمة للضغط المطول لإظهار مقبض تغيير الحجم، السحب لضبط حجم النافذة والنص';
+
+  @override
+  String get log_background_play_fix =>
+      'إصلاح إيقاف الموسيقى مؤقتاً عند تمكين التشغيل في الخلفية، إعادة استخدام مثيل المشغل بدون انقطاع';
+
+  @override
+  String get log_category_button_sync =>
+      'إصلاح زر التشغيل في صفحة الفئات الذي يعرض معلومات صوتية قديمة عند إيقاف التشغيل في الخلفية، يتم التحديث عند العودة';
+
+  @override
+  String get log_build_stability =>
+      'إصلاح خطأ R8 OOM في التجميع، شاشة بيضاء عند بدء تشغيل x86_64/armv7، ضبط ذاكرة Gradle JVM وتنزيلات ABI';
+
+  @override
+  String get log_lyric_scale_animation =>
+      'إضافة تأثير التكبير لانتقال الكلمات كلمة بكلمة، إصلاح مشاكل المزامنة، تثبيت مدة الانتقال 300 مللي ثانية';
 
   @override
   String get msg_remember_choice => 'تذكر هذا الاختيار للعمليات المستقبلية';
@@ -3731,4 +3832,18 @@ class L10nAr extends L10n {
 
   @override
   String get ui_app_single_apk => 'APK واحد';
+
+  @override
+  String get ui_desktop_lyric => 'كلمات سطح المكتب';
+
+  @override
+  String get msg_overlay_permission_required =>
+      'يلزم إذن النافذة العائمة لعرض كلمات سطح المكتب. يرجى منحه في الإعدادات وإعادة المحاولة.';
+
+  @override
+  String get msg_notification_permission_denied =>
+      'يلزم إذن الإشعارات لعرض لوحة التحكم بالتشغيل. هل تريد فتح الإعدادات لمنحه؟';
+
+  @override
+  String get msg_open_settings => 'اذهب إلى الإعدادات';
 }

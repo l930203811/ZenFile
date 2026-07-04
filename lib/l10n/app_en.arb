@@ -203,7 +203,11 @@
   "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "v1041": "v1.0.42 (View)",
+  "v1041": "v1.0.43 (View)",
+  "ui_view_update": "View updates",
+  "@ui_view_update": {
+    "description": "Button label to view changelog on the about screen"
+  },
   "@zenfileflutter": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -291,7 +295,7 @@
   "@zenfilev1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfilev1041": "Download ZenFile v1.0.42",
+  "zenfilev1041": "Download ZenFile",
   "@msg9d287020": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -1211,7 +1215,7 @@
   "@msg11b1ec65": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg11b1ec65": "Enable quick create (+) button at bottom of browse page",
+  "msg11b1ec65": "Show action bar in browse page with back, forward, new, duplicate tab, up",
   "@msg7e7765b6": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -2944,7 +2948,7 @@
   "ui_media_preferences": "Media Preferences",
   "ui_file_actions_viewers": "File Actions & Viewers",
   "ui_no_settings_found": "No settings found",
-  "ui_show_floating_button": "Show Floating Button",
+  "ui_show_action_bar": "Show Action Bar",
   "ui_use_24h_format": "Use 24-Hour Format",
   "ui_show_folder_contents_count": "Show Folder Contents Count",
   "ui_show_folder_size": "Show Folder Size",
@@ -2953,6 +2957,11 @@
   "ui_show_media_previews": "Show Media Previews",
   "ui_adaptive_multiline_names": "Adaptive Multi-line File Names",
   "ui_hide_action_menu_buttons": "Hide Action Menu Buttons",
+  "ui_show_action_menu_buttons": "Show Action Menu Buttons",
+  "ui_action_menu_subtitle": "Choose display mode for the three-dot menu button. When off, no three-dot button appears beside files and folders.",
+  "ui_action_menu_mode_all": "Show in All Modes",
+  "ui_action_menu_mode_single": "Single Window Mode Only",
+  "ui_action_menu_mode_dual": "Dual Window Mode Only",
   "ui_enable_drag_drop": "Enable Drag & Drop",
   "ui_confirm_drag_drop": "Confirm Drag & Drop",
   "ui_enable_multi_tabs": "Enable Multiple Tabs",
@@ -3270,6 +3279,10 @@
   "ui_port": "Port",
   "ui_path_label": "Path",
   "ui_username_optional": "Username (Optional)",
+  "ui_share_name_optional": "Share Name (Optional)",
+  "ui_share_name_hint": "e.g., /Public or leave empty to auto-detect",
+  "ui_smb_desc": "Local Area Network & SMB NAS Share",
+  "ui_connection_suffix": "Connection",
   "ui_back": "Back",
   "ui_connect": "Connect",
   "ui_web_share": "Web Share",
@@ -3307,6 +3320,23 @@
       "log_remote_copy_paste_fix": "Fixed remote server copy to local showing 0% progress and files not appearing",
     "log_navbar_position_setting": "Added navigation bar position setting, support top or bottom display",
     "log_browse_top_area_optimize": "Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space",
+    "log_thanks_feedback": "Thanks to the following users for feedback and suggestions: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose",
+    "log_smb_native_rewrite": "Completely rewrote SMB client using native Android smbj library for real SMB protocol, with automatic share name detection",
+    "log_ftp_sftp_streaming": "Fixed FTP/SFTP streaming playback using raw Socket with independent data connection, supporting progressive caching",
+    "log_remote_l10n_fix": "Fixed hardcoded strings in remote connection page, added l10n keys for SMB protocol description and connection name suffix",
+    "log_image_viewer_menu": "Image viewer top-right menu changed to bottom sheet with 9 action items, black semi-transparent background for visibility",
+    "log_breadcrumb_border": "Added V-shaped complete border to breadcrumb buttons using CustomPaint, ensuring seamless connection and clear boundaries",
+    "log_three_dot_button_position": "Moved file/folder three-dot action buttons to top-right corner of cards to avoid accidental touches during drag",
+    "log_three_dot_button_setting": "Renamed three-dot button setting to 'Show three-dot buttons' with three modes: all/single-window only/dual-window only",
+    "log_category_back_select": "In category multi-select mode, back button now cancels selection instead of exiting the category",
+    "log_desktop_lyric": "Added desktop lyric floating window with permission check, draggable position, and tap to toggle play/pause",
+    "log_notification_panel": "Fixed notification panel not showing playback controls, retained notification on pause, with permission denial prompts",
+    "log_lyric_word_highlight": "Floating lyric supports word-by-word highlighting using SpannableStringBuilder for karaoke effect",
+    "log_floating_window_resize": "Floating lyric window supports long-press to show resize handle, drag to adjust window and text size",
+    "log_background_play_fix": "Fixed music pausing when enabling background play, attach reuses player instance without interruption",
+    "log_category_button_sync": "Fixed category page play button showing stale audio info when background play is off, refreshes on return",
+    "log_build_stability": "Fixed R8 compilation OOM, x86_64/armv7 startup white screen, adjusted Gradle JVM memory and ABI downloads",
+    "log_lyric_scale_animation": "Added scale effect to word-by-word lyric transition animation, fixed sync issues, fixed 300ms transition duration",
   "msg_remember_choice": "Remember this choice for future operations",
   "ui_caching": "Caching, please wait...",
   "ui_username": "Username",
@@ -3784,5 +3814,21 @@
   "ui_app_single_apk": "Single APK",
   "@ui_app_single_apk": {
     "description": "App Manager single APK label"
+  },
+  "ui_desktop_lyric": "Desktop Lyric",
+  "@ui_desktop_lyric": {
+    "description": "Desktop lyric floating window toggle in audio player more menu"
+  },
+  "msg_overlay_permission_required": "Overlay permission is required to show desktop lyrics. Please grant it in Settings and retry.",
+  "@msg_overlay_permission_required": {
+    "description": "Shown when overlay permission is denied while enabling desktop lyric"
+  },
+  "msg_notification_permission_denied": "Notification permission is required to show the playback control panel. Open Settings to grant it?",
+  "@msg_notification_permission_denied": {
+    "description": "Shown when notification permission is denied while enabling background playback"
+  },
+  "msg_open_settings": "Go to settings",
+  "@msg_open_settings": {
+    "description": "Action button on the SnackBar to open app settings when notification permission is denied"
   }
 }

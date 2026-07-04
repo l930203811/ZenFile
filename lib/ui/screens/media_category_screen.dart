@@ -803,7 +803,15 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     final fm = context.watch<FileManagerProvider>();
     final canPaste = (widget.mediaType == MediaType.downloads || widget.mediaType == MediaType.documents || widget.mediaType == MediaType.archives || widget.mediaType == MediaType.apks) && fm.hasClipboard;
 
-    return Scaffold(
+    // 多选模式下按返回键仅清除选中，而不是退出类别预览页
+    return PopScope(
+      canPop: !_isSelectionMode,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _isSelectionMode) {
+          _clearSelection();
+        }
+      },
+      child: Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(_isSelectionMode ? L10n.of(context).ui_selected_count(_selectedFilePaths.length + _selectedAssetIds.length) : _title),
@@ -993,6 +1001,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         ],
       ),
       bottomNavigationBar: _isSelectionMode ? _buildBottomActionBar(theme) : null,
+      ),
     );
   }
 
@@ -1621,7 +1630,10 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               ),
               transitionDuration: const Duration(milliseconds: 400),
             ),
-          );
+          ).then((_) {
+            // 返回类别页时刷新按钮状态，确保显示最新的 lastPlayed
+            if (mounted) setState(() {});
+          });
         }
       },
       onLongPress: () => _toggleSelection(path, null),
@@ -2093,8 +2105,13 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               final title = info['title']!;
               final artist = info['artist']!;
               final isCurrentTrack = handler.isPlayingPath(path);
-              final position = playingSnapshot.data?.updatePosition ?? Duration.zero;
-              final duration = itemSnapshot.data?.duration ?? Duration.zero;
+              // 仅在后台播放器活跃时使用流中的 position/duration，否则用 0 避免残留旧值
+              final position = handler.hasActivePlayer
+                  ? (playingSnapshot.data?.updatePosition ?? Duration.zero)
+                  : Duration.zero;
+              final duration = handler.hasActivePlayer
+                  ? (itemSnapshot.data?.duration ?? Duration.zero)
+                  : Duration.zero;
               final savedMs = PreferencesService.getPlaybackPosition(path);
               final savedPosition = savedMs != null ? Duration(milliseconds: savedMs) : Duration.zero;
 
@@ -2241,7 +2258,10 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         ),
         transitionDuration: const Duration(milliseconds: 400),
       ),
-    );
+    ).then((_) {
+      // 返回类别页时刷新按钮状态，确保显示最新的 lastPlayed
+      if (mounted) setState(() {});
+    });
   }
 
   Future<void> _toggleResumePlayback(String path, String title, String artist) async {

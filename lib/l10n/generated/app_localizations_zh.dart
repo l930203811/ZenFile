@@ -180,7 +180,10 @@ class L10nZh extends L10n {
   String get zenfile1 => '关于 ZenFile';
 
   @override
-  String get v1041 => 'v1.0.42 (查看)';
+  String get v1041 => 'v1.0.43 (查看)';
+
+  @override
+  String get ui_view_update => '查看更新';
 
   @override
   String get zenfileflutter =>
@@ -248,7 +251,7 @@ class L10nZh extends L10n {
   String get msg0537b04e => '长按图片可保存到相册，感谢您的支持！';
 
   @override
-  String get zenfilev1041 => '下载 ZenFile v1.0.42';
+  String get zenfilev1041 => '下载 ZenFile';
 
   @override
   String get msg9d287020 => '123云盘';
@@ -969,7 +972,7 @@ class L10nZh extends L10n {
   String get msgae1854a2 => '选择单指或双指左右滑动切换页面';
 
   @override
-  String get msg11b1ec65 => '在浏览页底部启用快速创建（+）按钮';
+  String get msg11b1ec65 => '在浏览页显示操作按钮栏，含后退、前进、新建、复制标签页、向上';
 
   @override
   String get msg7e7765b6 => '显示以点(.)开头的系统文件和文件夹';
@@ -2499,7 +2502,7 @@ class L10nZh extends L10n {
   String get ui_no_settings_found => '未找到设置';
 
   @override
-  String get ui_show_floating_button => '显示浮动按钮';
+  String get ui_show_action_bar => '显示操作按钮';
 
   @override
   String get ui_use_24h_format => '使用24小时制';
@@ -2524,6 +2527,21 @@ class L10nZh extends L10n {
 
   @override
   String get ui_hide_action_menu_buttons => '隐藏三点操作按钮';
+
+  @override
+  String get ui_show_action_menu_buttons => '显示三点操作按钮';
+
+  @override
+  String get ui_action_menu_subtitle => '选择三点菜单按钮的显示模式，关闭后文件和文件夹右侧将不显示三点按钮';
+
+  @override
+  String get ui_action_menu_mode_all => '全部显示';
+
+  @override
+  String get ui_action_menu_mode_single => '仅在单窗口模式显示';
+
+  @override
+  String get ui_action_menu_mode_dual => '仅在双窗口模式显示';
 
   @override
   String get ui_enable_drag_drop => '启用拖放';
@@ -2835,6 +2853,18 @@ class L10nZh extends L10n {
   String get ui_username_optional => '用户名（可选）';
 
   @override
+  String get ui_share_name_optional => '共享名（可选）';
+
+  @override
+  String get ui_share_name_hint => '如 /Public，留空则自动探测';
+
+  @override
+  String get ui_smb_desc => '局域网与 SMB NAS 共享';
+
+  @override
+  String get ui_connection_suffix => '连接';
+
+  @override
   String get ui_back => '返回';
 
   @override
@@ -2944,6 +2974,65 @@ class L10nZh extends L10n {
 
   @override
   String get log_browse_top_area_optimize => '启用底部导航栏时，优化浏览页顶部区域布局，增加文件列表显示空间';
+
+  @override
+  String get log_thanks_feedback =>
+      '感谢以下用户反馈与建议：越界、猕猴桃、Sir Jagadeesh Chandra Bose';
+
+  @override
+  String get log_smb_native_rewrite =>
+      'SMB 客户端完全重写，通过 Android 原生 smbj 库实现真实 SMB 协议，支持自动探测共享名';
+
+  @override
+  String get log_ftp_sftp_streaming =>
+      '修复 FTP/SFTP 流式播放，使用原生 Socket 独立数据连接，支持边缓存边播放';
+
+  @override
+  String get log_remote_l10n_fix => '修复远程连接页硬编码字符串，新增 SMB 协议描述与连接名称后缀的 l10n 翻译';
+
+  @override
+  String get log_image_viewer_menu => '图片浏览器右上角菜单改为底部弹窗，9 个操作项，黑色半透明背景提升可见性';
+
+  @override
+  String get log_breadcrumb_border =>
+      '面包屑按钮新增 V 形完整边框，使用 CustomPaint 绘制，相邻按钮无缝衔接且有清晰边界';
+
+  @override
+  String get log_three_dot_button_position => '文件/文件夹三点操作按钮调整到卡片右上角，避免拖动时误触';
+
+  @override
+  String get log_three_dot_button_setting =>
+      '三点操作按钮设置项改为「显示三点操作按钮」，支持全部显示/仅单窗口/仅双窗口三种模式';
+
+  @override
+  String get log_category_back_select => '分类页多选模式下按返回键取消选择，而不是退出类别';
+
+  @override
+  String get log_desktop_lyric => '新增桌面歌词悬浮窗，支持权限检查、拖动位置、单击切换播放/暂停';
+
+  @override
+  String get log_notification_panel => '修复下拉通知栏不显示播放控制面板，暂停时保留通知，权限拒绝时提示用户';
+
+  @override
+  String get log_lyric_word_highlight =>
+      '悬浮歌词支持逐字高亮，使用 SpannableStringBuilder 实现卡拉OK效果';
+
+  @override
+  String get log_floating_window_resize => '悬浮歌词窗口支持长按显示缩放手柄，拖拽调整窗口大小与文字大小';
+
+  @override
+  String get log_background_play_fix =>
+      '修复开启后台播放时暂停音乐的问题，attach 复用 player 实例不中断播放';
+
+  @override
+  String get log_category_button_sync => '修复未开启后台播放时音频类别页播放按钮显示旧音频信息，返回时刷新按钮状态';
+
+  @override
+  String get log_build_stability =>
+      '修复 R8 编译 OOM、x86_64/armv7 启动白屏，调整 Gradle JVM 内存与 ABI 下载';
+
+  @override
+  String get log_lyric_scale_animation => '逐字歌词过渡动画新增放大效果，修复同步问题，固定 300ms 过渡时长';
 
   @override
   String get msg_remember_choice => '记住此选择，后续操作默认使用';
@@ -3607,6 +3696,18 @@ class L10nZh extends L10n {
 
   @override
   String get ui_app_single_apk => '单个APK';
+
+  @override
+  String get ui_desktop_lyric => '桌面歌词';
+
+  @override
+  String get msg_overlay_permission_required => '需要悬浮窗权限才能显示桌面歌词，请前往设置授权后重试';
+
+  @override
+  String get msg_notification_permission_denied => '需要通知权限才能显示播放控制面板，是否前往设置开启？';
+
+  @override
+  String get msg_open_settings => '去设置';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -3785,7 +3886,10 @@ class L10nZhTw extends L10nZh {
   String get zenfile1 => '關於 ZenFile';
 
   @override
-  String get v1041 => 'v1.0.42 (檢視)';
+  String get v1041 => 'v1.0.43 (檢視)';
+
+  @override
+  String get ui_view_update => '查看更新';
 
   @override
   String get zenfileflutter =>
@@ -3853,7 +3957,7 @@ class L10nZhTw extends L10nZh {
   String get msg0537b04e => '長按圖片可儲存到相簿，感謝您的支援！';
 
   @override
-  String get zenfilev1041 => '下載 ZenFile v1.0.42';
+  String get zenfilev1041 => '下載 ZenFile';
 
   @override
   String get msg9d287020 => '123雲盤';
@@ -4574,7 +4678,7 @@ class L10nZhTw extends L10nZh {
   String get msgae1854a2 => '選擇單指或雙指左右滑動切換頁面';
 
   @override
-  String get msg11b1ec65 => '在瀏覽頁底部啟用快速建立（+）按鈕';
+  String get msg11b1ec65 => '在瀏覽頁顯示操作按鈕欄，含後退、前進、新建、複製標籤頁、向上';
 
   @override
   String get msg7e7765b6 => '顯示以點(.)開頭的系統檔案和資料夾';
@@ -6105,7 +6209,7 @@ class L10nZhTw extends L10nZh {
   String get ui_no_settings_found => '未找到設定';
 
   @override
-  String get ui_show_floating_button => '顯示浮動按鈕';
+  String get ui_show_action_bar => '顯示操作按鈕';
 
   @override
   String get ui_use_24h_format => '使用24小時制';
@@ -6130,6 +6234,21 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_hide_action_menu_buttons => '隱藏三點操作按鈕';
+
+  @override
+  String get ui_show_action_menu_buttons => '顯示三點操作按鈕';
+
+  @override
+  String get ui_action_menu_subtitle => '選擇三點選單按鈕的顯示模式，關閉後檔案和資料夾右側將不顯示三點按鈕';
+
+  @override
+  String get ui_action_menu_mode_all => '全部顯示';
+
+  @override
+  String get ui_action_menu_mode_single => '僅在單視窗模式顯示';
+
+  @override
+  String get ui_action_menu_mode_dual => '僅在雙視窗模式顯示';
 
   @override
   String get ui_enable_drag_drop => '啟用拖放';
@@ -6441,6 +6560,18 @@ class L10nZhTw extends L10nZh {
   String get ui_username_optional => '使用者名稱（可選）';
 
   @override
+  String get ui_share_name_optional => '共享名（可選）';
+
+  @override
+  String get ui_share_name_hint => '如 /Public，留空則自動探測';
+
+  @override
+  String get ui_smb_desc => '區域網與 SMB NAS 共享';
+
+  @override
+  String get ui_connection_suffix => '連線';
+
+  @override
   String get ui_back => '返回';
 
   @override
@@ -6550,6 +6681,66 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get log_browse_top_area_optimize => '啟用底部導覽列時，最佳化瀏覽頁頂部區域佈局，增加檔案列表顯示空間';
+
+  @override
+  String get log_thanks_feedback =>
+      '感謝以下使用者回饋與建議：越界、獼猴桃、Sir Jagadeesh Chandra Bose';
+
+  @override
+  String get log_smb_native_rewrite =>
+      'SMB 用戶端完全重寫，透過 Android 原生 smbj 程式庫實現真實 SMB 協定，支援自動探測共享名';
+
+  @override
+  String get log_ftp_sftp_streaming =>
+      '修復 FTP/SFTP 串流播放，使用原生 Socket 獨立資料連接，支援邊快取邊播放';
+
+  @override
+  String get log_remote_l10n_fix => '修復遠端連接頁硬編碼字串，新增 SMB 協定描述與連接名稱後綴的 l10n 翻譯';
+
+  @override
+  String get log_image_viewer_menu => '圖片瀏覽器右上角選單改為底部彈窗，9 個操作項，黑色半透明背景提升可見性';
+
+  @override
+  String get log_breadcrumb_border =>
+      '麵包屑按鈕新增 V 形完整邊框，使用 CustomPaint 繪製，相鄰按鈕無縫銜接且有清晰邊界';
+
+  @override
+  String get log_three_dot_button_position => '檔案/資料夾三點操作按鈕調整到卡片右上角，避免拖動時誤觸';
+
+  @override
+  String get log_three_dot_button_setting =>
+      '三點操作按鈕設定項改為「顯示三點操作按鈕」，支援全部顯示/僅單視窗/僅雙視窗三種模式';
+
+  @override
+  String get log_category_back_select => '分類頁多選模式下按返回鍵取消選擇，而不是離開類別';
+
+  @override
+  String get log_desktop_lyric => '新增桌面歌詞懸浮窗，支援權限檢查、拖動位置、單擊切換播放/暫停';
+
+  @override
+  String get log_notification_panel => '修復下拉通知欄不顯示播放控制面板，暫停時保留通知，權限拒絕時提示使用者';
+
+  @override
+  String get log_lyric_word_highlight =>
+      '懸浮歌詞支援逐字高亮，使用 SpannableStringBuilder 實現卡拉OK效果';
+
+  @override
+  String get log_floating_window_resize => '懸浮歌詞視窗支援長按顯示縮放手柄，拖曳調整視窗大小與文字大小';
+
+  @override
+  String get log_background_play_fix =>
+      '修復開啟背景播放時暫停音樂的問題，attach 複用 player 實例不中斷播放';
+
+  @override
+  String get log_category_button_sync =>
+      '修復未開啟背景播放時音訊類別頁播放按鈕顯示舊音訊資訊，返回時重新整理按鈕狀態';
+
+  @override
+  String get log_build_stability =>
+      '修復 R8 編譯 OOM、x86_64/armv7 啟動白屏，調整 Gradle JVM 記憶體與 ABI 下載';
+
+  @override
+  String get log_lyric_scale_animation => '逐字歌詞過渡動畫新增放大效果，修復同步問題，固定 300ms 過渡時長';
 
   @override
   String get msg_remember_choice => '記住此選擇，後續操作預設使用';
@@ -7212,4 +7403,16 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_app_single_apk => '單個APK';
+
+  @override
+  String get ui_desktop_lyric => '桌面歌詞';
+
+  @override
+  String get msg_overlay_permission_required => '需要懸浮窗權限才能顯示桌面歌詞，請前往設定授權後重試';
+
+  @override
+  String get msg_notification_permission_denied => '需要通知權限才能顯示播放控制面板，是否前往設定開啟？';
+
+  @override
+  String get msg_open_settings => '去設定';
 }

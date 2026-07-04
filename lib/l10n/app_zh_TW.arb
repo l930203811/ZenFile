@@ -210,9 +210,13 @@
   "@zenfile1": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "v1041": "v1.0.42 (檢視)",
+  "v1041": "v1.0.43 (檢視)",
   "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
+  },
+  "ui_view_update": "查看更新",
+  "@ui_view_update": {
+    "description": "Button label to view changelog on the about screen"
   },
   "zenfileflutter": "ZenFile 是一款基於 Flutter 構建的精美、流暢、開源的檔案管理器和離線媒體中心。專為極致效能、乾淨的毛玻璃美學和無縫使用者體驗而設計。",
   "@zenfileflutter": {
@@ -298,7 +302,7 @@
   "@msg0537b04e": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfilev1041": "下載 ZenFile v1.0.42",
+  "zenfilev1041": "下載 ZenFile",
   "@zenfilev1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -1233,7 +1237,7 @@
   "@msgae1854a2": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg11b1ec65": "在瀏覽頁底部啟用快速建立（+）按鈕",
+  "msg11b1ec65": "在瀏覽頁顯示操作按鈕欄，含後退、前進、新建、複製標籤頁、向上",
   "@msg11b1ec65": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -3002,7 +3006,7 @@
   "ui_media_preferences": "媒體偏好",
   "ui_file_actions_viewers": "檔案操作與檢視器",
   "ui_no_settings_found": "未找到設定",
-  "ui_show_floating_button": "顯示浮動按鈕",
+  "ui_show_action_bar": "顯示操作按鈕",
   "ui_use_24h_format": "使用24小時制",
   "ui_show_folder_contents_count": "顯示資料夾內容計數",
   "ui_show_folder_size": "顯示資料夾大小",
@@ -3011,6 +3015,11 @@
   "ui_show_media_previews": "顯示媒體預覽",
   "ui_adaptive_multiline_names": "自適應多行檔名",
   "ui_hide_action_menu_buttons": "隱藏三點操作按鈕",
+  "ui_show_action_menu_buttons": "顯示三點操作按鈕",
+  "ui_action_menu_subtitle": "選擇三點選單按鈕的顯示模式，關閉後檔案和資料夾右側將不顯示三點按鈕",
+  "ui_action_menu_mode_all": "全部顯示",
+  "ui_action_menu_mode_single": "僅在單視窗模式顯示",
+  "ui_action_menu_mode_dual": "僅在雙視窗模式顯示",
   "ui_enable_drag_drop": "啟用拖放",
   "ui_confirm_drag_drop": "確認拖放操作",
   "ui_enable_multi_tabs": "啟用多標籤頁",
@@ -3328,6 +3337,10 @@
   "ui_port": "埠",
   "ui_path_label": "路徑",
   "ui_username_optional": "使用者名稱（可選）",
+  "ui_share_name_optional": "共享名（可選）",
+  "ui_share_name_hint": "如 /Public，留空則自動探測",
+  "ui_smb_desc": "區域網與 SMB NAS 共享",
+  "ui_connection_suffix": "連線",
   "ui_back": "返回",
   "ui_connect": "連線",
   "ui_web_share": "網頁共享",
@@ -3365,6 +3378,23 @@
       "log_remote_copy_paste_fix": "修復遠端伺服器複製檔案到本機貼上時進度條無回應且檔案未出現的問題",
     "log_navbar_position_setting": "新增導覽列位置設定，支援頂部或底部顯示導覽列",
     "log_browse_top_area_optimize": "啟用底部導覽列時，最佳化瀏覽頁頂部區域佈局，增加檔案列表顯示空間",
+    "log_thanks_feedback": "感謝以下使用者回饋與建議：越界、獼猴桃、Sir Jagadeesh Chandra Bose",
+    "log_smb_native_rewrite": "SMB 用戶端完全重寫，透過 Android 原生 smbj 程式庫實現真實 SMB 協定，支援自動探測共享名",
+    "log_ftp_sftp_streaming": "修復 FTP/SFTP 串流播放，使用原生 Socket 獨立資料連接，支援邊快取邊播放",
+    "log_remote_l10n_fix": "修復遠端連接頁硬編碼字串，新增 SMB 協定描述與連接名稱後綴的 l10n 翻譯",
+    "log_image_viewer_menu": "圖片瀏覽器右上角選單改為底部彈窗，9 個操作項，黑色半透明背景提升可見性",
+    "log_breadcrumb_border": "麵包屑按鈕新增 V 形完整邊框，使用 CustomPaint 繪製，相鄰按鈕無縫銜接且有清晰邊界",
+    "log_three_dot_button_position": "檔案/資料夾三點操作按鈕調整到卡片右上角，避免拖動時誤觸",
+    "log_three_dot_button_setting": "三點操作按鈕設定項改為「顯示三點操作按鈕」，支援全部顯示/僅單視窗/僅雙視窗三種模式",
+    "log_category_back_select": "分類頁多選模式下按返回鍵取消選擇，而不是離開類別",
+    "log_desktop_lyric": "新增桌面歌詞懸浮窗，支援權限檢查、拖動位置、單擊切換播放/暫停",
+    "log_notification_panel": "修復下拉通知欄不顯示播放控制面板，暫停時保留通知，權限拒絕時提示使用者",
+    "log_lyric_word_highlight": "懸浮歌詞支援逐字高亮，使用 SpannableStringBuilder 實現卡拉OK效果",
+    "log_floating_window_resize": "懸浮歌詞視窗支援長按顯示縮放手柄，拖曳調整視窗大小與文字大小",
+    "log_background_play_fix": "修復開啟背景播放時暫停音樂的問題，attach 複用 player 實例不中斷播放",
+    "log_category_button_sync": "修復未開啟背景播放時音訊類別頁播放按鈕顯示舊音訊資訊，返回時重新整理按鈕狀態",
+    "log_build_stability": "修復 R8 編譯 OOM、x86_64/armv7 啟動白屏，調整 Gradle JVM 記憶體與 ABI 下載",
+    "log_lyric_scale_animation": "逐字歌詞過渡動畫新增放大效果，修復同步問題，固定 300ms 過渡時長",
   "msg_file_exists": "檔案已存在",
   "@msg_file_exists": {
     "description": "Conflict dialog title"
@@ -3841,5 +3871,21 @@
   "ui_app_single_apk": "單個APK",
   "@ui_app_single_apk": {
     "description": "App Manager single APK label"
+  },
+  "ui_desktop_lyric": "桌面歌詞",
+  "@ui_desktop_lyric": {
+    "description": "Desktop lyric floating window toggle in audio player more menu"
+  },
+  "msg_overlay_permission_required": "需要懸浮窗權限才能顯示桌面歌詞，請前往設定授權後重試",
+  "@msg_overlay_permission_required": {
+    "description": "Shown when overlay permission is denied while enabling desktop lyric"
+  },
+  "msg_notification_permission_denied": "需要通知權限才能顯示播放控制面板，是否前往設定開啟？",
+  "@msg_notification_permission_denied": {
+    "description": "Shown when notification permission is denied while enabling background playback"
+  },
+  "msg_open_settings": "去設定",
+  "@msg_open_settings": {
+    "description": "Action button on the SnackBar to open app settings when notification permission is denied"
   }
 }

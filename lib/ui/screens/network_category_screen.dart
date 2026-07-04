@@ -35,9 +35,8 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
   }
 
   IconData _getIconForType(String type) {
+    if (FileManagerProvider.isSmbType(type)) return Icons.dns_rounded;
     switch (type) {
-      case '局域网/SMB':
-        return Icons.dns_rounded;
       case 'FTP':
         return Icons.swap_horizontal_circle_rounded;
       case 'SFTP':
@@ -50,9 +49,8 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
   }
 
   Color _getColorForType(String type) {
+    if (FileManagerProvider.isSmbType(type)) return const Color(0xFF5B21B6);
     switch (type) {
-      case '局域网/SMB':
-        return const Color(0xFF5B21B6);
       case 'FTP':
         return const Color(0xFFF97316);
       case 'SFTP':

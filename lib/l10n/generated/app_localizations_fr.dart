@@ -185,7 +185,10 @@ class L10nFr extends L10n {
   String get zenfile1 => 'À propos de ZenFile';
 
   @override
-  String get v1041 => 'v1.0.42 (Voir)';
+  String get v1041 => 'v1.0.43 (Voir)';
+
+  @override
+  String get ui_view_update => 'Voir les mises à jour';
 
   @override
   String get zenfileflutter =>
@@ -254,7 +257,7 @@ class L10nFr extends L10n {
       'Appuyez longuement sur l\'image pour la sauvegarder dans la galerie. Merci pour votre soutien !';
 
   @override
-  String get zenfilev1041 => 'Télécharger ZenFile v1.0.42';
+  String get zenfilev1041 => 'Télécharger ZenFile';
 
   @override
   String get msg9d287020 => 'Cloud Drive 123';
@@ -1031,7 +1034,7 @@ class L10nFr extends L10n {
 
   @override
   String get msg11b1ec65 =>
-      'Activer le bouton de création rapide (+) en bas de la page de navigation';
+      'Afficher la barre d\'actions sur la page de navigation (précédent, suivant, nouveau, dupliquer l\'onglet, haut)';
 
   @override
   String get msg7e7765b6 =>
@@ -2642,7 +2645,7 @@ class L10nFr extends L10n {
   String get ui_no_settings_found => 'Aucun paramètre trouvé';
 
   @override
-  String get ui_show_floating_button => 'Afficher le bouton flottant';
+  String get ui_show_action_bar => 'Afficher la barre d\'actions';
 
   @override
   String get ui_use_24h_format => 'Utiliser le format 24 heures';
@@ -2671,6 +2674,23 @@ class L10nFr extends L10n {
   @override
   String get ui_hide_action_menu_buttons =>
       'Masquer les boutons du menu d\'actions';
+
+  @override
+  String get ui_show_action_menu_buttons =>
+      'Afficher les boutons du menu d\'actions';
+
+  @override
+  String get ui_action_menu_subtitle =>
+      'Choisir le mode d\'affichage du bouton de menu trois points. Désactivé, aucun bouton ne s\'affiche à côté des fichiers et dossiers.';
+
+  @override
+  String get ui_action_menu_mode_all => 'Afficher dans tous les modes';
+
+  @override
+  String get ui_action_menu_mode_single => 'Mode fenêtre unique uniquement';
+
+  @override
+  String get ui_action_menu_mode_dual => 'Mode double fenêtre uniquement';
 
   @override
   String get ui_enable_drag_drop => 'Activer le glisser-déposer';
@@ -2988,6 +3008,19 @@ class L10nFr extends L10n {
   String get ui_username_optional => 'Nom d\'utilisateur (facultatif)';
 
   @override
+  String get ui_share_name_optional => 'Nom de partage (facultatif)';
+
+  @override
+  String get ui_share_name_hint =>
+      'ex. /Public ou laisser vide pour la détection auto';
+
+  @override
+  String get ui_smb_desc => 'Réseau local & partage NAS SMB';
+
+  @override
+  String get ui_connection_suffix => 'Connexion';
+
+  @override
   String get ui_back => 'Retour';
 
   @override
@@ -3130,6 +3163,74 @@ class L10nFr extends L10n {
   @override
   String get log_browse_top_area_optimize =>
       'Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space';
+
+  @override
+  String get log_thanks_feedback =>
+      'Merci aux utilisateurs suivants pour leurs commentaires et suggestions : 越界, 猕猴桃, Sir Jagadeesh Chandra Bose';
+
+  @override
+  String get log_smb_native_rewrite =>
+      'Client SMB entièrement réécrit utilisant la bibliothèque native smbj d\'Android pour un véritable protocole SMB, avec détection automatique des noms de partage';
+
+  @override
+  String get log_ftp_sftp_streaming =>
+      'Correction de la lecture en streaming FTP/SFTP utilisant Socket brut avec connexion de données indépendante, prenant en charge la mise en cache progressive';
+
+  @override
+  String get log_remote_l10n_fix =>
+      'Corrigé les chaînes codées en dur dans la page de connexion distante, ajouté des clés l10n pour la description du protocole SMB et le suffixe du nom de connexion';
+
+  @override
+  String get log_image_viewer_menu =>
+      'Menu en haut à droite de la visionneuse d\'images modifié en feuille inférieure, 9 éléments d\'action, fond semi-transparent noir pour la visibilité';
+
+  @override
+  String get log_breadcrumb_border =>
+      'Ajout d\'une bordure complète en forme de V aux boutons de fil d\'Ariane utilisant CustomPaint, garantissant une connexion transparente et des limites claires';
+
+  @override
+  String get log_three_dot_button_position =>
+      'Boutons d\'action à trois points des fichiers/dossiers déplacés vers le coin supérieur droit des cartes pour éviter les touchers accidentels pendant le glissement';
+
+  @override
+  String get log_three_dot_button_setting =>
+      'Paramètre de bouton à trois points renommé en \'Afficher les boutons à trois points\' avec trois modes : tous/fenêtre unique uniquement/fenêtre double uniquement';
+
+  @override
+  String get log_category_back_select =>
+      'En mode de sélection multiple de catégorie, le bouton retour annule désormais la sélection au lieu de quitter la catégorie';
+
+  @override
+  String get log_desktop_lyric =>
+      'Ajout d\'une fenêtre flottante de paroles de bureau avec vérification des permissions, position glissable et appui pour basculer lecture/pause';
+
+  @override
+  String get log_notification_panel =>
+      'Correction du panneau de notification n\'affichant pas les contrôles de lecture, notification conservée en pause, avec invites de refus de permission';
+
+  @override
+  String get log_lyric_word_highlight =>
+      'Les paroles flottantes prennent en charge le surlignage mot par mot utilisant SpannableStringBuilder pour un effet karaoké';
+
+  @override
+  String get log_floating_window_resize =>
+      'La fenêtre flottante de paroles prend en charge l\'appui long pour afficher la poignée de redimensionnement, glisser pour ajuster la fenêtre et la taille du texte';
+
+  @override
+  String get log_background_play_fix =>
+      'Correction de la musique qui se met en pause lors de l\'activation de la lecture en arrière-plan, attach réutilise l\'instance du lecteur sans interruption';
+
+  @override
+  String get log_category_button_sync =>
+      'Correction du bouton de lecture de la page de catégorie affichant des informations audio obsolètes lorsque la lecture en arrière-plan est désactivée, se rafraîchit au retour';
+
+  @override
+  String get log_build_stability =>
+      'Correction du OOM de compilation R8, écran blanc de démarrage x86_64/armv7, ajustement de la mémoire JVM Gradle et des téléchargements ABI';
+
+  @override
+  String get log_lyric_scale_animation =>
+      'Ajout d\'un effet de mise à l\'échelle à l\'animation de transition de paroles mot par mot, correction des problèmes de synchronisation, durée de transition fixée à 300ms';
 
   @override
   String get msg_remember_choice =>
@@ -3811,4 +3912,18 @@ class L10nFr extends L10n {
 
   @override
   String get ui_app_single_apk => 'APK unique';
+
+  @override
+  String get ui_desktop_lyric => 'Paroles de bureau';
+
+  @override
+  String get msg_overlay_permission_required =>
+      'L\'autorisation de fenêtre flottante est requise pour afficher les paroles de bureau. Veuillez l\'accorder dans les Paramètres et réessayer.';
+
+  @override
+  String get msg_notification_permission_denied =>
+      'L\'autorisation de notifications est requise pour afficher le panneau de contrôle de lecture. Ouvrir les Paramètres pour l\'accorder ?';
+
+  @override
+  String get msg_open_settings => 'Aller aux paramètres';
 }

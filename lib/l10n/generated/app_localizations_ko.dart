@@ -179,7 +179,10 @@ class L10nKo extends L10n {
   String get zenfile1 => 'ZenFile 정보';
 
   @override
-  String get v1041 => 'v1.0.42 (보기)';
+  String get v1041 => 'v1.0.43 (보기)';
+
+  @override
+  String get ui_view_update => '업데이트 보기';
 
   @override
   String get zenfileflutter =>
@@ -247,7 +250,7 @@ class L10nKo extends L10n {
   String get msg0537b04e => '이미지를 길게 눌러 갤러리에 저장하세요. 지원해 주셔서 감사합니다!';
 
   @override
-  String get zenfilev1041 => 'ZenFile v1.0.42 다운로드';
+  String get zenfilev1041 => 'ZenFile 다운로드';
 
   @override
   String get msg9d287020 => '123 클라우드 드라이브';
@@ -971,7 +974,7 @@ class L10nKo extends L10n {
   String get msgae1854a2 => '한 손가락 또는 두 손가락 스와이프로 페이지 전환을 선택합니다';
 
   @override
-  String get msg11b1ec65 => '탐색 페이지 하단에 빠른 만들기(+) 버튼 활성화';
+  String get msg11b1ec65 => '탐색 페이지에 작업 모음(뒤로, 앞으로, 새로 만들기, 탭 복제, 위로) 표시';
 
   @override
   String get msg7e7765b6 => '마침표(.)로 시작하는 시스템 파일 및 폴더 표시';
@@ -2505,7 +2508,7 @@ class L10nKo extends L10n {
   String get ui_no_settings_found => '설정을 찾을 수 없습니다';
 
   @override
-  String get ui_show_floating_button => '플로팅 버튼 표시';
+  String get ui_show_action_bar => '작업 모음 표시';
 
   @override
   String get ui_use_24h_format => '24시간제 사용';
@@ -2530,6 +2533,22 @@ class L10nKo extends L10n {
 
   @override
   String get ui_hide_action_menu_buttons => '액션 메뉴 버튼 숨기기';
+
+  @override
+  String get ui_show_action_menu_buttons => '액션 메뉴 버튼 표시';
+
+  @override
+  String get ui_action_menu_subtitle =>
+      '三点 메뉴 버튼의 표시 모드를 선택합니다. 끄면 파일과 폴더 오른쪽에 三点 버튼이 표시되지 않습니다.';
+
+  @override
+  String get ui_action_menu_mode_all => '모두 표시';
+
+  @override
+  String get ui_action_menu_mode_single => '단일 창 모드만';
+
+  @override
+  String get ui_action_menu_mode_dual => '듀얼 창 모드만';
 
   @override
   String get ui_enable_drag_drop => '드래그 앤 드롭 활성화';
@@ -2841,6 +2860,18 @@ class L10nKo extends L10n {
   String get ui_username_optional => '사용자 이름 (선택 사항)';
 
   @override
+  String get ui_share_name_optional => '공유 이름 (선택사항)';
+
+  @override
+  String get ui_share_name_hint => '예: /Public 또는 비워두면 자동 감지';
+
+  @override
+  String get ui_smb_desc => '근거리 통신망 & SMB NAS 공유';
+
+  @override
+  String get ui_connection_suffix => '연결';
+
+  @override
   String get ui_back => '뒤로';
 
   @override
@@ -2962,6 +2993,74 @@ class L10nKo extends L10n {
   @override
   String get log_browse_top_area_optimize =>
       'Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space';
+
+  @override
+  String get log_thanks_feedback =>
+      '다음 사용자들의 피드백과 제안에 감사드립니다: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose';
+
+  @override
+  String get log_smb_native_rewrite =>
+      'SMB 클라이언트를 완전히 다시 작성하여 Android 네이티브 smbj 라이브러리로 실제 SMB 프로토콜 구현, 공유 이름 자동 감지 지원';
+
+  @override
+  String get log_ftp_sftp_streaming =>
+      'FTP/SFTP 스트리밍 재생 수정, 원시 Socket과 독립 데이터 연결 사용, 점진적 캐싱 지원';
+
+  @override
+  String get log_remote_l10n_fix =>
+      '원격 연결 페이지의 하드코딩된 문자열 수정, SMB 프로토콜 설명 및 연결 이름 접미사에 대한 l10n 키 추가';
+
+  @override
+  String get log_image_viewer_menu =>
+      '이미지 뷰어 우측 상단 메뉴를 바텀 시트로 변경, 9개 액션 항목, 가시성 향상을 위한 검은색 반투명 배경';
+
+  @override
+  String get log_breadcrumb_border =>
+      'CustomPaint를 사용하여 breadcrumb 버튼에 V자형 완전 테두리 추가, 매끄러운 연결과 명확한 경계 보장';
+
+  @override
+  String get log_three_dot_button_position =>
+      '파일/폴더 점 세 개 액션 버튼을 카드의 우측 상단 모서리로 이동, 드래그 중 실수로 터치하는 것 방지';
+
+  @override
+  String get log_three_dot_button_setting =>
+      '점 세 개 버튼 설정을 \'점 세 개 버튼 표시\'로 이름 변경, 모두/단일 창 전용/이중 창 전용 세 가지 모드 지원';
+
+  @override
+  String get log_category_back_select =>
+      '카테고리 다중 선택 모드에서 뒤로 버튼이 카테고리를 종료하는 대신 선택을 취소';
+
+  @override
+  String get log_desktop_lyric =>
+      '데스크톱 가사 플로팅 창 추가, 권한 확인, 위치 드래그, 탭하여 재생/일시정지 전환 지원';
+
+  @override
+  String get log_notification_panel =>
+      '알림 패널이 재생 컨트롤을 표시하지 않는 문제 수정, 일시정지 시 알림 유지, 권한 거부 시 프롬프트 표시';
+
+  @override
+  String get log_lyric_word_highlight =>
+      '플로팅 가사가 SpannableStringBuilder를 사용한 단어별 하이라이트 지원, 카라오케 효과 구현';
+
+  @override
+  String get log_floating_window_resize =>
+      '플로팅 가사 창이 길게 눌러 크기 조정 핸들 표시를 지원, 드래그하여 창과 텍스트 크기 조정';
+
+  @override
+  String get log_background_play_fix =>
+      '백그라운드 재생 활성화 시 음악이 일시정지되는 문제 수정, attach가 플레이어 인스턴스를 재사용하여 중단 없음';
+
+  @override
+  String get log_category_button_sync =>
+      '백그라운드 재생이 꺼져 있을 때 카테고리 페이지 재생 버튼이 오래된 오디오 정보를 표시하는 문제 수정, 돌아올 때 새로고침';
+
+  @override
+  String get log_build_stability =>
+      'R8 컴파일 OOM, x86_64/armv7 시작 시 흰 화면 수정, Gradle JVM 메모리 및 ABI 다운로드 조정';
+
+  @override
+  String get log_lyric_scale_animation =>
+      '단어별 가사 전환 애니메이션에 크기 조정 효과 추가, 동기화 문제 수정, 300ms 전환 시간 고정';
 
   @override
   String get msg_remember_choice => '이 선택을 기억하여 향후 작업에 적용';
@@ -3627,4 +3726,18 @@ class L10nKo extends L10n {
 
   @override
   String get ui_app_single_apk => '단일 APK';
+
+  @override
+  String get ui_desktop_lyric => '데스크톱 가사';
+
+  @override
+  String get msg_overlay_permission_required =>
+      '데스크톱 가사를 표시하려면 오버레이 권한이 필요합니다. 설정에서 권한을 부여한 후 다시 시도하세요.';
+
+  @override
+  String get msg_notification_permission_denied =>
+      '재생 제어 패널을 표시하려면 알림 권한이 필요합니다. 설정을 열어 권한을 부여하시겠습니까?';
+
+  @override
+  String get msg_open_settings => '설정으로';
 }

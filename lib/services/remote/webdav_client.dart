@@ -347,4 +347,11 @@ class WebDavRemoteClient implements RemoteClient {
     // media_kit / libmpv supports HTTP Basic Auth via URL credentials
     return '$protocol://$username:$password@$cleanHost:$port${Uri.encodeFull(normalizedPath)}';
   }
+
+  @override
+  Future<int> getFileSize(String remotePath) async {
+    // WebDAV uses direct streaming via getStreamUrl, so getFileSize is not
+    // critical for streaming. Return -1 to indicate unknown.
+    return -1;
+  }
 }

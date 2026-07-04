@@ -19,11 +19,10 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
     final tabs = provider.tabs;
     final activeIndex = provider.activeTabIndex;
 
-    return Container(
+    // 无背景色 Container —— 让标签页栏直接浮在 Scaffold 背景上，
+    // 与上方 AppBar 视觉融合为一整块顶部区域（与分类页一致）。
+    return SizedBox(
       height: 32,
-      decoration: BoxDecoration(
-        color: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
-      ),
       child: Row(
         children: [
           Expanded(
@@ -104,11 +103,6 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
               },
             ),
           ),
-          Container(
-            height: 32,
-            width: 1,
-            color: theme.dividerColor.withOpacity(0.12),
-          ),
           IconButton(
             constraints: const BoxConstraints(),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -125,42 +119,6 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
                 );
               });
             },
-          ),
-          PopupMenuButton<String>(
-            constraints: const BoxConstraints(),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            icon: const Icon(Broken.more, size: 20),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            position: PopupMenuPosition.under,
-            onSelected: (value) {
-              if (value == 'close_others') {
-                provider.closeOtherTabs();
-              } else if (value == 'duplicate') {
-                provider.duplicateActiveTab();
-              }
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'duplicate',
-                child: Row(
-                  children: [
-                    Icon(Broken.copy, size: 18),
-                    SizedBox(width: 10),
-                    Text(L10n.of(context).msg4e9c344a, style: TextStyle(fontWeight: FontWeight.w500)),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'close_others',
-                child: Row(
-                  children: [
-                    Icon(Broken.close_circle, size: 18),
-                    SizedBox(width: 10),
-                    Text(L10n.of(context).msg7716532d, style: TextStyle(fontWeight: FontWeight.w500)),
-                  ],
-                ),
-              ),
-            ],
           ),
         ],
       ),

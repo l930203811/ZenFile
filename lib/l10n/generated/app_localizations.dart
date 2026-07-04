@@ -415,8 +415,14 @@ abstract class L10n {
   /// ui\screens\about_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'v1.0.42 (查看)'**
+  /// **'v1.0.43 (查看)'**
   String get v1041;
+
+  /// Button label to view changelog on the about screen
+  ///
+  /// In zh, this message translates to:
+  /// **'查看更新'**
+  String get ui_view_update;
 
   /// ui\screens\about_screen.dart
   ///
@@ -547,7 +553,7 @@ abstract class L10n {
   /// ui\screens\about_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'下载 ZenFile v1.0.42'**
+  /// **'下载 ZenFile'**
   String get zenfilev1041;
 
   /// ui\screens\about_screen.dart
@@ -1927,7 +1933,7 @@ abstract class L10n {
   /// ui\screens\more_settings_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'在浏览页底部启用快速创建（+）按钮'**
+  /// **'在浏览页显示操作按钮栏，含后退、前进、新建、复制标签页、向上'**
   String get msg11b1ec65;
 
   /// ui\screens\more_settings_screen.dart
@@ -4786,11 +4792,11 @@ abstract class L10n {
   /// **'未找到设置'**
   String get ui_no_settings_found;
 
-  /// No description provided for @ui_show_floating_button.
+  /// No description provided for @ui_show_action_bar.
   ///
   /// In zh, this message translates to:
-  /// **'显示浮动按钮'**
-  String get ui_show_floating_button;
+  /// **'显示操作按钮'**
+  String get ui_show_action_bar;
 
   /// No description provided for @ui_use_24h_format.
   ///
@@ -4839,6 +4845,36 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'隐藏三点操作按钮'**
   String get ui_hide_action_menu_buttons;
+
+  /// No description provided for @ui_show_action_menu_buttons.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示三点操作按钮'**
+  String get ui_show_action_menu_buttons;
+
+  /// No description provided for @ui_action_menu_subtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择三点菜单按钮的显示模式，关闭后文件和文件夹右侧将不显示三点按钮'**
+  String get ui_action_menu_subtitle;
+
+  /// No description provided for @ui_action_menu_mode_all.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部显示'**
+  String get ui_action_menu_mode_all;
+
+  /// No description provided for @ui_action_menu_mode_single.
+  ///
+  /// In zh, this message translates to:
+  /// **'仅在单窗口模式显示'**
+  String get ui_action_menu_mode_single;
+
+  /// No description provided for @ui_action_menu_mode_dual.
+  ///
+  /// In zh, this message translates to:
+  /// **'仅在双窗口模式显示'**
+  String get ui_action_menu_mode_dual;
 
   /// No description provided for @ui_enable_drag_drop.
   ///
@@ -5398,6 +5434,30 @@ abstract class L10n {
   /// **'用户名（可选）'**
   String get ui_username_optional;
 
+  /// No description provided for @ui_share_name_optional.
+  ///
+  /// In zh, this message translates to:
+  /// **'共享名（可选）'**
+  String get ui_share_name_optional;
+
+  /// No description provided for @ui_share_name_hint.
+  ///
+  /// In zh, this message translates to:
+  /// **'如 /Public，留空则自动探测'**
+  String get ui_share_name_hint;
+
+  /// No description provided for @ui_smb_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'局域网与 SMB NAS 共享'**
+  String get ui_smb_desc;
+
+  /// No description provided for @ui_connection_suffix.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接'**
+  String get ui_connection_suffix;
+
   /// No description provided for @ui_back.
   ///
   /// In zh, this message translates to:
@@ -5619,6 +5679,108 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'启用底部导航栏时，优化浏览页顶部区域布局，增加文件列表显示空间'**
   String get log_browse_top_area_optimize;
+
+  /// No description provided for @log_thanks_feedback.
+  ///
+  /// In zh, this message translates to:
+  /// **'感谢以下用户反馈与建议：越界、猕猴桃、Sir Jagadeesh Chandra Bose'**
+  String get log_thanks_feedback;
+
+  /// No description provided for @log_smb_native_rewrite.
+  ///
+  /// In zh, this message translates to:
+  /// **'SMB 客户端完全重写，通过 Android 原生 smbj 库实现真实 SMB 协议，支持自动探测共享名'**
+  String get log_smb_native_rewrite;
+
+  /// No description provided for @log_ftp_sftp_streaming.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复 FTP/SFTP 流式播放，使用原生 Socket 独立数据连接，支持边缓存边播放'**
+  String get log_ftp_sftp_streaming;
+
+  /// No description provided for @log_remote_l10n_fix.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复远程连接页硬编码字符串，新增 SMB 协议描述与连接名称后缀的 l10n 翻译'**
+  String get log_remote_l10n_fix;
+
+  /// No description provided for @log_image_viewer_menu.
+  ///
+  /// In zh, this message translates to:
+  /// **'图片浏览器右上角菜单改为底部弹窗，9 个操作项，黑色半透明背景提升可见性'**
+  String get log_image_viewer_menu;
+
+  /// No description provided for @log_breadcrumb_border.
+  ///
+  /// In zh, this message translates to:
+  /// **'面包屑按钮新增 V 形完整边框，使用 CustomPaint 绘制，相邻按钮无缝衔接且有清晰边界'**
+  String get log_breadcrumb_border;
+
+  /// No description provided for @log_three_dot_button_position.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件/文件夹三点操作按钮调整到卡片右上角，避免拖动时误触'**
+  String get log_three_dot_button_position;
+
+  /// No description provided for @log_three_dot_button_setting.
+  ///
+  /// In zh, this message translates to:
+  /// **'三点操作按钮设置项改为「显示三点操作按钮」，支持全部显示/仅单窗口/仅双窗口三种模式'**
+  String get log_three_dot_button_setting;
+
+  /// No description provided for @log_category_back_select.
+  ///
+  /// In zh, this message translates to:
+  /// **'分类页多选模式下按返回键取消选择，而不是退出类别'**
+  String get log_category_back_select;
+
+  /// No description provided for @log_desktop_lyric.
+  ///
+  /// In zh, this message translates to:
+  /// **'新增桌面歌词悬浮窗，支持权限检查、拖动位置、单击切换播放/暂停'**
+  String get log_desktop_lyric;
+
+  /// No description provided for @log_notification_panel.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复下拉通知栏不显示播放控制面板，暂停时保留通知，权限拒绝时提示用户'**
+  String get log_notification_panel;
+
+  /// No description provided for @log_lyric_word_highlight.
+  ///
+  /// In zh, this message translates to:
+  /// **'悬浮歌词支持逐字高亮，使用 SpannableStringBuilder 实现卡拉OK效果'**
+  String get log_lyric_word_highlight;
+
+  /// No description provided for @log_floating_window_resize.
+  ///
+  /// In zh, this message translates to:
+  /// **'悬浮歌词窗口支持长按显示缩放手柄，拖拽调整窗口大小与文字大小'**
+  String get log_floating_window_resize;
+
+  /// No description provided for @log_background_play_fix.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复开启后台播放时暂停音乐的问题，attach 复用 player 实例不中断播放'**
+  String get log_background_play_fix;
+
+  /// No description provided for @log_category_button_sync.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复未开启后台播放时音频类别页播放按钮显示旧音频信息，返回时刷新按钮状态'**
+  String get log_category_button_sync;
+
+  /// No description provided for @log_build_stability.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复 R8 编译 OOM、x86_64/armv7 启动白屏，调整 Gradle JVM 内存与 ABI 下载'**
+  String get log_build_stability;
+
+  /// No description provided for @log_lyric_scale_animation.
+  ///
+  /// In zh, this message translates to:
+  /// **'逐字歌词过渡动画新增放大效果，修复同步问题，固定 300ms 过渡时长'**
+  String get log_lyric_scale_animation;
 
   /// No description provided for @msg_remember_choice.
   ///
@@ -6801,6 +6963,30 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'单个APK'**
   String get ui_app_single_apk;
+
+  /// Desktop lyric floating window toggle in audio player more menu
+  ///
+  /// In zh, this message translates to:
+  /// **'桌面歌词'**
+  String get ui_desktop_lyric;
+
+  /// Shown when overlay permission is denied while enabling desktop lyric
+  ///
+  /// In zh, this message translates to:
+  /// **'需要悬浮窗权限才能显示桌面歌词，请前往设置授权后重试'**
+  String get msg_overlay_permission_required;
+
+  /// Shown when notification permission is denied while enabling background playback
+  ///
+  /// In zh, this message translates to:
+  /// **'需要通知权限才能显示播放控制面板，是否前往设置开启？'**
+  String get msg_notification_permission_denied;
+
+  /// Action button on the SnackBar to open app settings when notification permission is denied
+  ///
+  /// In zh, this message translates to:
+  /// **'去设置'**
+  String get msg_open_settings;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

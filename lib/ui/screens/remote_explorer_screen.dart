@@ -169,9 +169,14 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
         await provider.openFile(context, streamUrl, isRemoteStream: true);
         return;
       }
-      // Non-HTTP protocols (FTP/SFTP): use local streaming proxy
+      // Non-HTTP protocols (FTP/SFTP/SMB): use local streaming proxy
       try {
-        final proxyUrl = await RemoteStreamingService.instance.startStreaming(_client!, item.path, item.name);
+        final proxyUrl = await RemoteStreamingService.instance.startStreaming(
+          _client!,
+          item.path,
+          item.name,
+          fileSize: item.size > 0 ? item.size : null,
+        );
         if (!mounted) return;
         final provider = context.read<FileManagerProvider>();
         await provider.openFile(context, proxyUrl, isRemoteStream: true);
@@ -1248,11 +1253,13 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       );
     }
 
-    if (!enableThumbnail || (!isImage && !isVideo && !isAudio)) {
-      // 默认文件图标
+    // For remote video/audio files, skip thumbnail download — downloading the
+    // entire file just for a thumbnail causes severe UI lag on SFTP/FTP.
+    // Only generate thumbnails for images (which are typically small).
+    if (!enableThumbnail || !isImage) {
       IconData iconData = Broken.document;
       if (isVideo) iconData = Broken.video;
-      else if (['.mp3', '.aac', '.wav', '.flac', '.m4a', '.ogg'].contains(ext)) iconData = Broken.audio_square;
+      else if (isAudio) iconData = Broken.audio_square;
       else if (['.txt', '.log', '.md', '.json', '.xml', '.html'].contains(ext)) iconData = Broken.document_text;
       else if (['.zip', '.rar', '.7z', '.tar', '.gz'].contains(ext)) iconData = Broken.archive;
 
@@ -1268,7 +1275,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       );
     }
 
-    // 缩略图模式
+    // Image thumbnail: download and show (images are typically small)
     return FutureBuilder<String?>(
       future: _getRemoteThumbnailPath(item),
       builder: (context, snapshot) {

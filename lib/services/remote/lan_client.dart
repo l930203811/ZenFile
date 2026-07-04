@@ -1,14 +1,14 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'remote_client.dart';
-import 'package:zenfile/l10n/generated/app_localizations.dart';
 
+/// Discovered server entry on the local network.
 class LanDiscoveredServer {
   final String host;
   final int port;
-  final String type; // 'FTP', 'SFTP', '局域网/SMB', 'WebDav'
+  final String type; // 'FTP', 'SFTP', 'SMB', 'WebDav'
   final String name;
 
   LanDiscoveredServer({
@@ -19,21 +19,38 @@ class LanDiscoveredServer {
   });
 }
 
+/// Real SMB client backed by Android native smbj via MethodChannel.
+///
+/// Communication protocol:
+///   1. `connect()` opens an SMB session on the native side and returns a
+///      `sessionId` (UUID) which is stored on this instance.
+///   2. All subsequent operations (`listDirectory`, `downloadFile`, etc.)
+///      pass the `sessionId` to the native side so it can look up the
+///      cached `DiskShare`.
+///   3. `disconnect()` releases native resources.
+///
+/// Paths use forward slashes (`/`) on the Dart side and are converted to
+/// backslashes inside the native helper. The first path segment is treated
+/// as the SMB share name; e.g. `/Public/Movies/film.mp4` resolves to
+/// share=`Public`, path=`\Movies\film.mp4`.
 class LanClient implements RemoteClient {
+  static const MethodChannel _channel = MethodChannel('com.sequl.zenfile/smb');
+
   final String host;
   final int port;
   final String username;
   final String password;
-  
-  static const String _smbPrefix = 'smb_virtual_fs_';
-  late SharedPreferences _prefs;
-  final List<RemoteFileItem> _virtualItems = [];
+  final String domain;
+
+  String? _sessionId;
+  bool _isConnected = false;
 
   LanClient({
     required this.host,
     required this.port,
     required this.username,
     required this.password,
+    this.domain = '',
   });
 
   static Future<List<String>> getLocalIps() async {
@@ -51,12 +68,14 @@ class LanClient implements RemoteClient {
     return ips;
   }
 
+  /// Scan the local subnet for likely file-share services.
+  /// This is a TCP port-probe only; it does not actually authenticate.
   static Future<List<LanDiscoveredServer>> scanSubnet({
     required Function(double progress) onProgress,
   }) async {
     final discovered = <LanDiscoveredServer>[];
     final localIps = await getLocalIps();
-    
+
     var baseSubnet = '192.168.1';
     if (localIps.isNotEmpty) {
       final parts = localIps.first.split('.');
@@ -68,15 +87,14 @@ class LanClient implements RemoteClient {
     final targetPorts = {
       21: 'FTP',
       22: 'SFTP',
-      445: '局域网/SMB',
+      445: 'SMB',
       80: 'WebDav',
       8080: 'WebDav',
     };
 
     const maxIps = 254;
     var scannedCount = 0;
-    
-    // Scan in parallel batches
+
     final futures = <Future<void>>[];
     for (var i = 1; i <= maxIps; i++) {
       final ip = '$baseSubnet.$i';
@@ -85,7 +103,8 @@ class LanClient implements RemoteClient {
           final port = entry.key;
           final type = entry.value;
           try {
-            final socket = await Socket.connect(ip, port, timeout: const Duration(milliseconds: 150));
+            final socket = await Socket.connect(ip, port,
+                timeout: const Duration(milliseconds: 150));
             socket.destroy();
             discovered.add(LanDiscoveredServer(
               host: ip,
@@ -104,194 +123,208 @@ class LanClient implements RemoteClient {
     return discovered;
   }
 
-  String get _storageKey => '$_smbPrefix${host}_${port}';
+  bool get _connected {
+    return _isConnected && _sessionId != null;
+  }
+
+  String get _requireSession {
+    final id = _sessionId;
+    if (!_connected || id == null) {
+      throw Exception('SMB session not established. Call connect() first.');
+    }
+    return id;
+  }
 
   @override
   Future<void> connect() async {
-    _prefs = await SharedPreferences.getInstance();
-    // Load virtual structure or populate initial items
-    final stored = _prefs.getString(_storageKey);
-    _virtualItems.clear();
-    
-    if (stored != null) {
-      try {
-        final decoded = json.decode(stored) as List<dynamic>;
-        for (final item in decoded) {
-          final map = item as Map<String, dynamic>;
-          _virtualItems.add(RemoteFileItem(
-            name: map['name'] as String,
-            path: map['path'] as String,
-            isDirectory: map['isDirectory'] as bool,
-            size: map['size'] as int,
-            modified: DateTime.parse(map['modified'] as String),
-          ));
-        }
-      } catch (_) {
-        _loadDefaultStructure();
+    if (_connected) return;
+    try {
+      final result = await _channel.invokeMethod<String>('connect', {
+        'host': host,
+        'port': port,
+        'username': username,
+        'password': password,
+        'domain': domain,
+      }).timeout(const Duration(seconds: 30));
+      if (result == null || result.isEmpty) {
+        throw Exception('Native SMB client returned empty session id');
       }
-    } else {
-      _loadDefaultStructure();
-      await _saveStructure();
+      _sessionId = result;
+      _isConnected = true;
+    } on PlatformException catch (e) {
+      _isConnected = false;
+      _sessionId = null;
+      throw Exception('SMB connect failed: ${e.code}: ${e.message}');
+    } on TimeoutException {
+      _isConnected = false;
+      _sessionId = null;
+      throw Exception('SMB connect timed out after 30s (host=$host:$port)');
     }
-  }
-
-  void _loadDefaultStructure() {
-    _virtualItems.addAll([
-      RemoteFileItem(
-        name: 'Shared_Media',
-        path: '/Shared_Media',
-        isDirectory: true,
-        size: 0,
-        modified: DateTime.now().subtract(const Duration(days: 3)),
-      ),
-      RemoteFileItem(
-        name: 'Office_Documents',
-        path: '/Office_Documents',
-        isDirectory: true,
-        size: 0,
-        modified: DateTime.now().subtract(const Duration(days: 1)),
-      ),
-      RemoteFileItem(
-        name: 'lan_read_me.txt',
-        path: '/lan_read_me.txt',
-        isDirectory: false,
-        size: 1450,
-        modified: DateTime.now(),
-      ),
-    ]);
-  }
-
-  Future<void> _saveStructure() async {
-    final list = _virtualItems.map((e) => {
-      'name': e.name,
-      'path': e.path,
-      'isDirectory': e.isDirectory,
-      'size': e.size,
-      'modified': e.modified.toIso8601String(),
-    }).toList();
-    await _prefs.setString(_storageKey, json.encode(list));
   }
 
   @override
   Future<void> disconnect() async {
-    // No-op
+    final id = _sessionId;
+    if (id == null) {
+      _isConnected = false;
+      return;
+    }
+    try {
+      await _channel.invokeMethod<bool>('disconnect', {'sessionId': id})
+          .timeout(const Duration(seconds: 10));
+    } catch (e) {
+      debugPrint('SMB disconnect error: $e');
+    } finally {
+      _sessionId = null;
+      _isConnected = false;
+    }
   }
 
+  String _normalizePath(String path) {
+    if (path.isEmpty) return '/';
+    if (!path.startsWith('/')) path = '/$path';
+    // Collapse multiple slashes but keep leading/trailing single slashes.
+    while (path.contains('//')) {
+      path = path.replaceAll('//', '/');
+    }
+    return path;
+  }
+
+  /// Lists directory contents. For root path "/", the native side returns
+  /// available SMB shares. For paths like "/{share}/...", it lists the
+  /// contents within that share.
   @override
   Future<List<RemoteFileItem>> listDirectory(String path) async {
-    final cleanPath = path == '/' ? '' : path;
-    return _virtualItems.where((item) {
-      final parent = item.path.substring(0, item.path.lastIndexOf('/'));
-      final checkParent = parent.isEmpty ? '' : parent;
-      return checkParent == cleanPath;
-    }).toList();
+    final session = _requireSession;
+    final normalized = _normalizePath(path);
+
+    final result = await _channel.invokeMethod<List<dynamic>>(
+      'listDirectory',
+      {'sessionId': session, 'path': normalized},
+    ).timeout(const Duration(seconds: 30));
+
+    if (result == null) return <RemoteFileItem>[];
+
+    final items = <RemoteFileItem>[];
+    for (final entry in result) {
+      if (entry is! Map) continue;
+      try {
+        final map = Map<String, dynamic>.from(entry);
+        final name = map['name'] as String? ?? '';
+        if (name.isEmpty || name == '.' || name == '..') continue;
+        final itemPath = map['path'] as String? ?? '/$name';
+        final isDir = map['isDirectory'] as bool? ?? false;
+        final size = (map['size'] as num?)?.toInt() ?? 0;
+        final modifiedMs = (map['modified'] as num?)?.toInt() ?? 0;
+        items.add(RemoteFileItem(
+          name: name,
+          path: itemPath,
+          isDirectory: isDir,
+          size: size,
+          modified: modifiedMs > 0
+              ? DateTime.fromMillisecondsSinceEpoch(modifiedMs)
+              : DateTime.now(),
+        ));
+      } catch (e) {
+        debugPrint('SMB list entry parse error: $e');
+      }
+    }
+    return items;
   }
 
   @override
   Future<void> createDirectory(String path) async {
-    final name = path.split('/').last;
-    if (_virtualItems.any((e) => e.path == path)) return;
-    
-    _virtualItems.add(RemoteFileItem(
-      name: name,
-      path: path,
-      isDirectory: true,
-      size: 0,
-      modified: DateTime.now(),
-    ));
-    await _saveStructure();
+    final session = _requireSession;
+    await _channel.invokeMethod<bool>('createDirectory', {
+      'sessionId': session,
+      'path': _normalizePath(path),
+    }).timeout(const Duration(seconds: 30));
   }
 
   @override
   Future<void> createFile(String path) async {
-    final name = path.split('/').last;
-    if (_virtualItems.any((e) => e.path == path)) return;
-    _virtualItems.add(RemoteFileItem(
-      name: name,
-      path: path,
-      isDirectory: false,
-      size: 0,
-      modified: DateTime.now(),
-    ));
-    await _saveStructure();
+    final session = _requireSession;
+    await _channel.invokeMethod<bool>('createFile', {
+      'sessionId': session,
+      'path': _normalizePath(path),
+    }).timeout(const Duration(seconds: 30));
   }
 
   @override
   Future<void> delete(String path, bool isDir) async {
-    _virtualItems.removeWhere((e) => e.path == path || e.path.startsWith('$path/'));
-    await _saveStructure();
+    final session = _requireSession;
+    await _channel.invokeMethod<bool>('delete', {
+      'sessionId': session,
+      'path': _normalizePath(path),
+      'isDir': isDir,
+    }).timeout(const Duration(seconds: 30));
   }
 
   @override
   Future<void> rename(String oldPath, String newPath) async {
-    final index = _virtualItems.indexWhere((e) => e.path == oldPath);
-    if (index == -1) throw Exception('Item not found: $oldPath');
-
-    final item = _virtualItems[index];
-    final newName = newPath.split('/').last;
-
-    _virtualItems[index] = RemoteFileItem(
-      name: newName,
-      path: newPath,
-      isDirectory: item.isDirectory,
-      size: item.size,
-      modified: DateTime.now(),
-    );
-
-    // Update children paths if directory
-    if (item.isDirectory) {
-      final oldPrefix = '$oldPath/';
-      final newPrefix = '$newPath/';
-      for (var i = 0; i < _virtualItems.length; i++) {
-        if (_virtualItems[i].path.startsWith(oldPrefix)) {
-          final child = _virtualItems[i];
-          final updatedPath = newPrefix + child.path.substring(oldPrefix.length);
-          _virtualItems[i] = RemoteFileItem(
-            name: child.name,
-            path: updatedPath,
-            isDirectory: child.isDirectory,
-            size: child.size,
-            modified: child.modified,
-          );
-        }
-      }
-    }
-
-    await _saveStructure();
+    final session = _requireSession;
+    await _channel.invokeMethod<bool>('rename', {
+      'sessionId': session,
+      'oldPath': _normalizePath(oldPath),
+      'newPath': _normalizePath(newPath),
+    }).timeout(const Duration(seconds: 30));
   }
 
   @override
-  Future<void> downloadFile(String remotePath, String localPath, Function(double progress) onProgress) async {
-    final item = _virtualItems.firstWhere((e) => e.path == remotePath, 
-      orElse: () => throw Exception('File not found')
-    );
-    
-    final localFile = File(localPath);
-    if (localFile.existsSync()) {
-      localFile.deleteSync();
+  Future<void> downloadFile(
+    String remotePath,
+    String localPath,
+    Function(double progress) onProgress,
+  ) async {
+    final session = _requireSession;
+    final file = File(localPath);
+    if (file.existsSync()) file.deleteSync();
+    file.parent.createSync(recursive: true);
+
+    // Kick off the download on the native side. The native helper streams
+    // the bytes to disk synchronously (from this isolate's perspective),
+    // so we emulate progress by polling the file size while it grows.
+    final totalFuture = getFileSize(remotePath);
+
+    final downloadFuture = _channel.invokeMethod<bool>('downloadFile', {
+      'sessionId': session,
+      'remotePath': _normalizePath(remotePath),
+      'localPath': localPath,
+    });
+
+    int totalSize = -1;
+    try {
+      totalSize = await totalFuture;
+    } catch (_) {
+      totalSize = -1;
     }
-    
-    // Write mock content
-    final sink = localFile.openWrite();
-    final text = 'ZenFile 局域网/SMB Virtual Storage Bridge\n'
-        'File: ${item.name}\n'
-        'Path: ${item.path}\n'
-        'Size: ${item.size} bytes\n'
-        'Successfully fetched from host IP $host.\n'
-        '${"*" * 100}\n';
-    
-    final bytes = utf8.encode(text);
-    
-    // Simulate network progress
-    const steps = 10;
-    for (var i = 1; i <= steps; i++) {
-      await Future.delayed(const Duration(milliseconds: 60));
-      onProgress(i / steps);
+
+    // Poll progress until the download completes.
+    Timer? progressTimer;
+    if (totalSize > 0) {
+      progressTimer = Timer.periodic(const Duration(milliseconds: 100), (_) {
+        try {
+          if (file.existsSync()) {
+            final current = file.lengthSync();
+            onProgress((current / totalSize).clamp(0.0, 0.99));
+          }
+        } catch (_) {}
+      });
     }
-    
-    sink.add(bytes);
-    await sink.flush();
-    await sink.close();
+
+    try {
+      final success = await downloadFuture.timeout(
+        const Duration(minutes: 30),
+      );
+      if (success != true) {
+        throw Exception('SMB download returned false');
+      }
+      onProgress(1.0);
+    } on TimeoutException {
+      throw Exception('SMB download timed out');
+    } finally {
+      progressTimer?.cancel();
+    }
   }
 
   @override
@@ -300,32 +333,75 @@ class LanClient implements RemoteClient {
     String remotePath,
     Function(double progress) onProgress,
   ) async {
+    final session = _requireSession;
     final localFile = File(localPath);
-    if (!localFile.existsSync()) throw Exception('Local file not found: $localPath');
-
-    final size = await localFile.length();
-    final name = remotePath.split('/').last;
-
-    onProgress(0.0);
-    // Simulate transfer
-    for (var i = 1; i <= 5; i++) {
-      await Future.delayed(const Duration(milliseconds: 80));
-      onProgress(i / 5);
+    if (!localFile.existsSync()) {
+      throw Exception('Local file not found: $localPath');
     }
 
-    // Add to virtual FS
-    _virtualItems.removeWhere((e) => e.path == remotePath);
-    _virtualItems.add(RemoteFileItem(
-      name: name,
-      path: remotePath,
-      isDirectory: false,
-      size: size,
-      modified: DateTime.now(),
-    ));
-    await _saveStructure();
-    onProgress(1.0);
+    final totalSize = await localFile.length();
+    final uploadFuture = _channel.invokeMethod<bool>('uploadFile', {
+      'sessionId': session,
+      'localPath': localPath,
+      'remotePath': _normalizePath(remotePath),
+    });
+
+    // Since the native upload is a blocking call with no progress reporting,
+    // we report a slowly increasing fake progress so the UI shows activity
+    // instead of being stuck at 0%.
+    Timer? progressTimer;
+    double fakeProgress = 0.0;
+    if (totalSize > 0) {
+      // Estimate upload time based on a conservative 2 MB/s speed
+      final estimatedSeconds = (totalSize / (2 * 1024 * 1024)).ceil();
+      final increment = 1.0 / (estimatedSeconds * 10); // 10 ticks per second
+      progressTimer = Timer.periodic(const Duration(milliseconds: 100), (_) {
+        fakeProgress = (fakeProgress + increment).clamp(0.0, 0.95);
+        onProgress(fakeProgress);
+      });
+    } else {
+      // For empty or unknown-size files, just report a small tick
+      progressTimer = Timer.periodic(const Duration(milliseconds: 200), (_) {
+        fakeProgress = (fakeProgress + 0.02).clamp(0.0, 0.95);
+        onProgress(fakeProgress);
+      });
+    }
+
+    try {
+      final success = await uploadFuture.timeout(
+        const Duration(minutes: 30),
+      );
+      if (success != true) {
+        throw Exception('SMB upload returned false');
+      }
+      onProgress(1.0);
+    } on TimeoutException {
+      throw Exception('SMB upload timed out');
+    } finally {
+      progressTimer?.cancel();
+    }
   }
 
   @override
-  String? getStreamUrl(String remotePath) => null;
+  String? getStreamUrl(String remotePath) {
+    // SMB cannot expose an HTTP URL for direct streaming. The
+    // RemoteStreamingService will download the file progressively and serve
+    // it via the local HTTP proxy instead.
+    return null;
+  }
+
+  @override
+  Future<int> getFileSize(String remotePath) async {
+    final session = _requireSession;
+    try {
+      final result = await _channel.invokeMethod<num>('getFileSize', {
+        'sessionId': session,
+        'remotePath': _normalizePath(remotePath),
+      }).timeout(const Duration(seconds: 10));
+      return result?.toInt() ?? -1;
+    } catch (e) {
+      debugPrint('SMB getFileSize error: $e');
+      return -1;
+    }
+  }
 }

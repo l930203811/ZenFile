@@ -733,21 +733,16 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
               const SizedBox(height: 8),
               ...connections.map((conn) {
                 IconData iconData;
-                switch (conn.type) {
-                  case 'FTP':
-                    iconData = Icons.swap_horizontal_circle_rounded;
-                    break;
-                  case 'SFTP':
-                    iconData = Icons.vpn_lock_rounded;
-                    break;
-                  case 'WebDav':
-                    iconData = Icons.web_rounded;
-                    break;
-                  case '局域网/SMB':
-                    iconData = Icons.computer_rounded;
-                    break;
-                  default:
-                    iconData = Broken.wifi;
+                if (FileManagerProvider.isSmbType(conn.type)) {
+                  iconData = Icons.computer_rounded;
+                } else if (conn.type == 'FTP') {
+                  iconData = Icons.swap_horizontal_circle_rounded;
+                } else if (conn.type == 'SFTP') {
+                  iconData = Icons.vpn_lock_rounded;
+                } else if (conn.type == 'WebDav') {
+                  iconData = Icons.web_rounded;
+                } else {
+                  iconData = Broken.wifi;
                 }
                 return ListTile(
                   leading: Container(

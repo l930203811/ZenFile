@@ -185,7 +185,10 @@ class L10nRu extends L10n {
   String get zenfile1 => 'О ZenFile';
 
   @override
-  String get v1041 => 'v1.0.42 (Просмотр)';
+  String get v1041 => 'v1.0.43 (Просмотр)';
+
+  @override
+  String get ui_view_update => 'Посмотреть обновления';
 
   @override
   String get zenfileflutter =>
@@ -255,7 +258,7 @@ class L10nRu extends L10n {
       'Нажмите и удерживайте изображение, чтобы сохранить в галерею. Спасибо за вашу поддержку!';
 
   @override
-  String get zenfilev1041 => 'Скачать ZenFile v1.0.42';
+  String get zenfilev1041 => 'Скачать ZenFile';
 
   @override
   String get msg9d287020 => '123 Cloud Drive';
@@ -1029,7 +1032,7 @@ class L10nRu extends L10n {
 
   @override
   String get msg11b1ec65 =>
-      'Включить кнопку быстрого создания (+) внизу страницы обзора';
+      'Показать панель действий на странице обзора (назад, вперёд, создать, дублировать вкладку, вверх)';
 
   @override
   String get msg7e7765b6 =>
@@ -2633,7 +2636,7 @@ class L10nRu extends L10n {
   String get ui_no_settings_found => 'Настройки не найдены';
 
   @override
-  String get ui_show_floating_button => 'Показать Плавающую Кнопку';
+  String get ui_show_action_bar => 'Показать Панель Действий';
 
   @override
   String get ui_use_24h_format => 'Использовать 24-Часовой Формат';
@@ -2659,6 +2662,22 @@ class L10nRu extends L10n {
 
   @override
   String get ui_hide_action_menu_buttons => 'Скрыть Кнопки Меню Действий';
+
+  @override
+  String get ui_show_action_menu_buttons => 'Показать Кнопки Меню Действий';
+
+  @override
+  String get ui_action_menu_subtitle =>
+      'Выберите режим отображения кнопки трёх точек. При выключении кнопка не отображается рядом с файлами и папками.';
+
+  @override
+  String get ui_action_menu_mode_all => 'Показывать во всех режимах';
+
+  @override
+  String get ui_action_menu_mode_single => 'Только в однооконном режиме';
+
+  @override
+  String get ui_action_menu_mode_dual => 'Только в двухоконном режиме';
 
   @override
   String get ui_enable_drag_drop => 'Включить Перетаскивание';
@@ -2974,6 +2993,19 @@ class L10nRu extends L10n {
   String get ui_username_optional => 'Имя Пользователя (Необязательно)';
 
   @override
+  String get ui_share_name_optional => 'Имя общей папки (необязательно)';
+
+  @override
+  String get ui_share_name_hint =>
+      'напр. /Public или пусто для автоопределения';
+
+  @override
+  String get ui_smb_desc => 'Локальная сеть и общий ресурс NAS SMB';
+
+  @override
+  String get ui_connection_suffix => 'Подключение';
+
+  @override
   String get ui_back => 'Назад';
 
   @override
@@ -3116,6 +3148,74 @@ class L10nRu extends L10n {
   @override
   String get log_browse_top_area_optimize =>
       'Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space';
+
+  @override
+  String get log_thanks_feedback =>
+      'Благодарим следующих пользователей за отзывы и предложения: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose';
+
+  @override
+  String get log_smb_native_rewrite =>
+      'Полностью переписан SMB-клиент с использованием нативной библиотеки Android smbj для реального протокола SMB, с автоматическим определением имени общего ресурса';
+
+  @override
+  String get log_ftp_sftp_streaming =>
+      'Исправлена потоковая передача FTP/SFTP с использованием сырого Socket с независимым подключением данных, поддерживает прогрессивное кэширование';
+
+  @override
+  String get log_remote_l10n_fix =>
+      'Исправлены жёстко закодированные строки на странице удалённого подключения, добавлены l10n-ключи для описания протокола SMB и суффикса имени подключения';
+
+  @override
+  String get log_image_viewer_menu =>
+      'Меню в правом верхнем углу просмотрщика изображений изменено на нижний лист, 9 элементов действий, чёрный полупрозрачный фон для видимости';
+
+  @override
+  String get log_breadcrumb_border =>
+      'Добавлена V-образная полная граница к кнопкам навигации с использованием CustomPaint, обеспечивая бесшовное соединение и чёткие границы';
+
+  @override
+  String get log_three_dot_button_position =>
+      'Кнопки действия с тремя точками файлов/папок перемещены в правый верхний угол карточек для предотвращения случайных нажатий при перетаскивании';
+
+  @override
+  String get log_three_dot_button_setting =>
+      'Настройка кнопки с тремя точками переименована в \'Показывать кнопки с тремя точками\' с тремя режимами: все/только одно окно/только двойное окно';
+
+  @override
+  String get log_category_back_select =>
+      'В режиме множественного выбора категории кнопка «Назад» теперь отменяет выбор вместо выхода из категории';
+
+  @override
+  String get log_desktop_lyric =>
+      'Добавлено плавающее окно текстов песен на рабочем столе с проверкой разрешений, перетаскиваемой позицией и нажатием для переключения воспроизведения/паузы';
+
+  @override
+  String get log_notification_panel =>
+      'Исправлена панель уведомлений, не отображающая элементы управления воспроизведением, уведомление сохраняется при паузе, с подсказками при отказе в разрешении';
+
+  @override
+  String get log_lyric_word_highlight =>
+      'Плавающий текст песни поддерживает пословное выделение с использованием SpannableStringBuilder для эффекта караоке';
+
+  @override
+  String get log_floating_window_resize =>
+      'Плавающее окно текстов песен поддерживает долгое нажатие для отображения маркера изменения размера, перетаскивание для настройки размера окна и текста';
+
+  @override
+  String get log_background_play_fix =>
+      'Исправлена пауза музыки при включении фоновой воспроизведения, attach повторно использует экземпляр плеера без прерывания';
+
+  @override
+  String get log_category_button_sync =>
+      'Исправлено отображение устаревшей аудиоинформации на кнопке воспроизведения на странице категории при выключенной фоновой воспроизведении, обновляется при возврате';
+
+  @override
+  String get log_build_stability =>
+      'Исправлены OOM компиляции R8, белый экран при запуске x86_64/armv7, настроена память JVM Gradle и загрузки ABI';
+
+  @override
+  String get log_lyric_scale_animation =>
+      'Добавлен эффект масштабирования к анимации перехода текстов песен по словам, исправлены проблемы синхронизации, зафиксирована длительность перехода 300мс';
 
   @override
   String get msg_remember_choice => 'Запомнить этот выбор для будущих операций';
@@ -3793,4 +3893,18 @@ class L10nRu extends L10n {
 
   @override
   String get ui_app_single_apk => 'Одиночный APK';
+
+  @override
+  String get ui_desktop_lyric => 'Текст на рабочем столе';
+
+  @override
+  String get msg_overlay_permission_required =>
+      'Для отображения текста на рабочем столе требуется разрешение на плавающее окно. Предоставьте его в Настройках и повторите попытку.';
+
+  @override
+  String get msg_notification_permission_denied =>
+      'Для отображения панели управления воспроизведением требуется разрешение на уведомления. Открыть Настройки, чтобы предоставить его?';
+
+  @override
+  String get msg_open_settings => 'В настройки';
 }

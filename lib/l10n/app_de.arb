@@ -203,9 +203,13 @@
   "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "v1041": "v1.0.42 (Anzeigen)",
-  "@zenfileflutter": {
+  "v1041": "v1.0.43 (Anzeigen)",
+  "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
+  },
+  "ui_view_update": "Updates ansehen",
+  "@ui_view_update": {
+    "description": "Button label to view changelog on the about screen"
   },
   "zenfileflutter": "ZenFile ist ein schöner, flüssiger, quelloffener Dateimanager und Offline-Mediacenter, entwickelt mit Flutter. Entworfen für maximale Leistung, klare Glasmorphismus-Ästhetik und nahtloses Benutzererlebnis.",
   "@msga12ebf50": {
@@ -291,7 +295,7 @@
   "@zenfilev1041": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfilev1041": "ZenFile v1.0.42 herunterladen",
+  "zenfilev1041": "ZenFile v1.0.43 herunterladen",
   "@msg9d287020": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -1211,7 +1215,7 @@
   "@msg11b1ec65": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg11b1ec65": "Schnellerstellen (+) Schaltfläche unten auf der Browse-Seite aktivieren",
+  "msg11b1ec65": "Aktionsleiste auf der Browse-Seite anzeigen (Zurück, Vorwärts, Neu, Tab duplizieren, Hoch)",
   "@msg7e7765b6": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -2944,7 +2948,7 @@
   "ui_media_preferences": "Medienpräferenzen",
   "ui_file_actions_viewers": "Dateiaktionen & Betrachter",
   "ui_no_settings_found": "Keine Einstellungen gefunden",
-  "ui_show_floating_button": "Schwebende Schaltfläche anzeigen",
+  "ui_show_action_bar": "Aktionsleiste anzeigen",
   "ui_use_24h_format": "24-Stunden-Format verwenden",
   "ui_show_folder_contents_count": "Ordnerinhaltanzahl anzeigen",
   "ui_show_folder_size": "Ordnergröße anzeigen",
@@ -2953,6 +2957,11 @@
   "ui_show_media_previews": "Medien-Miniaturvorschaubilder anzeigen",
   "ui_adaptive_multiline_names": "Adaptive mehrzeilige Dateinamen",
   "ui_hide_action_menu_buttons": "Aktions-Menü-Schaltflächen ausblenden",
+  "ui_show_action_menu_buttons": "Aktions-Menü-Schaltflächen anzeigen",
+  "ui_action_menu_subtitle": "Anzeigemodus für die Drei-Punkte-Menütaste wählen. Bei Ausblendung wird kein Drei-Punkte-Knopf neben Dateien und Ordnern angezeigt.",
+  "ui_action_menu_mode_all": "In allen Modi anzeigen",
+  "ui_action_menu_mode_single": "Nur im Einzelfenstermodus",
+  "ui_action_menu_mode_dual": "Nur im Doppel-Fenstermodus",
   "ui_enable_drag_drop": "Drag & Drop aktivieren",
   "ui_confirm_drag_drop": "Drag & Drop bestätigen",
   "ui_enable_multi_tabs": "Mehrere Tabs aktivieren",
@@ -3270,6 +3279,10 @@
   "ui_port": "Port",
   "ui_path_label": "Pfad",
   "ui_username_optional": "Benutzername (Optional)",
+  "ui_share_name_optional": "Freigabename (optional)",
+  "ui_share_name_hint": "z.B. /Public oder leer lassen für automatische Erkennung",
+  "ui_smb_desc": "Lokales Netzwerk & SMB NAS-Freigabe",
+  "ui_connection_suffix": "Verbindung",
   "ui_back": "Zurück",
   "ui_connect": "Verbinden",
   "ui_web_share": "Web-Freigabe",
@@ -3307,6 +3320,23 @@
       "log_remote_copy_paste_fix": "Behoben: Kopieren vom Remote-Server zeigt 0% Fortschritt und Dateien erscheinen nicht",
     "log_navbar_position_setting": "Added navigation bar position setting, support top or bottom display",
     "log_browse_top_area_optimize": "Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space",
+    "log_thanks_feedback": "Danke an folgende Nutzer für Feedback und Vorschläge: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose",
+    "log_smb_native_rewrite": "SMB-Client komplett neu geschrieben, verwendet native Android smbj-Bibliothek für echtes SMB-Protokoll, mit automatischer Share-Namenerkennung",
+    "log_ftp_sftp_streaming": "FTP/SFTP-Streaming-Wiedergabe repariert, verwendet rohes Socket mit unabhängiger Datenverbindung, unterstützt progressives Caching",
+    "log_remote_l10n_fix": "Hardcodierte Strings auf Remote-Verbindungsseite behoben, l10n-Keys für SMB-Protokollbeschreibung und Verbindungsnamenssuffix hinzugefügt",
+    "log_image_viewer_menu": "Bildbetrachter-Menü oben rechts in Bottom Sheet geändert, 9 Aktionen, schwarzer halbtransparenter Hintergrund für bessere Sichtbarkeit",
+    "log_breadcrumb_border": "V-förmigen kompletten Rahmen zu Breadcrumb-Buttons hinzugefügt, verwendet CustomPaint, nahtlose Verbindung und klare Grenzen",
+    "log_three_dot_button_position": "Datei/Ordner-Drei-Punkte-Aktionsbuttons in die obere rechte Ecke der Karten verschoben, um versehentliche Berührungen beim Ziehen zu vermeiden",
+    "log_three_dot_button_setting": "Drei-Punkte-Button-Einstellung in 'Drei-Punkte-Buttons anzeigen' umbenannt, mit drei Modi: alle/nur Einzelfenster/nur Dual-Fenster",
+    "log_category_back_select": "Im Mehrfachauswahlmodus der Kategorie bricht die Zurück-Taste die Auswahl ab, anstatt die Kategorie zu verlassen",
+    "log_desktop_lyric": "Desktop-Lyric-Schwebefenster hinzugefügt, mit Berechtigungsprüfung, ziehbarer Position und Tippen zum Umschalten von Wiedergabe/Pause",
+    "log_notification_panel": "Behoben: Benachrichtigungsleiste zeigt keine Wiedergabesteuerung, Benachrichtigung bei Pause beibehalten, mit Berechtigungsablehnungs-Hinweisen",
+    "log_lyric_word_highlight": "Schwebender Lyric-Text unterstützt wortweises Hervorheben mit SpannableStringBuilder für Karaoke-Effekt",
+    "log_floating_window_resize": "Schwebendes Lyric-Fenster unterstützt Long-Press zum Anzeigen des Größenänderungsgriffs, Ziehen zum Anpassen von Fenster- und Textgröße",
+    "log_background_play_fix": "Problem behoben, dass Musik beim Aktivieren der Hintergrundwiedergabe pausiert, attach verwendet Player-Instanz ohne Unterbrechung",
+    "log_category_button_sync": "Behoben: Wiedergabe-Button auf Kategorie-Seite zeigt alte Audio-Info bei deaktivierter Hintergrundwiedergabe, wird bei Rückkehr aktualisiert",
+    "log_build_stability": "R8-Kompilierung OOM behoben, x86_64/armv7 Start-Bildschirm weiß, Gradle JVM-Speicher und ABI-Downloads angepasst",
+    "log_lyric_scale_animation": "Skalierungseffekt zur wortweisen Lyric-Übergangsanimation hinzugefügt, Sync-Probleme behoben, 300ms Übergangsdauer festgelegt",
   "msg_file_exists": "Datei existiert bereits",
   "@msg_file_exists": {
     "description": "Conflict dialog title"
@@ -3783,5 +3813,21 @@
   "ui_app_single_apk": "Einzelnes APK",
   "@ui_app_single_apk": {
     "description": "App Manager single APK label"
+  },
+  "ui_desktop_lyric": "Desktop-Text",
+  "@ui_desktop_lyric": {
+    "description": "Desktop lyric floating window toggle in audio player more menu"
+  },
+  "msg_overlay_permission_required": "Für die Anzeige des Desktop-Textes ist die Berechtigung für schwebende Fenster erforderlich. Bitte erteilen Sie sie in den Einstellungen und versuchen Sie es erneut.",
+  "@msg_overlay_permission_required": {
+    "description": "Shown when overlay permission is denied while enabling desktop lyric"
+  },
+  "msg_notification_permission_denied": "Für die Anzeige des Wiedergabekontrollfelds ist die Berechtigung für Benachrichtigungen erforderlich. Einstellungen öffnen, um sie zu erteilen?",
+  "@msg_notification_permission_denied": {
+    "description": "Shown when notification permission is denied while enabling background playback"
+  },
+  "msg_open_settings": "Zu den Einstellungen",
+  "@msg_open_settings": {
+    "description": "Action button on the SnackBar to open app settings when notification permission is denied"
   }
 }

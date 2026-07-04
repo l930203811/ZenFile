@@ -325,70 +325,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     final fileManager = context.watch<FileManagerProvider>();
     final showBottomNav = fileManager.showBottomActionBar;
 
-    // 底部导航栏（开关开启时显示，顶部按钮全部移到底部，按原顺序排列，全部使用主题色）
-    Widget? bottomNav = showBottomNav
-        ? BottomAppBar(
-            elevation: 8,
-            color: theme.colorScheme.surface,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // 左侧：抽屉菜单 + 分类 + 浏览
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Builder(
-                      builder: (context) => IconButton(
-                        icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
-                        onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(Broken.category, color: theme.colorScheme.primary),
-                      tooltip: L10n.of(context).msg6e0f9cef,
-                      onPressed: () {
-                        _switchTab(0);
-                        context.read<MediaProvider>().refreshMediaBackground();
-                      },
-                    ),
-                    IconButton(
-                      icon: Icon(Broken.folder, color: theme.colorScheme.primary),
-                      tooltip: L10n.of(context).ui_browse,
-                      onPressed: () => _switchTab(1),
-                    ),
-                  ],
-                ),
-                // 右侧：刷新 + 主题切换 + 自定义
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: RotationTransition(
-                        turns: _refreshIconController,
-                        child: Icon(Broken.refresh, color: theme.colorScheme.primary),
-                      ),
-                      tooltip: L10n.of(context).msg354c1c9a,
-                      onPressed: _handleRefresh,
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        theme.brightness == Brightness.dark ? Broken.sun_1 : Broken.moon,
-                        color: theme.colorScheme.primary,
-                      ),
-                      onPressed: widget.toggleTheme,
-                    ),
-                    IconButton(
-                      icon: Icon(Broken.edit_2, color: theme.colorScheme.primary),
-                      tooltip: L10n.of(context).msg19021d08,
-                      onPressed: () => QuickCategoriesGrid.showCustomizeDialog(context, (index) => setState(() => _currentIndex = index)),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          )
-        : null;
-
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: showBottomNav
@@ -472,7 +408,77 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
           ),
         ],
       ),
-      bottomNavigationBar: bottomNav,
+      // 底部导航栏开启时，将完整 AppBar 内容（leading + actions）镜像到底部
+      // 用 Material+SafeArea+Row 模拟 AppBar 样式，避免 AppBar primary=true 导致的布局异常
+      bottomNavigationBar: showBottomNav
+          ? PreferredSize(
+              preferredSize: Size.fromHeight(kToolbarHeight + MediaQuery.of(context).padding.bottom),
+              child: Material(
+                color: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
+                elevation: 8,
+                child: SafeArea(
+                  top: false,
+                  child: SizedBox(
+                    height: kToolbarHeight,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // 左侧：抽屉 + 分类 + 浏览（与顶部 leading 一致）
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
+                              onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                _switchTab(0);
+                                context.read<MediaProvider>().refreshMediaBackground();
+                              },
+                              tooltip: L10n.of(context).msg6e0f9cef,
+                              icon: Icon(Broken.category, color: theme.colorScheme.primary),
+                            ),
+                            IconButton(
+                              onPressed: () => _switchTab(1),
+                              tooltip: L10n.of(context).ui_browse,
+                              icon: Icon(Broken.folder, color: theme.colorScheme.primary),
+                            ),
+                          ],
+                        ),
+                        // 右侧：刷新 + 主题切换 + 自定义（与顶部 actions 一致）
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              onPressed: _handleRefresh,
+                              tooltip: L10n.of(context).msg354c1c9a,
+                              icon: RotationTransition(
+                                turns: _refreshIconController,
+                                child: Icon(Broken.refresh, color: theme.colorScheme.primary),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: widget.toggleTheme,
+                              icon: Icon(
+                                theme.brightness == Brightness.dark ? Broken.sun_1 : Broken.moon,
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () => QuickCategoriesGrid.showCustomizeDialog(context, (index) => setState(() => _currentIndex = index)),
+                              tooltip: L10n.of(context).msg19021d08,
+                              icon: Icon(Broken.edit_2, color: theme.colorScheme.primary),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            )
+          : null,
     );
   }
 }

@@ -154,21 +154,16 @@ class ZenFileDrawer extends StatelessWidget {
                             ),
                             ...connections.map((conn) {
                               IconData iconData;
-                              switch (conn.type) {
-                                case '局域网/SMB':
-                                  iconData = Icons.dns_rounded;
-                                  break;
-                                case 'FTP':
-                                  iconData = Icons.swap_horizontal_circle_rounded;
-                                  break;
-                                case 'SFTP':
-                                  iconData = Icons.vpn_lock_rounded;
-                                  break;
-                                case 'WebDav':
-                                  iconData = Icons.web_rounded;
-                                  break;
-                                default:
-                                  iconData = Broken.wifi;
+                              if (FileManagerProvider.isSmbType(conn.type)) {
+                                iconData = Icons.dns_rounded;
+                              } else if (conn.type == 'FTP') {
+                                iconData = Icons.swap_horizontal_circle_rounded;
+                              } else if (conn.type == 'SFTP') {
+                                iconData = Icons.vpn_lock_rounded;
+                              } else if (conn.type == 'WebDav') {
+                                iconData = Icons.web_rounded;
+                              } else {
+                                iconData = Broken.wifi;
                               }
                               return _buildDrawerTile(
                                 context,
@@ -314,7 +309,7 @@ class ZenFileDrawer extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12.0),
               child: Text(
-                'ZenFile v1.0.42',
+                'ZenFile v1.0.43',
                 style: TextStyle(fontSize: 11.5, color: theme.colorScheme.onSurface.withOpacity(0.4), fontWeight: FontWeight.w600),
               ),
             ),

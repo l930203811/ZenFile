@@ -181,7 +181,10 @@ class L10nJa extends L10n {
   String get zenfile1 => 'ZenFileについて';
 
   @override
-  String get v1041 => 'v1.0.42 (查看)';
+  String get v1041 => 'v1.0.43 (表示)';
+
+  @override
+  String get ui_view_update => '更新を表示';
 
   @override
   String get zenfileflutter =>
@@ -249,7 +252,7 @@ class L10nJa extends L10n {
   String get msg0537b04e => '画像を長押ししてギャラリーに保存できます。ご支援ありがとうございます！';
 
   @override
-  String get zenfilev1041 => 'ZenFile v1.0.42 をダウンロード';
+  String get zenfilev1041 => 'ZenFile をダウンロード';
 
   @override
   String get msg9d287020 => '123クラウド';
@@ -972,7 +975,7 @@ class L10nJa extends L10n {
   String get msgae1854a2 => '一本指または二本指の左右スワイプでページを切り替えるかを選択';
 
   @override
-  String get msg11b1ec65 => 'ブラウズページの下部にクイック作成（+）ボタンを有効にする';
+  String get msg11b1ec65 => 'ブラウズページに操作バー（戻る、進む、新規、タブ複製、上へ）を表示';
 
   @override
   String get msg7e7765b6 => 'ドット(.)で始まるシステムファイルとフォルダを表示';
@@ -2508,7 +2511,7 @@ class L10nJa extends L10n {
   String get ui_no_settings_found => '設定が見つかりません';
 
   @override
-  String get ui_show_floating_button => 'フローティングボタンを表示';
+  String get ui_show_action_bar => '操作バーを表示';
 
   @override
   String get ui_use_24h_format => '24時間制を使用';
@@ -2533,6 +2536,22 @@ class L10nJa extends L10n {
 
   @override
   String get ui_hide_action_menu_buttons => '三点メニューボタンを隠す';
+
+  @override
+  String get ui_show_action_menu_buttons => '三点メニューボタンを表示';
+
+  @override
+  String get ui_action_menu_subtitle =>
+      '三点メニューボタンの表示モードを選択。オフ時はファイルとフォルダの右側に三点ボタンを表示しません。';
+
+  @override
+  String get ui_action_menu_mode_all => 'すべて表示';
+
+  @override
+  String get ui_action_menu_mode_single => 'シングルウィンドウモードのみ';
+
+  @override
+  String get ui_action_menu_mode_dual => 'デュアルウィンドウモードのみ';
 
   @override
   String get ui_enable_drag_drop => 'ドラッグ＆ドロップを有効にする';
@@ -2844,6 +2863,18 @@ class L10nJa extends L10n {
   String get ui_username_optional => 'ユーザー名（オプション）';
 
   @override
+  String get ui_share_name_optional => '共有名（任意）';
+
+  @override
+  String get ui_share_name_hint => '例: /Public または空欄で自動検出';
+
+  @override
+  String get ui_smb_desc => 'ローカルエリアネットワーク & SMB NAS共有';
+
+  @override
+  String get ui_connection_suffix => '接続';
+
+  @override
   String get ui_back => '戻る';
 
   @override
@@ -2963,6 +2994,74 @@ class L10nJa extends L10n {
   @override
   String get log_browse_top_area_optimize =>
       'Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space';
+
+  @override
+  String get log_thanks_feedback =>
+      '以下のユーザーのフィードバックと提案に感謝します：越界、猕猴桃、Sir Jagadeesh Chandra Bose';
+
+  @override
+  String get log_smb_native_rewrite =>
+      'SMBクライアントを完全に書き直し、Androidネイティブsmbjライブラリを使用して実際のSMBプロトコルを実現、共有名の自動検出をサポート';
+
+  @override
+  String get log_ftp_sftp_streaming =>
+      'FTP/SFTPストリーミング再生を修正、生Socketと独立したデータ接続を使用、プログレッシブキャッシュをサポート';
+
+  @override
+  String get log_remote_l10n_fix =>
+      'リモート接続ページのハードコードされた文字列を修正、SMBプロトコルの説明と接続名サフィックスのl10nキーを追加';
+
+  @override
+  String get log_image_viewer_menu =>
+      '画像ビューアの右上メニューをボトムシートに変更、9つのアクション項目、視認性向上のための黒い半透明背景';
+
+  @override
+  String get log_breadcrumb_border =>
+      'パンくずボタンにV字型の完全な枠線を追加、CustomPaintで描画、シームレスな接続と明確な境界を保証';
+
+  @override
+  String get log_three_dot_button_position =>
+      'ファイル/フォルダの三点アクションボタンをカードの右上隅に移動、ドラッグ時の誤タッチを回避';
+
+  @override
+  String get log_three_dot_button_setting =>
+      '三点ボタン設定を「三点アクションボタンを表示」に改名、全て/シングルウィンドウのみ/デュアルウィンドウのみの3モードをサポート';
+
+  @override
+  String get log_category_back_select =>
+      'カテゴリ複数選択モードで戻るボタンを押すとカテゴリを終了する代わりに選択をキャンセル';
+
+  @override
+  String get log_desktop_lyric =>
+      'デスクトップ歌詞フローティングウィンドウを追加、権限チェック、位置ドラッグ、タップで再生/一時停止の切り替えをサポート';
+
+  @override
+  String get log_notification_panel =>
+      '通知パネルが再生コントロールを表示しない問題を修正、一時停止時に通知を保持、権限拒否時にプロンプトを表示';
+
+  @override
+  String get log_lyric_word_highlight =>
+      'フローティング歌詞がSpannableStringBuilderを使用した一文字ずつのハイライトをサポート、カラオケ効果を実現';
+
+  @override
+  String get log_floating_window_resize =>
+      'フローティング歌詞ウィンドウが長押しでリサイズハンドルの表示をサポート、ドラッグしてウィンドウとテキストサイズを調整';
+
+  @override
+  String get log_background_play_fix =>
+      'バックグラウンド再生を有効化した時に音楽が一時停止する問題を修正、attachがプレーヤーインスタンスを再利用し再生を継続';
+
+  @override
+  String get log_category_button_sync =>
+      'バックグラウンド再生がオフの場合にカテゴリページの再生ボタンが古い音声情報を表示する問題を修正、戻る時に更新';
+
+  @override
+  String get log_build_stability =>
+      'R8コンパイルOOM、x86_64/armv7起動時の白画面を修正、Gradle JVMメモリとABIダウンロードを調整';
+
+  @override
+  String get log_lyric_scale_animation =>
+      '一文字ずつの歌詞遷移アニメーションに拡大効果を追加、同期問題を修正、300msの遷移時間を固定';
 
   @override
   String get msg_remember_choice => '今後の操作でもこの選択を記憶する';
@@ -3628,4 +3727,18 @@ class L10nJa extends L10n {
 
   @override
   String get ui_app_single_apk => 'シングルAPK';
+
+  @override
+  String get ui_desktop_lyric => 'デスクトップ歌詞';
+
+  @override
+  String get msg_overlay_permission_required =>
+      'デスクトップ歌詞を表示するにはオーバーレイ権限が必要です。設定で許可してから再試行してください。';
+
+  @override
+  String get msg_notification_permission_denied =>
+      '再生コントロールパネルを表示するには通知権限が必要です。設定を開いて許可しますか？';
+
+  @override
+  String get msg_open_settings => '設定へ';
 }

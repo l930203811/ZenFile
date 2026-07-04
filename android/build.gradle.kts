@@ -22,31 +22,6 @@ subprojects {
 }
 
 subprojects {
-    if (project.name == "media_kit_libs_android_video") {
-        project.afterEvaluate {
-            // Disable the downloadDependencies task that tries to download all ABI jars from GitHub
-            project.tasks.matching { it.name == "downloadDependencies" }.configureEach {
-                enabled = false
-            }
-            // Copy the arm64-v8a jar into the output dir (jar is already in root build dir)
-            val copyJarTask = project.tasks.register("copyMediaKitJar") {
-                doLast {
-                    val outputDir = project.file("${project.buildDir}/output")
-                    outputDir.mkdirs()
-                    val arm64Jar = project.rootProject.file("build/media_kit_libs_android_video/v1.1.7/default-arm64-v8a.jar")
-                    if (arm64Jar.exists()) {
-                        arm64Jar.copyTo(project.file("${outputDir}/default-arm64-v8a.jar"), true)
-                        println("Copied arm64-v8a jar (${arm64Jar.length()} bytes) to output dir")
-                    } else {
-                        throw GradleException("arm64-v8a jar not found at ${arm64Jar.absolutePath}")
-                    }
-                }
-            }
-            project.tasks.matching { it.name == "assemble" }.configureEach {
-                dependsOn(copyJarTask)
-            }
-        }
-    }
     if (project.name != "app") {
         project.afterEvaluate {
             project.plugins.withId("com.android.library") {

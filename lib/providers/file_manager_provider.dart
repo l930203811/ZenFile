@@ -131,6 +131,8 @@ class FileManagerProvider extends ChangeNotifier {
     _showFolderSizes = PreferencesService.getShowFolderSizes();
     _adaptiveMultiLineNames = PreferencesService.getAdaptiveMultiLineNames();
     _hideActionMenuButtons = PreferencesService.getHideActionMenuButtons();
+    _showActionMenuButtons = PreferencesService.getShowActionMenuButtons();
+    _actionMenuDisplayMode = PreferencesService.getActionMenuDisplayMode();
     _activeAppIcon = PreferencesService.getActiveAppIcon();
     _hideActionText = PreferencesService.getHideActionText();
     _disableLeftBackGesture = PreferencesService.getDisableLeftBackGesture();
@@ -858,8 +860,40 @@ class FileManagerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // 兼容旧代码：保留 _hideActionMenuButtons 字段（不再主动使用，但部分代码可能引用）
   bool _hideActionMenuButtons = false;
-  bool get hideActionMenuButtons => _hideActionMenuButtons;
+  // 新设置：是否显示三点操作按钮（默认开启）
+  bool _showActionMenuButtons = true;
+  bool get showActionMenuButtons => _showActionMenuButtons;
+  // 新设置：显示模式 'all' | 'single' | 'dual'
+  String _actionMenuDisplayMode = 'all';
+  String get actionMenuDisplayMode => _actionMenuDisplayMode;
+
+  /// 计算属性：根据 showActionMenuButtons 和 actionMenuDisplayMode 判断当前是否应隐藏三点按钮。
+  /// 兼容旧的 hideActionMenuButtons 调用点（!hideActionMenuButtons 即显示）。
+  bool get hideActionMenuButtons {
+    if (!_showActionMenuButtons) return true;
+    switch (_actionMenuDisplayMode) {
+      case 'single':
+        return enableSplitScreen; // 单窗口模式才显示 → 双窗口时隐藏
+      case 'dual':
+        return !enableSplitScreen; // 双窗口模式才显示 → 单窗口时隐藏
+      default:
+        return false; // 'all' 全部显示
+    }
+  }
+
+  void setShowActionMenuButtons(bool val) {
+    _showActionMenuButtons = val;
+    PreferencesService.saveShowActionMenuButtons(val);
+    notifyListeners();
+  }
+
+  void setActionMenuDisplayMode(String mode) {
+    _actionMenuDisplayMode = mode;
+    PreferencesService.saveActionMenuDisplayMode(mode);
+    notifyListeners();
+  }
 
   void toggleHideActionMenuButtons() {
     _hideActionMenuButtons = !_hideActionMenuButtons;
@@ -1031,25 +1065,36 @@ class FileManagerProvider extends ChangeNotifier {
     loadDirectory(connection.rootPath);
   }
 
+  /// Returns true if [type] represents an SMB/LAN connection.
+  /// The SMB label is localized (e.g. '局域网/SMB' in Chinese, 'LAN/SMB' in
+  /// English), so we cannot compare against a single hardcoded string.
+  /// Instead we check if the type contains 'smb' (case-insensitive), which
+  /// matches all current locale variants.
+  static bool isSmbType(String type) {
+    return type.toLowerCase().contains('smb');
+  }
+
   /// Factory: create the correct RemoteClient subclass for a connection model.
   static RemoteClient createRemoteClient(NetworkConnectionModel conn) {
-    switch (conn.type) {
-      case 'FTP':
-        return FtpRemoteClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
-      case 'SFTP':
-        return SftpRemoteClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
-      case 'WebDav':
-        return WebDavRemoteClient(
-          host: conn.host, port: conn.port, username: conn.username, password: conn.password,
-          protocol: conn.protocol, rootPath: conn.rootPath,
-        );
-      case '局域网/SMB':
-        return LanClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
-      case 'saf':
-        return SafRemoteClient(rootUri: conn.rootPath);
-      default:
-        throw ArgumentError('Unsupported connection type: ${conn.type}');
+    if (conn.type == 'FTP') {
+      return FtpRemoteClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
     }
+    if (conn.type == 'SFTP') {
+      return SftpRemoteClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
+    }
+    if (conn.type == 'WebDav') {
+      return WebDavRemoteClient(
+        host: conn.host, port: conn.port, username: conn.username, password: conn.password,
+        protocol: conn.protocol, rootPath: conn.rootPath,
+      );
+    }
+    if (isSmbType(conn.type)) {
+      return LanClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
+    }
+    if (conn.type == 'saf') {
+      return SafRemoteClient(rootUri: conn.rootPath);
+    }
+    throw ArgumentError('Unsupported connection type: ${conn.type}');
   }
 
   void closeTab(int index) {
@@ -1094,13 +1139,28 @@ class FileManagerProvider extends ChangeNotifier {
       useShizukuMode: active.useShizukuMode,
       isRootAvailable: active.isRootAvailable,
       scrollPositions: Map.from(active.scrollPositions),
-      isPinned: active.isPinned,
+      // 复制的标签页不继承 pinned 状态，否则用户无法通过双击关闭它
+      isPinned: false,
       isRemote: active.isRemote,
       remoteClient: active.remoteClient,
       remoteConnection: active.remoteConnection,
     );
-    _tabs.add(dup);
-    _activeTabIndex = _tabs.length - 1;
+    // 双窗口模式下，复制激活 tab 到未激活的 pane（索引 0 或 1），
+    // 而不是新增 tab（否则 tabs 数量 > 2，PaneBrowser 看不到新增的 tab）
+    if (enableSplitScreen && _tabs.length >= 2) {
+      final inactiveIndex = _activeTabIndex == 0 ? 1 : 0;
+      // 如果未激活 pane 是被钉住的，不覆盖
+      if (_tabs[inactiveIndex].isPinned) {
+        _tabs.add(dup);
+        _activeTabIndex = _tabs.length - 1;
+      } else {
+        _tabs[inactiveIndex] = dup;
+        _activeTabIndex = inactiveIndex;
+      }
+    } else {
+      _tabs.add(dup);
+      _activeTabIndex = _tabs.length - 1;
+    }
     _persistTabs();
     notifyListeners();
   }
@@ -1262,22 +1322,20 @@ class FileManagerProvider extends ChangeNotifier {
   String get rootPath => _rootPath;
 
   // 路径历史栈，用于支持前进/后退导航
+  // _pathHistory: 所有访问过的路径（按访问顺序）
+  // _historyIndex: 当前所在位置在 _pathHistory 中的索引
   final List<String> _pathHistory = [];
   int _historyIndex = -1;
 
   bool get canGoBack {
-    final path = currentPath;
-    if (path.isEmpty || _rootPath.isEmpty) return false;
-    if (path == _rootPath || path == '/' || p.dirname(path) == path) {
-      return false;
-    }
-    return true;
+    // 至少有 2 个历史记录且当前不在最早的记录上才能后退
+    return _pathHistory.length >= 2 && _historyIndex > 0;
   }
 
   bool get canGoForward => _historyIndex >= 0 && _historyIndex < _pathHistory.length - 1;
 
   void _pushPathToHistory(String path) {
-    // 如果当前不是历史栈的最后一个，截断后面的历史
+    // 如果当前不是历史栈的最后一个，截断后面的历史（用户从中间位置导航到新路径）
     if (_historyIndex < _pathHistory.length - 1) {
       _pathHistory.removeRange(_historyIndex + 1, _pathHistory.length);
     }
@@ -1291,13 +1349,10 @@ class FileManagerProvider extends ChangeNotifier {
   Future<bool> goBack() async {
     if (!canGoBack) return false;
     final exitedPath = currentPath;
-    final parent = p.dirname(currentPath);
-    _pushPathToHistory(exitedPath);
-    // 回退历史索引，使 goForward 可以返回到 exitedPath
-    if (_historyIndex > 0) {
-      _historyIndex--;
-    }
-    await loadDirectory(parent, showLoading: false, recordHistory: false);
+    // 回退历史索引
+    _historyIndex--;
+    final targetPath = _pathHistory[_historyIndex];
+    await loadDirectory(targetPath, showLoading: false, recordHistory: false);
     _highlightedPaths.clear();
     _highlightedPaths.add(exitedPath);
     notifyListeners();
@@ -1311,6 +1366,7 @@ class FileManagerProvider extends ChangeNotifier {
 
   Future<bool> goForward() async {
     if (!canGoForward) return false;
+    // 前进历史索引
     _historyIndex++;
     final nextPath = _pathHistory[_historyIndex];
     await loadDirectory(nextPath, showLoading: false, recordHistory: false);
@@ -1592,6 +1648,10 @@ class FileManagerProvider extends ChangeNotifier {
         activeTab.isLoading = true;
         notifyListeners();
       }
+      // 记录新路径到历史栈（用于前进/后退导航）
+      if (recordHistory && path.isNotEmpty) {
+        _pushPathToHistory(path);
+      }
       try {
         activeTab.currentPath = path;
         final remoteItems = await activeTab.remoteClient!.listDirectory(path);
@@ -1628,9 +1688,9 @@ class FileManagerProvider extends ChangeNotifier {
     if (currentPath != path) {
       _highlightedPaths.clear();
     }
-    // 记录路径到历史栈
-    if (recordHistory && currentPath.isNotEmpty && currentPath != path) {
-      _pushPathToHistory(currentPath);
+    // 记录新路径到历史栈（用于前进/后退导航）
+    if (recordHistory && path.isNotEmpty) {
+      _pushPathToHistory(path);
     }
     if (_storageVolumes.isEmpty) {
       _detectStorageVolumes();
@@ -2374,7 +2434,7 @@ class FileManagerProvider extends ChangeNotifier {
         protocol: conn.protocol,
         rootPath: conn.rootPath,
       );
-    } else if (conn.type == '局域网/SMB') {
+    } else if (isSmbType(conn.type)) {
       client = LanClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
     } else if (conn.type == 'saf') {
       client = SafRemoteClient(rootUri: conn.rootPath);
@@ -2420,30 +2480,33 @@ class FileManagerProvider extends ChangeNotifier {
     }
 
     try {
-      final totalFiles = _remoteClipboardItems.length;
+      final totalTopLevel = _remoteClipboardItems.length;
 
-      // 计算总字节数用于精确进度跟踪
-      int totalBytes = 0;
+      // Pre-count total files including folder contents for accurate progress
+      int totalFileCount = 0;
       for (final item in _remoteClipboardItems) {
-        if (!item.isDirectory && item.size > 0) {
-          totalBytes += item.size;
+        if (item.isDirectory) {
+          totalFileCount += await _countRemoteFiles(client, item.path);
+        } else {
+          totalFileCount += 1;
         }
       }
-      final useByteProgress = totalBytes > 0;
+      // Guard against zero
+      if (totalFileCount == 0) totalFileCount = totalTopLevel;
 
       progressNotifier.value = FileOperationProgress(
-        totalFiles: totalFiles,
-        currentFileIndex: 1,
-        currentFileName: 'Connecting...',
+        totalFiles: totalFileCount,
+        currentFileIndex: 0,
+        currentFileName: 'Starting...',
         percentage: 0.0,
         speedMBs: 0.0,
         eta: Duration.zero,
-        totalBytes: useByteProgress ? totalBytes : totalFiles,
+        totalBytes: totalFileCount,
         bytesProcessed: 0,
       );
 
       final targetPath = currentPath;
-      int bytesProcessedTotal = 0;
+      int processedFileCount = 0;
       final stopwatch = Stopwatch()..start();
 
       for (int i = 0; i < _remoteClipboardItems.length; i++) {
@@ -2454,70 +2517,60 @@ class FileManagerProvider extends ChangeNotifier {
         final remoteItem = _remoteClipboardItems[i];
         final destPath = p.join(targetPath, remoteItem.name);
 
-        if (useByteProgress) {
-          final itemSize = remoteItem.size > 0 ? remoteItem.size : 0;
-          progressNotifier.value = FileOperationProgress(
-            totalFiles: totalFiles,
-            currentFileIndex: i + 1,
-            currentFileName: remoteItem.name,
-            percentage: totalBytes > 0 ? bytesProcessedTotal / totalBytes : (i / totalFiles),
-            speedMBs: 0.0,
-            eta: Duration.zero,
-            totalBytes: totalBytes,
-            bytesProcessed: bytesProcessedTotal,
-          );
-        } else {
-          progressNotifier.value = FileOperationProgress(
-            totalFiles: totalFiles,
-            currentFileIndex: i + 1,
-            currentFileName: remoteItem.name,
-            percentage: (i / totalFiles),
-            speedMBs: 0.0,
-            eta: Duration.zero,
-            totalBytes: totalFiles,
-            bytesProcessed: i,
-          );
-        }
-
         if (remoteItem.isDirectory) {
-          await _downloadRemoteDirectory(client, remoteItem.path, destPath);
-        } else {
-          await client.downloadFile(remoteItem.path, destPath, (prog) {
-            if (useByteProgress && remoteItem.size > 0) {
-              final currentBytes = (prog * remoteItem.size).toInt();
-              final totalProcessed = bytesProcessedTotal + currentBytes;
+          // For folders, track progress per-file inside the directory
+          await _downloadRemoteDirectory(
+            client,
+            remoteItem.path,
+            destPath,
+            onFileStart: (fileName) {
+              processedFileCount++;
               final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
-              final speed = elapsedSeconds > 0 ? (totalProcessed / (1024 * 1024)) / elapsedSeconds : 0.0;
-              final remainingBytes = totalBytes - totalProcessed;
-              final etaSeconds = speed > 0 ? (remainingBytes / (1024 * 1024)) / speed : 0.0;
+              final speed = elapsedSeconds > 0
+                  ? (processedFileCount / elapsedSeconds)
+                  : 0.0;
+              final remaining = totalFileCount - processedFileCount;
+              final etaSeconds = speed > 0 ? remaining / speed : 0.0;
 
               progressNotifier.value = FileOperationProgress(
-                totalFiles: totalFiles,
-                currentFileIndex: i + 1,
-                currentFileName: remoteItem.name,
-                percentage: totalBytes > 0 ? totalProcessed / totalBytes : 0.0,
-                speedMBs: speed,
-                eta: Duration(seconds: etaSeconds.round()),
-                totalBytes: totalBytes,
-                bytesProcessed: totalProcessed,
-              );
-            } else {
-              progressNotifier.value = FileOperationProgress(
-                totalFiles: totalFiles,
-                currentFileIndex: i + 1,
-                currentFileName: remoteItem.name,
-                percentage: (i + prog) / totalFiles,
+                totalFiles: totalFileCount,
+                currentFileIndex: processedFileCount,
+                currentFileName: fileName,
+                percentage: processedFileCount / totalFileCount,
                 speedMBs: 0.0,
-                eta: Duration.zero,
-                totalBytes: totalFiles,
-                bytesProcessed: i,
+                eta: Duration(seconds: etaSeconds.round()),
+                totalBytes: totalFileCount,
+                bytesProcessed: processedFileCount,
               );
-            }
+            },
+          );
+        } else {
+          // For single files, show byte-level progress within this file
+          progressNotifier.value = FileOperationProgress(
+            totalFiles: totalFileCount,
+            currentFileIndex: processedFileCount + 1,
+            currentFileName: remoteItem.name,
+            percentage: processedFileCount / totalFileCount,
+            speedMBs: 0.0,
+            eta: Duration.zero,
+            totalBytes: totalFileCount,
+            bytesProcessed: processedFileCount,
+          );
+
+          await client.downloadFile(remoteItem.path, destPath, (prog) {
+            final currentProcessed = processedFileCount + prog;
+            progressNotifier.value = FileOperationProgress(
+              totalFiles: totalFileCount,
+              currentFileIndex: processedFileCount + 1,
+              currentFileName: remoteItem.name,
+              percentage: currentProcessed / totalFileCount,
+              speedMBs: 0.0,
+              eta: Duration.zero,
+              totalBytes: totalFileCount,
+              bytesProcessed: currentProcessed.round(),
+            );
           });
-          // 下载完成后累加字节数
-          if (remoteItem.size > 0) {
-            bytesProcessedTotal += remoteItem.size;
-          }
+          processedFileCount++;
         }
 
         if (_isCut) {
@@ -2581,7 +2634,16 @@ class FileManagerProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final totalFiles = _clipboardPaths.length;
+      final totalTopLevel = _clipboardPaths.length;
+
+      // Pre-count total files including folder contents for accurate progress
+      int totalFileCount = 0;
+      for (final srcPath in _clipboardPaths) {
+        totalFileCount += _countLocalFiles(srcPath);
+      }
+      if (totalFileCount == 0) totalFileCount = totalTopLevel;
+
+      int processedFileCount = 0;
       ConflictResult? cachedResolution;
       for (int i = 0; i < _clipboardPaths.length; i++) {
         if (_isOperationCancelled) throw Exception('Cancelled');
@@ -2631,32 +2693,51 @@ class FileManagerProvider extends ChangeNotifier {
           // overwrite: do nothing, keep destPath as is
         }
 
-        progressNotifier.value = FileOperationProgress(
-          totalFiles: totalFiles,
-          currentFileIndex: i + 1,
-          currentFileName: name,
-          percentage: i / totalFiles,
-          speedMBs: 0.0,
-          eta: Duration.zero,
-          totalBytes: totalFiles,
-          bytesProcessed: i,
-        );
-
         if (isDir) {
-          await _uploadLocalDirectory(client, srcPath, destPath);
+          await _uploadLocalDirectory(
+            client,
+            srcPath,
+            destPath,
+            onFileStart: (fileName) {
+              processedFileCount++;
+              progressNotifier.value = FileOperationProgress(
+                totalFiles: totalFileCount,
+                currentFileIndex: processedFileCount,
+                currentFileName: fileName,
+                percentage: processedFileCount / totalFileCount,
+                speedMBs: 0.0,
+                eta: Duration.zero,
+                totalBytes: totalFileCount,
+                bytesProcessed: processedFileCount,
+              );
+            },
+          );
         } else {
+          progressNotifier.value = FileOperationProgress(
+            totalFiles: totalFileCount,
+            currentFileIndex: processedFileCount + 1,
+            currentFileName: name,
+            percentage: processedFileCount / totalFileCount,
+            speedMBs: 0.0,
+            eta: Duration.zero,
+            totalBytes: totalFileCount,
+            bytesProcessed: processedFileCount,
+          );
+
           await client.uploadFile(srcPath, destPath, (prog) {
+            final currentProcessed = processedFileCount + prog;
             progressNotifier.value = FileOperationProgress(
-              totalFiles: totalFiles,
-              currentFileIndex: i + 1,
+              totalFiles: totalFileCount,
+              currentFileIndex: processedFileCount + 1,
               currentFileName: name,
-              percentage: (i + prog) / totalFiles,
+              percentage: currentProcessed / totalFileCount,
               speedMBs: 0.0,
               eta: Duration.zero,
-              totalBytes: totalFiles,
-              bytesProcessed: i,
+              totalBytes: totalFileCount,
+              bytesProcessed: currentProcessed.round(),
             );
           });
+          processedFileCount++;
         }
 
         if (_isCut) {
@@ -2718,7 +2799,20 @@ class FileManagerProvider extends ChangeNotifier {
 
     try {
       await sourceClient.connect();
-      final totalFiles = _remoteClipboardItems.length;
+      final totalTopLevel = _remoteClipboardItems.length;
+
+      // Pre-count total files for progress tracking
+      int totalFileCount = 0;
+      for (final item in _remoteClipboardItems) {
+        if (item.isDirectory) {
+          totalFileCount += await _countRemoteFiles(sourceClient, item.path);
+        } else {
+          totalFileCount += 1;
+        }
+      }
+      if (totalFileCount == 0) totalFileCount = totalTopLevel;
+
+      int processedFileCount = 0;
       ConflictResult? cachedResolution;
 
       for (int i = 0; i < _remoteClipboardItems.length; i++) {
@@ -2766,47 +2860,70 @@ class FileManagerProvider extends ChangeNotifier {
           }
         }
 
-        progressNotifier.value = FileOperationProgress(
-          totalFiles: totalFiles,
-          currentFileIndex: i + 1,
-          currentFileName: remoteItem.name,
-          percentage: i / totalFiles,
-          speedMBs: 0.0,
-          eta: Duration.zero,
-          totalBytes: totalFiles,
-          bytesProcessed: i,
-        );
-
         // Step 1: Download from source remote to local temp
         if (remoteItem.isDirectory) {
-          await _downloadRemoteDirectory(sourceClient, remoteItem.path, tempPath);
+          await _downloadRemoteDirectory(
+            sourceClient,
+            remoteItem.path,
+            tempPath,
+            onFileStart: (fileName) {
+              processedFileCount++;
+              progressNotifier.value = FileOperationProgress(
+                totalFiles: totalFileCount,
+                currentFileIndex: processedFileCount,
+                currentFileName: fileName,
+                percentage: (processedFileCount / totalFileCount) * 0.5, // download is 50%
+                speedMBs: 0.0,
+                eta: Duration.zero,
+                totalBytes: totalFileCount,
+                bytesProcessed: processedFileCount,
+              );
+            },
+          );
           // Step 2: Upload from local temp to target remote
-          await _uploadLocalDirectory(targetClient, tempPath, destPath);
+          await _uploadLocalDirectory(
+            targetClient,
+            tempPath,
+            destPath,
+            onFileStart: (fileName) {
+              progressNotifier.value = FileOperationProgress(
+                totalFiles: totalFileCount,
+                currentFileIndex: processedFileCount,
+                currentFileName: fileName,
+                percentage: 0.5 + (processedFileCount / totalFileCount) * 0.5, // upload is 50%
+                speedMBs: 0.0,
+                eta: Duration.zero,
+                totalBytes: totalFileCount,
+                bytesProcessed: processedFileCount,
+              );
+            },
+          );
         } else {
           await sourceClient.downloadFile(remoteItem.path, tempPath, (prog) {
             progressNotifier.value = FileOperationProgress(
-              totalFiles: totalFiles,
-              currentFileIndex: i + 1,
+              totalFiles: totalFileCount,
+              currentFileIndex: processedFileCount + 1,
               currentFileName: remoteItem.name,
-              percentage: (i + prog * 0.5) / totalFiles, // download is 50% of the operation
+              percentage: ((processedFileCount + prog) / totalFileCount) * 0.5,
               speedMBs: 0.0,
               eta: Duration.zero,
-              totalBytes: totalFiles,
-              bytesProcessed: i,
+              totalBytes: totalFileCount,
+              bytesProcessed: processedFileCount,
             );
           });
           await targetClient.uploadFile(tempPath, destPath, (prog) {
             progressNotifier.value = FileOperationProgress(
-              totalFiles: totalFiles,
-              currentFileIndex: i + 1,
+              totalFiles: totalFileCount,
+              currentFileIndex: processedFileCount + 1,
               currentFileName: remoteItem.name,
-              percentage: (i + 0.5 + prog * 0.5) / totalFiles, // upload is the other 50%
+              percentage: 0.5 + ((processedFileCount + prog) / totalFileCount) * 0.5,
               speedMBs: 0.0,
               eta: Duration.zero,
-              totalBytes: totalFiles,
-              bytesProcessed: i,
+              totalBytes: totalFileCount,
+              bytesProcessed: processedFileCount,
             );
           });
+          processedFileCount++;
         }
 
         // Step 3: Delete source if cut
@@ -2882,7 +2999,7 @@ class FileManagerProvider extends ChangeNotifier {
         host: conn.host, port: conn.port, username: conn.username, password: conn.password,
         protocol: conn.protocol, rootPath: conn.rootPath,
       );
-    } else if (conn.type == '局域网/SMB') {
+    } else if (isSmbType(conn.type)) {
       return LanClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
     } else if (conn.type == 'saf') {
       return SafRemoteClient(rootUri: conn.rootPath);
@@ -2890,7 +3007,47 @@ class FileManagerProvider extends ChangeNotifier {
     return null;
   }
 
-  Future<void> _uploadLocalDirectory(RemoteClient client, String localDirPath, String remoteDirPath) async {
+  /// Recursively counts files in a local directory (no network calls).
+  int _countLocalFiles(String localPath) {
+    final entity = FileSystemEntity.typeSync(localPath);
+    if (entity == FileSystemEntityType.directory) {
+      int count = 0;
+      try {
+        for (final item in Directory(localPath).listSync()) {
+          count += _countLocalFiles(item.path);
+        }
+      } catch (_) {}
+      return count;
+    } else if (entity == FileSystemEntityType.file) {
+      return 1;
+    }
+    return 0;
+  }
+
+  /// Recursively counts files in a remote directory (requires listDirectory calls).
+  Future<int> _countRemoteFiles(RemoteClient client, String remotePath) async {
+    try {
+      final items = await client.listDirectory(remotePath);
+      int count = 0;
+      for (final item in items) {
+        if (item.isDirectory) {
+          count += await _countRemoteFiles(client, item.path);
+        } else {
+          count += 1;
+        }
+      }
+      return count;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  Future<void> _uploadLocalDirectory(
+    RemoteClient client,
+    String localDirPath,
+    String remoteDirPath, {
+    void Function(String fileName)? onFileStart,
+  }) async {
     await client.createDirectory(remoteDirPath);
     final localDir = Directory(localDirPath);
     final items = localDir.listSync();
@@ -2899,14 +3056,20 @@ class FileManagerProvider extends ChangeNotifier {
       final name = p.basename(item.path);
       final remotePath = _buildRemotePath(remoteDirPath, name);
       if (item is Directory) {
-        await _uploadLocalDirectory(client, item.path, remotePath);
+        await _uploadLocalDirectory(client, item.path, remotePath, onFileStart: onFileStart);
       } else if (item is File) {
+        onFileStart?.call(name);
         await client.uploadFile(item.path, remotePath, (_) {});
       }
     }
   }
 
-  Future<void> _downloadRemoteDirectory(RemoteClient client, String remoteDirPath, String localDirPath) async {
+  Future<void> _downloadRemoteDirectory(
+    RemoteClient client,
+    String remoteDirPath,
+    String localDirPath, {
+    void Function(String fileName)? onFileStart,
+  }) async {
     final localDir = Directory(localDirPath);
     if (!localDir.existsSync()) {
       localDir.createSync(recursive: true);
@@ -2919,8 +3082,9 @@ class FileManagerProvider extends ChangeNotifier {
       }
       final destPath = p.join(localDirPath, item.name);
       if (item.isDirectory) {
-        await _downloadRemoteDirectory(client, item.path, destPath);
+        await _downloadRemoteDirectory(client, item.path, destPath, onFileStart: onFileStart);
       } else {
+        onFileStart?.call(item.name);
         await client.downloadFile(item.path, destPath, (prog) {});
       }
     }

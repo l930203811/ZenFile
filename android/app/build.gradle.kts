@@ -79,4 +79,6 @@ dependencies {
     implementation("dev.rikka.shizuku:api:13.1.5")
     implementation("dev.rikka.shizuku:provider:13.1.5")
     implementation("androidx.fragment:fragment:1.8.5")
+    // SMB support (smbj pulls BouncyCastle bcprov-jdk15on transitively for NTLMSSP)
+    implementation("com.hierynomus:smbj:0.13.0")
 }

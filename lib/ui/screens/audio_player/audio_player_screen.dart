@@ -12,6 +12,7 @@ import 'package:mime/mime.dart';
 import '../../../core/icon_fonts/broken_icons.dart';
 import '../../../core/utils.dart';
 import '../../../services/audio_background_handler.dart';
+import '../../../services/desktop_lyric_service.dart';
 import '../../../services/preferences_service.dart';
 import '../../../services/lyric_parser.dart';
 import '../../../services/remote/remote_client.dart';
@@ -52,7 +53,7 @@ class AudioPlayerScreen extends StatefulWidget {
 }
 
 class _AudioPlayerScreenState extends State<AudioPlayerScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   late final Player player;
 
   bool isPlaying = false;
@@ -113,6 +114,8 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
 
   // Background playback
   bool _isBackgroundMode = false;
+  // 标记用户已跳转系统设置请求通知权限，等待返回应用时复检
+  bool _backgroundPlayPendingPermission = false;
 
   // 歌词
   List<LyricLine>? _lyrics;
@@ -120,6 +123,14 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   bool _isLoadingLyrics = false;
   bool _showInlineLyrics = false; // 是否在播放器界面显示完整内联歌词
   int _lyricsLoadGeneration = 0; // 防止歌词加载竞态
+
+  // 桌面歌词悬浮窗
+  bool _desktopLyricEnabled = false;
+  // 标记用户已跳转系统设置请求悬浮窗权限，等待返回应用时复检
+  bool _desktopLyricPendingPermission = false;
+  String? _lastDesktopLyricText; // 上一次推送给悬浮窗的文本，用于节流
+  int _lastDesktopHighlightLen = -1; // 上一次推送给悬浮窗的高亮字符数
+  StreamSubscription<void>? _desktopLyricClickSub;
 
   // 远程流式播放
   String? _currentStreamUrl; // 当前远程流式播放的代理 URL
@@ -131,8 +142,22 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _currentIndex = widget.initialIndex;
     _isBackgroundMode = PreferencesService.getAudioBackgroundPlay();
+    _desktopLyricEnabled = PreferencesService.getDesktopLyricEnabled();
+
+    // 桌面歌词悬浮窗：注册 MethodChannel 与单击回调
+    DesktopLyricService.instance.ensureInitialized();
+    _desktopLyricClickSub =
+        DesktopLyricService.instance.onLyricClick.listen((_) {
+      if (!mounted) return;
+      if (isPlaying) {
+        player.pause();
+      } else {
+        player.play();
+      }
+    });
 
     _fadeController = AnimationController(
       vsync: this,
@@ -179,6 +204,13 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         PreferencesService.savePlaybackPosition(_currentPath, position.inMilliseconds);
       }
     });
+
+    // 若上次会话开启了桌面歌词，恢复悬浮窗显示
+    if (_desktopLyricEnabled) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _showDesktopLyricIfEnabled();
+      });
+    }
   }
 
   void _initListeners() {
@@ -189,6 +221,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     player.stream.position.listen((p) {
       if (!mounted || isSeeking) return;
       setState(() => position = p);
+      _updateDesktopLyric();
     });
     player.stream.duration.listen((d) {
       if (!mounted) return;
@@ -396,6 +429,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     // 保存当前播放进度
     if (position.inMilliseconds > 0) {
       PreferencesService.savePlaybackPosition(_currentPath, position.inMilliseconds);
@@ -404,6 +438,12 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     _cacheCheckTimer?.cancel();
     _sleepTimer?.cancel();
     _fadeController.dispose();
+    // 清理桌面歌词悬浮窗
+    _desktopLyricClickSub?.cancel();
+    _desktopLyricClickSub = null;
+    _lastDesktopLyricText = null;
+    _lastDesktopHighlightLen = -1;
+    DesktopLyricService.instance.hide();
     // 清理远程流式会话
     _stopCurrentStream();
     if (_isBackgroundMode) {
@@ -535,6 +575,195 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     setState(() {
       _showInlineLyrics = !_showInlineLyrics;
     });
+  }
+
+  // ─── 桌面歌词悬浮窗 ────────────────────────────────────────────────────
+
+  /// 若用户上次开启了桌面歌词，恢复显示（带权限校验）
+  void _showDesktopLyricIfEnabled() async {
+    if (!_desktopLyricEnabled) return;
+    final granted = await DesktopLyricService.instance.checkPermission();
+    if (!granted) {
+      // 权限已被撤销，关闭本地开关
+      setState(() => _desktopLyricEnabled = false);
+      await PreferencesService.saveDesktopLyricEnabled(false);
+      return;
+    }
+    if (!mounted) return;
+    final line = _getCurrentLyricLine();
+    final text = line?.text ?? '';
+    final highlightLen = _calcDesktopHighlightLen(line);
+    _lastDesktopLyricText = text;
+    _lastDesktopHighlightLen = highlightLen;
+    await DesktopLyricService.instance.show(text);
+    // 立即推送一次逐字高亮位置
+    DesktopLyricService.instance.updateLyric(text, highlightLen: highlightLen);
+  }
+
+  /// 切换桌面歌词悬浮窗开关
+  void _toggleDesktopLyric() async {
+    if (_desktopLyricEnabled) {
+      await DesktopLyricService.instance.hide();
+      _lastDesktopLyricText = null;
+      _lastDesktopHighlightLen = -1;
+      setState(() => _desktopLyricEnabled = false);
+      await PreferencesService.saveDesktopLyricEnabled(false);
+      return;
+    }
+    // 开启：先检查权限
+    final granted = await DesktopLyricService.instance.checkPermission();
+    if (!granted) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(L10n.of(context).msg_overlay_permission_required),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      // 标记等待权限授予；用户从系统设置返回后会复检并自动开启
+      _desktopLyricPendingPermission = true;
+      await DesktopLyricService.instance.requestPermission();
+      return;
+    }
+    await _enableDesktopLyric();
+  }
+
+  /// 实际开启桌面歌词悬浮窗（权限已授予的前提下调用）
+  Future<void> _enableDesktopLyric() async {
+    final line = _getCurrentLyricLine();
+    final text = line?.text ?? '';
+    final highlightLen = _calcDesktopHighlightLen(line);
+    final ok = await DesktopLyricService.instance.show(text);
+    if (ok) {
+      _lastDesktopLyricText = text;
+      _lastDesktopHighlightLen = highlightLen;
+      // 立即推送逐字高亮
+      DesktopLyricService.instance.updateLyric(text, highlightLen: highlightLen);
+      setState(() => _desktopLyricEnabled = true);
+      await PreferencesService.saveDesktopLyricEnabled(true);
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(L10n.of(context).msg_overlay_permission_required),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) return;
+
+    // 后台播放：用户从系统设置返回，复检通知权限；若已授予则自动开启
+    if (_backgroundPlayPendingPermission) {
+      _backgroundPlayPendingPermission = false;
+      _resumeBackgroundPlayPermissionCheck();
+    }
+
+    // 桌面歌词：权限复检或状态同步
+    if (_desktopLyricPendingPermission) {
+      _desktopLyricPendingPermission = false;
+      _resumeDesktopLyricPermissionCheck();
+    } else {
+      // 同步开关状态与原生层实际显示状态，避免状态不一致
+      _syncDesktopLyricState();
+    }
+  }
+
+  Future<void> _resumeBackgroundPlayPermissionCheck() async {
+    bool granted = false;
+    try {
+      final status = await Permission.notification.status;
+      granted = status.isGranted;
+    } catch (e) {
+      granted = false;
+    }
+    if (!granted) return;
+    if (!mounted) return;
+    await _enableBackgroundMode();
+  }
+
+  Future<void> _resumeDesktopLyricPermissionCheck() async {
+    final granted = await DesktopLyricService.instance.checkPermission();
+    if (!granted) return;
+    if (!mounted) return;
+    await _enableDesktopLyric();
+  }
+
+  /// 同步本地开关状态与原生层悬浮窗实际显示状态
+  Future<void> _syncDesktopLyricState() async {
+    if (!mounted) return;
+    final actuallyShowing = await DesktopLyricService.instance.isShowing();
+    if (!mounted) return;
+    if (_desktopLyricEnabled != actuallyShowing) {
+      setState(() => _desktopLyricEnabled = actuallyShowing);
+      await PreferencesService.saveDesktopLyricEnabled(actuallyShowing);
+    }
+  }
+
+  /// 同步当前歌词行到悬浮窗（仅在文本变化时推送，节流）
+  void _updateDesktopLyric() {
+    if (!_desktopLyricEnabled) return;
+    final line = _getCurrentLyricLine();
+    final text = line?.text ?? '';
+    final highlightLen = _calcDesktopHighlightLen(line);
+    // 文本或高亮位置变化时才推送
+    if (text != _lastDesktopLyricText || highlightLen != _lastDesktopHighlightLen) {
+      _lastDesktopLyricText = text;
+      _lastDesktopHighlightLen = highlightLen;
+      DesktopLyricService.instance.updateLyric(text, highlightLen: highlightLen);
+    }
+  }
+
+  /// 计算桌面歌词悬浮窗的逐字高亮字符数
+  ///
+  /// - 若歌词行有逐字时间戳（word timestamps），则累加已唱字的字符数，
+  ///   并对当前正在唱的字按进度插值。
+  /// - 若无逐字时间戳，返回 0（不高亮）或全文高亮（由原生端控制）。
+  int _calcDesktopHighlightLen(LyricLine? line) {
+    if (line == null || !line.hasWordTimestamps || line.words == null) {
+      // 无逐字时间戳：如果当前行正在播放，全文高亮
+      return line != null ? line.text.length : 0;
+    }
+
+    final words = line.words!;
+    final posMs = position.inMilliseconds;
+    int charCount = 0;
+
+    for (int i = 0; i < words.length; i++) {
+      final word = words[i];
+      final wordTs = word.timestamp.inMilliseconds;
+
+      if (posMs < wordTs) {
+        // 当前字尚未开始
+        break;
+      }
+
+      // 当前字的持续时长
+      int wordDuration = 300; // 默认 300ms
+      if (i + 1 < words.length) {
+        final nextTs = words[i + 1].timestamp.inMilliseconds;
+        final gap = nextTs - wordTs;
+        if (gap > 0 && gap < 5000) {
+          wordDuration = gap;
+        }
+      }
+
+      final elapsed = posMs - wordTs;
+      final progress = (elapsed / wordDuration).clamp(0.0, 1.0);
+
+      if (progress >= 1.0) {
+        // 当前字已完全唱完
+        charCount += word.text.length;
+      } else {
+        // 当前字正在唱：按进度插值字符数
+        charCount += (word.text.length * progress).round();
+        break;
+      }
+    }
+
+    return charCount.clamp(0, line.text.length);
   }
 
   /// 获取当前应显示的歌词行
@@ -1183,13 +1412,10 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   }
 
   Future<void> _toggleBackgroundMode() async {
-    try {
-      player.pause();
-    } catch (_) {}
-
     if (_isBackgroundMode) {
       // Turn off — stop background handler to completely clear the notification,
       // but do NOT dispose the player because we want it to keep playing in the foreground!
+      // 注意：不要暂停 player，保持当前播放状态不变
       getAudioHandler().stopNotification();
       setState(() => _isBackgroundMode = false);
       await PreferencesService.saveAudioBackgroundPlay(false);
@@ -1207,17 +1433,48 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     }
 
     // Turn on — request notification permission dynamically on Android 13+
+    bool notifGranted = true;
     try {
-      await Permission.notification.request();
+      final status = await Permission.notification.request();
+      notifGranted = status.isGranted;
     } catch (e) {
       debugPrint('[ZenFile] Error requesting notification permission: $e');
+      notifGranted = false;
     }
 
+    if (!notifGranted && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(L10n.of(context).msg_notification_permission_denied),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          duration: const Duration(seconds: 6),
+          action: SnackBarAction(
+            label: L10n.of(context).msg_open_settings,
+            textColor: Colors.white,
+            onPressed: () async {
+              await openAppSettings();
+            },
+          ),
+        ),
+      );
+      // 标记等待权限授予；用户从系统设置返回后会复检并自动开启
+      _backgroundPlayPendingPermission = true;
+      return;
+    }
+
+    await _enableBackgroundMode();
+  }
+
+  /// 实际开启后台播放（通知权限已授予的前提下调用）
+  Future<void> _enableBackgroundMode() async {
     // Stop notification first to clear any blocked native service state!
+    // 注意：不要暂停 player，attach() 会复用同一个 player 实例
     getAudioHandler().stopNotification();
 
     // A small delay to ensure the OS registers the permission before we display the notification
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 300));
 
     if (!mounted) return;
 
@@ -1318,6 +1575,32 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                     onTap: () {
                       Navigator.pop(ctx);
                       _toggleInlineLyrics();
+                    },
+                  ),
+                  // ── 桌面歌词悬浮窗 ────────────────────────────────────────────────
+                  ListTile(
+                    leading: Icon(
+                      Broken.note_text,
+                      color: _desktopLyricEnabled ? Colors.deepPurpleAccent : Colors.white,
+                    ),
+                    title: Text(
+                      L10n.of(context).ui_desktop_lyric,
+                      style: TextStyle(
+                        color: _desktopLyricEnabled ? Colors.deepPurpleAccent : Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    trailing: Switch(
+                      value: _desktopLyricEnabled,
+                      activeColor: Colors.deepPurpleAccent,
+                      onChanged: (_) {
+                        _toggleDesktopLyric();
+                        setSheet(() {});
+                      },
+                    ),
+                    onTap: () {
+                      _toggleDesktopLyric();
+                      setSheet(() {});
                     },
                   ),
                   ListTile(

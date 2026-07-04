@@ -371,110 +371,13 @@ class _PaneBrowserState extends State<PaneBrowser> {
             children: [
               Column(
                 children: [
-                  // --- Pane Custom Header ---
-                  Container(
-                    height: 28,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                    decoration: BoxDecoration(
-                      color: isActive 
-                          ? theme.colorScheme.primary.withOpacity(0.06) 
-                          : theme.colorScheme.surfaceVariant.withOpacity(0.3),
-                      border: Border(
-                        bottom: BorderSide(
-                          color: theme.colorScheme.outline.withOpacity(0.1),
-                        ),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        // Glow/Active indicator dot or icon
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: isActive ? const Color(0xFF00C853) : Colors.grey.withOpacity(0.6),
-                            boxShadow: isActive ? [
-                              BoxShadow(
-                                color: const Color(0xFF00C853).withOpacity(0.4),
-                                blurRadius: 3,
-                                spreadRadius: 1,
-                              )
-                            ] : null,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        // UP button for parent directory（返回上级）
-                        if (tab.currentPath != '/' && tab.currentPath != provider.rootPath)
-                          GestureDetector(
-                            onTap: () => _goBack(provider),
-                            child: Container(
-                              width: 20,
-                              height: 20,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: theme.colorScheme.onSurface.withOpacity(0.06),
-                              ),
-                              child: Center(
-                                child: Icon(
-                                  Broken.arrow_up_1,
-                                  size: 12,
-                                  color: theme.colorScheme.onSurface.withOpacity(0.7),
-                                ),
-                              ),
-                            ),
-                          )
-                        else
-                          const SizedBox(width: 20, height: 20),
-                        const Spacer(),
-                        // 剪贴板粘贴按钮（右上角）
-                        if (provider.hasClipboard)
-                          GestureDetector(
-                            onTap: () => _showClipboardMenu(provider, theme),
-                            child: Container(
-                              height: 20,
-                              padding: const EdgeInsets.symmetric(horizontal: 6),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                color: provider.isCut ? Colors.orange.withOpacity(0.12) : theme.colorScheme.primary.withOpacity(0.12),
-                                border: Border.all(
-                                  color: provider.isCut ? Colors.orange.withOpacity(0.3) : theme.colorScheme.primary.withOpacity(0.3),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    provider.isCut ? Broken.scissor : Broken.clipboard,
-                                    size: 12,
-                                    color: provider.isCut ? Colors.orange : theme.colorScheme.primary,
-                                  ),
-                                  const SizedBox(width: 3),
-                                  Text(
-                                    _clipboardLabel(provider, context),
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: provider.isCut ? Colors.orange : theme.colorScheme.primary,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
                   if (tab.isLoading)
                     LinearProgressIndicator(
                       minHeight: 2.0,
                       backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
                       valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
                     ),
-                  
+
                   // 路径已在浏览页顶部显示，此处移除
                   if (provider.filterType != FileFilterType.all)
                     _buildActiveFilterBanner(context, provider),
@@ -876,105 +779,123 @@ class _PaneBrowserState extends State<PaneBrowser> {
           }
         },
         onLongPress: provider.enableDragDrop ? null : itemLongPress,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? theme.colorScheme.primaryContainer.withOpacity(0.4)
-                : isHighlighted
-                    ? theme.colorScheme.primary.withOpacity(0.05)
-                    : Colors.transparent,
-            border: isHighlighted
-                ? Border(
-                    left: BorderSide(color: theme.colorScheme.primary, width: 3),
-                  )
-                : null,
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              GestureDetector(
-                onTap: itemLongPress,
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? theme.colorScheme.primary
-                        : theme.colorScheme.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Icon(
-                    isSelected
-                        ? Broken.tick_circle
-                        : FileUtils.getFolderIcon(provider.folderIconOption),
-                    color: isSelected
-                        ? theme.colorScheme.onPrimary
-                        : theme.colorScheme.primary,
-                    size: 18,
-                  ),
-                ),
+        child: Stack(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? theme.colorScheme.primaryContainer.withOpacity(0.4)
+                    : isHighlighted
+                        ? theme.colorScheme.primary.withOpacity(0.05)
+                        : Colors.transparent,
+                border: isHighlighted
+                    ? Border(
+                        left: BorderSide(color: theme.colorScheme.primary, width: 3),
+                      )
+                    : null,
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      folder.name,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  GestureDetector(
+                    onTap: itemLongPress,
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(6),
                       ),
-                      maxLines: provider.adaptiveMultiLineNames ? 3 : 1,
-                      overflow: TextOverflow.ellipsis,
+                      child: Icon(
+                        isSelected
+                            ? Broken.tick_circle
+                            : FileUtils.getFolderIcon(provider.folderIconOption),
+                        color: isSelected
+                            ? theme.colorScheme.onPrimary
+                            : theme.colorScheme.primary,
+                        size: 18,
+                      ),
                     ),
-                    const SizedBox(height: 1),
-                    Consumer<FileManagerProvider>(
-                      builder: (context, provider, _) {
-                        final activeFilter = provider.filterType;
-                        if (activeFilter != FileFilterType.all) {
-                          return FutureBuilder<int>(
-                            future: provider.getMatchingFileCount(folder.path, activeFilter),
-                            builder: (context, snapshot) {
-                              final count = snapshot.data ?? 0;
-                              final name = provider.getFilterTypeName(activeFilter, count);
-                              return Text(
-                                '$count $name',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.primary,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 10.5,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              );
-                            },
-                          );
-                        } else {
-                          if (provider.hideTimeAndDate && !provider.showFolderContentsCount) {
-                            return const SizedBox.shrink();
-                          }
-                          if (provider.showFolderContentsCount) {
-                            return FutureBuilder<int>(
-                              future: provider.getFolderItemCount(folder.path),
-                              builder: (context, snapshot) {
-                                final count = snapshot.data ?? 0;
-                                final countStr = count == 1 ? '1 item' : '$count items';
-                                if (provider.hideTimeAndDate) {
-                                  return Text(
-                                    countStr,
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: theme.textTheme.bodySmall?.color?.withOpacity(0.55),
-                                      fontSize: 10.5,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Padding(
+                      // 右侧为三点按钮预留 24px，避免文字与按钮重叠
+                      padding: const EdgeInsets.only(right: 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            folder.name,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                            maxLines: provider.adaptiveMultiLineNames ? 3 : 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 1),
+                          Consumer<FileManagerProvider>(
+                            builder: (context, provider, _) {
+                              final activeFilter = provider.filterType;
+                              if (activeFilter != FileFilterType.all) {
+                                return FutureBuilder<int>(
+                                  future: provider.getMatchingFileCount(folder.path, activeFilter),
+                                  builder: (context, snapshot) {
+                                    final count = snapshot.data ?? 0;
+                                    final name = provider.getFilterTypeName(activeFilter, count);
+                                    return Text(
+                                      '$count $name',
+                                      style: theme.textTheme.bodySmall?.copyWith(
+                                        color: theme.colorScheme.primary,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 10.5,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    );
+                                  },
+                                );
+                              } else {
+                                if (provider.hideTimeAndDate && !provider.showFolderContentsCount) {
+                                  return const SizedBox.shrink();
+                                }
+                                if (provider.showFolderContentsCount) {
+                                  return FutureBuilder<int>(
+                                    future: provider.getFolderItemCount(folder.path),
+                                    builder: (context, snapshot) {
+                                      final count = snapshot.data ?? 0;
+                                      final countStr = count == 1 ? '1 item' : '$count items';
+                                      if (provider.hideTimeAndDate) {
+                                        return Text(
+                                          countStr,
+                                          style: theme.textTheme.bodySmall?.copyWith(
+                                            color: theme.textTheme.bodySmall?.color?.withOpacity(0.55),
+                                            fontSize: 10.5,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        );
+                                      } else {
+                                        return Text(
+                                          '$countStr • ${FileUtils.formatDate(folder.modified, use24Hour: provider.use24HourFormat)}',
+                                          style: theme.textTheme.bodySmall?.copyWith(
+                                            color: theme.textTheme.bodySmall?.color?.withOpacity(0.55),
+                                            fontSize: 10.5,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        );
+                                      }
+                                    },
                                   );
                                 } else {
                                   return Text(
-                                    '$countStr • ${FileUtils.formatDate(folder.modified, use24Hour: provider.use24HourFormat)}',
+                                    FileUtils.formatDate(folder.modified, use24Hour: provider.use24HourFormat),
                                     style: theme.textTheme.bodySmall?.copyWith(
                                       color: theme.textTheme.bodySmall?.color?.withOpacity(0.55),
                                       fontSize: 10.5,
@@ -983,27 +904,21 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                     overflow: TextOverflow.ellipsis,
                                   );
                                 }
-                              },
-                            );
-                          } else {
-                            return Text(
-                              FileUtils.formatDate(folder.modified, use24Hour: provider.use24HourFormat),
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.textTheme.bodySmall?.color?.withOpacity(0.55),
-                                fontSize: 10.5,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            );
-                          }
-                        }
-                      },
+                              }
+                            },
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              if (!context.select<FileManagerProvider, bool>((p) => p.hideActionMenuButtons))
-                IconButton(
+            ),
+            if (!context.select<FileManagerProvider, bool>((p) => p.hideActionMenuButtons))
+              Positioned(
+                top: 0,
+                right: 0,
+                child: IconButton(
                   icon: const Icon(Broken.more, size: 16),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
@@ -1016,8 +931,8 @@ class _PaneBrowserState extends State<PaneBrowser> {
                     );
                   },
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     );
@@ -1062,76 +977,88 @@ class _PaneBrowserState extends State<PaneBrowser> {
           }
         },
         onLongPress: provider.enableDragDrop ? null : itemLongPress,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? theme.colorScheme.primaryContainer.withOpacity(0.4)
-                : isHighlighted
-                    ? theme.colorScheme.primary.withOpacity(0.05)
-                    : Colors.transparent,
-            border: isHighlighted
-                ? Border(
-                    left: BorderSide(color: theme.colorScheme.primary, width: 3),
-                  )
-                : null,
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              GestureDetector(
-                onTap: itemLongPress,
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? theme.colorScheme.primary
-                        : iconColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: _CompactMediaThumbnail(
-                      file: file,
-                      isSelected: isSelected,
-                      iconColor: iconColor,
-                    ),
-                  ),
-                ),
+        child: Stack(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? theme.colorScheme.primaryContainer.withOpacity(0.4)
+                    : isHighlighted
+                        ? theme.colorScheme.primary.withOpacity(0.05)
+                        : Colors.transparent,
+                border: isHighlighted
+                    ? Border(
+                        left: BorderSide(color: theme.colorScheme.primary, width: 3),
+                      )
+                    : null,
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      file.name,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  GestureDetector(
+                    onTap: itemLongPress,
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? theme.colorScheme.primary
+                            : iconColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(6),
                       ),
-                      maxLines: provider.adaptiveMultiLineNames ? 3 : 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 1),
-                    Text(
-                      provider.hideTimeAndDate
-                          ? FileUtils.formatBytes(file.size, 1)
-                          : "${FileUtils.formatDate(file.modified, use24Hour: provider.use24HourFormat)}   ${FileUtils.formatBytes(file.size, 1)}",
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.textTheme.bodySmall?.color?.withOpacity(0.55),
-                        fontSize: 10.5,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: _CompactMediaThumbnail(
+                          file: file,
+                          isSelected: isSelected,
+                          iconColor: iconColor,
+                        ),
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Padding(
+                      // 右侧为三点按钮预留 24px，避免文字与按钮重叠
+                      padding: const EdgeInsets.only(right: 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            file.name,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                            maxLines: provider.adaptiveMultiLineNames ? 3 : 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 1),
+                          Text(
+                            provider.hideTimeAndDate
+                                ? FileUtils.formatBytes(file.size, 1)
+                                : "${FileUtils.formatDate(file.modified, use24Hour: provider.use24HourFormat)}   ${FileUtils.formatBytes(file.size, 1)}",
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.textTheme.bodySmall?.color?.withOpacity(0.55),
+                              fontSize: 10.5,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              if (!context.select<FileManagerProvider, bool>((p) => p.hideActionMenuButtons))
-                IconButton(
+            ),
+            if (!context.select<FileManagerProvider, bool>((p) => p.hideActionMenuButtons))
+              Positioned(
+                top: 0,
+                right: 0,
+                child: IconButton(
                   icon: const Icon(Broken.more, size: 16),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
@@ -1144,8 +1071,8 @@ class _PaneBrowserState extends State<PaneBrowser> {
                     );
                   },
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     );
