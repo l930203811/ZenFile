@@ -594,6 +594,7 @@ class _CustomizeCategoriesSheet extends StatelessWidget {
                   child: ReorderableListView.builder(
                     scrollController: scrollController,
                     physics: const BouncingScrollPhysics(),
+                    padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 16),
                     onReorder: (oldIndex, newIndex) => provider.reorderCategory(oldIndex, newIndex),
                     itemCount: order.length,
                     itemBuilder: (context, index) {

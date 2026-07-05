@@ -3096,7 +3096,7 @@ class L10nAr extends L10n {
 
   @override
   String get log_thanks_feedback =>
-      'شكراً للمستخدمين التاليين على ملاحظاتهم واقتراحاتهم: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose';
+      'شكراً للمستخدمين التاليين على ملاحظاتهم واقتراحاتهم: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose, Silence';
 
   @override
   String get log_smb_native_rewrite =>
@@ -3582,7 +3582,7 @@ class L10nAr extends L10n {
   String get ui_lyrics_load_failed => 'تعذر تحليل ملف كلمات الأغنية';
 
   @override
-  String get ui_select_lyrics_file => 'اختيار ملف كلمات الأغنية';
+  String get ui_select_lyrics_file => 'استيراد كلمات محلية';
 
   @override
   String get ui_no_lyrics_found => 'لم يتم العثور على كلمات الأغنية';
@@ -3846,4 +3846,25 @@ class L10nAr extends L10n {
 
   @override
   String get msg_open_settings => 'اذهب إلى الإعدادات';
+
+  @override
+  String get ui_search_lyrics_online => 'البحث عن كلمات الأغنية عبر الإنترنت';
+
+  @override
+  String get ui_lyrics_searching => '正在搜索歌词...';
+
+  @override
+  String get ui_lyrics_download_success_enhanced => '增强歌词下载成功！逐字显示已就绪';
+
+  @override
+  String get ui_lyrics_download_success => '歌词下载成功';
+
+  @override
+  String get ui_lyrics_not_found_online => '未找到匹配的歌词，试试调整歌曲信息后重试';
+
+  @override
+  String get ui_lyric_search_song_title => 'اسم الأغنية';
+
+  @override
+  String get ui_lyric_search_artist => 'الفنان';
 }

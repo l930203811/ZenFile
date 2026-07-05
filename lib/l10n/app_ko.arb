@@ -3320,7 +3320,7 @@
       "log_remote_copy_paste_fix": "원격 서버에서 로컬로 복사 시 진행률 표시줄이 0%이고 파일이 나타나지 않는 문제 수정",
     "log_navbar_position_setting": "Added navigation bar position setting, support top or bottom display",
     "log_browse_top_area_optimize": "Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space",
-    "log_thanks_feedback": "다음 사용자들의 피드백과 제안에 감사드립니다: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose",
+    "log_thanks_feedback": "다음 사용자들의 피드백과 제안에 감사드립니다: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose, Silence",
     "log_smb_native_rewrite": "SMB 클라이언트를 완전히 다시 작성하여 Android 네이티브 smbj 라이브러리로 실제 SMB 프로토콜 구현, 공유 이름 자동 감지 지원",
     "log_ftp_sftp_streaming": "FTP/SFTP 스트리밍 재생 수정, 원시 Socket과 독립 데이터 연결 사용, 점진적 캐싱 지원",
     "log_remote_l10n_fix": "원격 연결 페이지의 하드코딩된 문자열 수정, SMB 프로토콜 설명 및 연결 이름 접미사에 대한 l10n 키 추가",
@@ -3516,7 +3516,8 @@
   "msg_shortcut_failed": "추가 실패",
   "ui_lyrics_loaded": "가사를 불러왔습니다",
   "ui_lyrics_load_failed": "이 가사 파일을 분석할 수 없습니다",
-  "ui_select_lyrics_file": "가사 파일 선택",
+  "ui_select_lyrics_file": "로컬 가사 가져오기",
+  "ui_search_lyrics_online": "온라인 가사 검색",
   "ui_no_lyrics_found": "가사를 찾을 수 없습니다",
   "ui_lyrics_auto_load_hint": ".lrc 가사 파일을 오디오와 같은 폴더에\n(파일명도 동일하게) 두면 자동으로 불러옵니다",
   "ui_lyrics_panel": "가사 패널",
@@ -3829,5 +3830,7 @@
   "msg_open_settings": "설정으로",
   "@msg_open_settings": {
     "description": "Action button on the SnackBar to open app settings when notification permission is denied"
-  }
+  },
+  "ui_lyric_search_song_title": "곡 제목",
+  "ui_lyric_search_artist": "아티스트"
 }

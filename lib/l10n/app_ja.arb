@@ -3324,7 +3324,7 @@
       "log_remote_copy_paste_fix": "リモートサーバーからローカルへのコピー時にプログレスバーが0%のままファイルが表示されない問題を修正",
     "log_navbar_position_setting": "Added navigation bar position setting, support top or bottom display",
     "log_browse_top_area_optimize": "Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space",
-    "log_thanks_feedback": "以下のユーザーのフィードバックと提案に感謝します：越界、猕猴桃、Sir Jagadeesh Chandra Bose",
+    "log_thanks_feedback": "以下のユーザーのフィードバックと提案に感謝します：越界、猕猴桃、Sir Jagadeesh Chandra Bose、Silence",
     "log_smb_native_rewrite": "SMBクライアントを完全に書き直し、Androidネイティブsmbjライブラリを使用して実際のSMBプロトコルを実現、共有名の自動検出をサポート",
     "log_ftp_sftp_streaming": "FTP/SFTPストリーミング再生を修正、生Socketと独立したデータ接続を使用、プログレッシブキャッシュをサポート",
     "log_remote_l10n_fix": "リモート接続ページのハードコードされた文字列を修正、SMBプロトコルの説明と接続名サフィックスのl10nキーを追加",
@@ -3520,7 +3520,8 @@
   "msg_shortcut_failed": "追加に失敗しました",
   "ui_lyrics_loaded": "歌詞を読み込みました",
   "ui_lyrics_load_failed": "この歌詞ファイルを解析できません",
-  "ui_select_lyrics_file": "歌詞ファイルを選択",
+  "ui_select_lyrics_file": "ローカル歌詞をインポート",
+  "ui_search_lyrics_online": "オンライン歌詞検索",
   "ui_no_lyrics_found": "歌詞が見つかりません",
   "ui_lyrics_auto_load_hint": ".lrc 歌詞ファイルを音楽と同じフォルダに\n（ファイル名も同じにして）置くと自動読み込みされます",
   "ui_lyrics_panel": "歌詞パネル",
@@ -3833,5 +3834,7 @@
   "msg_open_settings": "設定へ",
   "@msg_open_settings": {
     "description": "Action button on the SnackBar to open app settings when notification permission is denied"
-  }
+  },
+  "ui_lyric_search_song_title": "曲名",
+  "ui_lyric_search_artist": "アーティスト"
 }

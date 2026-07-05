@@ -1947,8 +1947,15 @@ class FileManagerProvider extends ChangeNotifier {
       if (activeTab.isRemote && activeTab.remoteClient != null) {
         final client = activeTab.remoteClient!;
         for (final path in selectedPaths) {
-          final file = currentFiles.firstWhere((f) => f.path == path, orElse: () => currentFiles.first);
-          final remotePath = file.remoteSource?.path ?? path;
+          final file = currentFiles.cast<FileItemModel?>().firstWhere(
+            (f) => f?.path == path,
+            orElse: () => null,
+          );
+          if (file == null) {
+            debugPrint('Cannot delete $path: file not found in current list');
+            continue;
+          }
+          final remotePath = file.remoteSource?.path ?? file.path;
           await client.delete(remotePath, file.isDirectory);
         }
       } else if (RecycleBinService.isEnabled()) {
@@ -1971,6 +1978,7 @@ class FileManagerProvider extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error deleting selected files: $e');
+      rethrow;
     }
 
     selectedPaths.clear();
@@ -3194,17 +3202,22 @@ class FileManagerProvider extends ChangeNotifier {
       (f) => f?.path == path,
       orElse: () => null,
     );
-    final hasRemoteSource = file?.remoteSource != null;
 
-    // If the file has a remote source, delete from the remote server
-    if (hasRemoteSource && activeTab.isRemote && activeTab.remoteClient != null) {
+    // If we're in a remote tab, always delete from the remote server
+    // (covers both directly-browsed remote files and cached remote files)
+    if (activeTab.isRemote && activeTab.remoteClient != null) {
+      if (file == null) {
+        debugPrint('Cannot delete $path: file not found in current list');
+        return;
+      }
       final remoteClient = activeTab.remoteClient!;
-      final remotePath = file!.remoteSource!.path;
+      final remotePath = file.remoteSource?.path ?? file.path;
       try {
         await remoteClient.delete(remotePath, file.isDirectory);
         await loadDirectory(currentPath, showLoading: false, clearCache: true);
       } catch (e) {
         debugPrint('Error deleting remote file: $e');
+        rethrow;
       }
       return;
     }
@@ -3228,6 +3241,7 @@ class FileManagerProvider extends ChangeNotifier {
       await loadDirectory(currentPath, showLoading: false, clearCache: true);
     } catch (e) {
       debugPrint('Error deleting file: $e');
+      rethrow;
     }
   }
 
@@ -3250,6 +3264,7 @@ class FileManagerProvider extends ChangeNotifier {
       await loadDirectory(currentPath, showLoading: false, clearCache: true);
     } catch (e) {
       debugPrint('Error renaming file: $e');
+      rethrow;
     }
   }
 

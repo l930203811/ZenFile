@@ -587,7 +587,16 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             actionText: L10n.of(context).msgc8ce4b36,
           );
           if (newName != null && newName.isNotEmpty) {
-            await provider.renameFile(path, newName);
+            try {
+              await provider.renameFile(path, newName);
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('重命名失败: $e')),
+                );
+              }
+              return;
+            }
             if (isMulti) {
               provider.clearSelection();
             }
@@ -604,10 +613,18 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
               : L10n.of(context).msgee14ee27,
         );
         if (confirm) {
-          if (isMulti) {
-            await provider.deleteSelected();
-          } else {
-            await provider.deleteFile(path);
+          try {
+            if (isMulti) {
+              await provider.deleteSelected();
+            } else {
+              await provider.deleteFile(path);
+            }
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('删除失败: $e')),
+              );
+            }
           }
         }
         break;

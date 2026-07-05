@@ -14,6 +14,8 @@ import com.hierynomus.smbj.connection.Connection
 import com.hierynomus.smbj.session.Session
 import com.hierynomus.smbj.share.DiskShare
 import com.hierynomus.smbj.share.File
+import com.hierynomus.smbj.share.PipeShare
+import com.hierynomus.smbj.share.Share
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -50,6 +52,22 @@ class SmbService {
 
         // FILE_ATTRIBUTE_DIRECTORY bit (0x10) used to inspect FileIdBothDirectoryInformation.
         private const val FILE_ATTRIBUTE_DIRECTORY_BIT = 0x10L
+
+        // SMB NTSTATUS codes for "share exists but current credentials can't access it".
+        // These are handled in listSharesViaProbing as "accessible but access denied"
+        // so the user knows the share is there even if they can't open it.
+        private val ACCESS_EXISTS_STATUS_CODES = setOf(
+            0xC0000022L,  // STATUS_ACCESS_DENIED
+            0xC00000CAL,  // STATUS_NETWORK_ACCESS_DENIED
+            0xC000006DL,  // STATUS_LOGON_FAILURE
+            0xC000006AL,  // STATUS_WRONG_PASSWORD
+            0xC000006EL,  // STATUS_ACCOUNT_RESTRICTION
+            0xC000006FL,  // STATUS_INVALID_LOGON_HOURS
+            0xC0000070L,  // STATUS_INVALID_WORKSTATION
+            0xC0000071L,  // STATUS_PASSWORD_EXPIRED
+            0xC0000072L,  // STATUS_ACCOUNT_DISABLED
+            0xC0000193L,  // STATUS_LOGON_TYPE_NOT_GRANTED
+        )
     }
 
     /**
@@ -77,7 +95,8 @@ class SmbService {
             val client = SMBClient(config)
             val connection = client.connect(host, port)
             val authContext = if (username.isEmpty()) {
-                AuthenticationContext.anonymous()
+                // Some SMB servers (e.g. Samba) require a "guest" username for anonymous access
+                AuthenticationContext("guest", CharArray(0), null)
             } else {
                 AuthenticationContext(username, password?.toCharArray(), domain)
             }
@@ -150,107 +169,137 @@ class SmbService {
     /**
      * Lists the available shares on the connected SMB server.
      *
-     * smbj 0.13.0 does not expose DCE/RPC named-pipe access
-     * (PipeShare has no openFile), so shares are enumerated by
-     * probing a comprehensive list of common share names in parallel.
+     * Tries proper DCE/RPC share enumeration via the `srvsvc` named pipe
+     * first (NetShareEnumAll). This works on Windows servers and most modern
+     * Samba installations. If DCE/RPC fails (e.g. IPC$ is inaccessible,
+     * or the bind is rejected), falls back to the brute-force probing
+     * approach which checks a comprehensive list of common share names.
      */
     fun listShares(sessionId: String): List<Map<String, Any>> {
         val entry = sessions[sessionId] ?: throw Exception("Invalid or disconnected session id")
+        // Try DCE/RPC NetShareEnumAll first (proper enumeration)
+        try {
+            Log.i("SmbService", "Enumerating shares via DCE/RPC for ${entry.host}")
+            val rpcResult = listSharesViaRpc(entry)
+            if (rpcResult.isNotEmpty()) {
+                return rpcResult
+            }
+        } catch (e: Exception) {
+            Log.w("SmbService", "DCE/RPC failed, falling back to probing: ${e.message}")
+        }
+        // Fall back to brute-force probing
         Log.i("SmbService", "Enumerating shares via probing for ${entry.host}")
         return listSharesViaProbing(entry)
     }
-
-    /*
-    // DCE/RPC NetShareEnumAll — disabled: smbj 0.13.0 PipeShare has no openFile().
-    // Kept here for reference if upgrading to a newer smbj version in the future.
-    // ───────────────────────────────────────────────────────────────────────────
 
     /**
      * Enumerates shares via DCE/RPC NetShareEnumAll (opnum 15) on the
      * `srvsvc` named pipe accessed through `IPC$`.
      *
-     * Returns null on any failure so the caller can fall back to probing.
+     * Returns empty list on any failure so the caller can fall back to probing.
      */
     private fun listSharesViaRpc(entry: SmbSessionEntry): List<Map<String, Any>> {
-        val ipcShare = entry.session.connectShare("IPC$")
         try {
-            val pipeHandle = when (ipcShare) {
-                is PipeShare -> ipcShare.openFile(
-                    "\\srvsvc",
-                    EnumSet.of(AccessMask.GENERIC_READ, AccessMask.GENERIC_WRITE),
-                    null,
-                    allShareAccess(),
-                    SMB2CreateDisposition.FILE_OPEN,
-                    null
-                )
-                is DiskShare -> ipcShare.openFile(
-                    "\\srvsvc",
-                    EnumSet.of(AccessMask.GENERIC_READ, AccessMask.GENERIC_WRITE),
-                    null,
-                    allShareAccess(),
-                    SMB2CreateDisposition.FILE_OPEN,
-                    null
-                )
-                else -> {
-                    Log.w("SmbService", "IPC$ is ${ipcShare.javaClass.simpleName}, cannot open pipe")
-                    return emptyList()
-                }
-            }
-
+            val ipcShare = entry.session.connectShare("IPC$")
             try {
-                val input = pipeHandle.inputStream
-                val output = pipeHandle.outputStream
-
-                // 1. Send DCE/RPC Bind request
-                val bindRequest = createDcerpcBindRequest()
-                output.write(bindRequest)
-                output.flush()
-
-                // 2. Read Bind Ack (with generous timeout)
-                val bindAck = readDcerpcResponse(input, 5000)
-                if (bindAck == null || bindAck.size < 68) {
-                    Log.w("SmbService", "RPC bind ack too short or null")
-                    return emptyList()
-                }
-                // Check packet type = 12 (bind_ack)
-                if (bindAck[2].toInt() and 0xFF != 12) {
-                    Log.w("SmbService", "RPC unexpected response type: ${bindAck[2]}")
-                    return emptyList()
-                }
-                // Check result = 0 (acceptance) at offset 68-69 in most responses
-                // The exact offset depends on secondary address length, but we
-                // can search for the result bytes pattern.
-                if (!verifyBindAckResult(bindAck)) {
-                    Log.w("SmbService", "RPC bind rejected by server")
-                    return emptyList()
-                }
-
-                // 3. Send NetShareEnumAll request (opnum 15)
-                val serverName = "\\\\${entry.host}"
-                val enumRequest = createNetShareEnumAllRequest(serverName)
-                output.write(enumRequest)
-                output.flush()
-
-                // 4. Read response (may be large)
-                val response = readDcerpcResponse(input, 15000)
-                if (response == null || response.size < 24) {
-                    Log.w("SmbService", "RPC enum response too short or null")
-                    return emptyList()
-                }
-
-                // Check packet type = 2 (response)
-                if (response[2].toInt() and 0xFF != 2) {
-                    Log.w("SmbService", "RPC unexpected response type: ${response[2]}")
-                    return emptyList()
+                val pipeHandle = when (ipcShare) {
+                    is DiskShare -> ipcShare.openFile(
+                        "\\srvsvc",
+                        EnumSet.of(AccessMask.GENERIC_READ, AccessMask.GENERIC_WRITE),
+                        null,
+                        allShareAccess(),
+                        SMB2CreateDisposition.FILE_OPEN,
+                        null
+                    )
+                    is PipeShare -> {
+                        // smbj 0.13.0 PipeShare doesn't expose openFile.
+                        // Use reflection to extract the TreeConnect and wrap it in
+                        // a synthetic DiskShare for the IPC$ share, so we can send
+                        // SMB2 CREATE requests to open the \srvsvc named pipe.
+                        try {
+                            val treeConnectField = Share::class.java.getDeclaredField("treeConnect")
+                            treeConnectField.isAccessible = true
+                            val treeConnect = treeConnectField.get(ipcShare)
+                            val tcClass = Class.forName("com.hierynomus.smbj.session.TreeConnect")
+                            val diskShareCtor = DiskShare::class.java.getDeclaredConstructor(
+                                Session::class.java, tcClass, String::class.java
+                            )
+                            diskShareCtor.isAccessible = true
+                            (diskShareCtor.newInstance(entry.session, treeConnect, "IPC$") as DiskShare).openFile(
+                                "\\srvsvc",
+                                EnumSet.of(AccessMask.GENERIC_READ, AccessMask.GENERIC_WRITE),
+                                null,
+                                allShareAccess(),
+                                SMB2CreateDisposition.FILE_OPEN,
+                                null
+                            )
+                        } catch (reflectionError: Exception) {
+                            Log.w("SmbService", "Reflection to open IPC$ pipe failed: ${reflectionError.message}")
+                            return emptyList()
+                        }
+                    }
+                    else -> {
+                        Log.w("SmbService", "IPC$ is ${ipcShare.javaClass.simpleName}, cannot open pipe")
+                        return emptyList()
+                    }
                 }
 
-                // 5. Parse share list from NDR-encoded response
-                return parseNetShareEnumAllResponse(response)
+                try {
+                    val input = pipeHandle.inputStream
+                    val output = pipeHandle.outputStream
+
+                    // 1. Send DCE/RPC Bind request
+                    val bindRequest = createDcerpcBindRequest()
+                    output.write(bindRequest)
+                    output.flush()
+
+                    // 2. Read Bind Ack (with generous timeout)
+                    val bindAck = readDcerpcResponse(input, 5000)
+                    if (bindAck == null || bindAck.size < 68) {
+                        Log.w("SmbService", "RPC bind ack too short or null")
+                        return emptyList()
+                    }
+                    // Check packet type = 12 (bind_ack)
+                    if (bindAck[2].toInt() and 0xFF != 12) {
+                        Log.w("SmbService", "RPC unexpected response type: ${bindAck[2]}")
+                        return emptyList()
+                    }
+                    // Check result = 0 (acceptance) at offset 68-69 in most responses
+                    if (!verifyBindAckResult(bindAck)) {
+                        Log.w("SmbService", "RPC bind rejected by server")
+                        return emptyList()
+                    }
+
+                    // 3. Send NetShareEnumAll request (opnum 15)
+                    val serverName = "\\\\${entry.host}"
+                    val enumRequest = createNetShareEnumAllRequest(serverName)
+                    output.write(enumRequest)
+                    output.flush()
+
+                    // 4. Read response (may be large)
+                    val response = readDcerpcResponse(input, 15000)
+                    if (response == null || response.size < 24) {
+                        Log.w("SmbService", "RPC enum response too short or null")
+                        return emptyList()
+                    }
+
+                    // Check packet type = 2 (response)
+                    if (response[2].toInt() and 0xFF != 2) {
+                        Log.w("SmbService", "RPC unexpected response type: ${response[2]}")
+                        return emptyList()
+                    }
+
+                    // 5. Parse share list from NDR-encoded response
+                    return parseNetShareEnumAllResponse(response)
+                } finally {
+                    try { pipeHandle.close() } catch (_: Exception) {}
+                }
             } finally {
-                try { pipeHandle.close() } catch (_: Exception) {}
+                try { ipcShare.close() } catch (_: Exception) {}
             }
-        } finally {
-            try { ipcShare.close() } catch (_: Exception) {}
+        } catch (e: Exception) {
+            Log.w("SmbService", "DCE/RPC enumeration via IPC$ failed: ${e.message}")
+            return emptyList()
         }
     }
 
@@ -582,11 +631,6 @@ class SmbService {
         return items
     }
 
-    // ───────────────────────────────────────────────────────────────────────────
-    // Brute-force share probing (fallback)
-    // ───────────────────────────────────────────────────────────────────────────
-
-    */
     /**
      * Probes a comprehensive list of common share names by attempting to
      * connectShare each one. Uses a dedicated bounded thread pool for
@@ -631,7 +675,12 @@ class SmbService {
             "xiazai", "ruanjian", "yingpan", "cangku",
             "jiankang", "shexiang", "shebei", "shequ",
             "bangong", "bangongwenjian", "xuexi", "xuexiziliao",
-            "youxi", "youxianzhuang", "xiaoshuo", "xiaoshuowenjian"
+            "youxi", "youxianzhuang", "xiaoshuo", "xiaoshuowenjian",
+            // Additional generic names
+            "admin", "Admin", "administrator", "Administrator",
+            "root", "usb", "USB", "usb1", "USB1",
+            "external", "External", "external1", "External1",
+            "media", "share", "shares", "Sharing", "sharing",
         )
 
         // Also try the username as a share name (common on Linux/Samba)
@@ -684,11 +733,7 @@ class SmbService {
                         name to if (isDisk) 1 else 0
                     } catch (e: SMBApiException) {
                         val status = e.statusCode
-                        // STATUS_ACCESS_DENIED (0xC0000022) — the share EXISTS but
-                        // the current credentials don't have access. Still list it
-                        // so the user knows it's there.
-                        // STATUS_NETWORK_ACCESS_DENIED (0xC00000CA) — same idea.
-                        if (status == 0xC0000022L || status == 0xC00000CAL) {
+                        if (status in ACCESS_EXISTS_STATUS_CODES) {
                             Log.i("SmbService", "Found share (access denied): $name (status=0x${status.toString(16)})")
                             name to 2
                         } else {

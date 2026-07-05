@@ -2977,7 +2977,7 @@ class L10nZh extends L10n {
 
   @override
   String get log_thanks_feedback =>
-      '感谢以下用户反馈与建议：越界、猕猴桃、Sir Jagadeesh Chandra Bose';
+      '感谢以下用户反馈与建议：越界、猕猴桃、Sir Jagadeesh Chandra Bose、Silence';
 
   @override
   String get log_smb_native_rewrite =>
@@ -3448,7 +3448,7 @@ class L10nZh extends L10n {
   String get ui_lyrics_load_failed => '无法解析该歌词文件';
 
   @override
-  String get ui_select_lyrics_file => '选择歌词文件';
+  String get ui_select_lyrics_file => '导入本地歌词';
 
   @override
   String get ui_no_lyrics_found => '未找到歌词';
@@ -3708,6 +3708,27 @@ class L10nZh extends L10n {
 
   @override
   String get msg_open_settings => '去设置';
+
+  @override
+  String get ui_search_lyrics_online => '在线搜索歌词';
+
+  @override
+  String get ui_lyrics_searching => '正在搜索歌词...';
+
+  @override
+  String get ui_lyrics_download_success_enhanced => '增强歌词下载成功！逐字显示已就绪';
+
+  @override
+  String get ui_lyrics_download_success => '歌词下载成功';
+
+  @override
+  String get ui_lyrics_not_found_online => '未找到匹配的歌词，试试调整歌曲信息后重试';
+
+  @override
+  String get ui_lyric_search_song_title => '歌曲名';
+
+  @override
+  String get ui_lyric_search_artist => '歌手';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -6684,7 +6705,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get log_thanks_feedback =>
-      '感謝以下使用者回饋與建議：越界、獼猴桃、Sir Jagadeesh Chandra Bose';
+      '感謝以下使用者回饋與建議：越界、獼猴桃、Sir Jagadeesh Chandra Bose、Silence';
 
   @override
   String get log_smb_native_rewrite =>
@@ -7156,7 +7177,7 @@ class L10nZhTw extends L10nZh {
   String get ui_lyrics_load_failed => '無法解析此歌詞檔案';
 
   @override
-  String get ui_select_lyrics_file => '選擇歌詞檔案';
+  String get ui_select_lyrics_file => '匯入本地歌詞';
 
   @override
   String get ui_no_lyrics_found => '未找到歌詞';
@@ -7415,4 +7436,25 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get msg_open_settings => '去設定';
+
+  @override
+  String get ui_search_lyrics_online => '線上搜尋歌詞';
+
+  @override
+  String get ui_lyrics_searching => '正在搜尋歌詞...';
+
+  @override
+  String get ui_lyrics_download_success_enhanced => '增強歌詞下載成功！逐字顯示已就緒';
+
+  @override
+  String get ui_lyrics_download_success => '歌詞下載成功';
+
+  @override
+  String get ui_lyrics_not_found_online => '未找到匹配的歌詞，試試調整歌曲資訊後重試';
+
+  @override
+  String get ui_lyric_search_song_title => '歌曲名稱';
+
+  @override
+  String get ui_lyric_search_artist => '歌手';
 }

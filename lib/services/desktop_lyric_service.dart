@@ -70,12 +70,16 @@ class DesktopLyricService {
   /// 显示悬浮窗（若已显示则仅更新文本）
   ///
   /// [text] 初始歌词文本；[x]/[y] 初始位置（左上为原点）。
-  Future<bool> show(String text, {int x = 0, int y = 200}) async {
+  /// [highlightColor] 已唱部分颜色（ARGB int，如 0xFFFF8800）；
+  /// [normalColor] 未唱部分颜色。
+  Future<bool> show(String text, {int x = 0, int y = 200, int? highlightColor, int? normalColor}) async {
     try {
       final result = await _channel.invokeMethod<bool>('show', {
         'text': text,
         'x': x,
         'y': y,
+        if (highlightColor != null) 'highlightColor': highlightColor,
+        if (normalColor != null) 'normalColor': normalColor,
       });
       return result ?? false;
     } catch (e) {
@@ -100,11 +104,14 @@ class DesktopLyricService {
   /// [text] 当前歌词行全文；[highlightLen] 已唱字符数（从行首算起），
   /// 原生端会用 [ForegroundColorSpan] 将前 [highlightLen] 个字符渲染为高亮色，
   /// 其余渲染为普通色，实现逐字卡拉OK效果。
-  Future<bool> updateLyric(String text, {int highlightLen = 0}) async {
+  /// [highlightColor] / [normalColor]：颜色更新（ARGB int），传 null 则沿用上次值。
+  Future<bool> updateLyric(String text, {int highlightLen = 0, int? highlightColor, int? normalColor}) async {
     try {
       final result = await _channel.invokeMethod<bool>('updateLyric', {
         'text': text,
         'highlightLen': highlightLen,
+        if (highlightColor != null) 'highlightColor': highlightColor,
+        if (normalColor != null) 'normalColor': normalColor,
       });
       return result ?? false;
     } catch (e) {

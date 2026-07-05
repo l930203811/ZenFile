@@ -3320,7 +3320,7 @@
       "log_remote_copy_paste_fix": "Fixed remote server copy to local showing 0% progress and files not appearing",
     "log_navbar_position_setting": "Added navigation bar position setting, support top or bottom display",
     "log_browse_top_area_optimize": "Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space",
-    "log_thanks_feedback": "Thanks to the following users for feedback and suggestions: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose",
+    "log_thanks_feedback": "Thanks to the following users for feedback and suggestions: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose, Silence",
     "log_smb_native_rewrite": "Completely rewrote SMB client using native Android smbj library for real SMB protocol, with automatic share name detection",
     "log_ftp_sftp_streaming": "Fixed FTP/SFTP streaming playback using raw Socket with independent data connection, supporting progressive caching",
     "log_remote_l10n_fix": "Fixed hardcoded strings in remote connection page, added l10n keys for SMB protocol description and connection name suffix",
@@ -3517,7 +3517,7 @@
   "msg_shortcut_failed": "Failed to add shortcut",
   "ui_lyrics_loaded": "Lyrics loaded",
   "ui_lyrics_load_failed": "Cannot parse this lyrics file",
-  "ui_select_lyrics_file": "Select lyrics file",
+  "ui_select_lyrics_file": "Import local lyrics",
   "ui_no_lyrics_found": "No lyrics found",
   "ui_lyrics_auto_load_hint": "Place an .lrc file in the same folder as the audio\n(with the same filename) to auto-load",
   "ui_lyrics_panel": "Lyrics panel",
@@ -3830,5 +3830,33 @@
   "msg_open_settings": "Go to settings",
   "@msg_open_settings": {
     "description": "Action button on the SnackBar to open app settings when notification permission is denied"
+  },
+  "ui_search_lyrics_online": "Search Online for Lyrics",
+  "@ui_search_lyrics_online": {
+    "description": "Button label to search lyrics online for the current song"
+  },
+  "ui_lyrics_searching": "Searching for lyrics...",
+  "@ui_lyrics_searching": {
+    "description": "Dialog message shown while searching lyrics online"
+  },
+  "ui_lyrics_download_success_enhanced": "Enhanced lyrics downloaded! Word-by-word display is ready.",
+  "@ui_lyrics_download_success_enhanced": {
+    "description": "SnackBar message when enhanced lyrics with word timestamps are downloaded"
+  },
+  "ui_lyrics_download_success": "Lyrics downloaded successfully",
+  "@ui_lyrics_download_success": {
+    "description": "SnackBar message when plain lyrics are downloaded"
+  },
+  "ui_lyrics_not_found_online": "No matching lyrics found. Try adjusting the song info and retry.",
+  "@ui_lyrics_not_found_online": {
+    "description": "SnackBar message when online lyric search returns no results"
+  },
+  "ui_lyric_search_song_title": "Song Title",
+  "@ui_lyric_search_song_title": {
+    "description": "Label for song title input field in lyric search dialog"
+  },
+  "ui_lyric_search_artist": "Artist",
+  "@ui_lyric_search_artist": {
+    "description": "Label for artist input field in lyric search dialog"
   }
 }

@@ -5683,7 +5683,7 @@ abstract class L10n {
   /// No description provided for @log_thanks_feedback.
   ///
   /// In zh, this message translates to:
-  /// **'感谢以下用户反馈与建议：越界、猕猴桃、Sir Jagadeesh Chandra Bose'**
+  /// **'感谢以下用户反馈与建议：越界、猕猴桃、Sir Jagadeesh Chandra Bose、Silence'**
   String get log_thanks_feedback;
 
   /// No description provided for @log_smb_native_rewrite.
@@ -6541,7 +6541,7 @@ abstract class L10n {
   /// No description provided for @ui_select_lyrics_file.
   ///
   /// In zh, this message translates to:
-  /// **'选择歌词文件'**
+  /// **'导入本地歌词'**
   String get ui_select_lyrics_file;
 
   /// No description provided for @ui_no_lyrics_found.
@@ -6987,6 +6987,48 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'去设置'**
   String get msg_open_settings;
+
+  /// Button label to search lyrics online for the current song
+  ///
+  /// In zh, this message translates to:
+  /// **'在线搜索歌词'**
+  String get ui_search_lyrics_online;
+
+  /// Dialog message shown while searching lyrics online
+  ///
+  /// In zh, this message translates to:
+  /// **'正在搜索歌词...'**
+  String get ui_lyrics_searching;
+
+  /// SnackBar message when enhanced lyrics with word timestamps are downloaded
+  ///
+  /// In zh, this message translates to:
+  /// **'增强歌词下载成功！逐字显示已就绪'**
+  String get ui_lyrics_download_success_enhanced;
+
+  /// SnackBar message when plain lyrics are downloaded
+  ///
+  /// In zh, this message translates to:
+  /// **'歌词下载成功'**
+  String get ui_lyrics_download_success;
+
+  /// SnackBar message when online lyric search returns no results
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到匹配的歌词，试试调整歌曲信息后重试'**
+  String get ui_lyrics_not_found_online;
+
+  /// Label for song title input field in lyric search dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'歌曲名'**
+  String get ui_lyric_search_song_title;
+
+  /// Label for artist input field in lyric search dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'歌手'**
+  String get ui_lyric_search_artist;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

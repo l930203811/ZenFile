@@ -343,14 +343,20 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     if (confirm) {
       final provider = context.read<FileManagerProvider>();
       final toDelete = _selectedPaths.toList();
-      for (final path in toDelete) {
-        await provider.deleteFile(path);
-        setState(() {
-          _results.removeWhere((e) => e.path == path);
-        });
+      try {
+        for (final path in toDelete) {
+          await provider.deleteFile(path);
+          setState(() {
+            _results.removeWhere((e) => e.path == path);
+          });
+        }
+        _clearSelection();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).msg45326802)));
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('删除失败: $e')));
+        }
       }
-      _clearSelection();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).msg45326802)));
     }
   }
 
@@ -400,7 +406,14 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
             actionText: L10n.of(context).msgc8ce4b36,
           );
           if (newName != null && newName.isNotEmpty) {
-            await provider.renameFile(path, newName);
+            try {
+              await provider.renameFile(path, newName);
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('重命名失败: $e')));
+              }
+              return;
+            }
             if (isMulti) {
               _clearSelection();
             }
@@ -418,20 +431,26 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
               : 'Are you sure you want to delete this item? This cannot be undone.',
         );
         if (confirm) {
-          if (isMulti) {
-            final toDelete = _selectedPaths.toList();
-            for (final p in toDelete) {
-              await provider.deleteFile(p);
+          try {
+            if (isMulti) {
+              final toDelete = _selectedPaths.toList();
+              for (final p in toDelete) {
+                await provider.deleteFile(p);
+                setState(() {
+                  _results.removeWhere((e) => e.path == p);
+                });
+              }
+              _clearSelection();
+            } else {
+              await provider.deleteFile(path);
               setState(() {
-                _results.removeWhere((e) => e.path == p);
+                _results.removeWhere((e) => e.path == path);
               });
             }
-            _clearSelection();
-          } else {
-            await provider.deleteFile(path);
-            setState(() {
-              _results.removeWhere((e) => e.path == path);
-            });
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('删除失败: $e')));
+            }
           }
         }
         break;

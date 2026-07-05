@@ -105,6 +105,8 @@ object DesktopLyricService {
                     val text = call.argument<String>("text") ?: ""
                     val x = (call.argument<Number>("x")?.toInt()) ?: 0
                     val y = (call.argument<Number>("y")?.toInt()) ?: 200
+                    (call.argument<Number>("highlightColor")?.toInt())?.let { highlightColor = it }
+                    (call.argument<Number>("normalColor")?.toInt())?.let { normalColor = it }
                     initX = x
                     initY = y
                     show(activity, text)
@@ -117,8 +119,8 @@ object DesktopLyricService {
                 "updateLyric" -> {
                     val text = call.argument<String>("text") ?: ""
                     val highlightLen = (call.argument<Number>("highlightLen")?.toInt()) ?: 0
-                    val highlight = (call.argument<Number>("highlight")?.toInt()) ?: highlightColor
-                    highlightColor = highlight
+                    (call.argument<Number>("highlightColor")?.toInt())?.let { highlightColor = it }
+                    (call.argument<Number>("normalColor")?.toInt())?.let { normalColor = it }
                     updateLyric(text, highlightLen)
                     result.success(true)
                 }
@@ -176,6 +178,18 @@ object DesktopLyricService {
         if (isShowing) {
             updateLyric(text, 0)
             return
+        }
+        // 防御：清理可能残留的旧 View（系统 detach 后 rootView 仍非 null 的情况）
+        if (rootView != null) {
+            try {
+                rootView?.let { windowManager?.removeView(it) }
+            } catch (_: Exception) {
+            }
+            rootView = null
+            container = null
+            lyricTextView = null
+            resizeHandle = null
+            layoutParams = null
         }
         if (!checkOverlayPermission(context)) {
             Toast.makeText(context, "未授予悬浮窗权限", Toast.LENGTH_SHORT).show()
@@ -271,10 +285,30 @@ object DesktopLyricService {
         setupTouchListener(rootView!!, params, context)
         setupResizeListener(resizeHandle!!, rootView!!, params, context)
 
+        // 监听 View 被 WindowManager 意外 detach（系统回收、内存压力等），
+        // 此时自动重置 isShowing，让 Flutter 端心跳检测到并恢复。
+        rootView?.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+            override fun onViewAttachedToWindow(v: View) {}
+            override fun onViewDetachedFromWindow(v: View) {
+                // 系统主动 detach（非 hide() 触发）→ 重置状态
+                if (isShowing) {
+                    isShowing = false
+                    // 不主动置空 rootView 等，避免 hide() 二次 removeView 抛异常
+                    // 下次 show() 会先清理再重建
+                }
+            }
+        })
+
         try {
             windowManager?.addView(rootView, params)
             isShowing = true
         } catch (e: Exception) {
+            // addView 失败时清理残留引用，避免下次 show() 误判
+            rootView = null
+            container = null
+            lyricTextView = null
+            resizeHandle = null
+            layoutParams = null
             Toast.makeText(context, "悬浮窗显示失败：${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
@@ -282,7 +316,11 @@ object DesktopLyricService {
     /** 隐藏并销毁悬浮窗 */
     @Synchronized
     fun hide() {
-        if (!isShowing) return
+        if (!isShowing && rootView == null) {
+            // 已彻底清理，仅兜底
+            isShowing = false
+            return
+        }
         try {
             rootView?.let { windowManager?.removeView(it) }
         } catch (_: Exception) {
@@ -301,9 +339,11 @@ object DesktopLyricService {
     fun updateLyric(text: String, highlightLen: Int) {
         currentText = text
         currentHighlightLen = highlightLen
+        // 防御：若悬浮窗已被系统回收，不做无意义操作，让 Flutter 心跳检测到并恢复
+        if (!isShowing || rootView == null) return
         lyricTextView?.let { tv ->
             tv.post {
-                tv.text = buildSpannableText(text, highlightLen)
+                tv.setText(buildSpannableText(text, highlightLen))
             }
         }
     }

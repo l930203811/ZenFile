@@ -395,7 +395,14 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           actionText: L10n.of(context).msgc8ce4b36,
         );
         if (newName != null && newName.isNotEmpty && mounted) {
-          await context.read<FileManagerProvider>().renameFile(filePath, newName);
+          try {
+            await context.read<FileManagerProvider>().renameFile(filePath, newName);
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('重命名失败: $e')));
+            }
+            return;
+          }
           _clearSelection();
           await context.read<MediaProvider>().loadMedia(forceRefresh: true);
         }
@@ -733,7 +740,14 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                       actionText: L10n.of(context).msgc8ce4b36,
                     );
                     if (newName != null && newName.isNotEmpty && mounted) {
-                      await context.read<FileManagerProvider>().renameFile(filePath, newName);
+                      try {
+                        await context.read<FileManagerProvider>().renameFile(filePath, newName);
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('重命名失败: $e')));
+                        }
+                        return;
+                      }
                       context.read<MediaProvider>().loadMedia(forceRefresh: true);
                     }
                   },

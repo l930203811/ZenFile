@@ -367,7 +367,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
         body: SafeArea(
           child: ListView(
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.of(context).padding.bottom + 16),
             children: [
               if (_searchQuery.isEmpty) ...[
                 Padding(
@@ -1163,7 +1163,7 @@ class GeneralSettingsScreen extends StatelessWidget {
       body: SafeArea(
         child: ListView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.of(context).padding.bottom + 16),
           children: [
             SettingsTile(
               icon: Broken.folder_favorite,
@@ -1262,7 +1262,7 @@ class AppearanceSettingsScreen extends StatelessWidget {
       body: SafeArea(
         child: ListView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.of(context).padding.bottom + 16),
           children: [
             SettingsTile(
               icon: Broken.colorfilter,
@@ -1340,7 +1340,7 @@ class ExplorerSettingsScreen extends StatelessWidget {
       body: SafeArea(
         child: ListView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.of(context).padding.bottom + 16),
           children: [
             SettingsTile(
               icon: Broken.edit,
@@ -1484,7 +1484,7 @@ class LayoutSettingsScreen extends StatelessWidget {
       body: SafeArea(
         child: ListView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.of(context).padding.bottom + 16),
           children: [
             SettingsTile(
               icon: Broken.document_text_1,
@@ -1752,7 +1752,7 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
       body: SafeArea(
         child: ListView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.of(context).padding.bottom + 16),
           children: [
             SettingsTile(
               icon: Broken.folder_2,
@@ -1862,7 +1862,7 @@ class ActionsSettingsScreen extends StatelessWidget {
       body: SafeArea(
         child: ListView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.of(context).padding.bottom + 16),
           children: [
             SettingsTile(
               icon: Broken.setting_3,
@@ -1924,7 +1924,7 @@ class _TrashSettingsScreenState extends State<TrashSettingsScreen> {
       body: SafeArea(
         child: ListView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.of(context).padding.bottom + 16),
           children: [
             SettingsTile(
               icon: Broken.trash,

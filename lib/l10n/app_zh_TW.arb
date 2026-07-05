@@ -3378,7 +3378,7 @@
       "log_remote_copy_paste_fix": "修復遠端伺服器複製檔案到本機貼上時進度條無回應且檔案未出現的問題",
     "log_navbar_position_setting": "新增導覽列位置設定，支援頂部或底部顯示導覽列",
     "log_browse_top_area_optimize": "啟用底部導覽列時，最佳化瀏覽頁頂部區域佈局，增加檔案列表顯示空間",
-    "log_thanks_feedback": "感謝以下使用者回饋與建議：越界、獼猴桃、Sir Jagadeesh Chandra Bose",
+    "log_thanks_feedback": "感謝以下使用者回饋與建議：越界、獼猴桃、Sir Jagadeesh Chandra Bose、Silence",
     "log_smb_native_rewrite": "SMB 用戶端完全重寫，透過 Android 原生 smbj 程式庫實現真實 SMB 協定，支援自動探測共享名",
     "log_ftp_sftp_streaming": "修復 FTP/SFTP 串流播放，使用原生 Socket 獨立資料連接，支援邊快取邊播放",
     "log_remote_l10n_fix": "修復遠端連接頁硬編碼字串，新增 SMB 協定描述與連接名稱後綴的 l10n 翻譯",
@@ -3574,7 +3574,7 @@
   "msg_shortcut_failed": "加入失敗，請重試",
   "ui_lyrics_loaded": "歌詞已載入",
   "ui_lyrics_load_failed": "無法解析此歌詞檔案",
-  "ui_select_lyrics_file": "選擇歌詞檔案",
+  "ui_select_lyrics_file": "匯入本地歌詞",
   "ui_no_lyrics_found": "未找到歌詞",
   "ui_lyrics_auto_load_hint": "將 .lrc 歌詞檔案放在音訊同目錄下\n（檔名與音訊相同）即可自動載入",
   "ui_lyrics_panel": "歌詞全螢幕面板",
@@ -3887,5 +3887,33 @@
   "msg_open_settings": "去設定",
   "@msg_open_settings": {
     "description": "Action button on the SnackBar to open app settings when notification permission is denied"
+  },
+  "ui_search_lyrics_online": "線上搜尋歌詞",
+  "@ui_search_lyrics_online": {
+    "description": "Button label to search lyrics online for the current song"
+  },
+  "ui_lyrics_searching": "正在搜尋歌詞...",
+  "@ui_lyrics_searching": {
+    "description": "Dialog message shown while searching lyrics online"
+  },
+  "ui_lyrics_download_success_enhanced": "增強歌詞下載成功！逐字顯示已就緒",
+  "@ui_lyrics_download_success_enhanced": {
+    "description": "SnackBar message when enhanced lyrics with word timestamps are downloaded"
+  },
+  "ui_lyrics_download_success": "歌詞下載成功",
+  "@ui_lyrics_download_success": {
+    "description": "SnackBar message when plain lyrics are downloaded"
+  },
+  "ui_lyrics_not_found_online": "未找到匹配的歌詞，試試調整歌曲資訊後重試",
+  "@ui_lyrics_not_found_online": {
+    "description": "SnackBar message when online lyric search returns no results"
+  },
+  "ui_lyric_search_song_title": "歌曲名稱",
+  "@ui_lyric_search_song_title": {
+    "description": "Label for song title input field in lyric search dialog"
+  },
+  "ui_lyric_search_artist": "歌手",
+  "@ui_lyric_search_artist": {
+    "description": "Label for artist input field in lyric search dialog"
   }
 }

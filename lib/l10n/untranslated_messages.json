@@ -1,0 +1,50 @@
+{
+  "ar": [
+    "ui_lyrics_searching",
+    "ui_lyrics_download_success_enhanced",
+    "ui_lyrics_download_success",
+    "ui_lyrics_not_found_online"
+  ],
+
+  "de": [
+    "ui_lyrics_searching",
+    "ui_lyrics_download_success_enhanced",
+    "ui_lyrics_download_success",
+    "ui_lyrics_not_found_online"
+  ],
+
+  "es": [
+    "ui_lyrics_searching",
+    "ui_lyrics_download_success_enhanced",
+    "ui_lyrics_download_success",
+    "ui_lyrics_not_found_online"
+  ],
+
+  "fr": [
+    "ui_lyrics_searching",
+    "ui_lyrics_download_success_enhanced",
+    "ui_lyrics_download_success",
+    "ui_lyrics_not_found_online"
+  ],
+
+  "ja": [
+    "ui_lyrics_searching",
+    "ui_lyrics_download_success_enhanced",
+    "ui_lyrics_download_success",
+    "ui_lyrics_not_found_online"
+  ],
+
+  "ko": [
+    "ui_lyrics_searching",
+    "ui_lyrics_download_success_enhanced",
+    "ui_lyrics_download_success",
+    "ui_lyrics_not_found_online"
+  ],
+
+  "ru": [
+    "ui_lyrics_searching",
+    "ui_lyrics_download_success_enhanced",
+    "ui_lyrics_download_success",
+    "ui_lyrics_not_found_online"
+  ]
+}

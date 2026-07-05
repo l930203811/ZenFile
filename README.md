@@ -12,7 +12,7 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 **Native SMB Rewrite & Desktop Lyric Floating Window & Streaming Playback Fixes** — SMB client completely rewritten with native Android smbj library for real SMB protocol. Added desktop lyric floating window with word-by-word karaoke highlighting and drag-to-resize. Fixed FTP/SFTP streaming playback, notification panel, and background play continuity. Refined breadcrumb borders, three-dot button positions, and category selection back behavior.
 
-🙏 **Thanks for Feedback** — Thanks to the following users for feedback and suggestions: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose
+🙏 **Thanks for Feedback** — Thanks to the following users for feedback and suggestions: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose, Silence
 
 | | |
 |---|---|

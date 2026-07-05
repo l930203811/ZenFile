@@ -3320,7 +3320,7 @@
       "log_remote_copy_paste_fix": "Behoben: Kopieren vom Remote-Server zeigt 0% Fortschritt und Dateien erscheinen nicht",
     "log_navbar_position_setting": "Added navigation bar position setting, support top or bottom display",
     "log_browse_top_area_optimize": "Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space",
-    "log_thanks_feedback": "Danke an folgende Nutzer für Feedback und Vorschläge: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose",
+    "log_thanks_feedback": "Danke an folgende Nutzer für Feedback und Vorschläge: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose, Silence",
     "log_smb_native_rewrite": "SMB-Client komplett neu geschrieben, verwendet native Android smbj-Bibliothek für echtes SMB-Protokoll, mit automatischer Share-Namenerkennung",
     "log_ftp_sftp_streaming": "FTP/SFTP-Streaming-Wiedergabe repariert, verwendet rohes Socket mit unabhängiger Datenverbindung, unterstützt progressives Caching",
     "log_remote_l10n_fix": "Hardcodierte Strings auf Remote-Verbindungsseite behoben, l10n-Keys für SMB-Protokollbeschreibung und Verbindungsnamenssuffix hinzugefügt",
@@ -3516,7 +3516,8 @@
   "msg_shortcut_failed": "Hinzufügen fehlgeschlagen",
   "ui_lyrics_loaded": "Liedtext geladen",
   "ui_lyrics_load_failed": "Liedtextdatei kann nicht analysiert werden",
-  "ui_select_lyrics_file": "Liedtextdatei auswählen",
+  "ui_select_lyrics_file": "Lokale Liedtexte importieren",
+  "ui_search_lyrics_online": "Songtext online suchen",
   "ui_no_lyrics_found": "Kein Liedtext gefunden",
   "ui_lyrics_auto_load_hint": "Legen Sie die .lrc-Datei im selben Ordner wie die Audiodatei ab\n(mit dem gleichen Dateinamen) für automatisches Laden",
   "ui_lyrics_panel": "Liedtext-Panel",
@@ -3829,5 +3830,7 @@
   "msg_open_settings": "Zu den Einstellungen",
   "@msg_open_settings": {
     "description": "Action button on the SnackBar to open app settings when notification permission is denied"
-  }
+  },
+  "ui_lyric_search_song_title": "Songtitel",
+  "ui_lyric_search_artist": "Künstler"
 }

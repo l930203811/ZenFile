@@ -3320,7 +3320,7 @@
       "log_remote_copy_paste_fix": "إصلاح مشكلة النسخ من الخادم البعيد: شريط التقدم 0% والملفات لا تظهر",
     "log_navbar_position_setting": "Added navigation bar position setting, support top or bottom display",
     "log_browse_top_area_optimize": "Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space",
-    "log_thanks_feedback": "شكراً للمستخدمين التاليين على ملاحظاتهم واقتراحاتهم: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose",
+    "log_thanks_feedback": "شكراً للمستخدمين التاليين على ملاحظاتهم واقتراحاتهم: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose, Silence",
     "log_smb_native_rewrite": "إعادة كتابة كاملة لعميل SMB باستخدام مكتبة smbj الأصلية لأندرويد لبروتوكول SMB حقيقي، مع اكتشاف تلقائي لاسم المشاركة",
     "log_ftp_sftp_streaming": "إصلاح تشغيل FTP/SFTP بتدفق باستخدام Socket خام مع اتصال بيانات مستقل، دعم التخزين المؤقت التدريجي",
     "log_remote_l10n_fix": "إصلاح النصوص الثابتة في صفحة الاتصال البعيد، إضافة مفاتيح l10n لوصف بروتوكول SMB ولاحقة اسم الاتصال",
@@ -3516,7 +3516,8 @@
   "msg_shortcut_failed": "فشل الإضافة",
   "ui_lyrics_loaded": "تم تحميل كلمات الأغنية",
   "ui_lyrics_load_failed": "تعذر تحليل ملف كلمات الأغنية",
-  "ui_select_lyrics_file": "اختيار ملف كلمات الأغنية",
+  "ui_select_lyrics_file": "استيراد كلمات محلية",
+  "ui_search_lyrics_online": "البحث عن كلمات الأغنية عبر الإنترنت",
   "ui_no_lyrics_found": "لم يتم العثور على كلمات الأغنية",
   "ui_lyrics_auto_load_hint": "ضع ملف .lrc في نفس مجلد الملف الصوتي\n(بنفس الاسم) لتحميله تلقائيًا",
   "ui_lyrics_panel": "لوحة كلمات الأغنية",
@@ -3829,5 +3830,7 @@
   "msg_open_settings": "اذهب إلى الإعدادات",
   "@msg_open_settings": {
     "description": "Action button on the SnackBar to open app settings when notification permission is denied"
-  }
+  },
+  "ui_lyric_search_song_title": "اسم الأغنية",
+  "ui_lyric_search_artist": "الفنان"
 }

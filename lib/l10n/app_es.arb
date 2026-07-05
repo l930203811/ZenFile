@@ -3320,7 +3320,7 @@
       "log_remote_copy_paste_fix": "Corregido: copiar desde servidor remoto muestra 0% de progreso y los archivos no aparecen",
     "log_navbar_position_setting": "Added navigation bar position setting, support top or bottom display",
     "log_browse_top_area_optimize": "Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space",
-    "log_thanks_feedback": "Gracias a los siguientes usuarios por sus comentarios y sugerencias: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose",
+    "log_thanks_feedback": "Gracias a los siguientes usuarios por sus comentarios y sugerencias: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose, Silence",
     "log_smb_native_rewrite": "Cliente SMB completamente reescrito usando la biblioteca nativa smbj de Android para protocolo SMB real, con detección automática de nombres de recurso compartido",
     "log_ftp_sftp_streaming": "Reproducida la transmisión FTP/SFTP usando Socket sin formato con conexión de datos independiente, soporta caché progresiva",
     "log_remote_l10n_fix": "Corregidas cadenas codificadas en la página de conexión remota, agregadas claves l10n para descripción del protocolo SMB y sufijo de nombre de conexión",
@@ -3516,7 +3516,8 @@
   "msg_shortcut_failed": "Error al añadir",
   "ui_lyrics_loaded": "Letra cargada",
   "ui_lyrics_load_failed": "No se puede analizar este archivo de letra",
-  "ui_select_lyrics_file": "Seleccionar archivo de letra",
+  "ui_select_lyrics_file": "Importar letra local",
+  "ui_search_lyrics_online": "Buscar letra en línea",
   "ui_no_lyrics_found": "No se encontró letra",
   "ui_lyrics_auto_load_hint": "Coloca el archivo .lrc en la misma carpeta que el audio\n(con el mismo nombre) para cargarlo automáticamente",
   "ui_lyrics_panel": "Panel de letras",
@@ -3829,5 +3830,7 @@
   "msg_open_settings": "Ir a ajustes",
   "@msg_open_settings": {
     "description": "Action button on the SnackBar to open app settings when notification permission is denied"
-  }
+  },
+  "ui_lyric_search_song_title": "Título",
+  "ui_lyric_search_artist": "Artista"
 }

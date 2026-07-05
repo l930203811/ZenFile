@@ -13,8 +13,10 @@ import '../../../core/icon_fonts/broken_icons.dart';
 import '../../../core/utils.dart';
 import '../../../services/audio_background_handler.dart';
 import '../../../services/desktop_lyric_service.dart';
+import '../../../services/desktop_lyric_controller.dart';
 import '../../../services/preferences_service.dart';
 import '../../../services/lyric_parser.dart';
+import '../../../services/lyric_search_service.dart';
 import '../../../services/remote/remote_client.dart';
 import '../../../services/remote_streaming_service.dart';
 import '../../../services/network_connections_service.dart';
@@ -131,6 +133,10 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   String? _lastDesktopLyricText; // 上一次推送给悬浮窗的文本，用于节流
   int _lastDesktopHighlightLen = -1; // 上一次推送给悬浮窗的高亮字符数
   StreamSubscription<void>? _desktopLyricClickSub;
+  // 心跳计数器：每 N 次更新检查一次原生层 isShowing，发现消失则自动恢复
+  int _desktopLyricHeartbeatCounter = 0;
+  static const int _desktopLyricHeartbeatInterval = 20; // 约 10 秒检查一次（按 500ms 更新周期）
+  bool _desktopLyricRecovering = false; // 防止恢复逻辑重入
 
   // 远程流式播放
   String? _currentStreamUrl; // 当前远程流式播放的代理 URL
@@ -221,6 +227,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     player.stream.position.listen((p) {
       if (!mounted || isSeeking) return;
       setState(() => position = p);
+      // 桌面歌词由 DesktopLyricController 独立监听更新，此处仅更新内联歌词
       _updateDesktopLyric();
     });
     player.stream.duration.listen((d) {
@@ -443,13 +450,19 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     _desktopLyricClickSub = null;
     _lastDesktopLyricText = null;
     _lastDesktopHighlightLen = -1;
-    DesktopLyricService.instance.hide();
+    _desktopLyricHeartbeatCounter = 0;
+    _desktopLyricRecovering = false;
     // 清理远程流式会话
     _stopCurrentStream();
     if (_isBackgroundMode) {
       // Let audio keep playing in background — don't dispose player
+      // 桌面歌词也应保持显示，不随页面关闭而消失
+      // DesktopLyricController 继续运行，独立于 widget 生命周期更新歌词
       getAudioHandler().setSkipCallback(null);
     } else {
+      // 非后台模式：停止控制器并隐藏悬浮窗
+      DesktopLyricController.instance.stop();
+      DesktopLyricService.instance.hide();
       player.dispose();
       getAudioHandler().detach();
     }
@@ -499,6 +512,8 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   void _loadLyrics() {
     final audioPath = _currentPath;
     final generation = ++_lyricsLoadGeneration;
+    final title = _currentTitle;
+    final artist = _getDisplayArtist();
 
     setState(() {
       _lyrics = null;
@@ -507,15 +522,40 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     });
 
     // 异步加载歌词
-    Future(() {
+    Future(() async {
+      // 1. 先尝试本地加载
       final loaded = LyricParser.loadLyricForAudio(audioPath);
 
       // 只应用最新一次加载的结果，避免切歌竞态覆盖
-      if (mounted && generation == _lyricsLoadGeneration) {
-        setState(() {
-          if (loaded != null) {
+      if (generation != _lyricsLoadGeneration) return;
+
+      if (loaded != null) {
+        if (mounted) {
+          setState(() {
             _lyrics = loaded.lyrics;
             _lyricSourcePath = loaded.sourcePath;
+            _isLoadingLyrics = false;
+          });
+        }
+        return;
+      }
+
+      // 2. 本地未找到，尝试在线搜索（静默后台）
+      debugPrint('[LyricSearch] 本地未找到歌词，尝试在线搜索: $title - $artist');
+      if (generation != _lyricsLoadGeneration) return;
+
+      final onlineResult = await LyricSearchService.searchAndDownload(
+        title: title,
+        artist: artist,
+        audioPath: audioPath,
+      );
+
+      // 只应用最新一次加载的结果
+      if (mounted && generation == _lyricsLoadGeneration) {
+        setState(() {
+          if (onlineResult != null) {
+            _lyrics = onlineResult.lyrics;
+            _lyricSourcePath = onlineResult.sourcePath;
           } else {
             _lyrics = null;
             _lyricSourcePath = null;
@@ -570,6 +610,220 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     }
   }
 
+  /// 从完整文件名中智能分离歌曲名和歌手名。
+  /// 支持分隔符: " - ", " – ", " — ", "-", "–", "—", "丨", "|"
+  /// 返回 null 表示无法分离。
+  List<String>? _trySplitTitleAndArtist(String raw) {
+    if (raw.isEmpty) return null;
+    final separators = [' - ', ' – ', ' — ', '-', '–', '—', '丨', '|'];
+    for (final sep in separators) {
+      final idx = raw.lastIndexOf(sep);
+      if (idx > 0 && idx < raw.length - sep.length) {
+        final title = raw.substring(0, idx).trim();
+        final artist = raw.substring(idx + sep.length).trim();
+        // 去除文件名中常见的后缀/标签
+        final cleanArtist = artist
+            .replaceAll(RegExp(r'\s*[（(][^)）]*[)）]\s*$'), '')
+            .replaceAll(RegExp(r'\s*\[[^\]]*\]\s*$'), '')
+            .trim();
+        if (title.isNotEmpty && cleanArtist.isNotEmpty && cleanArtist.length > 1) {
+          return [title, cleanArtist];
+        }
+      }
+    }
+    return null;
+  }
+
+  /// 弹出在线歌词搜索对话框，自动填入歌曲名和歌手名，可手动修改后搜索
+  Future<void> _showLyricSearchDialog() async {
+    // 使用原始歌手名（空字符串），而非界面显示的"未知艺术家"翻译
+    String songTitle = _currentTitle;
+    String artistForSearch = _currentArtist;
+
+    // 如果歌手名为空/unknown，尝试从标题中分离
+    if (FileUtils.isUnknownArtist(artistForSearch) && songTitle.isNotEmpty) {
+      final split = _trySplitTitleAndArtist(songTitle);
+      if (split != null) {
+        songTitle = split[0];
+        artistForSearch = split[1];
+      }
+    }
+
+    final titleController = TextEditingController(text: songTitle);
+    final artistController = TextEditingController(text: artistForSearch);
+
+    final l10n = L10n.of(context);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    String? errorMessage;
+    bool isSearching = false;
+
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          return AlertDialog(
+            backgroundColor: isDark ? const Color(0xFF1E1E2E) : theme.colorScheme.surface,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            title: Row(
+              children: [
+                Icon(Broken.music_filter, color: theme.colorScheme.primary, size: 22),
+                const SizedBox(width: 10),
+                Text(
+                  l10n.ui_search_lyrics_online,
+                  style: TextStyle(
+                    color: isDark ? Colors.white : theme.colorScheme.onSurface,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+              ],
+            ),
+            content: SizedBox(
+              width: 300,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // 歌曲名输入框
+                  TextField(
+                    controller: titleController,
+                    enabled: !isSearching,
+                    style: TextStyle(color: isDark ? Colors.white : theme.colorScheme.onSurface),
+                    decoration: InputDecoration(
+                      labelText: l10n.ui_lyric_search_song_title,
+                      labelStyle: TextStyle(color: theme.colorScheme.primary.withOpacity(0.7)),
+                      filled: true,
+                      fillColor: isDark ? Colors.white.withOpacity(0.05) : theme.colorScheme.onSurface.withOpacity(0.04),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                      prefixIcon: Icon(Icons.music_note_rounded, color: theme.colorScheme.primary.withOpacity(0.6), size: 20),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // 歌手名输入框
+                  TextField(
+                    controller: artistController,
+                    enabled: !isSearching,
+                    style: TextStyle(color: isDark ? Colors.white : theme.colorScheme.onSurface),
+                    decoration: InputDecoration(
+                      labelText: l10n.ui_lyric_search_artist,
+                      labelStyle: TextStyle(color: theme.colorScheme.primary.withOpacity(0.7)),
+                      filled: true,
+                      fillColor: isDark ? Colors.white.withOpacity(0.05) : theme.colorScheme.onSurface.withOpacity(0.04),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                      prefixIcon: Icon(Icons.person_rounded, color: theme.colorScheme.primary.withOpacity(0.6), size: 20),
+                    ),
+                  ),
+                  // 搜索中指示器 / 错误提示
+                  if (isSearching) ...[
+                    const SizedBox(height: 20),
+                    const Center(child: CircularProgressIndicator()),
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n.ui_lyrics_searching,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: isDark ? Colors.white70 : theme.colorScheme.onSurface.withOpacity(0.5),
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                  if (errorMessage != null && !isSearching) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.orangeAccent.shade100.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.orangeAccent.shade100.withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.info_outline_rounded, color: Colors.orange.shade600, size: 18),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              errorMessage!,
+                              style: TextStyle(
+                                color: isDark ? Colors.orange.shade200 : Colors.orange.shade800,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(l10n.ui_cancel, style: TextStyle(color: isDark ? Colors.white70 : theme.colorScheme.onSurface.withOpacity(0.6))),
+              ),
+              TextButton(
+                onPressed: isSearching
+                    ? null
+                    : () async {
+                        final title = titleController.text.trim();
+                        final artist = artistController.text.trim();
+                        if (title.isEmpty) {
+                          setDialogState(() {
+                            errorMessage = l10n.ui_lyrics_not_found_online;
+                          });
+                          return;
+                        }
+
+                        setDialogState(() {
+                          isSearching = true;
+                          errorMessage = null;
+                        });
+
+                        // 在对话框中执行搜索
+                        final searchResult = await LyricSearchService.searchAndDownload(
+                          title: title,
+                          artist: artist,
+                          audioPath: _currentPath,
+                        );
+
+                        if (!ctx.mounted) return;
+
+                        if (searchResult != null) {
+                          Navigator.pop(ctx, true); // 关闭对话框，返回成功
+                        } else {
+                          setDialogState(() {
+                            isSearching = false;
+                            errorMessage = l10n.ui_lyrics_not_found_online;
+                          });
+                        }
+                      },
+                child: Text(l10n.ui_search_lyrics_online, style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    // 清理控制器
+    titleController.dispose();
+    artistController.dispose();
+
+    if (!mounted || result != true) return;
+
+    // 对话框返回 true 表示搜索成功，reload lyrics
+    _loadLyrics();
+  }
+
   /// 切换完整内联歌词显示（用歌词视图替换封面）
   void _toggleInlineLyrics() {
     setState(() {
@@ -578,6 +832,18 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   }
 
   // ─── 桌面歌词悬浮窗 ────────────────────────────────────────────────────
+
+  /// 获取桌面歌词颜色（ARGB int 格式，用于原生层渲染）
+  /// 返回 [highlightColor, normalColor]。
+  List<int> _getDesktopLyricColors() {
+    final accent = Theme.of(context).colorScheme.primary;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // 高亮色 = 主题主色（已唱部分）
+    final highlightColor = accent.value;
+    // 普通色 = 主题主色 35% 透明度（未唱部分）
+    final normalColor = accent.withOpacity(0.35).value;
+    return [highlightColor, normalColor];
+  }
 
   /// 若用户上次开启了桌面歌词，恢复显示（带权限校验）
   void _showDesktopLyricIfEnabled() async {
@@ -595,9 +861,10 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     final highlightLen = _calcDesktopHighlightLen(line);
     _lastDesktopLyricText = text;
     _lastDesktopHighlightLen = highlightLen;
-    await DesktopLyricService.instance.show(text);
+    final colors = _getDesktopLyricColors();
+    await DesktopLyricService.instance.show(text, highlightColor: colors[0], normalColor: colors[1]);
     // 立即推送一次逐字高亮位置
-    DesktopLyricService.instance.updateLyric(text, highlightLen: highlightLen);
+    DesktopLyricService.instance.updateLyric(text, highlightLen: highlightLen, highlightColor: colors[0], normalColor: colors[1]);
   }
 
   /// 切换桌面歌词悬浮窗开关
@@ -633,12 +900,13 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     final line = _getCurrentLyricLine();
     final text = line?.text ?? '';
     final highlightLen = _calcDesktopHighlightLen(line);
-    final ok = await DesktopLyricService.instance.show(text);
+    final colors = _getDesktopLyricColors();
+    final ok = await DesktopLyricService.instance.show(text, highlightColor: colors[0], normalColor: colors[1]);
     if (ok) {
       _lastDesktopLyricText = text;
       _lastDesktopHighlightLen = highlightLen;
       // 立即推送逐字高亮
-      DesktopLyricService.instance.updateLyric(text, highlightLen: highlightLen);
+      DesktopLyricService.instance.updateLyric(text, highlightLen: highlightLen, highlightColor: colors[0], normalColor: colors[1]);
       setState(() => _desktopLyricEnabled = true);
       await PreferencesService.saveDesktopLyricEnabled(true);
     } else if (mounted) {
@@ -692,13 +960,19 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   }
 
   /// 同步本地开关状态与原生层悬浮窗实际显示状态
+  ///
+  /// 关键修复：当本地开关为 ON 但原生层悬浮窗被系统回收（isShowing=false）时，
+  /// 自动重新创建悬浮窗并推送当前歌词，避免「开启后无故消失」。
   Future<void> _syncDesktopLyricState() async {
     if (!mounted) return;
     final actuallyShowing = await DesktopLyricService.instance.isShowing();
     if (!mounted) return;
-    if (_desktopLyricEnabled != actuallyShowing) {
-      setState(() => _desktopLyricEnabled = actuallyShowing);
-      await PreferencesService.saveDesktopLyricEnabled(actuallyShowing);
+    if (_desktopLyricEnabled && !actuallyShowing) {
+      // 开关为 ON 但悬浮窗被系统回收 → 自动恢复
+      await _enableDesktopLyric();
+    } else if (!_desktopLyricEnabled && actuallyShowing) {
+      // 开关为 OFF 但悬浮窗仍在显示 → 主动关闭
+      await DesktopLyricService.instance.hide();
     }
   }
 
@@ -713,6 +987,27 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       _lastDesktopLyricText = text;
       _lastDesktopHighlightLen = highlightLen;
       DesktopLyricService.instance.updateLyric(text, highlightLen: highlightLen);
+    }
+    // 心跳检查：定期确认原生层悬浮窗是否仍存在，发现消失则自动恢复
+    _desktopLyricHeartbeatCounter++;
+    if (_desktopLyricHeartbeatCounter >= _desktopLyricHeartbeatInterval &&
+        !_desktopLyricRecovering) {
+      _desktopLyricHeartbeatCounter = 0;
+      _checkAndRecoverDesktopLyric();
+    }
+  }
+
+  /// 检查悬浮窗是否仍显示，若已消失则自动恢复
+  Future<void> _checkAndRecoverDesktopLyric() async {
+    if (!_desktopLyricEnabled || _desktopLyricRecovering) return;
+    final stillShowing = await DesktopLyricService.instance.isShowing();
+    if (!stillShowing && _desktopLyricEnabled && mounted) {
+      _desktopLyricRecovering = true;
+      try {
+        await _enableDesktopLyric();
+      } finally {
+        _desktopLyricRecovering = false;
+      }
     }
   }
 
@@ -1062,7 +1357,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _LyricsPanel(
+      builder: (ctx) => _LyricsPanel(
         player: player,
         lyrics: _lyrics,
         lyricSourcePath: _lyricSourcePath,
@@ -1071,8 +1366,12 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         accentColor: Theme.of(context).colorScheme.primary,
         isLoading: _isLoadingLyrics,
         onSelectLyricFile: () {
-          Navigator.pop(context);
+          Navigator.pop(ctx);
           _selectLyricFile();
+        },
+        onSearchOnline: () {
+          Navigator.pop(ctx);
+          _showLyricSearchDialog();
         },
         onSeek: (d) => player.seek(d),
       ),
@@ -1565,18 +1864,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                       _toggleBackgroundMode();
                     },
                   ),
-                  const Divider(color: Colors.white12, height: 1),
-                  ListTile(
-                    leading: Icon(Broken.document, color: _showInlineLyrics ? Colors.deepPurpleAccent : Colors.white),
-                    title: Text(
-                      _showInlineLyrics ? L10n.of(context).ui_hide_lyrics : L10n.of(context).ui_show_lyrics,
-                      style: TextStyle(color: _showInlineLyrics ? Colors.deepPurpleAccent : Colors.white, fontWeight: FontWeight.w600),
-                    ),
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      _toggleInlineLyrics();
-                    },
-                  ),
                   // ── 桌面歌词悬浮窗 ────────────────────────────────────────────────
                   ListTile(
                     leading: Icon(
@@ -1601,6 +1888,14 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                     onTap: () {
                       _toggleDesktopLyric();
                       setSheet(() {});
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.search_rounded, color: Colors.white),
+                    title: Text(L10n.of(context).ui_search_lyrics_online, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _showLyricSearchDialog();
                     },
                   ),
                   ListTile(
@@ -1856,6 +2151,7 @@ class _LyricsPanel extends StatefulWidget {
   final Color accentColor;
   final bool isLoading;
   final VoidCallback? onSelectLyricFile;
+  final VoidCallback? onSearchOnline;
   final void Function(Duration)? onSeek;
 
   const _LyricsPanel({
@@ -1867,6 +2163,7 @@ class _LyricsPanel extends StatefulWidget {
     required this.accentColor,
     required this.isLoading,
     this.onSelectLyricFile,
+    this.onSearchOnline,
     this.onSeek,
   });
 
@@ -2011,16 +2308,34 @@ class _LyricsPanelState extends State<_LyricsPanel> {
               ),
             ),
             const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: widget.onSelectLyricFile,
-              icon: const Icon(Icons.folder_open_rounded, size: 20),
-              label: Text(L10n.of(context).ui_select_lyrics_file),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: widget.accentColor,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              ),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: widget.onSearchOnline,
+                  icon: const Icon(Icons.search_rounded, size: 20),
+                  label: Text(L10n.of(context).ui_search_lyrics_online),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: widget.accentColor,
+                    side: BorderSide(color: widget.accentColor.withOpacity(0.4)),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                ),
+                OutlinedButton.icon(
+                  onPressed: widget.onSelectLyricFile,
+                  icon: const Icon(Icons.folder_open_rounded, size: 20),
+                  label: Text(L10n.of(context).ui_select_lyrics_file),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: widget.accentColor,
+                    side: BorderSide(color: widget.accentColor.withOpacity(0.4)),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

@@ -3320,7 +3320,7 @@
       "log_remote_copy_paste_fix": "Исправлена проблема с копированием с удалённого сервера: прогресс 0% и файлы не появляются",
     "log_navbar_position_setting": "Added navigation bar position setting, support top or bottom display",
     "log_browse_top_area_optimize": "Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space",
-    "log_thanks_feedback": "Благодарим следующих пользователей за отзывы и предложения: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose",
+    "log_thanks_feedback": "Благодарим следующих пользователей за отзывы и предложения: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose, Silence",
     "log_smb_native_rewrite": "Полностью переписан SMB-клиент с использованием нативной библиотеки Android smbj для реального протокола SMB, с автоматическим определением имени общего ресурса",
     "log_ftp_sftp_streaming": "Исправлена потоковая передача FTP/SFTP с использованием сырого Socket с независимым подключением данных, поддерживает прогрессивное кэширование",
     "log_remote_l10n_fix": "Исправлены жёстко закодированные строки на странице удалённого подключения, добавлены l10n-ключи для описания протокола SMB и суффикса имени подключения",
@@ -3516,7 +3516,8 @@
   "msg_shortcut_failed": "Ошибка добавления",
   "ui_lyrics_loaded": "Текст песни загружен",
   "ui_lyrics_load_failed": "Не удалось разобрать файл текста",
-  "ui_select_lyrics_file": "Выбрать файл текста",
+  "ui_select_lyrics_file": "Импорт локального текста",
+  "ui_search_lyrics_online": "Искать текст онлайн",
   "ui_no_lyrics_found": "Текст песни не найден",
   "ui_lyrics_auto_load_hint": "Поместите файл .lrc в ту же папку, что и аудио\n(с тем же именем файла), чтобы автоматически загрузить",
   "ui_lyrics_panel": "Панель текста",
@@ -3829,5 +3830,7 @@
   "msg_open_settings": "В настройки",
   "@msg_open_settings": {
     "description": "Action button on the SnackBar to open app settings when notification permission is denied"
-  }
+  },
+  "ui_lyric_search_song_title": "Название",
+  "ui_lyric_search_artist": "Исполнитель"
 }

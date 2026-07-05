@@ -3151,7 +3151,7 @@ class L10nRu extends L10n {
 
   @override
   String get log_thanks_feedback =>
-      'Благодарим следующих пользователей за отзывы и предложения: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose';
+      'Благодарим следующих пользователей за отзывы и предложения: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose, Silence';
 
   @override
   String get log_smb_native_rewrite =>
@@ -3642,7 +3642,7 @@ class L10nRu extends L10n {
   String get ui_lyrics_load_failed => 'Не удалось разобрать файл текста';
 
   @override
-  String get ui_select_lyrics_file => 'Выбрать файл текста';
+  String get ui_select_lyrics_file => 'Импорт локального текста';
 
   @override
   String get ui_no_lyrics_found => 'Текст песни не найден';
@@ -3907,4 +3907,25 @@ class L10nRu extends L10n {
 
   @override
   String get msg_open_settings => 'В настройки';
+
+  @override
+  String get ui_search_lyrics_online => 'Искать текст онлайн';
+
+  @override
+  String get ui_lyrics_searching => '正在搜索歌词...';
+
+  @override
+  String get ui_lyrics_download_success_enhanced => '增强歌词下载成功！逐字显示已就绪';
+
+  @override
+  String get ui_lyrics_download_success => '歌词下载成功';
+
+  @override
+  String get ui_lyrics_not_found_online => '未找到匹配的歌词，试试调整歌曲信息后重试';
+
+  @override
+  String get ui_lyric_search_song_title => 'Название';
+
+  @override
+  String get ui_lyric_search_artist => 'Исполнитель';
 }
