@@ -3928,6 +3928,22 @@ class L10nFr extends L10n {
   String get msg_open_settings => 'Aller aux paramètres';
 
   @override
+  String get msg_notification_not_granted =>
+      'L\'autorisation de notification n\'est pas accordée, la notification de contrôle de lecture ne peut donc pas être affichée. Veuillez activer l\'autorisation de notification dans les paramètres.';
+
+  @override
+  String get msg_notification_blocked_hint =>
+      'La notification ne s\'affiche pas. Le canal de notification est peut-être désactivé ou l\'optimisation de la batterie limite l\'exécution en arrière-plan. Veuillez vérifier l\'autorisation de notification et les paramètres d\'optimisation de la batterie.';
+
+  @override
+  String get msg_audio_service_init_failed =>
+      'Le service de lecture en arrière-plan n\'a pas pu être initialisé, les boutons de contrôle de notification ne peuvent donc pas être affichés. Veuillez redémarrer l\'application ; si le problème persiste, effacez les données de l\'application dans les paramètres système et rouvrez-la.';
+
+  @override
+  String get msg_notification_channel_disabled =>
+      'Le canal de notification est désactivé. Allez dans Paramètres → Gestion des applications → ZenFile → Notifications, recherchez le canal « ZenFile Audio Player » et activez-le.';
+
+  @override
   String get ui_search_lyrics_online => 'Rechercher des paroles en ligne';
 
   @override

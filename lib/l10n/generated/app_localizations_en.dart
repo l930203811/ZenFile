@@ -3856,6 +3856,22 @@ class L10nEn extends L10n {
   String get msg_open_settings => 'Go to settings';
 
   @override
+  String get msg_notification_not_granted =>
+      'Notification permission is not granted, so the playback control notification cannot be shown. Please enable notification permission in Settings.';
+
+  @override
+  String get msg_notification_blocked_hint =>
+      'The notification is not showing. The notification channel may be disabled or battery optimization is restricting background execution. Please check notification permission and battery optimization settings.';
+
+  @override
+  String get msg_audio_service_init_failed =>
+      'The background playback service failed to initialize, so the notification control buttons cannot be shown. Please try restarting the app; if the issue persists, clear app data in system settings and reopen.';
+
+  @override
+  String get msg_notification_channel_disabled =>
+      'The notification channel is disabled. Go to Settings → App management → ZenFile → Notifications, find the \"ZenFile Audio Player\" channel and enable it.';
+
+  @override
   String get ui_search_lyrics_online => 'Search Online for Lyrics';
 
   @override

@@ -6988,6 +6988,30 @@ abstract class L10n {
   /// **'去设置'**
   String get msg_open_settings;
 
+  /// Shown when notification permission is detected as not granted after enabling background playback
+  ///
+  /// In zh, this message translates to:
+  /// **'通知权限未授予，无法显示播放控制通知。请前往设置开启通知权限。'**
+  String get msg_notification_not_granted;
+
+  /// Shown when notification fails to appear despite permission being granted, typically due to ROM restrictions
+  ///
+  /// In zh, this message translates to:
+  /// **'通知栏未生效，可能是系统通知渠道被禁用或电池优化限制了后台运行。请在系统设置中检查通知权限和电池优化设置。'**
+  String get msg_notification_blocked_hint;
+
+  /// Shown when AudioService.init fails - the background playback service cannot be registered with the OS
+  ///
+  /// In zh, this message translates to:
+  /// **'后台播放服务初始化失败，通知栏控制按钮无法显示。请尝试重启应用；若问题持续，请在系统设置中清除应用数据后重新打开。'**
+  String get msg_audio_service_init_failed;
+
+  /// Shown when the notification channel is disabled by the user or system
+  ///
+  /// In zh, this message translates to:
+  /// **'通知渠道已被禁用。请前往系统设置 → 应用管理 → ZenFile → 通知，找到\"ZenFile Audio Player\"渠道并将其启用。'**
+  String get msg_notification_channel_disabled;
+
   /// Button label to search lyrics online for the current song
   ///
   /// In zh, this message translates to:

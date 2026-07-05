@@ -3927,6 +3927,22 @@ class L10nEs extends L10n {
   String get msg_open_settings => 'Ir a ajustes';
 
   @override
+  String get msg_notification_not_granted =>
+      'El permiso de notificación no está concedido, por lo que no se puede mostrar la notificación de control de reproducción. Habilite el permiso de notificación en Configuración.';
+
+  @override
+  String get msg_notification_blocked_hint =>
+      'La notificación no se muestra. Es posible que el canal de notificación esté desactivado o que la optimización de batería esté restringiendo la ejecución en segundo plano. Revise el permiso de notificación y la configuración de optimización de batería.';
+
+  @override
+  String get msg_audio_service_init_failed =>
+      'El servicio de reproducción en segundo plano no se pudo inicializar, por lo que no se pueden mostrar los botones de control de notificación. Reinicie la aplicación; si el problema persiste, borre los datos de la aplicación en los ajustes del sistema y vuelva a abrirla.';
+
+  @override
+  String get msg_notification_channel_disabled =>
+      'El canal de notificación está desactivado. Vaya a Ajustes → Gestión de aplicaciones → ZenFile → Notificaciones, busque el canal \"ZenFile Audio Player\" y actívelo.';
+
+  @override
   String get ui_search_lyrics_online => 'Buscar letra en línea';
 
   @override

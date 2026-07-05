@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:xml/xml.dart' as xml;
@@ -225,17 +226,61 @@ class WebDavRemoteClient implements RemoteClient {
 
   @override
   Future<void> delete(String path, bool isDir) async {
-    final url = Uri.parse(_baseUrl + Uri.encodeFull(path));
-    final request = await _httpClient.openUrl('DELETE', url);
-    final auth = _authHeader();
-    if (auth.isNotEmpty) {
-      request.headers.set('Authorization', auth);
+    // WebDAV 删除偶尔会因网络抖动或服务器锁文件失败，增加重试逻辑
+    const maxRetries = 3;
+    Exception? lastError;
+    for (int attempt = 0; attempt < maxRetries; attempt++) {
+      HttpClientRequest? request;
+      HttpClientResponse? response;
+      try {
+        final url = Uri.parse(_baseUrl + Uri.encodeFull(path));
+        request = await _httpClient.openUrl('DELETE', url);
+        final auth = _authHeader();
+        if (auth.isNotEmpty) {
+          request.headers.set('Authorization', auth);
+        }
+        response = await request.close().timeout(const Duration(seconds: 30));
+        // 404 表示文件/目录不存在，不重试直接抛出
+        if (response.statusCode == 404) {
+          await response.drain();
+          throw Exception('WebDAV delete error: 404 (not found): $path');
+        }
+        if (response.statusCode >= 400) {
+          throw Exception('WebDAV delete error: ${response.statusCode}');
+        }
+        await response.drain();
+        return; // 成功则直接返回
+      } on TimeoutException {
+        // 确保响应体被消费，避免连接泄漏
+        try {
+          if (response != null) await response.drain();
+        } catch (_) {}
+        lastError = Exception('WebDAV delete timed out');
+        if (attempt < maxRetries - 1) {
+          await Future.delayed(Duration(milliseconds: 500 * (attempt + 1)));
+        }
+      } on Exception catch (e) {
+        // 确保响应体被消费，避免连接泄漏
+        try {
+          if (response != null) await response.drain();
+        } catch (_) {}
+        lastError = e;
+        // 如果是"文件不存在"类错误，不重试直接抛出
+        final msg = e.toString().toLowerCase();
+        if (msg.contains('not found') ||
+            msg.contains('does not exist') ||
+            msg.contains('404')) {
+          rethrow;
+        }
+        // 其他错误（网络抖动、服务器锁文件等）延迟后重试
+        if (attempt < maxRetries - 1) {
+          await Future.delayed(Duration(milliseconds: 500 * (attempt + 1)));
+        }
+      }
     }
-    final response = await request.close();
-    if (response.statusCode >= 400) {
-      throw Exception('WebDAV delete error: ${response.statusCode}');
-    }
-    await response.drain();
+    // 所有重试都失败，抛出最后一个错误
+    throw Exception(
+        'WebDAV delete failed after $maxRetries attempts: $lastError');
   }
 
   @override

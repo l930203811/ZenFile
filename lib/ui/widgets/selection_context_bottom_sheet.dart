@@ -302,7 +302,15 @@ class SelectionContextBottomSheet extends StatelessWidget {
                   content: L10n.of(context).selectedcount2(selectedCount),
                 );
                 if (confirm) {
-                  await provider.deleteSelected();
+                  try {
+                    await provider.deleteSelected();
+                  } catch (e) {
+                    if (effectiveContext.mounted) {
+                      ScaffoldMessenger.of(effectiveContext).showSnackBar(
+                        SnackBar(content: Text(L10n.of(effectiveContext).msg_delete_failed(e)), behavior: SnackBarBehavior.floating),
+                      );
+                    }
+                  }
                 }
               },
             ),

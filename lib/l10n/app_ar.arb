@@ -3831,6 +3831,22 @@
   "@msg_open_settings": {
     "description": "Action button on the SnackBar to open app settings when notification permission is denied"
   },
+  "msg_notification_not_granted": "إذن الإشعارات غير ممنوح، لذا لا يمكن إظهار إشعار التحكم في التشغيل. يرجى تمكين إذن الإشعارات في الإعدادات.",
+  "@msg_notification_not_granted": {
+    "description": "Shown when notification permission is detected as not granted after enabling background playback"
+  },
+  "msg_notification_blocked_hint": "الإشعار لا يظهر. قد تكون قناة الإشعارات معطلة أو أن تحسين البطارية يقيّد التشغيل في الخلفية. يرجى التحقق من إذن الإشعارات وإعدادات تحسين البطارية.",
+  "@msg_notification_blocked_hint": {
+    "description": "Shown when notification fails to appear despite permission being granted, typically due to ROM restrictions"
+  },
+  "msg_audio_service_init_failed": "فشل تهيئة خدمة التشغيل في الخلفية، لذا لا يمكن إظهار أزرار التحكم في الإشعارات. يرجى محاولة إعادة تشغيل التطبيق؛ إذا استمرت المشكلة، امسح بيانات التطبيق في إعدادات النظام وأعد الفتح.",
+  "@msg_audio_service_init_failed": {
+    "description": "Shown when AudioService.init fails - the background playback service cannot be registered with the OS"
+  },
+  "msg_notification_channel_disabled": "تم تعطيل قناة الإشعارات. انتقل إلى الإعدادات → إدارة التطبيقات → ZenFile → الإشعارات، وابحث عن قناة \"ZenFile Audio Player\" وقم بتمكينها.",
+  "@msg_notification_channel_disabled": {
+    "description": "Shown when the notification channel is disabled by the user or system"
+  },
   "ui_lyric_search_song_title": "اسم الأغنية",
   "ui_lyric_search_artist": "الفنان"
 }

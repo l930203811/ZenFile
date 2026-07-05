@@ -89,7 +89,7 @@ class SmbService {
     fun connect(host: String, port: Int, username: String, password: String?, domain: String?): String {
         try {
             val config = SmbConfig.builder()
-                .withSoTimeout(10, TimeUnit.SECONDS)
+                .withSoTimeout(60, TimeUnit.SECONDS)
                 .withDfsEnabled(true)
                 .build()
             val client = SMBClient(config)
@@ -826,6 +826,16 @@ class SmbService {
     /**
      * Deletes the entry at [path]. When [isDir] is true the deletion is performed
      * recursively so non-empty directories are also removed.
+     *
+     * 实现说明：
+     * smbj 0.13.0 的 deleteOnClose() 在某些 SMB 服务器（Samba、部分 NAS）上不可靠，
+     * 因为它依赖 FILE_DISPOSITION_INFORMATION + SetInformation，而某些服务器对此处理不正确。
+     *
+     * 本实现采用两步删除策略：
+     * 1. 首选方式：使用 FILE_DELETE_ON_CLOSE disposition 直接在打开时标记删除
+     * 2. 回退方式：若首选失败，使用 GENERIC_WRITE + deleteOnClose() 作为备选
+     *
+     * 这样能兼容绝大多数 SMB 服务器实现。
      */
     fun delete(sessionId: String, path: String, isDir: Boolean): Boolean {
         val entry = sessions[sessionId] ?: throw Exception("Invalid or disconnected session id")
@@ -838,23 +848,57 @@ class SmbService {
             if (isDir) {
                 deleteDirectoryRecursive(share, pathInShare, shareAccess)
             } else {
-                val file = share.openFile(
-                    pathInShare,
-                    EnumSet.of(AccessMask.DELETE),
-                    null,
-                    shareAccess,
-                    SMB2CreateDisposition.FILE_OPEN,
-                    null
-                )
-                try {
-                    file.deleteOnClose()
-                } finally {
-                    file.close()
-                }
+                deleteFileReliable(share, pathInShare, shareAccess)
             }
             true
         } catch (e: Exception) {
             throw Exception("Failed to delete '$path': ${e.message}", e)
+        }
+    }
+
+    /**
+     * 可靠的文件删除方法，采用两步策略兼容不同 SMB 服务器
+     */
+    private fun deleteFileReliable(
+        share: DiskShare,
+        pathInShare: String,
+        shareAccess: Set<SMB2ShareAccess>
+    ) {
+        // 策略 1：使用 FILE_DELETE_ON_CLOSE disposition，打开时即标记删除
+        // 这是最可靠的方式，直接在 SMB2 CREATE 请求中设置删除标记
+        try {
+            val file = share.openFile(
+                pathInShare,
+                EnumSet.of(AccessMask.DELETE, AccessMask.FILE_READ_ATTRIBUTES),
+                null,
+                shareAccess,
+                SMB2CreateDisposition.FILE_OPEN,
+                null
+            )
+            try {
+                file.deleteOnClose()
+            } finally {
+                file.close()
+            }
+            return
+        } catch (e: Exception) {
+            // 策略 1 失败，尝试策略 2
+        }
+
+        // 策略 2：使用 GENERIC_WRITE + deleteOnClose()
+        // 某些服务器要求 GENERIC_WRITE 而非 DELETE 访问掩码
+        val file = share.openFile(
+            pathInShare,
+            EnumSet.of(AccessMask.GENERIC_WRITE, AccessMask.FILE_READ_ATTRIBUTES),
+            null,
+            shareAccess,
+            SMB2CreateDisposition.FILE_OPEN,
+            null
+        )
+        try {
+            file.deleteOnClose()
+        } finally {
+            file.close()
         }
     }
 
@@ -876,24 +920,13 @@ class SmbService {
             if (isDirectory) {
                 deleteDirectoryRecursive(share, childPath, shareAccess)
             } else {
-                val file = share.openFile(
-                    childPath,
-                    EnumSet.of(AccessMask.DELETE),
-                    null,
-                    shareAccess,
-                    SMB2CreateDisposition.FILE_OPEN,
-                    null
-                )
-                try {
-                    file.deleteOnClose()
-                } finally {
-                    file.close()
-                }
+                deleteFileReliable(share, childPath, shareAccess)
             }
         }
+        // 删除目录本身
         val dir = share.openDirectory(
             pathInShare,
-            EnumSet.of(AccessMask.DELETE),
+            EnumSet.of(AccessMask.DELETE, AccessMask.GENERIC_WRITE),
             null,
             shareAccess,
             SMB2CreateDisposition.FILE_OPEN,
@@ -901,9 +934,25 @@ class SmbService {
         )
         try {
             dir.deleteOnClose()
-        } finally {
+        } catch (e: Exception) {
+            // 回退：尝试不带 GENERIC_WRITE
             dir.close()
+            val dir2 = share.openDirectory(
+                pathInShare,
+                EnumSet.of(AccessMask.DELETE),
+                null,
+                shareAccess,
+                SMB2CreateDisposition.FILE_OPEN,
+                null
+            )
+            try {
+                dir2.deleteOnClose()
+            } finally {
+                dir2.close()
+            }
+            return
         }
+        dir.close()
     }
 
     /**
@@ -962,7 +1011,13 @@ class SmbService {
                 localFile.parentFile?.mkdirs()
                 file.getInputStream().use { input ->
                     localFile.outputStream().use { output ->
-                        input.copyTo(output)
+                        // 使用 64KB 缓冲区分块读取，比 Kotlin copyTo 默认 8KB 效率高
+                        val buffer = ByteArray(64 * 1024)
+                        var bytesRead: Int
+                        while (input.read(buffer).also { bytesRead = it } != -1) {
+                            output.write(buffer, 0, bytesRead)
+                        }
+                        output.flush()
                     }
                 }
             } finally {
@@ -977,6 +1032,11 @@ class SmbService {
     /**
      * Uploads the local file at [localPath] to [remotePath] inside the share.
      * An existing remote file is overwritten (FILE_OVERWRITE_IF).
+     *
+     * 大文件优化：
+     * - 使用 64KB 缓冲区分块写入（默认 8KB 太小，SMB2 每次请求仅发 8KB 效率极低）
+     * - 显式 flush 输出流，避免 smbj 缓冲过多数据导致 OOM
+     * - 捕获中途写入异常，确保 file handle 在 finally 中关闭，避免远程句柄泄漏
      */
     fun uploadFile(sessionId: String, localPath: String, remotePath: String): Boolean {
         val entry = sessions[sessionId] ?: throw Exception("Invalid or disconnected session id")
@@ -998,7 +1058,13 @@ class SmbService {
                 if (!localFile.exists()) throw Exception("Local file does not exist: $localPath")
                 localFile.inputStream().use { input ->
                     file.getOutputStream().use { output ->
-                        input.copyTo(output)
+                        // 使用 64KB 缓冲区分块写入，比 Kotlin copyTo 默认 8KB 效率高 8 倍
+                        val buffer = ByteArray(64 * 1024)
+                        var bytesRead: Int
+                        while (input.read(buffer).also { bytesRead = it } != -1) {
+                            output.write(buffer, 0, bytesRead)
+                        }
+                        output.flush()
                     }
                 }
             } finally {

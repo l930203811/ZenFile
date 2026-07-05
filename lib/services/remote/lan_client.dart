@@ -253,11 +253,37 @@ class LanClient implements RemoteClient {
   @override
   Future<void> delete(String path, bool isDir) async {
     final session = _requireSession;
-    await _channel.invokeMethod<bool>('delete', {
-      'sessionId': session,
-      'path': _normalizePath(path),
-      'isDir': isDir,
-    }).timeout(const Duration(seconds: 30));
+    // SMB 删除偶尔会因网络抖动或服务器锁文件失败，增加重试逻辑
+    const maxRetries = 3;
+    Exception? lastError;
+    for (int attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        await _channel.invokeMethod<bool>('delete', {
+          'sessionId': session,
+          'path': _normalizePath(path),
+          'isDir': isDir,
+        }).timeout(const Duration(seconds: 30));
+        return; // 成功则直接返回
+      } on PlatformException catch (e) {
+        lastError = e;
+        // 如果是"文件不存在"类错误，不重试直接返回
+        final msg = (e.message ?? '').toLowerCase();
+        if (msg.contains('no such file') || msg.contains('not found') || msg.contains('does not exist')) {
+          rethrow;
+        }
+        // 其他错误（网络抖动、服务器锁文件等）延迟后重试
+        if (attempt < maxRetries - 1) {
+          await Future.delayed(Duration(milliseconds: 500 * (attempt + 1)));
+        }
+      } on TimeoutException {
+        lastError = Exception('SMB delete timed out');
+        if (attempt < maxRetries - 1) {
+          await Future.delayed(Duration(milliseconds: 500 * (attempt + 1)));
+        }
+      }
+    }
+    // 所有重试都失败，抛出最后一个错误
+    throw Exception('SMB delete failed after $maxRetries attempts: $lastError');
   }
 
   @override
@@ -368,9 +394,17 @@ class LanClient implements RemoteClient {
     }
 
     try {
-      final success = await uploadFuture.timeout(
-        const Duration(minutes: 30),
-      );
+      // 根据文件大小动态调整超时：
+      // - 默认 30 分钟（适用于大部分文件）
+      // - 超过 1GB 的大文件按 10 MB/s 估算额外时间，避免大文件超时失败
+      //   注意：原生层已使用 64KB 缓冲区 + 60s socket 超时，传输效率与稳定性已提升
+      Duration timeout = const Duration(minutes: 30);
+      if (totalSize > 1024 * 1024 * 1024) {
+        // 超过 1GB：按 10 MB/s 估算 + 10 分钟余量
+        final estimatedMinutes = (totalSize / (10 * 1024 * 1024) / 60).ceil() + 10;
+        timeout = Duration(minutes: estimatedMinutes.clamp(30, 240));
+      }
+      final success = await uploadFuture.timeout(timeout);
       if (success != true) {
         throw Exception('SMB upload returned false');
       }

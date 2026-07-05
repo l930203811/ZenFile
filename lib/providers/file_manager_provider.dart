@@ -1979,10 +1979,13 @@ class FileManagerProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('Error deleting selected files: $e');
       rethrow;
+    } finally {
+      // 确保删除失败时也清理 loading 状态，避免 UI 卡死
+      selectedPaths.clear();
+      activeTab.isLoading = false;
+      notifyListeners();
     }
 
-    selectedPaths.clear();
-    activeTab.isLoading = false;
     await loadDirectory(currentPath, showLoading: false, clearCache: true);
   }
 

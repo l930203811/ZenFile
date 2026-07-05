@@ -10,6 +10,11 @@ import 'preferences_service.dart';
 /// Global singleton handler instance
 ZenFileAudioHandler? _audioHandlerInstance;
 
+/// Whether AudioService.init has successfully registered the handler.
+/// 若为 false，表示 audio_service 框架未注册，通知栏无法显示，
+/// 此时 playbackState 的更新不会到达系统通知层。
+bool isAudioServiceInitialized = false;
+
 /// Returns the global audio handler, creating it lazily if needed.
 ZenFileAudioHandler getAudioHandler() {
   _audioHandlerInstance ??= ZenFileAudioHandler._();

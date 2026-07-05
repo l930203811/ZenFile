@@ -172,11 +172,44 @@ class SftpRemoteClient implements RemoteClient {
   @override
   Future<void> delete(String path, bool isDir) async {
     if (_sftpClient == null) throw Exception('SFTP not connected');
-    if (isDir) {
-      await _sftpClient!.rmdir(path);
-    } else {
-      await _sftpClient!.remove(path);
+    // SFTP 删除偶尔会因网络抖动或服务器锁文件失败，增加重试逻辑
+    const maxRetries = 3;
+    Exception? lastError;
+    for (int attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        if (isDir) {
+          await _sftpClient!
+              .rmdir(path)
+              .timeout(const Duration(seconds: 30));
+        } else {
+          await _sftpClient!
+              .remove(path)
+              .timeout(const Duration(seconds: 30));
+        }
+        return; // 成功则直接返回
+      } on TimeoutException {
+        lastError = Exception('SFTP delete timed out');
+        if (attempt < maxRetries - 1) {
+          await Future.delayed(Duration(milliseconds: 500 * (attempt + 1)));
+        }
+      } on Exception catch (e) {
+        lastError = e;
+        // 如果是"文件不存在"类错误，不重试直接抛出
+        final msg = e.toString().toLowerCase();
+        if (msg.contains('no such file') ||
+            msg.contains('not found') ||
+            msg.contains('does not exist') ||
+            msg.contains('ssh_fx_no_such_file')) {
+          rethrow;
+        }
+        // 其他错误（网络抖动、服务器锁文件等）延迟后重试
+        if (attempt < maxRetries - 1) {
+          await Future.delayed(Duration(milliseconds: 500 * (attempt + 1)));
+        }
+      }
     }
+    // 所有重试都失败，抛出最后一个错误
+    throw Exception('SFTP delete failed after $maxRetries attempts: $lastError');
   }
 
   @override

@@ -170,18 +170,51 @@ class FtpRemoteClient implements RemoteClient {
   @override
   Future<void> delete(String path, bool isDir) async {
     if (_ftpConnect == null) throw Exception('FTP not connected');
-    if (isDir) {
-      final ok = await _ftpConnect!.deleteDirectory(path);
-      if (!ok) throw Exception('Failed to delete directory: $path');
-    } else {
-      final fileName = p.basename(path);
-      final parentPath = p.dirname(path);
-      if (parentPath.isNotEmpty && parentPath != '/') {
-        await _ftpConnect!.changeDirectory(parentPath);
+    // FTP 删除偶尔会因网络抖动或服务器锁文件失败，增加重试逻辑
+    const maxRetries = 3;
+    Exception? lastError;
+    for (int attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        if (isDir) {
+          final ok = await _ftpConnect!
+              .deleteDirectory(path)
+              .timeout(const Duration(seconds: 30));
+          if (!ok) throw Exception('Failed to delete directory: $path');
+        } else {
+          final fileName = p.basename(path);
+          final parentPath = p.dirname(path);
+          if (parentPath.isNotEmpty && parentPath != '/') {
+            await _ftpConnect!.changeDirectory(parentPath);
+          }
+          final ok = await _ftpConnect!
+              .deleteFile(fileName)
+              .timeout(const Duration(seconds: 30));
+          if (!ok) throw Exception('Failed to delete file: $path');
+        }
+        return; // 成功则直接返回
+      } on TimeoutException {
+        lastError = Exception('FTP delete timed out');
+        if (attempt < maxRetries - 1) {
+          await Future.delayed(Duration(milliseconds: 500 * (attempt + 1)));
+        }
+      } on Exception catch (e) {
+        lastError = e;
+        // 如果是"文件不存在"类错误，不重试直接抛出
+        final msg = e.toString().toLowerCase();
+        if (msg.contains('no such file') ||
+            msg.contains('not found') ||
+            msg.contains('does not exist') ||
+            msg.contains('550')) {
+          rethrow;
+        }
+        // 其他错误（网络抖动、服务器锁文件等）延迟后重试
+        if (attempt < maxRetries - 1) {
+          await Future.delayed(Duration(milliseconds: 500 * (attempt + 1)));
+        }
       }
-      final ok = await _ftpConnect!.deleteFile(fileName);
-      if (!ok) throw Exception('Failed to delete file: $path');
     }
+    // 所有重试都失败，抛出最后一个错误
+    throw Exception('FTP delete failed after $maxRetries attempts: $lastError');
   }
 
   @override

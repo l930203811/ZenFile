@@ -81,21 +81,12 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     final parts = currentPath.split('/').where((n) => n.isNotEmpty).toList();
 
     // 如果路径为根目录或太短，显示存储卷名称
+    // 存储卷弹窗由左侧向下箭头按钮专责触发，此处仅显示文本避免误触
     if (parts.isEmpty) {
-      return GestureDetector(
-        onTap: () => _showStorageVolumeModal(context, provider),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Broken.arrow_down_2, size: 16, color: theme.colorScheme.primary),
-            const SizedBox(width: 6),
-            Text(
-              currentPath,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: theme.colorScheme.onSurface),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
+      return Text(
+        currentPath,
+        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: theme.colorScheme.onSurface),
+        overflow: TextOverflow.ellipsis,
       );
     }
 
@@ -174,9 +165,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
           bottom: 0,
           width: itemW,
           child: GestureDetector(
-            onTap: i == 0
-                ? () => _showStorageVolumeModal(context, provider)
-                : () {
+            onTap: () {
                     if (targetPath != currentPath) provider.loadDirectory(targetPath);
                   },
             onLongPress: () {
@@ -281,7 +270,29 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             padding: const EdgeInsets.only(left: 4, right: 4),
             child: SizedBox(
               height: 22,
-              child: _buildPathBreadcrumb(context, provider),
+              child: Row(
+                children: [
+                  // 存储卷/网络连接导航按钮（左侧靠左对齐，所有模式一致）
+                  GestureDetector(
+                    onTap: () => _showStorageVolumeModal(context, provider),
+                    child: Container(
+                      height: 22,
+                      width: 22,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withOpacity(0.10),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: theme.colorScheme.primary.withOpacity(0.25),
+                          width: 1,
+                        ),
+                      ),
+                      child: Icon(Broken.arrow_down_2, size: 14, color: theme.colorScheme.primary),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(child: _buildPathBreadcrumb(context, provider)),
+                ],
+              ),
             ),
           ),
       ],
@@ -622,7 +633,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
           } catch (e) {
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('删除失败: $e')),
+                SnackBar(content: Text(L10n.of(context).msg_delete_failed(e)), behavior: SnackBarBehavior.floating),
               );
             }
           }
@@ -1961,7 +1972,17 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                         ),
                       )
                     // 导航栏在顶部：showFloatingAddButton 控制浏览操作栏是否显示
-                    : (provider.showFloatingAddButton ? _buildBrowseActionBar(context, provider) : null),
+                    // 使用 SafeArea 处理安卓虚拟导航键（三键导航）的底部间距，
+                    // 避免操作栏与系统导航键重叠。手势导航时 padding.bottom=0 不影响。
+                    : (provider.showFloatingAddButton
+                        ? Material(
+                            color: theme.colorScheme.surface,
+                            child: SafeArea(
+                              top: false,
+                              child: _buildBrowseActionBar(context, provider),
+                            ),
+                          )
+                        : null),
           ),
         );
       },

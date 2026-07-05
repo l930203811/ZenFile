@@ -78,8 +78,11 @@ void main() async {
         notificationColor: Color(0xFF6200EE),
       ),
     );
+    isAudioServiceInitialized = true;
   } catch (e) {
     // audio_service init failed – background playback unavailable but app continues
+    // 标记未初始化，后续 _enableBackgroundMode 会在诊断中检测到并提示用户
+    isAudioServiceInitialized = false;
     debugPrint('[ZenFile] AudioService.init failed: $e');
   }
 

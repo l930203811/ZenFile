@@ -3848,6 +3848,22 @@ class L10nAr extends L10n {
   String get msg_open_settings => 'اذهب إلى الإعدادات';
 
   @override
+  String get msg_notification_not_granted =>
+      'إذن الإشعارات غير ممنوح، لذا لا يمكن إظهار إشعار التحكم في التشغيل. يرجى تمكين إذن الإشعارات في الإعدادات.';
+
+  @override
+  String get msg_notification_blocked_hint =>
+      'الإشعار لا يظهر. قد تكون قناة الإشعارات معطلة أو أن تحسين البطارية يقيّد التشغيل في الخلفية. يرجى التحقق من إذن الإشعارات وإعدادات تحسين البطارية.';
+
+  @override
+  String get msg_audio_service_init_failed =>
+      'فشل تهيئة خدمة التشغيل في الخلفية، لذا لا يمكن إظهار أزرار التحكم في الإشعارات. يرجى محاولة إعادة تشغيل التطبيق؛ إذا استمرت المشكلة، امسح بيانات التطبيق في إعدادات النظام وأعد الفتح.';
+
+  @override
+  String get msg_notification_channel_disabled =>
+      'تم تعطيل قناة الإشعارات. انتقل إلى الإعدادات → إدارة التطبيقات → ZenFile → الإشعارات، وابحث عن قناة \"ZenFile Audio Player\" وقم بتمكينها.';
+
+  @override
   String get ui_search_lyrics_online => 'البحث عن كلمات الأغنية عبر الإنترنت';
 
   @override

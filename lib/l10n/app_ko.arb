@@ -3831,6 +3831,22 @@
   "@msg_open_settings": {
     "description": "Action button on the SnackBar to open app settings when notification permission is denied"
   },
+  "msg_notification_not_granted": "알림 권한이 허용되지 않아 재생 제어 알림을 표시할 수 없습니다. 설정에서 알림 권한을 활성화해 주세요.",
+  "@msg_notification_not_granted": {
+    "description": "Shown when notification permission is detected as not granted after enabling background playback"
+  },
+  "msg_notification_blocked_hint": "알림이 표시되지 않습니다. 알림 채널이 비활성화되어 있거나 배터리 최적화가 백그라운드 실행을 제한하고 있을 수 있습니다. 알림 권한과 배터리 최적화 설정을 확인해 주세요.",
+  "@msg_notification_blocked_hint": {
+    "description": "Shown when notification fails to appear despite permission being granted, typically due to ROM restrictions"
+  },
+  "msg_audio_service_init_failed": "백그라운드 재생 서비스 초기화에 실패하여 알림 컨트롤 버튼을 표시할 수 없습니다. 앱을 다시 시작해 보세요. 문제가 지속되면 시스템 설정에서 앱 데이터를 지우고 다시 여세요.",
+  "@msg_audio_service_init_failed": {
+    "description": "Shown when AudioService.init fails - the background playback service cannot be registered with the OS"
+  },
+  "msg_notification_channel_disabled": "알림 채널이 비활성화되어 있습니다. 설정 → 앱 관리 → ZenFile → 알림으로 이동하여 \"ZenFile Audio Player\" 채널을 찾아 활성화하세요.",
+  "@msg_notification_channel_disabled": {
+    "description": "Shown when the notification channel is disabled by the user or system"
+  },
   "ui_lyric_search_song_title": "곡 제목",
   "ui_lyric_search_artist": "아티스트"
 }

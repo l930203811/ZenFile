@@ -3831,6 +3831,22 @@
   "@msg_open_settings": {
     "description": "Action button on the SnackBar to open app settings when notification permission is denied"
   },
+  "msg_notification_not_granted": "Die Berechtigung für Benachrichtigungen wurde nicht erteilt, daher kann die Wiedergabesteuerung-Benachrichtigung nicht angezeigt werden. Bitte aktivieren Sie die Benachrichtigungsberechtigung in den Einstellungen.",
+  "@msg_notification_not_granted": {
+    "description": "Shown when notification permission is detected as not granted after enabling background playback"
+  },
+  "msg_notification_blocked_hint": "Die Benachrichtigung wird nicht angezeigt. Möglicherweise ist der Benachrichtigungskanal deaktiviert oder die Akkuoptimierung schränkt die Hintergrundausführung ein. Bitte überprüfen Sie die Benachrichtigungsberechtigung und die Akkuoptimierungseinstellungen.",
+  "@msg_notification_blocked_hint": {
+    "description": "Shown when notification fails to appear despite permission being granted, typically due to ROM restrictions"
+  },
+  "msg_audio_service_init_failed": "Die Hintergrundwiedergabe-Dienst konnte nicht initialisiert werden, daher können die Benachrichtigungs-Steuerungstasten nicht angezeigt werden. Bitte starten Sie die App neu; wenn das Problem besteht, löschen Sie die App-Daten in den Systemeinstellungen und öffnen Sie sie erneut.",
+  "@msg_audio_service_init_failed": {
+    "description": "Shown when AudioService.init fails - the background playback service cannot be registered with the OS"
+  },
+  "msg_notification_channel_disabled": "Der Benachrichtigungskanal ist deaktiviert. Gehen Sie zu Einstellungen → App-Verwaltung → ZenFile → Benachrichtigungen, suchen Sie den Kanal \"ZenFile Audio Player\" und aktivieren Sie ihn.",
+  "@msg_notification_channel_disabled": {
+    "description": "Shown when the notification channel is disabled by the user or system"
+  },
   "ui_lyric_search_song_title": "Songtitel",
   "ui_lyric_search_artist": "Künstler"
 }

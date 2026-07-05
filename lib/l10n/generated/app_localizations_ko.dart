@@ -3742,6 +3742,22 @@ class L10nKo extends L10n {
   String get msg_open_settings => '설정으로';
 
   @override
+  String get msg_notification_not_granted =>
+      '알림 권한이 허용되지 않아 재생 제어 알림을 표시할 수 없습니다. 설정에서 알림 권한을 활성화해 주세요.';
+
+  @override
+  String get msg_notification_blocked_hint =>
+      '알림이 표시되지 않습니다. 알림 채널이 비활성화되어 있거나 배터리 최적화가 백그라운드 실행을 제한하고 있을 수 있습니다. 알림 권한과 배터리 최적화 설정을 확인해 주세요.';
+
+  @override
+  String get msg_audio_service_init_failed =>
+      '백그라운드 재생 서비스 초기화에 실패하여 알림 컨트롤 버튼을 표시할 수 없습니다. 앱을 다시 시작해 보세요. 문제가 지속되면 시스템 설정에서 앱 데이터를 지우고 다시 여세요.';
+
+  @override
+  String get msg_notification_channel_disabled =>
+      '알림 채널이 비활성화되어 있습니다. 설정 → 앱 관리 → ZenFile → 알림으로 이동하여 \"ZenFile Audio Player\" 채널을 찾아 활성화하세요.';
+
+  @override
   String get ui_search_lyrics_online => '온라인 가사 검색';
 
   @override

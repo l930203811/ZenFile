@@ -3743,6 +3743,22 @@ class L10nJa extends L10n {
   String get msg_open_settings => '設定へ';
 
   @override
+  String get msg_notification_not_granted =>
+      '通知権限が許可されていないため、再生コントロール通知を表示できません。設定で通知権限を有効にしてください。';
+
+  @override
+  String get msg_notification_blocked_hint =>
+      '通知が表示されません。通知チャネルが無効になっているか、バッテリー最適化がバックグラウンド実行を制限している可能性があります。通知権限とバッテリー最適化設定を確認してください。';
+
+  @override
+  String get msg_audio_service_init_failed =>
+      'バックグラウンド再生サービスの初期化に失敗したため、通知のコントロールボタンを表示できません。アプリを再起動してみてください。問題が続く場合は、システム設定でアプリデータを消去して再度開いてください。';
+
+  @override
+  String get msg_notification_channel_disabled =>
+      '通知チャネルが無効になっています。設定 → アプリ管理 → ZenFile → 通知に移動し、「ZenFile Audio Player」チャネルを見つけて有効にしてください。';
+
+  @override
   String get ui_search_lyrics_online => 'オンライン歌詞検索';
 
   @override

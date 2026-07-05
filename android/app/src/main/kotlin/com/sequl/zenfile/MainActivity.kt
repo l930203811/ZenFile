@@ -994,6 +994,25 @@ class MainActivity : AudioServiceFragmentActivity() {
                     notificationManager.cancel(id)
                     result.success(true)
                 }
+                "checkAudioChannelStatus" -> {
+                    // 检查 audio_service 的通知渠道是否被禁用
+                    // 返回 Map: {"enabled": bool, "importance": int, "exists": bool}
+                    val audioChannelId = "com.sequl.zenfile.audio"
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        val channel = notificationManager.getNotificationChannel(audioChannelId)
+                        if (channel == null) {
+                            // 渠道不存在，audio_service 可能尚未创建
+                            result.success(mapOf("exists" to false, "enabled" to false, "importance" to -1))
+                        } else {
+                            val importance = channel.importance
+                            val enabled = importance != NotificationManager.IMPORTANCE_NONE
+                            result.success(mapOf("exists" to true, "enabled" to enabled, "importance" to importance))
+                        }
+                    } else {
+                        // Android < 8.0 没有通知渠道概念，总是返回启用
+                        result.success(mapOf("exists" to true, "enabled" to true, "importance" to 3))
+                    }
+                }
                 else -> result.notImplemented()
             }
         }

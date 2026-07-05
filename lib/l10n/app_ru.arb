@@ -3831,6 +3831,22 @@
   "@msg_open_settings": {
     "description": "Action button on the SnackBar to open app settings when notification permission is denied"
   },
+  "msg_notification_not_granted": "Разрешение на уведомления не предоставлено, поэтому уведомление об управлении воспроизведением не может быть показано. Включите разрешение на уведомления в настройках.",
+  "@msg_notification_not_granted": {
+    "description": "Shown when notification permission is detected as not granted after enabling background playback"
+  },
+  "msg_notification_blocked_hint": "Уведомление не отображается. Возможно, канал уведомлений отключён или оптимизация батареи ограничивает фоновую работу. Проверьте разрешение на уведомления и настройки оптимизации батареи.",
+  "@msg_notification_blocked_hint": {
+    "description": "Shown when notification fails to appear despite permission being granted, typically due to ROM restrictions"
+  },
+  "msg_audio_service_init_failed": "Служба фонового воспроизведения не смогла инициализироваться, поэтому кнопки управления уведомлениями не могут быть показаны. Перезапустите приложение; если проблема не уйдёт, очистите данные приложения в настройках системы и откройте снова.",
+  "@msg_audio_service_init_failed": {
+    "description": "Shown when AudioService.init fails - the background playback service cannot be registered with the OS"
+  },
+  "msg_notification_channel_disabled": "Канал уведомлений отключён. Перейдите в Настройки → Управление приложениями → ZenFile → Уведомления, найдите канал «ZenFile Audio Player» и включите его.",
+  "@msg_notification_channel_disabled": {
+    "description": "Shown when the notification channel is disabled by the user or system"
+  },
   "ui_lyric_search_song_title": "Название",
   "ui_lyric_search_artist": "Исполнитель"
 }

@@ -197,13 +197,13 @@ class _PaneBrowserState extends State<PaneBrowser> {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  // 粘贴按钮（右侧，较大）
+                  // 粘贴按钮（右侧，较大）— 粘贴到当前 pane 对应的 tab
                   Expanded(
                     flex: 5,
                     child: ElevatedButton.icon(
                       onPressed: () async {
                         Navigator.pop(sheetContext);
-                        await provider.pasteFile(context, clearAfterPaste: true);
+                        await provider.pasteFileToTab(context, widget.tabIndex, clearAfterPaste: true);
                       },
                       icon: const Icon(Icons.content_paste, size: 16),
                       label: Text(l10n.ui_paste, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
@@ -317,10 +317,18 @@ class _PaneBrowserState extends State<PaneBrowser> {
               : L10n.of(context).msgee14ee27,
         );
         if (confirm) {
-          if (isMulti) {
-            await provider.deleteSelected();
-          } else {
-            await provider.deleteFile(path);
+          try {
+            if (isMulti) {
+              await provider.deleteSelected();
+            } else {
+              await provider.deleteFile(path);
+            }
+          } catch (e) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(L10n.of(context).msg_delete_failed(e)), behavior: SnackBarBehavior.floating),
+              );
+            }
           }
         }
         break;
@@ -602,6 +610,66 @@ class _PaneBrowserState extends State<PaneBrowser> {
                   ),
                 ],
               ),
+              // 剪贴板按钮（双窗口模式，两 pane 各自右上角显示，点击粘贴到该 pane）
+              if (provider.hasClipboard)
+                Positioned(
+                  top: 6,
+                  right: 8,
+                  child: GestureDetector(
+                    onTap: () => _showClipboardMenu(provider, theme),
+                    child: Container(
+                      height: 26,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(13),
+                        color: provider.isCut
+                            ? Colors.orange.withOpacity(0.12)
+                            : theme.colorScheme.primary.withOpacity(0.12),
+                        border: Border.all(
+                          color: provider.isCut
+                              ? Colors.orange.withOpacity(0.3)
+                              : theme.colorScheme.primary.withOpacity(0.3),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            provider.isCut ? Broken.scissor : Broken.clipboard,
+                            size: 13,
+                            color: provider.isCut
+                                ? Colors.orange
+                                : theme.colorScheme.primary,
+                          ),
+                          const SizedBox(width: 4),
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 90),
+                            child: Text(
+                              _clipboardLabel(provider, context),
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: provider.isCut
+                                    ? Colors.orange
+                                    : theme.colorScheme.primary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               // 文件传输进度条覆盖层
               Positioned.fill(
                 child: ValueListenableBuilder<FileOperationProgress?>(

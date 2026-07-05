@@ -3904,6 +3904,22 @@ class L10nDe extends L10n {
   String get msg_open_settings => 'Zu den Einstellungen';
 
   @override
+  String get msg_notification_not_granted =>
+      'Die Berechtigung für Benachrichtigungen wurde nicht erteilt, daher kann die Wiedergabesteuerung-Benachrichtigung nicht angezeigt werden. Bitte aktivieren Sie die Benachrichtigungsberechtigung in den Einstellungen.';
+
+  @override
+  String get msg_notification_blocked_hint =>
+      'Die Benachrichtigung wird nicht angezeigt. Möglicherweise ist der Benachrichtigungskanal deaktiviert oder die Akkuoptimierung schränkt die Hintergrundausführung ein. Bitte überprüfen Sie die Benachrichtigungsberechtigung und die Akkuoptimierungseinstellungen.';
+
+  @override
+  String get msg_audio_service_init_failed =>
+      'Die Hintergrundwiedergabe-Dienst konnte nicht initialisiert werden, daher können die Benachrichtigungs-Steuerungstasten nicht angezeigt werden. Bitte starten Sie die App neu; wenn das Problem besteht, löschen Sie die App-Daten in den Systemeinstellungen und öffnen Sie sie erneut.';
+
+  @override
+  String get msg_notification_channel_disabled =>
+      'Der Benachrichtigungskanal ist deaktiviert. Gehen Sie zu Einstellungen → App-Verwaltung → ZenFile → Benachrichtigungen, suchen Sie den Kanal \"ZenFile Audio Player\" und aktivieren Sie ihn.';
+
+  @override
   String get ui_search_lyrics_online => 'Songtext online suchen';
 
   @override

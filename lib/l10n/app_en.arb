@@ -3831,6 +3831,22 @@
   "@msg_open_settings": {
     "description": "Action button on the SnackBar to open app settings when notification permission is denied"
   },
+  "msg_notification_not_granted": "Notification permission is not granted, so the playback control notification cannot be shown. Please enable notification permission in Settings.",
+  "@msg_notification_not_granted": {
+    "description": "Shown when notification permission is detected as not granted after enabling background playback"
+  },
+  "msg_notification_blocked_hint": "The notification is not showing. The notification channel may be disabled or battery optimization is restricting background execution. Please check notification permission and battery optimization settings.",
+  "@msg_notification_blocked_hint": {
+    "description": "Shown when notification fails to appear despite permission being granted, typically due to ROM restrictions"
+  },
+  "msg_audio_service_init_failed": "The background playback service failed to initialize, so the notification control buttons cannot be shown. Please try restarting the app; if the issue persists, clear app data in system settings and reopen.",
+  "@msg_audio_service_init_failed": {
+    "description": "Shown when AudioService.init fails - the background playback service cannot be registered with the OS"
+  },
+  "msg_notification_channel_disabled": "The notification channel is disabled. Go to Settings → App management → ZenFile → Notifications, find the \"ZenFile Audio Player\" channel and enable it.",
+  "@msg_notification_channel_disabled": {
+    "description": "Shown when the notification channel is disabled by the user or system"
+  },
   "ui_search_lyrics_online": "Search Online for Lyrics",
   "@ui_search_lyrics_online": {
     "description": "Button label to search lyrics online for the current song"

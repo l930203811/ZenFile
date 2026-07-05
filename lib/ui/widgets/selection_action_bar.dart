@@ -122,7 +122,15 @@ class SelectionActionBar extends StatelessWidget {
                   content: L10n.of(context).selectedcount2(provider.selectedPaths.length),
                 );
                 if (confirm) {
-                  await provider.deleteSelected();
+                  try {
+                    await provider.deleteSelected();
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(L10n.of(context).msg_delete_failed(e)), behavior: SnackBarBehavior.floating),
+                      );
+                    }
+                  }
                 }
               },
             ),

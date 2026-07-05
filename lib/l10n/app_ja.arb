@@ -3835,6 +3835,22 @@
   "@msg_open_settings": {
     "description": "Action button on the SnackBar to open app settings when notification permission is denied"
   },
+  "msg_notification_not_granted": "通知権限が許可されていないため、再生コントロール通知を表示できません。設定で通知権限を有効にしてください。",
+  "@msg_notification_not_granted": {
+    "description": "Shown when notification permission is detected as not granted after enabling background playback"
+  },
+  "msg_notification_blocked_hint": "通知が表示されません。通知チャネルが無効になっているか、バッテリー最適化がバックグラウンド実行を制限している可能性があります。通知権限とバッテリー最適化設定を確認してください。",
+  "@msg_notification_blocked_hint": {
+    "description": "Shown when notification fails to appear despite permission being granted, typically due to ROM restrictions"
+  },
+  "msg_audio_service_init_failed": "バックグラウンド再生サービスの初期化に失敗したため、通知のコントロールボタンを表示できません。アプリを再起動してみてください。問題が続く場合は、システム設定でアプリデータを消去して再度開いてください。",
+  "@msg_audio_service_init_failed": {
+    "description": "Shown when AudioService.init fails - the background playback service cannot be registered with the OS"
+  },
+  "msg_notification_channel_disabled": "通知チャネルが無効になっています。設定 → アプリ管理 → ZenFile → 通知に移動し、「ZenFile Audio Player」チャネルを見つけて有効にしてください。",
+  "@msg_notification_channel_disabled": {
+    "description": "Shown when the notification channel is disabled by the user or system"
+  },
   "ui_lyric_search_song_title": "曲名",
   "ui_lyric_search_artist": "アーティスト"
 }

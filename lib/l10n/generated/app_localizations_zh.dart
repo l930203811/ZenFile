@@ -3710,6 +3710,21 @@ class L10nZh extends L10n {
   String get msg_open_settings => '去设置';
 
   @override
+  String get msg_notification_not_granted => '通知权限未授予，无法显示播放控制通知。请前往设置开启通知权限。';
+
+  @override
+  String get msg_notification_blocked_hint =>
+      '通知栏未生效，可能是系统通知渠道被禁用或电池优化限制了后台运行。请在系统设置中检查通知权限和电池优化设置。';
+
+  @override
+  String get msg_audio_service_init_failed =>
+      '后台播放服务初始化失败，通知栏控制按钮无法显示。请尝试重启应用；若问题持续，请在系统设置中清除应用数据后重新打开。';
+
+  @override
+  String get msg_notification_channel_disabled =>
+      '通知渠道已被禁用。请前往系统设置 → 应用管理 → ZenFile → 通知，找到\"ZenFile Audio Player\"渠道并将其启用。';
+
+  @override
   String get ui_search_lyrics_online => '在线搜索歌词';
 
   @override
@@ -7436,6 +7451,21 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get msg_open_settings => '去設定';
+
+  @override
+  String get msg_notification_not_granted => '通知權限未授予，無法顯示播放控制通知。請前往設定開啟通知權限。';
+
+  @override
+  String get msg_notification_blocked_hint =>
+      '通知欄未生效，可能是系統通知渠道被停用或電池優化限制了背景執行。請在系統設定中檢查通知權限和電池優化設定。';
+
+  @override
+  String get msg_audio_service_init_failed =>
+      '背景播放服務初始化失敗，通知欄控制按鈕無法顯示。請嘗試重啟應用；若問題持續，請在系統設定中清除應用資料後重新開啟。';
+
+  @override
+  String get msg_notification_channel_disabled =>
+      '通知渠道已被停用。請前往系統設定 → 應用管理 → ZenFile → 通知，找到「ZenFile Audio Player」渠道並將其啟用。';
 
   @override
   String get ui_search_lyrics_online => '線上搜尋歌詞';

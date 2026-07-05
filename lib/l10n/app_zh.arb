@@ -3985,6 +3985,22 @@
   "@msg_open_settings": {
     "description": "Action button on the SnackBar to open app settings when notification permission is denied"
   },
+  "msg_notification_not_granted": "通知权限未授予，无法显示播放控制通知。请前往设置开启通知权限。",
+  "@msg_notification_not_granted": {
+    "description": "Shown when notification permission is detected as not granted after enabling background playback"
+  },
+  "msg_notification_blocked_hint": "通知栏未生效，可能是系统通知渠道被禁用或电池优化限制了后台运行。请在系统设置中检查通知权限和电池优化设置。",
+  "@msg_notification_blocked_hint": {
+    "description": "Shown when notification fails to appear despite permission being granted, typically due to ROM restrictions"
+  },
+  "msg_audio_service_init_failed": "后台播放服务初始化失败，通知栏控制按钮无法显示。请尝试重启应用；若问题持续，请在系统设置中清除应用数据后重新打开。",
+  "@msg_audio_service_init_failed": {
+    "description": "Shown when AudioService.init fails - the background playback service cannot be registered with the OS"
+  },
+  "msg_notification_channel_disabled": "通知渠道已被禁用。请前往系统设置 → 应用管理 → ZenFile → 通知，找到\"ZenFile Audio Player\"渠道并将其启用。",
+  "@msg_notification_channel_disabled": {
+    "description": "Shown when the notification channel is disabled by the user or system"
+  },
   "ui_search_lyrics_online": "在线搜索歌词",
   "@ui_search_lyrics_online": {
     "description": "Button label to search lyrics online for the current song"
