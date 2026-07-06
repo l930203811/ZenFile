@@ -2201,96 +2201,97 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                 Expanded(
                   child: FadeTransition(
                     opacity: _fadeAnim,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        // Artwork or Inline Lyrics (toggleable)
-                        _buildArtworkOrLyrics(accent, theme, isDark),
-                        // Single-line current lyric (always visible by default)
-                        _buildSingleLineLyrics(accent, theme, isDark),
-                        // Title row with Favorite Heart icon on right matching Screenshot 2
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 28),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      _currentTitle,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w800,
-                                        fontSize: 24,
-                                        letterSpacing: 0.2,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          // Artwork or Inline Lyrics (toggleable)
+                          _buildArtworkOrLyrics(accent, theme, isDark),
+                          // Single-line current lyric (always visible by default)
+                          _buildSingleLineLyrics(accent, theme, isDark),
+                          // Title row with Favorite Heart icon on right matching Screenshot 2
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 28),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        _currentTitle,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 24,
+                                          letterSpacing: 0.2,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      _getDisplayArtist(),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        color: theme.colorScheme.onSurface.withOpacity(0.6),
-                                        fontWeight: FontWeight.w600,
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        _getDisplayArtist(),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          color: theme.colorScheme.onSurface.withOpacity(0.6),
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              IconButton(
-                                icon: Icon(
-                                  _isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                                  color: _isFavorite ? Colors.redAccent : theme.colorScheme.onSurface.withOpacity(0.6),
-                                  size: 28,
+                                IconButton(
+                                  icon: Icon(
+                                    _isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                                    color: _isFavorite ? Colors.redAccent : theme.colorScheme.onSurface.withOpacity(0.6),
+                                    size: 28,
+                                  ),
+                                  onPressed: () => setState(() => _isFavorite = !_isFavorite),
                                 ),
-                                onPressed: () => setState(() => _isFavorite = !_isFavorite),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        // Interactive Glowing Waveform Seek Bar
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: AudioWaveformWidget(
+                          // Interactive Glowing Waveform Seek Bar
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: AudioWaveformWidget(
+                              position: position,
+                              duration: duration,
+                              isPlaying: isPlaying,
+                              accentColor: accent,
+                              onSeekStart: () => isSeeking = true,
+                              onSeek: (d) {
+                                isSeeking = false;
+                                setState(() => position = d);
+                                player.seek(d);
+                              },
+                            ),
+                          ),
+                          // Compact Playback Controls & Bottom Utilities
+                          AudioControlsWidget(
+                            isPlaying: isPlaying,
                             position: position,
                             duration: duration,
-                            isPlaying: isPlaying,
+                            onPlayPause: () => player.playOrPause(),
+                            onPrevious: _allSongs.length > 1 ? _playPrevious : null,
+                            onNext: _allSongs.length > 1 ? _playNext : null,
+                            onShowLyrics: _toggleInlineLyrics,
+                            onShowSleepTimer: _showSleepTimerDialog,
+                            onShowEqualizer: _showEqualizerDialog,
+                            onShowQueue: () => _showQueueSheet(accent),
+                            repeatMode: _repeatMode,
+                            onToggleRepeat: () => setState(() => _repeatMode = (_repeatMode + 1) % 3),
                             accentColor: accent,
-                            onSeekStart: () => isSeeking = true,
-                            onSeek: (d) {
-                              isSeeking = false;
-                              setState(() => position = d);
-                              player.seek(d);
-                            },
+                            hasLyrics: _lyrics != null && _lyrics!.isNotEmpty,
+                            isShowingLyrics: _showInlineLyrics,
                           ),
-                        ),
-                        // Compact Playback Controls & Bottom Utilities
-                        AudioControlsWidget(
-                          isPlaying: isPlaying,
-                          position: position,
-                          duration: duration,
-                          onPlayPause: () => player.playOrPause(),
-                          onPrevious: _allSongs.length > 1 ? _playPrevious : null,
-                          onNext: _allSongs.length > 1 ? _playNext : null,
-                          onShowLyrics: _toggleInlineLyrics,
-                          onShowSleepTimer: _showSleepTimerDialog,
-                          onShowEqualizer: _showEqualizerDialog,
-                          onShowQueue: () => _showQueueSheet(accent),
-                          repeatMode: _repeatMode,
-                          onToggleRepeat: () => setState(() => _repeatMode = (_repeatMode + 1) % 3),
-                          accentColor: accent,
-                          hasLyrics: _lyrics != null && _lyrics!.isNotEmpty,
-                          isShowingLyrics: _showInlineLyrics,
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
               ],
             ),
           ),

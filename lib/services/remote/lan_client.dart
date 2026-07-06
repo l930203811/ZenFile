@@ -354,6 +354,31 @@ class LanClient implements RemoteClient {
   }
 
   @override
+  Future<void> downloadRange(String remotePath, String localPath, int startByte, int length) async {
+    final session = _requireSession;
+    final file = File(localPath);
+    if (file.existsSync()) file.deleteSync();
+    file.parent.createSync(recursive: true);
+
+    // 调用原生 downloadRange：只下载文件头部指定字节范围，用于生成缩略图
+    // 无需轮询进度（数据量小，原生层同步写盘后即返回）
+    try {
+      final success = await _channel.invokeMethod<bool>('downloadRange', {
+        'sessionId': session,
+        'remotePath': _normalizePath(remotePath),
+        'localPath': localPath,
+        'startByte': startByte,
+        'length': length,
+      }).timeout(const Duration(minutes: 2));
+      if (success != true) {
+        throw Exception('SMB downloadRange returned false');
+      }
+    } on TimeoutException {
+      throw Exception('SMB downloadRange timed out');
+    }
+  }
+
+  @override
   Future<void> uploadFile(
     String localPath,
     String remotePath,

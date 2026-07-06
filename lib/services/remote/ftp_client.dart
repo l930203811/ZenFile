@@ -284,6 +284,19 @@ class FtpRemoteClient implements RemoteClient {
     onProgress(1.0);
   }
 
+  @override
+  Future<void> downloadRange(String remotePath, String localPath, int startByte, int length) async {
+    if (_ftpConnect == null) throw Exception('FTP not connected');
+    // 复用 raw socket 实现，通过 FTP REST 命令指定起始偏移，限制读取长度
+    await _downloadWithRawSocket(
+      remotePath,
+      localPath,
+      (_) {},
+      startByte: startByte,
+      maxLength: length,
+    );
+  }
+
   /// Raw socket FTP download with periodic disk flushing.
   ///
   /// Opens a SEPARATE control+data connection to the FTP server (independent
@@ -298,8 +311,10 @@ class FtpRemoteClient implements RemoteClient {
   Future<void> _downloadWithRawSocket(
     String remotePath,
     String localPath,
-    Function(double progress) onProgress,
-  ) async {
+    Function(double progress) onProgress, {
+    int startByte = 0,
+    int? maxLength,
+  }) async {
     Socket? controlSocket;
     Socket? dataSocket;
     IOSink? sink;
@@ -384,6 +399,11 @@ class FtpRemoteClient implements RemoteClient {
       dataSocket = await Socket.connect(host, pasvPort,
           timeout: const Duration(seconds: 15));
 
+      // FTP REST 命令：指定下载起始字节偏移（用于 range 下载）
+      if (startByte > 0) {
+        await sendCommand('REST $startByte');
+      }
+
       // Issue RETR
       controlSocket.write('RETR $remotePath\r\n');
       // Wait for 150/125 response
@@ -406,6 +426,12 @@ class FtpRemoteClient implements RemoteClient {
       const flushInterval = 4 * 1024;
 
       await for (final chunk in dataSocket) {
+        if (maxLength != null && downloaded + chunk.length > maxLength) {
+          // 达到请求范围上限，只写入剩余需要的字节
+          sink.add(chunk.sublist(0, maxLength - downloaded));
+          downloaded = maxLength;
+          break;
+        }
         sink.add(chunk);
         downloaded += chunk.length;
         sinceFlush += chunk.length;
@@ -418,6 +444,7 @@ class FtpRemoteClient implements RemoteClient {
           isFirstChunk = false;
           await Future.delayed(const Duration(milliseconds: 1));
         }
+        if (maxLength != null && downloaded >= maxLength) break;
       }
 
       await sink.flush();

@@ -2954,7 +2954,7 @@
   "ui_show_folder_size": "Ordnergröße anzeigen",
   "ui_show_bottom_action_bar": "Navigationsleistenposition",
   "ui_hide_action_text": "Aktionsleisten-Textbeschriftungen ausblenden",
-  "ui_show_media_previews": "Medien-Miniaturvorschaubilder anzeigen",
+  "ui_show_media_previews": "Lokale Medien-Miniaturvorschaubilder",
   "ui_adaptive_multiline_names": "Adaptive mehrzeilige Dateinamen",
   "ui_hide_action_menu_buttons": "Aktions-Menü-Schaltflächen ausblenden",
   "ui_show_action_menu_buttons": "Aktions-Menü-Schaltflächen anzeigen",
@@ -3848,5 +3848,9 @@
     "description": "Shown when the notification channel is disabled by the user or system"
   },
   "ui_lyric_search_song_title": "Songtitel",
-  "ui_lyric_search_artist": "Künstler"
+  "ui_lyric_search_artist": "Künstler",
+  "msg_rotate_video": "Video drehen",
+  "@msg_rotate_video": {
+    "description": "Rotate video clockwise in video player"
+  }
 }

@@ -2529,7 +2529,7 @@ class L10nJa extends L10n {
   String get ui_hide_action_text => 'アクションバーのテキストラベルを隠す';
 
   @override
-  String get ui_show_media_previews => 'メディアプレビューを表示';
+  String get ui_show_media_previews => 'ローカルメディアサムネイル';
 
   @override
   String get ui_adaptive_multiline_names => 'アダプティブマルチラインファイル名';
@@ -3778,4 +3778,7 @@ class L10nJa extends L10n {
 
   @override
   String get ui_lyric_search_artist => 'アーティスト';
+
+  @override
+  String get msg_rotate_video => '動画を回転';
 }

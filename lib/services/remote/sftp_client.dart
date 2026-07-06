@@ -272,6 +272,40 @@ class SftpRemoteClient implements RemoteClient {
   }
 
   @override
+  Future<void> downloadRange(String remotePath, String localPath, int startByte, int length) async {
+    if (_sftpClient == null) throw Exception('SFTP not connected');
+
+    final file = await _sftpClient!.open(remotePath);
+    final localFile = File(localPath);
+    final sink = localFile.openWrite();
+
+    try {
+      // dartssh2 的 read() 原生支持 offset + length，底层发起 SSH_FXP_READ 请求
+      final stream = file.read(offset: startByte, length: length).timeout(
+        const Duration(seconds: 60),
+        onTimeout: (eventSink) {
+          eventSink.addError(Exception('SFTP readRange timed out: no data for 60s'));
+          eventSink.close();
+        },
+      );
+      int downloaded = 0;
+      await for (final chunk in stream) {
+        if (downloaded + chunk.length > length) {
+          // 防止超出请求范围
+          sink.add(chunk.sublist(0, length - downloaded));
+          break;
+        }
+        sink.add(chunk);
+        downloaded += chunk.length;
+      }
+    } finally {
+      await sink.flush();
+      await sink.close();
+      await file.close();
+    }
+  }
+
+  @override
   Future<void> uploadFile(
     String localPath,
     String remotePath,

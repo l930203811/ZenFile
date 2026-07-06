@@ -332,6 +332,42 @@ class WebDavRemoteClient implements RemoteClient {
   }
 
   @override
+  Future<void> downloadRange(String remotePath, String localPath, int startByte, int length) async {
+    final url = Uri.parse(_baseUrl + Uri.encodeFull(remotePath));
+    final request = await _httpClient.openUrl('GET', url);
+    final auth = _authHeader();
+    if (auth.isNotEmpty) {
+      request.headers.set('Authorization', auth);
+    }
+    // HTTP Range 请求只下载指定字节范围
+    request.headers.set(HttpHeaders.rangeHeader, 'bytes=$startByte-${startByte + length - 1}');
+    final response = await request.close();
+    // 206 = Partial Content（range 请求成功）；200 = 服务器忽略 Range 返回完整内容
+    if (response.statusCode != 206 && response.statusCode != 200) {
+      throw Exception('WebDAV downloadRange error: ${response.statusCode}');
+    }
+
+    final file = File(localPath);
+    final sink = file.openWrite();
+    int downloaded = 0;
+    try {
+      await for (final chunk in response) {
+        if (downloaded + chunk.length > length) {
+          // 防止服务器返回超出请求范围的数据
+          sink.add(chunk.sublist(0, length - downloaded));
+          break;
+        }
+        sink.add(chunk);
+        downloaded += chunk.length;
+        if (downloaded >= length) break;
+      }
+    } finally {
+      await sink.flush();
+      await sink.close();
+    }
+  }
+
+  @override
   Future<void> uploadFile(
     String localPath,
     String remotePath,

@@ -2954,7 +2954,7 @@
   "ui_show_folder_size": "إظهار حجم المجلد",
   "ui_show_bottom_action_bar": "موقع شريط التنقل",
   "ui_hide_action_text": "إخفاء تسميات نص شريط الإجراءات",
-  "ui_show_media_previews": "إظهار معاينات الوسائط",
+  "ui_show_media_previews": "صور مصغرة للوسائط المحلية",
   "ui_adaptive_multiline_names": "أسماء ملفات متعددة الأسطر التكيفية",
   "ui_hide_action_menu_buttons": "إخفاء أزرار قائمة الإجراءات",
   "ui_show_action_menu_buttons": "إظهار أزرار قائمة الإجراءات",
@@ -3848,5 +3848,9 @@
     "description": "Shown when the notification channel is disabled by the user or system"
   },
   "ui_lyric_search_song_title": "اسم الأغنية",
-  "ui_lyric_search_artist": "الفنان"
+  "ui_lyric_search_artist": "الفنان",
+  "msg_rotate_video": "تدوير الفيديو",
+  "@msg_rotate_video": {
+    "description": "Rotate video clockwise in video player"
+  }
 }

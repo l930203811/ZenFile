@@ -158,6 +158,17 @@ class PreferencesService {
     await _prefs?.setBool(_keyIsGridView, val);
   }
 
+  // 媒体分类页面按类别独立存储列表/网格视图偏好
+  static const String _keyMediaCategoryGridView = 'media_category_grid_view_';
+
+  static bool getMediaCategoryGridView(String mediaType, {bool defaultValue = false}) {
+    return _prefs?.getBool('$_keyMediaCategoryGridView$mediaType') ?? defaultValue;
+  }
+
+  static Future<void> saveMediaCategoryGridView(String mediaType, bool val) async {
+    await _prefs?.setBool('$_keyMediaCategoryGridView$mediaType', val);
+  }
+
   static double getIconScale() {
     return _prefs?.getDouble(_keyIconScale) ?? 1.0;
   }

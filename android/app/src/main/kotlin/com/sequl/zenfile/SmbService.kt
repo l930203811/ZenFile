@@ -1030,6 +1030,68 @@ class SmbService {
     }
 
     /**
+     * 下载远程文件指定字节范围到本地，用于生成缩略图等只需文件头部的场景。
+     *
+     * 使用 smbj 的 SMB2FileInputStream.skip(startByte) 跳过起始字节（仅更新内部
+     * readOffset，不实际读取数据，后续 read() 会从新偏移发起 SMB2 READ 请求），
+     * 然后只读取 [length] 字节即停止，避免下载完整大文件。
+     */
+    fun downloadRange(sessionId: String, remotePath: String, localPath: String, startByte: Long, length: Long): Boolean {
+        val entry = sessions[sessionId] ?: throw Exception("Invalid or disconnected session id")
+        val (shareName, pathInShare) = resolveShareAndPath(remotePath)
+        if (shareName.isEmpty()) throw Exception("Invalid path: no share name specified")
+
+        return try {
+            val share = getShare(entry, shareName)
+            val file = share.openFile(
+                pathInShare,
+                EnumSet.of(AccessMask.GENERIC_READ),
+                null,
+                allShareAccess(),
+                SMB2CreateDisposition.FILE_OPEN,
+                null
+            )
+            try {
+                val localFile = java.io.File(localPath)
+                localFile.parentFile?.mkdirs()
+                file.getInputStream().use { input ->
+                    // 跳过起始字节：smbj 的 skip() 仅更新内部 readOffset，不获取数据
+                    if (startByte > 0) {
+                        var remaining = startByte
+                        while (remaining > 0) {
+                            val skipped = input.skip(remaining)
+                            if (skipped <= 0) break
+                            remaining -= skipped
+                        }
+                    }
+                    localFile.outputStream().use { output ->
+                        val buffer = ByteArray(64 * 1024)
+                        var downloaded = 0L
+                        var bytesRead: Int
+                        while (input.read(buffer).also { bytesRead = it } != -1) {
+                            if (downloaded + bytesRead > length) {
+                                // 只写入剩余需要的字节数
+                                output.write(buffer, 0, (length - downloaded).toInt())
+                                downloaded = length
+                                break
+                            }
+                            output.write(buffer, 0, bytesRead)
+                            downloaded += bytesRead
+                            if (downloaded >= length) break
+                        }
+                        output.flush()
+                    }
+                }
+            } finally {
+                file.close()
+            }
+            true
+        } catch (e: Exception) {
+            throw Exception("Failed to download range '$remotePath' [$startByte..${startByte + length}]: ${e.message}", e)
+        }
+    }
+
+    /**
      * Uploads the local file at [localPath] to [remotePath] inside the share.
      * An existing remote file is overwritten (FILE_OVERWRITE_IF).
      *

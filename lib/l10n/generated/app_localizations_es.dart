@@ -2665,7 +2665,7 @@ class L10nEs extends L10n {
       'Ocultar Etiquetas de Texto de la Barra de Acciones';
 
   @override
-  String get ui_show_media_previews => 'Mostrar Vistas Previas Multimedia';
+  String get ui_show_media_previews => 'Miniaturas Multimedia Locales';
 
   @override
   String get ui_adaptive_multiline_names =>
@@ -3962,4 +3962,7 @@ class L10nEs extends L10n {
 
   @override
   String get ui_lyric_search_artist => 'Artista';
+
+  @override
+  String get msg_rotate_video => 'Rotar video';
 }

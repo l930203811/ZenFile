@@ -30,6 +30,9 @@ import 'file_action_dialogs.dart';
 import 'create_archive_dialog.dart';
 import 'batch_rename_dialog.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+import '../../services/remote/remote_client.dart';
+import '../../services/media_thumbnail_service.dart';
+import 'package:path_provider/path_provider.dart';
 
 class PaneBrowser extends StatefulWidget {
   final int tabIndex;
@@ -596,6 +599,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                                           isSelected,
                                                           isSelectionMode,
                                                           tab.remoteConnection,
+                                                          tab.remoteClient,
                                                         );
                                                       }
                                                     },
@@ -1013,6 +1017,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
     bool isSelected,
     bool isSelectionMode,
     NetworkConnectionModel? remoteConnection,
+    RemoteClient? remoteClient,
   ) {
     final theme = Theme.of(context);
     final isHighlighted = provider.forceHighlightedPaths.contains(file.path) || (provider.enableFolderHighlight && provider.highlightedPaths.contains(file.path));
@@ -1081,6 +1086,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                           file: file,
                           isSelected: isSelected,
                           iconColor: iconColor,
+                          remoteClient: remoteClient,
                         ),
                       ),
                     ),
@@ -1104,16 +1110,30 @@ class _PaneBrowserState extends State<PaneBrowser> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 1),
-                          Text(
-                            provider.hideTimeAndDate
-                                ? FileUtils.formatBytes(file.size, 1)
-                                : "${FileUtils.formatDate(file.modified, use24Hour: provider.use24HourFormat)}   ${FileUtils.formatBytes(file.size, 1)}",
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.textTheme.bodySmall?.color?.withOpacity(0.55),
-                              fontSize: 10.5,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          Row(
+                            children: [
+                              if (!provider.hideTimeAndDate) ...[
+                                Flexible(
+                                  child: Text(
+                                    FileUtils.formatDate(file.modified, use24Hour: provider.use24HourFormat),
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: theme.textTheme.bodySmall?.color?.withOpacity(0.55),
+                                      fontSize: 10.5,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                              ],
+                              Text(
+                                FileUtils.formatBytes(file.size, 1),
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.textTheme.bodySmall?.color?.withOpacity(0.55),
+                                  fontSize: 10.5,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -1246,11 +1266,13 @@ class _CompactMediaThumbnail extends StatefulWidget {
   final FileItemModel file;
   final bool isSelected;
   final Color iconColor;
+  final RemoteClient? remoteClient;
 
   const _CompactMediaThumbnail({
     required this.file,
     required this.isSelected,
     required this.iconColor,
+    this.remoteClient,
   });
 
   @override
@@ -1262,18 +1284,113 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
   Uint8List? _videoThumb;
   Uint8List? _audioThumb;
   Uint8List? _apkIcon;
+  Uint8List? _remoteThumb;
 
   @override
   void initState() {
     super.initState();
     final lowerPath = widget.file.path.toLowerCase();
-    if (FileUtils.isVideo(widget.file.path)) {
+    // 远程文件优先走远程缩略图加载逻辑
+    if (widget.file.isRemote && widget.remoteClient != null) {
+      _loadRemoteThumb();
+    } else if (FileUtils.isVideo(widget.file.path)) {
       _loadVideoThumb();
     } else if (FileUtils.isAudio(widget.file.path)) {
       _loadAudioThumb();
     } else if (lowerPath.endsWith('.apk') || lowerPath.endsWith('.xapk') || lowerPath.endsWith('.apks') || lowerPath.endsWith('.apkm')) {
       _loadApkIcon();
     }
+  }
+
+  Future<void> _loadRemoteThumb() async {
+    if (!mounted) return;
+    final client = widget.remoteClient;
+    if (client == null) return;
+    try {
+      // 缩略图缓存目录
+      Directory thumbDir;
+      try {
+        thumbDir = Directory('/storage/emulated/0/Download/ZenFile_Remote/cache/thumbnails/remote');
+        if (!thumbDir.existsSync()) thumbDir.createSync(recursive: true);
+      } catch (_) {
+        final appDir = await getApplicationDocumentsDirectory();
+        thumbDir = Directory(p.join(appDir.path, 'ZenFile_Remote', 'cache', 'thumbnails', 'remote'));
+        if (!thumbDir.existsSync()) thumbDir.createSync(recursive: true);
+      }
+      final thumbName = '${widget.file.path.replaceAll('/', '_').replaceAll('\\', '_')}_thumb.jpg';
+      final thumbPath = p.join(thumbDir.path, thumbName);
+      final thumbFile = File(thumbPath);
+
+      // 检查缓存
+      if (thumbFile.existsSync()) {
+        final bytes = await thumbFile.readAsBytes();
+        if (mounted && bytes.isNotEmpty) {
+          setState(() => _remoteThumb = bytes);
+        }
+        return;
+      }
+
+      // 下载到临时目录
+      Directory tempDir;
+      try {
+        tempDir = Directory('/storage/emulated/0/Download/ZenFile_Remote/cache/temp');
+        if (!tempDir.existsSync()) tempDir.createSync(recursive: true);
+      } catch (_) {
+        final appDir = await getApplicationDocumentsDirectory();
+        tempDir = Directory(p.join(appDir.path, 'ZenFile_Remote', 'cache', 'temp'));
+        if (!tempDir.existsSync()) tempDir.createSync(recursive: true);
+      }
+
+      final ext = p.extension(widget.file.name).toLowerCase();
+      final tempPath = p.join(tempDir.path, 'remote_temp_${DateTime.now().millisecondsSinceEpoch}$ext');
+
+      // 远程连接已建立，直接下载
+      final isVideo = FileUtils.isVideo(widget.file.path);
+      final isAudio = FileUtils.isAudio(widget.file.path);
+      if (isVideo || isAudio) {
+        // 视频/音频只需头部 2MB 即可提取缩略图/封面
+        try {
+          await client.downloadRange(widget.file.path, tempPath, 0, 2 * 1024 * 1024);
+        } catch (e) {
+          await client.downloadFile(widget.file.path, tempPath, (_) {});
+        }
+      } else {
+        // 图片等完整下载
+        await client.downloadFile(widget.file.path, tempPath, (_) {});
+      }
+
+      // 生成缩略图
+      final provider = context.read<MediaProvider>();
+      Uint8List? thumbBytes;
+      if (isVideo) {
+        thumbBytes = await MediaThumbnailService.generateVideoThumbnail(tempPath);
+        if (thumbBytes != null && thumbBytes.length > 20) {
+          await thumbFile.writeAsBytes(thumbBytes);
+        }
+      } else if (isAudio) {
+        thumbBytes = await MediaThumbnailService.generateAudioThumbnail(tempPath);
+        if (thumbBytes != null && thumbBytes.length > 20) {
+          await thumbFile.writeAsBytes(thumbBytes);
+        }
+      } else {
+        // 图片直接复制为缩略图
+        final tempFile = File(tempPath);
+        if (tempFile.existsSync()) {
+          await tempFile.copy(thumbPath);
+          thumbBytes = await thumbFile.readAsBytes();
+        }
+      }
+
+      // 清理临时文件
+      try {
+        final tempFile = File(tempPath);
+        if (tempFile.existsSync()) await tempFile.delete();
+      } catch (_) {}
+
+      if (mounted && thumbBytes != null && thumbBytes.isNotEmpty) {
+        setState(() => _remoteThumb = thumbBytes);
+      }
+    } catch (_) {}
   }
 
   Future<void> _loadApkIcon() async {
@@ -1414,6 +1531,34 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
         width: double.infinity,
         height: double.infinity,
         errorBuilder: (context, error, stackTrace) => Icon(Broken.mobile, color: widget.iconColor, size: 18),
+      );
+    }
+
+    // 远程文件缩略图（图片/视频/音频）
+    if (widget.file.isRemote && _remoteThumb != null) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.memory(
+            _remoteThumb!,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+            errorBuilder: (context, error, stackTrace) => Icon(
+              FileUtils.getIconForFile(widget.file.path),
+              color: widget.iconColor,
+              size: 18,
+            ),
+          ),
+          if (isVid)
+            Center(
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(color: Colors.black.withOpacity(0.6), shape: BoxShape.circle),
+                child: const Icon(Broken.play, color: Colors.white, size: 10),
+              ),
+            ),
+        ],
       );
     }
 

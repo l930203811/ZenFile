@@ -2648,7 +2648,7 @@ class L10nDe extends L10n {
       'Aktionsleisten-Textbeschriftungen ausblenden';
 
   @override
-  String get ui_show_media_previews => 'Medien-Miniaturvorschaubilder anzeigen';
+  String get ui_show_media_previews => 'Lokale Medien-Miniaturvorschaubilder';
 
   @override
   String get ui_adaptive_multiline_names => 'Adaptive mehrzeilige Dateinamen';
@@ -3939,4 +3939,7 @@ class L10nDe extends L10n {
 
   @override
   String get ui_lyric_search_artist => 'Künstler';
+
+  @override
+  String get msg_rotate_video => 'Video drehen';
 }

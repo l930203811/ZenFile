@@ -155,10 +155,17 @@ class ThumbnailCache {
       final remoteClient = FileManagerProvider.createRemoteClient(conn);
       await remoteClient.connect();
 
-      // 下载视频到临时文件
+      // 下载视频文件头部 2MB 到临时文件（足够 MediaMetadataRetriever 提取帧）
+      // 避免下载完整大文件消耗流量与内存
       final tempDir = await getTemporaryDirectory();
       final tempFile = File(p.join(tempDir.path, 'zenfile_thumb_$key'));
-      await remoteClient.downloadFile(remoteFilePath, tempFile.path, (_) {});
+      try {
+        await remoteClient.downloadRange(remoteFilePath, tempFile.path, 0, 2 * 1024 * 1024);
+      } catch (e) {
+        // 部分服务器或客户端可能不支持 range 下载，回退到完整下载
+        debugPrint('[ThumbnailCache] downloadRange 失败，回退完整下载: $e');
+        await remoteClient.downloadFile(remoteFilePath, tempFile.path, (_) {});
+      }
       await remoteClient.disconnect();
 
       // 通过原生 MediaMetadataRetriever 生成远程视频缩略图

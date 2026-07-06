@@ -37,6 +37,11 @@ abstract class RemoteClient {
   Future<void> delete(String path, bool isDir);
   Future<void> rename(String oldPath, String newPath);
   Future<void> downloadFile(String remotePath, String localPath, Function(double progress) onProgress);
+
+  /// 下载远程文件的指定字节范围到本地文件，用于生成缩略图等只需文件头部的场景。
+  /// [startByte] 起始字节偏移（inclusive），[length] 要下载的字节数。
+  /// 下载结果写入 localPath（只包含请求范围内的字节）。
+  Future<void> downloadRange(String remotePath, String localPath, int startByte, int length);
   Future<void> uploadFile(String localPath, String remotePath, Function(double progress) onProgress);
 
   /// Returns a URL that can be used for streaming playback, or null if streaming is not supported.

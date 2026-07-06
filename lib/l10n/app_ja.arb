@@ -2958,7 +2958,7 @@
   "ui_show_folder_size": "フォルダサイズを表示",
   "ui_show_bottom_action_bar": "ナビゲーションバーの位置",
   "ui_hide_action_text": "アクションバーのテキストラベルを隠す",
-  "ui_show_media_previews": "メディアプレビューを表示",
+  "ui_show_media_previews": "ローカルメディアサムネイル",
   "ui_adaptive_multiline_names": "アダプティブマルチラインファイル名",
   "ui_hide_action_menu_buttons": "三点メニューボタンを隠す",
   "ui_show_action_menu_buttons": "三点メニューボタンを表示",
@@ -3852,5 +3852,9 @@
     "description": "Shown when the notification channel is disabled by the user or system"
   },
   "ui_lyric_search_song_title": "曲名",
-  "ui_lyric_search_artist": "アーティスト"
+  "ui_lyric_search_artist": "アーティスト",
+  "msg_rotate_video": "動画を回転",
+  "@msg_rotate_video": {
+    "description": "Rotate video clockwise in video player"
+  }
 }

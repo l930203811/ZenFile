@@ -4831,7 +4831,7 @@ abstract class L10n {
   /// No description provided for @ui_show_media_previews.
   ///
   /// In zh, this message translates to:
-  /// **'显示媒体预览'**
+  /// **'本地媒体缩略图'**
   String get ui_show_media_previews;
 
   /// No description provided for @ui_adaptive_multiline_names.
@@ -7053,6 +7053,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'歌手'**
   String get ui_lyric_search_artist;
+
+  /// Rotate video clockwise in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'旋转画面'**
+  String get msg_rotate_video;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

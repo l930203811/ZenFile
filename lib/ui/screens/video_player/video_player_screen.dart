@@ -87,6 +87,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   // Utilities
   bool _isMuted = false;
   int _repeatMode = 0; // 0=none, 1=one, 2=all
+  int _rotationTurns = 0; // 0=0°, 1=90°顺时针, 2=180°, 3=270°
 
   @override
   void initState() {
@@ -144,6 +145,13 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       player.open(Media(resolved));
       if (mounted) setState(() => _isBuffering = false);
       return;
+    }
+
+    // 处理本地代理 URL（流式播放：http://127.0.0.1:PORT/stream...）
+    // 记录到 _currentStreamUrl 以便 dispose 时清理流式会话（HTTP 服务器+后台下载）
+    if (widget.videoPath.startsWith('http://127.0.0.1') ||
+        widget.videoPath.startsWith('http://localhost')) {
+      _currentStreamUrl = widget.videoPath;
     }
 
     // For remote files that are being cached, wait until the download completes
@@ -546,11 +554,14 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Main Video Surface
-          Video(
-            controller: controller,
-            controls: NoVideoControls,
-            fit: BoxFit.contain,
+          // Main Video Surface (支持顺时针旋转)
+          RotatedBox(
+            quarterTurns: _rotationTurns,
+            child: Video(
+              controller: controller,
+              controls: NoVideoControls,
+              fit: BoxFit.contain,
+            ),
           ),
 
           // Brightness Dimming Overlay
@@ -748,6 +759,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                     isLocked: _isLocked,
                     isMuted: _isMuted,
                     repeatMode: _repeatMode,
+                    rotationTurns: _rotationTurns,
                     onChanged: (v) => setState(() => _sliderValue = v),
                     onChangeStart: (_) {
                       _isSeeking = true;
@@ -790,7 +802,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                       setState(() => _repeatMode = (_repeatMode + 1) % 3);
                       _showControls();
                     },
-                    onCopyUrl: () => _showControls(),
+                    onRotate: () {
+                      setState(() => _rotationTurns = (_rotationTurns + 1) % 4);
+                      _showControls();
+                    },
                     onInteract: _showControls,
                   ),
                 ],

@@ -2954,7 +2954,7 @@
   "ui_show_folder_size": "Show Folder Size",
   "ui_show_bottom_action_bar": "Navigation Bar Position",
   "ui_hide_action_text": "Hide Action Bar Text Labels",
-  "ui_show_media_previews": "Show Media Previews",
+  "ui_show_media_previews": "Local Media Thumbnails",
   "ui_adaptive_multiline_names": "Adaptive Multi-line File Names",
   "ui_hide_action_menu_buttons": "Hide Action Menu Buttons",
   "ui_show_action_menu_buttons": "Show Action Menu Buttons",
@@ -3874,5 +3874,9 @@
   "ui_lyric_search_artist": "Artist",
   "@ui_lyric_search_artist": {
     "description": "Label for artist input field in lyric search dialog"
+  },
+  "msg_rotate_video": "Rotate Video",
+  "@msg_rotate_video": {
+    "description": "Rotate video clockwise in video player"
   }
 }

@@ -185,70 +185,81 @@ class _AudioArtworkWidgetState extends State<AudioArtworkWidget>
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size.width * 0.85;
-    final maxSize = size.clamp(260.0, 360.0);
+    // 使用 LayoutBuilder 获取父级约束，同时考虑宽度和高度
+    // 横屏时可用高度较小，封面尺寸应按高度计算避免溢出
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availW = constraints.maxWidth;
+        final availH = constraints.maxHeight;
+        // 取宽高较小者作为基准，确保正方形封面在两个方向都不溢出
+        final base = availW < availH ? availW : availH;
+        final size = base * 0.85;
+        // 竖屏：宽 ~400 → 340；横屏：高 ~400 → 340；高很小时缩小到 200 下限
+        final maxSize = size.clamp(180.0, 360.0);
 
-    return GestureDetector(
-      onPanUpdate: _onPanUpdate,
-      onPanEnd: _onPanEnd,
-      onDoubleTap: widget.onDoubleTap,
-      onLongPress: widget.onLongPress,
-      child: AnimatedScale(
-        scale: widget.isPlaying ? 1.02 : 0.98,
-        duration: const Duration(milliseconds: 350),
-        curve: Curves.easeOutBack,
-        child: Transform(
-          transform: Matrix4.identity()
-            ..setEntry(3, 2, 0.001)
-            ..rotateX(_tiltX)
-            ..rotateY(_tiltY),
-          alignment: Alignment.center,
-          child: Container(
-            width: maxSize,
-            height: maxSize,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: [
-                BoxShadow(
-                  color: widget.accentColor.withOpacity(widget.isPlaying ? 0.35 : 0.15),
-                  blurRadius: 40,
-                  spreadRadius: 8,
-                  offset: const Offset(0, 16),
-                ),
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  blurRadius: 20,
-                  spreadRadius: 2,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(28),
+        return GestureDetector(
+          onPanUpdate: _onPanUpdate,
+          onPanEnd: _onPanEnd,
+          onDoubleTap: widget.onDoubleTap,
+          onLongPress: widget.onLongPress,
+          child: AnimatedScale(
+            scale: widget.isPlaying ? 1.02 : 0.98,
+            duration: const Duration(milliseconds: 350),
+            curve: Curves.easeOutBack,
+            child: Transform(
+              transform: Matrix4.identity()
+                ..setEntry(3, 2, 0.001)
+                ..rotateX(_tiltX)
+                ..rotateY(_tiltY),
+              alignment: Alignment.center,
               child: Container(
-                color: widget.accentColor.withOpacity(0.12),
-                child: _isLoading
-                    ? Center(
-                        child: CircularProgressIndicator(
-                          color: widget.accentColor,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : _artworkBytes != null
-                        ? Image.memory(
-                            _artworkBytes!,
-                            fit: BoxFit.cover,
-                            width: maxSize,
-                            height: maxSize,
-                            gaplessPlayback: true,
-                            errorBuilder: (context, error, stackTrace) => _defaultArtworkIcon(maxSize),
+                width: maxSize,
+                height: maxSize,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(28),
+                  boxShadow: [
+                    BoxShadow(
+                      color: widget.accentColor.withOpacity(widget.isPlaying ? 0.35 : 0.15),
+                      blurRadius: 40,
+                      spreadRadius: 8,
+                      offset: const Offset(0, 16),
+                    ),
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 20,
+                      spreadRadius: 2,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(28),
+                  child: Container(
+                    color: widget.accentColor.withOpacity(0.12),
+                    child: _isLoading
+                        ? Center(
+                            child: CircularProgressIndicator(
+                              color: widget.accentColor,
+                              strokeWidth: 2,
+                            ),
                           )
-                        : _defaultArtworkIcon(maxSize),
+                        : _artworkBytes != null
+                            ? Image.memory(
+                                _artworkBytes!,
+                                fit: BoxFit.cover,
+                                width: maxSize,
+                                height: maxSize,
+                                gaplessPlayback: true,
+                                errorBuilder: (context, error, stackTrace) => _defaultArtworkIcon(maxSize),
+                              )
+                            : _defaultArtworkIcon(maxSize),
+                  ),
+                ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

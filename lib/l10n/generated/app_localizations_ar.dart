@@ -2605,7 +2605,7 @@ class L10nAr extends L10n {
   String get ui_hide_action_text => 'إخفاء تسميات نص شريط الإجراءات';
 
   @override
-  String get ui_show_media_previews => 'إظهار معاينات الوسائط';
+  String get ui_show_media_previews => 'صور مصغرة للوسائط المحلية';
 
   @override
   String get ui_adaptive_multiline_names =>
@@ -3883,4 +3883,7 @@ class L10nAr extends L10n {
 
   @override
   String get ui_lyric_search_artist => 'الفنان';
+
+  @override
+  String get msg_rotate_video => 'تدوير الفيديو';
 }

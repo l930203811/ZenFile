@@ -2609,7 +2609,7 @@ class L10nEn extends L10n {
   String get ui_hide_action_text => 'Hide Action Bar Text Labels';
 
   @override
-  String get ui_show_media_previews => 'Show Media Previews';
+  String get ui_show_media_previews => 'Local Media Thumbnails';
 
   @override
   String get ui_adaptive_multiline_names => 'Adaptive Multi-line File Names';
@@ -3893,4 +3893,7 @@ class L10nEn extends L10n {
 
   @override
   String get ui_lyric_search_artist => 'Artist';
+
+  @override
+  String get msg_rotate_video => 'Rotate Video';
 }

@@ -890,6 +890,15 @@ class MainActivity : AudioServiceFragmentActivity() {
                             val res = smb.downloadFile(sessionId, remotePath, localPath)
                             runOnUiThread { result.success(res) }
                         }
+                        "downloadRange" -> {
+                            val sessionId = call.argument<String>("sessionId") ?: ""
+                            val remotePath = call.argument<String>("remotePath") ?: ""
+                            val localPath = call.argument<String>("localPath") ?: ""
+                            val startByte = (call.argument<Number>("startByte") ?: 0).toLong()
+                            val length = (call.argument<Number>("length") ?: 0).toLong()
+                            val res = smb.downloadRange(sessionId, remotePath, localPath, startByte, length)
+                            runOnUiThread { result.success(res) }
+                        }
                         "uploadFile" -> {
                             val sessionId = call.argument<String>("sessionId") ?: ""
                             val localPath = call.argument<String>("localPath") ?: ""

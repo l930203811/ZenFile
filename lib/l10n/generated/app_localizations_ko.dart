@@ -2526,7 +2526,7 @@ class L10nKo extends L10n {
   String get ui_hide_action_text => '액션 바 텍스트 레이블 숨기기';
 
   @override
-  String get ui_show_media_previews => '미디어 미리보기 표시';
+  String get ui_show_media_previews => '로컬 미디어 썸네일';
 
   @override
   String get ui_adaptive_multiline_names => '적응형 다중 줄 파일 이름';
@@ -3777,4 +3777,7 @@ class L10nKo extends L10n {
 
   @override
   String get ui_lyric_search_artist => '아티스트';
+
+  @override
+  String get msg_rotate_video => '비디오 회전';
 }

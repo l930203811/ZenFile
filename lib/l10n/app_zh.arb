@@ -3018,7 +3018,7 @@
   "ui_show_folder_size": "显示文件夹大小",
   "ui_show_bottom_action_bar": "导航栏位置",
   "ui_hide_action_text": "隐藏操作栏文字标签",
-  "ui_show_media_previews": "显示媒体预览",
+  "ui_show_media_previews": "本地媒体缩略图",
   "ui_adaptive_multiline_names": "自适应多行文件名",
   "ui_hide_action_menu_buttons": "隐藏三点操作按钮",
   "ui_show_action_menu_buttons": "显示三点操作按钮",
@@ -4028,5 +4028,9 @@
   "ui_lyric_search_artist": "歌手",
   "@ui_lyric_search_artist": {
     "description": "Label for artist input field in lyric search dialog"
+  },
+  "msg_rotate_video": "旋转画面",
+  "@msg_rotate_video": {
+    "description": "Rotate video clockwise in video player"
   }
 }

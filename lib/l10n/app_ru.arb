@@ -2954,7 +2954,7 @@
   "ui_show_folder_size": "Показывать Размер Папки",
   "ui_show_bottom_action_bar": "Положение панели навигации",
   "ui_hide_action_text": "Скрыть Текстовые Метки Панели Действий",
-  "ui_show_media_previews": "Показывать Предпросмотр Медиа",
+  "ui_show_media_previews": "Локальные Медиа Миниатюры",
   "ui_adaptive_multiline_names": "Адаптивные Многострочные Имена Файлов",
   "ui_hide_action_menu_buttons": "Скрыть Кнопки Меню Действий",
   "ui_show_action_menu_buttons": "Показать Кнопки Меню Действий",
@@ -3848,5 +3848,9 @@
     "description": "Shown when the notification channel is disabled by the user or system"
   },
   "ui_lyric_search_song_title": "Название",
-  "ui_lyric_search_artist": "Исполнитель"
+  "ui_lyric_search_artist": "Исполнитель",
+  "msg_rotate_video": "Повернуть видео",
+  "@msg_rotate_video": {
+    "description": "Rotate video clockwise in video player"
+  }
 }

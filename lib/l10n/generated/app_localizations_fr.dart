@@ -2665,7 +2665,7 @@ class L10nFr extends L10n {
       'Masquer les étiquettes de texte de la barre d\'actions';
 
   @override
-  String get ui_show_media_previews => 'Afficher les aperçus média';
+  String get ui_show_media_previews => 'Miniatures média locales';
 
   @override
   String get ui_adaptive_multiline_names =>
@@ -3963,4 +3963,7 @@ class L10nFr extends L10n {
 
   @override
   String get ui_lyric_search_artist => 'Artiste';
+
+  @override
+  String get msg_rotate_video => 'Faire pivoter la vidéo';
 }

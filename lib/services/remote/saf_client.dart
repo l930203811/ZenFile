@@ -92,6 +92,13 @@ class SafRemoteClient implements RemoteClient {
   }
 
   @override
+  Future<void> downloadRange(String remotePath, String localPath, int startByte, int length) async {
+    // SAF 基于 ContentResolver，文件为本地存储，range 下载意义不大，
+    // 直接回退到完整下载（数据来源是本地 USB/SD 卡，非网络）
+    await downloadFile(remotePath, localPath, (_) {});
+  }
+
+  @override
   Future<void> uploadFile(String localPath, String remotePath, Function(double progress) onProgress) async {
     onProgress(0.0);
     final int lastSlash = remotePath.lastIndexOf('/');

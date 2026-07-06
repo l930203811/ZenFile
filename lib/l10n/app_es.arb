@@ -2954,7 +2954,7 @@
   "ui_show_folder_size": "Mostrar Tamaño de Carpeta",
   "ui_show_bottom_action_bar": "Posición de la barra de navegación",
   "ui_hide_action_text": "Ocultar Etiquetas de Texto de la Barra de Acciones",
-  "ui_show_media_previews": "Mostrar Vistas Previas Multimedia",
+  "ui_show_media_previews": "Miniaturas Multimedia Locales",
   "ui_adaptive_multiline_names": "Nombres de Archivo Multilínea Adaptativos",
   "ui_hide_action_menu_buttons": "Ocultar Botones del Menú de Acciones",
   "ui_show_action_menu_buttons": "Mostrar Botones del Menú de Acciones",
@@ -3848,5 +3848,9 @@
     "description": "Shown when the notification channel is disabled by the user or system"
   },
   "ui_lyric_search_song_title": "Título",
-  "ui_lyric_search_artist": "Artista"
+  "ui_lyric_search_artist": "Artista",
+  "msg_rotate_video": "Rotar video",
+  "@msg_rotate_video": {
+    "description": "Rotate video clockwise in video player"
+  }
 }

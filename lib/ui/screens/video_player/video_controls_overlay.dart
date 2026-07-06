@@ -13,6 +13,7 @@ class VideoControlsOverlay extends StatelessWidget {
   final bool isLocked;
   final bool isMuted;
   final int repeatMode; // 0=none, 1=one, 2=all
+  final int rotationTurns; // 0=0°, 1=90°, 2=180°, 3=270°
   final ValueChanged<double> onChanged;
   final ValueChanged<double> onChangeEnd;
   final ValueChanged<double> onChangeStart;
@@ -26,7 +27,7 @@ class VideoControlsOverlay extends StatelessWidget {
   final VoidCallback onToggleLock;
   final VoidCallback onToggleMute;
   final VoidCallback onToggleRepeat;
-  final VoidCallback onCopyUrl;
+  final VoidCallback onRotate;
   final VoidCallback onInteract;
 
   const VideoControlsOverlay({
@@ -41,6 +42,7 @@ class VideoControlsOverlay extends StatelessWidget {
     required this.isLocked,
     required this.isMuted,
     required this.repeatMode,
+    required this.rotationTurns,
     required this.onChanged,
     required this.onChangeEnd,
     required this.onChangeStart,
@@ -54,7 +56,7 @@ class VideoControlsOverlay extends StatelessWidget {
     required this.onToggleLock,
     required this.onToggleMute,
     required this.onToggleRepeat,
-    required this.onCopyUrl,
+    required this.onRotate,
     required this.onInteract,
   });
 
@@ -83,6 +85,8 @@ class VideoControlsOverlay extends StatelessWidget {
         top: 32,
         left: 24,
         child: SafeArea(
+          top: !isFullScreen,
+          bottom: !isFullScreen,
           child: GestureDetector(
             onTap: onToggleLock,
             child: Container(
@@ -136,6 +140,8 @@ class VideoControlsOverlay extends StatelessWidget {
               ),
             ),
             child: SafeArea(
+              top: !isFullScreen,
+              bottom: !isFullScreen,
               child: Row(
                 children: [
                   IconButton(
@@ -232,6 +238,8 @@ class VideoControlsOverlay extends StatelessWidget {
         // CENTER PLAYBACK CONTROLS
         Center(
           child: SafeArea(
+            top: !isFullScreen,
+            bottom: !isFullScreen,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -309,6 +317,8 @@ class VideoControlsOverlay extends StatelessWidget {
               ),
             ),
             child: SafeArea(
+              top: !isFullScreen,
+              bottom: !isFullScreen,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -389,17 +399,13 @@ class VideoControlsOverlay extends StatelessWidget {
                             },
                           ),
                           const SizedBox(width: 8),
-                          // Copy Link
+                          // Rotate Video Clockwise
                           IconButton(
-                            icon: Icon(Icons.copy_rounded, color: itemsColor, size: 22),
-                            tooltip: L10n.of(context).url1,
+                            icon: Icon(Icons.rotate_right_rounded, color: itemsColor, size: 22),
+                            tooltip: L10n.of(context).msg_rotate_video,
                             onPressed: () {
                               onInteract();
-                              onCopyUrl();
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                content: Text(L10n.of(context).msg4d2abc8c),
-                                backgroundColor: accentColor,
-                              ));
+                              onRotate();
                             },
                           ),
                           const SizedBox(width: 8),

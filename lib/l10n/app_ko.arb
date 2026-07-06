@@ -2954,7 +2954,7 @@
   "ui_show_folder_size": "폴더 크기 표시",
   "ui_show_bottom_action_bar": "탐색 막대 위치",
   "ui_hide_action_text": "액션 바 텍스트 레이블 숨기기",
-  "ui_show_media_previews": "미디어 미리보기 표시",
+  "ui_show_media_previews": "로컬 미디어 썸네일",
   "ui_adaptive_multiline_names": "적응형 다중 줄 파일 이름",
   "ui_hide_action_menu_buttons": "액션 메뉴 버튼 숨기기",
   "ui_show_action_menu_buttons": "액션 메뉴 버튼 표시",
@@ -3848,5 +3848,9 @@
     "description": "Shown when the notification channel is disabled by the user or system"
   },
   "ui_lyric_search_song_title": "곡 제목",
-  "ui_lyric_search_artist": "아티스트"
+  "ui_lyric_search_artist": "아티스트",
+  "msg_rotate_video": "비디오 회전",
+  "@msg_rotate_video": {
+    "description": "Rotate video clockwise in video player"
+  }
 }

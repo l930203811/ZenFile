@@ -353,8 +353,22 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
       final tempPath = p.join(tempDir.path, 'remote_temp_${DateTime.now().millisecondsSinceEpoch}$ext');
       
       try {
-        await client.downloadFile(widget.file.path, tempPath, (_) {});
-        
+        // 视频/音频只需下载头部 2MB 即可由 MediaMetadataRetriever 提取缩略图/封面
+        // 图片/SVG 需要完整文件用于直接显示
+        final isVideo = FileUtils.isVideo(widget.file.path);
+        final isAudio = FileUtils.isAudio(widget.file.path);
+        if (isVideo || isAudio) {
+          try {
+            await client.downloadRange(widget.file.path, tempPath, 0, 2 * 1024 * 1024);
+          } catch (e) {
+            // 部分服务器/客户端不支持 range 下载，回退到完整下载
+            debugPrint('downloadRange 失败，回退完整下载: $e');
+            await client.downloadFile(widget.file.path, tempPath, (_) {});
+          }
+        } else {
+          await client.downloadFile(widget.file.path, tempPath, (_) {});
+        }
+
         // SVG 文件：读取字节内容用于 SvgPicture.memory 渲染
         if (ext == '.svg') {
           final bytes = await File(tempPath).readAsBytes();
@@ -363,7 +377,7 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
           }
           return;
         }
-        
+
         // 图片直接复制作为缩略图
         if (['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.heic'].contains(ext)) {
           await File(tempPath).copy(thumbPath);
@@ -373,7 +387,7 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
             setState(() => _remoteThumb = bytes);
           }
           return;
-        } else if (FileUtils.isVideo(widget.file.path)) {
+        } else if (isVideo) {
           // 视频缩略图：通过原生 MediaMetadataRetriever 生成
           final thumbBytes = await MediaThumbnailService.generateVideoThumbnail(tempPath);
           if (thumbBytes != null && thumbBytes.isNotEmpty) {

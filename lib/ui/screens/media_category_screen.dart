@@ -54,6 +54,9 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
   List<AssetEntity> _albumAssets = [];
   bool _loadingAlbum = false;
 
+  // 当前类别的视图模式：true=网格视图, false=列表视图
+  late bool _isGridView;
+
   @override
   void initState() {
     super.initState();
@@ -65,6 +68,14 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     if (widget.album == null && (widget.mediaType == MediaType.images || widget.mediaType == MediaType.videos)) {
       _showFoldersMode = PreferencesService.getPreferFoldersInMedia();
     }
+
+    // 按类别初始化视图模式：图片/截图默认网格，其余默认列表
+    final defaultGrid = widget.mediaType == MediaType.images ||
+        widget.mediaType == MediaType.screenshots;
+    _isGridView = PreferencesService.getMediaCategoryGridView(
+      widget.mediaType.name,
+      defaultValue: defaultGrid,
+    );
 
     if (widget.album != null) {
       _loadAlbumAssets();
@@ -894,6 +905,40 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                 );
               },
             ),
+            // 视图切换菜单：列表视图 / 网格视图
+            PopupMenuButton<bool>(
+              icon: const Icon(Broken.category),
+              tooltip: L10n.of(context).ui_list_layout_style,
+              onSelected: (isGrid) {
+                setState(() => _isGridView = isGrid);
+                PreferencesService.saveMediaCategoryGridView(
+                    widget.mediaType.name, isGrid);
+              },
+              itemBuilder: (context) => [
+                CheckedPopupMenuItem(
+                  value: false,
+                  checked: !_isGridView,
+                  child: Row(
+                    children: [
+                      const Icon(Broken.row_vertical, size: 18),
+                      const SizedBox(width: 8),
+                      Text(L10n.of(context).msg829cb1dd),
+                    ],
+                  ),
+                ),
+                CheckedPopupMenuItem(
+                  value: true,
+                  checked: _isGridView,
+                  child: Row(
+                    children: [
+                      const Icon(Broken.element_3, size: 18),
+                      const SizedBox(width: 8),
+                      Text(L10n.of(context).ui_grid_view),
+                    ],
+                  ),
+                ),
+              ],
+            ),
             Consumer<MediaProvider>(
               builder: (context, provider, child) {
                 return IconButton(
@@ -977,9 +1022,9 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                       provider.sortOrder == MediaSortOrder.dateWise;
 
                   if (widget.mediaType == MediaType.images) {
-                    return _buildImageGrid(displayAssets, theme, isDateWise, isGrouped);
+                    return _buildImageGrid(displayAssets, theme, isDateWise, isGrouped, _isGridView);
                   } else {
-                    return _buildVideoGrid(displayAssets, theme, isDateWise, isGrouped);
+                    return _buildVideoGrid(displayAssets, theme, isDateWise, isGrouped, _isGridView);
                   }
                 }
 
@@ -993,21 +1038,21 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                     provider.sortOrder == MediaSortOrder.dateWise;
 
                 if (widget.mediaType == MediaType.images) {
-                  return _buildImageGrid(provider.images, theme, isDateWise, isGrouped);
+                  return _buildImageGrid(provider.images, theme, isDateWise, isGrouped, _isGridView);
                 } else if (widget.mediaType == MediaType.videos) {
-                  return _buildVideoGrid(provider.videos, theme, isDateWise, isGrouped);
+                  return _buildVideoGrid(provider.videos, theme, isDateWise, isGrouped, _isGridView);
                 } else if (widget.mediaType == MediaType.audios) {
-                  return _buildAudioList(provider.audios, theme, isDateWise, isGrouped);
+                  return _buildAudioList(provider.audios, theme, isDateWise, isGrouped, _isGridView);
                 } else if (widget.mediaType == MediaType.screenshots) {
-                  return _buildImageGrid(provider.screenshots, theme, isDateWise, isGrouped);
+                  return _buildImageGrid(provider.screenshots, theme, isDateWise, isGrouped, _isGridView);
                 } else if (widget.mediaType == MediaType.archives) {
-                  return _buildGenericFileList(provider.archives, theme, isDateWise, isGrouped);
+                  return _buildGenericFileList(provider.archives, theme, isDateWise, isGrouped, _isGridView);
                 } else if (widget.mediaType == MediaType.downloads) {
-                  return _buildGenericFileList(provider.downloads, theme, isDateWise, isGrouped);
+                  return _buildGenericFileList(provider.downloads, theme, isDateWise, isGrouped, _isGridView);
                 } else if (widget.mediaType == MediaType.apks) {
-                  return _buildGenericFileList(provider.apks, theme, isDateWise, isGrouped);
+                  return _buildGenericFileList(provider.apks, theme, isDateWise, isGrouped, _isGridView);
                 } else {
-                  return _buildDocumentList(provider.documents, theme, isDateWise, isGrouped);
+                  return _buildDocumentList(provider.documents, theme, isDateWise, isGrouped, _isGridView);
                 }
               },
             ),
@@ -1350,13 +1395,13 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     );
   }
 
-  Widget _buildImageGrid(List<dynamic> images, ThemeData theme, bool isDateWise, bool isGrouped) {
+  Widget _buildImageGrid(List<dynamic> images, ThemeData theme, bool isDateWise, bool isGrouped, bool isGridView) {
     if (images.isEmpty) return _buildEmptyState(theme);
     if (isGrouped) {
       return _buildGroupedView<dynamic>(
         items: images,
         theme: theme,
-        isGrid: true,
+        isGrid: isGridView,
         isDateWise: isDateWise,
         itemTileBuilder: (item, showDate) {
           final isSelected = item is AssetEntity
@@ -1371,14 +1416,38 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             } catch (_) {}
           }
           final dateStr = FileUtils.formatDate(date);
-          return _buildImageTile(item, theme, isSelected, showDate, dateStr, images);
+          return isGridView
+              ? _buildImageTile(item, theme, isSelected, showDate, dateStr, images)
+              : _buildImageListTile(item, theme, isSelected, showDate, dateStr, images);
         },
       );
     }
-    return GridView.builder(
-      padding: const EdgeInsets.all(6),
+    if (isGridView) {
+      return GridView.builder(
+        padding: const EdgeInsets.all(6),
+        physics: const BouncingScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 6, mainAxisSpacing: 6),
+        itemCount: images.length,
+        itemBuilder: (context, index) {
+          final item = images[index];
+          final isSelected = item is AssetEntity
+              ? _selectedAssetIds.contains(item.id)
+              : _selectedFilePaths.contains(item.path);
+          DateTime date = DateTime.fromMillisecondsSinceEpoch(0);
+          if (item is AssetEntity) {
+            date = item.createDateTime;
+          } else if (item is FileSystemEntity) {
+            try {
+              date = File(item.path).statSync().modified;
+            } catch (_) {}
+          }
+          final dateStr = FileUtils.formatDate(date);
+          return _buildImageTile(item, theme, isSelected, isDateWise, dateStr, images);
+        },
+      );
+    }
+    return ListView.builder(
       physics: const BouncingScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 6, mainAxisSpacing: 6),
       itemCount: images.length,
       itemBuilder: (context, index) {
         final item = images[index];
@@ -1394,8 +1463,106 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           } catch (_) {}
         }
         final dateStr = FileUtils.formatDate(date);
-        return _buildImageTile(item, theme, isSelected, isDateWise, dateStr, images);
+        return _buildImageListTile(item, theme, isSelected, isDateWise, dateStr, images);
       },
+    );
+  }
+
+  /// 图片的列表视图 tile：缩略图 + 标题 + 日期
+  Widget _buildImageListTile(
+    dynamic item,
+    ThemeData theme,
+    bool isSelected,
+    bool showDate,
+    String dateStr,
+    List<dynamic> images,
+  ) {
+    final isAsset = item is AssetEntity;
+    final id = isAsset ? item.id : item.path;
+    final path = isAsset ? '' : item.path;
+    final title = isAsset ? (item.title ?? 'Image_$id') : path_helper.basename(path);
+
+    return ListTile(
+      key: ValueKey(id),
+      onTap: () async {
+        if (_isSelectionMode) {
+          _toggleSelection(isAsset ? null : path, isAsset ? id : null);
+        } else {
+          if (isAsset) {
+            final file = await item.file;
+            if (file != null && mounted) {
+              Navigator.push(context, _slideRoute(ImageViewerScreen(
+                imagePath: file.path,
+                siblingItems: images,
+                initialAssetId: item.id,
+              )));
+            }
+          } else {
+            Navigator.push(context, _slideRoute(ImageViewerScreen(
+              imagePath: path,
+              siblingItems: images,
+            )));
+          }
+        }
+      },
+      onLongPress: () => _toggleSelection(isAsset ? null : path, isAsset ? id : null),
+      leading: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: SizedBox(
+              width: 40,
+              height: 40,
+              child: isAsset
+                  ? _CachedImageTile(
+                      asset: item,
+                      onTap: () {},
+                      onLongPress: () {},
+                    )
+                  : path.toLowerCase().endsWith('.svg')
+                      ? SvgPicture.file(File(path), fit: BoxFit.cover,
+                          placeholderBuilder: (context) => Container(
+                            color: Colors.grey.withOpacity(0.1),
+                            child: const Center(child: Icon(Broken.image, size: 20, color: Colors.grey)),
+                          ),
+                        )
+                      : Image.file(File(path), fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: Colors.grey.withOpacity(0.1),
+                            child: const Center(child: Icon(Broken.image, size: 20, color: Colors.grey)),
+                          ),
+                        ),
+            ),
+          ),
+          if (_isSelectionMode || isSelected)
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: Icon(
+                isSelected ? Broken.tick_square : Icons.check_box_outline_blank,
+                color: isSelected ? theme.colorScheme.primary : Colors.white.withOpacity(0.8),
+                size: 20,
+              ),
+            ),
+        ],
+      ),
+      title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
+      subtitle: showDate ? Text(dateStr, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.5))) : null,
+      trailing: _isSelectionMode
+          ? null
+          : IconButton(
+              icon: const Icon(Broken.more),
+              onPressed: () async {
+                if (isAsset) {
+                  final f = await item.file;
+                  if (f != null) {
+                    _showSingleItemOptions(name: title, filePath: f.path, assetId: item.id);
+                  }
+                } else {
+                  _showSingleItemOptions(name: title, filePath: path);
+                }
+              },
+            ),
     );
   }
 
@@ -1452,7 +1619,8 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             },
             onLongPress: () => _toggleSelection(null, item.id),
           )
-        else if (path.startsWith('remote://'))
+        else if (path.startsWith('remote://') &&
+            PreferencesService.getRemoteMediaThumbnailPreview())
           _RemoteVideoTile(
             remotePath: path,
             onTap: () {
@@ -1563,13 +1731,13 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     );
   }
 
-  Widget _buildVideoGrid(List<dynamic> videos, ThemeData theme, bool isDateWise, bool isGrouped) {
+  Widget _buildVideoGrid(List<dynamic> videos, ThemeData theme, bool isDateWise, bool isGrouped, bool isGridView) {
     if (videos.isEmpty) return _buildEmptyState(theme);
     if (isGrouped) {
       return _buildGroupedView<dynamic>(
         items: videos,
         theme: theme,
-        isGrid: true,
+        isGrid: isGridView,
         isDateWise: isDateWise,
         itemTileBuilder: (item, showDate) {
           final isSelected = item is AssetEntity
@@ -1584,14 +1752,38 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             } catch (_) {}
           }
           final dateStr = FileUtils.formatDate(date);
-          return _buildVideoTile(item, theme, isSelected, showDate, dateStr, videos);
+          return isGridView
+              ? _buildVideoTile(item, theme, isSelected, showDate, dateStr, videos)
+              : _buildVideoListTile(item, theme, isSelected, showDate, dateStr, videos);
         },
       );
     }
-    return GridView.builder(
-      padding: const EdgeInsets.all(6),
+    if (isGridView) {
+      return GridView.builder(
+        padding: const EdgeInsets.all(6),
+        physics: const BouncingScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 6, mainAxisSpacing: 6),
+        itemCount: videos.length,
+        itemBuilder: (context, index) {
+          final item = videos[index];
+          final isSelected = item is AssetEntity
+              ? _selectedAssetIds.contains(item.id)
+              : _selectedFilePaths.contains(item.path);
+          DateTime date = DateTime.fromMillisecondsSinceEpoch(0);
+          if (item is AssetEntity) {
+            date = item.createDateTime;
+          } else if (item is FileSystemEntity) {
+            try {
+              date = File(item.path).statSync().modified;
+            } catch (_) {}
+          }
+          final dateStr = FileUtils.formatDate(date);
+          return _buildVideoTile(item, theme, isSelected, isDateWise, dateStr, videos);
+        },
+      );
+    }
+    return ListView.builder(
       physics: const BouncingScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 6, mainAxisSpacing: 6),
       itemCount: videos.length,
       itemBuilder: (context, index) {
         final item = videos[index];
@@ -1607,8 +1799,94 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           } catch (_) {}
         }
         final dateStr = FileUtils.formatDate(date);
-        return _buildVideoTile(item, theme, isSelected, isDateWise, dateStr, videos);
+        return _buildVideoListTile(item, theme, isSelected, isDateWise, dateStr, videos);
       },
+    );
+  }
+
+  /// 视频的列表视图 tile：缩略图 + 标题 + 日期
+  Widget _buildVideoListTile(
+    dynamic item,
+    ThemeData theme,
+    bool isSelected,
+    bool showDate,
+    String dateStr,
+    List<dynamic> videoList,
+  ) {
+    final isAsset = item is AssetEntity;
+    final id = isAsset ? item.id : item.path;
+    final path = isAsset ? '' : item.path;
+    final title = isAsset ? (item.title ?? 'Video_$id') : path_helper.basename(path);
+
+    return ListTile(
+      key: ValueKey(id),
+      onTap: () async {
+        if (_isSelectionMode) {
+          _toggleSelection(isAsset ? null : path, isAsset ? id : null);
+        } else {
+          if (isAsset) {
+            final file = await item.file;
+            if (file != null && mounted) {
+              Navigator.push(context, _slideRoute(VideoPlayerScreen(
+                videoPath: file.path,
+                playlist: videoList,
+                initialIndex: videoList.indexOf(item),
+              )));
+            }
+          } else {
+            Navigator.push(context, _slideRoute(VideoPlayerScreen(
+              videoPath: path,
+              playlist: videoList,
+              initialIndex: videoList.indexOf(item),
+            )));
+          }
+        }
+      },
+      onLongPress: () => _toggleSelection(isAsset ? null : path, isAsset ? id : null),
+      leading: Stack(
+        children: [
+          // 本地 asset 或远程视频显示缩略图，否则显示默认图标
+          if (isAsset)
+            _VideoListThumbnail(asset: item, size: 40)
+          else if (path.startsWith('remote://') &&
+              PreferencesService.getRemoteMediaThumbnailPreview())
+            _VideoListThumbnail(remotePath: path, size: 40)
+          else
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primaryContainer.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Center(child: Icon(Broken.video, size: 22)),
+            ),
+          if (_isSelectionMode || isSelected)
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: Icon(
+                isSelected ? Broken.tick_square : Icons.check_box_outline_blank,
+                color: isSelected ? theme.colorScheme.primary : Colors.white.withOpacity(0.8),
+                size: 20,
+              ),
+            ),
+        ],
+      ),
+      title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
+      subtitle: showDate ? Text(dateStr, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.5))) : null,
+      trailing: _isSelectionMode
+          ? null
+          : IconButton(
+              icon: const Icon(Broken.more),
+              onPressed: () {
+                if (isAsset) {
+                  _showSingleItemOptions(name: title, assetId: item.id);
+                } else {
+                  _showSingleItemOptions(name: title, filePath: path);
+                }
+              },
+            ),
     );
   }
 
@@ -1654,17 +1932,17 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       leading: Stack(
         children: [
           Container(
-            width: 50,
-            height: 50,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: theme.colorScheme.primaryContainer),
             child: QueryArtworkWidget(
               id: audio.id,
               type: ArtworkType.AUDIO,
               artworkBorder: BorderRadius.circular(10),
               artworkFit: BoxFit.cover,
-              artworkWidth: 50,
-              artworkHeight: 50,
-              nullArtworkWidget: Icon(Icons.music_note, size: 26, color: theme.colorScheme.onPrimaryContainer),
+              artworkWidth: 40,
+              artworkHeight: 40,
+              nullArtworkWidget: Icon(Icons.music_note, size: 22, color: theme.colorScheme.onPrimaryContainer),
             ),
           ),
           if (_isSelectionMode || isSelected)
@@ -1696,13 +1974,13 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     );
   }
 
-  Widget _buildAudioList(List<SongModel> audios, ThemeData theme, bool isDateWise, bool isGrouped) {
+  Widget _buildAudioList(List<SongModel> audios, ThemeData theme, bool isDateWise, bool isGrouped, bool isGridView) {
     if (audios.isEmpty) return _buildEmptyState(theme);
     if (isGrouped) {
       return _buildGroupedView<SongModel>(
         items: audios,
         theme: theme,
-        isGrid: false,
+        isGrid: isGridView,
         isDateWise: isDateWise,
         itemTileBuilder: (audio, showDate) {
           final path = audio.data;
@@ -1713,7 +1991,28 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           } catch (_) {}
           final dateStr = modified != null ? FileUtils.formatDate(modified) : L10n.of(context).msg424a0110;
           final index = audios.indexOf(audio);
-          return _buildAudioTile(audio, theme, isSelected, showDate, dateStr, index, audios);
+          return isGridView
+              ? _buildAudioGridTile(audio, theme, isSelected, showDate, dateStr, index, audios)
+              : _buildAudioTile(audio, theme, isSelected, showDate, dateStr, index, audios);
+        },
+      );
+    }
+    if (isGridView) {
+      return GridView.builder(
+        padding: const EdgeInsets.all(6),
+        physics: const BouncingScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 6, mainAxisSpacing: 6),
+        itemCount: audios.length,
+        itemBuilder: (context, index) {
+          final audio = audios[index];
+          final path = audio.data;
+          final isSelected = _selectedFilePaths.contains(path);
+          DateTime? modified;
+          try {
+            modified = File(path).statSync().modified;
+          } catch (_) {}
+          final dateStr = modified != null ? FileUtils.formatDate(modified) : L10n.of(context).msg424a0110;
+          return _buildAudioGridTile(audio, theme, isSelected, isDateWise, dateStr, index, audios);
         },
       );
     }
@@ -1731,6 +2030,120 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         final dateStr = modified != null ? FileUtils.formatDate(modified) : L10n.of(context).msg424a0110;
         return _buildAudioTile(audio, theme, isSelected, isDateWise, dateStr, index, audios);
       },
+    );
+  }
+
+  /// 音频的网格视图 tile：图标 + 标题 + 艺术家
+  Widget _buildAudioGridTile(
+    SongModel audio,
+    ThemeData theme,
+    bool isSelected,
+    bool showDate,
+    String dateStr,
+    int index,
+    List<SongModel> audios,
+  ) {
+    final path = audio.data;
+    final title = audio.title;
+    final artist = _isUnknownArtist(audio.artist) ? L10n.of(context).msg5e32276d : audio.artist!;
+
+    return GestureDetector(
+      key: ValueKey(path),
+      onTap: () {
+        if (_isSelectionMode) {
+          _toggleSelection(path, null);
+        } else {
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => AudioPlayerScreen(
+                audioPath: path,
+                title: title,
+                artist: _isUnknownArtist(audio.artist) ? L10n.of(context).msg5e32276d : audio.artist!,
+                allSongs: audios,
+                initialIndex: index,
+              ),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
+                position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+                child: child,
+              ),
+              transitionDuration: const Duration(milliseconds: 400),
+            ),
+          ).then((_) {
+            if (mounted) setState(() {});
+          });
+        }
+      },
+      onLongPress: () => _toggleSelection(path, null),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primaryContainer.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Broken.music, size: 32, color: theme.colorScheme.primary),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Text(title, maxLines: 2, overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Text(artist, maxLines: 1, overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (showDate)
+            Positioned(
+              bottom: 4,
+              left: 4,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                decoration: BoxDecoration(color: Colors.black.withOpacity(0.6), borderRadius: BorderRadius.circular(4)),
+                child: Text(
+                  dateStr.split(',').first,
+                  style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+          if (_isSelectionMode || isSelected)
+            Positioned(
+              top: 6,
+              right: 6,
+              child: Icon(
+                isSelected ? Broken.tick_square : Icons.check_box_outline_blank,
+                color: isSelected ? theme.colorScheme.primary : Colors.white.withOpacity(0.8),
+                size: 24,
+              ),
+            )
+          else
+            Positioned(
+              top: 4,
+              right: 4,
+              child: InkWell(
+                onTap: () => _showSingleItemOptions(name: title, filePath: path),
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), shape: BoxShape.circle),
+                  child: const Icon(Broken.more, color: Colors.white, size: 18),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -1761,8 +2174,8 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       leading: Stack(
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
             child: Center(
               child: FileTypeIcon(
@@ -1800,13 +2213,13 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     );
   }
 
-  Widget _buildDocumentList(List<FileSystemEntity> documents, ThemeData theme, bool isDateWise, bool isGrouped) {
+  Widget _buildDocumentList(List<FileSystemEntity> documents, ThemeData theme, bool isDateWise, bool isGrouped, bool isGridView) {
     if (documents.isEmpty) return _buildEmptyState(theme);
     if (isGrouped) {
       return _buildGroupedView<FileSystemEntity>(
         items: documents,
         theme: theme,
-        isGrid: false,
+        isGrid: isGridView,
         isDateWise: isDateWise,
         itemTileBuilder: (doc, showDate) {
           final isSelected = _selectedFilePaths.contains(doc.path);
@@ -1817,7 +2230,29 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             size = st.size;
             modified = st.modified;
           } catch (_) {}
-          return _buildDocumentTile(doc, theme, isSelected, showDate, size, modified);
+          return isGridView
+              ? _buildDocumentGridTile(doc, theme, isSelected, showDate, size, modified)
+              : _buildDocumentTile(doc, theme, isSelected, showDate, size, modified);
+        },
+      );
+    }
+    if (isGridView) {
+      return GridView.builder(
+        padding: const EdgeInsets.all(6),
+        physics: const BouncingScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 6, mainAxisSpacing: 6),
+        itemCount: documents.length,
+        itemBuilder: (context, index) {
+          final doc = documents[index];
+          final isSelected = _selectedFilePaths.contains(doc.path);
+          int size = 0;
+          DateTime modified = DateTime.now();
+          try {
+            final st = doc.statSync();
+            size = st.size;
+            modified = st.modified;
+          } catch (_) {}
+          return _buildDocumentGridTile(doc, theme, isSelected, isDateWise, size, modified);
         },
       );
     }
@@ -1837,6 +2272,100 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         } catch (_) {}
         return _buildDocumentTile(doc, theme, isSelected, isDateWise, size, modified);
       },
+    );
+  }
+
+  /// 文档的网格视图 tile：图标 + 文件名 + 大小
+  Widget _buildDocumentGridTile(
+    FileSystemEntity doc,
+    ThemeData theme,
+    bool isSelected,
+    bool showDate,
+    int size,
+    DateTime modified,
+  ) {
+    final path = doc.path;
+    final name = path.split('/').last;
+    final ext = name.contains('.') ? name.substring(name.lastIndexOf('.')).toLowerCase() : '';
+    final icon = _docIcon(ext);
+    final color = _docColor(ext);
+    final dateStr = FileUtils.formatDate(modified);
+
+    return GestureDetector(
+      key: ValueKey(path),
+      onTap: () {
+        if (_isSelectionMode) {
+          _toggleSelection(path, null);
+        } else {
+          context.read<FileManagerProvider>().openFile(context, path);
+        }
+      },
+      onLongPress: () => _toggleSelection(path, null),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: color.withOpacity(0.15)),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
+                  child: Center(
+                    child: FileTypeIcon(
+                      icon: icon,
+                      label: FileUtils.getDocumentTypeLabel(path),
+                      color: color,
+                      iconScale: 1.0,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Text(name, maxLines: 2, overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(FileUtils.formatBytes(size, 2), style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurface.withOpacity(0.5))),
+                if (showDate)
+                  Text(dateStr.split(',').first, style: TextStyle(fontSize: 9, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+              ],
+            ),
+          ),
+          if (_isSelectionMode || isSelected)
+            Positioned(
+              top: 6,
+              right: 6,
+              child: Icon(
+                isSelected ? Broken.tick_square : Icons.check_box_outline_blank,
+                color: isSelected ? theme.colorScheme.primary : Colors.white.withOpacity(0.8),
+                size: 24,
+              ),
+            )
+          else
+            Positioned(
+              top: 4,
+              right: 4,
+              child: InkWell(
+                onTap: () => _showSingleItemOptions(name: name, filePath: path),
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), shape: BoxShape.circle),
+                  child: const Icon(Broken.more, color: Colors.white, size: 18),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -1866,8 +2395,8 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       leading: Stack(
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(color: iconColor.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
             child: isApk
                 ? _ApkThumbnail(path: path, iconColor: iconColor)
@@ -1924,13 +2453,13 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     );
   }
 
-  Widget _buildGenericFileList(List<FileSystemEntity> files, ThemeData theme, bool isDateWise, bool isGrouped) {
+  Widget _buildGenericFileList(List<FileSystemEntity> files, ThemeData theme, bool isDateWise, bool isGrouped, bool isGridView) {
     if (files.isEmpty) return _buildEmptyState(theme);
     if (isGrouped) {
       return _buildGroupedView<FileSystemEntity>(
         items: files,
         theme: theme,
-        isGrid: false,
+        isGrid: isGridView,
         isDateWise: isDateWise,
         itemTileBuilder: (file, showDate) {
           final isSelected = _selectedFilePaths.contains(file.path);
@@ -1941,7 +2470,29 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             size = st.size;
             modified = st.modified;
           } catch (_) {}
-          return _buildGenericFileTile(file, theme, isSelected, showDate, size, modified);
+          return isGridView
+              ? _buildGenericFileGridTile(file, theme, isSelected, showDate, size, modified)
+              : _buildGenericFileTile(file, theme, isSelected, showDate, size, modified);
+        },
+      );
+    }
+    if (isGridView) {
+      return GridView.builder(
+        padding: const EdgeInsets.all(6),
+        physics: const BouncingScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 6, mainAxisSpacing: 6),
+        itemCount: files.length,
+        itemBuilder: (context, index) {
+          final file = files[index];
+          final isSelected = _selectedFilePaths.contains(file.path);
+          int size = 0;
+          DateTime modified = DateTime.now();
+          try {
+            final st = file.statSync();
+            size = st.size;
+            modified = st.modified;
+          } catch (_) {}
+          return _buildGenericFileGridTile(file, theme, isSelected, isDateWise, size, modified);
         },
       );
     }
@@ -1961,6 +2512,102 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         } catch (_) {}
         return _buildGenericFileTile(file, theme, isSelected, isDateWise, size, modified);
       },
+    );
+  }
+
+  /// 通用文件（压缩包/下载/安装包）的网格视图 tile：图标 + 文件名 + 大小
+  Widget _buildGenericFileGridTile(
+    FileSystemEntity file,
+    ThemeData theme,
+    bool isSelected,
+    bool showDate,
+    int size,
+    DateTime modified,
+  ) {
+    final path = file.path;
+    final name = path.split('/').last;
+    final iconColor = FileUtils.getColorForFile(name, context);
+    final isApk = name.toLowerCase().endsWith('.apk') || name.toLowerCase().endsWith('.xapk') || name.toLowerCase().endsWith('.apks') || name.toLowerCase().endsWith('.apkm');
+    final dateStr = FileUtils.formatDate(modified);
+
+    return GestureDetector(
+      key: ValueKey(path),
+      onTap: () {
+        if (_isSelectionMode) {
+          _toggleSelection(path, null);
+        } else {
+          context.read<FileManagerProvider>().openFile(context, path);
+        }
+      },
+      onLongPress: () => _toggleSelection(path, null),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: iconColor.withOpacity(0.15)),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(color: iconColor.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
+                  child: Center(
+                    child: isApk
+                        ? _ApkThumbnail(path: path, iconColor: iconColor)
+                        : FileUtils.isArchive(path)
+                            ? ArchiveTypeIcon(
+                                label: FileUtils.getArchiveTypeLabel(path),
+                                color: iconColor,
+                                iconScale: 1.0,
+                              )
+                            : Icon(FileUtils.getIconForFile(name), color: iconColor, size: 22),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Text(name, maxLines: 2, overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(FileUtils.formatBytes(size, 2), style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurface.withOpacity(0.5))),
+                if (showDate)
+                  Text(dateStr.split(',').first, style: TextStyle(fontSize: 9, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+              ],
+            ),
+          ),
+          if (_isSelectionMode || isSelected)
+            Positioned(
+              top: 6,
+              right: 6,
+              child: Icon(
+                isSelected ? Broken.tick_square : Icons.check_box_outline_blank,
+                color: isSelected ? theme.colorScheme.primary : Colors.white.withOpacity(0.8),
+                size: 24,
+              ),
+            )
+          else
+            Positioned(
+              top: 4,
+              right: 4,
+              child: InkWell(
+                onTap: () => _showSingleItemOptions(name: name, filePath: path),
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), shape: BoxShape.circle),
+                  child: const Icon(Broken.more, color: Colors.white, size: 18),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -2579,6 +3226,126 @@ class _RemoteVideoTileWidgetState extends State<_RemoteVideoTileWidget> {
                 height: 36,
                 decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), shape: BoxShape.circle),
                 child: const Icon(Icons.play_arrow, color: Colors.white, size: 22),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 视频列表视图缩略图组件（支持本地 asset 和远程视频）
+/// 在列表模式下复用网格视图的缩略图加载逻辑，以小尺寸方形渲染
+class _VideoListThumbnail extends StatefulWidget {
+  final AssetEntity? asset;
+  final String? remotePath;
+  final double size;
+
+  const _VideoListThumbnail({
+    this.asset,
+    this.remotePath,
+    this.size = 40,
+  });
+
+  @override
+  State<_VideoListThumbnail> createState() => _VideoListThumbnailState();
+}
+
+class _VideoListThumbnailState extends State<_VideoListThumbnail> {
+  Uint8List? _thumbnail;
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadThumbnail();
+  }
+
+  Future<void> _loadThumbnail() async {
+    try {
+      if (widget.asset != null) {
+        if (ThumbnailCache.hasCached(widget.asset!.id)) {
+          if (mounted) {
+            setState(() {
+              _thumbnail = ThumbnailCache.getCached(widget.asset!.id);
+              _loaded = true;
+            });
+          }
+          return;
+        }
+        final data = await ThumbnailCache.get(widget.asset!);
+        if (mounted) {
+          setState(() {
+            _thumbnail = data;
+            _loaded = true;
+          });
+        }
+      } else if (widget.remotePath != null) {
+        final data = await ThumbnailCache.getForRemoteVideo(widget.remotePath!);
+        if (mounted) {
+          setState(() {
+            _thumbnail = data;
+            _loaded = true;
+          });
+        }
+      }
+    } catch (_) {
+      if (mounted) setState(() => _loaded = true);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _VideoListThumbnail oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final newAssetId = widget.asset?.id;
+    final oldAssetId = oldWidget.asset?.id;
+    final newRemote = widget.remotePath;
+    final oldRemote = oldWidget.remotePath;
+    if (newAssetId != oldAssetId || newRemote != oldRemote) {
+      _loaded = false;
+      _thumbnail = null;
+      _loadThumbnail();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: SizedBox(
+        width: widget.size,
+        height: widget.size,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (_loaded && _thumbnail != null)
+              Image.memory(
+                _thumbnail!,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+                gaplessPlayback: true,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: theme.colorScheme.primaryContainer.withOpacity(0.3),
+                  child: Center(child: Icon(Broken.video, size: 20, color: theme.colorScheme.onPrimaryContainer.withOpacity(0.6))),
+                ),
+              )
+            else
+              Container(
+                color: theme.colorScheme.primaryContainer.withOpacity(0.3),
+                child: const Center(child: SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 1.5))),
+              ),
+            // 播放图标遮罩
+            Center(
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.play_arrow, color: Colors.white, size: 12),
               ),
             ),
           ],

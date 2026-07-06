@@ -2654,7 +2654,7 @@ class L10nRu extends L10n {
   String get ui_hide_action_text => 'Скрыть Текстовые Метки Панели Действий';
 
   @override
-  String get ui_show_media_previews => 'Показывать Предпросмотр Медиа';
+  String get ui_show_media_previews => 'Локальные Медиа Миниатюры';
 
   @override
   String get ui_adaptive_multiline_names =>
@@ -3944,4 +3944,7 @@ class L10nRu extends L10n {
 
   @override
   String get ui_lyric_search_artist => 'Исполнитель';
+
+  @override
+  String get msg_rotate_video => 'Повернуть видео';
 }

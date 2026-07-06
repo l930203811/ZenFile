@@ -2520,7 +2520,7 @@ class L10nZh extends L10n {
   String get ui_hide_action_text => '隐藏操作栏文字标签';
 
   @override
-  String get ui_show_media_previews => '显示媒体预览';
+  String get ui_show_media_previews => '本地媒体缩略图';
 
   @override
   String get ui_adaptive_multiline_names => '自适应多行文件名';
@@ -3744,6 +3744,9 @@ class L10nZh extends L10n {
 
   @override
   String get ui_lyric_search_artist => '歌手';
+
+  @override
+  String get msg_rotate_video => '旋转画面';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -6263,7 +6266,7 @@ class L10nZhTw extends L10nZh {
   String get ui_hide_action_text => '隱藏操作欄文字標籤';
 
   @override
-  String get ui_show_media_previews => '顯示媒體預覽';
+  String get ui_show_media_previews => '本地媒體縮圖';
 
   @override
   String get ui_adaptive_multiline_names => '自適應多行檔名';
@@ -7487,4 +7490,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_lyric_search_artist => '歌手';
+
+  @override
+  String get msg_rotate_video => '旋轉畫面';
 }
