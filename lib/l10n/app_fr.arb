@@ -1,0 +1,3931 @@
+{
+  "@@locale": "fr",
+  "@msg6f3e533a": {
+    "description": "main.dart"
+  },
+  "msg6f3e533a": "Ouverture du document partagé...",
+  "@msgbca59325": {
+    "description": "main.dart"
+  },
+  "msgbca59325": "Analyse du flux de contenu sécurisé",
+  "@zenfile": {
+    "description": "main.dart"
+  },
+  "zenfile": "ZenFile a besoin de l'autorisation de stockage pour gérer, organiser et afficher vos fichiers médias de manière fluide.",
+  "@e": {
+    "type": "text"
+  },
+  "e": "Échec de la suppression du répertoire de cache : {e}",
+  "@msg21cefa9b": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "msg21cefa9b": "Stockage interne",
+  "@smb": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "smb": "LAN/SMB",
+  "@msg05d3c93c": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "msg05d3c93c": "Éléments déplacés avec succès",
+  "@e1": {
+    "type": "text"
+  },
+  "e1": "Échec du transfert : {e}",
+  "@msga45bac47": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "msga45bac47": "Opération annulée",
+  "@e2": {
+    "type": "text"
+  },
+  "e2": "Échec de la connexion au serveur distant : {e}",
+  "@e3": {
+    "type": "text"
+  },
+  "e3": "Erreur lors de la création du dossier : {e}",
+  "@msg3df5ef6c": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "msg3df5ef6c": "Limite de compression dépassée",
+  "@msg5e32276d": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "msg5e32276d": "Artiste inconnu",
+  "@msg497ec49d": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "msg497ec49d": "Dossiers locaux",
+  "@e4": {
+    "type": "text"
+  },
+  "e4": "Échec du téléchargement du fichier distant : {e}",
+  "@msg6b9ca1dd": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "msg6b9ca1dd": "Impossible de déplacer le dossier vers lui-même ou le même emplacement",
+  "@e5": {
+    "type": "text"
+  },
+  "e5": "Échec du déplacement des éléments : {e}",
+  "@msg5238524c": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "msg5238524c": "Impossible de copier le dossier vers lui-même ou le même emplacement",
+  "@e6": {
+    "type": "text"
+  },
+  "e6": "Échec de la copie des éléments : {e}",
+  "@msgc806d0fa": {
+    "description": "providers\\media_provider.dart"
+  },
+  "msgc806d0fa": "Archive",
+  "@msg03070d08": {
+    "description": "providers\\media_provider.dart"
+  },
+  "msg03070d08": "APK",
+  "@ftp": {
+    "description": "providers\\media_provider.dart"
+  },
+  "ftp": "Partage FTP",
+  "@web": {
+    "description": "providers\\media_provider.dart"
+  },
+  "web": "Partage Web",
+  "@msge86bd662": {
+    "description": "providers\\media_provider.dart"
+  },
+  "msge86bd662": "Galerie de l'appareil (Auto)",
+  "@msg16166a01": {
+    "description": "providers\\media_provider.dart"
+  },
+  "msg16166a01": "Bibliothèque audio de l'appareil (Auto)",
+  "@msgbb34b7ec": {
+    "description": "providers\\media_provider.dart"
+  },
+  "msgbb34b7ec": "Stockage interne (Analyser tous les dossiers)",
+  "@msg26a1f2d9": {
+    "description": "providers\\media_provider.dart"
+  },
+  "msg26a1f2d9": "Galerie de l'appareil (Captures d'écran)",
+  "@msg39e11368": {
+    "description": "services\\apk_installer_service.dart"
+  },
+  "msg39e11368": "Extraction du paquet APK...",
+  "@apk": {
+    "description": "services\\apk_installer_service.dart"
+  },
+  "apk": "Aucun APK installable trouvé dans le paquet",
+  "@apk1": {
+    "description": "services\\apk_installer_service.dart"
+  },
+  "apk1": "Impossible de lancer l'installateur APK fractionné",
+  "@msg2f0138ad": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msg2f0138ad": "Compression des fichiers",
+  "@msga2292820": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msga2292820": "Archive créée avec succès",
+  "@msg0683ca6b": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msg0683ca6b": "Extraction de l'archive",
+  "@msg1f216eda": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msg1f216eda": "Archive extraite avec succès",
+  "@msg5fa802be": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msg5fa802be": "Échec de l'opération",
+  "@msg8fccf382": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msg8fccf382": "Oui/Non",
+  "@msgc18fb099": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msgc18fb099": "Extraction réussie. Ouvrir l'emplacement ?",
+  "msg_compress_open_location": "Compression réussie. Ouvrir l'emplacement ?",
+  "@msg4367e85a": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msg4367e85a": "Aucun fichier compressible trouvé",
+  "@msg60a4545d": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msg60a4545d": "Format non pris en charge",
+  "@msg226519e7": {
+    "description": "services\\background_archive_service.dart"
+  },
+  "msg226519e7": "Aucun fichier d'archive trouvé",
+  "@msg88d150c7": {
+    "description": "services\\folder_share_service.dart"
+  },
+  "msg88d150c7": "Aucun élément à partager.",
+  "@e7": {
+    "type": "text"
+  },
+  "e7": "Erreur lors de la lecture du fichier partagé : {e}",
+  "@zenfilesmbvirtualstoragebridgen": {
+    "description": "services\\remote\\lan_client.dart"
+  },
+  "zenfilesmbvirtualstoragebridgen": "Pont de stockage virtuel LAN/SMB ZenFile\n",
+  "@msgf3a485df": {
+    "description": "services\\remote\\saf_client.dart"
+  },
+  "msgf3a485df": "Nouveau dossier",
+  "@msge48a7157": {
+    "description": "services\\remote\\saf_client.dart"
+  },
+  "msge48a7157": "Nouveau fichier",
+  "@zenfilebackupssettings": {
+    "description": "services\\settings_backup_service.dart"
+  },
+  "zenfilebackupssettings": "Paramètres sauvegardés dans ZenFile/Backups/Settings/",
+  "@json": {
+    "description": "services\\settings_backup_service.dart"
+  },
+  "json": "Veuillez sélectionner un fichier de sauvegarde de paramètres .json valide",
+  "@e8": {
+    "type": "text"
+  },
+  "e8": "Échec de la restauration des paramètres : {e}",
+  "@url": {
+    "type": "text"
+  },
+  "url": "Impossible d'ouvrir le lien {url}",
+  "@zenfile1": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "zenfile1": "À propos de ZenFile",
+  "@v1041": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "v1041": "v1.0.43 (Voir)",
+  "ui_view_update": "Voir les mises à jour",
+  "@ui_view_update": {
+    "description": "Button label to view changelog on the about screen"
+  },
+  "@zenfileflutter": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "zenfileflutter": "ZenFile est un gestionnaire de fichiers et centre média hors ligne magnifique, fluide et open source, construit avec Flutter. Conçu pour des performances optimales, une esthétique glassmorphisme épurée et une expérience utilisateur transparente.",
+  "@msga12ebf50": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msga12ebf50": "Ultra rapide",
+  "@msgfccb5a01": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgfccb5a01": "Mise en cache sans état et analyse asynchrone",
+  "@msg6d8fbdac": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg6d8fbdac": "Espace de travail sécurisé chiffré",
+  "@ftpsftpwebdav": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "ftpsftpwebdav": "Prend en charge FTP, LAN, SFTP et WebDAV",
+  "@msge8f352b9": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msge8f352b9": "Interface magnifique",
+  "@amoled": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "amoled": "AMOLED Noir pur et thèmes vibrants",
+  "@msge8069659": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msge8069659": "Étoiler sur le dépôt",
+  "@telegram": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "telegram": "Rejoindre le canal Telegram",
+  "@msg5f84adea": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg5f84adea": "Partager l'application avec des amis",
+  "@zenfilehttpsgithubcoml930203811zenfilereleases": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "zenfilehttpsgithubcoml930203811zenfilereleases": "Recommandez ZenFile, un gestionnaire de fichiers et centre média hors ligne magnifique : https://github.com/l930203811/ZenFile/releases",
+  "@github": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "github": "Voir le code source GitHub",
+  "@sequeldpdnsorg": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "sequeldpdnsorg": "Contact : 1@sequel.dpdns.org",
+  "@msged8518d7": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msged8518d7": "E-mail copié dans le presse-papiers",
+  "@qq": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "qq": "Numéro de groupe QQ copié dans le presse-papiers",
+  "@bysequel": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "bysequel": "Créé avec ❤️ par Sequel",
+  "@zenfile2": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "zenfile2": "Copyright © 2026 ZenFile. Tous droits réservés.",
+  "@msg138d3725": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg138d3725": "Votre soutien me motive ❤️",
+  "@msgccd097a7": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgccd097a7": "Alipay",
+  "@msgbffe28c8": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgbffe28c8": "WeChat Pay",
+  "@msg0537b04e": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg0537b04e": "Appuyez longuement sur l'image pour la sauvegarder dans la galerie. Merci pour votre soutien !",
+  "@zenfilev1041": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "zenfilev1041": "Télécharger ZenFile",
+  "@msg9d287020": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg9d287020": "Cloud Drive 123",
+  "@msgb2b41b6a": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgb2b41b6a": "Cloud Drive 115",
+  "@msg77ee718b": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg77ee718b": "Baidu Netdisk",
+  "@msgbff1432a": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgbff1432a": "Quark Cloud Drive",
+  "@msge03395d0": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msge03395d0": "Small Plane Cloud Drive",
+  "@svg": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "svg": "Ajout du support complet SVG (aperçu miniature et visualisation)",
+  "@ziprar7ztargz": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "ziprar7ztargz": "Ajout du code couleur par format d'archive (zip/rar/7z/tar/gz ont chacun des couleurs uniques)",
+  "@msg09a6e11b": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg09a6e11b": "Ajout de la fonction de téléchargement avant lecture pour les fichiers distants",
+  "@msg1c3206b8": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg1c3206b8": "Corrigé : impossible de passer à la page de navigation depuis la page de catégorie après extraction",
+  "@msgb1e4da91": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgb1e4da91": "Corrigé : gel de la page avec 'Afficher le répertoire de cache' et 'Ouvrir l'emplacement après extraction'",
+  "@yyyymmdd": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "yyyymmdd": "Optimisation du format de date en yyyy-MM-dd",
+  "@msg4c425252": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg4c425252": "Optimisation de l'affichage de l'heure par défaut sur 24 heures",
+  "@msg1eaf4abb": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg1eaf4abb": "Barre de chemin entièrement optimisée (boutons fil d'Ariane plus compacts et styles de flèches)",
+  "@msgd3381817": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgd3381817": "Barre d'onglets et barre de chemin déplacées vers le haut pour plus d'espace pour la liste de fichiers",
+  "@msg342688b2": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg342688b2": "Zone d'en-tête double fenêtre simplifiée (hauteur réduite de 30%)",
+  "@msg8954452f": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg8954452f": "Le serveur distant remplace l'onglet inactif en mode double fenêtre",
+  "@msgac5a0315": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgac5a0315": "Geste retour optimisé : annule la sélection au lieu de quitter la page lorsque des éléments sont sélectionnés",
+  "@msg1904388e": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg1904388e": "Balayage à deux doigts vers la droite ouvre le tiroir, balayage à deux doigts vers la gauche change la page catégorie/navigation",
+  "@msg2762c070": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg2762c070": "Ajout du commutateur de balayage à deux doigts (peut être désactivé dans les paramètres Général et Comportement)",
+  "@msg48dca69a": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg48dca69a": "Barre de progression changée en style anneau circulaire avec pourcentage au centre",
+  "@windows": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "windows": "Correctif de compatibilité des chemins distants (problème de séparateur de chemin Windows)",
+  "@msg65eefc98": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg65eefc98": "Le commutateur de barre d'adresse contrôle désormais les fil d'Ariane de chemin stylisés",
+  "@msg96a6856a": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg96a6856a": "Paramètre de page d'accueil par défaut (choisir catégorie ou navigation comme page de démarrage)",
+  "@msg250213fd": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg250213fd": "Nouvelle icône d'installateur d'application (style Zen naturel)",
+  "@msg7f53e8b1": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg7f53e8b1": "Barre de progression circulaire en pourcentage (affichée pendant la copie/déplacement)",
+  "@msg051469b5": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg051469b5": "La barre de progression se ferme automatiquement après une opération réussie, aucune confirmation manuelle nécessaire",
+  "@msge4c4d5e2": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msge4c4d5e2": "Menu d'opération sur les fichiers changé en popup inférieur (ne couvre plus la barre d'onglets)",
+  "@msga33dbb51": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msga33dbb51": "Barre d'actions de sélection déplacée en bas (avec indicateur de nombre sélectionné)",
+  "@msge6c84f11": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msge6c84f11": "Corrigé : clic pour accéder aux détails de l'application après changement d'icône",
+  "@msg46b8ca8f": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg46b8ca8f": "Corrigé : changement de page local anormal après copie distante",
+  "@msgb3dea5f5": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgb3dea5f5": "Le menu appui long du visionneur de texte prend en charge copier et tout sélectionner",
+  "@msga4c92214": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msga4c92214": "Disposition du popup glisser-déposer optimisée (plus compacte)",
+  "@msg32854144": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg32854144": "Icônes de la page catégorie prennent en charge le commutateur de fond cercle/carré",
+  "@msg3a93e257": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg3a93e257": "Paramètre de forme des icônes de catégorie (commutateur dans Apparence et Thème)",
+  "@zenfile3": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "zenfile3": "Première version de ZenFile",
+  "@msg47b760ed": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg47b760ed": "Support multi-onglets",
+  "@ftpsftpwebdavsmb": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "ftpsftpwebdavsmb": "Connexion au serveur distant (FTP/SFTP/WebDAV/SMB)",
+  "@msg4b736dfb": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg4b736dfb": "Coffre-fort de chiffrement de fichiers",
+  "@ftpwebdav": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "ftpwebdav": "Fonctionnalités du serveur FTP/WebDAV",
+  "@msg03257c2d": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg03257c2d": "Paramètres de thème et d'apparence personnalisés",
+  "@msg5cce42e6": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg5cce42e6": "Optimisation des opérations glisser-déposer sur le serveur distant",
+  "@msg074f1ce7": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg074f1ce7": "Amélioration de la fonctionnalité d'icône de bureau d'application personnalisée",
+  "@msg5c66ffab": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg5c66ffab": "L'appui long dans la liste de fichiers du serveur distant peut déclencher un popup glisser-déposer (sera corrigé dans la prochaine version)",
+  "@bug1sequeldpdnsorgqq792408214": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "bug1sequeldpdnsorgqq792408214": "Si vous avez des suggestions ou trouvez des bugs, merci de nous faire part de vos retours par e-mail à 1@sequel.dpdns.org ou via le groupe QQ 792408214.",
+  "@msgd054a84c": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgd054a84c": "Appui long pour sauvegarder l'image",
+  "@msgb3b83e12": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgb3b83e12": "Échec du chargement de l'image",
+  "@msgc2790d54": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msgc2790d54": "Permission de stockage requise pour sauvegarder l'image",
+  "@msg1292d351": {
+    "description": "ui\\screens\\about_screen.dart"
+  },
+  "msg1292d351": "Image sauvegardée dans la galerie",
+  "@e9": {
+    "type": "text"
+  },
+  "e9": "Échec de la sauvegarde : {e}",
+  "@msg7a4ee0c7": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msg7a4ee0c7": "Aucun fichier à partager",
+  "@msg45326802": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msg45326802": "Éléments supprimés avec succès",
+  "@e10": {
+    "type": "text"
+  },
+  "e10": "Erreur de partage : {e}",
+  "@msg4fb42e6e": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msg4fb42e6e": "Copié dans le presse-papiers",
+  "@msge5212c58": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msge5212c58": "Couper vers le presse-papiers",
+  "@msgc8ce4b36": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msgc8ce4b36": "Renommer",
+  "@msgf139c5cf": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msgf139c5cf": "Entrez le nouveau nom",
+  "@msg53518c22": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msg53518c22": "Supprimer le fichier",
+  "@msg47809e5d": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msg47809e5d": "Aucun fichier récent",
+  "@msg7a7e6c25": {
+    "description": "ui\\screens\\all_recent_files_screen.dart"
+  },
+  "msg7a7e6c25": "Les fichiers nouvellement créés ou téléchargés apparaîtront ici.",
+  "@msg765d1698": {
+    "description": "ui\\screens\\archive_viewer_screen.dart"
+  },
+  "msg765d1698": "Supprimer les éléments sélectionnés",
+  "@msg365f2f0a": {
+    "description": "ui\\screens\\archive_viewer_screen.dart"
+  },
+  "msg365f2f0a": "Éléments supprimés avec succès ✓",
+  "@successcount": {
+    "type": "text"
+  },
+  "successcount": "{successCount} éléments ajoutés à l'archive avec succès ✓",
+  "@count": {
+    "type": "text"
+  },
+  "count": "{count} éléments collés dans l'archive ✓",
+  "@msg39cb3352": {
+    "description": "ui\\screens\\archive_viewer_screen.dart"
+  },
+  "msg39cb3352": "Impossible de lire l'archive",
+  "@msg99abedc6": {
+    "description": "ui\\screens\\archive_viewer_screen.dart"
+  },
+  "msg99abedc6": "Extraire dans le dossier actuel",
+  "@msg8d0cfb58": {
+    "description": "ui\\screens\\archive_viewer_screen.dart"
+  },
+  "msg8d0cfb58": "Ajouter des fichiers",
+  "@msg5bf1fb72": {
+    "description": "ui\\screens\\audio_player\\audio_artwork_widget.dart"
+  },
+  "msg5bf1fb72": "Audio sans perte",
+  "@msg47cab5ae": {
+    "description": "ui\\screens\\audio_player\\audio_controls_widget.dart"
+  },
+  "msg47cab5ae": "Minuterie de sommeil",
+  "@msg50c1b248": {
+    "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+  },
+  "msg50c1b248": "Lecture en arrière-plan arrêtée",
+  "@msg6d16d396": {
+    "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+  },
+  "msg6d16d396": "Lecture en arrière-plan activée",
+  "@msg3038d9b8": {
+    "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+  },
+  "msg3038d9b8": "Aléatoire : Désactivé",
+  "@msg29eed1da": {
+    "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+  },
+  "msg29eed1da": "Lecture en arrière-plan",
+  "@msg4aa059f7": {
+    "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+  },
+  "msg4aa059f7": "Appuyez pour arrêter la lecture en arrière-plan",
+  "@msg8f7f4490": {
+    "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+  },
+  "msg8f7f4490": "Afficher la notification avec contrôles",
+  "@msgb7c87215": {
+    "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+  },
+  "msgb7c87215": "Effets sonores et Égaliseur",
+  "@msgfc449780": {
+    "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+  },
+  "msgfc449780": "Informations sur le fichier audio",
+  "@msgb4fbc92c": {
+    "description": "ui\\screens\\backup_settings_screen.dart"
+  },
+  "msgb4fbc92c": "Sauvegarde et restauration",
+  "@zenfilebackupssettings1": {
+    "description": "ui\\screens\\backup_settings_screen.dart"
+  },
+  "zenfilebackupssettings1": "Sauvegarder tous les paramètres actuels dans ZenFile/Backups/Settings/",
+  "@json1": {
+    "description": "ui\\screens\\backup_settings_screen.dart"
+  },
+  "json1": "Sélectionner et restaurer les paramètres depuis un fichier de sauvegarde JSON",
+  "@msg534c621a": {
+    "description": "ui\\screens\\backup_settings_screen.dart"
+  },
+  "msg534c621a": "Répertoire de sauvegarde",
+  "@msg396b7d3f": {
+    "description": "ui\\screens\\backup_settings_screen.dart"
+  },
+  "msg396b7d3f": "Taille du fichier",
+  "@msgc047ee32": {
+    "description": "ui\\screens\\backup_settings_screen.dart"
+  },
+  "msgc047ee32": "Date de dernière sauvegarde",
+  "@msg917fd6ef": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "msg917fd6ef": "Aucune donnée à exporter.",
+  "@sqlite": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "sqlite": "Lecteur de base de données SQLite",
+  "@msg03a0d224": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "msg03a0d224": "Structure de la table",
+  "@sql": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "sql": "Console SQL",
+  "@msge2f0fe67": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "msge2f0fe67": "Échec de l'ouverture de la base de données",
+  "@msg8bb11da4": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "msg8bb11da4": "Aucune table trouvée dans cette base de données.",
+  "@msg7796aa3e": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "msg7796aa3e": "Rechercher des lignes...",
+  "@msg15f26697": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "msg15f26697": "Aucune ligne trouvée",
+  "@msg0eaa935b": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "msg0eaa935b": "Détails de la structure non chargés.",
+  "@sql1": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "sql1": "Éditeur SQL",
+  "@select": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "select": "Modèle SELECT",
+  "@csv": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "csv": "Exporter les résultats en CSV",
+  "@select1": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "select1": "Exécuter une requête SELECT pour afficher les résultats.",
+  "@msgd1ad9002": {
+    "description": "ui\\screens\\database_reader_screen.dart"
+  },
+  "msgd1ad9002": "Erreur lors de l'exécution de la requête.",
+  "@targetpath": {
+    "type": "text"
+  },
+  "targetpath": "Chemin copié : {targetPath}",
+  "@msg6ed14da7": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg6ed14da7": "Niveau suivant",
+  "@msgcd0b9aca": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msgcd0b9aca": "Supprimer la sélection",
+  "@msgee14ee27": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msgee14ee27": "Êtêtes-vous sûr de vouloir supprimer cet élément ? Cette action est irréversible.",
+  "@filenamecreatedname": {
+    "type": "text"
+  },
+  "filenamecreatedname": "\"{fileName}\" existe déjà, \"{createdName}\" a été créé.",
+  "@foldernamecreatedname": {
+    "type": "text"
+  },
+  "foldernamecreatedname": "\"{folderName}\" existe déjà, \"{createdName}\" a été créé.",
+  "@msgbd165c40": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msgbd165c40": "Créer un nouveau document texte vierge",
+  "@msg68ac91eb": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg68ac91eb": "Nouvelle archive",
+  "@msg881f6a80": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg881f6a80": "Compresser le contenu du dossier actuel",
+  "@msg97301f64": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg97301f64": "Options d'affichage et de tri",
+  "@msg829cb1dd": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg829cb1dd": "Vue en liste",
+  "@msg0a4ebb8d": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg0a4ebb8d": "Options de taille et d'espacement",
+  "@msg88062f93": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg88062f93": "Taille des icônes et des dossiers",
+  "@msga7c781f5": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msga7c781f5": "Taille et espacement",
+  "@msga2946a1a": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msga2946a1a": "Trier par",
+  "@za": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "za": "Nom (Z-A)",
+  "@msg2e2a26bb": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg2e2a26bb": "Taille (Grand)",
+  "@msgf437ace4": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msgf437ace4": "Ce dossier uniquement",
+  "@msg551f98ba": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "msg551f98ba": "Aucun favori",
+  "@ui_favorites": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_favorites": "Favoris",
+  "@ui_new_favorite": {
+    "description": "directory_screen.dart"
+  },
+  "ui_new_favorite": "Ajouter aux favoris",
+  "@ui_favorite": {
+    "description": "file_action_dialogs.dart"
+  },
+  "ui_favorite": "Favori",
+  "@msg_favorited": {
+    "description": "directory_screen.dart",
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "msg_favorited": "{name} ajouté aux favoris",
+  "@msg4dfc167a": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg4dfc167a": "Activer le tri personnalisé pour ce dossier",
+  "@msge4c84f81": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msge4c84f81": "Ajouter un raccourci",
+  "@msgd730e478": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msgd730e478": "Racine système",
+  "@msg35546526": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg35546526": "Connexions réseau",
+  "@msg67a6ea5e": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg67a6ea5e": "Ajouter une connexion réseau",
+  "@msgcc51d6c2": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msgcc51d6c2": "Supprimer la connexion",
+  "@msg6e0f9cef": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg6e0f9cef": "Catégories d'accueil",
+  "@msge9691076": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msge9691076": "Dossier vide",
+  "@msg551f98ba": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg551f98ba": "Ce répertoire ne contient aucun fichier ni sous-dossier.",
+  "@msg17093362": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg17093362": "Annuler l'opération",
+  "@msg681c0f39": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg681c0f39": "Recherche globale",
+  "@msg0c36f64f": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg0c36f64f": "Documents uniquement",
+  "@msg26b041dd": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg26b041dd": "Audio uniquement",
+  "@msge632ba85": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msge632ba85": "Archives uniquement",
+  "@label": {
+    "type": "text"
+  },
+  "label": "Filtre {label} activé",
+  "@msg0e77af8a": {
+    "description": "ui\\screens\\directory_screen.dart"
+  },
+  "msg0e77af8a": "Dossiers cachés",
+  "@e11": {
+    "type": "text"
+  },
+  "e11": "Erreur de chargement : {e}",
+  "@msg5937f822": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg5937f822": "(Diapositive vide)",
+  "@msg360d0b37": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg360d0b37": "Sauvegardé avec succès ✓",
+  "@pdf": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "pdf": "Paramètres d'affichage PDF",
+  "@msg09c933bf": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg09c933bf": "Optimiser les performances de rendu pour les documents volumineux, complexes ou numérisés.",
+  "@msg701a85d4": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg701a85d4": "Mode standard",
+  "@msg2722d1a7": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg2722d1a7": "Idéal pour les documents texte",
+  "@msgb2b08d54": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msgb2b08d54": "Adapté aux brochures et photos",
+  "@msg8b519c02": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg8b519c02": "Mise en page",
+  "@msg7f2cd152": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg7f2cd152": "Continu (liste de défilement vertical)",
+  "@msg151ea324": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg151ea324": "Direction de défilement",
+  "@msg7d45ded6": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg7d45ded6": "Vertical (défilement de haut en bas)",
+  "@msg176ef589": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg176ef589": "Activer la sélection de texte",
+  "@msg864f8706": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg864f8706": "La désactivation peut améliorer considérablement la vitesse de rendu des pages et éliminer les retards de défilement.",
+  "@msgd28847a2": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msgd28847a2": "Nouveau document",
+  "@msg3007c452": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg3007c452": "Plus d'options",
+  "@msg452dba7c": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg452dba7c": "Retour à la ligne",
+  "@msgc31f9440": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msgc31f9440": "Afficher les numéros de ligne",
+  "@msg1d93c30b": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg1d93c30b": "Ouvrir avec une autre application",
+  "@msgace80573": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msgace80573": "(Fichier vide)",
+  "@msg030f48bd": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg030f48bd": "Ouvrir avec l'application",
+  "@msgfd96af00": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msgfd96af00": "Fonctionnalité de partage à venir",
+  "@ftp1": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "ftp1": "Serveur FTP arrêté avec succès",
+  "@ftpe": {
+    "type": "text"
+  },
+  "ftpe": "Erreur lors du démarrage du serveur FTP : {e}",
+  "@msg5c202e56": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg5c202e56": "Veuillez arrêter le serveur avant de modifier la configuration",
+  "@msgfca29cb3": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msgfca29cb3": "Changer le port",
+  "@msg8a0b5bf5": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg8a0b5bf5": "Numéro de port invalide",
+  "@msg3bce2199": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg3bce2199": "Définir le nom d'utilisateur",
+  "@msg0b62b5ce": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg0b62b5ce": "Le nom d'utilisateur ne peut pas être vide",
+  "@ftp2": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "ftp2": "Serveur FTP",
+  "@msg5ab96a6d": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg5ab96a6d": "Veuillez arrêter le serveur avant de modifier les paramètres",
+  "@msgc400f106": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msgc400f106": "Changer de répertoire",
+  "@msgb5eb59fc": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msgb5eb59fc": "Définir l'utilisateur",
+  "@msg70c53afb": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg70c53afb": "Accès anonyme",
+  "@msg8e2021aa": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg8e2021aa": "Créer un raccourci",
+  "@msgd70e9bdf": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msgd70e9bdf": "Inactif",
+  "@msg7ae644e4": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg7ae644e4": "État du réseau",
+  "@msg5d57821d": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg5d57821d": "Adresse du serveur",
+  "@msgfefea1b3": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msgfefea1b3": "Répertoire principal",
+  "@msg124d9054": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "msg124d9054": "Afficher les fichiers cachés",
+  "@tlsftp": {
+    "description": "ui\\screens\\ftp_server_screen.dart"
+  },
+  "tlsftp": "Connexion FTP sécurisée basée sur TLS explicite",
+  "@msg1f4c1042": {
+    "description": "ui\\screens\\global_search_screen.dart"
+  },
+  "msg1f4c1042": "Dossier",
+  "@msgf2ef53c0": {
+    "description": "ui\\screens\\global_search_screen.dart"
+  },
+  "msgf2ef53c0": "Rechercher dans ce dossier...",
+  "@msgfff96ede": {
+    "description": "ui\\screens\\global_search_screen.dart"
+  },
+  "msgfff96ede": "Plus d'actions",
+  "@msg88e45bb8": {
+    "description": "ui\\screens\\global_search_screen.dart"
+  },
+  "msg88e45bb8": "Rechercher dans votre stockage",
+  "@query": {
+    "type": "text"
+  },
+  "query": "Aucun résultat pour \"{_query}\"",
+  "@msge109d1ea": {
+    "description": "ui\\screens\\home_screen.dart"
+  },
+  "msge109d1ea": "Tableau de bord actualisé avec succès",
+  "@msg05cea075": {
+    "description": "ui\\screens\\home_screen.dart"
+  },
+  "msg05cea075": "Appuyez à nouveau pour quitter l'application",
+  "@msg7498c202": {
+    "description": "ui\\screens\\home_screen.dart"
+  },
+  "msg7498c202": "Quitter l'application",
+  "@msg03247b17": {
+    "description": "ui\\screens\\home_screen.dart"
+  },
+  "msg03247b17": "Êtêtes-vous sûr de vouloir quitter ? Appuyez sur Retour ou appuyez sur Quitter pour fermer l'application.",
+  "@msg354c1c9a": {
+    "description": "ui\\screens\\home_screen.dart"
+  },
+  "msg354c1c9a": "Actualiser le tableau de bord",
+  "@msg19021d08": {
+    "description": "ui\\screens\\home_screen.dart"
+  },
+  "msg19021d08": "Catégories rapides personnalisées",
+  "@html": {
+    "description": "ui\\screens\\html_viewer_screen.dart"
+  },
+  "html": "Aperçu HTML",
+  "@msgfba1f416": {
+    "description": "ui\\screens\\internal_file_picker_screen.dart"
+  },
+  "msgfba1f416": "Entrez le nom du dossier",
+  "@msg33b0b21c": {
+    "description": "ui\\screens\\internal_file_picker_screen.dart"
+  },
+  "msg33b0b21c": "Sélectionner et épingler le dossier",
+  "@msgff3200cc": {
+    "description": "ui\\screens\\internal_file_picker_screen.dart"
+  },
+  "msgff3200cc": "Effacer la sélection",
+  "@msg4614630a": {
+    "description": "ui\\screens\\internal_file_picker_screen.dart"
+  },
+  "msg4614630a": "Le dossier est vide",
+  "@msg5dc1fa7b": {
+    "description": "ui\\screens\\internal_file_picker_screen.dart"
+  },
+  "msg5dc1fa7b": "Épingler ce dossier",
+  "@markdown": {
+    "description": "ui\\screens\\markdown_viewer_screen.dart"
+  },
+  "markdown": "Aperçu Markdown",
+  "@count1": {
+    "type": "text"
+  },
+  "count1": "Êtêtes-vous sûr de vouloir supprimer définitivement {count} éléments sélectionnés ?",
+  "@count2": {
+    "type": "text"
+  },
+  "count2": "{count} éléments supprimés avec succès",
+  "@pastedcountdestdir": {
+    "type": "text"
+  },
+  "pastedcountdestdir": "{pastedCount} éléments collés dans {destDir}",
+  "@msgfadbb0bc": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msgfadbb0bc": "Aucun fichier à partager.",
+  "@msg3ad97542": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg3ad97542": "Aucun fichier physique trouvé pour le renommage",
+  "@msg1303e638": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg1303e638": "Date de modification",
+  "@msg5bab3781": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg5bab3781": "Informations sur le média",
+  "@msg880a18f3": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg880a18f3": "Éléments sélectionnés",
+  "@msgea9ecb93": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msgea9ecb93": "Taille totale",
+  "@msg5556baa3": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg5556baa3": "Appui long pour ouvrir avec...",
+  "@msg631cd220": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg631cd220": "Confirmer la suppression",
+  "@name": {
+    "type": "text"
+  },
+  "name": "{name} supprimé",
+  "@msgcd8264f1": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msgcd8264f1": "Afficher l'emplacement",
+  "@msg2a4cfb07": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg2a4cfb07": "Ouvrir avec...",
+  "@msg8bf52387": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg8bf52387": "Fichier introuvable ou ne peut pas être partagé.",
+  "@msg419be096": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg419be096": "Coller ici",
+  "@msg5093bc80": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg5093bc80": "Plus récents d'abord",
+  "@msgbc74b5a8": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msgbc74b5a8": "Par date",
+  "@msgef7ae768": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msgef7ae768": "Plus récents d'abord (groupés par mois)",
+  "@msgb8140039": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msgb8140039": "Plus anciens d'abord (groupés par mois)",
+  "@msg424a0110": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msg424a0110": "Date inconnue",
+  "@msgb19671d6": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "msgb19671d6": "Tous les éléments",
+  "@msg11fea612": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg11fea612": "Date et heure",
+  "@msg12e86877": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg12e86877": "Taille du fichier / Nombre d'éléments",
+  "@msg7908038f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg7908038f": "Aucun / Masqué",
+  "@msg9136d4dc": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg9136d4dc": "Ne pas afficher d'informations supplémentaires sur la droite",
+  "@msg84986f91": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg84986f91": "Afficher la date et l'heure de dernière modification",
+  "@msgfc000737": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgfc000737": "Les fichiers affichent la taille, les dossiers affichent le nombre d'éléments",
+  "@msg83de16cc": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg83de16cc": "Choisir le style d'information en fin de ligne",
+  "@msgaa2a18a1": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgaa2a18a1": "Choisir ce qui est affiché à droite des fichiers et dossiers lorsque le bouton d'action à trois points est masqué.",
+  "@msg26e4c5d6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg26e4c5d6": "Afficher la barre d'adresse",
+  "@windows1": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "windows1": "Afficher la barre d'adresse modifiable de style Explorateur Windows en haut de la liste de fichiers",
+  "@msg74e86197": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg74e86197": "Ouvrir les raccourcis image/vidéo directement dans le dossier (galerie) en vue préférée",
+  "@msga1fbf3c6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msga1fbf3c6": "Masquer la barre de navigation Android",
+  "@msg02dddc02": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg02dddc02": "Masquer la barre de navigation inférieure pour maximiser l'espace d'écran (balayez vers le haut pour afficher)",
+  "@msg50923c95": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg50923c95": "Effacer toutes les associations 'Ouvrir avec' mémorisées",
+  "@msg6fdc09ac": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg6fdc09ac": "Ignorer la boîte de dialogue 'Ouvrir avec'",
+  "@msg0a4b0442": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg0a4b0442": "Ignorer la boîte de dialogue de sélection d'application, ouvrir les fichiers directement avec le visionneur par défaut",
+  "@msge1157984": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msge1157984": "Choisir de démarrer en page de catégorie ou de navigation",
+  "@msgae1854a2": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgae1854a2": "Choisir le balayage à un ou deux doigts pour changer de page",
+  "@msg11b1ec65": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg11b1ec65": "Afficher la barre d'actions sur la page de navigation (précédent, suivant, nouveau, dupliquer l'onglet, haut)",
+  "@msg7e7765b6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg7e7765b6": "Afficher les fichiers et dossiers système commençant par un point (.)",
+  "@msg86f3d70f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg86f3d70f": "Afficher les en-têtes de nombre de dossiers et de fichiers",
+  "@msg40e9c325": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg40e9c325": "Afficher le nombre total de dossiers et de fichiers sous l'en-tête de stockage",
+  "@ampm24": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "ampm24": "Basculer entre le format 12 heures (AM/PM) et 24 heures dans la liste",
+  "@msg25ee6612": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg25ee6612": "Masquer l'heure et la date dans la liste",
+  "@msg337359a6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg337359a6": "Masquer complètement la date et l'heure de modification pour les fichiers et dossiers",
+  "@msga517863e": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msga517863e": "Calculer et afficher le nombre total de fichiers et de dossiers dans le répertoire",
+  "@msg59a24fcb": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg59a24fcb": "Calculer et afficher la taille totale de tous les fichiers du répertoire (peut affecter les performances de la liste)",
+  "@msg309e2a28": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg309e2a28": "Afficher la barre de navigation en haut ou en bas",
+  "@msge34c23ff": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msge34c23ff": "En haut",
+  "@msg3341e3ed": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg3341e3ed": "Les boutons d'action sont affichés en haut de la page",
+  "@msg8c414b06": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg8c414b06": "En bas",
+  "@msg5d2c8e7f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5d2c8e7f": "Les boutons d'action sont affichés en bas de la page",
+  "@msg9b7639ac": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg9b7639ac": "Afficher uniquement les icônes dans la barre d'actions de sélection sur les pages de navigation et média",
+  "@msgdd69671b": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdd69671b": "Flash bref et défilement vers le dossier quitté lors du retour",
+  "@msg57736228": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg57736228": "Afficher les vignettes réelles d'images et de vidéos au lieu des icônes de fichiers génériques",
+  "@msg1eda8a50": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg1eda8a50": "Autoriser les noms de fichiers à passer à 3 lignes au lieu de les tronquer",
+  "@msgc7196afd": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgc7196afd": "Masquer le bouton de menu à trois points à côté des dossiers et fichiers",
+  "@msgad54815d": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgad54815d": "Appui long et glisser les dossiers ou fichiers pour les déplacer vers d'autres dossiers",
+  "@msg5dff8f2d": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5dff8f2d": "Afficher un popup d'options lors du glisser-déposer de fichiers (copier, déplacer, compresser)",
+  "@msg4b0a7063": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg4b0a7063": "Autoriser l'ouverture de plusieurs dossiers dans des onglets séparés pour une navigation rapide",
+  "@msgf04ac00d": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgf04ac00d": "Parcourir deux répertoires côte à côte et transférer facilement des fichiers",
+  "@msgd1591ba4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgd1591ba4": "Ouvrir le dernier dossier parcouru au démarrage de l'application",
+  "@msg25792550": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg25792550": "Déplacer les fichiers et dossiers supprimés vers la corbeille cachée au lieu de la suppression définitive",
+  "@msg1b9633fe": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg1b9633fe": "Couleur de thème / Thème dynamique",
+  "@msg64db4c2d": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg64db4c2d": "Style d'icône de dossier",
+  "@msgece44aa5": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgece44aa5": "Style du bouton du tiroir d'application",
+  "@amoled1": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "amoled1": "Mode AMOLED noir pur",
+  "@amoled2": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "amoled2": "Utiliser un fond noir pur pour les écrans AMOLED en mode sombre",
+  "@msg5228b59f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5228b59f": "Typographie de l'application / Police",
+  "@msge7d18d73": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msge7d18d73": "Raccourcis personnalisés",
+  "@msg036fe6a4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg036fe6a4": "Réorganiser et basculer la visibilité des éléments de catégorie rapide",
+  "@msgead3e5c5": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgead3e5c5": "Rechercher dans les paramètres...",
+  "@msg2590095f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg2590095f": "Catégories de paramètres",
+  "@msgfdae44c3": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgfdae44c3": "Général et comportement",
+  "@msgeae34685": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgeae34685": "Écran par défaut, contrôles de navigation et raccourcis",
+  "@msg91b228b8": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg91b228b8": "Thème, icône d'application, style de dossier et typographie",
+  "@msgad6e8bb8": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgad6e8bb8": "Options du navigateur de fichiers",
+  "@msg8ddc4963": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg8ddc4963": "Barre d'adresse, fichiers cachés, onglets et glisser-déposer",
+  "@msg45db4e2a": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg45db4e2a": "Taille du dossier, nombre et format de date/heure",
+  "@msg09ca4d86": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg09ca4d86": "Vue de galerie par défaut et aperçu miniature",
+  "@msgeb3693fb": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgeb3693fb": "Configuration des actions d'ouverture et du visionneur par défaut",
+  "@msg3a6a39ae": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg3a6a39ae": "Commutateur de corbeille et durée de suppression automatique",
+  "@msg9edfaff3": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg9edfaff3": "Sauvegarder ou restaurer tous les paramètres de l'application",
+  "@msg99c9cc56": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg99c9cc56": "Essayez de rechercher d'autres mots-clés",
+  "@msga432d127": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msga432d127": "Page d'accueil par défaut",
+  "@msg226fc6ae": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg226fc6ae": "Page de catégorie",
+  "@msgd48a082d": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgd48a082d": "Balayer pour changer de page",
+  "@msgaac01f32": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgaac01f32": "Balayage à un doigt",
+  "@msg59c7debc": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg59c7debc": "Se souvenir du dernier dossier ouvert",
+  "@msgce732d8a": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgce732d8a": "Masquer les étiquettes de texte dans la barre inférieure (Accueil/Navigation) pour un look plus propre et compact",
+  "@msg1cfeaace": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg1cfeaace": "Navigateur de fichiers et navigation",
+  "@msgd33e3082": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgd33e3082": "Surligner le dossier quitté",
+  "@msga4333788": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msga4333788": "Média et actions par défaut",
+  "@msg20c87c8e": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg20c87c8e": "Vue préférée de la galerie par défaut",
+  "@msg72b1f919": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg72b1f919": "Toutes les sélections de visionneur par défaut ont été réinitialisées",
+  "@msge99f4762": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msge99f4762": "Activer la corbeille",
+  "@msg2c8a394a": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg2c8a394a": "Page de navigation",
+  "@msg2c3c5a35": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg2c3c5a35": "Forme de l'icône",
+  "@msg267fcd86": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg267fcd86": "Tous les 3 jours",
+  "@msg9104c0c5": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg9104c0c5": "Toutes les 2 semaines",
+  "@days": {
+    "type": "text"
+  },
+  "days": "Tous les {days} jours",
+  "@msg673ad9d4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg673ad9d4": "Cache du serveur distant effacé",
+  "@msgd9f142c4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgd9f142c4": "Nettoyage automatique du cache",
+  "@msg5472ef41": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5472ef41": "Effacer immédiatement les fichiers en cache téléchargés depuis les serveurs réseau",
+  "@msgac7687d9": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgac7687d9": "Parcourir le répertoire de fichiers cache du serveur distant",
+  "@msg225f6249": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg225f6249": "Afficher les aperçus miniatures pour les images et vidéos sur les serveurs réseau",
+  "@materialyou": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "materialyou": "Material You (Couleur de fond dynamique)",
+  "@msg05cff3ad": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg05cff3ad": "Orange vif",
+  "@msg5ed35657": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5ed35657": "Violet royal",
+  "@msge74a7283": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msge74a7283": "Or ambré",
+  "@msg3904ba87": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg3904ba87": "Rose cybernétique",
+  "@msgd58d230a": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgd58d230a": "Bleu saphir",
+  "@msg508b005e": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg508b005e": "Vert forêt",
+  "@msgefdde083": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgefdde083": "Pêche de coucher de soleil",
+  "@msg628e73a9": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg628e73a9": "Bleu par défaut (Bleu signature)",
+  "@msg8244d240": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg8244d240": "Classique uni",
+  "@msgf08d9b15": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgf08d9b15": "Moderne arrondi",
+  "@msge5fba3dd": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msge5fba3dd": "Étoile spéciale",
+  "@msgfe4254dc": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgfe4254dc": "Fragment de document",
+  "@msg84719fd5": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg84719fd5": "Contour minimaliste",
+  "@zenfile4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "zenfile4": "Contour en pointillés ZenFile",
+  "@vuesax": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "vuesax": "Grille de catégories / Grille Vuesax",
+  "@msg5dc988f4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5dc988f4": "Menu hamburger / Menu classique",
+  "@msgd06ba04f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgd06ba04f": "M3 Expressif 1",
+  "@msg5090469e": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg5090469e": "M3 Expressif 2",
+  "@d": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "d": "M3 Expressif 3",
+  "@msg67836b24": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg67836b24": "Minimaliste",
+  "@msgf08c8dc4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgf08c8dc4": "Glassmorphisme",
+  "msgdesign6": "Cyberpunk",
+  "@msgdesign6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign7": "Neumorphisme",
+  "@msgdesign7": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign8": "Classique 2",
+  "@msgdesign8": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign9": "Classique 3",
+  "@msgdesign9": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdesign10": "Design utilisateur 1",
+  "@msgdesign10": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "@msg7372dc9f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg7372dc9f": "Icône personnalisée",
+  "@msg3004e40a": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg3004e40a": "Logo par défaut (Zen naturel)",
+  "@msgc540e940": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgc540e940": "Matrice de points et Sans Serif",
+  "@msg00ea5776": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg00ea5776": "Ofit Modern Sans Serif",
+  "@msg7bdbfaa5": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg7bdbfaa5": "Jienao Tech Monospace",
+  "@msgdcb4082d": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgdcb4082d": "Mont Urban Sans Serif",
+  "@msg9d7001d9": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg9d7001d9": "Police personnalisée importée",
+  "@msgc2f5e9e4": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgc2f5e9e4": "Signature par défaut",
+  "@msg6a7c758f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg6a7c758f": "Jamais (désactiver la suppression automatique)",
+  "@days1": {
+    "type": "text"
+  },
+  "days1": "Après {days} jours",
+  "@msgfe76ae54": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgfe76ae54": "Choisir la page affichée par défaut au lancement de l'application",
+  "@msg8af2412a": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg8af2412a": "Afficher la page de catégorie rapide au démarrage",
+  "@msg245c3258": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg245c3258": "Afficher la page de navigation de fichiers au démarrage",
+  "@msg4439669d": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg4439669d": "Choisir le balayage à un ou deux doigts pour changer de page",
+  "@msg46978666": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg46978666": "Balayage à un doigt pour changer la page catégorie/navigation ou ouvrir le tiroir",
+  "@msgbc9bf336": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgbc9bf336": "Balayage à deux doigts",
+  "@msg563871d3": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg563871d3": "Balayage à deux doigts pour changer la page catégorie/navigation ou ouvrir le tiroir",
+  "@msgca71ac0c": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgca71ac0c": "Choisir la couleur de thème",
+  "@msg732630c1": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg732630c1": "Choisir le style d'icône de dossier",
+  "@msgf9224d98": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgf9224d98": "Choisir le style du bouton de tiroir",
+  "@msgc337ecfa": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgc337ecfa": "Choisir la forme des icônes de catégorie",
+  "@msgf18bc3d9": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgf18bc3d9": "Icône du lanceur d'application",
+  "@logo": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "logo": "Choisissez un logo personnalisé pour l'icône du lanceur d'application. Certains lanceurs peuvent prendre quelques secondes pour se mettre à jour.",
+  "@msg64a6476a": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg64a6476a": "Par défaut",
+  "@title": {
+    "type": "text"
+  },
+  "title": "Icône de l'application changée en {title}",
+  "@msgad76161f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgad76161f": "Choisir une icône personnalisée",
+  "@pngjpgwebp": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "pngjpgwebp": "Veuillez sélectionner un fichier image (PNG/JPG/WEBP)",
+  "@msgb06c5c34": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgb06c5c34": "Icône personnalisée appliquée",
+  "@e12": {
+    "type": "text"
+  },
+  "e12": "Échec de l'application de l'icône personnalisée : {e}",
+  "@msg375c9eb8": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg375c9eb8": "Style géométrique minimaliste brut",
+  "@msg817e321b": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg817e321b": "Titre rétro haute technologie en matrice de points + corps propre",
+  "@msg3c2a24cc": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg3c2a24cc": "Esthétique géométrique ultra-lisse, minimaliste et premium",
+  "@msg978f8d11": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg978f8d11": "Style monospace développeur propre et futuriste",
+  "@msg93b657aa": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg93b657aa": "Typographie audacieuse, moderne et accrocheuse",
+  "@msg9db40ad6": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg9db40ad6": "Votre fichier de police personnalisée chargé",
+  "@zenfile5": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "zenfile5": "Choisissez une belle police pour personnaliser le thème visuel global de ZenFile",
+  "@msg7372efa5": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg7372efa5": "Remplacer le fichier de police personnalisée",
+  "@msg3186839b": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg3186839b": "Échec du chargement du fichier de police sélectionné.",
+  "@opentypeotftruetypettf": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "opentypeotftruetypettf": "Veuillez sélectionner un fichier de police OpenType (.otf) ou TrueType (.ttf) valide.",
+  "@msgcf42dedc": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgcf42dedc": "Supprimer la police personnalisée",
+  "@msg2b9abfaa": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg2b9abfaa": "Police personnalisée supprimée.",
+  "@msgfdef8c23": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgfdef8c23": "7 jours",
+  "@msg25436ba3": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg25436ba3": "15 jours",
+  "@msg85e7f60c": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg85e7f60c": "30 jours (Recommandé)",
+  "@msgd61e706f": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgd61e706f": "Jamais (Nettoyage manuel)",
+  "@msgf0ef894a": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msgf0ef894a": "Durée de suppression automatique de la corbeille",
+  "@msg1200d6b7": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "msg1200d6b7": "Les éléments de la corbeille seront définitivement supprimés après cette durée.",
+  "@msg432fbb31": {
+    "description": "ui\\screens\\network_category_screen.dart"
+  },
+  "msg432fbb31": "Supprimer la connexion",
+  "@msgdeleteconn": {
+    "type": "text"
+  },
+  "msgdeleteconn": "Êtêtes-vous sûr de vouloir supprimer \"{name}\" ?",
+  "@msg3358aa10": {
+    "description": "ui\\screens\\network_category_screen.dart"
+  },
+  "msg3358aa10": "Ajouter une connexion",
+  "@msgc9c900d0": {
+    "description": "ui\\screens\\network_category_screen.dart"
+  },
+  "msgc9c900d0": "Pas encore de connexions distantes",
+  "@ftpsftpwebdavsmb1": {
+    "description": "ui\\screens\\network_category_screen.dart"
+  },
+  "ftpsftpwebdavsmb1": "Ajouter une connexion FTP, SFTP, WebDAV ou SMB",
+  "@e13": {
+    "type": "text"
+  },
+  "e13": "Échec de la connexion : {e}",
+  "@msgb5bc0bf1": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msgb5bc0bf1": "Résolution de l'adresse hôte...",
+  "@msgc3d4e5f6": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msgc3d4e5f6": "Vérification du statut du port...",
+  "@msg3005ba4d": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msg3005ba4d": "Vérification des identifiants...",
+  "@msgab36a8c6": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msgab36a8c6": "Montage du volume de stockage...",
+  "name1": "\"{name}\" ajouté avec succès !",
+  "@name1": {
+    "type": "text"
+  },
+  "@connectedtype": {
+    "type": "text"
+  },
+  "connectedtype": "\"{name}\" connecté avec succès !",
+  "@msgdf434415": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msgdf434415": "Application système désactivée",
+  "@documentsui": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "documentsui": "Votre appareil n'a pas l'application système de fichiers/documents par défaut (DocumentsUI) activée,",
+  "@androidnn": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "androidnn": "Ceci est nécessaire pour qu'Android puisse sélectionner et monter des répertoires.\n\n",
+  "@msgb2af4e30": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msgb2af4e30": "Veuillez vérifier si l'application système 'Fichiers' ou 'Documents' est désactivée dans les paramètres de l'appareil,",
+  "@safe": {
+    "type": "text"
+  },
+  "safe": "Échec de la demande du dossier SAF : {e}",
+  "@msg65c7ecb6": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msg65c7ecb6": "Veuillez entrer le nom de la connexion",
+  "@msg69e3963c": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msg69e3963c": "Veuillez entrer l'adresse/le nom d'hôte du serveur",
+  "@msgce1ec2ce": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msgce1ec2ce": "Connexion distante",
+  "@msg25557d1f": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msg25557d1f": "Protocole standard de transfert de fichiers",
+  "@ssh": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "ssh": "Serveur de transfert de fichiers sécurisé SSH",
+  "@http": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "http": "HTTP Web Distributed Authoring",
+  "@androidsd": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "androidsd": "Android Storage Access Framework (Carte SD / Stockage externe)",
+  "@msg8486035b": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msg8486035b": "Choisir le service réseau",
+  "@naszenfile": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "naszenfile": "Monter le serveur distant ou le partage NAS comme lecteur dynamique dans la liste de stockage ZenFile.",
+  "@selectedtype": {
+    "type": "text"
+  },
+  "selectedtype": "Paramètres {_selectedType}",
+  "@msg5c808d9a": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msg5c808d9a": "Entrez les détails de connexion pour lier ce volume de stockage réseau.",
+  "@nas": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "nas": "Exemple : NAS de bureau, Partage maison",
+  "@dav": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "dav": "Exemple : 192.168.1.100 ou 192.168.1.100/dav",
+  "@naslocal": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "naslocal": "Exemple : 192.168.1.100 ou nas.local",
+  "@dav1": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "dav1": "Exemple : /dav ou /",
+  "@anonymousadmin": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "anonymousadmin": "Exemple : anonymous ou admin",
+  "@msgeec70cd2": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msgeec70cd2": "Mot de passe (facultatif)",
+  "@msgf1fa9d44": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "msgf1fa9d44": "Création du point de montage...",
+  "@selectedtype1": {
+    "type": "text"
+  },
+  "selectedtype1": "Veuillez patienter, nous établissons une connexion fiable au serveur {_selectedType}.",
+  "@e14": {
+    "type": "text"
+  },
+  "e14": "Erreur lors de la restauration de l'élément : {e}",
+  "@e15": {
+    "type": "text"
+  },
+  "e15": "Erreur lors de la suppression de l'élément : {e}",
+  "@msg62187f1b": {
+    "description": "ui\\screens\\recycle_bin_screen.dart"
+  },
+  "msg62187f1b": "Êtêtes-vous sûr de vouloir supprimer définitivement tous les éléments de la corbeille ? Cette action est irréversible.",
+  "@msg8cd6bc18": {
+    "description": "ui\\screens\\recycle_bin_screen.dart"
+  },
+  "msg8cd6bc18": "Vider la corbeille",
+  "@msga4dfc0c6": {
+    "description": "ui\\screens\\recycle_bin_screen.dart"
+  },
+  "msga4dfc0c6": "Corbeille vidée avec succès",
+  "@msg07d80ac5": {
+    "description": "ui\\screens\\recycle_bin_screen.dart"
+  },
+  "msg07d80ac5": "Recherche de fichiers supprimés...",
+  "@msg96d2b75f": {
+    "description": "ui\\screens\\recycle_bin_screen.dart"
+  },
+  "msg96d2b75f": "Supprimer définitivement",
+  "@msg0d824a24": {
+    "description": "ui\\screens\\recycle_bin_screen.dart"
+  },
+  "msg0d824a24": "La corbeille est vide",
+  "@msg4c478216": {
+    "description": "ui\\screens\\recycle_bin_screen.dart"
+  },
+  "msg4c478216": "Emplacement d'origine",
+  "@msgc44a57b6": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msgc44a57b6": "Téléchargement du texte...",
+  "@msgd6d8292d": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msgd6d8292d": "Mise en tampon du média...",
+  "@e16": {
+    "type": "text"
+  },
+  "e16": "Échec du téléchargement : {e}",
+  "@msg66d723c5": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg66d723c5": "Dépassement du délai de tampon, veuillez vérifier la connexion réseau",
+  "@msg53082c55": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg53082c55": "Impossible de coller au même emplacement",
+  "@msg108feeed": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg108feeed": "Copie...",
+  "@msg2d4b44ec": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg2d4b44ec": "Éléments collés avec succès",
+  "@filenamee": {
+    "type": "text"
+  },
+  "filenamee": "Échec du téléchargement de \"{fileName}\" : {e}",
+  "@newname": {
+    "type": "text"
+  },
+  "newname": "Renommé en \"{newName}\"",
+  "@msg4b342999": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg4b342999": "Supprimer l'élément",
+  "@e17": {
+    "type": "text"
+  },
+  "e17": "Échec de la suppression : {e}",
+  "@msg79d7fef7": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg79d7fef7": "Nouveau dossier distant",
+  "@msga98473f2": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msga98473f2": "Nom du dossier",
+  "@e18": {
+    "type": "text"
+  },
+  "e18": "Échec de la création du dossier : {e}",
+  "@msg5ca05a9b": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg5ca05a9b": "Répertoire distant",
+  "@msga636c09d": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msga636c09d": "Copier vers l'appareil local",
+  "@msga4c461a4": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msga4c461a4": "Télécharger le fichier dans le presse-papiers local",
+  "@msg425502fa": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg425502fa": "Télécharger et supprimer du serveur",
+  "@msgc2b9f4b9": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msgc2b9f4b9": "Répertoire racine",
+  "@msg2f7cd487": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg2f7cd487": "Télécharger le presse-papiers local vers le serveur",
+  "@msg905c34fa": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg905c34fa": "Coller le presse-papiers distant",
+  "@msg8439c155": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg8439c155": "Connexion déconnectée",
+  "@msgda43df27": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msgda43df27": "Réessayer la connexion",
+  "@msga21f6ab1": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msga21f6ab1": "Répertoire vide",
+  "@msge1c538b8": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msge1c538b8": "Télécharger le contenu du presse-papiers ici",
+  "@e19": {
+    "type": "text"
+  },
+  "e19": "Échec du téléchargement : {e}",
+  "@msg50eaf94d": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msg50eaf94d": "Confirmation de suppression",
+  "@msgcb0da17b": {
+    "description": "ui\\screens\\remote_explorer_screen.dart"
+  },
+  "msgcb0da17b": "Suppression...",
+  "@msg4805c385": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msg4805c385": "Gestion des applications",
+  "@msg93bc1f09": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msg93bc1f09": "Actualiser la liste",
+  "@msg32e490fe": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msg32e490fe": "Applications utilisateur installées",
+  "@apk2": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "apk2": "APK sauvegardés",
+  "@msg8936ded6": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msg8936ded6": "Rechercher un nom de paquet ou d'application...",
+  "@msgd8b3fc58": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msgd8b3fc58": "Trier par taille",
+  "@msgbe1399f0": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msgbe1399f0": "Trier alphabétiquement",
+  "@msg9ad67f11": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msg9ad67f11": "Trier par date de sauvegarde",
+  "@msgb0681bd4": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msgb0681bd4": "Calcul de stockage précis",
+  "@msg34cd846c": {
+    "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+  },
+  "msg34cd846c": "Accorder la permission d'accès à l'utilisation",
+  "@msga22ddaae": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msga22ddaae": "Analyse de stockage",
+  "@msgaae779d4": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msgaae779d4": "Rescanner le stockage",
+  "@msg7ae97495": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msg7ae97495": "Analyse du stockage de l'appareil",
+  "@msga5e5bf71": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msga5e5bf71": "Stockage total",
+  "@msg652be256": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msg652be256": "Répartition par catégorie",
+  "@msgb1a2c3d4": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msgb1a2c3d4": "Initializing...",
+  "@msgc2d3e4f5": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msgc2d3e4f5": "Reading system memory...",
+  "@msgd3e4f5a6": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msgd3e4f5a6": "Calculating app storage...",
+  "@msge4f5a6b7": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msge4f5a6b7": "Analyzing files, categorizing assets, and reading installed apps space...",
+  "@msgf5a6b7c8": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart",
+    "type": "text",
+    "placeholders": {
+      "size": {}
+    }
+  },
+  "msgf5a6b7c8": "{size} free",
+  "@msga6b7c8d9": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart",
+    "type": "text",
+    "placeholders": {
+      "size": {},
+      "percent": {}
+    }
+  },
+  "msga6b7c8d9": "{size} used ({percent}%)",
+  "@msgb7c8d9e0": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart",
+    "type": "text",
+    "placeholders": {
+      "percent": {}
+    }
+  },
+  "msgb7c8d9e0": "{percent}% of total storage",
+  "@msgc8d9e0f1": {
+    "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+  },
+  "msgc8d9e0f1": "System / Other",
+  "ui_drag_archive_created": "Archive \"{name}\" created successfully",
+  "@ui_drag_archive_created": {
+    "description": "Drag drop action dialog snackbar",
+    "type": "text",
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "ui_drag_archive_failed": "Failed to create archive: {error}",
+  "@ui_drag_archive_failed": {
+    "description": "Drag drop action dialog snackbar",
+    "type": "text",
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "ui_backup_success": "Paramètres sauvegardés dans ZenFile/Backups/Settings/",
+  "@ui_backup_success": {
+    "description": "Settings backup service snackbar"
+  },
+  "ui_backup_failed": "Échec de la sauvegarde : {error}",
+  "@ui_backup_failed": {
+    "description": "Settings backup service snackbar",
+    "type": "text",
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "ui_restore_invalid_file": "Veuillez sélectionner un fichier de sauvegarde de paramètres .json valide",
+  "@ui_restore_invalid_file": {
+    "description": "Settings restore snackbar"
+  },
+  "ui_restore_success": "Paramètres restaurés avec succès !",
+  "@ui_restore_success": {
+    "description": "Settings restore snackbar"
+  },
+  "ui_restore_failed": "Échec de la restauration : {error}",
+  "@ui_restore_failed": {
+    "description": "Settings restore snackbar",
+    "type": "text",
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "@msgeb3d7d70": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\app_batch_action_bar.dart"
+  },
+  "msgeb3d7d70": "Désinstaller l'application",
+  "@msg6eb319a1": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\app_batch_action_bar.dart"
+  },
+  "msg6eb319a1": "Sauvegarde de l'application sélectionnée...",
+  "@msg7fbfdce6": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\app_list_tab.dart"
+  },
+  "msg7fbfdce6": "Aucune application trouvée",
+  "@msg753cdb55": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
+  },
+  "msg753cdb55": "Lancer l'application",
+  "@apk3": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
+  },
+  "apk3": "Sauvegarder l'APK",
+  "@apk4": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
+  },
+  "apk4": "Sauvegarde de l'APK...",
+  "@apk5": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
+  },
+  "apk5": "Échec de la sauvegarde de l'APK",
+  "@apk6": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
+  },
+  "apk6": "Partager le fichier APK",
+  "@msga0b18169": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\backup_list_tab.dart"
+  },
+  "msga0b18169": "Partager le fichier de sauvegarde",
+  "@msgb443cd06": {
+    "description": "ui\\screens\\storage_analyzer\\widgets\\backup_list_tab.dart"
+  },
+  "msgb443cd06": "Supprimer le fichier de sauvegarde",
+  "@e20": {
+    "type": "text"
+  },
+  "e20": "Erreur lors du chargement du fichier : {e}",
+  "@msg24c6ab0f": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg24c6ab0f": "Fichier sauvegardé avec succès",
+  "@count3": {
+    "type": "text"
+  },
+  "count3": "{count} occurrences remplacées",
+  "@msgffb01e5b": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msgffb01e5b": "Texte brut",
+  "@msg7902d9c0": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg7902d9c0": "Choisir la syntaxe",
+  "@msgc856a077": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msgc856a077": "Rechercher / Remplacer",
+  "@msg7f2c95cd": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg7f2c95cd": "Sauvegarder le fichier",
+  "@msg084e9388": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg084e9388": "Déverrouiller le zoom",
+  "@msgf387265a": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msgf387265a": "Retour à la ligne : Activé",
+  "@msg1045ba75": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg1045ba75": "Retour à la ligne : Désactivé",
+  "@msg96f0ad7d": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg96f0ad7d": "Verrouillage d'édition : Activé",
+  "@msg349ab61d": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg349ab61d": "Verrouillage d'édition : Désactivé",
+  "@msg0cee3cd1": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg0cee3cd1": "Masquer les numéros de ligne",
+  "@selectedlanguage": {
+    "type": "text"
+  },
+  "selectedlanguage": "Syntaxe ({_selectedLanguage})",
+  "@msg0dac421f": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg0dac421f": "Remplacer par...",
+  "@msg52709ae1": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg52709ae1": "Tout remplacer",
+  "@msg4ecba8f6": {
+    "description": "ui\\screens\\text_editor_screen.dart"
+  },
+  "msg4ecba8f6": "Tabulation",
+  "@e21": {
+    "type": "text"
+  },
+  "e21": "Erreur lors du chargement du coffre-fort : {e}",
+  "@msg4828116a": {
+    "description": "ui\\screens\\vault_explorer_screen.dart"
+  },
+  "msg4828116a": "Fichiers cachés",
+  "@msg3bf31dfe": {
+    "description": "ui\\screens\\vault_lock_screen.dart"
+  },
+  "msg3bf31dfe": "Entrez le mot de passe pour déverrouiller",
+  "@pin": {
+    "description": "ui\\screens\\vault_lock_screen.dart"
+  },
+  "pin": "Entrez le PIN pour déverrouiller le portefeuille",
+  "@pin1": {
+    "description": "ui\\screens\\vault_lock_screen.dart"
+  },
+  "pin1": "Définissez votre PIN à 4 chiffres",
+  "@pin2": {
+    "description": "ui\\screens\\vault_lock_screen.dart"
+  },
+  "pin2": "Confirmez votre PIN à 4 chiffres",
+  "@msgbb590f19": {
+    "description": "ui\\screens\\vault_lock_screen.dart"
+  },
+  "msgbb590f19": "Coffre-fort privé",
+  "@msgaa43fa46": {
+    "description": "ui\\screens\\vault_lock_screen.dart"
+  },
+  "msgaa43fa46": "Tout effacer",
+  "@msgc16eed0e": {
+    "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
+  },
+  "msgc16eed0e": "Vitesse de lecture",
+  "@msg8f106217": {
+    "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
+  },
+  "msg8f106217": "Verrouiller les contrôles",
+  "@msg1f41f25d": {
+    "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
+  },
+  "msg1f41f25d": "Mode répétition",
+  "@msg4d2abc8c": {
+    "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
+  },
+  "msg4d2abc8c": "Chemin du média copié dans le presse-papiers.",
+  "@http1": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "http1": "Serveur de partage HTTP local arrêté.",
+  "@msg2904d894": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg2904d894": "Établissement du relais proxy sécurisé...",
+  "@msga1b2c3d4": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
+  "msga1b2c3d4": "Retour au dossier parent",
+  "@msga1b2c3d5": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
+  "msga1b2c3d5": "Comment configurer Shizuku ?",
+  "@msga1b2c3d6": {
+    "description": "ui\\main.dart"
+  },
+  "msga1b2c3d6": "Permission de stockage requise",
+  "@msga1b2c3d7": {
+    "description": "ui\\main.dart"
+  },
+  "msga1b2c3d7": "Accorder la permission",
+  "@msg2c146598": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg2c146598": "Tunnel cloud Internet en ligne ! Lien temporaire activé.",
+  "@msg4a5d26f4": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg4a5d26f4": "Lien copié dans le presse-papiers !",
+  "@type": {
+    "type": "text"
+  },
+  "type": "Scannez avec un autre appareil pour ouvrir {type} immédiatement.",
+  "@msgc8390d74": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msgc8390d74": "Centre de partage Web",
+  "@msg5345cdce": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg5345cdce": "Lien de partage Internet",
+  "@http2": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "http2": "Serveur de partage HTTP local",
+  "@wifi": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "wifi": "Permettre aux autres appareils sur le même Wi-Fi d'accéder, d'afficher et de diffuser vos fichiers via le navigateur Web.",
+  "@msg73c512df": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg73c512df": "Serveur en ligne et en diffusion",
+  "@url1": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "url1": "Copier l'URL",
+  "@msg22b03c02": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg22b03c02": "Code QR",
+  "@sharedir": {
+    "type": "text"
+  },
+  "sharedir": "Répertoire de partage : {shareDir}",
+  "@msge6a29aa4": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msge6a29aa4": "Serveur en veille",
+  "@wifi1": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "wifi1": "Veuillez vous assurer que les autres appareils sont sur le même réseau Wi-Fi, puis démarrez le serveur.",
+  "@msg974465c1": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg974465c1": "Démarrer le serveur Web",
+  "@msg27d5bd3c": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg27d5bd3c": "Générez un lien de tunnel public temporaire sécurisé. Partagez ce lien avec n'importe qui sur Internet pour leur permettre de télécharger des fichiers à haute vitesse, quelle que soit la taille du fichier.",
+  "@msg66a09a42": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg66a09a42": "Lien de partage temporaire (valable 24 heures) :",
+  "@msg879058ce": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg879058ce": "Copier le lien",
+  "@msg7ed199f8": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg7ed199f8": "Clients navigateur connectés",
+  "@msgb77e4adf": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msgb77e4adf": "En attente de téléchargements Internet entrants...",
+  "@msga61778bc": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msga61778bc": "Partage Internet non activé",
+  "@msga3c80551": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msga3c80551": "Désactiver le partage cloud",
+  "@msg6466e61e": {
+    "description": "ui\\screens\\web_sharing_screen.dart"
+  },
+  "msg6466e61e": "Activer le lien de partage Internet",
+  "@msg67bd9375": {
+    "description": "ui\\widgets\\background_operation_progress_dialog.dart"
+  },
+  "msg67bd9375": "Traitement en cours...",
+  "@msg3fa72416": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg3fa72416": "Renommage des fichiers...",
+  "@msg7dbbef0e": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg7dbbef0e": "Veuillez patienter, mise à jour du contenu du dossier",
+  "@msg1a2d9a44": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg1a2d9a44": "Nom original (%)",
+  "@msgcb029197": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msgcb029197": "Numéro séquentiel (#)",
+  "@msgb6d8a14f": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msgb6d8a14f": "Numéro séquentiel à trois chiffres (###)",
+  "@n": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "n": "Nom de fichier sans extension ({n})",
+  "@de": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "de": "Extension avec point ({de})",
+  "@e22": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "e22": "Extension sans point ({e})",
+  "@n1": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "n1": "Nom de fichier complet avec extension ({N})",
+  "@msg0e9dc63a": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg0e9dc63a": "Modèle de nom",
+  "@msg4a63edba": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg4a63edba": "Extension",
+  "@msga420ad79": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msga420ad79": "Numéro de départ",
+  "@msg9857973d": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg9857973d": "Rechercher le texte",
+  "@msg1605701e": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg1605701e": "Remplacer par",
+  "@msgd35f80c8": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msgd35f80c8": "Remplacer le contenu",
+  "@msg32c61dab": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg32c61dab": "Aperçu du renommage",
+  "@msg92642e0e": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "msg92642e0e": "Retour à l'édition",
+  "@msgde88d67a": {
+    "description": "ui\\widgets\\conflict_dialog.dart"
+  },
+  "msgde88d67a": "Le fichier existe déjà",
+  "@msge59e35b5": {
+    "description": "ui\\widgets\\conflict_dialog.dart"
+  },
+  "msge59e35b5": "Appliquer à tous les conflits restants",
+  "@msg27dfaae5": {
+    "description": "ui\\widgets\\conflict_dialog.dart"
+  },
+  "msg27dfaae5": "Conserver les deux",
+  "@msg6cfbf05d": {
+    "description": "ui\\widgets\\conflict_dialog.dart"
+  },
+  "msg6cfbf05d": "Renommer le fichier",
+  "@msg25f747ce": {
+    "description": "ui\\widgets\\create_archive_dialog.dart"
+  },
+  "msg25f747ce": "Créer une archive",
+  "@msged5f808e": {
+    "description": "ui\\widgets\\create_archive_dialog.dart"
+  },
+  "msged5f808e": "Format de compression",
+  "@mb": {
+    "description": "ui\\widgets\\create_archive_dialog.dart"
+  },
+  "mb": "Taille de fractionnement (Mo, facultatif)",
+  "@msgac52af6a": {
+    "description": "ui\\widgets\\create_archive_dialog.dart"
+  },
+  "msgac52af6a": "Laisser vide pour créer une archive unique",
+  "@msgdf2ef7f5": {
+    "description": "ui\\widgets\\create_archive_dialog.dart"
+  },
+  "msgdf2ef7f5": "Créer une archive séparée pour chaque fichier",
+  "@msgb52d4a73": {
+    "description": "ui\\widgets\\directory_tab_bar.dart"
+  },
+  "msgb52d4a73": "Nouvel onglet",
+  "@msg4e9c344a": {
+    "description": "ui\\widgets\\directory_tab_bar.dart"
+  },
+  "msg4e9c344a": "Dupliquer l'onglet",
+  "@msg7716532d": {
+    "description": "ui\\widgets\\directory_tab_bar.dart"
+  },
+  "msg7716532d": "Fermer les autres onglets",
+  "@msgd78603eb": {
+    "description": "ui\\widgets\\directory_tab_bar.dart"
+  },
+  "msgd78603eb": "Double tap pour fermer l'onglet",
+  "@selectedcount": {
+    "type": "text"
+  },
+  "selectedcount": "{selectedCount} éléments",
+  "@e23": {
+    "type": "text"
+  },
+  "e23": "Échec de la création de l'archive : {e}",
+  "@msgc4d7eece": {
+    "description": "ui\\widgets\\extract_archive_dialog.dart"
+  },
+  "msgc4d7eece": "Extraire l'archive",
+  "@msgf15821d0": {
+    "description": "ui\\widgets\\extract_archive_dialog.dart"
+  },
+  "msgf15821d0": "Extraire dans le dossier",
+  "@msgff69affd": {
+    "description": "ui\\widgets\\extract_archive_dialog.dart"
+  },
+  "msg_extract_to": "Extraire vers…",
+  "@msg_extract_to": {
+    "description": "Extract archive dialog title"
+  },
+  "ui_current_directory": "Répertoire actuel",
+  "@ui_current_directory": {
+    "description": "Extract to current directory checkbox"
+  },
+  "ui_custom_directory": "Répertoire personnalisé",
+  "@ui_custom_directory": {
+    "description": "Extract to custom directory checkbox"
+  },
+  "msgff69affd": "Mot de passe (si chiffré)",
+  "@msg67eda5e6": {
+    "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+  },
+  "msg67eda5e6": "Tous les fichiers",
+  "@msg8b2fcb31": {
+    "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+  },
+  "msg8b2fcb31": "Afficher tous les fichiers et dossiers de ce répertoire",
+  "@pdfword": {
+    "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+  },
+  "pdfword": "PDF, documents Word, tableurs, textes et livres électroniques",
+  "@jpegpngwebp": {
+    "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+  },
+  "jpegpngwebp": "JPEG, PNG, WebP et formats photo bruts",
+  "@mp3wavaac": {
+    "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+  },
+  "mp3wavaac": "MP3, WAV, AAC et audio haute fidélité",
+  "@mp4mkvwebm": {
+    "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+  },
+  "mp4mkvwebm": "MP4, MKV, WebM et clips vidéo haute résolution",
+  "@zip7zrar": {
+    "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+  },
+  "zip7zrar": "ZIP, 7Z, RAR et autres fichiers compressés",
+  "@msg6d3e48cc": {
+    "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+  },
+  "msg6d3e48cc": "Choisir une catégorie pour afficher uniquement les fichiers correspondants",
+  "@e24": {
+    "type": "text"
+  },
+  "e24": "Échec du chargement de la miniature distante : {e}",
+  "@msg32a1bd25": {
+    "description": "ui\\widgets\\file_item.dart"
+  },
+  "msg32a1bd25": "1 élément",
+  "@count4": {
+    "type": "text"
+  },
+  "count4": "{count} éléments",
+  "@msg9d69d7a0": {
+    "description": "ui\\widgets\\file_operation_progress_dialog.dart"
+  },
+  "msg9d69d7a0": "Déplacement des fichiers...",
+  "@ui_transferring_files": {
+    "description": "ui\\widgets\\file_operation_progress_dialog.dart"
+  },
+  "ui_transferring_files": "Transfert des fichiers",
+  "@ui_time_remaining": {
+    "description": "ui\\widgets\\file_operation_progress_dialog.dart"
+  },
+  "ui_time_remaining": "restant",
+  "@zenfile6": {
+    "description": "ui\\widgets\\open_with_sheet.dart"
+  },
+  "zenfile6": "Expérience native personnalisée ZenFile",
+  "@msg42be43e6": {
+    "description": "ui\\widgets\\open_with_sheet.dart"
+  },
+  "msg42be43e6": "Application système externe",
+  "@msgd1fca831": {
+    "description": "ui\\widgets\\open_with_sheet.dart"
+  },
+  "msgd1fca831": "Ouvrir avec une application tierce sur l'appareil",
+  "@msgdb75b769": {
+    "description": "ui\\widgets\\open_with_sheet.dart"
+  },
+  "msgdb75b769": "Une seule fois",
+  "@msg959429a5": {
+    "description": "ui\\widgets\\premium_storage_overview.dart"
+  },
+  "msg959429a5": "Parcourir les fichiers de l'appareil",
+  "@msgc31116e3": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msgc31116e3": "Ajouter une nouvelle connexion",
+  "@msgf1d4ff50": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msgf1d4ff50": "Personnalisé",
+  "@msg490ac572": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msg490ac572": "Aucun raccourci épinglé. Appuyez sur Personnaliser pour en ajouter.",
+  "@msg445a43cb": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msg445a43cb": "Faites glisser la poignée (=) pour réorganiser les icônes de la page d'accueil.",
+  "@msg944d5ecd": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msg944d5ecd": "Ajouter un raccourci dossier/fichier",
+  "@msg4f356348": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msg4f356348": "Chemin personnalisé",
+  "@msg94733bec": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msg94733bec": "Supprimer le raccourci",
+  "@msg5c29ad2f": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msg5c29ad2f": "Restaurer l'emplacement",
+  "@msg21de5dd7": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msg21de5dd7": "Emplacement d'analyse personnalisé :",
+  "@msg4bb81f99": {
+    "description": "ui\\widgets\\quick_categories_grid.dart"
+  },
+  "msg4bb81f99": "Aucun chemin personnalisé ajouté.",
+  "@msgf544c399": {
+    "description": "ui\\widgets\\recent_files_section.dart"
+  },
+  "msgf544c399": "Octobre",
+  "@msgc0615eb3": {
+    "description": "ui\\widgets\\recent_files_section.dart"
+  },
+  "msgc0615eb3": "Décembre",
+  "@msg54355dd8": {
+    "description": "ui\\widgets\\recent_files_section.dart"
+  },
+  "msg54355dd8": "Fichiers récents",
+  "@msgd5eac3a3": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
+  "msgd5eac3a3": "Dossiers système restreints",
+  "@android11androiddataandroidobbzenfile": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
+  "android11androiddataandroidobbzenfile": "Android 11+ restreint l'accès standard aux dossiers Android/data et Android/obb pour protéger les données des applications. Pour afficher et modifier ces fichiers, ZenFile a besoin d'autorisations avancées.",
+  "@root": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
+  "root": "Utiliser l'accès root (Superutilisateur)",
+  "@shizukuroot": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
+  "shizukuroot": "Accorder l'accès Shizuku (Pas de root requis)",
+  "@selectedcount1": {
+    "type": "text"
+  },
+  "selectedcount1": "{selectedCount} éléments sélectionnés",
+  "@selectedcount2": {
+    "type": "text"
+  },
+  "selectedcount2": "Êtêtes-vous sûr de vouloir supprimer {selectedCount} éléments ? Cette action est irréversible.",
+  "@msga9b87614": {
+    "description": "ui\\widgets\\selection_action_bar.dart"
+  },
+  "msga9b87614": "Éléments sélectionnés désépinglés",
+  "@msg84e4fac9": {
+    "description": "ui\\widgets\\selection_action_bar.dart"
+  },
+  "msg84e4fac9": "Désépingler",
+  "@msg3be9abab": {
+    "description": "ui\\widgets\\selection_action_bar.dart"
+  },
+  "msg3be9abab": "Calcul de la taille...",
+  "@msg7704aa2c": {
+    "description": "ui\\widgets\\selection_action_bar.dart"
+  },
+  "msg7704aa2c": "Chemin sélectionné :",
+  "@label1": {
+    "type": "text"
+  },
+  "label1": "{label} copié dans le presse-papiers",
+  "@selectedcount3": {
+    "type": "text"
+  },
+  "selectedcount3": "{selectedCount} éléments sélectionnés",
+  "@msg8b73264b": {
+    "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
+  },
+  "msg8b73264b": "Fichiers (appui long pour choisir ouvrir avec)",
+  "@msgc5c0646c": {
+    "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
+  },
+  "msgc5c0646c": "Copier la sélection",
+  "@msg8e6d4604": {
+    "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
+  },
+  "msg8e6d4604": "Couper la sélection",
+  "@msg1058354c": {
+    "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
+  },
+  "msg1058354c": "Propriétés et informations",
+  "@usedstoragestr": {
+    "type": "text"
+  },
+  "usedstoragestr": "{usedStorageStr} utilisé",
+  "@freestoragestr": {
+    "type": "text"
+  },
+  "freestoragestr": "{freeStorageStr} disponible",
+  "@msgc823e21b": {
+    "description": "ui\\widgets\\tab_options_sheet.dart"
+  },
+  "msgc823e21b": "Désépingler l'onglet",
+  "@msg7d6c1284": {
+    "description": "ui\\widgets\\zenfile_address_bar.dart"
+  },
+  "msg7d6c1284": "Aucun répertoire ou fichier correspondant trouvé",
+  "@path": {
+    "type": "text"
+  },
+  "path": "Le chemin n'existe pas : {path}",
+  "@msg6cbbf7d9": {
+    "description": "ui\\widgets\\zenfile_address_bar.dart"
+  },
+  "msg6cbbf7d9": "Entrez le chemin absolu...",
+  "@msgf13fc21c": {
+    "description": "ui\\widgets\\zenfile_drawer.dart"
+  },
+  "msgf13fc21c": "Réseau",
+  "@msg41e625d1": {
+    "description": "ui\\widgets\\zenfile_drawer.dart"
+  },
+  "msg41e625d1": "Ajouter une connexion distante",
+  "@msg8755e992": {
+    "description": "ui\\widgets\\zenfile_drawer.dart"
+  },
+  "msg8755e992": "Mode clair",
+  "@msg1cf6fcd3": {
+    "description": "ui\\widgets\\zenfile_drawer.dart"
+  },
+  "msg1cf6fcd3": "Plus de paramètres",
+  "@msgeef7e30c": {
+    "description": "ui\\widgets\\zenfile_drawer.dart"
+  },
+  "msgeef7e30c": "Suite média premium",
+  "msg2ad64aa7": "Impossible d'ouvrir le lien : {urlString}",
+  "msg30d17f96": "Points forts",
+  "msgaba638c4": "Sécurité du coffre-fort",
+  "msgd309e9ea": "Centre serveur",
+  "msg4a5f936c": "Contact et partage",
+  "msg4d48a010": "ZenFile - Gestionnaire de fichiers magnifique",
+  "msg1f4c0192": "Offrir un café à l'auteur",
+  "msg2eceaa85": "Pourboire pour l'auteur",
+  "msg305734ce": "Journal des modifications",
+  "msg1c80891a": "Ajout de l'aperçu miniature des fichiers distants dans la page de navigation",
+  "msg212f8f9e": "Corrigé : le fichier distant ne peut pas être ouvert/lue",
+  "msgd0cf310e": "Optimisation de la gestion unifiée du répertoire de cache des fichiers distants",
+  "msg072f2022": "Le balayage à un doigt changé en balayage à deux doigts (pour éviter le geste retour accidentel)",
+  "msg66517dc4": "Titres des options de police entièrement localisés",
+  "msgacad92c8": "Suppression de la fonctionnalité 'Empêcher le geste retour gauche d'ouvrir le tiroir'",
+  "msg09d0e1b6": "Corrigé : le changement d'icône alternative ne fonctionne pas",
+  "msg2d1872c8": "Menu de l'éditeur de texte entièrement localisé",
+  "msg2e35eef7": "Navigateur de fichiers double panneau",
+  "msge96aa2cd": "Lecteur média intégré",
+  "msg49a6c41e": "Changement d'icône d'application (plusieurs styles disponibles)",
+  "msg4d82be7c": "Plan de mise à jour de la prochaine version",
+  "msg2c8957dd": "Problèmes connus",
+  "msg11cb01fc": "Lecture vidéo du serveur distant pendant la mise en cache",
+  "msg60a4d643": "L'icône personnalisée ne change pas l'icône de bureau après le téléchargement (sera amélioré dans la prochaine version)",
+  "msg9e68ea42": "Échec de la sauvegarde, veuillez réessayer",
+  "cat_images": "Images",
+  "cat_videos": "Vidéos",
+  "cat_audios": "Audio",
+  "cat_documents": "Documents",
+  "cat_downloads": "Téléchargements",
+  "cat_screenshots": "Captures d'écran",
+  "cat_recent": "Récent",
+  "cat_network": "Réseau",
+  "cat_apps": "Applications",
+  "cat_settings": "Paramètres",
+  "cat_storage": "Espace",
+  "cat_service": "Service",
+  "cat_manage": "Gérer",
+  "cat_config": "Configuration",
+  "cat_analyze": "Analyser",
+  "cat_vault": "Coffre-fort",
+  "cat_vault_desc": "Stockage sécurisé",
+  "cat_quick_categories": "Catégories",
+  "ui_nav": "Local",
+  "ui_home": "Accueil",
+  "ui_recycle_bin": "Corbeille",
+  "ui_dark_mode": "Mode sombre",
+  "ui_personalize_settings": "Paramètres",
+  "ui_compress": "Compresser",
+  "ui_copy": "Copier",
+  "ui_cut": "Couper",
+  "ui_move": "Move",
+  "@ui_move": {
+    "description": "Drag drop action dialog"
+  },
+  "ui_apply": "Apply",
+  "@ui_apply": {
+    "description": "Drag drop action dialog confirm button"
+  },
+  "ui_delete": "Supprimer",
+  "ui_select_all": "Tout sélectionner",
+  "ui_cancel": "Annuler",
+  "ui_confirm": "Confirmer",
+  "ui_share": "Partager",
+  "ui_move_here": "Déplacer ici",
+  "ui_properties": "Propriétés",
+  "ui_info": "Infos",
+  "ui_open": "Ouvrir",
+  "ui_close": "Fermer",
+  "ui_more": "Plus",
+  "ui_appearance_theme": "Apparence et thème",
+  "ui_list_layout_style": "Style de liste et de mise en page",
+  "ui_media_preferences": "Préférences média",
+  "ui_file_actions_viewers": "Actions et visionneurs de fichiers",
+  "ui_no_settings_found": "Aucun paramètre trouvé",
+  "ui_show_action_bar": "Afficher la barre d'actions",
+  "ui_use_24h_format": "Utiliser le format 24 heures",
+  "ui_show_folder_contents_count": "Afficher le nombre de contenu du dossier",
+  "ui_show_folder_size": "Afficher la taille du dossier",
+  "ui_show_bottom_action_bar": "Position de la barre de navigation",
+  "ui_hide_action_text": "Masquer les étiquettes de texte de la barre d'actions",
+  "ui_show_media_previews": "Miniatures média locales",
+  "ui_adaptive_multiline_names": "Noms de fichiers multilignes adaptatifs",
+  "ui_hide_action_menu_buttons": "Masquer les boutons du menu d'actions",
+  "ui_show_action_menu_buttons": "Afficher les boutons du menu d'actions",
+  "ui_action_menu_subtitle": "Choisir le mode d'affichage du bouton de menu trois points. Désactivé, aucun bouton ne s'affiche à côté des fichiers et dossiers.",
+  "ui_action_menu_mode_all": "Afficher dans tous les modes",
+  "ui_action_menu_mode_single": "Mode fenêtre unique uniquement",
+  "ui_action_menu_mode_dual": "Mode double fenêtre uniquement",
+  "ui_enable_drag_drop": "Activer le glisser-déposer",
+  "ui_confirm_drag_drop": "Confirmer le glisser-déposer",
+  "ui_enable_multi_tabs": "Activer les onglets multiples",
+  "ui_enable_split_screen": "Activer l'écran partagé",
+  "ui_app_icon": "Icône de l'application",
+  "ui_emerald_green": "Vert émeraude",
+  "ui_deep_red": "Rouge foncé",
+  "ui_square": "Carré",
+  "ui_circle": "Cercle",
+  "ui_1_day_after": "1 jour plus tard",
+  "ui_no_auto_clean": "Pas de nettoyage automatique",
+  "ui_daily": "Quotidien",
+  "ui_weekly": "Hebdomadaire",
+  "ui_monthly": "Mensuel",
+  "ui_every_n_days": "Tous les {days} jours",
+  "@ui_every_n_days": {
+    "description": "ui\\screens\\more_settings_screen.dart",
+    "type": "text"
+  },
+  "ui_clear_cache_failed": "Échec de la suppression du cache : {e}",
+  "@ui_clear_cache_failed": {
+    "description": "ui\\screens\\more_settings_screen.dart",
+    "type": "text"
+  },
+  "ui_clear_remote_cache": "Effacer le cache distant",
+  "ui_view_cache_dir": "Afficher le répertoire de cache",
+  "ui_remote_media_thumbnail": "Miniatures média distantes",
+  "ui_auto_clean_remote_cache": "Nettoyer automatiquement le cache du serveur distant périodiquement : {label}",
+  "@ui_auto_clean_remote_cache": {
+    "description": "ui\\screens\\more_settings_screen.dart",
+    "type": "text"
+  },
+  "ui_custom_font_with_name": "Police personnalisée ({name})",
+  "@ui_custom_font_with_name": {
+    "description": "ui\\screens\\more_settings_screen.dart",
+    "type": "text"
+  },
+  "ui_import_custom_font": "Importer un fichier de police personnalisé (.ttf/.otf)",
+  "ui_custom_font_applied": "Police personnalisée \"{name}\" appliquée avec succès !",
+  "@ui_custom_font_applied": {
+    "description": "ui\\screens\\more_settings_screen.dart",
+    "type": "text"
+  },
+  "ui_invalid_file_type": "Type de fichier invalide",
+  "ui_language": "Langue",
+  "ui_hide_nav_labels": "Masquer les étiquettes de navigation inférieure",
+  "ui_reset_default_viewers": "Réinitialiser les visionneurs par défaut",
+  "ui_trailing_info_when_hidden": "Info en fin de ligne quand le menu est masqué",
+  "ui_go_up": "Remonter",
+  "@ui_go_up": {
+    "description": "directory_screen.dart"
+  },
+  "ui_cut_copy_items": "{prefix} · {count} éléments",
+  "@ui_cut_copy_items": {
+    "description": "directory_screen.dart",
+    "placeholders": {
+      "prefix": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_clear": "Effacer",
+  "@ui_clear": {
+    "description": "directory_screen.dart"
+  },
+  "ui_paste": "Coller",
+  "@ui_paste": {
+    "description": "directory_screen.dart"
+  },
+  "ui_file_name": "Nom du fichier",
+  "@ui_file_name": {
+    "description": "directory_screen.dart"
+  },
+  "ui_create": "Créer",
+  "@ui_create": {
+    "description": "directory_screen.dart"
+  },
+  "ui_create_new_directory": "Créer un nouveau répertoire",
+  "@ui_create_new_directory": {
+    "description": "directory_screen.dart"
+  },
+  "ui_layout_mode": "Mode de mise en page",
+  "@ui_layout_mode": {
+    "description": "directory_screen.dart"
+  },
+  "ui_grid_view": "Vue en grille",
+  "@ui_grid_view": {
+    "description": "directory_screen.dart"
+  },
+  "ui_name_asc": "Nom (A-Z)",
+  "@ui_name_asc": {
+    "description": "directory_screen.dart"
+  },
+  "ui_newest": "Plus récents",
+  "@ui_newest": {
+    "description": "directory_screen.dart"
+  },
+  "ui_oldest": "Plus anciens",
+  "@ui_oldest": {
+    "description": "directory_screen.dart"
+  },
+  "ui_size_small": "Taille (Petit)",
+  "@ui_size_small": {
+    "description": "directory_screen.dart"
+  },
+  "ui_type": "Type",
+  "@ui_type": {
+    "description": "ui widgets"
+  },
+  "ui_storage_volume": "Volume de stockage",
+  "@ui_storage_volume": {
+    "description": "directory_screen.dart"
+  },
+  "ui_browse": "Parcourir",
+  "@ui_browse": {
+    "description": "directory_screen.dart"
+  },
+  "ui_new": "Nouveau",
+  "@ui_new": {
+    "description": "directory_screen.dart"
+  },
+  "ui_folders_count": "Dossiers : {count}",
+  "@ui_folders_count": {
+    "description": "directory_screen.dart",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_files_count": "Fichiers : {count}",
+  "@ui_files_count": {
+    "description": "directory_screen.dart",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_selection_mode": "Mode sélection",
+  "@ui_selection_mode": {
+    "description": "directory_screen.dart"
+  },
+  "ui_storage_and_sd": "Stockage et carte SD",
+  "@ui_storage_and_sd": {
+    "description": "directory_screen.dart"
+  },
+  "ui_images_only": "Images uniquement",
+  "@ui_images_only": {
+    "description": "ui widgets"
+  },
+  "ui_videos_only": "Vidéos uniquement",
+  "@ui_videos_only": {
+    "description": "ui widgets"
+  },
+  "ui_show_folders": "Afficher les dossiers",
+  "@ui_show_folders": {
+    "description": "directory_screen.dart"
+  },
+  "ui_files": "Fichiers",
+  "@ui_files": {
+    "description": "directory_screen.dart"
+  },
+  "ui_delete_file_confirm": "Êtêtes-vous sûr de vouloir supprimer ce fichier ? Cette action est irréversible.",
+  "@ui_delete_file_confirm": {
+    "description": "directory_screen.dart"
+  },
+  "ui_done": "Terminé",
+  "@ui_done": {
+    "description": "ui widgets"
+  },
+  "ui_name": "Nom",
+  "@ui_name": {
+    "description": "ui widgets"
+  },
+  "ui_path": "Chemin",
+  "@ui_path": {
+    "description": "ui widgets"
+  },
+  "ui_size": "Taille",
+  "@ui_size": {
+    "description": "ui widgets"
+  },
+  "ui_permissions": "Permissions",
+  "@ui_permissions": {
+    "description": "ui widgets"
+  },
+  "ui_contains": "Contient",
+  "@ui_contains": {
+    "description": "ui widgets"
+  },
+  "ui_extract": "Extraire",
+  "@ui_extract": {
+    "description": "ui widgets"
+  },
+  "ui_pin_to_top": "Épingler en haut",
+  "@ui_pin_to_top": {
+    "description": "ui widgets"
+  },
+  "msg_select_all": "Tout sélectionner",
+  "@msg_select_all": {
+    "description": "selection_context_bottom_sheet.dart"
+  },
+  "ui_pinned_selected": "Éléments sélectionnés épinglés",
+  "@ui_pinned_selected": {
+    "description": "ui widgets"
+  },
+  "ui_filter_by_type": "Filtrer les fichiers par type",
+  "@ui_filter_by_type": {
+    "description": "ui widgets"
+  },
+  "ui_default_scan_locations": "Emplacements d'analyse par défaut :",
+  "@ui_default_scan_locations": {
+    "description": "ui widgets"
+  },
+  "ui_exclude_location": "Exclure l'emplacement",
+  "@ui_exclude_location": {
+    "description": "ui widgets"
+  },
+  "ui_add_custom_path": "Ajouter un chemin personnalisé",
+  "@ui_add_custom_path": {
+    "description": "ui widgets"
+  },
+  "ui_added_custom_paths": "{count} chemins personnalisés ajoutés",
+  "@ui_added_custom_paths": {
+    "description": "ui widgets",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_close_tab": "Fermer l'onglet",
+  "@ui_close_tab": {
+    "description": "ui widgets"
+  },
+  "ui_not_found_title": "Aucun {title} trouvé",
+  "@ui_not_found_title": {
+    "description": "ui widgets",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_oldest_first": "Plus anciens d'abord",
+  "@ui_oldest_first": {
+    "description": "ui widgets"
+  },
+  "ui_sort_options": "Options de tri",
+  "@ui_sort_options": {
+    "description": "ui widgets"
+  },
+  "ui_refresh": "Actualiser",
+  "@ui_refresh": {
+    "description": "ui widgets"
+  },
+  "ui_selected_count": "{count} sélectionné(s)",
+  "@ui_selected_count": {
+    "description": "ui widgets",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_permanently_delete_name": "Supprimer définitivement \"{name}\" ?",
+  "@ui_permanently_delete_name": {
+    "description": "ui widgets",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_copied_count": "{count} éléments copiés dans le presse-papiers",
+  "@ui_copied_count": {
+    "description": "ui widgets",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_cut_count": "{count} éléments coupés dans le presse-papiers",
+  "@ui_cut_count": {
+    "description": "ui widgets",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_read": "Lire",
+  "@ui_read": {
+    "description": "ui widgets"
+  },
+  "ui_write": "Écrire",
+  "@ui_write": {
+    "description": "ui widgets"
+  },
+  "ui_file": "Fichier",
+  "@ui_file": {
+    "description": "ui widgets"
+  },
+  "ui_backup_settings": "Sauvegarder les paramètres",
+  "ui_restore_settings": "Restaurer les paramètres",
+  "ui_backup_info": "Informations de sauvegarde",
+  "ui_backup_file": "Fichier de sauvegarde",
+  "ui_no_backup_file": "Aucun fichier de sauvegarde",
+  "ui_remote_connection": "Connexion distante",
+  "ui_step_n_of_3": "Étape {step} / 3",
+  "ui_choose_network_service": "Choisir le service réseau",
+  "ui_connection_name": "Nom de la connexion",
+  "ui_protocol": "Protocole",
+  "ui_port": "Port",
+  "ui_path_label": "Chemin",
+  "ui_username_optional": "Nom d'utilisateur (facultatif)",
+  "ui_share_name_optional": "Nom de partage (facultatif)",
+  "ui_share_name_hint": "ex. /Public ou laisser vide pour la détection auto",
+  "ui_smb_desc": "Réseau local & partage NAS SMB",
+  "ui_connection_suffix": "Connexion",
+  "ui_back": "Retour",
+  "ui_connect": "Connecter",
+  "ui_web_share": "Partage Web",
+  "ui_network": "Réseau",
+  "log_i18n_full": "Internationalisation complète pour l'interface chinoise/anglaise",
+  "log_fix_selection_count": "Corrigé : le nombre de sélection de fichiers ne s'affiche pas",
+  "log_fix_remote_title": "Corrigé : problème d'affichage du titre de la page de connexion distante",
+  "log_svg_thumbnail_category": "Les miniatures SVG s'affichent désormais dans les pages de catégorie",
+  "log_language_btn_top": "Bouton de changement de langue déplacé en haut des paramètres",
+  "log_fix_category_missing": "Corrigé : certaines catégories ne s'affichent pas en mode anglais",
+  "log_text_editor": "Nouvelles fonctionnalités de l'éditeur de texte : nouveau fichier, enregistrer sous, annuler/rétablir",
+  "log_text_editor_settings": "Persistance des paramètres de l'éditeur de texte (retour à la ligne, numéros de ligne, mode lecture)",
+  "log_10_languages": "Support de 10 langues (chinois, anglais, japonais, coréen, allemand, français, espagnol, russe, arabe)",
+  "log_fix_l10n_hardcode": "Correction de plusieurs problèmes de texte codé en dur l10n",
+  "log_language_scroll": "Optimisation du dialogue de sélection de langue avec support du défilement",
+  "log_remote_media_cache": "Les médias distants s'ouvrent immédiatement dans le lecteur avec mise en cache en arrière-plan",
+  "log_remote_to_remote": "Ajout de la copie/coupe entre serveurs distants",
+  "log_remote_cut_progress": "Correction de la barre de progression pour les opérations de coupe distante",
+  "log_audio_scan_stable": "Amélioration de la stabilité du scan de la catégorie audio",
+  "log_extract_dialog_redesign": "Dialogue d'extraction redessiné avec sélection du répertoire actuel/personnalisé",
+  "log_vault_quick_category": "Raccourci coffre-fort ajouté aux catégories rapides (désactivé par défaut)",
+  "log_vault_l10n_fix": "Correction du texte anglais codé en dur et du gel lors de l'ajout de plusieurs fichiers dans le coffre-fort",
+  "log_compression_path_fix": "Unification des chemins de compression pour le bouton 3 points et le menu appui long",
+  "log_compression_progress": "Amélioration du dialogue de progression avec affichage multi-étapes et fermeture automatique fiable",
+  "log_web_share_category": "Le portail de partage Web affiche les fichiers par catégories (dossiers, vidéos, audio, images, documents, autres)",
+  "log_web_share_l10n": "Le portail de partage Web prend en charge l'affichage multilingue selon la langue de l'application",
+    "log_music_lyrics_fullscreen_removed": "Panneau plein écran des paroles supprimé du menu du lecteur musical",
+    "log_music_lyrics_centered": "Affichage des paroles actuelles centré dans le lecteur musical",
+    "log_music_player_button": "Bouton du lecteur musical ajouté en haut de la catégorie Musique",
+    "log_music_remember_progress": "Le lecteur musical mémorise la position de lecture et reprend automatiquement",
+    "log_image_icon_redesign": "Icônes de fichiers image redesignées avec étiquette de format (jpg, png, etc.)",
+    "log_doc_icon_redesign": "Icônes de fichiers document redesignées avec étiquette de format",
+    "log_archive_icon_redesign": "Icônes d'archives redesignées avec étiquette de format (zip, 7z, rar, etc.)",
+    "log_music_lrc_lyrics": "Chargement automatique des paroles LRC et sélection manuelle de fichiers de paroles",
+      "log_remote_copy_paste_fix": "Correction de la copie depuis le serveur distant: progression à 0% et fichiers absents",
+    "log_navbar_position_setting": "Added navigation bar position setting, support top or bottom display",
+    "log_browse_top_area_optimize": "Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space",
+    "log_thanks_feedback": "Merci aux utilisateurs suivants pour leurs commentaires et suggestions : 越界, 猕猴桃, Sir Jagadeesh Chandra Bose, Silence",
+    "log_smb_native_rewrite": "Client SMB entièrement réécrit utilisant la bibliothèque native smbj d'Android pour un véritable protocole SMB, avec détection automatique des noms de partage",
+    "log_ftp_sftp_streaming": "Correction de la lecture en streaming FTP/SFTP utilisant Socket brut avec connexion de données indépendante, prenant en charge la mise en cache progressive",
+    "log_remote_l10n_fix": "Corrigé les chaînes codées en dur dans la page de connexion distante, ajouté des clés l10n pour la description du protocole SMB et le suffixe du nom de connexion",
+    "log_image_viewer_menu": "Menu en haut à droite de la visionneuse d'images modifié en feuille inférieure, 9 éléments d'action, fond semi-transparent noir pour la visibilité",
+    "log_breadcrumb_border": "Ajout d'une bordure complète en forme de V aux boutons de fil d'Ariane utilisant CustomPaint, garantissant une connexion transparente et des limites claires",
+    "log_three_dot_button_position": "Boutons d'action à trois points des fichiers/dossiers déplacés vers le coin supérieur droit des cartes pour éviter les touchers accidentels pendant le glissement",
+    "log_three_dot_button_setting": "Paramètre de bouton à trois points renommé en 'Afficher les boutons à trois points' avec trois modes : tous/fenêtre unique uniquement/fenêtre double uniquement",
+    "log_category_back_select": "En mode de sélection multiple de catégorie, le bouton retour annule désormais la sélection au lieu de quitter la catégorie",
+    "log_desktop_lyric": "Ajout d'une fenêtre flottante de paroles de bureau avec vérification des permissions, position glissable et appui pour basculer lecture/pause",
+    "log_notification_panel": "Correction du panneau de notification n'affichant pas les contrôles de lecture, notification conservée en pause, avec invites de refus de permission",
+    "log_lyric_word_highlight": "Les paroles flottantes prennent en charge le surlignage mot par mot utilisant SpannableStringBuilder pour un effet karaoké",
+    "log_floating_window_resize": "La fenêtre flottante de paroles prend en charge l'appui long pour afficher la poignée de redimensionnement, glisser pour ajuster la fenêtre et la taille du texte",
+    "log_background_play_fix": "Correction de la musique qui se met en pause lors de l'activation de la lecture en arrière-plan, attach réutilise l'instance du lecteur sans interruption",
+    "log_category_button_sync": "Correction du bouton de lecture de la page de catégorie affichant des informations audio obsolètes lorsque la lecture en arrière-plan est désactivée, se rafraîchit au retour",
+    "log_build_stability": "Correction du OOM de compilation R8, écran blanc de démarrage x86_64/armv7, ajustement de la mémoire JVM Gradle et des téléchargements ABI",
+    "log_lyric_scale_animation": "Ajout d'un effet de mise à l'échelle à l'animation de transition de paroles mot par mot, correction des problèmes de synchronisation, durée de transition fixée à 300ms",
+  "msg_file_exists": "Le fichier existe déjà",
+  "@msg_file_exists": {
+    "description": "Conflict dialog title"
+  },
+  "msg_file_exists_desc": "Un fichier du même nom \"{fileName}\" existe déjà dans le dossier de destination. Comment souhaitez-vous procéder ?",
+  "@msg_file_exists_desc": {
+    "description": "Conflict dialog description",
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
+  "msg_existing_file": "Fichier existant",
+  "@msg_existing_file": {
+    "description": "Existing file label in conflict dialog"
+  },
+  "msg_cancel_paste": "Annuler le collage",
+  "@msg_cancel_paste": {
+    "description": "Cancel paste button"
+  },
+  "msg_skip_file": "Ignorer",
+  "@msg_skip_file": {
+    "description": "Skip file button in conflict dialog"
+  },
+  "msg_overwrite_file": "Remplacer",
+  "@msg_overwrite_file": {
+    "description": "Overwrite file button in conflict dialog"
+  },
+  "msg_newer": "Plus récent",
+  "@msg_newer": {
+    "description": "Newer badge in conflict dialog"
+  },
+  "msg_new_file_name": "Nouveau nom de fichier",
+  "@msg_new_file_name": {
+    "description": "New file name label in rename dialog"
+  },
+  "msg_remember_choice": "Se souvenir de ce choix pour les opérations futures",
+  "ui_caching": "Mise en cache, veuillez patienter...",
+  "ui_username": "Nom d'utilisateur",
+  "ui_anonymous": "Anonyme",
+  "ui_start": "Démarrer",
+  "ui_stop": "Arrêter",
+  "ui_connected": "Connecté",
+  "ui_activated": "Activé",
+  "ui_web_sharing_center": "Centre de partage Web",
+  "ui_local_web_share": "Partage Web local",
+  "ui_http_local_share_server": "Serveur de partage HTTP local",
+  "ui_server_idle": "Serveur en veille",
+  "ui_pick_files_folders": "Sélectionner des fichiers et dossiers",
+  "ui_secure_storage": "Stockage sécurisé",
+  "ui_protected_total_space": "Espace total protégé",
+  "ui_hidden_files_count": "Fichiers cachés",
+  "ui_search_obfuscated": "Rechercher les fichiers masqués...",
+  "ui_vault_empty": "Votre coffre-fort sécurisé est vide",
+  "ui_hide_files": "Masquer les fichiers",
+  "ui_global_search": "Recherche globale",
+  "ui_all": "Tous",
+  "ui_folders": "Dossiers",
+  "ui_images": "Images",
+  "ui_videos": "Vidéos",
+  "ui_audio": "Audio",
+  "ui_documents": "Documents",
+  "ui_no_matching_files": "Aucun fichier correspondant trouvé",
+  "ui_try_modify_search": "Essayez de modifier votre texte de recherche pour trouver les éléments masqués.",
+  "ui_vault_empty_desc": "Les signatures d'obscurcissement XOR rendent les fichiers complètement inouvrables et cachés de la base de données du scanner système. Cliquez sur le bouton ci-dessous pour les protéger.",
+  "ui_copied_n_items": "{count} élément(s) copié(s) dans le presse-papiers",
+  "ui_cut_n_items": "{count} élément(s) coupé(s) dans le presse-papiers",
+  "ui_copy_tooltip": "Copier",
+  "ui_cut_tooltip": "Couper",
+  "ui_delete_tooltip": "Supprimer",
+  "ui_search_this_folder": "Rechercher dans ce dossier",
+  "ui_search_files_subfolders_in": "Rechercher des fichiers et sous-dossiers dans : {path}",
+  "ui_no_results": "Aucun résultat trouvé",
+  "ui_no_match_for": "Aucun résultat pour \"{query}\"",
+  "ui_n_selected": "{count} sélectionné(s) ({size})",
+  "ui_select_language_title": "Sélectionner la langue",
+  "ui_select_language_desc": "Veuillez sélectionner votre langue préférée",
+  "ui_language_chinese": "中文",
+  "ui_language_english": "English",
+  "msgDefaultZoom": "Zoom par défaut ({fontSize}pt)",
+  "msgLockZoom": "Verrouiller le zoom",
+  "ui_background": "Arrière-plan",
+  "ui_overall_progress": "Progression globale",
+  "ui_archive_name": "Nom de l'archive",
+  "ui_compression_level": "Niveau de compression",
+  "ui_delete_source_after": "Supprimer les fichiers source après la fin",
+  "ui_no_compression": "Aucune (Stockage uniquement)",
+  "ui_fast": "Rapide",
+  "ui_standard": "Standard",
+  "ui_maximum": "Maximum",
+  "ui_new_txt": "Nouveau fichier texte",
+  "ui_save_as": "Enregistrer sous",
+  "ui_undo": "Annuler",
+  "ui_redo": "Rétablir",
+  "ui_add_selected": "Ajouter la sélection ({count})",
+  "msg_vault_choose_mode": "Choisir le mode de protection",
+  "msg_vault_mode_desc": "Choisissez comment protéger vos fichiers sélectionnés. Les fichiers sécurisés sont instantanément brouillés par XOR.",
+  "ui_secure_import": "Importation sécurisée (Sandbox)",
+  "ui_in_place_scramble": "Brouillage sur place (Rapide)",
+  "msg_scrambling": "Brouillage et protection...",
+  "msg_protected_count": "{successCount} éléments protégés avec succès.",
+  "msg_protect_failed_count": "Échec du verrouillage de {failCount} éléments.",
+  "msg_restored": "「{name}」a été restauré à son emplacement d'origine.",
+  "msg_restore_failed": "Échec de la restauration du fichier : {error}",
+  "msg_decrypting": "Déchiffrement sécurisé...",
+  "msg_security_details": "Détails de sécurité",
+  "ui_restore_unhide": "Restaurer (Afficher)",
+  "msg_permanent_delete": "Supprimer définitivement ?",
+  "msg_permanent_delete_content": "Êtes-vous sûr de vouloir supprimer définitivement 「{name}」? Cette action est irréversible.",
+  "msg_file_deleted": "Le fichier a été supprimé définitivement.",
+  "msg_delete_failed": "Échec de la suppression du fichier : {error}",
+  "msg_original_name": "Nom d'origine",
+  "msg_original_path": "Chemin d'origine",
+  "msg_scrambled_path": "Chemin brouillé",
+  "msg_size_label": "Taille",
+  "msg_locked_at": "Verrouillé le",
+  "msg_protection_mode": "Mode de protection",
+  "msg_in_place_scrambling": "Brouillage sur place",
+  "msg_isolated_move": "Déplacement isolé (Sandbox)",
+  "web_share_search": "Rechercher des fichiers et dossiers...",
+  "web_share_upload": "Télécharger",
+  "web_share_drop_title": "Déposez les fichiers ici pour les télécharger",
+  "web_share_drop_desc": "Vos fichiers seront instantanément téléchargés dans ce dossier partagé",
+  "web_share_empty_search": "Aucun élément ne correspond à votre recherche",
+  "web_share_empty_desc": "Vérifiez l'orthographe ou essayez un terme de recherche différent",
+  "web_share_copy_link": "Copier le lien",
+  "web_share_download": "Télécharger",
+  "web_share_uploading": "Téléchargement de {name}...",
+  "@web_share_uploading": {
+    "description": "Upload progress title",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "web_share_upload_success": "Téléchargement terminé avec succès",
+  "web_share_upload_failed": "Échec du téléchargement de {name}",
+  "@web_share_upload_failed": {
+    "description": "Upload failed message",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "web_share_preview_unsupported": "L'aperçu n'est pas pris en charge pour ce type de fichier",
+  "web_share_preview_download": "Cliquez sur Télécharger ci-dessous pour l'enregistrer sur votre appareil",
+  "web_share_footer": "Partage et diffusion sécurisés de fichiers via ZenFile",
+  "web_share_parent_dir": "Répertoire parent",
+  "web_share_go_up": "Remonter d'un niveau",
+  "web_share_items_count": "{count} éléments",
+  "@web_share_items_count": {
+    "description": "Item count display",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "web_share_link_copied": "Lien copié dans le presse-papiers",
+  "web_share_copy_failed": "Échec de la copie du lien",
+  "web_share_local": "Partage Wi-Fi local",
+  "web_share_internet": "Partage Internet",
+  "web_share_category_folders": "Dossiers",
+  "web_share_category_videos": "Vidéos",
+  "web_share_category_audio": "Audio",
+  "web_share_category_images": "Images",
+  "web_share_category_documents": "Documents",
+  "web_share_category_others": "Autres",
+  "web_share_loading_preview": "Chargement de l'aperçu...",
+  "web_share_preview_error": "Impossible de diffuser le document. Vous pouvez toujours le télécharger directement.",
+  "msg_custom_shortcut": "Icône personnalisée",
+  "msg_add_custom_shortcut": "Ajouter à l'écran d'accueil",
+  "msg_shortcut_added": "Ajouté à l'écran d'accueil",
+  "msg_shortcut_failed": "Échec de l'ajout",
+  "ui_lyrics_loaded": "Paroles chargées",
+  "ui_lyrics_load_failed": "Impossible d'analyser ce fichier de paroles",
+  "ui_select_lyrics_file": "Importer des paroles locales",
+  "ui_search_lyrics_online": "Rechercher des paroles en ligne",
+  "ui_no_lyrics_found": "Aucune parole trouvée",
+  "ui_lyrics_auto_load_hint": "Placez le fichier .lrc dans le même dossier que l'audio\n(avec le même nom de fichier) pour le charger automatiquement",
+  "ui_lyrics_panel": "Panneau des paroles",
+  "ui_show_lyrics": "Afficher les paroles",
+  "ui_hide_lyrics": "Masquer les paroles",
+  "ui_sound_effects_speed": "Effets sonores et vitesse",
+  "ui_pitch_adjustment": "Réglage de la tonalité",
+  "ui_restore_default": "Restaurer par défaut",
+  "ui_sound_effects": "Effets sonores",
+  "ui_playback_queue": "File de lecture",
+  "ui_repeat_off": "Répéter : Désactivé",
+  "ui_repeat_one": "Répéter : Un titre",
+  "ui_repeat_all": "Répéter : Tous",
+  "ui_shuffle_on": "Lecture aléatoire : Activée",
+  "ui_minutes_format": "{minutes} minutes",
+  "ui_sleep_timer_set": "Minuterie de sommeil réglée sur {minutes} minutes.",
+  "ui_enter_minutes": "Entrer les minutes",
+  "ui_sleep_timer_end": "Minuterie terminée, lecture en pause",
+  "ui_close_player": "Fermer le lecteur",
+  "ui_open_player": "Ouvrir le lecteur",
+  "ui_now_playing": "Lecture en cours",
+  "ui_resume_playback": "Reprendre la lecture",
+  "ui_single": "Single",
+  "ui_add_remote_path": "Ajouter un chemin distant",
+  "ui_select_remote_server": "Sélectionner un serveur distant",
+  "ui_no_remote_connections": "Aucune connexion distante, veuillez d'abord ajouter une connexion réseau",
+  "ui_retry": "Réessayer",
+  "ui_no_subfolders": "Aucun sous-dossier",
+  "ui_select_this_folder": "Sélectionner ce dossier",
+  "ui_downloading_file": "Téléchargement: {file}",
+  "@ui_downloading_file": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_sent": "Envoyé: {amount}",
+  "@ui_sent": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@ui_minutes_format": {
+    "description": "Minutes format for sleep timer options",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@ui_sleep_timer_set": {
+    "description": "Sleep timer set confirmation",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_recycle_restore_success": "{count} élément(s) restauré(s) avec succès",
+  "@ui_recycle_restore_success": {
+    "description": "Recycle bin restore success message",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_recycle_restore_failed": "Erreur lors de la restauration : {error}",
+  "@ui_recycle_restore_failed": {
+    "description": "Recycle bin restore failed message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_recycle_perm_delete_title": "Supprimer définitivement ?",
+  "@ui_recycle_perm_delete_title": {
+    "description": "Recycle bin permanent delete confirm dialog title"
+  },
+  "ui_recycle_perm_delete_message": "Êtes-vous sûr de vouloir supprimer définitivement ces {count} élément(s) ? Cette action est irréversible.",
+  "@ui_recycle_perm_delete_message": {
+    "description": "Recycle bin permanent delete confirm dialog message",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_recycle_perm_delete_success": "{count} élément(s) supprimé(s) définitivement",
+  "@ui_recycle_perm_delete_success": {
+    "description": "Recycle bin permanent delete success message",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_recycle_perm_delete_failed": "Erreur lors de la suppression : {error}",
+  "@ui_recycle_perm_delete_failed": {
+    "description": "Recycle bin permanent delete failed message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_recycle_empty_title": "Vider la corbeille ?",
+  "@ui_recycle_empty_title": {
+    "description": "Recycle bin empty confirm dialog title"
+  },
+  "ui_recycle_empty_failed": "Erreur lors de la vidange de la corbeille : {error}",
+  "@ui_recycle_empty_failed": {
+    "description": "Recycle bin empty failed message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_recycle_selected_count": "{count} sélectionné(s)",
+  "@ui_recycle_selected_count": {
+    "description": "Recycle bin selected items count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_recycle_deleted_at": "Supprimé le : {date} • {size}",
+  "@ui_recycle_deleted_at": {
+    "description": "Recycle bin item deleted date and size",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_recycle_restore": "Restaurer",
+  "@ui_recycle_restore": {
+    "description": "Recycle bin restore action"
+  },
+  "ui_recycle_empty_hint": "Les éléments que vous supprimez lorsque la corbeille est activée apparaîtront ici. Vous pouvez les restaurer ou les supprimer définitivement.",
+  "@ui_recycle_empty_hint": {
+    "description": "Recycle bin empty state hint"
+  },
+  "ui_recycle_deleted_date": "Date de suppression",
+  "@ui_recycle_deleted_date": {
+    "description": "Recycle bin deleted date label"
+  },
+  "ui_recycle_type": "Type",
+  "@ui_recycle_type": {
+    "description": "Recycle bin item type label"
+  },
+  "ui_recycle_file": "Fichier",
+  "@ui_recycle_file": {
+    "description": "Recycle bin file type"
+  },
+  "ui_db_browse_data": "Parcourir les données",
+  "@ui_db_browse_data": {
+    "description": "Database reader browse data tab"
+  },
+  "ui_db_table_schema": "Structure de la table",
+  "@ui_db_table_schema": {
+    "description": "Database reader table schema tab"
+  },
+  "ui_db_sql_console": "Console SQL",
+  "@ui_db_sql_console": {
+    "description": "Database reader SQL console tab"
+  },
+  "ui_db_export_success": "Exporté avec succès vers {fileName}",
+  "@ui_db_export_success": {
+    "description": "Database reader CSV export success message",
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_db_export_failed": "Échec de l'export : {error}",
+  "@ui_db_export_failed": {
+    "description": "Database reader CSV export failed message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_db_export_csv": "Exporter la table en CSV",
+  "@ui_db_export_csv": {
+    "description": "Database reader export CSV tooltip"
+  },
+  "ui_db_primary_key": "PK",
+  "@ui_db_primary_key": {
+    "description": "Database reader primary key label"
+  },
+  "ui_db_not_null": "NOT NULL",
+  "@ui_db_not_null": {
+    "description": "Database reader not null label"
+  },
+  "ui_db_type": "Type : {type}",
+  "@ui_db_type": {
+    "description": "Database reader column type label",
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_db_default": "Défaut : {value}",
+  "@ui_db_default": {
+    "description": "Database reader column default value label",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "ui_db_execute_query": "Exécuter la requête",
+  "@ui_db_execute_query": {
+    "description": "Database reader execute query button"
+  },
+  "ui_db_enter_query": "Entrez la requête SELECT ici...",
+  "@ui_db_enter_query": {
+    "description": "Database reader SQL query hint text"
+  },
+  "ui_db_showing_range": "Affichage de {start} - {end}",
+  "@ui_db_showing_range": {
+    "description": "Database reader pagination range text",
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_db_query_returned": "La requête a retourné {count} lignes",
+  "@ui_db_query_returned": {
+    "description": "Database reader query result row count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ui_app_installed_user_apps": "Applications utilisateur installées",
+  "@ui_app_installed_user_apps": {
+    "description": "App Manager installed user apps tab"
+  },
+  "ui_app_system_packages": "Paquets système",
+  "@ui_app_system_packages": {
+    "description": "App Manager system packages tab"
+  },
+  "ui_app_backup_apk": "APK sauvegardés",
+  "@ui_app_backup_apk": {
+    "description": "App Manager backup APKs tab"
+  },
+  "ui_app_precise_storage": "Calcul de stockage précis",
+  "@ui_app_precise_storage": {
+    "description": "App Manager precise storage calculation title"
+  },
+  "ui_app_grant_usage_access": "Accorder l'accès aux données d'utilisation",
+  "@ui_app_grant_usage_access": {
+    "description": "App Manager grant usage access button"
+  },
+  "ui_app_search_backup": "Rechercher des sauvegardes...",
+  "@ui_app_search_backup": {
+    "description": "App Manager search backup hint"
+  },
+  "ui_app_sort_by_install_date": "Trier par date d'installation",
+  "@ui_app_sort_by_install_date": {
+    "description": "App Manager sort by install date option"
+  },
+  "ui_select_all": "Tout sélectionner",
+  "@ui_select_all": {
+    "description": "Select all items"
+  },
+  "ui_app_no_backup_found": "Aucune sauvegarde trouvée",
+  "@ui_app_no_backup_found": {
+    "description": "App Manager no backup found empty state title"
+  },
+  "ui_app_split_apk": "APK fractionné (APKS)",
+  "@ui_app_split_apk": {
+    "description": "App Manager split APK (APKS) label"
+  },
+  "ui_app_single_apk": "APK unique",
+  "@ui_app_single_apk": {
+    "description": "App Manager single APK label"
+  },
+  "ui_desktop_lyric": "Paroles de bureau",
+  "@ui_desktop_lyric": {
+    "description": "Desktop lyric floating window toggle in audio player more menu"
+  },
+  "msg_overlay_permission_required": "L'autorisation de fenêtre flottante est requise pour afficher les paroles de bureau. Veuillez l'accorder dans les Paramètres et réessayer.",
+  "@msg_overlay_permission_required": {
+    "description": "Shown when overlay permission is denied while enabling desktop lyric"
+  },
+  "msg_notification_permission_denied": "L'autorisation de notifications est requise pour afficher le panneau de contrôle de lecture. Ouvrir les Paramètres pour l'accorder ?",
+  "@msg_notification_permission_denied": {
+    "description": "Shown when notification permission is denied while enabling background playback"
+  },
+  "msg_open_settings": "Aller aux paramètres",
+  "@msg_open_settings": {
+    "description": "Action button on the SnackBar to open app settings when notification permission is denied"
+  },
+  "msg_notification_not_granted": "L'autorisation de notification n'est pas accordée, la notification de contrôle de lecture ne peut donc pas être affichée. Veuillez activer l'autorisation de notification dans les paramètres.",
+  "@msg_notification_not_granted": {
+    "description": "Shown when notification permission is detected as not granted after enabling background playback"
+  },
+  "msg_notification_blocked_hint": "La notification ne s'affiche pas. Le canal de notification est peut-être désactivé ou l'optimisation de la batterie limite l'exécution en arrière-plan. Veuillez vérifier l'autorisation de notification et les paramètres d'optimisation de la batterie.",
+  "@msg_notification_blocked_hint": {
+    "description": "Shown when notification fails to appear despite permission being granted, typically due to ROM restrictions"
+  },
+  "msg_audio_service_init_failed": "Le service de lecture en arrière-plan n'a pas pu être initialisé, les boutons de contrôle de notification ne peuvent donc pas être affichés. Veuillez redémarrer l'application ; si le problème persiste, effacez les données de l'application dans les paramètres système et rouvrez-la.",
+  "@msg_audio_service_init_failed": {
+    "description": "Shown when AudioService.init fails - the background playback service cannot be registered with the OS"
+  },
+  "msg_notification_channel_disabled": "Le canal de notification est désactivé. Allez dans Paramètres → Gestion des applications → ZenFile → Notifications, recherchez le canal « ZenFile Audio Player » et activez-le.",
+  "@msg_notification_channel_disabled": {
+    "description": "Shown when the notification channel is disabled by the user or system"
+  },
+  "ui_lyric_search_song_title": "Titre",
+  "ui_lyric_search_artist": "Artiste",
+  "msg_rotate_video": "Faire pivoter la vidéo",
+  "@msg_rotate_video": {
+    "description": "Rotate video clockwise in video player"
+  },
+  "msg_aspect_fit": "Ajuster à l'écran",
+  "@msg_aspect_fit": {
+    "description": "Video aspect ratio mode: fit to screen"
+  },
+  "msg_aspect_fill": "Étirer pour remplir",
+  "@msg_aspect_fill": {
+    "description": "Video aspect ratio mode: stretch to fill"
+  },
+  "msg_aspect_center": "Centré",
+  "@msg_aspect_center": {
+    "description": "Video aspect ratio mode: centered original size"
+  },
+  "msg_aspect_16_9": "16:9",
+  "@msg_aspect_16_9": {
+    "description": "Video aspect ratio mode: 16:9"
+  },
+  "msg_aspect_4_3": "4:3",
+  "@msg_aspect_4_3": {
+    "description": "Video aspect ratio mode: 4:3"
+  },
+  "drawer_tools": "Outils",
+  "open_with_native": "Ouvrir avec cette application",
+  "open_with_external": "Ouvrir avec une application externe",
+  "open_once": "Une seule fois",
+  "open_always": "Toujours",
+  "drawer_edit_connection": "Modifier",
+  "cat_system": "Système",
+  "cat_storage_volume": "Stockage",
+  "ui_columns_per_row": "Colonnes par ligne",
+  "ui_3columns": "3 Colonnes",
+  "ui_4columns": "4 Colonnes",
+  "msge8b8e9b3": "Actions rapides",
+  "@msge8b8e9b3": {
+    "description": "Right side menu header title"
+  },
+  "msg04b7de53": "Accès rapide aux fonctions courantes",
+  "@msg04b7de53": {
+    "description": "Right side menu header subtitle"
+  }
+}
