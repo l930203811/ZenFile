@@ -13,6 +13,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 
 import 'core/theme.dart';
 import 'core/icon_fonts/broken_icons.dart';
+import 'core/navigator_key.dart';
 import 'providers/file_manager_provider.dart';
 import 'providers/media_provider.dart';
 import 'services/preferences_service.dart';
@@ -24,7 +25,6 @@ import 'services/audio_background_handler.dart';
 import 'package:audio_service/audio_service.dart';
 import 'ui/screens/home_screen.dart';
 
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<_ZenFileAppState> appStateKey = GlobalKey<_ZenFileAppState>();
 
 void main() async {

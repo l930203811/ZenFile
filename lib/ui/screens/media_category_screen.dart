@@ -727,17 +727,6 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               ),
               if (filePath != null)
                 ListTile(
-                  leading: Icon(Broken.folder_open, color: theme.colorScheme.primary),
-                  title: Text(L10n.of(context).msgcd8264f1),
-                  onTap: () {
-                    context.read<FileManagerProvider>().showFileInLocation(filePath);
-                    Navigator.pop(ctx);
-                    Navigator.popUntil(context, (route) => route.isFirst);
-                    widget.onNavigateTab?.call(1);
-                  },
-                ),
-              if (filePath != null)
-                ListTile(
                   leading: Icon(Broken.edit, color: theme.colorScheme.primary),
                   title: Text(L10n.of(context).msgc8ce4b36),
                   onTap: () async {
@@ -761,6 +750,17 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                       }
                       context.read<MediaProvider>().loadMedia(forceRefresh: true);
                     }
+                  },
+                ),
+              if (filePath != null)
+                ListTile(
+                  leading: Icon(Broken.folder_open, color: theme.colorScheme.primary),
+                  title: Text(L10n.of(context).msgcd8264f1),
+                  onTap: () {
+                    context.read<FileManagerProvider>().showFileInLocation(filePath);
+                    Navigator.pop(ctx);
+                    Navigator.popUntil(context, (route) => route.isFirst);
+                    widget.onNavigateTab?.call(1);
                   },
                 ),
               if (filePath != null)
@@ -1028,32 +1028,50 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                   }
                 }
 
-                if (provider.isLoading && !provider.isLoaded) {
-                  return _buildShimmerLoading(theme);
-                }
-
                 final isDateWise = provider.sortOrder == MediaSortOrder.dateWise;
                 final isGrouped = provider.sortOrder == MediaSortOrder.newestGrouped ||
                     provider.sortOrder == MediaSortOrder.oldestGrouped ||
                     provider.sortOrder == MediaSortOrder.dateWise;
 
-                if (widget.mediaType == MediaType.images) {
-                  return _buildImageGrid(provider.images, theme, isDateWise, isGrouped, _isGridView);
-                } else if (widget.mediaType == MediaType.videos) {
-                  return _buildVideoGrid(provider.videos, theme, isDateWise, isGrouped, _isGridView);
-                } else if (widget.mediaType == MediaType.audios) {
-                  return _buildAudioList(provider.audios, theme, isDateWise, isGrouped, _isGridView);
-                } else if (widget.mediaType == MediaType.screenshots) {
-                  return _buildImageGrid(provider.screenshots, theme, isDateWise, isGrouped, _isGridView);
-                } else if (widget.mediaType == MediaType.archives) {
-                  return _buildGenericFileList(provider.archives, theme, isDateWise, isGrouped, _isGridView);
-                } else if (widget.mediaType == MediaType.downloads) {
-                  return _buildGenericFileList(provider.downloads, theme, isDateWise, isGrouped, _isGridView);
-                } else if (widget.mediaType == MediaType.apks) {
-                  return _buildGenericFileList(provider.apks, theme, isDateWise, isGrouped, _isGridView);
-                } else {
-                  return _buildDocumentList(provider.documents, theme, isDateWise, isGrouped, _isGridView);
+                // 优先显示已加载的数据（缓存或实时），只有数据为空且未完成加载时才显示 shimmer
+                Widget? content;
+                switch (widget.mediaType) {
+                  case MediaType.images:
+                    content = provider.images.isNotEmpty ? _buildImageGrid(provider.images, theme, isDateWise, isGrouped, _isGridView) : null;
+                    break;
+                  case MediaType.videos:
+                    content = provider.videos.isNotEmpty ? _buildVideoGrid(provider.videos, theme, isDateWise, isGrouped, _isGridView) : null;
+                    break;
+                  case MediaType.audios:
+                    content = provider.audios.isNotEmpty ? _buildAudioList(provider.audios, theme, isDateWise, isGrouped, _isGridView) : null;
+                    break;
+                  case MediaType.screenshots:
+                    content = provider.screenshots.isNotEmpty ? _buildImageGrid(provider.screenshots, theme, isDateWise, isGrouped, _isGridView) : null;
+                    break;
+                  case MediaType.archives:
+                    content = provider.archives.isNotEmpty ? _buildGenericFileList(provider.archives, theme, isDateWise, isGrouped, _isGridView) : null;
+                    break;
+                  case MediaType.downloads:
+                    content = provider.downloads.isNotEmpty ? _buildGenericFileList(provider.downloads, theme, isDateWise, isGrouped, _isGridView) : null;
+                    break;
+                  case MediaType.apks:
+                    content = provider.apks.isNotEmpty ? _buildGenericFileList(provider.apks, theme, isDateWise, isGrouped, _isGridView) : null;
+                    break;
+                  default:
+                    content = provider.documents.isNotEmpty ? _buildDocumentList(provider.documents, theme, isDateWise, isGrouped, _isGridView) : null;
                 }
+
+                if (content != null) {
+                  return content;
+                }
+
+                // 数据为空时，根据加载状态决定显示 shimmer 还是空状态
+                if (!provider.isLoaded) {
+                  return _buildShimmerLoading(theme);
+                }
+
+                // 数据为空且已完成加载 → 显示空状态提示（原逻辑会走到这里）
+                return _buildEmptyState(theme);
               },
             ),
           ),
@@ -1119,6 +1137,65 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     return AnimatedBuilder(
       animation: _shimmerController,
       builder: (context, child) {
+        // 列表视图：保持与实际列表一致的视觉占位，避免启动时闪烁网格背景
+        if (!_isGridView) {
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            itemCount: 18,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Row(
+                  children: [
+                    // 缩略图占位（固定 40x40，与列表图标一致）
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: ShaderMask(
+                        shaderCallback: (rect) => LinearGradient(
+                          colors: [baseColor, highlightColor, baseColor],
+                          stops: [0.0, _shimmerController.value, 1.0],
+                        ).createShader(rect),
+                        child: const SizedBox(width: 40, height: 40),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // 标题 + 副标题占位
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: ShaderMask(
+                              shaderCallback: (rect) => LinearGradient(
+                                colors: [baseColor, highlightColor, baseColor],
+                                stops: [0.0, _shimmerController.value, 1.0],
+                              ).createShader(rect),
+                              child: const SizedBox(height: 12, width: double.infinity),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: ShaderMask(
+                              shaderCallback: (rect) => LinearGradient(
+                                colors: [baseColor, highlightColor, baseColor],
+                                stops: [0.0, _shimmerController.value, 1.0],
+                              ).createShader(rect),
+                              child: SizedBox(height: 10, width: MediaQuery.of(context).size.width * 0.4),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        }
+        // 网格视图：3 列方块占位
         return GridView.builder(
           padding: const EdgeInsets.all(8),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 6, mainAxisSpacing: 6),
@@ -1879,9 +1956,12 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           ? null
           : IconButton(
               icon: const Icon(Broken.more),
-              onPressed: () {
+              onPressed: () async {
                 if (isAsset) {
-                  _showSingleItemOptions(name: title, assetId: item.id);
+                  final f = await item.file;
+                  if (f != null) {
+                    _showSingleItemOptions(name: title, filePath: f.path, assetId: item.id);
+                  }
                 } else {
                   _showSingleItemOptions(name: title, filePath: path);
                 }

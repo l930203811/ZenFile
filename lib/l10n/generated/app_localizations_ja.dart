@@ -135,6 +135,9 @@ class L10nJa extends L10n {
   String get msgc18fb099 => '展開に成功しました。保存先を開きますか？';
 
   @override
+  String get msg_compress_open_location => '圧縮に成功しました。保存先を開きますか？';
+
+  @override
   String get msg4367e85a => '圧縮可能なファイルが見つかりません';
 
   @override
@@ -614,6 +617,23 @@ class L10nJa extends L10n {
   String get msgf437ace4 => 'このフォルダのみ';
 
   @override
+  String get msg551f98ba => 'このディレクトリにはファイルやサブフォルダが含まれていません。';
+
+  @override
+  String get ui_favorites => 'お気に入り';
+
+  @override
+  String get ui_new_favorite => 'お気に入りに追加';
+
+  @override
+  String get ui_favorite => 'お気に入り';
+
+  @override
+  String msg_favorited(Object name) {
+    return '$name をお気に入りに追加しました';
+  }
+
+  @override
   String get msg4dfc167a => 'このフォルダのカスタム並べ替えを有効にする';
 
   @override
@@ -636,9 +656,6 @@ class L10nJa extends L10n {
 
   @override
   String get msge9691076 => '空のフォルダ';
-
-  @override
-  String get msg551f98ba => 'このディレクトリにはファイルやサブフォルダが含まれていません。';
 
   @override
   String get msg17093362 => '操作をキャンセル';
@@ -1153,7 +1170,7 @@ class L10nJa extends L10n {
   String get msg2c8a394a => 'ブラウズページ';
 
   @override
-  String get msg2c3c5a35 => 'カテゴリアイコンの形状';
+  String get msg2c3c5a35 => 'アイコン形状';
 
   @override
   String get msg267fcd86 => '3日ごと';
@@ -2152,6 +2169,12 @@ class L10nJa extends L10n {
   String get msg9d69d7a0 => 'ファイルを移動中...';
 
   @override
+  String get ui_transferring_files => 'ファイル転送中';
+
+  @override
+  String get ui_time_remaining => '残り';
+
+  @override
   String get zenfile6 => 'ZenFileカスタムネイティブ体験';
 
   @override
@@ -2287,7 +2310,7 @@ class L10nJa extends L10n {
   String get msg6cbbf7d9 => '絶対パスを入力...';
 
   @override
-  String get msgf13fc21c => 'サーバーとツール';
+  String get msgf13fc21c => 'ネットワーク';
 
   @override
   String get msg41e625d1 => 'リモート接続を追加';
@@ -2409,7 +2432,7 @@ class L10nJa extends L10n {
   String get cat_settings => '設定';
 
   @override
-  String get cat_storage => 'ストレージ';
+  String get cat_storage => '空間';
 
   @override
   String get cat_service => 'サービス';
@@ -2430,10 +2453,10 @@ class L10nJa extends L10n {
   String get cat_vault_desc => '安全な保存';
 
   @override
-  String get cat_quick_categories => 'ショートカットカテゴリ';
+  String get cat_quick_categories => 'カテゴリ';
 
   @override
-  String get ui_nav => 'ナビゲーション';
+  String get ui_nav => 'ローカル';
 
   @override
   String get ui_home => 'ホーム';
@@ -2445,7 +2468,7 @@ class L10nJa extends L10n {
   String get ui_dark_mode => 'ダークモード';
 
   @override
-  String get ui_personalize_settings => 'パーソナライズと設定';
+  String get ui_personalize_settings => '設定';
 
   @override
   String get ui_compress => '圧縮';
@@ -2756,6 +2779,9 @@ class L10nJa extends L10n {
   String get ui_pin_to_top => 'トップに固定';
 
   @override
+  String get msg_select_all => '全て選択';
+
+  @override
   String get ui_pinned_selected => '選択したアイテムをトップに固定しました';
 
   @override
@@ -3062,6 +3088,43 @@ class L10nJa extends L10n {
   @override
   String get log_lyric_scale_animation =>
       '一文字ずつの歌詞遷移アニメーションに拡大効果を追加、同期問題を修正、300msの遷移時間を固定';
+
+  @override
+  String get log_quick_action_panel => '重新调整了顶部导航栏按钮，新增快捷操作页面，在浏览页可左滑弹出快捷操作面板';
+
+  @override
+  String get log_favorites => '新增了收藏夹，用户可以收藏本地或远程文件/文件夹收藏到快捷操作面板的收藏夹中';
+
+  @override
+  String get log_drawer_redesign => '重构了抽屉页，抽屉页更加简洁美观，持久化记住抽屉页所有展开/折叠状态，操作更加便捷';
+
+  @override
+  String get log_video_player_rotation => '视频播放器新增了顺时针旋转画面，新增缩放比例';
+
+  @override
+  String get log_category_reorder =>
+      '优化了分类页可长按类别图标拖动调整位置顺序，新增每行 3 列/4 列可选，现在支持重命名类别名称';
+
+  @override
+  String get log_compression_fix => '修复了压缩一些问题';
+
+  @override
+  String get log_progress_bar_redesign => '重新设计了进度条窗口样式';
+
+  @override
+  String get log_dual_pane_status_bar => '双窗口模式顶部新增状态栏，显示激活窗口指示器和剪贴板内容摘要';
+
+  @override
+  String get log_transfer_fixes => '修复传输进度条不更新、无法取消、远程列表空白、传输速度不显示等问题';
+
+  @override
+  String get log_drawer_font_consistency => '修复了抽屉页「设置」按钮字体与其他栏目不一致的问题';
+
+  @override
+  String get log_landscape_layout => '优化平板/车机横屏模式下的文件网格布局';
+
+  @override
+  String get log_progress_i18n => '进度条窗口新增完整的多语言翻译支持';
 
   @override
   String get msg_remember_choice => '今後の操作でもこの選択を記憶する';
@@ -3781,4 +3844,58 @@ class L10nJa extends L10n {
 
   @override
   String get msg_rotate_video => '動画を回転';
+
+  @override
+  String get msg_aspect_fit => '画面に合わせる';
+
+  @override
+  String get msg_aspect_fill => '引き伸ばし';
+
+  @override
+  String get msg_aspect_center => '中央';
+
+  @override
+  String get msg_aspect_16_9 => '16:9';
+
+  @override
+  String get msg_aspect_4_3 => '4:3';
+
+  @override
+  String get drawer_tools => 'ツール';
+
+  @override
+  String get open_with_native => 'このアプリで開く';
+
+  @override
+  String get open_with_external => '外部アプリで開く';
+
+  @override
+  String get open_once => '今回のみ';
+
+  @override
+  String get open_always => '常に';
+
+  @override
+  String get drawer_edit_connection => '編集';
+
+  @override
+  String get cat_system => 'システム';
+
+  @override
+  String get cat_storage_volume => 'ストレージ';
+
+  @override
+  String get ui_columns_per_row => '1行あたりの列数';
+
+  @override
+  String get ui_3columns => '3列';
+
+  @override
+  String get ui_4columns => '4列';
+
+  @override
+  String get msge8b8e9b3 => 'クイック操作';
+
+  @override
+  String get msg04b7de53 => '常用機能へのクイックアクセス';
 }

@@ -5,7 +5,7 @@ import 'package:ftpconnect/ftpconnect.dart';
 import 'package:path/path.dart' as p;
 import 'remote_client.dart';
 
-class FtpRemoteClient implements RemoteClient {
+class FtpRemoteClient extends RemoteClient {
   final String host;
   final int port;
   final String username;
@@ -366,8 +366,13 @@ class FtpRemoteClient implements RemoteClient {
         return responseCompleter!.future.timeout(const Duration(seconds: 15));
       }
 
-      // Read welcome banner
-      await sendCommand('').timeout(const Duration(seconds: 5)).catchError((_) => '');
+      // Read welcome banner — server sends it immediately on connect.
+      // 不使用 sendCommand('')（空命令会让服务器返回 500 错误，破坏协议序列）。
+      // 等待 responseCompleter 被控制连接的 listen 回调填充。
+      responseCompleter = Completer<String>();
+      try {
+        await responseCompleter!.future.timeout(const Duration(seconds: 5));
+      } catch (_) {}
 
       // Authenticate
       final user = username.isEmpty ? 'anonymous' : username;
@@ -381,15 +386,18 @@ class FtpRemoteClient implements RemoteClient {
       // Binary mode
       await sendCommand('TYPE I');
 
-      // Query file size (best-effort)
+      // 尝试快速查询 SIZE（3秒超时），失败就用 0（进度不更新但数据立即下载）
       int fileSize = 0;
       try {
-        final sizeResp = await sendCommand('SIZE $remotePath');
-        if (sizeResp.startsWith('2')) {
-          final parts = sizeResp.split(' ');
-          if (parts.length >= 2) fileSize = int.tryParse(parts.last) ?? 0;
+        final sizeResp = await sendCommand('SIZE $remotePath')
+            .timeout(const Duration(seconds: 3));
+        final match = RegExp(r'(\d+)').firstMatch(sizeResp);
+        if (match != null) {
+          fileSize = int.parse(match.group(1)!);
         }
-      } catch (_) {}
+      } catch (_) {
+        // SIZE 查询超时或失败 — 继续下载，进度按字节无法报告
+      }
 
       // Enter passive mode
       final pasvResp = await sendCommand('PASV');
@@ -404,10 +412,13 @@ class FtpRemoteClient implements RemoteClient {
         await sendCommand('REST $startByte');
       }
 
-      // Issue RETR
+      // Issue RETR — 发送命令后等待 150/125 响应
+      // 不使用 sendCommand('')（空命令 hack 会破坏协议序列）
       controlSocket.write('RETR $remotePath\r\n');
-      // Wait for 150/125 response
-      await sendCommand('').timeout(const Duration(seconds: 10));
+      responseCompleter = Completer<String>();
+      try {
+        await responseCompleter!.future.timeout(const Duration(seconds: 10));
+      } catch (_) {}
 
       // Prepare local file
       final file = File(localPath);
@@ -417,15 +428,15 @@ class FtpRemoteClient implements RemoteClient {
       sink = file.openWrite();
 
       // Read data from data socket, write to file with periodic flushing.
-      // Flush immediately on the first chunk so the streaming proxy sees
-      // data without waiting for the 100ms polling interval. Subsequent
-      // flushes happen every 4KB.
+      // 首块立即 flush（让代理尽快看到数据），后续每 64KB flush 一次。
+      // 之前 4KB+1ms delay 限制了吞吐量到 ~1.5MB/s。
       int downloaded = 0;
       int sinceFlush = 0;
       bool isFirstChunk = true;
-      const flushInterval = 4 * 1024;
+      const flushInterval = 64 * 1024; // 64KB
 
       await for (final chunk in dataSocket) {
+        if (isCancelled) break;
         if (maxLength != null && downloaded + chunk.length > maxLength) {
           // 达到请求范围上限，只写入剩余需要的字节
           sink.add(chunk.sublist(0, maxLength - downloaded));
@@ -442,7 +453,6 @@ class FtpRemoteClient implements RemoteClient {
           await sink.flush();
           sinceFlush = 0;
           isFirstChunk = false;
-          await Future.delayed(const Duration(milliseconds: 1));
         }
         if (maxLength != null && downloaded >= maxLength) break;
       }
@@ -454,9 +464,11 @@ class FtpRemoteClient implements RemoteClient {
       await dataSocket.close();
       dataSocket = null;
 
-      // Read final 226 response
+      // Read final 226 response — 服务器在数据传输完成后自动发送
+      // 不使用 sendCommand('')（空命令会破坏协议序列）
+      responseCompleter = Completer<String>();
       try {
-        await sendCommand('').timeout(const Duration(seconds: 5));
+        await responseCompleter!.future.timeout(const Duration(seconds: 5));
       } catch (_) {}
 
       // Quit

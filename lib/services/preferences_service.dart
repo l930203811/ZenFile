@@ -20,7 +20,7 @@ class PreferencesService {
   // 当前迁移版本：每次新增分类需要补全到 active 列表时递增。
   // 旧版本(< 当前版本)的用户启动时才补全新分类到 active，
   // 之后不再干预用户主动关闭的分类，避免重启后被重新启用。
-  static const int kCurrentCategoriesMigratedVersion = 3;
+  static const int kCurrentCategoriesMigratedVersion = 4;
   static const String _keyShowFolderFileCount = 'show_folder_file_count';
   static const String _keyShowBottomActionBar = 'show_bottom_action_bar';
   static const String _keyEnableMultipleTabs = 'enable_multiple_tabs';
@@ -367,7 +367,7 @@ class PreferencesService {
   }
 
   static bool getSkipOpenWithDialog() {
-    return _prefs?.getBool(_keySkipOpenWithDialog) ?? true;
+    return _prefs?.getBool(_keySkipOpenWithDialog) ?? false;
   }
 
   static Future<void> saveSkipOpenWithDialog(bool val) async {
@@ -669,6 +669,22 @@ class PreferencesService {
     await _prefs?.setString(_keyExcludedDefaultPaths, jsonEncode(map));
   }
 
+  static const String _keyCustomCategoryLabels = 'custom_category_labels';
+
+  static Map<String, String> getCustomCategoryLabels() {
+    final str = _prefs?.getString(_keyCustomCategoryLabels);
+    if (str == null) return {};
+    try {
+      return Map<String, String>.from(jsonDecode(str) as Map<String, dynamic>);
+    } catch (_) {
+      return {};
+    }
+  }
+
+  static Future<void> saveCustomCategoryLabels(Map<String, String> map) async {
+    await _prefs?.setString(_keyCustomCategoryLabels, jsonEncode(map));
+  }
+
   static const String _keyCustomFontPath = 'custom_font_path';
 
   static String? getCustomFontPath() {
@@ -920,5 +936,49 @@ class PreferencesService {
   static Future<void> saveLastPlayedAudio(String path, String title, String artist) async {
     final map = {'path': path, 'title': title, 'artist': artist};
     await _prefs?.setString(_keyLastPlayedAudio, jsonEncode(map));
+  }
+
+  // --- Drawer Section Expanded State ---
+  static const String _keyDrawerSectionExpanded = 'drawer_section_expanded_';
+
+  /// 获取抽屉栏目是否展开，默认折叠（false）
+  static bool getDrawerSectionExpanded(String sectionKey, {bool defaultValue = false}) {
+    return _prefs?.getBool('$_keyDrawerSectionExpanded$sectionKey') ?? defaultValue;
+  }
+
+  /// 保存抽屉栏目展开/折叠状态
+  static Future<void> saveDrawerSectionExpanded(String sectionKey, bool expanded) async {
+    await _prefs?.setBool('$_keyDrawerSectionExpanded$sectionKey', expanded);
+  }
+
+  // --- Categories Grid Columns ---
+  static const String _keyCategoriesGridColumns = 'categories_grid_columns';
+
+  /// 获取分类页网格列数，默认 3 列
+  static int getCategoriesGridColumns({int defaultValue = 3}) {
+    return _prefs?.getInt(_keyCategoriesGridColumns) ?? defaultValue;
+  }
+
+  /// 保存分类页网格列数
+  static Future<void> saveCategoriesGridColumns(int columns) async {
+    await _prefs?.setInt(_keyCategoriesGridColumns, columns);
+  }
+
+  // --- Favorites ---
+  static const String _keyFavorites = 'favorites';
+
+  static List<Map<String, dynamic>> getFavorites() {
+    final str = _prefs?.getString(_keyFavorites);
+    if (str == null) return [];
+    try {
+      final decoded = jsonDecode(str) as List<dynamic>;
+      return decoded.map((e) => Map<String, dynamic>.from(e)).toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  static Future<void> saveFavorites(List<Map<String, dynamic>> list) async {
+    await _prefs?.setString(_keyFavorites, jsonEncode(list));
   }
 }

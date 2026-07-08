@@ -155,6 +155,10 @@
   "@msgc18fb099": {
     "description": "services\\background_archive_service.dart"
   },
+  "msg_compress_open_location": "压缩成功，是否打开所在位置？",
+  "@msg_compress_open_location": {
+    "description": "services\\background_archive_service.dart"
+  },
   "msg4367e85a": "未找到可压缩的文件",
   "@msg4367e85a": {
     "description": "services\\background_archive_service.dart"
@@ -767,7 +771,30 @@
   },
   "msgf437ace4": "仅此文件夹",
   "@msgf437ace4": {
-    "description": "ui\\screens\\directory_screen.dart"
+    "description": "zenfile_end_drawer.dart"
+  },
+  "msg551f98ba": "暂无收藏",
+  "@msg551f98ba": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_favorites": "收藏夹",
+  "@ui_favorites": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_new_favorite": "新建收藏",
+  "@ui_new_favorite": {
+    "description": "directory_screen.dart"
+  },
+  "ui_favorite": "收藏",
+  "@ui_favorite": {
+    "description": "file_action_dialogs.dart"
+  },
+  "msg_favorited": "已收藏 {name}",
+  "@msg_favorited": {
+    "description": "directory_screen.dart",
+    "placeholders": {
+      "name": {}
+    }
   },
   "msg4dfc167a": "启用此文件夹的自定义排序",
   "@msg4dfc167a": {
@@ -1473,7 +1500,7 @@
   "@msg2c8a394a": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg2c3c5a35": "分类图标形状",
+  "msg2c3c5a35": "图标形状",
   "@msg2c3c5a35": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -2744,6 +2771,14 @@
   "@msg9d69d7a0": {
     "description": "ui\\widgets\\file_operation_progress_dialog.dart"
   },
+  "ui_transferring_files": "传输文件",
+  "@ui_transferring_files": {
+    "description": "ui\\widgets\\file_operation_progress_dialog.dart"
+  },
+  "ui_time_remaining": "剩下",
+  "@ui_time_remaining": {
+    "description": "ui\\widgets\\file_operation_progress_dialog.dart"
+  },
   "zenfile6": "ZenFile 自定义原生体验",
   "@zenfile6": {
     "description": "ui\\widgets\\open_with_sheet.dart"
@@ -2776,7 +2811,7 @@
   "@msg490ac572": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
   },
-  "msg445a43cb": "拖动手柄 (=) 可重新排列首页图标。",
+  "msg445a43cb": "长按图标拖动排列分类图标",
   "@msg445a43cb": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
   },
@@ -2911,7 +2946,7 @@
   "@msg6cbbf7d9": {
     "description": "ui\\widgets\\zenfile_address_bar.dart"
   },
-  "msgf13fc21c": "服务器与工具",
+  "msgf13fc21c": "网络",
   "@msgf13fc21c": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
   },
@@ -2966,7 +3001,7 @@
   "cat_network": "网络",
   "cat_apps": "应用",
   "cat_settings": "设置",
-  "cat_storage": "存储",
+  "cat_storage": "空间",
   "cat_service": "服务",
   "cat_manage": "管理",
   "cat_config": "配置",
@@ -2979,12 +3014,12 @@
   "@cat_vault_desc": {
     "description": "Vault shortcut category description"
   },
-  "cat_quick_categories": "快捷分类",
-  "ui_nav": "导航",
+  "cat_quick_categories": "分类",
+  "ui_nav": "本地",
   "ui_home": "主页",
   "ui_recycle_bin": "回收站",
   "ui_dark_mode": "深色模式",
-  "ui_personalize_settings": "个性化和设置",
+  "ui_personalize_settings": "设置",
   "ui_compress": "压缩",
   "ui_copy": "复制",
   "ui_cut": "剪切",
@@ -3228,6 +3263,10 @@
   "@ui_pin_to_top": {
     "description": "ui widgets"
   },
+  "msg_select_all": "全选",
+  "@msg_select_all": {
+    "description": "selection_context_bottom_sheet.dart"
+  },
   "ui_pinned_selected": "已将所选项目置顶",
   "@ui_pinned_selected": {
     "description": "ui widgets"
@@ -3401,6 +3440,18 @@
     "log_category_button_sync": "修复未开启后台播放时音频类别页播放按钮显示旧音频信息，返回时刷新按钮状态",
     "log_build_stability": "修复 R8 编译 OOM、x86_64/armv7 启动白屏，调整 Gradle JVM 内存与 ABI 下载",
     "log_lyric_scale_animation": "逐字歌词过渡动画新增放大效果，修复同步问题，固定 300ms 过渡时长",
+  "log_quick_action_panel": "重新调整了顶部导航栏按钮，新增快捷操作页面，在浏览页可左滑弹出快捷操作面板",
+  "log_favorites": "新增了收藏夹，用户可以收藏本地或远程文件/文件夹收藏到快捷操作面板的收藏夹中",
+  "log_drawer_redesign": "重构了抽屉页，抽屉页更加简洁美观，持久化记住抽屉页所有展开/折叠状态，操作更加便捷",
+  "log_video_player_rotation": "视频播放器新增了顺时针旋转画面，新增缩放比例",
+  "log_category_reorder": "优化了分类页可长按类别图标拖动调整位置顺序，新增每行 3 列/4 列可选，现在支持重命名类别名称",
+  "log_compression_fix": "修复了压缩一些问题",
+  "log_progress_bar_redesign": "重新设计了进度条窗口样式",
+  "log_dual_pane_status_bar": "双窗口模式顶部新增状态栏，显示激活窗口指示器和剪贴板内容摘要",
+  "log_transfer_fixes": "修复传输进度条不更新、无法取消、远程列表空白、传输速度不显示等问题",
+  "log_drawer_font_consistency": "修复了抽屉页「设置」按钮字体与其他栏目不一致的问题",
+  "log_landscape_layout": "优化平板/车机横屏模式下的文件网格布局",
+  "log_progress_i18n": "进度条窗口新增完整的多语言翻译支持",
   "msg_remember_choice": "记住此选择，后续操作默认使用",
   "ui_caching": "正在缓存中，请稍后...",
   "ui_username": "用户名",
@@ -4032,5 +4083,44 @@
   "msg_rotate_video": "旋转画面",
   "@msg_rotate_video": {
     "description": "Rotate video clockwise in video player"
+  },
+  "msg_aspect_fit": "适应屏幕",
+  "@msg_aspect_fit": {
+    "description": "Video aspect ratio mode: fit to screen"
+  },
+  "msg_aspect_fill": "拉伸填充",
+  "@msg_aspect_fill": {
+    "description": "Video aspect ratio mode: stretch to fill"
+  },
+  "msg_aspect_center": "居中",
+  "@msg_aspect_center": {
+    "description": "Video aspect ratio mode: centered original size"
+  },
+  "msg_aspect_16_9": "16:9",
+  "@msg_aspect_16_9": {
+    "description": "Video aspect ratio mode: 16:9"
+  },
+  "msg_aspect_4_3": "4:3",
+  "@msg_aspect_4_3": {
+    "description": "Video aspect ratio mode: 4:3"
+  },
+  "drawer_tools": "工具",
+  "open_with_native": "使用本应用打开",
+  "open_with_external": "使用外部系统选择器打开",
+  "open_once": "仅一次",
+  "open_always": "始终",
+  "drawer_edit_connection": "编辑",
+  "cat_system": "系统",
+  "cat_storage_volume": "存储",
+  "ui_columns_per_row": "每行显示",
+  "ui_3columns": "3列",
+  "ui_4columns": "4列",
+  "msge8b8e9b3": "快捷操作",
+  "@msge8b8e9b3": {
+    "description": "Right side menu header title"
+  },
+  "msg04b7de53": "常用功能快捷入口",
+  "@msg04b7de53": {
+    "description": "Right side menu header subtitle"
   }
 }

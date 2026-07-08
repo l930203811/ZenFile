@@ -135,6 +135,10 @@ class L10nEn extends L10n {
   String get msgc18fb099 => 'Extraction successful. Open location?';
 
   @override
+  String get msg_compress_open_location =>
+      'Compression successful. Open location?';
+
+  @override
   String get msg4367e85a => 'No compressible files found';
 
   @override
@@ -644,6 +648,23 @@ class L10nEn extends L10n {
   String get msgf437ace4 => 'This Folder Only';
 
   @override
+  String get msg551f98ba => 'This directory contains no files or subfolders.';
+
+  @override
+  String get ui_favorites => 'Favorites';
+
+  @override
+  String get ui_new_favorite => 'Add to Favorites';
+
+  @override
+  String get ui_favorite => 'Favorite';
+
+  @override
+  String msg_favorited(Object name) {
+    return 'Favorited $name';
+  }
+
+  @override
   String get msg4dfc167a => 'Enable custom sort for this folder';
 
   @override
@@ -666,9 +687,6 @@ class L10nEn extends L10n {
 
   @override
   String get msge9691076 => 'Empty Folder';
-
-  @override
-  String get msg551f98ba => 'This directory contains no files or subfolders.';
 
   @override
   String get msg17093362 => 'Cancel Operation';
@@ -1212,7 +1230,7 @@ class L10nEn extends L10n {
   String get msg2c8a394a => 'Browse Page';
 
   @override
-  String get msg2c3c5a35 => 'Category Icon Shape';
+  String get msg2c3c5a35 => 'Icon Shape';
 
   @override
   String get msg267fcd86 => 'Every 3 days';
@@ -2227,6 +2245,12 @@ class L10nEn extends L10n {
   String get msg9d69d7a0 => 'Moving files...';
 
   @override
+  String get ui_transferring_files => 'Transferring files';
+
+  @override
+  String get ui_time_remaining => 'remaining';
+
+  @override
   String get zenfile6 => 'ZenFile Custom Native Experience';
 
   @override
@@ -2362,7 +2386,7 @@ class L10nEn extends L10n {
   String get msg6cbbf7d9 => 'Enter absolute path...';
 
   @override
-  String get msgf13fc21c => 'Servers & Tools';
+  String get msgf13fc21c => 'Network';
 
   @override
   String get msg41e625d1 => 'Add Remote Connection';
@@ -2489,7 +2513,7 @@ class L10nEn extends L10n {
   String get cat_settings => 'Settings';
 
   @override
-  String get cat_storage => 'Storage';
+  String get cat_storage => 'Space';
 
   @override
   String get cat_service => 'Service';
@@ -2510,10 +2534,10 @@ class L10nEn extends L10n {
   String get cat_vault_desc => 'Secure Storage';
 
   @override
-  String get cat_quick_categories => 'Quick Categories';
+  String get cat_quick_categories => 'Categories';
 
   @override
-  String get ui_nav => 'Navigation';
+  String get ui_nav => 'Local';
 
   @override
   String get ui_home => 'Home';
@@ -2525,7 +2549,7 @@ class L10nEn extends L10n {
   String get ui_dark_mode => 'Dark Mode';
 
   @override
-  String get ui_personalize_settings => 'Personalize & Settings';
+  String get ui_personalize_settings => 'Settings';
 
   @override
   String get ui_compress => 'Compress';
@@ -2835,6 +2859,9 @@ class L10nEn extends L10n {
 
   @override
   String get ui_pin_to_top => 'Pin to Top';
+
+  @override
+  String get msg_select_all => 'Select All';
 
   @override
   String get ui_pinned_selected => 'Pinned selected items';
@@ -3166,6 +3193,52 @@ class L10nEn extends L10n {
   @override
   String get log_lyric_scale_animation =>
       'Added scale effect to word-by-word lyric transition animation, fixed sync issues, fixed 300ms transition duration';
+
+  @override
+  String get log_quick_action_panel =>
+      'Redesigned top navigation bar buttons, added quick action page, swipe left on browse page to open quick action panel';
+
+  @override
+  String get log_favorites =>
+      'Added favorites feature, users can bookmark local or remote files/folders to the favorites in quick action panel';
+
+  @override
+  String get log_drawer_redesign =>
+      'Redesigned drawer page, more concise and beautiful, persists all expand/collapse states, more convenient to operate';
+
+  @override
+  String get log_video_player_rotation =>
+      'Video player added clockwise rotation and zoom ratio adjustment';
+
+  @override
+  String get log_category_reorder =>
+      'Optimized category page to support long-press drag-and-drop reordering, added 3/4 column options, now supports renaming category names';
+
+  @override
+  String get log_compression_fix => 'Fixed several archive-related issues';
+
+  @override
+  String get log_progress_bar_redesign => 'Redesigned progress dialog style';
+
+  @override
+  String get log_dual_pane_status_bar =>
+      'Added status bar on top of dual-pane mode, showing active window indicator and clipboard summary';
+
+  @override
+  String get log_transfer_fixes =>
+      'Fixed FTP/SFTP/SMB/WebDAV progress bar not updating, cancel not working, remote list going blank, and missing real-time speed display';
+
+  @override
+  String get log_drawer_font_consistency =>
+      'Fixed \"Settings\" font size to match other drawer entries';
+
+  @override
+  String get log_landscape_layout =>
+      'Optimized file grid layout for tablets and car infotainment systems in landscape mode';
+
+  @override
+  String get log_progress_i18n =>
+      'Added complete multi-language support for the progress dialog';
 
   @override
   String get msg_remember_choice =>
@@ -3896,4 +3969,58 @@ class L10nEn extends L10n {
 
   @override
   String get msg_rotate_video => 'Rotate Video';
+
+  @override
+  String get msg_aspect_fit => 'Fit to Screen';
+
+  @override
+  String get msg_aspect_fill => 'Stretch Fill';
+
+  @override
+  String get msg_aspect_center => 'Center';
+
+  @override
+  String get msg_aspect_16_9 => '16:9';
+
+  @override
+  String get msg_aspect_4_3 => '4:3';
+
+  @override
+  String get drawer_tools => 'Tools';
+
+  @override
+  String get open_with_native => 'Open with this app';
+
+  @override
+  String get open_with_external => 'Open with external app';
+
+  @override
+  String get open_once => 'Just once';
+
+  @override
+  String get open_always => 'Always';
+
+  @override
+  String get drawer_edit_connection => 'Edit';
+
+  @override
+  String get cat_system => 'System';
+
+  @override
+  String get cat_storage_volume => 'Storage';
+
+  @override
+  String get ui_columns_per_row => 'Columns per row';
+
+  @override
+  String get ui_3columns => '3 Columns';
+
+  @override
+  String get ui_4columns => '4 Columns';
+
+  @override
+  String get msge8b8e9b3 => 'Quick Actions';
+
+  @override
+  String get msg04b7de53 => 'Quick access to common functions';
 }

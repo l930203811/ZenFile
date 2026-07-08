@@ -123,42 +123,53 @@ class FileActionSheet {
     bool isArchive = false,
     bool showShare = false,
     bool showInLocation = false,
+    bool openWith = false,
   }) {
     final theme = Theme.of(context);
     return showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) {
         return Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(ctx).size.height * 0.8,
+          ),
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: SafeArea(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Center(
-                  child: Container(
-                    width: 38, height: 4, margin: const EdgeInsets.only(top: 12, bottom: 8),
-                    decoration: BoxDecoration(color: theme.colorScheme.onSurface.withOpacity(0.15), borderRadius: BorderRadius.circular(2)),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 38, height: 4, margin: const EdgeInsets.only(top: 12, bottom: 8),
+                      decoration: BoxDecoration(color: theme.colorScheme.onSurface.withOpacity(0.15), borderRadius: BorderRadius.circular(2)),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                if (showInLocation)
-                  _buildTile(ctx, theme, icon: Broken.folder_open, title: L10n.of(context).msgcd8264f1, value: 'show_in_location', onAction: onAction),
-                if (showShare)
-                  _buildTile(ctx, theme, icon: Icons.share_outlined, title: L10n.of(context).ui_share, value: 'share', onAction: onAction),
-                if (isArchive)
-                  _buildTile(ctx, theme, icon: Broken.archive, title: L10n.of(ctx).ui_extract, value: 'extract', onAction: onAction),
-                _buildTile(ctx, theme, icon: Broken.box_add, title: L10n.of(context).ui_compress, value: 'archive', onAction: onAction),
-                _buildTile(ctx, theme, icon: Broken.document_copy, title: L10n.of(context).ui_copy, value: 'copy', onAction: onAction),
-                _buildTile(ctx, theme, icon: Broken.scissor, title: L10n.of(context).ui_cut, value: 'cut', onAction: onAction),
-                _buildTile(ctx, theme, icon: Broken.edit, title: L10n.of(context).msgc8ce4b36, value: 'rename', onAction: onAction),
-                _buildDeleteTile(ctx, theme, onAction: onAction),
-                const SizedBox(height: 8),
-              ],
+                  const SizedBox(height: 8),
+                  // 顺序与 _showSingleItemOptions 保持一致：解压、复制、剪切、删除、重命名、在位置中显示、打开方式、压缩、分享、收藏
+                  if (isArchive)
+                    _buildTile(ctx, theme, icon: Broken.archive, title: L10n.of(ctx).ui_extract, value: 'extract', onAction: onAction),
+                  _buildTile(ctx, theme, icon: Broken.document_copy, title: L10n.of(context).ui_copy, value: 'copy', onAction: onAction),
+                  _buildTile(ctx, theme, icon: Broken.scissor, title: L10n.of(context).ui_cut, value: 'cut', onAction: onAction),
+                  _buildDeleteTile(ctx, theme, onAction: onAction),
+                  _buildTile(ctx, theme, icon: Broken.edit, title: L10n.of(context).msgc8ce4b36, value: 'rename', onAction: onAction),
+                  if (showInLocation)
+                    _buildTile(ctx, theme, icon: Broken.folder_open, title: L10n.of(context).msgcd8264f1, value: 'show_in_location', onAction: onAction),
+                  if (openWith)
+                    _buildTile(ctx, theme, icon: Broken.eye, title: L10n.of(context).msg2a4cfb07, value: 'open_with', onAction: onAction),
+                  _buildTile(ctx, theme, icon: Broken.box_add, title: L10n.of(context).ui_compress, value: 'archive', onAction: onAction),
+                  if (showShare)
+                    _buildTile(ctx, theme, icon: Icons.share_outlined, title: L10n.of(context).ui_share, value: 'share', onAction: onAction),
+                  _buildTile(ctx, theme, icon: Broken.folder_favorite, title: L10n.of(ctx).ui_favorite, value: 'favorite', onAction: onAction),
+                  const SizedBox(height: 8),
+                ],
+              ),
             ),
           ),
         );

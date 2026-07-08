@@ -323,7 +323,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                     });
                   },
                 )
-              : Text(L10n.of(context).msg1cf6fcd3),
+              : Text(L10n.of(context).ui_personalize_settings),
           leading: IconButton(
             icon: const Icon(Broken.arrow_left),
             onPressed: () {
@@ -370,16 +370,6 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
             padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.of(context).padding.bottom + 16),
             children: [
               if (_searchQuery.isEmpty) ...[
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0, left: 4.0),
-                  child: Text(
-                    L10n.of(context).msg2590095f,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.onSurface.withOpacity(0.8),
-                    ),
-                  ),
-                ),
                 SettingsTile(
                   icon: Broken.language_circle,
                   title: L10n.of(context).ui_language,

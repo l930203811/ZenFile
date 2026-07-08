@@ -247,6 +247,9 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
         Navigator.pop(context);
         widget.onNavigateTab?.call(1);
         break;
+      case 'open_with':
+        provider.openFile(context, path, forceOpenWith: true);
+        break;
       case 'share':
         if (FileSystemEntity.isFileSync(path)) {
           try {
@@ -328,6 +331,18 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
               );
             }
           }
+        }
+        break;
+      case 'favorite':
+        final name = p.basename(path);
+        final isRemote = provider.currIsRemote;
+        final connectionId = provider.activeTab.remoteConnection?.id;
+        final isDir = isRemote ? true : Directory(path).existsSync();
+        provider.addFavorite(path, name, isDir, isRemote: isRemote, connectionId: connectionId);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(L10n.of(context).msg_favorited(name)), behavior: SnackBarBehavior.floating, duration: const Duration(seconds: 2)),
+          );
         }
         break;
     }
@@ -432,6 +447,7 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
                         file: item,
                         isSelected: isItemSelected,
                         showShowInLocationOption: true,
+                        showOpenWithOption: true,
                         onTap: () {
                           if (_isSelectionMode) {
                             _toggleSelection(item.path);

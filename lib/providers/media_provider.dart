@@ -212,6 +212,7 @@ class ThumbnailCache {
 
 class MediaProvider extends ChangeNotifier {
   MediaProvider() {
+    final migratedVersion = PreferencesService.getCategoriesMigratedVersion();
     final savedOrder = PreferencesService.getCategoryOrder();
     if (savedOrder != null && savedOrder.isNotEmpty) {
       _categoryOrder = savedOrder;
@@ -266,6 +267,17 @@ class MediaProvider extends ChangeNotifier {
         _categoryOrder.add('回收站');
         orderUpdated = true;
       }
+      if (!_categoryOrder.contains('系统')) {
+        _categoryOrder.insert(0, '系统');
+        orderUpdated = true;
+      }
+      if (!_categoryOrder.contains('存储')) {
+        // 确保 '存储' 在 '系统' 后面，'空间' 前面
+        final systemIndex = _categoryOrder.indexOf('系统');
+        final insertIndex = systemIndex >= 0 ? systemIndex + 1 : 0;
+        _categoryOrder.insert(insertIndex, '存储');
+        orderUpdated = true;
+      }
       if (orderUpdated) {
         PreferencesService.saveCategoryOrder(_categoryOrder);
       }
@@ -294,7 +306,6 @@ class MediaProvider extends ChangeNotifier {
       }
       // 仅在迁移版本低于当前版本时，补全新分类到 active 列表。
       // 已迁移用户不再干预其 active 状态，避免用户主动关闭的分类在重启后被重新启用。
-      final migratedVersion = PreferencesService.getCategoriesMigratedVersion();
       if (migratedVersion < PreferencesService.kCurrentCategoriesMigratedVersion) {
         if (!_activeCategories.contains('网络')) {
           _activeCategories.add('网络');
@@ -320,6 +331,16 @@ class MediaProvider extends ChangeNotifier {
           _activeCategories.add('回收站');
           activeUpdated = true;
         }
+        if (!_activeCategories.contains('系统')) {
+          _activeCategories.insert(0, '系统');
+          activeUpdated = true;
+        }
+        if (!_activeCategories.contains('存储')) {
+          final systemIndex = _activeCategories.indexOf('系统');
+          final insertIndex = systemIndex >= 0 ? systemIndex + 1 : 0;
+          _activeCategories.insert(insertIndex, '存储');
+          activeUpdated = true;
+        }
       }
       if (activeUpdated) {
         PreferencesService.saveActiveCategories(_activeCategories);
@@ -336,6 +357,7 @@ class MediaProvider extends ChangeNotifier {
     }
     _customCategoryPaths = PreferencesService.getCustomCategoryPaths();
     _excludedDefaultPaths = PreferencesService.getExcludedDefaultPaths();
+    _customCategoryLabels = PreferencesService.getCustomCategoryLabels();
   }
 
   List<AssetEntity> _images = [];
@@ -353,6 +375,8 @@ class MediaProvider extends ChangeNotifier {
   Map<String, List<String>> get customCategoryPaths => _customCategoryPaths;
   Map<String, List<String>> _excludedDefaultPaths = {};
   Map<String, List<String>> get excludedDefaultPaths => _excludedDefaultPaths;
+  Map<String, String> _customCategoryLabels = {};
+  Map<String, String> get customCategoryLabels => _customCategoryLabels;
   List<FileItemModel> _recentFiles = [];
   List<CustomShortcutModel> _customShortcuts = [];
   List<AssetPathEntity> _imageAlbums = [];
@@ -362,6 +386,9 @@ class MediaProvider extends ChangeNotifier {
   List<AssetPathEntity> get videoAlbums => _videoAlbums;
 
   List<String> _categoryOrder = [
+    '系统',
+    '存储',
+    '空间',
     '图片',
     '视频',
     '音频',
@@ -376,12 +403,14 @@ class MediaProvider extends ChangeNotifier {
     '安装包',
     '设置',
     '最近',
-    '存储',
     '保险箱',
     '回收站',
   ];
 
   List<String> _activeCategories = [
+    '系统',
+    '存储',
+    '空间',
     '图片',
     '视频',
     '音频',
@@ -396,7 +425,6 @@ class MediaProvider extends ChangeNotifier {
     '安装包',
     '设置',
     '最近',
-    '存储',
     '保险箱',
     '回收站',
   ];
@@ -616,6 +644,50 @@ class MediaProvider extends ChangeNotifier {
     _categoryOrder.insert(newIndex, item);
     PreferencesService.saveCategoryOrder(_categoryOrder);
     _saveCache();
+    notifyListeners();
+  }
+
+  /// 重命名类别显示标签
+  /// oldLabel: 当前显示的标签（可能是原始标签或已自定义的标签）
+  /// newLabel: 新的显示标签
+  void renameCategory(String oldLabel, String newLabel) {
+    // 查找原始键：如果 oldLabel 是已自定义的标签值，找到对应的原始键
+    String? originalKey = oldLabel;
+    bool foundAsValue = false;
+    for (final entry in _customCategoryLabels.entries) {
+      if (entry.value == oldLabel) {
+        originalKey = entry.key;
+        foundAsValue = true;
+        break;
+      }
+    }
+
+    // 如果新标签与原始键相同（即改回默认名），删除自定义标签条目
+    // 这样显示时会回退到 l10n 默认翻译
+    if (newLabel == originalKey) {
+      if (_customCategoryLabels.containsKey(originalKey)) {
+        _customCategoryLabels.remove(originalKey);
+        PreferencesService.saveCustomCategoryLabels(_customCategoryLabels);
+        notifyListeners();
+      }
+      return;
+    }
+
+    // 新旧标签相同且不是改回默认名，无需操作
+    if (oldLabel == newLabel && !foundAsValue) return;
+
+    if (foundAsValue) {
+      // oldLabel 是已自定义的标签值，更新对应的原始键的值
+      _customCategoryLabels[originalKey!] = newLabel;
+    } else if (_customCategoryLabels.containsKey(oldLabel)) {
+      // oldLabel 是原始键且已有自定义标签，更新值
+      _customCategoryLabels[oldLabel] = newLabel;
+    } else {
+      // oldLabel 是原始键且没有自定义标签，创建新条目
+      _customCategoryLabels[oldLabel] = newLabel;
+    }
+
+    PreferencesService.saveCustomCategoryLabels(_customCategoryLabels);
     notifyListeners();
   }
 
@@ -841,6 +913,8 @@ class MediaProvider extends ChangeNotifier {
 
     // Fast initial load from disk cache
     await _loadFromDiskCache();
+    // 缓存加载后立即通知，让界面显示缓存数据，避免空状态等待
+    notifyListeners();
 
     bool isStorageGranted = false;
     try {

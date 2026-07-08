@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -15,16 +16,17 @@ import '../widgets/drag_drop_handler.dart';
 import '../widgets/file_action_dialogs.dart';
 import '../widgets/drag_drop_action_dialog.dart';
 import '../widgets/create_archive_dialog.dart';
+import '../widgets/sort_modal.dart';
 import '../widgets/batch_rename_dialog.dart';
 import '../widgets/selection_action_bar.dart';
 import '../widgets/selection_context_bottom_sheet.dart';
 import '../widgets/zenfile_drawer.dart';
+import '../widgets/zenfile_end_drawer.dart';
+import '../widgets/quick_categories_grid.dart';
 import '../../core/icon_fonts/broken_icons.dart';
-import 'global_search_screen.dart';
 import 'internal_file_picker_screen.dart';
 import '../widgets/restricted_folder_banner.dart';
 import '../widgets/directory_tab_bar.dart';
-import '../../services/pin_service.dart';
 import '../../services/folder_share_service.dart';
 import '../widgets/pane_browser.dart';
 import '../../services/network_connections_service.dart';
@@ -35,7 +37,8 @@ import 'package:zenfile/l10n/generated/app_localizations.dart';
 class DirectoryScreen extends StatefulWidget {
   final VoidCallback toggleTheme;
   final Function(int)? onNavigateTab;
-  const DirectoryScreen({super.key, required this.toggleTheme, this.onNavigateTab});
+  final VoidCallback? onEndDrawerCustomize;
+  const DirectoryScreen({super.key, required this.toggleTheme, this.onNavigateTab, this.onEndDrawerCustomize});
 
   @override
   State<DirectoryScreen> createState() => _DirectoryScreenState();
@@ -349,6 +352,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
               PopupMenuItem(value: 'file', child: Row(children: [Icon(Broken.document, size: 20), SizedBox(width: 12), Text(L10n.of(context).msge48a7157, style: TextStyle(fontWeight: FontWeight.w600))])),
               PopupMenuItem(value: 'folder', child: Row(children: [Icon(Broken.folder, size: 20), SizedBox(width: 12), Text(L10n.of(context).msgf3a485df, style: TextStyle(fontWeight: FontWeight.w600))])),
               PopupMenuItem(value: 'archive', child: Row(children: [Icon(Broken.archive, size: 20), SizedBox(width: 12), Text(L10n.of(context).msg68ac91eb, style: TextStyle(fontWeight: FontWeight.w600))])),
+              PopupMenuItem(value: 'favorite', child: Row(children: [Icon(Broken.folder_favorite, size: 20), SizedBox(width: 12), Text(L10n.of(context).ui_new_favorite, style: TextStyle(fontWeight: FontWeight.w600))])),
             ],
           ),
           // 复制标签页：双屏模式下复制激活 tab 到未激活 pane；单窗口模式下新建标签页
@@ -538,6 +542,68 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     );
   }
 
+  void _openEndDrawer(BuildContext context, FileManagerProvider provider) {
+    final outerContext = context;
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black26,
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(1, 0),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.85,
+              child: MediaQuery.removePadding(
+                context: context,
+                removeTop: true,
+                child: _buildEndDrawerWithGesture(context, outerContext, provider),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildEndDrawerWithGesture(BuildContext dialogContext, BuildContext outerContext, FileManagerProvider provider) {
+    return GestureDetector(
+      onHorizontalDragEnd: (details) {
+        if (details.primaryVelocity! > 0) {
+          Navigator.pop(dialogContext);
+        }
+      },
+      child: ZenFileEndDrawer(
+        toggleTheme: widget.toggleTheme,
+        // 注意：ZenFileEndDrawer 内部每个菜单项 onTap 已调用 Navigator.pop(context) 关闭弹窗，
+        // 此处回调触发时 dialog 正在关闭动画中，不得再次 pop，否则会 pop 掉主路由导致黑屏。
+        onRefresh: () {
+          Future.delayed(const Duration(milliseconds: 350), () {
+            widget.onNavigateTab?.call(0);
+          });
+        },
+        onCustomize: () {
+          Future.delayed(const Duration(milliseconds: 350), () {
+            widget.onEndDrawerCustomize?.call();
+          });
+        },
+        onShowSortModal: () {
+          Future.delayed(const Duration(milliseconds: 350), () {
+            SortModal.show(outerContext, provider);
+          });
+        },
+        onNavigateToBrowse: () => widget.onNavigateTab?.call(1),
+        searchFolderPath: provider.currentPath,
+        provider: provider,
+      ),
+    );
+  }
+
   void _goBack(FileManagerProvider provider) async {
     if (_scrollController.hasClients) {
       provider.saveScrollOffset(provider.currentPath, _scrollController.offset);
@@ -645,6 +711,18 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             : [path];
         await FolderShareService.sharePaths(context, paths);
         break;
+      case 'favorite':
+        final name = p.posix.basename(path);
+        final isRemote = provider.currIsRemote;
+        final connectionId = provider.activeTab.remoteConnection?.id;
+        final isDir = isRemote ? true : await Directory(path).exists();
+        provider.addFavorite(path, name, isDir, isRemote: isRemote, connectionId: connectionId);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(L10n.of(context).msg_favorited(name)), behavior: SnackBarBehavior.floating, duration: const Duration(seconds: 2)),
+          );
+        }
+        break;
       case 'pin':
         await provider.togglePinPath(path);
         break;
@@ -709,6 +787,18 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             separateArchives: res.separateArchives,
             targetPaths: [provider.currentPath],
             context: context,
+          );
+        }
+        break;
+      case 'favorite':
+        final currentPath = provider.currentPath;
+        final name = p.posix.basename(currentPath);
+        final isRemote = provider.currIsRemote;
+        final connectionId = provider.activeTab.remoteConnection?.id;
+        provider.addFavorite(currentPath, name, true, isRemote: isRemote, connectionId: connectionId);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(L10n.of(context).msg_favorited(name)), behavior: SnackBarBehavior.floating, duration: const Duration(seconds: 2)),
           );
         }
         break;
@@ -785,248 +875,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   }
 
   void _showSortModal(BuildContext context, FileManagerProvider provider) {
-    final theme = Theme.of(context);
-    bool isAppearanceExpanded = false;
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: theme.colorScheme.surface,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setStateModal) {
-            return SafeArea(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(L10n.of(context).msg97301f64, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                        IconButton(icon: const Icon(Broken.close_circle), onPressed: () => Navigator.pop(context)),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(L10n.of(context).ui_layout_mode, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: InkWell(
-                            onTap: () {
-                              provider.setGridView(false);
-                              setStateModal(() {});
-                            },
-                            borderRadius: BorderRadius.circular(16),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: !provider.isGridView ? theme.colorScheme.primary : theme.colorScheme.surfaceVariant,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Broken.row_vertical, color: !provider.isGridView ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface),
-                                  const SizedBox(width: 8),
-                                  Text(L10n.of(context).msg829cb1dd, style: TextStyle(fontWeight: FontWeight.bold, color: !provider.isGridView ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface)),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: InkWell(
-                            onTap: () {
-                              provider.setGridView(true);
-                              setStateModal(() {});
-                            },
-                            borderRadius: BorderRadius.circular(16),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: provider.isGridView ? theme.colorScheme.primary : theme.colorScheme.surfaceVariant,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Broken.element_3, color: provider.isGridView ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface),
-                                  const SizedBox(width: 8),
-                                  Text(L10n.of(context).ui_grid_view, style: TextStyle(fontWeight: FontWeight.bold, color: provider.isGridView ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface)),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    Theme(
-                      data: theme.copyWith(dividerColor: Colors.transparent),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: theme.dividerColor.withOpacity(0.1)),
-                        ),
-                        child: ExpansionTile(
-                          initiallyExpanded: isAppearanceExpanded,
-                          onExpansionChanged: (exp) {
-                            isAppearanceExpanded = exp;
-                          },
-                          leading: Icon(Broken.setting_2, color: theme.colorScheme.primary),
-                          title: Text(L10n.of(context).msg0a4ebb8d, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-                          childrenPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(L10n.of(context).msg88062f93, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
-                                Text('${(provider.iconScale * 100).round()}%', style: TextStyle(fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
-                              ],
-                            ),
-                            Slider(
-                              value: provider.iconScale,
-                              min: 0.7,
-                              max: 1.5,
-                              divisions: 8,
-                              activeColor: theme.colorScheme.primary,
-                              onChanged: (val) {
-                                provider.setIconScale(val);
-                                setStateModal(() {});
-                              },
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(L10n.of(context).msga7c781f5, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
-                                Text('${(provider.itemPaddingMultiplier * 100).round()}%', style: TextStyle(fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
-                              ],
-                            ),
-                            Slider(
-                              value: provider.itemPaddingMultiplier,
-                              min: 0.4,
-                              max: 2.0,
-                              divisions: 16,
-                              activeColor: theme.colorScheme.primary,
-                              onChanged: (val) {
-                                provider.setItemPaddingMultiplier(val);
-                                setStateModal(() {});
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(L10n.of(context).msga2946a1a, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        _buildSortChip(context, provider, setStateModal, L10n.of(context).ui_name_asc, FileSortType.nameAsc),
-                        _buildSortChip(context, provider, setStateModal, L10n.of(context).za, FileSortType.nameDesc),
-                        _buildSortChip(context, provider, setStateModal, L10n.of(context).ui_newest, FileSortType.dateNewest),
-                        _buildSortChip(context, provider, setStateModal, L10n.of(context).ui_oldest, FileSortType.dateOldest),
-                        _buildSortChip(context, provider, setStateModal, L10n.of(context).msg2e2a26bb, FileSortType.sizeLargest),
-                        _buildSortChip(context, provider, setStateModal, L10n.of(context).ui_size_small, FileSortType.sizeSmallest),
-                        _buildSortChip(context, provider, setStateModal, L10n.of(context).ui_type, FileSortType.type),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: provider.isFolderOverrideEnabled(provider.currentPath)
-                            ? theme.colorScheme.primary.withOpacity(0.08)
-                            : theme.colorScheme.surfaceVariant.withOpacity(0.4),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: provider.isFolderOverrideEnabled(provider.currentPath)
-                              ? theme.colorScheme.primary.withOpacity(0.25)
-                              : theme.dividerColor.withOpacity(0.08),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Broken.folder_favorite,
-                            color: provider.isFolderOverrideEnabled(provider.currentPath)
-                                ? theme.colorScheme.primary
-                                : theme.colorScheme.onSurface.withOpacity(0.65),
-                            size: 24,
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  L10n.of(context).msgf437ace4,
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  L10n.of(context).msg4dfc167a,
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.onSurface.withOpacity(0.55),
-                                    fontSize: 11,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Switch.adaptive(
-                            value: provider.isFolderOverrideEnabled(provider.currentPath),
-                            activeColor: theme.colorScheme.primary,
-                            onChanged: (val) {
-                              provider.setFolderOverrideEnabled(provider.currentPath, val);
-                              setStateModal(() {});
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      );
-    },
-  );
-}
-
-  Widget _buildSortChip(BuildContext context, FileManagerProvider provider, StateSetter setStateModal, String label, FileSortType sortType) {
-    final theme = Theme.of(context);
-    final activeSort = provider.getSortTypeForPath(provider.currentPath);
-    final isSelected = activeSort == sortType;
-    return ActionChip(
-      label: Text(label, style: TextStyle(fontWeight: FontWeight.bold, color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface)),
-      backgroundColor: isSelected ? theme.colorScheme.primary : theme.colorScheme.surfaceVariant,
-      onPressed: () {
-        provider.setSortType(sortType);
-        if (sortType == FileSortType.type) {
-          Navigator.pop(context); // Close the sort sheet
-          FileFilterBottomSheet.show(context); // Open filter sheet
-        } else {
-          setStateModal(() {});
-        }
-      },
-    );
+    SortModal.show(context, provider);
   }
 
   void _showStorageVolumeModal(BuildContext context, FileManagerProvider provider) {
@@ -1294,7 +1143,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
               if (firstHighlightedIndex != -1) {
                 double targetOffset = 0.0;
                 if (provider.isGridView) {
-                  final crossAxisCount = (MediaQuery.of(context).size.width / (110 * provider.iconScale)).floor().clamp(2, 6);
+                  final crossAxisCount = (MediaQuery.of(context).size.width / (110 * provider.iconScale)).floor().clamp(2, 10);
                   final row = firstHighlightedIndex ~/ crossAxisCount;
                   final itemHeight = (150 * provider.iconScale * provider.itemPaddingMultiplier).clamp(100.0, 300.0);
                   targetOffset = row * itemHeight;
@@ -1332,76 +1181,48 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                     surfaceTintColor: Colors.transparent,
                     scrolledUnderElevation: 0,
                     titleSpacing: 0,
-                    centerTitle: false,
-                    actionsPadding: const EdgeInsets.only(right: 4),
-                    leadingWidth: isSelectionMode ? 56 : 160,
+                    centerTitle: true,
+                    leadingWidth: isSelectionMode ? 56 : 0,
+                    automaticallyImplyLeading: isSelectionMode,
                     title: isSelectionMode
                         ? const SizedBox.shrink()
-                        : const SizedBox.shrink(),
-                    leading: isSelectionMode
-                        ? IconButton(
-                            icon: const Icon(Broken.close_square),
-                            onPressed: () => provider.clearSelection(),
-                          )
-                        : Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Builder(
-                                builder: (context) => IconButton(
+                        : Builder(
+                            builder: (context) => Row(
+                              children: [
+                                // 抽屉按钮（靠左）
+                                IconButton(
                                   icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
                                   onPressed: () => Scaffold.of(context).openDrawer(),
                                 ),
-                              ),
-                              IconButton(
-                                icon: Icon(Broken.category, color: theme.colorScheme.primary),
-                                tooltip: L10n.of(context).msg6e0f9cef,
-                                onPressed: () {
-                                  widget.onNavigateTab?.call(0);
-                                },
-                              ),
-                              IconButton(
-                                icon: Icon(Broken.folder, color: theme.colorScheme.primary),
-                                tooltip: L10n.of(context).ui_browse,
-                                onPressed: () {
-                                  // 已在浏览页，无需切换
-                                },
-                              ),
-                            ],
-                          ),
-                    actions: isSelectionMode
-                        ? [
-                            IconButton(
-                              icon: const Icon(Broken.tick_square),
-                              tooltip: L10n.of(context).ui_select_all,
-                              onPressed: () => provider.selectAll(),
-                            ),
-                          ]
-                        : [
-                            IconButton(
-                              icon: Icon(Broken.search_normal, color: theme.colorScheme.primary),
-                              onPressed: () {
-                                Navigator.push(context, MaterialPageRoute(builder: (_) => GlobalSearchScreen(searchFolderPath: provider.currentPath)));
-                              },
-                            ),
-                            IconButton(
-                              icon: Icon(Broken.filter_edit, color: theme.colorScheme.primary),
-                              tooltip: L10n.of(context).msg97301f64,
-                              onPressed: () => _showSortModal(context, provider),
-                            ),
-                            PopupMenuButton<String>(
-                              icon: Icon(Broken.add_square, size: 26, color: theme.colorScheme.primary),
-                              tooltip: L10n.of(context).ui_new,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                              position: PopupMenuPosition.under,
-                              elevation: 8,
-                              onSelected: (val) => _handleMenuAction(context, val, provider),
-                              itemBuilder: (context) => [
-                                PopupMenuItem(value: 'file', child: Row(children: [Icon(Broken.document, size: 20), SizedBox(width: 12), Text(L10n.of(context).msge48a7157, style: TextStyle(fontWeight: FontWeight.w600))])),
-                                PopupMenuItem(value: 'folder', child: Row(children: [Icon(Broken.folder, size: 20), SizedBox(width: 12), Text(L10n.of(context).msgf3a485df, style: TextStyle(fontWeight: FontWeight.w600))])),
-                                PopupMenuItem(value: 'archive', child: Row(children: [Icon(Broken.archive, size: 20), SizedBox(width: 12), Text(L10n.of(context).msg68ac91eb, style: TextStyle(fontWeight: FontWeight.w600))])),
+                                const Spacer(),
+                                // 分类页按钮
+                                IconButton(
+                                  icon: Icon(Broken.category, color: theme.colorScheme.primary),
+                                  tooltip: L10n.of(context).msg6e0f9cef,
+                                  onPressed: () {
+                                    widget.onNavigateTab?.call(0);
+                                  },
+                                ),
+                                const SizedBox(width: 32),
+                                // 浏览页按钮
+                                IconButton(
+                                  icon: Icon(Broken.folder, color: theme.colorScheme.primary),
+                                  tooltip: L10n.of(context).ui_browse,
+                                  onPressed: () {
+                                    // 已在浏览页，无需切换
+                                  },
+                                ),
+                                const Spacer(),
+                                // 快捷操作按钮（靠右）
+                                IconButton(
+                                  icon: Icon(Broken.more_circle, color: theme.colorScheme.primary),
+                                  tooltip: L10n.of(context).msge8b8e9b3,
+                                  onPressed: () => _openEndDrawer(context, provider),
+                                ),
                               ],
                             ),
-                          ],
+                          ),
+                    actions: [],
                   )
                 : AppBar(
                     automaticallyImplyLeading: false,
@@ -1545,7 +1366,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                           sliver: provider.isGridView
                               ? SliverGrid(
                                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: (MediaQuery.of(context).size.width / (110 * provider.iconScale)).floor().clamp(2, 6),
+                                    crossAxisCount: (MediaQuery.of(context).size.width / (110 * provider.iconScale)).floor().clamp(2, 10),
                                     mainAxisSpacing: (12 * provider.itemPaddingMultiplier).clamp(4.0, 24.0),
                                     crossAxisSpacing: (12 * provider.itemPaddingMultiplier).clamp(4.0, 24.0),
                                     childAspectRatio: 0.75,
@@ -1745,148 +1566,6 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                         ),
                       ),
                     ),
-                  // 文件传输进度条覆盖层
-                  Positioned.fill(
-                    child: ValueListenableBuilder<FileOperationProgress?>(
-                      valueListenable: provider.progressNotifier,
-                      builder: (context, progress, child) {
-                        if (progress == null) return const SizedBox.shrink();
-                        final percent = (progress.percentage * 100).clamp(0, 100).toInt();
-                        final theme = Theme.of(context);
-                        final isDark = theme.brightness == Brightness.dark;
-                        final circleBgColor = isDark ? const Color(0xFF1E1E2E).withValues(alpha: 0.92) : const Color(0xFFF8F8FC).withValues(alpha: 0.92);
-                        return Stack(
-                          children: [
-                            // 半透明暗色背景，阻止与后方文件的交互
-                            IgnorePointer(
-                              child: Container(color: Colors.black54),
-                            ),
-                            // 居中内容区域
-                            Center(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  // 圆形进度区域 (200x200)
-                                  Container(
-                                    width: 200,
-                                    height: 200,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: circleBgColor,
-                                      border: Border.all(
-                                        color: theme.colorScheme.outline.withValues(alpha: 0.12),
-                                        width: 1,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.3),
-                                          blurRadius: 32,
-                                          spreadRadius: 4,
-                                        ),
-                                      ],
-                                    ),
-                                    child: Stack(
-                                      fit: StackFit.expand,
-                                      children: [
-                                        // 背景环（轨道）
-                                        Padding(
-                                          padding: const EdgeInsets.all(18),
-                                          child: CircularProgressIndicator(
-                                            value: 1.0,
-                                            strokeWidth: 5,
-                                            backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.06),
-                                            valueColor: AlwaysStoppedAnimation<Color>(
-                                              theme.colorScheme.primary.withValues(alpha: 0.06),
-                                            ),
-                                          ),
-                                        ),
-                                        // 进度环
-                                        Padding(
-                                          padding: const EdgeInsets.all(18),
-                                          child: CircularProgressIndicator(
-                                            value: progress.percentage.clamp(0.0, 1.0),
-                                            strokeWidth: 5,
-                                            backgroundColor: Colors.transparent,
-                                            valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
-                                            strokeCap: StrokeCap.round,
-                                          ),
-                                        ),
-                                        // 中心：百分比 + 文件计数
-                                        Center(
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Text(
-                                                '$percent%',
-                                                style: TextStyle(
-                                                  fontSize: 44,
-                                                  fontWeight: FontWeight.w900,
-                                                  color: theme.colorScheme.primary,
-                                                  letterSpacing: -1,
-                                                  height: 1,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 6),
-                                              Text(
-                                                '${progress.currentFileIndex}/${progress.totalFiles}',
-                                                style: TextStyle(
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.35),
-                                                  letterSpacing: 0.5,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  // 当前文件名
-                                  ConstrainedBox(
-                                    constraints: const BoxConstraints(maxWidth: 220),
-                                    child: Text(
-                                      progress.currentFileName,
-                                      style: theme.textTheme.bodySmall?.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white.withValues(alpha: 0.85),
-                                        fontSize: 12,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 24),
-                                  // 取消操作按钮
-                                  SizedBox(
-                                    width: 140,
-                                    height: 38,
-                                    child: OutlinedButton(
-                                      onPressed: () => provider.cancelOperation(),
-                                      style: OutlinedButton.styleFrom(
-                                        foregroundColor: Colors.white70,
-                                        side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(19),
-                                        ),
-                                        padding: EdgeInsets.zero,
-                                      ),
-                                      child: Text(
-                                        L10n.of(context).msg17093362,
-                                        style: TextStyle(fontSize: 13),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
                   ],
                 ),
               );
@@ -1900,7 +1579,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             bottomNavigationBar: isSelectionMode
                 ? SelectionActionBar(provider: provider)
                 : showBottomActionBar
-                    // 导航栏在底部：始终显示镜像 AppBar，showFloatingAddButton 只控制顶部浏览操作栏
+                    // 导航栏在底部：四个按钮均匀分布（与顶部布局一致）
                     ? PreferredSize(
                         preferredSize: Size.fromHeight(kToolbarHeight + MediaQuery.of(context).padding.bottom),
                         child: Material(
@@ -1911,59 +1590,34 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                             child: SizedBox(
                               height: kToolbarHeight,
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  // 左侧：抽屉 + 分类 + 浏览（与顶部 leading 一致）
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Builder(
-                                        builder: (ctx) => IconButton(
-                                          icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
-                                          tooltip: L10n.of(context).msg6e0f9cef,
-                                          onPressed: () => Scaffold.of(ctx).openDrawer(),
-                                        ),
-                                      ),
-                                      IconButton(
-                                        icon: Icon(Broken.category, color: theme.colorScheme.primary),
-                                        tooltip: L10n.of(context).msg6e0f9cef,
-                                        onPressed: () => widget.onNavigateTab?.call(0),
-                                      ),
-                                      IconButton(
-                                        icon: Icon(Broken.folder, color: theme.colorScheme.primary),
-                                        tooltip: L10n.of(context).ui_browse,
-                                        onPressed: () {},
-                                      ),
-                                    ],
+                                  // 抽屉按钮（靠左）
+                                  Builder(
+                                    builder: (ctx) => IconButton(
+                                      icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
+                                      onPressed: () => Scaffold.of(ctx).openDrawer(),
+                                    ),
                                   ),
-                                  // 右侧：搜索 + 排序 + 新建（与顶部 actions 一致）
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      IconButton(
-                                        icon: Icon(Broken.search_normal, color: theme.colorScheme.primary),
-                                        tooltip: L10n.of(context).msg681c0f39,
-                                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => GlobalSearchScreen(searchFolderPath: provider.currentPath))),
-                                      ),
-                                      IconButton(
-                                        icon: Icon(Broken.filter_edit, color: theme.colorScheme.primary),
-                                        tooltip: L10n.of(context).msg97301f64,
-                                        onPressed: () => _showSortModal(context, provider),
-                                      ),
-                                      PopupMenuButton<String>(
-                                        icon: Icon(Broken.add_square, size: 26, color: theme.colorScheme.primary),
-                                        tooltip: L10n.of(context).ui_new,
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                        position: PopupMenuPosition.under,
-                                        elevation: 8,
-                                        onSelected: (val) => _handleMenuAction(context, val, provider),
-                                        itemBuilder: (context) => [
-                                          PopupMenuItem(value: 'file', child: Row(children: [Icon(Broken.document, size: 20), SizedBox(width: 12), Text(L10n.of(context).msge48a7157, style: TextStyle(fontWeight: FontWeight.w600))])),
-                                          PopupMenuItem(value: 'folder', child: Row(children: [Icon(Broken.folder, size: 20), SizedBox(width: 12), Text(L10n.of(context).msgf3a485df, style: TextStyle(fontWeight: FontWeight.w600))])),
-                                          PopupMenuItem(value: 'archive', child: Row(children: [Icon(Broken.archive, size: 20), SizedBox(width: 12), Text(L10n.of(context).msg68ac91eb, style: TextStyle(fontWeight: FontWeight.w600))])),
-                                        ],
-                                      ),
-                                    ],
+                                  const Spacer(),
+                                  // 分类页按钮
+                                  IconButton(
+                                    icon: Icon(Broken.category, color: theme.colorScheme.primary),
+                                    tooltip: L10n.of(context).msg6e0f9cef,
+                                    onPressed: () => widget.onNavigateTab?.call(0),
+                                  ),
+                                  const SizedBox(width: 32),
+                                  // 浏览页按钮
+                                  IconButton(
+                                    icon: Icon(Broken.folder, color: theme.colorScheme.primary),
+                                    tooltip: L10n.of(context).ui_browse,
+                                    onPressed: () {},
+                                  ),
+                                  const Spacer(),
+                                  // 快捷操作按钮（靠右）
+                                  IconButton(
+                                    icon: Icon(Broken.more_circle, color: theme.colorScheme.primary),
+                                    tooltip: L10n.of(context).msge8b8e9b3,
+                                    onPressed: () => _openEndDrawer(context, provider),
                                   ),
                                 ],
                               ),

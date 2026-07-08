@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
+import '../../core/navigator_key.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/utils.dart';
@@ -111,6 +112,28 @@ class SelectionActionBar extends StatelessWidget {
               },
             ),
             _ActionButton(
+              icon: Broken.folder_favorite,
+              label: L10n.of(context).ui_favorite,
+              hideLabel: provider.hideActionText,
+              onTap: () {
+                final selectedPaths = provider.selectedPaths.toList();
+                final isRemote = provider.currIsRemote;
+                final connectionId = provider.activeTab.remoteConnection?.id;
+                for (final path in selectedPaths) {
+                  final name = p.basename(path);
+                  final isDir = isRemote ? true : Directory(path).existsSync();
+                  provider.addFavorite(path, name, isDir, isRemote: isRemote, connectionId: connectionId);
+                }
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(L10n.of(context).msg_favorited(p.basename(selectedPaths.first))),
+                    behavior: SnackBarBehavior.floating,
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              },
+            ),
+            _ActionButton(
               icon: Broken.trash,
               label: L10n.of(context).ui_delete,
               color: Colors.redAccent,
@@ -133,12 +156,6 @@ class SelectionActionBar extends StatelessWidget {
                   }
                 }
               },
-            ),
-            _ActionButton(
-              icon: Broken.info_circle,
-              label: L10n.of(context).ui_properties,
-              hideLabel: provider.hideActionText,
-              onTap: () => _showPropertiesModal(context, provider),
             ),
             PopupMenuButton<String>(
               icon: Column(
@@ -176,6 +193,12 @@ class SelectionActionBar extends StatelessWidget {
                     isMultiSelection: selectedCount > 1,
                   );
                   if (res != null) {
+                    // 用根 navigator 的 context 而非 widget context：
+                    // createArchive 内部会 selectedPaths.clear() 退出选择模式，
+                    // 导致 SelectionActionBar unmount、widget context 失效。
+                    // 用 navigatorKey.currentContext 确保 startCompression 显示的
+                    // 进度弹窗和后续刷新不依赖已 unmount 的 widget。
+                    final rootContext = navigatorKey.currentContext ?? context;
                     await provider.createArchive(
                       archiveName: res.archiveName,
                       format: res.format,
@@ -185,10 +208,8 @@ class SelectionActionBar extends StatelessWidget {
                       deleteSource: res.deleteSource,
                       separateArchives: res.separateArchives,
                       targetPaths: selectedPaths,
-                      context: context,
+                      context: rootContext,
                     );
-                    // 刷新由 createArchive 内部通过 BackgroundArchiveService._onOperationComplete 处理
-                    // 不在此处额外调用 loadDirectory，避免与压缩 Isolate 并发 I/O 导致性能下降和刷新竞态
                   }
                 } else if (action == 'paste') {
                   await provider.pasteFile(context);
@@ -218,6 +239,8 @@ class SelectionActionBar extends StatelessWidget {
                       ),
                     );
                   }
+                } else if (action == 'properties') {
+                  _showPropertiesModal(context, provider);
                 }
               },
               itemBuilder: (context) {
@@ -288,6 +311,17 @@ class SelectionActionBar extends StatelessWidget {
                         ),
                         const SizedBox(width: 12),
                         Text(allPinned ? L10n.of(context).msg84e4fac9 : L10n.of(context).ui_pin_to_top, style: const TextStyle(fontWeight: FontWeight.w500)),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuDivider(),
+                  PopupMenuItem(
+                    value: 'properties',
+                    child: Row(
+                      children: [
+                        const Icon(Broken.info_circle, size: 20),
+                        const SizedBox(width: 12),
+                        Text(L10n.of(context).ui_properties, style: const TextStyle(fontWeight: FontWeight.w500)),
                       ],
                     ),
                   ),

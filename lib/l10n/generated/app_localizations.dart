@@ -337,6 +337,12 @@ abstract class L10n {
   /// services\background_archive_service.dart
   ///
   /// In zh, this message translates to:
+  /// **'压缩成功，是否打开所在位置？'**
+  String get msg_compress_open_location;
+
+  /// services\background_archive_service.dart
+  ///
+  /// In zh, this message translates to:
   /// **'未找到可压缩的文件'**
   String get msg4367e85a;
 
@@ -1234,11 +1240,41 @@ abstract class L10n {
   /// **'大小（大）'**
   String get msg2e2a26bb;
 
-  /// ui\screens\directory_screen.dart
+  /// zenfile_end_drawer.dart
   ///
   /// In zh, this message translates to:
   /// **'仅此文件夹'**
   String get msgf437ace4;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'此目录不包含任何文件或子文件夹。'**
+  String get msg551f98ba;
+
+  /// zenfile_end_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'收藏夹'**
+  String get ui_favorites;
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'新建收藏'**
+  String get ui_new_favorite;
+
+  /// file_action_dialogs.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'收藏'**
+  String get ui_favorite;
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已收藏 {name}'**
+  String msg_favorited(Object name);
 
   /// ui\screens\directory_screen.dart
   ///
@@ -1287,12 +1323,6 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'空文件夹'**
   String get msge9691076;
-
-  /// ui\screens\directory_screen.dart
-  ///
-  /// In zh, this message translates to:
-  /// **'此目录不包含任何文件或子文件夹。'**
-  String get msg551f98ba;
 
   /// ui\screens\directory_screen.dart
   ///
@@ -2287,7 +2317,7 @@ abstract class L10n {
   /// ui\screens\more_settings_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'分类图标形状'**
+  /// **'图标形状'**
   String get msg2c3c5a35;
 
   /// ui\screens\more_settings_screen.dart
@@ -4108,6 +4138,18 @@ abstract class L10n {
   /// **'正在移动文件...'**
   String get msg9d69d7a0;
 
+  /// ui\widgets\file_operation_progress_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'传输文件'**
+  String get ui_transferring_files;
+
+  /// ui\widgets\file_operation_progress_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'剩下'**
+  String get ui_time_remaining;
+
   /// ui\widgets\open_with_sheet.dart
   ///
   /// In zh, this message translates to:
@@ -4159,7 +4201,7 @@ abstract class L10n {
   /// ui\widgets\quick_categories_grid.dart
   ///
   /// In zh, this message translates to:
-  /// **'拖动手柄 (=) 可重新排列首页图标。'**
+  /// **'长按图标拖动排列分类图标'**
   String get msg445a43cb;
 
   /// ui\widgets\quick_categories_grid.dart
@@ -4351,7 +4393,7 @@ abstract class L10n {
   /// ui\widgets\zenfile_drawer.dart
   ///
   /// In zh, this message translates to:
-  /// **'服务器与工具'**
+  /// **'网络'**
   String get msgf13fc21c;
 
   /// ui\widgets\zenfile_drawer.dart
@@ -4591,7 +4633,7 @@ abstract class L10n {
   /// No description provided for @cat_storage.
   ///
   /// In zh, this message translates to:
-  /// **'存储'**
+  /// **'空间'**
   String get cat_storage;
 
   /// No description provided for @cat_service.
@@ -4633,13 +4675,13 @@ abstract class L10n {
   /// No description provided for @cat_quick_categories.
   ///
   /// In zh, this message translates to:
-  /// **'快捷分类'**
+  /// **'分类'**
   String get cat_quick_categories;
 
   /// No description provided for @ui_nav.
   ///
   /// In zh, this message translates to:
-  /// **'导航'**
+  /// **'本地'**
   String get ui_nav;
 
   /// No description provided for @ui_home.
@@ -4663,7 +4705,7 @@ abstract class L10n {
   /// No description provided for @ui_personalize_settings.
   ///
   /// In zh, this message translates to:
-  /// **'个性化和设置'**
+  /// **'设置'**
   String get ui_personalize_settings;
 
   /// No description provided for @ui_compress.
@@ -5248,6 +5290,12 @@ abstract class L10n {
   /// **'置顶'**
   String get ui_pin_to_top;
 
+  /// selection_context_bottom_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'全选'**
+  String get msg_select_all;
+
   /// ui widgets
   ///
   /// In zh, this message translates to:
@@ -5781,6 +5829,78 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'逐字歌词过渡动画新增放大效果，修复同步问题，固定 300ms 过渡时长'**
   String get log_lyric_scale_animation;
+
+  /// No description provided for @log_quick_action_panel.
+  ///
+  /// In zh, this message translates to:
+  /// **'重新调整了顶部导航栏按钮，新增快捷操作页面，在浏览页可左滑弹出快捷操作面板'**
+  String get log_quick_action_panel;
+
+  /// No description provided for @log_favorites.
+  ///
+  /// In zh, this message translates to:
+  /// **'新增了收藏夹，用户可以收藏本地或远程文件/文件夹收藏到快捷操作面板的收藏夹中'**
+  String get log_favorites;
+
+  /// No description provided for @log_drawer_redesign.
+  ///
+  /// In zh, this message translates to:
+  /// **'重构了抽屉页，抽屉页更加简洁美观，持久化记住抽屉页所有展开/折叠状态，操作更加便捷'**
+  String get log_drawer_redesign;
+
+  /// No description provided for @log_video_player_rotation.
+  ///
+  /// In zh, this message translates to:
+  /// **'视频播放器新增了顺时针旋转画面，新增缩放比例'**
+  String get log_video_player_rotation;
+
+  /// No description provided for @log_category_reorder.
+  ///
+  /// In zh, this message translates to:
+  /// **'优化了分类页可长按类别图标拖动调整位置顺序，新增每行 3 列/4 列可选，现在支持重命名类别名称'**
+  String get log_category_reorder;
+
+  /// No description provided for @log_compression_fix.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复了压缩一些问题'**
+  String get log_compression_fix;
+
+  /// No description provided for @log_progress_bar_redesign.
+  ///
+  /// In zh, this message translates to:
+  /// **'重新设计了进度条窗口样式'**
+  String get log_progress_bar_redesign;
+
+  /// No description provided for @log_dual_pane_status_bar.
+  ///
+  /// In zh, this message translates to:
+  /// **'双窗口模式顶部新增状态栏，显示激活窗口指示器和剪贴板内容摘要'**
+  String get log_dual_pane_status_bar;
+
+  /// No description provided for @log_transfer_fixes.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复传输进度条不更新、无法取消、远程列表空白、传输速度不显示等问题'**
+  String get log_transfer_fixes;
+
+  /// No description provided for @log_drawer_font_consistency.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复了抽屉页「设置」按钮字体与其他栏目不一致的问题'**
+  String get log_drawer_font_consistency;
+
+  /// No description provided for @log_landscape_layout.
+  ///
+  /// In zh, this message translates to:
+  /// **'优化平板/车机横屏模式下的文件网格布局'**
+  String get log_landscape_layout;
+
+  /// No description provided for @log_progress_i18n.
+  ///
+  /// In zh, this message translates to:
+  /// **'进度条窗口新增完整的多语言翻译支持'**
+  String get log_progress_i18n;
 
   /// No description provided for @msg_remember_choice.
   ///
@@ -7059,6 +7179,114 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'旋转画面'**
   String get msg_rotate_video;
+
+  /// Video aspect ratio mode: fit to screen
+  ///
+  /// In zh, this message translates to:
+  /// **'适应屏幕'**
+  String get msg_aspect_fit;
+
+  /// Video aspect ratio mode: stretch to fill
+  ///
+  /// In zh, this message translates to:
+  /// **'拉伸填充'**
+  String get msg_aspect_fill;
+
+  /// Video aspect ratio mode: centered original size
+  ///
+  /// In zh, this message translates to:
+  /// **'居中'**
+  String get msg_aspect_center;
+
+  /// Video aspect ratio mode: 16:9
+  ///
+  /// In zh, this message translates to:
+  /// **'16:9'**
+  String get msg_aspect_16_9;
+
+  /// Video aspect ratio mode: 4:3
+  ///
+  /// In zh, this message translates to:
+  /// **'4:3'**
+  String get msg_aspect_4_3;
+
+  /// No description provided for @drawer_tools.
+  ///
+  /// In zh, this message translates to:
+  /// **'工具'**
+  String get drawer_tools;
+
+  /// No description provided for @open_with_native.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用本应用打开'**
+  String get open_with_native;
+
+  /// No description provided for @open_with_external.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用外部系统选择器打开'**
+  String get open_with_external;
+
+  /// No description provided for @open_once.
+  ///
+  /// In zh, this message translates to:
+  /// **'仅一次'**
+  String get open_once;
+
+  /// No description provided for @open_always.
+  ///
+  /// In zh, this message translates to:
+  /// **'始终'**
+  String get open_always;
+
+  /// No description provided for @drawer_edit_connection.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑'**
+  String get drawer_edit_connection;
+
+  /// No description provided for @cat_system.
+  ///
+  /// In zh, this message translates to:
+  /// **'系统'**
+  String get cat_system;
+
+  /// No description provided for @cat_storage_volume.
+  ///
+  /// In zh, this message translates to:
+  /// **'存储'**
+  String get cat_storage_volume;
+
+  /// No description provided for @ui_columns_per_row.
+  ///
+  /// In zh, this message translates to:
+  /// **'每行显示'**
+  String get ui_columns_per_row;
+
+  /// No description provided for @ui_3columns.
+  ///
+  /// In zh, this message translates to:
+  /// **'3列'**
+  String get ui_3columns;
+
+  /// No description provided for @ui_4columns.
+  ///
+  /// In zh, this message translates to:
+  /// **'4列'**
+  String get ui_4columns;
+
+  /// Right side menu header title
+  ///
+  /// In zh, this message translates to:
+  /// **'快捷操作'**
+  String get msge8b8e9b3;
+
+  /// Right side menu header subtitle
+  ///
+  /// In zh, this message translates to:
+  /// **'常用功能快捷入口'**
+  String get msg04b7de53;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

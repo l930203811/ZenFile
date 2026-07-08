@@ -14,6 +14,7 @@ class VideoControlsOverlay extends StatelessWidget {
   final bool isMuted;
   final int repeatMode; // 0=none, 1=one, 2=all
   final int rotationTurns; // 0=0°, 1=90°, 2=180°, 3=270°
+  final int aspectRatioMode; // 0=fit, 1=fill, 2=center, 3=16:9, 4=4:3
   final ValueChanged<double> onChanged;
   final ValueChanged<double> onChangeEnd;
   final ValueChanged<double> onChangeStart;
@@ -28,6 +29,7 @@ class VideoControlsOverlay extends StatelessWidget {
   final VoidCallback onToggleMute;
   final VoidCallback onToggleRepeat;
   final VoidCallback onRotate;
+  final VoidCallback onToggleAspectRatio;
   final VoidCallback onInteract;
 
   const VideoControlsOverlay({
@@ -43,6 +45,7 @@ class VideoControlsOverlay extends StatelessWidget {
     required this.isMuted,
     required this.repeatMode,
     required this.rotationTurns,
+    required this.aspectRatioMode,
     required this.onChanged,
     required this.onChangeEnd,
     required this.onChangeStart,
@@ -57,6 +60,7 @@ class VideoControlsOverlay extends StatelessWidget {
     required this.onToggleMute,
     required this.onToggleRepeat,
     required this.onRotate,
+    required this.onToggleAspectRatio,
     required this.onInteract,
   });
 
@@ -322,6 +326,23 @@ class VideoControlsOverlay extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Time labels above slider (current time on left, total duration on right)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          _formatDuration(position),
+                          style: TextStyle(color: itemsColor, fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          _formatDuration(duration),
+                          style: TextStyle(color: itemsColor, fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
                   // Full Width Seek Bar
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -351,74 +372,66 @@ class VideoControlsOverlay extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  // Bottom Bar Utilities & Timers
+                  // Action Icons Row
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      // Current / Total Time Chip
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.4),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.white.withOpacity(0.15), width: 1),
+                      // Repeat Button
+                      IconButton(
+                        icon: Icon(
+                          repeatMode == 0
+                              ? Icons.repeat_rounded
+                              : repeatMode == 1
+                                  ? Icons.repeat_one_rounded
+                                  : Icons.repeat_rounded,
+                          color: repeatMode != 0 ? accentColor : itemsColor.withOpacity(0.7),
+                          size: 22,
                         ),
-                        child: Text(
-                          '${_formatDuration(position)} / ${_formatDuration(duration)}',
-                          style: TextStyle(color: itemsColor, fontSize: 13, fontWeight: FontWeight.bold),
-                        ),
+                        tooltip: L10n.of(context).msg1f41f25d,
+                        onPressed: () {
+                          onInteract();
+                          onToggleRepeat();
+                        },
                       ),
-                      // Action Icons Row
-                      Row(
-                        children: [
-                          // Repeat Button
-                          IconButton(
-                            icon: Icon(
-                              repeatMode == 0
-                                  ? Icons.repeat_rounded
-                                  : repeatMode == 1
-                                      ? Icons.repeat_one_rounded
-                                      : Icons.repeat_rounded,
-                              color: repeatMode != 0 ? accentColor : itemsColor.withOpacity(0.7),
-                              size: 22,
-                            ),
-                            tooltip: L10n.of(context).msg1f41f25d,
-                            onPressed: () {
-                              onInteract();
-                              onToggleRepeat();
-                            },
-                          ),
-                          const SizedBox(width: 8),
-                          // Mute Button
-                          IconButton(
-                            icon: Icon(isMuted ? Broken.volume_slash : Broken.volume_high, color: itemsColor, size: 22),
-                            tooltip: isMuted ? '取消静音' : '静音',
-                            onPressed: () {
-                              onInteract();
-                              onToggleMute();
-                            },
-                          ),
-                          const SizedBox(width: 8),
-                          // Rotate Video Clockwise
-                          IconButton(
-                            icon: Icon(Icons.rotate_right_rounded, color: itemsColor, size: 22),
-                            tooltip: L10n.of(context).msg_rotate_video,
-                            onPressed: () {
-                              onInteract();
-                              onRotate();
-                            },
-                          ),
-                          const SizedBox(width: 8),
-                          // Full Screen
-                          IconButton(
-                            icon: Icon(isFullScreen ? Icons.fullscreen_exit_rounded : Icons.fullscreen_rounded, color: itemsColor, size: 28),
-                            tooltip: isFullScreen ? '退出全屏' : '全屏',
-                            onPressed: () {
-                              onInteract();
-                              onToggleFullScreen();
-                            },
-                          ),
-                        ],
+                      const SizedBox(width: 8),
+                      // Mute Button
+                      IconButton(
+                        icon: Icon(isMuted ? Broken.volume_slash : Broken.volume_high, color: itemsColor, size: 22),
+                        tooltip: isMuted ? '取消静音' : '静音',
+                        onPressed: () {
+                          onInteract();
+                          onToggleMute();
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      // Aspect Ratio Toggle Button
+                      IconButton(
+                        icon: Icon(Icons.aspect_ratio_rounded, color: aspectRatioMode != 0 ? accentColor : itemsColor, size: 22),
+                        tooltip: L10n.of(context).msg_aspect_fit,
+                        onPressed: () {
+                          onInteract();
+                          onToggleAspectRatio();
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      // Rotate Video Clockwise
+                      IconButton(
+                        icon: Icon(Icons.rotate_right_rounded, color: itemsColor, size: 22),
+                        tooltip: L10n.of(context).msg_rotate_video,
+                        onPressed: () {
+                          onInteract();
+                          onRotate();
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      // Full Screen
+                      IconButton(
+                        icon: Icon(isFullScreen ? Icons.fullscreen_exit_rounded : Icons.fullscreen_rounded, color: itemsColor, size: 28),
+                        tooltip: isFullScreen ? '退出全屏' : '全屏',
+                        onPressed: () {
+                          onInteract();
+                          onToggleFullScreen();
+                        },
                       ),
                     ],
                   ),

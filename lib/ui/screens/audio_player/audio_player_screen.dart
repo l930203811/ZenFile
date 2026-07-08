@@ -198,7 +198,19 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       );
       _shuffleQueue = List.generate(_allSongs.length, (i) => i);
       _initListeners();
-      _openTrack();
+      // 覆盖 media_kit 硬编码的 network-timeout=5s，给远程流式播放足够时间
+      () async {
+        try {
+          final platform = player.platform;
+          if (platform is NativePlayer) {
+            await platform.setProperty('network-timeout', '60');
+            await platform.setProperty('cache-secs', '10');
+          }
+        } catch (e) {
+          debugPrint('设置 audio network-timeout 失败: $e');
+        }
+        _openTrack();
+      }();
       if (_isBackgroundMode) {
         _startBackgroundMode();
       }

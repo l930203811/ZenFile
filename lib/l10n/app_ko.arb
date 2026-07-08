@@ -148,6 +148,7 @@
     "description": "services\\background_archive_service.dart"
   },
   "msgc18fb099": "압축 해제 성공. 위치를 여시겠습니까?",
+  "msg_compress_open_location": "압축 성공. 위치를 여시겠습니까?",
   "@msg4367e85a": {
     "description": "services\\background_archive_service.dart"
   },
@@ -752,6 +753,29 @@
     "description": "ui\\screens\\directory_screen.dart"
   },
   "msgf437ace4": "이 폴더만",
+  "@msg551f98ba": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "msg551f98ba": "즐겨찾기 없음",
+  "@ui_favorites": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_favorites": "즐겨찾기",
+  "@ui_new_favorite": {
+    "description": "directory_screen.dart"
+  },
+  "ui_new_favorite": "즐겨찾기에 추가",
+  "@ui_favorite": {
+    "description": "file_action_dialogs.dart"
+  },
+  "ui_favorite": "즐겨찾기",
+  "@msg_favorited": {
+    "description": "directory_screen.dart",
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "msg_favorited": "{name} 즐겨찾기 추가됨",
   "@msg4dfc167a": {
     "description": "ui\\screens\\directory_screen.dart"
   },
@@ -1451,7 +1475,7 @@
   "@msg2c3c5a35": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg2c3c5a35": "카테고리 아이콘 모양",
+  "msg2c3c5a35": "아이콘 모양",
   "@msg267fcd86": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -2693,6 +2717,14 @@
     "description": "ui\\widgets\\file_operation_progress_dialog.dart"
   },
   "msg9d69d7a0": "파일 이동 중...",
+  "@ui_transferring_files": {
+    "description": "ui\\widgets\\file_operation_progress_dialog.dart"
+  },
+  "ui_transferring_files": "파일 전송 중",
+  "@ui_time_remaining": {
+    "description": "ui\\widgets\\file_operation_progress_dialog.dart"
+  },
+  "ui_time_remaining": "남음",
   "@zenfile6": {
     "description": "ui\\widgets\\open_with_sheet.dart"
   },
@@ -2856,7 +2888,7 @@
   "@msgf13fc21c": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
   },
-  "msgf13fc21c": "서버 및 도구",
+  "msgf13fc21c": "네트워크",
   "@msg41e625d1": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
   },
@@ -2908,19 +2940,19 @@
   "cat_network": "네트워크",
   "cat_apps": "앱",
   "cat_settings": "설정",
-  "cat_storage": "저장소",
+  "cat_storage": "공간",
   "cat_service": "서비스",
   "cat_manage": "관리",
   "cat_config": "구성",
   "cat_analyze": "분석",
   "cat_vault": "금고",
   "cat_vault_desc": "안전 저장",
-  "cat_quick_categories": "빠른 카테고리",
-  "ui_nav": "내비게이션",
+  "cat_quick_categories": "카테고리",
+  "ui_nav": "로컬",
   "ui_home": "홈",
   "ui_recycle_bin": "휴지통",
   "ui_dark_mode": "다크 모드",
-  "ui_personalize_settings": "개인화 및 설정",
+  "ui_personalize_settings": "설정",
   "ui_compress": "압축",
   "ui_copy": "복사",
   "ui_cut": "잘라내기",
@@ -3163,6 +3195,10 @@
   "ui_pin_to_top": "상단에 고정",
   "@ui_pin_to_top": {
     "description": "ui widgets"
+  },
+  "msg_select_all": "전체 선택",
+  "@msg_select_all": {
+    "description": "selection_context_bottom_sheet.dart"
   },
   "ui_pinned_selected": "선택한 항목이 고정되었습니다",
   "@ui_pinned_selected": {
@@ -3852,5 +3888,44 @@
   "msg_rotate_video": "비디오 회전",
   "@msg_rotate_video": {
     "description": "Rotate video clockwise in video player"
+  },
+  "msg_aspect_fit": "화면에 맞춤",
+  "@msg_aspect_fit": {
+    "description": "Video aspect ratio mode: fit to screen"
+  },
+  "msg_aspect_fill": "늘려 채우기",
+  "@msg_aspect_fill": {
+    "description": "Video aspect ratio mode: stretch to fill"
+  },
+  "msg_aspect_center": "가운데",
+  "@msg_aspect_center": {
+    "description": "Video aspect ratio mode: centered original size"
+  },
+  "msg_aspect_16_9": "16:9",
+  "@msg_aspect_16_9": {
+    "description": "Video aspect ratio mode: 16:9"
+  },
+  "msg_aspect_4_3": "4:3",
+  "@msg_aspect_4_3": {
+    "description": "Video aspect ratio mode: 4:3"
+  },
+  "drawer_tools": "도구",
+  "open_with_native": "이 앱으로 열기",
+  "open_with_external": "외부 앱으로 열기",
+  "open_once": "이번만",
+  "open_always": "항상",
+  "drawer_edit_connection": "편집",
+  "cat_system": "시스템",
+  "cat_storage_volume": "저장소",
+  "ui_columns_per_row": "행당 열 수",
+  "ui_3columns": "3열",
+  "ui_4columns": "4열",
+  "msge8b8e9b3": "빠른 작업",
+  "@msge8b8e9b3": {
+    "description": "Right side menu header title"
+  },
+  "msg04b7de53": "자주 사용하는 기능에 빠르게 접근",
+  "@msg04b7de53": {
+    "description": "Right side menu header subtitle"
   }
 }

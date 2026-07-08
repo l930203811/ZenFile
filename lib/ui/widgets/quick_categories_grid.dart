@@ -31,8 +31,36 @@ class QuickCategoriesGrid extends StatefulWidget {
 
   static Map<String, Map<String, dynamic>> getAllCategoriesMap(BuildContext context, bool isDark, Function(int) onNavigateTab) {
     final mediaProvider = Provider.of<MediaProvider>(context, listen: false);
+    final fileManager = Provider.of<FileManagerProvider>(context, listen: false);
     final l10n = L10n.of(context);
     final map = <String, Map<String, dynamic>>{
+      '系统': {
+        'label': l10n.cat_system,
+        'icon': Broken.cpu,
+        'color': isDark ? Colors.redAccent : const Color(0xFFE53935),
+        'count': l10n.cat_manage,
+        'isCustom': false,
+        'action': () {
+          fileManager.setRootPath('/');
+          fileManager.loadDirectory('/');
+          onNavigateTab(1);
+        },
+      },
+      '存储': {
+        'label': l10n.cat_storage_volume,
+        'icon': Broken.folder_open,
+        'color': isDark ? Colors.blueAccent : const Color(0xFF1976D2),
+        'count': l10n.msg21cefa9b,
+        'isCustom': false,
+        'action': () {
+          final internalVolume = fileManager.storageVolumes.firstWhere(
+            (v) => v.isInternal,
+            orElse: () => fileManager.storageVolumes.first,
+          );
+          fileManager.loadDirectory(internalVolume.path);
+          onNavigateTab(1);
+        },
+      },
       '图片': {
         'label': l10n.cat_images,
         'icon': Broken.image,
@@ -145,9 +173,9 @@ class QuickCategoriesGrid extends StatefulWidget {
         'isCustom': false,
         'pageBuilder': () => const MoreSettingsScreen(),
       },
-      '存储': {
+      '空间': {
         'label': l10n.cat_storage,
-        'icon': Broken.driver,
+        'icon': Broken.chart_square,
         'color': isDark ? Colors.cyanAccent : const Color(0xFF00ACC1),
         'count': l10n.cat_analyze,
         'isCustom': false,
@@ -201,6 +229,14 @@ class QuickCategoriesGrid extends StatefulWidget {
       }
     }
 
+    // 应用自定义标签
+    for (final entry in map.entries) {
+      final key = entry.key;
+      if (mediaProvider.customCategoryLabels.containsKey(key)) {
+        entry.value['label'] = mediaProvider.customCategoryLabels[key];
+      }
+    }
+
     return map;
   }
 
@@ -224,6 +260,21 @@ class QuickCategoriesGrid extends StatefulWidget {
 }
 
 class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
+  // 拖拽排序状态
+  bool _isDragging = false;
+  int _draggingIndex = -1;
+  int _targetIndex = -1;
+  Offset _dragOffset = Offset.zero;
+  OverlayEntry? _overlayEntry;
+  final GlobalKey _gridKey = GlobalKey();
+
+  // 获取活跃分类的标签列表（用于拖拽排序更新）
+  List<String> _getActiveCategoryLabels(MediaProvider mediaProvider, Map<String, Map<String, dynamic>> allCategoriesMap) {
+    return mediaProvider.categoryOrder
+        .where((label) => mediaProvider.activeCategories.contains(label) && allCategoriesMap.containsKey(label))
+        .toList();
+  }
+
   /// 从图标位置扩散进入目标页面
   void _navigateWithExpand({
     required GlobalKey iconKey,
@@ -259,6 +310,95 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     );
   }
 
+  /// 开始拖拽排序
+  void _startDrag(int index, Offset localPosition, Widget dragWidget, Color color) {
+    _isDragging = true;
+    _draggingIndex = index;
+    _targetIndex = index;
+    _dragOffset = localPosition;
+
+    _overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        left: _dragOffset.dx - 32,
+        top: _dragOffset.dy - 32,
+        child: Material(
+          elevation: 6,
+          borderRadius: BorderRadius.circular(8),
+          color: color.withOpacity(0.3),
+          child: Container(
+            width: 64,
+            height: 64,
+            alignment: Alignment.center,
+            child: dragWidget,
+          ),
+        ),
+      ),
+    );
+    Overlay.of(context).insert(_overlayEntry!);
+    setState(() {});
+  }
+
+  /// 更新拖拽位置
+  void _updateDrag(Offset globalPosition) {
+    _dragOffset = globalPosition;
+    _overlayEntry?.markNeedsBuild();
+
+    final gridRenderBox = _gridKey.currentContext?.findRenderObject() as RenderBox?;
+    if (gridRenderBox == null) return;
+
+    final localPosition = gridRenderBox.globalToLocal(globalPosition);
+    final columns = PreferencesService.getCategoriesGridColumns();
+    final screenWidth = gridRenderBox.size.width;
+    final itemWidth = (screenWidth - (columns - 1) * 16) / columns;
+    final childAspectRatio = columns == 4 ? 0.62 : 0.75;
+    final itemHeight = itemWidth / childAspectRatio;
+
+    double colFraction = localPosition.dx / (itemWidth + 16);
+    double rowFraction = localPosition.dy / (itemHeight + 8);
+
+    int adjustedCol = colFraction.round();
+    int adjustedRow = rowFraction.round();
+
+    int newIndex = adjustedRow * columns + adjustedCol;
+
+    final activeLabels = _getActiveCategoryLabels(
+      context.read<MediaProvider>(),
+      QuickCategoriesGrid.getAllCategoriesMap(context, Theme.of(context).brightness == Brightness.dark, widget.onNavigateTab),
+    );
+
+    if (newIndex >= 0 && newIndex != _targetIndex) {
+      _targetIndex = newIndex.clamp(0, activeLabels.length - 1);
+      setState(() {});
+    }
+  }
+
+  /// 结束拖拽排序
+  void _endDrag(MediaProvider mediaProvider, Map<String, Map<String, dynamic>> allCategoriesMap) {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+
+    if (_isDragging && _draggingIndex != _targetIndex && _draggingIndex >= 0 && _targetIndex >= 0) {
+      final activeLabels = _getActiveCategoryLabels(mediaProvider, allCategoriesMap);
+
+      // 计算在完整 categoryOrder 中的位置
+      final draggingLabel = activeLabels[_draggingIndex];
+      final targetLabel = activeLabels[_targetIndex];
+
+      final fullDraggingIndex = mediaProvider.categoryOrder.indexOf(draggingLabel);
+      final fullTargetIndex = mediaProvider.categoryOrder.indexOf(targetLabel);
+
+      if (fullDraggingIndex >= 0 && fullTargetIndex >= 0) {
+        // 执行 reorder
+        mediaProvider.reorderCategory(fullDraggingIndex, fullTargetIndex);
+      }
+    }
+
+    _isDragging = false;
+    _draggingIndex = -1;
+    _targetIndex = -1;
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -267,11 +407,13 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     final fileManagerProvider = context.watch<FileManagerProvider>();
 
     final allCategoriesMap = QuickCategoriesGrid.getAllCategoriesMap(context, isDark, widget.onNavigateTab);
+    final activeLabels = _getActiveCategoryLabels(mediaProvider, allCategoriesMap);
 
-    final activeList = mediaProvider.categoryOrder
-        .where((label) => mediaProvider.activeCategories.contains(label) && allCategoriesMap.containsKey(label))
+    final activeList = activeLabels
         .map((label) => allCategoriesMap[label]!)
         .toList();
+
+    final columns = PreferencesService.getCategoriesGridColumns();
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -320,86 +462,109 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
               ),
             )
           else
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              child: GridView.builder(
-                key: ValueKey(activeList.length),
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 8,
-                  childAspectRatio: 0.75,
-                ),
-                itemCount: activeList.length,
-                itemBuilder: (context, index) {
-                  final cat = activeList[index];
-                  final label = cat['label'] as String;
-                  final icon = cat['icon'] as IconData;
-                  final color = cat['color'] as Color;
-                  final count = cat['count'] as String;
-                  final pageBuilder = cat['pageBuilder'] as Widget Function()?;
-                  final action = cat['action'] as VoidCallback?;
-                  final shape = fileManagerProvider.categoryIconShape;
-                  final isSquare = shape == 'square';
-                  final iconKey = GlobalKey();
+            Listener(
+              onPointerMove: _isDragging ? (event) => _updateDrag(event.position) : null,
+              onPointerUp: _isDragging ? (event) => _endDrag(mediaProvider, allCategoriesMap) : null,
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: GridView.builder(
+                  key: _gridKey,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: columns,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 8,
+                    childAspectRatio: columns == 4 ? 0.62 : 0.75,
+                  ),
+                  itemCount: activeList.length,
+                  itemBuilder: (context, index) {
+                    final cat = activeList[index];
+                    final labelKey = activeLabels[index];
+                    final label = cat['label'] as String;
+                    final icon = cat['icon'] as IconData;
+                    final color = cat['color'] as Color;
+                    final count = cat['count'] as String;
+                    final pageBuilder = cat['pageBuilder'] as Widget Function()?;
+                    final action = cat['action'] as VoidCallback?;
+                    final shape = fileManagerProvider.categoryIconShape;
+                    final isSquare = shape == 'square';
+                    final iconKey = GlobalKey();
 
-                  return Column(
-                    key: ValueKey(label),
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Material(
-                        key: iconKey,
-                        color: color.withOpacity(0.15),
-                        shape: isSquare ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)) : const CircleBorder(),
-                        child: InkWell(
-                          onTap: () {
-                            if (pageBuilder != null) {
-                              _navigateWithExpand(
-                                iconKey: iconKey,
-                                color: color,
-                                targetPage: pageBuilder(),
-                              );
-                            } else {
-                              action?.call();
-                            }
-                          },
-                          customBorder: isSquare ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)) : const CircleBorder(),
-                          splashColor: color.withOpacity(0.25),
-                          highlightColor: color.withOpacity(0.15),
-                          child: Container(
-                            width: 64,
-                            height: 64,
-                            alignment: Alignment.center,
-                            child: Icon(icon, color: color, size: 28),
-                          ),
+                    final isBeingDragged = _isDragging && _draggingIndex == index;
+                    final isTarget = _isDragging && _targetIndex == index && _draggingIndex != index;
+
+                    return GestureDetector(
+                      onLongPressStart: (details) {
+                        _startDrag(
+                          index,
+                          details.globalPosition,
+                          Icon(icon, color: color, size: 28),
+                          color,
+                        );
+                      },
+                      child: Opacity(
+                        opacity: isBeingDragged ? 0.3 : (isTarget ? 0.6 : 1.0),
+                        child: Column(
+                          key: ValueKey(labelKey),
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Material(
+                              key: iconKey,
+                              color: isTarget ? color.withOpacity(0.3) : color.withOpacity(0.15),
+                              shape: isSquare ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)) : const CircleBorder(),
+                              child: InkWell(
+                                onTap: () {
+                                  if (!_isDragging) {
+                                    if (pageBuilder != null) {
+                                      _navigateWithExpand(
+                                        iconKey: iconKey,
+                                        color: color,
+                                        targetPage: pageBuilder(),
+                                      );
+                                    } else {
+                                      action?.call();
+                                    }
+                                  }
+                                },
+                                customBorder: isSquare ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)) : const CircleBorder(),
+                                splashColor: color.withOpacity(0.25),
+                                highlightColor: color.withOpacity(0.15),
+                                child: Container(
+                                  width: 64,
+                                  height: 64,
+                                  alignment: Alignment.center,
+                                  child: Icon(icon, color: color, size: 28),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              label,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              count,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.textTheme.bodySmall?.color?.withOpacity(0.6),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      Text(
-                        label,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        count,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.textTheme.bodySmall?.color?.withOpacity(0.6),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
         ],
@@ -507,151 +672,181 @@ class _CustomizeCategoriesSheet extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return DraggableScrollableSheet(
-      initialChildSize: 0.7,
-      minChildSize: 0.4,
-      maxChildSize: 0.95,
-      expand: false,
-      builder: (context, scrollController) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            final iconShape = PreferencesService.getCategoryIconShape();
+    return Consumer<FileManagerProvider>(
+      builder: (context, fileManager, _) {
         return Consumer<MediaProvider>(
           builder: (context, provider, child) {
-            final activeCats = provider.activeCategories;
-            final order = provider.categoryOrder;
-            final categoriesMap = QuickCategoriesGrid.getAllCategoriesMap(context, isDark, onNavigateTab);
+            return DraggableScrollableSheet(
+              initialChildSize: 0.7,
+              minChildSize: 0.4,
+              maxChildSize: 0.95,
+              expand: false,
+              builder: (context, scrollController) {
+                return StatefulBuilder(
+                  builder: (context, setModalState) {
+                    final iconShape = fileManager.categoryIconShape;
+                    final gridColumns = fileManager.categoriesGridColumns;
+                    final activeCats = provider.activeCategories;
+                    final order = provider.categoryOrder;
+                    final categoriesMap = QuickCategoriesGrid.getAllCategoriesMap(context, isDark, onNavigateTab);
 
-            return Column(
-              children: [
-                const SizedBox(height: 12),
-                Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.withOpacity(0.3), borderRadius: BorderRadius.circular(2))),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(L10n.of(context).msge7d18d73, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                      TextButton(onPressed: () => Navigator.pop(context), child: Text(L10n.of(context).ui_done, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
-                    ],
-                  ),
-                ),
-                // 分类图标形状选项
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(L10n.of(context).msg2c3c5a35, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, fontSize: 16)),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          _buildShapeOption(context, theme, iconShape, 'circle', Icons.circle_outlined, L10n.of(context).ui_circle, setModalState),
-                          const SizedBox(width: 8),
-                          _buildShapeOption(context, theme, iconShape, 'square', Icons.crop_square, L10n.of(context).ui_square, setModalState),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      L10n.of(context).msg445a43cb,
-                      style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6), fontSize: 13),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: OutlinedButton.icon(
-                    icon: const Icon(Broken.add, size: 20),
-                    label: Text(L10n.of(context).msg944d5ecd, style: TextStyle(fontWeight: FontWeight.bold)),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(46),
-                      foregroundColor: theme.colorScheme.primary,
-                      side: BorderSide(color: theme.colorScheme.primary.withOpacity(0.5)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                    onPressed: () async {
-                      final fileManager = context.read<FileManagerProvider>();
-                      final paths = await InternalFilePickerScreen.show(context, rootPath: fileManager.rootPath);
-                      if (paths != null && paths.isNotEmpty) {
-                        for (final p in paths) {
-                          provider.addCustomShortcut(p);
-                        }
-                      }
-                    },
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Divider(),
-                Expanded(
-                  child: ReorderableListView.builder(
-                    scrollController: scrollController,
-                    physics: const BouncingScrollPhysics(),
-                    padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 16),
-                    onReorder: (oldIndex, newIndex) => provider.reorderCategory(oldIndex, newIndex),
-                    itemCount: order.length,
-                    itemBuilder: (context, index) {
-                      final label = order[index];
-                      final cat = categoriesMap[label];
-                      if (cat == null) return const SizedBox.shrink(key: ValueKey('empty'));
+                    return Column(
+                      children: [
+                        const SizedBox(height: 12),
+                        Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.withOpacity(0.3), borderRadius: BorderRadius.circular(2))),
+                        const SizedBox(height: 16),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: Center(
+                            child: Text(L10n.of(context).msge7d18d73, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(L10n.of(context).msg2c3c5a35, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, fontSize: 16)),
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    children: [
+                                      _buildShapeOption(context, theme, iconShape, 'circle', L10n.of(context).ui_circle, setModalState),
+                                      const SizedBox(width: 8),
+                                      _buildShapeOption(context, theme, iconShape, 'square', L10n.of(context).ui_square, setModalState),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(L10n.of(context).ui_columns_per_row, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, fontSize: 16)),
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    children: [
+                                      _buildColumnsOption(context, theme, gridColumns, 3, L10n.of(context).ui_3columns, setModalState),
+                                      const SizedBox(width: 8),
+                                      _buildColumnsOption(context, theme, gridColumns, 4, L10n.of(context).ui_4columns, setModalState),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              L10n.of(context).msg445a43cb,
+                              style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6), fontSize: 13),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: OutlinedButton.icon(
+                            icon: const Icon(Broken.add, size: 20),
+                            label: Text(L10n.of(context).msg944d5ecd, style: TextStyle(fontWeight: FontWeight.bold)),
+                            style: OutlinedButton.styleFrom(
+                              minimumSize: const Size.fromHeight(46),
+                              foregroundColor: theme.colorScheme.primary,
+                              side: BorderSide(color: theme.colorScheme.primary.withOpacity(0.5)),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            ),
+                            onPressed: () async {
+                              final paths = await InternalFilePickerScreen.show(context, rootPath: fileManager.rootPath);
+                              if (paths != null && paths.isNotEmpty) {
+                                for (final p in paths) {
+                                  provider.addCustomShortcut(p);
+                                }
+                              }
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Divider(),
+                        Expanded(
+                          child: ReorderableListView.builder(
+                            scrollController: scrollController,
+                            physics: const BouncingScrollPhysics(),
+                            padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 16),
+                            onReorder: (oldIndex, newIndex) => provider.reorderCategory(oldIndex, newIndex),
+                            itemCount: order.length,
+                            itemBuilder: (context, index) {
+                              final label = order[index];
+                              final cat = categoriesMap[label];
+                              if (cat == null) return const SizedBox.shrink(key: ValueKey('empty'));
 
-                      final icon = cat['icon'] as IconData;
-                      final color = cat['color'] as Color;
-                      final isEnabled = activeCats.contains(label);
-                      final isCustom = cat['isCustom'] == true;
+                              final icon = cat['icon'] as IconData;
+                              final color = cat['color'] as Color;
+                              final isEnabled = activeCats.contains(label);
+                              final isCustom = cat['isCustom'] == true;
 
-                      return CategoryItemWidget(
-                        key: ValueKey(label),
-                        label: label,
-                        cat: cat,
-                        isEnabled: isEnabled,
-                        provider: provider,
-                        index: index,
-                      );
-                    },
-                  ),
-                ),
-              ],
+                              return CategoryItemWidget(
+                                key: ValueKey(label),
+                                label: label,
+                                cat: cat,
+                                isEnabled: isEnabled,
+                                provider: provider,
+                                index: index,
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
             );
-          },
-        );
           },
         );
       },
     );
   }
 
-  static Widget _buildShapeOption(BuildContext context, ThemeData theme, String currentShape, String shapeKey, IconData icon, String label, void Function(void Function()) setModalState) {
+  static Widget _buildShapeOption(BuildContext context, ThemeData theme, String currentShape, String shapeKey, String label, void Function(void Function()) setModalState) {
     final isSelected = currentShape == shapeKey;
     return InkWell(
       onTap: () {
-        PreferencesService.saveCategoryIconShape(shapeKey);
         context.read<FileManagerProvider>().setCategoryIconShape(shapeKey);
         setModalState(() {});
       },
       borderRadius: BorderRadius.circular(8),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
         decoration: BoxDecoration(
           color: isSelected ? theme.colorScheme.primary : theme.colorScheme.surfaceVariant.withOpacity(0.3),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.1)),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14, color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface.withOpacity(0.6)),
-            const SizedBox(width: 4),
-            Text(label, style: TextStyle(fontSize: 12, fontWeight: isSelected ? FontWeight.bold : FontWeight.w500, color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface.withOpacity(0.7))),
-          ],
+        child: Text(label, style: TextStyle(fontSize: 12, fontWeight: isSelected ? FontWeight.bold : FontWeight.w500, color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface.withOpacity(0.7))),
+      ),
+    );
+  }
+
+  static Widget _buildColumnsOption(BuildContext context, ThemeData theme, int currentColumns, int columns, String label, void Function(void Function()) setModalState) {
+    final isSelected = currentColumns == columns;
+    return InkWell(
+      onTap: () {
+        context.read<FileManagerProvider>().setCategoriesGridColumns(columns);
+        setModalState(() {});
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+        decoration: BoxDecoration(
+          color: isSelected ? theme.colorScheme.primary : theme.colorScheme.surfaceVariant.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.1)),
         ),
+        child: Text(label, style: TextStyle(fontSize: 12, fontWeight: isSelected ? FontWeight.bold : FontWeight.w500, color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface.withOpacity(0.7))),
       ),
     );
   }
@@ -691,6 +886,52 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
     '安装包',
     '截图',
   ];
+
+  Future<void> _showRenameDialog(BuildContext context) async {
+    final theme = Theme.of(context);
+    final currentLabel = widget.cat['label'] as String;
+    final TextEditingController controller = TextEditingController(text: currentLabel);
+
+    await showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: theme.scaffoldBackgroundColor,
+          title: Text(L10n.of(context).msgc8ce4b36, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: InputDecoration(
+              hintText: L10n.of(context).msgf139c5cf,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: theme.colorScheme.onSurface.withOpacity(0.1)),
+              ),
+            ),
+            onSubmitted: (_) {
+              Navigator.of(context).pop();
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(L10n.of(context).ui_cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                final newLabel = controller.text.trim();
+                if (newLabel.isNotEmpty) {
+                  widget.provider.renameCategory(widget.label, newLabel);
+                }
+                Navigator.of(context).pop();
+              },
+              child: Text(L10n.of(context).ui_done, style: TextStyle(fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   /// 显示远程服务器目录选择器，返回 `remote://{connectionId}|{path}` 格式的路径。
   Future<String?> _showRemotePathPicker(BuildContext context) async {
@@ -882,16 +1123,18 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
                 ),
                 const SizedBox(width: 4),
               ],
+              IconButton(
+                icon: const Icon(Icons.edit, color: Colors.grey, size: 20),
+                tooltip: L10n.of(context).msgc8ce4b36,
+                onPressed: () => _showRenameDialog(context),
+              ),
+              const SizedBox(width: 4),
               Switch(
                 value: widget.isEnabled,
                 activeColor: theme.colorScheme.primary,
                 onChanged: (val) => widget.provider.toggleCategory(label),
               ),
               const SizedBox(width: 12),
-              ReorderableDragStartListener(
-                index: widget.index,
-                child: const Icon(Icons.drag_handle, color: Colors.grey, size: 24),
-              ),
             ],
           ),
         ),

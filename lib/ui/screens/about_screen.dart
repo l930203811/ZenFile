@@ -160,7 +160,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   const SizedBox(height: 6),
                   // 版本号文本（硬编码，无需 l10n；以后升级版本只改这里）
                   Text(
-                    'v1.0.43',
+                    'v1.1.0',
                     style: TextStyle(
                       color: theme.colorScheme.onSurface.withOpacity(0.7),
                       fontSize: 13,
@@ -704,24 +704,19 @@ class AboutZenFileScreen extends StatelessWidget {
                     ),
                   ),
 
-                  _buildVersionSection(ctx, theme, 'v1.0.43', '2026-07-05', [
-                    L10n.of(context).log_thanks_feedback,
-                    L10n.of(context).log_smb_native_rewrite,
-                    L10n.of(context).log_ftp_sftp_streaming,
-                    L10n.of(context).log_remote_l10n_fix,
-                    L10n.of(context).log_image_viewer_menu,
-                    L10n.of(context).log_breadcrumb_border,
-                    L10n.of(context).log_three_dot_button_position,
-                    L10n.of(context).log_three_dot_button_setting,
-                    L10n.of(context).log_category_back_select,
-                    L10n.of(context).log_desktop_lyric,
-                    L10n.of(context).log_notification_panel,
-                    L10n.of(context).log_lyric_word_highlight,
-                    L10n.of(context).log_floating_window_resize,
-                    L10n.of(context).log_background_play_fix,
-                    L10n.of(context).log_category_button_sync,
-                    L10n.of(context).log_build_stability,
-                    L10n.of(context).log_lyric_scale_animation,
+                  _buildVersionSection(ctx, theme, 'v1.1.0', '2026-07-05', [
+                    L10n.of(context).log_quick_action_panel,
+                    L10n.of(context).log_favorites,
+                    L10n.of(context).log_drawer_redesign,
+                    L10n.of(context).log_video_player_rotation,
+                    L10n.of(context).log_category_reorder,
+                    L10n.of(context).log_compression_fix,
+                    L10n.of(context).log_progress_bar_redesign,
+                    L10n.of(context).log_dual_pane_status_bar,
+                    L10n.of(context).log_transfer_fixes,
+                    L10n.of(context).log_drawer_font_consistency,
+                    L10n.of(context).log_landscape_layout,
+                    L10n.of(context).log_progress_i18n,
                   ]),
                   const SizedBox(height: 16),
                   _buildVersionSection(ctx, theme, 'v1.0.42', '2026-06-30', [

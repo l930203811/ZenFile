@@ -147,7 +147,8 @@
   "@msgc18fb099": {
     "description": "services\\background_archive_service.dart"
   },
-  "msgc18fb099": "تم الاستخراج بنجاح. فتح الموقع؟",
+  "msgc18fb099": "تم الاستخراج بنجاح. فتح الموقع?",
+  "msg_compress_open_location": "تم الضغط بنجاح. فتح الموقع?",
   "@msg4367e85a": {
     "description": "services\\background_archive_service.dart"
   },
@@ -752,6 +753,29 @@
     "description": "ui\\screens\\directory_screen.dart"
   },
   "msgf437ace4": "هذا المجلد فقط",
+  "@msg551f98ba": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "msg551f98ba": "لا توجد مفضلات",
+  "@ui_favorites": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_favorites": "المفضلات",
+  "@ui_new_favorite": {
+    "description": "directory_screen.dart"
+  },
+  "ui_new_favorite": "إضافة إلى المفضلات",
+  "@ui_favorite": {
+    "description": "file_action_dialogs.dart"
+  },
+  "ui_favorite": "مفضل",
+  "@msg_favorited": {
+    "description": "directory_screen.dart",
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "msg_favorited": "تمت إضافة {name} إلى المفضلات",
   "@msg4dfc167a": {
     "description": "ui\\screens\\directory_screen.dart"
   },
@@ -1451,7 +1475,7 @@
   "@msg2c3c5a35": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg2c3c5a35": "شكل أيقونة الفئة",
+  "msg2c3c5a35": "شكل الأيقونة",
   "@msg267fcd86": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -2693,6 +2717,14 @@
     "description": "ui\\widgets\\file_operation_progress_dialog.dart"
   },
   "msg9d69d7a0": "جارٍ نقل الملفات...",
+  "@ui_transferring_files": {
+    "description": "ui\\widgets\\file_operation_progress_dialog.dart"
+  },
+  "ui_transferring_files": "جارٍ نقل الملفات",
+  "@ui_time_remaining": {
+    "description": "ui\\widgets\\file_operation_progress_dialog.dart"
+  },
+  "ui_time_remaining": "متبقي",
   "@zenfile6": {
     "description": "ui\\widgets\\open_with_sheet.dart"
   },
@@ -2856,7 +2888,7 @@
   "@msgf13fc21c": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
   },
-  "msgf13fc21c": "الخوادم والأدوات",
+  "msgf13fc21c": "شبكة",
   "@msg41e625d1": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
   },
@@ -2908,19 +2940,19 @@
   "cat_network": "الشبكة",
   "cat_apps": "التطبيقات",
   "cat_settings": "الإعدادات",
-  "cat_storage": "التخزين",
+  "cat_storage": "المساحة",
   "cat_service": "الخدمة",
   "cat_manage": "الإدارة",
   "cat_config": "التكوين",
   "cat_analyze": "التحليل",
   "cat_vault": "خزنة",
   "cat_vault_desc": "تخزين آمن",
-  "cat_quick_categories": "الفئات السريعة",
-  "ui_nav": "التنقل",
+  "cat_quick_categories": "الفئات",
+  "ui_nav": "محلي",
   "ui_home": "الرئيسية",
   "ui_recycle_bin": "سلة المحذوفات",
   "ui_dark_mode": "الوضع الداكن",
-  "ui_personalize_settings": "التخصيص والإعدادات",
+  "ui_personalize_settings": "إعدادات",
   "ui_compress": "ضغط",
   "ui_copy": "نسخ",
   "ui_cut": "قص",
@@ -3163,6 +3195,10 @@
   "ui_pin_to_top": "تثبيت في الأعلى",
   "@ui_pin_to_top": {
     "description": "ui widgets"
+  },
+  "msg_select_all": "تحديد الكل",
+  "@msg_select_all": {
+    "description": "selection_context_bottom_sheet.dart"
   },
   "ui_pinned_selected": "تم تثبيت العناصر المحددة",
   "@ui_pinned_selected": {
@@ -3852,5 +3888,44 @@
   "msg_rotate_video": "تدوير الفيديو",
   "@msg_rotate_video": {
     "description": "Rotate video clockwise in video player"
+  },
+  "msg_aspect_fit": "ملاءمة الشاشة",
+  "@msg_aspect_fit": {
+    "description": "Video aspect ratio mode: fit to screen"
+  },
+  "msg_aspect_fill": "تمديد للتعبئة",
+  "@msg_aspect_fill": {
+    "description": "Video aspect ratio mode: stretch to fill"
+  },
+  "msg_aspect_center": "توسيط",
+  "@msg_aspect_center": {
+    "description": "Video aspect ratio mode: centered original size"
+  },
+  "msg_aspect_16_9": "16:9",
+  "@msg_aspect_16_9": {
+    "description": "Video aspect ratio mode: 16:9"
+  },
+  "msg_aspect_4_3": "4:3",
+  "@msg_aspect_4_3": {
+    "description": "Video aspect ratio mode: 4:3"
+  },
+  "drawer_tools": "أدوات",
+  "open_with_native": "فتح بهذا التطبيق",
+  "open_with_external": "فتح بالتطبيق الخارجي",
+  "open_once": "مرة واحدة فقط",
+  "open_always": "دائمًا",
+  "drawer_edit_connection": "تحرير",
+  "cat_system": "النظام",
+  "cat_storage_volume": "التخزين",
+  "ui_columns_per_row": "الأعمدة لكل صف",
+  "ui_3columns": "3 أعمدة",
+  "ui_4columns": "4 أعمدة",
+  "msge8b8e9b3": "إجراءات سريعة",
+  "@msge8b8e9b3": {
+    "description": "Right side menu header title"
+  },
+  "msg04b7de53": "وصول سريع للوظائف الشائعة",
+  "@msg04b7de53": {
+    "description": "Right side menu header subtitle"
   }
 }

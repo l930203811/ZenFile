@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:xml/xml.dart' as xml;
 import 'remote_client.dart';
 
-class WebDavRemoteClient implements RemoteClient {
+class WebDavRemoteClient extends RemoteClient {
   final String host;
   final int port;
   final String username;
@@ -319,6 +319,7 @@ class WebDavRemoteClient implements RemoteClient {
 
     try {
       await for (final chunk in response) {
+        if (isCancelled) break;
         sink.add(chunk);
         downloaded += chunk.length;
         if (totalSize > 0) {

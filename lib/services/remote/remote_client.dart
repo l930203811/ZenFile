@@ -51,4 +51,14 @@ abstract class RemoteClient {
   /// Returns the file size in bytes, or -1 if unknown.
   /// Used by RemoteStreamingService for progressive streaming support.
   Future<int> getFileSize(String remotePath);
+
+  // 取消令牌：设置为 true 时，进行中的 downloadFile/uploadFile 应尽快退出
+  bool _cancelled = false;
+  bool get isCancelled => _cancelled;
+  void cancel() {
+    _cancelled = true;
+  }
+  void resetCancel() {
+    _cancelled = false;
+  }
 }

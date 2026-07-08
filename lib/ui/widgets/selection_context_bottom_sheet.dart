@@ -11,6 +11,8 @@ import 'create_archive_dialog.dart';
 import 'package:share_plus/share_plus.dart';
 import 'batch_rename_dialog.dart';
 import '../../services/folder_share_service.dart';
+import '../../services/pin_service.dart';
+import '../../core/navigator_key.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class SelectionContextBottomSheet extends StatelessWidget {
@@ -203,88 +205,30 @@ class SelectionContextBottomSheet extends StatelessWidget {
                   await BatchRenameDialog.show(effectiveContext, provider);
                 },
               ),
-            if (isSingle && !isFolder)
-              _buildMenuItem(
-                context: context,
-                icon: Broken.eye,
-                label: L10n.of(context).msg2a4cfb07,
-                onTap: () {
-                  final effectiveContext = outerContext ?? context;
-                  Navigator.pop(context);
-                  provider.openFile(effectiveContext, targetPath, forceOpenWith: true);
-                },
-              ),
-            if (isSingle && !isFolder && FileUtils.isArchive(targetPath))
-              _buildMenuItem(
-                context: context,
-                icon: Broken.box,
-                label: L10n.of(context).ui_extract,
-                onTap: () async {
-                  final effectiveContext = outerContext ?? context;
-                  Navigator.pop(context);
-                  await provider.extractArchiveDirectly(effectiveContext, targetPath);
-                },
-              ),
             _buildMenuItem(
               context: context,
-              icon: Broken.box_add,
-              label: L10n.of(context).ui_compress,
-              onTap: () async {
-                final effectiveContext = outerContext ?? context;
-                Navigator.pop(context);
-                // 缓存选中路径，避免弹窗异步过程中 selectedPaths 被其他操作修改
-                final selectedPaths = provider.selectedPaths.toList();
-                // 压缩选中项：默认名称使用第一个选中项的名字，而非当前目录名
-                final firstSelected = selectedPaths.isNotEmpty
-                    ? p.basename(selectedPaths.first)
-                    : 'archive';
-                final res = await CreateArchiveDialog.show(
-                  effectiveContext,
-                  initialName: firstSelected,
-                  isMultiSelection: selectedCount > 1,
-                );
-                if (res != null) {
-                  await provider.createArchive(
-                    archiveName: res.archiveName,
-                    format: res.format,
-                    compressionLevel: res.compressionLevel,
-                    password: res.password,
-                    splitSizeMB: res.splitSizeMB,
-                    deleteSource: res.deleteSource,
-                    separateArchives: res.separateArchives,
-                    targetPaths: selectedPaths,
-                    context: effectiveContext,
-                  );
-                  // 刷新由 createArchive 内部通过 BackgroundArchiveService._onOperationComplete 处理
-                  // 不在此处额外调用 loadDirectory，避免与压缩 Isolate 并发 I/O 导致性能下降和刷新竞态
-                }
-              },
-            ),
-            _buildMenuItem(
-              context: context,
-              icon: Icons.share_outlined,
-              label: L10n.of(context).ui_share,
-              onTap: () async {
-                final effectiveContext = outerContext ?? context;
-                Navigator.pop(context);
-                final selectedPaths = provider.selectedPaths.toList();
-                await FolderShareService.sharePaths(effectiveContext, selectedPaths);
-              },
-            ),
-            _buildMenuItem(
-              context: context,
-              icon: Broken.info_circle,
-              label: L10n.of(context).msg1058354c,
+              icon: Broken.folder_favorite,
+              label: L10n.of(context).ui_favorite,
               onTap: () {
-                final effectiveContext = outerContext ?? context;
                 Navigator.pop(context);
-                showDialog(
-                  context: effectiveContext,
-                  builder: (context) => PropertiesModalDialog(
-                    selectedPaths: provider.selectedPaths.toList(),
-                    provider: provider,
-                  ),
-                );
+                final selectedPaths = provider.selectedPaths.toList();
+                final isRemote = provider.currIsRemote;
+                final connectionId = provider.activeTab.remoteConnection?.id;
+                for (final path in selectedPaths) {
+                  final name = p.basename(path);
+                  final isDir = isRemote ? true : Directory(path).existsSync();
+                  provider.addFavorite(path, name, isDir, isRemote: isRemote, connectionId: connectionId);
+                }
+                final effectiveContext = outerContext ?? context;
+                if (effectiveContext.mounted) {
+                  ScaffoldMessenger.of(effectiveContext).showSnackBar(
+                    SnackBar(
+                      content: Text(L10n.of(effectiveContext).msg_favorited(p.basename(selectedPaths.first))),
+                      behavior: SnackBarBehavior.floating,
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                }
               },
             ),
             const Divider(height: 1),
@@ -314,10 +258,113 @@ class SelectionContextBottomSheet extends StatelessWidget {
                 }
               },
             ),
+            if (isSingle && !isFolder)
+              _buildMenuItem(
+                context: context,
+                icon: Broken.eye,
+                label: L10n.of(context).msg2a4cfb07,
+                onTap: () {
+                  final effectiveContext = outerContext ?? context;
+                  Navigator.pop(context);
+                  provider.openFile(effectiveContext, targetPath, forceOpenWith: true);
+                },
+              ),
+            if (isSingle && !isFolder && FileUtils.isArchive(targetPath))
+              _buildMenuItem(
+                context: context,
+                icon: Broken.box,
+                label: L10n.of(context).ui_extract,
+                onTap: () async {
+                  final effectiveContext = outerContext ?? context;
+                  Navigator.pop(context);
+                  await provider.extractArchiveDirectly(effectiveContext, targetPath);
+                },
+              ),
+            _buildMoreButton(context),
             const SizedBox(height: 16),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildMoreButton(BuildContext context) {
+    final theme = Theme.of(context);
+    return PopupMenuButton<String>(
+      icon: Row(
+        children: [
+          Icon(Broken.more, color: theme.colorScheme.onSurface.withOpacity(0.8), size: 22),
+          const SizedBox(width: 16),
+          Text(L10n.of(context).ui_more, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
+        ],
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      position: PopupMenuPosition.under,
+      elevation: 8,
+      onSelected: (action) async {
+        Navigator.pop(context);
+        final effectiveContext = outerContext ?? context;
+        if (action == 'compress') {
+          final selectedPaths = provider.selectedPaths.toList();
+          final firstSelected = selectedPaths.isNotEmpty
+              ? p.basename(selectedPaths.first)
+              : 'archive';
+          final res = await CreateArchiveDialog.show(
+            effectiveContext,
+            initialName: firstSelected,
+            isMultiSelection: provider.selectedPaths.length > 1,
+          );
+          if (res != null) {
+            // 用根 navigator context，避免 selectedPaths.clear() 退出选择模式后
+            // widget context 失效导致进度弹窗和刷新异常
+            final rootContext = navigatorKey.currentContext ?? effectiveContext;
+            await provider.createArchive(
+              archiveName: res.archiveName,
+              format: res.format,
+              compressionLevel: res.compressionLevel,
+              password: res.password,
+              splitSizeMB: res.splitSizeMB,
+              deleteSource: res.deleteSource,
+              separateArchives: res.separateArchives,
+              targetPaths: selectedPaths,
+              context: rootContext,
+            );
+          }
+        } else if (action == 'share') {
+          final selectedPaths = provider.selectedPaths.toList();
+          await FolderShareService.sharePaths(effectiveContext, selectedPaths);
+        } else if (action == 'select_all') {
+          provider.selectAll();
+        } else if (action == 'pin_to_top') {
+          final selected = provider.selectedPaths.toList();
+          final allPinned = selected.every((p) => PinService.isPinned(p));
+          for (final path in selected) {
+            if (allPinned) {
+              await PinService.unpin(path);
+            } else {
+              await PinService.pin(path);
+            }
+          }
+        } else if (action == 'properties') {
+          showDialog(
+            context: effectiveContext,
+            builder: (context) => PropertiesModalDialog(
+              selectedPaths: provider.selectedPaths.toList(),
+              provider: provider,
+            ),
+          );
+        }
+      },
+      itemBuilder: (context) {
+        return [
+          PopupMenuItem(value: 'compress', child: Row(children: [Icon(Broken.box_add, size: 20), SizedBox(width: 12), Text(L10n.of(context).ui_compress)])),
+          PopupMenuItem(value: 'share', child: Row(children: [Icon(Icons.share_outlined, size: 20), SizedBox(width: 12), Text(L10n.of(context).ui_share)])),
+          PopupMenuItem(value: 'select_all', child: Row(children: [Icon(Broken.tick_square, size: 20), SizedBox(width: 12), Text(L10n.of(context).msg_select_all)])),
+          PopupMenuItem(value: 'pin_to_top', child: Row(children: [Icon(Icons.push_pin, size: 20), SizedBox(width: 12), Text(L10n.of(context).ui_pin_to_top)])),
+          const PopupMenuDivider(),
+          PopupMenuItem(value: 'properties', child: Row(children: [Icon(Broken.info_circle, size: 20), SizedBox(width: 12), Text(L10n.of(context).msg1058354c)])),
+        ];
+      },
     );
   }
 

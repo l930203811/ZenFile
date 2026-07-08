@@ -7,6 +7,8 @@ import '../../providers/media_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../widgets/quick_categories_grid.dart';
 import '../widgets/zenfile_drawer.dart';
+import '../widgets/zenfile_end_drawer.dart';
+import '../widgets/sort_modal.dart';
 import 'directory_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
@@ -144,6 +146,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
           _scaffoldKey.currentState?.closeDrawer();
           return;
         }
+        // 右侧菜单打开时优先关闭
+        if (_scaffoldKey.currentState?.isEndDrawerOpen ?? false) {
+          _scaffoldKey.currentState?.closeEndDrawer();
+          return;
+        }
         // 浏览页有选中状态时，清除选中而非切换页面
         if (_currentIndex == 1 && provider.isSelectionMode) {
           provider.clearSelection();
@@ -163,6 +170,32 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
         drawer: ZenFileDrawer(
           toggleTheme: widget.toggleTheme,
           onNavigateTab: (index) => _switchTab(index),
+        ),
+        endDrawer: ZenFileEndDrawer(
+          toggleTheme: widget.toggleTheme,
+          onRefresh: () {
+            _scaffoldKey.currentState?.closeEndDrawer();
+            _switchTab(0);
+            _handleRefresh();
+          },
+          onCustomize: () {
+            _scaffoldKey.currentState?.closeEndDrawer();
+            _switchTab(0);
+            Future.delayed(const Duration(milliseconds: 300), () {
+              QuickCategoriesGrid.showCustomizeDialog(context, (index) => setState(() => _currentIndex = index));
+            });
+          },
+          onShowSortModal: () {
+            _scaffoldKey.currentState?.closeEndDrawer();
+            _switchTab(1);
+            Future.delayed(const Duration(milliseconds: 300), () {
+              final provider = context.read<FileManagerProvider>();
+              SortModal.show(context, provider);
+            });
+          },
+          onNavigateToBrowse: () => _switchTab(1),
+          searchFolderPath: context.read<FileManagerProvider>().rootPath,
+          provider: context.read<FileManagerProvider>(),
         ),
         body: Consumer<FileManagerProvider>(
           builder: (context, provider, _) {
@@ -206,8 +239,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                     );
                     final deltaX = endCenter.dx - _dualFingerStartCenter!.dx;
                     if (deltaX < -_dualFingerSwipeThreshold) {
+                      // 向左滑动：分类页→浏览页，浏览页→快捷操作页面
                       if (_currentIndex == 0) _switchTab(1);
+                      else if (_currentIndex == 1) _scaffoldKey.currentState?.openEndDrawer();
                     } else if (deltaX > _dualFingerSwipeThreshold) {
+                      // 向右滑动：快捷操作页面关闭、浏览页→分类页、分类页→抽屉
                       if (_currentIndex == 0) {
                         _scaffoldKey.currentState?.openDrawer();
                       } else if (_currentIndex == 1) {
@@ -244,8 +280,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                           final dt = DateTime.now().difference(_singleFingerLastTime!).inMilliseconds;
                           final velocity = dt > 0 ? (dx / dt) * 1000 : 0.0; // px/s
                           if (velocity < -300) {
+                            // 向左滑动：分类页→浏览页，浏览页→快捷操作页面
                             if (_currentIndex == 0) _switchTab(1);
+                            else if (_currentIndex == 1) _scaffoldKey.currentState?.openEndDrawer();
                           } else if (velocity > 300) {
+                            // 向右滑动：快捷操作页面关闭、浏览页→分类页、分类页→抽屉
                             if (_currentIndex == 0) {
                               _scaffoldKey.currentState?.openDrawer();
                             } else if (_currentIndex == 1) {
@@ -306,6 +345,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                       DirectoryScreen(
                         toggleTheme: widget.toggleTheme,
                         onNavigateTab: (index) => _switchTab(index),
+                        onEndDrawerCustomize: () {
+                          _switchTab(0);
+                          Future.delayed(const Duration(milliseconds: 300), () {
+                            QuickCategoriesGrid.showCustomizeDialog(context, (index) => setState(() => _currentIndex = index));
+                          });
+                        },
                       ),
                     ],
                   );
@@ -325,6 +370,42 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     final fileManager = context.watch<FileManagerProvider>();
     final showBottomNav = fileManager.showBottomActionBar;
 
+    Widget buildTopNavRow() {
+      return Row(
+        children: [
+          // 抽屉按钮（靠左）
+          IconButton(
+            icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
+            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+          ),
+          const Spacer(),
+          // 分类页按钮
+          IconButton(
+            onPressed: () {
+              _switchTab(0);
+              context.read<MediaProvider>().refreshMediaBackground();
+            },
+            tooltip: L10n.of(context).msg6e0f9cef,
+            icon: Icon(Broken.category, color: theme.colorScheme.primary),
+          ),
+          const SizedBox(width: 32),
+          // 浏览页按钮
+          IconButton(
+            onPressed: () => _switchTab(1),
+            tooltip: L10n.of(context).ui_browse,
+            icon: Icon(Broken.folder, color: theme.colorScheme.primary),
+          ),
+          const Spacer(),
+          // 快捷操作按钮（靠右）
+          IconButton(
+            icon: Icon(Broken.more_circle, color: theme.colorScheme.primary),
+            tooltip: L10n.of(context).msge8b8e9b3,
+            onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+          ),
+        ],
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: showBottomNav
@@ -339,54 +420,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
               surfaceTintColor: Colors.transparent,
               scrolledUnderElevation: 0,
               titleSpacing: 0,
-              centerTitle: false,
-              actionsPadding: const EdgeInsets.only(right: 4),
-              leadingWidth: 160,
-              title: const SizedBox.shrink(),
-              leading: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
-                    onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      _switchTab(0);
-                      context.read<MediaProvider>().refreshMediaBackground();
-                    },
-                    tooltip: L10n.of(context).msg6e0f9cef,
-                    icon: Icon(Broken.category, color: theme.colorScheme.primary),
-                  ),
-                  IconButton(
-                    onPressed: () => _switchTab(1),
-                    tooltip: L10n.of(context).ui_browse,
-                    icon: Icon(Broken.folder, color: theme.colorScheme.primary),
-                  ),
-                ],
-              ),
-              actions: [
-                IconButton(
-                  onPressed: _handleRefresh,
-                  tooltip: L10n.of(context).msg354c1c9a,
-                  icon: RotationTransition(
-                    turns: _refreshIconController,
-                    child: Icon(Broken.refresh, color: theme.colorScheme.primary),
-                  ),
-                ),
-                IconButton(
-                  onPressed: widget.toggleTheme,
-                  icon: Icon(
-                    theme.brightness == Brightness.dark ? Broken.sun_1 : Broken.moon,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => QuickCategoriesGrid.showCustomizeDialog(context, (index) => setState(() => _currentIndex = index)),
-                  tooltip: L10n.of(context).msg19021d08,
-                  icon: Icon(Broken.edit_2, color: theme.colorScheme.primary),
-                ),
-              ],
+              centerTitle: true,
+              title: buildTopNavRow(),
             ),
       body: Column(
         children: [
@@ -408,8 +443,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
           ),
         ],
       ),
-      // 底部导航栏开启时，将完整 AppBar 内容（leading + actions）镜像到底部
-      // 用 Material+SafeArea+Row 模拟 AppBar 样式，避免 AppBar primary=true 导致的布局异常
+      // 底部导航栏开启时，四个按钮与顶部布局一致
       bottomNavigationBar: showBottomNav
           ? PreferredSize(
               preferredSize: Size.fromHeight(kToolbarHeight + MediaQuery.of(context).padding.bottom),
@@ -421,56 +455,35 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                   child: SizedBox(
                     height: kToolbarHeight,
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // 左侧：抽屉 + 分类 + 浏览（与顶部 leading 一致）
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
-                              onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                            ),
-                            IconButton(
-                              onPressed: () {
-                                _switchTab(0);
-                                context.read<MediaProvider>().refreshMediaBackground();
-                              },
-                              tooltip: L10n.of(context).msg6e0f9cef,
-                              icon: Icon(Broken.category, color: theme.colorScheme.primary),
-                            ),
-                            IconButton(
-                              onPressed: () => _switchTab(1),
-                              tooltip: L10n.of(context).ui_browse,
-                              icon: Icon(Broken.folder, color: theme.colorScheme.primary),
-                            ),
-                          ],
+                        // 抽屉按钮（靠左）
+                        IconButton(
+                          icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
+                          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
                         ),
-                        // 右侧：刷新 + 主题切换 + 自定义（与顶部 actions 一致）
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              onPressed: _handleRefresh,
-                              tooltip: L10n.of(context).msg354c1c9a,
-                              icon: RotationTransition(
-                                turns: _refreshIconController,
-                                child: Icon(Broken.refresh, color: theme.colorScheme.primary),
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: widget.toggleTheme,
-                              icon: Icon(
-                                theme.brightness == Brightness.dark ? Broken.sun_1 : Broken.moon,
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: () => QuickCategoriesGrid.showCustomizeDialog(context, (index) => setState(() => _currentIndex = index)),
-                              tooltip: L10n.of(context).msg19021d08,
-                              icon: Icon(Broken.edit_2, color: theme.colorScheme.primary),
-                            ),
-                          ],
+                        const Spacer(),
+                        // 分类页按钮
+                        IconButton(
+                          onPressed: () {
+                            _switchTab(0);
+                            context.read<MediaProvider>().refreshMediaBackground();
+                          },
+                          tooltip: L10n.of(context).msg6e0f9cef,
+                          icon: Icon(Broken.category, color: theme.colorScheme.primary),
+                        ),
+                        const SizedBox(width: 32),
+                        // 浏览页按钮
+                        IconButton(
+                          onPressed: () => _switchTab(1),
+                          tooltip: L10n.of(context).ui_browse,
+                          icon: Icon(Broken.folder, color: theme.colorScheme.primary),
+                        ),
+                        const Spacer(),
+                        // 快捷操作按钮（靠右）
+                        IconButton(
+                          icon: Icon(Broken.more_circle, color: theme.colorScheme.primary),
+                          tooltip: L10n.of(context).msge8b8e9b3,
+                          onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
                         ),
                       ],
                     ),

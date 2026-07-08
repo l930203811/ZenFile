@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
@@ -17,7 +16,7 @@ class FileOperationProgressDialog extends StatelessWidget {
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.4),
+      barrierColor: Colors.black54,
       builder: (context) => PopScope(
         canPop: false,
         child: FileOperationProgressDialog(provider: provider),
@@ -29,166 +28,212 @@ class FileOperationProgressDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-      child: Center(
-        child: ValueListenableBuilder<FileOperationProgress?>(
-          valueListenable: provider.progressNotifier,
-          builder: (context, progress, child) {
-            if (progress == null) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (Navigator.canPop(context)) {
-                  Navigator.pop(context);
-                }
-              });
-              return const SizedBox.shrink();
-            }
+    return Center(
+      child: ValueListenableBuilder<FileOperationProgress?>(
+        valueListenable: provider.progressNotifier,
+        builder: (context, progress, child) {
+          if (progress == null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context);
+              }
+            });
+            return const SizedBox.shrink();
+          }
 
-            final percent = (progress.percentage * 100).clamp(0, 100).toInt();
-            final isDark = theme.brightness == Brightness.dark;
+          final percent = (progress.percentage * 100).clamp(0, 100).toInt();
+          final isDark = theme.brightness == Brightness.dark;
+          final circleBgColor = isDark
+              ? const Color(0xFF1E1E2E)
+              : theme.colorScheme.surface;
 
-            return Card(
-              elevation: 24,
-              shadowColor: Colors.black.withOpacity(0.3),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(28),
-                side: BorderSide(color: theme.colorScheme.outline.withOpacity(0.12)),
-              ),
-              color: isDark ? const Color(0xFF1E1E2E) : theme.colorScheme.surface.withOpacity(0.95),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(28),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 32),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Title
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            provider.isCut ? Broken.scissor : Broken.document_copy,
-                            color: theme.colorScheme.primary,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            provider.isCut ? L10n.of(context).msg9d69d7a0 : '正在复制文件...',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Circular progress ring with percentage
-                      SizedBox(
-                        width: 120,
-                        height: 120,
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            // Background ring
-                            CircularProgressIndicator(
-                              value: 1.0,
-                              strokeWidth: 8,
-                              backgroundColor: theme.colorScheme.primary.withOpacity(0.08),
-                              valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary.withOpacity(0.08)),
-                            ),
-                            // Progress ring
-                            CircularProgressIndicator(
-                              value: progress.percentage.clamp(0.0, 1.0),
-                              strokeWidth: 8,
-                              backgroundColor: Colors.transparent,
-                              valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
-                              strokeCap: StrokeCap.round,
-                            ),
-                            // Percentage text
-                            Center(
-                              child: Text(
-                                '$percent%',
-                                style: TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w900,
-                                  color: theme.colorScheme.primary,
-                                  letterSpacing: -1,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Current file info
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Broken.document,
-                              size: 16,
-                              color: theme.colorScheme.primary.withOpacity(0.7),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                progress.currentFileName,
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: theme.colorScheme.onSurface.withOpacity(0.8),
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-
-                      // Stats row
-                      Text(
-                        '${progress.currentFileIndex}/${progress.totalFiles}  |  ${FileUtils.formatBytes(progress.bytesProcessed, 1)} / ${FileUtils.formatBytes(progress.totalBytes, 1)}  |  ${progress.speedMBs.toStringAsFixed(1)} MB/s',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(0.45),
-                          fontSize: 11,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Cancel button
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            provider.cancelOperation();
-                          },
-                          icon: const Icon(Broken.close_square, size: 16),
-                          label: Text(L10n.of(context).msg17093362, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.redAccent,
-                            side: BorderSide(color: Colors.redAccent.withOpacity(0.3)),
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                color: circleBgColor,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.4),
+                    blurRadius: 30,
+                    spreadRadius: 2,
+                    offset: const Offset(0, 12),
                   ),
-                ),
+                ],
               ),
-            );
-          },
-        ),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // 环形进度条（外圈）
+                  Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: CircularProgressIndicator(
+                      value: 1.0,
+                      strokeWidth: 8,
+                      backgroundColor: Colors.transparent,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        theme.colorScheme.primary.withOpacity(0.08),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: CircularProgressIndicator(
+                      value: progress.percentage.clamp(0.0, 1.0),
+                      strokeWidth: 8,
+                      backgroundColor: Colors.transparent,
+                      valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
+                      strokeCap: StrokeCap.round,
+                    ),
+                  ),
+
+                  // 内部内容区域
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 28),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // 顶部关闭/后台按钮
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: theme.colorScheme.primary.withOpacity(0.1),
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.close, size: 18),
+                            color: theme.colorScheme.primary,
+                            onPressed: () {
+                              provider.runInBackground();
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // 分隔线
+                        Container(
+                          height: 1,
+                          color: theme.colorScheme.outline.withOpacity(0.15),
+                        ),
+                        const SizedBox(height: 14),
+
+                        // 标题
+                        Text(
+                          provider.isCut ? L10n.of(context).msg9d69d7a0 : L10n.of(context).msg108feeed,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+
+                        // 副标题
+                        Text(
+                          L10n.of(context).ui_transferring_files,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: theme.colorScheme.onSurface.withOpacity(0.5),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+
+                        // 当前文件信息
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 200),
+                          child: Text(
+                            progress.currentFileName,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: theme.colorScheme.onSurface.withOpacity(0.6),
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+
+                        // 统计信息
+                        Column(
+                          children: [
+                            Text(
+                              '${FileUtils.formatBytes(progress.bytesProcessed, 1)} / ${FileUtils.formatBytes(progress.totalBytes, 1)}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: theme.colorScheme.onSurface,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              progress.eta.inSeconds > 0
+                                  ? '${_formatDuration(progress.eta)} ${L10n.of(context).ui_time_remaining}'
+                                  : '',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: theme.colorScheme.onSurface.withOpacity(0.5),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+
+                        // 分隔线
+                        Container(
+                          height: 1,
+                          color: theme.colorScheme.outline.withOpacity(0.15),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // 停止按钮
+                        SizedBox(
+                          width: 100,
+                          height: 36,
+                          child: OutlinedButton(
+                            onPressed: () {
+                              provider.cancelOperation();
+                              Navigator.of(context).pop();
+                            },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: theme.colorScheme.onSurface.withOpacity(0.6),
+                              side: BorderSide(
+                                color: theme.colorScheme.outline.withOpacity(0.2),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                              padding: EdgeInsets.zero,
+                            ),
+                            child: Text(
+                              L10n.of(context).ui_cancel,
+                              style: const TextStyle(fontSize: 13),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
+  }
+
+  String _formatDuration(Duration duration) {
+    if (duration.inHours > 0) {
+      return '${duration.inHours}:${(duration.inMinutes % 60).toString().padLeft(2, '0')}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
+    }
+    return '${duration.inMinutes}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
   }
 }

@@ -33,7 +33,7 @@ class LanDiscoveredServer {
 /// backslashes inside the native helper. The first path segment is treated
 /// as the SMB share name; e.g. `/Public/Movies/film.mp4` resolves to
 /// share=`Public`, path=`\Movies\film.mp4`.
-class LanClient implements RemoteClient {
+class LanClient extends RemoteClient {
   static const MethodChannel _channel = MethodChannel('com.sequl.zenfile/smb');
 
   final String host;
@@ -310,7 +310,12 @@ class LanClient implements RemoteClient {
     // Kick off the download on the native side. The native helper streams
     // the bytes to disk synchronously (from this isolate's perspective),
     // so we emulate progress by polling the file size while it grows.
-    final totalFuture = getFileSize(remotePath);
+    // getFileSize 可能耗时 10s+（网络慢时），导致流式播放超时。
+    // 用 2s 超时，超时就跳过 — 进度不更新但数据立即开始下载。
+    final totalFuture = getFileSize(remotePath).timeout(
+      const Duration(seconds: 2),
+      onTimeout: () => -1,
+    );
 
     final downloadFuture = _channel.invokeMethod<bool>('downloadFile', {
       'sessionId': session,

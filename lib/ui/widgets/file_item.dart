@@ -35,6 +35,7 @@ class FileItem extends StatelessWidget {
   final double iconScale;
   final double itemPaddingMultiplier;
   final bool showShowInLocationOption;
+  final bool showOpenWithOption;
 
   const FileItem({
     super.key,
@@ -47,6 +48,7 @@ class FileItem extends StatelessWidget {
     this.iconScale = 1.0,
     this.itemPaddingMultiplier = 1.0,
     this.showShowInLocationOption = false,
+    this.showOpenWithOption = false,
   });
 
   @override
@@ -187,6 +189,8 @@ class FileItem extends StatelessWidget {
                       context,
                       onAction,
                       isArchive: isArchive,
+                      showInLocation: showShowInLocationOption,
+                      openWith: showOpenWithOption && !file.isDirectory,
                     );
                   },
                 ),

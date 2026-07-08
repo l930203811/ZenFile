@@ -138,6 +138,10 @@ class L10nEs extends L10n {
   String get msgc18fb099 => 'Extracción exitosa. ¿Abrir ubicación?';
 
   @override
+  String get msg_compress_open_location =>
+      'Compresión exitosa. ¿Abrir ubicación?';
+
+  @override
   String get msg4367e85a => 'No se encontraron archivos comprimibles';
 
   @override
@@ -658,6 +662,24 @@ class L10nEs extends L10n {
   String get msgf437ace4 => 'Solo Esta Carpeta';
 
   @override
+  String get msg551f98ba =>
+      'Este directorio no contiene archivos ni subcarpetas.';
+
+  @override
+  String get ui_favorites => 'Favoritos';
+
+  @override
+  String get ui_new_favorite => 'Agregar a favoritos';
+
+  @override
+  String get ui_favorite => 'Favorito';
+
+  @override
+  String msg_favorited(Object name) {
+    return '$name agregado a favoritos';
+  }
+
+  @override
   String get msg4dfc167a =>
       'Habilitar ordenamiento personalizado para esta carpeta';
 
@@ -681,10 +703,6 @@ class L10nEs extends L10n {
 
   @override
   String get msge9691076 => 'Carpeta Vacía';
-
-  @override
-  String get msg551f98ba =>
-      'Este directorio no contiene archivos ni subcarpetas.';
 
   @override
   String get msg17093362 => 'Cancelar Operación';
@@ -1244,7 +1262,7 @@ class L10nEs extends L10n {
   String get msg2c8a394a => 'Página de Navegación';
 
   @override
-  String get msg2c3c5a35 => 'Forma de Icono de Categoría';
+  String get msg2c3c5a35 => 'Forma del Icono';
 
   @override
   String get msg267fcd86 => 'Cada 3 días';
@@ -2273,6 +2291,12 @@ class L10nEs extends L10n {
   String get msg9d69d7a0 => 'Moviendo archivos...';
 
   @override
+  String get ui_transferring_files => 'Transfiriendo archivos';
+
+  @override
+  String get ui_time_remaining => 'restantes';
+
+  @override
   String get zenfile6 => 'Experiencia Nativa Personalizada de ZenFile';
 
   @override
@@ -2412,7 +2436,7 @@ class L10nEs extends L10n {
   String get msg6cbbf7d9 => 'Ingrese la ruta absoluta...';
 
   @override
-  String get msgf13fc21c => 'Servidores y Herramientas';
+  String get msgf13fc21c => 'Red';
 
   @override
   String get msg41e625d1 => 'Añadir Conexión Remota';
@@ -2544,7 +2568,7 @@ class L10nEs extends L10n {
   String get cat_settings => 'Configuración';
 
   @override
-  String get cat_storage => 'Almacenamiento';
+  String get cat_storage => 'Espacio';
 
   @override
   String get cat_service => 'Servicio';
@@ -2565,10 +2589,10 @@ class L10nEs extends L10n {
   String get cat_vault_desc => 'Almacenamiento seguro';
 
   @override
-  String get cat_quick_categories => 'Categorías Rápidas';
+  String get cat_quick_categories => 'Categorías';
 
   @override
-  String get ui_nav => 'Navegación';
+  String get ui_nav => 'Local';
 
   @override
   String get ui_home => 'Inicio';
@@ -2580,7 +2604,7 @@ class L10nEs extends L10n {
   String get ui_dark_mode => 'Modo Oscuro';
 
   @override
-  String get ui_personalize_settings => 'Personalizar y Configuración';
+  String get ui_personalize_settings => 'Ajustes';
 
   @override
   String get ui_compress => 'Comprimir';
@@ -2897,6 +2921,9 @@ class L10nEs extends L10n {
 
   @override
   String get ui_pin_to_top => 'Fijar Arriba';
+
+  @override
+  String get msg_select_all => 'Seleccionar todo';
 
   @override
   String get ui_pinned_selected => 'Elementos seleccionados fijados';
@@ -3231,6 +3258,43 @@ class L10nEs extends L10n {
   @override
   String get log_lyric_scale_animation =>
       'Agregado efecto de escala a la animación de transición de letra palabra por palabra, corregidos problemas de sincronización, fijada duración de transición de 300ms';
+
+  @override
+  String get log_quick_action_panel => '重新调整了顶部导航栏按钮，新增快捷操作页面，在浏览页可左滑弹出快捷操作面板';
+
+  @override
+  String get log_favorites => '新增了收藏夹，用户可以收藏本地或远程文件/文件夹收藏到快捷操作面板的收藏夹中';
+
+  @override
+  String get log_drawer_redesign => '重构了抽屉页，抽屉页更加简洁美观，持久化记住抽屉页所有展开/折叠状态，操作更加便捷';
+
+  @override
+  String get log_video_player_rotation => '视频播放器新增了顺时针旋转画面，新增缩放比例';
+
+  @override
+  String get log_category_reorder =>
+      '优化了分类页可长按类别图标拖动调整位置顺序，新增每行 3 列/4 列可选，现在支持重命名类别名称';
+
+  @override
+  String get log_compression_fix => '修复了压缩一些问题';
+
+  @override
+  String get log_progress_bar_redesign => '重新设计了进度条窗口样式';
+
+  @override
+  String get log_dual_pane_status_bar => '双窗口模式顶部新增状态栏，显示激活窗口指示器和剪贴板内容摘要';
+
+  @override
+  String get log_transfer_fixes => '修复传输进度条不更新、无法取消、远程列表空白、传输速度不显示等问题';
+
+  @override
+  String get log_drawer_font_consistency => '修复了抽屉页「设置」按钮字体与其他栏目不一致的问题';
+
+  @override
+  String get log_landscape_layout => '优化平板/车机横屏模式下的文件网格布局';
+
+  @override
+  String get log_progress_i18n => '进度条窗口新增完整的多语言翻译支持';
 
   @override
   String get msg_remember_choice =>
@@ -3965,4 +4029,58 @@ class L10nEs extends L10n {
 
   @override
   String get msg_rotate_video => 'Rotar video';
+
+  @override
+  String get msg_aspect_fit => 'Ajustar a pantalla';
+
+  @override
+  String get msg_aspect_fill => 'Estirar para llenar';
+
+  @override
+  String get msg_aspect_center => 'Centrado';
+
+  @override
+  String get msg_aspect_16_9 => '16:9';
+
+  @override
+  String get msg_aspect_4_3 => '4:3';
+
+  @override
+  String get drawer_tools => 'Herramientas';
+
+  @override
+  String get open_with_native => 'Abrir con esta aplicación';
+
+  @override
+  String get open_with_external => 'Abrir con aplicación externa';
+
+  @override
+  String get open_once => 'Solo esta vez';
+
+  @override
+  String get open_always => 'Siempre';
+
+  @override
+  String get drawer_edit_connection => 'Editar';
+
+  @override
+  String get cat_system => 'Sistema';
+
+  @override
+  String get cat_storage_volume => 'Almacenamiento';
+
+  @override
+  String get ui_columns_per_row => 'Columnas por fila';
+
+  @override
+  String get ui_3columns => '3 Columnas';
+
+  @override
+  String get ui_4columns => '4 Columnas';
+
+  @override
+  String get msge8b8e9b3 => 'Acciones rápidas';
+
+  @override
+  String get msg04b7de53 => 'Acceso rápido a funciones comunes';
 }

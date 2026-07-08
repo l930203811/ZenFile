@@ -42,6 +42,7 @@ import android.os.storage.StorageManager
 import android.os.Process
 
 import android.media.MediaMetadataRetriever
+import androidx.core.content.FileProvider
 class MainActivity : AudioServiceFragmentActivity() {
     private val CHANNEL = "com.sequl.zenfile/root_shizuku"
     private val SHIZUKU_REQUEST_CODE = 10001
@@ -488,7 +489,8 @@ class MainActivity : AudioServiceFragmentActivity() {
                         }
                     }
                 }
-                "addHomeScreenShortcut" -> {                    executor.execute {
+                "addHomeScreenShortcut" -> {
+                    executor.execute {
                         try {
                             val pathArg = call.argument<String>("path")
                             val customIconFile = if (!pathArg.isNullOrEmpty()) {
@@ -561,6 +563,50 @@ class MainActivity : AudioServiceFragmentActivity() {
                             }
                         } catch (e: Exception) {
                             runOnUiThread { result.error("ICON_ERROR", e.message, null) }
+                        }
+                    }
+                }
+                "openWithChooser" -> {
+                    val path = call.argument<String>("path") ?: ""
+                    val mimeType = call.argument<String>("mimeType") ?: ""
+                    executor.execute {
+                        try {
+                            val intent = Intent(Intent.ACTION_VIEW)
+                            val uri: Uri
+                            if (path.startsWith("http://") || path.startsWith("https://")) {
+                                // HTTP(S) URL — 用于远程流式播放（VLC 等播放器可直接流式播放）
+                                uri = Uri.parse(path)
+                            } else if (path.startsWith("content://")) {
+                                uri = Uri.parse(path)
+                            } else {
+                                // 本地文件路径 — 通过 FileProvider 转换为 content:// URI
+                                val file = File(path)
+                                if (!file.exists()) {
+                                    runOnUiThread { result.error("FILE_NOT_FOUND", "File not found: $path", null) }
+                                    return@execute
+                                }
+                                val authority = "${packageName}.fileprovider"
+                                uri = FileProvider.getUriForFile(this@MainActivity, authority, file)
+                                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            }
+
+                            if (mimeType.isNotEmpty()) {
+                                intent.setDataAndType(uri, mimeType)
+                            } else {
+                                intent.data = uri
+                            }
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+                            // 使用 Intent.createChooser 强制弹出系统选择器
+                            // 即使已设默认应用也会弹出，让用户从所有可用应用中选择
+                            val chooser = Intent.createChooser(intent, "打开方式").apply {
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            startActivity(chooser)
+                            runOnUiThread { result.success(true) }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            runOnUiThread { result.error("CHOOSER_ERROR", e.message, null) }
                         }
                     }
                 }

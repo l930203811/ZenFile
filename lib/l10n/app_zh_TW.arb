@@ -155,6 +155,10 @@
   "@msgc18fb099": {
     "description": "services\\background_archive_service.dart"
   },
+  "msg_compress_open_location": "壓縮成功，是否開啟所在位置？",
+  "@msg_compress_open_location": {
+    "description": "services\\background_archive_service.dart"
+  },
   "msg4367e85a": "未找到可壓縮的檔案",
   "@msg4367e85a": {
     "description": "services\\background_archive_service.dart"
@@ -766,6 +770,29 @@
     "description": "ui\\screens\\directory_screen.dart"
   },
   "msgf437ace4": "僅此資料夾",
+  "@msg551f98ba": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "msg551f98ba": "暫無收藏",
+  "@ui_favorites": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_favorites": "收藏夾",
+  "@ui_new_favorite": {
+    "description": "directory_screen.dart"
+  },
+  "ui_new_favorite": "新增收藏",
+  "@ui_favorite": {
+    "description": "file_action_dialogs.dart"
+  },
+  "ui_favorite": "收藏",
+  "@msg_favorited": {
+    "description": "directory_screen.dart",
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "msg_favorited": "已收藏 {name}",
   "@msgf437ace4": {
     "description": "ui\\screens\\directory_screen.dart"
   },
@@ -1473,7 +1500,7 @@
   "@msg2c8a394a": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg2c3c5a35": "分類圖示形狀",
+  "msg2c3c5a35": "圖示形狀",
   "@msg2c3c5a35": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -2744,6 +2771,14 @@
   "@msg9d69d7a0": {
     "description": "ui\\widgets\\file_operation_progress_dialog.dart"
   },
+  "ui_transferring_files": "傳輸檔案",
+  "@ui_transferring_files": {
+    "description": "ui\\widgets\\file_operation_progress_dialog.dart"
+  },
+  "ui_time_remaining": "剩下",
+  "@ui_time_remaining": {
+    "description": "ui\\widgets\\file_operation_progress_dialog.dart"
+  },
   "zenfile6": "ZenFile 自定義原生體驗",
   "@zenfile6": {
     "description": "ui\\widgets\\open_with_sheet.dart"
@@ -2911,7 +2946,7 @@
   "@msg6cbbf7d9": {
     "description": "ui\\widgets\\zenfile_address_bar.dart"
   },
-  "msgf13fc21c": "伺服器與工具",
+  "msgf13fc21c": "網路",
   "@msgf13fc21c": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
   },
@@ -2966,19 +3001,19 @@
   "cat_network": "網路",
   "cat_apps": "應用",
   "cat_settings": "設定",
-  "cat_storage": "儲存",
+  "cat_storage": "空間",
   "cat_service": "服務",
   "cat_manage": "管理",
   "cat_config": "配置",
   "cat_analyze": "分析",
   "cat_vault": "保險箱",
   "cat_vault_desc": "安全儲存",
-  "cat_quick_categories": "快捷分類",
-  "ui_nav": "導航",
+  "cat_quick_categories": "分類",
+  "ui_nav": "本地",
   "ui_home": "主頁",
   "ui_recycle_bin": "回收站",
   "ui_dark_mode": "深色模式",
-  "ui_personalize_settings": "個性化和設定",
+  "ui_personalize_settings": "設定",
   "ui_compress": "壓縮",
   "ui_copy": "複製",
   "ui_cut": "剪下",
@@ -3221,6 +3256,10 @@
   "ui_pin_to_top": "置頂",
   "@ui_pin_to_top": {
     "description": "ui widgets"
+  },
+  "msg_select_all": "全選",
+  "@msg_select_all": {
+    "description": "selection_context_bottom_sheet.dart"
   },
   "ui_pinned_selected": "已將所選專案置頂",
   "@ui_pinned_selected": {
@@ -3935,5 +3974,44 @@
   "msg_rotate_video": "旋轉畫面",
   "@msg_rotate_video": {
     "description": "Rotate video clockwise in video player"
+  },
+  "msg_aspect_fit": "符合螢幕",
+  "@msg_aspect_fit": {
+    "description": "Video aspect ratio mode: fit to screen"
+  },
+  "msg_aspect_fill": "拉伸填滿",
+  "@msg_aspect_fill": {
+    "description": "Video aspect ratio mode: stretch to fill"
+  },
+  "msg_aspect_center": "置中",
+  "@msg_aspect_center": {
+    "description": "Video aspect ratio mode: centered original size"
+  },
+  "msg_aspect_16_9": "16:9",
+  "@msg_aspect_16_9": {
+    "description": "Video aspect ratio mode: 16:9"
+  },
+  "msg_aspect_4_3": "4:3",
+  "@msg_aspect_4_3": {
+    "description": "Video aspect ratio mode: 4:3"
+  },
+  "drawer_tools": "工具",
+  "open_with_native": "使用本應用程式開啟",
+  "open_with_external": "使用外部系統選擇器開啟",
+  "open_once": "僅一次",
+  "open_always": "始終",
+  "drawer_edit_connection": "編輯",
+  "cat_system": "系統",
+  "cat_storage_volume": "儲存",
+  "ui_columns_per_row": "每行顯示",
+  "ui_3columns": "3列",
+  "ui_4columns": "4列",
+  "msge8b8e9b3": "快捷操作",
+  "@msge8b8e9b3": {
+    "description": "Right side menu header title"
+  },
+  "msg04b7de53": "常用功能快捷入口",
+  "@msg04b7de53": {
+    "description": "Right side menu header subtitle"
   }
 }

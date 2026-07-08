@@ -33,6 +33,18 @@ class RemoteStreamingService {
   }) async {
     _cleanupStale();
 
+    // 重复保护：如果同一文件已有活跃会话，复用它而非创建新下载
+    // 这避免了用户重新点击播放时启动重复下载
+    for (final entry in _sessions.entries) {
+      final session = entry.value;
+      if (session.remotePath == remotePath && !session.disposed) {
+        debugPrint('RemoteStreamingService: reusing existing session for $remotePath (port ${entry.key})');
+        final ext = p.extension(fileName);
+        return 'http://127.0.0.1:${entry.key}/stream$ext';
+      }
+    }
+
+    debugPrint('RemoteStreamingService: startStreaming remotePath=$remotePath fileName=$fileName knownSize=$fileSize');
     final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     final session = _StreamSession(
       client: client,
@@ -87,18 +99,30 @@ class RemoteStreamingService {
     try {
       final mimeType = lookupMimeType(session.fileName) ?? 'application/octet-stream';
       final rangeHeader = request.headers.value(HttpHeaders.rangeHeader);
+      debugPrint('RemoteStreamingService: request ${request.method} ${request.uri.path} range=$rangeHeader');
 
-      // Determine file size (with short timeout; unknown is OK)
-      int fileSize;
-      try {
-        fileSize = await session.waitForSize().timeout(const Duration(seconds: 5));
-      } catch (_) {
-        fileSize = -1;
+      // 立即决定 fileSize，不等待 getFileSize（可耗 10-15s）。
+      // 优先用 knownFileSize（来自文件列表元数据），否则用 -1 走 chunked 200。
+      // 这样 HTTP 响应头立即发送，media_kit 不会因等待而超时。
+      int fileSize = session.knownFileSize ?? -1;
+      // 如果 knownFileSize 未知，尝试 1s 内获取（不阻塞太久）
+      if (fileSize <= 0) {
+        try {
+          fileSize = await session.waitForSize().timeout(const Duration(seconds: 1));
+          debugPrint('RemoteStreamingService: got fileSize=$fileSize within 1s');
+        } catch (_) {
+          fileSize = -1;
+          debugPrint('RemoteStreamingService: fileSize not ready in 1s, using chunked 200');
+        }
+      } else {
+        debugPrint('RemoteStreamingService: using knownFileSize=$fileSize');
       }
 
       if (fileSize > 0) {
+        debugPrint('RemoteStreamingService: serving 206 (seekable) fileSize=$fileSize');
         await _serveProgressive(session, response, fileSize, mimeType, rangeHeader);
       } else {
+        debugPrint('RemoteStreamingService: serving chunked 200 (unknown size)');
         await _serveProgressiveUnknown(session, response, mimeType);
       }
     } catch (e) {
@@ -481,14 +505,20 @@ class _StreamSession {
 
   Future<void> _doDownload() async {
     try {
-      try {
-        _totalBytes = await client.getFileSize(remotePath)
-            .timeout(const Duration(seconds: 8));
-      } catch (_) {
-        _totalBytes = -1;
-      }
-      if (_totalBytes <= 0 && knownFileSize != null && knownFileSize! > 0) {
+      // Skip getFileSize entirely to avoid blocking the download.
+      // getFileSize can take 10-15s (SFTP stat, FTP SIZE, SMB native call),
+      // and client.downloadFile may ALSO query size internally.
+      // Instead, rely on knownFileSize (from file list metadata) or -1.
+      // The HTTP handler uses waitForSize().timeout(2s) — if size is unknown
+      // by then, it falls back to chunked 200 (no seek, but plays immediately).
+      // downloadFile's internal stat/getFileSize also has a 2s timeout, so
+      // data starts flowing ASAP.
+      if (knownFileSize != null && knownFileSize! > 0) {
         _totalBytes = knownFileSize!;
+        debugPrint('RemoteStreamingService: using knownFileSize=$_totalBytes');
+      } else {
+        _totalBytes = -1;
+        debugPrint('RemoteStreamingService: unknown size, will use chunked 200');
       }
       if (!_sizeCompleter.isCompleted) {
         _sizeCompleter.complete(_totalBytes);
@@ -530,6 +560,7 @@ class _StreamSession {
         }
       }
       _downloadComplete = true;
+      debugPrint('RemoteStreamingService: download complete, totalBytes=$_totalBytes downloaded=$_downloadedBytes');
       _notifyProgress();
     } catch (e) {
       _lengthPollTimer?.cancel();
@@ -565,9 +596,25 @@ class _StreamSession {
     _lengthPollTimer?.cancel();
     _lengthPollTimer = null;
     _notifyProgress();
+    // 关闭 HTTP 服务器，停止向 media_kit 推送数据
     try {
       await server.close(force: true);
     } catch (_) {}
+    // 尝试取消下载：调用 client.disconnect() 中断底层连接
+    // 这是关键修复：之前 dispose 不取消下载，导致退出播放器后
+    // SFTP/FTP/SMB 下载在后台继续运行，占用网络带宽和 CPU
+    try {
+      await client.disconnect();
+    } catch (e) {
+      debugPrint('RemoteStreamingService: dispose disconnect error: $e');
+    }
+    // 等待下载 Future 结束（disconnect 会中断网络读取，使其快速失败）
+    if (_downloadFuture != null) {
+      try {
+        await _downloadFuture!.timeout(const Duration(seconds: 3));
+      } catch (_) {}
+    }
+    // 删除本地缓存文件
     try {
       if (_localPath != null) {
         final f = File(_localPath!);

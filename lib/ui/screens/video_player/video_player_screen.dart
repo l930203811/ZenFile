@@ -88,6 +88,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   bool _isMuted = false;
   int _repeatMode = 0; // 0=none, 1=one, 2=all
   int _rotationTurns = 0; // 0=0°, 1=90°顺时针, 2=180°, 3=270°
+  int _aspectRatioMode = 0; // 0=适应屏幕, 1=拉伸填充, 2=居中, 3=16:9, 4=4:3
+  String? _aspectToast;
+  Timer? _aspectToastTimer;
 
   @override
   void initState() {
@@ -125,8 +128,23 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       ),
     );
 
+    // 覆盖 media_kit 硬编码的 network-timeout=5s。
+    // SMB/FTP/SFTP 建立连接+认证可能需要 5-10s，5s 超时会导致 libmpv
+    // 在数据到达前就放弃播放。设为 60s 给本地代理足够时间启动下载。
+    // 必须在 _startPlayback 之前完成，否则播放已经开始读取超时值。
     _initListeners();
-    _startPlayback();
+    () async {
+      try {
+        final platform = player.platform;
+        if (platform is NativePlayer) {
+          await platform.setProperty('network-timeout', '60');
+          await platform.setProperty('cache-secs', '10');
+        }
+      } catch (e) {
+        debugPrint('设置 network-timeout 失败: $e');
+      }
+      _startPlayback();
+    }();
     player.setVolume(_volume * 100.0);
     _startHideTimer();
   }
@@ -515,8 +533,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _seekIndicatorTimer?.cancel();
     _sliderTimer?.cancel();
     _cacheCheckTimer?.cancel();
+    _aspectToastTimer?.cancel();
     _controlsAnimController.dispose();
-    // 清理远程流式会话
+    // 清理远程流式会话：fire-and-forget 但确保异步执行。
+    // dispose() 不能是 async（Framework 要求 void），
+    // 但 stopStreaming 内部会调用 client.disconnect() 取消下载。
     _stopCurrentStream();
     player.dispose();
     final hideNav = PreferencesService.getHideNavigationBar();
@@ -547,6 +568,73 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     return name.length > 40 ? '${name.substring(0, 37)}...' : name;
   }
 
+  /// 根据当前伸缩比例模式构建视频画面
+  Widget _buildVideoSurface() {
+    BoxFit fit;
+    double? forcedRatio;
+    switch (_aspectRatioMode) {
+      case 1: // 拉伸填充
+        fit = BoxFit.fill;
+        break;
+      case 2: // 居中（原始尺寸）
+        fit = BoxFit.none;
+        break;
+      case 3: // 16:9
+        fit = BoxFit.fill;
+        forcedRatio = 16 / 9;
+        break;
+      case 4: // 4:3
+        fit = BoxFit.fill;
+        forcedRatio = 4 / 3;
+        break;
+      default: // 0 适应屏幕
+        fit = BoxFit.contain;
+    }
+
+    Widget video = Video(
+      controller: controller,
+      controls: NoVideoControls,
+      fit: fit,
+    );
+    if (forcedRatio != null) {
+      video = AspectRatio(aspectRatio: forcedRatio, child: video);
+    }
+    return RotatedBox(
+      quarterTurns: _rotationTurns,
+      child: video,
+    );
+  }
+
+  /// 获取当前伸缩比例模式的多语言提示词
+  String _aspectRatioLabel() {
+    final l10n = L10n.of(context);
+    switch (_aspectRatioMode) {
+      case 1:
+        return l10n.msg_aspect_fill;
+      case 2:
+        return l10n.msg_aspect_center;
+      case 3:
+        return l10n.msg_aspect_16_9;
+      case 4:
+        return l10n.msg_aspect_4_3;
+      default:
+        return l10n.msg_aspect_fit;
+    }
+  }
+
+  /// 切换伸缩比例并显示提示词
+  void _toggleAspectRatio() {
+    setState(() {
+      _aspectRatioMode = (_aspectRatioMode + 1) % 5;
+      _aspectToast = _aspectRatioLabel();
+    });
+    _aspectToastTimer?.cancel();
+    _aspectToastTimer = Timer(const Duration(milliseconds: 1500), () {
+      if (mounted) setState(() => _aspectToast = null);
+    });
+    _showControls();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -554,15 +642,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Main Video Surface (支持顺时针旋转)
-          RotatedBox(
-            quarterTurns: _rotationTurns,
-            child: Video(
-              controller: controller,
-              controls: NoVideoControls,
-              fit: BoxFit.contain,
-            ),
-          ),
+          // Main Video Surface (支持顺时针旋转 + 伸缩比例切换)
+          _buildVideoSurface(),
 
           // Brightness Dimming Overlay
           IgnorePointer(
@@ -740,6 +821,30 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
               ),
             ),
 
+          // Aspect Ratio Toggle Toast
+          if (_aspectToast != null)
+            Positioned(
+              top: 54,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: IgnorePointer(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.75),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+                    ),
+                    child: Text(
+                      _aspectToast!,
+                      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
           // Modular Controls Overlay
           FadeTransition(
             opacity: _controlsOpacity,
@@ -760,6 +865,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                     isMuted: _isMuted,
                     repeatMode: _repeatMode,
                     rotationTurns: _rotationTurns,
+                    aspectRatioMode: _aspectRatioMode,
                     onChanged: (v) => setState(() => _sliderValue = v),
                     onChangeStart: (_) {
                       _isSeeking = true;
@@ -806,6 +912,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                       setState(() => _rotationTurns = (_rotationTurns + 1) % 4);
                       _showControls();
                     },
+                    onToggleAspectRatio: _toggleAspectRatio,
                     onInteract: _showControls,
                   ),
                 ],

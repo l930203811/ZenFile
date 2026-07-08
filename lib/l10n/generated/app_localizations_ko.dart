@@ -134,6 +134,9 @@ class L10nKo extends L10n {
   String get msgc18fb099 => '압축 해제 성공. 위치를 여시겠습니까?';
 
   @override
+  String get msg_compress_open_location => '압축 성공. 위치를 여시겠습니까?';
+
+  @override
   String get msg4367e85a => '압축 가능한 파일을 찾을 수 없습니다';
 
   @override
@@ -613,6 +616,23 @@ class L10nKo extends L10n {
   String get msgf437ace4 => '이 폴더만';
 
   @override
+  String get msg551f98ba => '이 디렉토리에는 파일이나 하위 폴더가 없습니다.';
+
+  @override
+  String get ui_favorites => '즐겨찾기';
+
+  @override
+  String get ui_new_favorite => '즐겨찾기에 추가';
+
+  @override
+  String get ui_favorite => '즐겨찾기';
+
+  @override
+  String msg_favorited(Object name) {
+    return '$name 즐겨찾기 추가됨';
+  }
+
+  @override
   String get msg4dfc167a => '이 폴더에 사용자 정의 정렬 활성화';
 
   @override
@@ -635,9 +655,6 @@ class L10nKo extends L10n {
 
   @override
   String get msge9691076 => '빈 폴더';
-
-  @override
-  String get msg551f98ba => '이 디렉토리에는 파일이나 하위 폴더가 없습니다.';
 
   @override
   String get msg17093362 => '작업 취소';
@@ -1151,7 +1168,7 @@ class L10nKo extends L10n {
   String get msg2c8a394a => '탐색 페이지';
 
   @override
-  String get msg2c3c5a35 => '카테고리 아이콘 모양';
+  String get msg2c3c5a35 => '아이콘 모양';
 
   @override
   String get msg267fcd86 => '3일마다';
@@ -2148,6 +2165,12 @@ class L10nKo extends L10n {
   String get msg9d69d7a0 => '파일 이동 중...';
 
   @override
+  String get ui_transferring_files => '파일 전송 중';
+
+  @override
+  String get ui_time_remaining => '남음';
+
+  @override
   String get zenfile6 => 'ZenFile 사용자 정의 네이티브 경험';
 
   @override
@@ -2283,7 +2306,7 @@ class L10nKo extends L10n {
   String get msg6cbbf7d9 => '절대 경로 입력...';
 
   @override
-  String get msgf13fc21c => '서버 및 도구';
+  String get msgf13fc21c => '네트워크';
 
   @override
   String get msg41e625d1 => '원격 연결 추가';
@@ -2406,7 +2429,7 @@ class L10nKo extends L10n {
   String get cat_settings => '설정';
 
   @override
-  String get cat_storage => '저장소';
+  String get cat_storage => '공간';
 
   @override
   String get cat_service => '서비스';
@@ -2427,10 +2450,10 @@ class L10nKo extends L10n {
   String get cat_vault_desc => '안전 저장';
 
   @override
-  String get cat_quick_categories => '빠른 카테고리';
+  String get cat_quick_categories => '카테고리';
 
   @override
-  String get ui_nav => '내비게이션';
+  String get ui_nav => '로컬';
 
   @override
   String get ui_home => '홈';
@@ -2442,7 +2465,7 @@ class L10nKo extends L10n {
   String get ui_dark_mode => '다크 모드';
 
   @override
-  String get ui_personalize_settings => '개인화 및 설정';
+  String get ui_personalize_settings => '설정';
 
   @override
   String get ui_compress => '압축';
@@ -2753,6 +2776,9 @@ class L10nKo extends L10n {
   String get ui_pin_to_top => '상단에 고정';
 
   @override
+  String get msg_select_all => '전체 선택';
+
+  @override
   String get ui_pinned_selected => '선택한 항목이 고정되었습니다';
 
   @override
@@ -3061,6 +3087,43 @@ class L10nKo extends L10n {
   @override
   String get log_lyric_scale_animation =>
       '단어별 가사 전환 애니메이션에 크기 조정 효과 추가, 동기화 문제 수정, 300ms 전환 시간 고정';
+
+  @override
+  String get log_quick_action_panel => '重新调整了顶部导航栏按钮，新增快捷操作页面，在浏览页可左滑弹出快捷操作面板';
+
+  @override
+  String get log_favorites => '新增了收藏夹，用户可以收藏本地或远程文件/文件夹收藏到快捷操作面板的收藏夹中';
+
+  @override
+  String get log_drawer_redesign => '重构了抽屉页，抽屉页更加简洁美观，持久化记住抽屉页所有展开/折叠状态，操作更加便捷';
+
+  @override
+  String get log_video_player_rotation => '视频播放器新增了顺时针旋转画面，新增缩放比例';
+
+  @override
+  String get log_category_reorder =>
+      '优化了分类页可长按类别图标拖动调整位置顺序，新增每行 3 列/4 列可选，现在支持重命名类别名称';
+
+  @override
+  String get log_compression_fix => '修复了压缩一些问题';
+
+  @override
+  String get log_progress_bar_redesign => '重新设计了进度条窗口样式';
+
+  @override
+  String get log_dual_pane_status_bar => '双窗口模式顶部新增状态栏，显示激活窗口指示器和剪贴板内容摘要';
+
+  @override
+  String get log_transfer_fixes => '修复传输进度条不更新、无法取消、远程列表空白、传输速度不显示等问题';
+
+  @override
+  String get log_drawer_font_consistency => '修复了抽屉页「设置」按钮字体与其他栏目不一致的问题';
+
+  @override
+  String get log_landscape_layout => '优化平板/车机横屏模式下的文件网格布局';
+
+  @override
+  String get log_progress_i18n => '进度条窗口新增完整的多语言翻译支持';
 
   @override
   String get msg_remember_choice => '이 선택을 기억하여 향후 작업에 적용';
@@ -3780,4 +3843,58 @@ class L10nKo extends L10n {
 
   @override
   String get msg_rotate_video => '비디오 회전';
+
+  @override
+  String get msg_aspect_fit => '화면에 맞춤';
+
+  @override
+  String get msg_aspect_fill => '늘려 채우기';
+
+  @override
+  String get msg_aspect_center => '가운데';
+
+  @override
+  String get msg_aspect_16_9 => '16:9';
+
+  @override
+  String get msg_aspect_4_3 => '4:3';
+
+  @override
+  String get drawer_tools => '도구';
+
+  @override
+  String get open_with_native => '이 앱으로 열기';
+
+  @override
+  String get open_with_external => '외부 앱으로 열기';
+
+  @override
+  String get open_once => '이번만';
+
+  @override
+  String get open_always => '항상';
+
+  @override
+  String get drawer_edit_connection => '편집';
+
+  @override
+  String get cat_system => '시스템';
+
+  @override
+  String get cat_storage_volume => '저장소';
+
+  @override
+  String get ui_columns_per_row => '행당 열 수';
+
+  @override
+  String get ui_3columns => '3열';
+
+  @override
+  String get ui_4columns => '4열';
+
+  @override
+  String get msge8b8e9b3 => '빠른 작업';
+
+  @override
+  String get msg04b7de53 => '자주 사용하는 기능에 빠르게 접근';
 }

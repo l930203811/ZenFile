@@ -134,6 +134,9 @@ class L10nZh extends L10n {
   String get msgc18fb099 => '解压成功，是否打开所在位置？';
 
   @override
+  String get msg_compress_open_location => '压缩成功，是否打开所在位置？';
+
+  @override
   String get msg4367e85a => '未找到可压缩的文件';
 
   @override
@@ -611,6 +614,23 @@ class L10nZh extends L10n {
   String get msgf437ace4 => '仅此文件夹';
 
   @override
+  String get msg551f98ba => '此目录不包含任何文件或子文件夹。';
+
+  @override
+  String get ui_favorites => '收藏夹';
+
+  @override
+  String get ui_new_favorite => '新建收藏';
+
+  @override
+  String get ui_favorite => '收藏';
+
+  @override
+  String msg_favorited(Object name) {
+    return '已收藏 $name';
+  }
+
+  @override
   String get msg4dfc167a => '启用此文件夹的自定义排序';
 
   @override
@@ -633,9 +653,6 @@ class L10nZh extends L10n {
 
   @override
   String get msge9691076 => '空文件夹';
-
-  @override
-  String get msg551f98ba => '此目录不包含任何文件或子文件夹。';
 
   @override
   String get msg17093362 => '取消操作';
@@ -1149,7 +1166,7 @@ class L10nZh extends L10n {
   String get msg2c8a394a => '浏览页';
 
   @override
-  String get msg2c3c5a35 => '分类图标形状';
+  String get msg2c3c5a35 => '图标形状';
 
   @override
   String get msg267fcd86 => '每3天';
@@ -2143,6 +2160,12 @@ class L10nZh extends L10n {
   String get msg9d69d7a0 => '正在移动文件...';
 
   @override
+  String get ui_transferring_files => '传输文件';
+
+  @override
+  String get ui_time_remaining => '剩下';
+
+  @override
   String get zenfile6 => 'ZenFile 自定义原生体验';
 
   @override
@@ -2167,7 +2190,7 @@ class L10nZh extends L10n {
   String get msg490ac572 => '未固定快捷方式。点击自定义添加。';
 
   @override
-  String get msg445a43cb => '拖动手柄 (=) 可重新排列首页图标。';
+  String get msg445a43cb => '长按图标拖动排列分类图标';
 
   @override
   String get msg944d5ecd => '添加文件夹/文件快捷方式';
@@ -2278,7 +2301,7 @@ class L10nZh extends L10n {
   String get msg6cbbf7d9 => '输入绝对路径...';
 
   @override
-  String get msgf13fc21c => '服务器与工具';
+  String get msgf13fc21c => '网络';
 
   @override
   String get msg41e625d1 => '添加远程连接';
@@ -2400,7 +2423,7 @@ class L10nZh extends L10n {
   String get cat_settings => '设置';
 
   @override
-  String get cat_storage => '存储';
+  String get cat_storage => '空间';
 
   @override
   String get cat_service => '服务';
@@ -2421,10 +2444,10 @@ class L10nZh extends L10n {
   String get cat_vault_desc => '安全存储';
 
   @override
-  String get cat_quick_categories => '快捷分类';
+  String get cat_quick_categories => '分类';
 
   @override
-  String get ui_nav => '导航';
+  String get ui_nav => '本地';
 
   @override
   String get ui_home => '主页';
@@ -2436,7 +2459,7 @@ class L10nZh extends L10n {
   String get ui_dark_mode => '深色模式';
 
   @override
-  String get ui_personalize_settings => '个性化和设置';
+  String get ui_personalize_settings => '设置';
 
   @override
   String get ui_compress => '压缩';
@@ -2746,6 +2769,9 @@ class L10nZh extends L10n {
   String get ui_pin_to_top => '置顶';
 
   @override
+  String get msg_select_all => '全选';
+
+  @override
   String get ui_pinned_selected => '已将所选项目置顶';
 
   @override
@@ -3033,6 +3059,43 @@ class L10nZh extends L10n {
 
   @override
   String get log_lyric_scale_animation => '逐字歌词过渡动画新增放大效果，修复同步问题，固定 300ms 过渡时长';
+
+  @override
+  String get log_quick_action_panel => '重新调整了顶部导航栏按钮，新增快捷操作页面，在浏览页可左滑弹出快捷操作面板';
+
+  @override
+  String get log_favorites => '新增了收藏夹，用户可以收藏本地或远程文件/文件夹收藏到快捷操作面板的收藏夹中';
+
+  @override
+  String get log_drawer_redesign => '重构了抽屉页，抽屉页更加简洁美观，持久化记住抽屉页所有展开/折叠状态，操作更加便捷';
+
+  @override
+  String get log_video_player_rotation => '视频播放器新增了顺时针旋转画面，新增缩放比例';
+
+  @override
+  String get log_category_reorder =>
+      '优化了分类页可长按类别图标拖动调整位置顺序，新增每行 3 列/4 列可选，现在支持重命名类别名称';
+
+  @override
+  String get log_compression_fix => '修复了压缩一些问题';
+
+  @override
+  String get log_progress_bar_redesign => '重新设计了进度条窗口样式';
+
+  @override
+  String get log_dual_pane_status_bar => '双窗口模式顶部新增状态栏，显示激活窗口指示器和剪贴板内容摘要';
+
+  @override
+  String get log_transfer_fixes => '修复传输进度条不更新、无法取消、远程列表空白、传输速度不显示等问题';
+
+  @override
+  String get log_drawer_font_consistency => '修复了抽屉页「设置」按钮字体与其他栏目不一致的问题';
+
+  @override
+  String get log_landscape_layout => '优化平板/车机横屏模式下的文件网格布局';
+
+  @override
+  String get log_progress_i18n => '进度条窗口新增完整的多语言翻译支持';
 
   @override
   String get msg_remember_choice => '记住此选择，后续操作默认使用';
@@ -3747,6 +3810,60 @@ class L10nZh extends L10n {
 
   @override
   String get msg_rotate_video => '旋转画面';
+
+  @override
+  String get msg_aspect_fit => '适应屏幕';
+
+  @override
+  String get msg_aspect_fill => '拉伸填充';
+
+  @override
+  String get msg_aspect_center => '居中';
+
+  @override
+  String get msg_aspect_16_9 => '16:9';
+
+  @override
+  String get msg_aspect_4_3 => '4:3';
+
+  @override
+  String get drawer_tools => '工具';
+
+  @override
+  String get open_with_native => '使用本应用打开';
+
+  @override
+  String get open_with_external => '使用外部系统选择器打开';
+
+  @override
+  String get open_once => '仅一次';
+
+  @override
+  String get open_always => '始终';
+
+  @override
+  String get drawer_edit_connection => '编辑';
+
+  @override
+  String get cat_system => '系统';
+
+  @override
+  String get cat_storage_volume => '存储';
+
+  @override
+  String get ui_columns_per_row => '每行显示';
+
+  @override
+  String get ui_3columns => '3列';
+
+  @override
+  String get ui_4columns => '4列';
+
+  @override
+  String get msge8b8e9b3 => '快捷操作';
+
+  @override
+  String get msg04b7de53 => '常用功能快捷入口';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -3877,6 +3994,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get msgc18fb099 => '解壓成功，是否開啟所在位置？';
+
+  @override
+  String get msg_compress_open_location => '壓縮成功，是否開啟所在位置？';
 
   @override
   String get msg4367e85a => '未找到可壓縮的檔案';
@@ -4356,6 +4476,23 @@ class L10nZhTw extends L10nZh {
   String get msgf437ace4 => '僅此資料夾';
 
   @override
+  String get msg551f98ba => '此目錄不包含任何檔案或子資料夾。';
+
+  @override
+  String get ui_favorites => '收藏夾';
+
+  @override
+  String get ui_new_favorite => '新增收藏';
+
+  @override
+  String get ui_favorite => '收藏';
+
+  @override
+  String msg_favorited(Object name) {
+    return '已收藏 $name';
+  }
+
+  @override
   String get msg4dfc167a => '啟用此資料夾的自定義排序';
 
   @override
@@ -4378,9 +4515,6 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get msge9691076 => '空資料夾';
-
-  @override
-  String get msg551f98ba => '此目錄不包含任何檔案或子資料夾。';
 
   @override
   String get msg17093362 => '取消操作';
@@ -4894,7 +5028,7 @@ class L10nZhTw extends L10nZh {
   String get msg2c8a394a => '瀏覽頁';
 
   @override
-  String get msg2c3c5a35 => '分類圖示形狀';
+  String get msg2c3c5a35 => '圖示形狀';
 
   @override
   String get msg267fcd86 => '每3天';
@@ -5889,6 +6023,12 @@ class L10nZhTw extends L10nZh {
   String get msg9d69d7a0 => '正在移動檔案...';
 
   @override
+  String get ui_transferring_files => '傳輸檔案';
+
+  @override
+  String get ui_time_remaining => '剩下';
+
+  @override
   String get zenfile6 => 'ZenFile 自定義原生體驗';
 
   @override
@@ -6024,7 +6164,7 @@ class L10nZhTw extends L10nZh {
   String get msg6cbbf7d9 => '輸入絕對路徑...';
 
   @override
-  String get msgf13fc21c => '伺服器與工具';
+  String get msgf13fc21c => '網路';
 
   @override
   String get msg41e625d1 => '新增遠端連線';
@@ -6146,7 +6286,7 @@ class L10nZhTw extends L10nZh {
   String get cat_settings => '設定';
 
   @override
-  String get cat_storage => '儲存';
+  String get cat_storage => '空間';
 
   @override
   String get cat_service => '服務';
@@ -6167,10 +6307,10 @@ class L10nZhTw extends L10nZh {
   String get cat_vault_desc => '安全儲存';
 
   @override
-  String get cat_quick_categories => '快捷分類';
+  String get cat_quick_categories => '分類';
 
   @override
-  String get ui_nav => '導航';
+  String get ui_nav => '本地';
 
   @override
   String get ui_home => '主頁';
@@ -6182,7 +6322,7 @@ class L10nZhTw extends L10nZh {
   String get ui_dark_mode => '深色模式';
 
   @override
-  String get ui_personalize_settings => '個性化和設定';
+  String get ui_personalize_settings => '設定';
 
   @override
   String get ui_compress => '壓縮';
@@ -6490,6 +6630,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_pin_to_top => '置頂';
+
+  @override
+  String get msg_select_all => '全選';
 
   @override
   String get ui_pinned_selected => '已將所選專案置頂';
@@ -7493,4 +7636,58 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get msg_rotate_video => '旋轉畫面';
+
+  @override
+  String get msg_aspect_fit => '符合螢幕';
+
+  @override
+  String get msg_aspect_fill => '拉伸填滿';
+
+  @override
+  String get msg_aspect_center => '置中';
+
+  @override
+  String get msg_aspect_16_9 => '16:9';
+
+  @override
+  String get msg_aspect_4_3 => '4:3';
+
+  @override
+  String get drawer_tools => '工具';
+
+  @override
+  String get open_with_native => '使用本應用程式開啟';
+
+  @override
+  String get open_with_external => '使用外部系統選擇器開啟';
+
+  @override
+  String get open_once => '僅一次';
+
+  @override
+  String get open_always => '始終';
+
+  @override
+  String get drawer_edit_connection => '編輯';
+
+  @override
+  String get cat_system => '系統';
+
+  @override
+  String get cat_storage_volume => '儲存';
+
+  @override
+  String get ui_columns_per_row => '每行顯示';
+
+  @override
+  String get ui_3columns => '3列';
+
+  @override
+  String get ui_4columns => '4列';
+
+  @override
+  String get msge8b8e9b3 => '快捷操作';
+
+  @override
+  String get msg04b7de53 => '常用功能快捷入口';
 }

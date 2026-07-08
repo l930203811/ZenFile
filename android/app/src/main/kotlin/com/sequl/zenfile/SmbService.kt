@@ -5,6 +5,8 @@ import com.hierynomus.msdtyp.AccessMask
 import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation
 import com.hierynomus.msfscc.fileinformation.FileStandardInformation
 import com.hierynomus.mssmb2.SMB2CreateDisposition
+import com.hierynomus.mssmb2.SMB2CreateOptions
+import com.hierynomus.mssmb2.SMB2ImpersonationLevel
 import com.hierynomus.mssmb2.SMB2ShareAccess
 import com.hierynomus.mssmb2.SMBApiException
 import com.hierynomus.smbj.SMBClient
@@ -14,8 +16,8 @@ import com.hierynomus.smbj.connection.Connection
 import com.hierynomus.smbj.session.Session
 import com.hierynomus.smbj.share.DiskShare
 import com.hierynomus.smbj.share.File
+import com.hierynomus.smbj.share.NamedPipe
 import com.hierynomus.smbj.share.PipeShare
-import com.hierynomus.smbj.share.Share
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -184,6 +186,7 @@ class SmbService {
             if (rpcResult.isNotEmpty()) {
                 return rpcResult
             }
+            Log.i("SmbService", "DCE/RPC returned empty, trying probing")
         } catch (e: Exception) {
             Log.w("SmbService", "DCE/RPC failed, falling back to probing: ${e.message}")
         }
@@ -202,97 +205,87 @@ class SmbService {
         try {
             val ipcShare = entry.session.connectShare("IPC$")
             try {
-                val pipeHandle = when (ipcShare) {
-                    is DiskShare -> ipcShare.openFile(
-                        "\\srvsvc",
-                        EnumSet.of(AccessMask.GENERIC_READ, AccessMask.GENERIC_WRITE),
-                        null,
-                        allShareAccess(),
-                        SMB2CreateDisposition.FILE_OPEN,
-                        null
-                    )
-                    is PipeShare -> {
-                        // smbj 0.13.0 PipeShare doesn't expose openFile.
-                        // Use reflection to extract the TreeConnect and wrap it in
-                        // a synthetic DiskShare for the IPC$ share, so we can send
-                        // SMB2 CREATE requests to open the \srvsvc named pipe.
+                // smbj 0.13.0: PipeShare 直接暴露 open() 方法返回 NamedPipe
+                // 不需要反射绕过（原反射代码有两处致命错误：
+                //   1. TreeConnect 包路径错误（在 share 包，非 session 包）
+                //   2. DiskShare 构造函数签名错误
+                // ）
+                val pipeShare = ipcShare as? PipeShare ?: run {
+                    if (ipcShare is DiskShare) {
+                        // 某些服务器会把 IPC$ 返回为 DiskShare，尝试用 openFile
+                        Log.i("SmbService", "IPC$ is DiskShare, trying openFile")
+                        val pipeHandle = ipcShare.openFile(
+                            "\\srvsvc",
+                            EnumSet.of(AccessMask.GENERIC_READ, AccessMask.GENERIC_WRITE),
+                            null,
+                            allShareAccess(),
+                            SMB2CreateDisposition.FILE_OPEN,
+                            null
+                        )
                         try {
-                            val treeConnectField = Share::class.java.getDeclaredField("treeConnect")
-                            treeConnectField.isAccessible = true
-                            val treeConnect = treeConnectField.get(ipcShare)
-                            val tcClass = Class.forName("com.hierynomus.smbj.session.TreeConnect")
-                            val diskShareCtor = DiskShare::class.java.getDeclaredConstructor(
-                                Session::class.java, tcClass, String::class.java
-                            )
-                            diskShareCtor.isAccessible = true
-                            (diskShareCtor.newInstance(entry.session, treeConnect, "IPC$") as DiskShare).openFile(
-                                "\\srvsvc",
-                                EnumSet.of(AccessMask.GENERIC_READ, AccessMask.GENERIC_WRITE),
-                                null,
-                                allShareAccess(),
-                                SMB2CreateDisposition.FILE_OPEN,
-                                null
-                            )
-                        } catch (reflectionError: Exception) {
-                            Log.w("SmbService", "Reflection to open IPC$ pipe failed: ${reflectionError.message}")
-                            return emptyList()
+                            val input = pipeHandle.inputStream
+                            val output = pipeHandle.outputStream
+                            return listSharesViaDcerpcStream(entry, input, output)
+                        } finally {
+                            try { pipeHandle.close() } catch (_: Exception) {}
                         }
-                    }
-                    else -> {
+                    } else {
                         Log.w("SmbService", "IPC$ is ${ipcShare.javaClass.simpleName}, cannot open pipe")
                         return emptyList()
                     }
                 }
 
+                // 使用 PipeShare.open 获取 NamedPipe
+                // 签名: open(name, impersonation, desiredAccess, fileAttributes, shareAccess, createDisposition, createOptions)
+                val namedPipe = pipeShare.open(
+                    "\\srvsvc",
+                    SMB2ImpersonationLevel.Impersonation,
+                    EnumSet.of(AccessMask.GENERIC_READ, AccessMask.GENERIC_WRITE),
+                    null,
+                    allShareAccess(),
+                    SMB2CreateDisposition.FILE_OPEN,
+                    EnumSet.noneOf(SMB2CreateOptions::class.java)
+                )
                 try {
-                    val input = pipeHandle.inputStream
-                    val output = pipeHandle.outputStream
-
-                    // 1. Send DCE/RPC Bind request
+                    // NamedPipe 没有 inputStream/outputStream，只有 read/write/transact
+                    // 使用 write + read 完成 DCE/RPC 通信
                     val bindRequest = createDcerpcBindRequest()
-                    output.write(bindRequest)
-                    output.flush()
+                    namedPipe.write(bindRequest)
 
-                    // 2. Read Bind Ack (with generous timeout)
-                    val bindAck = readDcerpcResponse(input, 5000)
+                    // 读取 bind ack（循环读取直到获取完整响应）
+                    val bindAck = readNamedPipeResponse(namedPipe, 5000)
                     if (bindAck == null || bindAck.size < 68) {
                         Log.w("SmbService", "RPC bind ack too short or null")
                         return emptyList()
                     }
-                    // Check packet type = 12 (bind_ack)
                     if (bindAck[2].toInt() and 0xFF != 12) {
                         Log.w("SmbService", "RPC unexpected response type: ${bindAck[2]}")
                         return emptyList()
                     }
-                    // Check result = 0 (acceptance) at offset 68-69 in most responses
                     if (!verifyBindAckResult(bindAck)) {
                         Log.w("SmbService", "RPC bind rejected by server")
                         return emptyList()
                     }
 
-                    // 3. Send NetShareEnumAll request (opnum 15)
+                    // 发送 NetShareEnumAll 请求
                     val serverName = "\\\\${entry.host}"
                     val enumRequest = createNetShareEnumAllRequest(serverName)
-                    output.write(enumRequest)
-                    output.flush()
+                    namedPipe.write(enumRequest)
 
-                    // 4. Read response (may be large)
-                    val response = readDcerpcResponse(input, 15000)
+                    // 读取响应
+                    val response = readNamedPipeResponse(namedPipe, 15000)
                     if (response == null || response.size < 24) {
                         Log.w("SmbService", "RPC enum response too short or null")
                         return emptyList()
                     }
-
-                    // Check packet type = 2 (response)
                     if (response[2].toInt() and 0xFF != 2) {
                         Log.w("SmbService", "RPC unexpected response type: ${response[2]}")
                         return emptyList()
                     }
 
-                    // 5. Parse share list from NDR-encoded response
                     return parseNetShareEnumAllResponse(response)
                 } finally {
-                    try { pipeHandle.close() } catch (_: Exception) {}
+                    try { namedPipe.close() } catch (_: Exception) {}
                 }
             } finally {
                 try { ipcShare.close() } catch (_: Exception) {}
@@ -301,6 +294,130 @@ class SmbService {
             Log.w("SmbService", "DCE/RPC enumeration via IPC$ failed: ${e.message}")
             return emptyList()
         }
+    }
+
+    /**
+     * 使用 InputStream/OutputStream 方式的 DCE/RPC 通信（DiskShare 路径）
+     */
+    private fun listSharesViaDcerpcStream(
+        entry: SmbSessionEntry,
+        input: java.io.InputStream,
+        output: java.io.OutputStream
+    ): List<Map<String, Any>> {
+        val bindRequest = createDcerpcBindRequest()
+        output.write(bindRequest)
+        output.flush()
+
+        val bindAck = readDcerpcResponse(input, 5000)
+        if (bindAck == null || bindAck.size < 68) {
+            Log.w("SmbService", "RPC bind ack too short or null")
+            return emptyList()
+        }
+        if (bindAck[2].toInt() and 0xFF != 12) {
+            Log.w("SmbService", "RPC unexpected response type: ${bindAck[2]}")
+            return emptyList()
+        }
+        if (!verifyBindAckResult(bindAck)) {
+            Log.w("SmbService", "RPC bind rejected by server")
+            return emptyList()
+        }
+
+        val serverName = "\\\\${entry.host}"
+        val enumRequest = createNetShareEnumAllRequest(serverName)
+        output.write(enumRequest)
+        output.flush()
+
+        val response = readDcerpcResponse(input, 15000)
+        if (response == null || response.size < 24) {
+            Log.w("SmbService", "RPC enum response too short or null")
+            return emptyList()
+        }
+        if (response[2].toInt() and 0xFF != 2) {
+            Log.w("SmbService", "RPC unexpected response type: ${response[2]}")
+            return emptyList()
+        }
+
+        return parseNetShareEnumAllResponse(response)
+    }
+
+    /**
+     * 从 NamedPipe 读取 DCE/RPC 响应（支持多分片）
+     * NamedPipe 只有 read(byte[]) 方法，没有 InputStream
+     */
+    private fun readNamedPipeResponse(pipe: NamedPipe, timeoutMs: Int): ByteArray? {
+        val bos = ByteArrayOutputStream()
+        val startTime = System.currentTimeMillis()
+
+        // 读取第一个分片
+        val header = ByteArray(16)
+        val headerRead = readNamedPipeFully(pipe, header, 16, startTime, timeoutMs)
+        if (headerRead < 16) return null
+
+        val fragLen = ((header[9].toInt() and 0xFF) shl 8) or (header[8].toInt() and 0xFF)
+        if (fragLen < 16 || fragLen > 65536) {
+            Log.w("SmbService", "RPC invalid frag length: $fragLen")
+            return null
+        }
+
+        val body = ByteArray(fragLen - 16)
+        val bodyRead = readNamedPipeFully(pipe, body, fragLen - 16, startTime, timeoutMs)
+        if (bodyRead < fragLen - 16) return null
+
+        bos.write(header, 0, 16)
+        bos.write(body, 0, bodyRead)
+
+        val flags = header[3].toInt() and 0xFF
+        var isLast = (flags and 0x02) != 0
+
+        while (!isLast) {
+            if (System.currentTimeMillis() - startTime > timeoutMs) {
+                Log.w("SmbService", "RPC multi-fragment read timeout")
+                break
+            }
+            val nextHeader = ByteArray(16)
+            val nextHeaderRead = readNamedPipeFully(pipe, nextHeader, 16, startTime, timeoutMs)
+            if (nextHeaderRead < 16) break
+
+            val nextFragLen = ((nextHeader[9].toInt() and 0xFF) shl 8) or (nextHeader[8].toInt() and 0xFF)
+            if (nextFragLen < 16 || nextFragLen > 65536) break
+
+            val nextBody = ByteArray(nextFragLen - 16)
+            val nextBodyRead = readNamedPipeFully(pipe, nextBody, nextFragLen - 16, startTime, timeoutMs)
+            if (nextBodyRead < nextFragLen - 16) break
+
+            bos.write(nextBody, 0, nextBodyRead)
+
+            val nextFlags = nextHeader[3].toInt() and 0xFF
+            if ((nextFlags and 0x02) != 0) isLast = true
+        }
+
+        return bos.toByteArray()
+    }
+
+    /**
+     * 从 NamedPipe 读取精确数量的字节
+     */
+    private fun readNamedPipeFully(pipe: NamedPipe, buf: ByteArray, len: Int, startTime: Long, timeoutMs: Int): Int {
+        var totalRead = 0
+        while (totalRead < len) {
+            if (System.currentTimeMillis() - startTime > timeoutMs) {
+                Log.w("SmbService", "RPC read timeout: $totalRead/$len bytes")
+                return totalRead
+            }
+            val toRead = len - totalRead
+            val chunk = if (toRead <= 8192) ByteArray(toRead) else ByteArray(8192)
+            val read = pipe.read(chunk)
+            if (read <= 0) {
+                if (read < 0) {
+                    Log.w("SmbService", "RPC stream EOF: $totalRead/$len bytes")
+                    return totalRead
+                }
+                continue
+            }
+            System.arraycopy(chunk, 0, buf, totalRead, read)
+            totalRead += read
+        }
+        return totalRead
     }
 
     /**
@@ -681,6 +798,9 @@ class SmbService {
             "root", "usb", "USB", "usb1", "USB1",
             "external", "External", "external1", "External1",
             "media", "share", "shares", "Sharing", "sharing",
+            // Additional common share names (media library, backups, sync, etc.)
+            "film", "films", "audio", "picture", "image",
+            "backups", "sync", "workspace", "media library",
         )
 
         // Also try the username as a share name (common on Linux/Samba)
@@ -741,15 +861,16 @@ class SmbService {
                             name to 0
                         }
                     } catch (e: Exception) {
+                        Log.w("SmbService", "Probing share '$name' failed: ${e.message}")
                         name to 0
                     }
                 }
             }
 
             val items = mutableListOf<Map<String, Any>>()
-            for (future in futures) {
+            for ((future, name) in futures.zip(uniqueNames)) {
                 try {
-                    val (name, status) = future.get(3, TimeUnit.SECONDS)
+                    val (_, status) = future.get(10, TimeUnit.SECONDS)
                     if (status > 0) {
                         if (status == 1) {
                             Log.i("SmbService", "Found share: $name (accessible)")
@@ -762,8 +883,11 @@ class SmbService {
                             "modified" to 0L
                         ))
                     }
-                } catch (_: Exception) {
-                    // Timeout or error for this particular share — skip it
+                } catch (e: java.util.concurrent.TimeoutException) {
+                    Log.w("SmbService", "Probing share '$name' timed out after 10s")
+                    future.cancel(true)
+                } catch (e: Exception) {
+                    Log.w("SmbService", "Probing share '$name' failed: ${e.message}")
                     future.cancel(true)
                 }
             }

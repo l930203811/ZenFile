@@ -32,6 +32,7 @@ import 'package:on_audio_query/on_audio_query.dart';
 import '../ui/widgets/open_with_sheet.dart';
 import '../ui/widgets/conflict_dialog.dart';
 import '../ui/widgets/file_action_dialogs.dart';
+import '../ui/widgets/file_operation_progress_dialog.dart';
 import '../services/background_archive_service.dart';
 import '../services/pin_service.dart';
 import '../models/network_connection_model.dart';
@@ -140,6 +141,8 @@ class FileManagerProvider extends ChangeNotifier {
     _hideNavLabels = PreferencesService.getHideNavLabels();
     _trailingInfoType = PreferencesService.getTrailingInfoType();
     _categoryIconShape = PreferencesService.getCategoryIconShape();
+    _categoriesGridColumns = PreferencesService.getCategoriesGridColumns();
+    _favorites = PreferencesService.getFavorites();
 
     // One-time migration: reset PDF (and other documents) default open action to 'native' if it was set to 'external'
     if (!PreferencesService.getPdfResetDone()) {
@@ -172,7 +175,9 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
-  final ValueNotifier<FileOperationProgress?> progressNotifier = ValueNotifier<FileOperationProgress?>(null);
+  /// 自定义进度通知器：后台模式下忽略所有非 null 赋值，避免对话框重新弹出。
+  /// 设置为 null 始终生效（用于关闭对话框）。
+  final _BackgroundAwareProgressNotifier progressNotifier = _BackgroundAwareProgressNotifier();
   bool _isOperationCancelled = false;
   bool _isPasting = false;
   bool get isPasting => _isPasting;
@@ -186,10 +191,49 @@ class FileManagerProvider extends ChangeNotifier {
 
   void cancelOperation() {
     _isOperationCancelled = true;
+    // 调用当前活跃客户端的 cancel() 中断进行中的传输
+    _activeTransferClient?.cancel();
   }
+
+  /// 切换到后台运行：关闭进度对话框，传输继续在后台执行。
+  /// 设置 backgroundMode = true 后，进度通知器会忽略所有非 null 赋值，
+  /// 传输 Future 不受影响，仍在后台运行。设置 null 会正常生效以关闭对话框。
+  void runInBackground() {
+    progressNotifier.backgroundMode = true;
+    progressNotifier.value = null;
+  }
+
+  RemoteClient? _activeTransferClient;
 
   List<CustomShortcutModel> _pinnedFolderShortcuts = [];
   List<CustomShortcutModel> get pinnedFolderShortcuts => _pinnedFolderShortcuts;
+
+  List<Map<String, dynamic>> _favorites = [];
+  List<Map<String, dynamic>> get favorites => _favorites;
+
+  void addFavorite(String path, String name, bool isDirectory, {bool isRemote = false, String? connectionId}) {
+    if (_favorites.any((e) => e['path'] == path && (e['isRemote'] ?? false) == isRemote)) return;
+    _favorites.add({
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'path': path,
+      'name': name,
+      'isDirectory': isDirectory,
+      'isRemote': isRemote,
+      if (isRemote && connectionId != null) 'connectionId': connectionId,
+    });
+    PreferencesService.saveFavorites(_favorites);
+    notifyListeners();
+  }
+
+  void removeFavorite(String path) {
+    _favorites.removeWhere((e) => e['path'] == path);
+    PreferencesService.saveFavorites(_favorites);
+    notifyListeners();
+  }
+
+  bool isFavorite(String path) {
+    return _favorites.any((e) => e['path'] == path);
+  }
 
   void addPinnedFolderShortcut(String path, String label) {
     if (_pinnedFolderShortcuts.any((e) => e.path == path)) return;
@@ -799,7 +843,7 @@ class FileManagerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool _skipOpenWithDialog = true;
+  bool _skipOpenWithDialog = false;
   bool get skipOpenWithDialog => _skipOpenWithDialog;
 
   void toggleSkipOpenWithDialog() {
@@ -917,6 +961,16 @@ class FileManagerProvider extends ChangeNotifier {
     if (_categoryIconShape == shape) return;
     _categoryIconShape = shape;
     PreferencesService.saveCategoryIconShape(shape);
+    notifyListeners();
+  }
+
+  int _categoriesGridColumns = 3;
+  int get categoriesGridColumns => _categoriesGridColumns;
+
+  void setCategoriesGridColumns(int columns) {
+    if (_categoriesGridColumns == columns) return;
+    _categoriesGridColumns = columns;
+    PreferencesService.saveCategoriesGridColumns(columns);
     notifyListeners();
   }
 
@@ -1997,6 +2051,23 @@ class FileManagerProvider extends ChangeNotifier {
     await _pasteFileToTab(context, targetTabIndex, clearAfterPaste: clearAfterPaste);
   }
 
+  /// 显示文件传输进度对话框。设置一个初始 progress 值，避免对话框在首帧因
+  /// progressNotifier 为 null 而立即自关闭；传输结束时各 _paste 方法的
+  /// finally 会将 progressNotifier 置为 null，对话框随即自动关闭。
+  void _showTransferProgressDialog(BuildContext context) {
+    progressNotifier.value = FileOperationProgress(
+      totalFiles: 1,
+      currentFileIndex: 0,
+      currentFileName: 'Preparing...',
+      percentage: 0.0,
+      speedMBs: 0.0,
+      eta: Duration.zero,
+      totalBytes: 1,
+      bytesProcessed: 0,
+    );
+    unawaited(FileOperationProgressDialog.show(context, this));
+  }
+
   Future<void> _pasteFileToTab(BuildContext context, int targetTabIndex, {bool clearAfterPaste = true}) async {
     if (_clipboardPaths.isEmpty && !_isRemoteClipboard) return;
     if (targetTabIndex < 0 || targetTabIndex >= _tabs.length) return;
@@ -2013,8 +2084,10 @@ class FileManagerProvider extends ChangeNotifier {
       if (_isRemoteClipboard) {
         // 远程剪贴板粘贴到远程目录：先下载到本地临时目录，再上传到目标远程
         if (currIsRemote && activeTab.remoteClient != null) {
+          _showTransferProgressDialog(context);
           await _pasteRemoteToRemote(context, clearAfterPaste);
         } else {
+          _showTransferProgressDialog(context);
           await _pasteFromRemoteToLocal(context, clearAfterPaste);
         }
         return;
@@ -2022,12 +2095,16 @@ class FileManagerProvider extends ChangeNotifier {
 
       // 本地剪贴板粘贴到远程目录
       if (currIsRemote && activeTab.remoteClient != null) {
+        _showTransferProgressDialog(context);
         await _pasteLocalToRemote(context, clearAfterPaste);
         return;
       }
 
+      progressNotifier.backgroundMode = false;
       _isOperationCancelled = false;
+      _isPasting = true;
       activeTab.isLoading = true;
+      _showTransferProgressDialog(context);
       notifyListeners();
 
     final useRootMode = activeTab.useRootMode;
@@ -2062,6 +2139,10 @@ class FileManagerProvider extends ChangeNotifier {
             ),
           );
         }
+      } finally {
+        // 清理进度对话框和状态
+        progressNotifier.value = null;
+        _isPasting = false;
       }
       if (clearAfterPaste) {
         clearClipboard();
@@ -2428,6 +2509,7 @@ class FileManagerProvider extends ChangeNotifier {
   Future<void> _pasteFromRemoteToLocal(BuildContext context, bool clearAfterPaste) async {
     final conn = _remoteClipboardConnection;
     if (conn == null) {
+      progressNotifier.value = null;
       return;
     }
 
@@ -2456,6 +2538,8 @@ class FileManagerProvider extends ChangeNotifier {
       return;
     }
 
+    _activeTransferClient = client;
+    progressNotifier.backgroundMode = false;
     _isOperationCancelled = false;
     _isPasting = true;
     activeTab.isLoading = true;
@@ -2493,17 +2577,31 @@ class FileManagerProvider extends ChangeNotifier {
     try {
       final totalTopLevel = _remoteClipboardItems.length;
 
-      // Pre-count total files including folder contents for accurate progress
+      // Pre-count total files and estimate total bytes for accurate progress
       int totalFileCount = 0;
+      int totalBytesAll = 0;
+      int topLevelFileBytesSum = 0;
+      int topLevelFileCount = 0;
+      int directoryFileCount = 0;
       for (final item in _remoteClipboardItems) {
         if (item.isDirectory) {
-          totalFileCount += await _countRemoteFiles(client, item.path);
+          final dirCount = await _countRemoteFiles(client, item.path);
+          totalFileCount += dirCount;
+          directoryFileCount += dirCount;
         } else {
           totalFileCount += 1;
+          topLevelFileBytesSum += item.size;
+          topLevelFileCount++;
         }
       }
       // Guard against zero
       if (totalFileCount == 0) totalFileCount = totalTopLevel;
+
+      final int averageFileSize = (topLevelFileCount > 0)
+          ? (topLevelFileBytesSum / topLevelFileCount).round()
+          : 1024 * 1024;
+      totalBytesAll = topLevelFileBytesSum + directoryFileCount * averageFileSize;
+      if (totalBytesAll <= 0) totalBytesAll = 1;
 
       progressNotifier.value = FileOperationProgress(
         totalFiles: totalFileCount,
@@ -2512,12 +2610,14 @@ class FileManagerProvider extends ChangeNotifier {
         percentage: 0.0,
         speedMBs: 0.0,
         eta: Duration.zero,
-        totalBytes: totalFileCount,
+        totalBytes: totalBytesAll,
         bytesProcessed: 0,
       );
 
       final targetPath = currentPath;
       int processedFileCount = 0;
+      int bytesDone = 0;
+      int previousFilesBytes = 0;
       final stopwatch = Stopwatch()..start();
 
       for (int i = 0; i < _remoteClipboardItems.length; i++) {
@@ -2530,57 +2630,79 @@ class FileManagerProvider extends ChangeNotifier {
 
         if (remoteItem.isDirectory) {
           // For folders, track progress per-file inside the directory
+          final dirStartFileCount = processedFileCount;
           await _downloadRemoteDirectory(
             client,
             remoteItem.path,
             destPath,
             onFileStart: (fileName) {
               processedFileCount++;
+              bytesDone = previousFilesBytes + ((processedFileCount - dirStartFileCount) * averageFileSize).round();
               final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
-              final speed = elapsedSeconds > 0
-                  ? (processedFileCount / elapsedSeconds)
+              final speedMBs = elapsedSeconds > 0 && totalBytesAll > 0
+                  ? (bytesDone / (1024 * 1024)) / elapsedSeconds
                   : 0.0;
-              final remaining = totalFileCount - processedFileCount;
-              final etaSeconds = speed > 0 ? remaining / speed : 0.0;
+              final remainingBytes = totalBytesAll - bytesDone;
+              final etaSeconds = speedMBs > 0 ? (remainingBytes / (1024 * 1024)) / speedMBs : 0.0;
 
               progressNotifier.value = FileOperationProgress(
                 totalFiles: totalFileCount,
                 currentFileIndex: processedFileCount,
                 currentFileName: fileName,
                 percentage: processedFileCount / totalFileCount,
-                speedMBs: 0.0,
+                speedMBs: speedMBs,
                 eta: Duration(seconds: etaSeconds.round()),
-                totalBytes: totalFileCount,
-                bytesProcessed: processedFileCount,
+                totalBytes: totalBytesAll,
+                bytesProcessed: bytesDone,
               );
             },
           );
+          final dirFileCount = processedFileCount - dirStartFileCount;
+          previousFilesBytes += dirFileCount * averageFileSize;
+          bytesDone = previousFilesBytes;
         } else {
           // For single files, show byte-level progress within this file
+          final fileSize = remoteItem.size > 0 ? remoteItem.size : averageFileSize;
+
+          bytesDone = previousFilesBytes;
+          final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
+          final speedMBs = elapsedSeconds > 0 && totalBytesAll > 0
+              ? (bytesDone / (1024 * 1024)) / elapsedSeconds
+              : 0.0;
           progressNotifier.value = FileOperationProgress(
             totalFiles: totalFileCount,
             currentFileIndex: processedFileCount + 1,
             currentFileName: remoteItem.name,
             percentage: processedFileCount / totalFileCount,
-            speedMBs: 0.0,
+            speedMBs: speedMBs,
             eta: Duration.zero,
-            totalBytes: totalFileCount,
-            bytesProcessed: processedFileCount,
+            totalBytes: totalBytesAll,
+            bytesProcessed: bytesDone,
           );
 
           await client.downloadFile(remoteItem.path, destPath, (prog) {
+            bytesDone = previousFilesBytes + (fileSize * prog).round();
+            final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
+            final speedMBs = elapsedSeconds > 0 && totalBytesAll > 0
+                ? (bytesDone / (1024 * 1024)) / elapsedSeconds
+                : 0.0;
+            final remainingBytes = totalBytesAll - bytesDone;
+            final etaSeconds = speedMBs > 0 ? (remainingBytes / (1024 * 1024)) / speedMBs : 0.0;
+
             final currentProcessed = processedFileCount + prog;
             progressNotifier.value = FileOperationProgress(
               totalFiles: totalFileCount,
               currentFileIndex: processedFileCount + 1,
               currentFileName: remoteItem.name,
               percentage: currentProcessed / totalFileCount,
-              speedMBs: 0.0,
-              eta: Duration.zero,
-              totalBytes: totalFileCount,
-              bytesProcessed: currentProcessed.round(),
+              speedMBs: speedMBs,
+              eta: Duration(seconds: etaSeconds.round()),
+              totalBytes: totalBytesAll,
+              bytesProcessed: bytesDone,
             );
           });
+          previousFilesBytes += fileSize;
+          bytesDone = previousFilesBytes;
           processedFileCount++;
         }
 
@@ -2605,6 +2727,7 @@ class FileManagerProvider extends ChangeNotifier {
         );
       }
     } finally {
+      _activeTransferClient = null;
       try {
         await client.disconnect();
       } catch (_) {}
@@ -2637,8 +2760,15 @@ class FileManagerProvider extends ChangeNotifier {
 
   Future<void> _pasteLocalToRemote(BuildContext context, bool clearAfterPaste) async {
     final client = activeTab.remoteClient;
-    if (client == null) return;
+    if (client == null) {
+      progressNotifier.value = null;
+      return;
+    }
 
+    _activeTransferClient = client;
+    // 共享客户端（activeTab.remoteClient）可能残留上次取消的标志，传输前重置
+    client.resetCancel();
+    progressNotifier.backgroundMode = false;
     _isOperationCancelled = false;
     _isPasting = true;
     activeTab.isLoading = true;
@@ -2647,14 +2777,38 @@ class FileManagerProvider extends ChangeNotifier {
     try {
       final totalTopLevel = _clipboardPaths.length;
 
-      // Pre-count total files including folder contents for accurate progress
+      // Pre-count total files and estimate total bytes for accurate progress
       int totalFileCount = 0;
+      int totalBytesAll = 0;
+      int topLevelFileBytesSum = 0;
+      int topLevelFileCount = 0;
+      int directoryFileCount = 0;
       for (final srcPath in _clipboardPaths) {
-        totalFileCount += _countLocalFiles(srcPath);
+        final entityType = FileSystemEntity.typeSync(srcPath);
+        if (entityType == FileSystemEntityType.directory) {
+          final dirCount = _countLocalFiles(srcPath);
+          totalFileCount += dirCount;
+          directoryFileCount += dirCount;
+        } else if (entityType == FileSystemEntityType.file) {
+          totalFileCount += 1;
+          try {
+            topLevelFileBytesSum += File(srcPath).lengthSync();
+          } catch (_) {}
+          topLevelFileCount++;
+        }
       }
       if (totalFileCount == 0) totalFileCount = totalTopLevel;
 
+      final int averageFileSize = (topLevelFileCount > 0)
+          ? (topLevelFileBytesSum / topLevelFileCount).round()
+          : 1024 * 1024;
+      totalBytesAll = topLevelFileBytesSum + directoryFileCount * averageFileSize;
+      if (totalBytesAll <= 0) totalBytesAll = 1;
+
       int processedFileCount = 0;
+      int bytesDone = 0;
+      int previousFilesBytes = 0;
+      final stopwatch = Stopwatch()..start();
       ConflictResult? cachedResolution;
       for (int i = 0; i < _clipboardPaths.length; i++) {
         if (_isOperationCancelled) throw Exception('Cancelled');
@@ -2705,49 +2859,84 @@ class FileManagerProvider extends ChangeNotifier {
         }
 
         if (isDir) {
+          final dirStartFileCount = processedFileCount;
           await _uploadLocalDirectory(
             client,
             srcPath,
             destPath,
             onFileStart: (fileName) {
               processedFileCount++;
+              bytesDone = previousFilesBytes + ((processedFileCount - dirStartFileCount) * averageFileSize).round();
+              final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
+              final speedMBs = elapsedSeconds > 0 && totalBytesAll > 0
+                  ? (bytesDone / (1024 * 1024)) / elapsedSeconds
+                  : 0.0;
+              final remainingBytes = totalBytesAll - bytesDone;
+              final etaSeconds = speedMBs > 0 ? (remainingBytes / (1024 * 1024)) / speedMBs : 0.0;
+
               progressNotifier.value = FileOperationProgress(
                 totalFiles: totalFileCount,
                 currentFileIndex: processedFileCount,
                 currentFileName: fileName,
                 percentage: processedFileCount / totalFileCount,
-                speedMBs: 0.0,
-                eta: Duration.zero,
-                totalBytes: totalFileCount,
-                bytesProcessed: processedFileCount,
+                speedMBs: speedMBs,
+                eta: Duration(seconds: etaSeconds.round()),
+                totalBytes: totalBytesAll,
+                bytesProcessed: bytesDone,
               );
             },
           );
+          final dirFileCount = processedFileCount - dirStartFileCount;
+          previousFilesBytes += dirFileCount * averageFileSize;
+          bytesDone = previousFilesBytes;
         } else {
+          int fileSize;
+          try {
+            fileSize = File(srcPath).lengthSync();
+          } catch (_) {
+            fileSize = averageFileSize;
+          }
+          if (fileSize <= 0) fileSize = averageFileSize;
+
+          bytesDone = previousFilesBytes;
+          final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
+          final speedMBs = elapsedSeconds > 0 && totalBytesAll > 0
+              ? (bytesDone / (1024 * 1024)) / elapsedSeconds
+              : 0.0;
           progressNotifier.value = FileOperationProgress(
             totalFiles: totalFileCount,
             currentFileIndex: processedFileCount + 1,
             currentFileName: name,
             percentage: processedFileCount / totalFileCount,
-            speedMBs: 0.0,
+            speedMBs: speedMBs,
             eta: Duration.zero,
-            totalBytes: totalFileCount,
-            bytesProcessed: processedFileCount,
+            totalBytes: totalBytesAll,
+            bytesProcessed: bytesDone,
           );
 
           await client.uploadFile(srcPath, destPath, (prog) {
+            bytesDone = previousFilesBytes + (fileSize * prog).round();
+            final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
+            final speedMBs = elapsedSeconds > 0 && totalBytesAll > 0
+                ? (bytesDone / (1024 * 1024)) / elapsedSeconds
+                : 0.0;
+            final remainingBytes = totalBytesAll - bytesDone;
+            final etaSeconds = speedMBs > 0 ? (remainingBytes / (1024 * 1024)) / speedMBs : 0.0;
+
             final currentProcessed = processedFileCount + prog;
             progressNotifier.value = FileOperationProgress(
               totalFiles: totalFileCount,
               currentFileIndex: processedFileCount + 1,
               currentFileName: name,
               percentage: currentProcessed / totalFileCount,
-              speedMBs: 0.0,
-              eta: Duration.zero,
-              totalBytes: totalFileCount,
-              bytesProcessed: currentProcessed.round(),
+              speedMBs: speedMBs,
+              eta: Duration(seconds: etaSeconds.round()),
+              totalBytes: totalBytesAll,
+              bytesProcessed: bytesDone,
             );
           });
+          previousFilesBytes += fileSize;
+          bytesDone = previousFilesBytes;
           processedFileCount++;
         }
 
@@ -2776,6 +2965,7 @@ class FileManagerProvider extends ChangeNotifier {
         );
       }
     } finally {
+      _activeTransferClient = null;
       progressNotifier.value = null;
       if (clearAfterPaste) clearClipboard();
       await loadDirectory(currentPath, showLoading: false, clearCache: true);
@@ -2798,8 +2988,12 @@ class FileManagerProvider extends ChangeNotifier {
   Future<void> _pasteRemoteToRemote(BuildContext context, bool clearAfterPaste) async {
     final sourceClient = await _createRemoteClient(_remoteClipboardConnection!);
     final targetClient = activeTab.remoteClient;
-    if (sourceClient == null || targetClient == null) return;
+    if (sourceClient == null || targetClient == null) {
+      progressNotifier.value = null;
+      return;
+    }
 
+    progressNotifier.backgroundMode = false;
     _isOperationCancelled = false;
     _isPasting = true;
     activeTab.isLoading = true;
@@ -2812,19 +3006,36 @@ class FileManagerProvider extends ChangeNotifier {
       await sourceClient.connect();
       final totalTopLevel = _remoteClipboardItems.length;
 
-      // Pre-count total files for progress tracking
+      // Pre-count total files and estimate total bytes for progress tracking
       int totalFileCount = 0;
+      int totalBytesAll = 0;
+      int topLevelFileBytesSum = 0;
+      int topLevelFileCount = 0;
+      int directoryFileCount = 0;
       for (final item in _remoteClipboardItems) {
         if (item.isDirectory) {
-          totalFileCount += await _countRemoteFiles(sourceClient, item.path);
+          final dirCount = await _countRemoteFiles(sourceClient, item.path);
+          totalFileCount += dirCount;
+          directoryFileCount += dirCount;
         } else {
           totalFileCount += 1;
+          topLevelFileBytesSum += item.size;
+          topLevelFileCount++;
         }
       }
       if (totalFileCount == 0) totalFileCount = totalTopLevel;
 
+      final int averageFileSize = (topLevelFileCount > 0)
+          ? (topLevelFileBytesSum / topLevelFileCount).round()
+          : 1024 * 1024;
+      totalBytesAll = (topLevelFileBytesSum + directoryFileCount * averageFileSize) * 2;
+      if (totalBytesAll <= 0) totalBytesAll = 1;
+
       int processedFileCount = 0;
+      int bytesDone = 0;
+      int previousFilesBytes = 0;
       ConflictResult? cachedResolution;
+      final stopwatch = Stopwatch()..start();
 
       for (int i = 0; i < _remoteClipboardItems.length; i++) {
         if (_isOperationCancelled) throw Exception('Cancelled');
@@ -2873,67 +3084,109 @@ class FileManagerProvider extends ChangeNotifier {
 
         // Step 1: Download from source remote to local temp
         if (remoteItem.isDirectory) {
+          final dirStartFileCount = processedFileCount;
           await _downloadRemoteDirectory(
             sourceClient,
             remoteItem.path,
             tempPath,
             onFileStart: (fileName) {
               processedFileCount++;
+              bytesDone = previousFilesBytes + ((processedFileCount - dirStartFileCount) * averageFileSize).round();
+              final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
+              final speedMBs = elapsedSeconds > 0 && totalBytesAll > 0
+                  ? (bytesDone / (1024 * 1024)) / elapsedSeconds
+                  : 0.0;
+              final remainingBytes = totalBytesAll - bytesDone;
+              final etaSeconds = speedMBs > 0 ? (remainingBytes / (1024 * 1024)) / speedMBs : 0.0;
+
               progressNotifier.value = FileOperationProgress(
                 totalFiles: totalFileCount,
                 currentFileIndex: processedFileCount,
                 currentFileName: fileName,
-                percentage: (processedFileCount / totalFileCount) * 0.5, // download is 50%
-                speedMBs: 0.0,
-                eta: Duration.zero,
-                totalBytes: totalFileCount,
-                bytesProcessed: processedFileCount,
+                percentage: (processedFileCount / totalFileCount) * 0.5,
+                speedMBs: speedMBs,
+                eta: Duration(seconds: etaSeconds.round()),
+                totalBytes: totalBytesAll,
+                bytesProcessed: bytesDone,
               );
             },
           );
+          final dirFileCount = processedFileCount - dirStartFileCount;
+          previousFilesBytes += dirFileCount * averageFileSize;
+          bytesDone = previousFilesBytes;
           // Step 2: Upload from local temp to target remote
+          final uploadStartCount = processedFileCount;
           await _uploadLocalDirectory(
             targetClient,
             tempPath,
             destPath,
             onFileStart: (fileName) {
+              processedFileCount++;
+              bytesDone = previousFilesBytes + ((processedFileCount - uploadStartCount) * averageFileSize).round();
+              final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
+              final speedMBs = elapsedSeconds > 0 && totalBytesAll > 0
+                  ? (bytesDone / (1024 * 1024)) / elapsedSeconds
+                  : 0.0;
+              final remainingBytes = totalBytesAll - bytesDone;
+              final etaSeconds = speedMBs > 0 ? (remainingBytes / (1024 * 1024)) / speedMBs : 0.0;
+
               progressNotifier.value = FileOperationProgress(
                 totalFiles: totalFileCount,
                 currentFileIndex: processedFileCount,
                 currentFileName: fileName,
-                percentage: 0.5 + (processedFileCount / totalFileCount) * 0.5, // upload is 50%
-                speedMBs: 0.0,
-                eta: Duration.zero,
-                totalBytes: totalFileCount,
-                bytesProcessed: processedFileCount,
+                percentage: 0.5 + (processedFileCount / totalFileCount) * 0.5,
+                speedMBs: speedMBs,
+                eta: Duration(seconds: etaSeconds.round()),
+                totalBytes: totalBytesAll,
+                bytesProcessed: bytesDone,
               );
             },
           );
+          previousFilesBytes += dirFileCount * averageFileSize;
+          bytesDone = previousFilesBytes;
         } else {
+          final fileSize = remoteItem.size > 0 ? remoteItem.size : averageFileSize;
           await sourceClient.downloadFile(remoteItem.path, tempPath, (prog) {
+            bytesDone = previousFilesBytes + (fileSize * prog).round();
+            final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
+            final speedMBs = elapsedSeconds > 0 && totalBytesAll > 0
+                ? (bytesDone / (1024 * 1024)) / elapsedSeconds
+                : 0.0;
+            final remainingBytes = totalBytesAll - bytesDone;
+            final etaSeconds = speedMBs > 0 ? (remainingBytes / (1024 * 1024)) / speedMBs : 0.0;
+
             progressNotifier.value = FileOperationProgress(
               totalFiles: totalFileCount,
               currentFileIndex: processedFileCount + 1,
               currentFileName: remoteItem.name,
               percentage: ((processedFileCount + prog) / totalFileCount) * 0.5,
-              speedMBs: 0.0,
-              eta: Duration.zero,
-              totalBytes: totalFileCount,
-              bytesProcessed: processedFileCount,
+              speedMBs: speedMBs,
+              eta: Duration(seconds: etaSeconds.round()),
+              totalBytes: totalBytesAll,
+              bytesProcessed: bytesDone,
             );
           });
           await targetClient.uploadFile(tempPath, destPath, (prog) {
+            bytesDone = previousFilesBytes + fileSize + (fileSize * prog).round();
+            final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
+            final speedMBs = elapsedSeconds > 0 && totalBytesAll > 0
+                ? (bytesDone / (1024 * 1024)) / elapsedSeconds
+                : 0.0;
+            final remainingBytes = totalBytesAll - bytesDone;
+            final etaSeconds = speedMBs > 0 ? (remainingBytes / (1024 * 1024)) / speedMBs : 0.0;
+
             progressNotifier.value = FileOperationProgress(
               totalFiles: totalFileCount,
               currentFileIndex: processedFileCount + 1,
               currentFileName: remoteItem.name,
               percentage: 0.5 + ((processedFileCount + prog) / totalFileCount) * 0.5,
-              speedMBs: 0.0,
-              eta: Duration.zero,
-              totalBytes: totalFileCount,
-              bytesProcessed: processedFileCount,
+              speedMBs: speedMBs,
+              eta: Duration(seconds: etaSeconds.round()),
+              totalBytes: totalBytesAll,
+              bytesProcessed: bytesDone,
             );
           });
+          previousFilesBytes += fileSize * 2;
           processedFileCount++;
         }
 
@@ -3390,7 +3643,6 @@ class FileManagerProvider extends ChangeNotifier {
     }
 
     selectedPaths.clear();
-    activeTab.isLoading = true;
     notifyListeners();
 
     if (context != null && context.mounted) {
@@ -3416,6 +3668,10 @@ class FileManagerProvider extends ChangeNotifier {
         },
         provider: this,
       );
+      // startCompression 启动 Isolate 后立即返回（不等待压缩完成），
+      // 压缩进度由 BackgroundOperationProgressDialog 显示。
+      // 不设置 activeTab.isLoading = true，否则会在压缩期间一直显示 loading 遮罩，
+      // 叠加在进度弹窗后面造成"卡住"观感；目录刷新由 _onOperationComplete 负责。
     } else {
       try {
         await ArchiveService.createArchive(
@@ -3612,6 +3868,22 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
+  /// 通过系统选择器（Intent.createChooser）打开文件或 URL
+  /// 支持本地文件路径和 HTTP(S) URL（远程流式播放）
+  static const _platformChannel = MethodChannel('com.sequl.zenfile/root_shizuku');
+
+  Future<void> openWithSystemChooser(String path, {String? mimeType}) async {
+    try {
+      final mime = mimeType ?? lookupMimeType(path) ?? '*/*';
+      await _platformChannel.invokeMethod('openWithChooser', {
+        'path': path,
+        'mimeType': mime,
+      });
+    } catch (e) {
+      debugPrint('openWithSystemChooser 失败: $e');
+    }
+  }
+
   Future<void> openFile(BuildContext context, String path, {bool showOpenWithPopup = false, bool forceOpenWith = false, bool isRemoteStream = false}) async {
     _highlightedPaths.clear();
     _highlightedPaths.add(path);
@@ -3640,6 +3912,134 @@ class FileManagerProvider extends ChangeNotifier {
       return;
     }
 
+    // 在远程处理前，提取用于 hasNativeViewer 检查的真实路径（remote:// 需解析出实际文件路径）
+    String checkPath = path;
+    if (path.startsWith('remote://')) {
+      final uriPart = path.substring('remote://'.length);
+      final sepIdx = uriPart.indexOf('|');
+      if (sepIdx >= 0) checkPath = uriPart.substring(sepIdx + 1);
+    }
+    final checkExt = p.extension(checkPath).toLowerCase();
+
+    // 弹出"打开"/"打开方式..."选择对话框（跳过开关为关闭、非强制外部打开、且有内置查看器时）
+    // 用户已设置默认打开方式时不弹窗，直接按默认方式打开
+    // openAction: 'native' = 本应用打开, 'external' = 外部系统选择器
+    // persist: true = 保存为默认, false = 仅一次
+    String? openAction;
+    bool persistDefault = false; // 默认选中"仅一次"
+    if (!forceOpenWith && !_skipOpenWithDialog && hasNativeViewer(checkPath)) {
+      final defaultAction = PreferencesService.getDefaultOpenAction(checkExt);
+      if (defaultAction == null) {
+        // 未设置默认 → 弹出选择对话框
+        if (!context.mounted) return;
+        final choice = await showDialog<String>(
+          context: context,
+          builder: (ctx) {
+            final theme = Theme.of(ctx);
+            return StatefulBuilder(
+              builder: (ctx, setState) {
+                return Dialog(
+                  insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 320),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            p.basename(checkPath),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            width: double.infinity,
+                            child: FilledButton(
+                              onPressed: () => Navigator.pop(ctx, persistDefault ? 'always_native' : 'once_native'),
+                              child: Text(L10n.of(context).open_with_native),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.pop(ctx, persistDefault ? 'always_external' : 'once_external'),
+                              child: Text(L10n.of(context).open_with_external),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton(
+                                  style: OutlinedButton.styleFrom(
+                                    backgroundColor: !persistDefault
+                                        ? theme.colorScheme.primaryContainer
+                                        : Colors.transparent,
+                                    foregroundColor: !persistDefault
+                                        ? theme.colorScheme.onPrimaryContainer
+                                        : theme.colorScheme.onSurface,
+                                  ),
+                                  onPressed: () => setState(() => persistDefault = false),
+                                  child: Text(L10n.of(context).open_once),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: OutlinedButton(
+                                  style: OutlinedButton.styleFrom(
+                                    backgroundColor: persistDefault
+                                        ? theme.colorScheme.primaryContainer
+                                        : Colors.transparent,
+                                    foregroundColor: persistDefault
+                                        ? theme.colorScheme.onPrimaryContainer
+                                        : theme.colorScheme.onSurface,
+                                  ),
+                                  onPressed: () => setState(() => persistDefault = true),
+                                  child: Text(L10n.of(context).open_always),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          // 取消
+                          SizedBox(
+                            width: double.infinity,
+                            child: TextButton(
+                              onPressed: () => Navigator.pop(ctx, 'cancel'),
+                              child: Text(L10n.of(context).ui_cancel),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        );
+        if (choice == null || choice == 'cancel') return;
+        if (choice.startsWith('once_')) {
+          openAction = choice.substring(5); // 'native' or 'external'
+          persistDefault = false;
+        } else if (choice.startsWith('always_')) {
+          openAction = choice.substring(7); // 'native' or 'external'
+          persistDefault = true;
+        }
+        // 统一保存默认打开方式（避免各文件类型分支遗漏）
+        if (persistDefault && openAction != null) {
+          await PreferencesService.saveDefaultOpenAction(checkExt, openAction);
+        }
+      } else if (defaultAction == 'external') {
+        openAction = 'external';
+      }
+      // defaultAction == 'native' → openAction 保持 null，直接用内置查看器
+    }
+
     // 处理 remote:// 格式的远程路径（来自自定义快捷方式扫描的媒体文件）
     if (path.startsWith('remote://')) {
       try {
@@ -3664,10 +4064,18 @@ class FileManagerProvider extends ChangeNotifier {
         final remoteClient = createRemoteClient(conn);
         await remoteClient.connect();
 
+        // 媒体文件：无论选择"打开"还是"打开方式..."都采用流式播放
+        // "打开" → 本应用内置播放器；"打开方式..." → 系统选择器（VLC 等也可流式播放）
         if (isVideoFile || isAudioFile) {
           // 优先尝试直接流式 URL（WebDAV 支持 HTTP 流）
           final streamUrl = remoteClient.getStreamUrl(remotePath);
           if (streamUrl != null) {
+            if (openAction == 'external') {
+              // 系统选择器打开流式 URL
+              await openWithSystemChooser(streamUrl, mimeType: fileMime);
+              await remoteClient.disconnect();
+              return;
+            }
             // WebDAV 流式播放：保持连接直到播放完成（由 GC 清理）
             if (isVideoFile) {
               Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(videoPath: streamUrl, isRemote: true)));
@@ -3681,6 +4089,11 @@ class FileManagerProvider extends ChangeNotifier {
           try {
             final proxyUrl = await RemoteStreamingService.instance.startStreaming(remoteClient, remotePath, fileName);
             // 代理服务器持有客户端引用，不 disconnect
+            if (openAction == 'external') {
+              // 系统选择器打开代理 URL（VLC 等可流式播放）
+              await openWithSystemChooser(proxyUrl, mimeType: fileMime);
+              return;
+            }
             if (isVideoFile) {
               Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(videoPath: proxyUrl, isRemote: true)));
             } else {
@@ -3692,7 +4105,7 @@ class FileManagerProvider extends ChangeNotifier {
           }
         }
 
-        // 非媒体文件或流式失败：完整下载后打开
+        // 非媒体文件：完整下载后打开
         final cacheDir = Directory('/storage/emulated/0/Download/ZenFile_Remote');
         if (!cacheDir.existsSync()) cacheDir.createSync(recursive: true);
         final cachePath = p.join(cacheDir.path, fileName);
@@ -3702,6 +4115,12 @@ class FileManagerProvider extends ChangeNotifier {
         targetPath = cachePath;
         // 下载完成后断开连接
         await remoteClient.disconnect();
+
+        // 用户选择"使用外部系统选择器打开" → 调用系统选择器
+        if (openAction == 'external') {
+          await openWithSystemChooser(targetPath, mimeType: lookupMimeType(fileExt) ?? '*/*');
+          return;
+        }
       } catch (e) {
         debugPrint('远程路径文件打开失败: $e');
       }
@@ -3715,10 +4134,16 @@ class FileManagerProvider extends ChangeNotifier {
         final isAudioFile = fileMime.startsWith('audio/');
         final remoteClient = activeTab.remoteClient!;
 
+        // 媒体文件：无论选择"打开"还是"打开方式..."都采用流式播放
         if (isVideoFile || isAudioFile) {
           // 优先尝试直接流式 URL（WebDAV 支持 HTTP 流）
           final streamUrl = remoteClient.getStreamUrl(path);
           if (streamUrl != null) {
+            if (openAction == 'external') {
+              // 系统选择器打开流式 URL
+              await openWithSystemChooser(streamUrl, mimeType: fileMime);
+              return;
+            }
             // 直接流式播放 — 无需下载
             if (isVideoFile) {
               Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(videoPath: streamUrl, isRemote: true)));
@@ -3730,7 +4155,18 @@ class FileManagerProvider extends ChangeNotifier {
 
           // 非 HTTP 流协议（FTP/SFTP 等）：通过本地代理服务器实现边缓存边播放
           try {
-            final proxyUrl = await RemoteStreamingService.instance.startStreaming(remoteClient, path, p.basename(path));
+            // 从当前文件列表获取文件大小，避免 getFileSize 网络调用（可耗 10-15s）
+            final fileItem = currentFiles.where((f) => f.path == path).firstOrNull;
+            final knownSize = (fileItem != null && fileItem.size > 0) ? fileItem.size : null;
+            final proxyUrl = await RemoteStreamingService.instance.startStreaming(
+              remoteClient, path, p.basename(path),
+              fileSize: knownSize,
+            );
+            if (openAction == 'external') {
+              // 系统选择器打开代理 URL
+              await openWithSystemChooser(proxyUrl, mimeType: fileMime);
+              return;
+            }
             if (isVideoFile) {
               Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(videoPath: proxyUrl, isRemote: true)));
             } else {
@@ -3742,7 +4178,7 @@ class FileManagerProvider extends ChangeNotifier {
           }
         }
 
-        // 非媒体文件或流式失败：完整下载后打开
+        // 非媒体文件：完整下载后打开
         final cacheDir = Directory('/storage/emulated/0/Download/ZenFile_Remote');
         if (!cacheDir.existsSync()) cacheDir.createSync(recursive: true);
         final cachePath = p.join(cacheDir.path, p.basename(path));
@@ -3750,6 +4186,12 @@ class FileManagerProvider extends ChangeNotifier {
           await remoteClient.downloadFile(path, cachePath, (progress) {});
         }
         targetPath = cachePath;
+
+        // 用户选择"使用外部系统选择器打开" → 调用系统选择器
+        if (openAction == 'external') {
+          await openWithSystemChooser(targetPath, mimeType: fileMime.isEmpty ? '*/*' : fileMime);
+          return;
+        }
       } catch (e) {
         debugPrint('下载远程文件失败: $e');
       }
@@ -3771,8 +4213,15 @@ class FileManagerProvider extends ChangeNotifier {
       }
     }
 
+    // 弹窗选择了"使用外部系统选择器打开" → 调用系统选择器
+    if (openAction == 'external' && !forceOpenWith) {
+      await openWithSystemChooser(targetPath);
+      return;
+    }
+
+    // forceOpenWith 来自三点菜单"打开方式..."选项 → 调用系统选择器（不保存默认）
     if (forceOpenWith) {
-      await OpenFilex.open(targetPath);
+      await openWithSystemChooser(targetPath);
       return;
     }
 
@@ -3783,47 +4232,12 @@ class FileManagerProvider extends ChangeNotifier {
         await openFileNatively(context, targetPath);
         return;
       } else if (defaultAction == 'external') {
-        await OpenFilex.open(targetPath);
+        await openWithSystemChooser(targetPath);
         return;
       }
     }
 
-    if (showOpenWithPopup && !_skipOpenWithDialog && hasNativeViewer(targetPath)) {
-      if (!context.mounted) return;
-      
-      final result = await showModalBottomSheet<String>(
-        context: context,
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        builder: (ctx) => OpenWithSheet(
-          fileName: p.basename(path),
-          fileExtension: ext,
-        ),
-      );
-
-      if (result == null) return;
-
-      if (result.startsWith('always_')) {
-        final selectedType = result.substring('always_'.length);
-        await PreferencesService.saveDefaultOpenAction(ext, selectedType);
-        if (selectedType == 'native') {
-          await openFileNatively(context, targetPath);
-        } else {
-          await OpenFilex.open(targetPath);
-        }
-      } else if (result.startsWith('just_once_')) {
-        final selectedType = result.substring('just_once_'.length);
-        if (selectedType == 'native') {
-          await openFileNatively(context, targetPath);
-        } else {
-          await OpenFilex.open(targetPath);
-        }
-      }
-      return;
-    }
-
+    // 默认：使用内置查看器打开
     await openFileNatively(context, targetPath);
   }
 
@@ -4001,6 +4415,25 @@ class FileManagerProvider extends ChangeNotifier {
     super.dispose();
   }
 
+}
+
+
+/// 后台模式感知的进度通知器。
+///
+/// 当 [backgroundMode] 为 true（用户点击"后台"后），所有非 null 的进度赋值
+/// 都会被忽略，避免进度对话框重新弹出。设置 null 始终生效以关闭对话框。
+/// 新传输开始时需将 [backgroundMode] 重置为 false。
+class _BackgroundAwareProgressNotifier extends ValueNotifier<FileOperationProgress?> {
+  bool backgroundMode = false;
+
+  _BackgroundAwareProgressNotifier() : super(null);
+
+  @override
+  set value(FileOperationProgress? newValue) {
+    // 后台模式下忽略非 null 赋值；null 始终生效（用于关闭对话框）
+    if (backgroundMode && newValue != null) return;
+    super.value = newValue;
+  }
 }
 
 

@@ -148,6 +148,7 @@
     "description": "services\\background_archive_service.dart"
   },
   "msgc18fb099": "Extraction réussie. Ouvrir l'emplacement ?",
+  "msg_compress_open_location": "Compression réussie. Ouvrir l'emplacement ?",
   "@msg4367e85a": {
     "description": "services\\background_archive_service.dart"
   },
@@ -752,6 +753,29 @@
     "description": "ui\\screens\\directory_screen.dart"
   },
   "msgf437ace4": "Ce dossier uniquement",
+  "@msg551f98ba": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "msg551f98ba": "Aucun favori",
+  "@ui_favorites": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_favorites": "Favoris",
+  "@ui_new_favorite": {
+    "description": "directory_screen.dart"
+  },
+  "ui_new_favorite": "Ajouter aux favoris",
+  "@ui_favorite": {
+    "description": "file_action_dialogs.dart"
+  },
+  "ui_favorite": "Favori",
+  "@msg_favorited": {
+    "description": "directory_screen.dart",
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "msg_favorited": "{name} ajouté aux favoris",
   "@msg4dfc167a": {
     "description": "ui\\screens\\directory_screen.dart"
   },
@@ -1451,7 +1475,7 @@
   "@msg2c3c5a35": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg2c3c5a35": "Forme des icônes de catégorie",
+  "msg2c3c5a35": "Forme de l'icône",
   "@msg267fcd86": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -2693,6 +2717,14 @@
     "description": "ui\\widgets\\file_operation_progress_dialog.dart"
   },
   "msg9d69d7a0": "Déplacement des fichiers...",
+  "@ui_transferring_files": {
+    "description": "ui\\widgets\\file_operation_progress_dialog.dart"
+  },
+  "ui_transferring_files": "Transfert des fichiers",
+  "@ui_time_remaining": {
+    "description": "ui\\widgets\\file_operation_progress_dialog.dart"
+  },
+  "ui_time_remaining": "restant",
   "@zenfile6": {
     "description": "ui\\widgets\\open_with_sheet.dart"
   },
@@ -2856,7 +2888,7 @@
   "@msgf13fc21c": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
   },
-  "msgf13fc21c": "Serveurs et outils",
+  "msgf13fc21c": "Réseau",
   "@msg41e625d1": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
   },
@@ -2908,19 +2940,19 @@
   "cat_network": "Réseau",
   "cat_apps": "Applications",
   "cat_settings": "Paramètres",
-  "cat_storage": "Stockage",
+  "cat_storage": "Espace",
   "cat_service": "Service",
   "cat_manage": "Gérer",
   "cat_config": "Configuration",
   "cat_analyze": "Analyser",
   "cat_vault": "Coffre-fort",
   "cat_vault_desc": "Stockage sécurisé",
-  "cat_quick_categories": "Catégories rapides",
-  "ui_nav": "Navigation",
+  "cat_quick_categories": "Catégories",
+  "ui_nav": "Local",
   "ui_home": "Accueil",
   "ui_recycle_bin": "Corbeille",
   "ui_dark_mode": "Mode sombre",
-  "ui_personalize_settings": "Personnaliser et paramètres",
+  "ui_personalize_settings": "Paramètres",
   "ui_compress": "Compresser",
   "ui_copy": "Copier",
   "ui_cut": "Couper",
@@ -3163,6 +3195,10 @@
   "ui_pin_to_top": "Épingler en haut",
   "@ui_pin_to_top": {
     "description": "ui widgets"
+  },
+  "msg_select_all": "Tout sélectionner",
+  "@msg_select_all": {
+    "description": "selection_context_bottom_sheet.dart"
   },
   "ui_pinned_selected": "Éléments sélectionnés épinglés",
   "@ui_pinned_selected": {
@@ -3852,5 +3888,44 @@
   "msg_rotate_video": "Faire pivoter la vidéo",
   "@msg_rotate_video": {
     "description": "Rotate video clockwise in video player"
+  },
+  "msg_aspect_fit": "Ajuster à l'écran",
+  "@msg_aspect_fit": {
+    "description": "Video aspect ratio mode: fit to screen"
+  },
+  "msg_aspect_fill": "Étirer pour remplir",
+  "@msg_aspect_fill": {
+    "description": "Video aspect ratio mode: stretch to fill"
+  },
+  "msg_aspect_center": "Centré",
+  "@msg_aspect_center": {
+    "description": "Video aspect ratio mode: centered original size"
+  },
+  "msg_aspect_16_9": "16:9",
+  "@msg_aspect_16_9": {
+    "description": "Video aspect ratio mode: 16:9"
+  },
+  "msg_aspect_4_3": "4:3",
+  "@msg_aspect_4_3": {
+    "description": "Video aspect ratio mode: 4:3"
+  },
+  "drawer_tools": "Outils",
+  "open_with_native": "Ouvrir avec cette application",
+  "open_with_external": "Ouvrir avec une application externe",
+  "open_once": "Une seule fois",
+  "open_always": "Toujours",
+  "drawer_edit_connection": "Modifier",
+  "cat_system": "Système",
+  "cat_storage_volume": "Stockage",
+  "ui_columns_per_row": "Colonnes par ligne",
+  "ui_3columns": "3 Colonnes",
+  "ui_4columns": "4 Colonnes",
+  "msge8b8e9b3": "Actions rapides",
+  "@msge8b8e9b3": {
+    "description": "Right side menu header title"
+  },
+  "msg04b7de53": "Accès rapide aux fonctions courantes",
+  "@msg04b7de53": {
+    "description": "Right side menu header subtitle"
   }
 }

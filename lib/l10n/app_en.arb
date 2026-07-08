@@ -148,6 +148,7 @@
     "description": "services\\background_archive_service.dart"
   },
   "msgc18fb099": "Extraction successful. Open location?",
+  "msg_compress_open_location": "Compression successful. Open location?",
   "@msg4367e85a": {
     "description": "services\\background_archive_service.dart"
   },
@@ -752,6 +753,29 @@
     "description": "ui\\screens\\directory_screen.dart"
   },
   "msgf437ace4": "This Folder Only",
+  "@msg551f98ba": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "msg551f98ba": "No favorites",
+  "@ui_favorites": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_favorites": "Favorites",
+  "@ui_new_favorite": {
+    "description": "directory_screen.dart"
+  },
+  "ui_new_favorite": "Add to Favorites",
+  "@ui_favorite": {
+    "description": "file_action_dialogs.dart"
+  },
+  "ui_favorite": "Favorite",
+  "@msg_favorited": {
+    "description": "directory_screen.dart",
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "msg_favorited": "Favorited {name}",
   "@msg4dfc167a": {
     "description": "ui\\screens\\directory_screen.dart"
   },
@@ -1451,7 +1475,7 @@
   "@msg2c3c5a35": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg2c3c5a35": "Category Icon Shape",
+  "msg2c3c5a35": "Icon Shape",
   "@msg267fcd86": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -2693,6 +2717,14 @@
     "description": "ui\\widgets\\file_operation_progress_dialog.dart"
   },
   "msg9d69d7a0": "Moving files...",
+  "@ui_transferring_files": {
+    "description": "ui\\widgets\\file_operation_progress_dialog.dart"
+  },
+  "ui_transferring_files": "Transferring files",
+  "@ui_time_remaining": {
+    "description": "ui\\widgets\\file_operation_progress_dialog.dart"
+  },
+  "ui_time_remaining": "remaining",
   "@zenfile6": {
     "description": "ui\\widgets\\open_with_sheet.dart"
   },
@@ -2856,7 +2888,7 @@
   "@msgf13fc21c": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
   },
-  "msgf13fc21c": "Servers & Tools",
+  "msgf13fc21c": "Network",
   "@msg41e625d1": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
   },
@@ -2908,19 +2940,19 @@
   "cat_network": "Network",
   "cat_apps": "Apps",
   "cat_settings": "Settings",
-  "cat_storage": "Storage",
+  "cat_storage": "Space",
   "cat_service": "Service",
   "cat_manage": "Manage",
   "cat_config": "Config",
   "cat_analyze": "Analyze",
   "cat_vault": "Vault",
   "cat_vault_desc": "Secure Storage",
-  "cat_quick_categories": "Quick Categories",
-  "ui_nav": "Navigation",
+  "cat_quick_categories": "Categories",
+  "ui_nav": "Local",
   "ui_home": "Home",
   "ui_recycle_bin": "Recycle Bin",
   "ui_dark_mode": "Dark Mode",
-  "ui_personalize_settings": "Personalize & Settings",
+  "ui_personalize_settings": "Settings",
   "ui_compress": "Compress",
   "ui_copy": "Copy",
   "ui_cut": "Cut",
@@ -3164,6 +3196,10 @@
   "@ui_pin_to_top": {
     "description": "ui widgets"
   },
+  "msg_select_all": "Select All",
+  "@msg_select_all": {
+    "description": "selection_context_bottom_sheet.dart"
+  },
   "ui_pinned_selected": "Pinned selected items",
   "@ui_pinned_selected": {
     "description": "ui widgets"
@@ -3337,6 +3373,18 @@
     "log_category_button_sync": "Fixed category page play button showing stale audio info when background play is off, refreshes on return",
     "log_build_stability": "Fixed R8 compilation OOM, x86_64/armv7 startup white screen, adjusted Gradle JVM memory and ABI downloads",
     "log_lyric_scale_animation": "Added scale effect to word-by-word lyric transition animation, fixed sync issues, fixed 300ms transition duration",
+  "log_quick_action_panel": "Redesigned top navigation bar buttons, added quick action page, swipe left on browse page to open quick action panel",
+  "log_favorites": "Added favorites feature, users can bookmark local or remote files/folders to the favorites in quick action panel",
+  "log_drawer_redesign": "Redesigned drawer page, more concise and beautiful, persists all expand/collapse states, more convenient to operate",
+  "log_video_player_rotation": "Video player added clockwise rotation and zoom ratio adjustment",
+  "log_category_reorder": "Optimized category page to support long-press drag-and-drop reordering, added 3/4 column options, now supports renaming category names",
+  "log_compression_fix": "Fixed several archive-related issues",
+  "log_progress_bar_redesign": "Redesigned progress dialog style",
+  "log_dual_pane_status_bar": "Added status bar on top of dual-pane mode, showing active window indicator and clipboard summary",
+  "log_transfer_fixes": "Fixed FTP/SFTP/SMB/WebDAV progress bar not updating, cancel not working, remote list going blank, and missing real-time speed display",
+  "log_drawer_font_consistency": "Fixed \"Settings\" font size to match other drawer entries",
+  "log_landscape_layout": "Optimized file grid layout for tablets and car infotainment systems in landscape mode",
+  "log_progress_i18n": "Added complete multi-language support for the progress dialog",
   "msg_remember_choice": "Remember this choice for future operations",
   "ui_caching": "Caching, please wait...",
   "ui_username": "Username",
@@ -3878,5 +3926,44 @@
   "msg_rotate_video": "Rotate Video",
   "@msg_rotate_video": {
     "description": "Rotate video clockwise in video player"
+  },
+  "msg_aspect_fit": "Fit to Screen",
+  "@msg_aspect_fit": {
+    "description": "Video aspect ratio mode: fit to screen"
+  },
+  "msg_aspect_fill": "Stretch Fill",
+  "@msg_aspect_fill": {
+    "description": "Video aspect ratio mode: stretch to fill"
+  },
+  "msg_aspect_center": "Center",
+  "@msg_aspect_center": {
+    "description": "Video aspect ratio mode: centered original size"
+  },
+  "msg_aspect_16_9": "16:9",
+  "@msg_aspect_16_9": {
+    "description": "Video aspect ratio mode: 16:9"
+  },
+  "msg_aspect_4_3": "4:3",
+  "@msg_aspect_4_3": {
+    "description": "Video aspect ratio mode: 4:3"
+  },
+  "drawer_tools": "Tools",
+  "open_with_native": "Open with this app",
+  "open_with_external": "Open with external app",
+  "open_once": "Just once",
+  "open_always": "Always",
+  "drawer_edit_connection": "Edit",
+  "cat_system": "System",
+  "cat_storage_volume": "Storage",
+  "ui_columns_per_row": "Columns per row",
+  "ui_3columns": "3 Columns",
+  "ui_4columns": "4 Columns",
+  "msge8b8e9b3": "Quick Actions",
+  "@msge8b8e9b3": {
+    "description": "Right side menu header title"
+  },
+  "msg04b7de53": "Quick access to common functions",
+  "@msg04b7de53": {
+    "description": "Right side menu header subtitle"
   }
 }

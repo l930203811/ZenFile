@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'remote_client.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
-class SafRemoteClient implements RemoteClient {
+class SafRemoteClient extends RemoteClient {
   final String rootUri;
   static const _channel = MethodChannel('com.sequl.zenfile/saf');
 

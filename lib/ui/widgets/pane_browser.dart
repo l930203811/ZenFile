@@ -389,6 +389,100 @@ class _PaneBrowserState extends State<PaneBrowser> {
                       valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
                     ),
 
+                  // 双窗口顶部状态栏：激活指示器 + 剪贴板内容
+                  if (provider.enableSplitScreen)
+                    Container(
+                      height: 28,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surfaceVariant.withOpacity(0.25),
+                        border: Border(
+                          bottom: BorderSide(
+                            color: theme.colorScheme.outline.withOpacity(0.08),
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          // 左侧：激活窗口指示器（小亮点）
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 7,
+                                height: 7,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: isActive
+                                      ? theme.colorScheme.primary
+                                      : theme.colorScheme.onSurface.withOpacity(0.15),
+                                  boxShadow: isActive
+                                      ? [
+                                          BoxShadow(
+                                            color: theme.colorScheme.primary.withOpacity(0.4),
+                                            blurRadius: 4,
+                                            spreadRadius: 1,
+                                          ),
+                                        ]
+                                      : null,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Spacer(),
+                          // 右侧：剪贴板内容摘要（可点击展开）
+                          if (provider.hasClipboard)
+                            GestureDetector(
+                              onTap: () => _showClipboardMenu(provider, theme),
+                              child: Container(
+                                height: 22,
+                                padding: const EdgeInsets.symmetric(horizontal: 7),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(11),
+                                  color: provider.isCut
+                                      ? Colors.orange.withOpacity(0.12)
+                                      : theme.colorScheme.primary.withOpacity(0.12),
+                                  border: Border.all(
+                                    color: provider.isCut
+                                        ? Colors.orange.withOpacity(0.3)
+                                        : theme.colorScheme.primary.withOpacity(0.3),
+                                    width: 0.5,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      provider.isCut ? Broken.scissor : Broken.clipboard,
+                                      size: 11,
+                                      color: provider.isCut
+                                          ? Colors.orange
+                                          : theme.colorScheme.primary,
+                                    ),
+                                    const SizedBox(width: 3),
+                                    ConstrainedBox(
+                                      constraints: const BoxConstraints(maxWidth: 80),
+                                      child: Text(
+                                        _clipboardLabel(provider, context),
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          color: provider.isCut
+                                              ? Colors.orange
+                                              : theme.colorScheme.primary,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+
                   // 路径已在浏览页顶部显示，此处移除
                   if (provider.filterType != FileFilterType.all)
                     _buildActiveFilterBanner(context, provider),
@@ -490,12 +584,12 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                             bottom: 80,
                                             left: provider.isGridView ? 8 : 0,
                                             right: provider.isGridView ? 8 : 0,
-                                            top: 8,
+                                            top: 0,
                                           ),
                                           sliver: provider.isGridView
                                               ? SliverGrid(
                                                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                                    crossAxisCount: (MediaQuery.of(context).size.width / (2 * 110 * provider.iconScale)).floor().clamp(1, 4),
+                                                    crossAxisCount: (MediaQuery.of(context).size.width / (2 * 110 * provider.iconScale)).floor().clamp(1, 6),
                                                     mainAxisSpacing: (12 * provider.itemPaddingMultiplier).clamp(4.0, 24.0),
                                                     crossAxisSpacing: (12 * provider.itemPaddingMultiplier).clamp(4.0, 24.0),
                                                     childAspectRatio: 0.75 / provider.iconScale.clamp(0.7, 1.5),
@@ -614,199 +708,6 @@ class _PaneBrowserState extends State<PaneBrowser> {
                   ),
                 ],
               ),
-              // 剪贴板按钮（双窗口模式，两 pane 各自右上角显示，点击粘贴到该 pane）
-              if (provider.hasClipboard)
-                Positioned(
-                  top: 6,
-                  right: 8,
-                  child: GestureDetector(
-                    onTap: () => _showClipboardMenu(provider, theme),
-                    child: Container(
-                      height: 26,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(13),
-                        color: provider.isCut
-                            ? Colors.orange.withOpacity(0.12)
-                            : theme.colorScheme.primary.withOpacity(0.12),
-                        border: Border.all(
-                          color: provider.isCut
-                              ? Colors.orange.withOpacity(0.3)
-                              : theme.colorScheme.primary.withOpacity(0.3),
-                          width: 1,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            provider.isCut ? Broken.scissor : Broken.clipboard,
-                            size: 13,
-                            color: provider.isCut
-                                ? Colors.orange
-                                : theme.colorScheme.primary,
-                          ),
-                          const SizedBox(width: 4),
-                          ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 90),
-                            child: Text(
-                              _clipboardLabel(provider, context),
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: provider.isCut
-                                    ? Colors.orange
-                                    : theme.colorScheme.primary,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              // 文件传输进度条覆盖层
-              Positioned.fill(
-                child: ValueListenableBuilder<FileOperationProgress?>(
-                  valueListenable: provider.progressNotifier,
-                  builder: (context, progress, child) {
-                    if (progress == null) return const SizedBox.shrink();
-                    final percent = (progress.percentage * 100).clamp(0, 100).toInt();
-                    final isDark = theme.brightness == Brightness.dark;
-                    final circleBgColor = isDark ? const Color(0xFF1E1E2E).withValues(alpha: 0.92) : const Color(0xFFF8F8FC).withValues(alpha: 0.92);
-                    return Stack(
-                      children: [
-                        IgnorePointer(
-                          child: Container(color: Colors.black54),
-                        ),
-                        Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 160,
-                                height: 160,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: circleBgColor,
-                                  border: Border.all(
-                                    color: theme.colorScheme.outline.withValues(alpha: 0.12),
-                                    width: 1,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.3),
-                                      blurRadius: 24,
-                                      spreadRadius: 3,
-                                    ),
-                                  ],
-                                ),
-                                child: Stack(
-                                  fit: StackFit.expand,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(15),
-                                      child: CircularProgressIndicator(
-                                        value: 1.0,
-                                        strokeWidth: 4,
-                                        backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.06),
-                                        valueColor: AlwaysStoppedAnimation<Color>(
-                                          theme.colorScheme.primary.withValues(alpha: 0.06),
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(15),
-                                      child: CircularProgressIndicator(
-                                        value: progress.percentage.clamp(0.0, 1.0),
-                                        strokeWidth: 4,
-                                        backgroundColor: Colors.transparent,
-                                        valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
-                                        strokeCap: StrokeCap.round,
-                                      ),
-                                    ),
-                                    Center(
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            '$percent%',
-                                            style: TextStyle(
-                                              fontSize: 36,
-                                              fontWeight: FontWeight.w900,
-                                              color: theme.colorScheme.primary,
-                                              letterSpacing: -1,
-                                              height: 1,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            '${progress.currentFileIndex}/${progress.totalFiles}',
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w500,
-                                              color: theme.colorScheme.onSurface.withValues(alpha: 0.35),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 180),
-                                child: Text(
-                                  progress.currentFileName,
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white.withValues(alpha: 0.85),
-                                    fontSize: 11,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                              const SizedBox(height: 18),
-                              SizedBox(
-                                width: 120,
-                                height: 32,
-                                child: OutlinedButton(
-                                  onPressed: () => provider.cancelOperation(),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: Colors.white70,
-                                    side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    padding: EdgeInsets.zero,
-                                  ),
-                                  child: Text(
-                                    L10n.of(context).msg17093362,
-                                    style: TextStyle(fontSize: 12),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-
             ],
           ),
         ),

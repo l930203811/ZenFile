@@ -13,6 +13,7 @@ import 'package:charset/charset.dart';
 import 'package:just_zstd/just_zstd.dart';
 import '../providers/file_manager_provider.dart';
 import 'package:provider/provider.dart';
+import '../core/navigator_key.dart';
 import '../ui/widgets/background_operation_progress_dialog.dart';
 
 class BackgroundOperation {
@@ -21,6 +22,8 @@ class BackgroundOperation {
   final String archiveName;
   final bool isCompression;
   final String? destinationDir;
+  /// 压缩操作生成的压缩包完整路径（用于成功后高亮定位）
+  final String? destinationPath;
   double progress; // 0.0 to 1.0
   String currentFile;
   bool isRunningInBackground;
@@ -31,6 +34,7 @@ class BackgroundOperation {
     required this.archiveName,
     required this.isCompression,
     this.destinationDir,
+    this.destinationPath,
     this.progress = 0.0,
     this.currentFile = '',
     this.isRunningInBackground = false,
@@ -127,20 +131,24 @@ class BackgroundArchiveService {
     VoidCallback? onComplete,
     FileManagerProvider? provider,
   }) async {
+    // 调用方（如 SelectionActionBar）在 selectedPaths.clear() 后可能 unmount，
+    // 导致传入的 context 失效。用全局 navigatorKey 兜底，确保弹窗能正常显示和关闭。
+    final effectiveContext = context.mounted ? context : (navigatorKey.currentContext ?? context);
     final archiveName = p.basename(destinationPath);
     final operation = BackgroundOperation(
       id: 'compress_${DateTime.now().millisecondsSinceEpoch}',
-      title: L10n.of(context).msg2f0138ad,
+      title: L10n.of(effectiveContext).msg2f0138ad,
       archiveName: archiveName,
       isCompression: true,
       destinationDir: targetRefreshDir ?? p.dirname(destinationPath),
+      destinationPath: destinationPath,
     );
 
     activeOperation.value = operation;
-    _scaffoldMessenger ??= ScaffoldMessenger.of(context);
+    _scaffoldMessenger ??= ScaffoldMessenger.of(effectiveContext);
     _onCompleteCallback = onComplete;
     _refreshProvider = provider;
-    _savedContext = context;
+    _savedContext = effectiveContext;
 
     // 启动定时器兜底：如果30秒后对话框仍未关闭，强制关闭
     _dialogCloseTimer?.cancel();
@@ -149,7 +157,7 @@ class BackgroundArchiveService {
     });
 
     // Show progress dialog
-    BackgroundOperationProgressDialog.show(context, this);
+    BackgroundOperationProgressDialog.show(effectiveContext, this);
 
     _receivePort = ReceivePort();
 
@@ -182,10 +190,10 @@ class BackgroundArchiveService {
             _updateNotification(operation);
           }
         } else if (status == 'completed') {
-          _onOperationComplete(context, operation, L10n.of(context).msga2292820);
+          _onOperationComplete(effectiveContext, operation, L10n.of(effectiveContext).msga2292820);
         } else if (status == 'error') {
           final error = message['error'] as String;
-          _onOperationComplete(context, operation, 'Compression failed: $error', isError: true);
+          _onOperationComplete(effectiveContext, operation, 'Compression failed: $error', isError: true);
         }
       }
     });
@@ -356,27 +364,37 @@ class BackgroundArchiveService {
       }
     }
 
-    // 解压成功：显示'是/否'弹窗提示，不自动跳转（仅在用户点击确认后导航）
-    // 压缩成功：不需要 SnackBar，loadDirectory 刷新目录即可（和三点菜单行为一致）
-    if (!isError && !operation.isCompression && operation.destinationDir != null) {
+    // 压缩/解压成功后，弹出"是否打开所在位置"提示，确认后跳转并高亮目标
+    if (!isError && operation.destinationDir != null) {
       final l10n = L10n.of(context);
+      final isCompress = operation.isCompression;
+      final message = isCompress ? l10n.msg_compress_open_location : l10n.msgc18fb099;
       (_scaffoldMessenger ?? ScaffoldMessenger.of(context)).showSnackBar(
         SnackBar(
           content: Row(
             children: [
-              Expanded(child: Text(l10n.msgc18fb099)),
+              Expanded(child: Text(message)),
               TextButton(
                 onPressed: () {
                   (_scaffoldMessenger ?? ScaffoldMessenger.of(context)).hideCurrentSnackBar();
                   try {
                     final provider = Provider.of<FileManagerProvider>(context, listen: false);
-                    final destDir = operation.destinationDir!;
-                    // 强制切换到浏览 Tab（绕过 HomeScreen 的 scheduleMicrotask 间接导航）
+                    // 推断要高亮的目标路径
+                    // 压缩：高亮生成的压缩包文件
+                    // 解压：高亮解压出的根文件/文件夹（按压缩包名去扩展名推断）
+                    String highlightPath;
+                    if (isCompress && operation.destinationPath != null) {
+                      highlightPath = operation.destinationPath!;
+                    } else {
+                      final baseName = p.basenameWithoutExtension(operation.archiveName);
+                      highlightPath = p.join(operation.destinationDir!, baseName);
+                    }
+                    // 强制切换到浏览 Tab（浏览页才支持高亮和滚动定位）
                     provider.setNavigateToBrowseTab(true);
                     Navigator.popUntil(context, (route) => route.isFirst);
-                    // 直接加载解压目录，不依赖 HomeScreen 的 scheduleMicrotask
+                    // 跳转到目标所在位置并高亮（加载父目录 + 高亮 + 滚动到可视区域）
                     scheduleMicrotask(() {
-                      provider.loadDirectory(destDir, showLoading: false, clearCache: true);
+                      provider.showFileInLocation(highlightPath);
                     });
                   } catch (_) {}
                 },
