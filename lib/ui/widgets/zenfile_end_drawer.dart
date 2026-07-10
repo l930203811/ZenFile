@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
-import 'package:provider/provider.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../providers/file_manager_provider.dart';
 import '../screens/global_search_screen.dart';
-import '../widgets/quick_categories_grid.dart';
 import '../../services/preferences_service.dart';
 import '../../services/network_connections_service.dart';
 
@@ -35,11 +33,13 @@ class ZenFileEndDrawer extends StatefulWidget {
 }
 
 class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
+  late bool _isQuickActionsExpanded;
   late bool _isFavoritesExpanded;
 
   @override
   void initState() {
     super.initState();
+    _isQuickActionsExpanded = PreferencesService.getDrawerSectionExpanded('quick_actions');
     _isFavoritesExpanded = PreferencesService.getDrawerSectionExpanded('favorites');
   }
 
@@ -48,203 +48,161 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Drawer(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(28), bottomLeft: Radius.circular(28)),
-      ),
-      child: SafeArea(
-        child: Column(
-          children: [
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-              padding: const EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: isDark
-                      ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
-                      : [theme.colorScheme.primary.withOpacity(0.85), theme.colorScheme.primary],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: theme.colorScheme.primary.withOpacity(0.25),
-                    blurRadius: 16,
-                    offset: const Offset(0, 4),
+    return SafeArea(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+            child: Row(
+              children: [
+                Icon(Broken.more_circle, color: theme.colorScheme.primary, size: 28),
+                const SizedBox(width: 14),
+                Text(
+                  L10n.of(context).msg_quick_actions,
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurface,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
                   ),
-                ],
-              ),
-              child: Row(
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 4),
+
+          Expanded(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      shape: BoxShape.circle,
+                  ExpansionTile(
+                    initiallyExpanded: _isQuickActionsExpanded,
+                    onExpansionChanged: (expanded) {
+                      setState(() => _isQuickActionsExpanded = expanded);
+                      PreferencesService.saveDrawerSectionExpanded('quick_actions', expanded);
+                    },
+                    leading: Icon(Broken.command, color: theme.colorScheme.primary, size: 24),
+                    title: Text(
+                      L10n.of(context).msge8b8e9b3,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
                     ),
-                    child: const Icon(Broken.more_circle, color: Colors.white, size: 28),
+                    childrenPadding: const EdgeInsets.symmetric(horizontal: 12),
+                    children: [
+                      if (widget.onRefresh != null)
+                        _buildMenuItem(
+                          context,
+                          icon: Broken.refresh,
+                          title: L10n.of(context).msg354c1c9a,
+                          color: theme.colorScheme.primary,
+                          onTap: () {
+                            Navigator.pop(context);
+                            widget.onRefresh!();
+                          },
+                        ),
+                      if (widget.onCustomize != null)
+                        _buildMenuItem(
+                          context,
+                          icon: Broken.edit_2,
+                          title: L10n.of(context).msge7d18d73,
+                          color: theme.colorScheme.primary,
+                          onTap: () {
+                            Navigator.pop(context);
+                            widget.onCustomize!();
+                          },
+                        ),
+                      if (widget.onShowSortModal != null && widget.provider != null)
+                        _buildMenuItem(
+                          context,
+                          icon: Broken.filter_edit,
+                          title: L10n.of(context).msg97301f64,
+                          color: theme.colorScheme.primary,
+                          onTap: () {
+                            Navigator.pop(context);
+                            widget.onShowSortModal!();
+                          },
+                        ),
+                      _buildMenuItem(
+                        context,
+                        icon: isDark ? Broken.sun_1 : Broken.moon,
+                        title: isDark ? L10n.of(context).msg8755e992 : L10n.of(context).ui_dark_mode,
+                        color: theme.colorScheme.primary,
+                        onTap: () {
+                          Navigator.pop(context);
+                          widget.toggleTheme();
+                        },
+                      ),
+                      _buildMenuItem(
+                        context,
+                        icon: Broken.search_normal,
+                        title: L10n.of(context).msg681c0f39,
+                        color: theme.colorScheme.primary,
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => GlobalSearchScreen(
+                                searchFolderPath: widget.searchFolderPath,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          L10n.of(context).msge8b8e9b3,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          L10n.of(context).msg04b7de53,
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
+
+                  const SizedBox(height: 8),
+
+                  if (widget.provider != null)
+                    ExpansionTile(
+                      initiallyExpanded: _isFavoritesExpanded,
+                      onExpansionChanged: (expanded) {
+                        setState(() => _isFavoritesExpanded = expanded);
+                        PreferencesService.saveDrawerSectionExpanded('favorites', expanded);
+                      },
+                      leading: Icon(Broken.folder_favorite, color: theme.colorScheme.primary, size: 24),
+                      title: Text(
+                        L10n.of(context).ui_favorites,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                      ),
+                      childrenPadding: const EdgeInsets.symmetric(horizontal: 12),
+                      children: widget.provider!.favorites.isEmpty
+                          ? [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                child: Text(
+                                  L10n.of(context).msg551f98ba,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                                ),
+                              ),
+                            ]
+                          : widget.provider!.favorites.map((fav) {
+                              return _buildFavoriteItem(
+                                context,
+                                name: fav['name'] as String,
+                                path: fav['path'] as String,
+                                isDirectory: fav['isDirectory'] as bool,
+                                isRemote: fav['isRemote'] == true,
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  _openFavorite(fav);
+                                },
+                                onRemove: () {
+                                  widget.provider!.removeFavorite(fav['path'] as String);
+                                },
+                              );
+                            }).toList(),
                     ),
-                  ),
+
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
-            const SizedBox(height: 8),
-
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (widget.onRefresh != null)
-                      _buildMenuItem(
-                        context,
-                        icon: Broken.refresh,
-                        title: L10n.of(context).msg354c1c9a,
-                        color: theme.colorScheme.primary,
-                        onTap: () {
-                          Navigator.pop(context);
-                          widget.onRefresh!();
-                        },
-                      ),
-
-                    if (widget.onCustomize != null)
-                      _buildMenuItem(
-                        context,
-                        icon: Broken.edit_2,
-                        title: L10n.of(context).msge7d18d73,
-                        color: theme.colorScheme.primary,
-                        onTap: () {
-                          Navigator.pop(context);
-                          widget.onCustomize!();
-                        },
-                      ),
-
-                    if (widget.onShowSortModal != null && widget.provider != null)
-                      _buildMenuItem(
-                        context,
-                        icon: Broken.filter_edit,
-                        title: L10n.of(context).msg97301f64,
-                        color: theme.colorScheme.primary,
-                        onTap: () {
-                          Navigator.pop(context);
-                          widget.onShowSortModal!();
-                        },
-                      ),
-
-                    _buildMenuItem(
-                      context,
-                      icon: isDark ? Broken.sun_1 : Broken.moon,
-                      title: isDark ? L10n.of(context).msg8755e992 : L10n.of(context).ui_dark_mode,
-                      color: theme.colorScheme.primary,
-                      onTap: () {
-                        Navigator.pop(context);
-                        widget.toggleTheme();
-                      },
-                    ),
-
-                    _buildMenuItem(
-                      context,
-                      icon: Broken.search_normal,
-                      title: L10n.of(context).msg681c0f39,
-                      color: theme.colorScheme.primary,
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => GlobalSearchScreen(
-                              searchFolderPath: widget.searchFolderPath,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: 12),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12.0),
-                      child: Divider(height: 1, thickness: 1),
-                    ),
-                    const SizedBox(height: 8),
-
-                    if (widget.provider != null)
-                      ExpansionTile(
-                        initiallyExpanded: _isFavoritesExpanded,
-                        onExpansionChanged: (expanded) {
-                          setState(() => _isFavoritesExpanded = expanded);
-                          PreferencesService.saveDrawerSectionExpanded('favorites', expanded);
-                        },
-                        leading: Icon(Broken.folder_favorite, color: theme.colorScheme.primary, size: 24),
-                        title: Text(
-                          L10n.of(context).ui_favorites,
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                        childrenPadding: const EdgeInsets.symmetric(horizontal: 12),
-                        children: widget.provider!.favorites.isEmpty
-                            ? [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
-                                  child: Text(
-                                    L10n.of(context).msg551f98ba,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
-                                  ),
-                                ),
-                              ]
-                            : widget.provider!.favorites.map((fav) {
-                                return _buildFavoriteItem(
-                                  context,
-                                  name: fav['name'] as String,
-                                  path: fav['path'] as String,
-                                  isDirectory: fav['isDirectory'] as bool,
-                                  isRemote: fav['isRemote'] == true,
-                                  onTap: () {
-                                    Navigator.pop(context);
-                                    _openFavorite(fav);
-                                  },
-                                  onRemove: () {
-                                    widget.provider!.removeFavorite(fav['path'] as String);
-                                  },
-                                );
-                              }).toList(),
-                      ),
-
-                    const SizedBox(height: 24),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -367,7 +325,7 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
     try {
       final remoteClient = FileManagerProvider.createRemoteClient(connection);
       await remoteClient.connect();
-      provider.openRemoteTab(remoteClient, connection);
+      await provider.openRemoteTab(remoteClient, connection);
       // openRemoteTab 已 loadDirectory 到 rootPath，若收藏目标是子目录或文件的父目录，再加载一次
       final targetPath = isDirectory ? path : p.dirname(path);
       if (targetPath != connection.rootPath) {

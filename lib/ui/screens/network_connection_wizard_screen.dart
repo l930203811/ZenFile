@@ -184,7 +184,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
             await remoteClient.connect();
             if (mounted) {
               final provider = context.read<FileManagerProvider>();
-              provider.openRemoteTab(remoteClient, connection);
+              await provider.openRemoteTab(remoteClient, connection);
               widget.onNavigateTab!.call(1);
               Navigator.pop(context, true);
             }

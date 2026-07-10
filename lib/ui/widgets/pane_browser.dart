@@ -389,10 +389,12 @@ class _PaneBrowserState extends State<PaneBrowser> {
                       valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
                     ),
 
-                  // 双窗口顶部状态栏：激活指示器 + 剪贴板内容
+                  // 双窗口顶部状态栏：激活指示器 + 剪贴板内容（折叠/展开）
                   if (provider.enableSplitScreen)
-                    Container(
-                      height: 28,
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeInOut,
+                      height: provider.hasClipboard ? 28.0 : 14.0,
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.surfaceVariant.withOpacity(0.25),
@@ -405,33 +407,28 @@ class _PaneBrowserState extends State<PaneBrowser> {
                       child: Row(
                         children: [
                           // 左侧：激活窗口指示器（小亮点）
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 7,
-                                height: 7,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: isActive
-                                      ? theme.colorScheme.primary
-                                      : theme.colorScheme.onSurface.withOpacity(0.15),
-                                  boxShadow: isActive
-                                      ? [
-                                          BoxShadow(
-                                            color: theme.colorScheme.primary.withOpacity(0.4),
-                                            blurRadius: 4,
-                                            spreadRadius: 1,
-                                          ),
-                                        ]
-                                      : null,
-                                ),
-                              ),
-                            ],
+                          Container(
+                            width: 7,
+                            height: 7,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: isActive
+                                  ? theme.colorScheme.primary
+                                  : theme.colorScheme.onSurface.withOpacity(0.15),
+                              boxShadow: isActive
+                                  ? [
+                                      BoxShadow(
+                                        color: theme.colorScheme.primary.withOpacity(0.4),
+                                        blurRadius: 4,
+                                        spreadRadius: 1,
+                                      ),
+                                    ]
+                                  : null,
+                            ),
                           ),
-                          const Spacer(),
-                          // 右侧：剪贴板内容摘要（可点击展开）
-                          if (provider.hasClipboard)
+                          // 右侧：剪贴板内容摘要（有剪贴板时展开显示）
+                          if (provider.hasClipboard) ...[
+                            const Spacer(),
                             GestureDetector(
                               onTap: () => _showClipboardMenu(provider, theme),
                               child: Container(
@@ -479,6 +476,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                 ),
                               ),
                             ),
+                          ],
                         ],
                       ),
                     ),
@@ -601,11 +599,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                                       if (item.isDirectory) {
                                                         final itemLongPress = () {
                                                           _activatePane(provider);
-                                                          if (isSelectionMode && isSelected) {
-                                                            SelectionContextBottomSheet.show(context, provider, item.path);
-                                                          } else {
-                                                            provider.toggleSelection(item.path);
-                                                          }
+                                                          provider.toggleSelection(item.path);
                                                         };
                                                         return DragDropHandler(
                                                           path: item.path,
@@ -635,11 +629,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                                       } else {
                                                         final itemLongPress = () {
                                                           _activatePane(provider);
-                                                          if (isSelectionMode && isSelected) {
-                                                            SelectionContextBottomSheet.show(context, provider, item.path);
-                                                          } else {
-                                                            provider.toggleSelection(item.path);
-                                                          }
+                                                          provider.toggleSelection(item.path);
                                                         };
                                                         return DragDropHandler(
                                                           path: item.path,
@@ -728,11 +718,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
 
     final itemLongPress = () {
       _activatePane(provider);
-      if (isSelectionMode && isSelected) {
-        SelectionContextBottomSheet.show(context, provider, folder.path);
-      } else {
-        provider.toggleSelection(folder.path);
-      }
+      provider.toggleSelection(folder.path);
     };
 
     return DragDropHandler(
@@ -927,11 +913,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
 
     final itemLongPress = () {
       _activatePane(provider);
-      if (isSelectionMode && isSelected) {
-        SelectionContextBottomSheet.show(context, provider, file.path);
-      } else {
-        provider.toggleSelection(file.path);
-      }
+      provider.toggleSelection(file.path);
     };
 
     return DragDropHandler(

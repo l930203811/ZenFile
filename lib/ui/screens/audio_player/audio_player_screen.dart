@@ -228,6 +228,9 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _showDesktopLyricIfEnabled();
       });
+    } else if (DesktopLyricController.instance.isRunning) {
+      // Controller 正在运行说明桌面歌词已开启（可能从后台播放恢复），同步开关状态
+      setState(() => _desktopLyricEnabled = true);
     }
   }
 
@@ -548,6 +551,9 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
             _lyricSourcePath = loaded.sourcePath;
             _isLoadingLyrics = false;
           });
+          if (_desktopLyricEnabled) {
+            DesktopLyricController.instance.setLyrics(loaded.lyrics);
+          }
         }
         return;
       }
@@ -574,6 +580,9 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
           }
           _isLoadingLyrics = false;
         });
+        if (_desktopLyricEnabled) {
+          DesktopLyricController.instance.setLyrics(onlineResult?.lyrics);
+        }
       }
     });
   }
@@ -868,20 +877,16 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       return;
     }
     if (!mounted) return;
-    final line = _getCurrentLyricLine();
-    final text = line?.text ?? '';
-    final highlightLen = _calcDesktopHighlightLen(line);
-    _lastDesktopLyricText = text;
-    _lastDesktopHighlightLen = highlightLen;
     final colors = _getDesktopLyricColors();
-    await DesktopLyricService.instance.show(text, highlightColor: colors[0], normalColor: colors[1]);
-    // 立即推送一次逐字高亮位置
-    DesktopLyricService.instance.updateLyric(text, highlightLen: highlightLen, highlightColor: colors[0], normalColor: colors[1]);
+    DesktopLyricController.instance.setColors(highlightColor: colors[0], normalColor: colors[1]);
+    DesktopLyricController.instance.setLyrics(_lyrics);
+    DesktopLyricController.instance.start(player);
   }
 
   /// 切换桌面歌词悬浮窗开关
   void _toggleDesktopLyric() async {
     if (_desktopLyricEnabled) {
+      DesktopLyricController.instance.stop();
       await DesktopLyricService.instance.hide();
       _lastDesktopLyricText = null;
       _lastDesktopHighlightLen = -1;
@@ -909,26 +914,12 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
 
   /// 实际开启桌面歌词悬浮窗（权限已授予的前提下调用）
   Future<void> _enableDesktopLyric() async {
-    final line = _getCurrentLyricLine();
-    final text = line?.text ?? '';
-    final highlightLen = _calcDesktopHighlightLen(line);
     final colors = _getDesktopLyricColors();
-    final ok = await DesktopLyricService.instance.show(text, highlightColor: colors[0], normalColor: colors[1]);
-    if (ok) {
-      _lastDesktopLyricText = text;
-      _lastDesktopHighlightLen = highlightLen;
-      // 立即推送逐字高亮
-      DesktopLyricService.instance.updateLyric(text, highlightLen: highlightLen, highlightColor: colors[0], normalColor: colors[1]);
-      setState(() => _desktopLyricEnabled = true);
-      await PreferencesService.saveDesktopLyricEnabled(true);
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(L10n.of(context).msg_overlay_permission_required),
-          duration: const Duration(seconds: 3),
-        ),
-      );
-    }
+    DesktopLyricController.instance.setColors(highlightColor: colors[0], normalColor: colors[1]);
+    DesktopLyricController.instance.setLyrics(_lyrics);
+    DesktopLyricController.instance.start(player);
+    setState(() => _desktopLyricEnabled = true);
+    await PreferencesService.saveDesktopLyricEnabled(true);
   }
 
   @override
@@ -988,25 +979,10 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     }
   }
 
-  /// 同步当前歌词行到悬浮窗（仅在文本变化时推送，节流）
+  /// 同步当前歌词行到悬浮窗（由 DesktopLyricController 独立管理更新，此处仅做状态同步）
   void _updateDesktopLyric() {
-    if (!_desktopLyricEnabled) return;
-    final line = _getCurrentLyricLine();
-    final text = line?.text ?? '';
-    final highlightLen = _calcDesktopHighlightLen(line);
-    // 文本或高亮位置变化时才推送
-    if (text != _lastDesktopLyricText || highlightLen != _lastDesktopHighlightLen) {
-      _lastDesktopLyricText = text;
-      _lastDesktopHighlightLen = highlightLen;
-      DesktopLyricService.instance.updateLyric(text, highlightLen: highlightLen);
-    }
-    // 心跳检查：定期确认原生层悬浮窗是否仍存在，发现消失则自动恢复
-    _desktopLyricHeartbeatCounter++;
-    if (_desktopLyricHeartbeatCounter >= _desktopLyricHeartbeatInterval &&
-        !_desktopLyricRecovering) {
-      _desktopLyricHeartbeatCounter = 0;
-      _checkAndRecoverDesktopLyric();
-    }
+    // 桌面歌词更新已由 DesktopLyricController 独立管理
+    // 此方法保留用于向后兼容，未来可移除
   }
 
   /// 检查悬浮窗是否仍显示，若已消失则自动恢复
@@ -1722,6 +1698,15 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     _updateBackgroundItem();
   }
 
+  void _handleBackgroundToggle(BuildContext ctx) {
+    if (_isBackgroundMode) {
+      _toggleBackgroundMode();
+    } else {
+      Navigator.pop(ctx);
+      _toggleBackgroundMode();
+    }
+  }
+
   Future<void> _toggleBackgroundMode() async {
     if (_isBackgroundMode) {
       // Turn off — stop background handler to completely clear the notification,
@@ -2018,21 +2003,21 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                       color: _isBackgroundMode ? Colors.greenAccent : Colors.white,
                     ),
                     title: Text(
-                      _isBackgroundMode ? L10n.of(context).msg6d16d396 : L10n.of(context).msg29eed1da,
+                      L10n.of(context).msg29eed1da,
                       style: TextStyle(
                         color: _isBackgroundMode ? Colors.greenAccent : Colors.white,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    subtitle: Text(
-                      _isBackgroundMode
-                          ? L10n.of(context).msg4aa059f7
-                          : L10n.of(context).msg8f7f4490,
-                      style: const TextStyle(color: Colors.white54, fontSize: 12),
+                    trailing: Switch(
+                      value: _isBackgroundMode,
+                      activeColor: Colors.greenAccent,
+                      onChanged: (_) {
+                        _handleBackgroundToggle(ctx);
+                      },
                     ),
                     onTap: () {
-                      Navigator.pop(ctx);
-                      _toggleBackgroundMode();
+                      _handleBackgroundToggle(ctx);
                     },
                   ),
                   // ── 桌面歌词悬浮窗 ────────────────────────────────────────────────
@@ -2155,160 +2140,324 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
           AudioParticlesWidget(isPlaying: isPlaying, accentColor: accent),
           // Main Layout Matching Screenshot 2
           SafeArea(
-            child: Column(
-              children: [
-                // Premium Top Bar
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: Icon(Broken.arrow_down_2, size: 28),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                      Expanded(
-                        child: Column(
-                          children: [
-                            Text(
-                              _allSongs.isNotEmpty
-                                  ? '${_currentIndex + 1} / ${_allSongs.length}'
-                                  : '1 / 1',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                                color: accent,
-                                letterSpacing: 1.0,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              _getDisplayAlbum(),
-                              textAlign: TextAlign.center,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 15,
-                                color: theme.colorScheme.onSurface.withOpacity(0.9),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: theme.colorScheme.onSurface.withOpacity(0.08),
-                        ),
-                        child: IconButton(
-                          icon: const Icon(Icons.more_horiz_rounded, size: 22),
-                          onPressed: _showMoreMenu,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Main Animated Body
-                Expanded(
-                  child: FadeTransition(
-                    opacity: _fadeAnim,
-                    child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          // Artwork or Inline Lyrics (toggleable)
-                          _buildArtworkOrLyrics(accent, theme, isDark),
-                          // Single-line current lyric (always visible by default)
-                          _buildSingleLineLyrics(accent, theme, isDark),
-                          // Title row with Favorite Heart icon on right matching Screenshot 2
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 28),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        _currentTitle,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w800,
-                                          fontSize: 24,
-                                          letterSpacing: 0.2,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Text(
-                                        _getDisplayArtist(),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          color: theme.colorScheme.onSurface.withOpacity(0.6),
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: Icon(
-                                    _isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                                    color: _isFavorite ? Colors.redAccent : theme.colorScheme.onSurface.withOpacity(0.6),
-                                    size: 28,
-                                  ),
-                                  onPressed: () => setState(() => _isFavorite = !_isFavorite),
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Interactive Glowing Waveform Seek Bar
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: AudioWaveformWidget(
-                              position: position,
-                              duration: duration,
-                              isPlaying: isPlaying,
-                              accentColor: accent,
-                              onSeekStart: () => isSeeking = true,
-                              onSeek: (d) {
-                                isSeeking = false;
-                                setState(() => position = d);
-                                player.seek(d);
-                              },
-                            ),
-                          ),
-                          // Compact Playback Controls & Bottom Utilities
-                          AudioControlsWidget(
-                            isPlaying: isPlaying,
-                            position: position,
-                            duration: duration,
-                            onPlayPause: () => player.playOrPause(),
-                            onPrevious: _allSongs.length > 1 ? _playPrevious : null,
-                            onNext: _allSongs.length > 1 ? _playNext : null,
-                            onShowLyrics: _toggleInlineLyrics,
-                            onShowSleepTimer: _showSleepTimerDialog,
-                            onShowEqualizer: _showEqualizerDialog,
-                            onShowQueue: () => _showQueueSheet(accent),
-                            repeatMode: _repeatMode,
-                            onToggleRepeat: () => setState(() => _repeatMode = (_repeatMode + 1) % 3),
-                            accentColor: accent,
-                            hasLyrics: _lyrics != null && _lyrics!.isNotEmpty,
-                            isShowingLyrics: _showInlineLyrics,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final screenWidth = constraints.maxWidth;
+                final screenHeight = constraints.maxHeight;
+                final aspectRatio = screenWidth / screenHeight;
+                final isWideScreen = aspectRatio > 1.8;
+
+                if (isWideScreen) {
+                  return _buildWideScreenLayout(context, accent, theme, isDark);
+                } else {
+                  return _buildNormalScreenLayout(context, accent, theme, isDark);
+                }
+              },
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildNormalScreenLayout(BuildContext context, Color accent, ThemeData theme, bool isDark) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            children: [
+              IconButton(
+                icon: Icon(Broken.arrow_down_2, size: 28),
+                onPressed: () => Navigator.pop(context),
+              ),
+              Expanded(
+                child: Column(
+                  children: [
+                    Text(
+                      _allSongs.isNotEmpty
+                          ? '${_currentIndex + 1} / ${_allSongs.length}'
+                          : '1 / 1',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                        color: accent,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _getDisplayAlbum(),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                        color: theme.colorScheme.onSurface.withOpacity(0.9),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: theme.colorScheme.onSurface.withOpacity(0.08),
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.more_horiz_rounded, size: 22),
+                  onPressed: _showMoreMenu,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: FadeTransition(
+            opacity: _fadeAnim,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildArtworkOrLyrics(accent, theme, isDark),
+                  _buildSingleLineLyrics(accent, theme, isDark),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 28),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _currentTitle,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 24,
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                _getDisplayArtist(),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            _isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                            color: _isFavorite ? Colors.redAccent : theme.colorScheme.onSurface.withOpacity(0.6),
+                            size: 28,
+                          ),
+                          onPressed: () => setState(() => _isFavorite = !_isFavorite),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: AudioWaveformWidget(
+                      position: position,
+                      duration: duration,
+                      isPlaying: isPlaying,
+                      accentColor: accent,
+                      onSeekStart: () => isSeeking = true,
+                      onSeek: (d) {
+                        isSeeking = false;
+                        setState(() => position = d);
+                        player.seek(d);
+                      },
+                    ),
+                  ),
+                  AudioControlsWidget(
+                    isPlaying: isPlaying,
+                    position: position,
+                    duration: duration,
+                    onPlayPause: () => player.playOrPause(),
+                    onPrevious: _allSongs.length > 1 ? _playPrevious : null,
+                    onNext: _allSongs.length > 1 ? _playNext : null,
+                    onShowLyrics: _toggleInlineLyrics,
+                    onShowSleepTimer: _showSleepTimerDialog,
+                    onShowEqualizer: _showEqualizerDialog,
+                    onShowQueue: () => _showQueueSheet(accent),
+                    repeatMode: _repeatMode,
+                    onToggleRepeat: () => setState(() => _repeatMode = (_repeatMode + 1) % 3),
+                    accentColor: accent,
+                    hasLyrics: _lyrics != null && _lyrics!.isNotEmpty,
+                    isShowingLyrics: _showInlineLyrics,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWideScreenLayout(BuildContext context, Color accent, ThemeData theme, bool isDark) {
+    return Row(
+      children: [
+        Expanded(
+          flex: 1,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(Broken.arrow_down_2, size: 24),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    const SizedBox(width: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: theme.colorScheme.onSurface.withOpacity(0.08),
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.more_horiz_rounded, size: 20),
+                        onPressed: _showMoreMenu,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: FadeTransition(
+                  opacity: _fadeAnim,
+                  child: Center(
+                    child: _buildArtworkOrLyrics(accent, theme, isDark),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          flex: 1,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Text(
+                  _allSongs.isNotEmpty
+                      ? '${_currentIndex + 1} / ${_allSongs.length}'
+                      : '1 / 1',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    color: accent,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: FadeTransition(
+                  opacity: _fadeAnim,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildSingleLineLyrics(accent, theme, isDark),
+                        const SizedBox(height: 16),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                _currentTitle,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 20,
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                _getDisplayArtist(),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        IconButton(
+                          icon: Icon(
+                            _isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                            color: _isFavorite ? Colors.redAccent : theme.colorScheme.onSurface.withOpacity(0.6),
+                            size: 32,
+                          ),
+                          onPressed: () => setState(() => _isFavorite = !_isFavorite),
+                        ),
+                        const SizedBox(height: 16),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: AudioWaveformWidget(
+                            position: position,
+                            duration: duration,
+                            isPlaying: isPlaying,
+                            accentColor: accent,
+                            onSeekStart: () => isSeeking = true,
+                            onSeek: (d) {
+                              isSeeking = false;
+                              setState(() => position = d);
+                              player.seek(d);
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        AudioControlsWidget(
+                          isPlaying: isPlaying,
+                          position: position,
+                          duration: duration,
+                          onPlayPause: () => player.playOrPause(),
+                          onPrevious: _allSongs.length > 1 ? _playPrevious : null,
+                          onNext: _allSongs.length > 1 ? _playNext : null,
+                          onShowLyrics: _toggleInlineLyrics,
+                          onShowSleepTimer: _showSleepTimerDialog,
+                          onShowEqualizer: _showEqualizerDialog,
+                          onShowQueue: () => _showQueueSheet(accent),
+                          repeatMode: _repeatMode,
+                          onToggleRepeat: () => setState(() => _repeatMode = (_repeatMode + 1) % 3),
+                          accentColor: accent,
+                          hasLyrics: _lyrics != null && _lyrics!.isNotEmpty,
+                          isShowingLyrics: _showInlineLyrics,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

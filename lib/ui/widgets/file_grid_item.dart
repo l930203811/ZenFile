@@ -178,6 +178,7 @@ class FileGridItem extends StatelessWidget {
                       context,
                       onAction,
                       isArchive: isArchive,
+                      openWith: !file.isDirectory,
                     );
                   },
                 ),

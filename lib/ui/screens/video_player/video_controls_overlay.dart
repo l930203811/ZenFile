@@ -15,6 +15,8 @@ class VideoControlsOverlay extends StatelessWidget {
   final int repeatMode; // 0=none, 1=one, 2=all
   final int rotationTurns; // 0=0°, 1=90°, 2=180°, 3=270°
   final int aspectRatioMode; // 0=fit, 1=fill, 2=center, 3=16:9, 4=4:3
+  final bool subtitleEnabled;
+  final String? subtitlePath;
   final ValueChanged<double> onChanged;
   final ValueChanged<double> onChangeEnd;
   final ValueChanged<double> onChangeStart;
@@ -30,6 +32,11 @@ class VideoControlsOverlay extends StatelessWidget {
   final VoidCallback onToggleRepeat;
   final VoidCallback onRotate;
   final VoidCallback onToggleAspectRatio;
+  final VoidCallback onCustomAspectRatio;
+  final VoidCallback onAddSubtitle;
+  final VoidCallback onSubtitleSettings;
+  final VoidCallback onToggleSubtitle;
+  final VoidCallback onOpenPlaylist;
   final VoidCallback onInteract;
 
   const VideoControlsOverlay({
@@ -46,6 +53,8 @@ class VideoControlsOverlay extends StatelessWidget {
     required this.repeatMode,
     required this.rotationTurns,
     required this.aspectRatioMode,
+    this.subtitleEnabled = false,
+    this.subtitlePath,
     required this.onChanged,
     required this.onChangeEnd,
     required this.onChangeStart,
@@ -61,6 +70,11 @@ class VideoControlsOverlay extends StatelessWidget {
     required this.onToggleRepeat,
     required this.onRotate,
     required this.onToggleAspectRatio,
+    required this.onCustomAspectRatio,
+    required this.onAddSubtitle,
+    required this.onSubtitleSettings,
+    required this.onToggleSubtitle,
+    required this.onOpenPlaylist,
     required this.onInteract,
   });
 
@@ -108,9 +122,9 @@ class VideoControlsOverlay extends StatelessWidget {
                 children: [
                   Icon(Broken.lock, color: accentColor, size: 22),
                   const SizedBox(width: 8),
-                  const Text(
-                    'Slide / Tap to Unlock',
-                    style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                  Text(
+                    L10n.of(context).msg_slide_to_unlock,
+                    style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -174,9 +188,9 @@ class VideoControlsOverlay extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(4),
                                 border: Border.all(color: accentColor, width: 0.8),
                               ),
-                              child: const Text(
-                                '硬解',
-                                style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                              child: Text(
+                                L10n.of(context).msg_hwdec,
+                                style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -232,6 +246,65 @@ class VideoControlsOverlay extends StatelessWidget {
                     icon: Icon(Broken.unlock, color: itemsColor, size: 24),
                     tooltip: L10n.of(context).msg8f106217,
                     onPressed: onToggleLock,
+                  ),
+                  const SizedBox(width: 8),
+                  // Playlist Button
+                  IconButton(
+                    icon: Icon(Icons.playlist_play_rounded, color: itemsColor, size: 24),
+                    tooltip: L10n.of(context).msg_playlist,
+                    onPressed: () {
+                      onInteract();
+                      onOpenPlaylist();
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  // More Options Menu Button
+                  PopupMenuButton<String>(
+                    icon: Icon(Icons.menu_rounded, color: itemsColor, size: 24),
+                    tooltip: L10n.of(context).msg3007c452,
+                    color: const Color(0xFF1E1E2E),
+                    onSelected: (value) {
+                      onInteract();
+                      if (value == 'subtitle_settings') {
+                        onSubtitleSettings();
+                      } else if (value == 'custom_aspect') {
+                        onCustomAspectRatio();
+                      }
+                    },
+                    itemBuilder: (_) => [
+                      PopupMenuItem<String>(
+                        value: 'custom_aspect',
+                        child: Row(
+                          children: [
+                            Icon(Icons.aspect_ratio_rounded, size: 20, color: Colors.white),
+                            const SizedBox(width: 12),
+                            Text(
+                              L10n.of(context).msg_custom_aspect_ratio,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'subtitle_settings',
+                        child: Row(
+                          children: [
+                            Icon(Icons.subtitles_rounded, size: 20, color: Colors.white),
+                            const SizedBox(width: 12),
+                            Text(
+                              L10n.of(context).msg_subtitle_menu,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -376,6 +449,27 @@ class VideoControlsOverlay extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
+                      // Subtitle Toggle Button
+                      Opacity(
+                        opacity: subtitlePath != null ? 1.0 : 0.4,
+                        child: IconButton(
+                          icon: Icon(
+                            subtitleEnabled ? Icons.subtitles_rounded : Icons.subtitles_off_rounded,
+                            color: subtitleEnabled ? accentColor : itemsColor,
+                            size: 22,
+                          ),
+                          tooltip: subtitlePath != null
+                              ? (subtitleEnabled ? L10n.of(context).msg_subtitle_off : L10n.of(context).msg_subtitle_on)
+                              : L10n.of(context).msg_no_subtitle,
+                          onPressed: subtitlePath != null
+                              ? () {
+                                  onInteract();
+                                  onToggleSubtitle();
+                                }
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
                       // Repeat Button
                       IconButton(
                         icon: Icon(

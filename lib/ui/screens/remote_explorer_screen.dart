@@ -93,6 +93,35 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
     try {
       await _client?.connect();
       _isConnected = true;
+
+      // If this is an SMB connection and the configured rootPath is the
+      // generic root ("/"), try to auto-detect a usable share name by
+      // listing the server root and picking the first reasonable share.
+      if (FileManagerProvider.isSmbType(conn.type) && (_currentPath == '/' || _currentPath.isEmpty)) {
+        try {
+          final rootItems = await _client!.listDirectory('/');
+          if (rootItems.isNotEmpty) {
+            // Prefer the first directory-like share that isn't a special
+            // administrative share such as IPC$.
+            RemoteFileItem? picked;
+            for (final it in rootItems) {
+              final lname = it.name.toLowerCase();
+              if (!it.isDirectory) continue;
+              if (lname == 'ipc\$' || lname == 'print\$') continue;
+              picked = it;
+              break;
+            }
+            picked ??= rootItems.firstWhere((e) => e.isDirectory, orElse: () => rootItems.first);
+            if (picked != null) {
+              _currentPath = '/${picked.name}';
+            }
+          }
+        } catch (e) {
+          // Ignore detection errors and fall back to configured root
+          debugPrint('SMB share auto-detect failed: $e');
+        }
+      }
+
       await _loadDirectoryContents(_currentPath);
     } catch (e) {
       if (mounted) {

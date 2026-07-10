@@ -3909,6 +3909,14 @@
   "@msg_aspect_4_3": {
     "description": "Video aspect ratio mode: 4:3"
   },
+  "msg_aspect_custom": "Пользовательское",
+  "@msg_aspect_custom": {
+    "description": "Video aspect ratio mode: custom"
+  },
+  "msg_custom_aspect_ratio": "Пользовательское соотношение сторон",
+  "@msg_custom_aspect_ratio": {
+    "description": "Video player menu item for custom aspect ratio"
+  },
   "drawer_tools": "Инструменты",
   "open_with_native": "Открыть этой приложением",
   "open_with_external": "Открыть внешним приложением",
@@ -3927,5 +3935,86 @@
   "msg04b7de53": "Быстрый доступ к часто используемым функциям",
   "@msg04b7de53": {
     "description": "Right side menu header subtitle"
+  }
+,
+  "prop_read": "Read",
+  "prop_write": "Write",
+  "prop_folder_directory": "Folder / Directory",
+  "prop_file": "File",
+  "prop_contains_format": "{folderCount} subfolder(s), {fileCount} file(s)",
+  "@prop_contains_format": {
+    "placeholders": {
+      "folderCount": {
+        "type": "int"
+      },
+      "fileCount": {
+        "type": "int"
+      }
+    }
+  },
+  "prop_bytes": "bytes",
+  "prop_items_selected": "{count} items selected",
+  "@prop_items_selected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "prop_items_summary": "{count} items ({folderCount} folder(s), {fileCount} file(s))",
+  "@prop_items_summary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "folderCount": {
+        "type": "int"
+      },
+      "fileCount": {
+        "type": "int"
+      }
+    }
+  },
+  "msg_add_subtitle": "Добавить субтитры",
+  "@msg_add_subtitle": {"description": "Add subtitle option in video player more menu"},
+  "msg_subtitle_menu": "Субтитры",
+  "@msg_subtitle_menu": {
+    "description": "Subtitles menu item in video player more menu"
+  },
+  "msg_subtitle_size": "Размер субтитров",
+  "@msg_subtitle_size": {
+    "description": "Subtitle font size label in subtitle settings"
+  },
+  "msg_quick_actions": "Быстрые действия",
+  "@msg_quick_actions": {
+    "description": "Top title of quick actions page"
+  },
+  "msg_hwdec": "HW",
+  "@msg_hwdec": {"description": "Hardware decoding badge in video player header"},
+  "msg_subtitle_on": "Включить субтитры",
+  "@msg_subtitle_on": {"description": "Tooltip to turn on subtitles in video player"},
+  "msg_subtitle_off": "Выключить субтитры",
+  "@msg_subtitle_off": {"description": "Tooltip to turn off subtitles in video player"},
+  "msg_no_subtitle": "Нет субтитров",
+  "@msg_no_subtitle": {"description": "Tooltip when no subtitle is loaded in video player"},
+  "msg_playlist": "Плейлист",
+  "@msg_playlist": {
+    "description": "Playlist button tooltip in video player"
+  },
+  "msg_no_playlist": "Нет плейлиста",
+  "@msg_no_playlist": {
+    "description": "Message when no playlist available in video player"
+  },
+  "msg_slide_to_unlock": "Свайп / Нажмите для разблокировки",
+  "@msg_slide_to_unlock": {
+    "description": "Text on lock button in video player"
+  },
+  "msg_seconds_short": "с",
+  "@msg_seconds_short": {
+    "description": "Short unit for seconds in seek indicator (e.g. 10s)"
+  },
+  "msg_speed_2x": "Скорость 2.0x",
+  "@msg_speed_2x": {
+    "description": "Long press speed badge text in video player"
   }
 }

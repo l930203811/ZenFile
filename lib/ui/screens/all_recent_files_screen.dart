@@ -434,11 +434,7 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
                           }
                         },
                         onLongPress: () {
-                          if (_isSelectionMode && isItemSelected) {
-                            SelectionContextBottomSheet.show(context, provider, item.path);
-                          } else {
-                            _toggleSelection(item.path);
-                          }
+                          _toggleSelection(item.path);
                         },
                         onAction: (action) => _handleAction(context, action, item.path),
                       );
@@ -456,11 +452,7 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
                           }
                         },
                         onLongPress: () {
-                          if (_isSelectionMode && isItemSelected) {
-                            SelectionContextBottomSheet.show(context, provider, item.path);
-                          } else {
-                            _toggleSelection(item.path);
-                          }
+                          _toggleSelection(item.path);
                         },
                         onAction: (action) => _handleAction(context, action, item.path),
                       );

@@ -1388,6 +1388,26 @@ class _RemoteDirectoryPickerDialogState extends State<_RemoteDirectoryPickerDial
       _client?.disconnect();
       _client = FileManagerProvider.createRemoteClient(widget.connection);
       await _client!.connect();
+      // SMB auto-detect share when rootPath is generic
+      if (FileManagerProvider.isSmbType(widget.connection.type) && (_currentPath == '/' || _currentPath.isEmpty)) {
+        try {
+          final rootItems = await _client!.listDirectory('/');
+          if (rootItems.isNotEmpty) {
+            RemoteFileItem? picked;
+            for (final it in rootItems) {
+              final lname = it.name.toLowerCase();
+              if (!it.isDirectory) continue;
+              if (lname == 'ipc\$' || lname == 'print\$') continue;
+              picked = it;
+              break;
+            }
+            picked ??= rootItems.firstWhere((e) => e.isDirectory, orElse: () => rootItems.first);
+            if (picked != null) _currentPath = '/${picked.name}';
+          }
+        } catch (e) {
+          debugPrint('SMB auto-detect failed in QuickCategories: $e');
+        }
+      }
       await _listDir(_currentPath);
     } catch (e) {
       if (mounted) {

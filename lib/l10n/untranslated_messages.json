@@ -15,7 +15,20 @@
     "ui_lyrics_searching",
     "ui_lyrics_download_success_enhanced",
     "ui_lyrics_download_success",
-    "ui_lyrics_not_found_online"
+    "ui_lyrics_not_found_online",
+    "log_v1_1_1_line1",
+    "log_v1_1_1_line2",
+    "log_v1_1_1_line3",
+    "log_v1_1_1_line4",
+    "log_v1_1_1_line5",
+    "log_v1_1_1_line6",
+    "log_v1_1_1_line7",
+    "log_v1_1_1_line8",
+    "log_v1_1_1_line9",
+    "log_v1_1_1_line10",
+    "log_v1_1_1_line11",
+    "log_v1_1_1_line12",
+    "log_v1_1_1_line13"
   ],
 
   "de": [
@@ -34,7 +47,36 @@
     "ui_lyrics_searching",
     "ui_lyrics_download_success_enhanced",
     "ui_lyrics_download_success",
-    "ui_lyrics_not_found_online"
+    "ui_lyrics_not_found_online",
+    "log_v1_1_1_line1",
+    "log_v1_1_1_line2",
+    "log_v1_1_1_line3",
+    "log_v1_1_1_line4",
+    "log_v1_1_1_line5",
+    "log_v1_1_1_line6",
+    "log_v1_1_1_line7",
+    "log_v1_1_1_line8",
+    "log_v1_1_1_line9",
+    "log_v1_1_1_line10",
+    "log_v1_1_1_line11",
+    "log_v1_1_1_line12",
+    "log_v1_1_1_line13"
+  ],
+
+  "en": [
+    "log_v1_1_1_line1",
+    "log_v1_1_1_line2",
+    "log_v1_1_1_line3",
+    "log_v1_1_1_line4",
+    "log_v1_1_1_line5",
+    "log_v1_1_1_line6",
+    "log_v1_1_1_line7",
+    "log_v1_1_1_line8",
+    "log_v1_1_1_line9",
+    "log_v1_1_1_line10",
+    "log_v1_1_1_line11",
+    "log_v1_1_1_line12",
+    "log_v1_1_1_line13"
   ],
 
   "es": [
@@ -53,7 +95,20 @@
     "ui_lyrics_searching",
     "ui_lyrics_download_success_enhanced",
     "ui_lyrics_download_success",
-    "ui_lyrics_not_found_online"
+    "ui_lyrics_not_found_online",
+    "log_v1_1_1_line1",
+    "log_v1_1_1_line2",
+    "log_v1_1_1_line3",
+    "log_v1_1_1_line4",
+    "log_v1_1_1_line5",
+    "log_v1_1_1_line6",
+    "log_v1_1_1_line7",
+    "log_v1_1_1_line8",
+    "log_v1_1_1_line9",
+    "log_v1_1_1_line10",
+    "log_v1_1_1_line11",
+    "log_v1_1_1_line12",
+    "log_v1_1_1_line13"
   ],
 
   "fr": [
@@ -72,7 +127,20 @@
     "ui_lyrics_searching",
     "ui_lyrics_download_success_enhanced",
     "ui_lyrics_download_success",
-    "ui_lyrics_not_found_online"
+    "ui_lyrics_not_found_online",
+    "log_v1_1_1_line1",
+    "log_v1_1_1_line2",
+    "log_v1_1_1_line3",
+    "log_v1_1_1_line4",
+    "log_v1_1_1_line5",
+    "log_v1_1_1_line6",
+    "log_v1_1_1_line7",
+    "log_v1_1_1_line8",
+    "log_v1_1_1_line9",
+    "log_v1_1_1_line10",
+    "log_v1_1_1_line11",
+    "log_v1_1_1_line12",
+    "log_v1_1_1_line13"
   ],
 
   "ja": [
@@ -91,7 +159,20 @@
     "ui_lyrics_searching",
     "ui_lyrics_download_success_enhanced",
     "ui_lyrics_download_success",
-    "ui_lyrics_not_found_online"
+    "ui_lyrics_not_found_online",
+    "log_v1_1_1_line1",
+    "log_v1_1_1_line2",
+    "log_v1_1_1_line3",
+    "log_v1_1_1_line4",
+    "log_v1_1_1_line5",
+    "log_v1_1_1_line6",
+    "log_v1_1_1_line7",
+    "log_v1_1_1_line8",
+    "log_v1_1_1_line9",
+    "log_v1_1_1_line10",
+    "log_v1_1_1_line11",
+    "log_v1_1_1_line12",
+    "log_v1_1_1_line13"
   ],
 
   "ko": [
@@ -110,7 +191,20 @@
     "ui_lyrics_searching",
     "ui_lyrics_download_success_enhanced",
     "ui_lyrics_download_success",
-    "ui_lyrics_not_found_online"
+    "ui_lyrics_not_found_online",
+    "log_v1_1_1_line1",
+    "log_v1_1_1_line2",
+    "log_v1_1_1_line3",
+    "log_v1_1_1_line4",
+    "log_v1_1_1_line5",
+    "log_v1_1_1_line6",
+    "log_v1_1_1_line7",
+    "log_v1_1_1_line8",
+    "log_v1_1_1_line9",
+    "log_v1_1_1_line10",
+    "log_v1_1_1_line11",
+    "log_v1_1_1_line12",
+    "log_v1_1_1_line13"
   ],
 
   "ru": [
@@ -129,7 +223,20 @@
     "ui_lyrics_searching",
     "ui_lyrics_download_success_enhanced",
     "ui_lyrics_download_success",
-    "ui_lyrics_not_found_online"
+    "ui_lyrics_not_found_online",
+    "log_v1_1_1_line1",
+    "log_v1_1_1_line2",
+    "log_v1_1_1_line3",
+    "log_v1_1_1_line4",
+    "log_v1_1_1_line5",
+    "log_v1_1_1_line6",
+    "log_v1_1_1_line7",
+    "log_v1_1_1_line8",
+    "log_v1_1_1_line9",
+    "log_v1_1_1_line10",
+    "log_v1_1_1_line11",
+    "log_v1_1_1_line12",
+    "log_v1_1_1_line13"
   ],
 
   "zh_TW": [

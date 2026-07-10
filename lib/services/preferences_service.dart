@@ -870,18 +870,22 @@ class PreferencesService {
   }
 
   // --- Audio Playback Position Memory ---
-  static const String _keyPlaybackPositions = 'audio_playback_positions';
+  static const String _keyLastPlaybackPosition = 'last_playback_position';
   static const String _keyLastPlayedAudio = 'last_played_audio';
 
   /// 获取音频文件保存的播放进度（毫秒），返回 null 表示无记录
+  /// 仅返回最后一次播放的音频文件的进度
   static int? getPlaybackPosition(String audioPath) {
-    final json = _prefs?.getString(_keyPlaybackPositions);
+    final json = _prefs?.getString(_keyLastPlaybackPosition);
     if (json == null) return null;
     try {
       final map = jsonDecode(json) as Map<String, dynamic>;
-      final pos = map[audioPath];
-      if (pos is int) return pos;
-      if (pos is num) return pos.toInt();
+      final savedPath = map['path'] as String?;
+      final position = map['position'];
+      if (savedPath == audioPath && position != null) {
+        if (position is int) return position;
+        if (position is num) return position.toInt();
+      }
       return null;
     } catch (_) {
       return null;
@@ -889,28 +893,22 @@ class PreferencesService {
   }
 
   /// 保存音频文件的播放进度（毫秒）
+  /// 仅保存最后一次播放的音频文件的进度
   static Future<void> savePlaybackPosition(String audioPath, int positionMs) async {
-    final json = _prefs?.getString(_keyPlaybackPositions);
-    Map<String, dynamic> map = {};
-    if (json != null) {
-      try {
-        map = jsonDecode(json) as Map<String, dynamic>;
-      } catch (_) {
-        map = {};
-      }
-    }
-    map[audioPath] = positionMs;
-    await _prefs?.setString(_keyPlaybackPositions, jsonEncode(map));
+    final map = {'path': audioPath, 'position': positionMs};
+    await _prefs?.setString(_keyLastPlaybackPosition, jsonEncode(map));
   }
 
   /// 清除指定音频的播放进度记录
   static Future<void> clearPlaybackPosition(String audioPath) async {
-    final json = _prefs?.getString(_keyPlaybackPositions);
+    final json = _prefs?.getString(_keyLastPlaybackPosition);
     if (json == null) return;
     try {
       final map = jsonDecode(json) as Map<String, dynamic>;
-      map.remove(audioPath);
-      await _prefs?.setString(_keyPlaybackPositions, jsonEncode(map));
+      final savedPath = map['path'] as String?;
+      if (savedPath == audioPath) {
+        await _prefs?.remove(_keyLastPlaybackPosition);
+      }
     } catch (_) {}
   }
 
@@ -938,6 +936,96 @@ class PreferencesService {
     await _prefs?.setString(_keyLastPlayedAudio, jsonEncode(map));
   }
 
+  // --- Video Playback Position Memory ---
+  static const String _keyVideoPlaybackPositions = 'video_playback_positions';
+  static const String _keyLastPlayedVideo = 'last_played_video';
+  static const String _keyVideoCustomAspectRatio = 'video_custom_aspect_ratio';
+  static const String _keySubtitleFontSize = 'video_subtitle_font_size';
+
+  /// 获取视频文件保存的播放进度（毫秒），返回 null 表示无记录
+  static int? getVideoPlaybackPosition(String videoPath) {
+    final json = _prefs?.getString(_keyVideoPlaybackPositions);
+    if (json == null) return null;
+    try {
+      final map = jsonDecode(json) as Map<String, dynamic>;
+      final pos = map[videoPath];
+      if (pos is int) return pos;
+      if (pos is num) return pos.toInt();
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 保存视频文件的播放进度（毫秒）
+  static Future<void> saveVideoPlaybackPosition(String videoPath, int positionMs) async {
+    final json = _prefs?.getString(_keyVideoPlaybackPositions);
+    Map<String, dynamic> map = {};
+    if (json != null) {
+      try {
+        map = jsonDecode(json) as Map<String, dynamic>;
+      } catch (_) {
+        map = {};
+      }
+    }
+    map[videoPath] = positionMs;
+    await _prefs?.setString(_keyVideoPlaybackPositions, jsonEncode(map));
+  }
+
+  /// 清除指定视频的播放进度记录
+  static Future<void> clearVideoPlaybackPosition(String videoPath) async {
+    final json = _prefs?.getString(_keyVideoPlaybackPositions);
+    if (json == null) return;
+    try {
+      final map = jsonDecode(json) as Map<String, dynamic>;
+      map.remove(videoPath);
+      await _prefs?.setString(_keyVideoPlaybackPositions, jsonEncode(map));
+    } catch (_) {}
+  }
+
+  /// 获取上次播放的视频信息 {path, title}
+  static Map<String, String>? getLastPlayedVideo() {
+    final json = _prefs?.getString(_keyLastPlayedVideo);
+    if (json == null) return null;
+    try {
+      final map = jsonDecode(json) as Map<String, dynamic>;
+      final path = map['path'] as String?;
+      if (path == null || path.isEmpty) return null;
+      return {
+        'path': path,
+        'title': map['title'] as String? ?? '',
+      };
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 保存上次播放的视频信息
+  static Future<void> saveLastPlayedVideo(String path, String title) async {
+    final map = {'path': path, 'title': title};
+    await _prefs?.setString(_keyLastPlayedVideo, jsonEncode(map));
+  }
+
+  /// 获取视频自定义缩放比例，默认 16:9
+  static double getVideoCustomAspectRatio() {
+    return _prefs?.getDouble(_keyVideoCustomAspectRatio) ?? 16 / 9;
+  }
+
+  /// 保存视频自定义缩放比例
+  static Future<void> saveVideoCustomAspectRatio(double value) async {
+    await _prefs?.setDouble(_keyVideoCustomAspectRatio, value);
+  }
+
+  /// 获取字幕字体大小，默认 24
+  static double getSubtitleFontSize() {
+    return _prefs?.getDouble(_keySubtitleFontSize) ?? 24;
+  }
+
+  /// 保存字幕字体大小
+  static Future<void> saveSubtitleFontSize(double value) async {
+    await _prefs?.setDouble(_keySubtitleFontSize, value);
+  }
+
   // --- Drawer Section Expanded State ---
   static const String _keyDrawerSectionExpanded = 'drawer_section_expanded_';
 
@@ -954,8 +1042,8 @@ class PreferencesService {
   // --- Categories Grid Columns ---
   static const String _keyCategoriesGridColumns = 'categories_grid_columns';
 
-  /// 获取分类页网格列数，默认 3 列
-  static int getCategoriesGridColumns({int defaultValue = 3}) {
+  /// 获取分类页网格列数，默认 4 列
+  static int getCategoriesGridColumns({int defaultValue = 4}) {
     return _prefs?.getInt(_keyCategoriesGridColumns) ?? defaultValue;
   }
 

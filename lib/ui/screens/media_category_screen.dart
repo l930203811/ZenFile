@@ -957,6 +957,8 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             _buildFoldersToggle(theme),
           if (widget.album == null && widget.mediaType == MediaType.audios)
             _buildResumePlayerButton(theme),
+          if (widget.album == null && widget.mediaType == MediaType.videos)
+            _buildResumeVideoButton(theme),
           Expanded(
             child: Consumer<MediaProvider>(
               builder: (context, provider, child) {
@@ -1690,7 +1692,9 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                         initialIndex: videoList.indexOf(item),
                       ),
                     ),
-                  );
+                  ).then((_) {
+                    if (mounted) setState(() {});
+                  });
                 }
               }
             },
@@ -1713,7 +1717,9 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                       initialIndex: videoList.indexOf(item),
                     ),
                   ),
-                );
+                ).then((_) {
+                  if (mounted) setState(() {});
+                });
               }
             },
             onLongPress: () => _toggleSelection(path, null),
@@ -1733,7 +1739,9 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                       initialIndex: videoList.indexOf(item),
                     ),
                   ),
-                );
+                ).then((_) {
+                  if (mounted) setState(() {});
+                });
               }
             },
             onLongPress: () => _toggleSelection(path, null),
@@ -1908,14 +1916,18 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                 videoPath: file.path,
                 playlist: videoList,
                 initialIndex: videoList.indexOf(item),
-              )));
+              ))).then((_) {
+                if (mounted) setState(() {});
+              });
             }
           } else {
             Navigator.push(context, _slideRoute(VideoPlayerScreen(
               videoPath: path,
               playlist: videoList,
               initialIndex: videoList.indexOf(item),
-            )));
+            ))).then((_) {
+              if (mounted) setState(() {});
+            });
           }
         }
       },
@@ -2967,6 +2979,131 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         },
       ),
     );
+  }
+
+  Widget _buildResumeVideoButton(ThemeData theme) {
+    final lastPlayed = PreferencesService.getLastPlayedVideo();
+    if (lastPlayed == null) return const SizedBox.shrink();
+
+    final path = lastPlayed['path']!;
+    final title = lastPlayed['title'] ?? '';
+    final file = File(path);
+    if (!file.existsSync()) return const SizedBox.shrink();
+
+    final savedMs = PreferencesService.getVideoPlaybackPosition(path);
+    final savedPosition = savedMs != null ? Duration(milliseconds: savedMs) : Duration.zero;
+
+    String formatDuration(Duration d) {
+      final h = d.inHours;
+      final m = d.inMinutes % 60;
+      final s = d.inSeconds % 60;
+      if (h > 0) {
+        return '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+      }
+      return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+    }
+
+    final subtitle = savedPosition.inSeconds > 0
+        ? '${L10n.of(context).ui_resume_playback} · ${formatDuration(savedPosition)}'
+        : title;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Material(
+        color: theme.colorScheme.primaryContainer.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(13),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(13),
+          onTap: () => _openVideoPlayerFromResume(path),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: Material(
+                    color: theme.colorScheme.primary,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: () => _openVideoPlayerFromResume(path),
+                      child: Icon(
+                        Icons.play_arrow_rounded,
+                        color: theme.colorScheme.onPrimary,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        L10n.of(context).ui_resume_playback,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: theme.colorScheme.onSurface.withOpacity(0.4),
+                  size: 24,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _openVideoPlayerFromResume(String path) {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => VideoPlayerScreen(
+          videoPath: path,
+        ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
+          position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+          child: child,
+        ),
+        transitionDuration: const Duration(milliseconds: 400),
+      ),
+    ).then((_) {
+      if (mounted) setState(() {});
+    });
   }
 
   void _openAudioPlayerFromResume(String path, String title, String artist) {

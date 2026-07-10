@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class VideoSeekIndicator extends StatelessWidget {
   final bool forward;
@@ -49,7 +50,7 @@ class VideoSeekIndicator extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '${forward ? '+' : '-'}$seconds s',
+            '${forward ? '+' : '-'}$seconds${L10n.of(context).msg_seconds_short}',
             style: const TextStyle(
               color: color,
               fontSize: 16,

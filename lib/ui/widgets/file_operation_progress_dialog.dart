@@ -174,7 +174,7 @@ class FileOperationProgressDialog extends StatelessWidget {
                             const SizedBox(height: 3),
                             Text(
                               progress.eta.inSeconds > 0
-                                  ? '${_formatDuration(progress.eta)} ${L10n.of(context).ui_time_remaining}'
+                                  ? '${L10n.of(context).ui_time_remaining} ${_formatDuration(progress.eta)}'
                                   : '',
                               style: TextStyle(
                                 fontSize: 12,

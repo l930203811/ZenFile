@@ -3995,6 +3995,14 @@
   "@msg_aspect_4_3": {
     "description": "Video aspect ratio mode: 4:3"
   },
+  "msg_aspect_custom": "自訂",
+  "@msg_aspect_custom": {
+    "description": "Video aspect ratio mode: custom"
+  },
+  "msg_custom_aspect_ratio": "自訂縮放比例",
+  "@msg_custom_aspect_ratio": {
+    "description": "Video player menu item for custom aspect ratio"
+  },
   "drawer_tools": "工具",
   "open_with_native": "使用本應用程式開啟",
   "open_with_external": "使用外部系統選擇器開啟",
@@ -4006,12 +4014,145 @@
   "ui_columns_per_row": "每行顯示",
   "ui_3columns": "3列",
   "ui_4columns": "4列",
-  "msge8b8e9b3": "快捷操作",
+  "msge8b8e9b3": "常用功能",
   "@msge8b8e9b3": {
     "description": "Right side menu header title"
   },
   "msg04b7de53": "常用功能快捷入口",
   "@msg04b7de53": {
     "description": "Right side menu header subtitle"
+  }
+,
+  "prop_read": "Read",
+  "prop_write": "Write",
+  "prop_folder_directory": "Folder / Directory",
+  "prop_file": "File",
+  "prop_contains_format": "{folderCount} subfolder(s), {fileCount} file(s)",
+  "@prop_contains_format": {
+    "placeholders": {
+      "folderCount": {
+        "type": "int"
+      },
+      "fileCount": {
+        "type": "int"
+      }
+    }
+  },
+  "prop_bytes": "bytes",
+  "prop_items_selected": "{count} items selected",
+  "@prop_items_selected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "prop_items_summary": "{count} items ({folderCount} folder(s), {fileCount} file(s))",
+  "@prop_items_summary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "folderCount": {
+        "type": "int"
+      },
+      "fileCount": {
+        "type": "int"
+      }
+    }
+  },
+  "msg_add_subtitle": "新增字幕",
+  "@msg_add_subtitle": {"description": "Add subtitle option in video player more menu"},
+  "msg_subtitle_menu": "字幕",
+  "@msg_subtitle_menu": {
+    "description": "Subtitles menu item in video player more menu"
+  },
+  "msg_subtitle_size": "字幕大小",
+  "@msg_subtitle_size": {
+    "description": "Subtitle font size label in subtitle settings"
+  },
+  "msg_quick_actions": "快捷操作",
+  "@msg_quick_actions": {
+    "description": "Top title of quick actions page"
+  },
+  "msg_hwdec": "硬解",
+  "@msg_hwdec": {"description": "Hardware decoding badge in video player header"},
+  "msg_subtitle_on": "開啟字幕",
+  "@msg_subtitle_on": {"description": "Tooltip to turn on subtitles in video player"},
+  "msg_subtitle_off": "關閉字幕",
+  "@msg_subtitle_off": {"description": "Tooltip to turn off subtitles in video player"},
+  "msg_no_subtitle": "暫無字幕",
+  "@msg_no_subtitle": {"description": "Tooltip when no subtitle is loaded in video player"},
+  "msg_playlist": "播放列表",
+  "@msg_playlist": {
+    "description": "Playlist button tooltip in video player"
+  },
+  "msg_no_playlist": "暫無播放列表",
+  "@msg_no_playlist": {
+    "description": "Message when no playlist available in video player"
+  },
+  "msg_slide_to_unlock": "滑動/點擊解鎖",
+  "@msg_slide_to_unlock": {
+    "description": "Text on lock button in video player"
+  },
+  "msg_seconds_short": "秒",
+  "@msg_seconds_short": {
+    "description": "Short unit for seconds in seek indicator (e.g. 10s)"
+  },
+  "msg_speed_2x": "倍速 2.0x",
+  "@msg_speed_2x": {
+    "description": "Long press speed badge text in video player"
+  },
+  "log_v1_1_1_line1": "📹 視訊播放器",
+  "@log_v1_1_1_line1": {
+    "description": "Changelog v1.1.1 line 1"
+  },
+  "log_v1_1_1_line2": "支援外掛字幕：自動識別與影片同目錄、同檔名的字幕檔案（如 .srt、.ass），同時保留手動載入字幕檔案的入口。",
+  "@log_v1_1_1_line2": {
+    "description": "Changelog v1.1.1 line 2"
+  },
+  "log_v1_1_1_line3": "新增自訂畫面縮放比例，可靈活適配各類異形螢幕及非標準比例螢幕。",
+  "@log_v1_1_1_line3": {
+    "description": "Changelog v1.1.1 line 3"
+  },
+  "log_v1_1_1_line4": "🎵 音訊播放器",
+  "@log_v1_1_1_line4": {
+    "description": "Changelog v1.1.1 line 4"
+  },
+  "log_v1_1_1_line5": "修復了在平板、車機等橫屏裝置上的介面顯示異常問題，提升大螢幕體驗。",
+  "@log_v1_1_1_line5": {
+    "description": "Changelog v1.1.1 line 5"
+  },
+  "log_v1_1_1_line6": "📂 檔案瀏覽與操作",
+  "@log_v1_1_1_line6": {
+    "description": "Changelog v1.1.1 line 6"
+  },
+  "log_v1_1_1_line7": "優化側滑選單與快捷操作彈窗的寬度一致性，視覺更統一。",
+  "@log_v1_1_1_line7": {
+    "description": "Changelog v1.1.1 line 7"
+  },
+  "log_v1_1_1_line8": "快捷操作面板中的常用功能現支援摺疊/展開，且狀態會持久記憶，下次開啟保留您的偏好。",
+  "@log_v1_1_1_line8": {
+    "description": "Changelog v1.1.1 line 8"
+  },
+  "log_v1_1_1_line9": "調整檔案開啟邏輯：點擊檔案預設使用本應用直接開啟；如需切換其他應用，可在選中檔案後，透過頂部三點選單或底部操作列的「更多」選項選擇「開啟方式」。",
+  "@log_v1_1_1_line9": {
+    "description": "Changelog v1.1.1 line 9"
+  },
+  "log_v1_1_1_line10": "🗂️ 分類頁介面",
+  "@log_v1_1_1_line10": {
+    "description": "Changelog v1.1.1 line 10"
+  },
+  "log_v1_1_1_line11": "預設佈局改為每行4列，顯示更緊湊高效。",
+  "@log_v1_1_1_line11": {
+    "description": "Changelog v1.1.1 line 11"
+  },
+  "log_v1_1_1_line12": "您可在「自訂快捷方式」設定中自由切換每行3列或4列。",
+  "@log_v1_1_1_line12": {
+    "description": "Changelog v1.1.1 line 12"
+  },
+  "log_v1_1_1_line13": "支援長按分類圖示並拖曳，隨意調整類別排列順序。",
+  "@log_v1_1_1_line13": {
+    "description": "Changelog v1.1.1 line 13"
   }
 }

@@ -7210,6 +7210,18 @@ abstract class L10n {
   /// **'4:3'**
   String get msg_aspect_4_3;
 
+  /// Video aspect ratio mode: custom
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义'**
+  String get msg_aspect_custom;
+
+  /// Video player menu item for custom aspect ratio
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义缩放比例'**
+  String get msg_custom_aspect_ratio;
+
   /// No description provided for @drawer_tools.
   ///
   /// In zh, this message translates to:
@@ -7279,7 +7291,7 @@ abstract class L10n {
   /// Right side menu header title
   ///
   /// In zh, this message translates to:
-  /// **'快捷操作'**
+  /// **'常用功能'**
   String get msge8b8e9b3;
 
   /// Right side menu header subtitle
@@ -7287,6 +7299,210 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'常用功能快捷入口'**
   String get msg04b7de53;
+
+  /// No description provided for @prop_read.
+  ///
+  /// In zh, this message translates to:
+  /// **'读取'**
+  String get prop_read;
+
+  /// No description provided for @prop_write.
+  ///
+  /// In zh, this message translates to:
+  /// **'写入'**
+  String get prop_write;
+
+  /// No description provided for @prop_folder_directory.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件夹 / 目录'**
+  String get prop_folder_directory;
+
+  /// No description provided for @prop_file.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件'**
+  String get prop_file;
+
+  /// No description provided for @prop_contains_format.
+  ///
+  /// In zh, this message translates to:
+  /// **'{folderCount} 个子文件夹, {fileCount} 个文件'**
+  String prop_contains_format(int folderCount, int fileCount);
+
+  /// No description provided for @prop_bytes.
+  ///
+  /// In zh, this message translates to:
+  /// **'字节'**
+  String get prop_bytes;
+
+  /// No description provided for @prop_items_selected.
+  ///
+  /// In zh, this message translates to:
+  /// **'已选择 {count} 项'**
+  String prop_items_selected(int count);
+
+  /// No description provided for @prop_items_summary.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 项（{folderCount} 个文件夹, {fileCount} 个文件）'**
+  String prop_items_summary(int count, int folderCount, int fileCount);
+
+  /// Add subtitle option in video player more menu
+  ///
+  /// In zh, this message translates to:
+  /// **'添加字幕'**
+  String get msg_add_subtitle;
+
+  /// Subtitles menu item in video player more menu
+  ///
+  /// In zh, this message translates to:
+  /// **'字幕'**
+  String get msg_subtitle_menu;
+
+  /// Subtitle font size label in subtitle settings
+  ///
+  /// In zh, this message translates to:
+  /// **'字幕大小'**
+  String get msg_subtitle_size;
+
+  /// Top title of quick actions page
+  ///
+  /// In zh, this message translates to:
+  /// **'快捷操作'**
+  String get msg_quick_actions;
+
+  /// Hardware decoding badge in video player header
+  ///
+  /// In zh, this message translates to:
+  /// **'硬解'**
+  String get msg_hwdec;
+
+  /// Tooltip to turn on subtitles in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'开启字幕'**
+  String get msg_subtitle_on;
+
+  /// Tooltip to turn off subtitles in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭字幕'**
+  String get msg_subtitle_off;
+
+  /// Tooltip when no subtitle is loaded in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无字幕'**
+  String get msg_no_subtitle;
+
+  /// Playlist button tooltip in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'播放列表'**
+  String get msg_playlist;
+
+  /// Message when no playlist available in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无播放列表'**
+  String get msg_no_playlist;
+
+  /// Text on lock button in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'滑动/点击解锁'**
+  String get msg_slide_to_unlock;
+
+  /// Short unit for seconds in seek indicator (e.g. 10s)
+  ///
+  /// In zh, this message translates to:
+  /// **'秒'**
+  String get msg_seconds_short;
+
+  /// Long press speed badge text in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'倍速 2.0x'**
+  String get msg_speed_2x;
+
+  /// Changelog v1.1.1 line 1
+  ///
+  /// In zh, this message translates to:
+  /// **'📹 视频播放器'**
+  String get log_v1_1_1_line1;
+
+  /// Changelog v1.1.1 line 2
+  ///
+  /// In zh, this message translates to:
+  /// **'支持外挂字幕：自动识别与视频同目录、同文件名的字幕文件（如 .srt、.ass），同时保留手动加载字幕文件的入口。'**
+  String get log_v1_1_1_line2;
+
+  /// Changelog v1.1.1 line 3
+  ///
+  /// In zh, this message translates to:
+  /// **'新增自定义画面缩放比例，可灵活适配各类异形屏及非标准比例屏幕。'**
+  String get log_v1_1_1_line3;
+
+  /// Changelog v1.1.1 line 4
+  ///
+  /// In zh, this message translates to:
+  /// **'🎵 音频播放器'**
+  String get log_v1_1_1_line4;
+
+  /// Changelog v1.1.1 line 5
+  ///
+  /// In zh, this message translates to:
+  /// **'修复了在平板、车机等横屏设备上的界面显示异常问题，提升大屏体验。'**
+  String get log_v1_1_1_line5;
+
+  /// Changelog v1.1.1 line 6
+  ///
+  /// In zh, this message translates to:
+  /// **'📂 文件浏览与操作'**
+  String get log_v1_1_1_line6;
+
+  /// Changelog v1.1.1 line 7
+  ///
+  /// In zh, this message translates to:
+  /// **'优化侧滑菜单与快捷操作弹窗的宽度一致性，视觉更统一。'**
+  String get log_v1_1_1_line7;
+
+  /// Changelog v1.1.1 line 8
+  ///
+  /// In zh, this message translates to:
+  /// **'快捷操作面板中的常用功能现支持折叠/展开，且状态会持久记忆，下次打开保留您的偏好。'**
+  String get log_v1_1_1_line8;
+
+  /// Changelog v1.1.1 line 9
+  ///
+  /// In zh, this message translates to:
+  /// **'调整文件打开逻辑：点击文件默认使用本应用直接打开；如需切换其他应用，可在选中文件后，通过顶部三点菜单或底部操作栏的\"更多\"选项选择\"打开方式\"。'**
+  String get log_v1_1_1_line9;
+
+  /// Changelog v1.1.1 line 10
+  ///
+  /// In zh, this message translates to:
+  /// **'🗂️ 分类页界面'**
+  String get log_v1_1_1_line10;
+
+  /// Changelog v1.1.1 line 11
+  ///
+  /// In zh, this message translates to:
+  /// **'默认布局改为每行4列，显示更紧凑高效。'**
+  String get log_v1_1_1_line11;
+
+  /// Changelog v1.1.1 line 12
+  ///
+  /// In zh, this message translates to:
+  /// **'您可在\"自定义快捷方式\"设置中自由切换每行3列或4列。'**
+  String get log_v1_1_1_line12;
+
+  /// Changelog v1.1.1 line 13
+  ///
+  /// In zh, this message translates to:
+  /// **'支持长按分类图标并拖拽，随意调整类别排列顺序。'**
+  String get log_v1_1_1_line13;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

@@ -171,31 +171,46 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
           toggleTheme: widget.toggleTheme,
           onNavigateTab: (index) => _switchTab(index),
         ),
-        endDrawer: ZenFileEndDrawer(
-          toggleTheme: widget.toggleTheme,
-          onRefresh: () {
-            _scaffoldKey.currentState?.closeEndDrawer();
-            _switchTab(0);
-            _handleRefresh();
+        endDrawer: LayoutBuilder(
+          builder: (context, constraints) {
+            final drawerWidth = constraints.maxWidth * 0.85;
+            return SizedBox(
+              width: drawerWidth,
+              child: Drawer(
+                width: drawerWidth,
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(28), bottomLeft: Radius.circular(28)),
+                ),
+                child: ZenFileEndDrawer(
+                  toggleTheme: widget.toggleTheme,
+                  onRefresh: () {
+                    _scaffoldKey.currentState?.closeEndDrawer();
+                    _switchTab(0);
+                    _handleRefresh();
+                  },
+                  onCustomize: () {
+                    _scaffoldKey.currentState?.closeEndDrawer();
+                    _switchTab(0);
+                    Future.delayed(const Duration(milliseconds: 300), () {
+                      QuickCategoriesGrid.showCustomizeDialog(context, (index) => setState(() => _currentIndex = index));
+                    });
+                  },
+                  onShowSortModal: () {
+                    _scaffoldKey.currentState?.closeEndDrawer();
+                    _switchTab(1);
+                    Future.delayed(const Duration(milliseconds: 300), () {
+                      final provider = context.read<FileManagerProvider>();
+                      SortModal.show(context, provider);
+                    });
+                  },
+                  onNavigateToBrowse: () => _switchTab(1),
+                  searchFolderPath: context.read<FileManagerProvider>().rootPath,
+                  provider: context.read<FileManagerProvider>(),
+                ),
+              ),
+            );
           },
-          onCustomize: () {
-            _scaffoldKey.currentState?.closeEndDrawer();
-            _switchTab(0);
-            Future.delayed(const Duration(milliseconds: 300), () {
-              QuickCategoriesGrid.showCustomizeDialog(context, (index) => setState(() => _currentIndex = index));
-            });
-          },
-          onShowSortModal: () {
-            _scaffoldKey.currentState?.closeEndDrawer();
-            _switchTab(1);
-            Future.delayed(const Duration(milliseconds: 300), () {
-              final provider = context.read<FileManagerProvider>();
-              SortModal.show(context, provider);
-            });
-          },
-          onNavigateToBrowse: () => _switchTab(1),
-          searchFolderPath: context.read<FileManagerProvider>().rootPath,
-          provider: context.read<FileManagerProvider>(),
         ),
         body: Consumer<FileManagerProvider>(
           builder: (context, provider, _) {
@@ -351,6 +366,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                             QuickCategoriesGrid.showCustomizeDialog(context, (index) => setState(() => _currentIndex = index));
                           });
                         },
+                        onRefresh: () => _handleRefresh(),
                       ),
                     ],
                   );

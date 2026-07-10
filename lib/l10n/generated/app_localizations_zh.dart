@@ -3827,6 +3827,12 @@ class L10nZh extends L10n {
   String get msg_aspect_4_3 => '4:3';
 
   @override
+  String get msg_aspect_custom => '自定义';
+
+  @override
+  String get msg_custom_aspect_ratio => '自定义缩放比例';
+
+  @override
   String get drawer_tools => '工具';
 
   @override
@@ -3860,10 +3866,120 @@ class L10nZh extends L10n {
   String get ui_4columns => '4列';
 
   @override
-  String get msge8b8e9b3 => '快捷操作';
+  String get msge8b8e9b3 => '常用功能';
 
   @override
   String get msg04b7de53 => '常用功能快捷入口';
+
+  @override
+  String get prop_read => '读取';
+
+  @override
+  String get prop_write => '写入';
+
+  @override
+  String get prop_folder_directory => '文件夹 / 目录';
+
+  @override
+  String get prop_file => '文件';
+
+  @override
+  String prop_contains_format(int folderCount, int fileCount) {
+    return '$folderCount 个子文件夹, $fileCount 个文件';
+  }
+
+  @override
+  String get prop_bytes => '字节';
+
+  @override
+  String prop_items_selected(int count) {
+    return '已选择 $count 项';
+  }
+
+  @override
+  String prop_items_summary(int count, int folderCount, int fileCount) {
+    return '$count 项（$folderCount 个文件夹, $fileCount 个文件）';
+  }
+
+  @override
+  String get msg_add_subtitle => '添加字幕';
+
+  @override
+  String get msg_subtitle_menu => '字幕';
+
+  @override
+  String get msg_subtitle_size => '字幕大小';
+
+  @override
+  String get msg_quick_actions => '快捷操作';
+
+  @override
+  String get msg_hwdec => '硬解';
+
+  @override
+  String get msg_subtitle_on => '开启字幕';
+
+  @override
+  String get msg_subtitle_off => '关闭字幕';
+
+  @override
+  String get msg_no_subtitle => '暂无字幕';
+
+  @override
+  String get msg_playlist => '播放列表';
+
+  @override
+  String get msg_no_playlist => '暂无播放列表';
+
+  @override
+  String get msg_slide_to_unlock => '滑动/点击解锁';
+
+  @override
+  String get msg_seconds_short => '秒';
+
+  @override
+  String get msg_speed_2x => '倍速 2.0x';
+
+  @override
+  String get log_v1_1_1_line1 => '📹 视频播放器';
+
+  @override
+  String get log_v1_1_1_line2 =>
+      '支持外挂字幕：自动识别与视频同目录、同文件名的字幕文件（如 .srt、.ass），同时保留手动加载字幕文件的入口。';
+
+  @override
+  String get log_v1_1_1_line3 => '新增自定义画面缩放比例，可灵活适配各类异形屏及非标准比例屏幕。';
+
+  @override
+  String get log_v1_1_1_line4 => '🎵 音频播放器';
+
+  @override
+  String get log_v1_1_1_line5 => '修复了在平板、车机等横屏设备上的界面显示异常问题，提升大屏体验。';
+
+  @override
+  String get log_v1_1_1_line6 => '📂 文件浏览与操作';
+
+  @override
+  String get log_v1_1_1_line7 => '优化侧滑菜单与快捷操作弹窗的宽度一致性，视觉更统一。';
+
+  @override
+  String get log_v1_1_1_line8 => '快捷操作面板中的常用功能现支持折叠/展开，且状态会持久记忆，下次打开保留您的偏好。';
+
+  @override
+  String get log_v1_1_1_line9 =>
+      '调整文件打开逻辑：点击文件默认使用本应用直接打开；如需切换其他应用，可在选中文件后，通过顶部三点菜单或底部操作栏的\"更多\"选项选择\"打开方式\"。';
+
+  @override
+  String get log_v1_1_1_line10 => '🗂️ 分类页界面';
+
+  @override
+  String get log_v1_1_1_line11 => '默认布局改为每行4列，显示更紧凑高效。';
+
+  @override
+  String get log_v1_1_1_line12 => '您可在\"自定义快捷方式\"设置中自由切换每行3列或4列。';
+
+  @override
+  String get log_v1_1_1_line13 => '支持长按分类图标并拖拽，随意调整类别排列顺序。';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -7653,6 +7769,12 @@ class L10nZhTw extends L10nZh {
   String get msg_aspect_4_3 => '4:3';
 
   @override
+  String get msg_aspect_custom => '自訂';
+
+  @override
+  String get msg_custom_aspect_ratio => '自訂縮放比例';
+
+  @override
   String get drawer_tools => '工具';
 
   @override
@@ -7686,8 +7808,118 @@ class L10nZhTw extends L10nZh {
   String get ui_4columns => '4列';
 
   @override
-  String get msge8b8e9b3 => '快捷操作';
+  String get msge8b8e9b3 => '常用功能';
 
   @override
   String get msg04b7de53 => '常用功能快捷入口';
+
+  @override
+  String get prop_read => 'Read';
+
+  @override
+  String get prop_write => 'Write';
+
+  @override
+  String get prop_folder_directory => 'Folder / Directory';
+
+  @override
+  String get prop_file => 'File';
+
+  @override
+  String prop_contains_format(int folderCount, int fileCount) {
+    return '$folderCount subfolder(s), $fileCount file(s)';
+  }
+
+  @override
+  String get prop_bytes => 'bytes';
+
+  @override
+  String prop_items_selected(int count) {
+    return '$count items selected';
+  }
+
+  @override
+  String prop_items_summary(int count, int folderCount, int fileCount) {
+    return '$count items ($folderCount folder(s), $fileCount file(s))';
+  }
+
+  @override
+  String get msg_add_subtitle => '新增字幕';
+
+  @override
+  String get msg_subtitle_menu => '字幕';
+
+  @override
+  String get msg_subtitle_size => '字幕大小';
+
+  @override
+  String get msg_quick_actions => '快捷操作';
+
+  @override
+  String get msg_hwdec => '硬解';
+
+  @override
+  String get msg_subtitle_on => '開啟字幕';
+
+  @override
+  String get msg_subtitle_off => '關閉字幕';
+
+  @override
+  String get msg_no_subtitle => '暫無字幕';
+
+  @override
+  String get msg_playlist => '播放列表';
+
+  @override
+  String get msg_no_playlist => '暫無播放列表';
+
+  @override
+  String get msg_slide_to_unlock => '滑動/點擊解鎖';
+
+  @override
+  String get msg_seconds_short => '秒';
+
+  @override
+  String get msg_speed_2x => '倍速 2.0x';
+
+  @override
+  String get log_v1_1_1_line1 => '📹 視訊播放器';
+
+  @override
+  String get log_v1_1_1_line2 =>
+      '支援外掛字幕：自動識別與影片同目錄、同檔名的字幕檔案（如 .srt、.ass），同時保留手動載入字幕檔案的入口。';
+
+  @override
+  String get log_v1_1_1_line3 => '新增自訂畫面縮放比例，可靈活適配各類異形螢幕及非標準比例螢幕。';
+
+  @override
+  String get log_v1_1_1_line4 => '🎵 音訊播放器';
+
+  @override
+  String get log_v1_1_1_line5 => '修復了在平板、車機等橫屏裝置上的介面顯示異常問題，提升大螢幕體驗。';
+
+  @override
+  String get log_v1_1_1_line6 => '📂 檔案瀏覽與操作';
+
+  @override
+  String get log_v1_1_1_line7 => '優化側滑選單與快捷操作彈窗的寬度一致性，視覺更統一。';
+
+  @override
+  String get log_v1_1_1_line8 => '快捷操作面板中的常用功能現支援摺疊/展開，且狀態會持久記憶，下次開啟保留您的偏好。';
+
+  @override
+  String get log_v1_1_1_line9 =>
+      '調整檔案開啟邏輯：點擊檔案預設使用本應用直接開啟；如需切換其他應用，可在選中檔案後，透過頂部三點選單或底部操作列的「更多」選項選擇「開啟方式」。';
+
+  @override
+  String get log_v1_1_1_line10 => '🗂️ 分類頁介面';
+
+  @override
+  String get log_v1_1_1_line11 => '預設佈局改為每行4列，顯示更緊湊高效。';
+
+  @override
+  String get log_v1_1_1_line12 => '您可在「自訂快捷方式」設定中自由切換每行3列或4列。';
+
+  @override
+  String get log_v1_1_1_line13 => '支援長按分類圖示並拖曳，隨意調整類別排列順序。';
 }

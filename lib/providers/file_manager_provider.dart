@@ -964,7 +964,7 @@ class FileManagerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  int _categoriesGridColumns = 3;
+  int _categoriesGridColumns = 4;
   int get categoriesGridColumns => _categoriesGridColumns;
 
   void setCategoriesGridColumns(int columns) {
@@ -1094,7 +1094,7 @@ class FileManagerProvider extends ChangeNotifier {
 
   /// Open a remote connection in a new (or existing) tab, reusing the
   /// DirectoryScreen UI instead of the old RemoteExplorerScreen.
-  void openRemoteTab(RemoteClient client, NetworkConnectionModel connection) {
+  Future<void> openRemoteTab(RemoteClient client, NetworkConnectionModel connection) async {
     // Close any existing remote tabs first to avoid stale state
     _tabs.removeWhere((t) => t.isRemote);
 
@@ -1116,7 +1116,32 @@ class FileManagerProvider extends ChangeNotifier {
     }
     _persistTabs();
     notifyListeners();
-    loadDirectory(connection.rootPath);
+
+    // If SMB and rootPath is generic, attempt to auto-detect a usable share
+    // by listing '/' and picking the first directory-like share.
+    if (isSmbType(connection.type) && (newTab.currentPath == '/' || newTab.currentPath.isEmpty)) {
+      try {
+        final rootItems = await client.listDirectory('/');
+        if (rootItems.isNotEmpty) {
+          RemoteFileItem? picked;
+          for (final it in rootItems) {
+            final lname = it.name.toLowerCase();
+            if (!it.isDirectory) continue;
+            if (lname == 'ipc\$' || lname == 'print\$') continue;
+            picked = it;
+            break;
+          }
+          picked ??= rootItems.firstWhere((e) => e.isDirectory, orElse: () => rootItems.first);
+          if (picked != null) {
+            newTab.currentPath = '/${picked.name}';
+          }
+        }
+      } catch (e) {
+        debugPrint('SMB share auto-detect failed in openRemoteTab: $e');
+      }
+    }
+
+    await loadDirectory(newTab.currentPath);
   }
 
   /// Returns true if [type] represents an SMB/LAN connection.
@@ -3921,123 +3946,14 @@ class FileManagerProvider extends ChangeNotifier {
     }
     final checkExt = p.extension(checkPath).toLowerCase();
 
-    // 弹出"打开"/"打开方式..."选择对话框（跳过开关为关闭、非强制外部打开、且有内置查看器时）
-    // 用户已设置默认打开方式时不弹窗，直接按默认方式打开
-    // openAction: 'native' = 本应用打开, 'external' = 外部系统选择器
-    // persist: true = 保存为默认, false = 仅一次
     String? openAction;
-    bool persistDefault = false; // 默认选中"仅一次"
-    if (!forceOpenWith && !_skipOpenWithDialog && hasNativeViewer(checkPath)) {
+    if (forceOpenWith) {
+      openAction = 'external';
+    } else {
       final defaultAction = PreferencesService.getDefaultOpenAction(checkExt);
-      if (defaultAction == null) {
-        // 未设置默认 → 弹出选择对话框
-        if (!context.mounted) return;
-        final choice = await showDialog<String>(
-          context: context,
-          builder: (ctx) {
-            final theme = Theme.of(ctx);
-            return StatefulBuilder(
-              builder: (ctx, setState) {
-                return Dialog(
-                  insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 320),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            p.basename(checkPath),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-                          ),
-                          const SizedBox(height: 20),
-                          SizedBox(
-                            width: double.infinity,
-                            child: FilledButton(
-                              onPressed: () => Navigator.pop(ctx, persistDefault ? 'always_native' : 'once_native'),
-                              child: Text(L10n.of(context).open_with_native),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton(
-                              onPressed: () => Navigator.pop(ctx, persistDefault ? 'always_external' : 'once_external'),
-                              child: Text(L10n.of(context).open_with_external),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: OutlinedButton(
-                                  style: OutlinedButton.styleFrom(
-                                    backgroundColor: !persistDefault
-                                        ? theme.colorScheme.primaryContainer
-                                        : Colors.transparent,
-                                    foregroundColor: !persistDefault
-                                        ? theme.colorScheme.onPrimaryContainer
-                                        : theme.colorScheme.onSurface,
-                                  ),
-                                  onPressed: () => setState(() => persistDefault = false),
-                                  child: Text(L10n.of(context).open_once),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: OutlinedButton(
-                                  style: OutlinedButton.styleFrom(
-                                    backgroundColor: persistDefault
-                                        ? theme.colorScheme.primaryContainer
-                                        : Colors.transparent,
-                                    foregroundColor: persistDefault
-                                        ? theme.colorScheme.onPrimaryContainer
-                                        : theme.colorScheme.onSurface,
-                                  ),
-                                  onPressed: () => setState(() => persistDefault = true),
-                                  child: Text(L10n.of(context).open_always),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          // 取消
-                          SizedBox(
-                            width: double.infinity,
-                            child: TextButton(
-                              onPressed: () => Navigator.pop(ctx, 'cancel'),
-                              child: Text(L10n.of(context).ui_cancel),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            );
-          },
-        );
-        if (choice == null || choice == 'cancel') return;
-        if (choice.startsWith('once_')) {
-          openAction = choice.substring(5); // 'native' or 'external'
-          persistDefault = false;
-        } else if (choice.startsWith('always_')) {
-          openAction = choice.substring(7); // 'native' or 'external'
-          persistDefault = true;
-        }
-        // 统一保存默认打开方式（避免各文件类型分支遗漏）
-        if (persistDefault && openAction != null) {
-          await PreferencesService.saveDefaultOpenAction(checkExt, openAction);
-        }
-      } else if (defaultAction == 'external') {
+      if (defaultAction == 'external') {
         openAction = 'external';
       }
-      // defaultAction == 'native' → openAction 保持 null，直接用内置查看器
     }
 
     // 处理 remote:// 格式的远程路径（来自自定义快捷方式扫描的媒体文件）

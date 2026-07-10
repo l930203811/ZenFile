@@ -160,7 +160,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   const SizedBox(height: 6),
                   // 版本号文本（硬编码，无需 l10n；以后升级版本只改这里）
                   Text(
-                    'v1.1.0',
+                    'v1.1.1',
                     style: TextStyle(
                       color: theme.colorScheme.onSurface.withOpacity(0.7),
                       fontSize: 13,
@@ -704,6 +704,22 @@ class AboutZenFileScreen extends StatelessWidget {
                     ),
                   ),
 
+                  _buildVersionSection(ctx, theme, 'v1.1.1', '2026-07-10', [
+                    L10n.of(context).log_v1_1_1_line1,
+                    L10n.of(context).log_v1_1_1_line2,
+                    L10n.of(context).log_v1_1_1_line3,
+                    L10n.of(context).log_v1_1_1_line4,
+                    L10n.of(context).log_v1_1_1_line5,
+                    L10n.of(context).log_v1_1_1_line6,
+                    L10n.of(context).log_v1_1_1_line7,
+                    L10n.of(context).log_v1_1_1_line8,
+                    L10n.of(context).log_v1_1_1_line9,
+                    L10n.of(context).log_v1_1_1_line10,
+                    L10n.of(context).log_v1_1_1_line11,
+                    L10n.of(context).log_v1_1_1_line12,
+                    L10n.of(context).log_v1_1_1_line13,
+                  ]),
+                  const SizedBox(height: 16),
                   _buildVersionSection(ctx, theme, 'v1.1.0', '2026-07-05', [
                     L10n.of(context).log_quick_action_panel,
                     L10n.of(context).log_favorites,
@@ -791,20 +807,30 @@ class AboutZenFileScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          ...changes.map((c) => Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 6),
-                  child: Container(width: 5, height: 5, decoration: BoxDecoration(shape: BoxShape.circle, color: theme.colorScheme.primary.withOpacity(0.5))),
-                ),
-                const SizedBox(width: 10),
-                Expanded(child: Text(c, style: TextStyle(fontSize: 13.5, height: 1.4, color: theme.colorScheme.onSurface.withOpacity(0.8)))),
-              ],
-            ),
-          )),
+          ...changes.map((c) {
+            // 检测是否为分类标题行（以 emoji 开头，如 📹 🎵 📂 🗂️）
+            final isHeader = c.isNotEmpty && c.runes.first >= 0x1F000;
+            if (isHeader) {
+              return Padding(
+                padding: EdgeInsets.only(top: c == changes.first ? 0 : 10, bottom: 4),
+                child: Text(c, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withOpacity(0.9))),
+              );
+            }
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Container(width: 5, height: 5, decoration: BoxDecoration(shape: BoxShape.circle, color: theme.colorScheme.primary.withOpacity(0.5))),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(child: Text(c, style: TextStyle(fontSize: 13.5, height: 1.4, color: theme.colorScheme.onSurface.withOpacity(0.8)))),
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );

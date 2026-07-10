@@ -3909,6 +3909,14 @@
   "@msg_aspect_4_3": {
     "description": "Video aspect ratio mode: 4:3"
   },
+  "msg_aspect_custom": "Personnalisé",
+  "@msg_aspect_custom": {
+    "description": "Video aspect ratio mode: custom"
+  },
+  "msg_custom_aspect_ratio": "Rapport d'aspect personnalisé",
+  "@msg_custom_aspect_ratio": {
+    "description": "Video player menu item for custom aspect ratio"
+  },
   "drawer_tools": "Outils",
   "open_with_native": "Ouvrir avec cette application",
   "open_with_external": "Ouvrir avec une application externe",
@@ -3927,5 +3935,86 @@
   "msg04b7de53": "Accès rapide aux fonctions courantes",
   "@msg04b7de53": {
     "description": "Right side menu header subtitle"
+  }
+,
+  "prop_read": "Read",
+  "prop_write": "Write",
+  "prop_folder_directory": "Folder / Directory",
+  "prop_file": "File",
+  "prop_contains_format": "{folderCount} subfolder(s), {fileCount} file(s)",
+  "@prop_contains_format": {
+    "placeholders": {
+      "folderCount": {
+        "type": "int"
+      },
+      "fileCount": {
+        "type": "int"
+      }
+    }
+  },
+  "prop_bytes": "bytes",
+  "prop_items_selected": "{count} items selected",
+  "@prop_items_selected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "prop_items_summary": "{count} items ({folderCount} folder(s), {fileCount} file(s))",
+  "@prop_items_summary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "folderCount": {
+        "type": "int"
+      },
+      "fileCount": {
+        "type": "int"
+      }
+    }
+  },
+  "msg_add_subtitle": "Ajouter des sous-titres",
+  "@msg_add_subtitle": {"description": "Add subtitle option in video player more menu"},
+  "msg_subtitle_menu": "Sous-titres",
+  "@msg_subtitle_menu": {
+    "description": "Subtitles menu item in video player more menu"
+  },
+  "msg_subtitle_size": "Taille des sous-titres",
+  "@msg_subtitle_size": {
+    "description": "Subtitle font size label in subtitle settings"
+  },
+  "msg_quick_actions": "Actions rapides",
+  "@msg_quick_actions": {
+    "description": "Top title of quick actions page"
+  },
+  "msg_hwdec": "HW",
+  "@msg_hwdec": {"description": "Hardware decoding badge in video player header"},
+  "msg_subtitle_on": "Activer les sous-titres",
+  "@msg_subtitle_on": {"description": "Tooltip to turn on subtitles in video player"},
+  "msg_subtitle_off": "Désactiver les sous-titres",
+  "@msg_subtitle_off": {"description": "Tooltip to turn off subtitles in video player"},
+  "msg_no_subtitle": "Aucun sous-titre",
+  "@msg_no_subtitle": {"description": "Tooltip when no subtitle is loaded in video player"},
+  "msg_playlist": "Liste de lecture",
+  "@msg_playlist": {
+    "description": "Playlist button tooltip in video player"
+  },
+  "msg_no_playlist": "Aucune liste de lecture",
+  "@msg_no_playlist": {
+    "description": "Message when no playlist available in video player"
+  },
+  "msg_slide_to_unlock": "Glisser / Appuyer pour déverrouiller",
+  "@msg_slide_to_unlock": {
+    "description": "Text on lock button in video player"
+  },
+  "msg_seconds_short": "s",
+  "@msg_seconds_short": {
+    "description": "Short unit for seconds in seek indicator (e.g. 10s)"
+  },
+  "msg_speed_2x": "Vitesse 2.0x",
+  "@msg_speed_2x": {
+    "description": "Long press speed badge text in video player"
   }
 }

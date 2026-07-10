@@ -38,7 +38,14 @@ class DirectoryScreen extends StatefulWidget {
   final VoidCallback toggleTheme;
   final Function(int)? onNavigateTab;
   final VoidCallback? onEndDrawerCustomize;
-  const DirectoryScreen({super.key, required this.toggleTheme, this.onNavigateTab, this.onEndDrawerCustomize});
+  final VoidCallback? onRefresh;
+  const DirectoryScreen({
+    super.key, 
+    required this.toggleTheme, 
+    this.onNavigateTab, 
+    this.onEndDrawerCustomize,
+    this.onRefresh,
+  });
 
   @override
   State<DirectoryScreen> createState() => _DirectoryScreenState();
@@ -542,68 +549,6 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     );
   }
 
-  void _openEndDrawer(BuildContext context, FileManagerProvider provider) {
-    final outerContext = context;
-    showGeneralDialog(
-      context: context,
-      barrierDismissible: true,
-      barrierColor: Colors.black26,
-      transitionDuration: const Duration(milliseconds: 300),
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(1, 0),
-            end: Offset.zero,
-          ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.85,
-              child: MediaQuery.removePadding(
-                context: context,
-                removeTop: true,
-                child: _buildEndDrawerWithGesture(context, outerContext, provider),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildEndDrawerWithGesture(BuildContext dialogContext, BuildContext outerContext, FileManagerProvider provider) {
-    return GestureDetector(
-      onHorizontalDragEnd: (details) {
-        if (details.primaryVelocity! > 0) {
-          Navigator.pop(dialogContext);
-        }
-      },
-      child: ZenFileEndDrawer(
-        toggleTheme: widget.toggleTheme,
-        // 注意：ZenFileEndDrawer 内部每个菜单项 onTap 已调用 Navigator.pop(context) 关闭弹窗，
-        // 此处回调触发时 dialog 正在关闭动画中，不得再次 pop，否则会 pop 掉主路由导致黑屏。
-        onRefresh: () {
-          Future.delayed(const Duration(milliseconds: 350), () {
-            widget.onNavigateTab?.call(0);
-          });
-        },
-        onCustomize: () {
-          Future.delayed(const Duration(milliseconds: 350), () {
-            widget.onEndDrawerCustomize?.call();
-          });
-        },
-        onShowSortModal: () {
-          Future.delayed(const Duration(milliseconds: 350), () {
-            SortModal.show(outerContext, provider);
-          });
-        },
-        onNavigateToBrowse: () => widget.onNavigateTab?.call(1),
-        searchFolderPath: provider.currentPath,
-        provider: provider,
-      ),
-    );
-  }
-
   void _goBack(FileManagerProvider provider) async {
     if (_scrollController.hasClients) {
       provider.saveScrollOffset(provider.currentPath, _scrollController.offset);
@@ -722,6 +667,9 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             SnackBar(content: Text(L10n.of(context).msg_favorited(name)), behavior: SnackBarBehavior.floating, duration: const Duration(seconds: 2)),
           );
         }
+        break;
+      case 'open_with':
+        provider.openFile(context, path, forceOpenWith: true);
         break;
       case 'pin':
         await provider.togglePinPath(path);
@@ -1103,7 +1051,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                           try {
                             await client.connect();
                             if (context.mounted) {
-                              provider.openRemoteTab(client, conn);
+                              await provider.openRemoteTab(client, conn);
                             }
                           } catch (e) {
                             if (context.mounted) {
@@ -1176,14 +1124,55 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
               toggleTheme: widget.toggleTheme,
               onNavigateTab: widget.onNavigateTab,
             ),
+            endDrawer: LayoutBuilder(
+              builder: (context, constraints) {
+                final drawerWidth = constraints.maxWidth * 0.85;
+                return SizedBox(
+                  width: drawerWidth,
+                  child: Drawer(
+                    width: drawerWidth,
+                    backgroundColor: theme.scaffoldBackgroundColor,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.only(topLeft: Radius.circular(28), bottomLeft: Radius.circular(28)),
+                    ),
+                    child: ZenFileEndDrawer(
+                      toggleTheme: widget.toggleTheme,
+                      onRefresh: () {
+                        Scaffold.of(context).closeEndDrawer();
+                        widget.onNavigateTab?.call(0);
+                        Future.delayed(const Duration(milliseconds: 300), () {
+                          widget.onRefresh?.call();
+                        });
+                      },
+                      onCustomize: () {
+                        Scaffold.of(context).closeEndDrawer();
+                        Future.delayed(const Duration(milliseconds: 300), () {
+                          widget.onEndDrawerCustomize?.call();
+                        });
+                      },
+                      onShowSortModal: () {
+                        Scaffold.of(context).closeEndDrawer();
+                        Future.delayed(const Duration(milliseconds: 300), () {
+                          SortModal.show(context, provider);
+                        });
+                      },
+                      onNavigateToBrowse: () {
+                        Scaffold.of(context).closeEndDrawer();
+                      },
+                      searchFolderPath: provider.currentPath,
+                      provider: provider,
+                    ),
+                  ),
+                );
+              },
+            ),
             appBar: (isSelectionMode || !showBottomActionBar)
                 ? AppBar(
+                    automaticallyImplyLeading: isSelectionMode,
                     surfaceTintColor: Colors.transparent,
                     scrolledUnderElevation: 0,
                     titleSpacing: 0,
                     centerTitle: true,
-                    leadingWidth: isSelectionMode ? 56 : 0,
-                    automaticallyImplyLeading: isSelectionMode,
                     title: isSelectionMode
                         ? const SizedBox.shrink()
                         : Builder(
@@ -1217,18 +1206,22 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                 IconButton(
                                   icon: Icon(Broken.more_circle, color: theme.colorScheme.primary),
                                   tooltip: L10n.of(context).msge8b8e9b3,
-                                  onPressed: () => _openEndDrawer(context, provider),
+                                  onPressed: () => Scaffold.of(context).openEndDrawer(),
                                 ),
                               ],
                             ),
                           ),
-                    actions: [],
+                    // 显式占用 actions，避免 Scaffold 因存在 endDrawer
+                    // 自动在右上角补一个与“快捷操作”重复的菜单按钮。
+                    actions: const [SizedBox.shrink()],
                   )
                 : AppBar(
                     automaticallyImplyLeading: false,
                     surfaceTintColor: Colors.transparent,
                     scrolledUnderElevation: 0,
                     toolbarHeight: MediaQuery.of(context).padding.top,
+                    // 与上方分支保持一致，禁止自动注入 endDrawer 按钮。
+                    actions: const [SizedBox.shrink()],
                   ),
             body: Column(
               children: [
@@ -1283,9 +1276,79 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                   onGoBack: provider.canGoBack ? () => _goBack(provider) : null,
                                   isRootAvailable: provider.isRootAvailable,
                                 )
-                              : Stack(
+                              : Column(
                                   children: [
-                                    CustomScrollView(
+                                    // 顶部剪贴板栏（折叠/展开）
+                                    AnimatedContainer(
+                                      duration: const Duration(milliseconds: 200),
+                                      curve: Curves.easeInOut,
+                                      height: provider.hasClipboard ? 28.0 : 0.0,
+                                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                                      decoration: BoxDecoration(
+                                        color: theme.colorScheme.surfaceVariant.withOpacity(0.25),
+                                        border: Border(
+                                          bottom: BorderSide(
+                                            color: theme.colorScheme.outline.withOpacity(0.08),
+                                          ),
+                                        ),
+                                      ),
+                                      child: provider.hasClipboard
+                                          ? Row(
+                                              children: [
+                                                const Spacer(),
+                                                GestureDetector(
+                                                  onTap: () => _showClipboardMenuSheet(context, provider),
+                                                  child: Container(
+                                                    height: 22,
+                                                    padding: const EdgeInsets.symmetric(horizontal: 7),
+                                                    decoration: BoxDecoration(
+                                                      borderRadius: BorderRadius.circular(11),
+                                                      color: provider.isCut
+                                                          ? Colors.orange.withOpacity(0.12)
+                                                          : theme.colorScheme.primary.withOpacity(0.12),
+                                                      border: Border.all(
+                                                        color: provider.isCut
+                                                            ? Colors.orange.withOpacity(0.3)
+                                                            : theme.colorScheme.primary.withOpacity(0.3),
+                                                        width: 0.5,
+                                                      ),
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        Icon(
+                                                          provider.isCut ? Broken.scissor : Broken.clipboard,
+                                                          size: 11,
+                                                          color: provider.isCut
+                                                              ? Colors.orange
+                                                              : theme.colorScheme.primary,
+                                                        ),
+                                                        const SizedBox(width: 3),
+                                                        ConstrainedBox(
+                                                          constraints: const BoxConstraints(maxWidth: 120),
+                                                          child: Text(
+                                                            _clipboardLabel(provider),
+                                                            style: TextStyle(
+                                                              fontSize: 10,
+                                                              fontWeight: FontWeight.bold,
+                                                              color: provider.isCut
+                                                                  ? Colors.orange
+                                                                  : theme.colorScheme.primary,
+                                                            ),
+                                                            maxLines: 1,
+                                                            overflow: TextOverflow.ellipsis,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            )
+                                          : null,
+                                    ),
+                                    Expanded(
+                                      child: CustomScrollView(
                                       controller: _scrollController,
                                       physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                                       slivers: [
@@ -1377,11 +1440,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                       final isSelected = provider.selectedPaths.contains(item.path);
                                       if (item.isDirectory) {
                                         final itemLongPress = () {
-                                          if (isSelectionMode && isSelected) {
-                                            SelectionContextBottomSheet.show(context, provider, item.path);
-                                          } else {
-                                            provider.toggleSelection(item.path);
-                                          }
+                                          provider.toggleSelection(item.path);
                                         };
                                         return DragDropHandler(
                                           path: item.path,
@@ -1408,11 +1467,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                         );
                                       } else {
                                         final itemLongPress = () {
-                                          if (isSelectionMode && isSelected) {
-                                            SelectionContextBottomSheet.show(context, provider, item.path);
-                                          } else {
-                                            provider.toggleSelection(item.path);
-                                          }
+                                          provider.toggleSelection(item.path);
                                         };
                                         return DragDropHandler(
                                           path: item.path,
@@ -1449,11 +1504,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                       final isSelected = provider.selectedPaths.contains(item.path);
                                       if (item.isDirectory) {
                                         final itemLongPress = () {
-                                          if (isSelectionMode && isSelected) {
-                                            SelectionContextBottomSheet.show(context, provider, item.path);
-                                          } else {
-                                            provider.toggleSelection(item.path);
-                                          }
+                                          provider.toggleSelection(item.path);
                                         };
                                         return DragDropHandler(
                                           path: item.path,
@@ -1480,11 +1531,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                         );
                                       } else {
                                         final itemLongPress = () {
-                                          if (isSelectionMode && isSelected) {
-                                            SelectionContextBottomSheet.show(context, provider, item.path);
-                                          } else {
-                                            provider.toggleSelection(item.path);
-                                          }
+                                          provider.toggleSelection(item.path);
                                         };
                                         return DragDropHandler(
                                           path: item.path,
@@ -1497,6 +1544,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                             isSelected: isSelected,
                                             iconScale: provider.iconScale,
                                             itemPaddingMultiplier: provider.itemPaddingMultiplier,
+                                            showOpenWithOption: true,
                                             onTap: () {
                                               if (isSelectionMode) {
                                                 provider.toggleSelection(item.path);
@@ -1517,57 +1565,9 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                         ),
                     ],
                   ),
-                  // 剪贴板按钮（单窗口模式，右上角）
-                  if (provider.hasClipboard)
-                    Positioned(
-                      top: 8,
-                      right: 12,
-                      child: GestureDetector(
-                        onTap: () => _showClipboardMenuSheet(context, provider),
-                        child: Container(
-                          height: 28,
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(14),
-                            color: provider.isCut ? Colors.orange.withOpacity(0.12) : theme.colorScheme.primary.withOpacity(0.12),
-                            border: Border.all(
-                              color: provider.isCut ? Colors.orange.withOpacity(0.3) : theme.colorScheme.primary.withOpacity(0.3),
-                              width: 1,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                provider.isCut ? Broken.scissor : Broken.clipboard,
-                                size: 14,
-                                color: provider.isCut ? Colors.orange : theme.colorScheme.primary,
-                              ),
-                              const SizedBox(width: 5),
-                              Text(
-                                _clipboardLabel(provider),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: provider.isCut ? Colors.orange : theme.colorScheme.primary,
+                                    ),
+                                  ],
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
               );
             },
           ),
@@ -1617,7 +1617,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                   IconButton(
                                     icon: Icon(Broken.more_circle, color: theme.colorScheme.primary),
                                     tooltip: L10n.of(context).msge8b8e9b3,
-                                    onPressed: () => _openEndDrawer(context, provider),
+                                    onPressed: () => Scaffold.of(context).openEndDrawer(),
                                   ),
                                 ],
                               ),

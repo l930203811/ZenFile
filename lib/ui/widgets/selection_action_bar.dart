@@ -112,25 +112,11 @@ class SelectionActionBar extends StatelessWidget {
               },
             ),
             _ActionButton(
-              icon: Broken.folder_favorite,
-              label: L10n.of(context).ui_favorite,
+              icon: Broken.tick_square,
+              label: L10n.of(context).ui_select_all,
               hideLabel: provider.hideActionText,
               onTap: () {
-                final selectedPaths = provider.selectedPaths.toList();
-                final isRemote = provider.currIsRemote;
-                final connectionId = provider.activeTab.remoteConnection?.id;
-                for (final path in selectedPaths) {
-                  final name = p.basename(path);
-                  final isDir = isRemote ? true : Directory(path).existsSync();
-                  provider.addFavorite(path, name, isDir, isRemote: isRemote, connectionId: connectionId);
-                }
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(L10n.of(context).msg_favorited(p.basename(selectedPaths.first))),
-                    behavior: SnackBarBehavior.floating,
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
+                provider.selectAll();
               },
             ),
             _ActionButton(
@@ -214,11 +200,34 @@ class SelectionActionBar extends StatelessWidget {
                 } else if (action == 'paste') {
                   await provider.pasteFile(context);
                   provider.clearSelection();
-                } else if (action == 'select_all') {
-                  provider.selectAll();
                 } else if (action == 'share') {
                   final selectedPaths = provider.selectedPaths.toList();
                   await FolderShareService.sharePaths(context, selectedPaths);
+                } else if (action == 'favorite') {
+                  final selectedPaths = provider.selectedPaths.toList();
+                  final isRemote = provider.currIsRemote;
+                  final connectionId = provider.activeTab.remoteConnection?.id;
+                  for (final path in selectedPaths) {
+                    final name = p.basename(path);
+                    final isDir = isRemote ? true : Directory(path).existsSync();
+                    provider.addFavorite(path, name, isDir, isRemote: isRemote, connectionId: connectionId);
+                  }
+                  provider.clearSelection();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(L10n.of(context).msg_favorited(p.basename(selectedPaths.first))),
+                        behavior: SnackBarBehavior.floating,
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                } else if (action == 'open_with') {
+                  final selectedPaths = provider.selectedPaths.toList();
+                  for (final path in selectedPaths) {
+                    provider.openWithSystemChooser(path);
+                  }
+                  provider.clearSelection();
                 } else if (action == 'pin_to_top') {
                   final selected = provider.selectedPaths.toList();
                   final allPinned = selected.every((p) => PinService.isPinned(p));
@@ -291,12 +300,22 @@ class SelectionActionBar extends StatelessWidget {
                     ),
                   ),
                   PopupMenuItem(
-                    value: 'select_all',
+                    value: 'favorite',
                     child: Row(
                       children: [
-                        const Icon(Broken.tick_square, size: 20),
+                        const Icon(Broken.folder_favorite, size: 20),
                         const SizedBox(width: 12),
-                        Text(L10n.of(context).ui_select_all, style: const TextStyle(fontWeight: FontWeight.w500)),
+                        Text(L10n.of(context).ui_favorite, style: const TextStyle(fontWeight: FontWeight.w500)),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'open_with',
+                    child: Row(
+                      children: [
+                        const Icon(Broken.export, size: 20),
+                        const SizedBox(width: 12),
+                        Text(L10n.of(context).msg2a4cfb07, style: const TextStyle(fontWeight: FontWeight.w500)),
                       ],
                     ),
                   ),
@@ -390,7 +409,15 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
             if (widget.selectedPaths.length == 1) {
               final stat = dir.statSync();
               _lastModified = stat.modified;
-              _permissions = '${(stat.mode & 0x100) != 0 ? "读取" : ""}${(stat.mode & 0x80) != 0 ? " / 写入" : ""}';
+              final canRead = (stat.mode & 0x100) != 0;
+              final canWrite = (stat.mode & 0x80) != 0;
+              if (canRead && canWrite) {
+                _permissions = '${L10n.of(navigatorKey.currentContext!).prop_read} / ${L10n.of(navigatorKey.currentContext!).prop_write}';
+              } else if (canRead) {
+                _permissions = L10n.of(navigatorKey.currentContext!).prop_read;
+              } else if (canWrite) {
+                _permissions = L10n.of(navigatorKey.currentContext!).prop_write;
+              }
             }
             try {
               await for (final entity in dir.list(recursive: true, followLinks: false)) {
@@ -411,7 +438,15 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
             if (widget.selectedPaths.length == 1) {
               final stat = f.statSync();
               _lastModified = stat.modified;
-              _permissions = '${(stat.mode & 0x100) != 0 ? "读取" : ""}${(stat.mode & 0x80) != 0 ? " / 写入" : ""}';
+              final canRead = (stat.mode & 0x100) != 0;
+              final canWrite = (stat.mode & 0x80) != 0;
+              if (canRead && canWrite) {
+                _permissions = '${L10n.of(navigatorKey.currentContext!).prop_read} / ${L10n.of(navigatorKey.currentContext!).prop_write}';
+              } else if (canRead) {
+                _permissions = L10n.of(navigatorKey.currentContext!).prop_read;
+              } else if (canWrite) {
+                _permissions = L10n.of(navigatorKey.currentContext!).prop_write;
+              }
             }
           }
         } else {
@@ -442,10 +477,11 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
     if (widget.selectedPaths.length == 1) {
       final pStr = widget.selectedPaths.first;
       final ext = pStr.contains('.') ? pStr.substring(pStr.lastIndexOf('.')).toLowerCase() : '';
+      final l10n = L10n.of(navigatorKey.currentContext!);
       if (folders > 0) {
-        _mimeType = 'Folder / Directory';
+        _mimeType = l10n.prop_folder_directory;
       } else {
-        _mimeType = ext.isNotEmpty ? 'File ($ext)' : 'File';
+        _mimeType = ext.isNotEmpty ? '${l10n.prop_file} ($ext)' : l10n.prop_file;
       }
     }
 
@@ -462,9 +498,11 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = L10n.of(context);
     final count = widget.selectedPaths.length;
     final isSingle = count == 1;
-    final nameDisplay = isSingle ? p.basename(widget.selectedPaths.first) : '$count items selected';
+    final isFolderType = _mimeType == l10n.prop_folder_directory;
+    final nameDisplay = isSingle ? p.basename(widget.selectedPaths.first) : l10n.prop_items_selected(count);
 
     return AlertDialog(
       title: Row(
@@ -493,32 +531,32 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (isSingle) ...[
-                    _CopyablePropertyRow(label: L10n.of(context).ui_name, value: nameDisplay),
-                    _CopyablePropertyRow(label: L10n.of(context).ui_path, value: widget.selectedPaths.first),
+                    _CopyablePropertyRow(label: l10n.ui_name, value: nameDisplay),
+                    _CopyablePropertyRow(label: l10n.ui_path, value: widget.selectedPaths.first),
                     _CopyablePropertyRow(
-                      label: L10n.of(context).ui_size,
-                      value: '${FileUtils.formatBytes(_totalBytes, 2)} ($_totalBytes bytes)',
+                      label: l10n.ui_size,
+                      value: '${FileUtils.formatBytes(_totalBytes, 2)} ($_totalBytes ${l10n.prop_bytes})',
                     ),
-                    if (_mimeType == 'Folder / Directory')
+                    if (isFolderType)
                       _CopyablePropertyRow(
-                        label: L10n.of(context).ui_contains,
-                        value: '${_folderCount - 1} subfolder(s), $_fileCount file(s)',
+                        label: l10n.ui_contains,
+                        value: l10n.prop_contains_format(_folderCount - 1, _fileCount),
                       ),
                     if (_lastModified != null)
-                      _CopyablePropertyRow(label: L10n.of(context).msg1303e638, value: FileUtils.formatDate(_lastModified!)),
-                    if (_mimeType.isNotEmpty) _CopyablePropertyRow(label: L10n.of(context).ui_type, value: _mimeType),
-                    if (_permissions.isNotEmpty) _CopyablePropertyRow(label: L10n.of(context).ui_permissions, value: _permissions),
+                      _CopyablePropertyRow(label: l10n.msg1303e638, value: FileUtils.formatDate(_lastModified!)),
+                    if (_mimeType.isNotEmpty) _CopyablePropertyRow(label: l10n.ui_type, value: _mimeType),
+                    if (_permissions.isNotEmpty) _CopyablePropertyRow(label: l10n.ui_permissions, value: _permissions),
                   ] else ...[
                     _CopyablePropertyRow(
-                      label: L10n.of(context).msg880a18f3,
-                      value: '$count items ($_folderCount folder(s), $_fileCount file(s))',
+                      label: l10n.msg880a18f3,
+                      value: l10n.prop_items_summary(count, _folderCount, _fileCount),
                     ),
                     _CopyablePropertyRow(
-                      label: L10n.of(context).msgea9ecb93,
-                      value: '${FileUtils.formatBytes(_totalBytes, 2)} ($_totalBytes bytes)',
+                      label: l10n.msgea9ecb93,
+                      value: '${FileUtils.formatBytes(_totalBytes, 2)} ($_totalBytes ${l10n.prop_bytes})',
                     ),
                     const SizedBox(height: 12),
-                    Text(L10n.of(context).msg7704aa2c, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                    Text(l10n.msg7704aa2c, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                     const SizedBox(height: 8),
                     ConstrainedBox(
                       constraints: const BoxConstraints(maxHeight: 180),

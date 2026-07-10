@@ -4023,6 +4023,12 @@ class L10nDe extends L10n {
   String get msg_aspect_4_3 => '4:3';
 
   @override
+  String get msg_aspect_custom => 'Benutzerdefiniert';
+
+  @override
+  String get msg_custom_aspect_ratio => 'Benutzerdefiniertes Seitenverhältnis';
+
+  @override
   String get drawer_tools => 'Werkzeuge';
 
   @override
@@ -4060,4 +4066,114 @@ class L10nDe extends L10n {
 
   @override
   String get msg04b7de53 => 'Schnellzugriff auf häufige Funktionen';
+
+  @override
+  String get prop_read => 'Read';
+
+  @override
+  String get prop_write => 'Write';
+
+  @override
+  String get prop_folder_directory => 'Folder / Directory';
+
+  @override
+  String get prop_file => 'File';
+
+  @override
+  String prop_contains_format(int folderCount, int fileCount) {
+    return '$folderCount subfolder(s), $fileCount file(s)';
+  }
+
+  @override
+  String get prop_bytes => 'bytes';
+
+  @override
+  String prop_items_selected(int count) {
+    return '$count items selected';
+  }
+
+  @override
+  String prop_items_summary(int count, int folderCount, int fileCount) {
+    return '$count items ($folderCount folder(s), $fileCount file(s))';
+  }
+
+  @override
+  String get msg_add_subtitle => 'Untertitel hinzufügen';
+
+  @override
+  String get msg_subtitle_menu => 'Untertitel';
+
+  @override
+  String get msg_subtitle_size => 'Untertitelgröße';
+
+  @override
+  String get msg_quick_actions => 'Schnellaktionen';
+
+  @override
+  String get msg_hwdec => 'HW';
+
+  @override
+  String get msg_subtitle_on => 'Untertitel einschalten';
+
+  @override
+  String get msg_subtitle_off => 'Untertitel ausschalten';
+
+  @override
+  String get msg_no_subtitle => 'Kein Untertitel';
+
+  @override
+  String get msg_playlist => 'Wiedergabeliste';
+
+  @override
+  String get msg_no_playlist => 'Keine Wiedergabeliste';
+
+  @override
+  String get msg_slide_to_unlock => 'Wischen / Tippen zum Entsperren';
+
+  @override
+  String get msg_seconds_short => 's';
+
+  @override
+  String get msg_speed_2x => 'Geschw. 2.0x';
+
+  @override
+  String get log_v1_1_1_line1 => '📹 视频播放器';
+
+  @override
+  String get log_v1_1_1_line2 =>
+      '支持外挂字幕：自动识别与视频同目录、同文件名的字幕文件（如 .srt、.ass），同时保留手动加载字幕文件的入口。';
+
+  @override
+  String get log_v1_1_1_line3 => '新增自定义画面缩放比例，可灵活适配各类异形屏及非标准比例屏幕。';
+
+  @override
+  String get log_v1_1_1_line4 => '🎵 音频播放器';
+
+  @override
+  String get log_v1_1_1_line5 => '修复了在平板、车机等横屏设备上的界面显示异常问题，提升大屏体验。';
+
+  @override
+  String get log_v1_1_1_line6 => '📂 文件浏览与操作';
+
+  @override
+  String get log_v1_1_1_line7 => '优化侧滑菜单与快捷操作弹窗的宽度一致性，视觉更统一。';
+
+  @override
+  String get log_v1_1_1_line8 => '快捷操作面板中的常用功能现支持折叠/展开，且状态会持久记忆，下次打开保留您的偏好。';
+
+  @override
+  String get log_v1_1_1_line9 =>
+      '调整文件打开逻辑：点击文件默认使用本应用直接打开；如需切换其他应用，可在选中文件后，通过顶部三点菜单或底部操作栏的\"更多\"选项选择\"打开方式\"。';
+
+  @override
+  String get log_v1_1_1_line10 => '🗂️ 分类页界面';
+
+  @override
+  String get log_v1_1_1_line11 => '默认布局改为每行4列，显示更紧凑高效。';
+
+  @override
+  String get log_v1_1_1_line12 => '您可在\"自定义快捷方式\"设置中自由切换每行3列或4列。';
+
+  @override
+  String get log_v1_1_1_line13 => '支持长按分类图标并拖拽，随意调整类别排列顺序。';
 }
