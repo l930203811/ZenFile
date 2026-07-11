@@ -27,8 +27,11 @@ A beautifully crafted, open-source file manager and offline media center for And
 ⚠️ Known Issues (to be fixed in the next version)
 
 · The app may crash upon reopening after clearing its data.
+
 · Adjusting the display size of external subtitles in the video player does not take effect.
+
 · Currently, only the WebDAV client supports media file streaming; other clients do not yet support this feature.
+
 · After entering any shared directory via the SMB client, returning to the parent directory shows an empty list, and the breadcrumb path is incorrect.
 
 ---
