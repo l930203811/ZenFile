@@ -4013,4 +4013,13 @@ class L10nKo extends L10n {
 
   @override
   String get log_v1_1_1_line13 => '支持长按分类图标并拖拽，随意调整类别排列顺序。';
+
+  @override
+  String get ui_close_category => '카테고리 비활성화';
+
+  @override
+  String get ui_open_category => '카테고리 활성화';
+
+  @override
+  String get msg_custom_scan_paths => '사용자 정의 스캔 경로';
 }

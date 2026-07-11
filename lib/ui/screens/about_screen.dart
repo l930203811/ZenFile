@@ -160,7 +160,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   const SizedBox(height: 6),
                   // 版本号文本（硬编码，无需 l10n；以后升级版本只改这里）
                   Text(
-                    'v1.1.1',
+                    'v1.1.2',
                     style: TextStyle(
                       color: theme.colorScheme.onSurface.withOpacity(0.7),
                       fontSize: 13,
@@ -704,72 +704,8 @@ class AboutZenFileScreen extends StatelessWidget {
                     ),
                   ),
 
-                  _buildVersionSection(ctx, theme, 'v1.1.1', '2026-07-10', [
-                    L10n.of(context).log_v1_1_1_line1,
-                    L10n.of(context).log_v1_1_1_line2,
-                    L10n.of(context).log_v1_1_1_line3,
-                    L10n.of(context).log_v1_1_1_line4,
-                    L10n.of(context).log_v1_1_1_line5,
-                    L10n.of(context).log_v1_1_1_line6,
-                    L10n.of(context).log_v1_1_1_line7,
-                    L10n.of(context).log_v1_1_1_line8,
-                    L10n.of(context).log_v1_1_1_line9,
-                    L10n.of(context).log_v1_1_1_line10,
-                    L10n.of(context).log_v1_1_1_line11,
-                    L10n.of(context).log_v1_1_1_line12,
-                    L10n.of(context).log_v1_1_1_line13,
-                  ]),
-                  const SizedBox(height: 16),
-                  _buildVersionSection(ctx, theme, 'v1.1.0', '2026-07-05', [
-                    L10n.of(context).log_quick_action_panel,
-                    L10n.of(context).log_favorites,
-                    L10n.of(context).log_drawer_redesign,
-                    L10n.of(context).log_video_player_rotation,
-                    L10n.of(context).log_category_reorder,
-                    L10n.of(context).log_compression_fix,
-                    L10n.of(context).log_progress_bar_redesign,
-                    L10n.of(context).log_dual_pane_status_bar,
-                    L10n.of(context).log_transfer_fixes,
-                    L10n.of(context).log_drawer_font_consistency,
-                    L10n.of(context).log_landscape_layout,
-                    L10n.of(context).log_progress_i18n,
-                  ]),
-                  const SizedBox(height: 16),
-                  _buildVersionSection(ctx, theme, 'v1.0.42', '2026-06-30', [
-                    L10n.of(context).log_music_lyrics_fullscreen_removed,
-                    L10n.of(context).log_music_lyrics_centered,
-                    L10n.of(context).log_music_player_button,
-                    L10n.of(context).log_music_remember_progress,
-                    L10n.of(context).log_image_icon_redesign,
-                    L10n.of(context).log_doc_icon_redesign,
-                    L10n.of(context).log_archive_icon_redesign,
-                    L10n.of(context).log_music_lrc_lyrics,
-                    L10n.of(context).log_remote_copy_paste_fix,
-                    L10n.of(context).log_navbar_position_setting,
-                    L10n.of(context).log_browse_top_area_optimize,
-                  ]),
-                  const SizedBox(height: 16),
-                  _buildVersionSection(ctx, theme, 'v1.0.41', '2026-06-21', [
-                    L10n.of(context).log_extract_dialog_redesign,
-                    L10n.of(context).log_vault_quick_category,
-                    L10n.of(context).log_vault_l10n_fix,
-                    L10n.of(context).log_compression_path_fix,
-                    L10n.of(context).log_compression_progress,
-                    L10n.of(context).log_web_share_category,
-                    L10n.of(context).log_web_share_l10n,
-                  ]),
-                  const SizedBox(height: 16),
-                  _buildVersionSection(ctx, theme, 'v1.0.4', '2026-06-19', [
-                    L10n.of(context).log_remote_media_cache,
-                    L10n.of(context).log_remote_to_remote,
-                    L10n.of(context).log_remote_cut_progress,
-                    L10n.of(context).log_audio_scan_stable,
-                    L10n.of(context).log_text_editor,
-                    L10n.of(context).log_text_editor_settings,
-                    L10n.of(context).log_10_languages,
-                    L10n.of(context).log_fix_l10n_hardcode,
-                    L10n.of(context).log_language_scroll,
-                  ]),
+
+                  _buildV112Changelog(ctx, theme),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -777,6 +713,93 @@ class AboutZenFileScreen extends StatelessWidget {
           },
         );
       },
+    );
+  }
+
+  Widget _buildV112Changelog(BuildContext ctx, ThemeData theme) {
+    final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
+    final headerStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.9), fontWeight: FontWeight.bold);
+    final sectionStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.primary, fontWeight: FontWeight.w600);
+
+    Widget gap([double h = 6]) => SizedBox(height: h);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.06)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Version header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text('v1.1.2', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+              ),
+              const SizedBox(width: 10),
+              Text('2026-07-11', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+            ],
+          ),
+          gap(14),
+
+          // ── 中文版 ──
+          Text('ZenFile v1.1.2 更新日志（中文版）', style: headerStyle),
+          const Divider(height: 18),
+          gap(4),
+          Text('🐛 问题修复', style: sectionStyle),
+          gap(4),
+          Text('· 修复 SMB 客户端连接时，若未填写共享名则无法显示目录的问题。现在无需填写共享名即可正常扫描远程主机的所有共享目录。', style: textStyle),
+          gap(10),
+          Text('✨ 新增功能', style: sectionStyle),
+          gap(4),
+          Text('· 分类页支持长按类别图标弹出操作菜单，可快速重命名、关闭类别或自定义扫描位置；同时支持拖动图标自由调整类别排序。', style: textStyle),
+          gap(10),
+          Text('🎨 界面优化', style: sectionStyle),
+          gap(4),
+          Text('· 调整左右侧滑抽屉的页面宽度，整体缩减约 10%，使主内容区域显示更充裕。', style: textStyle),
+          gap(10),
+          Text('⚠️ 已知问题（预计下个版本修复）', style: sectionStyle),
+          gap(4),
+          Text('· 清除应用数据后，重新打开会出现闪退。', style: textStyle),
+          Text('· 视频播放器中调整外挂字幕显示大小暂不生效。', style: textStyle),
+          Text('· 目前仅 WebDAV 客户端支持媒体文件流式播放，其他客户端暂不支持。', style: textStyle),
+          Text('· SMB 客户端在进入任意共享目录后返回时，目录显示为空，且面包屑路径地址错误。', style: textStyle),
+
+          const Divider(height: 32),
+
+          // ── 英文版 ──
+          Text('ZenFile v1.1.2 Changelog (English Version)', style: headerStyle),
+          const Divider(height: 18),
+          gap(4),
+          Text('🐛 Bug Fixes', style: sectionStyle),
+          gap(4),
+          Text('· Fixed an issue where SMB client connection would show an empty directory if the share name was left blank. Now, you can connect without entering a share name, and the app will automatically scan and list all shared directories on the remote host.', style: textStyle),
+          gap(10),
+          Text('✨ New Features', style: sectionStyle),
+          gap(4),
+          Text('· On the category page, long‑press a category icon to bring up an action menu, allowing you to quickly rename, disable, or customize the scan location for that category. You can also drag icons to freely reorder categories.', style: textStyle),
+          gap(10),
+          Text('🎨 UI Improvements', style: sectionStyle),
+          gap(4),
+          Text('· Adjusted the width of the left/right sliding drawers, reducing them by approximately 10% to give more room to the main content area.', style: textStyle),
+          gap(10),
+          Text('⚠️ Known Issues (to be fixed in the next version)', style: sectionStyle),
+          gap(4),
+          Text('· The app may crash upon reopening after clearing its data.', style: textStyle),
+          Text('· Adjusting the display size of external subtitles in the video player does not take effect.', style: textStyle),
+          Text('· Currently, only the WebDAV client supports media file streaming; other clients do not yet support this feature.', style: textStyle),
+          Text('· After entering any shared directory via the SMB client, returning to the parent directory shows an empty list, and the breadcrumb path is incorrect.', style: textStyle),
+        ],
+      ),
     );
   }
 

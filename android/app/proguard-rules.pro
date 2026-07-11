@@ -47,3 +47,7 @@
 -dontwarn net.engio.mbassy.**
 -keep class net.engio.mbassy.** { *; }
 
+# dcerpc 依赖 RMI 相关类
+-dontwarn java.rmi.**
+-dontwarn com.rapid7.client.dcerpc.**
+

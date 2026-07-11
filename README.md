@@ -8,24 +8,28 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 ---
 
-## 🚀 What's New in v1.1.0
+## 🚀 What's New in v1.1.2
 
-**Quick Action Panel & Favorites & Drawer Redesign & Video Player & Category Page & Progress Bar & Transfers** — Added a new quick action panel accessible by swiping left on the browse page, and introduced a Favorites feature to bookmark local or remote files/folders. The drawer has been redesigned for a cleaner look and remembers all expand/collapse state persistently. The video player now supports clockwise rotation and zoom ratio adjustment. The category page supports long-press drag-and-drop reordering, 3/4 column layouts, and category renaming. The progress dialog has been completely redesigned. Transfer stability and speed display have been improved.
+---
 
-| | |
-|---|---|
-| ⚡ **Quick Action Panel** | New quick action page accessible by swiping left on the browse page |
-| ⭐ **Favorites** | Bookmark local or remote files/folders, pinned to the quick action panel |
-| 🗂️ **Drawer Redesign** | Cleaner, more beautiful drawer that persists all expand/collapse state |
-| 🎬 **Video Player Rotation** | Added clockwise rotation and zoom ratio adjustment for video playback |
-| 🎨 **Category Page Reordering** | Long-press category icons to drag-and-drop reorder; supports 3/4 columns; supports renaming category names |
-| 📊 **Progress Bar Redesign** | Brand-new circular progress dialog with a clean, modern look |
-| 🪟 **Dual-Pane Status Bar** | New top status bar in dual-pane mode showing active window indicator and clipboard summary |
-| 🐛 **Transfer Fixes** | Fixed FTP/SFTP/SMB/WebDAV progress bar not updating, cancel not working, remote list going blank, and missing real-time speed display |
-| 🔤 **Drawer Font Consistency** | Fixed "Settings" font size to match other drawer entries |
-| 📐 **Landscape Layout** | Optimized file grid layout for tablets and car infotainment systems in landscape mode |
-| 🗜️ **Archive Fixes** | Fixed several archive-related issues |
-| 🌍 **i18n** | Added complete multi-language support for the progress dialog |
+🐛 Bug Fixes
+
+· Fixed an issue where SMB client connection would show an empty directory if the share name was left blank. Now, you can connect without entering a share name, and the app will automatically scan and list all shared directories on the remote host.
+
+✨ New Features
+
+· On the category page, long‑press a category icon to bring up an action menu, allowing you to quickly rename, disable, or customize the scan location for that category. You can also drag icons to freely reorder categories.
+
+🎨 UI Improvements
+
+· Adjusted the width of the left/right sliding drawers, reducing them by approximately 10% to give more room to the main content area.
+
+⚠️ Known Issues (to be fixed in the next version)
+
+· The app may crash upon reopening after clearing its data.
+· Adjusting the display size of external subtitles in the video player does not take effect.
+· Currently, only the WebDAV client supports media file streaming; other clients do not yet support this feature.
+· After entering any shared directory via the SMB client, returning to the parent directory shows an empty list, and the breadcrumb path is incorrect.
 
 ---
 

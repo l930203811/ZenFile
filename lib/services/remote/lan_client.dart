@@ -194,13 +194,13 @@ class LanClient extends RemoteClient {
   /// available SMB shares. For paths like "/{share}/...", it lists the
   /// contents within that share.
   @override
-  Future<List<RemoteFileItem>> listDirectory(String path) async {
+  Future<List<RemoteFileItem>> listDirectory(String path, {bool forceRefresh = false}) async {
     final session = _requireSession;
     final normalized = _normalizePath(path);
 
     final result = await _channel.invokeMethod<List<dynamic>>(
       'listDirectory',
-      {'sessionId': session, 'path': normalized},
+      {'sessionId': session, 'path': normalized, 'forceRefresh': forceRefresh},
     ).timeout(const Duration(seconds: 30));
 
     if (result == null) return <RemoteFileItem>[];

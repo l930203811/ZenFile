@@ -19,7 +19,7 @@ class SafRemoteClient extends RemoteClient {
   }
 
   @override
-  Future<List<RemoteFileItem>> listDirectory(String path) async {
+  Future<List<RemoteFileItem>> listDirectory(String path, {bool forceRefresh = false}) async {
     final String pathUri = (path == '/' || path == rootUri) ? '' : path;
     final List<dynamic> result = await _channel.invokeMethod('listDirectory', {
       'rootUri': rootUri,

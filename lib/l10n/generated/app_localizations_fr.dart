@@ -4200,4 +4200,13 @@ class L10nFr extends L10n {
 
   @override
   String get log_v1_1_1_line13 => '支持长按分类图标并拖拽，随意调整类别排列顺序。';
+
+  @override
+  String get ui_close_category => 'Désactiver la catégorie';
+
+  @override
+  String get ui_open_category => 'Activer la catégorie';
+
+  @override
+  String get msg_custom_scan_paths => 'Chemins de scan personnalisés';
 }

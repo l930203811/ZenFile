@@ -66,6 +66,7 @@ android {
 
     packaging {
         jniLibs.useLegacyPackaging = false
+        resources.excludes.add("META-INF/versions/9/OSGI-INF/MANIFEST.MF")
     }
 
 
@@ -81,4 +82,10 @@ dependencies {
     implementation("androidx.fragment:fragment:1.8.5")
     // SMB support (smbj pulls BouncyCastle bcprov-jdk15on transitively for NTLMSSP)
     implementation("com.hierynomus:smbj:0.13.0")
+    implementation("com.rapid7.client:dcerpc:0.12.13") {
+        exclude(group = "com.google.guava", module = "guava")
+        exclude(group = "com.hierynomus", module = "smbj")
+    }
+    implementation("com.google.guava:guava:33.5.0-android")
+    implementation("com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava")
 }

@@ -54,7 +54,7 @@ class FtpRemoteClient extends RemoteClient {
   }
 
   @override
-  Future<List<RemoteFileItem>> listDirectory(String path) async {
+  Future<List<RemoteFileItem>> listDirectory(String path, {bool forceRefresh = false}) async {
     if (_ftpConnect == null) throw Exception('FTP not connected');
 
     final targetPath = (path.isEmpty || path == '/') ? '/' : path;

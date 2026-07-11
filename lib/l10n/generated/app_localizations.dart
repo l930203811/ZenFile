@@ -7503,6 +7503,24 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'支持长按分类图标并拖拽，随意调整类别排列顺序。'**
   String get log_v1_1_1_line13;
+
+  /// Button to close/disable a category in quick categories grid context menu
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭类别'**
+  String get ui_close_category;
+
+  /// Button to open/enable a category in quick categories grid context menu
+  ///
+  /// In zh, this message translates to:
+  /// **'开启类别'**
+  String get ui_open_category;
+
+  /// Menu item to configure custom scan paths for media categories
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义扫描位置'**
+  String get msg_custom_scan_paths;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

@@ -4199,4 +4199,13 @@ class L10nEs extends L10n {
 
   @override
   String get log_v1_1_1_line13 => '支持长按分类图标并拖拽，随意调整类别排列顺序。';
+
+  @override
+  String get ui_close_category => 'Desactivar categoría';
+
+  @override
+  String get ui_open_category => 'Activar categoría';
+
+  @override
+  String get msg_custom_scan_paths => 'Rutas de escaneo personalizadas';
 }

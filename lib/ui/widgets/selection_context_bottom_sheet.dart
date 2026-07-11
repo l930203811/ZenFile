@@ -51,7 +51,8 @@ class SelectionContextBottomSheet extends StatelessWidget {
     final isSingle = selectedCount == 1;
     final displayTitle = isSingle ? p.basename(targetPath) : L10n.of(context).selectedcount3(provider.selectedPaths.length);
     final isFolder = Directory(targetPath).existsSync() || 
-        provider.currentFiles.firstWhere((e) => e.path == targetPath, orElse: () => provider.currentFiles.first).isDirectory;
+        (provider.currentFiles.isNotEmpty &&
+            provider.currentFiles.firstWhere((e) => e.path == targetPath, orElse: () => provider.currentFiles.first).isDirectory);
 
     return Container(
       decoration: BoxDecoration(

@@ -4016,5 +4016,17 @@
   "msg_speed_2x": "Velocidad 2.0x",
   "@msg_speed_2x": {
     "description": "Long press speed badge text in video player"
+  },
+  "ui_close_category": "Desactivar categoría",
+  "@ui_close_category": {
+    "description": "Button to disable a category in quick categories grid context menu"
+  },
+  "ui_open_category": "Activar categoría",
+  "@ui_open_category": {
+    "description": "Button to enable a category in quick categories grid context menu"
+  },
+  "msg_custom_scan_paths": "Rutas de escaneo personalizadas",
+  "@msg_custom_scan_paths": {
+    "description": "Menu item to configure custom scan paths for media categories"
   }
 }

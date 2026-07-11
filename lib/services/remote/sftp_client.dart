@@ -46,7 +46,7 @@ class SftpRemoteClient extends RemoteClient {
   }
 
   @override
-  Future<List<RemoteFileItem>> listDirectory(String path) async {
+  Future<List<RemoteFileItem>> listDirectory(String path, {bool forceRefresh = false}) async {
     if (_sftpClient == null) throw Exception('SFTP not connected');
     
     var targetPath = path;

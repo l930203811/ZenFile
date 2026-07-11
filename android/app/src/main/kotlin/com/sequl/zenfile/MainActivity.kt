@@ -900,7 +900,8 @@ class MainActivity : AudioServiceFragmentActivity() {
                         "listDirectory" -> {
                             val sessionId = call.argument<String>("sessionId") ?: ""
                             val path = call.argument<String>("path") ?: "/"
-                            val items = smb.listDirectory(sessionId, path)
+                            val forceRefresh = call.argument<Boolean>("forceRefresh") ?: false
+                            val items = smb.listDirectory(sessionId, path, forceRefresh)
                             runOnUiThread { result.success(items) }
                         }
                         "createDirectory" -> {

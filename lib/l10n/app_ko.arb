@@ -4016,5 +4016,17 @@
   "msg_speed_2x": "2배속",
   "@msg_speed_2x": {
     "description": "Long press speed badge text in video player"
+  },
+  "ui_close_category": "카테고리 비활성화",
+  "@ui_close_category": {
+    "description": "Button to disable a category in quick categories grid context menu"
+  },
+  "ui_open_category": "카테고리 활성화",
+  "@ui_open_category": {
+    "description": "Button to enable a category in quick categories grid context menu"
+  },
+  "msg_custom_scan_paths": "사용자 정의 스캔 경로",
+  "@msg_custom_scan_paths": {
+    "description": "Menu item to configure custom scan paths for media categories"
   }
 }

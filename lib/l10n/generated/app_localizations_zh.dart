@@ -3980,6 +3980,15 @@ class L10nZh extends L10n {
 
   @override
   String get log_v1_1_1_line13 => '支持长按分类图标并拖拽，随意调整类别排列顺序。';
+
+  @override
+  String get ui_close_category => '关闭类别';
+
+  @override
+  String get ui_open_category => '开启类别';
+
+  @override
+  String get msg_custom_scan_paths => '自定义扫描位置';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -7922,4 +7931,13 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get log_v1_1_1_line13 => '支援長按分類圖示並拖曳，隨意調整類別排列順序。';
+
+  @override
+  String get ui_close_category => '關閉類別';
+
+  @override
+  String get ui_open_category => '開啟類別';
+
+  @override
+  String get msg_custom_scan_paths => '自定義掃描位置';
 }

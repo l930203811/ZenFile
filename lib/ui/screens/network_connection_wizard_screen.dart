@@ -264,7 +264,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
     final username = _usernameController.text.trim();
     final password = _passwordController.text.trim();
     final path = (_selectedType == 'WebDav' || _selectedType == L10n.of(context).smb)
-        ? _pathController.text.trim()
+        ? (_pathController.text.trim().isEmpty ? '/' : _pathController.text.trim())
         : '/';
 
     setState(() {

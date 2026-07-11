@@ -13,11 +13,14 @@ import com.hierynomus.smbj.SMBClient
 import com.hierynomus.smbj.SmbConfig
 import com.hierynomus.smbj.auth.AuthenticationContext
 import com.hierynomus.smbj.connection.Connection
+import com.hierynomus.smbj.common.SMBRuntimeException
 import com.hierynomus.smbj.session.Session
 import com.hierynomus.smbj.share.DiskShare
 import com.hierynomus.smbj.share.File
 import com.hierynomus.smbj.share.NamedPipe
 import com.hierynomus.smbj.share.PipeShare
+import com.rapid7.client.dcerpc.mssrvs.ServerService
+import com.rapid7.client.dcerpc.transport.SMBTransportFactories
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -44,7 +47,9 @@ class SmbService {
         val session: Session,
         val username: String,
         val host: String,
-        val shares: ConcurrentHashMap<String, DiskShare> = ConcurrentHashMap()
+        val shares: ConcurrentHashMap<String, DiskShare> = ConcurrentHashMap(),
+        @Volatile var cachedShares: List<Map<String, Any>>? = null,
+        @Volatile var sharesCacheTimeMs: Long = 0L
     )
 
     private val sessions = ConcurrentHashMap<String, SmbSessionEntry>()
@@ -70,6 +75,16 @@ class SmbService {
             0xC0000072L,  // STATUS_ACCOUNT_DISABLED
             0xC0000193L,  // STATUS_LOGON_TYPE_NOT_GRANTED
         )
+
+        private const val STYPE_PRINTQ = 0x00000001
+        private const val STYPE_DEVICE = 0x00000002
+        private const val STYPE_IPC = 0x00000003
+
+        // Share enumeration results are cached for this duration to avoid
+        // re-running the expensive 3-tier enumeration on every root navigation.
+        // Shares on a server rarely change during a session, so 60s is a
+        // reasonable balance between responsiveness and freshness.
+        private const val SHARES_CACHE_TTL_MS = 60_000L
     }
 
     /**
@@ -122,11 +137,11 @@ class SmbService {
      * are listed. Each returned entry exposes: name, path (forward-slash form
      * for Dart), isDirectory, size (bytes), modified (epoch millis).
      */
-    fun listDirectory(sessionId: String, path: String): List<Map<String, Any>> {
+    fun listDirectory(sessionId: String, path: String, forceRefresh: Boolean = false): List<Map<String, Any>> {
         val entry = sessions[sessionId] ?: throw Exception("Invalid or disconnected session id")
         if (path.isEmpty() || path == "/") {
             // Root listing: enumerate available shares on the server
-            return listShares(sessionId)
+            return listShares(sessionId, forceRefresh)
         }
 
         val (shareName, pathInShare) = resolveShareAndPath(path)
@@ -134,9 +149,7 @@ class SmbService {
 
         return try {
             val share = getShare(entry, shareName)
-            // smbj 的 list("") 在某些服务器上会失败,空路径时用 "\\" 替代
-            val effectivePath = if (pathInShare.isEmpty()) "\\" else pathInShare
-            val listing: List<FileIdBothDirectoryInformation> = share.list(effectivePath)
+            val listing = listPathInShare(share, shareName, pathInShare)
             val items = mutableListOf<Map<String, Any>>()
             val basePath = path.trimEnd('/')
 
@@ -168,31 +181,83 @@ class SmbService {
         }
     }
 
+    private fun listPathInShare(
+        share: DiskShare,
+        shareName: String,
+        pathInShare: String
+    ): List<FileIdBothDirectoryInformation> {
+        val candidates = mutableListOf<String>()
+        if (pathInShare.isEmpty()) {
+            candidates.add("\\")
+            candidates.add("")
+            candidates.add(".")
+        } else {
+            val normalized = pathInShare.replace('/', '\\')
+            candidates.add(normalized)
+            if (!normalized.startsWith("\\")) {
+                candidates.add("\\$normalized")
+            }
+            candidates.add(normalized.trimStart('\\'))
+        }
+
+        var lastError: Exception? = null
+        for (candidate in candidates) {
+            try {
+                return share.list(candidate)
+            } catch (e: Exception) {
+                lastError = e
+                Log.w("SmbService", "share.list failed for '$candidate': ${e.message}")
+            }
+        }
+        throw Exception("Failed to list path '$pathInShare' in share '$shareName'", lastError)
+    }
+
     /**
      * Lists the available shares on the connected SMB server.
      *
-     * Tries proper DCE/RPC share enumeration via the `srvsvc` named pipe
-     * first (NetShareEnumAll). This works on Windows servers and most modern
-     * Samba installations. If DCE/RPC fails (e.g. IPC$ is inaccessible,
-     * or the bind is rejected), falls back to the brute-force probing
-     * approach which checks a comprehensive list of common share names.
+     * Uses a three-tier fallback strategy:
+     * 1. Rapid7 DCE/RPC SRVSVC transport (same as MaterialFiles) — the most
+     *    compatible approach, works on Windows, Samba, and most NAS devices.
+     * 2. Hand-crafted DCE/RPC via IPC$ named pipe (NetShareEnumAll) — fallback
+     *    for servers where the rapid7 transport fails to bind.
+     * 3. Brute-force probing of a comprehensive list of common share names —
+     *    last resort when IPC$ is inaccessible or RPC is rejected.
      */
-    fun listShares(sessionId: String): List<Map<String, Any>> {
+    fun listShares(sessionId: String, forceRefresh: Boolean = false): List<Map<String, Any>> {
         val entry = sessions[sessionId] ?: throw Exception("Invalid or disconnected session id")
-        // Try DCE/RPC NetShareEnumAll first (proper enumeration)
+
+        // Return cached result if still fresh (avoids re-running the expensive
+        // 3-tier enumeration on every root navigation)
+        if (!forceRefresh) {
+            val cached = entry.cachedShares
+            val cacheAge = System.currentTimeMillis() - entry.sharesCacheTimeMs
+            if (cached != null && cacheAge < SHARES_CACHE_TTL_MS) {
+                Log.i("SmbService", "Returning cached shares (${cached.size} items, age=${cacheAge}ms) for ${entry.host}")
+                return cached
+            }
+        }
+
+        // Tier 1 + Tier 2: DCE/RPC enumeration (rapid7 SRVSVC → legacy manual)
         try {
             Log.i("SmbService", "Enumerating shares via DCE/RPC for ${entry.host}")
             val rpcResult = listSharesViaRpc(entry)
             if (rpcResult.isNotEmpty()) {
+                entry.cachedShares = rpcResult
+                entry.sharesCacheTimeMs = System.currentTimeMillis()
                 return rpcResult
             }
             Log.i("SmbService", "DCE/RPC returned empty, trying probing")
         } catch (e: Exception) {
             Log.w("SmbService", "DCE/RPC failed, falling back to probing: ${e.message}")
         }
-        // Fall back to brute-force probing
+        // Tier 3: brute-force probing
         Log.i("SmbService", "Enumerating shares via probing for ${entry.host}")
-        return listSharesViaProbing(entry)
+        val probeResult = listSharesViaProbing(entry)
+        if (probeResult.isNotEmpty()) {
+            entry.cachedShares = probeResult
+            entry.sharesCacheTimeMs = System.currentTimeMillis()
+        }
+        return probeResult
     }
 
     /**
@@ -202,6 +267,57 @@ class SmbService {
      * Returns empty list on any failure so the caller can fall back to probing.
      */
     private fun listSharesViaRpc(entry: SmbSessionEntry): List<Map<String, Any>> {
+        val transportResult = listSharesViaRpcTransport(entry)
+        if (transportResult.isNotEmpty()) {
+            return transportResult
+        }
+        Log.i("SmbService", "SRVSVC transport enumeration returned empty, trying legacy manual RPC")
+        return listSharesViaLegacyRpc(entry)
+    }
+
+    private fun listSharesViaRpcTransport(entry: SmbSessionEntry): List<Map<String, Any>> {
+        try {
+            val transport = SMBTransportFactories.SRVSVC.getTransport(entry.session)
+            val serverService = ServerService(transport)
+            val netShareInfos = serverService.shares1
+            val items = mutableListOf<Map<String, Any>>()
+
+            for (info in netShareInfos) {
+                val shareType = info.type
+                if (shareType.hasBits(STYPE_PRINTQ) || shareType.hasBits(STYPE_DEVICE) || shareType.hasBits(STYPE_IPC)) {
+                    continue
+                }
+
+                val name = info.netName?.trim().orEmpty()
+                if (name.isEmpty()) continue
+
+                items.add(
+                    mapOf(
+                        "name" to name,
+                        "path" to "/$name",
+                        "isDirectory" to true,
+                        "size" to 0L,
+                        "modified" to 0L
+                    )
+                )
+            }
+
+            items.sortBy { (it["name"] as String).lowercase() }
+            Log.i("SmbService", "SRVSVC transport enumeration found ${items.size} shares")
+            return items
+        } catch (e: java.io.IOException) {
+            Log.w("SmbService", "SRVSVC transport enumeration failed: ${e.message}")
+            return emptyList()
+        } catch (e: SMBRuntimeException) {
+            Log.w("SmbService", "SRVSVC transport enumeration failed: ${e.message}")
+            return emptyList()
+        } catch (e: Exception) {
+            Log.w("SmbService", "SRVSVC transport enumeration failed: ${e.message}")
+            return emptyList()
+        }
+    }
+
+    private fun listSharesViaLegacyRpc(entry: SmbSessionEntry): List<Map<String, Any>> {
         try {
             val ipcShare = entry.session.connectShare("IPC$")
             try {
@@ -295,6 +411,8 @@ class SmbService {
             return emptyList()
         }
     }
+
+    private fun Int.hasBits(bits: Int): Boolean = this and bits == bits
 
     /**
      * 使用 InputStream/OutputStream 方式的 DCE/RPC 通信（DiskShare 路径）
@@ -750,8 +868,14 @@ class SmbService {
 
     /**
      * Probes a comprehensive list of common share names by attempting to
-     * connectShare each one. Uses a dedicated bounded thread pool for
-     * Android compatibility (avoids ForkJoinPool issues).
+     * connectShare each one. Uses a bounded thread pool (8 threads) to
+     * avoid overwhelming SMB servers with too many concurrent tree-connect
+     * requests, which can trigger rate-limiting or connection refusals on
+     * some NAS firmware.
+     *
+     * The per-probe timeout is 5 seconds — most servers respond to an
+     * invalid share name with STATUS_BAD_NETWORK_NAME within milliseconds;
+     * the 5s ceiling only matters for slow or unresponsive servers.
      */
     private fun listSharesViaProbing(entry: SmbSessionEntry): List<Map<String, Any>> {
         val commonNames = listOf(
@@ -779,69 +903,62 @@ class SmbService {
             "buffalo", "Buffalo",
             // Common Samba defaults
             "everyone", "guest", "nobody", "root",
-            // Synology
-            "Public", "video", "photo", "music", "homes",
-            // QNAP
-            "Multimedia", "Public", "Web", "Recordings",
-            // WD My Cloud
+            // Synology defaults
+            "video", "photo", "homes",
+            // QNAP defaults
+            "Multimedia", "Web", "Recordings",
+            // WD My Cloud defaults
             "TimeMachineBackup", "SmartWare",
             // Chinese NAS common pinyin names
             "gongxiang", "gonggong", "xiazai", "yingyin",
             "yinyue", "tupian", "wenjian", "ziyuan",
             "shuju", "beifen", "yingshi", "boke",
-            "xiazai", "ruanjian", "yingpan", "cangku",
+            "ruanjian", "yingpan", "cangku",
             "jiankang", "shexiang", "shebei", "shequ",
             "bangong", "bangongwenjian", "xuexi", "xuexiziliao",
             "youxi", "youxianzhuang", "xiaoshuo", "xiaoshuowenjian",
             // Additional generic names
             "admin", "Admin", "administrator", "Administrator",
-            "root", "usb", "USB", "usb1", "USB1",
+            "usb", "USB", "usb1", "USB1",
             "external", "External", "external1", "External1",
-            "media", "share", "shares", "Sharing", "sharing",
-            // Additional common share names (media library, backups, sync, etc.)
+            "Sharing", "sharing",
             "film", "films", "audio", "picture", "image",
-            "backups", "sync", "workspace", "media library",
+            "backups", "sync", "workspace",
         )
-
-        // Also try the username as a share name (common on Linux/Samba)
-        val usernameShare = entry.username.ifEmpty { null }
 
         // Deduplicate case-insensitively, then build final list
         val tried = mutableSetOf<String>()
-        val namesWithExtras = mutableListOf<String>()
+        val uniqueNames = mutableListOf<String>()
 
-        // Add all common names first
         for (name in commonNames) {
             if (name.isNotEmpty() && tried.add(name.lowercase())) {
-                namesWithExtras.add(name)
+                uniqueNames.add(name)
             }
         }
 
-        // Derive share names from the server hostname (e.g. "nas-server" → "nas-server", "nas", "server")
+        // Derive share names from the server hostname (e.g. "nas-server" → "nas", "server")
         val hostNameOnly = entry.host.split(".").firstOrNull()?.takeIf { it.isNotEmpty() } ?: ""
         if (hostNameOnly.isNotEmpty()) {
             val hostParts = hostNameOnly.split("-", "_", " ")
             for (part in hostParts) {
                 val clean = part.trim().takeIf { it.isNotEmpty() && it.length >= 2 } ?: continue
-                if (tried.add(clean.lowercase())) namesWithExtras.add(clean)
+                if (tried.add(clean.lowercase())) uniqueNames.add(clean)
             }
-            if (tried.add(hostNameOnly.lowercase())) namesWithExtras.add(hostNameOnly)
+            if (tried.add(hostNameOnly.lowercase())) uniqueNames.add(hostNameOnly)
         }
 
-        // Username as share name
+        // Username as share name (common on Linux/Samba)
+        val usernameShare = entry.username.ifEmpty { null }
         if (usernameShare != null && usernameShare.isNotEmpty() && tried.add(usernameShare.lowercase())) {
-            namesWithExtras.add(usernameShare)
+            uniqueNames.add(usernameShare)
         }
-
-        val uniqueNames = namesWithExtras
 
         Log.i("SmbService", "Probing ${uniqueNames.size} share names for ${entry.host}")
 
-        // Use a cached thread pool — if threads block on slow connectShare calls
-        // (up to soTimeout = 10s), new threads are spawned for the remaining probes
-        // instead of waiting for the blocked ones. This prevents the probing from
-        // stalling when many probes hit non-existent shares.
-        val executor = Executors.newCachedThreadPool()
+        // Bounded thread pool: 8 concurrent probes is enough to saturate a
+        // typical SMB server's tree-connect throughput without triggering
+        // rate-limiting or connection refusals.
+        val executor = Executors.newFixedThreadPool(8)
         try {
             // Return value: 0 = not found, 1 = accessible disk share, 2 = exists but access denied
             val futures = uniqueNames.map { name ->
@@ -870,7 +987,7 @@ class SmbService {
             val items = mutableListOf<Map<String, Any>>()
             for ((future, name) in futures.zip(uniqueNames)) {
                 try {
-                    val (_, status) = future.get(10, TimeUnit.SECONDS)
+                    val (_, status) = future.get(5, TimeUnit.SECONDS)
                     if (status > 0) {
                         if (status == 1) {
                             Log.i("SmbService", "Found share: $name (accessible)")
@@ -884,7 +1001,7 @@ class SmbService {
                         ))
                     }
                 } catch (e: java.util.concurrent.TimeoutException) {
-                    Log.w("SmbService", "Probing share '$name' timed out after 10s")
+                    Log.w("SmbService", "Probing share '$name' timed out after 5s")
                     future.cancel(true)
                 } catch (e: Exception) {
                     Log.w("SmbService", "Probing share '$name' failed: ${e.message}")

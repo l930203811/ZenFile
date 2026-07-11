@@ -31,7 +31,7 @@ class RemoteFileItem {
 abstract class RemoteClient {
   Future<void> connect();
   Future<void> disconnect();
-  Future<List<RemoteFileItem>> listDirectory(String path);
+  Future<List<RemoteFileItem>> listDirectory(String path, {bool forceRefresh = false});
   Future<void> createDirectory(String path);
   Future<void> createFile(String path);
   Future<void> delete(String path, bool isDir);

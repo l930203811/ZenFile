@@ -21,8 +21,9 @@ import '../../services/preferences_service.dart';
 class ZenFileDrawer extends StatefulWidget {
   final VoidCallback toggleTheme;
   final Function(int)? onNavigateTab;
+  final double? width;
 
-  const ZenFileDrawer({super.key, required this.toggleTheme, this.onNavigateTab});
+  const ZenFileDrawer({super.key, required this.toggleTheme, this.onNavigateTab, this.width});
 
   @override
   State<ZenFileDrawer> createState() => _ZenFileDrawerState();
@@ -63,6 +64,7 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
         .toList();
 
     return Drawer(
+      width: widget.width,
       backgroundColor: theme.scaffoldBackgroundColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(topRight: Radius.circular(28), bottomRight: Radius.circular(28)),
@@ -288,7 +290,7 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12.0),
               child: Text(
-                'ZenFile v1.1.1',
+                'ZenFile v1.1.2',
                 style: TextStyle(fontSize: 11.5, color: theme.colorScheme.onSurface.withOpacity(0.4), fontWeight: FontWeight.w600),
               ),
             ),

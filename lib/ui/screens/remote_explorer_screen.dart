@@ -44,6 +44,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
   bool _isLoading = true;
   String _errorMsg = '';
   String _currentPath = '/';
+  late final String _rootPath;
   List<RemoteFileItem> _items = [];
 
   // Selection mode
@@ -59,7 +60,10 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
   @override
   void initState() {
     super.initState();
-    _currentPath = widget.connection.rootPath;
+    _rootPath = widget.connection.rootPath.isNotEmpty
+        ? widget.connection.rootPath
+        : '/';
+    _currentPath = _rootPath;
     _initClient();
   }
 
@@ -84,44 +88,21 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
         protocol: conn.protocol,
         rootPath: conn.rootPath,
       );
-    } else if (conn.type == L10n.of(context).smb) {
+    } else if (FileManagerProvider.isSmbType(conn.type)) {
       _client = LanClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
     } else if (conn.type == 'saf') {
       _client = SafRemoteClient(rootUri: conn.rootPath);
     }
 
+    if (_client == null) {
+      throw Exception('Unsupported remote connection type: ${conn.type}');
+    }
+
     try {
-      await _client?.connect();
+      await _client.connect();
       _isConnected = true;
 
-      // If this is an SMB connection and the configured rootPath is the
-      // generic root ("/"), try to auto-detect a usable share name by
-      // listing the server root and picking the first reasonable share.
-      if (FileManagerProvider.isSmbType(conn.type) && (_currentPath == '/' || _currentPath.isEmpty)) {
-        try {
-          final rootItems = await _client!.listDirectory('/');
-          if (rootItems.isNotEmpty) {
-            // Prefer the first directory-like share that isn't a special
-            // administrative share such as IPC$.
-            RemoteFileItem? picked;
-            for (final it in rootItems) {
-              final lname = it.name.toLowerCase();
-              if (!it.isDirectory) continue;
-              if (lname == 'ipc\$' || lname == 'print\$') continue;
-              picked = it;
-              break;
-            }
-            picked ??= rootItems.firstWhere((e) => e.isDirectory, orElse: () => rootItems.first);
-            if (picked != null) {
-              _currentPath = '/${picked.name}';
-            }
-          }
-        } catch (e) {
-          // Ignore detection errors and fall back to configured root
-          debugPrint('SMB share auto-detect failed: $e');
-        }
-      }
-
+      // For SMB with generic root path, keep "/" to list all shared directories.
       await _loadDirectoryContents(_currentPath);
     } catch (e) {
       if (mounted) {
@@ -133,14 +114,14 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
     }
   }
 
-  Future<void> _loadDirectoryContents(String path) async {
+  Future<void> _loadDirectoryContents(String path, {bool forceRefresh = false}) async {
     if (_client == null || !_isConnected) return;
     setState(() {
       _isLoading = true;
       _errorMsg = '';
     });
     try {
-      final items = await _client!.listDirectory(path);
+      final items = await _client!.listDirectory(path, forceRefresh: forceRefresh);
       items.sort((a, b) {
         if (a.isDirectory && !b.isDirectory) return -1;
         if (!a.isDirectory && b.isDirectory) return 1;
@@ -275,9 +256,9 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
   }
 
   void _navigateUp() {
-    if (_currentPath == widget.connection.rootPath) return;
+    if (_currentPath == _rootPath) return;
     if (widget.connection.type == 'saf') {
-      final parentUri = _getSafParentUri(_currentPath, widget.connection.rootPath);
+      final parentUri = _getSafParentUri(_currentPath, _rootPath);
       _loadDirectoryContents(parentUri);
       return;
     }
@@ -285,9 +266,11 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
     if (parts.isNotEmpty) parts.removeLast();
     var parent = parts.join('/');
     if (parent.isEmpty) parent = '/';
-    if (parent.length < widget.connection.rootPath.length) {
-      parent = widget.connection.rootPath;
+    if (parent.length < _rootPath.length) {
+      parent = _rootPath;
     }
+    // Avoid infinite back to same path
+    if (parent == _currentPath) return;
     _loadDirectoryContents(parent);
   }
 
@@ -812,14 +795,13 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
     final provider = context.watch<FileManagerProvider>();
 
     final isSaf = widget.connection.type == 'saf';
-    final rootPath = widget.connection.rootPath;
     
     List<String> pathNodes = [];
     List<String> pathUris = [];
     
     if (isSaf) {
       pathNodes.add(L10n.of(context).msgc2b9f4b9);
-      pathUris.add(rootPath);
+      pathUris.add(_rootPath);
       
       final docIndex = _currentPath.indexOf('/document/');
       if (docIndex != -1) {
@@ -845,8 +827,8 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       }
     } else {
       String relativePath = _currentPath;
-      if (_currentPath.startsWith(rootPath)) {
-        relativePath = _currentPath.substring(rootPath.length);
+      if (_currentPath.startsWith(_rootPath)) {
+        relativePath = _currentPath.substring(_rootPath.length);
       }
       if (relativePath.isEmpty || relativePath == '/') relativePath = '';
 
@@ -858,18 +840,17 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
     final hasLocalClipboard = provider.clipboardPaths.isNotEmpty;
     final hasRemoteClipboard = provider.isRemoteClipboard;
 
-    final canPopRemote = _currentPath != widget.connection.rootPath;
+    final atRoot = _currentPath == _rootPath;
 
     return PopScope(
-      canPop: canPopRemote,
+      canPop: atRoot,
       onPopInvoked: (didPop) {
         if (didPop) return;
-        if (_currentPath != widget.connection.rootPath) {
-          _navigateUp();
-        }
+        _navigateUp();
       },
       child: Scaffold(
         drawer: ZenFileDrawer(
+          width: MediaQuery.of(context).size.width * 0.75,
           toggleTheme: () {
             final brightness = Theme.of(context).brightness;
             final isDark = brightness == Brightness.dark;
@@ -1095,8 +1076,8 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
                         final String reconstructedPath = isSaf
                             ? pathUris[idx]
                             : (idx > 0
-                                ? (rootPath.endsWith('/') ? '$rootPath${pathNodes.sublist(1, idx + 1).join('/')}' : '$rootPath/${pathNodes.sublist(1, idx + 1).join('/')}')
-                                : rootPath);
+                                ? (_rootPath.endsWith('/') ? '$_rootPath${pathNodes.sublist(1, idx + 1).join('/')}' : '$_rootPath/${pathNodes.sublist(1, idx + 1).join('/')}')
+                                : _rootPath);
                         return Row(
                           children: [
                             InkWell(

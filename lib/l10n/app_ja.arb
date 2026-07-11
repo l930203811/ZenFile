@@ -4020,5 +4020,17 @@
   "msg_speed_2x": "2倍速",
   "@msg_speed_2x": {
     "description": "Long press speed badge text in video player"
+  },
+  "ui_close_category": "カテゴリを無効化",
+  "@ui_close_category": {
+    "description": "Button to disable a category in quick categories grid context menu"
+  },
+  "ui_open_category": "カテゴリを有効化",
+  "@ui_open_category": {
+    "description": "Button to enable a category in quick categories grid context menu"
+  },
+  "msg_custom_scan_paths": "カスタムスキャンパス",
+  "@msg_custom_scan_paths": {
+    "description": "Menu item to configure custom scan paths for media categories"
   }
 }

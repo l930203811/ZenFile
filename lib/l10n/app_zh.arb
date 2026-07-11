@@ -4272,5 +4272,17 @@
   "log_v1_1_1_line13": "支持长按分类图标并拖拽，随意调整类别排列顺序。",
   "@log_v1_1_1_line13": {
     "description": "Changelog v1.1.1 line 13"
+  },
+  "ui_close_category": "关闭类别",
+  "@ui_close_category": {
+    "description": "Button to close/disable a category in quick categories grid context menu"
+  },
+  "ui_open_category": "开启类别",
+  "@ui_open_category": {
+    "description": "Button to open/enable a category in quick categories grid context menu"
+  },
+  "msg_custom_scan_paths": "自定义扫描位置",
+  "@msg_custom_scan_paths": {
+    "description": "Menu item to configure custom scan paths for media categories"
   }
 }

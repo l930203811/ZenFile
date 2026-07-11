@@ -53,10 +53,12 @@ class QuickCategoriesGrid extends StatefulWidget {
         'count': l10n.msg21cefa9b,
         'isCustom': false,
         'action': () {
-          final internalVolume = fileManager.storageVolumes.firstWhere(
-            (v) => v.isInternal,
-            orElse: () => fileManager.storageVolumes.first,
-          );
+          final internalVolume = fileManager.storageVolumes.isNotEmpty
+              ? fileManager.storageVolumes.firstWhere(
+                  (v) => v.isInternal,
+                  orElse: () => fileManager.storageVolumes.first,
+                )
+              : StorageVolume(name: 'Internal Storage', path: '/storage/emulated/0', isInternal: true);
           fileManager.loadDirectory(internalVolume.path);
           onNavigateTab(1);
         },
@@ -240,7 +242,7 @@ class QuickCategoriesGrid extends StatefulWidget {
     return map;
   }
 
-  static void showCustomizeDialog(BuildContext context, [Function(int)? onNavigateTab]) {
+  static void showCustomizeDialog(BuildContext context, [Function(int)? onNavigateTab, String? expandLabelKey]) {
     final theme = Theme.of(context);
     showModalBottomSheet(
       context: context,
@@ -248,9 +250,12 @@ class QuickCategoriesGrid extends StatefulWidget {
       backgroundColor: theme.scaffoldBackgroundColor,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (context) {
-        return _CustomizeCategoriesSheet(onNavigateTab: onNavigateTab ?? (index) {
-          Navigator.popUntil(context, (route) => route.isFirst);
-        });
+        return _CustomizeCategoriesSheet(
+          onNavigateTab: onNavigateTab ?? (index) {
+            Navigator.popUntil(context, (route) => route.isFirst);
+          },
+          initialExpandLabelKey: expandLabelKey,
+        );
       },
     );
   }
@@ -266,7 +271,23 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
   int _targetIndex = -1;
   Offset _dragOffset = Offset.zero;
   OverlayEntry? _overlayEntry;
+  OverlayEntry? _menuOverlayEntry;
   final GlobalKey _gridKey = GlobalKey();
+  // 长按菜单→拖拽切换用
+  Offset? _longPressOrigin;
+  String? _longPressLabelKey;
+
+  // 标准媒体类别（有自定义扫描路径功能）
+  static const _standardMediaCategories = [
+    '图片',
+    '视频',
+    '音频',
+    '文档',
+    '压缩包',
+    '下载',
+    '安装包',
+    '截图',
+  ];
 
   // 获取活跃分类的标签列表（用于拖拽排序更新）
   List<String> _getActiveCategoryLabels(MediaProvider mediaProvider, Map<String, Map<String, dynamic>> allCategoriesMap) {
@@ -399,6 +420,180 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     setState(() {});
   }
 
+  /// 长按类别图标弹出上下文菜单（类似 Android 桌面图标长按效果）
+  /// 使用 Listener 而非 GestureDetector，避免拖拽手势被截断
+  void _showCategoryContextMenu({
+    required Offset position,
+    required String labelKey,
+    required Color color,
+  }) {
+    _closeMenuOverlay();
+    final mediaProvider = context.read<MediaProvider>();
+    final isStandard = _standardMediaCategories.contains(labelKey);
+    final isEnabled = mediaProvider.activeCategories.contains(labelKey);
+    final l10n = L10n.of(context);
+    final theme = Theme.of(context);
+
+    // 菜单定位：靠左对齐，基于图标位置不容许溢出
+    final screenWidth = MediaQuery.of(context).size.width;
+    const menuMinWidth = 180.0;
+    const edgeMargin = 16.0;
+    // 菜单左边缘与图标左边缘对齐（图标宽64，中心 ~32）
+    final double menuLeft = (position.dx - 32).clamp(edgeMargin, screenWidth - menuMinWidth - edgeMargin);
+
+    _menuOverlayEntry = OverlayEntry(
+      builder: (overlayCtx) {
+        return _CategoryMenuOverlayWidget(
+          menuLeft: menuLeft,
+          menuTop: position.dy,
+          labelKey: labelKey,
+          color: color,
+          isStandard: isStandard,
+          isEnabled: isEnabled,
+          theme: theme,
+          l10n: l10n,
+          getCategoryIndex: () => _getCategoryIndex(labelKey),
+          getCategoryIcon: () => _getCategoryIcon(labelKey),
+          onDragStart: (dragPos) {
+            _startDrag(
+              _getCategoryIndex(labelKey),
+              dragPos,
+              Icon(_getCategoryIcon(labelKey), color: color, size: 28),
+              color,
+            );
+          },
+          onDragUpdate: (pos) => _updateDrag(pos),
+          onDragEnd: () {
+            final allCatMap = QuickCategoriesGrid.getAllCategoriesMap(
+              context, Theme.of(context).brightness == Brightness.dark, widget.onNavigateTab,
+            );
+            _endDrag(context.read<MediaProvider>(), allCatMap);
+            _closeMenuOverlay();
+          },
+          onDismiss: _closeMenuOverlay,
+          onMenuAction: (action) {
+            _closeMenuOverlay();
+            _handleMenuAction(action, labelKey);
+          },
+          buildMenuItem: (icon, label, colorParam, onTap) =>
+              _buildMenuItem(icon: icon, label: label, color: colorParam, onTap: onTap),
+        );
+      },
+    );
+
+    Overlay.of(context).insert(_menuOverlayEntry!);
+  }
+
+  void _closeMenuOverlay() {
+    _menuOverlayEntry?.remove();
+    _menuOverlayEntry = null;
+  }
+
+  int _getCategoryIndex(String labelKey) {
+    final provider = context.read<MediaProvider>();
+    final allCategoriesMap = QuickCategoriesGrid.getAllCategoriesMap(
+      context,
+      Theme.of(context).brightness == Brightness.dark,
+      widget.onNavigateTab,
+    );
+    final activeLabels = _getActiveCategoryLabels(provider, allCategoriesMap);
+    return activeLabels.indexOf(labelKey);
+  }
+
+  IconData _getCategoryIcon(String labelKey) {
+    final allCategoriesMap = QuickCategoriesGrid.getAllCategoriesMap(
+      context,
+      Theme.of(context).brightness == Brightness.dark,
+      widget.onNavigateTab,
+    );
+    final cat = allCategoriesMap[labelKey];
+    if (cat == null) return Icons.folder;
+    return cat['icon'] as IconData;
+  }
+
+  Widget _buildMenuItem({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        height: 44,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            Icon(icon, size: 20, color: color),
+            const SizedBox(width: 12),
+            Text(label, style: const TextStyle(fontSize: 14)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _handleMenuAction(String action, String labelKey) {
+    switch (action) {
+      case 'scan_paths':
+        QuickCategoriesGrid.showCustomizeDialog(context, widget.onNavigateTab, labelKey);
+      case 'rename':
+        _showRenameDialogForGrid(labelKey);
+      case 'toggle':
+        context.read<MediaProvider>().toggleCategory(labelKey);
+    }
+  }
+
+  Future<void> _showRenameDialogForGrid(String labelKey) async {
+    final allCategoriesMap = QuickCategoriesGrid.getAllCategoriesMap(
+      context,
+      Theme.of(context).brightness == Brightness.dark,
+      widget.onNavigateTab,
+    );
+    final cat = allCategoriesMap[labelKey];
+    if (cat == null) return;
+    final currentLabel = cat['label'] as String;
+    final theme = Theme.of(context);
+    final TextEditingController controller = TextEditingController(text: currentLabel);
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: theme.scaffoldBackgroundColor,
+          title: Text(L10n.of(context).msgc8ce4b36, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: InputDecoration(
+              hintText: L10n.of(context).msgf139c5cf,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: theme.colorScheme.onSurface.withOpacity(0.1)),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(L10n.of(context).ui_cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                final newLabel = controller.text.trim();
+                if (newLabel.isNotEmpty) {
+                  context.read<MediaProvider>().renameCategory(labelKey, newLabel);
+                }
+                Navigator.of(ctx).pop();
+              },
+              child: Text(L10n.of(context).ui_done, style: TextStyle(fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -496,12 +691,42 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
 
                     return GestureDetector(
                       onLongPressStart: (details) {
-                        _startDrag(
-                          index,
-                          details.globalPosition,
-                          Icon(icon, color: color, size: 28),
-                          color,
+                        _longPressOrigin = details.globalPosition;
+                        _longPressLabelKey = labelKey;
+                        _showCategoryContextMenu(
+                          position: details.globalPosition,
+                          labelKey: labelKey,
+                          color: color,
                         );
+                      },
+                      onLongPressMoveUpdate: (details) {
+                        if (_isDragging) {
+                          _updateDrag(details.globalPosition);
+                          return;
+                        }
+                        if (_menuOverlayEntry == null) return;
+                        final origin = _longPressOrigin;
+                        if (origin == null) return;
+                        final distance = (details.globalPosition - origin).distance;
+                        if (distance > 10.0) {
+                          _closeMenuOverlay();
+                          _startDrag(
+                            _getCategoryIndex(labelKey),
+                            details.globalPosition,
+                            Icon(_getCategoryIcon(labelKey), color: color, size: 28),
+                            color,
+                          );
+                        }
+                      },
+                      onLongPressEnd: (_) {
+                        if (_isDragging) {
+                          final allCatMap = QuickCategoriesGrid.getAllCategoriesMap(
+                            context, Theme.of(context).brightness == Brightness.dark, widget.onNavigateTab,
+                          );
+                          _endDrag(context.read<MediaProvider>(), allCatMap);
+                        }
+                        _longPressOrigin = null;
+                        _longPressLabelKey = null;
                       },
                       child: Opacity(
                         opacity: isBeingDragged ? 0.3 : (isTarget ? 0.6 : 1.0),
@@ -564,6 +789,151 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                       ),
                     );
                   },
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 类别长按弹出菜单的 Overlay 组件，支持菜单点击和拖拽排序的连续手势。
+/// 使用 Listener（原始指针事件）而非 GestureDetector，确保拖拽时指针事件不会
+/// 因 overlay 移除而中断。
+class _CategoryMenuOverlayWidget extends StatefulWidget {
+  final double menuLeft;
+  final double menuTop;
+  final String labelKey;
+  final Color color;
+  final bool isStandard;
+  final bool isEnabled;
+  final ThemeData theme;
+  final dynamic l10n; // L10n 类型
+  final int Function() getCategoryIndex;
+  final IconData Function() getCategoryIcon;
+  final void Function(Offset dragPos) onDragStart;
+  final void Function(Offset pos) onDragUpdate;
+  final VoidCallback onDragEnd;
+  final VoidCallback onDismiss;
+  final void Function(String action) onMenuAction;
+  final Widget Function(IconData icon, String label, Color color, VoidCallback onTap) buildMenuItem;
+
+  const _CategoryMenuOverlayWidget({
+    required this.menuLeft,
+    required this.menuTop,
+    required this.labelKey,
+    required this.color,
+    required this.isStandard,
+    required this.isEnabled,
+    required this.theme,
+    required this.l10n,
+    required this.getCategoryIndex,
+    required this.getCategoryIcon,
+    required this.onDragStart,
+    required this.onDragUpdate,
+    required this.onDragEnd,
+    required this.onDismiss,
+    required this.onMenuAction,
+    required this.buildMenuItem,
+  });
+
+  @override
+  State<_CategoryMenuOverlayWidget> createState() => _CategoryMenuOverlayWidgetState();
+}
+
+class _CategoryMenuOverlayWidgetState extends State<_CategoryMenuOverlayWidget> {
+  bool _menuVisible = true;
+  bool _dragActive = false;
+  Offset _pointerDownPos = Offset.zero;
+
+  static const double _dragThreshold = 8.0;
+
+  void _onPointerDown(PointerDownEvent event) {
+    _pointerDownPos = event.position;
+    _dragActive = false;
+  }
+
+  void _onPointerMove(PointerMoveEvent event) {
+    if (!_dragActive) {
+      final distance = (event.position - _pointerDownPos).distance;
+      if (distance > _dragThreshold) {
+        _dragActive = true;
+        setState(() => _menuVisible = false);
+        widget.onDragStart(event.position);
+      }
+    } else {
+      widget.onDragUpdate(event.position);
+    }
+  }
+
+  void _onPointerUp(PointerUpEvent event) {
+    if (!_dragActive) {
+      // 未拖拽，视为点击空白处关闭菜单
+      widget.onDismiss();
+    } else {
+      widget.onDragEnd();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: _onPointerDown,
+      onPointerMove: _onPointerMove,
+      onPointerUp: _onPointerUp,
+      child: Stack(
+        children: [
+          // 全屏透明背景，接收指针事件
+          Positioned.fill(child: Container(color: Colors.transparent)),
+          // 菜单内容（拖拽激活后隐藏）
+          if (_menuVisible)
+            Positioned(
+              left: widget.menuLeft,
+              top: widget.menuTop,
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  constraints: const BoxConstraints(minWidth: 180),
+                  decoration: BoxDecoration(
+                    color: widget.theme.cardColor,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (widget.isStandard) ...[
+                        widget.buildMenuItem(
+                          Icons.folder_special,
+                          widget.l10n.msg_custom_scan_paths,
+                          widget.color,
+                          () => widget.onMenuAction('scan_paths'),
+                        ),
+                        const Divider(height: 1),
+                      ],
+                      widget.buildMenuItem(
+                        Icons.edit,
+                        widget.l10n.msgc8ce4b36,
+                        widget.color,
+                        () => widget.onMenuAction('rename'),
+                      ),
+                      const Divider(height: 1),
+                      widget.buildMenuItem(
+                        widget.isEnabled ? Icons.visibility_off : Icons.visibility,
+                        widget.isEnabled ? widget.l10n.ui_close_category : widget.l10n.ui_open_category,
+                        widget.color,
+                        () => widget.onMenuAction('toggle'),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -662,10 +1032,69 @@ class _CircleClipper extends CustomClipper<Path> {
   }
 }
 
-class _CustomizeCategoriesSheet extends StatelessWidget {
+class _CustomizeCategoriesSheet extends StatefulWidget {
   final Function(int) onNavigateTab;
+  final String? initialExpandLabelKey;
 
-  const _CustomizeCategoriesSheet({required this.onNavigateTab});
+  const _CustomizeCategoriesSheet({
+    required this.onNavigateTab,
+    this.initialExpandLabelKey,
+  });
+
+  @override
+  State<_CustomizeCategoriesSheet> createState() => _CustomizeCategoriesSheetState();
+}
+
+class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
+  final Map<String, GlobalKey> _itemKeys = {};
+  bool _hasScrolledToTarget = false;
+
+  GlobalKey _getItemKey(String label) {
+    return _itemKeys.putIfAbsent(label, () => GlobalKey());
+  }
+
+  void _scrollToTargetItem(ScrollController scrollController, List<String> order) {
+    if (_hasScrolledToTarget) return;
+    final targetLabel = widget.initialExpandLabelKey;
+    if (targetLabel == null) return;
+    final targetIndex = order.indexOf(targetLabel);
+    if (targetIndex < 0) return;
+
+    final key = _itemKeys[targetLabel];
+    if (key?.currentContext != null) {
+      _hasScrolledToTarget = true;
+      Scrollable.ensureVisible(
+        key!.currentContext!,
+        alignment: 0.4, // 滚动到接近屏幕中间位置
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      // 目标 item 尚未渲染，估算位置并滚动
+      final estimatedOffset = targetIndex * 80.0;
+      final maxScroll = scrollController.position.maxScrollExtent;
+      final targetOffset = (estimatedOffset - 200).clamp(0.0, maxScroll);
+      scrollController.animateTo(
+        targetOffset,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeInOut,
+      );
+      // 延迟后再次尝试精确滚动
+      Future.delayed(const Duration(milliseconds: 400), () {
+        if (!mounted || _hasScrolledToTarget) return;
+        final key2 = _itemKeys[targetLabel];
+        if (key2 != null && key2.currentContext != null) {
+          _hasScrolledToTarget = true;
+          Scrollable.ensureVisible(
+            key2.currentContext!,
+            alignment: 0.4,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -682,13 +1111,20 @@ class _CustomizeCategoriesSheet extends StatelessWidget {
               maxChildSize: 0.95,
               expand: false,
               builder: (context, scrollController) {
+                // 在首次渲染完成后触发滚动
+                if (!_hasScrolledToTarget && widget.initialExpandLabelKey != null) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _scrollToTargetItem(scrollController, provider.categoryOrder);
+                  });
+                }
+
                 return StatefulBuilder(
                   builder: (context, setModalState) {
                     final iconShape = fileManager.categoryIconShape;
                     final gridColumns = fileManager.categoriesGridColumns;
                     final activeCats = provider.activeCategories;
                     final order = provider.categoryOrder;
-                    final categoriesMap = QuickCategoriesGrid.getAllCategoriesMap(context, isDark, onNavigateTab);
+                    final categoriesMap = QuickCategoriesGrid.getAllCategoriesMap(context, isDark, widget.onNavigateTab);
 
                     return Column(
                       children: [
@@ -788,13 +1224,17 @@ class _CustomizeCategoriesSheet extends StatelessWidget {
                               final isEnabled = activeCats.contains(label);
                               final isCustom = cat['isCustom'] == true;
 
-                              return CategoryItemWidget(
-                                key: ValueKey(label),
-                                label: label,
-                                cat: cat,
-                                isEnabled: isEnabled,
-                                provider: provider,
-                                index: index,
+                              return Container(
+                                key: _getItemKey(label),
+                                child: CategoryItemWidget(
+                                  key: ValueKey(label),
+                                  label: label,
+                                  cat: cat,
+                                  isEnabled: isEnabled,
+                                  provider: provider,
+                                  index: index,
+                                  initiallyExpanded: label == widget.initialExpandLabelKey,
+                                ),
                               );
                             },
                           ),
@@ -811,7 +1251,7 @@ class _CustomizeCategoriesSheet extends StatelessWidget {
     );
   }
 
-  static Widget _buildShapeOption(BuildContext context, ThemeData theme, String currentShape, String shapeKey, String label, void Function(void Function()) setModalState) {
+  Widget _buildShapeOption(BuildContext context, ThemeData theme, String currentShape, String shapeKey, String label, void Function(void Function()) setModalState) {
     final isSelected = currentShape == shapeKey;
     return InkWell(
       onTap: () {
@@ -831,7 +1271,7 @@ class _CustomizeCategoriesSheet extends StatelessWidget {
     );
   }
 
-  static Widget _buildColumnsOption(BuildContext context, ThemeData theme, int currentColumns, int columns, String label, void Function(void Function()) setModalState) {
+  Widget _buildColumnsOption(BuildContext context, ThemeData theme, int currentColumns, int columns, String label, void Function(void Function()) setModalState) {
     final isSelected = currentColumns == columns;
     return InkWell(
       onTap: () {
@@ -858,6 +1298,7 @@ class CategoryItemWidget extends StatefulWidget {
   final bool isEnabled;
   final MediaProvider provider;
   final int index;
+  final bool initiallyExpanded;
 
   const CategoryItemWidget({
     super.key,
@@ -866,6 +1307,7 @@ class CategoryItemWidget extends StatefulWidget {
     required this.isEnabled,
     required this.provider,
     required this.index,
+    this.initiallyExpanded = false,
   });
 
   @override
@@ -873,7 +1315,7 @@ class CategoryItemWidget extends StatefulWidget {
 }
 
 class _CategoryItemWidgetState extends State<CategoryItemWidget> {
-  bool _isExpanded = false;
+  late bool _isExpanded = widget.initiallyExpanded;
 
   /// 支持远程服务器自定义路径的分类
   static const _remotePathCategories = [
@@ -1369,7 +1811,9 @@ class _RemoteDirectoryPickerDialogState extends State<_RemoteDirectoryPickerDial
   @override
   void initState() {
     super.initState();
-    _currentPath = widget.connection.rootPath;
+    _currentPath = widget.connection.rootPath.isNotEmpty
+        ? widget.connection.rootPath
+        : '/';
     _connectAndList();
   }
 
@@ -1388,26 +1832,7 @@ class _RemoteDirectoryPickerDialogState extends State<_RemoteDirectoryPickerDial
       _client?.disconnect();
       _client = FileManagerProvider.createRemoteClient(widget.connection);
       await _client!.connect();
-      // SMB auto-detect share when rootPath is generic
-      if (FileManagerProvider.isSmbType(widget.connection.type) && (_currentPath == '/' || _currentPath.isEmpty)) {
-        try {
-          final rootItems = await _client!.listDirectory('/');
-          if (rootItems.isNotEmpty) {
-            RemoteFileItem? picked;
-            for (final it in rootItems) {
-              final lname = it.name.toLowerCase();
-              if (!it.isDirectory) continue;
-              if (lname == 'ipc\$' || lname == 'print\$') continue;
-              picked = it;
-              break;
-            }
-            picked ??= rootItems.firstWhere((e) => e.isDirectory, orElse: () => rootItems.first);
-            if (picked != null) _currentPath = '/${picked.name}';
-          }
-        } catch (e) {
-          debugPrint('SMB auto-detect failed in QuickCategories: $e');
-        }
-      }
+      // For SMB keep "/" to list all shared directories.
       await _listDir(_currentPath);
     } catch (e) {
       if (mounted) {
@@ -1419,13 +1844,13 @@ class _RemoteDirectoryPickerDialogState extends State<_RemoteDirectoryPickerDial
     }
   }
 
-  Future<void> _listDir(String path) async {
+  Future<void> _listDir(String path, {bool forceRefresh = false}) async {
     setState(() {
       _isLoading = true;
       _errorMsg = '';
     });
     try {
-      final items = await _client!.listDirectory(path);
+      final items = await _client!.listDirectory(path, forceRefresh: forceRefresh);
       items.sort((a, b) {
         if (a.isDirectory != b.isDirectory) return a.isDirectory ? -1 : 1;
         return a.name.toLowerCase().compareTo(b.name.toLowerCase());

@@ -1403,25 +1403,7 @@ class MediaProvider extends ChangeNotifier {
           await client.connect();
           try {
             var effectivePath = remoteBasePath;
-            if (FileManagerProvider.isSmbType(conn.type) && (effectivePath == '/' || effectivePath.isEmpty)) {
-              try {
-                final rootItems = await client.listDirectory('/');
-                if (rootItems.isNotEmpty) {
-                  RemoteFileItem? picked;
-                  for (final it in rootItems) {
-                    final lname = it.name.toLowerCase();
-                    if (!it.isDirectory) continue;
-                    if (lname == 'ipc\$' || lname == 'print\$') continue;
-                    picked = it;
-                    break;
-                  }
-                  picked ??= rootItems.firstWhere((e) => e.isDirectory, orElse: () => rootItems.first);
-                  if (picked != null) effectivePath = '/${picked.name}';
-                }
-              } catch (e) {
-                debugPrint('SMB auto-detect failed in media_provider scan: $e');
-              }
-            }
+            // For SMB keep "/" to scan all shared directories.
             final items = await client.listDirectory(effectivePath);
             for (final item in items) {
               if (!item.isDirectory) {
@@ -1510,25 +1492,7 @@ class MediaProvider extends ChangeNotifier {
 
       try {
         var effectivePath = remoteBasePath;
-        if (FileManagerProvider.isSmbType(conn.type) && (effectivePath == '/' || effectivePath.isEmpty)) {
-          try {
-            final rootItems = await client.listDirectory('/');
-            if (rootItems.isNotEmpty) {
-              RemoteFileItem? picked;
-              for (final it in rootItems) {
-                final lname = it.name.toLowerCase();
-                if (!it.isDirectory) continue;
-                if (lname == 'ipc\$' || lname == 'print\$') continue;
-                picked = it;
-                break;
-              }
-              picked ??= rootItems.firstWhere((e) => e.isDirectory, orElse: () => rootItems.first);
-              if (picked != null) effectivePath = '/${picked.name}';
-            }
-          } catch (e) {
-            debugPrint('SMB auto-detect failed in _scanRemotePath: $e');
-          }
-        }
+        // For SMB keep "/" to scan all shared directories.
 
         await _scanRemoteDirectoryRecursively(client, effectivePath, filter, (remoteFilePath) {
           files.add(File('remote://$connectionId|$remoteFilePath'));

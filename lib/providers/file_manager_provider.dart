@@ -171,7 +171,16 @@ class FileManagerProvider extends ChangeNotifier {
         )
       ];
     } else {
-      _storageVolumes = [];
+      // 全新安装（缓存为空）时也须提供默认卷，避免 storageVolumes.first 崩溃
+      _storageVolumes = [
+        StorageVolume(
+          name: 'Internal Storage',
+          path: '/storage/emulated/0',
+          isInternal: true,
+          totalBytes: 0,
+          usedBytes: 0,
+        )
+      ];
     }
   }
 
@@ -1049,11 +1058,11 @@ class FileManagerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> loadDirectoryForTab(int tabIndex, String path, {bool showLoading = true, bool clearCache = false}) async {
+  Future<void> loadDirectoryForTab(int tabIndex, String path, {bool showLoading = true, bool clearCache = false, bool forceRefresh = false}) async {
     if (tabIndex >= 0 && tabIndex < _tabs.length) {
       final oldIndex = _activeTabIndex;
       _activeTabIndex = tabIndex;
-      await loadDirectory(path, showLoading: showLoading, clearCache: clearCache);
+      await loadDirectory(path, showLoading: showLoading, clearCache: clearCache, forceRefresh: forceRefresh);
       _activeTabIndex = oldIndex;
       notifyListeners();
     }
@@ -1117,30 +1126,7 @@ class FileManagerProvider extends ChangeNotifier {
     _persistTabs();
     notifyListeners();
 
-    // If SMB and rootPath is generic, attempt to auto-detect a usable share
-    // by listing '/' and picking the first directory-like share.
-    if (isSmbType(connection.type) && (newTab.currentPath == '/' || newTab.currentPath.isEmpty)) {
-      try {
-        final rootItems = await client.listDirectory('/');
-        if (rootItems.isNotEmpty) {
-          RemoteFileItem? picked;
-          for (final it in rootItems) {
-            final lname = it.name.toLowerCase();
-            if (!it.isDirectory) continue;
-            if (lname == 'ipc\$' || lname == 'print\$') continue;
-            picked = it;
-            break;
-          }
-          picked ??= rootItems.firstWhere((e) => e.isDirectory, orElse: () => rootItems.first);
-          if (picked != null) {
-            newTab.currentPath = '/${picked.name}';
-          }
-        }
-      } catch (e) {
-        debugPrint('SMB share auto-detect failed in openRemoteTab: $e');
-      }
-    }
-
+    // For SMB with generic root path, keep "/" to list all shared directories.
     await loadDirectory(newTab.currentPath);
   }
 
@@ -1151,6 +1137,146 @@ class FileManagerProvider extends ChangeNotifier {
   /// matches all current locale variants.
   static bool isSmbType(String type) {
     return type.toLowerCase().contains('smb');
+  }
+
+  static const Set<String> _ignoredSmbShareNames = {
+    'ipc\$',
+    'print\$',
+    'admin\$',
+    'c\$',
+    'd\$',
+    'e\$',
+    'f\$',
+  };
+
+  static const List<String> _defaultSmbShareNames = [
+    'Public', 'Shared', 'share', 'Shares', 'files', 'Files', 'data', 'Data',
+    'Documents', 'Docs', 'Home', 'home', 'homes', 'Media', 'media', 'NAS', 'nas',
+    'Videos', 'Movies', 'Music', 'Download', 'Downloads', 'backup', 'Backup',
+    'Multimedia', 'video', 'photo', 'music', 'Recordings', 'storage', 'Storage',
+    'archive', 'Archive', 'workspace', 'Workspace', 'sync', 'Sync',
+    'Software', 'Games', 'work', 'server', 'fileshare',
+    'project', 'projects', 'tmp', 'Temp', 'temp',
+    'share1', 'share2', 'data1', 'data2', 'files1', 'files2',
+    'Photos', 'Pictures', 'Images', 'TV', 'Movie',
+    'Anime', 'anime', 'Cartoons', 'cartoons',
+    'Documentaries', 'documentaries', 'Sports', 'sports',
+    'Users', 'users', 'Profile',
+    'disk', 'Disk', 'cloud', 'Cloud',
+    'Volume1', 'volume1', 'Volume', 'volume',
+    'Volume2', 'volume2', 'Volume3', 'volume3',
+    'everyone', 'guest', 'nobody', 'root',
+    'usb', 'USB', 'usb1', 'USB1',
+    'external', 'External', 'external1', 'External1',
+    'backups', 'film', 'films', 'audio', 'picture', 'image',
+    'Web', 'TimeMachineBackup', 'SmartWare',
+    'terramaster', 'TerraMaster', 'asustor', 'Asustor',
+    'buffalo', 'Buffalo',
+    'gongxiang', 'gonggong', 'xiazai', 'yingyin',
+    'yinyue', 'tupian', 'wenjian', 'ziyuan',
+    'shuju', 'beifen', 'yingshi', 'boke',
+    'ruanjian', 'yingpan', 'cangku',
+    'jiankang', 'shexiang', 'shebei', 'shequ',
+    'bangong', 'bangongwenjian', 'xuexi', 'xuexiziliao',
+    'youxi', 'youxianzhuang', 'xiaoshuo', 'xiaoshuowenjian',
+    'admin', 'Admin', 'administrator', 'Administrator',
+    'Sharing', 'sharing',
+  ];
+
+  static String? _pickBrowsableSmbSharePath(List<RemoteFileItem> items) {
+    for (final item in items) {
+      if (!item.isDirectory) continue;
+      final lowerName = item.name.toLowerCase();
+      if (_ignoredSmbShareNames.contains(lowerName)) continue;
+      if (lowerName.endsWith(r'$')) continue;
+      return '/${item.name}';
+    }
+    return null;
+  }
+
+  static Iterable<String> _tokenizeSmbGuessSource(String raw) sync* {
+    for (final part in raw.split(RegExp(r'[\\/\s._-]+'))) {
+      final token = part.trim();
+      if (token.length >= 2) {
+        yield token;
+      }
+    }
+  }
+
+  static List<String> _buildSmbShareGuessNames(NetworkConnectionModel? connection) {
+    final ordered = <String>[];
+    final seen = <String>{};
+
+    void addCandidate(String? value) {
+      final candidate = value?.trim();
+      if (candidate == null || candidate.isEmpty) return;
+      final normalized = candidate.replaceAll('\\', '/').trim();
+      if (normalized.isEmpty || normalized == '/') return;
+      if (normalized.contains('/')) {
+        final firstSegment = normalized
+            .split('/')
+            .firstWhere((segment) => segment.isNotEmpty, orElse: () => '');
+        addCandidate(firstSegment);
+        return;
+      }
+      final lower = normalized.toLowerCase();
+      if (_ignoredSmbShareNames.contains(lower)) return;
+      if (seen.add(lower)) {
+        ordered.add(normalized);
+      }
+    }
+
+    for (final name in _defaultSmbShareNames) {
+      addCandidate(name);
+    }
+
+    if (connection != null) {
+      addCandidate(connection.rootPath);
+      addCandidate(connection.username);
+
+      final host = connection.host.trim();
+      if (host.isNotEmpty) {
+        addCandidate(host);
+        addCandidate(host.split(':').first);
+        addCandidate(host.split('.').first);
+        for (final token in _tokenizeSmbGuessSource(host)) {
+          addCandidate(token);
+        }
+      }
+
+      final connectionName = connection.name.trim();
+      if (connectionName.isNotEmpty) {
+        addCandidate(connectionName);
+        for (final token in _tokenizeSmbGuessSource(connectionName)) {
+          addCandidate(token);
+        }
+      }
+    }
+
+    return ordered;
+  }
+
+  static Future<String?> detectSmbShare(RemoteClient client, {NetworkConnectionModel? connection, bool forceRefresh = false}) async {
+    try {
+      final rootItems = await client.listDirectory('/', forceRefresh: forceRefresh);
+      final detectedFromRoot = _pickBrowsableSmbSharePath(rootItems);
+      if (detectedFromRoot != null) {
+        return detectedFromRoot;
+      }
+    } catch (e) {
+      debugPrint('SMB root share list failed: $e');
+    }
+
+    for (final guess in _buildSmbShareGuessNames(connection)) {
+      try {
+        await client.listDirectory('/$guess');
+        return '/$guess';
+      } catch (_) {
+        // continue to next guess
+      }
+    }
+
+    return null;
   }
 
   /// Factory: create the correct RemoteClient subclass for a connection model.
@@ -1720,7 +1846,7 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> loadDirectory(String path, {bool showLoading = true, bool clearCache = false, bool recordHistory = true}) async {
+  Future<void> loadDirectory(String path, {bool showLoading = true, bool clearCache = false, bool recordHistory = true, bool forceRefresh = false}) async {
     // ── Remote branch ──
     if (activeTab.isRemote && activeTab.remoteClient != null) {
       if (showLoading) {
@@ -1733,7 +1859,7 @@ class FileManagerProvider extends ChangeNotifier {
       }
       try {
         activeTab.currentPath = path;
-        final remoteItems = await activeTab.remoteClient!.listDirectory(path);
+        final remoteItems = await activeTab.remoteClient!.listDirectory(path, forceRefresh: forceRefresh);
         remoteItems.sort((a, b) {
           if (a.isDirectory && !b.isDirectory) return -1;
           if (!a.isDirectory && b.isDirectory) return 1;
@@ -1950,6 +2076,10 @@ class FileManagerProvider extends ChangeNotifier {
 
   void copyFile(String path) {
     if (currIsRemote) {
+      if (currentFiles.isEmpty) {
+        setClipboard([path], isCut: false);
+        return;
+      }
       final item = currentFiles.firstWhere(
         (f) => f.path == path,
         orElse: () => currentFiles.first,
@@ -1964,6 +2094,10 @@ class FileManagerProvider extends ChangeNotifier {
 
   void cutFile(String path) {
     if (currIsRemote) {
+      if (currentFiles.isEmpty) {
+        setClipboard([path], isCut: true);
+        return;
+      }
       final item = currentFiles.firstWhere(
         (f) => f.path == path,
         orElse: () => currentFiles.first,

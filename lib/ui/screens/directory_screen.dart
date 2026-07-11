@@ -1123,48 +1123,41 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             drawer: ZenFileDrawer(
               toggleTheme: widget.toggleTheme,
               onNavigateTab: widget.onNavigateTab,
+              width: MediaQuery.of(context).size.width * 0.75,
             ),
-            endDrawer: LayoutBuilder(
-              builder: (context, constraints) {
-                final drawerWidth = constraints.maxWidth * 0.85;
-                return SizedBox(
-                  width: drawerWidth,
-                  child: Drawer(
-                    width: drawerWidth,
-                    backgroundColor: theme.scaffoldBackgroundColor,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.only(topLeft: Radius.circular(28), bottomLeft: Radius.circular(28)),
-                    ),
-                    child: ZenFileEndDrawer(
-                      toggleTheme: widget.toggleTheme,
-                      onRefresh: () {
-                        Scaffold.of(context).closeEndDrawer();
-                        widget.onNavigateTab?.call(0);
-                        Future.delayed(const Duration(milliseconds: 300), () {
-                          widget.onRefresh?.call();
-                        });
-                      },
-                      onCustomize: () {
-                        Scaffold.of(context).closeEndDrawer();
-                        Future.delayed(const Duration(milliseconds: 300), () {
-                          widget.onEndDrawerCustomize?.call();
-                        });
-                      },
-                      onShowSortModal: () {
-                        Scaffold.of(context).closeEndDrawer();
-                        Future.delayed(const Duration(milliseconds: 300), () {
-                          SortModal.show(context, provider);
-                        });
-                      },
-                      onNavigateToBrowse: () {
-                        Scaffold.of(context).closeEndDrawer();
-                      },
-                      searchFolderPath: provider.currentPath,
-                      provider: provider,
-                    ),
-                  ),
-                );
-              },
+            endDrawer: Drawer(
+              width: MediaQuery.of(context).size.width * 0.75,
+              backgroundColor: theme.scaffoldBackgroundColor,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(28), bottomLeft: Radius.circular(28)),
+              ),
+              child: ZenFileEndDrawer(
+                toggleTheme: widget.toggleTheme,
+                onRefresh: () {
+                  Scaffold.of(context).closeEndDrawer();
+                  widget.onNavigateTab?.call(0);
+                  Future.delayed(const Duration(milliseconds: 300), () {
+                    widget.onRefresh?.call();
+                  });
+                },
+                onCustomize: () {
+                  Scaffold.of(context).closeEndDrawer();
+                  Future.delayed(const Duration(milliseconds: 300), () {
+                    widget.onEndDrawerCustomize?.call();
+                  });
+                },
+                onShowSortModal: () {
+                  Scaffold.of(context).closeEndDrawer();
+                  Future.delayed(const Duration(milliseconds: 300), () {
+                    SortModal.show(context, provider);
+                  });
+                },
+                onNavigateToBrowse: () {
+                  Scaffold.of(context).closeEndDrawer();
+                },
+                searchFolderPath: provider.currentPath,
+                provider: provider,
+              ),
             ),
             appBar: (isSelectionMode || !showBottomActionBar)
                 ? AppBar(

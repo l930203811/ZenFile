@@ -4016,5 +4016,17 @@
   "msg_speed_2x": "السرعة 2.0x",
   "@msg_speed_2x": {
     "description": "Long press speed badge text in video player"
+  },
+  "ui_close_category": "إيقاف الفئة",
+  "@ui_close_category": {
+    "description": "Button to disable a category in quick categories grid context menu"
+  },
+  "ui_open_category": "تفعيل الفئة",
+  "@ui_open_category": {
+    "description": "Button to enable a category in quick categories grid context menu"
+  },
+  "msg_custom_scan_paths": "مسوحات مخصصة",
+  "@msg_custom_scan_paths": {
+    "description": "Menu item to configure custom scan paths for media categories"
   }
 }
