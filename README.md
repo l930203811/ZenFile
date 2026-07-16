@@ -33,8 +33,11 @@ A beautifully crafted, open-source file manager and offline media center for And
 · Adjusting the display size of external subtitles in the video player does not take effect.
 
 · Currently, only the WebDAV client supports media file streaming; other clients do not yet support this feature.
+
 · After entering any shared directory via the SMB client, returning to the parent directory shows an empty list, and the breadcrumb path is incorrect.
+
 · When backing up large APK packages, the interface may appear stuck in the executing state, though the backup continues in the background. Press the Back button and check "Backed up APKs" to view the backup files; the backup location is ZenFile/Backups on the main storage.
+
 · After enabling FTP sharing, other FTP clients may see an empty directory when connecting.
 
 ---
