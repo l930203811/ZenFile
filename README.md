@@ -15,7 +15,9 @@ A beautifully crafted, open-source file manager and offline media center for And
 ✨ New Features
 
 · Custom Home Directory: In the browse view, tap the three‑dot menu on a folder and select “Set as Home”, or long‑press the folder and find “Set as Home” in the “More” menu. In dual‑window mode, each window can have its own independent home path for efficient multi‑directory management.
+
 · WEB Sharing Enhanced: Supports custom share paths and fixes the issue where only folders could be browsed but files could not be viewed. Added common file operation buttons (copy, paste, cut, delete, rename) for easier remote management.
+
 · Remote Cache Cleanup: Added customizable remote cache cleanup options, giving you more flexibility in managing storage space.
 
 🐛 Bug Fixes
