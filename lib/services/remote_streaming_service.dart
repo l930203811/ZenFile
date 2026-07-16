@@ -579,7 +579,7 @@ class _StreamSession {
 
   String _getLocalTempPath() {
     try {
-      final dir = Directory('/storage/emulated/0/Download/ZenFile_Remote/cache/streaming');
+      final dir = Directory('/storage/emulated/0/ZenFile/cache/streaming');
       if (!dir.existsSync()) dir.createSync(recursive: true);
       final ext = p.extension(fileName);
       final safeName = fileName.replaceAll(RegExp(r'[^\w.\-]'), '_');

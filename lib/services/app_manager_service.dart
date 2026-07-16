@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:archive/archive_io.dart';
@@ -126,7 +126,9 @@ class AppManagerService {
 
   // --- New APK Backup, Share, Restore, and Batch Features ---
 
-  static Future<bool> backupApp(AppInfoModel app) async {
+  /// 备份 APK，返回备份文件路径（成功）或 null（失败）。
+  /// 使用 Android 原生方法在后台线程执行，避免阻塞 UI 线程和内存问题。
+  static Future<String?> backupApp(AppInfoModel app) async {
     try {
       final backupDir = Directory('/storage/emulated/0/ZenFile/Backups/Apps');
       if (!backupDir.existsSync()) {
@@ -137,38 +139,86 @@ class AppManagerService {
       final version = app.version.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
 
       if (app.splitSourceDirs.isEmpty) {
-        // Single APK app
+        // 单 APK：使用原生方法复制文件（10分钟超时）
         final destPath = p.join(backupDir.path, '${cleanName}_v$version.apk');
-        final sourceFile = File(app.sourceDir);
-        if (sourceFile.existsSync()) {
-          await sourceFile.copy(destPath);
-          return true;
-        }
-      } else {
-        // Split APK app - compress into a .apks (ZIP format) file
-        final destPath = p.join(backupDir.path, '${cleanName}_v$version.apks');
-        final encoder = ZipFileEncoder();
-        encoder.create(destPath);
-
-        // Add base APK
-        final baseFile = File(app.sourceDir);
-        if (baseFile.existsSync()) {
-          encoder.addFile(baseFile, 'base.apk');
-        }
-
-        // Add split APKs
-        for (final splitPath in app.splitSourceDirs) {
-          final splitFile = File(splitPath);
-          if (splitFile.existsSync()) {
-            encoder.addFile(splitFile, p.basename(splitPath));
+        try {
+          final result = await _channel
+              .invokeMethod<bool>('copyFile', {
+                'source': app.sourceDir,
+                'dest': destPath,
+              })
+              .timeout(const Duration(minutes: 10));
+          if (result == true && await File(destPath).exists()) {
+            return destPath;
+          }
+        } catch (e) {
+          debugPrint('Native copyFile failed: $e');
+          // 降级到 Dart 流式复制
+          try {
+            final source = File(app.sourceDir);
+            final dest = File(destPath);
+            await source.openRead().pipe(dest.openWrite());
+            if (await dest.exists()) {
+              return destPath;
+            }
+          } catch (e2) {
+            debugPrint('Dart fallback copy failed: $e2');
           }
         }
-        encoder.close();
-        return true;
+        return null;
+      } else {
+        // Split APK：使用原生方法创建 ZIP（10分钟超时）
+        final destPath = p.join(backupDir.path, '${cleanName}_v$version.apks');
+        try {
+          final result = await _channel
+              .invokeMethod<bool>('createZip', {
+                'basePath': app.sourceDir,
+                'splitPaths': app.splitSourceDirs,
+                'destPath': destPath,
+              })
+              .timeout(const Duration(minutes: 10));
+          if (result == true && await File(destPath).exists()) {
+            return destPath;
+          }
+        } catch (e) {
+          debugPrint('Native createZip failed: $e');
+          // 降级到 Dart 创建 ZIP
+          try {
+            final encoder = ZipFileEncoder();
+            encoder.create(destPath);
+            final baseFile = File(app.sourceDir);
+            if (baseFile.existsSync()) {
+              encoder.addFile(baseFile, 'base.apk');
+            }
+            for (final splitPath in app.splitSourceDirs) {
+              final splitFile = File(splitPath);
+              if (splitFile.existsSync()) {
+                encoder.addFile(splitFile, p.basename(splitPath));
+              }
+            }
+            encoder.close();
+            if (await File(destPath).exists()) {
+              return destPath;
+            }
+          } catch (e2) {
+            debugPrint('Dart fallback zip failed: $e2');
+          }
+        }
+        return null;
       }
-      return false;
     } catch (e) {
       debugPrint('Error backing up app: $e');
+      return null;
+    }
+  }
+
+  /// 通过系统文件管理器打开指定目录
+  static Future<bool> openDirectory(String path) async {
+    try {
+      await _channel.invokeMethod('openDirectory', {'path': path});
+      return true;
+    } catch (e) {
+      debugPrint('Error opening directory: $e');
       return false;
     }
   }
@@ -305,4 +355,36 @@ class AppManagerService {
       return false;
     }
   }
+}
+
+/// 在 isolate 中复制文件（顶层函数，供 compute 调用）
+/// 使用流式复制，避免一次性读取大文件到内存
+Future<void> _copyFileIsolate(Map<String, String> args) async {
+  final source = File(args['source']!);
+  final dest = File(args['dest']!);
+  const bufferSize = 64 * 1024; // 64KB
+  await source.openRead().pipe(dest.openWrite());
+}
+
+/// 在 isolate 中创建 ZIP 文件（顶层函数，供 compute 调用）
+Future<void> _createZipIsolate(Map<String, dynamic> args) async {
+  final basePath = args['basePath'] as String;
+  final splitPaths = (args['splitPaths'] as List).cast<String>();
+  final destPath = args['destPath'] as String;
+
+  final encoder = ZipFileEncoder();
+  encoder.create(destPath);
+
+  final baseFile = File(basePath);
+  if (baseFile.existsSync()) {
+    encoder.addFile(baseFile, 'base.apk');
+  }
+
+  for (final splitPath in splitPaths) {
+    final splitFile = File(splitPath);
+    if (splitFile.existsSync()) {
+      encoder.addFile(splitFile, p.basename(splitPath));
+    }
+  }
+  encoder.close();
 }

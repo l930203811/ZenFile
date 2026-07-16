@@ -272,7 +272,7 @@ class L10nAr extends L10n {
   String get msgbff1432a => 'Quark Cloud Drive';
 
   @override
-  String get msge03395d0 => 'Small Plane Cloud Drive';
+  String get msge03395d0 => 'PikPak Cloud Drive';
 
   @override
   String get svg => 'تمت إضافة دعم SVG الكامل (معاينة الصور المصغرة والعرض)';
@@ -457,6 +457,16 @@ class L10nAr extends L10n {
 
   @override
   String get msgf139c5cf => 'أدخل الاسم الجديد';
+
+  @override
+  String get msg_rename_extension_warning_title => 'تغيير الامتداد';
+
+  @override
+  String get msg_rename_extension_warning_content =>
+      'أنت تقوم بتغيير امتداد الملف، مما قد يمنع فتح الملف بشكل صحيح. هل أنت متأكد من المتابعة؟';
+
+  @override
+  String get msg_rename_extension_confirm => 'تأكيد التغيير';
 
   @override
   String get msg53518c22 => 'حذف ملف';
@@ -777,6 +787,9 @@ class L10nAr extends L10n {
 
   @override
   String get msgfd96af00 => 'ميزة المشاركة قريباً';
+
+  @override
+  String get ui_share => 'مشاركة';
 
   @override
   String get ftp1 => 'تم إيقاف خادم FTP بنجاح';
@@ -1334,6 +1347,9 @@ class L10nAr extends L10n {
 
   @override
   String get msgdesign10 => 'تصميم المستخدم 1';
+
+  @override
+  String get msgdesign11 => 'تصميم المستخدم 2';
 
   @override
   String get msg7372dc9f => 'أيقونة مخصصة';
@@ -1995,6 +2011,30 @@ class L10nAr extends L10n {
   String get msga1b2c3d7 => 'منح الإذن';
 
   @override
+  String get msg_media_only_permission_title => 'صلاحية ملفات الوسائط فقط';
+
+  @override
+  String get msg_media_only_permission_desc =>
+      'تم منح حق الوصول إلى ملفات الوسائط فقط حاليًا. لن يتمكن مدير الملفات من استخدام وظائف إعادة التسمية والقص والحذف وغيرها بشكل صحيح. يرجى منح \"الوصول إلى جميع الملفات\" للحصول على الوظائف الكاملة.';
+
+  @override
+  String get msg_grant_full_storage_permission => 'منح وصول التخزين الكامل';
+
+  @override
+  String get msg_permission_request_title => '授权请求';
+
+  @override
+  String get msg_permission_request_desc =>
+      '为了访问您设备上的文件，您需要手动为 ZenFile 授予[所有文件访问]权限，点击确定后进入设置界面，选择[ZenFile]并开启授权。';
+
+  @override
+  String get ui_open_settings => 'فتح الإعدادات';
+
+  @override
+  String get ui_open_settings_desc =>
+      'تم رفض إذن التخزين بشكل دائم. يرجى الذهاب إلى إعدادات النظام لمنح إذن إدارة الملفات يدوياً.';
+
+  @override
   String get msg2c146598 =>
       'نفق الإنترنت السحابي متصل! تم تفعيل الرابط المؤقت.';
 
@@ -2574,9 +2614,6 @@ class L10nAr extends L10n {
   String get ui_confirm => 'تأكيد';
 
   @override
-  String get ui_share => 'مشاركة';
-
-  @override
   String get ui_move_here => 'النقل هنا';
 
   @override
@@ -2617,6 +2654,9 @@ class L10nAr extends L10n {
 
   @override
   String get ui_show_folder_contents_count => 'إظهار محتويات المجلدات';
+
+  @override
+  String get ui_set_as_home => 'تعيين كصفحة رئيسية';
 
   @override
   String get ui_show_folder_size => 'إظهار حجم المجلد';
@@ -3882,6 +3922,58 @@ class L10nAr extends L10n {
   String get ui_app_grant_usage_access => 'منح صلاحية الوصول إلى الاستخدام';
 
   @override
+  String get ui_app_usage_access_description =>
+      'لعرض الحجم الدقيق لتخزين التطبيقات (APK + البيانات + ذاكرة التخزين المؤقت) بدلاً من حجم المثبت الخام، يرجى تمكين إذن الوصول إلى الاستخدام لـ ZenFile في إعدادات النظام.';
+
+  @override
+  String get ui_backup_apk_open_folder => 'فتح مجلد النسخ الاحتياطي';
+
+  @override
+  String ui_backup_apk_success_with_path(String path) {
+    return 'تم النسخ الاحتياطي إلى $path. فتح المجلد؟';
+  }
+
+  @override
+  String get ui_backup_apk_open => 'فتح';
+
+  @override
+  String get ui_clear_remote_cache_success =>
+      'تم مسح ذاكرة التخزين المؤقت البعيدة.';
+
+  @override
+  String get ui_clear_remote_cache_failed =>
+      'فشل مسح ذاكرة التخزين المؤقت البعيدة.';
+
+  @override
+  String get ui_app_system_settings => 'إعدادات النظام / التفاصيل';
+
+  @override
+  String get ui_app_restore_install => 'استعادة / تثبيت التطبيق';
+
+  @override
+  String get ui_app_size_label => 'الحجم:';
+
+  @override
+  String get ui_app_installed_label => 'تاريخ التثبيت:';
+
+  @override
+  String get ui_app_backup_date_label => 'تاريخ النسخ:';
+
+  @override
+  String get ui_batch_backup_progress =>
+      'جارٍ نسخ التطبيقات المحددة احتياطيًا...';
+
+  @override
+  String ui_batch_backup_success(int count) {
+    return 'تم نسخ $count تطبيق(ات) بنجاح إلى ZenFile/Backups/Apps/';
+  }
+
+  @override
+  String ui_batch_backup_failed(String error) {
+    return 'فشل نسخ بعض التطبيقات احتياطيًا: $error';
+  }
+
+  @override
   String get ui_app_search_backup => 'البحث عن نسخ احتياطي...';
 
   @override
@@ -3889,6 +3981,20 @@ class L10nAr extends L10n {
 
   @override
   String get ui_app_no_backup_found => 'لم يتم العثور على نسخ احتياطية';
+
+  @override
+  String get ui_app_backup_empty_subtitle =>
+      'ستظهر هنا قائمة بملفات APK و APKS التي قمت بنسخها احتياطيًا.';
+
+  @override
+  String ui_app_backup_search_not_found(String query) {
+    return 'لم نعثر على أي نسخ احتياطية تطابق \"$query\"';
+  }
+
+  @override
+  String ui_app_backup_size_date(String size, String date) {
+    return 'الحجم: $size • تاريخ النسخ الاحتياطي: $date';
+  }
 
   @override
   String get ui_app_split_apk => 'APK مقسم (APKS)';
@@ -4050,6 +4156,40 @@ class L10nAr extends L10n {
   String get msg_subtitle_size => 'حجم الترجمة';
 
   @override
+  String get msg_subtitle_position => 'موضع الترجمة';
+
+  @override
+  String get msg_subtitle_pos_top => 'أعلى';
+
+  @override
+  String get msg_subtitle_pos_bottom => 'أسفل';
+
+  @override
+  String get msg_subtitle_no_background => 'إزالة خلفية الترجمة';
+
+  @override
+  String get msg_auto_clean_cache => 'تنظيف ذاكرة التخزين المؤقت تلقائيًا';
+
+  @override
+  String get msg_auto_clean_cache_hint => 'اضغط لضبط الفاصل الزمني للتنظيف';
+
+  @override
+  String get msg_auto_clean_cache_picker_hint =>
+      'اسحب لتحديد الفاصل الزمني للتنظيف';
+
+  @override
+  String get msg_cache_clean_unit_day => 'أيام';
+
+  @override
+  String get msg_cache_clean_unit_hour => 'ساعات';
+
+  @override
+  String get msg_cache_clean_unit_minute => 'دقائق';
+
+  @override
+  String get msg_cache_clean_confirm => 'تأكيد';
+
+  @override
   String get msg_quick_actions => 'إجراءات سريعة';
 
   @override
@@ -4128,4 +4268,84 @@ class L10nAr extends L10n {
 
   @override
   String get msg_custom_scan_paths => 'مسوحات مخصصة';
+
+  @override
+  String get notification_web_share_local_title =>
+      'ZenFile مشاركة الويب المحلية';
+
+  @override
+  String get notification_web_share_internet_title =>
+      'ZenFile مشاركة الويب عبر الإنترنت';
+
+  @override
+  String notification_web_share_running(Object url) {
+    return 'يعمل على $url';
+  }
+
+  @override
+  String get notification_ftp_title => 'ZenFile خادم FTP';
+
+  @override
+  String notification_ftp_running(Object ip, Object port) {
+    return 'يعمل على ftp://$ip:$port';
+  }
+
+  @override
+  String get ui_download_links => 'روابط التحميل';
+
+  @override
+  String get changelog_v1121_new_features_title => 'ميزات جديدة';
+
+  @override
+  String get changelog_v1121_new_feature_1 =>
+      'عرض الصفحة الرئيسية المخصص: في صفحة التصفح، اضغط على قائمة النقاط الثلاث للمجلد واختر \"تعيين كصفحة رئيسية\"، أو اضغط مطولاً على المجلد وابحث عن \"تعيين كصفحة رئيسية\" في قائمة \"المزيد\". في وضع النافذة المزدوجة، يمكن لكل نافذة تعيين مسار رئيسي مختلف بشكل مستقل، مما يحسن كفاءة إدارة الأدلة المتعددة.';
+
+  @override
+  String get changelog_v1121_new_feature_2 =>
+      'تعزيز المشاركة عبر الويب: يدعم مسارات المشاركة المخصصة، ويصلح المشكلة السابقة التي لم يكن من الممكن من خلالها تصفح المجلدات فقط دون عرض محتوى الملف. كما يضيف أزرار عمليات الملفات الشائعة مثل النسخ واللصق والقص والحذف وإعادة التسمية، مما يجعل الإدارة عن بُعد أكثر ملاءمة.';
+
+  @override
+  String get changelog_v1121_new_feature_3 =>
+      'تنظيف ذاكرة التخزين المؤقت البعيدة: تمت إضافة وظيفة تنظيف ذاكرة التخزين المؤقت البعيدة المخصصة لإدارة مساحة التخزين بمرونة.';
+
+  @override
+  String get changelog_v1121_bugfixes_title => 'إصلاحات الأخطاء';
+
+  @override
+  String get changelog_v1121_bugfix_1 =>
+      'تم إصلاح المشكلة التي كانت تعرض فيها دليل فارغًا عند عودة عميل SMB من أي دليل مشترك.';
+
+  @override
+  String get changelog_v1121_bugfix_2 =>
+      'تم إصلاح بعض مشاكل النصوص الصينية المُبرمَجة في الواجهة، مما يحسن توافق العرض في البيئات متعددة اللغات.';
+
+  @override
+  String get changelog_v1121_known_issues_title =>
+      'المشاكل المعروفة (سيتم إصلاحها في الإصدار التالي)';
+
+  @override
+  String get changelog_v1121_known_issue_1 =>
+      'يتعطل التطبيق بعد مسح بيانات التطبيق وإعادة فتحه.';
+
+  @override
+  String get changelog_v1121_known_issue_2 =>
+      'ضبط حجم عرض الترجمة الخارجية في مشغل الفيديو لا يؤتي ثماره مؤقتًا.';
+
+  @override
+  String get changelog_v1121_known_issue_3 =>
+      'حاليًا يدعم عميل WebDAV فقط تشغيل الوسائط المتدفقة، بينما لا تدعم العملاء الآخرون ذلك بعد.';
+
+  @override
+  String get changelog_v1121_known_issue_4 =>
+      'عند نسخ احتياطي لحزم APK كبيرة، قد تتوقف الواجهة في حالة التنفيذ، لكن النسخ الاحتياطي الفعلي لا يزال قيد التشغيل في الخلفية. يرجى الضغط على زر الرجوع والانتقال إلى \"APK المنسوخ احتياطيًا\" لعرض ملفات النسخ الاحتياطي. مسار النسخ الاحتياطي هو في دليل ZenFile/Backups في التخزين الرئيسي.';
+
+  @override
+  String get changelog_v1121_known_issue_5 =>
+      'بعد تمكين خدمة مشاركة FTP، تظهر الأدلة فارغة عند الاتصال بعملاء FTP الآخرين.';
+
+  @override
+  String get msg_editor_lines => 'سطر';
+
+  @override
+  String get msg_editor_modified => 'تم التعديل';
 }

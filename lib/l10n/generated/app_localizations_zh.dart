@@ -269,7 +269,7 @@ class L10nZh extends L10n {
   String get msgbff1432a => '夸克网盘';
 
   @override
-  String get msge03395d0 => '小飞机网盘';
+  String get msge03395d0 => 'PikPak网盘';
 
   @override
   String get svg => '新增 SVG 文件完整支持（缩略图预览与查看）';
@@ -428,6 +428,16 @@ class L10nZh extends L10n {
 
   @override
   String get msgf139c5cf => '输入新名称';
+
+  @override
+  String get msg_rename_extension_warning_title => '后缀名变更';
+
+  @override
+  String get msg_rename_extension_warning_content =>
+      '您正在修改文件后缀名，这可能导致文件无法正常打开。确定要继续吗？';
+
+  @override
+  String get msg_rename_extension_confirm => '确认修改';
 
   @override
   String get msg53518c22 => '删除文件';
@@ -744,6 +754,9 @@ class L10nZh extends L10n {
 
   @override
   String get msgfd96af00 => '分享功能即将推出';
+
+  @override
+  String get ui_share => '分享';
 
   @override
   String get ftp1 => 'FTP服务器已成功停止';
@@ -1274,6 +1287,9 @@ class L10nZh extends L10n {
 
   @override
   String get msgdesign10 => '用户设计 1';
+
+  @override
+  String get msgdesign11 => '用户设计 2';
 
   @override
   String get msg7372dc9f => '自定义图标';
@@ -1920,6 +1936,29 @@ class L10nZh extends L10n {
   String get msga1b2c3d7 => '授予权限';
 
   @override
+  String get msg_media_only_permission_title => '仅媒体文件权限';
+
+  @override
+  String get msg_media_only_permission_desc =>
+      '当前仅授予媒体文件访问权限，文件管理器将无法正常使用重命名、剪切、删除等功能。请授予「所有文件管理权限」以获得完整功能。';
+
+  @override
+  String get msg_grant_full_storage_permission => '确定';
+
+  @override
+  String get msg_permission_request_title => '授权请求';
+
+  @override
+  String get msg_permission_request_desc =>
+      '为了访问您设备上的文件，您需要手动为 ZenFile 授予[所有文件访问]权限，点击确定后进入设置界面，选择[ZenFile]并开启授权。';
+
+  @override
+  String get ui_open_settings => '打开设置';
+
+  @override
+  String get ui_open_settings_desc => '存储权限已被永久拒绝，请前往系统设置手动授予文件管理权限。';
+
+  @override
   String get msg2c146598 => '互联网云隧道已上线！临时链接已激活。';
 
   @override
@@ -2489,9 +2528,6 @@ class L10nZh extends L10n {
   String get ui_confirm => '确定';
 
   @override
-  String get ui_share => '分享';
-
-  @override
   String get ui_move_here => '移动到此处';
 
   @override
@@ -2532,6 +2568,9 @@ class L10nZh extends L10n {
 
   @override
   String get ui_show_folder_contents_count => '显示文件夹内容计数';
+
+  @override
+  String get ui_set_as_home => '设为首页';
 
   @override
   String get ui_show_folder_size => '显示文件夹大小';
@@ -3746,6 +3785,55 @@ class L10nZh extends L10n {
   String get ui_app_grant_usage_access => '授予使用情况访问权限';
 
   @override
+  String get ui_app_usage_access_description =>
+      '如需查看精确的应用存储大小（APK + 数据 + 缓存），而不仅是安装包大小，请在系统设置中为 ZenFile 启用使用情况访问权限。';
+
+  @override
+  String get ui_backup_apk_open_folder => '打开备份目录';
+
+  @override
+  String ui_backup_apk_success_with_path(String path) {
+    return '已成功备份到 $path，是否打开所在目录？';
+  }
+
+  @override
+  String get ui_backup_apk_open => '打开';
+
+  @override
+  String get ui_clear_remote_cache_success => '远程缓存已清理。';
+
+  @override
+  String get ui_clear_remote_cache_failed => '清理远程缓存失败。';
+
+  @override
+  String get ui_app_system_settings => '系统设置 / 详情';
+
+  @override
+  String get ui_app_restore_install => '恢复 / 安装应用';
+
+  @override
+  String get ui_app_size_label => '大小：';
+
+  @override
+  String get ui_app_installed_label => '安装时间：';
+
+  @override
+  String get ui_app_backup_date_label => '备份时间：';
+
+  @override
+  String get ui_batch_backup_progress => '正在备份所选应用...';
+
+  @override
+  String ui_batch_backup_success(int count) {
+    return '已成功备份 $count 个应用到 ZenFile/Backups/Apps/';
+  }
+
+  @override
+  String ui_batch_backup_failed(String error) {
+    return '备份部分应用失败：$error';
+  }
+
+  @override
   String get ui_app_search_backup => '搜索备份...';
 
   @override
@@ -3753,6 +3841,19 @@ class L10nZh extends L10n {
 
   @override
   String get ui_app_no_backup_found => '未找到备份';
+
+  @override
+  String get ui_app_backup_empty_subtitle => '已备份的 APK 和 APKS 文件列表将显示在此处。';
+
+  @override
+  String ui_app_backup_search_not_found(String query) {
+    return '找不到与\"$query\"匹配的备份';
+  }
+
+  @override
+  String ui_app_backup_size_date(String size, String date) {
+    return '大小：$size • 备份日期：$date';
+  }
 
   @override
   String get ui_app_split_apk => '分包 (APKS)';
@@ -3911,6 +4012,39 @@ class L10nZh extends L10n {
   String get msg_subtitle_size => '字幕大小';
 
   @override
+  String get msg_subtitle_position => '字幕位置';
+
+  @override
+  String get msg_subtitle_pos_top => '顶部';
+
+  @override
+  String get msg_subtitle_pos_bottom => '底部';
+
+  @override
+  String get msg_subtitle_no_background => '移除字幕背景';
+
+  @override
+  String get msg_auto_clean_cache => '自动清理缓存';
+
+  @override
+  String get msg_auto_clean_cache_hint => '点击设置自动清理时间间隔';
+
+  @override
+  String get msg_auto_clean_cache_picker_hint => '滑动选择自动清理时间间隔';
+
+  @override
+  String get msg_cache_clean_unit_day => '天';
+
+  @override
+  String get msg_cache_clean_unit_hour => '小时';
+
+  @override
+  String get msg_cache_clean_unit_minute => '分钟';
+
+  @override
+  String get msg_cache_clean_confirm => '确认';
+
+  @override
   String get msg_quick_actions => '快捷操作';
 
   @override
@@ -3989,6 +4123,78 @@ class L10nZh extends L10n {
 
   @override
   String get msg_custom_scan_paths => '自定义扫描位置';
+
+  @override
+  String get notification_web_share_local_title => 'ZenFile 本地网页共享';
+
+  @override
+  String get notification_web_share_internet_title => 'ZenFile 互联网网页共享';
+
+  @override
+  String notification_web_share_running(Object url) {
+    return '运行于 $url';
+  }
+
+  @override
+  String get notification_ftp_title => 'ZenFile FTP 服务器';
+
+  @override
+  String notification_ftp_running(Object ip, Object port) {
+    return '运行于 ftp://$ip:$port';
+  }
+
+  @override
+  String get ui_download_links => '下载链接';
+
+  @override
+  String get changelog_v1121_new_features_title => '新增功能';
+
+  @override
+  String get changelog_v1121_new_feature_1 =>
+      '自定义首页显示：浏览页中，点击文件夹的三点菜单选择\"设为首页\"，或长按文件夹后在\"更多\"菜单中找到\"设为首页\"选项。双窗口模式下，两个窗口可独立设置不同的首页路径，提升多目录管理效率。';
+
+  @override
+  String get changelog_v1121_new_feature_2 =>
+      'WEB共享增强：支持自定义共享路径，修复了此前仅能浏览文件夹而无法查看文件内容的问题。同时新增复制、粘贴、剪切、删除、重命名等常用文件操作按钮，远程管理更便捷。';
+
+  @override
+  String get changelog_v1121_new_feature_3 => '远程缓存清理：新增自定义清理远程缓存功能，可灵活管理存储空间。';
+
+  @override
+  String get changelog_v1121_bugfixes_title => '问题修复';
+
+  @override
+  String get changelog_v1121_bugfix_1 => '修复 SMB 客户端进入任意共享目录后返回时目录显示为空的问题。';
+
+  @override
+  String get changelog_v1121_bugfix_2 => '修复部分界面存在中文硬编码的问题，提升多语言环境下的显示兼容性。';
+
+  @override
+  String get changelog_v1121_known_issues_title => '已知问题（预计下个版本修复）';
+
+  @override
+  String get changelog_v1121_known_issue_1 => '清除应用数据后重新打开会出现闪退。';
+
+  @override
+  String get changelog_v1121_known_issue_2 => '视频播放器中调整外挂字幕显示大小暂不生效。';
+
+  @override
+  String get changelog_v1121_known_issue_3 =>
+      '目前仅 WebDAV 客户端支持媒体文件流式播放，其他客户端暂不支持。';
+
+  @override
+  String get changelog_v1121_known_issue_4 =>
+      '备份较大 APK 安装包时，界面会卡在执行状态，实际备份仍在后台进行。请按返回键后前往\"已备份 APK\"查看备份文件，备份路径位于主存储 ZenFile/Backups 目录。';
+
+  @override
+  String get changelog_v1121_known_issue_5 =>
+      'FTP 共享服务开启后，使用其他 FTP 客户端连接时目录显示为空。';
+
+  @override
+  String get msg_editor_lines => '行';
+
+  @override
+  String get msg_editor_modified => '已修改';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -4256,7 +4462,7 @@ class L10nZhTw extends L10nZh {
   String get msgbff1432a => '夸克網盤';
 
   @override
-  String get msge03395d0 => '小飛機網盤';
+  String get msge03395d0 => 'PikPak網盤';
 
   @override
   String get svg => '新增 SVG 檔案完整支援（縮圖預覽與檢視）';
@@ -4415,6 +4621,16 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get msgf139c5cf => '輸入新名稱';
+
+  @override
+  String get msg_rename_extension_warning_title => '副檔名變更';
+
+  @override
+  String get msg_rename_extension_warning_content =>
+      '您正在修改檔案副檔名，這可能導致檔案無法正常開啟。確定要繼續嗎？';
+
+  @override
+  String get msg_rename_extension_confirm => '確認修改';
 
   @override
   String get msg53518c22 => '刪除檔案';
@@ -4731,6 +4947,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get msgfd96af00 => '分享功能即將推出';
+
+  @override
+  String get ui_share => '分享';
 
   @override
   String get ftp1 => 'FTP伺服器已成功停止';
@@ -5261,6 +5480,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get msgdesign10 => '使用者設計 1';
+
+  @override
+  String get msgdesign11 => '使用者設計 2';
 
   @override
   String get msg7372dc9f => '自定義圖示';
@@ -5908,6 +6130,22 @@ class L10nZhTw extends L10nZh {
   String get msga1b2c3d7 => '授予許可權';
 
   @override
+  String get msg_media_only_permission_title => '僅媒體檔案權限';
+
+  @override
+  String get msg_media_only_permission_desc =>
+      '目前僅授予媒體檔案存取權限，檔案管理員將無法正常使用重新命名、剪下、刪除等功能。請授予「所有檔案管理權限」以獲得完整功能。';
+
+  @override
+  String get msg_grant_full_storage_permission => '授予完整儲存權限';
+
+  @override
+  String get ui_open_settings => '打開設定';
+
+  @override
+  String get ui_open_settings_desc => '儲存權限已被永久拒絕，請前往系統設定手動授予檔案管理權限。';
+
+  @override
   String get msg2c146598 => '網際網路雲隧道已上線！臨時連結已啟用。';
 
   @override
@@ -6477,9 +6715,6 @@ class L10nZhTw extends L10nZh {
   String get ui_confirm => '確定';
 
   @override
-  String get ui_share => '分享';
-
-  @override
   String get ui_move_here => '移動到此處';
 
   @override
@@ -6520,6 +6755,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_show_folder_contents_count => '顯示資料夾內容計數';
+
+  @override
+  String get ui_set_as_home => '設為首頁';
 
   @override
   String get ui_show_folder_size => '顯示資料夾大小';
@@ -7697,6 +7935,55 @@ class L10nZhTw extends L10nZh {
   String get ui_app_grant_usage_access => '授予使用狀況存取權限';
 
   @override
+  String get ui_app_usage_access_description =>
+      '如需查看精確的應用儲存大小（APK + 資料 + 快取），而不僅是安裝包大小，請在系統設定中為 ZenFile 啟用使用狀況存取權限。';
+
+  @override
+  String get ui_backup_apk_open_folder => '開啟備份目錄';
+
+  @override
+  String ui_backup_apk_success_with_path(String path) {
+    return '已成功備份到 $path，是否開啟所在目錄？';
+  }
+
+  @override
+  String get ui_backup_apk_open => '開啟';
+
+  @override
+  String get ui_clear_remote_cache_success => '遠端快取已清理。';
+
+  @override
+  String get ui_clear_remote_cache_failed => '清理遠端快取失敗。';
+
+  @override
+  String get ui_app_system_settings => '系統設定 / 詳細資料';
+
+  @override
+  String get ui_app_restore_install => '還原 / 安裝應用';
+
+  @override
+  String get ui_app_size_label => '大小：';
+
+  @override
+  String get ui_app_installed_label => '安裝時間：';
+
+  @override
+  String get ui_app_backup_date_label => '備份時間：';
+
+  @override
+  String get ui_batch_backup_progress => '正在備份所選應用...';
+
+  @override
+  String ui_batch_backup_success(int count) {
+    return '已成功備份 $count 個應用到 ZenFile/Backups/Apps/';
+  }
+
+  @override
+  String ui_batch_backup_failed(String error) {
+    return '備份部分應用失敗：$error';
+  }
+
+  @override
   String get ui_app_search_backup => '搜尋備份...';
 
   @override
@@ -7704,6 +7991,19 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_app_no_backup_found => '未找到備份';
+
+  @override
+  String get ui_app_backup_empty_subtitle => '已備份的 APK 和 APKS 檔案列表將顯示在此處。';
+
+  @override
+  String ui_app_backup_search_not_found(String query) {
+    return '找不到與「$query」匹配的備份';
+  }
+
+  @override
+  String ui_app_backup_size_date(String size, String date) {
+    return '大小：$size • 備份日期：$date';
+  }
 
   @override
   String get ui_app_split_apk => '分包 (APKS)';
@@ -7862,6 +8162,39 @@ class L10nZhTw extends L10nZh {
   String get msg_subtitle_size => '字幕大小';
 
   @override
+  String get msg_subtitle_position => '字幕位置';
+
+  @override
+  String get msg_subtitle_pos_top => '頂部';
+
+  @override
+  String get msg_subtitle_pos_bottom => '底部';
+
+  @override
+  String get msg_subtitle_no_background => '移除字幕背景';
+
+  @override
+  String get msg_auto_clean_cache => '自動清理快取';
+
+  @override
+  String get msg_auto_clean_cache_hint => '點擊設定自動清理時間間隔';
+
+  @override
+  String get msg_auto_clean_cache_picker_hint => '滑動選擇自動清理時間間隔';
+
+  @override
+  String get msg_cache_clean_unit_day => '天';
+
+  @override
+  String get msg_cache_clean_unit_hour => '小時';
+
+  @override
+  String get msg_cache_clean_unit_minute => '分鐘';
+
+  @override
+  String get msg_cache_clean_confirm => '確認';
+
+  @override
   String get msg_quick_actions => '快捷操作';
 
   @override
@@ -7940,4 +8273,76 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get msg_custom_scan_paths => '自定義掃描位置';
+
+  @override
+  String get notification_web_share_local_title => 'ZenFile 本地網頁共享';
+
+  @override
+  String get notification_web_share_internet_title => 'ZenFile 網際網路網頁共享';
+
+  @override
+  String notification_web_share_running(Object url) {
+    return '運行於 $url';
+  }
+
+  @override
+  String get notification_ftp_title => 'ZenFile FTP 伺服器';
+
+  @override
+  String notification_ftp_running(Object ip, Object port) {
+    return '運行於 ftp://$ip:$port';
+  }
+
+  @override
+  String get ui_download_links => '下載連結';
+
+  @override
+  String get changelog_v1121_new_features_title => '新增功能';
+
+  @override
+  String get changelog_v1121_new_feature_1 =>
+      '自定義首頁顯示：瀏覽頁中，點擊文件夾的三點選單選擇\"設為首頁\"，或長按文件夾後在\"更多\"選單中找到\"設為首頁\"選項。雙視窗模式下，兩個視窗可獨立設定不同的首頁路徑，提升多目錄管理效率。';
+
+  @override
+  String get changelog_v1121_new_feature_2 =>
+      'WEB共享增強：支援自定義共享路徑，修復了此前僅能瀏覽文件夾而無法查看文件內容的問題。同時新增複製、貼上、剪下、刪除、重新命名等常用文件操作按鈕，遠端管理更便捷。';
+
+  @override
+  String get changelog_v1121_new_feature_3 => '遠端快取清理：新增自定義清理遠端快取功能，可靈活管理儲存空間。';
+
+  @override
+  String get changelog_v1121_bugfixes_title => '問題修復';
+
+  @override
+  String get changelog_v1121_bugfix_1 => '修復 SMB 客戶端進入任意共享目錄後返回時目錄顯示為空的問題。';
+
+  @override
+  String get changelog_v1121_bugfix_2 => '修復部分介面存在中文硬編碼的問題，提升多語言環境下的顯示相容性。';
+
+  @override
+  String get changelog_v1121_known_issues_title => '已知問題（預計下個版本修復）';
+
+  @override
+  String get changelog_v1121_known_issue_1 => '清除應用資料後重新打開會出現閃退。';
+
+  @override
+  String get changelog_v1121_known_issue_2 => '視頻播放器中調整外掛字幕顯示大小暫不生效。';
+
+  @override
+  String get changelog_v1121_known_issue_3 =>
+      '目前僅 WebDAV 客戶端支援媒體文件流式播放，其他客戶端暫不支援。';
+
+  @override
+  String get changelog_v1121_known_issue_4 =>
+      '備份較大 APK 安裝包時，介面會卡在執行狀態，實際備份仍在後台進行。請按返回鍵後前往\"已備份 APK\"查看備份文件，備份路徑位於主存儲 ZenFile/Backups 目錄。';
+
+  @override
+  String get changelog_v1121_known_issue_5 =>
+      'FTP 共享服務開啟後，使用其他 FTP 客戶端連接時目錄顯示為空。';
+
+  @override
+  String get msg_editor_lines => '行';
+
+  @override
+  String get msg_editor_modified => '已修改';
 }

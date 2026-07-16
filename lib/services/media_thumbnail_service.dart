@@ -58,12 +58,12 @@ class MediaThumbnailService {
   /// Get the thumbnail cache directory.
   static Future<Directory> getThumbDir() async {
     try {
-      final dir = Directory('/storage/emulated/0/Download/ZenFile_Remote/cache/thumbnails/remote');
+      final dir = Directory('/storage/emulated/0/ZenFile/cache/thumbnails/remote');
       if (!dir.existsSync()) dir.createSync(recursive: true);
       return dir;
     } catch (_) {
       final appDir = await getApplicationDocumentsDirectory();
-      final dir = Directory(p.join(appDir.path, 'ZenFile_Remote', 'cache', 'thumbnails', 'remote'));
+      final dir = Directory(p.join(appDir.path, 'ZenFile', 'cache', 'thumbnails', 'remote'));
       if (!dir.existsSync()) dir.createSync(recursive: true);
       return dir;
     }
@@ -72,12 +72,12 @@ class MediaThumbnailService {
   /// Get the temp download directory.
   static Future<Directory> getTempDir() async {
     try {
-      final dir = Directory('/storage/emulated/0/Download/ZenFile_Remote/cache/temp');
+      final dir = Directory('/storage/emulated/0/ZenFile/cache/temp');
       if (!dir.existsSync()) dir.createSync(recursive: true);
       return dir;
     } catch (_) {
       final appDir = await getApplicationDocumentsDirectory();
-      final dir = Directory(p.join(appDir.path, 'ZenFile_Remote', 'cache', 'temp'));
+      final dir = Directory(p.join(appDir.path, 'ZenFile', 'cache', 'temp'));
       if (!dir.existsSync()) dir.createSync(recursive: true);
       return dir;
     }

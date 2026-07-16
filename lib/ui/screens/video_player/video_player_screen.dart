@@ -99,6 +99,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   bool _subtitleEnabled = false;
   String? _subtitlePath;
   double _subtitleFontSize = 24;
+  double _subtitlePosition = 100; // 0=顶部, 100=底部
+  bool _subtitleNoBackground = false;
 
   // Playback Progress
   Timer? _progressSaveTimer;
@@ -113,6 +115,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _currentIndex = widget.initialIndex ?? 0;
     _customAspectRatio = PreferencesService.getVideoCustomAspectRatio();
     _subtitleFontSize = PreferencesService.getSubtitleFontSize();
+    _subtitlePosition = PreferencesService.getSubtitlePosition();
+    _subtitleNoBackground = PreferencesService.getSubtitleNoBackground();
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     SystemChrome.setPreferredOrientations([
@@ -156,7 +160,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         if (platform is NativePlayer) {
           await platform.setProperty('network-timeout', '60');
           await platform.setProperty('cache-secs', '10');
+          // 强制覆盖 ASS 字幕样式，确保 sub-font-size/sub-pos 等属性生效
+          await platform.setProperty('sub-ass-override', 'force');
           await platform.setProperty('sub-font-size', _subtitleFontSize.round().toString());
+          await platform.setProperty('sub-pos', _subtitlePosition.round().toString());
+          await _applySubtitleBackgroundProps(platform);
         }
       } catch (e) {
         debugPrint('设置 network-timeout 失败: $e');
@@ -284,6 +292,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         player.setSubtitleTrack(SubtitleTrack.no());
       }
       _applySubtitleFontSize(_subtitleFontSize);
+      _applySubtitlePosition(_subtitlePosition);
+      _applySubtitleBackground();
     } catch (e) {
       debugPrint('应用字幕失败: $e');
     }
@@ -299,6 +309,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
           SubtitleTrack.uri(_subtitlePath!, title: 'External'),
         );
         _applySubtitleFontSize(_subtitleFontSize);
+        _applySubtitlePosition(_subtitlePosition);
+        _applySubtitleBackground();
       } else {
         player.setSubtitleTrack(SubtitleTrack.no());
       }
@@ -564,6 +576,71 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                       ],
                     ),
                   ),
+                  Divider(color: Colors.white12, height: 1),
+                  // 字幕位置滑块
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    child: Row(
+                      children: [
+                        Icon(Icons.vertical_align_center, color: Colors.white70, size: 22),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(L10n.of(ctx).msg_subtitle_position, style: TextStyle(color: Colors.white, fontSize: 15)),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Text(L10n.of(ctx).msg_subtitle_pos_top, style: TextStyle(color: Colors.white38, fontSize: 12)),
+                                  Expanded(
+                                    child: Slider(
+                                      value: _subtitlePosition,
+                                      min: 0,
+                                      max: 100,
+                                      divisions: 20,
+                                      activeColor: Theme.of(ctx).colorScheme.primary,
+                                      label: _subtitlePosition.round().toString(),
+                                      onChanged: (v) {
+                                        setModalState(() => _subtitlePosition = v);
+                                        _applySubtitlePosition(v);
+                                      },
+                                      onChangeEnd: (v) {
+                                        PreferencesService.saveSubtitlePosition(v);
+                                      },
+                                    ),
+                                  ),
+                                  Text(L10n.of(ctx).msg_subtitle_pos_bottom, style: TextStyle(color: Colors.white38, fontSize: 12)),
+                                  const SizedBox(width: 8),
+                                  SizedBox(
+                                    width: 36,
+                                    child: Text(
+                                      _subtitlePosition.round().toString(),
+                                      style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Divider(color: Colors.white12, height: 1),
+                  // 移除字幕背景透明层开关
+                  SwitchListTile(
+                    value: _subtitleNoBackground,
+                    onChanged: (v) {
+                      setModalState(() => _subtitleNoBackground = v);
+                      _applySubtitleBackground();
+                      PreferencesService.saveSubtitleNoBackground(v);
+                    },
+                    activeColor: Theme.of(ctx).colorScheme.primary,
+                    title: Text(L10n.of(ctx).msg_subtitle_no_background,
+                        style: TextStyle(color: Colors.white, fontSize: 15)),
+                    secondary: Icon(Icons.layers_clear_rounded, color: Colors.white70, size: 22),
+                  ),
                 ],
               ),
                 ),
@@ -580,9 +657,52 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       final platform = player.platform;
       if (platform is NativePlayer) {
         platform.setProperty('sub-font-size', size.round().toString());
+        // 同时设置 sub-scale 以确保字幕大小变化可见
+        // sub-font-size 单独在部分设备/字幕格式上可能不生效
+        platform.setProperty('sub-scale', (size / 24).toStringAsFixed(2));
       }
     } catch (e) {
       debugPrint('设置字幕大小失败: $e');
+    }
+  }
+
+  void _applySubtitlePosition(double pos) {
+    try {
+      final platform = player.platform;
+      if (platform is NativePlayer) {
+        platform.setProperty('sub-pos', pos.round().toString());
+      }
+    } catch (e) {
+      debugPrint('设置字幕位置失败: $e');
+    }
+  }
+
+  Future<void> _applySubtitleBackgroundProps(NativePlayer platform) async {
+    try {
+      if (_subtitleNoBackground) {
+        // 移除字幕背景透明层：背景全透明、无边框、无阴影
+        await platform.setProperty('sub-back-color', '#00000000');
+        await platform.setProperty('sub-border-size', '0');
+        await platform.setProperty('sub-shadow-offset', '0');
+      } else {
+        // 恢复默认：无边框背景色（透明）、有边框、有阴影
+        await platform.setProperty('sub-back-color', '#00000000');
+        await platform.setProperty('sub-border-size', '3');
+        await platform.setProperty('sub-shadow-offset', '1');
+      }
+    } catch (e) {
+      debugPrint('设置字幕背景失败: $e');
+    }
+  }
+
+  void _applySubtitleBackground() {
+    try {
+      final platform = player.platform;
+      if (platform is NativePlayer) {
+        _applySubtitleBackgroundProps(platform);
+      }
+    } catch (e) {
+      debugPrint('设置字幕背景失败: $e');
     }
   }
 
@@ -884,7 +1004,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       }
 
       // 回退：完整下载后播放
-      final cacheDir = Directory('/storage/emulated/0/Download/ZenFile_Remote');
+      final cacheDir = Directory('/storage/emulated/0/ZenFile');
       if (!cacheDir.existsSync()) cacheDir.createSync(recursive: true);
       final cachePath = p.join(cacheDir.path, fileName);
       if (!File(cachePath).existsSync()) {

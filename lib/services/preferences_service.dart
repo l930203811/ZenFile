@@ -124,6 +124,33 @@ class PreferencesService {
     await _prefs?.setBool(_keyShowHomeBrowseNav, val);
   }
 
+  static const String _keyHomeDirectoryLeft = 'home_directory_left';
+  static const String _keyHomeDirectoryRight = 'home_directory_right';
+
+  static String? getHomeDirectoryLeft() {
+    return _prefs?.getString(_keyHomeDirectoryLeft);
+  }
+
+  static Future<void> saveHomeDirectoryLeft(String? path) async {
+    if (path == null) {
+      await _prefs?.remove(_keyHomeDirectoryLeft);
+    } else {
+      await _prefs?.setString(_keyHomeDirectoryLeft, path);
+    }
+  }
+
+  static String? getHomeDirectoryRight() {
+    return _prefs?.getString(_keyHomeDirectoryRight);
+  }
+
+  static Future<void> saveHomeDirectoryRight(String? path) async {
+    if (path == null) {
+      await _prefs?.remove(_keyHomeDirectoryRight);
+    } else {
+      await _prefs?.setString(_keyHomeDirectoryRight, path);
+    }
+  }
+
   static const String _keyShowMediaPreviews = 'show_media_previews';
 
   static bool getShowMediaPreviews() {
@@ -608,16 +635,40 @@ class PreferencesService {
 
   // --- Remote Server Cache Settings ---
   static const String _keyRemoteCacheAutoCleanDays = 'remote_cache_auto_clean_days';
+  static const String _keyRemoteCacheAutoCleanMinutes = 'remote_cache_auto_clean_minutes';
   static const String _keyRemoteCacheLastCleanTime = 'remote_cache_last_clean_time';
   static const String _keyRemoteMediaThumbnailPreview = 'remote_media_thumbnail_preview';
 
   /// 获取自动清理天数，0表示不自动清理
+  /// @deprecated 保留兼容旧版本，新代码使用 getRemoteCacheAutoCleanMinutes
   static int getRemoteCacheAutoCleanDays() {
     return _prefs?.getInt(_keyRemoteCacheAutoCleanDays) ?? 0;
   }
 
+  /// @deprecated 保留兼容旧版本
   static Future<void> saveRemoteCacheAutoCleanDays(int days) async {
     await _prefs?.setInt(_keyRemoteCacheAutoCleanDays, days);
+  }
+
+  /// 获取自动清理间隔（分钟）。
+  /// 默认 5 分钟（即 0天0小时5分钟）。
+  /// 0 表示不自动清理。
+  static int getRemoteCacheAutoCleanMinutes() {
+    // 兼容旧版本：如果新键不存在但旧键有值，转换为新单位
+    if (_prefs?.containsKey(_keyRemoteCacheAutoCleanMinutes) ?? false) {
+      return _prefs?.getInt(_keyRemoteCacheAutoCleanMinutes) ?? 5;
+    }
+    // 旧版本值转换为分钟
+    final oldDays = _prefs?.getInt(_keyRemoteCacheAutoCleanDays) ?? 0;
+    if (oldDays > 0) {
+      return oldDays * 24 * 60;
+    }
+    // 首次安装默认 5 分钟
+    return 5;
+  }
+
+  static Future<void> saveRemoteCacheAutoCleanMinutes(int minutes) async {
+    await _prefs?.setInt(_keyRemoteCacheAutoCleanMinutes, minutes);
   }
 
   static int getRemoteCacheLastCleanTime() {
@@ -941,6 +992,8 @@ class PreferencesService {
   static const String _keyLastPlayedVideo = 'last_played_video';
   static const String _keyVideoCustomAspectRatio = 'video_custom_aspect_ratio';
   static const String _keySubtitleFontSize = 'video_subtitle_font_size';
+  static const String _keySubtitlePosition = 'video_subtitle_position';
+  static const String _keySubtitleNoBackground = 'video_subtitle_no_background';
 
   /// 获取视频文件保存的播放进度（毫秒），返回 null 表示无记录
   static int? getVideoPlaybackPosition(String videoPath) {
@@ -1024,6 +1077,26 @@ class PreferencesService {
   /// 保存字幕字体大小
   static Future<void> saveSubtitleFontSize(double value) async {
     await _prefs?.setDouble(_keySubtitleFontSize, value);
+  }
+
+  /// 获取字幕垂直位置（0-100，100=底部，0=顶部），默认 100
+  static double getSubtitlePosition() {
+    return _prefs?.getDouble(_keySubtitlePosition) ?? 100;
+  }
+
+  /// 保存字幕垂直位置
+  static Future<void> saveSubtitlePosition(double value) async {
+    await _prefs?.setDouble(_keySubtitlePosition, value);
+  }
+
+  /// 获取是否移除字幕背景（true=透明无背景），默认 false
+  static bool getSubtitleNoBackground() {
+    return _prefs?.getBool(_keySubtitleNoBackground) ?? false;
+  }
+
+  /// 保存字幕背景移除开关
+  static Future<void> saveSubtitleNoBackground(bool value) async {
+    await _prefs?.setBool(_keySubtitleNoBackground, value);
   }
 
   // --- Drawer Section Expanded State ---

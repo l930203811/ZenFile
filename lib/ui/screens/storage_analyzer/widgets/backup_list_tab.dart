@@ -140,7 +140,10 @@ class _BackupListTabState extends State<BackupListTab> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Size: ${FileUtils.formatBytes(item['apkSize'] as int, 2)} • Backup Date: ${FileUtils.formatDate(item['installTime'] as DateTime, use24Hour: true).split('  ').first}',
+                            L10n.of(context).ui_app_backup_size_date(
+                              FileUtils.formatBytes(item['apkSize'] as int, 2),
+                              FileUtils.formatDate(item['installTime'] as DateTime, use24Hour: true).split('  ').first,
+                            ),
                             style: TextStyle(
                               color: theme.colorScheme.primary,
                               fontWeight: FontWeight.w600,
@@ -160,7 +163,7 @@ class _BackupListTabState extends State<BackupListTab> {
                 _buildBottomSheetActionItem(
                   theme: theme,
                   icon: Broken.document_upload,
-                  label: 'Restore / Install App',
+                  label: L10n.of(context).ui_app_restore_install,
                   color: theme.colorScheme.primary,
                   onTap: () async {
                     Navigator.pop(context);
@@ -270,8 +273,8 @@ class _BackupListTabState extends State<BackupListTab> {
               const SizedBox(height: 4),
               Text(
                 widget.searchQuery.isNotEmpty
-                    ? 'We couldn\'t find any backups matching "${widget.searchQuery}"'
-                    : 'A list of your backed up APK and APKS files will show here.',
+                    ? L10n.of(context).ui_app_backup_search_not_found(widget.searchQuery)
+                    : L10n.of(context).ui_app_backup_empty_subtitle,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: theme.textTheme.bodySmall?.color?.withOpacity(0.6),

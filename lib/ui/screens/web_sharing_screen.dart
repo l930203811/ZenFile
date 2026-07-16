@@ -5,6 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../services/web_sharing_service.dart';
+import 'internal_file_picker_screen.dart';
 import 'dart:math' as math;
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
@@ -19,6 +20,7 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
   late AnimationController _pulseController;
   final _webService = WebSharingService.instance;
   int _activeTab = 0; // 0: Local Share, 1: Internet Share
+  String _shareDir = ''; // 空字符串表示使用默认内部存储根目录
 
   @override
   void initState() {
@@ -68,7 +70,13 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
     } else {
       try {
         await Permission.notification.request();
+        final l10n = L10n.of(context);
         _webService.setWebLocale(Localizations.localeOf(context).languageCode);
+        _webService.setNotificationText(
+          localTitle: l10n.notification_web_share_local_title,
+          internetTitle: l10n.notification_web_share_internet_title,
+          runningText: l10n.notification_web_share_running('{url}'),
+        );
         await _webService.startLocalServer(rootPath);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -143,6 +151,34 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
             ),
           );
         }
+      });
+    }
+  }
+
+  Future<void> _pickShareDirectory() async {
+    if (_webService.isLocalActive || _webService.isInternetActive) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(L10n.of(context).msg5ab96a6d),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    final initialPath = _shareDir.isNotEmpty
+        ? _shareDir
+        : '/storage/emulated/0';
+
+    final picked = await InternalFilePickerScreen.show(
+      context,
+      rootPath: initialPath,
+      pickDirectory: true,
+    );
+
+    if (picked != null && picked.isNotEmpty) {
+      setState(() {
+        _shareDir = picked.first;
       });
     }
   }
@@ -262,7 +298,13 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
 
     // 每次重建时同步 App 当前语言到 Web 共享服务，确保语言切换后立即生效
     if (_webService.isLocalActive || _webService.isInternetActive) {
+      final l10n = L10n.of(context);
       _webService.setWebLocale(Localizations.localeOf(context).languageCode);
+      _webService.setNotificationText(
+        localTitle: l10n.notification_web_share_local_title,
+        internetTitle: l10n.notification_web_share_internet_title,
+        runningText: l10n.notification_web_share_running('{url}'),
+      );
     }
 
     final isActive = _activeTab == 0 ? _webService.isLocalActive : _webService.isInternetActive;
@@ -507,19 +549,37 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
           ),
           const SizedBox(height: 20),
 
-          // Share path description
-          Row(
-            children: [
-              Icon(Broken.folder_open, size: 18, color: theme.colorScheme.onSurface.withOpacity(0.4)),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                    L10n.of(context).msgfefea1b3 + ': ' + shareDir,
-                    style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6), fontWeight: FontWeight.w600),
-                    overflow: TextOverflow.ellipsis,
+          // Share path selection
+          InkWell(
+            onTap: _pickShareDirectory,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+              child: Row(
+                children: [
+                  Icon(Broken.folder_open, size: 18, color: theme.colorScheme.primary),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          L10n.of(context).msgfefea1b3,
+                          style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.5), fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _shareDir.isEmpty ? '/storage/emulated/0' : _shareDir,
+                          style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withOpacity(0.8), fontWeight: FontWeight.w600),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ),
+                  Icon(Icons.chevron_right_rounded, size: 20, color: theme.colorScheme.onSurface.withOpacity(0.4)),
+                ],
               ),
-            ],
+            ),
           ),
         ] else ...[
           // Idle board
@@ -552,6 +612,39 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
               ),
             ),
           ),
+          const SizedBox(height: 20),
+          // Share path selection
+          InkWell(
+            onTap: _pickShareDirectory,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+              child: Row(
+                children: [
+                  Icon(Broken.folder_open, size: 18, color: theme.colorScheme.primary),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          L10n.of(context).msgfefea1b3,
+                          style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.5), fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _shareDir.isEmpty ? '/storage/emulated/0' : _shareDir,
+                          style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withOpacity(0.8), fontWeight: FontWeight.w600),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.chevron_right_rounded, size: 20, color: theme.colorScheme.onSurface.withOpacity(0.4)),
+                ],
+              ),
+            ),
+          ),
         ],
 
         const SizedBox(height: 40),
@@ -565,7 +658,7 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
             elevation: 2,
           ),
-          onPressed: () => _toggleLocalServer(shareDir),
+          onPressed: () => _toggleLocalServer(_shareDir),
           icon: Icon(_webService.isLocalActive ? Icons.stop_rounded : Icons.play_arrow_rounded),
           label: Text(
             _webService.isLocalActive ? L10n.of(context).msga3c80551 : L10n.of(context).msg974465c1,
@@ -578,7 +671,6 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
 
   // --- TAB 2: Internet Proxy Tunnel (Cloud Mock) ---
   Widget _buildInternetShareView(ThemeData theme, bool isDark) {
-    final shareDir = context.read<FileManagerProvider>().rootPath;
     return ListView(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.all(20.0),
@@ -674,6 +766,22 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
                 ],
               ),
             ),
+          ),
+          const SizedBox(height: 20),
+
+          // Share path display
+          Row(
+            children: [
+              Icon(Broken.folder_open, size: 18, color: theme.colorScheme.onSurface.withOpacity(0.4)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                    L10n.of(context).msgfefea1b3 + ': ' + (_shareDir.isEmpty ? '/storage/emulated/0' : _shareDir),
+                    style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6), fontWeight: FontWeight.w600),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+              ),
+            ],
           ),
           const SizedBox(height: 24),
 
@@ -796,6 +904,39 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
               ),
             ),
           ),
+          const SizedBox(height: 20),
+          // Share path selection
+          InkWell(
+            onTap: _pickShareDirectory,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+              child: Row(
+                children: [
+                  Icon(Broken.folder_open, size: 18, color: theme.colorScheme.primary),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          L10n.of(context).msgfefea1b3,
+                          style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.5), fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _shareDir.isEmpty ? '/storage/emulated/0' : _shareDir,
+                          style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withOpacity(0.8), fontWeight: FontWeight.w600),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.chevron_right_rounded, size: 20, color: theme.colorScheme.onSurface.withOpacity(0.4)),
+                ],
+              ),
+            ),
+          ),
         ],
 
         const SizedBox(height: 40),
@@ -809,7 +950,7 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
             elevation: 2,
           ),
-          onPressed: () => _toggleInternetTunnel(shareDir),
+          onPressed: () => _toggleInternetTunnel(_shareDir),
           icon: Icon(_webService.isInternetActive ? Icons.cloud_off : Icons.cloud_queue_rounded),
           label: Text(
             _webService.isInternetActive ? L10n.of(context).msga3c80551 : L10n.of(context).msg6466e61e,

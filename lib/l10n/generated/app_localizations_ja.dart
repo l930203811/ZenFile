@@ -270,7 +270,7 @@ class L10nJa extends L10n {
   String get msgbff1432a => 'Quarkクラウド';
 
   @override
-  String get msge03395d0 => 'Xiaofeijiクラウド';
+  String get msge03395d0 => 'PikPakクラウド';
 
   @override
   String get svg => 'SVGファイルの完全サポートを追加（サムネイルプレビューと表示）';
@@ -430,6 +430,16 @@ class L10nJa extends L10n {
 
   @override
   String get msgf139c5cf => '新しい名前を入力';
+
+  @override
+  String get msg_rename_extension_warning_title => '拡張子の変更';
+
+  @override
+  String get msg_rename_extension_warning_content =>
+      'ファイルの拡張子を変更しようとしています。これによりファイルが正しく開けなくなる可能性があります。続行しますか？';
+
+  @override
+  String get msg_rename_extension_confirm => '変更を確認';
 
   @override
   String get msg53518c22 => 'ファイルを削除';
@@ -747,6 +757,9 @@ class L10nJa extends L10n {
 
   @override
   String get msgfd96af00 => '共有機能は近日公開';
+
+  @override
+  String get ui_share => '共有';
 
   @override
   String get ftp1 => 'FTPサーバーが正常に停止しました';
@@ -1278,6 +1291,9 @@ class L10nJa extends L10n {
 
   @override
   String get msgdesign10 => 'ユーザーデザイン 1';
+
+  @override
+  String get msgdesign11 => 'ユーザーデザイン 2';
 
   @override
   String get msg7372dc9f => 'カスタムアイコン';
@@ -1928,6 +1944,30 @@ class L10nJa extends L10n {
   String get msga1b2c3d7 => 'アクセス許可を付与';
 
   @override
+  String get msg_media_only_permission_title => 'メディアファイルのみのアクセス';
+
+  @override
+  String get msg_media_only_permission_desc =>
+      '現在、メディアファイルへのアクセスのみ許可されています。ファイルマネージャーの名前変更、切り取り、削除などの機能が正常に使用できません。完全な機能を使用するには「すべてのファイルアクセス」を許可してください。';
+
+  @override
+  String get msg_grant_full_storage_permission => '完全なストレージアクセスを許可';
+
+  @override
+  String get msg_permission_request_title => '授权请求';
+
+  @override
+  String get msg_permission_request_desc =>
+      '为了访问您设备上的文件，您需要手动为 ZenFile 授予[所有文件访问]权限，点击确定后进入设置界面，选择[ZenFile]并开启授权。';
+
+  @override
+  String get ui_open_settings => '設定を開く';
+
+  @override
+  String get ui_open_settings_desc =>
+      'ストレージ権限が永久に拒否されました。システム設定でファイル管理権限を手動で付与してください。';
+
+  @override
   String get msg2c146598 => 'インターネットクラウドトンネルがオンラインです！一時リンクが有効です。';
 
   @override
@@ -2498,9 +2538,6 @@ class L10nJa extends L10n {
   String get ui_confirm => '確認';
 
   @override
-  String get ui_share => '共有';
-
-  @override
   String get ui_move_here => 'ここに移動';
 
   @override
@@ -2541,6 +2578,9 @@ class L10nJa extends L10n {
 
   @override
   String get ui_show_folder_contents_count => 'フォルダの内容数を表示';
+
+  @override
+  String get ui_set_as_home => 'ホームに設定';
 
   @override
   String get ui_show_folder_size => 'フォルダサイズを表示';
@@ -3777,6 +3817,55 @@ class L10nJa extends L10n {
   String get ui_app_grant_usage_access => '使用状況アクセス権限を付与';
 
   @override
+  String get ui_app_usage_access_description =>
+      'APK + データ + キャッシュを含む正確なアプリストレージサイズを表示するには、システム設定で ZenFile の使用状況アクセス権限を有効にしてください。';
+
+  @override
+  String get ui_backup_apk_open_folder => 'バックアップフォルダを開く';
+
+  @override
+  String ui_backup_apk_success_with_path(String path) {
+    return '$path にバックアップしました。フォルダを開きますか？';
+  }
+
+  @override
+  String get ui_backup_apk_open => '開く';
+
+  @override
+  String get ui_clear_remote_cache_success => 'リモートキャッシュをクリアしました。';
+
+  @override
+  String get ui_clear_remote_cache_failed => 'リモートキャッシュのクリアに失敗しました。';
+
+  @override
+  String get ui_app_system_settings => 'システム設定 / 詳細';
+
+  @override
+  String get ui_app_restore_install => '復元 / アプリをインストール';
+
+  @override
+  String get ui_app_size_label => 'サイズ：';
+
+  @override
+  String get ui_app_installed_label => 'インストール日：';
+
+  @override
+  String get ui_app_backup_date_label => 'バックアップ日：';
+
+  @override
+  String get ui_batch_backup_progress => '選択したアプリをバックアップしています...';
+
+  @override
+  String ui_batch_backup_success(int count) {
+    return '$count 個のアプリを ZenFile/Backups/Apps/ にバックアップしました';
+  }
+
+  @override
+  String ui_batch_backup_failed(String error) {
+    return '一部のアプリのバックアップに失敗しました：$error';
+  }
+
+  @override
   String get ui_app_search_backup => 'バックアップを検索...';
 
   @override
@@ -3784,6 +3873,20 @@ class L10nJa extends L10n {
 
   @override
   String get ui_app_no_backup_found => 'バックアップが見つかりません';
+
+  @override
+  String get ui_app_backup_empty_subtitle =>
+      'バックアップされたAPKおよびAPKSファイルの一覧がここに表示されます。';
+
+  @override
+  String ui_app_backup_search_not_found(String query) {
+    return '「$query」に一致するバックアップが見つかりませんでした';
+  }
+
+  @override
+  String ui_app_backup_size_date(String size, String date) {
+    return 'サイズ：$size • バックアップ日：$date';
+  }
 
   @override
   String get ui_app_split_apk => '分割APK (APKS)';
@@ -3945,6 +4048,39 @@ class L10nJa extends L10n {
   String get msg_subtitle_size => '字幕サイズ';
 
   @override
+  String get msg_subtitle_position => '字幕の位置';
+
+  @override
+  String get msg_subtitle_pos_top => '上';
+
+  @override
+  String get msg_subtitle_pos_bottom => '下';
+
+  @override
+  String get msg_subtitle_no_background => '字幕の背景を削除';
+
+  @override
+  String get msg_auto_clean_cache => 'キャッシュを自動的にクリーン';
+
+  @override
+  String get msg_auto_clean_cache_hint => 'タップして自動クリーニング間隔を設定';
+
+  @override
+  String get msg_auto_clean_cache_picker_hint => 'スライドして自動クリーニング間隔を選択';
+
+  @override
+  String get msg_cache_clean_unit_day => '日';
+
+  @override
+  String get msg_cache_clean_unit_hour => '時間';
+
+  @override
+  String get msg_cache_clean_unit_minute => '分';
+
+  @override
+  String get msg_cache_clean_confirm => '確認';
+
+  @override
   String get msg_quick_actions => 'クイック操作';
 
   @override
@@ -4023,4 +4159,81 @@ class L10nJa extends L10n {
 
   @override
   String get msg_custom_scan_paths => 'カスタムスキャンパス';
+
+  @override
+  String get notification_web_share_local_title => 'ZenFile ローカル Web 共有';
+
+  @override
+  String get notification_web_share_internet_title => 'ZenFile インターネット Web 共有';
+
+  @override
+  String notification_web_share_running(Object url) {
+    return '$url で実行中';
+  }
+
+  @override
+  String get notification_ftp_title => 'ZenFile FTP サーバー';
+
+  @override
+  String notification_ftp_running(Object ip, Object port) {
+    return 'ftp://$ip:$port で実行中';
+  }
+
+  @override
+  String get ui_download_links => 'ダウンロードリンク';
+
+  @override
+  String get changelog_v1121_new_features_title => '新機能';
+
+  @override
+  String get changelog_v1121_new_feature_1 =>
+      'カスタムホームページ表示：ブラウズページで、フォルダの三点メニューをタップして「ホームに設定」を選択するか、フォルダを長押しして「その他」メニューから「ホームに設定」を選択します。デュアルウィンドウモードでは、両方のウィンドウで異なるホームパスを独立して設定でき、複数ディレクトリの管理効率が向上します。';
+
+  @override
+  String get changelog_v1121_new_feature_2 =>
+      'WEB共有の強化：カスタム共有パスをサポートし、以前はフォルダの閲覧のみが可能でファイルの内容を表示できなかった問題を修正しました。さらに、コピー、貼り付け、切り取り、削除、名前の変更などの一般的なファイル操作ボタンを追加し、リモート管理をより便利にしました。';
+
+  @override
+  String get changelog_v1121_new_feature_3 =>
+      'リモートキャッシュクリーンアップ：カスタムリモートキャッシュクリーンアップ機能を追加し、ストレージスペースを柔軟に管理できます。';
+
+  @override
+  String get changelog_v1121_bugfixes_title => 'バグ修正';
+
+  @override
+  String get changelog_v1121_bugfix_1 =>
+      'SMBクライアントで任意の共有ディレクトリに入って戻ったときに、ディレクトリが空で表示される問題を修正しました。';
+
+  @override
+  String get changelog_v1121_bugfix_2 =>
+      '一部のインターフェースに中国語のハードコードが存在する問題を修正し、多言語環境での表示互換性を向上させました。';
+
+  @override
+  String get changelog_v1121_known_issues_title => '既知の問題（次のバージョンで修正予定）';
+
+  @override
+  String get changelog_v1121_known_issue_1 =>
+      'アプリデータをクリアしてから再度開くと、クラッシュが発生します。';
+
+  @override
+  String get changelog_v1121_known_issue_2 =>
+      'ビデオプレーヤーで外部字幕の表示サイズを調整しても、一時的に効果がありません。';
+
+  @override
+  String get changelog_v1121_known_issue_3 =>
+      '現在、WebDAVクライアントのみがメディアファイルのストリーミング再生をサポートしており、他のクライアントはまだサポートしていません。';
+
+  @override
+  String get changelog_v1121_known_issue_4 =>
+      '大きなAPKインストールパッケージをバックアップする際、インターフェースが実行状態で停止する可能性がありますが、実際のバックアップはバックグラウンドで引き続き実行されています。戻るボタンを押してから「バックアップ済みAPK」に移動して、バックアップファイルを確認してください。バックアップパスは、メインストレージのZenFile/Backupsディレクトリにあります。';
+
+  @override
+  String get changelog_v1121_known_issue_5 =>
+      'FTP共有サービスを有効にした後、他のFTPクライアントで接続するとディレクトリが空で表示されます。';
+
+  @override
+  String get msg_editor_lines => '行';
+
+  @override
+  String get msg_editor_modified => '変更済み';
 }

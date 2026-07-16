@@ -89,6 +89,71 @@ class FileActionDialogs {
     return result ?? false;
   }
 
+  /// 显示重命名输入对话框，并在检测到文件后缀名变更时提示用户确认。
+  /// 返回最终确认的新名称；用户取消则返回 null。
+  static Future<String?> showRenameDialog(
+    BuildContext context, {
+    required String currentName,
+    required String title,
+    required String hint,
+    required String actionText,
+  }) async {
+    final newName = await showTextInputDialog(
+      context,
+      title: title,
+      hint: hint,
+      initialValue: currentName,
+      actionText: actionText,
+    );
+    if (newName == null || newName.isEmpty || newName == currentName) {
+      return newName;
+    }
+    // 检测后缀名是否变更（针对文件，非目录）
+    final oldExt = _extractExtension(currentName);
+    final newExt = _extractExtension(newName);
+    // 目录通常无后缀或后缀无意义；仅当原文件名存在后缀且发生变更时提示
+    if (oldExt.isNotEmpty && oldExt.toLowerCase() != newExt.toLowerCase()) {
+      final l10n = L10n.of(context);
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) {
+          return AlertDialog(
+            title: Text(l10n.msg_rename_extension_warning_title),
+            content: Text(l10n.msg_rename_extension_warning_content),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(l10n.ui_cancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                style: FilledButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(l10n.msg_rename_extension_confirm),
+              ),
+            ],
+          );
+        },
+      );
+      if (confirmed != true) {
+        return null;
+      }
+    }
+    return newName;
+  }
+
+  /// 提取文件名后缀（不含点），无后缀返回空字符串
+  static String _extractExtension(String name) {
+    final lastDot = name.lastIndexOf('.');
+    // 文件名以点开头（如 .gitignore）视为无后缀
+    if (lastDot <= 0) return '';
+    return name.substring(lastDot + 1);
+  }
+
   static Future<void> showWarningDialog(
     BuildContext context, {
     required String title,
@@ -124,6 +189,7 @@ class FileActionSheet {
     bool showShare = false,
     bool showInLocation = false,
     bool openWith = false,
+    bool showSetAsHome = false,
   }) {
     final theme = Theme.of(context);
     return showModalBottomSheet(
@@ -167,6 +233,8 @@ class FileActionSheet {
                   if (showShare)
                     _buildTile(ctx, theme, icon: Icons.share_outlined, title: L10n.of(context).ui_share, value: 'share', onAction: onAction),
                   _buildTile(ctx, theme, icon: Broken.folder_favorite, title: L10n.of(ctx).ui_favorite, value: 'favorite', onAction: onAction),
+                  if (showSetAsHome)
+                    _buildTile(ctx, theme, icon: Broken.home_2, title: L10n.of(ctx).ui_set_as_home, value: 'set_as_home', onAction: onAction),
                   const SizedBox(height: 8),
                 ],
               ),

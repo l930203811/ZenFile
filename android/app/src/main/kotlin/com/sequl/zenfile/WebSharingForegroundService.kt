@@ -22,11 +22,13 @@ class WebSharingForegroundService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val url = intent?.getStringExtra("url") ?: "http://127.0.0.1:8080"
         val isInternet = intent?.getBooleanExtra("isInternet", false) ?: false
-        
+        val title = intent?.getStringExtra("title") ?: if (isInternet) "ZenFile Internet Web Share" else "ZenFile Local Web Share"
+        val contentText = intent?.getStringExtra("contentText") ?: "Running at $url"
+
         val notificationIntent = Intent(this, MainActivity::class.java).apply {
             this.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         }
-        
+
         val pendingIntent = PendingIntent.getActivity(
             this,
             0,
@@ -48,11 +50,9 @@ class WebSharingForegroundService : Service() {
             Notification.Builder(this)
         }
 
-        val title = if (isInternet) "NFile Internet Web Share" else "NFile Local Web Share"
-
         val notification = builder
             .setContentTitle(title)
-            .setContentText("Running at $url")
+            .setContentText(contentText)
             .setSmallIcon(iconResId)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
@@ -69,8 +69,8 @@ class WebSharingForegroundService : Service() {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "Web Sharing Server"
-            val descriptionText = "Displays status of the background Web Sharing Server"
+            val name = "ZenFile Web Sharing"
+            val descriptionText = "ZenFile Web Sharing Service"
             val importance = NotificationManager.IMPORTANCE_LOW
             val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                 description = descriptionText

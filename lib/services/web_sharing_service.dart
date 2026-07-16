@@ -48,6 +48,11 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
   /// Current locale for web sharing HTML pages (e.g., 'en', 'zh', 'zh_TW', 'ja', etc.)
   String _webLocale = 'en';
 
+  // Notification text (localized via l10n)
+  String _notifLocalTitle = 'ZenFile Local Web Share';
+  String _notifInternetTitle = 'ZenFile Internet Web Share';
+  String _notifRunningText = 'Running at {url}';
+
   /// Set the locale for web sharing HTML pages with normalization
   /// Maps Flutter locale codes to web translation keys
   void setWebLocale(String locale) {
@@ -57,6 +62,17 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
   }
 
   String get webLocale => _webLocale;
+
+  /// Set localized notification text (called from screen with L10n context)
+  void setNotificationText({
+    required String localTitle,
+    required String internetTitle,
+    required String runningText,
+  }) {
+    _notifLocalTitle = localTitle;
+    _notifInternetTitle = internetTitle;
+    _notifRunningText = runningText;
+  }
 
   /// Normalize Flutter locale code to web translation key
   static String _normalizeLocale(String locale) {
@@ -123,6 +139,8 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         await _channel.invokeMethod('startWebSharingService', {
           'url': 'http://$_localIpAddress:$_port',
           'isInternet': false,
+          'title': _notifLocalTitle,
+          'contentText': _notifRunningText.replaceAll('{url}', 'http://$_localIpAddress:$_port'),
         });
       } catch (e) {
         debugPrint('Failed to start native web sharing service: $e');
@@ -186,6 +204,12 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
     // Map URL path to target local filesystem path
     final targetPath = p.join(rootDir, uriPath.startsWith('/') ? uriPath.substring(1) : uriPath);
     final entityType = FileSystemEntity.typeSync(targetPath);
+
+    // Handle API operations (copy, cut, rename, delete, etc.)
+    if (uriPath.startsWith('/api/')) {
+      await _handleApiRequest(request, rootDir, uriPath);
+      return;
+    }
 
     // Handle high-speed file uploads via binary stream piping
     if (request.method == 'POST') {
@@ -353,7 +377,7 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
     const _translations = <String, Map<String, String>>{
       'en': {
         'root': 'Root', 'parentDir': '.. (Parent Directory)', 'goUp': 'Go up one level',
-        'folders': 'Folders', 'videos': 'Videos', 'audio': 'Audio', 'images': 'Images',
+        'folders': 'Shared Directory', 'videos': 'Videos', 'audio': 'Audio', 'images': 'Images',
         'documents': 'Documents', 'others': 'Others', 'items': 'items',
         'noItems': 'No items in this category', 'search': 'Search files & folders...',
         'upload': 'Upload', 'emptySearch': 'No items match your search',
@@ -363,10 +387,12 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         'dropDesc': 'Your files will be uploaded instantly to this shared folder',
         'footer': 'Securely sharing and streaming files via ZenFile',
         'download': 'Download', 'copyLink': 'Copy Link',
+        'newFolder': 'New Folder', 'copy': 'Copy', 'cut': 'Cut', 'paste': 'Paste',
+        'rename': 'Rename', 'delete': 'Delete', 'selected': 'selected',
       },
       'zh': {
         'root': '\u6839\u76ee\u5f55', 'parentDir': '.. (\u4e0a\u7ea7\u76ee\u5f55)', 'goUp': '\u8fd4\u56de\u4e0a\u4e00\u7ea7',
-        'folders': '\u6587\u4ef6\u5939', 'videos': '\u89c6\u9891', 'audio': '\u97f3\u9891', 'images': '\u56fe\u7247',
+        'folders': '\u5171\u4eab\u76ee\u5f55', 'videos': '\u89c6\u9891', 'audio': '\u97f3\u9891', 'images': '\u56fe\u7247',
         'documents': '\u6587\u6863', 'others': '\u5176\u4ed6', 'items': '\u4e2a\u9879\u76ee',
         'noItems': '\u6b64\u5206\u7c7b\u4e2d\u6ca1\u6709\u9879\u76ee', 'search': '\u641c\u7d22\u6587\u4ef6\u548c\u6587\u4ef6\u5939...',
         'upload': '\u4e0a\u4f20', 'emptySearch': '\u6ca1\u6709\u5339\u914d\u7684\u9879\u76ee',
@@ -376,10 +402,12 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         'dropDesc': '\u6587\u4ef6\u5c06\u7acb\u5373\u4e0a\u4f20\u5230\u6b64\u5171\u4eab\u6587\u4ef6\u5939',
         'footer': '\u901a\u8fc7 ZenFile \u5b89\u5168\u5171\u4eab\u548c\u6d41\u5f0f\u4f20\u8f93\u6587\u4ef6',
         'download': '\u4e0b\u8f7d', 'copyLink': '\u590d\u5236\u94fe\u63a5',
+        'newFolder': '\u65b0\u5efa\u6587\u4ef6\u5939', 'copy': '\u590d\u5236', 'cut': '\u526a\u5207', 'paste': '\u7c98\u8d34',
+        'rename': '\u91cd\u547d\u540d', 'delete': '\u5220\u9664', 'selected': '\u5df2\u9009',
       },
       'zh_TW': {
         'root': '\u6839\u76ee\u9304', 'parentDir': '.. (\u4e0a\u7d1a\u76ee\u9304)', 'goUp': '\u8fd4\u56de\u4e0a\u4e00\u7d1a',
-        'folders': '\u8cc7\u6599\u593e', 'videos': '\u5f71\u7247', 'audio': '\u97f3\u8a0a', 'images': '\u5716\u7247',
+        'folders': '\u5171\u4eab\u76ee\u9304', 'videos': '\u5f71\u7247', 'audio': '\u97f3\u8a0a', 'images': '\u5716\u7247',
         'documents': '\u6587\u4ef6', 'others': '\u5176\u4ed6', 'items': '\u500b\u9805\u76ee',
         'noItems': '\u6b64\u5206\u985e\u4e2d\u6c92\u6709\u9805\u76ee', 'search': '\u641c\u5c0b\u6a94\u6848\u548c\u8cc7\u6599\u593e...',
         'upload': '\u4e0a\u50b3', 'emptySearch': '\u6c92\u6709\u5339\u914d\u7684\u9805\u76ee',
@@ -389,10 +417,12 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         'dropDesc': '\u6a94\u6848\u5c07\u7acb\u5373\u4e0a\u50b3\u5230\u6b64\u5171\u4eab\u8cc0\u6599\u593e',
         'footer': '\u900f\u904e ZenFile \u5b89\u5168\u5171\u4eab\u548c\u4e32\u6d41\u50b3\u8f38\u6a94\u6848',
         'download': '\u4e0b\u8f09', 'copyLink': '\u8907\u88fd\u9023\u7d50',
+        'newFolder': '\u65b0\u589e\u8cc7\u6599\u593e', 'copy': '\u8907\u88fd', 'cut': '\u526a\u4e0b', 'paste': '\u8cbc\u4e0a',
+        'rename': '\u91cd\u65b0\u547d\u540d', 'delete': '\u522a\u9664', 'selected': '\u5df2\u9078\u53d6',
       },
       'ja': {
         'root': '\u30eb\u30fc\u30c8', 'parentDir': '.. (\u89aa\u30c7\u30a3\u30ec\u30af\u30c8\u30ea)', 'goUp': '1\u3064\u4e0a\u306e\u968e\u5c64\u306b\u623b\u308b',
-        'folders': '\u30d5\u30a9\u30eb\u30c0', 'videos': '\u52d5\u753b', 'audio': '\u97f3\u697d', 'images': '\u753b\u50cf',
+        'folders': '\u5171\u6709\u30c7\u30a3\u30ec\u30af\u30c8\u30ea', 'videos': '\u52d5\u753b', 'audio': '\u97f3\u697d', 'images': '\u753b\u50cf',
         'documents': '\u30c9\u30ad\u30e5\u30e1\u30f3\u30c8', 'others': '\u305d\u306e\u4ed6', 'items': '\u9805\u76ee',
         'noItems': '\u3053\u306e\u30ab\u30c6\u30b4\u30ea\u306b\u9805\u76ee\u306f\u3042\u308a\u307e\u305b\u3093', 'search': '\u30d5\u30a1\u30a4\u30eb\u3068\u30d5\u30a9\u30eb\u30c0\u3092\u691c\u7d22...',
         'upload': '\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9', 'emptySearch': '\u4e00\u81f4\u3059\u308b\u9805\u76ee\u304c\u3042\u308a\u307e\u305b\u3093',
@@ -402,10 +432,12 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         'dropDesc': '\u30d5\u30a1\u30a4\u30eb\u306f\u3053\u306e\u5171\u6709\u30d5\u30a9\u30eb\u30c0\u306b\u5373\u5ea7\u306b\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9\u3055\u308c\u307e\u3059',
         'footer': 'ZenFile \u3092\u4ecb\u3057\u3066\u30d5\u30a1\u30a4\u30eb\u3092\u5b89\u5168\u306b\u5171\u6709\u304a\u3088\u3073\u30b9\u30c8\u30ea\u30fc\u30df\u30f3\u30b0',
         'download': '\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9', 'copyLink': '\u30ea\u30f3\u30af\u3092\u30b3\u30d4\u30fc',
+        'newFolder': '\u65b0\u898f\u30d5\u30a9\u30eb\u30c0', 'copy': '\u30b3\u30d4\u30fc', 'cut': '\u5207\u308a\u53d6\u308a', 'paste': '\u8cbc\u308a\u4ed8\u3051',
+        'rename': '\u540d\u524d\u5909\u66f4', 'delete': '\u524a\u9664', 'selected': '\u9078\u629e\u6e08',
       },
       'ko': {
         'root': '\ub8e8\ud2b8', 'parentDir': '.. (\uc0c1\uc704 \ub514\ub809\ud1a0\ub9ac)', 'goUp': '\ud55c \ub2e8\uacc4 \uc704\ub85c \uc774\ub3d9',
-        'folders': '\ud3f4\ub354', 'videos': '\ub3d9\uc601\uc0c1', 'audio': '\uc624\ub514\uc624', 'images': '\uc774\ubbf8\uc9c0',
+        'folders': '\uacf5\uc720 \ub514\ub809\ud1a0\ub9ac', 'videos': '\ub3d9\uc601\uc0c1', 'audio': '\uc624\ub514\uc624', 'images': '\uc774\ubbf8\uc9c0',
         'documents': '\ubb38\uc11c', 'others': '\uae30\ud0c0', 'items': '\uac1c \ud56d\ubaa9',
         'noItems': '\uc774 \ubd84\ub958\uc5d0 \ud56d\ubaa9\uc774 \uc5c6\uc2b5\ub2c8\ub2e4', 'search': '\ud30c\uc77c \ubc0f \ud3f4\ub354 \uac80\uc0c9...',
         'upload': '\uc5c5\ub85c\ub4dc', 'emptySearch': '\uc77c\uce58\ud558\ub294 \ud56d\ubaa9\uc774 \uc5c6\uc2b5\ub2c8\ub2e4',
@@ -415,10 +447,12 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         'dropDesc': '\ud30c\uc77c\uc774 \uc774 \uacf5\uc720 \ud3f4\ub354\uc5d0 \uc989\uc2dc \uc5c5\ub85c\ub4dc\ub429\ub2c8\ub2e4',
         'footer': 'ZenFile\uc744 \ud1b5\ud574 \ud30c\uc77c\uc744 \uc548\uc804\ud558\uac8c \uacf5\uc720 \ubc0f \uc2a4\ud2b8\ub9ac\ubc0d',
         'download': '\ub2e4\uc6b4\ub85c\ub4dc', 'copyLink': '\ub9c1\ud06c \ubcf5\uc0ac',
+        'newFolder': '\uc0c8 \ud3f4\ub354', 'copy': '\ubcf5\uc0ac', 'cut': '\uc790\ub974\uae30', 'paste': '\ubd99\uc774\uae30',
+        'rename': '\uc774\ub984 \ubc14\uafb8\uae30', 'delete': '\uc0ad\uc81c', 'selected': '\uc120\ud0dd\ub428',
       },
       'de': {
         'root': 'Stammverzeichnis', 'parentDir': '.. (\u00dcbergeordnetes Verzeichnis)', 'goUp': 'Eine Ebene nach oben',
-        'folders': 'Ordner', 'videos': 'Videos', 'audio': 'Audio', 'images': 'Bilder',
+        'folders': 'Freigegebenes Verzeichnis', 'videos': 'Videos', 'audio': 'Audio', 'images': 'Bilder',
         'documents': 'Dokumente', 'others': 'Sonstiges', 'items': 'Elemente',
         'noItems': 'Keine Elemente in dieser Kategorie', 'search': 'Dateien & Ordner suchen...',
         'upload': 'Hochladen', 'emptySearch': 'Keine Elemente entsprechen Ihrer Suche',
@@ -428,10 +462,12 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         'dropDesc': 'Ihre Dateien werden sofort in diesen freigegebenen Ordner hochgeladen',
         'footer': 'Sicheres Teilen und Streamen von Dateien \u00fcber ZenFile',
         'download': 'Herunterladen', 'copyLink': 'Link kopieren',
+        'newFolder': 'Neuer Ordner', 'copy': 'Kopieren', 'cut': 'Ausschneiden', 'paste': 'Einf\u00fcgen',
+        'rename': 'Umbenennen', 'delete': 'L\u00f6schen', 'selected': 'ausgew\u00e4hlt',
       },
       'fr': {
         'root': 'Racine', 'parentDir': '.. (R\u00e9pertoire parent)', 'goUp': 'Remonter d\'un niveau',
-        'folders': 'Dossiers', 'videos': 'Vid\u00e9os', 'audio': 'Audio', 'images': 'Images',
+        'folders': 'R\u00e9pertoire partag\u00e9', 'videos': 'Vid\u00e9os', 'audio': 'Audio', 'images': 'Images',
         'documents': 'Documents', 'others': 'Autres', 'items': '\u00e9l\u00e9ments',
         'noItems': 'Aucun \u00e9l\u00e9ment dans cette cat\u00e9gorie', 'search': 'Rechercher des fichiers et dossiers...',
         'upload': 'T\u00e9l\u00e9charger', 'emptySearch': 'Aucun \u00e9l\u00e9ment ne correspond \u00e0 votre recherche',
@@ -441,10 +477,12 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         'dropDesc': 'Vos fichiers seront instantan\u00e9ment t\u00e9l\u00e9charg\u00e9s dans ce dossier partag\u00e9',
         'footer': 'Partage et diffusion s\u00e9curis\u00e9s de fichiers via ZenFile',
         'download': 'T\u00e9l\u00e9charger', 'copyLink': 'Copier le lien',
+        'newFolder': 'Nouveau dossier', 'copy': 'Copier', 'cut': 'Couper', 'paste': 'Coller',
+        'rename': 'Renommer', 'delete': 'Supprimer', 'selected': 's\u00e9lectionn\u00e9',
       },
       'es': {
         'root': 'Ra\u00edz', 'parentDir': '.. (Directorio principal)', 'goUp': 'Subir un nivel',
-        'folders': 'Carpetas', 'videos': 'V\u00eddeos', 'audio': 'Audio', 'images': 'Im\u00e1genes',
+        'folders': 'Directorio compartido', 'videos': 'V\u00eddeos', 'audio': 'Audio', 'images': 'Im\u00e1genes',
         'documents': 'Documentos', 'others': 'Otros', 'items': 'elementos',
         'noItems': 'No hay elementos en esta categor\u00eda', 'search': 'Buscar archivos y carpetas...',
         'upload': 'Subir', 'emptySearch': 'Ning\u00fan elemento coincide con su b\u00fasqueda',
@@ -454,10 +492,12 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         'dropDesc': 'Sus archivos se subir\u00e1n instant\u00e1neamente a esta carpeta compartida',
         'footer': 'Compartir y transmitir archivos de forma segura a trav\u00e9s de ZenFile',
         'download': 'Descargar', 'copyLink': 'Copiar enlace',
+        'newFolder': 'Nueva carpeta', 'copy': 'Copiar', 'cut': 'Cortar', 'paste': 'Pegar',
+        'rename': 'Renombrar', 'delete': 'Eliminar', 'selected': 'seleccionado',
       },
       'ru': {
         'root': '\u041a\u043e\u0440\u043d\u0435\u0432\u043e\u0439 \u043a\u0430\u0442\u0430\u043b\u043e\u0433', 'parentDir': '.. (\u0420\u043e\u0434\u0438\u0442\u0435\u043b\u044c\u0441\u043a\u0438\u0439 \u043a\u0430\u0442\u0430\u043b\u043e\u0433)', 'goUp': '\u041f\u0435\u0440\u0435\u0439\u0442\u0438 \u043d\u0430 \u0443\u0440\u043e\u0432\u0435\u043d\u044c \u0432\u044b\u0448\u0435',
-        'folders': '\u041f\u0430\u043f\u043a\u0438', 'videos': '\u0412\u0438\u0434\u0435\u043e', 'audio': '\u0410\u0443\u0434\u0438\u043e', 'images': '\u0418\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f',
+        'folders': '\u041e\u0431\u0449\u0438\u0439 \u043a\u0430\u0442\u0430\u043b\u043e\u0433', 'videos': '\u0412\u0438\u0434\u0435\u043e', 'audio': '\u0410\u0443\u0434\u0438\u043e', 'images': '\u0418\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f',
         'documents': '\u0414\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u044b', 'others': '\u041f\u0440\u043e\u0447\u0435\u0435', 'items': '\u044d\u043b\u0435\u043c\u0435\u043d\u0442\u043e\u0432',
         'noItems': '\u041d\u0435\u0442 \u044d\u043b\u0435\u043c\u0435\u043d\u0442\u043e\u0432 \u0432 \u044d\u0442\u043e\u0439 \u043a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u0438', 'search': '\u041f\u043e\u0438\u0441\u043a \u0444\u0430\u0439\u043b\u043e\u0432 \u0438 \u043f\u0430\u043f\u043e\u043a...',
         'upload': '\u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c', 'emptySearch': '\u041d\u0435\u0442 \u044d\u043b\u0435\u043c\u0435\u043d\u0442\u043e\u0432, \u0441\u043e\u043e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0443\u044e\u0449\u0438\u0445 \u0432\u0430\u0448\u0435\u043c\u0443 \u0437\u0430\u043f\u0440\u043e\u0441\u0443',
@@ -467,10 +507,12 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         'dropDesc': '\u0412\u0430\u0448\u0438 \u0444\u0430\u0439\u043b\u044b \u0431\u0443\u0434\u0443\u0442 \u043c\u0433\u043d\u043e\u0432\u0435\u043d\u043d\u043e \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u044b \u0432 \u044d\u0442\u0443 \u043e\u0431\u0449\u0443\u044e \u043f\u0430\u043f\u043a\u0443',
         'footer': '\u0411\u0435\u0437\u043e\u043f\u0430\u0441\u043d\u043e\u0435 \u0441\u043e\u0432\u043c\u0435\u0441\u0442\u043d\u043e\u0435 \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u043d\u0438\u0435 \u0438 \u0441\u0442\u0440\u0438\u043c\u0438\u043d\u0433 \u0444\u0430\u0439\u043b\u043e\u0432 \u0447\u0435\u0440\u0435\u0437 ZenFile',
         'download': '\u0421\u043a\u0430\u0447\u0430\u0442\u044c', 'copyLink': '\u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0441\u0441\u044b\u043b\u043a\u0443',
+        'newFolder': '\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430', 'copy': '\u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c', 'cut': '\u0412\u044b\u0440\u0435\u0437\u0430\u0442\u044c', 'paste': '\u0412\u0441\u0442\u0430\u0432\u0438\u0442\u044c',
+        'rename': '\u041f\u0435\u0440\u0435\u0438\u043c\u0435\u043d\u043e\u0432\u0430\u0442\u044c', 'delete': '\u0423\u0434\u0430\u043b\u0438\u0442\u044c', 'selected': '\u0432\u044b\u0431\u0440\u0430\u043d\u043e',
       },
       'ar': {
         'root': '\u0627\u0644\u062c\u0630\u0631', 'parentDir': '.. (\u0627\u0644\u062f\u0644\u064a\u0644 \u0627\u0644\u0623\u0635\u0644\u064a)', 'goUp': '\u0627\u0644\u0627\u0646\u062a\u0642\u0627\u0644 \u0644\u0644\u0623\u0639\u0644\u0649',
-        'folders': '\u0627\u0644\u0645\u062c\u0644\u062f\u0627\u062a', 'videos': '\u0627\u0644\u0641\u064a\u062f\u064a\u0648', 'audio': '\u0627\u0644\u0635\u0648\u062a', 'images': '\u0627\u0644\u0635\u0648\u0631',
+        'folders': '\u0627\u0644\u062f\u0644\u064a\u0644 \u0627\u0644\u0645\u0634\u062a\u0631\u0643', 'videos': '\u0627\u0644\u0641\u064a\u062f\u064a\u0648', 'audio': '\u0627\u0644\u0635\u0648\u062a', 'images': '\u0627\u0644\u0635\u0648\u0631',
         'documents': '\u0627\u0644\u0645\u0633\u062a\u0646\u062f\u0627\u062a', 'others': '\u0623\u062e\u0631\u0649', 'items': '\u0639\u0646\u0635\u0631',
         'noItems': '\u0644\u0627 \u062a\u0648\u062c\u062f \u0639\u0646\u0627\u0635\u0631 \u0641\u064a \u0647\u0630\u0647 \u0627\u0644\u0641\u0626\u0629', 'search': '\u0627\u0644\u0628\u062d\u062b \u0639\u0646 \u0627\u0644\u0645\u0644\u0641\u0627\u062a \u0648\u0627\u0644\u0645\u062c\u0644\u062f\u0627\u062a...',
         'upload': '\u0631\u0641\u0639', 'emptySearch': '\u0644\u0627 \u062a\u0648\u062c\u062f \u0639\u0646\u0627\u0635\u0631 \u062a\u0637\u0627\u0628\u0642 \u0628\u062d\u062b\u0643',
@@ -480,6 +522,8 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         'dropDesc': '\u0633\u062a\u0645 \u0631\u0641\u0639 \u0645\u0644\u0641\u0627\u062a\u0643 \u0641\u0648\u0631\u0627\u064b \u0625\u0644\u0649 \u0647\u0630\u0627 \u0627\u0644\u0645\u062c\u0644\u062f \u0627\u0644\u0645\u0634\u062a\u0631\u0643',
         'footer': '\u0645\u0634\u0627\u0631\u0643\u0629 \u0648\u0628\u062b \u0627\u0644\u0645\u0644\u0641\u0627\u062a \u0628\u0623\u0645\u0627\u0646 \u0639\u0628\u0631 ZenFile',
         'download': '\u062a\u062d\u0645\u064a\u0644', 'copyLink': '\u0646\u0633\u062e \u0627\u0644\u0631\u0627\u0628\u0637',
+        'newFolder': '\u0645\u062c\u0644\u062f \u062c\u062f\u064a\u062f', 'copy': '\u0646\u0633\u062e', 'cut': '\u0642\u0635', 'paste': '\u0644\u0635\u0642',
+        'rename': '\u0625\u0639\u0627\u062f\u0629 \u062a\u0633\u0645\u064a\u0629', 'delete': '\u062d\u0630\u0641', 'selected': '\u0645\u062d\u062f\u062f',
       },
     };
     final tr = _translations[lang] ?? _translations['en']!;
@@ -509,7 +553,7 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
     const downloadSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>';
 
     // Categorize items
-    final folders = <FileSystemEntity>[];
+    final mainStorageItems = <FileSystemEntity>[]; // 当前目录的文件夹和文件（用于"主储存"浏览）
     final videos = <FileSystemEntity>[];
     final audios = <FileSystemEntity>[];
     final images = <FileSystemEntity>[];
@@ -532,42 +576,33 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
       }
     }
 
+    // 当前目录的文件夹和文件都加入"主储存"区域，供浏览和下载
     for (final item in items) {
       final name = p.basename(item.path);
       if (name.startsWith('.')) continue;
-      if (item is Directory) {
-        folders.add(item);
-      } else {
-        _categorizeFile(item, videos, audios, images, documents, others);
-      }
+      mainStorageItems.add(item);
     }
 
-    // Recursively scan subdirectories for media/document files (limited depth)
-    void scanSubdirs(Directory dir, int depth) {
-      if (depth > 3) return; // limit recursion depth to prevent performance issues
+    // 无论当前在哪个目录，始终从 rootDir 递归扫描整个手机存储的媒体/文档文件
+    void scanAllStorage(Directory dir, int depth) {
+      if (depth > 5) return; // 限制递归深度防止性能问题
       try {
         for (final sub in dir.listSync()) {
           final subName = p.basename(sub.path);
           if (subName.startsWith('.')) continue;
           if (sub is Directory) {
-            scanSubdirs(sub, depth + 1);
+            scanAllStorage(sub, depth + 1);
           } else if (sub is File) {
             _categorizeFile(sub, videos, audios, images, documents, others);
           }
         }
       } catch (e) {
-        // Skip directories we can't read (permission denied, etc.)
+        // 跳过无权限读取的目录
       }
     }
+    scanAllStorage(Directory(rootDir), 0);
 
-    // Scan each immediate subdirectory for media/document files
-    for (final folder in folders) {
-      if (folder is Directory) {
-        scanSubdirs(folder, 1);
-      }
-    }
-
-    debugPrint('WebSharing HTML: folders=${folders.length}, videos=${videos.length}, audios=${audios.length}, images=${images.length}, documents=${documents.length}, others=${others.length}');
+    debugPrint('WebSharing HTML: mainStorage=${mainStorageItems.length}, videos=${videos.length}, audios=${audios.length}, images=${images.length}, documents=${documents.length}, others=${others.length}');
     debugPrint('WebSharing HTML: currentPath=$currentPath, rootDir=$rootDir, totalItems=${items.length}');
 
     // Helper to generate a single item HTML
@@ -631,6 +666,9 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
       if (isDir) {
         return '''
         <div class="explorer-item folder-item" data-name="${name.replaceAll('"', '&quot;')}" data-type="directory" data-url="$relativeUrl" onclick="handleItemClick(this)">
+          <div class="item-checkbox" onclick="toggleItemSelection(event, this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
           <div class="item-icon-wrapper dir-icon">$svgIcon</div>
           <div class="item-details">
             <div class="item-name" title="${name.replaceAll('"', '&quot;')}">$name</div>
@@ -648,6 +686,9 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
 
         return '''
         <div class="explorer-item file-item" data-name="${name.replaceAll('"', '&quot;')}" data-type="file" data-url="$relativeUrl" data-size="$sizeStr" data-modified="$dateStr" data-mime="$mimeType" onclick="handleItemClick(this)">
+          <div class="item-checkbox" onclick="toggleItemSelection(event, this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
           <div class="item-icon-wrapper $iconClass">$svgIcon</div>
           <div class="item-details">
             <div class="item-name" title="${name.replaceAll('"', '&quot;')}">$name</div>
@@ -722,10 +763,10 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
     }
 
     // Generate category sections in order
-    // Folders section defaults to collapsed only at root path, subdirectories default to expanded
-    // Media/document categories default to collapsed (content is from recursive scan)
-    final isRoot = currentPath == '/';
-    listHtml += generateCategorySection('folders', tr['folders']!, 'cat-folders', folderSvg, folders, defaultCollapsed: isRoot);
+    // "共享目录"区域显示当前目录的文件夹和文件，供浏览导航
+    // 媒体/文档分类始终扫描整个手机存储，无论当前在哪个目录
+    // 所有类别默认折叠
+    listHtml += generateCategorySection('folders', tr['folders']!, 'cat-folders', folderSvg, mainStorageItems, defaultCollapsed: true);
     listHtml += generateCategorySection('videos', tr['videos']!, 'cat-videos', videoSvg, videos, defaultCollapsed: true);
     listHtml += generateCategorySection('audio', tr['audio']!, 'cat-audio', audioSvg, audios, defaultCollapsed: true);
     listHtml += generateCategorySection('images', tr['images']!, 'cat-images', imageSvg, images, defaultCollapsed: true);
@@ -976,6 +1017,56 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
       align-items: center;
       gap: 12px;
     }
+    .action-buttons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 4px;
+      border-radius: 12px;
+    }
+    .action-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    .action-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 2;
+    }
+    .action-btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+    }
+    .action-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .action-btn-danger:hover {
+      background: rgba(239, 68, 68, 0.12);
+      color: #EF4444;
+    }
+    .selection-info {
+      font-size: 12px;
+      color: var(--text-muted);
+      padding: 4px 10px;
+      background: rgba(59, 130, 246, 0.1);
+      border-radius: 8px;
+      margin-left: 4px;
+    }
+    .selection-info #selectionCount {
+      color: var(--primary);
+      font-weight: 600;
+    }
     .view-toggles {
       display: flex;
       background: var(--card);
@@ -1080,6 +1171,45 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
       background: rgba(107, 114, 128, 0.08);
       border: 1px solid rgba(107, 114, 128, 0.15);
       color: var(--file-color);
+    }
+
+    .item-checkbox {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      opacity: 0;
+      background: var(--card);
+    }
+    .item-checkbox svg {
+      width: 14px;
+      height: 14px;
+      color: white;
+      opacity: 0;
+      transform: scale(0.5);
+      transition: all 0.2s ease;
+    }
+    .explorer-item:hover .item-checkbox {
+      opacity: 1;
+    }
+    .explorer-item.selected .item-checkbox {
+      opacity: 1;
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+    .explorer-item.selected .item-checkbox svg {
+      opacity: 1;
+      transform: scale(1);
+    }
+    .explorer-item.selected {
+      background: rgba(59, 130, 246, 0.08);
+      border-color: rgba(59, 130, 246, 0.2);
     }
 
     .item-details {
@@ -1900,13 +2030,38 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         <input type="text" id="searchInput" class="search-input" placeholder="${tr['search']}">
       </div>
       
-      <div class="view-toggles">
-        <button class="toggle-btn" id="viewToggleList" onclick="setViewMode('list')" title="List View">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-        </button>
-        <button class="toggle-btn" id="viewToggleGrid" onclick="setViewMode('grid')" title="Grid View">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-        </button>
+      <div class="toolbar-controls">
+        <div class="action-buttons">
+          <button class="action-btn" onclick="createNewFolder()" title="${tr['newFolder']}">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path></svg>
+          </button>
+          <button class="action-btn" onclick="copySelected()" title="${tr['copy']}">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+          </button>
+          <button class="action-btn" onclick="cutSelected()" title="${tr['cut']}">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"></path></svg>
+          </button>
+          <button class="action-btn" onclick="pasteItems()" title="${tr['paste']}">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+          </button>
+          <button class="action-btn" onclick="renameSelected()" title="${tr['rename']}">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+          </button>
+          <button class="action-btn action-btn-danger" onclick="deleteSelected()" title="${tr['delete']}">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+          </button>
+          <div class="selection-info" id="selectionInfo" style="display: none;">
+            <span id="selectionCount">0</span> ${tr['selected']}
+          </div>
+        </div>
+        <div class="view-toggles">
+          <button class="toggle-btn" id="viewToggleList" onclick="setViewMode('list')" title="List View">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+          </button>
+          <button class="toggle-btn" id="viewToggleGrid" onclick="setViewMode('grid')" title="Grid View">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          </button>
+        </div>
       </div>
     </div>
     
@@ -1986,8 +2141,8 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
     // Translation dictionary (lang is set from Dart)
     const lang = '${lang}';
     const L = {
-      en: { search: 'Search files & folders...', upload: 'Upload', dropTitle: 'Drop files here to upload', dropDesc: 'Your files will be uploaded instantly to this shared folder', emptySearch: 'No items match your search', emptyDesc: 'Check the spelling or try a different search term', copyLink: 'Copy Link', download: 'Download', uploading: 'Uploading', uploadSuccess: 'Upload completed successfully!', uploadFailed: 'Failed to upload', previewUnsupported: 'Preview is not supported for this file type', previewDownload: 'Click Download below to save it on your system', footer: 'Securely sharing and streaming files via ZenFile', parentDir: 'Parent Directory', goUp: 'Go up one level', itemsCount: 'items', linkCopied: 'Link copied to clipboard!', copyFailed: 'Failed to copy link', loadingPreview: 'Loading preview...', previewError: 'Failed to stream document. You can still download it directly.', catFolders: 'Folders', catVideos: 'Videos', catAudio: 'Audio', catImages: 'Images', catDocuments: 'Documents', catOthers: 'Others' },
-      zh: { search: '\u641c\u7d22\u6587\u4ef6\u548c\u6587\u4ef6\u5939...', upload: '\u4e0a\u4f20', dropTitle: '\u62d6\u62fd\u6587\u4ef6\u5230\u6b64\u5904\u4e0a\u4f20', dropDesc: '\u6587\u4ef6\u5c06\u7acb\u5373\u4e0a\u4f20\u5230\u6b64\u5171\u4eab\u6587\u4ef6\u5939', emptySearch: '\u6ca1\u6709\u5339\u914d\u7684\u9879\u76ee', emptyDesc: '\u68c0\u67e5\u62fc\u5199\u6216\u5c1d\u8bd5\u4e0d\u540c\u7684\u641c\u7d22\u8bcd', copyLink: '\u590d\u5236\u94fe\u63a5', download: '\u4e0b\u8f7d', uploading: '\u6b63\u5728\u4e0a\u4f20', uploadSuccess: '\u4e0a\u4f20\u6210\u529f\uff01', uploadFailed: '\u4e0a\u4f20\u5931\u8d25', previewUnsupported: '\u4e0d\u652f\u6301\u9884\u89c8\u6b64\u6587\u4ef6\u7c7b\u578b', previewDownload: '\u70b9\u51fb\u4e0b\u65b9\u4e0b\u8f7d\u6309\u94ae\u4fdd\u5b58\u5230\u60a8\u7684\u8bbe\u5907', footer: '\u901a\u8fc7 ZenFile \u5b89\u5168\u5171\u4eab\u548c\u6d41\u5f0f\u4f20\u8f93\u6587\u4ef6', parentDir: '\u4e0a\u7ea7\u76ee\u5f55', goUp: '\u8fd4\u56de\u4e0a\u4e00\u7ea7', itemsCount: '\u4e2a\u9879\u76ee', linkCopied: '\u94fe\u63a5\u5df2\u590d\u5236\u5230\u526a\u8d34\u677f\uff01', copyFailed: '\u590d\u5236\u94fe\u63a5\u5931\u8d25', loadingPreview: '\u6b63\u5728\u52a0\u8f7d\u9884\u89c8...', previewError: '\u65e0\u6cd5\u6d41\u5f0f\u4f20\u8f93\u6587\u6863\u3002\u60a8\u4ecd\u7136\u53ef\u4ee5\u76f4\u63a5\u4e0b\u8f7d\u3002', catFolders: '\u6587\u4ef6\u5939', catVideos: '\u89c6\u9891', catAudio: '\u97f3\u9891', catImages: '\u56fe\u7247', catDocuments: '\u6587\u6863', catOthers: '\u5176\u4ed6' },
+      en: { search: 'Search files & folders...', upload: 'Upload', dropTitle: 'Drop files here to upload', dropDesc: 'Your files will be uploaded instantly to this shared folder', emptySearch: 'No items match your search', emptyDesc: 'Check the spelling or try a different search term', copyLink: 'Copy Link', download: 'Download', uploading: 'Uploading', uploadSuccess: 'Upload completed successfully!', uploadFailed: 'Failed to upload', previewUnsupported: 'Preview is not supported for this file type', previewDownload: 'Click Download below to save it on your system', footer: 'Securely sharing and streaming files via ZenFile', parentDir: 'Parent Directory', goUp: 'Go up one level', itemsCount: 'items', linkCopied: 'Link copied to clipboard!', copyFailed: 'Failed to copy link', loadingPreview: 'Loading preview...', previewError: 'Failed to stream document. You can still download it directly.', catFolders: 'Shared Folders', catVideos: 'Videos', catAudio: 'Audio', catImages: 'Images', catDocuments: 'Documents', catOthers: 'Others', newFolder: 'New Folder', copy: 'Copy', cut: 'Cut', paste: 'Paste', rename: 'Rename', delete: 'Delete', selected: 'selected', selectItems: 'Please select items first', selectOneItem: 'Please select exactly one item', copiedToClipboard: 'Copied to clipboard', cutToClipboard: 'Cut to clipboard', clipboardEmpty: 'Clipboard is empty', operationSuccess: 'Operation completed successfully', operationFailed: 'Operation failed', enterNewName: 'Enter new name:', renameSuccess: 'Rename successful', renameFailed: 'Rename failed', confirmDelete: 'Are you sure you want to delete', items: 'items', deleteSuccess: 'Delete successful', deleteFailed: 'Delete failed', enterFolderName: 'Enter folder name:', folderCreated: 'Folder created successfully', createFolderFailed: 'Failed to create folder' },
+      zh: { search: '\u641c\u7d22\u6587\u4ef6\u548c\u6587\u4ef6\u5939...', upload: '\u4e0a\u4f20', dropTitle: '\u62d6\u62fd\u6587\u4ef6\u5230\u6b64\u5904\u4e0a\u4f20', dropDesc: '\u6587\u4ef6\u5c06\u7acb\u5373\u4e0a\u4f20\u5230\u6b64\u5171\u4eab\u6587\u4ef6\u5939', emptySearch: '\u6ca1\u6709\u5339\u914d\u7684\u9879\u76ee', emptyDesc: '\u68c0\u67e5\u62fc\u5199\u6216\u5c1d\u8bd5\u4e0d\u540c\u7684\u641c\u7d22\u8bcd', copyLink: '\u590d\u5236\u94fe\u63a5', download: '\u4e0b\u8f7d', uploading: '\u6b63\u5728\u4e0a\u4f20', uploadSuccess: '\u4e0a\u4f20\u6210\u529f\uff01', uploadFailed: '\u4e0a\u4f20\u5931\u8d25', previewUnsupported: '\u4e0d\u652f\u6301\u9884\u89c8\u6b64\u6587\u4ef6\u7c7b\u578b', previewDownload: '\u70b9\u51fb\u4e0b\u65b9\u4e0b\u8f7d\u6309\u94ae\u4fdd\u5b58\u5230\u60a8\u7684\u8bbe\u5907', footer: '\u901a\u8fc7 ZenFile \u5b89\u5168\u5171\u4eab\u548c\u6d41\u5f0f\u4f20\u8f93\u6587\u4ef6', parentDir: '\u4e0a\u7ea7\u76ee\u5f55', goUp: '\u8fd4\u56de\u4e0a\u4e00\u7ea7', itemsCount: '\u4e2a\u9879\u76ee', linkCopied: '\u94fe\u63a5\u5df2\u590d\u5236\u5230\u526a\u8d34\u677f\uff01', copyFailed: '\u590d\u5236\u94fe\u63a5\u5931\u8d25', loadingPreview: '\u6b63\u5728\u52a0\u8f7d\u9884\u89c8...', previewError: '\u65e0\u6cd5\u6d41\u5f0f\u4f20\u8f93\u6587\u6863\u3002\u60a8\u4ecd\u7136\u53ef\u4ee5\u76f4\u63a5\u4e0b\u8f7d\u3002', catFolders: '\u5171\u4eab\u76ee\u5f55', catVideos: '\u89c6\u9891', catAudio: '\u97f3\u9891', catImages: '\u56fe\u7247', catDocuments: '\u6587\u6863', catOthers: '\u5176\u4ed6', newFolder: '\u65b0\u5efa\u6587\u4ef6\u5939', copy: '\u590d\u5236', cut: '\u526a\u5207', paste: '\u7c98\u8d34', rename: '\u91cd\u547d\u540d', delete: '\u5220\u9664', selected: '\u5df2\u9009', selectItems: '\u8bf7\u5148\u9009\u62e9\u9879\u76ee', selectOneItem: '\u8bf7\u9009\u62e9\u4e00\u4e2a\u9879\u76ee', copiedToClipboard: '\u5df2\u590d\u5236\u5230\u526a\u8d34\u677f', cutToClipboard: '\u5df2\u526a\u5207\u5230\u526a\u8d34\u677f', clipboardEmpty: '\u526a\u8d34\u677f\u4e3a\u7a7a', operationSuccess: '\u64cd\u4f5c\u6210\u529f', operationFailed: '\u64cd\u4f5c\u5931\u8d25', enterNewName: '\u8bf7\u8f93\u5165\u65b0\u540d\u79f0\uff1a', renameSuccess: '\u91cd\u547d\u540d\u6210\u529f', renameFailed: '\u91cd\u547d\u540d\u5931\u8d25', confirmDelete: '\u786e\u5b9a\u8981\u5220\u9664', items: '\u4e2a\u9879\u76ee', deleteSuccess: '\u5220\u9664\u6210\u529f', deleteFailed: '\u5220\u9664\u5931\u8d25', enterFolderName: '\u8bf7\u8f93\u5165\u6587\u4ef6\u5939\u540d\u79f0\uff1a', folderCreated: '\u6587\u4ef6\u5939\u521b\u5efa\u6210\u529f', createFolderFailed: '\u521b\u5efa\u6587\u4ef6\u5939\u5931\u8d25' },
       zh_TW: { search: '\u641c\u5c0b\u6a94\u6848\u548c\u8cc7\u6599\u593e...', upload: '\u4e0a\u50b3', dropTitle: '\u62d6\u66f3\u6a94\u6848\u5230\u6b64\u8655\u4e0a\u50b3', dropDesc: '\u6a94\u6848\u5c07\u7acb\u5373\u4e0a\u50b3\u5230\u6b64\u5171\u4eab\u8cc7\u6599\u593e', emptySearch: '\u6c92\u6709\u5339\u914d\u7684\u9805\u76ee', emptyDesc: '\u6aa2\u67e5\u62fc\u5beb\u6216\u5617\u8a66\u4e0d\u540c\u7684\u641c\u5c0b\u8a5e', copyLink: '\u8907\u88fd\u9023\u7d50', download: '\u4e0b\u8f09', uploading: '\u6b63\u5728\u4e0a\u50b3', uploadSuccess: '\u4e0a\u50b3\u6210\u529f\uff01', uploadFailed: '\u4e0a\u50b3\u5931\u6557', previewUnsupported: '\u4e0d\u652f\u63f4\u9810\u89bd\u6b64\u6a94\u6848\u985e\u578b', previewDownload: '\u9ede\u64ca\u4e0b\u65b9\u4e0b\u8f09\u6309\u9215\u5132\u5b58\u5230\u60a8\u7684\u88dd\u7f6e', footer: '\u900f\u904e ZenFile \u5b89\u5168\u5171\u4eab\u548c\u4e32\u6d41\u50b3\u8f38\u6a94\u6848', parentDir: '\u4e0a\u7d1a\u76ee\u9304', goUp: '\u8fd4\u56de\u4e0a\u4e00\u7d1a', itemsCount: '\u500b\u9805\u76ee', linkCopied: '\u9023\u7d50\u5df2\u8907\u88fd\u5230\u526a\u8cbc\u7c3f\uff01', copyFailed: '\u8907\u88fd\u9023\u7d50\u5931\u6557', loadingPreview: '\u6b63\u5728\u8f09\u5165\u9810\u89bd...', previewError: '\u7121\u6cd5\u4e32\u6d41\u50b3\u8f38\u6587\u4ef6\u3002\u60a8\u4ecd\u7136\u53ef\u4ee5\u76f4\u63a5\u4e0b\u8f09\u3002', catFolders: '\u8cc7\u6599\u593e', catVideos: '\u5f71\u7247', catAudio: '\u97f3\u8a0a', catImages: '\u5716\u7247', catDocuments: '\u6587\u4ef6', catOthers: '\u5176\u4ed6' },
       ja: { search: '\u30d5\u30a1\u30a4\u30eb\u3068\u30d5\u30a9\u30eb\u30c0\u3092\u691c\u7d22...', upload: '\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9', dropTitle: '\u30d5\u30a1\u30a4\u30eb\u3092\u3053\u3053\u306b\u30c9\u30e9\u30c3\u30b0\u3057\u3066\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9', dropDesc: '\u30d5\u30a1\u30a4\u30eb\u306f\u3053\u306e\u5171\u6709\u30d5\u30a9\u30eb\u30c0\u306b\u5373\u5ea7\u306b\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9\u3055\u308c\u307e\u3059', emptySearch: '\u4e00\u81f4\u3059\u308b\u9805\u76ee\u304c\u3042\u308a\u307e\u305b\u3093', emptyDesc: '\u30b9\u30da\u30eb\u3092\u78ba\u8a8d\u3059\u308b\u304b\u3001\u5225\u306e\u691c\u7d22\u8a9e\u3092\u8a66\u3057\u3066\u304f\u3060\u3055\u3044', copyLink: '\u30ea\u30f3\u30af\u3092\u30b3\u30d4\u30fc', download: '\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9', uploading: '\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9\u4e2d', uploadSuccess: '\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9\u304c\u5b8c\u4e86\u3057\u307e\u3057\u305f\uff01', uploadFailed: '\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9\u306b\u5931\u6557\u3057\u307e\u3057\u305f', previewUnsupported: '\u3053\u306e\u30d5\u30a1\u30a4\u30eb\u30bf\u30a4\u30d7\u306e\u30d7\u30ec\u30d3\u30e5\u30fc\u306f\u30b5\u30dd\u30fc\u30c8\u3055\u308c\u3066\u3044\u307e\u305b\u3093', previewDownload: '\u4e0b\u306e\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9\u30dc\u30bf\u30f3\u3092\u30af\u30ea\u30c3\u30af\u3057\u3066\u30c7\u30d0\u30a4\u30b9\u306b\u4fdd\u5b58', footer: 'ZenFile \u3092\u4ecb\u3057\u3066\u30d5\u30a1\u30a4\u30eb\u3092\u5b89\u5168\u306b\u5171\u6709\u304a\u3088\u3073\u30b9\u30c8\u30ea\u30fc\u30df\u30f3\u30b0', parentDir: '\u89aa\u30c7\u30a3\u30ec\u30af\u30c8\u30ea', goUp: '1\u3064\u4e0a\u306e\u968e\u5c64\u306b\u623b\u308b', itemsCount: '\u9805\u76ee', linkCopied: '\u30ea\u30f3\u30af\u3092\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u306b\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f\uff01', copyFailed: '\u30ea\u30f3\u30af\u306e\u30b3\u30d4\u30fc\u306b\u5931\u6557\u3057\u307e\u3057\u305f', loadingPreview: '\u30d7\u30ec\u30d3\u30e5\u30fc\u3092\u8aad\u307f\u8fbc\u307f\u4e2d...', previewError: '\u30c9\u30ad\u30e5\u30e1\u30f3\u30c8\u3092\u30b9\u30c8\u30ea\u30fc\u30df\u30f3\u30b0\u3067\u304d\u307e\u305b\u3093\u3002\u76f4\u63a5\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9\u3067\u304d\u307e\u3059\u3002', catFolders: '\u30d5\u30a9\u30eb\u30c0', catVideos: '\u52d5\u753b', catAudio: '\u30aa\u30fc\u30c7\u30a3\u30aa', catImages: '\u753b\u50cf', catDocuments: '\u30c9\u30ad\u30e5\u30e1\u30f3\u30c8', catOthers: '\u305d\u306e\u4ed6' },
       ko: { search: '\ud30c\uc77c \ubc0f \ud3f4\ub354 \uac80\uc0c9...', upload: '\uc5c5\ub85c\ub4dc', dropTitle: '\ud30c\uc77c\uc744 \uc5ec\uae30\uc5d0 \ub4dc\ub86d\ud558\uc5ec \uc5c5\ub85c\ub4dc', dropDesc: '\ud30c\uc77c\uc774 \uc774 \uacf5\uc720 \ud3f4\ub354\uc5d0 \uc989\uc2dc \uc5c5\ub85c\ub4dc\ub429\ub2c8\ub2e4', emptySearch: '\uc77c\uce58\ud558\ub294 \ud56d\ubaa9\uc774 \uc5c6\uc2b5\ub2c8\ub2e4', emptyDesc: '\ucca0\uc790\ub97c \ud655\uc778\ud558거\ub098 \ub2e4\ub978 \uac80\uc0c9\uc5b4\ub97c \uc2dc\ub3c4\ud558\uc138\uc694', copyLink: '\ub9c1\ud06c \ubcf5\uc0ac', download: '\ub2e4\uc6b4\ub85c\ub4dc', uploading: '\uc5c5\ub85c\ub4dc \uc911', uploadSuccess: '\uc5c5\ub85c\ub4dc\uac00 \uc644\ub8cc\ub418\uc5c8\uc2b5\ub2c8\ub2e4!', uploadFailed: '\uc5c5\ub85c\ub4dc\uc5d0 \uc2e4\ud328\ud588\uc2b5\ub2c8\ub2e4', previewUnsupported: '\uc774 \ud30c\uc77c \ud615\uc2dd\uc758 \ubbf8\ub9ac\ubcf4\uae30\ub294 \uc9c0\uc6d0\ub418\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4', previewDownload: '\uc544\ub798\uc758 \ub2e4\uc6b4\ub85c\ub4dc\ub97c \ud074\ub9ad\ud558\uc5ec \uae30\uae30\uc5d0 \uc800\uc7a5', footer: 'ZenFile\uc744 \ud1b5\ud574 \ud30c\uc77c\uc744 \uc548\uc804\ud558\uac8c \uacf5\uc720 \ubc0f \uc2a4\ud2b8\ub9ac\ubc0d', parentDir: '\uc0c1\uc704 \ub514\ub809\ud1a0\ub9ac', goUp: '\ud55c \ub2e8\uacc4 \uc704\ub85c \uc774\ub3d9', itemsCount: '\uac1c \ud56d\ubaa9', linkCopied: '\ub9c1\ud06c\uac00 \ud074\ub9bd\ubcf4\ub4dc\uc5d0 \ubcf5\uc0ac\ub418\uc5c8\uc2b5\ub2c8\ub2e4!', copyFailed: '\ub9c1\ud06c \ubcf5\uc0ac \uc2e4\ud328', loadingPreview: '\ubbf8\ub9ac\ubcf4\uae30 \ub85c\ub4dc \uc911...', previewError: '\ubb38\uc11c\ub97c \uc2a4\ud2b8\ub9ac\ubc0d\ud560 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4. \uc9c1\uc811 \ub2e4\uc6b4\ub85c\ub4dc\ud560 \uc218 \uc788\uc2b5\ub2c8\ub2e4.', catFolders: '\ud3f4\ub354', catVideos: '\ub3d9\uc601\uc0c1', catAudio: '\uc624\ub514\uc624', catImages: '\uc774\ubbf8\uc9c0', catDocuments: '\ubb38\uc11c', catOthers: '\uae30\ud0c0' },
@@ -1999,11 +2154,223 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
     };
     const t = L[lang] || L['en'];
 
+    // Category collapse/expand state persistence
+    // Stores user toggled categories so they don't auto-collapse on navigation
+    const CAT_STATE_KEY = 'zenfile_category_states';
+
+    function loadCategoryStates() {
+      try {
+        const raw = localStorage.getItem(CAT_STATE_KEY);
+        if (!raw) return {};
+        const obj = JSON.parse(raw);
+        return (obj && typeof obj === 'object') ? obj : {};
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function saveCategoryStates() {
+      try {
+        const states = {};
+        document.querySelectorAll('.category-section').forEach(sec => {
+          const id = sec.id; // e.g. cat-section-folders
+          if (id) {
+            states[id] = sec.classList.contains('collapsed') ? 'collapsed' : 'expanded';
+          }
+        });
+        localStorage.setItem(CAT_STATE_KEY, JSON.stringify(states));
+      } catch (e) {
+        // ignore (e.g. private mode)
+      }
+    }
+
+    function applyCategoryStates() {
+      const states = loadCategoryStates();
+      document.querySelectorAll('.category-section').forEach(sec => {
+        const id = sec.id;
+        if (states[id] === 'expanded') {
+          sec.classList.remove('collapsed');
+        } else if (states[id] === 'collapsed') {
+          sec.classList.add('collapsed');
+        }
+      });
+    }
+
     function toggleCategory(catKey) {
       const section = document.getElementById('cat-section-' + catKey);
       if (section) {
         section.classList.toggle('collapsed');
+        saveCategoryStates();
       }
+    }
+
+    // Apply persisted states once DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', applyCategoryStates);
+    } else {
+      applyCategoryStates();
+    }
+
+    // File operations state
+    const clipboard = { items: [], action: null };
+
+    function toggleItemSelection(event, checkboxEl) {
+      event.stopPropagation();
+      const item = checkboxEl.closest('.explorer-item');
+      if (item) {
+        item.classList.toggle('selected');
+        updateSelectionInfo();
+      }
+    }
+
+    function getSelectedItems() {
+      return Array.from(document.querySelectorAll('.explorer-item.selected:not(.parent-dir)')).map(el => ({
+        name: el.getAttribute('data-name'),
+        url: el.getAttribute('data-url'),
+        type: el.getAttribute('data-type')
+      }));
+    }
+
+    function updateSelectionInfo() {
+      const selected = getSelectedItems();
+      const infoEl = document.getElementById('selectionInfo');
+      const countEl = document.getElementById('selectionCount');
+      if (infoEl && countEl) {
+        if (selected.length > 0) {
+          infoEl.style.display = '';
+          countEl.textContent = selected.length;
+        } else {
+          infoEl.style.display = 'none';
+        }
+      }
+    }
+
+    function copySelected() {
+      const selected = getSelectedItems();
+      if (selected.length === 0) {
+        showToast(t.selectItems || 'Please select items first');
+        return;
+      }
+      clipboard.items = selected;
+      clipboard.action = 'copy';
+      showToast((t.copiedToClipboard || 'Copied to clipboard') + ' (' + selected.length + ')');
+    }
+
+    function cutSelected() {
+      const selected = getSelectedItems();
+      if (selected.length === 0) {
+        showToast(t.selectItems || 'Please select items first');
+        return;
+      }
+      clipboard.items = selected;
+      clipboard.action = 'cut';
+      showToast((t.cutToClipboard || 'Cut to clipboard') + ' (' + selected.length + ')');
+    }
+
+    async function pasteItems() {
+      if (!clipboard.items || clipboard.items.length === 0) {
+        showToast(t.clipboardEmpty || 'Clipboard is empty');
+        return;
+      }
+      const currentPath = window.location.pathname || '/';
+      const action = clipboard.action;
+      const apiAction = action === 'copy' ? 'copy' : 'move';
+
+      try {
+        for (const item of clipboard.items) {
+          const response = await fetch('/api/' + apiAction, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ src: item.url, dest: currentPath })
+          });
+          const result = await response.json();
+          if (!result.success) {
+            throw new Error(result.error || 'Operation failed');
+          }
+        }
+        if (action === 'cut') {
+          clipboard.items = [];
+          clipboard.action = null;
+        }
+        showToast(t.operationSuccess || 'Operation completed successfully');
+        setTimeout(() => window.location.reload(), 500);
+      } catch (e) {
+        showToast((t.operationFailed || 'Operation failed') + ': ' + e.message);
+      }
+    }
+
+    function renameSelected() {
+      const selected = getSelectedItems();
+      if (selected.length !== 1) {
+        showToast(t.selectOneItem || 'Please select exactly one item');
+        return;
+      }
+      const item = selected[0];
+      const newName = prompt(t.enterNewName || 'Enter new name:', item.name);
+      if (!newName || newName === item.name) return;
+
+      fetch('/api/rename', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ src: item.url, newName: newName })
+      }).then(r => r.json()).then(result => {
+        if (result.success) {
+          showToast(t.renameSuccess || 'Rename successful');
+          setTimeout(() => window.location.reload(), 500);
+        } else {
+          showToast((t.renameFailed || 'Rename failed') + ': ' + result.error);
+        }
+      }).catch(e => {
+        showToast((t.renameFailed || 'Rename failed') + ': ' + e.message);
+      });
+    }
+
+    function deleteSelected() {
+      const selected = getSelectedItems();
+      if (selected.length === 0) {
+        showToast(t.selectItems || 'Please select items first');
+        return;
+      }
+      if (!confirm((t.confirmDelete || 'Are you sure you want to delete') + ' ' + selected.length + ' ' + (t.items || 'items') + '?')) return;
+
+      Promise.all(selected.map(item =>
+        fetch('/api/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ src: item.url })
+        }).then(r => r.json())
+      )).then(results => {
+        const failed = results.filter(r => !r.success);
+        if (failed.length === 0) {
+          showToast(t.deleteSuccess || 'Delete successful');
+          setTimeout(() => window.location.reload(), 500);
+        } else {
+          showToast((t.deleteFailed || 'Some items failed to delete') + ': ' + failed.length);
+        }
+      }).catch(e => {
+        showToast((t.deleteFailed || 'Delete failed') + ': ' + e.message);
+      });
+    }
+
+    function createNewFolder() {
+      const name = prompt(t.enterFolderName || 'Enter folder name:', t.newFolder || 'New Folder');
+      if (!name) return;
+      const currentPath = window.location.pathname || '/';
+
+      fetch('/api/createFolder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dest: currentPath, newName: name })
+      }).then(r => r.json()).then(result => {
+        if (result.success) {
+          showToast(t.folderCreated || 'Folder created successfully');
+          setTimeout(() => window.location.reload(), 500);
+        } else {
+          showToast((t.createFolderFailed || 'Failed to create folder') + ': ' + result.error);
+        }
+      }).catch(e => {
+        showToast((t.createFolderFailed || 'Failed to create folder') + ': ' + e.message);
+      });
     }
 
     // Get DOM elements and set localized texts
@@ -2465,6 +2832,8 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         await _channel.invokeMethod('startWebSharingService', {
           'url': 'Establishing secure proxy tunnel...',
           'isInternet': true,
+          'title': _notifInternetTitle,
+          'contentText': _notifRunningText.replaceAll('{url}', 'Establishing secure proxy tunnel...'),
         });
       } catch (e) {
         debugPrint('Failed to start native web sharing service for tunnel: $e');
@@ -2552,6 +2921,8 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
           _channel.invokeMethod('startWebSharingService', {
             'url': _internetShareLink,
             'isInternet': true,
+            'title': _notifInternetTitle,
+            'contentText': _notifRunningText.replaceAll('{url}', _internetShareLink),
           });
         } catch (_) {}
       });
@@ -2598,6 +2969,8 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
             _channel.invokeMethod('startWebSharingService', {
               'url': _internetShareLink,
               'isInternet': true,
+              'title': _notifInternetTitle,
+              'contentText': _notifRunningText.replaceAll('{url}', _internetShareLink),
             });
           } catch (e) {
             debugPrint('Failed to update native web sharing service with link: $e');
@@ -2657,6 +3030,170 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
 
       notifyListeners();
     });
+  }
+
+  Future<void> _handleApiRequest(HttpRequest request, String rootDir, String uriPath) async {
+    final response = request.response;
+    response.headers.contentType = ContentType.json;
+
+    try {
+      final body = await utf8.decoder.bind(request).join();
+      final Map<String, dynamic> data = body.isNotEmpty ? jsonDecode(body) as Map<String, dynamic> : {};
+
+      final action = uriPath.replaceFirst('/api/', '');
+      final srcPath = data['src'] != null 
+          ? p.join(rootDir, (data['src'] as String).startsWith('/') ? (data['src'] as String).substring(1) : data['src'])
+          : null;
+      final destPath = data['dest'] != null
+          ? p.join(rootDir, (data['dest'] as String).startsWith('/') ? (data['dest'] as String).substring(1) : data['dest'])
+          : null;
+      final newName = data['newName'] as String?;
+
+      if (srcPath != null && !p.normalize(srcPath).startsWith(p.normalize(rootDir))) {
+        response.statusCode = HttpStatus.forbidden;
+        response.write(jsonEncode({'success': false, 'error': 'Invalid source path'}));
+        await response.close();
+        return;
+      }
+      if (destPath != null && !p.normalize(destPath).startsWith(p.normalize(rootDir))) {
+        response.statusCode = HttpStatus.forbidden;
+        response.write(jsonEncode({'success': false, 'error': 'Invalid destination path'}));
+        await response.close();
+        return;
+      }
+
+      switch (action) {
+        case 'copy':
+          if (srcPath == null || destPath == null) {
+            response.statusCode = HttpStatus.badRequest;
+            response.write(jsonEncode({'success': false, 'error': 'Missing src or dest'}));
+            break;
+          }
+          await _copyEntity(srcPath, destPath);
+          response.statusCode = HttpStatus.ok;
+          response.write(jsonEncode({'success': true}));
+          break;
+
+        case 'move':
+          if (srcPath == null || destPath == null) {
+            response.statusCode = HttpStatus.badRequest;
+            response.write(jsonEncode({'success': false, 'error': 'Missing src or dest'}));
+            break;
+          }
+          await _moveEntity(srcPath, destPath);
+          response.statusCode = HttpStatus.ok;
+          response.write(jsonEncode({'success': true}));
+          break;
+
+        case 'rename':
+          if (srcPath == null || newName == null) {
+            response.statusCode = HttpStatus.badRequest;
+            response.write(jsonEncode({'success': false, 'error': 'Missing src or newName'}));
+            break;
+          }
+          final newPath = p.join(p.dirname(srcPath), newName);
+          if (!p.normalize(newPath).startsWith(p.normalize(rootDir))) {
+            response.statusCode = HttpStatus.forbidden;
+            response.write(jsonEncode({'success': false, 'error': 'Invalid new name'}));
+            break;
+          }
+          final entity = FileSystemEntity.typeSync(srcPath) == FileSystemEntityType.directory
+              ? Directory(srcPath)
+              : File(srcPath);
+          await entity.rename(newPath);
+          response.statusCode = HttpStatus.ok;
+          response.write(jsonEncode({'success': true}));
+          break;
+
+        case 'delete':
+          if (srcPath == null) {
+            response.statusCode = HttpStatus.badRequest;
+            response.write(jsonEncode({'success': false, 'error': 'Missing src'}));
+            break;
+          }
+          final entity = FileSystemEntity.typeSync(srcPath) == FileSystemEntityType.directory
+              ? Directory(srcPath)
+              : File(srcPath);
+          await entity.delete(recursive: true);
+          response.statusCode = HttpStatus.ok;
+          response.write(jsonEncode({'success': true}));
+          break;
+
+        case 'createFolder':
+          if (destPath == null || newName == null) {
+            response.statusCode = HttpStatus.badRequest;
+            response.write(jsonEncode({'success': false, 'error': 'Missing dest or newName'}));
+            break;
+          }
+          final newFolderPath = p.join(destPath, newName);
+          if (!p.normalize(newFolderPath).startsWith(p.normalize(rootDir))) {
+            response.statusCode = HttpStatus.forbidden;
+            response.write(jsonEncode({'success': false, 'error': 'Invalid path'}));
+            break;
+          }
+          await Directory(newFolderPath).create(recursive: false);
+          response.statusCode = HttpStatus.ok;
+          response.write(jsonEncode({'success': true}));
+          break;
+
+        default:
+          response.statusCode = HttpStatus.notFound;
+          response.write(jsonEncode({'success': false, 'error': 'Unknown action: $action'}));
+      }
+    } catch (e) {
+      response.statusCode = HttpStatus.internalServerError;
+      response.write(jsonEncode({'success': false, 'error': e.toString()}));
+    }
+
+    await response.close();
+  }
+
+  Future<void> _copyEntity(String srcPath, String destPath) async {
+    final type = FileSystemEntity.typeSync(srcPath);
+    if (type == FileSystemEntityType.directory) {
+      final srcDir = Directory(srcPath);
+      final destDir = Directory(destPath);
+      if (!await destDir.exists()) {
+        await destDir.create(recursive: true);
+      }
+      await for (final entity in srcDir.list()) {
+        final entityName = p.basename(entity.path);
+        final newDest = p.join(destPath, entityName);
+        if (entity is Directory) {
+          await _copyEntity(entity.path, newDest);
+        } else if (entity is File) {
+          await entity.copy(newDest);
+        }
+      }
+    } else if (type == FileSystemEntityType.file) {
+      final file = File(srcPath);
+      if (FileSystemEntity.typeSync(destPath) == FileSystemEntityType.directory) {
+        final destFile = p.join(destPath, p.basename(srcPath));
+        await file.copy(destFile);
+      } else {
+        await file.copy(destPath);
+      }
+    }
+  }
+
+  Future<void> _moveEntity(String srcPath, String destPath) async {
+    final type = FileSystemEntity.typeSync(srcPath);
+    final entity = type == FileSystemEntityType.directory
+        ? Directory(srcPath)
+        : File(srcPath);
+    
+    String finalDest = destPath;
+    if (type == FileSystemEntityType.file &&
+        FileSystemEntity.typeSync(destPath) == FileSystemEntityType.directory) {
+      finalDest = p.join(destPath, p.basename(srcPath));
+    }
+    
+    try {
+      await entity.rename(finalDest);
+    } catch (e) {
+      await _copyEntity(srcPath, finalDest);
+      await entity.delete(recursive: true);
+    }
   }
 
   ActiveClient? _trackClientActivity(HttpRequest request, String targetPath, int fileSize) {
@@ -2752,6 +3289,8 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         _channel.invokeMethod('startWebSharingService', {
           'url': 'http://$_localIpAddress:$_port',
           'isInternet': false,
+          'title': _notifLocalTitle,
+          'contentText': _notifRunningText.replaceAll('{url}', 'http://$_localIpAddress:$_port'),
         });
       } else {
         _channel.invokeMethod('stopWebSharingService');

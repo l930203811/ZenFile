@@ -22,11 +22,13 @@ class FtpForegroundService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val ip = intent?.getStringExtra("ip") ?: "127.0.0.1"
         val port = intent?.getIntExtra("port", 9999) ?: 9999
-        
+        val title = intent?.getStringExtra("title") ?: "ZenFile FTP Server"
+        val contentText = intent?.getStringExtra("contentText") ?: "Running at ftp://$ip:$port"
+
         val notificationIntent = Intent(this, MainActivity::class.java).apply {
             this.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         }
-        
+
         val pendingIntent = PendingIntent.getActivity(
             this,
             0,
@@ -49,8 +51,8 @@ class FtpForegroundService : Service() {
         }
 
         val notification = builder
-            .setContentTitle("NFile FTP Server")
-            .setContentText("Running at ftp://$ip:$port")
+            .setContentTitle(title)
+            .setContentText(contentText)
             .setSmallIcon(iconResId)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
@@ -67,8 +69,8 @@ class FtpForegroundService : Service() {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "FTP Server"
-            val descriptionText = "Displays status of the background FTP Server"
+            val name = "ZenFile FTP Server"
+            val descriptionText = "ZenFile FTP Service"
             val importance = NotificationManager.IMPORTANCE_LOW
             val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                 description = descriptionText

@@ -49,6 +49,11 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
       } catch (_) {}
 
       try {
+        final l10n = L10n.of(context);
+        _ftpService.setNotificationText(
+          title: l10n.notification_ftp_title,
+          runningText: l10n.notification_ftp_running('{ip}', '{port}'),
+        );
         await _ftpService.start();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

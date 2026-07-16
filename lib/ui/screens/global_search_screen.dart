@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart' as p;
-import 'package:share_plus/share_plus.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../providers/media_provider.dart';
 import '../../models/file_item_model.dart';
@@ -29,7 +28,7 @@ class GlobalSearchScreen extends StatefulWidget {
 class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _query = '';
-  late String _selectedFilter; // All, Folders, Images, Videos, Audio, Documents
+  String? _selectedFilter; // All, Folders, Images, Videos, Audio, Documents
   
   List<FileItemModel> _results = [];
   bool _isSearching = false;
@@ -76,6 +75,13 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     final fileProvider = context.read<FileManagerProvider>();
     _lastActivePath = fileProvider.currentPath;
     fileProvider.addListener(_onFileManagerChanged);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 初始化默认过滤器为"全部"（需在 didChangeDependencies 中执行，因为依赖 L10n）
+    _selectedFilter ??= L10n.of(context).ui_all;
   }
 
   @override
@@ -213,7 +219,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
           bool matchFilter = false;
           if (_selectedFilter == L10n.of(context).ui_all) {
             matchFilter = true;
-          } else if (_selectedFilter == L10n.of(context).msg1f4c1042 && isDir) {
+          } else if (_selectedFilter == L10n.of(context).ui_folders && isDir) {
             matchFilter = true;
           } else if (_selectedFilter == L10n.of(context).ui_images && !isDir && _isImage(name)) {
             matchFilter = true;
@@ -237,7 +243,14 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
           }
         }
       },
-      onError: (_) {},
+      onError: (e) {
+        debugPrint('搜索文件系统时出错: $e');
+        if (mounted) {
+          setState(() {
+            _isSearching = false;
+          });
+        }
+      },
       onDone: () {
         if (mounted) {
           setState(() {
@@ -364,8 +377,13 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     final provider = context.read<FileManagerProvider>();
     switch (action) {
       case 'show_in_location':
-        Navigator.pop(context);
-        await provider.showFileInLocation(path);
+        // 使用与"查看远程缓存目录"相同的导航模式，确保从任何页面
+        // 都能正确切换到浏览 Tab 并定位文件
+        provider.setNavigateToBrowseTab(true);
+        Navigator.of(context).popUntil((route) => route.isFirst);
+        scheduleMicrotask(() {
+          provider.showFileInLocation(path);
+        });
         break;
       case 'share':
         final isMulti = _selectedPaths.isNotEmpty && _selectedPaths.contains(path);
@@ -710,8 +728,13 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                                 if (_isSelectionMode) {
                                   _toggleSelection(item.path);
                                 } else {
-                                  Navigator.pop(context);
-                                  context.read<FileManagerProvider>().loadDirectory(item.path);
+                                  // 使用与"查看远程缓存目录"相同的导航模式：
+                                  // 设置待导航路径并切换到浏览 Tab，确保从任何页面
+                                  // （抽屉、分类页等）打开搜索后都能正确跳转到浏览页
+                                  final provider = context.read<FileManagerProvider>();
+                                  provider.setPendingBrowseNavigation(item.path, []);
+                                  provider.setNavigateToBrowseTab(true);
+                                  Navigator.of(context).popUntil((route) => route.isFirst);
                                 }
                               },
                               onLongPress: () => _toggleSelection(item.path),

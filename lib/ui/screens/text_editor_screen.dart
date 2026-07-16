@@ -674,22 +674,20 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
         backgroundColor: theme.colorScheme.surface,
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: Flexible(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                p.basename(_currentFilePath),
-                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                overflow: TextOverflow.ellipsis,
-              ),
-              Text(
-                '$_selectedLanguage • $lineCount 行${_isModified ? ' (已修改)' : ''}',
-                style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              p.basename(_currentFilePath),
+              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              overflow: TextOverflow.ellipsis,
+            ),
+            Text(
+              '$_selectedLanguage • $lineCount ${L10n.of(context).msg_editor_lines}${_isModified ? ' (${L10n.of(context).msg_editor_modified})' : ''}',
+              style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
         actions: [
           const SizedBox(width: 12),

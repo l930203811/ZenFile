@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
@@ -290,7 +291,7 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12.0),
               child: Text(
-                'ZenFile v1.1.2',
+                'ZenFile v1.1.21',
                 style: TextStyle(fontSize: 11.5, color: theme.colorScheme.onSurface.withOpacity(0.4), fontWeight: FontWeight.w600),
               ),
             ),
@@ -319,9 +320,12 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
             data: theme.copyWith(dividerColor: Colors.transparent),
             child: ExpansionTile(
               leading: Icon(icon, size: 24, color: theme.colorScheme.onSurface.withOpacity(0.8)),
-              title: Text(
+              title: AutoSizeText(
                 title,
                 style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface.withOpacity(0.95)),
+                maxLines: 1,
+                minFontSize: 12,
+                overflow: TextOverflow.ellipsis,
               ),
               iconColor: theme.colorScheme.primary,
               textColor: theme.colorScheme.primary,
@@ -591,9 +595,12 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                 Icon(icon, size: 22, color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.8)),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: Text(
+                  child: AutoSizeText(
                     title,
                     style: TextStyle(fontSize: fontSize, fontWeight: fontWeight, color: color),
+                    maxLines: 1,
+                    minFontSize: 12,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 if (trailing != null) trailing,

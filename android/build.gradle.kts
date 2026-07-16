@@ -2,6 +2,7 @@ allprojects {
     repositories {
         maven { url = uri("C:/Users/admin/flutter-maven-repo") }
         maven { url = uri("https://mirrors.tuna.tsinghua.edu.cn/flutter/download.flutter.io") }
+        maven { url = uri("https://storage.googleapis.com/download.flutter.io") }
         google()
         mavenCentral()
     }
@@ -23,6 +24,15 @@ subprojects {
 
 subprojects {
     if (project.name != "app") {
+        project.plugins.withId("com.android.library") {
+            project.extensions.configure<com.android.build.gradle.LibraryExtension> {
+                compileSdk = 35
+                compileOptions {
+                    sourceCompatibility = JavaVersion.VERSION_17
+                    targetCompatibility = JavaVersion.VERSION_17
+                }
+            }
+        }
         project.afterEvaluate {
             project.plugins.withId("com.android.library") {
                 project.extensions.configure<com.android.build.gradle.LibraryExtension> {

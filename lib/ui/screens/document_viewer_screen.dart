@@ -1218,7 +1218,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
             width: double.infinity,
             child: OutlinedButton.icon(
               icon: Icon(Icons.share, color: fileColor),
-              label: Text('分享', style: TextStyle(color: fileColor)),
+              label: Text(L10n.of(context).ui_share, style: TextStyle(color: fileColor)),
               style: OutlinedButton.styleFrom(
                 side: BorderSide(color: fileColor.withOpacity(0.5)),
                 padding: const EdgeInsets.symmetric(vertical: 14),

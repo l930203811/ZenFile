@@ -247,6 +247,19 @@
         </activity-alias>
 
         <activity-alias
+            android:name=".MainActivityDesign11"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@drawable/design_11"
+            android:label="ZenFile"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
             android:name=".MainActivityCustom"
             android:enabled="false"
             android:exported="true"

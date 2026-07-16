@@ -856,153 +856,191 @@ class MediaProvider extends ChangeNotifier {
   }
 
   Future<void> refreshMediaBackground() async {
-    final futures = <Future<void>>[];
-    
-    bool isStorageGranted = false;
     try {
-      isStorageGranted = await Permission.storage.isGranted || await Permission.manageExternalStorage.isGranted;
-    } catch (_) {}
-    
-    PermissionState ps = PermissionState.denied;
-    try {
-      ps = await PhotoManager.requestPermissionExtend();
-    } catch (_) {}
+      final futures = <Future<void>>[];
 
-    bool hasAudioPermission = false;
-    try {
-      hasAudioPermission = await _audioQuery.permissionsStatus();
-    } catch (_) {}
+      bool isStorageGranted = false;
+      try {
+        isStorageGranted = await Permission.manageExternalStorage.isGranted;
+      } catch (_) {}
 
-    if (ps.isAuth || isStorageGranted) {
-      futures.add(_loadImagesAndVideos());
+      PermissionState ps = PermissionState.denied;
+      bool hasAudioPermission = false;
+
+      if (isStorageGranted) {
+        ps = PermissionState.authorized;
+        hasAudioPermission = true;
+        if (Platform.isAndroid) {
+          try {
+            final info = await DeviceInfoPlugin().androidInfo;
+            final sdk = info.version.sdkInt;
+            if (sdk < 33) {
+              PhotoManager.setIgnorePermissionCheck(true);
+            } else {
+              try {
+                ps = await PhotoManager.requestPermissionExtend();
+              } catch (_) {}
+
+              try {
+                hasAudioPermission = await _audioQuery.permissionsStatus();
+                if (!hasAudioPermission) {
+                  final status = await Permission.audio.request();
+                  hasAudioPermission = status.isGranted;
+                }
+              } catch (_) {}
+            }
+          } catch (_) {}
+        } else {
+          try {
+            ps = await PhotoManager.requestPermissionExtend();
+          } catch (_) {}
+          hasAudioPermission = true;
+        }
+      } else {
+        if (Platform.isAndroid) {
+          try {
+            PhotoManager.setIgnorePermissionCheck(true);
+          } catch (_) {}
+        }
+      }
+
+      if (ps.isAuth || isStorageGranted) {
+        futures.add(_loadImagesAndVideos());
+      }
+      if (hasAudioPermission || isStorageGranted) {
+        futures.add(_loadAudios(hasPermission: hasAudioPermission || isStorageGranted));
+      }
+      futures.add(_loadDocuments());
+      futures.add(_loadArchivesDownloadsAndApks());
+
+      await Future.wait(futures);
+      await _scanCustomCategories();
+      await _scanRecentFiles();
+      await _saveCache();
+      _applySort();
+
+      PreferencesService.saveCategoryCount('图片', images.length);
+      PreferencesService.saveCategoryCount('视频', videos.length);
+      PreferencesService.saveCategoryCount('音频', _audios.length);
+      PreferencesService.saveCategoryCount('文档', _documents.length);
+      PreferencesService.saveCategoryCount('压缩包', _archives.length);
+      PreferencesService.saveCategoryCount('下载', _downloads.length);
+      PreferencesService.saveCategoryCount('安装包', _apks.length);
+      PreferencesService.saveCategoryCount('截图', screenshots.length);
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint('refreshMediaBackground error: $e');
     }
-    if (hasAudioPermission || isStorageGranted) {
-      futures.add(_loadAudios(hasPermission: hasAudioPermission || isStorageGranted));
-    }
-    futures.add(_loadDocuments());
-    futures.add(_loadArchivesDownloadsAndApks());
-
-    await Future.wait(futures);
-    await _scanCustomCategories();
-    await _scanRecentFiles();
-    await _saveCache();
-    _applySort();
-    
-    PreferencesService.saveCategoryCount('图片', images.length);
-    PreferencesService.saveCategoryCount('视频', videos.length);
-    PreferencesService.saveCategoryCount('音频', _audios.length);
-    PreferencesService.saveCategoryCount('文档', _documents.length);
-    PreferencesService.saveCategoryCount('压缩包', _archives.length);
-    PreferencesService.saveCategoryCount('下载', _downloads.length);
-    PreferencesService.saveCategoryCount('安装包', _apks.length);
-    PreferencesService.saveCategoryCount('截图', screenshots.length);
-
-    notifyListeners();
   }
 
   Future<void> loadMedia({bool forceRefresh = false}) async {
-    if (_isLoaded && !forceRefresh) {
-      await _scanCustomCategories();
-      _applySort();
-      notifyListeners();
-      return;
-    }
-
-    _isLoading = true;
-    notifyListeners();
-
-    // Fast initial load from disk cache
-    await _loadFromDiskCache();
-    // 缓存加载后立即通知，让界面显示缓存数据，避免空状态等待
-    notifyListeners();
-
-    bool isStorageGranted = false;
     try {
-      isStorageGranted = await Permission.storage.isGranted || await Permission.manageExternalStorage.isGranted;
-    } catch (_) {}
-
-    PermissionState ps = PermissionState.denied;
-    bool hasAudioPermission = false;
-
-    if (isStorageGranted) {
-      ps = PermissionState.authorized;
-      hasAudioPermission = true;
-    } else {
-      if (Platform.isAndroid) {
-        try {
-          final info = await DeviceInfoPlugin().androidInfo;
-          final sdk = info.version.sdkInt;
-          if (sdk < 33) {
-            final storageStatus = await Permission.storage.request();
-            if (storageStatus.isGranted) {
-              isStorageGranted = true;
-              ps = PermissionState.authorized;
-              hasAudioPermission = true;
-            }
-            await Permission.accessMediaLocation.request();
-            PhotoManager.setIgnorePermissionCheck(true);
-          } else {
-            try {
-              ps = await PhotoManager.requestPermissionExtend();
-            } catch (_) {}
-
-            try {
-              hasAudioPermission = await _audioQuery.permissionsStatus();
-              if (!hasAudioPermission) {
-                final status = await Permission.audio.request();
-                hasAudioPermission = status.isGranted;
-              }
-            } catch (_) {}
-          }
-        } catch (_) {}
-      } else {
-        try {
-          ps = await PhotoManager.requestPermissionExtend();
-        } catch (_) {}
-        hasAudioPermission = true;
+      if (_isLoaded && !forceRefresh) {
+        await _scanCustomCategories();
+        _applySort();
+        notifyListeners();
+        return;
       }
-    }
 
-    final futures = <Future<void>>[];
-    if (ps.isAuth || isStorageGranted) {
-      if (isStorageGranted && !ps.isAuth) {
-        try {
-          PhotoManager.setIgnorePermissionCheck(true);
-        } catch (_) {}
-      }
+      _isLoading = true;
+      notifyListeners();
+
+      // Fast initial load from disk cache
+      await _loadFromDiskCache();
+      // 缓存加载后立即通知，让界面显示缓存数据，避免空状态等待
+      notifyListeners();
+
+      bool isStorageGranted = false;
       try {
-        PhotoManager.clearFileCache();
+        isStorageGranted = await Permission.manageExternalStorage.isGranted;
       } catch (_) {}
-      futures.add(_loadImagesAndVideos());
+
+      PermissionState ps = PermissionState.denied;
+      bool hasAudioPermission = false;
+
+      if (isStorageGranted) {
+        ps = PermissionState.authorized;
+        hasAudioPermission = true;
+        if (Platform.isAndroid) {
+          try {
+            final info = await DeviceInfoPlugin().androidInfo;
+            final sdk = info.version.sdkInt;
+            if (sdk < 33) {
+              PhotoManager.setIgnorePermissionCheck(true);
+            } else {
+              try {
+                ps = await PhotoManager.requestPermissionExtend();
+              } catch (_) {}
+
+              try {
+                hasAudioPermission = await _audioQuery.permissionsStatus();
+                if (!hasAudioPermission) {
+                  final status = await Permission.audio.request();
+                  hasAudioPermission = status.isGranted;
+                }
+              } catch (_) {}
+            }
+          } catch (_) {}
+        } else {
+          try {
+            ps = await PhotoManager.requestPermissionExtend();
+          } catch (_) {}
+          hasAudioPermission = true;
+        }
+      } else {
+        if (Platform.isAndroid) {
+          try {
+            PhotoManager.setIgnorePermissionCheck(true);
+          } catch (_) {}
+        }
+      }
+
+      final futures = <Future<void>>[];
+      if (ps.isAuth || isStorageGranted) {
+        if (isStorageGranted && !ps.isAuth) {
+          try {
+            PhotoManager.setIgnorePermissionCheck(true);
+          } catch (_) {}
+        }
+        try {
+          PhotoManager.clearFileCache();
+        } catch (_) {}
+        futures.add(_loadImagesAndVideos());
+      }
+      if (hasAudioPermission || isStorageGranted) {
+        futures.add(_loadAudios(hasPermission: hasAudioPermission || isStorageGranted));
+      }
+      futures.add(_loadDocuments());
+      futures.add(_loadArchivesDownloadsAndApks());
+
+      await Future.wait(futures);
+      await _scanCustomCategories();
+
+      // Scan recent files after all media is loaded so it can merge from providers
+      await _scanRecentFiles();
+
+      await _saveCache();
+
+      _applySort();
+
+      PreferencesService.saveCategoryCount('图片', images.length);
+      PreferencesService.saveCategoryCount('视频', videos.length);
+      PreferencesService.saveCategoryCount('音频', _audios.length);
+      PreferencesService.saveCategoryCount('文档', _documents.length);
+      PreferencesService.saveCategoryCount('压缩包', _archives.length);
+      PreferencesService.saveCategoryCount('下载', _downloads.length);
+      PreferencesService.saveCategoryCount('安装包', _apks.length);
+      PreferencesService.saveCategoryCount('截图', screenshots.length);
+
+      _isLoading = false;
+      _isLoaded = true;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('loadMedia error: $e');
+      _isLoading = false;
+      notifyListeners();
     }
-    if (hasAudioPermission || isStorageGranted) {
-      futures.add(_loadAudios(hasPermission: hasAudioPermission || isStorageGranted));
-    }
-    futures.add(_loadDocuments());
-    futures.add(_loadArchivesDownloadsAndApks());
-
-    await Future.wait(futures);
-    await _scanCustomCategories();
-
-    // Scan recent files after all media is loaded so it can merge from providers
-    await _scanRecentFiles();
-
-    await _saveCache();
-
-    _applySort();
-
-    PreferencesService.saveCategoryCount('图片', images.length);
-    PreferencesService.saveCategoryCount('视频', videos.length);
-    PreferencesService.saveCategoryCount('音频', _audios.length);
-    PreferencesService.saveCategoryCount('文档', _documents.length);
-    PreferencesService.saveCategoryCount('压缩包', _archives.length);
-    PreferencesService.saveCategoryCount('下载', _downloads.length);
-    PreferencesService.saveCategoryCount('安装包', _apks.length);
-    PreferencesService.saveCategoryCount('截图', screenshots.length);
-
-    _isLoading = false;
-    _isLoaded = true;
-    notifyListeners();
   }
 
   Future<void> _loadImagesAndVideos() async {

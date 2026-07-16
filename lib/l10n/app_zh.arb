@@ -1,4288 +1,6932 @@
 {
   "@@locale": "zh",
+
   "msg6f3e533a": "正在打开共享文档...",
+
   "@msg6f3e533a": {
     "description": "main.dart"
+
   },
   "msgbca59325": "正在解析安全内容流",
+
   "@msgbca59325": {
     "description": "main.dart"
+
   },
   "zenfile": "ZenFile 需要存储权限才能无缝管理、组织和显示您的媒体文件。",
+
   "@zenfile": {
     "description": "main.dart"
+
   },
   "e": "清理缓存目录失败: {e}",
+
   "@e": {
     "description": "main.dart",
+
     "type": "text"
+
   },
   "msg21cefa9b": "内部存储",
+
   "@msg21cefa9b": {
     "description": "providers\\file_manager_provider.dart"
+
   },
   "smb": "局域网/SMB",
+
   "@smb": {
     "description": "providers\\file_manager_provider.dart"
+
   },
   "msg05d3c93c": "成功移动项目",
+
   "@msg05d3c93c": {
     "description": "providers\\file_manager_provider.dart"
+
   },
   "e1": "传输失败：{e}",
+
   "@e1": {
     "description": "providers\\file_manager_provider.dart",
+
     "type": "text"
+
   },
   "msga45bac47": "操作已取消",
+
   "@msga45bac47": {
     "description": "providers\\file_manager_provider.dart"
+
   },
   "e2": "连接远程服务器失败：{e}",
+
   "@e2": {
     "description": "providers\\file_manager_provider.dart",
+
     "type": "text"
+
   },
   "e3": "创建文件夹出错：{e}",
+
   "@e3": {
     "description": "providers\\file_manager_provider.dart",
+
     "type": "text"
+
   },
   "msg3df5ef6c": "压缩超出限制",
+
   "@msg3df5ef6c": {
     "description": "providers\\file_manager_provider.dart"
+
   },
   "msg5e32276d": "未知艺术家",
+
   "@msg5e32276d": {
     "description": "providers\\file_manager_provider.dart"
+
   },
   "msg497ec49d": "本地文件夹",
+
   "@msg497ec49d": {
     "description": "providers\\file_manager_provider.dart"
+
   },
   "e4": "下载远程文件失败: {e}",
+
   "@e4": {
     "description": "providers\\file_manager_provider.dart",
+
     "type": "text"
+
   },
   "msg6b9ca1dd": "无法将文件夹移动到自身或相同位置",
+
   "@msg6b9ca1dd": {
     "description": "providers\\file_manager_provider.dart"
+
   },
   "e5": "移动项目失败：{e}",
+
   "@e5": {
     "description": "providers\\file_manager_provider.dart",
+
     "type": "text"
+
   },
   "msg5238524c": "无法将文件夹复制到自身或相同位置",
+
   "@msg5238524c": {
     "description": "providers\\file_manager_provider.dart"
+
   },
   "e6": "复制项目失败：{e}",
+
   "@e6": {
     "description": "providers\\file_manager_provider.dart",
+
     "type": "text"
+
   },
   "msgc806d0fa": "压缩包",
+
   "@msgc806d0fa": {
     "description": "providers\\media_provider.dart"
+
   },
   "msg03070d08": "安装包",
+
   "@msg03070d08": {
     "description": "providers\\media_provider.dart"
+
   },
   "ftp": "FTP共享",
+
   "@ftp": {
     "description": "providers\\media_provider.dart"
+
   },
   "web": "Web共享",
+
   "@web": {
     "description": "providers\\media_provider.dart"
+
   },
   "msge86bd662": "设备相册（自动）",
+
   "@msge86bd662": {
     "description": "providers\\media_provider.dart"
+
   },
   "msg16166a01": "设备音频库（自动）",
+
   "@msg16166a01": {
     "description": "providers\\media_provider.dart"
+
   },
   "msgbb34b7ec": "内部存储（扫描所有文件夹）",
+
   "@msgbb34b7ec": {
     "description": "providers\\media_provider.dart"
+
   },
   "msg26a1f2d9": "设备相册（截图）",
+
   "@msg26a1f2d9": {
     "description": "providers\\media_provider.dart"
+
   },
   "msg39e11368": "正在解压安装包...",
+
   "@msg39e11368": {
     "description": "services\\apk_installer_service.dart"
+
   },
   "apk": "安装包中未找到可安装的APK",
+
   "@apk": {
     "description": "services\\apk_installer_service.dart"
+
   },
   "apk1": "无法启动分包APK安装器",
+
   "@apk1": {
     "description": "services\\apk_installer_service.dart"
+
   },
   "msg2f0138ad": "正在压缩文件",
+
   "@msg2f0138ad": {
     "description": "services\\background_archive_service.dart"
+
   },
   "msga2292820": "压缩包创建成功",
+
   "@msga2292820": {
     "description": "services\\background_archive_service.dart"
+
   },
   "msg0683ca6b": "正在解压压缩包",
+
   "@msg0683ca6b": {
     "description": "services\\background_archive_service.dart"
+
   },
   "msg1f216eda": "压缩包解压成功",
+
   "@msg1f216eda": {
     "description": "services\\background_archive_service.dart"
+
   },
   "msg5fa802be": "操作失败",
+
   "@msg5fa802be": {
     "description": "services\\background_archive_service.dart"
+
   },
   "msg8fccf382": "是/否",
+
   "@msg8fccf382": {
     "description": "services\\background_archive_service.dart"
+
   },
   "msgc18fb099": "解压成功，是否打开所在位置？",
+
   "@msgc18fb099": {
     "description": "services\\background_archive_service.dart"
+
   },
   "msg_compress_open_location": "压缩成功，是否打开所在位置？",
+
   "@msg_compress_open_location": {
     "description": "services\\background_archive_service.dart"
+
   },
   "msg4367e85a": "未找到可压缩的文件",
+
   "@msg4367e85a": {
     "description": "services\\background_archive_service.dart"
+
   },
   "msg60a4545d": "不支持的格式",
+
   "@msg60a4545d": {
     "description": "services\\background_archive_service.dart"
+
   },
   "msg226519e7": "未找到压缩包文件",
+
   "@msg226519e7": {
     "description": "services\\background_archive_service.dart"
+
   },
   "msg88d150c7": "未找到可分享的项目。",
+
   "@msg88d150c7": {
     "description": "services\\folder_share_service.dart"
+
   },
   "e7": "读取共享文件出错：{e}",
+
   "@e7": {
     "description": "services\\intent_handler_service.dart",
+
     "type": "text"
+
   },
   "zenfilesmbvirtualstoragebridgen": "ZenFile 局域网/SMB Virtual Storage Bridge\\n",
+
   "@zenfilesmbvirtualstoragebridgen": {
     "description": "services\\remote\\lan_client.dart"
+
   },
   "msgf3a485df": "新建文件夹",
+
   "@msgf3a485df": {
     "description": "services\\remote\\saf_client.dart"
+
   },
   "msge48a7157": "新建文件",
+
   "@msge48a7157": {
     "description": "services\\remote\\saf_client.dart"
+
   },
   "zenfilebackupssettings": "设置已备份到 ZenFile/Backups/Settings/",
+
   "@zenfilebackupssettings": {
     "description": "services\\settings_backup_service.dart"
+
   },
   "json": "请选择有效的 .json 设置备份文件",
+
   "@json": {
     "description": "services\\settings_backup_service.dart"
+
   },
   "e8": "设置恢复失败: {e}",
+
   "@e8": {
     "description": "services\\settings_backup_service.dart",
+
     "type": "text"
+
   },
   "url": "无法打开链接 {url}",
+
   "@url": {
     "description": "ui\\screens\\about_screen.dart",
+
     "type": "text"
+
   },
   "zenfile1": "关于 ZenFile",
+
   "@zenfile1": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "v1041": "v1.0.43 (查看)",
+
   "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "ui_view_update": "查看更新",
+
   "@ui_view_update": {
     "description": "Button label to view changelog on the about screen"
+
   },
   "zenfileflutter": "ZenFile 是一款基于 Flutter 构建的精美、流畅、开源的文件管理器和离线媒体中心。专为极致性能、干净的毛玻璃美学和无缝用户体验而设计。",
+
   "@zenfileflutter": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msga12ebf50": "极速体验",
+
   "@msga12ebf50": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msgfccb5a01": "无状态缓存与异步扫描",
+
   "@msgfccb5a01": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg6d8fbdac": "加密安全工作区",
+
   "@msg6d8fbdac": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "ftpsftpwebdav": "支持 FTP、局域网、SFTP 和 WebDAV",
+
   "@ftpsftpwebdav": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msge8f352b9": "精美界面",
+
   "@msge8f352b9": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "amoled": "AMOLED 纯黑 & 绚丽主题",
+
   "@amoled": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msge8069659": "在仓库中加星",
+
   "@msge8069659": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "telegram": "加入 Telegram 频道",
+
   "@telegram": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg5f84adea": "与好友分享应用",
+
   "@msg5f84adea": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "zenfilehttpsgithubcoml930203811zenfilereleases": "推荐 ZenFile，一款精美的离线文件管理器和媒体中心：https://github.com/l930203811/ZenFile/releases",
+
   "@zenfilehttpsgithubcoml930203811zenfilereleases": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "github": "查看 GitHub 源代码",
+
   "@github": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "sequeldpdnsorg": "联系邮箱：1@sequel.dpdns.org",
+
   "@sequeldpdnsorg": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msged8518d7": "邮箱已复制到剪贴板",
+
   "@msged8518d7": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "qq": "QQ 群号已复制到剪贴板",
+
   "@qq": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "bysequel": "用心打造 ❤️ by Sequel",
+
   "@bysequel": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "zenfile2": "版权所有 © 2026 ZenFile。保留所有权利。",
+
   "@zenfile2": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg138d3725": "您的支持是我持续更新的动力 ❤️",
+
   "@msg138d3725": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msgccd097a7": "支付宝",
+
   "@msgccd097a7": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msgbffe28c8": "微信支付",
+
   "@msgbffe28c8": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg0537b04e": "长按图片可保存到相册，感谢您的支持！",
+
   "@msg0537b04e": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "zenfilev1041": "下载 ZenFile",
+
   "@zenfilev1041": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg9d287020": "123云盘",
+
   "@msg9d287020": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msgb2b41b6a": "115网盘",
+
   "@msgb2b41b6a": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg77ee718b": "百度网盘",
+
   "@msg77ee718b": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msgbff1432a": "夸克网盘",
+
   "@msgbff1432a": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
-  "msge03395d0": "小飞机网盘",
+  "msge03395d0": "PikPak网盘",
+
   "@msge03395d0": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "svg": "新增 SVG 文件完整支持（缩略图预览与查看）",
+
   "@svg": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "ziprar7ztargz": "新增压缩包格式颜色区分（zip/rar/7z/tar/gz 各有专属颜色）",
+
   "@ziprar7ztargz": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg09a6e11b": "新增远程文件先下载再播放功能",
+
   "@msg09a6e11b": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg1c3206b8": "修复分类页解压后无法跳转到浏览页的问题",
+
   "@msg1c3206b8": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msgb1e4da91": "修复「查看缓存目录」和「解压后打开所在位置」导致页面卡死的问题",
+
   "@msgb1e4da91": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "yyyymmdd": "优化文件日期格式为 yyyy-MM-dd",
+
   "@yyyymmdd": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg4c425252": "优化默认启用 24 小时制时间显示",
+
   "@msg4c425252": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg1eaf4abb": "路径栏全面优化（更紧凑的面包屑按钮和箭头样式）",
+
   "@msg1eaf4abb": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msgd3381817": "标签栏和路径栏整体上移，为文件列表留出更多空间",
+
   "@msgd3381817": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg342688b2": "双窗口头部区域精简（高度缩减30%）",
+
   "@msg342688b2": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg8954452f": "双窗口模式下远程服务器替换未激活标签页",
+
   "@msg8954452f": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msgac5a0315": "返回手势优化：选中状态下返回清除选中而非退出页面",
+
   "@msgac5a0315": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg1904388e": "双指右滑打开抽屉页，双指左滑切换分类/浏览页",
+
   "@msg1904388e": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg2762c070": "新增双指滑动开关（常规与行为设置中可关闭）",
+
   "@msg2762c070": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg48dca69a": "进度条改为圆环线条样式，中心显示百分比数字",
+
   "@msg48dca69a": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "windows": "远程路径兼容性修复（Windows平台路径分隔符问题）",
+
   "@windows": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg65eefc98": "地址栏开关改为控制美化后的路径面包屑",
+
   "@msg65eefc98": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg96a6856a": "默认主页设置（可选择分类页或浏览页作为启动页）",
+
   "@msg96a6856a": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg250213fd": "全新安装包图标（自然禅意风格）",
+
   "@msg250213fd": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg7f53e8b1": "圆形百分比进度条（复制/移动文件时显示）",
+
   "@msg7f53e8b1": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg051469b5": "操作成功后自动关闭进度条，无需手动确认",
+
   "@msg051469b5": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msge4c4d5e2": "文件操作菜单改为底部弹出（不再遮挡标签栏）",
+
   "@msge4c4d5e2": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msga33dbb51": "选择模式操作栏移至屏幕底部（含已选数量指示器）",
+
   "@msga33dbb51": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msge6c84f11": "修复：切换图标后点击进入应用详情",
+
   "@msge6c84f11": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg46b8ca8f": "修复：远程复制后切换本地页面异常",
+
   "@msg46b8ca8f": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msgb3dea5f5": "文本查看器长按菜单支持复制和全选（已汉化）",
+
   "@msgb3dea5f5": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msga4c92214": "拖放弹窗布局优化（更紧凑）",
+
   "@msga4c92214": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg32854144": "分类页图标支持圆形/方形背景切换",
+
   "@msg32854144": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg3a93e257": "分类图标形状设置（外观与主题中切换）",
+
   "@msg3a93e257": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "zenfile3": "ZenFile 首次发布",
+
   "@zenfile3": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg47b760ed": "多标签页支持",
+
   "@msg47b760ed": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "ftpsftpwebdavsmb": "远程服务器连接（FTP/SFTP/WebDAV/SMB）",
+
   "@ftpsftpwebdavsmb": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg4b736dfb": "文件加密保险柜",
+
   "@msg4b736dfb": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "ftpwebdav": "FTP/WebDAV 服务器功能",
+
   "@ftpwebdav": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg03257c2d": "自定义主题与外观设置",
+
   "@msg03257c2d": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg5cce42e6": "远程服务器文件拖放操作优化",
+
   "@msg5cce42e6": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg074f1ce7": "自定义应用桌面图标功能完善",
+
   "@msg074f1ce7": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg5c66ffab": "远程服务器文件列表中长按可能触发拖放操作弹窗（下版本修复）",
+
   "@msg5c66ffab": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "bug1sequeldpdnsorgqq792408214": "如果您有任何优化建议或发现Bug，欢迎通过邮箱 1@sequel.dpdns.org 或QQ群 792408214 反馈给我们。",
+
   "@bug1sequeldpdnsorgqq792408214": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msgd054a84c": "长按保存图片",
+
   "@msgd054a84c": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msgb3b83e12": "图片加载失败",
+
   "@msgb3b83e12": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msgc2790d54": "需要存储权限才能保存图片",
+
   "@msgc2790d54": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg1292d351": "图片已保存到相册",
+
   "@msg1292d351": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "e9": "保存失败: {e}",
+
   "@e9": {
     "description": "ui\\screens\\about_screen.dart",
+
     "type": "text"
+
   },
   "msg7a4ee0c7": "没有可分享的文件",
+
   "@msg7a4ee0c7": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
+
   },
   "msg45326802": "成功删除项目",
+
   "@msg45326802": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
+
   },
   "e10": "分享出错：{e}",
+
   "@e10": {
     "description": "ui\\screens\\all_recent_files_screen.dart",
+
     "type": "text"
+
   },
   "msg4fb42e6e": "已复制到剪贴板",
+
   "@msg4fb42e6e": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
+
   },
   "msge5212c58": "已剪切到剪贴板",
+
   "@msge5212c58": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
+
   },
   "msgc8ce4b36": "重命名",
+
   "@msgc8ce4b36": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
+
   },
   "msgf139c5cf": "输入新名称",
+
   "@msgf139c5cf": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
+
+  },
+  "msg_rename_extension_warning_title": "后缀名变更",
+
+  "@msg_rename_extension_warning_title": {
+    "description": "Title of warning dialog when file extension is changed during rename"
+
+  },
+  "msg_rename_extension_warning_content": "您正在修改文件后缀名，这可能导致文件无法正常打开。确定要继续吗？",
+
+  "@msg_rename_extension_warning_content": {
+    "description": "Content of warning dialog when file extension is changed during rename"
+
+  },
+  "msg_rename_extension_confirm": "确认修改",
+
+  "@msg_rename_extension_confirm": {
+    "description": "Confirm button text in extension change warning dialog"
+
   },
   "msg53518c22": "删除文件",
+
   "@msg53518c22": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
+
   },
   "msg47809e5d": "无最近文件",
+
   "@msg47809e5d": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
+
   },
   "msg7a7e6c25": "新创建或下载的文件将显示在这里。",
+
   "@msg7a7e6c25": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
+
   },
   "msg765d1698": "删除所选项目",
+
   "@msg765d1698": {
     "description": "ui\\screens\\archive_viewer_screen.dart"
+
   },
   "msg365f2f0a": "项目删除成功 ✓",
+
   "@msg365f2f0a": {
     "description": "ui\\screens\\archive_viewer_screen.dart"
+
   },
   "successcount": "已成功添加 {successCount} 个项目到压缩包 ✓",
+
   "@successcount": {
     "description": "ui\\screens\\archive_viewer_screen.dart",
+
     "type": "text"
+
   },
   "count": "已粘贴 {count} 个项目到压缩包 ✓",
+
   "@count": {
     "description": "ui\\screens\\archive_viewer_screen.dart",
+
     "type": "text"
+
   },
   "msg39cb3352": "无法读取压缩包",
+
   "@msg39cb3352": {
     "description": "ui\\screens\\archive_viewer_screen.dart"
+
   },
   "msg99abedc6": "解压到当前文件夹",
+
   "@msg99abedc6": {
     "description": "ui\\screens\\archive_viewer_screen.dart"
+
   },
   "msg8d0cfb58": "添加文件",
+
   "@msg8d0cfb58": {
     "description": "ui\\screens\\archive_viewer_screen.dart"
+
   },
   "msg5bf1fb72": "无损音频",
+
   "@msg5bf1fb72": {
     "description": "ui\\screens\\audio_player\\audio_artwork_widget.dart"
+
   },
   "msg47cab5ae": "定时关闭",
+
   "@msg47cab5ae": {
     "description": "ui\\screens\\audio_player\\audio_controls_widget.dart"
+
   },
   "msg50c1b248": "后台播放已停止",
+
   "@msg50c1b248": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+
   },
   "msg6d16d396": "后台播放已启用",
+
   "@msg6d16d396": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+
   },
   "msg3038d9b8": "随机播放: 关",
+
   "@msg3038d9b8": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+
   },
   "msg29eed1da": "后台播放",
+
   "@msg29eed1da": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+
   },
   "msg4aa059f7": "点击停止后台播放",
+
   "@msg4aa059f7": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+
   },
   "msg8f7f4490": "显示带控制按钮的通知",
+
   "@msg8f7f4490": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+
   },
   "msgb7c87215": "音效与均衡器",
+
   "@msgb7c87215": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+
   },
   "msgfc449780": "音频文件信息",
+
   "@msgfc449780": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+
   },
   "msgb4fbc92c": "备份与恢复",
+
   "@msgb4fbc92c": {
     "description": "ui\\screens\\backup_settings_screen.dart"
+
   },
   "zenfilebackupssettings1": "将所有当前设置保存到 ZenFile/Backups/Settings/",
+
   "@zenfilebackupssettings1": {
     "description": "ui\\screens\\backup_settings_screen.dart"
+
   },
   "json1": "选择并恢复 JSON 备份文件中的设置",
+
   "@json1": {
     "description": "ui\\screens\\backup_settings_screen.dart"
+
   },
   "msg534c621a": "备份目录",
+
   "@msg534c621a": {
     "description": "ui\\screens\\backup_settings_screen.dart"
+
   },
   "msg396b7d3f": "文件大小",
+
   "@msg396b7d3f": {
     "description": "ui\\screens\\backup_settings_screen.dart"
+
   },
   "msgc047ee32": "最后备份时间",
+
   "@msgc047ee32": {
     "description": "ui\\screens\\backup_settings_screen.dart"
+
   },
   "msg917fd6ef": "没有可导出的数据。",
+
   "@msg917fd6ef": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "sqlite": "SQLite数据库阅读器",
+
   "@sqlite": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "msg03a0d224": "表结构",
+
   "@msg03a0d224": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "sql": "SQL控制台",
+
   "@sql": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "msge2f0fe67": "打开数据库失败",
+
   "@msge2f0fe67": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "msg8bb11da4": "此数据库中未找到表。",
+
   "@msg8bb11da4": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "msg7796aa3e": "搜索行...",
+
   "@msg7796aa3e": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "msg15f26697": "未找到行",
+
   "@msg15f26697": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "msg0eaa935b": "未加载结构详情。",
+
   "@msg0eaa935b": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "sql1": "SQL 编辑器",
+
   "@sql1": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "select": "SELECT模板",
+
   "@select": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "csv": "导出结果为CSV",
+
   "@csv": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "select1": "执行SELECT查询以查看结果。",
+
   "@select1": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "msgd1ad9002": "执行查询出错。",
+
   "@msgd1ad9002": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "targetpath": "已复制路径: {targetPath}",
+
   "@targetpath": {
     "description": "ui\\screens\\directory_screen.dart",
+
     "type": "text"
+
   },
   "msg6ed14da7": "下一级",
+
   "@msg6ed14da7": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msgcd0b9aca": "删除选中",
+
   "@msgcd0b9aca": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msgee14ee27": "确定要删除此项目吗？此操作无法撤销。",
+
   "@msgee14ee27": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "filenamecreatedname": "\"{fileName}\" 已存在，已创建 \"{createdName}\"。",
+
   "@filenamecreatedname": {
     "description": "ui\\screens\\directory_screen.dart",
+
     "type": "text"
+
   },
   "foldernamecreatedname": "\"{folderName}\" 已存在，已创建 \"{createdName}\"。",
+
   "@foldernamecreatedname": {
     "description": "ui\\screens\\directory_screen.dart",
+
     "type": "text"
+
   },
   "msgbd165c40": "创建新的空白文本文档",
+
   "@msgbd165c40": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg68ac91eb": "新建压缩包",
+
   "@msg68ac91eb": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg881f6a80": "压缩当前文件夹内容",
+
   "@msg881f6a80": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg97301f64": "查看和排序选项",
+
   "@msg97301f64": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg829cb1dd": "列表视图",
+
   "@msg829cb1dd": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg0a4ebb8d": "大小和间距选项",
+
   "@msg0a4ebb8d": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg88062f93": "图标和文件夹大小",
+
   "@msg88062f93": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msga7c781f5": "大小和间距",
+
   "@msga7c781f5": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msga2946a1a": "排序方式",
+
   "@msga2946a1a": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "za": "名称 (Z-A)",
+
   "@za": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg2e2a26bb": "大小（大）",
+
   "@msg2e2a26bb": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msgf437ace4": "仅此文件夹",
+
   "@msgf437ace4": {
     "description": "zenfile_end_drawer.dart"
+
   },
   "msg551f98ba": "暂无收藏",
+
   "@msg551f98ba": {
     "description": "zenfile_end_drawer.dart"
+
   },
   "ui_favorites": "收藏夹",
+
   "@ui_favorites": {
     "description": "zenfile_end_drawer.dart"
+
   },
   "ui_new_favorite": "新建收藏",
+
   "@ui_new_favorite": {
     "description": "directory_screen.dart"
+
   },
   "ui_favorite": "收藏",
+
   "@ui_favorite": {
     "description": "file_action_dialogs.dart"
+
   },
   "msg_favorited": "已收藏 {name}",
+
   "@msg_favorited": {
     "description": "directory_screen.dart",
+
     "placeholders": {
       "name": {}
     }
   },
   "msg4dfc167a": "启用此文件夹的自定义排序",
+
   "@msg4dfc167a": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msge4c84f81": "添加快捷方式",
+
   "@msge4c84f81": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msgd730e478": "系统根目录",
+
   "@msgd730e478": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg35546526": "网络连接",
+
   "@msg35546526": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg67a6ea5e": "添加网络连接",
+
   "@msg67a6ea5e": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msgcc51d6c2": "移除连接",
+
   "@msgcc51d6c2": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg6e0f9cef": "首页分类",
+
   "@msg6e0f9cef": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msge9691076": "空文件夹",
+
   "@msge9691076": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg551f98ba": "此目录不包含任何文件或子文件夹。",
+
   "@msg551f98ba": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg17093362": "取消操作",
+
   "@msg17093362": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg681c0f39": "全局搜索",
+
   "@msg681c0f39": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg0c36f64f": "仅文档",
+
   "@msg0c36f64f": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg26b041dd": "仅音频",
+
   "@msg26b041dd": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msge632ba85": "仅压缩包",
+
   "@msge632ba85": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "label": "{label} 筛选已激活",
+
   "@label": {
     "description": "ui\\screens\\directory_screen.dart",
+
     "type": "text"
+
   },
   "msg0e77af8a": "隐藏文件夹",
+
   "@msg0e77af8a": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "e11": "加载出错：{e}",
+
   "@e11": {
     "description": "ui\\screens\\document_viewer_screen.dart",
+
     "type": "text"
+
   },
   "msg5937f822": "（空白幻灯片）",
+
   "@msg5937f822": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg360d0b37": "保存成功 ✓",
+
   "@msg360d0b37": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "pdf": "PDF显示设置",
+
   "@pdf": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg09c933bf": "优化大型、设计复杂或扫描文档的渲染性能。",
+
   "@msg09c933bf": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg701a85d4": "标准模式",
+
   "@msg701a85d4": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg2722d1a7": "最适合文本文档",
+
   "@msg2722d1a7": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msgb2b08d54": "适合宣传册和照片",
+
   "@msgb2b08d54": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg8b519c02": "页面布局",
+
   "@msg8b519c02": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg7f2cd152": "连续（垂直滚动列表）",
+
   "@msg7f2cd152": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg151ea324": "滚动方向",
+
   "@msg151ea324": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg7d45ded6": "垂直（从上到下滚动）",
+
   "@msg7d45ded6": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg176ef589": "启用文本选择",
+
   "@msg176ef589": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg864f8706": "关闭可显著提升页面渲染速度并消除滚动卡顿。",
+
   "@msg864f8706": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msgd28847a2": "新建文档",
+
   "@msgd28847a2": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg3007c452": "更多选项",
+
   "@msg3007c452": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg452dba7c": "自动换行",
+
   "@msg452dba7c": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msgc31f9440": "显示行号",
+
   "@msgc31f9440": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg1d93c30b": "用其他应用打开",
+
   "@msg1d93c30b": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msgace80573": "（空文件）",
+
   "@msgace80573": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg030f48bd": "用应用打开",
+
   "@msg030f48bd": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msgfd96af00": "分享功能即将推出",
+
   "@msgfd96af00": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
+  },
+  "ui_share": "分享",
+
+  "@ui_share": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "ftp1": "FTP服务器已成功停止",
+
   "@ftp1": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "ftpe": "启动FTP服务器出错：{e}",
+
   "@ftpe": {
     "description": "ui\\screens\\ftp_server_screen.dart",
+
     "type": "text"
+
   },
   "msg5c202e56": "请在更改配置前停止服务器",
+
   "@msg5c202e56": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msgfca29cb3": "更改端口",
+
   "@msgfca29cb3": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msg8a0b5bf5": "无效的端口号",
+
   "@msg8a0b5bf5": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msg3bce2199": "设置用户名",
+
   "@msg3bce2199": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msg0b62b5ce": "用户名不能为空",
+
   "@msg0b62b5ce": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "ftp2": "FTP 服务器",
+
   "@ftp2": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msg5ab96a6d": "编辑设置前请先停止服务器",
+
   "@msg5ab96a6d": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msgc400f106": "更改目录",
+
   "@msgc400f106": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msgb5eb59fc": "设置用户",
+
   "@msgb5eb59fc": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msg70c53afb": "匿名访问",
+
   "@msg70c53afb": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msg8e2021aa": "创建快捷方式",
+
   "@msg8e2021aa": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msgd70e9bdf": "未激活",
+
   "@msgd70e9bdf": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msg7ae644e4": "网络状态",
+
   "@msg7ae644e4": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msg5d57821d": "服务器地址",
+
   "@msg5d57821d": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msgfefea1b3": "主目录",
+
   "@msgfefea1b3": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msg124d9054": "显示隐藏文件",
+
   "@msg124d9054": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "tlsftp": "基于显式 TLS 的安全 FTP 连接",
+
   "@tlsftp": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msg1f4c1042": "文件夹",
+
   "@msg1f4c1042": {
     "description": "ui\\screens\\global_search_screen.dart"
+
   },
   "msgf2ef53c0": "在此文件夹中搜索...",
+
   "@msgf2ef53c0": {
     "description": "ui\\screens\\global_search_screen.dart"
+
   },
   "msgfff96ede": "更多操作",
+
   "@msgfff96ede": {
     "description": "ui\\screens\\global_search_screen.dart"
+
   },
   "msg88e45bb8": "搜索您的存储",
+
   "@msg88e45bb8": {
     "description": "ui\\screens\\global_search_screen.dart"
+
   },
   "query": "未找到匹配 \"{_query}\" 的内容",
+
   "@query": {
     "description": "ui\\screens\\global_search_screen.dart",
+
     "type": "text"
+
   },
   "msge109d1ea": "仪表盘刷新成功",
+
   "@msge109d1ea": {
     "description": "ui\\screens\\home_screen.dart"
+
   },
   "msg05cea075": "再按一次退出应用",
+
   "@msg05cea075": {
     "description": "ui\\screens\\home_screen.dart"
+
   },
   "msg7498c202": "退出应用",
+
   "@msg7498c202": {
     "description": "ui\\screens\\home_screen.dart"
+
   },
   "msg03247b17": "确定要退出吗？再次按返回键或点击退出以关闭应用。",
+
   "@msg03247b17": {
     "description": "ui\\screens\\home_screen.dart"
+
   },
   "msg354c1c9a": "刷新仪表盘",
+
   "@msg354c1c9a": {
     "description": "ui\\screens\\home_screen.dart"
+
   },
   "msg19021d08": "自定义快捷分类",
+
   "@msg19021d08": {
     "description": "ui\\screens\\home_screen.dart"
+
   },
   "html": "HTML 预览",
+
   "@html": {
     "description": "ui\\screens\\html_viewer_screen.dart"
+
   },
   "msgfba1f416": "输入文件夹名称",
+
   "@msgfba1f416": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
+
   },
   "msg33b0b21c": "选择并固定文件夹",
+
   "@msg33b0b21c": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
+
   },
   "msgff3200cc": "清除选择",
+
   "@msgff3200cc": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
+
   },
   "msg4614630a": "文件夹为空",
+
   "@msg4614630a": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
+
   },
   "msg5dc1fa7b": "固定此文件夹",
+
   "@msg5dc1fa7b": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
+
   },
   "markdown": "Markdown 预览",
+
   "@markdown": {
     "description": "ui\\screens\\markdown_viewer_screen.dart"
+
   },
   "count1": "确定要永久删除选中的 {count} 个项目吗？",
+
   "@count1": {
     "description": "ui\\screens\\media_category_screen.dart",
+
     "type": "text"
+
   },
   "count2": "已成功删除 {count} 个项目",
+
   "@count2": {
     "description": "ui\\screens\\media_category_screen.dart",
+
     "type": "text"
+
   },
   "pastedcountdestdir": "已粘贴 {pastedCount} 个项目到 {destDir}",
+
   "@pastedcountdestdir": {
     "description": "ui\\screens\\media_category_screen.dart",
+
     "type": "text"
+
   },
   "msgfadbb0bc": "没有可分享的文件。",
+
   "@msgfadbb0bc": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msg3ad97542": "未找到可重命名的物理文件",
+
   "@msg3ad97542": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msg1303e638": "修改时间",
+
   "@msg1303e638": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msg5bab3781": "媒体信息",
+
   "@msg5bab3781": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msg880a18f3": "已选择项目",
+
   "@msg880a18f3": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msgea9ecb93": "总大小",
+
   "@msgea9ecb93": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msg5556baa3": "长按打开方式...",
+
   "@msg5556baa3": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msg631cd220": "确认删除",
+
   "@msg631cd220": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "name": "已删除 {name}",
+
   "@name": {
     "description": "ui\\screens\\media_category_screen.dart",
+
     "type": "text"
+
   },
   "msgcd8264f1": "在位置中显示",
+
   "@msgcd8264f1": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msg2a4cfb07": "打开方式...",
+
   "@msg2a4cfb07": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msg8bf52387": "文件未找到或不可分享。",
+
   "@msg8bf52387": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msg419be096": "粘贴到此处",
+
   "@msg419be096": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msg5093bc80": "最新优先",
+
   "@msg5093bc80": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msgbc74b5a8": "按日期",
+
   "@msgbc74b5a8": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msgef7ae768": "最新优先（按月分组）",
+
   "@msgef7ae768": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msgb8140039": "最旧优先（按月分组）",
+
   "@msgb8140039": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msg424a0110": "未知日期",
+
   "@msg424a0110": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msgb19671d6": "全部项目",
+
   "@msgb19671d6": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msg11fea612": "日期和时间",
+
   "@msg11fea612": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg12e86877": "文件大小 / 项目数",
+
   "@msg12e86877": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg7908038f": "无 / 隐藏信息",
+
   "@msg7908038f": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg9136d4dc": "不在右侧显示额外信息",
+
   "@msg9136d4dc": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg84986f91": "显示最后修改日期和时间",
+
   "@msg84986f91": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgfc000737": "文件显示大小，文件夹显示项目数",
+
   "@msgfc000737": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg83de16cc": "选择尾部信息样式",
+
   "@msg83de16cc": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgaa2a18a1": "选择当三点操作按钮隐藏时，文件和文件夹右侧显示的内容。",
+
   "@msgaa2a18a1": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg26e4c5d6": "显示地址栏",
+
   "@msg26e4c5d6": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "windows1": "在文件列表顶部显示可编辑的Windows资源管理器风格地址栏",
+
   "@windows1": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg74e86197": "直接以文件夹（相册）首选视图打开图片/视频快捷分类",
+
   "@msg74e86197": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msga1fbf3c6": "隐藏安卓导航栏",
+
   "@msga1fbf3c6": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg02dddc02": "隐藏底部导航栏以最大化屏幕空间（上滑可显示）",
+
   "@msg02dddc02": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg50923c95": "清除所有已记住的\"打开方式\"关联",
+
   "@msg50923c95": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg6fdc09ac": "跳过\"打开方式\"对话框",
+
   "@msg6fdc09ac": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg0a4b0442": "绕过应用选择对话框，直接使用默认查看器打开文件",
+
   "@msg0a4b0442": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msge1157984": "选择启动时进入分类页或浏览页",
+
   "@msge1157984": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgae1854a2": "选择单指或双指左右滑动切换页面",
+
   "@msgae1854a2": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg11b1ec65": "在浏览页显示操作按钮栏，含后退、前进、新建、复制标签页、向上",
+
   "@msg11b1ec65": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg7e7765b6": "显示以点(.)开头的系统文件和文件夹",
+
   "@msg7e7765b6": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg86f3d70f": "显示文件夹和文件计数标题",
+
   "@msg86f3d70f": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg40e9c325": "在存储标题栏下显示文件夹和文件总数",
+
   "@msg40e9c325": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "ampm24": "在列表中切换12小时（AM/PM）和24小时时间格式",
+
   "@ampm24": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg25ee6612": "在列表中隐藏时间和日期",
+
   "@msg25ee6612": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg337359a6": "完全隐藏文件和文件夹的修改日期和时间",
+
   "@msg337359a6": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msga517863e": "计算并显示目录中的文件和文件夹总数",
+
   "@msga517863e": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg59a24fcb": "计算并显示目录中所有文件的总大小（可能影响列表性能）",
+
   "@msg59a24fcb": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg309e2a28": "在顶部或底部显示导航栏位置",
+
   "@msg309e2a28": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msge34c23ff": "顶部",
+
   "@msge34c23ff": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg3341e3ed": "操作按钮显示在页面顶部",
+
   "@msg3341e3ed": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg8c414b06": "底部",
+
   "@msg8c414b06": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg5d2c8e7f": "操作按钮显示在页面底部",
+
   "@msg5d2c8e7f": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg9b7639ac": "在浏览和媒体页面的选择操作栏中仅显示图标",
+
   "@msg9b7639ac": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgdd69671b": "返回时短暂闪烁并滚动到刚退出的文件夹",
+
   "@msgdd69671b": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg57736228": "显示实际的图片和视频缩略图而非通用文件图标",
+
   "@msg57736228": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg1eda8a50": "允许文件名换行显示3行而非截断",
+
   "@msg1eda8a50": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgc7196afd": "隐藏文件夹和文件旁边的三点菜单按钮",
+
   "@msgc7196afd": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgad54815d": "长按并拖动文件夹或文件将其移动到其他文件夹",
+
   "@msgad54815d": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg5dff8f2d": "拖放文件时显示选项弹窗（复制、移动、压缩）",
+
   "@msg5dff8f2d": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg4b0a7063": "允许在单独的标签页中打开多个文件夹以便快速导航",
+
   "@msg4b0a7063": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgf04ac00d": "并排浏览两个目录并轻松传输文件",
+
   "@msgf04ac00d": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgd1591ba4": "启动应用时打开上次浏览的文件夹",
+
   "@msgd1591ba4": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg25792550": "将删除的文件和文件夹移至隐藏的回收站而非永久删除",
+
   "@msg25792550": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg1b9633fe": "主题色 / 动态主题",
+
   "@msg1b9633fe": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg64db4c2d": "文件夹图标样式",
+
   "@msg64db4c2d": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgece44aa5": "应用抽屉按钮样式",
+
   "@msgece44aa5": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "amoled1": "AMOLED 纯黑模式",
+
   "@amoled1": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "amoled2": "在深色模式下为AMOLED屏幕使用纯黑背景",
+
   "@amoled2": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg5228b59f": "应用排版 / 字体",
+
   "@msg5228b59f": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msge7d18d73": "自定义快捷方式",
+
   "@msge7d18d73": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg036fe6a4": "重新排列和切换快捷分类项目的可见性",
+
   "@msg036fe6a4": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgead3e5c5": "搜索设置...",
+
   "@msgead3e5c5": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg2590095f": "设置分类",
+
   "@msg2590095f": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgfdae44c3": "常规与行为",
+
   "@msgfdae44c3": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgeae34685": "默认屏幕、导航控制和快捷方式",
+
   "@msgeae34685": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg91b228b8": "主题、应用图标、文件夹样式和排版",
+
   "@msg91b228b8": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgad6e8bb8": "文件浏览器选项",
+
   "@msgad6e8bb8": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg8ddc4963": "地址栏、隐藏文件、标签页和拖放",
+
   "@msg8ddc4963": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg45db4e2a": "文件夹大小、计数和时间/日期格式",
+
   "@msg45db4e2a": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg09ca4d86": "默认相册视图和缩略图预览",
+
   "@msg09ca4d86": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgeb3693fb": "打开操作和默认查看器配置",
+
   "@msgeb3693fb": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg3a6a39ae": "回收站开关和自动删除时长",
+
   "@msg3a6a39ae": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg9edfaff3": "备份或恢复所有应用设置",
+
   "@msg9edfaff3": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg99c9cc56": "尝试搜索其他关键词",
+
   "@msg99c9cc56": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msga432d127": "默认主页",
+
   "@msga432d127": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg226fc6ae": "分类页",
+
   "@msg226fc6ae": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgd48a082d": "滑动切换页面",
+
   "@msgd48a082d": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgaac01f32": "单指滑动",
+
   "@msgaac01f32": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg59c7debc": "记住上次打开的文件夹",
+
   "@msg59c7debc": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgce732d8a": "隐藏底部栏（首页/浏览）的文字标签，更简洁紧凑",
+
   "@msgce732d8a": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg1cfeaace": "文件浏览器与导航",
+
   "@msg1cfeaace": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgd33e3082": "高亮退出文件夹",
+
   "@msgd33e3082": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msga4333788": "媒体与默认操作",
+
   "@msga4333788": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg20c87c8e": "默认相册首选视图",
+
   "@msg20c87c8e": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg72b1f919": "所有默认查看器选择已重置",
+
   "@msg72b1f919": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msge99f4762": "启用回收站",
+
   "@msge99f4762": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg2c8a394a": "浏览页",
+
   "@msg2c8a394a": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg2c3c5a35": "图标形状",
+
   "@msg2c3c5a35": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg267fcd86": "每3天",
+
   "@msg267fcd86": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg9104c0c5": "每两周",
+
   "@msg9104c0c5": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "days": "每{days}天",
+
   "@days": {
     "description": "ui\\screens\\more_settings_screen.dart",
+
     "type": "text"
+
   },
   "msg673ad9d4": "远程服务器缓存已清除",
+
   "@msg673ad9d4": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgd9f142c4": "自动清理缓存",
+
   "@msgd9f142c4": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg5472ef41": "立即清除网络服务器下载的缓存文件",
+
   "@msg5472ef41": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgac7687d9": "浏览远程服务器缓存文件所在目录",
+
   "@msgac7687d9": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg225f6249": "为网络服务器上的图片和视频显示缩略图预览",
+
   "@msg225f6249": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "materialyou": "Material You（动态壁纸取色）",
+
   "@materialyou": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg05cff3ad": "活力橙",
+
   "@msg05cff3ad": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg5ed35657": "皇家紫",
+
   "@msg5ed35657": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msge74a7283": "琥珀金",
+
   "@msge74a7283": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg3904ba87": "赛博粉",
+
   "@msg3904ba87": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgd58d230a": "蓝宝石",
+
   "@msgd58d230a": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg508b005e": "森林绿",
+
   "@msg508b005e": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgefdde083": "日落桃",
+
   "@msgefdde083": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg628e73a9": "默认蓝（标志性蓝色）",
+
   "@msg628e73a9": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg8244d240": "经典实心",
+
   "@msg8244d240": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgf08d9b15": "现代圆角",
+
   "@msgf08d9b15": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msge5fba3dd": "星标特别",
+
   "@msge5fba3dd": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgfe4254dc": "文档片段",
+
   "@msgfe4254dc": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg84719fd5": "极简描边",
+
   "@msg84719fd5": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "zenfile4": "ZenFile 断线描边",
+
   "@zenfile4": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "vuesax": "分类网格 / Vuesax 网格",
+
   "@vuesax": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg5dc988f4": "汉堡菜单 / 经典菜单",
+
   "@msg5dc988f4": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgd06ba04f": "M3 表现派 1",
+
   "@msgd06ba04f": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg5090469e": "M3 表现派 2",
+
   "@msg5090469e": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "d": "M3 表现派 3",
+
   "@d": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg67836b24": "极简风",
+
   "@msg67836b24": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgf08c8dc4": "玻璃拟态",
+
   "msgdesign6": "赛博朋克",
+
   "@msgdesign6": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgdesign7": "新拟态",
+
   "@msgdesign7": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgdesign8": "经典 2",
+
   "@msgdesign8": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgdesign9": "经典 3",
+
   "@msgdesign9": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgdesign10": "用户设计 1",
+
   "@msgdesign10": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
+  },
+  "msgdesign11": "用户设计 2",
+
+  "@msgdesign11": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "@msgf08c8dc4": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg7372dc9f": "自定义图标",
+
   "@msg7372dc9f": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg3004e40a": "默认标志（自然禅意）",
+
   "@msg3004e40a": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgc540e940": "点阵与无衬线",
+
   "@msgc540e940": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg00ea5776": "欧菲特现代无衬线",
+
   "@msg00ea5776": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg7bdbfaa5": "捷脑科技等宽",
+
   "@msg7bdbfaa5": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgdcb4082d": "蒙特都市无衬线",
+
   "@msgdcb4082d": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg9d7001d9": "自定义导入字体",
+
   "@msg9d7001d9": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgc2f5e9e4": "标志性默认",
+
   "@msgc2f5e9e4": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg6a7c758f": "从不（禁用自动删除）",
+
   "@msg6a7c758f": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "days1": "{days} 天后",
+
   "@days1": {
     "description": "ui\\screens\\more_settings_screen.dart",
+
     "type": "text"
+
   },
   "msgfe76ae54": "选择启动应用时默认显示的页面",
+
   "@msgfe76ae54": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg8af2412a": "启动时显示快捷分类页面",
+
   "@msg8af2412a": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg245c3258": "启动时显示文件浏览页面",
+
   "@msg245c3258": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg4439669d": "选择用单指或双指左右滑动切换页面",
+
   "@msg4439669d": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg46978666": "单指左右滑动切换分类页、浏览页或打开抽屉",
+
   "@msg46978666": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgbc9bf336": "双指滑动",
+
   "@msgbc9bf336": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg563871d3": "双指左右滑动切换分类页、浏览页或打开抽屉",
+
   "@msg563871d3": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgca71ac0c": "选择主题色",
+
   "@msgca71ac0c": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg732630c1": "选择文件夹图标样式",
+
   "@msg732630c1": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgf9224d98": "选择抽屉按钮样式",
+
   "@msgf9224d98": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgc337ecfa": "选择分类图标形状",
+
   "@msgc337ecfa": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgf18bc3d9": "应用启动器图标",
+
   "@msgf18bc3d9": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "logo": "为应用启动器图标选择一个自定义Logo。注意某些启动器可能需要几秒钟才能更新。",
+
   "@logo": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg64a6476a": "默认标志",
+
   "@msg64a6476a": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "title": "应用图标已切换为 {title}",
+
   "@title": {
     "description": "ui\\screens\\more_settings_screen.dart",
+
     "type": "text"
+
   },
   "msgad76161f": "选择自定义图标",
+
   "@msgad76161f": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "pngjpgwebp": "请选择图片文件（PNG/JPG/WEBP）",
+
   "@pngjpgwebp": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgb06c5c34": "自定义图标已应用",
+
   "@msgb06c5c34": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "e12": "应用自定义图标失败: {e}",
+
   "@e12": {
     "description": "ui\\screens\\more_settings_screen.dart",
+
     "type": "text"
+
   },
   "msg375c9eb8": "原始简洁几何风格",
+
   "@msg375c9eb8": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg817e321b": "高科技复古点阵标题 + 简洁正文",
+
   "@msg817e321b": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg3c2a24cc": "超流畅、极简且高级的几何美学",
+
   "@msg3c2a24cc": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg978f8d11": "干净且未来感的开发者等宽风格",
+
   "@msg978f8d11": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg93b657aa": "大胆、现代且醒目的字体排版",
+
   "@msg93b657aa": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg9db40ad6": "您加载的自定义字体文件",
+
   "@msg9db40ad6": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "zenfile5": "选择一种精美的字体来自定义ZenFile的整体视觉主题",
+
   "@zenfile5": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg7372efa5": "替换自定义字体文件",
+
   "@msg7372efa5": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg3186839b": "加载所选字体文件失败。",
+
   "@msg3186839b": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "opentypeotftruetypettf": "请选择有效的 OpenType (.otf) 或 TrueType (.ttf) 字体文件.",
+
   "@opentypeotftruetypettf": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgcf42dedc": "移除自定义字体",
+
   "@msgcf42dedc": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg2b9abfaa": "自定义字体已移除。",
+
   "@msg2b9abfaa": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgfdef8c23": "7 天",
+
   "@msgfdef8c23": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg25436ba3": "15 天",
+
   "@msg25436ba3": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg85e7f60c": "30 天（推荐）",
+
   "@msg85e7f60c": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgd61e706f": "从不（手动清理）",
+
   "@msgd61e706f": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgf0ef894a": "自动删除回收站时长",
+
   "@msgf0ef894a": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg1200d6b7": "回收站中的项目将在此时长后被永久删除。",
+
   "@msg1200d6b7": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg432fbb31": "删除连接",
+
   "@msg432fbb31": {
     "description": "ui\\screens\\network_category_screen.dart"
+
   },
   "@msgdeleteconn": {
     "type": "text"
+
   },
   "msgdeleteconn": "确定要删除 \"{name}\" 吗？",
+
   "msg3358aa10": "添加连接",
+
   "@msg3358aa10": {
     "description": "ui\\screens\\network_category_screen.dart"
+
   },
   "msgc9c900d0": "暂无远程连接",
+
   "@msgc9c900d0": {
     "description": "ui\\screens\\network_category_screen.dart"
+
   },
   "ftpsftpwebdavsmb1": "添加 FTP、SFTP、WebDav 或 SMB 连接",
+
   "@ftpsftpwebdavsmb1": {
     "description": "ui\\screens\\network_category_screen.dart"
+
   },
   "e13": "连接失败：{e}",
+
   "@e13": {
     "description": "ui\\screens\\network_category_screen.dart",
+
     "type": "text"
+
   },
   "msgb5bc0bf1": "正在解析主机地址...",
+
   "@msgb5bc0bf1": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "@msgc3d4e5f6": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "msgc3d4e5f6": "正在检查端口状态...",
+
   "msg3005ba4d": "正在验证凭据...",
+
   "@msg3005ba4d": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "msgab36a8c6": "正在挂载存储卷...",
+
   "@msgab36a8c6": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "name1": "\"{name}\" 添加成功！",
+
   "@name1": {
     "type": "text"
+
   },
   "@connectedtype": {
     "type": "text"
+
   },
   "connectedtype": "\"{name}\" 连接成功！",
+
   "msgdf434415": "系统应用已禁用",
+
   "@msgdf434415": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "documentsui": "您的设备没有启用默认的系统文件/文档应用（DocumentsUI），",
+
   "@documentsui": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "androidnn": "这是 Android 选择和挂载目录所必需的。\\n\\n",
+
   "@androidnn": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "msgb2af4e30": "请检查\"文件\"或\"文档\"系统应用是否在设备设置中被禁用，",
+
   "@msgb2af4e30": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "safe": "请求 SAF 文件夹失败：{e}",
+
   "@safe": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart",
+
     "type": "text"
+
   },
   "msg65c7ecb6": "请输入连接名称",
+
   "@msg65c7ecb6": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "msg69e3963c": "请输入服务器地址/主机名",
+
   "@msg69e3963c": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "msgce1ec2ce": "远程连接",
+
   "@msgce1ec2ce": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "msg25557d1f": "标准文件传输协议",
+
   "@msg25557d1f": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "ssh": "SSH安全文件传输服务器",
+
   "@ssh": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "http": "HTTP网页分布式创作",
+
   "@http": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "androidsd": "Android 存储访问框架 (SD 卡 / 外部存储)",
+
   "@androidsd": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "msg8486035b": "选择网络服务",
+
   "@msg8486035b": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "naszenfile": "将远程服务器或 NAS 共享挂载为 ZenFile 存储列表中的动态驱动器。",
+
   "@naszenfile": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "selectedtype": "{_selectedType} 设置",
+
   "@selectedtype": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart",
+
     "type": "text"
+
   },
   "msg5c808d9a": "输入连接详情以链接此网络存储卷。",
+
   "@msg5c808d9a": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "nas": "例如：办公室 NAS、家庭共享",
+
   "@nas": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "dav": "例如：192.168.1.100 或 192.168.1.100/dav",
+
   "@dav": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "naslocal": "例如：192.168.1.100 或 nas.local",
+
   "@naslocal": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "dav1": "例如：/dav 或 /",
+
   "@dav1": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "anonymousadmin": "例如：anonymous 或 admin",
+
   "@anonymousadmin": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "msgeec70cd2": "密码（可选）",
+
   "@msgeec70cd2": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "msgf1fa9d44": "正在创建挂载点...",
+
   "@msgf1fa9d44": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "selectedtype1": "请稍候，我们正在建立与 {_selectedType} 服务器的可靠连接。",
+
   "@selectedtype1": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart",
+
     "type": "text"
+
   },
   "e14": "恢复项目出错：{e}",
+
   "@e14": {
     "description": "ui\\screens\\recycle_bin_screen.dart",
+
     "type": "text"
+
   },
   "e15": "删除项目出错：{e}",
+
   "@e15": {
     "description": "ui\\screens\\recycle_bin_screen.dart",
+
     "type": "text"
+
   },
   "msg62187f1b": "确定要永久删除回收站中的所有项目吗？此操作不可逆。",
+
   "@msg62187f1b": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
+
   },
   "msg8cd6bc18": "清空回收站",
+
   "@msg8cd6bc18": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
+
   },
   "msga4dfc0c6": "回收站已成功清空",
+
   "@msga4dfc0c6": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
+
   },
   "msg07d80ac5": "搜索已删除文件...",
+
   "@msg07d80ac5": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
+
   },
   "msg96d2b75f": "永久删除",
+
   "@msg96d2b75f": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
+
   },
   "msg0d824a24": "回收站为空",
+
   "@msg0d824a24": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
+
   },
   "msg4c478216": "原始位置",
+
   "@msg4c478216": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
+
   },
   "msgc44a57b6": "正在下载文本...",
+
   "@msgc44a57b6": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msgd6d8292d": "正在缓冲媒体...",
+
   "@msgd6d8292d": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "e16": "下载失败：{e}",
+
   "@e16": {
     "description": "ui\\screens\\remote_explorer_screen.dart",
+
     "type": "text"
+
   },
   "msg66d723c5": "缓冲超时，请检查网络连接",
+
   "@msg66d723c5": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msg53082c55": "无法粘贴到相同位置",
+
   "@msg53082c55": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msg108feeed": "正在复制...",
+
   "@msg108feeed": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msg2d4b44ec": "成功粘贴项目",
+
   "@msg2d4b44ec": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "filenamee": "上传\"{fileName}\"失败：{e}",
+
   "@filenamee": {
     "description": "ui\\screens\\remote_explorer_screen.dart",
+
     "type": "text"
+
   },
   "newname": "已重命名为 \"{newName}\"",
+
   "@newname": {
     "description": "ui\\screens\\remote_explorer_screen.dart",
+
     "type": "text"
+
   },
   "msg4b342999": "删除项目",
+
   "@msg4b342999": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "e17": "删除失败：{e}",
+
   "@e17": {
     "description": "ui\\screens\\remote_explorer_screen.dart",
+
     "type": "text"
+
   },
   "msg79d7fef7": "新建远程文件夹",
+
   "@msg79d7fef7": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msga98473f2": "文件夹名称",
+
   "@msga98473f2": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "e18": "创建文件夹失败：{e}",
+
   "@e18": {
     "description": "ui\\screens\\remote_explorer_screen.dart",
+
     "type": "text"
+
   },
   "msg5ca05a9b": "远程目录",
+
   "@msg5ca05a9b": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msga636c09d": "复制到本地设备",
+
   "@msga636c09d": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msga4c461a4": "下载文件到本地剪贴板",
+
   "@msga4c461a4": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msg425502fa": "下载并从服务器删除",
+
   "@msg425502fa": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msgc2b9f4b9": "根目录",
+
   "@msgc2b9f4b9": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msg2f7cd487": "上传本地剪贴板到服务器",
+
   "@msg2f7cd487": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msg905c34fa": "粘贴远程剪贴板",
+
   "@msg905c34fa": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msg8439c155": "连接已断开",
+
   "@msg8439c155": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msgda43df27": "重试连接",
+
   "@msgda43df27": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msga21f6ab1": "空目录",
+
   "@msga21f6ab1": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msge1c538b8": "在此上传剪贴板内容",
+
   "@msge1c538b8": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "e19": "下载失败: {e}",
+
   "@e19": {
     "description": "ui\\screens\\remote_explorer_screen.dart",
+
     "type": "text"
+
   },
   "msg50eaf94d": "删除确认",
+
   "@msg50eaf94d": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msgcb0da17b": "正在删除...",
+
   "@msgcb0da17b": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msg4805c385": "应用管理",
+
   "@msg4805c385": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+
   },
   "msg93bc1f09": "刷新列表",
+
   "@msg93bc1f09": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+
   },
   "msg32e490fe": "已安装的用户应用",
+
   "@msg32e490fe": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+
   },
   "apk2": "已备份的APK",
+
   "@apk2": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+
   },
   "msg8936ded6": "搜索包名或名称...",
+
   "@msg8936ded6": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+
   },
   "msgd8b3fc58": "按大小排序",
+
   "@msgd8b3fc58": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+
   },
   "msgbe1399f0": "按字母排序",
+
   "@msgbe1399f0": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+
   },
   "msg9ad67f11": "按备份日期排序",
+
   "@msg9ad67f11": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+
   },
   "msgb0681bd4": "精确存储计算",
+
   "@msgb0681bd4": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+
   },
   "msg34cd846c": "授予使用情况访问权限",
+
   "@msg34cd846c": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+
   },
   "msga22ddaae": "存储分析",
+
   "@msga22ddaae": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+
   },
   "msgaae779d4": "重新扫描存储",
+
   "@msgaae779d4": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+
   },
   "msg7ae97495": "正在扫描设备存储",
+
   "@msg7ae97495": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+
   },
   "msga5e5bf71": "总存储",
+
   "@msga5e5bf71": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+
   },
   "msg652be256": "分类明细",
+
   "@msg652be256": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+
   },
   "@msgb1a2c3d4": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+
   },
   "msgb1a2c3d4": "初始化中...",
+
   "@msgc2d3e4f5": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+
   },
   "msgc2d3e4f5": "正在读取系统存储...",
+
   "@msgd3e4f5a6": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+
   },
   "msgd3e4f5a6": "正在计算应用占用空间...",
+
   "@msge4f5a6b7": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+
   },
   "msge4f5a6b7": "正在分析文件、分类资源并读取已安装应用占用空间...",
+
   "@msgf5a6b7c8": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart",
+
     "type": "text",
+
     "placeholders": {
       "size": {}
     }
   },
   "msgf5a6b7c8": "{size} 可用",
+
   "@msga6b7c8d9": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart",
+
     "type": "text",
+
     "placeholders": {
       "size": {},
       "percent": {}
     }
   },
   "msga6b7c8d9": "{size} 已用（{percent}%）",
+
   "@msgb7c8d9e0": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart",
+
     "type": "text",
+
     "placeholders": {
       "percent": {}
     }
   },
   "msgb7c8d9e0": "占总存储的 {percent}%",
+
   "@msgc8d9e0f1": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+
   },
   "msgc8d9e0f1": "系统/其他",
+
   "ui_drag_archive_created": "压缩包\"{name}\"创建成功",
+
   "@ui_drag_archive_created": {
     "description": "Drag drop action dialog snackbar",
+
     "type": "text",
+
     "placeholders": {
       "name": {}
     }
   },
   "ui_drag_archive_failed": "创建压缩包失败：{error}",
+
   "@ui_drag_archive_failed": {
     "description": "Drag drop action dialog snackbar",
+
     "type": "text",
+
     "placeholders": {
       "error": {}
     }
   },
   "ui_backup_success": "设置已备份到 ZenFile/Backups/Settings/",
+
   "@ui_backup_success": {
     "description": "Settings backup service snackbar"
+
   },
   "ui_backup_failed": "备份失败：{error}",
+
   "@ui_backup_failed": {
     "description": "Settings backup service snackbar",
+
     "type": "text",
+
     "placeholders": {
       "error": {}
     }
   },
   "ui_restore_invalid_file": "请选择有效的 .json 设置备份文件",
+
   "@ui_restore_invalid_file": {
     "description": "Settings restore snackbar"
+
   },
   "ui_restore_success": "设置恢复成功！",
+
   "@ui_restore_success": {
     "description": "Settings restore snackbar"
+
   },
   "ui_restore_failed": "恢复失败：{error}",
+
   "@ui_restore_failed": {
     "description": "Settings restore snackbar",
+
     "type": "text",
+
     "placeholders": {
       "error": {}
     }
   },
   "msgeb3d7d70": "卸载应用",
+
   "@msgeb3d7d70": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_batch_action_bar.dart"
+
   },
   "msg6eb319a1": "正在备份所选应用...",
+
   "@msg6eb319a1": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_batch_action_bar.dart"
+
   },
   "msg7fbfdce6": "未找到应用",
+
   "@msg7fbfdce6": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_list_tab.dart"
+
   },
   "msg753cdb55": "启动应用",
+
   "@msg753cdb55": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
+
   },
   "apk3": "备份APK",
+
   "@apk3": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
+
   },
   "apk4": "正在备份APK...",
+
   "@apk4": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
+
   },
   "apk5": "备份APK失败",
+
   "@apk5": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
+
   },
   "apk6": "分享APK文件",
+
   "@apk6": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
+
   },
   "msga0b18169": "分享备份文件",
+
   "@msga0b18169": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\backup_list_tab.dart"
+
   },
   "msgb443cd06": "删除备份文件",
+
   "@msgb443cd06": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\backup_list_tab.dart"
+
   },
   "e20": "加载文件出错：{e}",
+
   "@e20": {
     "description": "ui\\screens\\text_editor_screen.dart",
+
     "type": "text"
+
   },
   "msg24c6ab0f": "文件保存成功",
+
   "@msg24c6ab0f": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "count3": "已替换 {count} 处",
+
   "@count3": {
     "description": "ui\\screens\\text_editor_screen.dart",
+
     "type": "text"
+
   },
   "msgffb01e5b": "纯文本",
+
   "@msgffb01e5b": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "msg7902d9c0": "选择语法",
+
   "@msg7902d9c0": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "msgc856a077": "查找 / 替换",
+
   "@msgc856a077": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "msg7f2c95cd": "保存文件",
+
   "@msg7f2c95cd": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "msg084e9388": "解锁缩放",
+
   "@msg084e9388": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "msgf387265a": "自动换行: 开",
+
   "@msgf387265a": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "msg1045ba75": "自动换行: 关",
+
   "@msg1045ba75": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "msg96f0ad7d": "编辑锁定: 开",
+
   "@msg96f0ad7d": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "msg349ab61d": "编辑锁定: 关",
+
   "@msg349ab61d": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "msg0cee3cd1": "隐藏行号",
+
   "@msg0cee3cd1": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "selectedlanguage": "语法 ({_selectedLanguage})",
+
   "@selectedlanguage": {
     "description": "ui\\screens\\text_editor_screen.dart",
+
     "type": "text"
+
   },
   "msg0dac421f": "替换为...",
+
   "@msg0dac421f": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "msg52709ae1": "全部替换",
+
   "@msg52709ae1": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "msg4ecba8f6": "制表符",
+
   "@msg4ecba8f6": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "e21": "加载保险箱出错：{e}",
+
   "@e21": {
     "description": "ui\\screens\\vault_explorer_screen.dart",
+
     "type": "text"
+
   },
   "msg4828116a": "隐藏文件",
+
   "@msg4828116a": {
     "description": "ui\\screens\\vault_explorer_screen.dart"
+
   },
   "msg3bf31dfe": "输入密码解锁",
+
   "@msg3bf31dfe": {
     "description": "ui\\screens\\vault_lock_screen.dart"
+
   },
   "pin": "输入PIN码解锁钱包",
+
   "@pin": {
     "description": "ui\\screens\\vault_lock_screen.dart"
+
   },
   "pin1": "设置您的4位钱包PIN码",
+
   "@pin1": {
     "description": "ui\\screens\\vault_lock_screen.dart"
+
   },
   "pin2": "确认您的4位PIN码",
+
   "@pin2": {
     "description": "ui\\screens\\vault_lock_screen.dart"
+
   },
   "msgbb590f19": "私人保险箱",
+
   "@msgbb590f19": {
     "description": "ui\\screens\\vault_lock_screen.dart"
+
   },
   "msgaa43fa46": "全部清除",
+
   "@msgaa43fa46": {
     "description": "ui\\screens\\vault_lock_screen.dart"
+
   },
   "msgc16eed0e": "播放速度",
+
   "@msgc16eed0e": {
     "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
+
   },
   "msg8f106217": "锁定控制",
+
   "@msg8f106217": {
     "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
+
   },
   "msg1f41f25d": "重复模式",
+
   "@msg1f41f25d": {
     "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
+
   },
   "msg4d2abc8c": "媒体路径已复制到剪贴板。",
+
   "@msg4d2abc8c": {
     "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
+
   },
   "http1": "本地 HTTP 共享服务器已停止。",
+
   "@http1": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msg2904d894": "正在建立安全代理中继...",
+
   "@msg2904d894": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "@msga1b2c3d4": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
+
   },
   "msga1b2c3d4": "返回上一级",
+
   "@msga1b2c3d5": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
+
   },
   "msga1b2c3d5": "如何设置Shizuku？",
+
   "@msga1b2c3d6": {
     "description": "ui\\main.dart"
+
   },
   "msga1b2c3d6": "需要存储权限",
+
   "@msga1b2c3d7": {
     "description": "ui\\main.dart"
+
   },
   "msga1b2c3d7": "授予权限",
+
+  "msg_media_only_permission_title": "仅媒体文件权限",
+
+  "@msg_media_only_permission_title": {
+    "description": "Title for media-only permission warning"
+
+  },
+  "msg_media_only_permission_desc": "当前仅授予媒体文件访问权限，文件管理器将无法正常使用重命名、剪切、删除等功能。请授予「所有文件管理权限」以获得完整功能。",
+
+  "@msg_media_only_permission_desc": {
+    "description": "Description for media-only permission warning"
+
+  },
+  "msg_grant_full_storage_permission": "确定",
+
+  "@msg_grant_full_storage_permission": {
+    "description": "Button text to grant full storage permission"
+
+  },
+  "msg_permission_request_title": "授权请求",
+
+  "@msg_permission_request_title": {
+    "description": "Title of the permission request dialog"
+
+  },
+  "msg_permission_request_desc": "为了访问您设备上的文件，您需要手动为 ZenFile 授予[所有文件访问]权限，点击确定后进入设置界面，选择[ZenFile]并开启授权。",
+
+  "@msg_permission_request_desc": {
+    "description": "Description text for the permission request dialog"
+
+  },
+  "ui_open_settings": "打开设置",
+
+  "@ui_open_settings": {
+    "description": "ui\\main.dart"
+
+  },
+  "ui_open_settings_desc": "存储权限已被永久拒绝，请前往系统设置手动授予文件管理权限。",
+
+  "@ui_open_settings_desc": {
+    "description": "ui\\main.dart"
+
+  },
   "@msg2c146598": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msg2c146598": "互联网云隧道已上线！临时链接已激活。",
+
   "@msg4a5d26f4": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msg4a5d26f4": "链接已复制到剪贴板！",
+
   "type": "使用其他设备扫描以立即打开 {type}。",
+
   "@type": {
     "description": "ui\\screens\\web_sharing_screen.dart",
+
     "type": "text"
+
   },
   "msgc8390d74": "网页共享中心",
+
   "@msgc8390d74": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msg5345cdce": "互联网分享链接",
+
   "@msg5345cdce": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "http2": "HTTP本地共享服务器",
+
   "@http2": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "wifi": "允许同一 Wi-Fi 下的其他设备通过网页浏览器访问、查看和流式传输您的文件。",
+
   "@wifi": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msg73c512df": "服务器在线并流式传输中",
+
   "@msg73c512df": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "url1": "复制 URL",
+
   "@url1": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msg22b03c02": "二维码",
+
   "@msg22b03c02": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "sharedir": "共享目录：{shareDir}",
+
   "@sharedir": {
     "description": "ui\\screens\\web_sharing_screen.dart",
+
     "type": "text"
+
   },
   "msge6a29aa4": "服务器空闲",
+
   "@msge6a29aa4": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "wifi1": "请确保其他设备与此设备处于同一 Wi-Fi 网络，然后启动服务器。",
+
   "@wifi1": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msg974465c1": "启动网页服务器",
+
   "@msg974465c1": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msg27d5bd3c": "生成一个安全的临时公共隧道链接。与互联网上任何地方的任何人分享此链接，让他们高速下载文件，无论文件大小。",
+
   "@msg27d5bd3c": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msg66a09a42": "临时分享链接（有效期 24 小时）：",
+
   "@msg66a09a42": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msg879058ce": "复制链接",
+
   "@msg879058ce": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msg7ed199f8": "已连接的浏览器客户端",
+
   "@msg7ed199f8": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msgb77e4adf": "等待传入的互联网下载...",
+
   "@msgb77e4adf": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msga61778bc": "互联网共享未激活",
+
   "@msga61778bc": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msga3c80551": "停用云共享",
+
   "@msga3c80551": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msg6466e61e": "激活互联网分享链接",
+
   "@msg6466e61e": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msg67bd9375": "正在处理...",
+
   "@msg67bd9375": {
     "description": "ui\\widgets\\background_operation_progress_dialog.dart"
+
   },
   "msg3fa72416": "正在重命名文件...",
+
   "@msg3fa72416": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msg7dbbef0e": "请稍候，正在更新文件夹内容",
+
   "@msg7dbbef0e": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msg1a2d9a44": "原始名称 (%)",
+
   "@msg1a2d9a44": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msgcb029197": "顺序编号 (#)",
+
   "@msgcb029197": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msgb6d8a14f": "三位顺序编号 (###)",
+
   "@msgb6d8a14f": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "n": "不带扩展名的文件名 ({n})",
+
   "@n": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "de": "带点的扩展名 ({de})",
+
   "@de": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "e22": "不带点的扩展名 ({e})",
+
   "@e22": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "n1": "带扩展名的完整文件名 ({N})",
+
   "@n1": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msg0e9dc63a": "名称模式",
+
   "@msg0e9dc63a": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msg4a63edba": "扩展名",
+
   "@msg4a63edba": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msga420ad79": "起始编号",
+
   "@msga420ad79": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msg9857973d": "查找文本",
+
   "@msg9857973d": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msg1605701e": "替换为",
+
   "@msg1605701e": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msgd35f80c8": "替换内容",
+
   "@msgd35f80c8": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msg32c61dab": "重命名预览",
+
   "@msg32c61dab": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msg92642e0e": "返回编辑",
+
   "@msg92642e0e": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msgde88d67a": "文件已存在",
+
   "@msgde88d67a": {
     "description": "ui\\widgets\\conflict_dialog.dart"
+
   },
   "msge59e35b5": "应用于所有剩余冲突",
+
   "@msge59e35b5": {
     "description": "ui\\widgets\\conflict_dialog.dart"
+
   },
   "msg27dfaae5": "保留两者",
+
   "@msg27dfaae5": {
     "description": "ui\\widgets\\conflict_dialog.dart"
+
   },
   "msg6cfbf05d": "重命名文件",
+
   "@msg6cfbf05d": {
     "description": "ui\\widgets\\conflict_dialog.dart"
+
   },
   "msg25f747ce": "创建压缩包",
+
   "@msg25f747ce": {
     "description": "ui\\widgets\\create_archive_dialog.dart"
+
   },
   "msged5f808e": "压缩格式",
+
   "@msged5f808e": {
     "description": "ui\\widgets\\create_archive_dialog.dart"
+
   },
   "mb": "分卷大小（MB，可选）",
+
   "@mb": {
     "description": "ui\\widgets\\create_archive_dialog.dart"
+
   },
   "msgac52af6a": "留空则创建单个压缩包",
+
   "@msgac52af6a": {
     "description": "ui\\widgets\\create_archive_dialog.dart"
+
   },
   "msgdf2ef7f5": "为每个文件创建单独的压缩包",
+
   "@msgdf2ef7f5": {
     "description": "ui\\widgets\\create_archive_dialog.dart"
+
   },
   "msgb52d4a73": "新建标签页",
+
   "@msgb52d4a73": {
     "description": "ui\\widgets\\directory_tab_bar.dart"
+
   },
   "msg4e9c344a": "复制标签页",
+
   "@msg4e9c344a": {
     "description": "ui\\widgets\\directory_tab_bar.dart"
+
   },
   "msg7716532d": "关闭其他标签页",
+
   "@msg7716532d": {
     "description": "ui\\widgets\\directory_tab_bar.dart"
+
   },
   "msgd78603eb": "双击关闭标签页",
+
   "@msgd78603eb": {
     "description": "ui\\widgets\\directory_tab_bar.dart"
+
   },
   "selectedcount": "{selectedCount} 个项目",
+
   "@selectedcount": {
     "description": "ui\\widgets\\drag_drop_action_dialog.dart",
+
     "type": "text"
+
   },
   "e23": "创建压缩包失败：{e}",
+
   "@e23": {
     "description": "ui\\widgets\\drag_drop_action_dialog.dart",
+
     "type": "text"
+
   },
   "msgc4d7eece": "解压压缩包",
+
   "@msgc4d7eece": {
     "description": "ui\\widgets\\extract_archive_dialog.dart"
+
   },
   "msgf15821d0": "解压到文件夹",
+
   "@msgf15821d0": {
     "description": "ui\\widgets\\extract_archive_dialog.dart"
+
   },
   "msg_extract_to": "解压到…",
+
   "@msg_extract_to": {
     "description": "Extract archive dialog title"
+
   },
   "ui_current_directory": "当前目录",
+
   "@ui_current_directory": {
     "description": "Extract to current directory checkbox"
+
   },
   "ui_custom_directory": "自定义目录",
+
   "@ui_custom_directory": {
     "description": "Extract to custom directory checkbox"
+
   },
   "msgff69affd": "密码（如果已加密）",
+
   "@msgff69affd": {
     "description": "ui\\widgets\\extract_archive_dialog.dart"
+
   },
   "msg67eda5e6": "全部文件",
+
   "@msg67eda5e6": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+
   },
   "msg8b2fcb31": "显示此目录中的所有文件和文件夹",
+
   "@msg8b2fcb31": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+
   },
   "pdfword": "PDF、Word 文档、电子表格、文本和电子书",
+
   "@pdfword": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+
   },
   "jpegpngwebp": "JPEG、PNG、WebP 和原始照片格式",
+
   "@jpegpngwebp": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+
   },
   "mp3wavaac": "MP3、WAV、AAC 和高保真音频",
+
   "@mp3wavaac": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+
   },
   "mp4mkvwebm": "MP4、MKV、WebM 和高分辨率视频片段",
+
   "@mp4mkvwebm": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+
   },
   "zip7zrar": "ZIP、7Z、RAR 和其他压缩文件",
+
   "@zip7zrar": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+
   },
   "msg6d3e48cc": "选择一个类别以仅显示匹配的文件",
+
   "@msg6d3e48cc": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+
   },
   "e24": "远程缩略图加载失败: {e}",
+
   "@e24": {
     "description": "ui\\widgets\\file_item.dart",
+
     "type": "text"
+
   },
   "msg32a1bd25": "1 项",
+
   "@msg32a1bd25": {
     "description": "ui\\widgets\\file_item.dart"
+
   },
   "count4": "{count} 项",
+
   "@count4": {
     "description": "ui\\widgets\\file_item.dart",
+
     "type": "text"
+
   },
   "msg9d69d7a0": "正在移动文件...",
+
   "@msg9d69d7a0": {
     "description": "ui\\widgets\\file_operation_progress_dialog.dart"
+
   },
   "ui_transferring_files": "传输文件",
+
   "@ui_transferring_files": {
     "description": "ui\\widgets\\file_operation_progress_dialog.dart"
+
   },
   "ui_time_remaining": "剩下",
+
   "@ui_time_remaining": {
     "description": "ui\\widgets\\file_operation_progress_dialog.dart"
+
   },
   "zenfile6": "ZenFile 自定义原生体验",
+
   "@zenfile6": {
     "description": "ui\\widgets\\open_with_sheet.dart"
+
   },
   "msg42be43e6": "系统外部应用",
+
   "@msg42be43e6": {
     "description": "ui\\widgets\\open_with_sheet.dart"
+
   },
   "msgd1fca831": "使用设备上的第三方应用打开",
+
   "@msgd1fca831": {
     "description": "ui\\widgets\\open_with_sheet.dart"
+
   },
   "msgdb75b769": "仅一次",
+
   "@msgdb75b769": {
     "description": "ui\\widgets\\open_with_sheet.dart"
+
   },
   "msg959429a5": "浏览设备文件",
+
   "@msg959429a5": {
     "description": "ui\\widgets\\premium_storage_overview.dart"
+
   },
   "msgc31116e3": "添加新连接",
+
   "@msgc31116e3": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
+
   },
   "msgf1d4ff50": "自定义",
+
   "@msgf1d4ff50": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
+
   },
   "msg490ac572": "未固定快捷方式。点击自定义添加。",
+
   "@msg490ac572": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
+
   },
   "msg445a43cb": "长按图标拖动排列分类图标",
+
   "@msg445a43cb": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
+
   },
   "msg944d5ecd": "添加文件夹/文件快捷方式",
+
   "@msg944d5ecd": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
+
   },
   "msg4f356348": "自定义路径",
+
   "@msg4f356348": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
+
   },
   "msg94733bec": "删除快捷方式",
+
   "@msg94733bec": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
+
   },
   "msg5c29ad2f": "恢复位置",
+
   "@msg5c29ad2f": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
+
   },
   "msg21de5dd7": "自定义扫描位置：",
+
   "@msg21de5dd7": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
+
   },
   "msg4bb81f99": "未添加自定义路径。",
+
   "@msg4bb81f99": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
+
   },
   "msgf544c399": "10月",
+
   "@msgf544c399": {
     "description": "ui\\widgets\\recent_files_section.dart"
+
   },
   "msgc0615eb3": "12月",
+
   "@msgc0615eb3": {
     "description": "ui\\widgets\\recent_files_section.dart"
+
   },
   "msg54355dd8": "最近文件",
+
   "@msg54355dd8": {
     "description": "ui\\widgets\\recent_files_section.dart"
+
   },
   "msgd5eac3a3": "受限系统文件夹",
+
   "@msgd5eac3a3": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
+
   },
   "android11androiddataandroidobbzenfile": "Android 11+ 限制了对 Android/data 和 Android/obb 文件夹的标准访问，以保护应用数据。要查看和修改这些文件，ZenFile 需要高级权限。",
+
   "@android11androiddataandroidobbzenfile": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
+
   },
   "root": "使用 Root 访问（超级用户）",
+
   "@root": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
+
   },
   "shizukuroot": "授予Shizuku访问权限（无需Root）",
+
   "@shizukuroot": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
+
   },
   "selectedcount1": "已选择 {selectedCount} 项",
+
   "@selectedcount1": {
     "description": "ui\\widgets\\selection_action_bar.dart",
+
     "type": "text"
+
   },
   "selectedcount2": "确定要删除 {selectedCount} 个项目吗？此操作无法撤销。",
+
   "@selectedcount2": {
     "description": "ui\\widgets\\selection_action_bar.dart",
+
     "type": "text"
+
   },
   "msga9b87614": "已取消置顶所选项目",
+
   "@msga9b87614": {
     "description": "ui\\widgets\\selection_action_bar.dart"
+
   },
   "msg84e4fac9": "取消置顶",
+
   "@msg84e4fac9": {
     "description": "ui\\widgets\\selection_action_bar.dart"
+
   },
   "msg3be9abab": "正在计算大小...",
+
   "@msg3be9abab": {
     "description": "ui\\widgets\\selection_action_bar.dart"
+
   },
   "msg7704aa2c": "已选择路径：",
+
   "@msg7704aa2c": {
     "description": "ui\\widgets\\selection_action_bar.dart"
+
   },
   "label1": "已复制 {label} 到剪贴板",
+
   "@label1": {
     "description": "ui\\widgets\\selection_action_bar.dart",
+
     "type": "text"
+
   },
   "selectedcount3": "已选择 {selectedCount} 个项目",
+
   "@selectedcount3": {
     "description": "ui\\widgets\\selection_context_bottom_sheet.dart",
+
     "type": "text"
+
   },
   "msg8b73264b": "文件（长按选择打开方式）",
+
   "@msg8b73264b": {
     "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
+
   },
   "msgc5c0646c": "复制所选",
+
   "@msgc5c0646c": {
     "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
+
   },
   "msg8e6d4604": "剪切所选",
+
   "@msg8e6d4604": {
     "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
+
   },
   "msg1058354c": "属性与信息",
+
   "@msg1058354c": {
     "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
+
   },
   "usedstoragestr": "已使用 {usedStorageStr}",
+
   "@usedstoragestr": {
     "description": "ui\\widgets\\storage_overview.dart",
+
     "type": "text"
+
   },
   "freestoragestr": "{freeStorageStr} 可用",
+
   "@freestoragestr": {
     "description": "ui\\widgets\\swipable_storage_overview.dart",
+
     "type": "text"
+
   },
   "msgc823e21b": "取消固定标签页",
+
   "@msgc823e21b": {
     "description": "ui\\widgets\\tab_options_sheet.dart"
+
   },
   "msg7d6c1284": "未找到匹配的目录或文件",
+
   "@msg7d6c1284": {
     "description": "ui\\widgets\\zenfile_address_bar.dart"
+
   },
   "path": "路径不存在: {path}",
+
   "@path": {
     "description": "ui\\widgets\\zenfile_address_bar.dart",
+
     "type": "text"
+
   },
   "msg6cbbf7d9": "输入绝对路径...",
+
   "@msg6cbbf7d9": {
     "description": "ui\\widgets\\zenfile_address_bar.dart"
+
   },
   "msgf13fc21c": "网络",
+
   "@msgf13fc21c": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
+
   },
   "msg41e625d1": "添加远程连接",
+
   "@msg41e625d1": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
+
   },
   "msg8755e992": "浅色模式",
+
   "@msg8755e992": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
+
   },
   "msg1cf6fcd3": "更多设置",
+
   "@msg1cf6fcd3": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
+
   },
   "msgeef7e30c": "精品媒体套件",
+
   "@msgeef7e30c": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
+
   },
   "msg2ad64aa7": "无法打开链接：{urlString}",
+
   "msg30d17f96": "核心亮点",
+
   "msgaba638c4": "保险箱安全",
+
   "msgd309e9ea": "服务器中心",
+
   "msg4a5f936c": "联系与分享",
+
   "msg4d48a010": "ZenFile - 精美文件管理器",
+
   "msg1f4c0192": "请作者喝杯咖啡 ☕",
+
   "msg2eceaa85": "打赏作者",
+
   "msg305734ce": "更新日志",
+
   "msg1c80891a": "新增浏览页远程文件缩略图预览",
+
   "msg212f8f9e": "修复远程文件无法打开播放的问题",
+
   "msgd0cf310e": "优化远程文件缓存目录统一管理",
+
   "msg072f2022": "单指滑动切换页面改为双指滑动（避免误触返回手势）",
+
   "msg66517dc4": "字体选项标题全面汉化",
+
   "msgacad92c8": "移除\"阻止左侧返回手势打开抽屉\"功能",
+
   "msg09d0e1b6": "修复：备用图标切换不生效",
+
   "msg2d1872c8": "文本编辑器菜单全面汉化",
+
   "msg2e35eef7": "双面板文件浏览器",
+
   "msge96aa2cd": "内置媒体播放器",
+
   "msg49a6c41e": "应用图标切换（多种风格可选）",
+
   "msg4d82be7c": "下版本更新计划",
+
   "msg2c8957dd": "已知问题",
+
   "msg11cb01fc": "远程服务器边缓存边播放视频",
+
   "msg60a4d643": "自定义图标上传后桌面图标不会更改（下版本完善）",
+
   "msg9e68ea42": "保存失败，请重试",
+
   "cat_images": "图片",
+
   "cat_videos": "视频",
+
   "cat_audios": "音频",
+
   "cat_documents": "文档",
+
   "cat_downloads": "下载",
+
   "cat_screenshots": "截图",
+
   "cat_recent": "最近",
+
   "cat_network": "网络",
+
   "cat_apps": "应用",
+
   "cat_settings": "设置",
+
   "cat_storage": "空间",
+
   "cat_service": "服务",
+
   "cat_manage": "管理",
+
   "cat_config": "配置",
+
   "cat_analyze": "分析",
+
   "cat_vault": "保险箱",
+
   "@cat_vault": {
     "description": "Vault shortcut category label"
+
   },
   "cat_vault_desc": "安全存储",
+
   "@cat_vault_desc": {
     "description": "Vault shortcut category description"
+
   },
   "cat_quick_categories": "分类",
+
   "ui_nav": "本地",
+
   "ui_home": "主页",
+
   "ui_recycle_bin": "回收站",
+
   "ui_dark_mode": "深色模式",
+
   "ui_personalize_settings": "设置",
+
   "ui_compress": "压缩",
+
   "ui_copy": "复制",
+
   "ui_cut": "剪切",
+
   "ui_move": "移动",
+
   "@ui_move": {
     "description": "Drag drop action dialog"
+
   },
   "ui_apply": "应用",
+
   "@ui_apply": {
     "description": "Drag drop action dialog confirm button"
+
   },
   "ui_delete": "删除",
+
   "ui_select_all": "全选",
+
   "ui_cancel": "取消",
+
   "ui_confirm": "确定",
+
   "ui_share": "分享",
+
   "ui_move_here": "移动到此处",
+
   "ui_properties": "属性",
+
   "ui_info": "信息",
+
   "ui_open": "打开",
+
   "ui_close": "关闭",
+
   "ui_more": "更多",
+
   "ui_appearance_theme": "外观与主题",
+
   "ui_list_layout_style": "列表与布局样式",
+
   "ui_media_preferences": "媒体偏好",
+
   "ui_file_actions_viewers": "文件操作与查看器",
+
   "ui_no_settings_found": "未找到设置",
+
   "ui_show_action_bar": "显示操作按钮",
+
   "ui_use_24h_format": "使用24小时制",
+
   "ui_show_folder_contents_count": "显示文件夹内容计数",
+
+  "ui_set_as_home": "设为首页",
+
+  "@ui_set_as_home": {
+    "description": "Set current folder as home directory"
+
+  },
   "ui_show_folder_size": "显示文件夹大小",
+
   "ui_show_bottom_action_bar": "导航栏位置",
+
   "ui_hide_action_text": "隐藏操作栏文字标签",
+
   "ui_show_media_previews": "本地媒体缩略图",
+
   "ui_adaptive_multiline_names": "自适应多行文件名",
+
   "ui_hide_action_menu_buttons": "隐藏三点操作按钮",
+
   "ui_show_action_menu_buttons": "显示三点操作按钮",
+
   "ui_action_menu_subtitle": "选择三点菜单按钮的显示模式，关闭后文件和文件夹右侧将不显示三点按钮",
+
   "ui_action_menu_mode_all": "全部显示",
+
   "ui_action_menu_mode_single": "仅在单窗口模式显示",
+
   "ui_action_menu_mode_dual": "仅在双窗口模式显示",
+
   "ui_enable_drag_drop": "启用拖放",
+
   "ui_confirm_drag_drop": "确认拖放操作",
+
   "ui_enable_multi_tabs": "启用多标签页",
+
   "ui_enable_split_screen": "启用分屏",
+
   "ui_app_icon": "应用图标",
+
   "ui_emerald_green": "翠绿",
+
   "ui_deep_red": "深红",
+
   "ui_square": "方形",
+
   "ui_circle": "圆形",
+
   "ui_1_day_after": "1 天后",
+
   "ui_no_auto_clean": "不自动清理",
+
   "ui_daily": "每天",
+
   "ui_weekly": "每周",
+
   "ui_monthly": "每月",
+
   "ui_every_n_days": "每{days}天",
+
   "@ui_every_n_days": {
     "description": "ui\\screens\\more_settings_screen.dart",
+
     "type": "text"
+
   },
   "ui_clear_cache_failed": "清除缓存失败: {e}",
+
   "@ui_clear_cache_failed": {
     "description": "ui\\screens\\more_settings_screen.dart",
+
     "type": "text"
+
   },
   "ui_clear_remote_cache": "清除远程缓存",
+
   "ui_view_cache_dir": "查看缓存目录",
+
   "ui_remote_media_thumbnail": "远程媒体缩略图",
+
   "ui_auto_clean_remote_cache": "定期自动清理远程服务器缓存文件: {label}",
+
   "@ui_auto_clean_remote_cache": {
     "description": "ui\\screens\\more_settings_screen.dart",
+
     "type": "text"
+
   },
   "ui_custom_font_with_name": "自定义字体（{name}）",
+
   "@ui_custom_font_with_name": {
     "description": "ui\\screens\\more_settings_screen.dart",
+
     "type": "text"
+
   },
   "ui_import_custom_font": "导入自定义字体文件 (.ttf/.otf)",
+
   "ui_custom_font_applied": "自定义字体\"{name}\"已成功应用！",
+
   "@ui_custom_font_applied": {
     "description": "ui\\screens\\more_settings_screen.dart",
+
     "type": "text"
+
   },
   "ui_invalid_file_type": "无效的文件类型",
+
   "ui_language": "语言",
+
   "ui_hide_nav_labels": "隐藏底部导航标签",
+
   "ui_reset_default_viewers": "重置默认文件查看器",
+
   "ui_trailing_info_when_hidden": "三点禁用尾部信息",
+
   "ui_go_up": "上一级",
+
   "@ui_go_up": {
     "description": "directory_screen.dart"
+
   },
   "ui_cut_copy_items": "{prefix} · {count} 项",
+
   "@ui_cut_copy_items": {
     "description": "directory_screen.dart",
+
     "placeholders": {
       "prefix": {
         "type": "String"
+
       },
       "count": {
         "type": "int"
+
       }
     }
   },
   "ui_clear": "清除",
+
   "@ui_clear": {
     "description": "directory_screen.dart"
+
   },
   "ui_paste": "粘贴",
+
   "@ui_paste": {
     "description": "directory_screen.dart"
+
   },
   "ui_file_name": "文件名",
+
   "@ui_file_name": {
     "description": "directory_screen.dart"
+
   },
   "ui_create": "创建",
+
   "@ui_create": {
     "description": "directory_screen.dart"
+
   },
   "ui_create_new_directory": "创建新目录",
+
   "@ui_create_new_directory": {
     "description": "directory_screen.dart"
+
   },
   "ui_layout_mode": "布局模式",
+
   "@ui_layout_mode": {
     "description": "directory_screen.dart"
+
   },
   "ui_grid_view": "网格视图",
+
   "@ui_grid_view": {
     "description": "directory_screen.dart"
+
   },
   "ui_name_asc": "名称 (A-Z)",
+
   "@ui_name_asc": {
     "description": "directory_screen.dart"
+
   },
   "ui_newest": "最新",
+
   "@ui_newest": {
     "description": "directory_screen.dart"
+
   },
   "ui_oldest": "最旧",
+
   "@ui_oldest": {
     "description": "directory_screen.dart"
+
   },
   "ui_size_small": "大小（小）",
+
   "@ui_size_small": {
     "description": "directory_screen.dart"
+
   },
   "ui_type": "类型",
+
   "@ui_type": {
     "description": "ui widgets"
+
   },
   "ui_storage_volume": "存储卷",
+
   "@ui_storage_volume": {
     "description": "directory_screen.dart"
+
   },
   "ui_browse": "浏览",
+
   "@ui_browse": {
     "description": "directory_screen.dart"
+
   },
   "ui_new": "新建",
+
   "@ui_new": {
     "description": "directory_screen.dart"
+
   },
   "ui_folders_count": "文件夹：{count}",
+
   "@ui_folders_count": {
     "description": "directory_screen.dart",
+
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "ui_files_count": "文件：{count}",
+
   "@ui_files_count": {
     "description": "directory_screen.dart",
+
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "ui_selection_mode": "选择模式",
+
   "@ui_selection_mode": {
     "description": "directory_screen.dart"
+
   },
   "ui_storage_and_sd": "存储卷和SD卡",
+
   "@ui_storage_and_sd": {
     "description": "directory_screen.dart"
+
   },
   "ui_images_only": "仅图片",
+
   "@ui_images_only": {
     "description": "ui widgets"
+
   },
   "ui_videos_only": "仅视频",
+
   "@ui_videos_only": {
     "description": "ui widgets"
+
   },
   "ui_show_folders": "显示文件夹",
+
   "@ui_show_folders": {
     "description": "directory_screen.dart"
+
   },
   "ui_files": "文件",
+
   "@ui_files": {
     "description": "directory_screen.dart"
+
   },
   "ui_delete_file_confirm": "确定要删除此文件吗？此操作无法撤销。",
+
   "@ui_delete_file_confirm": {
     "description": "directory_screen.dart"
+
   },
   "ui_done": "完成",
+
   "@ui_done": {
     "description": "ui widgets"
+
   },
   "ui_name": "名称",
+
   "@ui_name": {
     "description": "ui widgets"
+
   },
   "ui_path": "路径",
+
   "@ui_path": {
     "description": "ui widgets"
+
   },
   "ui_size": "大小",
+
   "@ui_size": {
     "description": "ui widgets"
+
   },
   "ui_permissions": "权限",
+
   "@ui_permissions": {
     "description": "ui widgets"
+
   },
   "ui_contains": "包含",
+
   "@ui_contains": {
     "description": "ui widgets"
+
   },
   "ui_extract": "解压",
+
   "@ui_extract": {
     "description": "ui widgets"
+
   },
   "ui_pin_to_top": "置顶",
+
   "@ui_pin_to_top": {
     "description": "ui widgets"
+
   },
   "msg_select_all": "全选",
+
   "@msg_select_all": {
     "description": "selection_context_bottom_sheet.dart"
+
   },
   "ui_pinned_selected": "已将所选项目置顶",
+
   "@ui_pinned_selected": {
     "description": "ui widgets"
+
   },
   "ui_filter_by_type": "按类型筛选文件",
+
   "@ui_filter_by_type": {
     "description": "ui widgets"
+
   },
   "ui_default_scan_locations": "默认扫描位置：",
+
   "@ui_default_scan_locations": {
     "description": "ui widgets"
+
   },
   "ui_exclude_location": "排除位置",
+
   "@ui_exclude_location": {
     "description": "ui widgets"
+
   },
   "ui_add_custom_path": "添加自定义路径",
+
   "@ui_add_custom_path": {
     "description": "ui widgets"
+
   },
   "ui_added_custom_paths": "已添加 {count} 个自定义路径",
+
   "@ui_added_custom_paths": {
     "description": "ui widgets",
+
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "ui_close_tab": "关闭标签页",
+
   "@ui_close_tab": {
     "description": "ui widgets"
+
   },
   "ui_not_found_title": "未找到 {title}",
+
   "@ui_not_found_title": {
     "description": "ui widgets",
+
     "placeholders": {
       "title": {
         "type": "String"
+
       }
     }
   },
   "ui_oldest_first": "最旧优先",
+
   "@ui_oldest_first": {
     "description": "ui widgets"
+
   },
   "ui_sort_options": "排序选项",
+
   "@ui_sort_options": {
     "description": "ui widgets"
+
   },
   "ui_refresh": "刷新",
+
   "@ui_refresh": {
     "description": "ui widgets"
+
   },
   "ui_selected_count": "{count} 已选择",
+
   "@ui_selected_count": {
     "description": "ui widgets",
+
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "ui_permanently_delete_name": "永久删除\"{name}\"？",
+
   "@ui_permanently_delete_name": {
     "description": "ui widgets",
+
     "placeholders": {
       "name": {
         "type": "String"
+
       }
     }
   },
   "ui_copied_count": "已复制 {count} 个项目到剪贴板",
+
   "@ui_copied_count": {
     "description": "ui widgets",
+
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "ui_cut_count": "已剪切 {count} 个项目到剪贴板",
+
   "@ui_cut_count": {
     "description": "ui widgets",
+
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "ui_read": "读取",
+
   "@ui_read": {
     "description": "ui widgets"
+
   },
   "ui_write": "写入",
+
   "@ui_write": {
     "description": "ui widgets"
+
   },
   "ui_file": "文件",
+
   "@ui_file": {
     "description": "ui widgets"
+
   },
   "ui_backup_settings": "备份设置",
+
   "ui_restore_settings": "恢复设置",
+
   "ui_backup_info": "备份信息",
+
   "ui_backup_file": "备份文件",
+
   "ui_no_backup_file": "暂无备份文件",
+
   "ui_remote_connection": "远程连接",
+
   "ui_step_n_of_3": "第 {step} / 3 步",
+
   "ui_choose_network_service": "选择网络服务",
+
   "ui_connection_name": "连接名称",
+
   "ui_protocol": "协议",
+
   "ui_port": "端口",
+
   "ui_path_label": "路径",
+
   "ui_username_optional": "用户名（可选）",
+
   "ui_share_name_optional": "共享名（可选）",
+
   "ui_share_name_hint": "如 /Public，留空则自动探测",
+
   "ui_smb_desc": "局域网与 SMB NAS 共享",
+
   "ui_connection_suffix": "连接",
+
   "ui_back": "返回",
+
   "ui_connect": "连接",
+
   "ui_web_share": "网页共享",
+
   "ui_network": "网络",
+
   "log_i18n_full": "全面国际化中英文界面",
+
   "log_fix_selection_count": "修复文件选择数量不显示的问题",
+
   "log_fix_remote_title": "修复远程连接页面标题显示异常",
+
   "log_svg_thumbnail_category": "SVG 缩略图在分类页面中正常显示",
+
   "log_language_btn_top": "语言切换按钮移至设置页顶部",
+
   "log_fix_category_missing": "修复英文模式下部分分类不显示",
+
   "log_text_editor": "新增文本编辑器功能：新建文件、另存为、撤销/重做",
+
   "log_text_editor_settings": "文本编辑器设置持久化（自动换行、行号、阅读模式）",
+
   "log_10_languages": "支持10种多国语言（中文、英语、日语、韩语、德语、法语、西班牙语、俄语、阿拉伯语）",
+
   "log_fix_l10n_hardcode": "修复多处 l10n 硬编码问题",
+
   "log_language_scroll": "优化语言选择界面支持滚动",
+
   "log_remote_media_cache": "远程媒体文件点击后立即打开播放器，后台缓存并显示进度",
+
   "log_remote_to_remote": "新增远程服务器到远程服务器的复制/剪切功能",
+
   "log_remote_cut_progress": "修复远程剪切操作进度条显示异常",
+
   "log_audio_scan_stable": "优化音频分类扫描稳定性",
+
   "log_extract_dialog_redesign": "重新设计解压对话框，支持当前目录/自定义目录选择",
+
   "log_vault_quick_category": "将保险箱快捷方式添加到快捷分类（默认关闭）",
+
   "log_vault_l10n_fix": "修复保险箱页面英文硬编码和添加多文件时卡死的问题",
+
   "log_compression_path_fix": "统一三点按钮和长按菜单的压缩路径，修复压缩包名称错误",
+
   "log_compression_progress": "优化压缩进度对话框，支持多阶段进度显示和可靠自动关闭",
+
   "log_web_share_category": "网页共享门户支持分类显示文件（文件夹、视频、音频、图片、文档、其他）",
+
   "log_web_share_l10n": "网页共享门户支持根据 App 语言自动切换多语言显示",
+
     "log_music_lyrics_fullscreen_removed": "音乐播放器移除歌词全屏面板功能",
+
     "log_music_lyrics_centered": "音乐播放器当前歌词改为居中对齐显示",
+
     "log_music_player_button": "音乐分类页顶部添加音乐播放器快捷按钮，方便继续收听",
+
     "log_music_remember_progress": "音乐播放器记住播放进度，下次自动续播",
+
     "log_image_icon_redesign": "重新设计图片文件图标，显示格式标签（jpg、png 等）",
+
     "log_doc_icon_redesign": "重新设计文档文件图标，显示格式标签",
+
     "log_archive_icon_redesign": "重新设计压缩包图标，显示格式标签（zip、7z、rar 等）",
+
     "log_music_lrc_lyrics": "音乐播放器支持自动加载 LRC 歌词及手动选择歌词文件",
+
     "log_remote_copy_paste_fix": "修复远程服务器复制文件到本地粘贴时进度条无响应且文件未出现的问题",
+
     "log_navbar_position_setting": "新增导航栏位置设置，支持顶部或底部显示导航栏",
+
     "log_browse_top_area_optimize": "启用底部导航栏时，优化浏览页顶部区域布局，增加文件列表显示空间",
+
     "log_thanks_feedback": "感谢以下用户反馈与建议：越界、猕猴桃、Sir Jagadeesh Chandra Bose、Silence",
+
     "log_smb_native_rewrite": "SMB 客户端完全重写，通过 Android 原生 smbj 库实现真实 SMB 协议，支持自动探测共享名",
+
     "log_ftp_sftp_streaming": "修复 FTP/SFTP 流式播放，使用原生 Socket 独立数据连接，支持边缓存边播放",
+
     "log_remote_l10n_fix": "修复远程连接页硬编码字符串，新增 SMB 协议描述与连接名称后缀的 l10n 翻译",
+
     "log_image_viewer_menu": "图片浏览器右上角菜单改为底部弹窗，9 个操作项，黑色半透明背景提升可见性",
+
     "log_breadcrumb_border": "面包屑按钮新增 V 形完整边框，使用 CustomPaint 绘制，相邻按钮无缝衔接且有清晰边界",
+
     "log_three_dot_button_position": "文件/文件夹三点操作按钮调整到卡片右上角，避免拖动时误触",
+
     "log_three_dot_button_setting": "三点操作按钮设置项改为「显示三点操作按钮」，支持全部显示/仅单窗口/仅双窗口三种模式",
+
     "log_category_back_select": "分类页多选模式下按返回键取消选择，而不是退出类别",
+
     "log_desktop_lyric": "新增桌面歌词悬浮窗，支持权限检查、拖动位置、单击切换播放/暂停",
+
     "log_notification_panel": "修复下拉通知栏不显示播放控制面板，暂停时保留通知，权限拒绝时提示用户",
+
     "log_lyric_word_highlight": "悬浮歌词支持逐字高亮，使用 SpannableStringBuilder 实现卡拉OK效果",
+
     "log_floating_window_resize": "悬浮歌词窗口支持长按显示缩放手柄，拖拽调整窗口大小与文字大小",
+
     "log_background_play_fix": "修复开启后台播放时暂停音乐的问题，attach 复用 player 实例不中断播放",
+
     "log_category_button_sync": "修复未开启后台播放时音频类别页播放按钮显示旧音频信息，返回时刷新按钮状态",
+
     "log_build_stability": "修复 R8 编译 OOM、x86_64/armv7 启动白屏，调整 Gradle JVM 内存与 ABI 下载",
+
     "log_lyric_scale_animation": "逐字歌词过渡动画新增放大效果，修复同步问题，固定 300ms 过渡时长",
+
   "log_quick_action_panel": "重新调整了顶部导航栏按钮，新增快捷操作页面，在浏览页可左滑弹出快捷操作面板",
+
   "log_favorites": "新增了收藏夹，用户可以收藏本地或远程文件/文件夹收藏到快捷操作面板的收藏夹中",
+
   "log_drawer_redesign": "重构了抽屉页，抽屉页更加简洁美观，持久化记住抽屉页所有展开/折叠状态，操作更加便捷",
+
   "log_video_player_rotation": "视频播放器新增了顺时针旋转画面，新增缩放比例",
+
   "log_category_reorder": "优化了分类页可长按类别图标拖动调整位置顺序，新增每行 3 列/4 列可选，现在支持重命名类别名称",
+
   "log_compression_fix": "修复了压缩一些问题",
+
   "log_progress_bar_redesign": "重新设计了进度条窗口样式",
+
   "log_dual_pane_status_bar": "双窗口模式顶部新增状态栏，显示激活窗口指示器和剪贴板内容摘要",
+
   "log_transfer_fixes": "修复传输进度条不更新、无法取消、远程列表空白、传输速度不显示等问题",
+
   "log_drawer_font_consistency": "修复了抽屉页「设置」按钮字体与其他栏目不一致的问题",
+
   "log_landscape_layout": "优化平板/车机横屏模式下的文件网格布局",
+
   "log_progress_i18n": "进度条窗口新增完整的多语言翻译支持",
+
   "msg_remember_choice": "记住此选择，后续操作默认使用",
+
   "ui_caching": "正在缓存中，请稍后...",
+
   "ui_username": "用户名",
+
   "ui_anonymous": "匿名",
+
   "ui_start": "启动",
+
   "ui_stop": "停止",
+
   "ui_connected": "已连接",
+
   "ui_activated": "已激活",
+
   "ui_web_sharing_center": "网页共享中心",
+
   "ui_local_web_share": "本地网页共享",
+
   "ui_http_local_share_server": "HTTP本地共享服务器",
+
   "ui_server_idle": "服务器空闲",
+
   "ui_pick_files_folders": "选择文件和文件夹",
+
   "ui_secure_storage": "安全存储",
+
   "ui_protected_total_space": "已保护总空间",
+
   "ui_hidden_files_count": "已隐藏文件",
+
   "ui_search_obfuscated": "搜索混淆文件...",
+
   "ui_vault_empty": "您的安全保险箱为空",
+
   "ui_hide_files": "隐藏文件",
+
   "ui_global_search": "全局搜索",
+
   "ui_all": "全部",
+
   "ui_folders": "文件夹",
+
   "ui_images": "图片",
+
   "ui_videos": "视频",
+
   "ui_audio": "音频",
+
   "ui_documents": "文档",
+
   "ui_no_matching_files": "未找到匹配文件",
+
   "ui_try_modify_search": "请尝试修改搜索文本以查找隐藏项目。",
+
   "ui_vault_empty_desc": "XOR混淆签名混淆使文件完全无法打开，并从系统扫描器数据库中隐藏。点击下方的按钮来保护它们。",
+
   "ui_copied_n_items": "已复制 {count} 个项目到剪贴板",
+
   "ui_cut_n_items": "已剪切 {count} 个项目到剪贴板",
+
   "ui_copy_tooltip": "复制",
+
   "ui_cut_tooltip": "剪切",
+
   "ui_delete_tooltip": "删除",
+
   "ui_search_this_folder": "搜索此文件夹",
+
   "ui_search_files_subfolders_in": "搜索文件和子文件夹于：{path}",
+
   "ui_no_results": "未找到结果",
+
   "ui_no_match_for": "未找到匹配 \"{query}\" 的内容",
+
   "ui_n_selected": "{count} 已选择 ({size})",
+
   "ui_select_language_title": "选择语言",
+
   "ui_select_language_desc": "请选择您偏好的语言",
+
   "ui_language_chinese": "中文",
+
   "ui_language_english": "English",
+
   "msgDefaultZoom": "默认缩放 ({fontSize}pt)",
+
   "msgLockZoom": "锁定缩放",
+
   "ui_background": "后台",
+
   "ui_overall_progress": "总体进度",
+
   "ui_archive_name": "压缩包名称",
+
   "ui_compression_level": "压缩级别",
+
   "ui_delete_source_after": "完成后删除源文件",
+
   "ui_no_compression": "无（仅存储）",
+
   "ui_fast": "快速",
+
   "ui_standard": "标准",
+
   "ui_maximum": "最大",
+
   "ui_new_txt": "新建文本",
+
   "ui_save_as": "另存为",
+
   "ui_undo": "撤销",
+
   "ui_redo": "重做",
+
   "ui_add_selected": "添加所选 ({count})",
+
   "msg_file_exists": "文件已存在",
+
   "@msg_file_exists": {
     "description": "Title shown when a file conflict is detected"
+
   },
   "msg_file_exists_desc": "目标文件夹中已存在同名文件\"{fileName}\"。您想怎么处理？",
+
   "@msg_file_exists_desc": {
     "description": "Description shown when a file conflict is detected",
+
     "placeholders": {
       "fileName": {
         "type": "String",
+
         "example": "document.txt"
+
       }
     }
   },
   "msg_existing_file": "现有文件",
+
   "@msg_existing_file": {
     "description": "Label for the existing file in conflict dialog"
+
   },
   "msg_cancel_paste": "取消粘贴",
+
   "@msg_cancel_paste": {
     "description": "Button to cancel paste operation in conflict dialog"
+
   },
   "msg_skip_file": "跳过",
+
   "@msg_skip_file": {
     "description": "Button to skip file in conflict dialog"
+
   },
   "msg_overwrite_file": "替换",
+
   "@msg_overwrite_file": {
     "description": "Button to overwrite file in conflict dialog"
+
   },
   "msg_newer": "较新",
+
   "@msg_newer": {
     "description": "Badge indicating a file is newer in conflict dialog"
+
   },
   "msg_new_file_name": "新文件名",
+
   "@msg_new_file_name": {
     "description": "Label for new file name input in rename dialog"
+
   },
   "msg_vault_choose_mode": "选择保护模式",
+
   "@msg_vault_choose_mode": {
     "description": "Vault protection mode dialog title"
+
   },
   "msg_vault_mode_desc": "选择如何保护选中的文件。安全文件将立即进行 XOR 混淆加密。",
+
   "@msg_vault_mode_desc": {
     "description": "Vault protection mode dialog description"
+
   },
   "ui_secure_import": "安全导入（沙盒）",
+
   "@ui_secure_import": {
     "description": "Vault sandbox import button"
+
   },
   "ui_in_place_scramble": "原地混淆（快速）",
+
   "@ui_in_place_scramble": {
     "description": "Vault in-place scramble button"
+
   },
   "msg_scrambling": "正在混淆加密...",
+
   "@msg_scrambling": {
     "description": "Vault scrambling progress text"
+
   },
   "msg_protected_count": "成功保护 {successCount} 个项目。",
+
   "@msg_protected_count": {
     "description": "Vault protected success message",
+
     "placeholders": {
       "successCount": {}
     }
   },
   "msg_protect_failed_count": "失败锁定 {failCount} 个项目。",
+
   "@msg_protect_failed_count": {
     "description": "Vault protect failed message",
+
     "placeholders": {
       "failCount": {}
     }
   },
   "msg_restored": "已将「{name}」恢复到原始位置。",
+
   "@msg_restored": {
     "description": "Vault restore success message",
+
     "placeholders": {
       "name": {}
     }
   },
   "msg_restore_failed": "恢复文件失败：{error}",
+
   "@msg_restore_failed": {
     "description": "Vault restore failed message",
+
     "placeholders": {
       "error": {}
     }
   },
   "msg_decrypting": "正在安全解密...",
+
   "@msg_decrypting": {
     "description": "Vault decrypting progress text"
+
   },
   "msg_security_details": "安全详情",
+
   "@msg_security_details": {
     "description": "Vault security details dialog title"
+
   },
   "ui_restore_unhide": "恢复（取消隐藏）",
+
   "@ui_restore_unhide": {
     "description": "Vault restore menu item"
+
   },
   "msg_permanent_delete": "永久删除？",
+
   "@msg_permanent_delete": {
     "description": "Vault permanent delete confirm title"
+
   },
   "msg_permanent_delete_content": "确定要永久删除「{name}」吗？此操作无法撤销。",
+
   "@msg_permanent_delete_content": {
     "description": "Vault permanent delete confirm content",
+
     "placeholders": {
       "name": {}
     }
   },
   "msg_file_deleted": "文件已永久删除。",
+
   "@msg_file_deleted": {
     "description": "Vault file deleted message"
+
   },
   "msg_delete_failed": "删除文件失败：{error}",
+
   "@msg_delete_failed": {
     "description": "Vault delete failed message",
+
     "placeholders": {
       "error": {}
     }
   },
   "msg_original_name": "原始名称",
+
   "@msg_original_name": {
     "description": "Vault original name label"
+
   },
   "msg_original_path": "原始路径",
+
   "@msg_original_path": {
     "description": "Vault original path label"
+
   },
   "msg_scrambled_path": "混淆路径",
+
   "@msg_scrambled_path": {
     "description": "Vault scrambled path label"
+
   },
   "msg_size_label": "大小",
+
   "@msg_size_label": {
     "description": "Vault size label"
+
   },
   "msg_locked_at": "锁定时间",
+
   "@msg_locked_at": {
     "description": "Vault locked at label"
+
   },
   "msg_protection_mode": "保护模式",
+
   "@msg_protection_mode": {
     "description": "Vault protection mode label"
+
   },
   "msg_in_place_scrambling": "原地混淆",
+
   "@msg_in_place_scrambling": {
     "description": "Vault in-place scrambling mode"
+
   },
   "msg_isolated_move": "隔离移动（沙盒）",
+
   "@msg_isolated_move": {
     "description": "Vault isolated move mode"
+
   },
   "web_share_search": "搜索文件和文件夹...",
+
   "web_share_upload": "上传",
+
   "web_share_drop_title": "拖拽文件到此处上传",
+
   "web_share_drop_desc": "文件将立即上传到此共享文件夹",
+
   "web_share_empty_search": "没有匹配的项目",
+
   "web_share_empty_desc": "检查拼写或尝试不同的搜索词",
+
   "web_share_copy_link": "复制链接",
+
   "web_share_download": "下载",
+
   "web_share_uploading": "正在上传 {name}...",
+
   "@web_share_uploading": {
     "description": "Upload progress title",
+
     "placeholders": {
       "name": {
         "type": "String"
+
       }
     }
   },
   "web_share_upload_success": "上传成功",
+
   "web_share_upload_failed": "上传 {name} 失败",
+
   "@web_share_upload_failed": {
     "description": "Upload failed message",
+
     "placeholders": {
       "name": {
         "type": "String"
+
       }
     }
   },
   "web_share_preview_unsupported": "不支持预览此文件类型",
+
   "web_share_preview_download": "点击下方下载按钮保存到您的设备",
+
   "web_share_footer": "通过 ZenFile 安全共享和流式传输文件",
+
   "web_share_parent_dir": "上级目录",
+
   "web_share_go_up": "返回上一级",
+
   "web_share_items_count": "{count} 个项目",
+
   "@web_share_items_count": {
     "description": "Item count display",
+
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "web_share_link_copied": "链接已复制到剪贴板",
+
   "web_share_copy_failed": "复制链接失败",
+
   "web_share_local": "本地 Wi-Fi 共享",
+
   "web_share_internet": "互联网共享",
+
   "web_share_category_folders": "文件夹",
+
   "web_share_category_videos": "视频",
+
   "web_share_category_audio": "音频",
+
   "web_share_category_images": "图片",
+
   "web_share_category_documents": "文档",
+
   "web_share_category_others": "其他",
+
   "web_share_loading_preview": "正在加载预览...",
+
   "web_share_preview_error": "无法流式传输文档。您仍然可以直接下载。",
+
   "msg_custom_shortcut": "自定义图标",
+
   "msg_add_custom_shortcut": "添加到主屏幕",
+
   "msg_shortcut_added": "已添加到主屏幕",
+
   "msg_shortcut_failed": "添加失败，请重试",
+
   "ui_lyrics_loaded": "歌词已加载",
+
   "ui_lyrics_load_failed": "无法解析该歌词文件",
+
   "ui_select_lyrics_file": "导入本地歌词",
+
   "ui_no_lyrics_found": "未找到歌词",
+
   "ui_lyrics_auto_load_hint": "将 .lrc 歌词文件放在音频同目录下\n（文件名与音频相同）即可自动加载",
+
   "ui_lyrics_panel": "歌词全屏面板",
+
   "ui_show_lyrics": "显示歌词",
+
   "ui_hide_lyrics": "隐藏歌词",
+
   "ui_sound_effects_speed": "音效与播放速度",
+
   "ui_pitch_adjustment": "音调调节",
+
   "ui_restore_default": "恢复默认",
+
   "ui_sound_effects": "音效",
+
   "ui_playback_queue": "播放队列",
+
   "ui_repeat_off": "循环：关闭",
+
   "ui_repeat_one": "循环：单曲",
+
   "ui_repeat_all": "循环：全部",
+
   "ui_shuffle_on": "随机播放：开",
+
   "ui_minutes_format": "{minutes} 分钟",
+
   "ui_sleep_timer_set": "睡眠定时器已设置为 {minutes} 分钟。",
+
   "ui_enter_minutes": "输入分钟数",
+
   "ui_sleep_timer_end": "定时时间到，已暂停播放",
+
   "ui_close_player": "关闭播放器",
+
   "ui_open_player": "打开播放器",
+
   "ui_now_playing": "正在播放",
+
   "ui_resume_playback": "继续播放",
+
   "ui_single": "单曲",
+
   "ui_add_remote_path": "添加远程路径",
+
   "ui_select_remote_server": "选择远程服务器",
+
   "ui_no_remote_connections": "暂无远程连接，请先添加网络连接",
+
   "ui_retry": "重试",
+
   "ui_no_subfolders": "无子文件夹",
+
   "ui_select_this_folder": "选择此文件夹",
+
   "ui_downloading_file": "下载中: {file}",
+
   "@ui_downloading_file": {
     "placeholders": {
       "file": {
         "type": "String"
+
       }
     }
   },
   "ui_sent": "已发送: {amount}",
+
   "@ui_sent": {
     "placeholders": {
       "amount": {
         "type": "String"
+
       }
     }
   },
   "@ui_minutes_format": {
     "description": "Minutes format for sleep timer options",
+
     "placeholders": {
       "minutes": {
         "type": "int"
+
       }
     }
   },
   "@ui_sleep_timer_set": {
     "description": "Sleep timer set confirmation",
+
     "placeholders": {
       "minutes": {
         "type": "int"
+
       }
     }
   },
   "ui_recycle_restore_success": "已成功恢复 {count} 个项目",
+
   "@ui_recycle_restore_success": {
     "description": "Recycle bin restore success message",
+
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "ui_recycle_restore_failed": "恢复项目出错：{error}",
+
   "@ui_recycle_restore_failed": {
     "description": "Recycle bin restore failed message",
+
     "placeholders": {
       "error": {
         "type": "String"
+
       }
     }
   },
   "ui_recycle_perm_delete_title": "永久删除？",
+
   "@ui_recycle_perm_delete_title": {
     "description": "Recycle bin permanent delete confirm dialog title"
+
   },
   "ui_recycle_perm_delete_message": "确定要永久删除这些 {count} 个项目吗？此操作无法撤销。",
+
   "@ui_recycle_perm_delete_message": {
     "description": "Recycle bin permanent delete confirm dialog message",
+
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "ui_recycle_perm_delete_success": "已永久删除 {count} 个项目",
+
   "@ui_recycle_perm_delete_success": {
     "description": "Recycle bin permanent delete success message",
+
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "ui_recycle_perm_delete_failed": "删除项目出错：{error}",
+
   "@ui_recycle_perm_delete_failed": {
     "description": "Recycle bin permanent delete failed message",
+
     "placeholders": {
       "error": {
         "type": "String"
+
       }
     }
   },
   "ui_recycle_empty_title": "清空回收站？",
+
   "@ui_recycle_empty_title": {
     "description": "Recycle bin empty confirm dialog title"
+
   },
   "ui_recycle_empty_failed": "清空回收站出错：{error}",
+
   "@ui_recycle_empty_failed": {
     "description": "Recycle bin empty failed message",
+
     "placeholders": {
       "error": {
         "type": "String"
+
       }
     }
   },
   "ui_recycle_selected_count": "已选择 {count} 项",
+
   "@ui_recycle_selected_count": {
     "description": "Recycle bin selected items count",
+
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "ui_recycle_deleted_at": "已删除：{date} • {size}",
+
   "@ui_recycle_deleted_at": {
     "description": "Recycle bin item deleted date and size",
+
     "placeholders": {
       "date": {
         "type": "String"
+
       },
       "size": {
         "type": "String"
+
       }
     }
   },
   "ui_recycle_restore": "恢复",
+
   "@ui_recycle_restore": {
     "description": "Recycle bin restore action"
+
   },
   "ui_recycle_empty_hint": "启用回收站后删除的项目将显示在这里。您可以恢复它们或永久删除。",
+
   "@ui_recycle_empty_hint": {
     "description": "Recycle bin empty state hint"
+
   },
   "ui_recycle_deleted_date": "回收日期",
+
   "@ui_recycle_deleted_date": {
     "description": "Recycle bin deleted date label"
+
   },
   "ui_recycle_type": "类型",
+
   "@ui_recycle_type": {
     "description": "Recycle bin item type label"
+
   },
   "ui_recycle_file": "文件",
+
   "@ui_recycle_file": {
     "description": "Recycle bin file type"
+
   },
   "ui_db_browse_data": "浏览数据",
+
   "@ui_db_browse_data": {
     "description": "Database reader browse data tab"
+
   },
   "ui_db_table_schema": "表结构",
+
   "@ui_db_table_schema": {
     "description": "Database reader table schema tab"
+
   },
   "ui_db_sql_console": "SQL控制台",
+
   "@ui_db_sql_console": {
     "description": "Database reader SQL console tab"
+
   },
   "ui_db_export_success": "成功导出到 {fileName}",
+
   "@ui_db_export_success": {
     "description": "Database reader CSV export success message",
+
     "placeholders": {
       "fileName": {
         "type": "String"
+
       }
     }
   },
   "ui_db_export_failed": "导出失败：{error}",
+
   "@ui_db_export_failed": {
     "description": "Database reader CSV export failed message",
+
     "placeholders": {
       "error": {
         "type": "String"
+
       }
     }
   },
   "ui_db_export_csv": "导出表为CSV",
+
   "@ui_db_export_csv": {
     "description": "Database reader export CSV tooltip"
+
   },
   "ui_db_primary_key": "主键",
+
   "@ui_db_primary_key": {
     "description": "Database reader primary key label"
+
   },
   "ui_db_not_null": "非空",
+
   "@ui_db_not_null": {
     "description": "Database reader not null label"
+
   },
   "ui_db_type": "类型：{type}",
+
   "@ui_db_type": {
     "description": "Database reader column type label",
+
     "placeholders": {
       "type": {
         "type": "String"
+
       }
     }
   },
   "ui_db_default": "默认值：{value}",
+
   "@ui_db_default": {
     "description": "Database reader column default value label",
+
     "placeholders": {
       "value": {
         "type": "String"
+
       }
     }
   },
   "ui_db_execute_query": "执行查询",
+
   "@ui_db_execute_query": {
     "description": "Database reader execute query button"
+
   },
   "ui_db_enter_query": "在此输入SELECT查询...",
+
   "@ui_db_enter_query": {
     "description": "Database reader SQL query hint text"
+
   },
   "ui_db_showing_range": "显示 {start} - {end}",
+
   "@ui_db_showing_range": {
     "description": "Database reader pagination range text",
+
     "placeholders": {
       "start": {
         "type": "int"
+
       },
       "end": {
         "type": "int"
+
       }
     }
   },
   "ui_db_query_returned": "查询返回 {count} 行",
+
   "@ui_db_query_returned": {
     "description": "Database reader query result row count",
+
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "ui_app_installed_user_apps": "已安装的用户应用",
+
   "@ui_app_installed_user_apps": {
     "description": "App Manager installed user apps tab"
+
   },
   "ui_app_system_packages": "系统包",
+
   "@ui_app_system_packages": {
     "description": "App Manager system packages tab"
+
   },
   "ui_app_backup_apk": "已备份的APK",
+
   "@ui_app_backup_apk": {
     "description": "App Manager backup APKs tab"
+
   },
   "ui_app_precise_storage": "精确存储计算",
+
   "@ui_app_precise_storage": {
     "description": "App Manager precise storage calculation title"
+
   },
   "ui_app_grant_usage_access": "授予使用情况访问权限",
+
   "@ui_app_grant_usage_access": {
     "description": "App Manager grant usage access button"
+
+  },
+  "ui_app_usage_access_description": "如需查看精确的应用存储大小（APK + 数据 + 缓存），而不仅是安装包大小，请在系统设置中为 ZenFile 启用使用情况访问权限。",
+
+  "@ui_app_usage_access_description": {
+    "description": "App Manager usage access permission description"
+
+  },
+  "ui_backup_apk_open_folder": "打开备份目录",
+
+  "@ui_backup_apk_open_folder": {
+    "description": "Open APK backup folder after backup success"
+
+  },
+  "ui_backup_apk_success_with_path": "已成功备份到 {path}，是否打开所在目录？",
+
+  "@ui_backup_apk_success_with_path": {
+    "description": "Backup success message showing the file path, asking if user wants to open the folder",
+
+    "placeholders": {
+      "path": {
+        "type": "String"
+
+      }
+    }
+  },
+  "ui_backup_apk_open": "打开",
+
+  "@ui_backup_apk_open": {
+    "description": "Open button label"
+
+  },
+  "ui_clear_remote_cache_success": "远程缓存已清理。",
+
+  "@ui_clear_remote_cache_success": {
+    "description": "Successfully cleared remote cache"
+
+  },
+  "ui_clear_remote_cache_failed": "清理远程缓存失败。",
+
+  "@ui_clear_remote_cache_failed": {
+    "description": "Failed to clear remote cache"
+
+  },
+  "ui_app_system_settings": "系统设置 / 详情",
+
+  "@ui_app_system_settings": {
+    "description": "Open app system settings / details page"
+
+  },
+  "ui_app_restore_install": "恢复 / 安装应用",
+
+  "@ui_app_restore_install": {
+    "description": "Restore / install APK from backup"
+
+  },
+  "ui_app_size_label": "大小：",
+
+  "@ui_app_size_label": {
+    "description": "Size label in app info header"
+
+  },
+  "ui_app_installed_label": "安装时间：",
+
+  "@ui_app_installed_label": {
+    "description": "Install date label in app info header"
+
+  },
+  "ui_app_backup_date_label": "备份时间：",
+
+  "@ui_app_backup_date_label": {
+    "description": "Backup date label in backup info header"
+
+  },
+  "ui_batch_backup_progress": "正在备份所选应用...",
+
+  "@ui_batch_backup_progress": {
+    "description": "Progress message during batch APK backup"
+
+  },
+  "ui_batch_backup_success": "已成功备份 {count} 个应用到 ZenFile/Backups/Apps/",
+
+  "@ui_batch_backup_success": {
+    "description": "Success message after batch APK backup",
+
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "ui_batch_backup_failed": "备份部分应用失败：{error}",
+
+  "@ui_batch_backup_failed": {
+    "description": "Error message after batch APK backup",
+
+    "placeholders": {
+      "error": { "type": "String" }
+    }
   },
   "ui_app_search_backup": "搜索备份...",
+
   "@ui_app_search_backup": {
     "description": "App Manager search backup hint"
+
   },
   "ui_app_sort_by_install_date": "按安装日期排序",
+
   "@ui_app_sort_by_install_date": {
     "description": "App Manager sort by install date option"
+
   },
   "ui_select_all": "全选",
+
   "@ui_select_all": {
     "description": "Select all items"
+
   },
   "ui_app_no_backup_found": "未找到备份",
+
   "@ui_app_no_backup_found": {
     "description": "App Manager no backup found empty state title"
+
+  },
+  "ui_app_backup_empty_subtitle": "已备份的 APK 和 APKS 文件列表将显示在此处。",
+
+  "@ui_app_backup_empty_subtitle": {
+    "description": "Backup list empty state subtitle"
+
+  },
+  "ui_app_backup_search_not_found": "找不到与\"{query}\"匹配的备份",
+
+  "@ui_app_backup_search_not_found": {
+    "description": "Backup list search empty state subtitle",
+
+    "placeholders": {
+      "query": {
+        "type": "String"
+
+      }
+    }
+  },
+  "ui_app_backup_size_date": "大小：{size} • 备份日期：{date}",
+
+  "@ui_app_backup_size_date": {
+    "description": "Backup item size and date label",
+
+    "placeholders": {
+      "size": {
+        "type": "String"
+
+      },
+      "date": {
+        "type": "String"
+
+      }
+    }
   },
   "ui_app_split_apk": "分包 (APKS)",
+
   "@ui_app_split_apk": {
     "description": "App Manager split APK (APKS) label"
+
   },
   "ui_app_single_apk": "单个APK",
+
   "@ui_app_single_apk": {
     "description": "App Manager single APK label"
+
   },
   "ui_desktop_lyric": "桌面歌词",
+
   "@ui_desktop_lyric": {
     "description": "Desktop lyric floating window toggle in audio player more menu"
+
   },
   "msg_overlay_permission_required": "需要悬浮窗权限才能显示桌面歌词，请前往设置授权后重试",
+
   "@msg_overlay_permission_required": {
     "description": "Shown when overlay permission is denied while enabling desktop lyric"
+
   },
   "msg_notification_permission_denied": "需要通知权限才能显示播放控制面板，是否前往设置开启？",
+
   "@msg_notification_permission_denied": {
     "description": "Shown when notification permission is denied while enabling background playback"
+
   },
   "msg_open_settings": "去设置",
+
   "@msg_open_settings": {
     "description": "Action button on the SnackBar to open app settings when notification permission is denied"
+
   },
   "msg_notification_not_granted": "通知权限未授予，无法显示播放控制通知。请前往设置开启通知权限。",
+
   "@msg_notification_not_granted": {
     "description": "Shown when notification permission is detected as not granted after enabling background playback"
+
   },
   "msg_notification_blocked_hint": "通知栏未生效，可能是系统通知渠道被禁用或电池优化限制了后台运行。请在系统设置中检查通知权限和电池优化设置。",
+
   "@msg_notification_blocked_hint": {
     "description": "Shown when notification fails to appear despite permission being granted, typically due to ROM restrictions"
+
   },
   "msg_audio_service_init_failed": "后台播放服务初始化失败，通知栏控制按钮无法显示。请尝试重启应用；若问题持续，请在系统设置中清除应用数据后重新打开。",
+
   "@msg_audio_service_init_failed": {
     "description": "Shown when AudioService.init fails - the background playback service cannot be registered with the OS"
+
   },
   "msg_notification_channel_disabled": "通知渠道已被禁用。请前往系统设置 → 应用管理 → ZenFile → 通知，找到\"ZenFile Audio Player\"渠道并将其启用。",
+
   "@msg_notification_channel_disabled": {
     "description": "Shown when the notification channel is disabled by the user or system"
+
   },
   "ui_search_lyrics_online": "在线搜索歌词",
+
   "@ui_search_lyrics_online": {
     "description": "Button label to search lyrics online for the current song"
+
   },
   "ui_lyrics_searching": "正在搜索歌词...",
+
   "@ui_lyrics_searching": {
     "description": "Dialog message shown while searching lyrics online"
+
   },
   "ui_lyrics_download_success_enhanced": "增强歌词下载成功！逐字显示已就绪",
+
   "@ui_lyrics_download_success_enhanced": {
     "description": "SnackBar message when enhanced lyrics with word timestamps are downloaded"
+
   },
   "ui_lyrics_download_success": "歌词下载成功",
+
   "@ui_lyrics_download_success": {
     "description": "SnackBar message when plain lyrics are downloaded"
+
   },
   "ui_lyrics_not_found_online": "未找到匹配的歌词，试试调整歌曲信息后重试",
+
   "@ui_lyrics_not_found_online": {
     "description": "SnackBar message when online lyric search returns no results"
+
   },
   "ui_lyric_search_song_title": "歌曲名",
+
   "@ui_lyric_search_song_title": {
     "description": "Label for song title input field in lyric search dialog"
+
   },
   "ui_lyric_search_artist": "歌手",
+
   "@ui_lyric_search_artist": {
     "description": "Label for artist input field in lyric search dialog"
+
   },
   "msg_rotate_video": "旋转画面",
+
   "@msg_rotate_video": {
     "description": "Rotate video clockwise in video player"
+
   },
   "msg_aspect_fit": "适应屏幕",
+
   "@msg_aspect_fit": {
     "description": "Video aspect ratio mode: fit to screen"
+
   },
   "msg_aspect_fill": "拉伸填充",
+
   "@msg_aspect_fill": {
     "description": "Video aspect ratio mode: stretch to fill"
+
   },
   "msg_aspect_center": "居中",
+
   "@msg_aspect_center": {
     "description": "Video aspect ratio mode: centered original size"
+
   },
   "msg_aspect_16_9": "16:9",
+
   "@msg_aspect_16_9": {
     "description": "Video aspect ratio mode: 16:9"
+
   },
   "msg_aspect_4_3": "4:3",
+
   "@msg_aspect_4_3": {
     "description": "Video aspect ratio mode: 4:3"
+
   },
   "msg_aspect_custom": "自定义",
+
   "@msg_aspect_custom": {
     "description": "Video aspect ratio mode: custom"
+
   },
   "msg_custom_aspect_ratio": "自定义缩放比例",
+
   "@msg_custom_aspect_ratio": {
     "description": "Video player menu item for custom aspect ratio"
+
   },
   "drawer_tools": "工具",
+
   "open_with_native": "使用本应用打开",
+
   "open_with_external": "使用外部系统选择器打开",
+
   "open_once": "仅一次",
+
   "open_always": "始终",
+
   "drawer_edit_connection": "编辑",
+
   "cat_system": "系统",
+
   "cat_storage_volume": "存储",
+
   "ui_columns_per_row": "每行显示",
+
   "ui_3columns": "3列",
+
   "ui_4columns": "4列",
+
   "msge8b8e9b3": "常用功能",
+
   "@msge8b8e9b3": {
     "description": "Right side menu header title"
+
   },
   "msg04b7de53": "常用功能快捷入口",
+
   "@msg04b7de53": {
     "description": "Right side menu header subtitle"
+
   },
   "prop_read": "读取",
+
   "prop_write": "写入",
+
   "prop_folder_directory": "文件夹 / 目录",
+
   "prop_file": "文件",
+
   "prop_contains_format": "{folderCount} 个子文件夹, {fileCount} 个文件",
+
   "@prop_contains_format": {
     "placeholders": {
       "folderCount": {
         "type": "int"
+
       },
       "fileCount": {
         "type": "int"
+
       }
     }
   },
   "prop_bytes": "字节",
+
   "prop_items_selected": "已选择 {count} 项",
+
   "@prop_items_selected": {
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "prop_items_summary": "{count} 项（{folderCount} 个文件夹, {fileCount} 个文件）",
+
   "@prop_items_summary": {
     "placeholders": {
       "count": {
         "type": "int"
+
       },
       "folderCount": {
         "type": "int"
+
       },
       "fileCount": {
         "type": "int"
+
       }
     }
   },
   "msg_add_subtitle": "添加字幕",
+
   "@msg_add_subtitle": {
     "description": "Add subtitle option in video player more menu"
+
   },
   "msg_subtitle_menu": "字幕",
+
   "@msg_subtitle_menu": {
     "description": "Subtitles menu item in video player more menu"
+
   },
   "msg_subtitle_size": "字幕大小",
+
   "@msg_subtitle_size": {
     "description": "Subtitle font size label in subtitle settings"
+
+  },
+  "msg_subtitle_position": "字幕位置",
+
+  "@msg_subtitle_position": {
+    "description": "Subtitle vertical position label in subtitle settings"
+
+  },
+  "msg_subtitle_pos_top": "顶部",
+
+  "@msg_subtitle_pos_top": {
+    "description": "Top label for subtitle position slider"
+
+  },
+  "msg_subtitle_pos_bottom": "底部",
+
+  "@msg_subtitle_pos_bottom": {
+    "description": "Bottom label for subtitle position slider"
+
+  },
+  "msg_subtitle_no_background": "移除字幕背景",
+
+  "@msg_subtitle_no_background": {
+    "description": "Toggle to remove subtitle background transparent layer"
+
+  },
+  "msg_auto_clean_cache": "自动清理缓存",
+
+  "@msg_auto_clean_cache": {
+    "description": "Auto clean cache setting title"
+
+  },
+  "msg_auto_clean_cache_hint": "点击设置自动清理时间间隔",
+
+  "@msg_auto_clean_cache_hint": {
+    "description": "Hint text for auto clean cache setting"
+
+  },
+  "msg_auto_clean_cache_picker_hint": "滑动选择自动清理时间间隔",
+
+  "@msg_auto_clean_cache_picker_hint": {
+    "description": "Hint text in the duration picker bottom sheet"
+
+  },
+  "msg_cache_clean_unit_day": "天",
+
+  "@msg_cache_clean_unit_day": {
+    "description": "Day unit label in cache clean duration picker"
+
+  },
+  "msg_cache_clean_unit_hour": "小时",
+
+  "@msg_cache_clean_unit_hour": {
+    "description": "Hour unit label in cache clean duration picker"
+
+  },
+  "msg_cache_clean_unit_minute": "分钟",
+
+  "@msg_cache_clean_unit_minute": {
+    "description": "Minute unit label in cache clean duration picker"
+
+  },
+  "msg_cache_clean_confirm": "确认",
+
+  "@msg_cache_clean_confirm": {
+    "description": "Confirm button in cache clean duration picker"
+
   },
   "msg_quick_actions": "快捷操作",
+
   "@msg_quick_actions": {
     "description": "Top title of quick actions page"
+
   },
   "msg_hwdec": "硬解",
+
   "@msg_hwdec": {
     "description": "Hardware decoding badge in video player header"
+
   },
   "msg_subtitle_on": "开启字幕",
+
   "@msg_subtitle_on": {
     "description": "Tooltip to turn on subtitles in video player"
+
   },
   "msg_subtitle_off": "关闭字幕",
+
   "@msg_subtitle_off": {
     "description": "Tooltip to turn off subtitles in video player"
+
   },
   "msg_no_subtitle": "暂无字幕",
+
   "@msg_no_subtitle": {
     "description": "Tooltip when no subtitle is loaded in video player"
+
   },
   "msg_playlist": "播放列表",
+
   "@msg_playlist": {
     "description": "Playlist button tooltip in video player"
+
   },
   "msg_no_playlist": "暂无播放列表",
+
   "@msg_no_playlist": {
     "description": "Message when no playlist available in video player"
+
   },
   "msg_slide_to_unlock": "滑动/点击解锁",
+
   "@msg_slide_to_unlock": {
     "description": "Text on lock button in video player"
+
   },
   "msg_seconds_short": "秒",
+
   "@msg_seconds_short": {
     "description": "Short unit for seconds in seek indicator (e.g. 10s)"
+
   },
   "msg_speed_2x": "倍速 2.0x",
+
   "@msg_speed_2x": {
     "description": "Long press speed badge text in video player"
+
   },
   "log_v1_1_1_line1": "📹 视频播放器",
+
   "@log_v1_1_1_line1": {
     "description": "Changelog v1.1.1 line 1"
+
   },
   "log_v1_1_1_line2": "支持外挂字幕：自动识别与视频同目录、同文件名的字幕文件（如 .srt、.ass），同时保留手动加载字幕文件的入口。",
+
   "@log_v1_1_1_line2": {
     "description": "Changelog v1.1.1 line 2"
+
   },
   "log_v1_1_1_line3": "新增自定义画面缩放比例，可灵活适配各类异形屏及非标准比例屏幕。",
+
   "@log_v1_1_1_line3": {
     "description": "Changelog v1.1.1 line 3"
+
   },
   "log_v1_1_1_line4": "🎵 音频播放器",
+
   "@log_v1_1_1_line4": {
     "description": "Changelog v1.1.1 line 4"
+
   },
   "log_v1_1_1_line5": "修复了在平板、车机等横屏设备上的界面显示异常问题，提升大屏体验。",
+
   "@log_v1_1_1_line5": {
     "description": "Changelog v1.1.1 line 5"
+
   },
   "log_v1_1_1_line6": "📂 文件浏览与操作",
+
   "@log_v1_1_1_line6": {
     "description": "Changelog v1.1.1 line 6"
+
   },
   "log_v1_1_1_line7": "优化侧滑菜单与快捷操作弹窗的宽度一致性，视觉更统一。",
+
   "@log_v1_1_1_line7": {
     "description": "Changelog v1.1.1 line 7"
+
   },
   "log_v1_1_1_line8": "快捷操作面板中的常用功能现支持折叠/展开，且状态会持久记忆，下次打开保留您的偏好。",
+
   "@log_v1_1_1_line8": {
     "description": "Changelog v1.1.1 line 8"
+
   },
   "log_v1_1_1_line9": "调整文件打开逻辑：点击文件默认使用本应用直接打开；如需切换其他应用，可在选中文件后，通过顶部三点菜单或底部操作栏的\"更多\"选项选择\"打开方式\"。",
+
   "@log_v1_1_1_line9": {
     "description": "Changelog v1.1.1 line 9"
+
   },
   "log_v1_1_1_line10": "🗂️ 分类页界面",
+
   "@log_v1_1_1_line10": {
     "description": "Changelog v1.1.1 line 10"
+
   },
   "log_v1_1_1_line11": "默认布局改为每行4列，显示更紧凑高效。",
+
   "@log_v1_1_1_line11": {
     "description": "Changelog v1.1.1 line 11"
+
   },
   "log_v1_1_1_line12": "您可在\"自定义快捷方式\"设置中自由切换每行3列或4列。",
+
   "@log_v1_1_1_line12": {
     "description": "Changelog v1.1.1 line 12"
+
   },
   "log_v1_1_1_line13": "支持长按分类图标并拖拽，随意调整类别排列顺序。",
+
   "@log_v1_1_1_line13": {
     "description": "Changelog v1.1.1 line 13"
+
   },
   "ui_close_category": "关闭类别",
+
   "@ui_close_category": {
     "description": "Button to close/disable a category in quick categories grid context menu"
+
   },
   "ui_open_category": "开启类别",
+
   "@ui_open_category": {
     "description": "Button to open/enable a category in quick categories grid context menu"
+
   },
   "msg_custom_scan_paths": "自定义扫描位置",
+
   "@msg_custom_scan_paths": {
     "description": "Menu item to configure custom scan paths for media categories"
+
+  },
+  "notification_web_share_local_title": "ZenFile 本地网页共享",
+
+  "notification_web_share_internet_title": "ZenFile 互联网网页共享",
+
+  "notification_web_share_running": "运行于 {url}",
+
+  "@notification_web_share_running": {
+    "placeholders": {
+      "url": {}
+    }
+  },
+  "notification_ftp_title": "ZenFile FTP 服务器",
+
+  "notification_ftp_running": "运行于 ftp://{ip}:{port}",
+
+  "@notification_ftp_running": {
+    "placeholders": {
+      "ip": {},
+      "port": {}
+    }
   }
+,
+  "ui_download_links": "下载链接",
+
+  "@ui_download_links": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_new_features_title": "新增功能",
+
+  "@changelog_v1121_new_features_title": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_new_feature_1": "自定义首页显示：浏览页中，点击文件夹的三点菜单选择\"设为首页\"，或长按文件夹后在\"更多\"菜单中找到\"设为首页\"选项。双窗口模式下，两个窗口可独立设置不同的首页路径，提升多目录管理效率。",
+
+  "@changelog_v1121_new_feature_1": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_new_feature_2": "WEB共享增强：支持自定义共享路径，修复了此前仅能浏览文件夹而无法查看文件内容的问题。同时新增复制、粘贴、剪切、删除、重命名等常用文件操作按钮，远程管理更便捷。",
+
+  "@changelog_v1121_new_feature_2": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_new_feature_3": "远程缓存清理：新增自定义清理远程缓存功能，可灵活管理存储空间。",
+
+  "@changelog_v1121_new_feature_3": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_bugfixes_title": "问题修复",
+
+  "@changelog_v1121_bugfixes_title": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_bugfix_1": "修复 SMB 客户端进入任意共享目录后返回时目录显示为空的问题。",
+
+  "@changelog_v1121_bugfix_1": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_bugfix_2": "修复部分界面存在中文硬编码的问题，提升多语言环境下的显示兼容性。",
+
+  "@changelog_v1121_bugfix_2": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_known_issues_title": "已知问题（预计下个版本修复）",
+
+  "@changelog_v1121_known_issues_title": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_known_issue_1": "清除应用数据后重新打开会出现闪退。",
+
+  "@changelog_v1121_known_issue_1": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_known_issue_2": "视频播放器中调整外挂字幕显示大小暂不生效。",
+
+  "@changelog_v1121_known_issue_2": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_known_issue_3": "目前仅 WebDAV 客户端支持媒体文件流式播放，其他客户端暂不支持。",
+
+  "@changelog_v1121_known_issue_3": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_known_issue_4": "备份较大 APK 安装包时，界面会卡在执行状态，实际备份仍在后台进行。请按返回键后前往\"已备份 APK\"查看备份文件，备份路径位于主存储 ZenFile/Backups 目录。",
+
+  "@changelog_v1121_known_issue_4": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_known_issue_5": "FTP 共享服务开启后，使用其他 FTP 客户端连接时目录显示为空。",
+
+  "@changelog_v1121_known_issue_5": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "msg_editor_lines": "行",
+
+  "msg_editor_modified": "已修改"
 }

@@ -20,8 +20,6 @@ import '../widgets/sort_modal.dart';
 import '../widgets/batch_rename_dialog.dart';
 import '../widgets/selection_action_bar.dart';
 import '../widgets/selection_context_bottom_sheet.dart';
-import '../widgets/zenfile_drawer.dart';
-import '../widgets/zenfile_end_drawer.dart';
 import '../widgets/quick_categories_grid.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import 'internal_file_picker_screen.dart';
@@ -39,12 +37,16 @@ class DirectoryScreen extends StatefulWidget {
   final Function(int)? onNavigateTab;
   final VoidCallback? onEndDrawerCustomize;
   final VoidCallback? onRefresh;
+  final VoidCallback? onOpenDrawer;
+  final VoidCallback? onOpenEndDrawer;
   const DirectoryScreen({
-    super.key, 
-    required this.toggleTheme, 
-    this.onNavigateTab, 
+    super.key,
+    required this.toggleTheme,
+    this.onNavigateTab,
     this.onEndDrawerCustomize,
     this.onRefresh,
+    this.onOpenDrawer,
+    this.onOpenEndDrawer,
   });
 
   @override
@@ -601,11 +603,11 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
           await BatchRenameDialog.show(context, provider);
         } else {
           final currentName = p.posix.basename(path);
-          final newName = await FileActionDialogs.showTextInputDialog(
+          final newName = await FileActionDialogs.showRenameDialog(
             context,
+            currentName: currentName,
             title: L10n.of(context).msgc8ce4b36,
             hint: L10n.of(context).msgf139c5cf,
-            initialValue: currentName,
             actionText: L10n.of(context).msgc8ce4b36,
           );
           if (newName != null && newName.isNotEmpty) {
@@ -673,6 +675,18 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         break;
       case 'pin':
         await provider.togglePinPath(path);
+        break;
+      case 'set_as_home':
+        await provider.setAsHomeDirectory(path);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(L10n.of(context).ui_set_as_home),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
         break;
     }
   }
@@ -1120,45 +1134,6 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             }
           },
           child: Scaffold(
-            drawer: ZenFileDrawer(
-              toggleTheme: widget.toggleTheme,
-              onNavigateTab: widget.onNavigateTab,
-              width: MediaQuery.of(context).size.width * 0.75,
-            ),
-            endDrawer: Drawer(
-              width: MediaQuery.of(context).size.width * 0.75,
-              backgroundColor: theme.scaffoldBackgroundColor,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(28), bottomLeft: Radius.circular(28)),
-              ),
-              child: ZenFileEndDrawer(
-                toggleTheme: widget.toggleTheme,
-                onRefresh: () {
-                  Scaffold.of(context).closeEndDrawer();
-                  widget.onNavigateTab?.call(0);
-                  Future.delayed(const Duration(milliseconds: 300), () {
-                    widget.onRefresh?.call();
-                  });
-                },
-                onCustomize: () {
-                  Scaffold.of(context).closeEndDrawer();
-                  Future.delayed(const Duration(milliseconds: 300), () {
-                    widget.onEndDrawerCustomize?.call();
-                  });
-                },
-                onShowSortModal: () {
-                  Scaffold.of(context).closeEndDrawer();
-                  Future.delayed(const Duration(milliseconds: 300), () {
-                    SortModal.show(context, provider);
-                  });
-                },
-                onNavigateToBrowse: () {
-                  Scaffold.of(context).closeEndDrawer();
-                },
-                searchFolderPath: provider.currentPath,
-                provider: provider,
-              ),
-            ),
             appBar: (isSelectionMode || !showBottomActionBar)
                 ? AppBar(
                     automaticallyImplyLeading: isSelectionMode,
@@ -1168,41 +1143,39 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                     centerTitle: true,
                     title: isSelectionMode
                         ? const SizedBox.shrink()
-                        : Builder(
-                            builder: (context) => Row(
-                              children: [
-                                // 抽屉按钮（靠左）
-                                IconButton(
-                                  icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
-                                  onPressed: () => Scaffold.of(context).openDrawer(),
-                                ),
-                                const Spacer(),
-                                // 分类页按钮
-                                IconButton(
-                                  icon: Icon(Broken.category, color: theme.colorScheme.primary),
-                                  tooltip: L10n.of(context).msg6e0f9cef,
-                                  onPressed: () {
-                                    widget.onNavigateTab?.call(0);
-                                  },
-                                ),
-                                const SizedBox(width: 32),
-                                // 浏览页按钮
-                                IconButton(
-                                  icon: Icon(Broken.folder, color: theme.colorScheme.primary),
-                                  tooltip: L10n.of(context).ui_browse,
-                                  onPressed: () {
-                                    // 已在浏览页，无需切换
-                                  },
-                                ),
-                                const Spacer(),
-                                // 快捷操作按钮（靠右）
-                                IconButton(
-                                  icon: Icon(Broken.more_circle, color: theme.colorScheme.primary),
-                                  tooltip: L10n.of(context).msge8b8e9b3,
-                                  onPressed: () => Scaffold.of(context).openEndDrawer(),
-                                ),
-                              ],
-                            ),
+                        : Row(
+                            children: [
+                              // 抽屉按钮（靠左）
+                              IconButton(
+                                icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
+                                onPressed: () => widget.onOpenDrawer?.call(),
+                              ),
+                              const Spacer(),
+                              // 分类页按钮
+                              IconButton(
+                                icon: Icon(Broken.category, color: theme.colorScheme.primary),
+                                tooltip: L10n.of(context).msg6e0f9cef,
+                                onPressed: () {
+                                  widget.onNavigateTab?.call(0);
+                                },
+                              ),
+                              const SizedBox(width: 32),
+                              // 浏览页按钮
+                              IconButton(
+                                icon: Icon(Broken.folder, color: theme.colorScheme.primary),
+                                tooltip: L10n.of(context).ui_browse,
+                                onPressed: () {
+                                  // 已在浏览页，无需切换
+                                },
+                              ),
+                              const Spacer(),
+                              // 快捷操作按钮（靠右）
+                              IconButton(
+                                icon: Icon(Broken.more_circle, color: theme.colorScheme.primary),
+                                tooltip: L10n.of(context).msge8b8e9b3,
+                                onPressed: () => widget.onOpenEndDrawer?.call(),
+                              ),
+                            ],
                           ),
                     // 显式占用 actions，避免 Scaffold 因存在 endDrawer
                     // 自动在右上角补一个与“快捷操作”重复的菜单按钮。
@@ -1585,11 +1558,9 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                               child: Row(
                                 children: [
                                   // 抽屉按钮（靠左）
-                                  Builder(
-                                    builder: (ctx) => IconButton(
-                                      icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
-                                      onPressed: () => Scaffold.of(ctx).openDrawer(),
-                                    ),
+                                  IconButton(
+                                    icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
+                                    onPressed: () => widget.onOpenDrawer?.call(),
                                   ),
                                   const Spacer(),
                                   // 分类页按钮
@@ -1610,7 +1581,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                   IconButton(
                                     icon: Icon(Broken.more_circle, color: theme.colorScheme.primary),
                                     tooltip: L10n.of(context).msge8b8e9b3,
-                                    onPressed: () => Scaffold.of(context).openEndDrawer(),
+                                    onPressed: () => widget.onOpenEndDrawer?.call(),
                                   ),
                                 ],
                               ),

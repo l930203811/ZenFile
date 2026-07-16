@@ -1,8 +1,10 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../../core/icon_fonts/broken_icons.dart';
 import '../../../../models/app_info_model.dart';
 import '../../../../services/app_manager_service.dart';
+import '../../../../providers/file_manager_provider.dart';
 import '../../../../core/utils.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
@@ -110,7 +112,7 @@ class AppOptionsSheet extends StatelessWidget {
             _buildBottomSheetActionItem(
               theme: theme,
               icon: Broken.setting_4,
-              label: 'System Settings / Details',
+              label: L10n.of(context).ui_app_system_settings,
               color: Colors.blueAccent,
               onTap: () {
                 Navigator.pop(context);
@@ -123,22 +125,73 @@ class AppOptionsSheet extends StatelessWidget {
               label: L10n.of(context).apk3,
               color: Colors.orangeAccent,
               onTap: () async {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(L10n.of(context).apk4)),
+                // 在关闭 bottom sheet 前捕获所有依赖，避免 context 失效
+                final navigator = Navigator.of(context);
+                final rootNavigator = Navigator.of(context, rootNavigator: true);
+                final scaffoldMessenger = ScaffoldMessenger.of(context);
+                final l10n = L10n.of(context);
+                final provider = context.read<FileManagerProvider>();
+
+                // 关闭 bottom sheet
+                navigator.pop();
+
+                // 显示加载对话框（使用 rootNavigator，不受 bottom sheet 销毁影响）
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  useRootNavigator: true,
+                  builder: (ctx) => AlertDialog(
+                    content: Row(
+                      children: [
+                        const CircularProgressIndicator(),
+                        const SizedBox(width: 20),
+                        Expanded(child: Text(l10n.apk4)),
+                      ],
+                    ),
+                  ),
                 );
-                final success = await AppManagerService.backupApp(app);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        success
-                            ? 'APK backed up successfully to ZenFile/Backups/Apps/'
-                            : L10n.of(context).apk5,
-                      ),
+
+                // 执行备份
+                final backupPath = await AppManagerService.backupApp(app);
+
+                // 关闭加载对话框（使用 rootNavigator）
+                rootNavigator.pop();
+
+                if (backupPath != null) {
+                  // 备份成功，显示路径并询问是否打开目录
+                  final openFolder = await showDialog<bool>(
+                    context: context,
+                    useRootNavigator: true,
+                    builder: (ctx) => AlertDialog(
+                      title: Text(l10n.ui_backup_apk_open_folder),
+                      content: Text(l10n.ui_backup_apk_success_with_path(backupPath)),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: Text(MaterialLocalizations.of(ctx).cancelButtonLabel),
+                        ),
+                        FilledButton(
+                          onPressed: () => Navigator.pop(ctx, true),
+                          child: Text(l10n.ui_backup_apk_open),
+                        ),
+                      ],
                     ),
                   );
+                  if (openFolder == true) {
+                    final dirPath = backupPath.substring(0, backupPath.lastIndexOf('/'));
+                    navigator.popUntil((route) => route.isFirst);
+                    Future.delayed(const Duration(milliseconds: 200), () {
+                      provider.setPendingBrowseNavigation(dirPath, [backupPath]);
+                      provider.setNavigateToBrowseTab(true);
+                    });
+                  }
                   onRefreshNeeded();
+                } else {
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(
+                      content: Text(l10n.apk5),
+                    ),
+                  );
                 }
               },
             ),

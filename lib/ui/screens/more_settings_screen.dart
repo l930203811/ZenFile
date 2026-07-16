@@ -1610,38 +1610,71 @@ class MediaSettingsScreen extends StatefulWidget {
 
 class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
   bool _preferFolders = false;
-  int _autoCleanDays = 0;
+  int _autoCleanMinutes = 5;
   bool _remoteThumbnailPreview = false;
 
   @override
   void initState() {
     super.initState();
     _preferFolders = PreferencesService.getPreferFoldersInMedia();
-    _autoCleanDays = PreferencesService.getRemoteCacheAutoCleanDays();
+    _autoCleanMinutes = PreferencesService.getRemoteCacheAutoCleanMinutes();
     _remoteThumbnailPreview = PreferencesService.getRemoteMediaThumbnailPreview();
   }
 
-  String _getAutoCleanLabel(int days) {
-    switch (days) {
-      case 0: return L10n.of(context).ui_no_auto_clean;
-      case 1: return L10n.of(context).ui_daily;
-      case 3: return L10n.of(context).msg267fcd86;
-      case 7: return L10n.of(context).ui_weekly;
-      case 14: return L10n.of(context).msg9104c0c5;
-      case 30: return L10n.of(context).ui_monthly;
-      default: return L10n.of(context).ui_every_n_days(days);
+  /// 将分钟数拆分为天、小时、分钟
+  List<int> _splitDuration(int totalMinutes) {
+    final days = totalMinutes ~/ (24 * 60);
+    final hours = (totalMinutes % (24 * 60)) ~/ 60;
+    final minutes = totalMinutes % 60;
+    return [days, hours, minutes];
+  }
+
+  /// 将天、小时、分钟合并为总分钟数
+  int _mergeDuration(int days, int hours, int minutes) {
+    return days * 24 * 60 + hours * 60 + minutes;
+  }
+
+  String _getAutoCleanLabel(int totalMinutes) {
+    if (totalMinutes <= 0) {
+      return L10n.of(context).ui_no_auto_clean;
     }
+    final parts = <String>[];
+    final d = _splitDuration(totalMinutes);
+    if (d[0] > 0) parts.add('${d[0]} ${L10n.of(context).msg_cache_clean_unit_day}');
+    if (d[1] > 0) parts.add('${d[1]} ${L10n.of(context).msg_cache_clean_unit_hour}');
+    if (d[2] > 0) parts.add('${d[2]} ${L10n.of(context).msg_cache_clean_unit_minute}');
+    if (parts.isEmpty) {
+      return L10n.of(context).ui_no_auto_clean;
+    }
+    return parts.join(' ');
   }
 
   Future<void> _clearRemoteCache() async {
     try {
-      // 清除整个 ZenFile_Remote 目录（包含下载文件和缓存）
-      final cacheDir = Directory('/storage/emulated/0/Download/ZenFile_Remote');
-      if (cacheDir.existsSync()) {
-        await cacheDir.delete(recursive: true);
-        cacheDir.createSync(recursive: true);
+      // Only clear cache/temp directories; never touch user data or
+      // backups (ZenFile/Backups/Settings and ZenFile/Backups/Apps).
+      final baseDir = Directory('/storage/emulated/0/ZenFile');
+      if (baseDir.existsSync()) {
+        // 1. Clear the entire cache/ subtree (thumbnails, temp, etc.)
+        final cacheDir = Directory('${baseDir.path}/cache');
+        if (cacheDir.existsSync()) {
+          await cacheDir.delete(recursive: true);
+          cacheDir.createSync(recursive: true);
+        }
+
+        // 2. Clear loose .temp_* directories used for transient uploads
+        for (final entity in baseDir.listSync()) {
+          final name = p.basename(entity.path);
+          if (entity is Directory && name.startsWith('.temp_')) {
+            try {
+              await entity.delete(recursive: true);
+            } catch (_) {}
+          }
+        }
       }
-      // 同时清理旧的临时缓存目录（兼容之前版本）
+
+      // 3. Also clear legacy cache locations (older app versions stored
+      //    remote cache under Android/data/.../cache).
       final oldCacheDirs = [
         '/storage/emulated/0/Android/data/com.sequl.zenfile/cache/remote_cache',
         '/storage/emulated/0/Android/data/com.sequl.zenfile/cache/remote_thumbnails',
@@ -1653,28 +1686,34 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
       await PreferencesService.saveRemoteCacheLastCleanTime(DateTime.now().millisecondsSinceEpoch);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(L10n.of(context).msg673ad9d4), behavior: SnackBarBehavior.floating),
+          SnackBar(
+            content: Text(L10n.of(context).ui_clear_remote_cache_success),
+            behavior: SnackBarBehavior.floating,
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(L10n.of(context).ui_clear_cache_failed(e)), behavior: SnackBarBehavior.floating),
+          SnackBar(
+            content: Text(L10n.of(context).ui_clear_remote_cache_failed),
+            behavior: SnackBarBehavior.floating,
+          ),
         );
       }
     }
   }
 
   void _showAutoCleanPicker() {
-    final options = [0, 1, 3, 7, 14, 30];
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) {
         return SafeArea(
           child: ConstrainedBox(
             constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(ctx).size.height * 0.75,
+              maxHeight: MediaQuery.of(ctx).size.height * 0.8,
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -1686,36 +1725,50 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
                     decoration: BoxDecoration(color: Colors.grey.withOpacity(0.3), borderRadius: BorderRadius.circular(2)),
                   ),
                   const SizedBox(height: 16),
-                  Text(L10n.of(context).msgd9f142c4, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(L10n.of(context).msgd9f142c4,
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   ListTile(
                     leading: Icon(Broken.trash, color: Theme.of(ctx).colorScheme.error),
                     title: Text(L10n.of(context).ui_clear_remote_cache),
-                    subtitle: Text(L10n.of(context).msg5472ef41, style: TextStyle(fontSize: 12)),
+                    subtitle: Text(L10n.of(context).msg5472ef41, style: const TextStyle(fontSize: 12)),
                     onTap: () {
                       Navigator.pop(ctx);
                       _clearRemoteCache();
                     },
                   ),
                   const Divider(height: 1),
-                  const SizedBox(height: 4),
-                  Flexible(
-                    child: ListView(
-                      shrinkWrap: true,
-                      physics: const BouncingScrollPhysics(),
-                      children: options.map((days) => ListTile(
-                        leading: Icon(
-                          _autoCleanDays == days ? Icons.check_circle_rounded : Icons.circle_outlined,
-                          color: _autoCleanDays == days ? Theme.of(ctx).colorScheme.primary : Colors.grey,
-                        ),
-                        title: Text(_getAutoCleanLabel(days)),
-                        onTap: () {
-                          setState(() => _autoCleanDays = days);
-                          PreferencesService.saveRemoteCacheAutoCleanDays(days);
-                          Navigator.pop(ctx);
-                        },
-                      )).toList(),
+                  const SizedBox(height: 8),
+                  // 不自动清理选项
+                  ListTile(
+                    leading: Icon(
+                      _autoCleanMinutes <= 0 ? Icons.check_circle_rounded : Icons.circle_outlined,
+                      color: _autoCleanMinutes <= 0 ? Theme.of(ctx).colorScheme.primary : Colors.grey,
                     ),
+                    title: Text(L10n.of(context).ui_no_auto_clean),
+                    onTap: () {
+                      setState(() => _autoCleanMinutes = 0);
+                      PreferencesService.saveRemoteCacheAutoCleanMinutes(0);
+                      // 取消自动清理定时器
+                      startAutoCleanTimer();
+                      Navigator.pop(ctx);
+                    },
+                  ),
+                  const Divider(height: 1),
+                  // 自动清理 - 时间间隔选择器
+                  ListTile(
+                    leading: Icon(
+                      _autoCleanMinutes > 0 ? Icons.check_circle_rounded : Icons.circle_outlined,
+                      color: _autoCleanMinutes > 0 ? Theme.of(ctx).colorScheme.primary : Colors.grey,
+                    ),
+                    title: Text(L10n.of(context).msg_auto_clean_cache),
+                    subtitle: _autoCleanMinutes > 0
+                        ? Text(_getAutoCleanLabel(_autoCleanMinutes), style: const TextStyle(fontSize: 12))
+                        : Text(L10n.of(context).msg_auto_clean_cache_hint, style: const TextStyle(fontSize: 12)),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _showDurationPicker();
+                    },
                   ),
                 ],
               ),
@@ -1723,6 +1776,195 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
           ),
         );
       },
+    );
+  }
+
+  /// 显示天/小时/分钟滑动选择器
+  void _showDurationPicker() {
+    final current = _splitDuration(_autoCleanMinutes);
+    int selectedDays = current[0];
+    int selectedHours = current[1];
+    int selectedMinutes = current[2];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 40, height: 4,
+                      decoration: BoxDecoration(
+                          color: Colors.grey.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(2)),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(L10n.of(context).msg_auto_clean_cache,
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    Text(L10n.of(context).msg_auto_clean_cache_picker_hint,
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      height: 200,
+                      child: Row(
+                        children: [
+                          // 天数选择器 0-31
+                          Expanded(
+                            child: _buildDurationWheel(
+                              context: ctx,
+                              label: L10n.of(context).msg_cache_clean_unit_day,
+                              itemCount: 32, // 0-31
+                              initialItem: selectedDays,
+                              onChanged: (index) {
+                                setSheetState(() => selectedDays = index);
+                              },
+                            ),
+                          ),
+                          // 小时选择器 0-24
+                          Expanded(
+                            child: _buildDurationWheel(
+                              context: ctx,
+                              label: L10n.of(context).msg_cache_clean_unit_hour,
+                              itemCount: 25, // 0-24
+                              initialItem: selectedHours,
+                              onChanged: (index) {
+                                setSheetState(() => selectedHours = index);
+                              },
+                            ),
+                          ),
+                          // 分钟选择器 0-60
+                          Expanded(
+                            child: _buildDurationWheel(
+                              context: ctx,
+                              label: L10n.of(context).msg_cache_clean_unit_minute,
+                              itemCount: 61, // 0-60
+                              initialItem: selectedMinutes,
+                              onChanged: (index) {
+                                setSheetState(() => selectedMinutes = index);
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            child: Text(L10n.of(context).ui_cancel),
+                          ),
+                          const Spacer(),
+                          FilledButton(
+                            onPressed: () {
+                              final total = _mergeDuration(selectedDays, selectedHours, selectedMinutes);
+                              setState(() => _autoCleanMinutes = total);
+                              PreferencesService.saveRemoteCacheAutoCleanMinutes(total);
+                              // 重启自动清理定时器以应用新的间隔
+                              startAutoCleanTimer();
+                              Navigator.pop(ctx);
+                            },
+                            style: FilledButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                            ),
+                            child: Text(L10n.of(context).msg_cache_clean_confirm),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  /// 构建单个时间单位的滚动选择轮
+  Widget _buildDurationWheel({
+    required BuildContext context,
+    required String label,
+    required int itemCount,
+    required int initialItem,
+    required ValueChanged<int> onChanged,
+  }) {
+    final theme = Theme.of(context);
+    final controller = FixedExtentScrollController(initialItem: initialItem);
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Text(label, style: TextStyle(fontSize: 13, color: theme.colorScheme.primary, fontWeight: FontWeight.w600)),
+        ),
+        Expanded(
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // 中心选择高亮条
+              Container(
+                height: 36,
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primaryContainer.withOpacity(0.4),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              NotificationListener<ScrollNotification>(
+                onNotification: (notification) {
+                  if (notification is ScrollEndNotification) {
+                    final selectedIndex = (controller.selectedItem).round() % itemCount;
+                    if (selectedIndex < 0) {
+                      onChanged(0);
+                    } else {
+                      onChanged(selectedIndex);
+                    }
+                  }
+                  return false;
+                },
+                child: ListWheelScrollView.useDelegate(
+                  controller: controller,
+                  itemExtent: 36,
+                  perspective: 0.003,
+                  diameterRatio: 1.2,
+                  physics: const FixedExtentScrollPhysics(),
+                  childDelegate: ListWheelChildBuilderDelegate(
+                    builder: (ctx, index) {
+                      if (index < 0 || index >= itemCount) return null;
+                      return Center(
+                        child: Text(
+                          '$index',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                      );
+                    },
+                    childCount: itemCount,
+                  ),
+                  onSelectedItemChanged: (index) {
+                    onChanged(index);
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -1813,7 +2055,7 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
               onTap: () {
                 final provider = context.read<FileManagerProvider>();
                 // 设置待导航路径，让 HomeScreen 切页后加载目录
-                provider.setPendingBrowseNavigation('/storage/emulated/0/Download/ZenFile_Remote', []);
+                provider.setPendingBrowseNavigation('/storage/emulated/0/ZenFile', []);
                 provider.setNavigateToBrowseTab(true);
                 // 关闭所有设置页面回到首页
                 Navigator.of(context).popUntil((route) => route.isFirst);
@@ -1822,7 +2064,7 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
             SettingsTile(
               icon: Broken.clock,
               title: L10n.of(context).msgd9f142c4,
-              subtitle: L10n.of(context).ui_auto_clean_remote_cache(_getAutoCleanLabel(_autoCleanDays)),
+              subtitle: _getAutoCleanLabel(_autoCleanMinutes),
               trailing: Icon(Icons.chevron_right_rounded, color: theme.colorScheme.onSurface.withOpacity(0.4)),
               onTap: _showAutoCleanPicker,
             ),
@@ -2011,6 +2253,7 @@ String _getAppIconLabel(BuildContext context, String option) {
     case 'design8': return L10n.of(context).msgdesign8;
     case 'design9': return L10n.of(context).msgdesign9;
     case 'design10': return L10n.of(context).msgdesign10;
+    case 'design11': return L10n.of(context).msgdesign11;
     case 'custom': return L10n.of(context).msg7372dc9f;
     case 'default':
     default:
@@ -2790,6 +3033,14 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
                                 id: 'design10',
                                 title: L10n.of(context).msgdesign10,
                                 imagePath: 'assets/logo/zf_user_design_1.png',
+                              ),
+                              _buildIconOptionCard(
+                                context,
+                                fileManager,
+                                theme,
+                                id: 'design11',
+                                title: L10n.of(context).msgdesign11,
+                                imagePath: 'assets/logo/zf_user_design_2.png',
                               ),
                               _buildCustomIconOptionCard(
                                 context,

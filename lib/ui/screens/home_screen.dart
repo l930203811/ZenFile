@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../providers/media_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
@@ -45,7 +46,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     );
     _currentIndex = context.read<FileManagerProvider>().defaultToBrowseScreen ? 1 : 0;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<MediaProvider>().loadMedia();
+      try {
+        Permission.manageExternalStorage.isGranted.then((hasFullPermission) {
+          if (hasFullPermission) {
+            context.read<MediaProvider>().loadMedia();
+          }
+        });
+      } catch (_) {}
     });
   }
 
@@ -78,7 +85,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      context.read<MediaProvider>().refreshMediaBackground();
+      try {
+        Permission.manageExternalStorage.isGranted.then((hasFullPermission) {
+          if (hasFullPermission) {
+            try {
+              context.read<MediaProvider>().refreshMediaBackground();
+            } catch (_) {}
+          }
+        });
+      } catch (_) {}
     }
   }
 
@@ -101,10 +116,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
           _isRefreshing = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('仪表盘刷新成功'),
+          SnackBar(
+            content: Text(L10n.of(context).msge109d1ea),
             behavior: SnackBarBehavior.floating,
-            duration: Duration(seconds: 1),
+            duration: const Duration(seconds: 1),
           ),
         );
       }
@@ -170,10 +185,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
         drawer: ZenFileDrawer(
           toggleTheme: widget.toggleTheme,
           onNavigateTab: (index) => _switchTab(index),
-          width: MediaQuery.of(context).size.width * 0.75,
+          width: MediaQuery.of(context).size.width * 0.675,
         ),
         endDrawer: Drawer(
-          width: MediaQuery.of(context).size.width * 0.75,
+          width: MediaQuery.of(context).size.width * 0.675,
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.only(topLeft: Radius.circular(28), bottomLeft: Radius.circular(28)),
@@ -353,6 +368,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                       DirectoryScreen(
                         toggleTheme: widget.toggleTheme,
                         onNavigateTab: (index) => _switchTab(index),
+                        onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
+                        onOpenEndDrawer: () => _scaffoldKey.currentState?.openEndDrawer(),
                         onEndDrawerCustomize: () {
                           _switchTab(0);
                           Future.delayed(const Duration(milliseconds: 300), () {

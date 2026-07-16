@@ -233,6 +233,7 @@ class FolderItem extends StatelessWidget {
                     FileActionSheet.show(
                       context,
                       onAction,
+                      showSetAsHome: true,
                     );
                   },
                 ),

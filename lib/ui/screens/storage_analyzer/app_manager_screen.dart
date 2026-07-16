@@ -365,7 +365,7 @@ class _AppManagerScreenState extends State<AppManagerScreen> with SingleTickerPr
           ),
           const SizedBox(height: 6),
           Text(
-            'To see exact app storage sizes (APK + data + cache) instead of just the raw installer size, please enable the Usage Access permission for ZenFile in System Settings.',
+            L10n.of(context).ui_app_usage_access_description,
             style: TextStyle(
               fontSize: 12.5,
               color: theme.textTheme.bodyMedium?.color?.withOpacity(0.8),
@@ -385,9 +385,22 @@ class _AppManagerScreenState extends State<AppManagerScreen> with SingleTickerPr
               ),
               onPressed: () async {
                 await AppManagerService.requestUsageStatsPermission();
-                Future.delayed(const Duration(seconds: 1), () {
-                  _loadApplications();
-                });
+                // Re-check permission status immediately when user returns
+                // from system settings so the banner can be hidden in time
+                // without requiring a manual refresh of the page.
+                if (mounted) {
+                  final hasPerm = await AppManagerService.checkUsageStatsPermission();
+                  if (mounted) {
+                    setState(() {
+                      _hasUsageStatsPermission = hasPerm;
+                    });
+                  }
+                  // Also reload the apps to update the size info that
+                  // depends on the usage stats permission.
+                  if (hasPerm) {
+                    _loadApplications();
+                  }
+                }
               },
               child: Text(
                 L10n.of(context).ui_app_grant_usage_access,

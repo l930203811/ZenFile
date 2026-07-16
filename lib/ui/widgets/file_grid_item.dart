@@ -383,7 +383,7 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
       if (activeTab == null || activeTab.remoteClient == null) return;
       final client = activeTab.remoteClient!;
 
-      final thumbDir = Directory('/storage/emulated/0/Download/ZenFile_Remote/cache/thumbnails/remote');
+      final thumbDir = Directory('/storage/emulated/0/ZenFile/cache/thumbnails/remote');
       if (!await thumbDir.exists()) {
         await thumbDir.create(recursive: true);
       }

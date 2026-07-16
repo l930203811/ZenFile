@@ -295,11 +295,11 @@ class _PaneBrowserState extends State<PaneBrowser> {
           await BatchRenameDialog.show(context, provider);
         } else {
           final currentName = p.posix.basename(path);
-          final newName = await FileActionDialogs.showTextInputDialog(
+          final newName = await FileActionDialogs.showRenameDialog(
             context,
+            currentName: currentName,
             title: L10n.of(context).msgc8ce4b36,
             hint: L10n.of(context).msgf139c5cf,
-            initialValue: currentName,
             actionText: L10n.of(context).msgc8ce4b36,
           );
           if (newName != null && newName.isNotEmpty) {
@@ -333,6 +333,18 @@ class _PaneBrowserState extends State<PaneBrowser> {
               );
             }
           }
+        }
+        break;
+      case 'set_as_home':
+        await provider.setAsHomeDirectory(path);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(L10n.of(context).ui_set_as_home),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 2),
+            ),
+          );
         }
         break;
     }
@@ -887,6 +899,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                       context,
                       (action) => _handleAction(context, action, folder.path),
                       isArchive: false,
+                      showSetAsHome: true,
                     );
                   },
                 ),
@@ -1193,11 +1206,11 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
       // 缩略图缓存目录
       Directory thumbDir;
       try {
-        thumbDir = Directory('/storage/emulated/0/Download/ZenFile_Remote/cache/thumbnails/remote');
+        thumbDir = Directory('/storage/emulated/0/ZenFile/cache/thumbnails/remote');
         if (!thumbDir.existsSync()) thumbDir.createSync(recursive: true);
       } catch (_) {
         final appDir = await getApplicationDocumentsDirectory();
-        thumbDir = Directory(p.join(appDir.path, 'ZenFile_Remote', 'cache', 'thumbnails', 'remote'));
+        thumbDir = Directory(p.join(appDir.path, 'ZenFile', 'cache', 'thumbnails', 'remote'));
         if (!thumbDir.existsSync()) thumbDir.createSync(recursive: true);
       }
       final thumbName = '${widget.file.path.replaceAll('/', '_').replaceAll('\\', '_')}_thumb.jpg';
@@ -1216,11 +1229,11 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
       // 下载到临时目录
       Directory tempDir;
       try {
-        tempDir = Directory('/storage/emulated/0/Download/ZenFile_Remote/cache/temp');
+        tempDir = Directory('/storage/emulated/0/ZenFile/cache/temp');
         if (!tempDir.existsSync()) tempDir.createSync(recursive: true);
       } catch (_) {
         final appDir = await getApplicationDocumentsDirectory();
-        tempDir = Directory(p.join(appDir.path, 'ZenFile_Remote', 'cache', 'temp'));
+        tempDir = Directory(p.join(appDir.path, 'ZenFile', 'cache', 'temp'));
         if (!tempDir.existsSync()) tempDir.createSync(recursive: true);
       }
 

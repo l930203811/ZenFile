@@ -99,7 +99,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
     }
 
     try {
-      await _client.connect();
+      await _client!.connect();
       _isConnected = true;
 
       // For SMB with generic root path, keep "/" to list all shared directories.
@@ -209,17 +209,11 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
     });
     
     try {
-      Directory? downloadDir = Directory('/storage/emulated/0/Download');
-      if (!downloadDir.existsSync()) {
-        downloadDir = await getExternalStorageDirectory();
-      }
-      downloadDir ??= await getApplicationDocumentsDirectory();
-      
-      final nfileDir = Directory(p.join(downloadDir.path, 'ZenFile_Remote'));
+      final nfileDir = Directory('/storage/emulated/0/ZenFile');
       if (!nfileDir.existsSync()) nfileDir.createSync(recursive: true);
-      
+
       final localPath = p.join(nfileDir.path, item.name);
-      
+
       // 文本和图片：完整下载后打开
       await _client!.downloadFile(item.path, localPath, (prog) {
         if (mounted) setState(() => _transferProgress = prog);
@@ -433,13 +427,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
     });
 
     try {
-      Directory? downloadDir = Directory('/storage/emulated/0/Download');
-      if (!downloadDir.existsSync()) {
-        downloadDir = await getExternalStorageDirectory();
-      }
-      downloadDir ??= await getApplicationDocumentsDirectory();
-
-      final nfileDir = Directory(p.join(downloadDir.path, 'ZenFile_Remote'));
+      final nfileDir = Directory('/storage/emulated/0/ZenFile');
       if (!nfileDir.existsSync()) nfileDir.createSync(recursive: true);
 
       final localPath = p.join(nfileDir.path, item.name);
@@ -850,7 +838,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       },
       child: Scaffold(
         drawer: ZenFileDrawer(
-          width: MediaQuery.of(context).size.width * 0.75,
+          width: MediaQuery.of(context).size.width * 0.675,
           toggleTheme: () {
             final brightness = Theme.of(context).brightness;
             final isDark = brightness == Brightness.dark;
@@ -1343,15 +1331,15 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       Directory? tempDir;
       try {
         // 统一缩略图缓存路径为 thumbnails/remote（与 file_item.dart 一致）
-        thumbDir = Directory('/storage/emulated/0/Download/ZenFile_Remote/cache/thumbnails/remote');
+        thumbDir = Directory('/storage/emulated/0/ZenFile/cache/thumbnails/remote');
         if (!thumbDir.existsSync()) thumbDir.createSync(recursive: true);
-        tempDir = Directory('/storage/emulated/0/Download/ZenFile_Remote/cache/temp');
+        tempDir = Directory('/storage/emulated/0/ZenFile/cache/temp');
         if (!tempDir.existsSync()) tempDir.createSync(recursive: true);
       } catch (_) {
         final appDir = await getApplicationDocumentsDirectory();
-        thumbDir = Directory(p.join(appDir.path, 'ZenFile_Remote', 'cache', 'thumbnails', 'remote'));
+        thumbDir = Directory(p.join(appDir.path, 'ZenFile', 'cache', 'thumbnails', 'remote'));
         if (!thumbDir.existsSync()) thumbDir.createSync(recursive: true);
-        tempDir = Directory(p.join(appDir.path, 'ZenFile_Remote', 'cache', 'temp'));
+        tempDir = Directory(p.join(appDir.path, 'ZenFile', 'cache', 'temp'));
         if (!tempDir.existsSync()) tempDir.createSync(recursive: true);
       }
       
@@ -1410,7 +1398,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
   Future<void> _batchDownloadSelected() async {
     if (_client == null || _selectedPaths.isEmpty) return;
     final selectedItems = _items.where((item) => _selectedPaths.contains(item.path)).toList();
-    final localBase = '/storage/emulated/0/Download/ZenFile_Remote';
+    final localBase = '/storage/emulated/0/ZenFile';
 
     setState(() {
       _isTransferring = true;

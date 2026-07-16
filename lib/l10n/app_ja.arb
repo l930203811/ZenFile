@@ -1,4036 +1,6530 @@
 {
   "@@locale": "ja",
+
   "@msg6f3e533a": {
     "description": "main.dart"
+
   },
   "msg6f3e533a": "共有ドキュメントを開いています...",
+
   "@msgbca59325": {
     "description": "main.dart"
+
   },
   "msgbca59325": "セキュアコンテンツストリームを解析中",
+
   "@zenfile": {
     "description": "main.dart"
+
   },
   "zenfile": "ZenFileは、メディアファイルをシームレスに管理・整理・表示するためにストレージのアクセス許可が必要です。",
+
   "@e": {
     "type": "text"
+
   },
   "e": "キャッシュディレクトリのクリアに失敗しました: {e}",
+
   "@msg21cefa9b": {
     "description": "providers\\file_manager_provider.dart"
+
   },
   "msg21cefa9b": "内部ストレージ",
+
   "@smb": {
     "description": "providers\\file_manager_provider.dart"
+
   },
   "smb": "LAN/SMB",
+
   "@msg05d3c93c": {
     "description": "providers\\file_manager_provider.dart"
+
   },
   "msg05d3c93c": "アイテムの移動に成功しました",
+
   "@e1": {
     "type": "text"
+
   },
   "e1": "転送に失敗しました: {e}",
+
   "@msga45bac47": {
     "description": "providers\\file_manager_provider.dart"
+
   },
   "msga45bac47": "操作がキャンセルされました",
+
   "@e2": {
     "type": "text"
+
   },
   "e2": "リモートサーバーへの接続に失敗しました: {e}",
+
   "@e3": {
     "type": "text"
+
   },
   "e3": "フォルダの作成エラー: {e}",
+
   "@msg3df5ef6c": {
     "description": "providers\\file_manager_provider.dart"
+
   },
   "msg3df5ef6c": "圧縮制限を超えました",
+
   "@msg5e32276d": {
     "description": "providers\\file_manager_provider.dart"
+
   },
   "msg5e32276d": "不明なアーティスト",
+
   "@msg497ec49d": {
     "description": "providers\\file_manager_provider.dart"
+
   },
   "msg497ec49d": "ローカルフォルダ",
+
   "@e4": {
     "type": "text"
+
   },
   "e4": "リモートファイルのダウンロードに失敗しました: {e}",
+
   "@msg6b9ca1dd": {
     "description": "providers\\file_manager_provider.dart"
+
   },
   "msg6b9ca1dd": "フォルダを自身または同じ場所に移動することはできません",
+
   "@e5": {
     "type": "text"
+
   },
   "e5": "アイテムの移動に失敗しました: {e}",
+
   "@msg5238524c": {
     "description": "providers\\file_manager_provider.dart"
+
   },
   "msg5238524c": "フォルダを自身または同じ場所にコピーすることはできません",
+
   "@e6": {
     "type": "text"
+
   },
   "e6": "アイテムのコピーに失敗しました: {e}",
+
   "@msgc806d0fa": {
     "description": "providers\\media_provider.dart"
+
   },
   "msgc806d0fa": "アーカイブ",
+
   "@msg03070d08": {
     "description": "providers\\media_provider.dart"
+
   },
   "msg03070d08": "APK",
+
   "@ftp": {
     "description": "providers\\media_provider.dart"
+
   },
   "ftp": "FTP共有",
+
   "@web": {
     "description": "providers\\media_provider.dart"
+
   },
   "web": "Web共有",
+
   "@msge86bd662": {
     "description": "providers\\media_provider.dart"
+
   },
   "msge86bd662": "デバイスギャラリー（自動）",
+
   "@msg16166a01": {
     "description": "providers\\media_provider.dart"
+
   },
   "msg16166a01": "デバイスオーディオライブラリ（自動）",
+
   "@msgbb34b7ec": {
     "description": "providers\\media_provider.dart"
+
   },
   "msgbb34b7ec": "内部ストレージ（全フォルダをスキャン）",
+
   "@msg26a1f2d9": {
     "description": "providers\\media_provider.dart"
+
   },
   "msg26a1f2d9": "デバイスギャラリー（スクリーンショット）",
+
   "@msg39e11368": {
     "description": "services\\apk_installer_service.dart"
+
   },
   "msg39e11368": "APKパッケージを展開中...",
+
   "@apk": {
     "description": "services\\apk_installer_service.dart"
+
   },
   "apk": "パッケージ内にインストール可能なAPKが見つかりません",
+
   "@apk1": {
     "description": "services\\apk_installer_service.dart"
+
   },
   "apk1": "分割APKインストーラーを起動できません",
+
   "@msg2f0138ad": {
     "description": "services\\background_archive_service.dart"
+
   },
   "msg2f0138ad": "ファイルを圧縮中",
+
   "@msga2292820": {
     "description": "services\\background_archive_service.dart"
+
   },
   "msga2292820": "アーカイブの作成に成功しました",
+
   "@msg0683ca6b": {
     "description": "services\\background_archive_service.dart"
+
   },
   "msg0683ca6b": "アーカイブを展開中",
+
   "@msg1f216eda": {
     "description": "services\\background_archive_service.dart"
+
   },
   "msg1f216eda": "アーカイブの展開に成功しました",
+
   "@msg5fa802be": {
     "description": "services\\background_archive_service.dart"
+
   },
   "msg5fa802be": "操作に失敗しました",
+
   "@msg8fccf382": {
     "description": "services\\background_archive_service.dart"
+
   },
   "msg8fccf382": "はい/いいえ",
+
   "@msgc18fb099": {
     "description": "services\\background_archive_service.dart"
+
   },
   "msgc18fb099": "展開に成功しました。保存先を開きますか？",
+
   "msg_compress_open_location": "圧縮に成功しました。保存先を開きますか？",
+
   "@msg4367e85a": {
     "description": "services\\background_archive_service.dart"
+
   },
   "msg4367e85a": "圧縮可能なファイルが見つかりません",
+
   "@msg60a4545d": {
     "description": "services\\background_archive_service.dart"
+
   },
   "msg60a4545d": "未対応の形式",
+
   "@msg226519e7": {
     "description": "services\\background_archive_service.dart"
+
   },
   "msg226519e7": "アーカイブファイルが見つかりません",
+
   "@msg88d150c7": {
     "description": "services\\folder_share_service.dart"
+
   },
   "msg88d150c7": "共有するアイテムがありません。",
+
   "@e7": {
     "type": "text"
+
   },
   "e7": "共有ファイルの読み取りエラー: {e}",
+
   "@zenfilesmbvirtualstoragebridgen": {
     "description": "services\\remote\\lan_client.dart"
+
   },
   "zenfilesmbvirtualstoragebridgen": "ZenFile LAN/SMB仮想ストレージブリッジ\n",
+
   "@msgf3a485df": {
     "description": "services\\remote\\saf_client.dart"
+
   },
   "msgf3a485df": "新規フォルダ",
+
   "@msge48a7157": {
     "description": "services\\remote\\saf_client.dart"
+
   },
   "msge48a7157": "新規ファイル",
+
   "@zenfilebackupssettings": {
     "description": "services\\settings_backup_service.dart"
+
   },
   "zenfilebackupssettings": "設定がZenFile/Backups/Settings/にバックアップされました",
+
   "@json": {
     "description": "services\\settings_backup_service.dart"
+
   },
   "json": "有効な.json設定バックアップファイルを選択してください",
+
   "@e8": {
     "type": "text"
+
   },
   "e8": "設定の復元に失敗しました: {e}",
+
   "@url": {
     "type": "text"
+
   },
   "url": "リンクを開けません {url}",
+
   "@zenfile1": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "zenfile1": "ZenFileについて",
+
   "@v103": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "v103": "v1.0.3 (表示)",
+
   "v1041": "v1.0.43 (表示)",
+
   "ui_view_update": "更新を表示",
+
   "@ui_view_update": {
     "description": "Button label to view changelog on the about screen"
+
   },
   "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "@zenfileflutter": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "zenfileflutter": "ZenFileはFlutterで構築された美しく、スムーズで、オープンソースのファイルマネージャーとオフラインメディアセンターです。究極のパフォーマンス、クリーンなすりガラスの美学、シームレスなユーザー体験のために設計されています。",
+
   "@msga12ebf50": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msga12ebf50": "超高速体験",
+
   "@msgfccb5a01": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msgfccb5a01": "ステートレスキャッシュと非同期スキャン",
+
   "@msg6d8fbdac": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg6d8fbdac": "暗号化セキュアワークスペース",
+
   "@ftpsftpwebdav": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "ftpsftpwebdav": "FTP、LAN、SFTP、WebDAVに対応",
+
   "@msge8f352b9": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msge8f352b9": "美しいインターフェース",
+
   "@amoled": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "amoled": "AMOLEDピュアブラック & 鮮やかなテーマ",
+
   "@msge8069659": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msge8069659": "リポジトリにスターをつける",
+
   "@telegram": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "telegram": "Telegramチャンネルに参加",
+
   "@msg5f84adea": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg5f84adea": "アプリを友達にシェア",
+
   "@zenfilehttpsgithubcoml930203811zenfilereleases": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "zenfilehttpsgithubcoml930203811zenfilereleases": "ZenFileをおすすめ：美しいオフラインファイルマネージャーとメディアセンター https://github.com/l930203811/ZenFile/releases",
+
   "@github": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "github": "GitHubソースコードを見る",
+
   "@sequeldpdnsorg": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "sequeldpdnsorg": "連絡先メール：1@sequel.dpdns.org",
+
   "@msged8518d7": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msged8518d7": "メールアドレスをクリップボードにコピーしました",
+
   "@qq": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "qq": "QQグループ番号をクリップボードにコピーしました",
+
   "@bysequel": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "bysequel": "心を込めて作成 ❤️ by Sequel",
+
   "@zenfile2": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "zenfile2": "Copyright © 2026 ZenFile. All rights reserved.",
+
   "@msg138d3725": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg138d3725": "あなたのサポートが更新の原動力です ❤️",
+
   "@msgccd097a7": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msgccd097a7": "Alipay",
+
   "@msgbffe28c8": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msgbffe28c8": "WeChat Pay",
+
   "@msg0537b04e": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg0537b04e": "画像を長押ししてギャラリーに保存できます。ご支援ありがとうございます！",
+
   "@zenfilev1041": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "zenfilev1041": "ZenFile をダウンロード",
+
   "@msg9d287020": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg9d287020": "123クラウド",
+
   "@msgb2b41b6a": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msgb2b41b6a": "115クラウド",
+
   "@msg77ee718b": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg77ee718b": "Baiduクラウド",
+
   "@msgbff1432a": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msgbff1432a": "Quarkクラウド",
+
   "@msge03395d0": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
-  "msge03395d0": "Xiaofeijiクラウド",
+  "msge03395d0": "PikPakクラウド",
+
   "@svg": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "svg": "SVGファイルの完全サポートを追加（サムネイルプレビューと表示）",
+
   "@ziprar7ztargz": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "ziprar7ztargz": "アーカイブ形式の色分けを追加（zip/rar/7z/tar/gzそれぞれに固有の色）",
+
   "@msg09a6e11b": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg09a6e11b": "リモートファイルのダウンロード後に再生する機能を追加",
+
   "@msg1c3206b8": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg1c3206b8": "カテゴリページで展開後にブラウズページに遷移できない問題を修正",
+
   "@msgb1e4da91": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msgb1e4da91": "「キャッシュディレクトリを表示」と「展開後に保存先を開く」によるページフリーズの問題を修正",
+
   "@yyyymmdd": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "yyyymmdd": "ファイル日付フォーマットをyyyy-MM-ddに最適化",
+
   "@msg4c425252": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg4c425252": "デフォルトで24時間制の時刻表示を有効化",
+
   "@msg1eaf4abb": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg1eaf4abb": "パスバーの全面最適化（よりコンパクトなパンくずボタンと矢印スタイル）",
+
   "@msgd3381817": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msgd3381817": "タブバーとパスバーを全体に上に移動し、ファイルリストにより多くのスペースを確保",
+
   "@msg342688b2": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg342688b2": "デュアルウィンドウのヘッダー領域を簡素化（高さを30%削減）",
+
   "@msg8954452f": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg8954452f": "デュアルウィンドウモードでリモートサーバーが非アクティブなタブを置き換えるように変更",
+
   "@msgac5a0315": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msgac5a0315": "戻るジェスチャーの最適化：選択状態で戻ると選択を解除し、ページを終了しない",
+
   "@msg1904388e": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg1904388e": "二本指で右にスワイプしてドロワーを開き、左にスワイプしてカテゴリ/ブラウズページを切り替え",
+
   "@msg2762c070": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg2762c070": "二本指スワイプの切り替えを追加（一般設定と動作設定でオフにできます）",
+
   "@msg48dca69a": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg48dca69a": "プログレスバーを円形ラインスタイルに変更し、中央にパーセンテージを表示",
+
   "@windows": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "windows": "リモートパスの互換性修正（Windowsプラットフォームのパス区切り文字の問題）",
+
   "@msg65eefc98": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg65eefc98": "アドレスバーの切り替えを装飾済みのパンくずリストの制御に変更",
+
   "@msg96a6856a": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg96a6856a": "デフォルトホーム設定（カテゴリページまたはブラウズページをスタートページに選択可能）",
+
   "@msg250213fd": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg250213fd": "新しいAPKアイコン（自然な禅のスタイル）",
+
   "@msg7f53e8b1": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg7f53e8b1": "円形パーセンテージプログレスバー（ファイルのコピー/移動時に表示）",
+
   "@msg051469b5": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg051469b5": "操作成功後にプログレスバーを自動的に閉じ、手動確認が不要に",
+
   "@msge4c4d5e2": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msge4c4d5e2": "ファイル操作メニューをボトムポップアップに変更（タブバーを隠さない）",
+
   "@msga33dbb51": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msga33dbb51": "選択モードのアクションバーを画面下部に移動（選択済み数インジケーター付き）",
+
   "@msge6c84f11": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msge6c84f11": "修正：アイコン切り替え後にアプリ詳細をタップして開く",
+
   "@msg46b8ca8f": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg46b8ca8f": "修正：リモートコピー後にローカルページに切り替えた際の異常",
+
   "@msgb3dea5f5": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msgb3dea5f5": "テキストビューアの長押しメニューでコピーと全選択をサポート（日本語化済み）",
+
   "@msga4c92214": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msga4c92214": "ドラッグ＆ドロップダイアログのレイアウト最適化（よりコンパクト）",
+
   "@msg32854144": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg32854144": "カテゴリページのアイコンで円形/角形の背景切り替えをサポート",
+
   "@msg3a93e257": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg3a93e257": "カテゴリアイコンの形状設定（外観とテーマで切り替え）",
+
   "@zenfile3": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "zenfile3": "ZenFile初回リリース",
+
   "@msg47b760ed": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg47b760ed": "マルチタブサポート",
+
   "@ftpsftpwebdavsmb": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "ftpsftpwebdavsmb": "リモートサーバー接続（FTP/SFTP/WebDAV/SMB）",
+
   "@msg4b736dfb": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg4b736dfb": "ファイル暗号化金庫",
+
   "@ftpwebdav": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "ftpwebdav": "FTP/WebDAVサーバー機能",
+
   "@msg03257c2d": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg03257c2d": "カスタムテーマと外観設定",
+
   "@msg5cce42e6": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg5cce42e6": "リモートサーバーのファイルドラッグ＆ドロップ操作の最適化",
+
   "@msg074f1ce7": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg074f1ce7": "カスタムアプリランチャーアイコン機能の改善",
+
   "@msg5c66ffab": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg5c66ffab": "リモートサーバーのファイルリストで長押しするとドラッグ＆ドロップダイアログが表示されることがある（次回バージョンで修正）",
+
   "@bug1sequeldpdnsorgqq792408214": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "bug1sequeldpdnsorgqq792408214": "最適化の提案やバグを発見した場合は、メール1@sequel.dpdns.orgまたはQQグループ792408214までご連絡ください。",
+
   "@msgd054a84c": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msgd054a84c": "長押しで画像を保存",
+
   "@msgb3b83e12": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msgb3b83e12": "画像の読み込みに失敗しました",
+
   "@msgc2790d54": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msgc2790d54": "画像を保存するにはストレージのアクセス許可が必要です",
+
   "@msg1292d351": {
     "description": "ui\\screens\\about_screen.dart"
+
   },
   "msg1292d351": "画像をギャラリーに保存しました",
+
   "@e9": {
     "type": "text"
+
   },
   "e9": "保存に失敗しました: {e}",
+
   "@msg7a4ee0c7": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
+
   },
   "msg7a4ee0c7": "共有可能なファイルがありません",
+
   "@msg45326802": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
+
   },
   "msg45326802": "アイテムの削除に成功しました",
+
   "@e10": {
     "type": "text"
+
   },
   "e10": "共有エラー: {e}",
+
   "@msg4fb42e6e": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
+
   },
   "msg4fb42e6e": "クリップボードにコピーしました",
+
   "@msge5212c58": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
+
   },
   "msge5212c58": "クリップボードに切り取りました",
+
   "@msgc8ce4b36": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
+
   },
   "msgc8ce4b36": "名前の変更",
+
   "@msgf139c5cf": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
+
   },
   "msgf139c5cf": "新しい名前を入力",
-  "@msg53518c22": {
+
+  "@msgf139c5cf": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
+
+  },
+  "msg_rename_extension_warning_title": "拡張子の変更",
+
+  "@msg_rename_extension_warning_title": {
+    "description": "Title of warning dialog when file extension is changed during rename"
+
+  },
+  "msg_rename_extension_warning_content": "ファイルの拡張子を変更しようとしています。これによりファイルが正しく開けなくなる可能性があります。続行しますか？",
+
+  "@msg_rename_extension_warning_content": {
+    "description": "Content of warning dialog when file extension is changed during rename"
+
+  },
+  "msg_rename_extension_confirm": "変更を確認",
+
+  "@msg_rename_extension_confirm": {
+    "description": "Confirm button text in extension change warning dialog"
+
   },
   "msg53518c22": "ファイルを削除",
+
   "@msg47809e5d": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
+
   },
   "msg47809e5d": "最近のファイルはありません",
+
   "@msg7a7e6c25": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
+
   },
   "msg7a7e6c25": "新しく作成またはダウンロードしたファイルがここに表示されます。",
+
   "@msg765d1698": {
     "description": "ui\\screens\\archive_viewer_screen.dart"
+
   },
   "msg765d1698": "選択したアイテムを削除",
+
   "@msg365f2f0a": {
     "description": "ui\\screens\\archive_viewer_screen.dart"
+
   },
   "msg365f2f0a": "アイテムの削除に成功しました ✓",
+
   "@successcount": {
     "type": "text"
+
   },
   "successcount": "{successCount}個のアイテムをアーカイブに追加しました ✓",
+
   "@count": {
     "type": "text"
+
   },
   "count": "{count}個のアイテムをアーカイブに貼り付けました ✓",
+
   "@msg39cb3352": {
     "description": "ui\\screens\\archive_viewer_screen.dart"
+
   },
   "msg39cb3352": "アーカイブを読み取れません",
+
   "@msg99abedc6": {
     "description": "ui\\screens\\archive_viewer_screen.dart"
+
   },
   "msg99abedc6": "現在のフォルダに展開",
+
   "@msg8d0cfb58": {
     "description": "ui\\screens\\archive_viewer_screen.dart"
+
   },
   "msg8d0cfb58": "ファイルを追加",
+
   "@msg5bf1fb72": {
     "description": "ui\\screens\\audio_player\\audio_artwork_widget.dart"
+
   },
   "msg5bf1fb72": "ロスレスオーディオ",
+
   "@msg47cab5ae": {
     "description": "ui\\screens\\audio_player\\audio_controls_widget.dart"
+
   },
   "msg47cab5ae": "スリープタイマー",
+
   "@msg50c1b248": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+
   },
   "msg50c1b248": "バックグラウンド再生を停止しました",
+
   "@msg6d16d396": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+
   },
   "msg6d16d396": "バックグラウンド再生が有効です",
+
   "@msg3038d9b8": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+
   },
   "msg3038d9b8": "シャッフル: オフ",
+
   "@msg29eed1da": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+
   },
   "msg29eed1da": "バックグラウンド再生",
+
   "@msg4aa059f7": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+
   },
   "msg4aa059f7": "タップしてバックグラウンド再生を停止",
+
   "@msg8f7f4490": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+
   },
   "msg8f7f4490": "コントロールボタン付きの通知を表示",
+
   "@msgb7c87215": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+
   },
   "msgb7c87215": "サウンドエフェクトとイコライザー",
+
   "@msgfc449780": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
+
   },
   "msgfc449780": "オーディオファイル情報",
+
   "@msgb4fbc92c": {
     "description": "ui\\screens\\backup_settings_screen.dart"
+
   },
   "msgb4fbc92c": "バックアップと復元",
+
   "@zenfilebackupssettings1": {
     "description": "ui\\screens\\backup_settings_screen.dart"
+
   },
   "zenfilebackupssettings1": "すべての現在の設定をZenFile/Backups/Settings/に保存",
+
   "@json1": {
     "description": "ui\\screens\\backup_settings_screen.dart"
+
   },
   "json1": "JSONバックアップファイルから設定を選択して復元",
+
   "@msg534c621a": {
     "description": "ui\\screens\\backup_settings_screen.dart"
+
   },
   "msg534c621a": "バックアップディレクトリ",
+
   "@msg396b7d3f": {
     "description": "ui\\screens\\backup_settings_screen.dart"
+
   },
   "msg396b7d3f": "ファイルサイズ",
+
   "@msgc047ee32": {
     "description": "ui\\screens\\backup_settings_screen.dart"
+
   },
   "msgc047ee32": "最終バックアップ時刻",
+
   "@msg917fd6ef": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "msg917fd6ef": "エクスポートするデータがありません。",
+
   "@sqlite": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "sqlite": "SQLiteデータベースリーダー",
+
   "@msg03a0d224": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "msg03a0d224": "テーブル構造",
+
   "@sql": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "sql": "SQLコンソール",
+
   "@msge2f0fe67": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "msge2f0fe67": "データベースを開けませんでした",
+
   "@msg8bb11da4": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "msg8bb11da4": "このデータベースにテーブルが見つかりません。",
+
   "@msg7796aa3e": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "msg7796aa3e": "行を検索...",
+
   "@msg15f26697": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "msg15f26697": "行が見つかりません",
+
   "@msg0eaa935b": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "msg0eaa935b": "構造の詳細が読み込まれていません。",
+
   "@sql1": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "sql1": "SQLエディター",
+
   "@select": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "select": "SELECTテンプレート",
+
   "@csv": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "csv": "結果をCSVとしてエクスポート",
+
   "@select1": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "select1": "SELECTクエリを実行して結果を表示します。",
+
   "@msgd1ad9002": {
     "description": "ui\\screens\\database_reader_screen.dart"
+
   },
   "msgd1ad9002": "クエリの実行エラー。",
+
   "@targetpath": {
     "type": "text"
+
   },
   "targetpath": "パスをコピーしました: {targetPath}",
+
   "@msg6ed14da7": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg6ed14da7": "次のレベル",
+
   "@msgcd0b9aca": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msgcd0b9aca": "選択を削除",
+
   "@msgee14ee27": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msgee14ee27": "このアイテムを削除しますか？この操作は元に戻せません。",
+
   "@filenamecreatedname": {
     "type": "text"
+
   },
   "filenamecreatedname": "\"{fileName}\"は既に存在します。\"{createdName}\"を作成しました。",
+
   "@foldernamecreatedname": {
     "type": "text"
+
   },
   "foldernamecreatedname": "\"{folderName}\"は既に存在します。\"{createdName}\"を作成しました。",
+
   "@msgbd165c40": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msgbd165c40": "新しい空のテキストドキュメントを作成",
+
   "@msg68ac91eb": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg68ac91eb": "新規アーカイブ",
+
   "@msg881f6a80": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg881f6a80": "現在のフォルダの内容を圧縮",
+
   "@msg97301f64": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg97301f64": "表示と並べ替えオプション",
+
   "@msg829cb1dd": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg829cb1dd": "リスト表示",
+
   "@msg0a4ebb8d": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg0a4ebb8d": "サイズと間隔オプション",
+
   "@msg88062f93": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg88062f93": "アイコンとフォルダサイズ",
+
   "@msga7c781f5": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msga7c781f5": "サイズと間隔",
+
   "@msga2946a1a": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msga2946a1a": "並べ替え方法",
+
   "@za": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "za": "名前 (Z-A)",
+
   "@msg2e2a26bb": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg2e2a26bb": "サイズ（大）",
+
   "@msgf437ace4": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msgf437ace4": "このフォルダのみ",
+
   "@msg551f98ba": {
     "description": "zenfile_end_drawer.dart"
+
   },
   "msg551f98ba": "お気に入りなし",
+
   "@ui_favorites": {
     "description": "zenfile_end_drawer.dart"
+
   },
   "ui_favorites": "お気に入り",
+
   "@ui_new_favorite": {
     "description": "directory_screen.dart"
+
   },
   "ui_new_favorite": "お気に入りに追加",
+
   "@ui_favorite": {
     "description": "file_action_dialogs.dart"
+
   },
   "ui_favorite": "お気に入り",
+
   "@msg_favorited": {
     "description": "directory_screen.dart",
+
     "placeholders": {
       "name": {}
     }
   },
   "msg_favorited": "{name} をお気に入りに追加しました",
+
   "@msg4dfc167a": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg4dfc167a": "このフォルダのカスタム並べ替えを有効にする",
+
   "@msge4c84f81": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msge4c84f81": "ショートカットを追加",
+
   "@msgd730e478": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msgd730e478": "システムルート",
+
   "@msg35546526": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg35546526": "ネットワーク接続",
+
   "@msg67a6ea5e": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg67a6ea5e": "ネットワーク接続を追加",
+
   "@msgcc51d6c2": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msgcc51d6c2": "接続を削除",
+
   "@msg6e0f9cef": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg6e0f9cef": "ホームカテゴリ",
+
   "@msge9691076": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msge9691076": "空のフォルダ",
+
   "@msg551f98ba": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg551f98ba": "このディレクトリにはファイルやサブフォルダが含まれていません。",
+
   "@msg17093362": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg17093362": "操作をキャンセル",
+
   "@msg681c0f39": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg681c0f39": "グローバル検索",
+
   "@msg0c36f64f": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg0c36f64f": "ドキュメントのみ",
+
   "@msg26b041dd": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg26b041dd": "オーディオのみ",
+
   "@msge632ba85": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msge632ba85": "アーカイブのみ",
+
   "@label": {
     "type": "text"
+
   },
   "label": "{label} フィルターが有効です",
+
   "@msg0e77af8a": {
     "description": "ui\\screens\\directory_screen.dart"
+
   },
   "msg0e77af8a": "隠しフォルダ",
+
   "@e11": {
     "type": "text"
+
   },
   "e11": "読み込みエラー: {e}",
+
   "@msg5937f822": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg5937f822": "（空白のスライド）",
+
   "@msg360d0b37": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg360d0b37": "保存に成功しました ✓",
+
   "@pdf": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "pdf": "PDF表示設定",
+
   "@msg09c933bf": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg09c933bf": "大型、デザインが複雑、またはスキャンされたドキュメントのレンダリングパフォーマンスを最適化します。",
+
   "@msg701a85d4": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg701a85d4": "標準モード",
+
   "@msg2722d1a7": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg2722d1a7": "テキストドキュメントに最適",
+
   "@msgb2b08d54": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msgb2b08d54": "パンフレットや写真に最適",
+
   "@msg8b519c02": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg8b519c02": "ページレイアウト",
+
   "@msg7f2cd152": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg7f2cd152": "連続（垂直スクロールリスト）",
+
   "@msg151ea324": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg151ea324": "スクロール方向",
+
   "@msg7d45ded6": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg7d45ded6": "垂直（上から下へスクロール）",
+
   "@msg176ef589": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg176ef589": "テキスト選択を有効にする",
+
   "@msg864f8706": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg864f8706": "オフにするとページのレンダリング速度が大幅に向上し、スクロールのカクつきが解消されます。",
+
   "@msgd28847a2": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msgd28847a2": "新規ドキュメント",
+
   "@msg3007c452": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg3007c452": "その他のオプション",
+
   "@msg452dba7c": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg452dba7c": "自動折り返し",
+
   "@msgc31f9440": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msgc31f9440": "行番号を表示",
+
   "@msg1d93c30b": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg1d93c30b": "別のアプリで開く",
+
   "@msgace80573": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msgace80573": "（空のファイル）",
+
   "@msg030f48bd": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msg030f48bd": "アプリで開く",
+
   "@msgfd96af00": {
     "description": "ui\\screens\\document_viewer_screen.dart"
+
   },
   "msgfd96af00": "共有機能は近日公開",
+
+  "ui_share": "共有",
+
+  "@ui_share": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+
+  },
   "@ftp1": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "ftp1": "FTPサーバーが正常に停止しました",
+
   "@ftpe": {
     "type": "text"
+
   },
   "ftpe": "FTPサーバーの起動エラー: {e}",
+
   "@msg5c202e56": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msg5c202e56": "設定を変更する前にサーバーを停止してください",
+
   "@msgfca29cb3": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msgfca29cb3": "ポートを変更",
+
   "@msg8a0b5bf5": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msg8a0b5bf5": "無効なポート番号",
+
   "@msg3bce2199": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msg3bce2199": "ユーザー名を設定",
+
   "@msg0b62b5ce": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msg0b62b5ce": "ユーザー名は空にできません",
+
   "@ftp2": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "ftp2": "FTPサーバー",
+
   "@msg5ab96a6d": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msg5ab96a6d": "設定を編集する前にサーバーを停止してください",
+
   "@msgc400f106": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msgc400f106": "ディレクトリを変更",
+
   "@msgb5eb59fc": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msgb5eb59fc": "ユーザーを設定",
+
   "@msg70c53afb": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msg70c53afb": "匿名アクセス",
+
   "@msg8e2021aa": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msg8e2021aa": "ショートカットを作成",
+
   "@msgd70e9bdf": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msgd70e9bdf": "非アクティブ",
+
   "@msg7ae644e4": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msg7ae644e4": "ネットワーク状態",
+
   "@msg5d57821d": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msg5d57821d": "サーバーアドレス",
+
   "@msgfefea1b3": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msgfefea1b3": "ホームディレクトリ",
+
   "@msg124d9054": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "msg124d9054": "隠しファイルを表示",
+
   "@tlsftp": {
     "description": "ui\\screens\\ftp_server_screen.dart"
+
   },
   "tlsftp": "明示的TLSベースのセキュアFTP接続",
+
   "@msg1f4c1042": {
     "description": "ui\\screens\\global_search_screen.dart"
+
   },
   "msg1f4c1042": "フォルダ",
+
   "@msgf2ef53c0": {
     "description": "ui\\screens\\global_search_screen.dart"
+
   },
   "msgf2ef53c0": "このフォルダ内を検索...",
+
   "@msgfff96ede": {
     "description": "ui\\screens\\global_search_screen.dart"
+
   },
   "msgfff96ede": "その他の操作",
+
   "@msg88e45bb8": {
     "description": "ui\\screens\\global_search_screen.dart"
+
   },
   "msg88e45bb8": "ストレージを検索",
+
   "@query": {
     "type": "text"
+
   },
   "query": "\"{_query}\"に一致するものが見つかりませんでした",
+
   "@msge109d1ea": {
     "description": "ui\\screens\\home_screen.dart"
+
   },
   "msge109d1ea": "ダッシュボードの更新に成功しました",
+
   "@msg05cea075": {
     "description": "ui\\screens\\home_screen.dart"
+
   },
   "msg05cea075": "もう一度押してアプリを終了",
+
   "@msg7498c202": {
     "description": "ui\\screens\\home_screen.dart"
+
   },
   "msg7498c202": "アプリを終了",
+
   "@msg03247b17": {
     "description": "ui\\screens\\home_screen.dart"
+
   },
   "msg03247b17": "終了しますか？戻るボタンをもう一度押すか、終了をタップしてアプリを閉じてください。",
+
   "@msg354c1c9a": {
     "description": "ui\\screens\\home_screen.dart"
+
   },
   "msg354c1c9a": "ダッシュボードを更新",
+
   "@msg19021d08": {
     "description": "ui\\screens\\home_screen.dart"
+
   },
   "msg19021d08": "カスタムショートカットカテゴリ",
+
   "@html": {
     "description": "ui\\screens\\html_viewer_screen.dart"
+
   },
   "html": "HTMLプレビュー",
+
   "@msgfba1f416": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
+
   },
   "msgfba1f416": "フォルダ名を入力",
+
   "@msg33b0b21c": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
+
   },
   "msg33b0b21c": "フォルダを選択してピン留め",
+
   "@msgff3200cc": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
+
   },
   "msgff3200cc": "選択をクリア",
+
   "@msg4614630a": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
+
   },
   "msg4614630a": "フォルダが空です",
+
   "@msg5dc1fa7b": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
+
   },
   "msg5dc1fa7b": "このフォルダをピン留め",
+
   "@markdown": {
     "description": "ui\\screens\\markdown_viewer_screen.dart"
+
   },
   "markdown": "Markdownプレビュー",
+
   "@count1": {
     "type": "text"
+
   },
   "count1": "選択した{count}個のアイテムを完全に削除しますか？",
+
   "@count2": {
     "type": "text"
+
   },
   "count2": "{count}個のアイテムを正常に削除しました",
+
   "@pastedcountdestdir": {
     "type": "text"
+
   },
   "pastedcountdestdir": "{pastedCount}個のアイテムを{destDir}に貼り付けました",
+
   "@msgfadbb0bc": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msgfadbb0bc": "共有可能なファイルがありません。",
+
   "@msg3ad97542": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msg3ad97542": "名前変更可能な物理ファイルが見つかりません",
+
   "@msg1303e638": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msg1303e638": "更新日時",
+
   "@msg5bab3781": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msg5bab3781": "メディア情報",
+
   "@msg880a18f3": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msg880a18f3": "アイテムを選択しました",
+
   "@msgea9ecb93": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msgea9ecb93": "合計サイズ",
+
   "@msg5556baa3": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msg5556baa3": "長押しで開く方法...",
+
   "@msg631cd220": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msg631cd220": "削除の確認",
+
   "@name": {
     "type": "text"
+
   },
   "name": "{name}を削除しました",
+
   "@msgcd8264f1": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msgcd8264f1": "保存先を表示",
+
   "@msg2a4cfb07": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msg2a4cfb07": "開く方法...",
+
   "@msg8bf52387": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msg8bf52387": "ファイルが見つからないか、共有できません。",
+
   "@msg419be096": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msg419be096": "ここに貼り付け",
+
   "@msg5093bc80": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msg5093bc80": "新しいもの順",
+
   "@msgbc74b5a8": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msgbc74b5a8": "日付順",
+
   "@msgef7ae768": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msgef7ae768": "新しいもの順（月別グループ）",
+
   "@msgb8140039": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msgb8140039": "古いもの順（月別グループ）",
+
   "@msg424a0110": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msg424a0110": "不明な日付",
+
   "@msgb19671d6": {
     "description": "ui\\screens\\media_category_screen.dart"
+
   },
   "msgb19671d6": "すべてのアイテム",
+
   "@msg11fea612": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg11fea612": "日付と時刻",
+
   "@msg12e86877": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg12e86877": "ファイルサイズ / アイテム数",
+
   "@msg7908038f": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg7908038f": "なし / 情報を隠す",
+
   "@msg9136d4dc": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg9136d4dc": "右側に追加情報を表示しない",
+
   "@msg84986f91": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg84986f91": "最終更新日時を表示",
+
   "@msgfc000737": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgfc000737": "ファイルはサイズを表示、フォルダはアイテム数を表示",
+
   "@msg83de16cc": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg83de16cc": "末尾情報スタイルを選択",
+
   "@msgaa2a18a1": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgaa2a18a1": "三点メニューボタンが非表示のとき、ファイルとフォルダの右側に表示される内容を選択します。",
+
   "@msg26e4c5d6": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg26e4c5d6": "アドレスバーを表示",
+
   "@windows1": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "windows1": "ファイルリストの上部に編集可能なWindowsエクスプローラースタイルのアドレスバーを表示",
+
   "@msg74e86197": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg74e86197": "フォルダ（ギャラリー）優先ビューで画像/動画のショートカットカテゴリを直接開く",
+
   "@msga1fbf3c6": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msga1fbf3c6": "Androidナビゲーションバーを隠す",
+
   "@msg02dddc02": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg02dddc02": "下部ナビゲーションバーを隠して画面スペースを最大化（上にスワイプで表示）",
+
   "@msg50923c95": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg50923c95": "すべての記憶済み「開く方法」の関連付けをクリア",
+
   "@msg6fdc09ac": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg6fdc09ac": "「開く方法」ダイアログをスキップ",
+
   "@msg0a4b0442": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg0a4b0442": "アプリ選択ダイアログをバイパスし、デフォルトビューアで直接ファイルを開く",
+
   "@msge1157984": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msge1157984": "起動時にカテゴリページまたはブラウズページに入るかを選択",
+
   "@msgae1854a2": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgae1854a2": "一本指または二本指の左右スワイプでページを切り替えるかを選択",
+
   "@msg11b1ec65": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg11b1ec65": "ブラウズページに操作バー（戻る、進む、新規、タブ複製、上へ）を表示",
+
   "@msg7e7765b6": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg7e7765b6": "ドット(.)で始まるシステムファイルとフォルダを表示",
+
   "@msg86f3d70f": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg86f3d70f": "フォルダとファイルのカウントタイトルを表示",
+
   "@msg40e9c325": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg40e9c325": "ストレージタイトルバーの下にフォルダとファイルの総数を表示",
+
   "@ampm24": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "ampm24": "リストで12時間（AM/PM）と24時間の時刻形式を切り替え",
+
   "@msg25ee6612": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg25ee6612": "リストで時刻と日付を隠す",
+
   "@msg337359a6": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg337359a6": "ファイルとフォルダの更新日時を完全に隠す",
+
   "@msga517863e": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msga517863e": "ディレクトリ内のファイルとフォルダの総数を計算して表示",
+
   "@msg59a24fcb": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg59a24fcb": "ディレクトリ内のすべてのファイルの合計サイズを計算して表示（リストのパフォーマンスに影響する場合があります）",
+
   "@msg309e2a28": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg309e2a28": "ナビゲーションバーを上部または下部に表示",
+
   "@msge34c23ff": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msge34c23ff": "上部",
+
   "@msg3341e3ed": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg3341e3ed": "アクションボタンはページの上部に表示されます",
+
   "@msg8c414b06": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg8c414b06": "下部",
+
   "@msg5d2c8e7f": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg5d2c8e7f": "アクションボタンはページの下部に表示されます",
+
   "@msg9b7639ac": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg9b7639ac": "ブラウズとメディアページの選択アクションバーにアイコンのみを表示",
+
   "@msgdd69671b": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgdd69671b": "戻る時に短く点滅し、終了したフォルダにスクロール",
+
   "@msg57736228": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg57736228": "実際の画像と動画のサムネイルを表示（汎用ファイルアイコンの代わり）",
+
   "@msg1eda8a50": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg1eda8a50": "ファイル名を3行まで折り返して表示（切り捨ての代わり）",
+
   "@msgc7196afd": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgc7196afd": "フォルダとファイルの横の三点メニューボタンを隠す",
+
   "@msgad54815d": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgad54815d": "フォルダまたはファイルを長押ししてドラッグし、別のフォルダに移動",
+
   "@msg5dff8f2d": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg5dff8f2d": "ファイルのドラッグ＆ドロップ時にオプションダイアログを表示（コピー、移動、圧縮）",
+
   "@msg4b0a7063": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg4b0a7063": "複数のフォルダを別のタブで開いて素早くナビゲーション",
+
   "@msgf04ac00d": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgf04ac00d": "2つのディレクトリを並べて表示し、簡単にファイルを転送",
+
   "@msgd1591ba4": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgd1591ba4": "アプリ起動時に前回ブラウズしたフォルダを開く",
+
   "@msg25792550": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg25792550": "削除したファイルとフォルダをごみ箱に移動（完全削除の代わり）",
+
   "@msg1b9633fe": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg1b9633fe": "テーマカラー / ダイナミックテーマ",
+
   "@msg64db4c2d": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg64db4c2d": "フォルダアイコンスタイル",
+
   "@msgece44aa5": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgece44aa5": "アプリドロワーボタンスタイル",
+
   "@amoled1": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "amoled1": "AMOLEDピュアブラックモード",
+
   "@amoled2": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "amoled2": "ダークモードでAMOLED画面にピュアブラック背景を使用",
+
   "@msg5228b59f": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg5228b59f": "アプリタイポグラフィ / フォント",
+
   "@msge7d18d73": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msge7d18d73": "カスタムショートカット",
+
   "@msg036fe6a4": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg036fe6a4": "ショートカットカテゴリアイテムの並べ替えと表示/非表示を切り替え",
+
   "@msgead3e5c5": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgead3e5c5": "設定を検索...",
+
   "@msg2590095f": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg2590095f": "設定カテゴリ",
+
   "@msgfdae44c3": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgfdae44c3": "一般と動作",
+
   "@msgeae34685": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgeae34685": "デフォルト画面、ナビゲーションコントロール、ショートカット",
+
   "@msg91b228b8": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg91b228b8": "テーマ、アプリアイコン、フォルダスタイル、タイポグラフィ",
+
   "@msgad6e8bb8": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgad6e8bb8": "ファイルブラウザオプション",
+
   "@msg8ddc4963": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg8ddc4963": "アドレスバー、隠しファイル、タブ、ドラッグ＆ドロップ",
+
   "@msg45db4e2a": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg45db4e2a": "フォルダサイズ、カウント、日時フォーマット",
+
   "@msg09ca4d86": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg09ca4d86": "デフォルトギャラリービューとサムネイルプレビュー",
+
   "@msgeb3693fb": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgeb3693fb": "開く操作とデフォルトビューアの設定",
+
   "@msg3a6a39ae": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg3a6a39ae": "ごみ箱の切り替えと自動削除期間",
+
   "@msg9edfaff3": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg9edfaff3": "すべてのアプリ設定をバックアップまたは復元",
+
   "@msg99c9cc56": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg99c9cc56": "他のキーワードで検索してみてください",
+
   "@msga432d127": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msga432d127": "デフォルトホーム",
+
   "@msg226fc6ae": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg226fc6ae": "カテゴリページ",
+
   "@msgd48a082d": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgd48a082d": "スワイプでページ切替",
+
   "@msgaac01f32": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgaac01f32": "一本指スワイプ",
+
   "@msg59c7debc": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg59c7debc": "前回開いたフォルダを記憶",
+
   "@msgce732d8a": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgce732d8a": "下部バー（ホーム/ブラウズ）のテキストラベルを隠し、よりシンプルに",
+
   "@msg1cfeaace": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg1cfeaace": "ファイルブラウザとナビゲーション",
+
   "@msgd33e3082": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgd33e3082": "フォルダ終了時のハイライト",
+
   "@msga4333788": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msga4333788": "メディアとデフォルト操作",
+
   "@msg20c87c8e": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg20c87c8e": "デフォルトのギャラリー優先ビュー",
+
   "@msg72b1f919": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg72b1f919": "すべてのデフォルトビューアの選択をリセットしました",
+
   "@msge99f4762": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msge99f4762": "ごみ箱を有効にする",
+
   "@msg2c8a394a": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg2c8a394a": "ブラウズページ",
+
   "@msg2c3c5a35": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg2c3c5a35": "アイコン形状",
+
   "@msg267fcd86": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg267fcd86": "3日ごと",
+
   "@msg9104c0c5": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg9104c0c5": "2週間ごと",
+
   "@days": {
     "type": "text"
+
   },
   "days": "{days}日ごと",
+
   "@msg673ad9d4": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg673ad9d4": "リモートサーバーのキャッシュをクリアしました",
+
   "@msgd9f142c4": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgd9f142c4": "キャッシュの自動クリーンアップ",
+
   "@msg5472ef41": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg5472ef41": "ネットワークサーバーからダウンロードしたキャッシュファイルを今すぐクリア",
+
   "@msgac7687d9": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgac7687d9": "リモートサーバーのキャッシュファイルがあるディレクトリを表示",
+
   "@msg225f6249": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg225f6249": "ネットワークサーバー上の画像と動画のサムネイルプレビューを表示",
+
   "@materialyou": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "materialyou": "Material You（ダイナミック壁紙カラー抽出）",
+
   "@msg05cff3ad": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg05cff3ad": "ビタントオレンジ",
+
   "@msg5ed35657": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg5ed35657": "ロイヤルパープル",
+
   "@msge74a7283": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msge74a7283": "アンバーゴールド",
+
   "@msg3904ba87": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg3904ba87": "サイバーピンク",
+
   "@msgd58d230a": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgd58d230a": "サファイアブルー",
+
   "@msg508b005e": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg508b005e": "フォレストグリーン",
+
   "@msgefdde083": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgefdde083": "サンセットピーチ",
+
   "@msg628e73a9": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg628e73a9": "デフォルトブルー（象徴的なブルー）",
+
   "@msg8244d240": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg8244d240": "クラシックソリッド",
+
   "@msgf08d9b15": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgf08d9b15": "モダンラウンド",
+
   "@msge5fba3dd": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msge5fba3dd": "スタースペシャル",
+
   "@msgfe4254dc": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgfe4254dc": "ドキュメントスニペット",
+
   "@msg84719fd5": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg84719fd5": "ミニマルストローク",
+
   "@zenfile4": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "zenfile4": "ZenFileブレイクストローク",
+
   "@vuesax": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "vuesax": "カテゴリグリッド / Vuesaxグリッド",
+
   "@msg5dc988f4": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg5dc988f4": "ハンバーガーメニュー / クラシックメニュー",
+
   "@msgd06ba04f": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgd06ba04f": "M3 エクスプレッシブ 1",
+
   "@msg5090469e": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg5090469e": "M3 エクスプレッシブ 2",
+
   "@d": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "d": "M3 エクスプレッシブ 3",
+
   "@msg67836b24": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg67836b24": "ミニマル",
+
   "@msgf08c8dc4": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgf08c8dc4": "グラスモーフィズム",
+
   "msgdesign6": "サイバーパンク",
+
   "@msgdesign6": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgdesign7": "ニューモーフィズム",
+
   "@msgdesign7": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgdesign8": "クラシック 2",
+
   "@msgdesign8": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgdesign9": "クラシック 3",
+
   "@msgdesign9": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgdesign10": "ユーザーデザイン 1",
+
   "@msgdesign10": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
+  },
+  "msgdesign11": "ユーザーデザイン 2",
+
+  "@msgdesign11": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "@msg7372dc9f": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg7372dc9f": "カスタムアイコン",
+
   "@msg3004e40a": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg3004e40a": "デフォルトロゴ（ナチュラル禅）",
+
   "@msgc540e940": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgc540e940": "ドットマトリックスとサンセリフ",
+
   "@msg00ea5776": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg00ea5776": "オプティモダンサンセリフ",
+
   "@msg7bdbfaa5": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg7bdbfaa5": "ジェットブレインズモノスペース",
+
   "@msgdcb4082d": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgdcb4082d": "モンテッサリサンセリフ",
+
   "@msg9d7001d9": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg9d7001d9": "カスタムインポートフォント",
+
   "@msgc2f5e9e4": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgc2f5e9e4": "象徴的デフォルト",
+
   "@msg6a7c758f": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg6a7c758f": "なし（自動削除を無効）",
+
   "@days1": {
     "type": "text"
+
   },
   "days1": "{days}日後",
+
   "@msgfe76ae54": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgfe76ae54": "アプリ起動時にデフォルトで表示されるページを選択",
+
   "@msg8af2412a": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg8af2412a": "起動時にショートカットカテゴリページを表示",
+
   "@msg245c3258": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg245c3258": "起動時にファイルブラウズページを表示",
+
   "@msg4439669d": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg4439669d": "一本指または二本指の左右スワイプでページを切り替えるかを選択",
+
   "@msg46978666": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg46978666": "一本指の左右スワイプでカテゴリページ、ブラウズページを切り替え、またはドロワーを開く",
+
   "@msgbc9bf336": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgbc9bf336": "二本指スワイプ",
+
   "@msg563871d3": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg563871d3": "二本指の左右スワイプでカテゴリページ、ブラウズページを切り替え、またはドロワーを開く",
+
   "@msgca71ac0c": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgca71ac0c": "テーマカラーを選択",
+
   "@msg732630c1": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg732630c1": "フォルダアイコンスタイルを選択",
+
   "@msgf9224d98": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgf9224d98": "ドロワーボタンスタイルを選択",
+
   "@msgc337ecfa": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgc337ecfa": "カテゴリアイコンの形状を選択",
+
   "@msgf18bc3d9": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgf18bc3d9": "アプリランチャーアイコン",
+
   "@logo": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "logo": "アプリランチャーアイコンにカスタムロゴを選択してください。一部のランチャーでは更新に数秒かかる場合があります。",
+
   "@msg64a6476a": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg64a6476a": "デフォルト",
+
   "@title": {
     "type": "text"
+
   },
   "title": "アプリアイコンを{title}に切り替えました",
+
   "@msgad76161f": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgad76161f": "カスタムアイコンを選択",
+
   "@pngjpgwebp": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "pngjpgwebp": "画像ファイルを選択してください（PNG/JPG/WEBP）",
+
   "@msgb06c5c34": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgb06c5c34": "カスタムアイコンを適用しました",
+
   "@e12": {
     "type": "text"
+
   },
   "e12": "カスタムアイコンの適用に失敗しました: {e}",
+
   "@msg375c9eb8": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg375c9eb8": "オリジナルのシンプルなジオメトリスタイル",
+
   "@msg817e321b": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg817e321b": "ハイテックレトロドットマトリックスタイトル + シンプルな本文",
+
   "@msg3c2a24cc": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg3c2a24cc": "超スムーズ、ミニマルで上品なジオメトリ美学",
+
   "@msg978f8d11": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg978f8d11": "クリーンで未来的な開発者モノスペーススタイル",
+
   "@msg93b657aa": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg93b657aa": "大胆でモダン、目を引くタイポグラフィ",
+
   "@msg9db40ad6": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg9db40ad6": "読み込んだカスタムフォントファイル",
+
   "@zenfile5": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "zenfile5": "美しいフォントを選択してZenFileの全体的なビジュアルテーマをカスタマイズ",
+
   "@msg7372efa5": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg7372efa5": "カスタムフォントファイルを置き換え",
+
   "@msg3186839b": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg3186839b": "選択したフォントファイルの読み込みに失敗しました。",
+
   "@opentypeotftruetypettf": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "opentypeotftruetypettf": "有効なOpenType (.otf) またはTrueType (.ttf) フォントファイルを選択してください。",
+
   "@msgcf42dedc": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgcf42dedc": "カスタムフォントを削除",
+
   "@msg2b9abfaa": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg2b9abfaa": "カスタムフォントを削除しました。",
+
   "@msgfdef8c23": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgfdef8c23": "7日",
+
   "@msg25436ba3": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg25436ba3": "15日",
+
   "@msg85e7f60c": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg85e7f60c": "30日（推奨）",
+
   "@msgd61e706f": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgd61e706f": "なし（手動クリーンアップ）",
+
   "@msgf0ef894a": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msgf0ef894a": "ごみ箱の自動削除期間",
+
   "@msg1200d6b7": {
     "description": "ui\\screens\\more_settings_screen.dart"
+
   },
   "msg1200d6b7": "ごみ箱内のアイテムはこの期間後に完全に削除されます。",
+
   "@msg432fbb31": {
     "description": "ui\\screens\\network_category_screen.dart"
+
   },
   "msg432fbb31": "接続を削除",
+
   "@msgdeleteconn": {
     "type": "text"
+
   },
   "msgdeleteconn": "\"{name}\"を削除しますか？",
+
   "@msg3358aa10": {
     "description": "ui\\screens\\network_category_screen.dart"
+
   },
   "msg3358aa10": "接続を追加",
+
   "@msgc9c900d0": {
     "description": "ui\\screens\\network_category_screen.dart"
+
   },
   "msgc9c900d0": "リモート接続はありません",
+
   "@ftpsftpwebdavsmb1": {
     "description": "ui\\screens\\network_category_screen.dart"
+
   },
   "ftpsftpwebdavsmb1": "FTP、SFTP、WebDAV、またはSMB接続を追加",
+
   "@e13": {
     "type": "text"
+
   },
   "e13": "接続に失敗しました: {e}",
+
   "@msgb5bc0bf1": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "msgb5bc0bf1": "ホストアドレスを解決中...",
+
   "@msgc3d4e5f6": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "msgc3d4e5f6": "ポートステータスを確認中...",
+
   "@msg3005ba4d": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "msg3005ba4d": "資格情報を検証中...",
+
   "@msgab36a8c6": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "msgab36a8c6": "ストレージボリュームをマウント中...",
+
   "name1": "\"{name}\"を追加しました！",
+
   "@name1": {
     "type": "text"
+
   },
   "@connectedtype": {
     "type": "text"
+
   },
   "connectedtype": "\"{name}\"に接続しました！",
+
   "@msgdf434415": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "msgdf434415": "システムアプリが無効です",
+
   "@documentsui": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "documentsui": "デバイスでデフォルトのシステムファイル/ドキュメントアプリ（DocumentsUI）が有効になっていません。",
+
   "@androidnn": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "androidnn": "これはAndroidがディレクトリを選択してマウントするために必要です。\n\n",
+
   "@msgb2af4e30": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "msgb2af4e30": "デバイスの設定で「ファイル」または「ドキュメント」システムアプリが無効になっていないか確認してください。",
+
   "@safe": {
     "type": "text"
+
   },
   "safe": "SAFフォルダのリクエストに失敗しました: {e}",
+
   "@msg65c7ecb6": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "msg65c7ecb6": "接続名を入力してください",
+
   "@msg69e3963c": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "msg69e3963c": "サーバーアドレス/ホスト名を入力してください",
+
   "@msgce1ec2ce": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "msgce1ec2ce": "リモート接続",
+
   "@msg25557d1f": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "msg25557d1f": "標準ファイル転送プロトコル",
+
   "@ssh": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "ssh": "SSHセキュアファイル転送サーバー",
+
   "@http": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "http": "HTTP Web分散オーサリング",
+
   "@androidsd": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "androidsd": "Androidストレージアクセスフレームワーク（SDカード / 外部ストレージ）",
+
   "@msg8486035b": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "msg8486035b": "ネットワークサービスを選択",
+
   "@naszenfile": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "naszenfile": "リモートサーバーまたはNAS共有をZenFileストレージリストのダイナミックドライブとしてマウントします。",
+
   "@selectedtype": {
     "type": "text"
+
   },
   "selectedtype": "{_selectedType}設定",
+
   "@msg5c808d9a": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "msg5c808d9a": "このネットワークストレージボリュームにリンクするための接続詳細を入力してください。",
+
   "@nas": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "nas": "例：オフィスNAS、ホーム共有",
+
   "@dav": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "dav": "例：192.168.1.100 または 192.168.1.100/dav",
+
   "@naslocal": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "naslocal": "例：192.168.1.100 または nas.local",
+
   "@dav1": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "dav1": "例：/dav または /",
+
   "@anonymousadmin": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "anonymousadmin": "例：anonymous または admin",
+
   "@msgeec70cd2": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "msgeec70cd2": "パスワード（オプション）",
+
   "@msgf1fa9d44": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+
   },
   "msgf1fa9d44": "マウントポイントを作成中...",
+
   "@selectedtype1": {
     "type": "text"
+
   },
   "selectedtype1": "しばらくお待ちください。{_selectedType}サーバーとの信頼できる接続を確立しています。",
+
   "@e14": {
     "type": "text"
+
   },
   "e14": "アイテムの復元エラー: {e}",
+
   "@e15": {
     "type": "text"
+
   },
   "e15": "アイテムの削除エラー: {e}",
+
   "@msg62187f1b": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
+
   },
   "msg62187f1b": "ごみ箱のすべてのアイテムを完全に削除しますか？この操作は元に戻せません。",
+
   "@msg8cd6bc18": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
+
   },
   "msg8cd6bc18": "ごみ箱を空にする",
+
   "@msga4dfc0c6": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
+
   },
   "msga4dfc0c6": "ごみ箱が正常に空になりました",
+
   "@msg07d80ac5": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
+
   },
   "msg07d80ac5": "削除されたファイルを検索...",
+
   "@msg96d2b75f": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
+
   },
   "msg96d2b75f": "完全に削除",
+
   "@msg0d824a24": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
+
   },
   "msg0d824a24": "ごみ箱は空です",
+
   "@msg4c478216": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
+
   },
   "msg4c478216": "元の場所",
+
   "@msgc44a57b6": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msgc44a57b6": "テキストをダウンロード中...",
+
   "@msgd6d8292d": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msgd6d8292d": "メディアをバッファリング中...",
+
   "@e16": {
     "type": "text"
+
   },
   "e16": "ダウンロードに失敗しました: {e}",
+
   "@msg66d723c5": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msg66d723c5": "バッファリングがタイムアウトしました。ネットワーク接続を確認してください",
+
   "@msg53082c55": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msg53082c55": "同じ場所に貼り付けることはできません",
+
   "@msg108feeed": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msg108feeed": "コピー中...",
+
   "@msg2d4b44ec": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msg2d4b44ec": "アイテムの貼り付けに成功しました",
+
   "@filenamee": {
     "type": "text"
+
   },
   "filenamee": "\"{fileName}\"のアップロードに失敗しました: {e}",
+
   "@newname": {
     "type": "text"
+
   },
   "newname": "\"{newName}\"に名前を変更しました",
+
   "@msg4b342999": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msg4b342999": "アイテムを削除",
+
   "@e17": {
     "type": "text"
+
   },
   "e17": "削除に失敗しました: {e}",
+
   "@msg79d7fef7": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msg79d7fef7": "新規リモートフォルダ",
+
   "@msga98473f2": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msga98473f2": "フォルダ名",
+
   "@e18": {
     "type": "text"
+
   },
   "e18": "フォルダの作成に失敗しました: {e}",
+
   "@msg5ca05a9b": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msg5ca05a9b": "リモートディレクトリ",
+
   "@msga636c09d": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msga636c09d": "ローカルデバイスにコピー",
+
   "@msga4c461a4": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msga4c461a4": "ファイルをローカルクリップボードにダウンロード",
+
   "@msg425502fa": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msg425502fa": "ダウンロードしてサーバーから削除",
+
   "@msgc2b9f4b9": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msgc2b9f4b9": "ルートディレクトリ",
+
   "@msg2f7cd487": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msg2f7cd487": "ローカルクリップボードをサーバーにアップロード",
+
   "@msg905c34fa": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msg905c34fa": "リモートクリップボードを貼り付け",
+
   "@msg8439c155": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msg8439c155": "接続が切断されました",
+
   "@msgda43df27": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msgda43df27": "再接続",
+
   "@msga21f6ab1": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msga21f6ab1": "空のディレクトリ",
+
   "@msge1c538b8": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msge1c538b8": "ここにクリップボードの内容をアップロード",
+
   "@e19": {
     "type": "text"
+
   },
   "e19": "ダウンロードに失敗しました: {e}",
+
   "@msg50eaf94d": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msg50eaf94d": "削除の確認",
+
   "@msgcb0da17b": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
+
   },
   "msgcb0da17b": "削除中...",
+
   "@msg4805c385": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+
   },
   "msg4805c385": "アプリ管理",
+
   "@msg93bc1f09": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+
   },
   "msg93bc1f09": "リストを更新",
+
   "@msg32e490fe": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+
   },
   "msg32e490fe": "インストール済みのユーザーアプリ",
+
   "@apk2": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+
   },
   "apk2": "バックアップ済みAPK",
+
   "@msg8936ded6": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+
   },
   "msg8936ded6": "パッケージ名または名前を検索...",
+
   "@msgd8b3fc58": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+
   },
   "msgd8b3fc58": "サイズ順",
+
   "@msgbe1399f0": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+
   },
   "msgbe1399f0": "名前順",
+
   "@msg9ad67f11": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+
   },
   "msg9ad67f11": "バックアップ日順",
+
   "@msgb0681bd4": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+
   },
   "msgb0681bd4": "正確なストレージ計算",
+
   "@msg34cd846c": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
+
   },
   "msg34cd846c": "使用状況へのアクセスを許可",
+
   "@msga22ddaae": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+
   },
   "msga22ddaae": "ストレージ分析",
+
   "@msgaae779d4": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+
   },
   "msgaae779d4": "ストレージを再スキャン",
+
   "@msg7ae97495": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+
   },
   "msg7ae97495": "デバイスストレージをスキャン中",
+
   "@msga5e5bf71": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+
   },
   "msga5e5bf71": "合計ストレージ",
+
   "@msg652be256": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+
   },
   "msg652be256": "カテゴリ別内訳",
+
   "@msgb1a2c3d4": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+
   },
   "msgb1a2c3d4": "Initializing...",
+
   "@msgc2d3e4f5": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+
   },
   "msgc2d3e4f5": "Reading system memory...",
+
   "@msgd3e4f5a6": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+
   },
   "msgd3e4f5a6": "Calculating app storage...",
+
   "@msge4f5a6b7": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+
   },
   "msge4f5a6b7": "Analyzing files, categorizing assets, and reading installed apps space...",
+
   "@msgf5a6b7c8": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart",
+
     "type": "text",
+
     "placeholders": {
       "size": {}
     }
   },
   "msgf5a6b7c8": "{size} free",
+
   "@msga6b7c8d9": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart",
+
     "type": "text",
+
     "placeholders": {
       "size": {},
       "percent": {}
     }
   },
   "msga6b7c8d9": "{size} used ({percent}%)",
+
   "@msgb7c8d9e0": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart",
+
     "type": "text",
+
     "placeholders": {
       "percent": {}
     }
   },
   "msgb7c8d9e0": "{percent}% of total storage",
+
   "@msgc8d9e0f1": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
+
   },
   "msgc8d9e0f1": "System / Other",
+
   "ui_drag_archive_created": "Archive \"{name}\" created successfully",
+
   "@ui_drag_archive_created": {
     "description": "Drag drop action dialog snackbar",
+
     "type": "text",
+
     "placeholders": {
       "name": {}
     }
   },
   "ui_drag_archive_failed": "Failed to create archive: {error}",
+
   "@ui_drag_archive_failed": {
     "description": "Drag drop action dialog snackbar",
+
     "type": "text",
+
     "placeholders": {
       "error": {}
     }
   },
   "ui_backup_success": "設定は ZenFile/Backups/Settings/ にバックアップされました",
+
   "@ui_backup_success": {
     "description": "Settings backup service snackbar"
+
   },
   "ui_backup_failed": "バックアップに失敗しました: {error}",
+
   "@ui_backup_failed": {
     "description": "Settings backup service snackbar",
+
     "type": "text",
+
     "placeholders": {
       "error": {}
     }
   },
   "ui_restore_invalid_file": "有効な .json 設定バックアップファイルを選択してください",
+
   "@ui_restore_invalid_file": {
     "description": "Settings restore snackbar"
+
   },
   "ui_restore_success": "設定の復元に成功しました！",
+
   "@ui_restore_success": {
     "description": "Settings restore snackbar"
+
   },
   "ui_restore_failed": "復元に失敗しました: {error}",
+
   "@ui_restore_failed": {
     "description": "Settings restore snackbar",
+
     "type": "text",
+
     "placeholders": {
       "error": {}
     }
   },
   "@msgeb3d7d70": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_batch_action_bar.dart"
+
   },
   "msgeb3d7d70": "アプリをアンインストール",
+
   "@msg6eb319a1": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_batch_action_bar.dart"
+
   },
   "msg6eb319a1": "選択したアプリをバックアップ中...",
+
   "@msg7fbfdce6": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_list_tab.dart"
+
   },
   "msg7fbfdce6": "アプリが見つかりません",
+
   "@msg753cdb55": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
+
   },
   "msg753cdb55": "アプリを起動",
+
   "@apk3": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
+
   },
   "apk3": "APKをバックアップ",
+
   "@apk4": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
+
   },
   "apk4": "APKをバックアップ中...",
+
   "@apk5": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
+
   },
   "apk5": "APKのバックアップに失敗しました",
+
   "@apk6": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
+
   },
   "apk6": "APKファイルを共有",
+
   "@msga0b18169": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\backup_list_tab.dart"
+
   },
   "msga0b18169": "バックアップファイルを共有",
+
   "@msgb443cd06": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\backup_list_tab.dart"
+
   },
   "msgb443cd06": "バックアップファイルを削除",
+
   "@e20": {
     "type": "text"
+
   },
   "e20": "ファイルの読み込みエラー: {e}",
+
   "@msg24c6ab0f": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "msg24c6ab0f": "ファイルの保存に成功しました",
+
   "@count3": {
     "type": "text"
+
   },
   "count3": "{count}箇所を置換しました",
+
   "@msgffb01e5b": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "msgffb01e5b": "プレーンテキスト",
+
   "@msg7902d9c0": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "msg7902d9c0": "構文を選択",
+
   "@msgc856a077": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "msgc856a077": "検索 / 置換",
+
   "@msg7f2c95cd": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "msg7f2c95cd": "ファイルを保存",
+
   "@msg084e9388": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "msg084e9388": "ズームのロックを解除",
+
   "@msgf387265a": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "msgf387265a": "自動折り返し: オン",
+
   "@msg1045ba75": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "msg1045ba75": "自動折り返し: オフ",
+
   "@msg96f0ad7d": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "msg96f0ad7d": "編集ロック: オン",
+
   "@msg349ab61d": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "msg349ab61d": "編集ロック: オフ",
+
   "@msg0cee3cd1": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "msg0cee3cd1": "行番号を隠す",
+
   "@selectedlanguage": {
     "type": "text"
+
   },
   "selectedlanguage": "構文 ({_selectedLanguage})",
+
   "@msg0dac421f": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "msg0dac421f": "置換後の文字列...",
+
   "@msg52709ae1": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "msg52709ae1": "すべて置換",
+
   "@msg4ecba8f6": {
     "description": "ui\\screens\\text_editor_screen.dart"
+
   },
   "msg4ecba8f6": "タブ",
+
   "@e21": {
     "type": "text"
+
   },
   "e21": "金庫の読み込みエラー: {e}",
+
   "@msg4828116a": {
     "description": "ui\\screens\\vault_explorer_screen.dart"
+
   },
   "msg4828116a": "ファイルを隠す",
+
   "@msg3bf31dfe": {
     "description": "ui\\screens\\vault_lock_screen.dart"
+
   },
   "msg3bf31dfe": "パスワードを入力してロック解除",
+
   "@pin": {
     "description": "ui\\screens\\vault_lock_screen.dart"
+
   },
   "pin": "PINコードを入力してウォレットのロック解除",
+
   "@pin1": {
     "description": "ui\\screens\\vault_lock_screen.dart"
+
   },
   "pin1": "4桁のウォレットPINコードを設定",
+
   "@pin2": {
     "description": "ui\\screens\\vault_lock_screen.dart"
+
   },
   "pin2": "4桁のPINコードを確認",
+
   "@msgbb590f19": {
     "description": "ui\\screens\\vault_lock_screen.dart"
+
   },
   "msgbb590f19": "プライベート金庫",
+
   "@msgaa43fa46": {
     "description": "ui\\screens\\vault_lock_screen.dart"
+
   },
   "msgaa43fa46": "すべてクリア",
+
   "@msgc16eed0e": {
     "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
+
   },
   "msgc16eed0e": "再生速度",
+
   "@msg8f106217": {
     "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
+
   },
   "msg8f106217": "コントロールをロック",
+
   "@msg1f41f25d": {
     "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
+
   },
   "msg1f41f25d": "リピートモード",
+
   "@msg4d2abc8c": {
     "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
+
   },
   "msg4d2abc8c": "メディアパスをクリップボードにコピーしました。",
+
   "@http1": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "http1": "ローカルHTTP共有サーバーが停止しました。",
+
   "@msg2904d894": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msg2904d894": "セキュアプロキシリレーを確立中...",
+
   "@msga1b2c3d4": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
+
   },
   "msga1b2c3d4": "前のレベルに戻る",
+
   "@msga1b2c3d5": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
+
   },
   "msga1b2c3d5": "Shizukuの設定方法は？",
+
   "@msga1b2c3d6": {
     "description": "ui\\main.dart"
+
   },
   "msga1b2c3d6": "ストレージのアクセス許可が必要です",
+
   "@msga1b2c3d7": {
     "description": "ui\\main.dart"
+
   },
   "msga1b2c3d7": "アクセス許可を付与",
+
+  "msg_media_only_permission_title": "メディアファイルのみのアクセス",
+
+  "@msg_media_only_permission_title": {
+    "description": "Title for media-only permission warning"
+
+  },
+  "msg_media_only_permission_desc": "現在、メディアファイルへのアクセスのみ許可されています。ファイルマネージャーの名前変更、切り取り、削除などの機能が正常に使用できません。完全な機能を使用するには「すべてのファイルアクセス」を許可してください。",
+
+  "@msg_media_only_permission_desc": {
+    "description": "Description for media-only permission warning"
+
+  },
+  "msg_grant_full_storage_permission": "完全なストレージアクセスを許可",
+
+  "@msg_grant_full_storage_permission": {
+    "description": "Button text to grant full storage permission"
+
+  },
+  "ui_open_settings": "設定を開く",
+
+  "@ui_open_settings": {
+    "description": "ui\\main.dart"
+
+  },
+  "ui_open_settings_desc": "ストレージ権限が永久に拒否されました。システム設定でファイル管理権限を手動で付与してください。",
+
+  "@ui_open_settings_desc": {
+    "description": "ui\\main.dart"
+
+  },
   "@msg2c146598": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msg2c146598": "インターネットクラウドトンネルがオンラインです！一時リンクが有効です。",
+
   "@msg4a5d26f4": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msg4a5d26f4": "リンクをクリップボードにコピーしました！",
+
   "@type": {
     "type": "text"
+
   },
   "type": "他のデバイスでスキャンしてすぐに{type}を開いてください。",
+
   "@msgc8390d74": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msgc8390d74": "Web共有センター",
+
   "@msg5345cdce": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msg5345cdce": "インターネット共有リンク",
+
   "@http2": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "http2": "HTTPローカル共有サーバー",
+
   "@wifi": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "wifi": "同じWi-Fi上の他のデバイスがWebブラウザ経由でファイルにアクセス、表示、ストリーミングできるようにします。",
+
   "@msg73c512df": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msg73c512df": "サーバーがオンラインでストリーミング中",
+
   "@url1": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "url1": "URLをコピー",
+
   "@msg22b03c02": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msg22b03c02": "QRコード",
+
   "@sharedir": {
     "type": "text"
+
   },
   "sharedir": "共有ディレクトリ：{shareDir}",
+
   "@msge6a29aa4": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msge6a29aa4": "サーバーがアイドル状態",
+
   "@wifi1": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "wifi1": "他のデバイスがこのデバイスと同じWi-Fiネットワークに接続されていることを確認してから、サーバーを起動してください。",
+
   "@msg974465c1": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msg974465c1": "Webサーバーを起動",
+
   "@msg27d5bd3c": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msg27d5bd3c": "安全な一時的なパブリックトンネルリンクを生成します。このリンクをインターネット上のどこにいる人と共有して、ファイルサイズに関係なく高速でダウンロードさせることができます。",
+
   "@msg66a09a42": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msg66a09a42": "一時共有リンク（有効期限24時間）：",
+
   "@msg879058ce": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msg879058ce": "リンクをコピー",
+
   "@msg7ed199f8": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msg7ed199f8": "接続済みのブラウザクライアント",
+
   "@msgb77e4adf": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msgb77e4adf": "インターネットからのダウンロードを待機中...",
+
   "@msga61778bc": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msga61778bc": "インターネット共有は非アクティブ",
+
   "@msga3c80551": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msga3c80551": "クラウド共有を無効化",
+
   "@msg6466e61e": {
     "description": "ui\\screens\\web_sharing_screen.dart"
+
   },
   "msg6466e61e": "インターネット共有リンクを有効化",
+
   "@msg67bd9375": {
     "description": "ui\\widgets\\background_operation_progress_dialog.dart"
+
   },
   "msg67bd9375": "処理中...",
+
   "@msg3fa72416": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msg3fa72416": "ファイルの名前を変更中...",
+
   "@msg7dbbef0e": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msg7dbbef0e": "お待ちください、フォルダの内容を更新中です",
+
   "@msg1a2d9a44": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msg1a2d9a44": "元の名前 (%)",
+
   "@msgcb029197": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msgcb029197": "連番 (#)",
+
   "@msgb6d8a14f": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msgb6d8a14f": "3桁連番 (###)",
+
   "@n": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "n": "拡張子なしのファイル名 ({n})",
+
   "@de": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "de": "ドット付き拡張子 ({de})",
+
   "@e22": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "e22": "ドットなし拡張子 ({e})",
+
   "@n1": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "n1": "拡張子付きの完全なファイル名 ({N})",
+
   "@msg0e9dc63a": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msg0e9dc63a": "名前パターン",
+
   "@msg4a63edba": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msg4a63edba": "拡張子",
+
   "@msga420ad79": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msga420ad79": "開始番号",
+
   "@msg9857973d": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msg9857973d": "検索テキスト",
+
   "@msg1605701e": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msg1605701e": "置換後",
+
   "@msgd35f80c8": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msgd35f80c8": "内容を置換",
+
   "@msg32c61dab": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msg32c61dab": "名前変更プレビュー",
+
   "@msg92642e0e": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
+
   },
   "msg92642e0e": "編集に戻る",
+
   "@msgde88d67a": {
     "description": "ui\\widgets\\conflict_dialog.dart"
+
   },
   "msgde88d67a": "ファイルが既に存在します",
+
   "@msge59e35b5": {
     "description": "ui\\widgets\\conflict_dialog.dart"
+
   },
   "msge59e35b5": "残りのすべての競合に適用",
+
   "@msg27dfaae5": {
     "description": "ui\\widgets\\conflict_dialog.dart"
+
   },
   "msg27dfaae5": "両方を保持",
+
   "@msg6cfbf05d": {
     "description": "ui\\widgets\\conflict_dialog.dart"
+
   },
   "msg6cfbf05d": "ファイルの名前を変更",
+
   "@msg25f747ce": {
     "description": "ui\\widgets\\create_archive_dialog.dart"
+
   },
   "msg25f747ce": "アーカイブを作成",
+
   "@msged5f808e": {
     "description": "ui\\widgets\\create_archive_dialog.dart"
+
   },
   "msged5f808e": "圧縮形式",
+
   "@mb": {
     "description": "ui\\widgets\\create_archive_dialog.dart"
+
   },
   "mb": "分割サイズ（MB、オプション）",
+
   "@msgac52af6a": {
     "description": "ui\\widgets\\create_archive_dialog.dart"
+
   },
   "msgac52af6a": "空欄の場合は単一のアーカイブを作成",
+
   "@msgdf2ef7f5": {
     "description": "ui\\widgets\\create_archive_dialog.dart"
+
   },
   "msgdf2ef7f5": "各ファイルに個別のアーカイブを作成",
+
   "@msgb52d4a73": {
     "description": "ui\\widgets\\directory_tab_bar.dart"
+
   },
   "msgb52d4a73": "新しいタブ",
+
   "@msg4e9c344a": {
     "description": "ui\\widgets\\directory_tab_bar.dart"
+
   },
   "msg4e9c344a": "タブをコピー",
+
   "@msg7716532d": {
     "description": "ui\\widgets\\directory_tab_bar.dart"
+
   },
   "msg7716532d": "他のタブを閉じる",
+
   "@msgd78603eb": {
     "description": "ui\\widgets\\directory_tab_bar.dart"
+
   },
   "msgd78603eb": "ダブルクリックでタブを閉じる",
+
   "@selectedcount": {
     "type": "text"
+
   },
   "selectedcount": "{selectedCount}個のアイテム",
+
   "@e23": {
     "type": "text"
+
   },
   "e23": "アーカイブの作成に失敗しました: {e}",
+
   "@msgc4d7eece": {
     "description": "ui\\widgets\\extract_archive_dialog.dart"
+
   },
   "msgc4d7eece": "アーカイブを展開",
+
   "@msgf15821d0": {
     "description": "ui\\widgets\\extract_archive_dialog.dart"
+
   },
   "msgf15821d0": "フォルダに展開",
+
   "@msgff69affd": {
     "description": "ui\\widgets\\extract_archive_dialog.dart"
+
   },
   "msg_extract_to": "展開先…",
+
   "@msg_extract_to": {
     "description": "Extract archive dialog title"
+
   },
   "ui_current_directory": "現在のフォルダ",
+
   "@ui_current_directory": {
     "description": "Extract to current directory checkbox"
+
   },
   "ui_custom_directory": "カスタムフォルダ",
+
   "@ui_custom_directory": {
     "description": "Extract to custom directory checkbox"
+
   },
   "msgff69affd": "パスワード（暗号化されている場合）",
+
   "@msg67eda5e6": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+
   },
   "msg67eda5e6": "すべてのファイル",
+
   "@msg8b2fcb31": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+
   },
   "msg8b2fcb31": "このディレクトリ内のすべてのファイルとフォルダを表示",
+
   "@pdfword": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+
   },
   "pdfword": "PDF、Word文書、スプレッドシート、テキスト、電子書籍",
+
   "@jpegpngwebp": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+
   },
   "jpegpngwebp": "JPEG、PNG、WebPおよびRAW写真フォーマット",
+
   "@mp3wavaac": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+
   },
   "mp3wavaac": "MP3、WAV、AACおよびハイファイオーディオ",
+
   "@mp4mkvwebm": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+
   },
   "mp4mkvwebm": "MP4、MKV、WebMおよび高解像度ビデオ",
+
   "@zip7zrar": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+
   },
   "zip7zrar": "ZIP、7Z、RARおよびその他の圧縮ファイル",
+
   "@msg6d3e48cc": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
+
   },
   "msg6d3e48cc": "カテゴリを選択して一致するファイルのみを表示",
+
   "@e24": {
     "type": "text"
+
   },
   "e24": "リモートサムネイルの読み込みに失敗しました: {e}",
+
   "@msg32a1bd25": {
     "description": "ui\\widgets\\file_item.dart"
+
   },
   "msg32a1bd25": "1項目",
+
   "@count4": {
     "type": "text"
+
   },
   "count4": "{count}項目",
+
   "@msg9d69d7a0": {
     "description": "ui\\widgets\\file_operation_progress_dialog.dart"
+
   },
   "msg9d69d7a0": "ファイルを移動中...",
+
   "@ui_transferring_files": {
     "description": "ui\\widgets\\file_operation_progress_dialog.dart"
+
   },
   "ui_transferring_files": "ファイル転送中",
+
   "@ui_time_remaining": {
     "description": "ui\\widgets\\file_operation_progress_dialog.dart"
+
   },
   "ui_time_remaining": "残り",
+
   "@zenfile6": {
     "description": "ui\\widgets\\open_with_sheet.dart"
+
   },
   "zenfile6": "ZenFileカスタムネイティブ体験",
+
   "@msg42be43e6": {
     "description": "ui\\widgets\\open_with_sheet.dart"
+
   },
   "msg42be43e6": "システム外部アプリ",
+
   "@msgd1fca831": {
     "description": "ui\\widgets\\open_with_sheet.dart"
+
   },
   "msgd1fca831": "デバイス上のサードパーティアプリで開く",
+
   "@msgdb75b769": {
     "description": "ui\\widgets\\open_with_sheet.dart"
+
   },
   "msgdb75b769": "今回のみ",
+
   "@msg959429a5": {
     "description": "ui\\widgets\\premium_storage_overview.dart"
+
   },
   "msg959429a5": "デバイスファイルをブラウズ",
+
   "@msgc31116e3": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
+
   },
   "msgc31116e3": "新しい接続を追加",
+
   "@msgf1d4ff50": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
+
   },
   "msgf1d4ff50": "カスタム",
+
   "@msg490ac572": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
+
   },
   "msg490ac572": "ピン留めされたショートカットはありません。カスタムをタップして追加してください。",
+
   "@msg445a43cb": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
+
   },
   "msg445a43cb": "ドラッグハンドル (=) でホームアイコンを並べ替えます。",
+
   "@msg944d5ecd": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
+
   },
   "msg944d5ecd": "フォルダ/ファイルのショートカットを追加",
+
   "@msg4f356348": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
+
   },
   "msg4f356348": "カスタムパス",
+
   "@msg94733bec": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
+
   },
   "msg94733bec": "ショートカットを削除",
+
   "@msg5c29ad2f": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
+
   },
   "msg5c29ad2f": "保存先を復元",
+
   "@msg21de5dd7": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
+
   },
   "msg21de5dd7": "カスタムスキャン場所：",
+
   "@msg4bb81f99": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
+
   },
   "msg4bb81f99": "カスタムパスは追加されていません。",
+
   "@msgf544c399": {
     "description": "ui\\widgets\\recent_files_section.dart"
+
   },
   "msgf544c399": "10月",
+
   "@msgc0615eb3": {
     "description": "ui\\widgets\\recent_files_section.dart"
+
   },
   "msgc0615eb3": "12月",
+
   "@msg54355dd8": {
     "description": "ui\\widgets\\recent_files_section.dart"
+
   },
   "msg54355dd8": "最近のファイル",
+
   "@msgd5eac3a3": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
+
   },
   "msgd5eac3a3": "制限付きシステムフォルダ",
+
   "@android11androiddataandroidobbzenfile": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
+
   },
   "android11androiddataandroidobbzenfile": "Android 11+ではアプリデータを保護するため、Android/dataおよびAndroid/obbフォルダへの標準アクセスが制限されています。これらのファイルを表示・変更するには、ZenFileが高度な権限が必要です。",
+
   "@root": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
+
   },
   "root": "Rootアクセスを使用（スーパーユーザー）",
+
   "@shizukuroot": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
+
   },
   "shizukuroot": "Shizukuアクセスを許可（Root不要）",
+
   "@selectedcount1": {
     "type": "text"
+
   },
   "selectedcount1": "{selectedCount}項目を選択しました",
+
   "@selectedcount2": {
     "type": "text"
+
   },
   "selectedcount2": "選択した{selectedCount}個のアイテムを削除しますか？この操作は元に戻せません。",
+
   "@msga9b87614": {
     "description": "ui\\widgets\\selection_action_bar.dart"
+
   },
   "msga9b87614": "選択したアイテムのピン留めを解除しました",
+
   "@msg84e4fac9": {
     "description": "ui\\widgets\\selection_action_bar.dart"
+
   },
   "msg84e4fac9": "ピン留めを解除",
+
   "@msg3be9abab": {
     "description": "ui\\widgets\\selection_action_bar.dart"
+
   },
   "msg3be9abab": "サイズを計算中...",
+
   "@msg7704aa2c": {
     "description": "ui\\widgets\\selection_action_bar.dart"
+
   },
   "msg7704aa2c": "選択したパス：",
+
   "@label1": {
     "type": "text"
+
   },
   "label1": "{label}をクリップボードにコピーしました",
+
   "@selectedcount3": {
     "type": "text"
+
   },
   "selectedcount3": "{selectedCount}個のアイテムを選択しました",
+
   "@msg8b73264b": {
     "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
+
   },
   "msg8b73264b": "ファイル（長押しで開く方法を選択）",
+
   "@msgc5c0646c": {
     "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
+
   },
   "msgc5c0646c": "選択したものをコピー",
+
   "@msg8e6d4604": {
     "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
+
   },
   "msg8e6d4604": "選択したものを切り取り",
+
   "@msg1058354c": {
     "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
+
   },
   "msg1058354c": "プロパティと情報",
+
   "@usedstoragestr": {
     "type": "text"
+
   },
   "usedstoragestr": "{usedStorageStr}使用済み",
+
   "@freestoragestr": {
     "type": "text"
+
   },
   "freestoragestr": "{freeStorageStr}利用可能",
+
   "@msgc823e21b": {
     "description": "ui\\widgets\\tab_options_sheet.dart"
+
   },
   "msgc823e21b": "タブのピン留めを解除",
+
   "@msg7d6c1284": {
     "description": "ui\\widgets\\zenfile_address_bar.dart"
+
   },
   "msg7d6c1284": "一致するディレクトリまたはファイルが見つかりません",
+
   "@path": {
     "type": "text"
+
   },
   "path": "パスが存在しません: {path}",
+
   "@msg6cbbf7d9": {
     "description": "ui\\widgets\\zenfile_address_bar.dart"
+
   },
   "msg6cbbf7d9": "絶対パスを入力...",
+
   "@msgf13fc21c": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
+
   },
   "msgf13fc21c": "ネットワーク",
+
   "@msg41e625d1": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
+
   },
   "msg41e625d1": "リモート接続を追加",
+
   "@msg8755e992": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
+
   },
   "msg8755e992": "ライトモード",
+
   "@msg1cf6fcd3": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
+
   },
   "msg1cf6fcd3": "その他の設定",
+
   "@msgeef7e30c": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
+
   },
   "msgeef7e30c": "プレミアムメディアスイート",
+
   "msg2ad64aa7": "リンクを開けません: {urlString}",
+
   "msg30d17f96": "主な特徴",
+
   "msgaba638c4": "金庫のセキュリティ",
+
   "msgd309e9ea": "サーバーセンター",
+
   "msg4a5f936c": "連絡先と共有",
+
   "msg4d48a010": "ZenFile - 美しいファイルマネージャー",
+
   "msg1f4c0192": "作者にコーヒーを奢る ☕",
+
   "msg2eceaa85": "作者に寄付",
+
   "msg305734ce": "更新履歴",
+
   "msg1c80891a": "ブラウズページにリモートファイルのサムネイルプレビューを追加",
+
   "msg212f8f9e": "リモートファイルが再生できない問題を修正",
+
   "msgd0cf310e": "リモートファイルのキャッシュディレクトリの一元管理を最適化",
+
   "msg072f2022": "一本指スワイプによるページ切替を二本指スワイプに変更（誤って戻るジェスチャーを防止）",
+
   "msg66517dc4": "フォントオプションのタイトルを全面的に日本語化",
+
   "msgacad92c8": "「左からの戻るジェスチャーによるドロワーを開く」機能を削除",
+
   "msg09d0e1b6": "修正：代替アイコンの切り替えが反映されない",
+
   "msg2d1872c8": "テキストエディターメニューを全面的に日本語化",
+
   "msg2e35eef7": "デュアルパネルファイルブラウザ",
+
   "msge96aa2cd": "内蔵メディアプレイヤー",
+
   "msg49a6c41e": "アプリアイコン切り替え（複数のスタイルから選択可能）",
+
   "msg4d82be7c": "次回バージョンの更新予定",
+
   "msg2c8957dd": "既知の問題",
+
   "msg11cb01fc": "リモートサーバーでキャッシュしながら動画を再生",
+
   "msg60a4d643": "カスタムアイコンのアップロード後にランチャーアイコンが変わらない（次回バージョンで改善）",
+
   "msg9e68ea42": "保存に失敗しました。もう一度お試しください",
+
   "cat_images": "画像",
+
   "cat_videos": "動画",
+
   "cat_audios": "オーディオ",
+
   "cat_documents": "ドキュメント",
+
   "cat_downloads": "ダウンロード",
+
   "cat_screenshots": "スクリーンショット",
+
   "cat_recent": "最近",
+
   "cat_network": "ネットワーク",
+
   "cat_apps": "アプリ",
+
   "cat_settings": "設定",
+
   "cat_storage": "空間",
+
   "cat_service": "サービス",
+
   "cat_manage": "管理",
+
   "cat_config": "設定",
+
   "cat_analyze": "分析",
+
   "cat_vault": "金庫",
+
   "cat_vault_desc": "安全な保存",
+
   "cat_quick_categories": "カテゴリ",
+
   "ui_nav": "ローカル",
+
   "ui_home": "ホーム",
+
   "ui_recycle_bin": "ごみ箱",
+
   "ui_dark_mode": "ダークモード",
+
   "ui_personalize_settings": "設定",
+
   "ui_compress": "圧縮",
+
   "ui_copy": "コピー",
+
   "ui_cut": "切り取り",
+
   "ui_move": "Move",
+
   "@ui_move": {
     "description": "Drag drop action dialog"
+
   },
   "ui_apply": "Apply",
+
   "@ui_apply": {
     "description": "Drag drop action dialog confirm button"
+
   },
   "ui_delete": "削除",
+
   "ui_select_all": "すべて選択",
+
   "ui_cancel": "キャンセル",
+
   "ui_confirm": "確認",
+
   "ui_share": "共有",
+
   "ui_move_here": "ここに移動",
+
   "ui_properties": "プロパティ",
+
   "ui_info": "情報",
+
   "ui_open": "開く",
+
   "ui_close": "閉じる",
+
   "ui_more": "その他",
+
   "ui_appearance_theme": "外観とテーマ",
+
   "ui_list_layout_style": "リストとレイアウトスタイル",
+
   "ui_media_preferences": "メディア設定",
+
   "ui_file_actions_viewers": "ファイル操作とビューア",
+
   "ui_no_settings_found": "設定が見つかりません",
+
   "ui_show_action_bar": "操作バーを表示",
+
   "ui_use_24h_format": "24時間制を使用",
+
   "ui_show_folder_contents_count": "フォルダの内容数を表示",
+
+  "ui_set_as_home": "ホームに設定",
+
+  "@ui_set_as_home": {
+    "description": "Set current folder as home directory"
+
+  },
   "ui_show_folder_size": "フォルダサイズを表示",
+
   "ui_show_bottom_action_bar": "ナビゲーションバーの位置",
+
   "ui_hide_action_text": "アクションバーのテキストラベルを隠す",
+
   "ui_show_media_previews": "ローカルメディアサムネイル",
+
   "ui_adaptive_multiline_names": "アダプティブマルチラインファイル名",
+
   "ui_hide_action_menu_buttons": "三点メニューボタンを隠す",
+
   "ui_show_action_menu_buttons": "三点メニューボタンを表示",
+
   "ui_action_menu_subtitle": "三点メニューボタンの表示モードを選択。オフ時はファイルとフォルダの右側に三点ボタンを表示しません。",
+
   "ui_action_menu_mode_all": "すべて表示",
+
   "ui_action_menu_mode_single": "シングルウィンドウモードのみ",
+
   "ui_action_menu_mode_dual": "デュアルウィンドウモードのみ",
+
   "ui_enable_drag_drop": "ドラッグ＆ドロップを有効にする",
+
   "ui_confirm_drag_drop": "ドラッグ＆ドロップ操作を確認",
+
   "ui_enable_multi_tabs": "マルチタブを有効にする",
+
   "ui_enable_split_screen": "分割画面を有効にする",
+
   "ui_app_icon": "アプリアイコン",
+
   "ui_emerald_green": "エメラルドグリーン",
+
   "ui_deep_red": "ディープレッド",
+
   "ui_square": "角形",
+
   "ui_circle": "円形",
+
   "ui_1_day_after": "1日後",
+
   "ui_no_auto_clean": "自動クリーンアップなし",
+
   "ui_daily": "毎日",
+
   "ui_weekly": "毎週",
+
   "ui_monthly": "毎月",
+
   "ui_every_n_days": "{days}日ごと",
+
   "@ui_every_n_days": {
     "description": "ui\\screens\\more_settings_screen.dart",
+
     "type": "text"
+
   },
   "ui_clear_cache_failed": "キャッシュのクリアに失敗しました: {e}",
+
   "@ui_clear_cache_failed": {
     "description": "ui\\screens\\more_settings_screen.dart",
+
     "type": "text"
+
   },
   "ui_clear_remote_cache": "リモートキャッシュをクリア",
+
   "ui_view_cache_dir": "キャッシュディレクトリを表示",
+
   "ui_remote_media_thumbnail": "リモートメディアサムネイル",
+
   "ui_auto_clean_remote_cache": "リモートサーバーのキャッシュファイルを定期的に自動クリーンアップ: {label}",
+
   "@ui_auto_clean_remote_cache": {
     "description": "ui\\screens\\more_settings_screen.dart",
+
     "type": "text"
+
   },
   "ui_custom_font_with_name": "カスタムフォント（{name}）",
+
   "@ui_custom_font_with_name": {
     "description": "ui\\screens\\more_settings_screen.dart",
+
     "type": "text"
+
   },
   "ui_import_custom_font": "カスタムフォントファイルをインポート (.ttf/.otf)",
+
   "ui_custom_font_applied": "カスタムフォント\"{name}\"が正常に適用されました！",
+
   "@ui_custom_font_applied": {
     "description": "ui\\screens\\more_settings_screen.dart",
+
     "type": "text"
+
   },
   "ui_invalid_file_type": "無効なファイルタイプ",
+
   "ui_language": "言語",
+
   "ui_hide_nav_labels": "下部ナビゲーションラベルを隠す",
+
   "ui_reset_default_viewers": "デフォルトファイルビューアをリセット",
+
   "ui_trailing_info_when_hidden": "三点メニュー無効時の末尾情報",
+
   "ui_go_up": "上のレベルへ",
+
   "@ui_go_up": {
     "description": "directory_screen.dart"
+
   },
   "ui_cut_copy_items": "{prefix} ・ {count}項目",
+
   "@ui_cut_copy_items": {
     "description": "directory_screen.dart",
+
     "placeholders": {
       "prefix": {
         "type": "String"
+
       },
       "count": {
         "type": "int"
+
       }
     }
   },
   "ui_clear": "クリア",
+
   "@ui_clear": {
     "description": "directory_screen.dart"
+
   },
   "ui_paste": "貼り付け",
+
   "@ui_paste": {
     "description": "directory_screen.dart"
+
   },
   "ui_file_name": "ファイル名",
+
   "@ui_file_name": {
     "description": "directory_screen.dart"
+
   },
   "ui_create": "作成",
+
   "@ui_create": {
     "description": "directory_screen.dart"
+
   },
   "ui_create_new_directory": "新規ディレクトリを作成",
+
   "@ui_create_new_directory": {
     "description": "directory_screen.dart"
+
   },
   "ui_layout_mode": "レイアウトモード",
+
   "@ui_layout_mode": {
     "description": "directory_screen.dart"
+
   },
   "ui_grid_view": "グリッド表示",
+
   "@ui_grid_view": {
     "description": "directory_screen.dart"
+
   },
   "ui_name_asc": "名前 (A-Z)",
+
   "@ui_name_asc": {
     "description": "directory_screen.dart"
+
   },
   "ui_newest": "新しい順",
+
   "@ui_newest": {
     "description": "directory_screen.dart"
+
   },
   "ui_oldest": "古い順",
+
   "@ui_oldest": {
     "description": "directory_screen.dart"
+
   },
   "ui_size_small": "サイズ（小）",
+
   "@ui_size_small": {
     "description": "directory_screen.dart"
+
   },
   "ui_type": "タイプ",
+
   "@ui_type": {
     "description": "ui widgets"
+
   },
   "ui_storage_volume": "ストレージボリューム",
+
   "@ui_storage_volume": {
     "description": "directory_screen.dart"
+
   },
   "ui_browse": "ブラウズ",
+
   "@ui_browse": {
     "description": "directory_screen.dart"
+
   },
   "ui_new": "新規",
+
   "@ui_new": {
     "description": "directory_screen.dart"
+
   },
   "ui_folders_count": "フォルダ：{count}",
+
   "@ui_folders_count": {
     "description": "directory_screen.dart",
+
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "ui_files_count": "ファイル：{count}",
+
   "@ui_files_count": {
     "description": "directory_screen.dart",
+
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "ui_selection_mode": "選択モード",
+
   "@ui_selection_mode": {
     "description": "directory_screen.dart"
+
   },
   "ui_storage_and_sd": "ストレージボリュームとSDカード",
+
   "@ui_storage_and_sd": {
     "description": "directory_screen.dart"
+
   },
   "ui_images_only": "画像のみ",
+
   "@ui_images_only": {
     "description": "ui widgets"
+
   },
   "ui_videos_only": "動画のみ",
+
   "@ui_videos_only": {
     "description": "ui widgets"
+
   },
   "ui_show_folders": "フォルダを表示",
+
   "@ui_show_folders": {
     "description": "directory_screen.dart"
+
   },
   "ui_files": "ファイル",
+
   "@ui_files": {
     "description": "directory_screen.dart"
+
   },
   "ui_delete_file_confirm": "このファイルを削除しますか？この操作は元に戻せません。",
+
   "@ui_delete_file_confirm": {
     "description": "directory_screen.dart"
+
   },
   "ui_done": "完了",
+
   "@ui_done": {
     "description": "ui widgets"
+
   },
   "ui_name": "名前",
+
   "@ui_name": {
     "description": "ui widgets"
+
   },
   "ui_path": "パス",
+
   "@ui_path": {
     "description": "ui widgets"
+
   },
   "ui_size": "サイズ",
+
   "@ui_size": {
     "description": "ui widgets"
+
   },
   "ui_permissions": "権限",
+
   "@ui_permissions": {
     "description": "ui widgets"
+
   },
   "ui_contains": "含む",
+
   "@ui_contains": {
     "description": "ui widgets"
+
   },
   "ui_extract": "展開",
+
   "@ui_extract": {
     "description": "ui widgets"
+
   },
   "ui_pin_to_top": "トップに固定",
+
   "@ui_pin_to_top": {
     "description": "ui widgets"
+
   },
   "msg_select_all": "全て選択",
+
   "@msg_select_all": {
     "description": "selection_context_bottom_sheet.dart"
+
   },
   "ui_pinned_selected": "選択したアイテムをトップに固定しました",
+
   "@ui_pinned_selected": {
     "description": "ui widgets"
+
   },
   "ui_filter_by_type": "タイプ別にファイルをフィルター",
+
   "@ui_filter_by_type": {
     "description": "ui widgets"
+
   },
   "ui_default_scan_locations": "デフォルトスキャン場所：",
+
   "@ui_default_scan_locations": {
     "description": "ui widgets"
+
   },
   "ui_exclude_location": "除外場所",
+
   "@ui_exclude_location": {
     "description": "ui widgets"
+
   },
   "ui_add_custom_path": "カスタムパスを追加",
+
   "@ui_add_custom_path": {
     "description": "ui widgets"
+
   },
   "ui_added_custom_paths": "{count}個のカスタムパスを追加しました",
+
   "@ui_added_custom_paths": {
     "description": "ui widgets",
+
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "ui_close_tab": "タブを閉じる",
+
   "@ui_close_tab": {
     "description": "ui widgets"
+
   },
   "ui_not_found_title": "{title}が見つかりません",
+
   "@ui_not_found_title": {
     "description": "ui widgets",
+
     "placeholders": {
       "title": {
         "type": "String"
+
       }
     }
   },
   "ui_oldest_first": "古いもの順",
+
   "@ui_oldest_first": {
     "description": "ui widgets"
+
   },
   "ui_sort_options": "並べ替えオプション",
+
   "@ui_sort_options": {
     "description": "ui widgets"
+
   },
   "ui_refresh": "更新",
+
   "@ui_refresh": {
     "description": "ui widgets"
+
   },
   "ui_selected_count": "{count}選択済み",
+
   "@ui_selected_count": {
     "description": "ui widgets",
+
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "ui_permanently_delete_name": "\"{name}\"を完全に削除しますか？",
+
   "@ui_permanently_delete_name": {
     "description": "ui widgets",
+
     "placeholders": {
       "name": {
         "type": "String"
+
       }
     }
   },
   "ui_copied_count": "{count}個のアイテムをクリップボードにコピーしました",
+
   "@ui_copied_count": {
     "description": "ui widgets",
+
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "ui_cut_count": "{count}個のアイテムをクリップボードに切り取りました",
+
   "@ui_cut_count": {
     "description": "ui widgets",
+
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "ui_read": "読み取り",
+
   "@ui_read": {
     "description": "ui widgets"
+
   },
   "ui_write": "書き込み",
+
   "@ui_write": {
     "description": "ui widgets"
+
   },
   "ui_file": "ファイル",
+
   "@ui_file": {
     "description": "ui widgets"
+
   },
   "ui_backup_settings": "設定をバックアップ",
+
   "ui_restore_settings": "設定を復元",
+
   "ui_backup_info": "バックアップ情報",
+
   "ui_backup_file": "バックアップファイル",
+
   "ui_no_backup_file": "バックアップファイルはありません",
+
   "ui_remote_connection": "リモート接続",
+
   "ui_step_n_of_3": "ステップ {step} / 3",
+
   "ui_choose_network_service": "ネットワークサービスを選択",
+
   "ui_connection_name": "接続名",
+
   "ui_protocol": "プロトコル",
+
   "ui_port": "ポート",
+
   "ui_path_label": "パス",
+
   "ui_username_optional": "ユーザー名（オプション）",
+
   "ui_share_name_optional": "共有名（任意）",
+
   "ui_share_name_hint": "例: /Public または空欄で自動検出",
+
   "ui_smb_desc": "ローカルエリアネットワーク & SMB NAS共有",
+
   "ui_connection_suffix": "接続",
+
   "ui_back": "戻る",
+
   "ui_connect": "接続",
+
   "ui_web_share": "Web共有",
+
   "ui_network": "ネットワーク",
+
   "log_i18n_full": "中国語/英語UIの完全な国際化",
+
   "log_fix_selection_count": "ファイル選択数が表示されない問題を修正",
+
   "log_fix_remote_title": "リモート接続ページのタイトル表示の異常を修正",
+
   "log_svg_thumbnail_category": "SVGサムネイルがカテゴリページに正常表示",
+
   "log_language_btn_top": "言語切替ボタンを設定ページの上部に移動",
+
   "log_fix_category_missing": "英語モードで一部のカテゴリが表示されない問題を修正",
+
   "log_text_editor": "テキストエディタ新機能：新規作成、名前を付けて保存、元に戻す/やり直す",
+
   "log_text_editor_settings": "テキストエディタ設定の永続化（ワードラップ、行番号、読み取り専用モード）",
+
   "log_10_languages": "10言語サポート（中国語、英語、日本語、韓国語、ドイツ語、フランス語、スペイン語、ロシア語、アラビア語）",
+
   "log_fix_l10n_hardcode": "複数のl10nハードコード問題を修正",
+
   "log_language_scroll": "言語選択ダイアログのスクロールサポートを最適化",
+
   "log_remote_media_cache": "リモートメディアファイルをクリック後すぐにプレーヤーを開き、バックグラウンドでキャッシュ",
+
   "log_remote_to_remote": "リモートサーバー間のコピー/カット機能を追加",
+
   "log_remote_cut_progress": "リモートカット操作のプログレスバー表示を修正",
+
   "log_audio_scan_stable": "オーディオカテゴリのスキャン安定性を改善",
+
   "log_extract_dialog_redesign": "解凍ダイアログを再設計し、現在のディレクトリ/カスタムディレクトリ選択をサポート",
+
   "log_vault_quick_category": "クイックカテゴリに金庫ショートカットを追加（デフォルトオフ）",
+
   "log_vault_l10n_fix": "金庫画面の英語ハードコードと複数ファイル追加時のフリーズを修正",
+
   "log_compression_path_fix": "3点ボタンと長押しメニューの圧縮パスを統一し、圧縮ファイル名のエラーを修正",
+
   "log_compression_progress": "圧縮進度ダイアログを改善し、多段階進度表示と確実な自動終了をサポート",
+
   "log_web_share_category": "Web共有ポータルがファイルを分類表示（フォルダ、動画、オーディオ、画像、ドキュメント、その他）",
+
   "log_web_share_l10n": "Web共有ポータルがアプリのロケールに基づいて多言語表示をサポート",
+
     "log_music_lyrics_fullscreen_removed": "ミュージックプレーヤーから歌詞フルスクリーンパネルを削除",
+
     "log_music_lyrics_centered": "ミュージックプレーヤーの現在の歌詞表示を中央揃えに変更",
+
     "log_music_player_button": "音楽カテゴリページ上部にミュージックプレーヤーボタンを追加",
+
     "log_music_remember_progress": "ミュージックプレーヤーが再生位置を記憶し、次回自動再開",
+
     "log_image_icon_redesign": "画像ファイルアイコンを再デザイン、形式ラベル（jpg、png等）を表示",
+
     "log_doc_icon_redesign": "ドキュメントファイルアイコンを再デザイン、形式ラベルを表示",
+
     "log_archive_icon_redesign": "圧縮ファイルアイコンを再デザイン、形式ラベル（zip、7z、rar等）を表示",
+
     "log_music_lrc_lyrics": "LRC歌詞の自動読み込みと手動歌詞ファイル選択をサポート",
+
       "log_remote_copy_paste_fix": "リモートサーバーからローカルへのコピー時にプログレスバーが0%のままファイルが表示されない問題を修正",
+
     "log_navbar_position_setting": "Added navigation bar position setting, support top or bottom display",
+
     "log_browse_top_area_optimize": "Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space",
+
     "log_thanks_feedback": "以下のユーザーのフィードバックと提案に感謝します：越界、猕猴桃、Sir Jagadeesh Chandra Bose、Silence",
+
     "log_smb_native_rewrite": "SMBクライアントを完全に書き直し、Androidネイティブsmbjライブラリを使用して実際のSMBプロトコルを実現、共有名の自動検出をサポート",
+
     "log_ftp_sftp_streaming": "FTP/SFTPストリーミング再生を修正、生Socketと独立したデータ接続を使用、プログレッシブキャッシュをサポート",
+
     "log_remote_l10n_fix": "リモート接続ページのハードコードされた文字列を修正、SMBプロトコルの説明と接続名サフィックスのl10nキーを追加",
+
     "log_image_viewer_menu": "画像ビューアの右上メニューをボトムシートに変更、9つのアクション項目、視認性向上のための黒い半透明背景",
+
     "log_breadcrumb_border": "パンくずボタンにV字型の完全な枠線を追加、CustomPaintで描画、シームレスな接続と明確な境界を保証",
+
     "log_three_dot_button_position": "ファイル/フォルダの三点アクションボタンをカードの右上隅に移動、ドラッグ時の誤タッチを回避",
+
     "log_three_dot_button_setting": "三点ボタン設定を「三点アクションボタンを表示」に改名、全て/シングルウィンドウのみ/デュアルウィンドウのみの3モードをサポート",
+
     "log_category_back_select": "カテゴリ複数選択モードで戻るボタンを押すとカテゴリを終了する代わりに選択をキャンセル",
+
     "log_desktop_lyric": "デスクトップ歌詞フローティングウィンドウを追加、権限チェック、位置ドラッグ、タップで再生/一時停止の切り替えをサポート",
+
     "log_notification_panel": "通知パネルが再生コントロールを表示しない問題を修正、一時停止時に通知を保持、権限拒否時にプロンプトを表示",
+
     "log_lyric_word_highlight": "フローティング歌詞がSpannableStringBuilderを使用した一文字ずつのハイライトをサポート、カラオケ効果を実現",
+
     "log_floating_window_resize": "フローティング歌詞ウィンドウが長押しでリサイズハンドルの表示をサポート、ドラッグしてウィンドウとテキストサイズを調整",
+
     "log_background_play_fix": "バックグラウンド再生を有効化した時に音楽が一時停止する問題を修正、attachがプレーヤーインスタンスを再利用し再生を継続",
+
     "log_category_button_sync": "バックグラウンド再生がオフの場合にカテゴリページの再生ボタンが古い音声情報を表示する問題を修正、戻る時に更新",
+
     "log_build_stability": "R8コンパイルOOM、x86_64/armv7起動時の白画面を修正、Gradle JVMメモリとABIダウンロードを調整",
+
     "log_lyric_scale_animation": "一文字ずつの歌詞遷移アニメーションに拡大効果を追加、同期問題を修正、300msの遷移時間を固定",
+
   "msg_file_exists": "ファイルが存在します",
+
   "@msg_file_exists": {
     "description": "Conflict dialog title"
+
   },
   "msg_file_exists_desc": "対象フォルダに同名ファイル\"{fileName}\"が既に存在します。どう処理しますか？",
+
   "@msg_file_exists_desc": {
     "description": "Conflict dialog description",
+
     "placeholders": {
       "fileName": {
         "type": "String"
+
       }
     }
   },
   "msg_existing_file": "既存ファイル",
+
   "@msg_existing_file": {
     "description": "Existing file label in conflict dialog"
+
   },
   "msg_cancel_paste": "貼り付けをキャンセル",
+
   "@msg_cancel_paste": {
     "description": "Cancel paste button"
+
   },
   "msg_skip_file": "スキップ",
+
   "@msg_skip_file": {
     "description": "Skip file button in conflict dialog"
+
   },
   "msg_overwrite_file": "上書き",
+
   "@msg_overwrite_file": {
     "description": "Overwrite file button in conflict dialog"
+
   },
   "msg_newer": " newer",
+
   "@msg_newer": {
     "description": "Newer badge in conflict dialog"
+
   },
   "msg_new_file_name": "新しいファイル名",
+
   "@msg_new_file_name": {
     "description": "New file name label in rename dialog"
+
   },
   "msg_remember_choice": "今後の操作でもこの選択を記憶する",
+
   "ui_caching": "キャッシュ中、しばらくお待ちください...",
+
   "ui_username": "ユーザー名",
+
   "ui_anonymous": "匿名",
+
   "ui_start": "開始",
+
   "ui_stop": "停止",
+
   "ui_connected": "接続済み",
+
   "ui_activated": "有効",
+
   "ui_web_sharing_center": "Web共有センター",
+
   "ui_local_web_share": "ローカルWeb共有",
+
   "ui_http_local_share_server": "HTTPローカル共有サーバー",
+
   "ui_server_idle": "サーバーアイドル",
+
   "ui_pick_files_folders": "ファイルとフォルダを選択",
+
   "ui_secure_storage": "セキュアストレージ",
+
   "ui_protected_total_space": "保護済み合計スペース",
+
   "ui_hidden_files_count": "隠しファイル",
+
   "ui_search_obfuscated": "難読化ファイルを検索...",
+
   "ui_vault_empty": "セキュア金庫は空です",
+
   "ui_hide_files": "ファイルを隠す",
+
   "ui_global_search": "グローバル検索",
+
   "ui_all": "すべて",
+
   "ui_folders": "フォルダ",
+
   "ui_images": "画像",
+
   "ui_videos": "動画",
+
   "ui_audio": "オーディオ",
+
   "ui_documents": "ドキュメント",
+
   "ui_no_matching_files": "一致するファイルが見つかりません",
+
   "ui_try_modify_search": "検索テキストを変更して隠しアイテムを探してみてください。",
+
   "ui_vault_empty_desc": "XOR難読化署名により、ファイルは完全に開けなくなり、システムスキャナーデータベースから隠されます。下のボタンをクリックして保護してください。",
+
   "ui_copied_n_items": "{count}個のアイテムをクリップボードにコピーしました",
+
   "ui_cut_n_items": "{count}個のアイテムをクリップボードに切り取りました",
+
   "ui_copy_tooltip": "コピー",
+
   "ui_cut_tooltip": "切り取り",
+
   "ui_delete_tooltip": "削除",
+
   "ui_search_this_folder": "このフォルダを検索",
+
   "ui_search_files_subfolders_in": "ファイルとサブフォルダを検索：{path}",
+
   "ui_no_results": "結果が見つかりません",
+
   "ui_no_match_for": "\"{query}\"に一致するものが見つかりませんでした",
+
   "ui_n_selected": "{count}選択済み ({size})",
+
   "ui_select_language_title": "言語を選択",
+
   "ui_select_language_desc": "お好みの言語を選択してください",
+
   "ui_language_chinese": "中国語",
+
   "ui_language_english": "English",
+
   "msgDefaultZoom": "デフォルトズーム ({fontSize}pt)",
+
   "msgLockZoom": "ズームをロック",
+
   "ui_background": "バックグラウンド",
+
   "ui_overall_progress": "全体の進捗",
+
   "ui_archive_name": "アーカイブ名",
+
   "ui_compression_level": "圧縮レベル",
+
   "ui_delete_source_after": "完了後にソースファイルを削除",
+
   "ui_no_compression": "なし（保存のみ）",
+
   "ui_fast": "高速",
+
   "ui_standard": "標準",
+
   "ui_maximum": "最大",
+
   "ui_new_txt": "新規テキストファイル",
+
   "ui_save_as": "名前を付けて保存",
+
   "ui_undo": "元に戻す",
+
   "ui_redo": "やり直す",
+
   "ui_add_selected": "選択を追加 ({count})",
+
   "msg_vault_choose_mode": "保護モードを選択",
+
   "msg_vault_mode_desc": "選択したファイルの保護方法を選択してください。セキュアファイルは即座にXORスクランブルされます。",
+
   "ui_secure_import": "セキュアインポート（サンドボックス）",
+
   "ui_in_place_scramble": "インプレーススクランブル（高速）",
+
   "msg_scrambling": "スクランブルと保護中...",
+
   "msg_protected_count": "{successCount} 個の項目を正常に保護しました。",
+
   "msg_protect_failed_count": "{failCount} 個の項目のロックに失敗しました。",
+
   "msg_restored": "「{name}」を元の位置に復元しました。",
+
   "msg_restore_failed": "ファイルの復元に失敗しました：{error}",
+
   "msg_decrypting": "安全に復号中...",
+
   "msg_security_details": "セキュリティ詳細",
+
   "ui_restore_unhide": "復元（非表示解除）",
+
   "msg_permanent_delete": "永久に削除しますか？",
+
   "msg_permanent_delete_content": "「{name}」を永久に削除してもよろしいですか？この操作は元に戻せません。",
+
   "msg_file_deleted": "ファイルは永久に削除されました。",
+
   "msg_delete_failed": "ファイルの削除に失敗しました：{error}",
+
   "msg_original_name": "元の名前",
+
   "msg_original_path": "元のパス",
+
   "msg_scrambled_path": "スクランブルパス",
+
   "msg_size_label": "サイズ",
+
   "msg_locked_at": "ロック日時",
+
   "msg_protection_mode": "保護モード",
+
   "msg_in_place_scrambling": "インプレーススクランブル",
+
   "msg_isolated_move": "分離移動（サンドボックス）",
+
   "web_share_search": "ファイルとフォルダを検索...",
+
   "web_share_upload": "アップロード",
+
   "web_share_drop_title": "ファイルをここにドラッグしてアップロード",
+
   "web_share_drop_desc": "ファイルはこの共有フォルダに即座にアップロードされます",
+
   "web_share_empty_search": "一致する項目がありません",
+
   "web_share_empty_desc": "スペルを確認するか、別の検索語を試してください",
+
   "web_share_copy_link": "リンクをコピー",
+
   "web_share_download": "ダウンロード",
+
   "web_share_uploading": "{name} をアップロード中...",
+
   "@web_share_uploading": {
     "description": "Upload progress title",
+
     "placeholders": {
       "name": {
         "type": "String"
+
       }
     }
   },
   "web_share_upload_success": "アップロードが完了しました",
+
   "web_share_upload_failed": "{name} のアップロードに失敗しました",
+
   "@web_share_upload_failed": {
     "description": "Upload failed message",
+
     "placeholders": {
       "name": {
         "type": "String"
+
       }
     }
   },
   "web_share_preview_unsupported": "このファイルタイプのプレビューはサポートされていません",
+
   "web_share_preview_download": "下のダウンロードボタンをクリックしてデバイスに保存",
+
   "web_share_footer": "ZenFile を介してファイルを安全に共有およびストリーミング",
+
   "web_share_parent_dir": "親ディレクトリ",
+
   "web_share_go_up": "1つ上の階層に戻る",
+
   "web_share_items_count": "{count} 項目",
+
   "@web_share_items_count": {
     "description": "Item count display",
+
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "web_share_link_copied": "リンクをクリップボードにコピーしました",
+
   "web_share_copy_failed": "リンクのコピーに失敗しました",
+
   "web_share_local": "ローカル Wi-Fi 共有",
+
   "web_share_internet": "インターネット共有",
+
   "web_share_category_folders": "フォルダ",
+
   "web_share_category_videos": "動画",
+
   "web_share_category_audio": "オーディオ",
+
   "web_share_category_images": "画像",
+
   "web_share_category_documents": "ドキュメント",
+
   "web_share_category_others": "その他",
+
   "web_share_loading_preview": "プレビューを読み込み中...",
+
   "web_share_preview_error": "ドキュメントをストリーミングできません。直接ダウンロードできます。",
+
   "msg_custom_shortcut": "カスタムアイコン",
+
   "msg_add_custom_shortcut": "ホーム画面に追加",
+
   "msg_shortcut_added": "ホーム画面に追加しました",
+
   "msg_shortcut_failed": "追加に失敗しました",
+
   "ui_lyrics_loaded": "歌詞を読み込みました",
+
   "ui_lyrics_load_failed": "この歌詞ファイルを解析できません",
+
   "ui_select_lyrics_file": "ローカル歌詞をインポート",
+
   "ui_search_lyrics_online": "オンライン歌詞検索",
+
   "ui_no_lyrics_found": "歌詞が見つかりません",
+
   "ui_lyrics_auto_load_hint": ".lrc 歌詞ファイルを音楽と同じフォルダに\n（ファイル名も同じにして）置くと自動読み込みされます",
+
   "ui_lyrics_panel": "歌詞パネル",
+
   "ui_show_lyrics": "歌詞を表示",
+
   "ui_hide_lyrics": "歌詞を隠す",
+
   "ui_sound_effects_speed": "サウンドエフェクトと再生速度",
+
   "ui_pitch_adjustment": "音調調整",
+
   "ui_restore_default": "デフォルトに戻す",
+
   "ui_sound_effects": "サウンドエフェクト",
+
   "ui_playback_queue": "再生キュー",
+
   "ui_repeat_off": "リピート：オフ",
+
   "ui_repeat_one": "リピート：1曲",
+
   "ui_repeat_all": "リピート：全曲",
+
   "ui_shuffle_on": "シャッフル：オン",
+
   "ui_minutes_format": "{minutes}分",
+
   "ui_sleep_timer_set": "スリープタイマーを {minutes} 分に設定しました。",
+
   "ui_enter_minutes": "分を入力",
+
   "ui_sleep_timer_end": "タイマーが終了し、再生を一時停止しました",
+
   "ui_close_player": "プレーヤーを閉じる",
+
   "ui_open_player": "プレーヤーを開く",
+
   "ui_now_playing": "再生中",
+
   "ui_resume_playback": "再生を再開",
+
   "ui_single": "シングル",
+
   "ui_add_remote_path": "リモートパスを追加",
+
   "ui_select_remote_server": "リモートサーバーを選択",
+
   "ui_no_remote_connections": "リモート接続がありません。ネットワーク接続を追加してください",
+
   "ui_retry": "再試行",
+
   "ui_no_subfolders": "サブフォルダがありません",
+
   "ui_select_this_folder": "このフォルダを選択",
+
   "ui_downloading_file": "ダウンロード中: {file}",
+
   "@ui_downloading_file": {
     "placeholders": {
       "file": {
         "type": "String"
+
       }
     }
   },
   "ui_sent": "送信済み: {amount}",
+
   "@ui_sent": {
     "placeholders": {
       "amount": {
         "type": "String"
+
       }
     }
   },
   "@ui_minutes_format": {
     "description": "Minutes format for sleep timer options",
+
     "placeholders": {
       "minutes": {
         "type": "int"
+
       }
     }
   },
   "@ui_sleep_timer_set": {
     "description": "Sleep timer set confirmation",
+
     "placeholders": {
       "minutes": {
         "type": "int"
+
       }
     }
   },
   "ui_recycle_restore_success": "{count}個の項目を正常に復元しました",
+
   "@ui_recycle_restore_success": {
     "description": "Recycle bin restore success message",
+
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "ui_recycle_restore_failed": "項目の復元エラー: {error}",
+
   "@ui_recycle_restore_failed": {
     "description": "Recycle bin restore failed message",
+
     "placeholders": {
       "error": {
         "type": "String"
+
       }
     }
   },
   "ui_recycle_perm_delete_title": "完全に削除しますか？",
+
   "@ui_recycle_perm_delete_title": {
     "description": "Recycle bin permanent delete confirm dialog title"
+
   },
   "ui_recycle_perm_delete_message": "これらの{count}個の項目を完全に削除してもよろしいですか？この操作は元に戻せません。",
+
   "@ui_recycle_perm_delete_message": {
     "description": "Recycle bin permanent delete confirm dialog message",
+
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "ui_recycle_perm_delete_success": "{count}個の項目を完全に削除しました",
+
   "@ui_recycle_perm_delete_success": {
     "description": "Recycle bin permanent delete success message",
+
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "ui_recycle_perm_delete_failed": "項目の削除エラー: {error}",
+
   "@ui_recycle_perm_delete_failed": {
     "description": "Recycle bin permanent delete failed message",
+
     "placeholders": {
       "error": {
         "type": "String"
+
       }
     }
   },
   "ui_recycle_empty_title": "ごみ箱を空にしますか？",
+
   "@ui_recycle_empty_title": {
     "description": "Recycle bin empty confirm dialog title"
+
   },
   "ui_recycle_empty_failed": "ごみ箱を空にするエラー: {error}",
+
   "@ui_recycle_empty_failed": {
     "description": "Recycle bin empty failed message",
+
     "placeholders": {
       "error": {
         "type": "String"
+
       }
     }
   },
   "ui_recycle_selected_count": "{count}個選択中",
+
   "@ui_recycle_selected_count": {
     "description": "Recycle bin selected items count",
+
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "ui_recycle_deleted_at": "削除日時: {date} • {size}",
+
   "@ui_recycle_deleted_at": {
     "description": "Recycle bin item deleted date and size",
+
     "placeholders": {
       "date": {
         "type": "String"
+
       },
       "size": {
         "type": "String"
+
       }
     }
   },
   "ui_recycle_restore": "復元",
+
   "@ui_recycle_restore": {
     "description": "Recycle bin restore action"
+
   },
   "ui_recycle_empty_hint": "ごみ箱が有効なときに削除した項目がここに表示されます。復元するか完全に削除することができます。",
+
   "@ui_recycle_empty_hint": {
     "description": "Recycle bin empty state hint"
+
   },
   "ui_recycle_deleted_date": "削除日",
+
   "@ui_recycle_deleted_date": {
     "description": "Recycle bin deleted date label"
+
   },
   "ui_recycle_type": "種類",
+
   "@ui_recycle_type": {
     "description": "Recycle bin item type label"
+
   },
   "ui_recycle_file": "ファイル",
+
   "@ui_recycle_file": {
     "description": "Recycle bin file type"
+
   },
   "ui_db_browse_data": "データ閲覧",
+
   "@ui_db_browse_data": {
     "description": "Database reader browse data tab"
+
   },
   "ui_db_table_schema": "テーブル構造",
+
   "@ui_db_table_schema": {
     "description": "Database reader table schema tab"
+
   },
   "ui_db_sql_console": "SQLコンソール",
+
   "@ui_db_sql_console": {
     "description": "Database reader SQL console tab"
+
   },
   "ui_db_export_success": "{fileName}にエクスポートしました",
+
   "@ui_db_export_success": {
     "description": "Database reader CSV export success message",
+
     "placeholders": {
       "fileName": {
         "type": "String"
+
       }
     }
   },
   "ui_db_export_failed": "エクスポートに失敗しました: {error}",
+
   "@ui_db_export_failed": {
     "description": "Database reader CSV export failed message",
+
     "placeholders": {
       "error": {
         "type": "String"
+
       }
     }
   },
   "ui_db_export_csv": "テーブルをCSVにエクスポート",
+
   "@ui_db_export_csv": {
     "description": "Database reader export CSV tooltip"
+
   },
   "ui_db_primary_key": "主キー",
+
   "@ui_db_primary_key": {
     "description": "Database reader primary key label"
+
   },
   "ui_db_not_null": "NOT NULL",
+
   "@ui_db_not_null": {
     "description": "Database reader not null label"
+
   },
   "ui_db_type": "タイプ: {type}",
+
   "@ui_db_type": {
     "description": "Database reader column type label",
+
     "placeholders": {
       "type": {
         "type": "String"
+
       }
     }
   },
   "ui_db_default": "デフォルト: {value}",
+
   "@ui_db_default": {
     "description": "Database reader column default value label",
+
     "placeholders": {
       "value": {
         "type": "String"
+
       }
     }
   },
   "ui_db_execute_query": "クエリ実行",
+
   "@ui_db_execute_query": {
     "description": "Database reader execute query button"
+
   },
   "ui_db_enter_query": "ここにSELECTクエリを入力...",
+
   "@ui_db_enter_query": {
     "description": "Database reader SQL query hint text"
+
   },
   "ui_db_showing_range": "{start} - {end} を表示中",
+
   "@ui_db_showing_range": {
     "description": "Database reader pagination range text",
+
     "placeholders": {
       "start": {
         "type": "int"
+
       },
       "end": {
         "type": "int"
+
       }
     }
   },
   "ui_db_query_returned": "クエリは {count} 行を返しました",
+
   "@ui_db_query_returned": {
     "description": "Database reader query result row count",
+
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "ui_app_installed_user_apps": "インストールされたユーザーアプリ",
+
   "@ui_app_installed_user_apps": {
     "description": "App Manager installed user apps tab"
+
   },
   "ui_app_system_packages": "システムパッケージ",
+
   "@ui_app_system_packages": {
     "description": "App Manager system packages tab"
+
   },
   "ui_app_backup_apk": "バックアップ済みAPK",
+
   "@ui_app_backup_apk": {
     "description": "App Manager backup APKs tab"
+
   },
   "ui_app_precise_storage": "正確なストレージ計算",
+
   "@ui_app_precise_storage": {
     "description": "App Manager precise storage calculation title"
+
   },
   "ui_app_grant_usage_access": "使用状況アクセス権限を付与",
+
   "@ui_app_grant_usage_access": {
     "description": "App Manager grant usage access button"
+
+  },
+  "ui_app_usage_access_description": "APK + データ + キャッシュを含む正確なアプリストレージサイズを表示するには、システム設定で ZenFile の使用状況アクセス権限を有効にしてください。",
+
+  "@ui_app_usage_access_description": {
+    "description": "App Manager usage access permission description"
+
+  },
+  "ui_backup_apk_open_folder": "バックアップフォルダを開く",
+
+  "@ui_backup_apk_open_folder": {
+    "description": "Open APK backup folder after backup success"
+
+  },
+  "ui_backup_apk_success_with_path": "{path} にバックアップしました。フォルダを開きますか？",
+
+  "@ui_backup_apk_success_with_path": {
+    "description": "Backup success message showing the file path, asking if user wants to open the folder",
+
+    "placeholders": {
+      "path": {
+        "type": "String"
+
+      }
+    }
+  },
+  "ui_backup_apk_open": "開く",
+
+  "@ui_backup_apk_open": {
+    "description": "Open button label"
+
+  },
+  "ui_clear_remote_cache_success": "リモートキャッシュをクリアしました。",
+
+  "@ui_clear_remote_cache_success": {
+    "description": "Successfully cleared remote cache"
+
+  },
+  "ui_clear_remote_cache_failed": "リモートキャッシュのクリアに失敗しました。",
+
+  "@ui_clear_remote_cache_failed": {
+    "description": "Failed to clear remote cache"
+
+  },
+  "ui_app_system_settings": "システム設定 / 詳細",
+
+  "@ui_app_system_settings": {
+    "description": "Open app system settings / details page"
+
+  },
+  "ui_app_restore_install": "復元 / アプリをインストール",
+
+  "@ui_app_restore_install": {
+    "description": "Restore / install APK from backup"
+
+  },
+  "ui_app_size_label": "サイズ：",
+
+  "@ui_app_size_label": {
+    "description": "Size label in app info header"
+
+  },
+  "ui_app_installed_label": "インストール日：",
+
+  "@ui_app_installed_label": {
+    "description": "Install date label in app info header"
+
+  },
+  "ui_app_backup_date_label": "バックアップ日：",
+
+  "@ui_app_backup_date_label": {
+    "description": "Backup date label in backup info header"
+
+  },
+  "ui_batch_backup_progress": "選択したアプリをバックアップしています...",
+
+  "@ui_batch_backup_progress": {
+    "description": "Progress message during batch APK backup"
+
+  },
+  "ui_batch_backup_success": "{count} 個のアプリを ZenFile/Backups/Apps/ にバックアップしました",
+
+  "@ui_batch_backup_success": {
+    "description": "Success message after batch APK backup",
+
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "ui_batch_backup_failed": "一部のアプリのバックアップに失敗しました：{error}",
+
+  "@ui_batch_backup_failed": {
+    "description": "Error message after batch APK backup",
+
+    "placeholders": {
+      "error": { "type": "String" }
+    }
   },
   "ui_app_search_backup": "バックアップを検索...",
+
   "@ui_app_search_backup": {
     "description": "App Manager search backup hint"
+
   },
   "ui_app_sort_by_install_date": "インストール日付で並べ替え",
+
   "@ui_app_sort_by_install_date": {
     "description": "App Manager sort by install date option"
+
   },
   "ui_select_all": "全て選択",
+
   "@ui_select_all": {
     "description": "Select all items"
+
   },
   "ui_app_no_backup_found": "バックアップが見つかりません",
+
   "@ui_app_no_backup_found": {
     "description": "App Manager no backup found empty state title"
+
+  },
+  "ui_app_backup_empty_subtitle": "バックアップされたAPKおよびAPKSファイルの一覧がここに表示されます。",
+
+  "@ui_app_backup_empty_subtitle": {
+    "description": "Backup list empty state subtitle"
+
+  },
+  "ui_app_backup_search_not_found": "「{query}」に一致するバックアップが見つかりませんでした",
+
+  "@ui_app_backup_search_not_found": {
+    "description": "Backup list search empty state subtitle",
+
+    "placeholders": {
+      "query": {
+        "type": "String"
+
+      }
+    }
+  },
+  "ui_app_backup_size_date": "サイズ：{size} • バックアップ日：{date}",
+
+  "@ui_app_backup_size_date": {
+    "description": "Backup item size and date label",
+
+    "placeholders": {
+      "size": {
+        "type": "String"
+
+      },
+      "date": {
+        "type": "String"
+
+      }
+    }
   },
   "ui_app_split_apk": "分割APK (APKS)",
+
   "@ui_app_split_apk": {
     "description": "App Manager split APK (APKS) label"
+
   },
   "ui_app_single_apk": "シングルAPK",
+
   "@ui_app_single_apk": {
     "description": "App Manager single APK label"
+
   },
   "ui_desktop_lyric": "デスクトップ歌詞",
+
   "@ui_desktop_lyric": {
     "description": "Desktop lyric floating window toggle in audio player more menu"
+
   },
   "msg_overlay_permission_required": "デスクトップ歌詞を表示するにはオーバーレイ権限が必要です。設定で許可してから再試行してください。",
+
   "@msg_overlay_permission_required": {
     "description": "Shown when overlay permission is denied while enabling desktop lyric"
+
   },
   "msg_notification_permission_denied": "再生コントロールパネルを表示するには通知権限が必要です。設定を開いて許可しますか？",
+
   "@msg_notification_permission_denied": {
     "description": "Shown when notification permission is denied while enabling background playback"
+
   },
   "msg_open_settings": "設定へ",
+
   "@msg_open_settings": {
     "description": "Action button on the SnackBar to open app settings when notification permission is denied"
+
   },
   "msg_notification_not_granted": "通知権限が許可されていないため、再生コントロール通知を表示できません。設定で通知権限を有効にしてください。",
+
   "@msg_notification_not_granted": {
     "description": "Shown when notification permission is detected as not granted after enabling background playback"
+
   },
   "msg_notification_blocked_hint": "通知が表示されません。通知チャネルが無効になっているか、バッテリー最適化がバックグラウンド実行を制限している可能性があります。通知権限とバッテリー最適化設定を確認してください。",
+
   "@msg_notification_blocked_hint": {
     "description": "Shown when notification fails to appear despite permission being granted, typically due to ROM restrictions"
+
   },
   "msg_audio_service_init_failed": "バックグラウンド再生サービスの初期化に失敗したため、通知のコントロールボタンを表示できません。アプリを再起動してみてください。問題が続く場合は、システム設定でアプリデータを消去して再度開いてください。",
+
   "@msg_audio_service_init_failed": {
     "description": "Shown when AudioService.init fails - the background playback service cannot be registered with the OS"
+
   },
   "msg_notification_channel_disabled": "通知チャネルが無効になっています。設定 → アプリ管理 → ZenFile → 通知に移動し、「ZenFile Audio Player」チャネルを見つけて有効にしてください。",
+
   "@msg_notification_channel_disabled": {
     "description": "Shown when the notification channel is disabled by the user or system"
+
   },
   "ui_lyric_search_song_title": "曲名",
+
   "ui_lyric_search_artist": "アーティスト",
+
   "msg_rotate_video": "動画を回転",
+
   "@msg_rotate_video": {
     "description": "Rotate video clockwise in video player"
+
   },
   "msg_aspect_fit": "画面に合わせる",
+
   "@msg_aspect_fit": {
     "description": "Video aspect ratio mode: fit to screen"
+
   },
   "msg_aspect_fill": "引き伸ばし",
+
   "@msg_aspect_fill": {
     "description": "Video aspect ratio mode: stretch to fill"
+
   },
   "msg_aspect_center": "中央",
+
   "@msg_aspect_center": {
     "description": "Video aspect ratio mode: centered original size"
+
   },
   "msg_aspect_16_9": "16:9",
+
   "@msg_aspect_16_9": {
     "description": "Video aspect ratio mode: 16:9"
+
   },
   "msg_aspect_4_3": "4:3",
+
   "@msg_aspect_4_3": {
     "description": "Video aspect ratio mode: 4:3"
+
   },
   "msg_aspect_custom": "カスタム",
+
   "@msg_aspect_custom": {
     "description": "Video aspect ratio mode: custom"
+
   },
   "msg_custom_aspect_ratio": "カスタムアスペクト比",
+
   "@msg_custom_aspect_ratio": {
     "description": "Video player menu item for custom aspect ratio"
+
   },
   "drawer_tools": "ツール",
+
   "open_with_native": "このアプリで開く",
+
   "open_with_external": "外部アプリで開く",
+
   "open_once": "今回のみ",
+
   "open_always": "常に",
+
   "drawer_edit_connection": "編集",
+
   "cat_system": "システム",
+
   "cat_storage_volume": "ストレージ",
+
   "ui_columns_per_row": "1行あたりの列数",
+
   "ui_3columns": "3列",
+
   "ui_4columns": "4列",
+
   "msge8b8e9b3": "クイック操作",
+
   "@msge8b8e9b3": {
     "description": "Right side menu header title"
+
   },
   "msg04b7de53": "常用機能へのクイックアクセス",
+
   "@msg04b7de53": {
     "description": "Right side menu header subtitle"
+
   }
 ,
   "prop_read": "Read",
+
   "prop_write": "Write",
+
   "prop_folder_directory": "Folder / Directory",
+
   "prop_file": "File",
+
   "prop_contains_format": "{folderCount} subfolder(s), {fileCount} file(s)",
+
   "@prop_contains_format": {
     "placeholders": {
       "folderCount": {
         "type": "int"
+
       },
       "fileCount": {
         "type": "int"
+
       }
     }
   },
   "prop_bytes": "bytes",
+
   "prop_items_selected": "{count} items selected",
+
   "@prop_items_selected": {
     "placeholders": {
       "count": {
         "type": "int"
+
       }
     }
   },
   "prop_items_summary": "{count} items ({folderCount} folder(s), {fileCount} file(s))",
+
   "@prop_items_summary": {
     "placeholders": {
       "count": {
         "type": "int"
+
       },
       "folderCount": {
         "type": "int"
+
       },
       "fileCount": {
         "type": "int"
+
       }
     }
   },
   "msg_add_subtitle": "字幕を追加",
+
   "@msg_add_subtitle": {"description": "Add subtitle option in video player more menu"},
   "msg_subtitle_menu": "字幕",
+
   "@msg_subtitle_menu": {
     "description": "Subtitles menu item in video player more menu"
+
   },
   "msg_subtitle_size": "字幕サイズ",
+
   "@msg_subtitle_size": {
     "description": "Subtitle font size label in subtitle settings"
+
+  },
+  "msg_subtitle_position": "字幕の位置",
+
+  "@msg_subtitle_position": {
+    "description": "Subtitle vertical position label in subtitle settings"
+
+  },
+  "msg_subtitle_pos_top": "上",
+
+  "@msg_subtitle_pos_top": {
+    "description": "Top label for subtitle position slider"
+
+  },
+  "msg_subtitle_pos_bottom": "下",
+
+  "@msg_subtitle_pos_bottom": {
+    "description": "Bottom label for subtitle position slider"
+
+  },
+  "msg_subtitle_no_background": "字幕の背景を削除",
+
+  "@msg_subtitle_no_background": {
+    "description": "Toggle to remove subtitle background transparent layer"
+
+  },
+  "msg_auto_clean_cache": "キャッシュを自動的にクリーン",
+
+  "@msg_auto_clean_cache": {
+    "description": "Auto clean cache setting title"
+
+  },
+  "msg_auto_clean_cache_hint": "タップして自動クリーニング間隔を設定",
+
+  "@msg_auto_clean_cache_hint": {
+    "description": "Hint text for auto clean cache setting"
+
+  },
+  "msg_auto_clean_cache_picker_hint": "スライドして自動クリーニング間隔を選択",
+
+  "@msg_auto_clean_cache_picker_hint": {
+    "description": "Hint text in the duration picker bottom sheet"
+
+  },
+  "msg_cache_clean_unit_day": "日",
+
+  "@msg_cache_clean_unit_day": {
+    "description": "Day unit label in cache clean duration picker"
+
+  },
+  "msg_cache_clean_unit_hour": "時間",
+
+  "@msg_cache_clean_unit_hour": {
+    "description": "Hour unit label in cache clean duration picker"
+
+  },
+  "msg_cache_clean_unit_minute": "分",
+
+  "@msg_cache_clean_unit_minute": {
+    "description": "Minute unit label in cache clean duration picker"
+
+  },
+  "msg_cache_clean_confirm": "確認",
+
+  "@msg_cache_clean_confirm": {
+    "description": "Confirm button in cache clean duration picker"
+
   },
   "msg_quick_actions": "クイック操作",
+
   "@msg_quick_actions": {
     "description": "Top title of quick actions page"
+
   },
   "msg_hwdec": "HW",
+
   "@msg_hwdec": {"description": "Hardware decoding badge in video player header"},
   "msg_subtitle_on": "字幕をオン",
+
   "@msg_subtitle_on": {"description": "Tooltip to turn on subtitles in video player"},
   "msg_subtitle_off": "字幕をオフ",
+
   "@msg_subtitle_off": {"description": "Tooltip to turn off subtitles in video player"},
   "msg_no_subtitle": "字幕なし",
+
   "@msg_no_subtitle": {"description": "Tooltip when no subtitle is loaded in video player"},
   "msg_playlist": "プレイリスト",
+
   "@msg_playlist": {
     "description": "Playlist button tooltip in video player"
+
   },
   "msg_no_playlist": "プレイリストなし",
+
   "@msg_no_playlist": {
     "description": "Message when no playlist available in video player"
+
   },
   "msg_slide_to_unlock": "スライド/タップしてロック解除",
+
   "@msg_slide_to_unlock": {
     "description": "Text on lock button in video player"
+
   },
   "msg_seconds_short": "秒",
+
   "@msg_seconds_short": {
     "description": "Short unit for seconds in seek indicator (e.g. 10s)"
+
   },
   "msg_speed_2x": "2倍速",
+
   "@msg_speed_2x": {
     "description": "Long press speed badge text in video player"
+
   },
   "ui_close_category": "カテゴリを無効化",
+
   "@ui_close_category": {
     "description": "Button to disable a category in quick categories grid context menu"
+
   },
   "ui_open_category": "カテゴリを有効化",
+
   "@ui_open_category": {
     "description": "Button to enable a category in quick categories grid context menu"
+
   },
   "msg_custom_scan_paths": "カスタムスキャンパス",
+
   "@msg_custom_scan_paths": {
     "description": "Menu item to configure custom scan paths for media categories"
+
+  },
+  "notification_web_share_local_title": "ZenFile ローカル Web 共有",
+
+  "notification_web_share_internet_title": "ZenFile インターネット Web 共有",
+
+  "notification_web_share_running": "{url} で実行中",
+
+  "@notification_web_share_running": {
+    "placeholders": {
+      "url": {}
+    }
+  },
+  "notification_ftp_title": "ZenFile FTP サーバー",
+
+  "notification_ftp_running": "ftp://{ip}:{port} で実行中",
+
+  "@notification_ftp_running": {
+    "placeholders": {
+      "ip": {},
+      "port": {}
+    }
   }
+,
+  "ui_download_links": "ダウンロードリンク",
+
+  "@ui_download_links": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_new_features_title": "新機能",
+
+  "@changelog_v1121_new_features_title": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_new_feature_1": "カスタムホームページ表示：ブラウズページで、フォルダの三点メニューをタップして「ホームに設定」を選択するか、フォルダを長押しして「その他」メニューから「ホームに設定」を選択します。デュアルウィンドウモードでは、両方のウィンドウで異なるホームパスを独立して設定でき、複数ディレクトリの管理効率が向上します。",
+
+  "@changelog_v1121_new_feature_1": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_new_feature_2": "WEB共有の強化：カスタム共有パスをサポートし、以前はフォルダの閲覧のみが可能でファイルの内容を表示できなかった問題を修正しました。さらに、コピー、貼り付け、切り取り、削除、名前の変更などの一般的なファイル操作ボタンを追加し、リモート管理をより便利にしました。",
+
+  "@changelog_v1121_new_feature_2": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_new_feature_3": "リモートキャッシュクリーンアップ：カスタムリモートキャッシュクリーンアップ機能を追加し、ストレージスペースを柔軟に管理できます。",
+
+  "@changelog_v1121_new_feature_3": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_bugfixes_title": "バグ修正",
+
+  "@changelog_v1121_bugfixes_title": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_bugfix_1": "SMBクライアントで任意の共有ディレクトリに入って戻ったときに、ディレクトリが空で表示される問題を修正しました。",
+
+  "@changelog_v1121_bugfix_1": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_bugfix_2": "一部のインターフェースに中国語のハードコードが存在する問題を修正し、多言語環境での表示互換性を向上させました。",
+
+  "@changelog_v1121_bugfix_2": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_known_issues_title": "既知の問題（次のバージョンで修正予定）",
+
+  "@changelog_v1121_known_issues_title": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_known_issue_1": "アプリデータをクリアしてから再度開くと、クラッシュが発生します。",
+
+  "@changelog_v1121_known_issue_1": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_known_issue_2": "ビデオプレーヤーで外部字幕の表示サイズを調整しても、一時的に効果がありません。",
+
+  "@changelog_v1121_known_issue_2": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_known_issue_3": "現在、WebDAVクライアントのみがメディアファイルのストリーミング再生をサポートしており、他のクライアントはまだサポートしていません。",
+
+  "@changelog_v1121_known_issue_3": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_known_issue_4": "大きなAPKインストールパッケージをバックアップする際、インターフェースが実行状態で停止する可能性がありますが、実際のバックアップはバックグラウンドで引き続き実行されています。戻るボタンを押してから「バックアップ済みAPK」に移動して、バックアップファイルを確認してください。バックアップパスは、メインストレージのZenFile/Backupsディレクトリにあります。",
+
+  "@changelog_v1121_known_issue_4": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "changelog_v1121_known_issue_5": "FTP共有サービスを有効にした後、他のFTPクライアントで接続するとディレクトリが空で表示されます。",
+
+  "@changelog_v1121_known_issue_5": {
+    "description": "ui\\screens\\about_screen.dart"
+
+  },
+  "msg_editor_lines": "行",
+
+  "msg_editor_modified": "変更済み"
 }

@@ -25,7 +25,11 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStreamReader
 import java.io.ByteArrayOutputStream
+import java.io.BufferedOutputStream
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -429,6 +433,7 @@ class MainActivity : AudioServiceFragmentActivity() {
                                 "com.sequl.zenfile.MainActivityDesign8",
                                 "com.sequl.zenfile.MainActivityDesign9",
                                 "com.sequl.zenfile.MainActivityDesign10",
+                                "com.sequl.zenfile.MainActivityDesign11",
                                 "com.sequl.zenfile.MainActivityCustom"
                             )
 
@@ -607,6 +612,116 @@ class MainActivity : AudioServiceFragmentActivity() {
                         } catch (e: Exception) {
                             e.printStackTrace()
                             runOnUiThread { result.error("CHOOSER_ERROR", e.message, null) }
+                        }
+                    }
+                }
+                "openDirectory" -> {
+                    val path = call.argument<String>("path") ?: ""
+                    try {
+                        val intent = Intent(Intent.ACTION_VIEW)
+                        val uri = Uri.parse(path)
+                        intent.setDataAndType(uri, "resource/folder")
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        startActivity(intent)
+                        result.success(true)
+                    } catch (e: Exception) {
+                        // Fallback: try with DocumentsContract MIME type
+                        try {
+                            val intent = Intent(Intent.ACTION_VIEW)
+                            val uri = Uri.parse(path)
+                            intent.setDataAndType(uri, DocumentsContract.Document.MIME_TYPE_DIR)
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            startActivity(intent)
+                            result.success(true)
+                        } catch (e2: Exception) {
+                            result.error("OPEN_DIR_FAILED", "Failed to open directory: ${e2.message}", null)
+                        }
+                    }
+                }
+                "copyFile" -> {
+                    val source = call.argument<String>("source") ?: ""
+                    val dest = call.argument<String>("dest") ?: ""
+                    executor.execute {
+                        try {
+                            val sourceFile = File(source)
+                            val destFile = File(dest)
+                            if (!destFile.parentFile?.exists()!!) {
+                                destFile.parentFile?.mkdirs()
+                            }
+                            // 使用 cp 命令复制，比 Java I/O 更快更可靠
+                            val process = ProcessBuilder("cp", source, dest).start()
+                            val completed = process.waitFor(10, TimeUnit.MINUTES)
+                            if (completed && process.exitValue() == 0) {
+                                runOnUiThread { result.success(true) }
+                            } else {
+                                process.destroyForcibly()
+                                // 降级到 Java I/O
+                                try {
+                                    sourceFile.inputStream().use { input ->
+                                        destFile.outputStream().use { output ->
+                                            input.copyTo(output, 65536)
+                                        }
+                                    }
+                                    runOnUiThread { result.success(true) }
+                                } catch (e2: Exception) {
+                                    e2.printStackTrace()
+                                    runOnUiThread { result.error("COPY_FAILED", e2.message, null) }
+                                }
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            runOnUiThread { result.error("COPY_FAILED", e.message, null) }
+                        }
+                    }
+                }
+                "createZip" -> {
+                    val basePath = call.argument<String>("basePath") ?: ""
+                    val splitPaths = call.argument<ArrayList<String>>("splitPaths") ?: ArrayList()
+                    val destPath = call.argument<String>("destPath") ?: ""
+                    executor.execute {
+                        try {
+                            val destFile = File(destPath)
+                            if (!destFile.parentFile?.exists()!!) {
+                                destFile.parentFile?.mkdirs()
+                            }
+                            val fos = FileOutputStream(destFile)
+                            val zos = ZipOutputStream(BufferedOutputStream(fos))
+                            val buffer = ByteArray(65536)
+                            
+                            val baseFile = File(basePath)
+                            if (baseFile.exists()) {
+                                val entry = ZipEntry("base.apk")
+                                zos.putNextEntry(entry)
+                                baseFile.inputStream().use { input ->
+                                    var len: Int
+                                    while (input.read(buffer).also { len = it } != -1) {
+                                        zos.write(buffer, 0, len)
+                                    }
+                                }
+                                zos.closeEntry()
+                            }
+                            
+                            for (splitPath in splitPaths) {
+                                val splitFile = File(splitPath)
+                                if (splitFile.exists()) {
+                                    val entry = ZipEntry(splitFile.name)
+                                    zos.putNextEntry(entry)
+                                    splitFile.inputStream().use { input ->
+                                        var len: Int
+                                        while (input.read(buffer).also { len = it } != -1) {
+                                            zos.write(buffer, 0, len)
+                                        }
+                                    }
+                                    zos.closeEntry()
+                                }
+                            }
+                            
+                            zos.close()
+                            fos.close()
+                            runOnUiThread { result.success(true) }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            runOnUiThread { result.error("ZIP_FAILED", e.message, null) }
                         }
                     }
                 }
@@ -822,10 +937,14 @@ class MainActivity : AudioServiceFragmentActivity() {
                 "startFtpService" -> {
                     val ip = call.argument<String>("ip") ?: "127.0.0.1"
                     val port = call.argument<Int>("port") ?: 9999
+                    val title = call.argument<String>("title") ?: "ZenFile FTP Server"
+                    val contentText = call.argument<String>("contentText") ?: "Running at ftp://$ip:$port"
                     try {
                         val intent = Intent(this, FtpForegroundService::class.java).apply {
                             putExtra("ip", ip)
                             putExtra("port", port)
+                            putExtra("title", title)
+                            putExtra("contentText", contentText)
                         }
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             startForegroundService(intent)
@@ -855,10 +974,14 @@ class MainActivity : AudioServiceFragmentActivity() {
                 "startWebSharingService" -> {
                     val url = call.argument<String>("url") ?: "http://127.0.0.1:8080"
                     val isInternet = call.argument<Boolean>("isInternet") ?: false
+                    val title = call.argument<String>("title") ?: if (isInternet) "ZenFile Internet Web Share" else "ZenFile Local Web Share"
+                    val contentText = call.argument<String>("contentText") ?: "Running at $url"
                     try {
                         val intent = Intent(this, WebSharingForegroundService::class.java).apply {
                             putExtra("url", url)
                             putExtra("isInternet", isInternet)
+                            putExtra("title", title)
+                            putExtra("contentText", contentText)
                         }
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             startForegroundService(intent)
@@ -878,6 +1001,58 @@ class MainActivity : AudioServiceFragmentActivity() {
                     } catch (e: Exception) {
                         result.error("STOP_FAILED", e.message, null)
                     }
+                }
+                else -> result.notImplemented()
+            }
+        }
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/permissions").setMethodCallHandler { call, result ->
+            when (call.method) {
+                "openManageExternalStorageSettings" -> {
+                    try {
+                        // 直接跳转到本应用的所有文件访问权限详情页
+                        // 使用 ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION + package URI，
+                        // 而不是 ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION（后者显示所有应用列表）
+                        val intent = Intent(
+                            android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                            Uri.parse("package:${packageName}")
+                        ).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        startActivity(intent)
+                        result.success(true)
+                    } catch (e: Exception) {
+                        // 备用方案1：打开所有应用列表页面
+                        try {
+                            val intent = Intent(android.provider.Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION).apply {
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            startActivity(intent)
+                            result.success(true)
+                        } catch (e2: Exception) {
+                            // 备用方案2：打开应用详情设置页
+                            try {
+                                val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                    data = Uri.parse("package:${packageName}")
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                startActivity(intent)
+                                result.success(true)
+                            } catch (ex: Exception) {
+                                result.error("OPEN_SETTINGS_FAILED", ex.message, null)
+                            }
+                        }
+                    }
+                }
+                "isManageExternalStorageGranted" -> {
+                    // 使用原生 Android API 直接检查权限，绕过 permission_handler 的缓存问题
+                    val granted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        android.os.Environment.isExternalStorageManager()
+                    } else {
+                        // Android 10 及以下不需要 MANAGE_EXTERNAL_STORAGE
+                        true
+                    }
+                    result.success(granted)
                 }
                 else -> result.notImplemented()
             }
@@ -979,8 +1154,8 @@ class MainActivity : AudioServiceFragmentActivity() {
         notificationsChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/notifications")
         notificationsChannel?.setMethodCallHandler { call, result ->
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            val channelId = "nfile_archive_channel"
-            val channelName = "NFile Archive Operations"
+            val channelId = "zenfile_archive_channel"
+            val channelName = "ZenFile Archive Operations"
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_LOW).apply {

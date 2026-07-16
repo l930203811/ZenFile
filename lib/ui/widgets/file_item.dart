@@ -321,11 +321,11 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
       // 构造缩略图缓存路径
       Directory thumbDir;
       try {
-        thumbDir = Directory('/storage/emulated/0/Download/ZenFile_Remote/cache/thumbnails/remote');
+        thumbDir = Directory('/storage/emulated/0/ZenFile/cache/thumbnails/remote');
         if (!thumbDir.existsSync()) thumbDir.createSync(recursive: true);
       } catch (_) {
         final appDir = await getApplicationDocumentsDirectory();
-        thumbDir = Directory(p.join(appDir.path, 'ZenFile_Remote', 'cache', 'thumbnails', 'remote'));
+        thumbDir = Directory(p.join(appDir.path, 'ZenFile', 'cache', 'thumbnails', 'remote'));
         if (!thumbDir.existsSync()) thumbDir.createSync(recursive: true);
       }
       
@@ -345,11 +345,11 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
       // 下载到临时目录
       Directory tempDir;
       try {
-        tempDir = Directory('/storage/emulated/0/Download/ZenFile_Remote/cache/temp');
+        tempDir = Directory('/storage/emulated/0/ZenFile/cache/temp');
         if (!tempDir.existsSync()) tempDir.createSync(recursive: true);
       } catch (_) {
         final appDir = await getApplicationDocumentsDirectory();
-        tempDir = Directory(p.join(appDir.path, 'ZenFile_Remote', 'cache', 'temp'));
+        tempDir = Directory(p.join(appDir.path, 'ZenFile', 'cache', 'temp'));
         if (!tempDir.existsSync()) tempDir.createSync(recursive: true);
       }
       

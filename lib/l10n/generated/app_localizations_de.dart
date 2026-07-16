@@ -277,7 +277,7 @@ class L10nDe extends L10n {
   String get msgbff1432a => 'Quark Cloud Drive';
 
   @override
-  String get msge03395d0 => 'Small Plane Cloud Drive';
+  String get msge03395d0 => 'PikPak Cloud Drive';
 
   @override
   String get svg =>
@@ -468,6 +468,16 @@ class L10nDe extends L10n {
 
   @override
   String get msgf139c5cf => 'Neuen Namen eingeben';
+
+  @override
+  String get msg_rename_extension_warning_title => 'Erweiterung ändern';
+
+  @override
+  String get msg_rename_extension_warning_content =>
+      'Sie ändern die Dateierweiterung, was verhindern kann, dass die Datei ordnungsgemäß geöffnet wird. Möchten Sie wirklich fortfahren?';
+
+  @override
+  String get msg_rename_extension_confirm => 'Änderung bestätigen';
 
   @override
   String get msg53518c22 => 'Datei löschen';
@@ -792,6 +802,9 @@ class L10nDe extends L10n {
 
   @override
   String get msgfd96af00 => 'Teilen-Funktion kommt bald';
+
+  @override
+  String get ui_share => 'Teilen';
 
   @override
   String get ftp1 => 'FTP-Server erfolgreich gestoppt';
@@ -1364,6 +1377,9 @@ class L10nDe extends L10n {
 
   @override
   String get msgdesign10 => 'Benutzerdesign 1';
+
+  @override
+  String get msgdesign11 => 'Benutzerdesign 2';
 
   @override
   String get msg7372dc9f => 'Benutzerdefiniertes Symbol';
@@ -2032,6 +2048,31 @@ class L10nDe extends L10n {
   String get msga1b2c3d7 => 'Berechtigung erteilen';
 
   @override
+  String get msg_media_only_permission_title => 'Nur Medien-Dateiberechtigung';
+
+  @override
+  String get msg_media_only_permission_desc =>
+      'Derzeit wurde nur der Zugriff auf Mediendateien gewährt. Der Dateimanager kann Funktionen wie Umbenennen, Ausschneiden, Löschen usw. nicht ordnungsgemäß verwenden. Bitte gewähren Sie \"Zugriff auf alle Dateien\" für volle Funktionalität.';
+
+  @override
+  String get msg_grant_full_storage_permission =>
+      'Vollen Speicherzugriff gewähren';
+
+  @override
+  String get msg_permission_request_title => '授权请求';
+
+  @override
+  String get msg_permission_request_desc =>
+      '为了访问您设备上的文件，您需要手动为 ZenFile 授予[所有文件访问]权限，点击确定后进入设置界面，选择[ZenFile]并开启授权。';
+
+  @override
+  String get ui_open_settings => 'Einstellungen öffnen';
+
+  @override
+  String get ui_open_settings_desc =>
+      'Die Speicherberechtigung wurde dauerhaft verweigert. Bitte gehen Sie zu den Systemeinstellungen, um die Dateiverwaltungsberechtigung manuell zu erteilen.';
+
+  @override
   String get msg2c146598 =>
       'Internet-Cloud-Tunnel online! Temporärer Link aktiviert.';
 
@@ -2617,9 +2658,6 @@ class L10nDe extends L10n {
   String get ui_confirm => 'Bestätigen';
 
   @override
-  String get ui_share => 'Teilen';
-
-  @override
   String get ui_move_here => 'Hierher verschieben';
 
   @override
@@ -2660,6 +2698,9 @@ class L10nDe extends L10n {
 
   @override
   String get ui_show_folder_contents_count => 'Ordnerinhaltanzahl anzeigen';
+
+  @override
+  String get ui_set_as_home => 'Als Startseite festlegen';
 
   @override
   String get ui_show_folder_size => 'Ordnergröße anzeigen';
@@ -3939,6 +3980,56 @@ class L10nDe extends L10n {
   String get ui_app_grant_usage_access => 'Verwendungsdatenzugriff gewähren';
 
   @override
+  String get ui_app_usage_access_description =>
+      'Um genaue App-Speichergrößen (APK + Daten + Cache) anstelle der reinen Installationsgröße anzuzeigen, aktivieren Sie bitte die Verwendungsdaten-Berechtigung für ZenFile in den Systemeinstellungen.';
+
+  @override
+  String get ui_backup_apk_open_folder => 'Sicherungsordner öffnen';
+
+  @override
+  String ui_backup_apk_success_with_path(String path) {
+    return 'Erfolgreich gesichert nach $path. Ordner öffnen?';
+  }
+
+  @override
+  String get ui_backup_apk_open => 'Öffnen';
+
+  @override
+  String get ui_clear_remote_cache_success => 'Remote-Cache geleert.';
+
+  @override
+  String get ui_clear_remote_cache_failed =>
+      'Remote-Cache konnte nicht geleert werden.';
+
+  @override
+  String get ui_app_system_settings => 'Systemeinstellungen / Details';
+
+  @override
+  String get ui_app_restore_install => 'Wiederherstellen / App installieren';
+
+  @override
+  String get ui_app_size_label => 'Größe:';
+
+  @override
+  String get ui_app_installed_label => 'Installiert:';
+
+  @override
+  String get ui_app_backup_date_label => 'Sicherungsdatum:';
+
+  @override
+  String get ui_batch_backup_progress => 'Ausgewählte Apps werden gesichert...';
+
+  @override
+  String ui_batch_backup_success(int count) {
+    return '$count App(s) erfolgreich in ZenFile/Backups/Apps/ gesichert';
+  }
+
+  @override
+  String ui_batch_backup_failed(String error) {
+    return 'Einige Apps konnten nicht gesichert werden: $error';
+  }
+
+  @override
   String get ui_app_search_backup => 'Sicherungen durchsuchen...';
 
   @override
@@ -3946,6 +4037,20 @@ class L10nDe extends L10n {
 
   @override
   String get ui_app_no_backup_found => 'Keine Sicherungen gefunden';
+
+  @override
+  String get ui_app_backup_empty_subtitle =>
+      'Eine Liste Ihrer gesicherten APK- und APKS-Dateien wird hier angezeigt.';
+
+  @override
+  String ui_app_backup_search_not_found(String query) {
+    return 'Wir konnten keine Sicherungen finden, die mit \"$query\" übereinstimmen';
+  }
+
+  @override
+  String ui_app_backup_size_date(String size, String date) {
+    return 'Größe: $size • Sicherungsdatum: $date';
+  }
 
   @override
   String get ui_app_split_apk => 'Geteiltes APK (APKS)';
@@ -4107,6 +4212,41 @@ class L10nDe extends L10n {
   String get msg_subtitle_size => 'Untertitelgröße';
 
   @override
+  String get msg_subtitle_position => 'Untertitelposition';
+
+  @override
+  String get msg_subtitle_pos_top => 'Oben';
+
+  @override
+  String get msg_subtitle_pos_bottom => 'Unten';
+
+  @override
+  String get msg_subtitle_no_background => 'Untertitelhintergrund entfernen';
+
+  @override
+  String get msg_auto_clean_cache => 'Cache automatisch bereinigen';
+
+  @override
+  String get msg_auto_clean_cache_hint =>
+      'Tippen, um Bereinigungsintervall festzulegen';
+
+  @override
+  String get msg_auto_clean_cache_picker_hint =>
+      'Wischen, um Bereinigungsintervall auszuwählen';
+
+  @override
+  String get msg_cache_clean_unit_day => 'Tage';
+
+  @override
+  String get msg_cache_clean_unit_hour => 'Stunden';
+
+  @override
+  String get msg_cache_clean_unit_minute => 'Minuten';
+
+  @override
+  String get msg_cache_clean_confirm => 'Bestätigen';
+
+  @override
   String get msg_quick_actions => 'Schnellaktionen';
 
   @override
@@ -4185,4 +4325,84 @@ class L10nDe extends L10n {
 
   @override
   String get msg_custom_scan_paths => 'Benutzerdefinierte Scan-Pfade';
+
+  @override
+  String get notification_web_share_local_title =>
+      'ZenFile Lokale Web-Freigabe';
+
+  @override
+  String get notification_web_share_internet_title =>
+      'ZenFile Internet Web-Freigabe';
+
+  @override
+  String notification_web_share_running(Object url) {
+    return 'Läuft unter $url';
+  }
+
+  @override
+  String get notification_ftp_title => 'ZenFile FTP-Server';
+
+  @override
+  String notification_ftp_running(Object ip, Object port) {
+    return 'Läuft unter ftp://$ip:$port';
+  }
+
+  @override
+  String get ui_download_links => 'Download-Links';
+
+  @override
+  String get changelog_v1121_new_features_title => 'Neue Funktionen';
+
+  @override
+  String get changelog_v1121_new_feature_1 =>
+      'Benutzerdefinierte Startseitenanzeige: Auf der Durchsuchen-Seite tippen Sie auf das Drei-Punkte-Menü eines Ordners und wählen \"Als Startseite festlegen\", oder halten Sie einen Ordner gedrückt und suchen Sie \"Als Startseite festlegen\" im \"Mehr\"-Menü. Im Dual-Fenster-Modus kann jedes Fenster unabhängig einen anderen Startpfad festlegen, was die Effizienz der Verwaltung mehrerer Verzeichnisse verbessert.';
+
+  @override
+  String get changelog_v1121_new_feature_2 =>
+      'WEB-Freigabe-Verbesserung: Unterstützt benutzerdefinierte Freigabepfade und behebt das vorherige Problem, bei dem nur Ordner durchsucht, aber keine Dateiinhalte angezeigt werden konnten. Fügt außerdem gängige Dateioperations-Schaltflächen wie Kopieren, Einfügen, Ausschneiden, Löschen und Umbenennen hinzu, was die Fernverwaltung bequemer macht.';
+
+  @override
+  String get changelog_v1121_new_feature_3 =>
+      'Remote-Cache-Bereinigung: Es wurde eine benutzerdefinierte Remote-Cache-Bereinigungsfunktion hinzugefügt, um den Speicherplatz flexibel zu verwalten.';
+
+  @override
+  String get changelog_v1121_bugfixes_title => 'Fehlerbehebungen';
+
+  @override
+  String get changelog_v1121_bugfix_1 =>
+      'Es wurde ein Problem behoben, bei dem der SMB-Client beim Zurückkehren aus einem beliebigen freigegebenen Verzeichnis ein leeres Verzeichnis anzeigte.';
+
+  @override
+  String get changelog_v1121_bugfix_2 =>
+      'Einige Probleme mit fest codiertem chinesischem Text in der Benutzeroberfläche wurden behoben, was die Anzeigekompatibilität in mehrsprachigen Umgebungen verbessert.';
+
+  @override
+  String get changelog_v1121_known_issues_title =>
+      'Bekannte Probleme (werden in der nächsten Version behoben)';
+
+  @override
+  String get changelog_v1121_known_issue_1 =>
+      'Die App stürzt ab, nachdem die App-Daten gelöscht und die App erneut geöffnet wurden.';
+
+  @override
+  String get changelog_v1121_known_issue_2 =>
+      'Die Anpassung der Anzeigegröße externer Untertitel im Videoplayer funktioniert vorübergehend nicht.';
+
+  @override
+  String get changelog_v1121_known_issue_3 =>
+      'Derzeit unterstützt nur der WebDAV-Client das Streaming von Mediendateien; andere Clients unterstützen dies noch nicht.';
+
+  @override
+  String get changelog_v1121_known_issue_4 =>
+      'Bei der Sicherung großer APK-Pakete kann die Benutzeroberfläche im Ausführungszustand hängen bleiben, aber die eigentliche Sicherung läuft weiterhin im Hintergrund. Bitte drücken Sie die Zurück-Taste und gehen Sie zu \"Gesicherte APKs\", um die Sicherungsdateien anzusehen. Der Sicherungspfad befindet sich im Verzeichnis ZenFile/Backups des Hauptspeichers.';
+
+  @override
+  String get changelog_v1121_known_issue_5 =>
+      'Nach Aktivierung des FTP-Freigabedienstes erscheinen Verzeichnisse leer, wenn sie mit anderen FTP-Clients verbunden werden.';
+
+  @override
+  String get msg_editor_lines => 'Zeilen';
+
+  @override
+  String get msg_editor_modified => 'Geändert';
 }

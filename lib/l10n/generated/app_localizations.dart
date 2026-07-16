@@ -589,7 +589,7 @@ abstract class L10n {
   /// ui\screens\about_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'小飞机网盘'**
+  /// **'PikPak网盘'**
   String get msge03395d0;
 
   /// ui\screens\about_screen.dart
@@ -897,6 +897,24 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'输入新名称'**
   String get msgf139c5cf;
+
+  /// Title of warning dialog when file extension is changed during rename
+  ///
+  /// In zh, this message translates to:
+  /// **'后缀名变更'**
+  String get msg_rename_extension_warning_title;
+
+  /// Content of warning dialog when file extension is changed during rename
+  ///
+  /// In zh, this message translates to:
+  /// **'您正在修改文件后缀名，这可能导致文件无法正常打开。确定要继续吗？'**
+  String get msg_rename_extension_warning_content;
+
+  /// Confirm button text in extension change warning dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'确认修改'**
+  String get msg_rename_extension_confirm;
 
   /// ui\screens\all_recent_files_screen.dart
   ///
@@ -1497,6 +1515,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'分享功能即将推出'**
   String get msgfd96af00;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'分享'**
+  String get ui_share;
 
   /// ui\screens\ftp_server_screen.dart
   ///
@@ -2529,6 +2553,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'用户设计 1'**
   String get msgdesign10;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'用户设计 2'**
+  String get msgdesign11;
 
   /// ui\screens\more_settings_screen.dart
   ///
@@ -3700,6 +3730,48 @@ abstract class L10n {
   /// **'授予权限'**
   String get msga1b2c3d7;
 
+  /// Title for media-only permission warning
+  ///
+  /// In zh, this message translates to:
+  /// **'仅媒体文件权限'**
+  String get msg_media_only_permission_title;
+
+  /// Description for media-only permission warning
+  ///
+  /// In zh, this message translates to:
+  /// **'当前仅授予媒体文件访问权限，文件管理器将无法正常使用重命名、剪切、删除等功能。请授予「所有文件管理权限」以获得完整功能。'**
+  String get msg_media_only_permission_desc;
+
+  /// Button text to grant full storage permission
+  ///
+  /// In zh, this message translates to:
+  /// **'确定'**
+  String get msg_grant_full_storage_permission;
+
+  /// Title of the permission request dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'授权请求'**
+  String get msg_permission_request_title;
+
+  /// Description text for the permission request dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'为了访问您设备上的文件，您需要手动为 ZenFile 授予[所有文件访问]权限，点击确定后进入设置界面，选择[ZenFile]并开启授权。'**
+  String get msg_permission_request_desc;
+
+  /// ui\main.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'打开设置'**
+  String get ui_open_settings;
+
+  /// ui\main.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'存储权限已被永久拒绝，请前往系统设置手动授予文件管理权限。'**
+  String get ui_open_settings_desc;
+
   /// ui\screens\web_sharing_screen.dart
   ///
   /// In zh, this message translates to:
@@ -4762,12 +4834,6 @@ abstract class L10n {
   /// **'确定'**
   String get ui_confirm;
 
-  /// No description provided for @ui_share.
-  ///
-  /// In zh, this message translates to:
-  /// **'分享'**
-  String get ui_share;
-
   /// No description provided for @ui_move_here.
   ///
   /// In zh, this message translates to:
@@ -4851,6 +4917,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'显示文件夹内容计数'**
   String get ui_show_folder_contents_count;
+
+  /// Set current folder as home directory
+  ///
+  /// In zh, this message translates to:
+  /// **'设为首页'**
+  String get ui_set_as_home;
 
   /// No description provided for @ui_show_folder_size.
   ///
@@ -7054,6 +7126,90 @@ abstract class L10n {
   /// **'授予使用情况访问权限'**
   String get ui_app_grant_usage_access;
 
+  /// App Manager usage access permission description
+  ///
+  /// In zh, this message translates to:
+  /// **'如需查看精确的应用存储大小（APK + 数据 + 缓存），而不仅是安装包大小，请在系统设置中为 ZenFile 启用使用情况访问权限。'**
+  String get ui_app_usage_access_description;
+
+  /// Open APK backup folder after backup success
+  ///
+  /// In zh, this message translates to:
+  /// **'打开备份目录'**
+  String get ui_backup_apk_open_folder;
+
+  /// Backup success message showing the file path, asking if user wants to open the folder
+  ///
+  /// In zh, this message translates to:
+  /// **'已成功备份到 {path}，是否打开所在目录？'**
+  String ui_backup_apk_success_with_path(String path);
+
+  /// Open button label
+  ///
+  /// In zh, this message translates to:
+  /// **'打开'**
+  String get ui_backup_apk_open;
+
+  /// Successfully cleared remote cache
+  ///
+  /// In zh, this message translates to:
+  /// **'远程缓存已清理。'**
+  String get ui_clear_remote_cache_success;
+
+  /// Failed to clear remote cache
+  ///
+  /// In zh, this message translates to:
+  /// **'清理远程缓存失败。'**
+  String get ui_clear_remote_cache_failed;
+
+  /// Open app system settings / details page
+  ///
+  /// In zh, this message translates to:
+  /// **'系统设置 / 详情'**
+  String get ui_app_system_settings;
+
+  /// Restore / install APK from backup
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复 / 安装应用'**
+  String get ui_app_restore_install;
+
+  /// Size label in app info header
+  ///
+  /// In zh, this message translates to:
+  /// **'大小：'**
+  String get ui_app_size_label;
+
+  /// Install date label in app info header
+  ///
+  /// In zh, this message translates to:
+  /// **'安装时间：'**
+  String get ui_app_installed_label;
+
+  /// Backup date label in backup info header
+  ///
+  /// In zh, this message translates to:
+  /// **'备份时间：'**
+  String get ui_app_backup_date_label;
+
+  /// Progress message during batch APK backup
+  ///
+  /// In zh, this message translates to:
+  /// **'正在备份所选应用...'**
+  String get ui_batch_backup_progress;
+
+  /// Success message after batch APK backup
+  ///
+  /// In zh, this message translates to:
+  /// **'已成功备份 {count} 个应用到 ZenFile/Backups/Apps/'**
+  String ui_batch_backup_success(int count);
+
+  /// Error message after batch APK backup
+  ///
+  /// In zh, this message translates to:
+  /// **'备份部分应用失败：{error}'**
+  String ui_batch_backup_failed(String error);
+
   /// App Manager search backup hint
   ///
   /// In zh, this message translates to:
@@ -7071,6 +7227,24 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'未找到备份'**
   String get ui_app_no_backup_found;
+
+  /// Backup list empty state subtitle
+  ///
+  /// In zh, this message translates to:
+  /// **'已备份的 APK 和 APKS 文件列表将显示在此处。'**
+  String get ui_app_backup_empty_subtitle;
+
+  /// Backup list search empty state subtitle
+  ///
+  /// In zh, this message translates to:
+  /// **'找不到与\"{query}\"匹配的备份'**
+  String ui_app_backup_search_not_found(String query);
+
+  /// Backup item size and date label
+  ///
+  /// In zh, this message translates to:
+  /// **'大小：{size} • 备份日期：{date}'**
+  String ui_app_backup_size_date(String size, String date);
 
   /// App Manager split APK (APKS) label
   ///
@@ -7366,6 +7540,72 @@ abstract class L10n {
   /// **'字幕大小'**
   String get msg_subtitle_size;
 
+  /// Subtitle vertical position label in subtitle settings
+  ///
+  /// In zh, this message translates to:
+  /// **'字幕位置'**
+  String get msg_subtitle_position;
+
+  /// Top label for subtitle position slider
+  ///
+  /// In zh, this message translates to:
+  /// **'顶部'**
+  String get msg_subtitle_pos_top;
+
+  /// Bottom label for subtitle position slider
+  ///
+  /// In zh, this message translates to:
+  /// **'底部'**
+  String get msg_subtitle_pos_bottom;
+
+  /// Toggle to remove subtitle background transparent layer
+  ///
+  /// In zh, this message translates to:
+  /// **'移除字幕背景'**
+  String get msg_subtitle_no_background;
+
+  /// Auto clean cache setting title
+  ///
+  /// In zh, this message translates to:
+  /// **'自动清理缓存'**
+  String get msg_auto_clean_cache;
+
+  /// Hint text for auto clean cache setting
+  ///
+  /// In zh, this message translates to:
+  /// **'点击设置自动清理时间间隔'**
+  String get msg_auto_clean_cache_hint;
+
+  /// Hint text in the duration picker bottom sheet
+  ///
+  /// In zh, this message translates to:
+  /// **'滑动选择自动清理时间间隔'**
+  String get msg_auto_clean_cache_picker_hint;
+
+  /// Day unit label in cache clean duration picker
+  ///
+  /// In zh, this message translates to:
+  /// **'天'**
+  String get msg_cache_clean_unit_day;
+
+  /// Hour unit label in cache clean duration picker
+  ///
+  /// In zh, this message translates to:
+  /// **'小时'**
+  String get msg_cache_clean_unit_hour;
+
+  /// Minute unit label in cache clean duration picker
+  ///
+  /// In zh, this message translates to:
+  /// **'分钟'**
+  String get msg_cache_clean_unit_minute;
+
+  /// Confirm button in cache clean duration picker
+  ///
+  /// In zh, this message translates to:
+  /// **'确认'**
+  String get msg_cache_clean_confirm;
+
   /// Top title of quick actions page
   ///
   /// In zh, this message translates to:
@@ -7521,6 +7761,132 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'自定义扫描位置'**
   String get msg_custom_scan_paths;
+
+  /// No description provided for @notification_web_share_local_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'ZenFile 本地网页共享'**
+  String get notification_web_share_local_title;
+
+  /// No description provided for @notification_web_share_internet_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'ZenFile 互联网网页共享'**
+  String get notification_web_share_internet_title;
+
+  /// No description provided for @notification_web_share_running.
+  ///
+  /// In zh, this message translates to:
+  /// **'运行于 {url}'**
+  String notification_web_share_running(Object url);
+
+  /// No description provided for @notification_ftp_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'ZenFile FTP 服务器'**
+  String get notification_ftp_title;
+
+  /// No description provided for @notification_ftp_running.
+  ///
+  /// In zh, this message translates to:
+  /// **'运行于 ftp://{ip}:{port}'**
+  String notification_ftp_running(Object ip, Object port);
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'下载链接'**
+  String get ui_download_links;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'新增功能'**
+  String get changelog_v1121_new_features_title;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义首页显示：浏览页中，点击文件夹的三点菜单选择\"设为首页\"，或长按文件夹后在\"更多\"菜单中找到\"设为首页\"选项。双窗口模式下，两个窗口可独立设置不同的首页路径，提升多目录管理效率。'**
+  String get changelog_v1121_new_feature_1;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'WEB共享增强：支持自定义共享路径，修复了此前仅能浏览文件夹而无法查看文件内容的问题。同时新增复制、粘贴、剪切、删除、重命名等常用文件操作按钮，远程管理更便捷。'**
+  String get changelog_v1121_new_feature_2;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'远程缓存清理：新增自定义清理远程缓存功能，可灵活管理存储空间。'**
+  String get changelog_v1121_new_feature_3;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'问题修复'**
+  String get changelog_v1121_bugfixes_title;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'修复 SMB 客户端进入任意共享目录后返回时目录显示为空的问题。'**
+  String get changelog_v1121_bugfix_1;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'修复部分界面存在中文硬编码的问题，提升多语言环境下的显示兼容性。'**
+  String get changelog_v1121_bugfix_2;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已知问题（预计下个版本修复）'**
+  String get changelog_v1121_known_issues_title;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'清除应用数据后重新打开会出现闪退。'**
+  String get changelog_v1121_known_issue_1;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'视频播放器中调整外挂字幕显示大小暂不生效。'**
+  String get changelog_v1121_known_issue_2;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'目前仅 WebDAV 客户端支持媒体文件流式播放，其他客户端暂不支持。'**
+  String get changelog_v1121_known_issue_3;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'备份较大 APK 安装包时，界面会卡在执行状态，实际备份仍在后台进行。请按返回键后前往\"已备份 APK\"查看备份文件，备份路径位于主存储 ZenFile/Backups 目录。'**
+  String get changelog_v1121_known_issue_4;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'FTP 共享服务开启后，使用其他 FTP 客户端连接时目录显示为空。'**
+  String get changelog_v1121_known_issue_5;
+
+  /// No description provided for @msg_editor_lines.
+  ///
+  /// In zh, this message translates to:
+  /// **'行'**
+  String get msg_editor_lines;
+
+  /// No description provided for @msg_editor_modified.
+  ///
+  /// In zh, this message translates to:
+  /// **'已修改'**
+  String get msg_editor_modified;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

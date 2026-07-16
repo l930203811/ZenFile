@@ -255,6 +255,7 @@ class FolderGridItem extends StatelessWidget {
                     FileActionSheet.show(
                       context,
                       onAction,
+                      showSetAsHome: true,
                     );
                   },
                 ),

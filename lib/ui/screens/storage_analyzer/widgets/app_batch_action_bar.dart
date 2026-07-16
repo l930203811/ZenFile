@@ -69,19 +69,19 @@ class AppBatchActionBar extends StatelessWidget {
 
   Future<void> _handleBatchBackup(BuildContext context) async {
     if (selectedPackages.isEmpty) return;
-    
+
     final appsToBackup = _selectedApps;
     onClearSelection();
 
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const AlertDialog(
+      builder: (context) => AlertDialog(
         content: Row(
           children: [
-            CircularProgressIndicator(),
-            SizedBox(width: 20),
-            Expanded(child: Text('正在备份所选应用...')),
+            const CircularProgressIndicator(),
+            const SizedBox(width: 20),
+            Expanded(child: Text(L10n.of(context).ui_batch_backup_progress)),
           ],
         ),
       ),
@@ -92,7 +92,7 @@ class AppBatchActionBar extends StatelessWidget {
       if (context.mounted) {
         Navigator.pop(context); // Close loading dialog
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('已成功备份 ${appsToBackup.length} 个应用到 ZenFile/Backups/Apps/')),
+          SnackBar(content: Text(L10n.of(context).ui_batch_backup_success(appsToBackup.length))),
         );
         onRefreshNeeded();
       }
@@ -100,7 +100,7 @@ class AppBatchActionBar extends StatelessWidget {
       if (context.mounted) {
         Navigator.pop(context); // Close loading dialog
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('备份部分应用失败：$e')),
+          SnackBar(content: Text(L10n.of(context).ui_batch_backup_failed('$e'))),
         );
       }
     }

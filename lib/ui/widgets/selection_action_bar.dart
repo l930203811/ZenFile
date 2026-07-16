@@ -248,6 +248,21 @@ class SelectionActionBar extends StatelessWidget {
                       ),
                     );
                   }
+                } else if (action == 'set_as_home') {
+                  final selectedPaths = provider.selectedPaths.toList();
+                  if (selectedPaths.isNotEmpty) {
+                    await provider.setAsHomeDirectory(selectedPaths.first);
+                  }
+                  provider.clearSelection();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(L10n.of(context).ui_set_as_home),
+                        behavior: SnackBarBehavior.floating,
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  }
                 } else if (action == 'properties') {
                   _showPropertiesModal(context, provider);
                 }
@@ -256,6 +271,8 @@ class SelectionActionBar extends StatelessWidget {
                 final selected = provider.selectedPaths.toList();
                 final allPinned = selected.isNotEmpty && selected.every((p) => PinService.isPinned(p));
                 final hasArchive = selected.any((p) => FileUtils.isArchive(p));
+                final selectedFiles = provider.currentFiles.where((f) => selected.contains(f.path)).toList();
+                final hasSingleDirectory = selected.length == 1 && selectedFiles.isNotEmpty && selectedFiles.first.isDirectory;
                 return [
                   if (hasArchive)
                     PopupMenuItem(
@@ -310,16 +327,6 @@ class SelectionActionBar extends StatelessWidget {
                     ),
                   ),
                   PopupMenuItem(
-                    value: 'open_with',
-                    child: Row(
-                      children: [
-                        const Icon(Broken.export, size: 20),
-                        const SizedBox(width: 12),
-                        Text(L10n.of(context).msg2a4cfb07, style: const TextStyle(fontWeight: FontWeight.w500)),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
                     value: 'pin_to_top',
                     child: Row(
                       children: [
@@ -329,11 +336,31 @@ class SelectionActionBar extends StatelessWidget {
                           color: allPinned ? Colors.orange : null,
                         ),
                         const SizedBox(width: 12),
-                        Text(allPinned ? L10n.of(context).msg84e4fac9 : L10n.of(context).ui_pin_to_top, style: const TextStyle(fontWeight: FontWeight.w500)),
+                        Text(allPinned ? L10n.of(context).msga9b87614 : L10n.of(context).ui_pin_to_top, style: const TextStyle(fontWeight: FontWeight.w500)),
                       ],
                     ),
                   ),
-                  const PopupMenuDivider(),
+                  if (hasSingleDirectory)
+                    PopupMenuItem(
+                      value: 'set_as_home',
+                      child: Row(
+                        children: [
+                          const Icon(Broken.home_2, size: 20),
+                          const SizedBox(width: 12),
+                          Text(L10n.of(context).ui_set_as_home, style: const TextStyle(fontWeight: FontWeight.w500)),
+                        ],
+                      ),
+                    ),
+                  PopupMenuItem(
+                    value: 'open_with',
+                    child: Row(
+                      children: [
+                        const Icon(Broken.export, size: 20),
+                        const SizedBox(width: 12),
+                        Text(L10n.of(context).msg2a4cfb07, style: const TextStyle(fontWeight: FontWeight.w500)),
+                      ],
+                    ),
+                  ),
                   PopupMenuItem(
                     value: 'properties',
                     child: Row(

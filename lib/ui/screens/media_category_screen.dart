@@ -3,6 +3,7 @@ import 'package:path/path.dart' as path_helper;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:intl/intl.dart';
@@ -81,7 +82,13 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       _loadAlbumAssets();
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.read<MediaProvider>().loadMedia();
+        try {
+          Permission.manageExternalStorage.isGranted.then((hasFullPermission) {
+            if (hasFullPermission) {
+              context.read<MediaProvider>().loadMedia();
+            }
+          });
+        } catch (_) {}
       });
     }
   }
@@ -398,11 +405,11 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       if (mounted) {
         final filePath = filePaths.first;
         final currentName = path_helper.basename(filePath);
-        final newName = await FileActionDialogs.showTextInputDialog(
+        final newName = await FileActionDialogs.showRenameDialog(
           context,
+          currentName: currentName,
           title: L10n.of(context).msgc8ce4b36,
           hint: L10n.of(context).msgf139c5cf,
-          initialValue: currentName,
           actionText: L10n.of(context).msgc8ce4b36,
         );
         if (newName != null && newName.isNotEmpty && mounted) {
@@ -732,11 +739,11 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                   onTap: () async {
                     Navigator.pop(ctx);
                     final currentName = path_helper.basename(filePath);
-                    final newName = await FileActionDialogs.showTextInputDialog(
+                    final newName = await FileActionDialogs.showRenameDialog(
                       context,
+                      currentName: currentName,
                       title: L10n.of(context).msgc8ce4b36,
                       hint: L10n.of(context).msgf139c5cf,
-                      initialValue: currentName,
                       actionText: L10n.of(context).msgc8ce4b36,
                     );
                     if (newName != null && newName.isNotEmpty && mounted) {

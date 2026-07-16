@@ -311,6 +311,8 @@ class FileManagerProvider extends ChangeNotifier {
         alias = 'com.sequl.zenfile.MainActivityDesign9';
       case 'design10':
         alias = 'com.sequl.zenfile.MainActivityDesign10';
+      case 'design11':
+        alias = 'com.sequl.zenfile.MainActivityDesign11';
     }
 
     await AppManagerService.changeAppIcon(alias);
@@ -1041,10 +1043,11 @@ class FileManagerProvider extends ChangeNotifier {
     
     if (_enableSplitScreen) {
       if (_tabs.length < 2) {
-        final initialPath = _rootPath.isNotEmpty ? _rootPath : '/';
+        final homeRight = PreferencesService.getHomeDirectoryRight();
+        final rightPath = homeRight ?? (_rootPath.isNotEmpty ? _rootPath : '/');
         final newTab = FolderTab(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
-          currentPath: initialPath,
+          currentPath: rightPath,
         );
         _tabs.add(newTab);
       }
@@ -1678,6 +1681,56 @@ class FileManagerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 获取当前激活 pane 的首页目录路径；null 表示未设置
+  String? get homeDirectory {
+    return _enableSplitScreen
+        ? PreferencesService.getHomeDirectoryRight()
+        : PreferencesService.getHomeDirectoryLeft();
+  }
+
+  /// 获取指定 pane 的首页目录路径
+  String? getHomeDirectoryForPane(int tabIndex) {
+    return tabIndex == 0
+        ? PreferencesService.getHomeDirectoryLeft()
+        : PreferencesService.getHomeDirectoryRight();
+  }
+
+  /// 将当前激活 pane 当前目录设为首页
+  Future<void> setCurrentAsHome() async {
+    final path = currentPath;
+    if (_activeTabIndex == 0) {
+      await PreferencesService.saveHomeDirectoryLeft(path);
+    } else {
+      await PreferencesService.saveHomeDirectoryRight(path);
+    }
+    notifyListeners();
+  }
+
+  /// 将指定路径设为当前激活 pane 的首页
+  /// 如果传入的是文件路径，则使用其父目录
+  Future<void> setAsHomeDirectory(String path) async {
+    String dirPath = path;
+    try {
+      if (File(path).existsSync()) {
+        dirPath = p.dirname(path);
+      }
+    } catch (_) {}
+    if (_activeTabIndex == 0) {
+      await PreferencesService.saveHomeDirectoryLeft(dirPath);
+    } else {
+      await PreferencesService.saveHomeDirectoryRight(dirPath);
+    }
+    notifyListeners();
+  }
+
+  /// 跳转到当前激活 pane 的首页目录
+  Future<void> goToHome() async {
+    final home = homeDirectory;
+    if (home != null) {
+      await loadDirectory(home);
+    }
+  }
+
   Future<void> _detectStorageVolumes() async {
     final volumes = <StorageVolume>[];
     if (Platform.isAndroid) {
@@ -1740,8 +1793,10 @@ class FileManagerProvider extends ChangeNotifier {
       initialPath = dir.path;
       _rootPath = initialPath;
     }
-    
-    // Initialize primary default tab
+
+    final homeLeft = PreferencesService.getHomeDirectoryLeft();
+    final homeRight = PreferencesService.getHomeDirectoryRight();
+
     final savedTabsData = PreferencesService.getSavedTabs();
     if (savedTabsData.isNotEmpty) {
       final allTabs = savedTabsData.map((data) {
@@ -1755,7 +1810,6 @@ class FileManagerProvider extends ChangeNotifier {
       if (_rememberLastFolder) {
         _tabs = allTabs;
       } else {
-        // Keep only pinned tabs
         _tabs = allTabs.where((t) => t.isPinned).toList();
       }
 
@@ -1768,36 +1822,57 @@ class FileManagerProvider extends ChangeNotifier {
         ];
       }
 
-      if (_enableSplitScreen && _tabs.length < 2) {
-        while (_tabs.length < 2) {
+      if (homeLeft != null && homeLeft.isNotEmpty) {
+        if (_tabs.isNotEmpty) {
+          _tabs[0] = FolderTab(
+            id: _tabs[0].id,
+            currentPath: homeLeft,
+            isPinned: _tabs[0].isPinned,
+          );
+        } else {
+          _tabs = [FolderTab(id: DateTime.now().millisecondsSinceEpoch.toString(), currentPath: homeLeft)];
+        }
+      }
+
+      if (_enableSplitScreen) {
+        if (_tabs.length < 2) {
+          final rightPath = (homeRight != null && homeRight.isNotEmpty) ? homeRight : initialPath;
           _tabs.add(FolderTab(
             id: (DateTime.now().millisecondsSinceEpoch + _tabs.length).toString(),
-            currentPath: initialPath,
+            currentPath: rightPath,
           ));
+        } else if (homeRight != null && homeRight.isNotEmpty) {
+          _tabs[1] = FolderTab(
+            id: _tabs[1].id,
+            currentPath: homeRight,
+            isPinned: _tabs[1].isPinned,
+          );
         }
       }
       _activeTabIndex = 0;
     } else {
+      final leftPath = (homeLeft != null && homeLeft.isNotEmpty) ? homeLeft : initialPath;
       _tabs = [
         FolderTab(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
-          currentPath: initialPath,
+          currentPath: leftPath,
         )
       ];
       if (_enableSplitScreen) {
+        final rightPath = (homeRight != null && homeRight.isNotEmpty) ? homeRight : initialPath;
         _tabs.add(FolderTab(
           id: (DateTime.now().millisecondsSinceEpoch + 1).toString(),
-          currentPath: initialPath,
+          currentPath: rightPath,
         ));
       }
       _activeTabIndex = 0;
     }
 
     await _detectStorageVolumes();
-    final path0 = _tabs.isNotEmpty ? _tabs[0].currentPath : initialPath;
+    final path0 = _tabs.isNotEmpty ? _tabs[0].currentPath : (homeLeft ?? initialPath);
     await loadDirectory(path0, showLoading: false);
     if (_enableSplitScreen) {
-      final path1 = _tabs.length > 1 ? _tabs[1].currentPath : initialPath;
+      final path1 = _tabs.length > 1 ? _tabs[1].currentPath : (homeRight ?? initialPath);
       await loadDirectoryForTab(1, path1, showLoading: false);
     }
   }
@@ -2571,7 +2646,12 @@ class FileManagerProvider extends ChangeNotifier {
                   );
                 },
               );
-              await srcFile.delete();
+              // 源文件删除失败不应中断整个剪切流程（避免剪切变复制 + 剪贴板不消失）
+              try {
+                await srcFile.delete();
+              } catch (delErr) {
+                debugPrint('Cut source file delete failed (already copied): $delErr');
+              }
             }
           } else {
             await _copyFileWithProgress(
@@ -2601,24 +2681,34 @@ class FileManagerProvider extends ChangeNotifier {
       }
 
       if (_isCut) {
+        // 源目录删除采用容错策略：单个失败不应中断整个流程，
+        // 否则会导致剪切变复制且剪贴板不自动消失。
         for (final srcPath in _clipboardPaths) {
           final type = FileSystemEntity.typeSync(srcPath);
           if (type == FileSystemEntityType.directory) {
             final dir = Directory(srcPath);
             if (dir.existsSync()) {
-              await dir.delete(recursive: true);
+              try {
+                await dir.delete(recursive: true);
+              } catch (delErr) {
+                debugPrint('Cut source dir delete failed (already copied): $delErr');
+              }
             }
           }
         }
       }
 
       if (_isCut && _sourceArchiveForCut != null && _internalSourcePathsForCut != null) {
-        await ArchiveService.deleteItemsFromArchive(
-          archivePath: _sourceArchiveForCut!,
-          internalPathsToDelete: _internalSourcePathsForCut!,
-        );
+        try {
+          await ArchiveService.deleteItemsFromArchive(
+            archivePath: _sourceArchiveForCut!,
+            internalPathsToDelete: _internalSourcePathsForCut!,
+          );
+        } catch (delErr) {
+          debugPrint('Cut archive item delete failed: $delErr');
+        }
       }
-      
+
       if (clearAfterPaste) {
         clearClipboard();
       }
@@ -3158,7 +3248,7 @@ class FileManagerProvider extends ChangeNotifier {
     activeTab.isLoading = true;
     notifyListeners();
 
-    final tempDir = Directory('/storage/emulated/0/Download/ZenFile_Remote/.temp_${DateTime.now().millisecondsSinceEpoch}');
+    final tempDir = Directory('/storage/emulated/0/ZenFile/.temp_${DateTime.now().millisecondsSinceEpoch}');
     if (!tempDir.existsSync()) tempDir.createSync(recursive: true);
 
     try {
@@ -3671,15 +3761,51 @@ class FileManagerProvider extends ChangeNotifier {
         final newPath = p.join(p.dirname(oldPath), newName);
         final type = FileSystemEntity.typeSync(oldPath);
         if (type == FileSystemEntityType.directory) {
-          await Directory(oldPath).rename(newPath);
+          await _renameWithFallback(Directory(oldPath), newPath);
         } else {
-          await File(oldPath).rename(newPath);
+          await _renameWithFallback(File(oldPath), newPath);
         }
       }
       await loadDirectory(currentPath, showLoading: false, clearCache: true);
     } catch (e) {
       debugPrint('Error renaming file: $e');
       rethrow;
+    }
+  }
+
+  /// 重命名实体，若 rename() 失败（跨文件系统/路径过长/权限等），
+  /// 回退到 复制 + 删除 以确保操作成功（与系统文件管理器行为一致）。
+  Future<void> _renameWithFallback(FileSystemEntity entity, String newPath) async {
+    try {
+      await entity.rename(newPath);
+    } catch (e) {
+      debugPrint('rename() failed, falling back to copy+delete: $e');
+      // 回退到复制 + 删除
+      if (entity is File) {
+        final srcFile = entity;
+        final parentDir = Directory(p.dirname(newPath));
+        if (!parentDir.existsSync()) {
+          await parentDir.create(recursive: true);
+        }
+        await srcFile.copy(newPath);
+        try {
+          await srcFile.delete();
+        } catch (delErr) {
+          debugPrint('Source delete after copy failed (rename fallback): $delErr');
+        }
+      } else if (entity is Directory) {
+        final srcDir = entity;
+        final destDir = Directory(newPath);
+        if (!destDir.existsSync()) {
+          await destDir.create(recursive: true);
+        }
+        await _copyDirectory(srcDir, destDir);
+        try {
+          await srcDir.delete(recursive: true);
+        } catch (delErr) {
+          debugPrint('Source dir delete after copy failed (rename fallback): $delErr');
+        }
+      }
     }
   }
 
@@ -4156,7 +4282,7 @@ class FileManagerProvider extends ChangeNotifier {
         }
 
         // 非媒体文件：完整下载后打开
-        final cacheDir = Directory('/storage/emulated/0/Download/ZenFile_Remote');
+        final cacheDir = Directory('/storage/emulated/0/ZenFile');
         if (!cacheDir.existsSync()) cacheDir.createSync(recursive: true);
         final cachePath = p.join(cacheDir.path, fileName);
         if (!File(cachePath).existsSync()) {
@@ -4229,7 +4355,7 @@ class FileManagerProvider extends ChangeNotifier {
         }
 
         // 非媒体文件：完整下载后打开
-        final cacheDir = Directory('/storage/emulated/0/Download/ZenFile_Remote');
+        final cacheDir = Directory('/storage/emulated/0/ZenFile');
         if (!cacheDir.existsSync()) cacheDir.createSync(recursive: true);
         final cachePath = p.join(cacheDir.path, p.basename(path));
         if (!File(cachePath).existsSync()) {

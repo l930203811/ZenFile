@@ -277,7 +277,7 @@ class L10nRu extends L10n {
   String get msgbff1432a => 'Quark Cloud Drive';
 
   @override
-  String get msge03395d0 => 'Small Plane Cloud Drive';
+  String get msge03395d0 => 'PikPak Cloud Drive';
 
   @override
   String get svg =>
@@ -469,6 +469,16 @@ class L10nRu extends L10n {
 
   @override
   String get msgf139c5cf => 'Введите новое имя';
+
+  @override
+  String get msg_rename_extension_warning_title => 'Изменение расширения';
+
+  @override
+  String get msg_rename_extension_warning_content =>
+      'Вы изменяете расширение файла, что может привести к невозможности его открытия. Вы уверены, что хотите продолжить?';
+
+  @override
+  String get msg_rename_extension_confirm => 'Подтвердить изменение';
 
   @override
   String get msg53518c22 => 'Удалить Файл';
@@ -792,6 +802,9 @@ class L10nRu extends L10n {
 
   @override
   String get msgfd96af00 => 'Функция обмена скоро появится';
+
+  @override
+  String get ui_share => 'Поделиться';
 
   @override
   String get ftp1 => 'FTP сервер успешно остановлен';
@@ -1368,6 +1381,9 @@ class L10nRu extends L10n {
 
   @override
   String get msgdesign10 => 'Пользовательский дизайн 1';
+
+  @override
+  String get msgdesign11 => 'Пользовательский дизайн 2';
 
   @override
   String get msg7372dc9f => 'Пользовательский Значок';
@@ -2038,6 +2054,31 @@ class L10nRu extends L10n {
   String get msga1b2c3d7 => 'Предоставить Разрешение';
 
   @override
+  String get msg_media_only_permission_title => 'Только медиа-файлы';
+
+  @override
+  String get msg_media_only_permission_desc =>
+      'В настоящее время предоставлен только доступ к медиафайлам. Файловый менеджер не сможет нормально использовать функции переименования, вырезания, удаления и т.д. Пожалуйста, предоставьте «Доступ ко всем файлам» для полной функциональности.';
+
+  @override
+  String get msg_grant_full_storage_permission =>
+      'Предоставить полный доступ к хранилищу';
+
+  @override
+  String get msg_permission_request_title => '授权请求';
+
+  @override
+  String get msg_permission_request_desc =>
+      '为了访问您设备上的文件，您需要手动为 ZenFile 授予[所有文件访问]权限，点击确定后进入设置界面，选择[ZenFile]并开启授权。';
+
+  @override
+  String get ui_open_settings => 'Открыть настройки';
+
+  @override
+  String get ui_open_settings_desc =>
+      'Разрешение на хранилище было навсегда отклонено. Перейдите в системные настройки, чтобы вручную предоставить разрешение на управление файлами.';
+
+  @override
   String get msg2c146598 =>
       'Облачный интернет-туннель активен! Временная ссылка активирована.';
 
@@ -2624,9 +2665,6 @@ class L10nRu extends L10n {
   String get ui_confirm => 'Подтвердить';
 
   @override
-  String get ui_share => 'Поделиться';
-
-  @override
   String get ui_move_here => 'Переместить Сюда';
 
   @override
@@ -2667,6 +2705,9 @@ class L10nRu extends L10n {
 
   @override
   String get ui_show_folder_contents_count => 'Показывать Содержимое Папок';
+
+  @override
+  String get ui_set_as_home => 'Установить как домашнюю';
 
   @override
   String get ui_show_folder_size => 'Показывать Размер Папки';
@@ -3944,6 +3985,57 @@ class L10nRu extends L10n {
   String get ui_app_grant_usage_access => 'Предоставить доступ к использованию';
 
   @override
+  String get ui_app_usage_access_description =>
+      'Чтобы видеть точный размер хранилища приложений (APK + данные + кэш) вместо только размера установщика, включите разрешение на доступ к использованию для ZenFile в системных настройках.';
+
+  @override
+  String get ui_backup_apk_open_folder => 'Открыть папку резервных копий';
+
+  @override
+  String ui_backup_apk_success_with_path(String path) {
+    return 'Успешно сохранено в $path. Открыть папку?';
+  }
+
+  @override
+  String get ui_backup_apk_open => 'Открыть';
+
+  @override
+  String get ui_clear_remote_cache_success => 'Удаленный кэш очищен.';
+
+  @override
+  String get ui_clear_remote_cache_failed =>
+      'Не удалось очистить удаленный кэш.';
+
+  @override
+  String get ui_app_system_settings => 'Системные настройки / Подробности';
+
+  @override
+  String get ui_app_restore_install => 'Восстановить / Установить приложение';
+
+  @override
+  String get ui_app_size_label => 'Размер:';
+
+  @override
+  String get ui_app_installed_label => 'Установлено:';
+
+  @override
+  String get ui_app_backup_date_label => 'Резерв. копия:';
+
+  @override
+  String get ui_batch_backup_progress =>
+      'Резервное копирование выбранных приложений...';
+
+  @override
+  String ui_batch_backup_success(int count) {
+    return 'Резервные копии $count приложений сохранены в ZenFile/Backups/Apps/';
+  }
+
+  @override
+  String ui_batch_backup_failed(String error) {
+    return 'Не удалось создать резервные копии некоторых приложений: $error';
+  }
+
+  @override
   String get ui_app_search_backup => 'Поиск резервных копий...';
 
   @override
@@ -3951,6 +4043,20 @@ class L10nRu extends L10n {
 
   @override
   String get ui_app_no_backup_found => 'Резервные копии не найдены';
+
+  @override
+  String get ui_app_backup_empty_subtitle =>
+      'Здесь будет отображаться список ваших резервных копий файлов APK и APKS.';
+
+  @override
+  String ui_app_backup_search_not_found(String query) {
+    return 'Мы не нашли резервных копий, соответствующих запросу «$query»';
+  }
+
+  @override
+  String ui_app_backup_size_date(String size, String date) {
+    return 'Размер: $size • Дата резервной копии: $date';
+  }
 
   @override
   String get ui_app_split_apk => 'Разделенный APK (APKS)';
@@ -4112,6 +4218,41 @@ class L10nRu extends L10n {
   String get msg_subtitle_size => 'Размер субтитров';
 
   @override
+  String get msg_subtitle_position => 'Положение субтитров';
+
+  @override
+  String get msg_subtitle_pos_top => 'Верх';
+
+  @override
+  String get msg_subtitle_pos_bottom => 'Низ';
+
+  @override
+  String get msg_subtitle_no_background => 'Убрать фон субтитров';
+
+  @override
+  String get msg_auto_clean_cache => 'Автоматическая очистка кэша';
+
+  @override
+  String get msg_auto_clean_cache_hint =>
+      'Нажмите, чтобы задать интервал очистки';
+
+  @override
+  String get msg_auto_clean_cache_picker_hint =>
+      'Прокрутите, чтобы выбрать интервал очистки';
+
+  @override
+  String get msg_cache_clean_unit_day => 'Дней';
+
+  @override
+  String get msg_cache_clean_unit_hour => 'Часов';
+
+  @override
+  String get msg_cache_clean_unit_minute => 'Минут';
+
+  @override
+  String get msg_cache_clean_confirm => 'Подтвердить';
+
+  @override
   String get msg_quick_actions => 'Быстрые действия';
 
   @override
@@ -4190,4 +4331,84 @@ class L10nRu extends L10n {
 
   @override
   String get msg_custom_scan_paths => 'Пользовательские пути сканирования';
+
+  @override
+  String get notification_web_share_local_title =>
+      'ZenFile Локальный веб-доступ';
+
+  @override
+  String get notification_web_share_internet_title =>
+      'ZenFile Интернет веб-доступ';
+
+  @override
+  String notification_web_share_running(Object url) {
+    return 'Работает на $url';
+  }
+
+  @override
+  String get notification_ftp_title => 'ZenFile FTP-сервер';
+
+  @override
+  String notification_ftp_running(Object ip, Object port) {
+    return 'Работает на ftp://$ip:$port';
+  }
+
+  @override
+  String get ui_download_links => 'Ссылки для скачивания';
+
+  @override
+  String get changelog_v1121_new_features_title => 'Новые функции';
+
+  @override
+  String get changelog_v1121_new_feature_1 =>
+      'Пользовательское отображение домашней страницы: на странице просмотра нажмите на меню из трёх точек папки и выберите \"Установить как домашнюю\", или нажмите и удерживайте папку и найдите \"Установить как домашнюю\" в меню \"Ещё\". В режиме двух окон каждое окно может независимо установить свой домашний путь, повышая эффективность управления несколькими каталогами.';
+
+  @override
+  String get changelog_v1121_new_feature_2 =>
+      'Улучшение веб-доступа: поддержка пользовательских путей общего доступа, исправлена предыдущая проблема, когда можно было просматривать только папки, но не содержимое файлов. Также добавлены кнопки общих операций с файлами, такие как копирование, вставка, вырезание, удаление и переименование, что упрощает удалённое управление.';
+
+  @override
+  String get changelog_v1121_new_feature_3 =>
+      'Очистка удалённого кэша: добавлена функция настраиваемой очистки удалённого кэша для гибкого управления пространством хранения.';
+
+  @override
+  String get changelog_v1121_bugfixes_title => 'Исправления ошибок';
+
+  @override
+  String get changelog_v1121_bugfix_1 =>
+      'Исправлена проблема, из-за которой при возвращении из любого общего каталога клиент SMB показывал пустой каталог.';
+
+  @override
+  String get changelog_v1121_bugfix_2 =>
+      'Исправлены проблемы с жёстко закодированным китайским текстом в некоторых элементах интерфейса, улучшена совместимость отображения в многоязычных средах.';
+
+  @override
+  String get changelog_v1121_known_issues_title =>
+      'Известные проблемы (будут исправлены в следующей версии)';
+
+  @override
+  String get changelog_v1121_known_issue_1 =>
+      'Приложение вылетает после очистки данных приложения и повторного открытия.';
+
+  @override
+  String get changelog_v1121_known_issue_2 =>
+      'Регулировка размера отображения внешних субтитров в видеопроигрывателе временно не работает.';
+
+  @override
+  String get changelog_v1121_known_issue_3 =>
+      'В настоящее время только клиент WebDAV поддерживает потоковое воспроизведение медиафайлов, другие клиенты пока не поддерживают.';
+
+  @override
+  String get changelog_v1121_known_issue_4 =>
+      'При резервном копировании больших пакетов APK интерфейс может зависнуть в состоянии выполнения, но фактическое резервное копирование всё ещё выполняется в фоновом режиме. Пожалуйста, нажмите кнопку назад и перейдите в \"Резервные APK\", чтобы просмотреть файлы резервных копий. Путь резервного копирования находится в каталоге ZenFile/Backups в основном хранилище.';
+
+  @override
+  String get changelog_v1121_known_issue_5 =>
+      'После включения службы общего доступа FTP каталоги отображаются пустыми при подключении с помощью других FTP-клиентов.';
+
+  @override
+  String get msg_editor_lines => 'строк';
+
+  @override
+  String get msg_editor_modified => 'Изменено';
 }

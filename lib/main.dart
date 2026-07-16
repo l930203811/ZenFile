@@ -27,74 +27,103 @@ import 'ui/screens/home_screen.dart';
 
 final GlobalKey<_ZenFileAppState> appStateKey = GlobalKey<_ZenFileAppState>();
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  // MediaKit.ensureInitialized() loads libmpv.so. On armv7 devices where the
-  // native library may be missing (e.g. when media_kit jars for armeabi-v7a
-  // are not packaged), an uncaught error here would prevent runApp() from
-  // executing, resulting in a white screen. Wrap in try-catch so the app
-  // always launches; media playback will simply be unavailable if it fails.
-  try {
-    MediaKit.ensureInitialized();
-  } catch (e) {
-    debugPrint('[ZenFile] MediaKit.ensureInitialized failed: $e');
-  }
-  await PreferencesService.init();
-  await PinService.init();
-  await NetworkConnectionsService.init();
-  await RecycleBinService.init();
+void main() {
+  runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
 
-  // 自动清理过期缓存
-  _autoCleanRemoteCache();
+    // 捕获 Flutter 框架错误，防止 release 模式闪退
+    FlutterError.onError = (FlutterErrorDetails details) {
+      FlutterError.presentError(details);
+      debugPrint('[ZenFile] Flutter error: ${details.exception}');
+    };
 
-  // Load custom font dynamically if configured
-  try {
-    final customFontPath = PreferencesService.getCustomFontPath();
-    if (customFontPath != null && customFontPath.isNotEmpty) {
-      final file = File(customFontPath);
-      if (file.existsSync()) {
-        final loader = FontLoader('CustomFont');
-        final bytes = await file.readAsBytes();
-        loader.addFont(Future.value(ByteData.sublistView(bytes)));
-        await loader.load();
-        debugPrint('Successfully loaded custom font at startup');
-      }
+    // MediaKit.ensureInitialized() loads libmpv.so. On armv7 devices where the
+    // native library may be missing (e.g. when media_kit jars for armeabi-v7a
+    // are not packaged), an uncaught error here would prevent runApp() from
+    // executing, resulting in a white screen. Wrap in try-catch so the app
+    // always launches; media playback will simply be unavailable if it fails.
+    try {
+      MediaKit.ensureInitialized();
+    } catch (e) {
+      debugPrint('[ZenFile] MediaKit.ensureInitialized failed: $e');
     }
-  } catch (e) {
-    debugPrint('Error loading custom font at startup: $e');
-  }
 
-  // Initialize audio_service for background media notification
-  // Wrapped in try-catch — app must still launch even if this fails
-  try {
-    await AudioService.init(
-      builder: () => getAudioHandler(),
-      config: const AudioServiceConfig(
-        androidNotificationChannelId: 'com.sequl.zenfile.audio',
-        androidNotificationChannelName: 'ZenFile Audio Player',
-        androidNotificationIcon: 'mipmap/ic_launcher',
-        androidShowNotificationBadge: true,
-        androidStopForegroundOnPause: false,
-        notificationColor: Color(0xFF6200EE),
+    try {
+      await PreferencesService.init();
+    } catch (e) {
+      debugPrint('[ZenFile] PreferencesService.init failed: $e');
+    }
+
+    try {
+      await PinService.init();
+    } catch (e) {
+      debugPrint('[ZenFile] PinService.init failed: $e');
+    }
+
+    try {
+      await NetworkConnectionsService.init();
+    } catch (e) {
+      debugPrint('[ZenFile] NetworkConnectionsService.init failed: $e');
+    }
+
+    try {
+      await RecycleBinService.init();
+    } catch (e) {
+      debugPrint('[ZenFile] RecycleBinService.init failed: $e');
+    }
+
+    // Load custom font dynamically if configured
+    try {
+      final customFontPath = PreferencesService.getCustomFontPath();
+      if (customFontPath != null && customFontPath.isNotEmpty) {
+        final file = File(customFontPath);
+        if (file.existsSync()) {
+          final loader = FontLoader('CustomFont');
+          final bytes = await file.readAsBytes();
+          loader.addFont(Future.value(ByteData.sublistView(bytes)));
+          await loader.load();
+          debugPrint('Successfully loaded custom font at startup');
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading custom font at startup: $e');
+    }
+
+    // Initialize audio_service for background media notification
+    // Wrapped in try-catch — app must still launch even if this fails
+    try {
+      await AudioService.init(
+        builder: () => getAudioHandler(),
+        config: const AudioServiceConfig(
+          androidNotificationChannelId: 'com.sequl.zenfile.audio',
+          androidNotificationChannelName: 'ZenFile Audio Player',
+          androidNotificationIcon: 'mipmap/ic_launcher',
+          androidShowNotificationBadge: true,
+          androidStopForegroundOnPause: false,
+          notificationColor: Color(0xFF6200EE),
+        ),
+      );
+      isAudioServiceInitialized = true;
+    } catch (e) {
+      // audio_service init failed – background playback unavailable but app continues
+      // 标记未初始化，后续 _enableBackgroundMode 会在诊断中检测到并提示用户
+      isAudioServiceInitialized = false;
+      debugPrint('[ZenFile] AudioService.init failed: $e');
+    }
+
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => FileManagerProvider()),
+          ChangeNotifierProvider(create: (_) => MediaProvider()),
+        ],
+        child: ZenFileApp(key: appStateKey),
       ),
     );
-    isAudioServiceInitialized = true;
-  } catch (e) {
-    // audio_service init failed – background playback unavailable but app continues
-    // 标记未初始化，后续 _enableBackgroundMode 会在诊断中检测到并提示用户
-    isAudioServiceInitialized = false;
-    debugPrint('[ZenFile] AudioService.init failed: $e');
-  }
-
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => FileManagerProvider()),
-        ChangeNotifierProvider(create: (_) => MediaProvider()),
-      ],
-      child: ZenFileApp(key: appStateKey),
-    ),
-  );
+  }, (error, stackTrace) {
+    // 捕获所有未处理的异步错误，防止 release 模式闪退
+    debugPrint('[ZenFile] Unhandled async error: $error\n$stackTrace');
+  });
 }
 
 const _gestureExclusionChannel = MethodChannel('com.sequl.zenfile/gesture_exclusion');
@@ -135,17 +164,22 @@ class ZenFileApp extends StatefulWidget {
   State<ZenFileApp> createState() => _ZenFileAppState();
 }
 
-class _ZenFileAppState extends State<ZenFileApp> {
+class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
   ThemeMode _themeMode = ThemeMode.system;
   Locale _locale = const Locale('en', 'US');
   bool? _hasPermission;
+  bool _isPermanentlyDenied = false;
+  bool _isMediaOnlyPermission = false;
   bool _sharingObserverSetup = false;
   bool _isResolvingIntent = false;
+  // 首次启动标志：未选择语言时为 true，用于延迟权限申请直到语言选择完成
+  bool _isFirstLaunch = false;
   StreamSubscription<List<SharedMediaFile>>? _sharingIntentSubscription;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     final hideNav = PreferencesService.getHideNavigationBar();
     if (hideNav) {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
@@ -165,24 +199,63 @@ class _ZenFileAppState extends State<ZenFileApp> {
     _themeMode = PreferencesService.getThemeMode();
     final savedLocale = PreferencesService.getAppLocale();
     _locale = _localeFromCode(savedLocale);
-    // Setup sharing observer immediately to catch incoming intents at the earliest possible frame!
-    _setupSharingIntentObserver();
     _initializeApplication();
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // 首次启动（语言选择流程中）不触发权限检查，避免与语言选择器冲突
+    if (state == AppLifecycleState.resumed && _hasPermission != true && !_isFirstLaunch) {
+      _checkStoragePermission();
+    }
+  }
+
+  @override
   void dispose() {
+    _cancelAutoCleanTimer();
+    WidgetsBinding.instance.removeObserver(this);
     _sharingIntentSubscription?.cancel();
     super.dispose();
   }
 
   Future<void> _initializeApplication() async {
+    // 检查是否为首次启动（未选择语言）
+    _isFirstLaunch = !PreferencesService.hasSelectedLanguage();
+
+    if (_isFirstLaunch) {
+      // 首次启动：保持 _hasPermission = null，让 build 显示空白 Scaffold。
+      // 不设置 _hasPermission = true，避免 HomeScreen 被创建并触发
+      // refreshMediaBackground() 在无权限时访问文件系统导致闪退。
+      // 与 NFile 原项目逻辑一致：权限检查是异步的，在此之前不显示任何功能页面。
+      if (mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _showFirstTimeLanguagePicker();
+        });
+      }
+      return;
+    }
+
+    // 非首次启动：正常检查权限
     await _checkStoragePermission();
-    // Show language picker on first launch
-    if (!PreferencesService.hasSelectedLanguage() && mounted) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _showFirstTimeLanguagePicker();
-      });
+    // Only run cache cleanup and intent observer after permission is granted
+    if (_hasPermission == true) {
+      _migrateOldCacheDir();
+      _startAutoCleanTimer();
+      _setupSharingIntentObserver();
+    }
+  }
+
+  /// 迁移旧的 Download/ZenFile_Remote 缓存目录到新的 /ZenFile 目录。
+  /// 旧目录已废弃，缓存文件不需要保留，直接删除旧目录。
+  void _migrateOldCacheDir() {
+    try {
+      final oldDir = Directory('/storage/emulated/0/Download/ZenFile_Remote');
+      if (oldDir.existsSync()) {
+        oldDir.deleteSync(recursive: true);
+        debugPrint('[ZenFile] 已移除旧的 Download/ZenFile_Remote 缓存目录');
+      }
+    } catch (e) {
+      debugPrint('[ZenFile] 移除旧缓存目录失败: $e');
     }
   }
 
@@ -280,7 +353,11 @@ class _ZenFileAppState extends State<ZenFileApp> {
                     if (mounted) {
                       setState(() {
                         _locale = _localeFromCode(selectedLocale);
+                        _isFirstLaunch = false;
                       });
+                      // 语言选择完成后，检查并申请存储权限
+                      // 应用已完全启动到首页，此时询问权限不会导致闪退
+                      _checkPermissionAfterLanguageSelection();
                     }
                   },
                   style: FilledButton.styleFrom(
@@ -295,6 +372,54 @@ class _ZenFileAppState extends State<ZenFileApp> {
         );
       },
     );
+  }
+
+  /// 语言选择完成后，检查并申请存储权限。
+  /// 此方法在应用完全启动到首页后被调用，避免启动过程中权限弹窗导致闪退。
+  Future<void> _checkPermissionAfterLanguageSelection() async {
+    // 先标记 _isFirstLaunch = false，让 didChangeAppLifecycleState 能正常工作
+    _isFirstLaunch = false;
+
+    // 检查权限
+    await _checkStoragePermission();
+
+    // 如果检测到有权限，可能是清除数据后权限状态不一致（系统显示有权限但实际无权限）。
+    // 调用 request() 重新确认权限，确保权限真正生效。
+    if (_hasPermission == true) {
+      try {
+        // 重新请求权限以激活它（如果已授予，request() 会立即返回 granted）
+        final status = await Permission.manageExternalStorage.request();
+        if (!status.isGranted) {
+          // request() 返回未授予，说明权限实际未生效
+          if (mounted) {
+            setState(() {
+              _hasPermission = false;
+              _isPermanentlyDenied = status.isPermanentlyDenied;
+            });
+          }
+          return;
+        }
+      } catch (e) {
+        debugPrint('[ZenFile] Permission re-confirm failed: $e');
+      }
+
+      _migrateOldCacheDir();
+      _startAutoCleanTimer();
+      _setupSharingIntentObserver();
+      _loadMediaAfterPermission();
+    }
+    // 无权限时：_hasPermission = false 会触发 build 方法显示 _StoragePermissionShield 页面，
+    // 由用户主动点击按钮来请求权限（与原项目 NFile 的交互方式一致）。
+  }
+
+  /// 在获得完整权限后加载媒体数据。
+  void _loadMediaAfterPermission() {
+    try {
+      final context = navigatorKey.currentContext;
+      if (context != null && context.mounted) {
+        context.read<MediaProvider>().loadMedia();
+      }
+    } catch (_) {}
   }
 
   Widget _buildLanguageOption(BuildContext ctx, String locale, String label, String subtitle, bool isSelected, ValueChanged<String> onTap) {
@@ -349,21 +474,49 @@ class _ZenFileAppState extends State<ZenFileApp> {
 
   Future<void> _checkStoragePermission() async {
     if (Platform.isAndroid) {
-      final manageStorageGranted = await Permission.manageExternalStorage.isGranted;
-      final standardStorageGranted = await Permission.storage.isGranted;
-      bool audioGranted = true;
+      bool manageStorageGranted = false;
+      bool mediaOnlyPermission = false;
       try {
-        final info = await DeviceInfoPlugin().androidInfo;
-        final sdk = info.version.sdkInt;
-        if (sdk >= 33) {
-          audioGranted = await Permission.audio.isGranted;
-        }
-      } catch (_) {}
+        // 与 NFile 原项目一致：使用 permission_handler 检查权限
+        manageStorageGranted = await Permission.manageExternalStorage.isGranted;
+
+        // 检查媒体权限
+        final standardStorageGranted = await Permission.storage.isGranted;
+        bool audioGranted = true;
+        try {
+          final info = await DeviceInfoPlugin().androidInfo;
+          final sdk = info.version.sdkInt;
+          if (sdk >= 33) {
+            audioGranted = await Permission.audio.isGranted;
+          }
+        } catch (_) {}
+
+        mediaOnlyPermission = !manageStorageGranted && (standardStorageGranted && audioGranted);
+      } catch (e) {
+        debugPrint('[ZenFile] Permission check failed: $e');
+        manageStorageGranted = false;
+        mediaOnlyPermission = false;
+      }
+
+      // 与 NFile 原项目一致：manageExternalStorage 或 媒体权限 都可以进入首页
+      final hasPermission = manageStorageGranted || mediaOnlyPermission;
+
+      final wasPermissionDenied = _hasPermission == false || _hasPermission == null;
 
       if (mounted) {
         setState(() {
-          _hasPermission = manageStorageGranted || (standardStorageGranted && audioGranted);
+          _hasPermission = hasPermission;
+          _isMediaOnlyPermission = mediaOnlyPermission && !manageStorageGranted;
         });
+      }
+
+      if (wasPermissionDenied && hasPermission) {
+        if (manageStorageGranted) {
+          _migrateOldCacheDir();
+          _startAutoCleanTimer();
+        }
+        _setupSharingIntentObserver();
+        _loadMediaAfterPermission();
       }
     } else {
       if (mounted) {
@@ -374,28 +527,174 @@ class _ZenFileAppState extends State<ZenFileApp> {
 
   Future<void> _requestStoragePermission() async {
     if (Platform.isAndroid) {
-      final manageStorageGranted = await Permission.manageExternalStorage.request().isGranted;
-      bool standardStorageGranted = false;
-      bool audioGranted = true;
       try {
-        final info = await DeviceInfoPlugin().androidInfo;
-        final sdk = info.version.sdkInt;
-        if (sdk >= 33) {
-          audioGranted = await Permission.audio.request().isGranted;
-        } else {
-          standardStorageGranted = await Permission.storage.request().isGranted;
-        }
-      } catch (_) {}
+        // 与 NFile 原项目一致：使用 permission_handler 的 request() 方法
+        final manageStorageGranted = await Permission.manageExternalStorage.request().isGranted;
+        bool standardStorageGranted = false;
+        bool audioGranted = true;
+        try {
+          final info = await DeviceInfoPlugin().androidInfo;
+          final sdk = info.version.sdkInt;
+          if (sdk >= 33) {
+            audioGranted = await Permission.audio.request().isGranted;
+          } else {
+            standardStorageGranted = await Permission.storage.request().isGranted;
+          }
+        } catch (_) {}
 
-      if (mounted) {
-        setState(() {
-          _hasPermission = manageStorageGranted || (standardStorageGranted && audioGranted);
-        });
+        final mediaOnlyPermission = !manageStorageGranted && (standardStorageGranted && audioGranted);
+        final hasPermission = manageStorageGranted || mediaOnlyPermission;
+
+        if (mounted) {
+          setState(() {
+            _hasPermission = hasPermission;
+            _isMediaOnlyPermission = mediaOnlyPermission && !manageStorageGranted;
+            if (!hasPermission) {
+              _isPermanentlyDenied = true;
+            }
+          });
+        }
+
+        if (hasPermission) {
+          if (manageStorageGranted) {
+            _migrateOldCacheDir();
+            _startAutoCleanTimer();
+          }
+          _setupSharingIntentObserver();
+          _loadMediaAfterPermission();
+        }
+      } catch (e) {
+        debugPrint('[ZenFile] Permission request failed: $e');
+        if (mounted) {
+          setState(() {
+            _hasPermission = false;
+            _isPermanentlyDenied = true;
+            _isMediaOnlyPermission = false;
+          });
+        }
       }
     } else {
       if (mounted) {
         setState(() => _hasPermission = true);
       }
+    }
+  }
+
+  /// 打开系统的「所有文件访问权限」设置页面。
+  /// 使用 ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION intent 直接跳转到特定页面，
+  /// 而不是通用的应用设置页面。
+  Future<void> _openManageExternalStorageSettings() async {
+    try {
+      const channel = MethodChannel('com.sequl.zenfile/permissions');
+      await channel.invokeMethod('openManageExternalStorageSettings');
+    } catch (_) {
+      await openAppSettings();
+    }
+  }
+
+  /// 使用原生 Android API（Environment.isExternalStorageManager）直接检查权限，
+  /// 绕过 permission_handler 插件可能存在的缓存/延迟问题。
+  /// 返回 true 表示确实拥有所有文件管理权限。
+  Future<bool> _checkManageExternalStorageNative() async {
+    try {
+      const channel = MethodChannel('com.sequl.zenfile/permissions');
+      final result = await channel.invokeMethod<bool>('isManageExternalStorageGranted');
+      return result ?? false;
+    } catch (e) {
+      debugPrint('[ZenFile] Native permission check failed: $e');
+      return false;
+    }
+  }
+
+  /// 显示权限确认对话框，询问用户是否同意前往设置开启所有文件管理权限。
+  /// 返回 true 表示用户同意前往设置，false 表示用户拒绝。
+  Future<bool> _showPermissionConfirmDialog() async {
+    final context = navigatorKey.currentContext;
+    if (context == null || !context.mounted) return false;
+
+    bool? result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        final theme = Theme.of(ctx);
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          title: Text(
+            L10n.of(ctx).msg_permission_request_title,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            textAlign: TextAlign.center,
+          ),
+          content: Text(
+            L10n.of(ctx).msg_permission_request_desc,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.7), fontSize: 14),
+          ),
+          actionsAlignment: MainAxisAlignment.end,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(
+                L10n.of(ctx).ui_cancel,
+                style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.7)),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(
+                L10n.of(ctx).msg_grant_full_storage_permission,
+                style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+    return result ?? false;
+  }
+
+  /// 实际写入+重命名测试来验证是否拥有完整文件管理权限。
+  /// 仅列目录在「媒体文件权限」下也能通过，必须通过写入+重命名才能准确区分。
+  Future<bool> _testFullStorageAccess() async {
+    // 先尝试在 Download 目录创建并重命名临时文件
+    try {
+      final downloadDir = Directory('/storage/emulated/0/Download');
+      if (downloadDir.existsSync()) {
+        final tmpFile = File('${downloadDir.path}/.zenfile_perm_test_${DateTime.now().millisecondsSinceEpoch}.tmp');
+        final renamedFile = File('${downloadDir.path}/.zenfile_perm_test_${DateTime.now().millisecondsSinceEpoch}_r.tmp');
+        try {
+          await tmpFile.writeAsBytes([0], flush: true);
+          await tmpFile.rename(renamedFile.path);
+          await renamedFile.delete();
+          return true;
+        } catch (_) {
+          // 清理可能残留的文件
+          try { if (tmpFile.existsSync()) await tmpFile.delete(); } catch (_) {}
+          try { if (renamedFile.existsSync()) await renamedFile.delete(); } catch (_) {}
+          return false;
+        }
+      }
+    } catch (_) {}
+    // Download 目录不可用，回退到根目录写入测试
+    try {
+      final tmpFile = File('/storage/emulated/0/.zenfile_perm_test_${DateTime.now().millisecondsSinceEpoch}.tmp');
+      try {
+        await tmpFile.writeAsBytes([0], flush: true);
+        await tmpFile.delete();
+        return true;
+      } catch (_) {
+        try { if (tmpFile.existsSync()) await tmpFile.delete(); } catch (_) {}
+        return false;
+      }
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> _openAppSettings() async {
+    try {
+      await openAppSettings();
+    } catch (e) {
+      debugPrint('[ZenFile] Failed to open app settings: $e');
     }
   }
 
@@ -428,6 +727,15 @@ class _ZenFileAppState extends State<ZenFileApp> {
   void _dispatchExternalMediaOpen(String absoluteFilePath) {
     if (absoluteFilePath.isEmpty) {
       if (mounted && _isResolvingIntent) {
+        setState(() => _isResolvingIntent = false);
+      }
+      return;
+    }
+
+    // Guard: don't attempt to open files before storage permission is confirmed
+    if (_hasPermission != true) {
+      debugPrint('[ZenFile] Skipping external media open: no storage permission');
+      if (mounted) {
         setState(() => _isResolvingIntent = false);
       }
       return;
@@ -595,7 +903,12 @@ class _ZenFileAppState extends State<ZenFileApp> {
                       ? const Scaffold()
                       : (_hasPermission == true
                           ? HomeScreen(toggleTheme: _toggleTheme)
-                          : _StoragePermissionShield(onRequestPermission: _requestStoragePermission))),
+                          : _StoragePermissionShield(
+                              onRequestPermission: _requestStoragePermission,
+                              onOpenSettings: _openManageExternalStorageSettings,
+                              isPermanentlyDenied: _isPermanentlyDenied,
+                              isMediaOnly: _isMediaOnlyPermission,
+                            ))),
             );
           },
         );
@@ -664,8 +977,16 @@ class _IntentLoadingScreen extends StatelessWidget {
 
 class _StoragePermissionShield extends StatelessWidget {
   final VoidCallback onRequestPermission;
+  final VoidCallback onOpenSettings;
+  final bool isPermanentlyDenied;
+  final bool isMediaOnly;
 
-  const _StoragePermissionShield({required this.onRequestPermission});
+  const _StoragePermissionShield({
+    required this.onRequestPermission,
+    required this.onOpenSettings,
+    required this.isPermanentlyDenied,
+    this.isMediaOnly = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -674,36 +995,68 @@ class _StoragePermissionShield extends StatelessWidget {
         child: Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Broken.folder_cross,
-                  size: 72,
-                  color: Theme.of(context).colorScheme.error.withOpacity(0.8),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  L10n.of(context).msga1b2c3d6,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  L10n.of(context).zenfile,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
-                ),
-                const SizedBox(height: 32),
-                FilledButton.icon(
-                  onPressed: onRequestPermission,
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    isMediaOnly ? Broken.document_sketch : Broken.folder_cross,
+                    size: 72,
+                    color: isMediaOnly
+                        ? Theme.of(context).colorScheme.primary.withOpacity(0.8)
+                        : Theme.of(context).colorScheme.error.withOpacity(0.8),
                   ),
-                  icon: const Icon(Broken.shield_tick),
-                  label: Text(L10n.of(context).msga1b2c3d7, style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-              ],
+                  const SizedBox(height: 24),
+                  Text(
+                    isMediaOnly
+                        ? L10n.of(context).msg_media_only_permission_title
+                        : L10n.of(context).msga1b2c3d6,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    isMediaOnly
+                        ? L10n.of(context).msg_media_only_permission_desc
+                        : (isPermanentlyDenied
+                            ? L10n.of(context).ui_open_settings_desc
+                            : L10n.of(context).zenfile),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                  ),
+                  const SizedBox(height: 32),
+                  if (isPermanentlyDenied || isMediaOnly) ...[
+                    FilledButton.icon(
+                      onPressed: onOpenSettings,
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      icon: const Icon(Broken.setting),
+                      label: Text(L10n.of(context).msg_grant_full_storage_permission,
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                    const SizedBox(height: 12),
+                  ] else ...[
+                    FilledButton.icon(
+                      onPressed: onRequestPermission,
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      icon: const Icon(Broken.shield_tick),
+                      label: Text(L10n.of(context).msga1b2c3d7,
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton.icon(
+                      onPressed: onOpenSettings,
+                      icon: const Icon(Broken.setting, size: 18),
+                      label: Text(L10n.of(context).ui_open_settings),
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
         ),
@@ -712,17 +1065,47 @@ class _StoragePermissionShield extends StatelessWidget {
   }
 }
 
+/// 自动清理缓存的定时器（顶层变量）
+Timer? _autoCleanTimer;
+
+/// 启动自动清理缓存的定时器
+void startAutoCleanTimer() {
+  _autoCleanTimer?.cancel();
+  final autoCleanMinutes = PreferencesService.getRemoteCacheAutoCleanMinutes();
+  if (autoCleanMinutes <= 0) return; // 未启用自动清理
+
+  // 立即执行一次清理
+  _autoCleanRemoteCache();
+
+  // 启动定时器，按设定间隔周期性清理
+  _autoCleanTimer = Timer.periodic(
+    Duration(minutes: autoCleanMinutes),
+    (_) => _autoCleanRemoteCache(),
+  );
+}
+
+/// 内部启动函数（权限通过后调用）
+void _startAutoCleanTimer() => startAutoCleanTimer();
+
+/// 取消自动清理定时器
+void _cancelAutoCleanTimer() {
+  _autoCleanTimer?.cancel();
+  _autoCleanTimer = null;
+}
+
 /// 自动清理过期缓存
 void _autoCleanRemoteCache() {
   try {
-    final autoCleanDays = PreferencesService.getRemoteCacheAutoCleanDays();
-    if (autoCleanDays <= 0) return; // 未启用自动清理
+    final autoCleanMinutes = PreferencesService.getRemoteCacheAutoCleanMinutes();
+    if (autoCleanMinutes <= 0) return; // 未启用自动清理
 
-    final cacheDir = Directory('/storage/emulated/0/Download/ZenFile_Remote');
-    if (!cacheDir.existsSync()) return;
+    // Restrict cleanup to the cache/ subtree to avoid deleting user
+    // settings/APK backups that live alongside the cache.
+    final baseDir = Directory('/storage/emulated/0/ZenFile');
+    if (!baseDir.existsSync()) return;
 
     final now = DateTime.now();
-    final threshold = now.subtract(Duration(days: autoCleanDays));
+    final threshold = now.subtract(Duration(minutes: autoCleanMinutes));
 
     // 遍历缓存目录，删除过期文件
     int deletedCount = 0;
@@ -748,11 +1131,16 @@ void _autoCleanRemoteCache() {
       }
     }
 
-    cleanDirectory(cacheDir);
+    final cacheRoot = Directory('${baseDir.path}/cache');
+    if (cacheRoot.existsSync()) {
+      cleanDirectory(cacheRoot);
+    }
 
     if (deletedCount > 0) {
       debugPrint('自动清理缓存: 删除 $deletedCount 个文件，释放 ${(deletedSize / 1024 / 1024).toStringAsFixed(1)} MB');
     }
+    // 记录本次清理时间
+    PreferencesService.saveRemoteCacheLastCleanTime(now.millisecondsSinceEpoch);
   } catch (e) {
     debugPrint('自动清理缓存失败: $e');
   }

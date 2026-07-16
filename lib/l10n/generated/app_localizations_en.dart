@@ -273,7 +273,7 @@ class L10nEn extends L10n {
   String get msgbff1432a => 'Quark Cloud Drive';
 
   @override
-  String get msge03395d0 => 'Small Plane Cloud Drive';
+  String get msge03395d0 => 'PikPak Cloud Drive';
 
   @override
   String get svg => 'Added full SVG support (thumbnail preview & viewing)';
@@ -459,6 +459,16 @@ class L10nEn extends L10n {
 
   @override
   String get msgf139c5cf => 'Enter new name';
+
+  @override
+  String get msg_rename_extension_warning_title => 'Extension Change';
+
+  @override
+  String get msg_rename_extension_warning_content =>
+      'You are changing the file extension, which may prevent the file from opening correctly. Are you sure you want to continue?';
+
+  @override
+  String get msg_rename_extension_confirm => 'Confirm Change';
 
   @override
   String get msg53518c22 => 'Delete File';
@@ -780,6 +790,9 @@ class L10nEn extends L10n {
 
   @override
   String get msgfd96af00 => 'Share feature coming soon';
+
+  @override
+  String get ui_share => 'Share';
 
   @override
   String get ftp1 => 'FTP server stopped successfully';
@@ -1340,6 +1353,9 @@ class L10nEn extends L10n {
 
   @override
   String get msgdesign10 => 'User Design 1';
+
+  @override
+  String get msgdesign11 => 'User Design 2';
 
   @override
   String get msg7372dc9f => 'Custom Icon';
@@ -2002,6 +2018,30 @@ class L10nEn extends L10n {
   String get msga1b2c3d7 => 'Grant Permission';
 
   @override
+  String get msg_media_only_permission_title => 'Media-Only Permission';
+
+  @override
+  String get msg_media_only_permission_desc =>
+      'Only media file access has been granted. The file manager cannot properly use rename, cut, delete, and other features. Please grant \"All files access\" for full functionality.';
+
+  @override
+  String get msg_grant_full_storage_permission => 'Grant Full Storage Access';
+
+  @override
+  String get msg_permission_request_title => '授权请求';
+
+  @override
+  String get msg_permission_request_desc =>
+      '为了访问您设备上的文件，您需要手动为 ZenFile 授予[所有文件访问]权限，点击确定后进入设置界面，选择[ZenFile]并开启授权。';
+
+  @override
+  String get ui_open_settings => 'Open Settings';
+
+  @override
+  String get ui_open_settings_desc =>
+      'Storage permission has been permanently denied. Please go to system settings to manually grant file management permission.';
+
+  @override
   String get msg2c146598 =>
       'Internet cloud tunnel online! Temporary link activated.';
 
@@ -2579,9 +2619,6 @@ class L10nEn extends L10n {
   String get ui_confirm => 'Confirm';
 
   @override
-  String get ui_share => 'Share';
-
-  @override
   String get ui_move_here => 'Move Here';
 
   @override
@@ -2622,6 +2659,9 @@ class L10nEn extends L10n {
 
   @override
   String get ui_show_folder_contents_count => 'Show Folder Contents Count';
+
+  @override
+  String get ui_set_as_home => 'Set as Home';
 
   @override
   String get ui_show_folder_size => 'Show Folder Size';
@@ -3900,6 +3940,55 @@ class L10nEn extends L10n {
   String get ui_app_grant_usage_access => 'Grant Usage Access';
 
   @override
+  String get ui_app_usage_access_description =>
+      'To see exact app storage sizes (APK + data + cache) instead of just the raw installer size, please enable the Usage Access permission for ZenFile in System Settings.';
+
+  @override
+  String get ui_backup_apk_open_folder => 'Open Backup Folder';
+
+  @override
+  String ui_backup_apk_success_with_path(String path) {
+    return 'Successfully backed up to $path. Open the folder?';
+  }
+
+  @override
+  String get ui_backup_apk_open => 'Open';
+
+  @override
+  String get ui_clear_remote_cache_success => 'Remote cache cleared.';
+
+  @override
+  String get ui_clear_remote_cache_failed => 'Failed to clear remote cache.';
+
+  @override
+  String get ui_app_system_settings => 'System Settings / Details';
+
+  @override
+  String get ui_app_restore_install => 'Restore / Install App';
+
+  @override
+  String get ui_app_size_label => 'Size:';
+
+  @override
+  String get ui_app_installed_label => 'Installed:';
+
+  @override
+  String get ui_app_backup_date_label => 'Backup Date:';
+
+  @override
+  String get ui_batch_backup_progress => 'Backing up selected apps...';
+
+  @override
+  String ui_batch_backup_success(int count) {
+    return 'Successfully backed up $count app(s) to ZenFile/Backups/Apps/';
+  }
+
+  @override
+  String ui_batch_backup_failed(String error) {
+    return 'Some apps failed to back up: $error';
+  }
+
+  @override
   String get ui_app_search_backup => 'Search backups...';
 
   @override
@@ -3907,6 +3996,20 @@ class L10nEn extends L10n {
 
   @override
   String get ui_app_no_backup_found => 'No Backups Found';
+
+  @override
+  String get ui_app_backup_empty_subtitle =>
+      'A list of your backed up APK and APKS files will show here.';
+
+  @override
+  String ui_app_backup_search_not_found(String query) {
+    return 'We couldn\'t find any backups matching \"$query\"';
+  }
+
+  @override
+  String ui_app_backup_size_date(String size, String date) {
+    return 'Size: $size • Backup Date: $date';
+  }
 
   @override
   String get ui_app_split_apk => 'Split APK (APKS)';
@@ -4070,6 +4173,40 @@ class L10nEn extends L10n {
   String get msg_subtitle_size => 'Subtitle Size';
 
   @override
+  String get msg_subtitle_position => 'Subtitle Position';
+
+  @override
+  String get msg_subtitle_pos_top => 'Top';
+
+  @override
+  String get msg_subtitle_pos_bottom => 'Bottom';
+
+  @override
+  String get msg_subtitle_no_background => 'Remove Subtitle Background';
+
+  @override
+  String get msg_auto_clean_cache => 'Auto Clean Cache';
+
+  @override
+  String get msg_auto_clean_cache_hint => 'Tap to set auto clean interval';
+
+  @override
+  String get msg_auto_clean_cache_picker_hint =>
+      'Slide to select auto clean interval';
+
+  @override
+  String get msg_cache_clean_unit_day => 'Days';
+
+  @override
+  String get msg_cache_clean_unit_hour => 'Hours';
+
+  @override
+  String get msg_cache_clean_unit_minute => 'Minutes';
+
+  @override
+  String get msg_cache_clean_confirm => 'Confirm';
+
+  @override
   String get msg_quick_actions => 'Quick Actions';
 
   @override
@@ -4148,4 +4285,83 @@ class L10nEn extends L10n {
 
   @override
   String get msg_custom_scan_paths => 'Custom Scan Paths';
+
+  @override
+  String get notification_web_share_local_title => 'ZenFile Local Web Share';
+
+  @override
+  String get notification_web_share_internet_title =>
+      'ZenFile Internet Web Share';
+
+  @override
+  String notification_web_share_running(Object url) {
+    return 'Running at $url';
+  }
+
+  @override
+  String get notification_ftp_title => 'ZenFile FTP Server';
+
+  @override
+  String notification_ftp_running(Object ip, Object port) {
+    return 'Running at ftp://$ip:$port';
+  }
+
+  @override
+  String get ui_download_links => 'Download Links';
+
+  @override
+  String get changelog_v1121_new_features_title => 'New Features';
+
+  @override
+  String get changelog_v1121_new_feature_1 =>
+      'Custom Home Page Display: In the browse page, tap the three-dot menu of a folder and select \"Set as Home\", or long-press a folder and find \"Set as Home\" in the \"More\" menu. In dual-window mode, each window can independently set a different home path, improving multi-directory management efficiency.';
+
+  @override
+  String get changelog_v1121_new_feature_2 =>
+      'WEB Sharing Enhancement: Supports custom shared paths, fixing the previous issue where only folders could be browsed but file contents could not be viewed. Also adds common file operation buttons such as copy, paste, cut, delete, and rename, making remote management more convenient.';
+
+  @override
+  String get changelog_v1121_new_feature_3 =>
+      'Remote Cache Cleanup: Added custom remote cache cleanup function for flexible storage space management.';
+
+  @override
+  String get changelog_v1121_bugfixes_title => 'Bug Fixes';
+
+  @override
+  String get changelog_v1121_bugfix_1 =>
+      'Fixed the issue where the SMB client would show an empty directory when returning from any shared directory.';
+
+  @override
+  String get changelog_v1121_bugfix_2 =>
+      'Fixed some interface hardcoded Chinese text issues, improving display compatibility in multilingual environments.';
+
+  @override
+  String get changelog_v1121_known_issues_title =>
+      'Known Issues (to be fixed in next version)';
+
+  @override
+  String get changelog_v1121_known_issue_1 =>
+      'App crashes after clearing app data and reopening.';
+
+  @override
+  String get changelog_v1121_known_issue_2 =>
+      'Adjusting external subtitle display size in the video player does not take effect temporarily.';
+
+  @override
+  String get changelog_v1121_known_issue_3 =>
+      'Currently only the WebDAV client supports media file streaming playback; other clients do not support it yet.';
+
+  @override
+  String get changelog_v1121_known_issue_4 =>
+      'When backing up large APK installation packages, the interface may get stuck in the execution state, but the actual backup is still running in the background. Please press the back button and go to \"Backed up APKs\" to view the backup files. The backup path is in the main storage ZenFile/Backups directory.';
+
+  @override
+  String get changelog_v1121_known_issue_5 =>
+      'After the FTP sharing service is enabled, directories appear empty when connecting with other FTP clients.';
+
+  @override
+  String get msg_editor_lines => 'lines';
+
+  @override
+  String get msg_editor_modified => 'Modified';
 }

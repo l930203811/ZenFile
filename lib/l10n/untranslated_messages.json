@@ -1,5 +1,7 @@
 {
   "ar": [
+    "msg_permission_request_title",
+    "msg_permission_request_desc",
     "log_quick_action_panel",
     "log_favorites",
     "log_drawer_redesign",
@@ -32,6 +34,8 @@
   ],
 
   "de": [
+    "msg_permission_request_title",
+    "msg_permission_request_desc",
     "log_quick_action_panel",
     "log_favorites",
     "log_drawer_redesign",
@@ -64,6 +68,8 @@
   ],
 
   "en": [
+    "msg_permission_request_title",
+    "msg_permission_request_desc",
     "log_v1_1_1_line1",
     "log_v1_1_1_line2",
     "log_v1_1_1_line3",
@@ -80,6 +86,8 @@
   ],
 
   "es": [
+    "msg_permission_request_title",
+    "msg_permission_request_desc",
     "log_quick_action_panel",
     "log_favorites",
     "log_drawer_redesign",
@@ -112,6 +120,8 @@
   ],
 
   "fr": [
+    "msg_permission_request_title",
+    "msg_permission_request_desc",
     "log_quick_action_panel",
     "log_favorites",
     "log_drawer_redesign",
@@ -144,6 +154,8 @@
   ],
 
   "ja": [
+    "msg_permission_request_title",
+    "msg_permission_request_desc",
     "log_quick_action_panel",
     "log_favorites",
     "log_drawer_redesign",
@@ -176,6 +188,8 @@
   ],
 
   "ko": [
+    "msg_permission_request_title",
+    "msg_permission_request_desc",
     "log_quick_action_panel",
     "log_favorites",
     "log_drawer_redesign",
@@ -208,6 +222,8 @@
   ],
 
   "ru": [
+    "msg_permission_request_title",
+    "msg_permission_request_desc",
     "log_quick_action_panel",
     "log_favorites",
     "log_drawer_redesign",
@@ -240,6 +256,8 @@
   ],
 
   "zh_TW": [
+    "msg_permission_request_title",
+    "msg_permission_request_desc",
     "log_quick_action_panel",
     "log_favorites",
     "log_drawer_redesign",

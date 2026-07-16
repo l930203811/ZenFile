@@ -13,6 +13,7 @@ pluginManagement {
     repositories {
         maven { url = uri("C:/Users/admin/flutter-maven-repo") }
         maven { url = uri("https://mirrors.tuna.tsinghua.edu.cn/flutter/download.flutter.io") }
+        maven { url = uri("https://storage.googleapis.com/download.flutter.io") }
         google()
         mavenCentral()
         gradlePluginPortal()

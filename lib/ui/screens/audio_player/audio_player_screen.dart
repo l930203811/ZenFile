@@ -389,7 +389,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       }
 
       // 回退：完整下载后播放
-      final cacheDir = Directory('/storage/emulated/0/Download/ZenFile_Remote');
+      final cacheDir = Directory('/storage/emulated/0/ZenFile');
       if (!cacheDir.existsSync()) cacheDir.createSync(recursive: true);
       final cachePath = p.join(cacheDir.path, fileName);
       if (!File(cachePath).existsSync()) {
