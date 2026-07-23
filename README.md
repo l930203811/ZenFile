@@ -35,34 +35,6 @@ A beautifully crafted, open-source file manager and offline media center for And
 · After enabling FTP sharing, other FTP clients may see an empty directory when connecting.
 
 ---
-
-## 🚀 What's New in v1.1.21
-
----
-
-✨ New Features
-
-· Custom Home Directory: In the browse view, tap the three‑dot menu on a folder and select “Set as Home”, or long‑press the folder and find “Set as Home” in the “More” menu. In dual‑window mode, each window can have its own independent home path for efficient multi‑directory management.
-· WEB Sharing Enhanced: Supports custom share paths and fixes the issue where only folders could be browsed but files could not be viewed. Added common file operation buttons (copy, paste, cut, delete, rename) for easier remote management.
-· Remote Cache Cleanup: Added customizable remote cache cleanup options, giving you more flexibility in managing storage space.
-
-🐛 Bug Fixes
-
-· Fixed an issue where the SMB client would show an empty directory when returning after entering any shared folder.
-· Fixed hard‑coded Chinese strings in some UI elements, improving display compatibility in multilingual environments.
-· Fixed an issue where global search returned no results.
-
-⚠️ Known Issues (to be fixed in the next version)
-
-· The app may crash upon reopening after clearing its data.
-
-· Adjusting the display size of external subtitles in the video player does not take effect.
-
-· Currently, only the WebDAV client supports media file streaming; other clients do not yet support this feature.
-· After entering any shared directory via the SMB client, returning to the parent directory shows an empty list, and the breadcrumb path is incorrect.
-· When backing up large APK packages, the interface may appear stuck in the executing state, though the backup continues in the background. Press the Back button and check "Backed up APKs" to view the backup files; the backup location is ZenFile/Backups on the main storage.
-· After enabling FTP sharing, other FTP clients may see an empty directory when connecting.
-
 ---
 
 ## ✨ Features
