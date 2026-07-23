@@ -1825,6 +1825,9 @@ class L10nJa extends L10n {
   String get apk6 => 'APKファイルを共有';
 
   @override
+  String get copy_package_name => 'パッケージ名をコピー';
+
+  @override
   String get msga0b18169 => 'バックアップファイルを共有';
 
   @override
@@ -4187,26 +4190,29 @@ class L10nJa extends L10n {
 
   @override
   String get changelog_v1121_new_feature_1 =>
-      'カスタムホームページ表示：ブラウズページで、フォルダの三点メニューをタップして「ホームに設定」を選択するか、フォルダを長押しして「その他」メニューから「ホームに設定」を選択します。デュアルウィンドウモードでは、両方のウィンドウで異なるホームパスを独立して設定でき、複数ディレクトリの管理効率が向上します。';
+      'アプリ管理：アプリのポップアップメニューに「パッケージ名をコピー」オプションを追加し、ワンタップでパッケージ名をコピーできるようになりました。';
 
   @override
   String get changelog_v1121_new_feature_2 =>
-      'WEB共有の強化：カスタム共有パスをサポートし、以前はフォルダの閲覧のみが可能でファイルの内容を表示できなかった問題を修正しました。さらに、コピー、貼り付け、切り取り、削除、名前の変更などの一般的なファイル操作ボタンを追加し、リモート管理をより便利にしました。';
+      'パスバー：パスバーを長押しすると編集モードになり、指定したパスを入力して移動できるようになりました。';
 
   @override
-  String get changelog_v1121_new_feature_3 =>
-      'リモートキャッシュクリーンアップ：カスタムリモートキャッシュクリーンアップ機能を追加し、ストレージスペースを柔軟に管理できます。';
+  String get changelog_v1121_opt_title => '最適化';
+
+  @override
+  String get changelog_v1121_opt_1 =>
+      '一部の予備アイコンと冗長なコードを削除し、アプリのサイズを削減しつつコードの保守性を向上しました。';
 
   @override
   String get changelog_v1121_bugfixes_title => 'バグ修正';
 
   @override
   String get changelog_v1121_bugfix_1 =>
-      'SMBクライアントで任意の共有ディレクトリに入って戻ったときに、ディレクトリが空で表示される問題を修正しました。';
+      'グローバル検索で data ディレクトリ内のファイルが検索できなかった問題を修正しました。';
 
   @override
   String get changelog_v1121_bugfix_2 =>
-      '一部のインターフェースに中国語のハードコードが存在する問題を修正し、多言語環境での表示互換性を向上させました。';
+      'アプリ管理のポップアップで「アンインストール」ボタンが一部の端末で画面下部にはみ出し、タップしづらくなっていた問題を修正しました。';
 
   @override
   String get changelog_v1121_known_issues_title => '既知の問題（次のバージョンで修正予定）';
@@ -4236,4 +4242,16 @@ class L10nJa extends L10n {
 
   @override
   String get msg_editor_modified => '変更済み';
+
+  @override
+  String get go_to_path => 'パスに移動';
+
+  @override
+  String get copy_path => 'パスをコピー';
+
+  @override
+  String get enter_path_hint => '絶対パスを入力...';
+
+  @override
+  String get breadcrumb_context_title => 'パンくずリストオプション';
 }

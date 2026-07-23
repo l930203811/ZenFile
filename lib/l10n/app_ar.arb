@@ -1,6524 +1,4301 @@
 {
   "@@locale": "ar",
-
   "@msg6f3e533a": {
     "description": "main.dart"
-
   },
   "msg6f3e533a": "جارٍ فتح المستند المشترك...",
-
   "@msgbca59325": {
     "description": "main.dart"
-
   },
   "msgbca59325": "جارٍ تحليل تدفق المحتوى الآمن",
-
   "@zenfile": {
     "description": "main.dart"
-
   },
   "zenfile": "يحتاج ZenFile إلى إذن التخزين لإدارة ملفات الوسائط الخاصة بك وتنظيمها وعرضها بسلاسة.",
-
   "@e": {
     "type": "text"
-
   },
   "e": "فشل في مسح دليل ذاكرة التخزين المؤقت: {e}",
-
   "@msg21cefa9b": {
     "description": "providers\\file_manager_provider.dart"
-
   },
   "msg21cefa9b": "التخزين الداخلي",
-
   "@smb": {
     "description": "providers\\file_manager_provider.dart"
-
   },
   "smb": "LAN/SMB",
-
   "@msg05d3c93c": {
     "description": "providers\\file_manager_provider.dart"
-
   },
   "msg05d3c93c": "تم نقل العناصر بنجاح",
-
   "@e1": {
     "type": "text"
-
   },
   "e1": "فشل النقل: {e}",
-
   "@msga45bac47": {
     "description": "providers\\file_manager_provider.dart"
-
   },
   "msga45bac47": "تم إلغاء العملية",
-
   "@e2": {
     "type": "text"
-
   },
   "e2": "فشل الاتصال بالخادم البعيد: {e}",
-
   "@e3": {
     "type": "text"
-
   },
   "e3": "خطأ في إنشاء المجلد: {e}",
-
   "@msg3df5ef6c": {
     "description": "providers\\file_manager_provider.dart"
-
   },
   "msg3df5ef6c": "تم تجاوز حد الضغط",
-
   "@msg5e32276d": {
     "description": "providers\\file_manager_provider.dart"
-
   },
   "msg5e32276d": "فنان غير معروف",
-
   "@msg497ec49d": {
     "description": "providers\\file_manager_provider.dart"
-
   },
   "msg497ec49d": "المجلدات المحلية",
-
   "@e4": {
     "type": "text"
-
   },
   "e4": "فشل تنزيل الملف البعيد: {e}",
-
   "@msg6b9ca1dd": {
     "description": "providers\\file_manager_provider.dart"
-
   },
   "msg6b9ca1dd": "لا يمكن نقل المجلد إلى نفسه أو نفس الموقع",
-
   "@e5": {
     "type": "text"
-
   },
   "e5": "فشل نقل العناصر: {e}",
-
   "@msg5238524c": {
     "description": "providers\\file_manager_provider.dart"
-
   },
   "msg5238524c": "لا يمكن نسخ المجلد إلى نفسه أو نفس الموقع",
-
   "@e6": {
     "type": "text"
-
   },
   "e6": "فشل نسخ العناصر: {e}",
-
   "@msgc806d0fa": {
     "description": "providers\\media_provider.dart"
-
   },
   "msgc806d0fa": "الأرشيف",
-
   "@msg03070d08": {
     "description": "providers\\media_provider.dart"
-
   },
   "msg03070d08": "APK",
-
   "@ftp": {
     "description": "providers\\media_provider.dart"
-
   },
   "ftp": "مشاركة FTP",
-
   "@web": {
     "description": "providers\\media_provider.dart"
-
   },
   "web": "مشاركة الويب",
-
   "@msge86bd662": {
     "description": "providers\\media_provider.dart"
-
   },
   "msge86bd662": "معرض الجهاز (تلقائي)",
-
   "@msg16166a01": {
     "description": "providers\\media_provider.dart"
-
   },
   "msg16166a01": "مكتبة الصوتيات بالجهاز (تلقائي)",
-
   "@msgbb34b7ec": {
     "description": "providers\\media_provider.dart"
-
   },
   "msgbb34b7ec": "التخزين الداخلي (فحص جميع المجلدات)",
-
   "@msg26a1f2d9": {
     "description": "providers\\media_provider.dart"
-
   },
   "msg26a1f2d9": "معرض الجهاز (لقطات الشاشة)",
-
   "@msg39e11368": {
     "description": "services\\apk_installer_service.dart"
-
   },
   "msg39e11368": "جارٍ استخراج حزمة APK...",
-
   "@apk": {
     "description": "services\\apk_installer_service.dart"
-
   },
   "apk": "لم يتم العثور على APK قابل للتثبيت في الحزمة",
-
   "@apk1": {
     "description": "services\\apk_installer_service.dart"
-
   },
   "apk1": "لا يمكن تشغيل مثبت APK المقسم",
-
   "@msg2f0138ad": {
     "description": "services\\background_archive_service.dart"
-
   },
   "msg2f0138ad": "جارٍ ضغط الملفات",
-
   "@msga2292820": {
     "description": "services\\background_archive_service.dart"
-
   },
   "msga2292820": "تم إنشاء الأرشيف بنجاح",
-
   "@msg0683ca6b": {
     "description": "services\\background_archive_service.dart"
-
   },
   "msg0683ca6b": "جارٍ استخراج الأرشيف",
-
   "@msg1f216eda": {
     "description": "services\\background_archive_service.dart"
-
   },
   "msg1f216eda": "تم استخراج الأرشيف بنجاح",
-
   "@msg5fa802be": {
     "description": "services\\background_archive_service.dart"
-
   },
   "msg5fa802be": "فشلت العملية",
-
   "@msg8fccf382": {
     "description": "services\\background_archive_service.dart"
-
   },
   "msg8fccf382": "نعم/لا",
-
   "@msgc18fb099": {
     "description": "services\\background_archive_service.dart"
-
   },
   "msgc18fb099": "تم الاستخراج بنجاح. فتح الموقع?",
-
   "msg_compress_open_location": "تم الضغط بنجاح. فتح الموقع?",
-
   "@msg4367e85a": {
     "description": "services\\background_archive_service.dart"
-
   },
   "msg4367e85a": "لم يتم العثور على ملفات قابلة للضغط",
-
   "@msg60a4545d": {
     "description": "services\\background_archive_service.dart"
-
   },
   "msg60a4545d": "تنسيق غير مدعوم",
-
   "@msg226519e7": {
     "description": "services\\background_archive_service.dart"
-
   },
   "msg226519e7": "لم يتم العثور على ملفات أرشيف",
-
   "@msg88d150c7": {
     "description": "services\\folder_share_service.dart"
-
   },
   "msg88d150c7": "لا توجد عناصر للمشاركة.",
-
   "@e7": {
     "type": "text"
-
   },
   "e7": "خطأ في قراءة الملف المشترك: {e}",
-
   "@zenfilesmbvirtualstoragebridgen": {
     "description": "services\\remote\\lan_client.dart"
-
   },
   "zenfilesmbvirtualstoragebridgen": "جسر التخزين الافتراضي LAN/SMB لـ ZenFile\n",
-
   "@msgf3a485df": {
     "description": "services\\remote\\saf_client.dart"
-
   },
   "msgf3a485df": "مجلد جديد",
-
   "@msge48a7157": {
     "description": "services\\remote\\saf_client.dart"
-
   },
   "msge48a7157": "ملف جديد",
-
   "@zenfilebackupssettings": {
     "description": "services\\settings_backup_service.dart"
-
   },
   "zenfilebackupssettings": "تم نسخ احتياطي للإعدادات إلى ZenFile/Backups/Settings/",
-
   "@json": {
     "description": "services\\settings_backup_service.dart"
-
   },
   "json": "يرجى اختيار ملف نسخ احتياطي للإعدادات .json صالح",
-
   "@e8": {
     "type": "text"
-
   },
   "e8": "فشل استعادة الإعدادات: {e}",
-
   "@url": {
     "type": "text"
-
   },
   "url": "لا يمكن فتح الرابط {url}",
-
   "@zenfile1": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "zenfile1": "حول ZenFile",
-
   "@v1041": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "v1041": "v1.0.43 (عرض)",
-
   "ui_view_update": "عرض التحديثات",
-
   "@ui_view_update": {
     "description": "Button label to view changelog on the about screen"
-
   },
   "@zenfileflutter": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "zenfileflutter": "ZenFile هو مدير ملفات ومركز وسائط غير متصل جميل وسلس ومفتوح المصدر مبني بـ Flutter. مصمم لأداء فائق وجمالية نظيفة وتجربة مستخدم سلسة.",
-
   "@msga12ebf50": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msga12ebf50": "سريع للغاية",
-
   "@msgfccb5a01": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msgfccb5a01": "تخزين مؤقت عديم الحالة ومسح غير متزامن",
-
   "@msg6d8fbdac": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg6d8fbdac": "مساحة عمل آمنة مشفرة",
-
   "@ftpsftpwebdav": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "ftpsftpwebdav": "يدعم FTP و LAN و SFTP و WebDAV",
-
   "@msge8f352b9": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msge8f352b9": "واجهة جميلة",
-
   "@amoled": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "amoled": "AMOLED أسود نقي وسمات نابضة",
-
   "@msge8069659": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msge8069659": "نجمة في المستودع",
-
   "@telegram": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "telegram": "الانضمام إلى قناة تيليجرام",
-
   "@msg5f84adea": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg5f84adea": "مشاركة التطبيق مع الأصدقاء",
-
   "@zenfilehttpsgithubcoml930203811zenfilereleases": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "zenfilehttpsgithubcoml930203811zenfilereleases": "نوصي بـ ZenFile، مدير ملفات ومركز وسائط غير متصل جميل: https://github.com/l930203811/ZenFile/releases",
-
   "@github": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "github": "عرض الكود المصدري على GitHub",
-
   "@sequeldpdnsorg": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "sequeldpdnsorg": "التواصل: 1@sequel.dpdns.org",
-
   "@msged8518d7": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msged8518d7": "تم نسخ البريد الإلكتروني إلى الحافظة",
-
   "@qq": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "qq": "تم نسخ رقم مجموعة QQ إلى الحافظة",
-
   "@bysequel": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "bysequel": "صنع بـ ❤️ بواسطة Sequel",
-
   "@zenfile2": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "zenfile2": "حقوق النشر © 2026 ZenFile. جميع الحقوق محفوظة.",
-
   "@msg138d3725": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg138d3725": "دعمك ي.keepني مستمراً ❤️",
-
   "@msgccd097a7": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msgccd097a7": "Alipay",
-
   "@msgbffe28c8": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msgbffe28c8": "WeChat Pay",
-
   "@msg0537b04e": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg0537b04e": "اضغط مطولاً على الصورة لحفظها في المعرض. شكراً لدعمك!",
-
   "@zenfilev1041": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "zenfilev1041": "تحميل ZenFile",
-
   "@msg9d287020": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg9d287020": "123 Cloud Drive",
-
   "@msgb2b41b6a": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msgb2b41b6a": "115 Cloud Drive",
-
   "@msg77ee718b": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg77ee718b": "Baidu Netdisk",
-
   "@msgbff1432a": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msgbff1432a": "Quark Cloud Drive",
-
   "@msge03395d0": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msge03395d0": "PikPak Cloud Drive",
-
   "@svg": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "svg": "تمت إضافة دعم SVG الكامل (معاينة الصور المصغرة والعرض)",
-
   "@ziprar7ztargz": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "ziprar7ztargz": "تمت إضافة ترميز الألوان لتنسيقات الأرشيف (كل من zip/rar/7z/tar/gz له ألوان فريدة)",
-
   "@msg09a6e11b": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg09a6e11b": "تمت إضافة ميزة التنزيل قبل التشغيل للملفات البعيدة",
-
   "@msg1c3206b8": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg1c3206b8": "تم الإصلاح: الاستخراج لا يمكنه الانتقال إلى صفحة التصفح من صفحة الفئات",
-
   "@msgb1e4da91": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msgb1e4da91": "تم الإصلاح: مشاكل تجمد الصفحة مع 'عرض دليل ذاكرة التخزين المؤقت' و'فتح الموقع بعد الاستخراج'",
-
   "@yyyymmdd": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "yyyymmdd": "تم تحسين تنسيق تاريخ الملف إلى yyyy-MM-dd",
-
   "@msg4c425252": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg4c425252": "تم تحسين العرض الافتراضي للوقت بتنسيق 24 ساعة",
-
   "@msg1eaf4abb": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg1eaf4abb": "تم تحسين شريط المسار بالكامل (أزرار مسار أكثر إحكاماً وأنماط أسهم)",
-
   "@msgd3381817": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msgd3381817": "تم نقل شريط علامات التبويب وشريط المسار لأعلى لإعطاء مساحة أكبر لقائمة الملفات",
-
   "@msg342688b2": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg342688b2": "تم تبسيط منطقة الرأس في النافذة المزدوجة (تم تقليل الارتفاع بنسبة 30%)",
-
   "@msg8954452f": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg8954452f": "يحل الخادم البعيد محل علامة التبويب غير النشطة في وضع النافذة المزدوجة",
-
   "@msgac5a0315": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msgac5a0315": "تم تحسين إيماءة الرجوع: يعود إلى إلغاء التحديد بدلاً من الخروج من الصفحة عند تحديد عناصر",
-
   "@msg1904388e": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg1904388e": "السحب بإصبعين يميناً يفتح القائمة الجانبية، والسحب بإصبعين يساراً يبدل صفحة الفئات/التصفح",
-
   "@msg2762c070": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg2762c070": "تمت إضافة مفتاح السحب بإصبعين (يمكن تعطيله في الإعدادات العامة والسلوك)",
-
   "@msg48dca69a": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg48dca69a": "تم تغيير شريط التقدم إلى نمط حلقة دائرية مع نسبة مئوية في المركز",
-
   "@windows": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "windows": "إصلاح توافق المسار البعيد (مشكلة فاصل المسار على منصة Windows)",
-
   "@msg65eefc98": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg65eefc98": "يتحكم مفتاح شريط العناوين الآن في مسارات التنقل المنسقة",
-
   "@msg96a6856a": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg96a6856a": "إعداد الصفحة الرئيسية الافتراضية (اختر صفحة الفئات أو التصفح كصفحة بدء)",
-
   "@msg250213fd": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg250213fd": "أيقونة مثبت التطبيقات الجديدة (نمط Zen الطبيعي)",
-
   "@msg7f53e8b1": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg7f53e8b1": "شريط تقدم دائري بالنسبة المئوية (يظهر أثناء النسخ/النقل)",
-
   "@msg051469b5": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg051469b5": "يتم إغلاق شريط التقدم تلقائياً بعد نجاح العملية، لا حاجة لتأكيد يدوي",
-
   "@msge4c4d5e2": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msge4c4d5e2": "تم تغيير قائمة عمليات الملفات إلى نافذة منبثقة سفلية (لم تعد تغطي شريط علامات التبويب)",
-
   "@msga33dbb51": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msga33dbb51": "تم نقل شريط إجراءات وضع التحديد إلى الأسفل (مع مؤشر عدد العناصر المحددة)",
-
   "@msge6c84f11": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msge6c84f11": "تم الإصلاح: النقر للدخول إلى تفاصيل التطبيق بعد تغيير الأيقونة",
-
   "@msg46b8ca8f": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg46b8ca8f": "تم الإصلاح: تبديل غير طبيعي للصفحة المحلية بعد النسخ البعيد",
-
   "@msgb3dea5f5": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msgb3dea5f5": "قائمة الضغط المطول في عارض النص تدعم النسخ وتحديد الكل",
-
   "@msga4c92214": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msga4c92214": "تم تحسين تخطيط النافذة المنبثقة للسحب والإفلات (أكثر إحكاماً)",
-
   "@msg32854144": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg32854144": "أيقونات صفحة الفئات تدعم تبديل الخلفية الدائرية/المربعة",
-
   "@msg3a93e257": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg3a93e257": "إعداد شكل أيقونة الفئة (التبديل في المظهر والسمة)",
-
   "@zenfile3": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "zenfile3": "الإصدار الأول لـ ZenFile",
-
   "@msg47b760ed": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg47b760ed": "دعم علامات تبويب متعددة",
-
   "@ftpsftpwebdavsmb": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "ftpsftpwebdavsmb": "اتصال بالخادم البعيد (FTP/SFTP/WebDAV/SMB)",
-
   "@msg4b736dfb": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg4b736dfb": "خزنة تشفير الملفات",
-
   "@ftpwebdav": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "ftpwebdav": "ميزات خادم FTP/WebDAV",
-
   "@msg03257c2d": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg03257c2d": "إعدادات السمة والمظهر المخصص",
-
   "@msg5cce42e6": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg5cce42e6": "تحسين عمليات السحب والإفلات للملفات على الخادم البعيد",
-
   "@msg074f1ce7": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg074f1ce7": "تحسين ميزة أيقونة سطح المكتب المخصصة للتطبيق",
-
   "@msg5c66ffab": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg5c66ffab": "الضغط المطول في قائمة ملفات الخادم البعيد قد يؤدي إلى فتح نافذة السحب والإفلات (سيتم إصلاحه في الإصدار التالي)",
-
   "@bug1sequeldpdnsorgqq792408214": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "bug1sequeldpdnsorgqq792408214": "إذا كان لديك اقتراحات أو وجدت أخطاء، يرجى إرسال ملاحظات عبر البريد الإلكتروني 1@sequel.dpdns.org أو مجموعة QQ 792408214.",
-
   "@msgd054a84c": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msgd054a84c": "اضغط مطولاً لحفظ الصورة",
-
   "@msgb3b83e12": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msgb3b83e12": "فشل تحميل الصورة",
-
   "@msgc2790d54": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msgc2790d54": "يلزم إذن التخزين لحفظ الصورة",
-
   "@msg1292d351": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg1292d351": "تم حفظ الصورة في المعرض",
-
   "@e9": {
     "type": "text"
-
   },
   "e9": "فشل الحفظ: {e}",
-
   "@msg7a4ee0c7": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
-
   },
   "msg7a4ee0c7": "لا توجد ملفات للمشاركة",
-
   "@msg45326802": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
-
   },
   "msg45326802": "تم حذف العناصر بنجاح",
-
   "@e10": {
     "type": "text"
-
   },
   "e10": "خطأ في المشاركة: {e}",
-
   "@msg4fb42e6e": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
-
   },
   "msg4fb42e6e": "تم النسخ إلى الحافظة",
-
   "@msge5212c58": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
-
   },
   "msge5212c58": "تم القص إلى الحافظة",
-
   "@msgc8ce4b36": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
-
   },
   "msgc8ce4b36": "إعادة تسمية",
-
   "@msgf139c5cf": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
-
   },
   "msgf139c5cf": "أدخل الاسم الجديد",
-
-  "@msgf139c5cf": {
-    "description": "ui\\screens\\all_recent_files_screen.dart"
-
-  },
   "msg_rename_extension_warning_title": "تغيير الامتداد",
-
   "@msg_rename_extension_warning_title": {
     "description": "Title of warning dialog when file extension is changed during rename"
-
   },
   "msg_rename_extension_warning_content": "أنت تقوم بتغيير امتداد الملف، مما قد يمنع فتح الملف بشكل صحيح. هل أنت متأكد من المتابعة؟",
-
   "@msg_rename_extension_warning_content": {
     "description": "Content of warning dialog when file extension is changed during rename"
-
   },
   "msg_rename_extension_confirm": "تأكيد التغيير",
-
   "@msg_rename_extension_confirm": {
     "description": "Confirm button text in extension change warning dialog"
-
   },
   "msg53518c22": "حذف ملف",
-
   "@msg47809e5d": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
-
   },
   "msg47809e5d": "لا توجد ملفات حديثة",
-
   "@msg7a7e6c25": {
     "description": "ui\\screens\\all_recent_files_screen.dart"
-
   },
   "msg7a7e6c25": "ستظهر الملفات المنشأة أو المنزلة حديثاً هنا.",
-
   "@msg765d1698": {
     "description": "ui\\screens\\archive_viewer_screen.dart"
-
   },
   "msg765d1698": "حذف العناصر المحددة",
-
   "@msg365f2f0a": {
     "description": "ui\\screens\\archive_viewer_screen.dart"
-
   },
   "msg365f2f0a": "تم حذف العناصر بنجاح ✓",
-
   "@successcount": {
     "type": "text"
-
   },
   "successcount": "تمت إضافة {successCount} عنصر إلى الأرشيف بنجاح ✓",
-
   "@count": {
     "type": "text"
-
   },
   "count": "تم لصق {count} عناصر في الأرشيف ✓",
-
   "@msg39cb3352": {
     "description": "ui\\screens\\archive_viewer_screen.dart"
-
   },
   "msg39cb3352": "لا يمكن قراءة الأرشيف",
-
   "@msg99abedc6": {
     "description": "ui\\screens\\archive_viewer_screen.dart"
-
   },
   "msg99abedc6": "استخراج إلى المجلد الحالي",
-
   "@msg8d0cfb58": {
     "description": "ui\\screens\\archive_viewer_screen.dart"
-
   },
   "msg8d0cfb58": "إضافة ملفات",
-
   "@msg5bf1fb72": {
     "description": "ui\\screens\\audio_player\\audio_artwork_widget.dart"
-
   },
   "msg5bf1fb72": "صوت بدون فقدان",
-
   "@msg47cab5ae": {
     "description": "ui\\screens\\audio_player\\audio_controls_widget.dart"
-
   },
   "msg47cab5ae": "مؤقت النوم",
-
   "@msg50c1b248": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
-
   },
   "msg50c1b248": "تم إيقاف التشغيل في الخلفية",
-
   "@msg6d16d396": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
-
   },
   "msg6d16d396": "تم تمكين التشغيل في الخلفية",
-
   "@msg3038d9b8": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
-
   },
   "msg3038d9b8": "عشوائي: إيقاف",
-
   "@msg29eed1da": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
-
   },
   "msg29eed1da": "التشغيل في الخلفية",
-
   "@msg4aa059f7": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
-
   },
   "msg4aa059f7": "اضغط لإيقاف التشغيل في الخلفية",
-
   "@msg8f7f4490": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
-
   },
   "msg8f7f4490": "إظهار إشعار مع عناصر التحكم",
-
   "@msgb7c87215": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
-
   },
   "msgb7c87215": "المؤثرات الصوتية ومعادل الصوت",
-
   "@msgfc449780": {
     "description": "ui\\screens\\audio_player\\audio_player_screen.dart"
-
   },
   "msgfc449780": "معلومات ملف الصوت",
-
   "@msgb4fbc92c": {
     "description": "ui\\screens\\backup_settings_screen.dart"
-
   },
   "msgb4fbc92c": "النسخ الاحتياطي والاستعادة",
-
   "@zenfilebackupssettings1": {
     "description": "ui\\screens\\backup_settings_screen.dart"
-
   },
   "zenfilebackupssettings1": "حفظ جميع الإعدادات الحالية إلى ZenFile/Backups/Settings/",
-
   "@json1": {
     "description": "ui\\screens\\backup_settings_screen.dart"
-
   },
   "json1": "اختيار واستعادة الإعدادات من ملف نسخ احتياطي JSON",
-
   "@msg534c621a": {
     "description": "ui\\screens\\backup_settings_screen.dart"
-
   },
   "msg534c621a": "دليل النسخ الاحتياطي",
-
   "@msg396b7d3f": {
     "description": "ui\\screens\\backup_settings_screen.dart"
-
   },
   "msg396b7d3f": "حجم الملف",
-
   "@msgc047ee32": {
     "description": "ui\\screens\\backup_settings_screen.dart"
-
   },
   "msgc047ee32": "وقت آخر نسخ احتياطي",
-
   "@msg917fd6ef": {
     "description": "ui\\screens\\database_reader_screen.dart"
-
   },
   "msg917fd6ef": "لا توجد بيانات للتصدير.",
-
   "@sqlite": {
     "description": "ui\\screens\\database_reader_screen.dart"
-
   },
   "sqlite": "قارئ قاعدة بيانات SQLite",
-
   "@msg03a0d224": {
     "description": "ui\\screens\\database_reader_screen.dart"
-
   },
   "msg03a0d224": "هيكل الجدول",
-
   "@sql": {
     "description": "ui\\screens\\database_reader_screen.dart"
-
   },
   "sql": "وحدة SQL",
-
   "@msge2f0fe67": {
     "description": "ui\\screens\\database_reader_screen.dart"
-
   },
   "msge2f0fe67": "فشل فتح قاعدة البيانات",
-
   "@msg8bb11da4": {
     "description": "ui\\screens\\database_reader_screen.dart"
-
   },
   "msg8bb11da4": "لم يتم العثور على جداول في قاعدة البيانات هذه.",
-
   "@msg7796aa3e": {
     "description": "ui\\screens\\database_reader_screen.dart"
-
   },
   "msg7796aa3e": "البحث في الصفوف...",
-
   "@msg15f26697": {
     "description": "ui\\screens\\database_reader_screen.dart"
-
   },
   "msg15f26697": "لم يتم العثور على صفوف",
-
   "@msg0eaa935b": {
     "description": "ui\\screens\\database_reader_screen.dart"
-
   },
   "msg0eaa935b": "لم يتم تحميل تفاصيل الهيكل.",
-
   "@sql1": {
     "description": "ui\\screens\\database_reader_screen.dart"
-
   },
   "sql1": "محرر SQL",
-
   "@select": {
     "description": "ui\\screens\\database_reader_screen.dart"
-
   },
   "select": "قالب SELECT",
-
   "@csv": {
     "description": "ui\\screens\\database_reader_screen.dart"
-
   },
   "csv": "تصدير النتائج كـ CSV",
-
   "@select1": {
     "description": "ui\\screens\\database_reader_screen.dart"
-
   },
   "select1": "قم بتنفيذ استعلام SELECT لعرض النتائج.",
-
   "@msgd1ad9002": {
     "description": "ui\\screens\\database_reader_screen.dart"
-
   },
   "msgd1ad9002": "خطأ في تنفيذ الاستعلام.",
-
   "@targetpath": {
     "type": "text"
-
   },
   "targetpath": "تم نسخ المسار: {targetPath}",
-
   "@msg6ed14da7": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msg6ed14da7": "المستوى التالي",
-
   "@msgcd0b9aca": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msgcd0b9aca": "حذف المحدد",
-
   "@msgee14ee27": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msgee14ee27": "هل أنت متأكد أنك تريد حذف هذا العنصر؟ لا يمكن التراجع عن هذا الإجراء.",
-
   "@filenamecreatedname": {
     "type": "text"
-
   },
   "filenamecreatedname": "\"{fileName}\" موجود بالفعل، تم إنشاء \"{createdName}\".",
-
   "@foldernamecreatedname": {
     "type": "text"
-
   },
   "foldernamecreatedname": "\"{folderName}\" موجود بالفعل، تم إنشاء \"{createdName}\".",
-
   "@msgbd165c40": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msgbd165c40": "إنشاء مستند نصي فارغ جديد",
-
   "@msg68ac91eb": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msg68ac91eb": "أرشيف جديد",
-
   "@msg881f6a80": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msg881f6a80": "ضغط محتويات المجلد الحالي",
-
   "@msg97301f64": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msg97301f64": "خيارات العرض والفرز",
-
   "@msg829cb1dd": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msg829cb1dd": "عرض القائمة",
-
   "@msg0a4ebb8d": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msg0a4ebb8d": "خيارات الحجم والمسافات",
-
   "@msg88062f93": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msg88062f93": "حجم الأيقونة والمجلد",
-
   "@msga7c781f5": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msga7c781f5": "الحجم والمسافات",
-
   "@msga2946a1a": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msga2946a1a": "فرز حسب",
-
   "@za": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "za": "الاسم (ي-أ)",
-
   "@msg2e2a26bb": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msg2e2a26bb": "الحجم (كبير)",
-
   "@msgf437ace4": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msgf437ace4": "هذا المجلد فقط",
-
   "@msg551f98ba": {
-    "description": "zenfile_end_drawer.dart"
-
+    "description": "ui\\screens\\directory_screen.dart"
   },
-  "msg551f98ba": "لا توجد مفضلات",
-
+  "msg551f98ba": "هذا الدليل لا يحتوي على ملفات أو مجلدات فرعية.",
   "@ui_favorites": {
     "description": "zenfile_end_drawer.dart"
-
   },
   "ui_favorites": "المفضلات",
-
   "@ui_new_favorite": {
     "description": "directory_screen.dart"
-
   },
   "ui_new_favorite": "إضافة إلى المفضلات",
-
   "@ui_favorite": {
     "description": "file_action_dialogs.dart"
-
   },
   "ui_favorite": "مفضل",
-
   "@msg_favorited": {
     "description": "directory_screen.dart",
-
     "placeholders": {
       "name": {}
     }
   },
   "msg_favorited": "تمت إضافة {name} إلى المفضلات",
-
   "@msg4dfc167a": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msg4dfc167a": "تمكين الفرز المخصص لهذا المجلد",
-
   "@msge4c84f81": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msge4c84f81": "إضافة اختصار",
-
   "@msgd730e478": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msgd730e478": "جذر النظام",
-
   "@msg35546526": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msg35546526": "اتصالات الشبكة",
-
   "@msg67a6ea5e": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msg67a6ea5e": "إضافة اتصال شبكة",
-
   "@msgcc51d6c2": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msgcc51d6c2": "إزالة الاتصال",
-
   "@msg6e0f9cef": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msg6e0f9cef": "فئات الصفحة الرئيسية",
-
   "@msge9691076": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msge9691076": "مجلد فارغ",
-
-  "@msg551f98ba": {
-    "description": "ui\\screens\\directory_screen.dart"
-
-  },
-  "msg551f98ba": "هذا الدليل لا يحتوي على ملفات أو مجلدات فرعية.",
-
   "@msg17093362": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msg17093362": "إلغاء العملية",
-
   "@msg681c0f39": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msg681c0f39": "بحث شامل",
-
   "@msg0c36f64f": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msg0c36f64f": "المستندات فقط",
-
   "@msg26b041dd": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msg26b041dd": "الصوتيات فقط",
-
   "@msge632ba85": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msge632ba85": "الأرشيفات فقط",
-
   "@label": {
     "type": "text"
-
   },
   "label": "تم تفعيل عامل التصفية {label}",
-
   "@msg0e77af8a": {
     "description": "ui\\screens\\directory_screen.dart"
-
   },
   "msg0e77af8a": "المجلدات المخفية",
-
   "@e11": {
     "type": "text"
-
   },
   "e11": "خطأ في التحميل: {e}",
-
   "@msg5937f822": {
     "description": "ui\\screens\\document_viewer_screen.dart"
-
   },
   "msg5937f822": "(شريحة فارغة)",
-
   "@msg360d0b37": {
     "description": "ui\\screens\\document_viewer_screen.dart"
-
   },
   "msg360d0b37": "تم الحفظ بنجاح ✓",
-
   "@pdf": {
     "description": "ui\\screens\\document_viewer_screen.dart"
-
   },
   "pdf": "إعدادات عرض PDF",
-
   "@msg09c933bf": {
     "description": "ui\\screens\\document_viewer_screen.dart"
-
   },
   "msg09c933bf": "تحسين أداء العرض للمستندات الكبيرة أو المعقدة أو الممسوحة ضوئياً.",
-
   "@msg701a85d4": {
     "description": "ui\\screens\\document_viewer_screen.dart"
-
   },
   "msg701a85d4": "الوضع القياسي",
-
   "@msg2722d1a7": {
     "description": "ui\\screens\\document_viewer_screen.dart"
-
   },
   "msg2722d1a7": "الأفضل للمستندات النصية",
-
   "@msgb2b08d54": {
     "description": "ui\\screens\\document_viewer_screen.dart"
-
   },
   "msgb2b08d54": "مناسب للكتيبات والصور",
-
   "@msg8b519c02": {
     "description": "ui\\screens\\document_viewer_screen.dart"
-
   },
   "msg8b519c02": "تخطيط الصفحة",
-
   "@msg7f2cd152": {
     "description": "ui\\screens\\document_viewer_screen.dart"
-
   },
   "msg7f2cd152": "مستمر (قائمة تمرير عمودية)",
-
   "@msg151ea324": {
     "description": "ui\\screens\\document_viewer_screen.dart"
-
   },
   "msg151ea324": "اتجاه التمرير",
-
   "@msg7d45ded6": {
     "description": "ui\\screens\\document_viewer_screen.dart"
-
   },
   "msg7d45ded6": "عمودي (تمرير من الأعلى للأسفل)",
-
   "@msg176ef589": {
     "description": "ui\\screens\\document_viewer_screen.dart"
-
   },
   "msg176ef589": "تمكين تحديد النص",
-
   "@msg864f8706": {
     "description": "ui\\screens\\document_viewer_screen.dart"
-
   },
   "msg864f8706": "تعطيل هذا يمكن أن يحسن سرعة عرض الصفحة بشكل كبير ويقضي على تأخير التمرير.",
-
   "@msgd28847a2": {
     "description": "ui\\screens\\document_viewer_screen.dart"
-
   },
   "msgd28847a2": "مستند جديد",
-
   "@msg3007c452": {
     "description": "ui\\screens\\document_viewer_screen.dart"
-
   },
   "msg3007c452": "خيارات إضافية",
-
   "@msg452dba7c": {
     "description": "ui\\screens\\document_viewer_screen.dart"
-
   },
   "msg452dba7c": "التفاف النص",
-
   "@msgc31f9440": {
     "description": "ui\\screens\\document_viewer_screen.dart"
-
   },
   "msgc31f9440": "إظهار أرقام الأسطر",
-
   "@msg1d93c30b": {
     "description": "ui\\screens\\document_viewer_screen.dart"
-
   },
   "msg1d93c30b": "فتح بتطبيق آخر",
-
   "@msgace80573": {
     "description": "ui\\screens\\document_viewer_screen.dart"
-
   },
   "msgace80573": "(ملف فارغ)",
-
   "@msg030f48bd": {
     "description": "ui\\screens\\document_viewer_screen.dart"
-
   },
   "msg030f48bd": "فتح بتطبيق",
-
   "@msgfd96af00": {
     "description": "ui\\screens\\document_viewer_screen.dart"
-
   },
   "msgfd96af00": "ميزة المشاركة قريباً",
-
   "ui_share": "مشاركة",
-
   "@ui_share": {
     "description": "ui\\screens\\document_viewer_screen.dart"
-
   },
   "@ftp1": {
     "description": "ui\\screens\\ftp_server_screen.dart"
-
   },
   "ftp1": "تم إيقاف خادم FTP بنجاح",
-
   "@ftpe": {
     "type": "text"
-
   },
   "ftpe": "خطأ في بدء خادم FTP: {e}",
-
   "@msg5c202e56": {
     "description": "ui\\screens\\ftp_server_screen.dart"
-
   },
   "msg5c202e56": "يرجى إيقاف الخادم قبل تغيير الإعدادات",
-
   "@msgfca29cb3": {
     "description": "ui\\screens\\ftp_server_screen.dart"
-
   },
   "msgfca29cb3": "تغيير المنفذ",
-
   "@msg8a0b5bf5": {
     "description": "ui\\screens\\ftp_server_screen.dart"
-
   },
   "msg8a0b5bf5": "رقم المنفذ غير صالح",
-
   "@msg3bce2199": {
     "description": "ui\\screens\\ftp_server_screen.dart"
-
   },
   "msg3bce2199": "تعيين اسم المستخدم",
-
   "@msg0b62b5ce": {
     "description": "ui\\screens\\ftp_server_screen.dart"
-
   },
   "msg0b62b5ce": "اسم المستخدم لا يمكن أن يكون فارغاً",
-
   "@ftp2": {
     "description": "ui\\screens\\ftp_server_screen.dart"
-
   },
   "ftp2": "خادم FTP",
-
   "@msg5ab96a6d": {
     "description": "ui\\screens\\ftp_server_screen.dart"
-
   },
   "msg5ab96a6d": "يرجى إيقاف الخادم قبل تعديل الإعدادات",
-
   "@msgc400f106": {
     "description": "ui\\screens\\ftp_server_screen.dart"
-
   },
   "msgc400f106": "تغيير الدليل",
-
   "@msgb5eb59fc": {
     "description": "ui\\screens\\ftp_server_screen.dart"
-
   },
   "msgb5eb59fc": "تعيين المستخدم",
-
   "@msg70c53afb": {
     "description": "ui\\screens\\ftp_server_screen.dart"
-
   },
   "msg70c53afb": "وصول مجهول",
-
   "@msg8e2021aa": {
     "description": "ui\\screens\\ftp_server_screen.dart"
-
   },
   "msg8e2021aa": "إنشاء اختصار",
-
   "@msgd70e9bdf": {
     "description": "ui\\screens\\ftp_server_screen.dart"
-
   },
   "msgd70e9bdf": "غير نشط",
-
   "@msg7ae644e4": {
     "description": "ui\\screens\\ftp_server_screen.dart"
-
   },
   "msg7ae644e4": "حالة الشبكة",
-
   "@msg5d57821d": {
     "description": "ui\\screens\\ftp_server_screen.dart"
-
   },
   "msg5d57821d": "عنوان الخادم",
-
   "@msgfefea1b3": {
     "description": "ui\\screens\\ftp_server_screen.dart"
-
   },
   "msgfefea1b3": "الدليل الرئيسي",
-
   "@msg124d9054": {
     "description": "ui\\screens\\ftp_server_screen.dart"
-
   },
   "msg124d9054": "إظهار الملفات المخفية",
-
   "@tlsftp": {
     "description": "ui\\screens\\ftp_server_screen.dart"
-
   },
   "tlsftp": "اتصال FTP آمن يعتمد على TLS صريح",
-
   "@msg1f4c1042": {
     "description": "ui\\screens\\global_search_screen.dart"
-
   },
   "msg1f4c1042": "مجلد",
-
   "@msgf2ef53c0": {
     "description": "ui\\screens\\global_search_screen.dart"
-
   },
   "msgf2ef53c0": "البحث في هذا المجلد...",
-
   "@msgfff96ede": {
     "description": "ui\\screens\\global_search_screen.dart"
-
   },
   "msgfff96ede": "إجراءات إضافية",
-
   "@msg88e45bb8": {
     "description": "ui\\screens\\global_search_screen.dart"
-
   },
   "msg88e45bb8": "البحث في التخزين الخاص بك",
-
   "@query": {
     "type": "text"
-
   },
   "query": "لم يتم العثور على نتائج لـ \"{_query}\"",
-
   "@msge109d1ea": {
     "description": "ui\\screens\\home_screen.dart"
-
   },
   "msge109d1ea": "تم تحديث لوحة التحكم بنجاح",
-
   "@msg05cea075": {
     "description": "ui\\screens\\home_screen.dart"
-
   },
   "msg05cea075": "اضغط مرة أخرى للخروج من التطبيق",
-
   "@msg7498c202": {
     "description": "ui\\screens\\home_screen.dart"
-
   },
   "msg7498c202": "الخروج من التطبيق",
-
   "@msg03247b17": {
     "description": "ui\\screens\\home_screen.dart"
-
   },
   "msg03247b17": "هل أنت متأكد أنك تريد الخروج؟ اضغط للخلف مرة أخرى أو اضغط خروج لإغلاق التطبيق.",
-
   "@msg354c1c9a": {
     "description": "ui\\screens\\home_screen.dart"
-
   },
   "msg354c1c9a": "تحديث لوحة التحكم",
-
   "@msg19021d08": {
     "description": "ui\\screens\\home_screen.dart"
-
   },
   "msg19021d08": "فئات سريعة مخصصة",
-
   "@html": {
     "description": "ui\\screens\\html_viewer_screen.dart"
-
   },
   "html": "معاينة HTML",
-
   "@msgfba1f416": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
-
   },
   "msgfba1f416": "أدخل اسم المجلد",
-
   "@msg33b0b21c": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
-
   },
   "msg33b0b21c": "اختيار وتثبيت المجلد",
-
   "@msgff3200cc": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
-
   },
   "msgff3200cc": "مسح التحديد",
-
   "@msg4614630a": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
-
   },
   "msg4614630a": "المجلد فارغ",
-
   "@msg5dc1fa7b": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
-
   },
   "msg5dc1fa7b": "تثبيت هذا المجلد",
-
   "@markdown": {
     "description": "ui\\screens\\markdown_viewer_screen.dart"
-
   },
   "markdown": "معاينة Markdown",
-
   "@count1": {
     "type": "text"
-
   },
   "count1": "هل أنت متأكد أنك تريد حذف {count} عنصر محدد بشكل دائم؟",
-
   "@count2": {
     "type": "text"
-
   },
   "count2": "تم حذف {count} عنصر بنجاح",
-
   "@pastedcountdestdir": {
     "type": "text"
-
   },
   "pastedcountdestdir": "تم لصق {pastedCount} عنصر في {destDir}",
-
   "@msgfadbb0bc": {
     "description": "ui\\screens\\media_category_screen.dart"
-
   },
   "msgfadbb0bc": "لا توجد ملفات للمشاركة.",
-
   "@msg3ad97542": {
     "description": "ui\\screens\\media_category_screen.dart"
-
   },
   "msg3ad97542": "لم يتم العثور على ملفات فعلية لإعادة التسمية",
-
   "@msg1303e638": {
     "description": "ui\\screens\\media_category_screen.dart"
-
   },
   "msg1303e638": "وقت التعديل",
-
   "@msg5bab3781": {
     "description": "ui\\screens\\media_category_screen.dart"
-
   },
   "msg5bab3781": "معلومات الوسائط",
-
   "@msg880a18f3": {
     "description": "ui\\screens\\media_category_screen.dart"
-
   },
   "msg880a18f3": "العناصر المحددة",
-
   "@msgea9ecb93": {
     "description": "ui\\screens\\media_category_screen.dart"
-
   },
   "msgea9ecb93": "الحجم الإجمالي",
-
   "@msg5556baa3": {
     "description": "ui\\screens\\media_category_screen.dart"
-
   },
   "msg5556baa3": "اضغط مطولاً للفتح باستخدام...",
-
   "@msg631cd220": {
     "description": "ui\\screens\\media_category_screen.dart"
-
   },
   "msg631cd220": "تأكيد الحذف",
-
   "@name": {
     "type": "text"
-
   },
   "name": "تم حذف {name}",
-
   "@msgcd8264f1": {
     "description": "ui\\screens\\media_category_screen.dart"
-
   },
   "msgcd8264f1": "إظهار في الموقع",
-
   "@msg2a4cfb07": {
     "description": "ui\\screens\\media_category_screen.dart"
-
   },
   "msg2a4cfb07": "فتح باستخدام...",
-
   "@msg8bf52387": {
     "description": "ui\\screens\\media_category_screen.dart"
-
   },
   "msg8bf52387": "الملف غير موجود أو لا يمكن مشاركته.",
-
   "@msg419be096": {
     "description": "ui\\screens\\media_category_screen.dart"
-
   },
   "msg419be096": "اللصق هنا",
-
   "@msg5093bc80": {
     "description": "ui\\screens\\media_category_screen.dart"
-
   },
   "msg5093bc80": "الأحدث أولاً",
-
   "@msgbc74b5a8": {
     "description": "ui\\screens\\media_category_screen.dart"
-
   },
   "msgbc74b5a8": "حسب التاريخ",
-
   "@msgef7ae768": {
     "description": "ui\\screens\\media_category_screen.dart"
-
   },
   "msgef7ae768": "الأحدث أولاً (مجمعة حسب الشهر)",
-
   "@msgb8140039": {
     "description": "ui\\screens\\media_category_screen.dart"
-
   },
   "msgb8140039": "الأقدم أولاً (مجمعة حسب الشهر)",
-
   "@msg424a0110": {
     "description": "ui\\screens\\media_category_screen.dart"
-
   },
   "msg424a0110": "تاريخ غير معروف",
-
   "@msgb19671d6": {
     "description": "ui\\screens\\media_category_screen.dart"
-
   },
   "msgb19671d6": "جميع العناصر",
-
   "@msg11fea612": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg11fea612": "التاريخ والوقت",
-
   "@msg12e86877": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg12e86877": "حجم الملف / عدد العناصر",
-
   "@msg7908038f": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg7908038f": "لا شيء / مخفي",
-
   "@msg9136d4dc": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg9136d4dc": "عدم إظهار معلومات إضافية على اليمين",
-
   "@msg84986f91": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg84986f91": "إظهار تاريخ ووقت آخر تعديل",
-
   "@msgfc000737": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgfc000737": "الملفات تعرض الحجم، المجلدات تعرض عدد العناصر",
-
   "@msg83de16cc": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg83de16cc": "اختر نمط المعلومات النهائية",
-
   "@msgaa2a18a1": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgaa2a18a1": "اختر ما يتم عرضه على الجانب الأيمن من الملفات والمجلدات عندما تكون زر الإجراءات ذات النقاط الثلاث مخفياً.",
-
   "@msg26e4c5d6": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg26e4c5d6": "إظهار شريط العنوان",
-
   "@windows1": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "windows1": "إظهار شريط عناوين قابل للتعديل بأسلوب مستكشف Windows في أعلى قائمة الملفات",
-
   "@msg74e86197": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg74e86197": "فتح اختصارات الصور/الفيديو مباشرة في العرض المفضل للمجلد (المعرض)",
-
   "@msga1fbf3c6": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msga1fbf3c6": "إخفاء شريط التنقل في Android",
-
   "@msg02dddc02": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg02dddc02": "إخفاء شريط التنقل السفلي لتعظيم مساحة الشاشة (اسحب لأعلى للعرض)",
-
   "@msg50923c95": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg50923c95": "مسح جميع ارتباطات 'فتح باستخدام' المحفوظة",
-
   "@msg6fdc09ac": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg6fdc09ac": "تخطي مربع حوار 'فتح باستخدام'",
-
   "@msg0a4b0442": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg0a4b0442": "تخطي مربع حوار اختيار التطبيق، فتح الملفات مباشرة بالعارض الافتراضي",
-
   "@msge1157984": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msge1157984": "اختر البدء في صفحة الفئات أو التصفح",
-
   "@msgae1854a2": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgae1854a2": "اختر السحب بإصبع واحد أو اثنين لتبديل الصفحات",
-
   "@msg11b1ec65": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg11b1ec65": "إظهار شريط الإجراءات في صفحة التصفح (للخلف، للأمام، جديد، تكرار علامة التبويب، للأعلى)",
-
   "@msg7e7765b6": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg7e7765b6": "إظهار الملفات والمجلدات النظامية التي تبدأ بنقطة(.)",
-
   "@msg86f3d70f": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg86f3d70f": "إظهار رؤوس عدد المجلدات والملفات",
-
   "@msg40e9c325": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg40e9c325": "إظهار إجمالي عدد المجلدات والملفات تحت رأس التخزين",
-
   "@ampm24": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "ampm24": "التبديل بين تنسيق الوقت 12 ساعة (ص/م) و 24 ساعة في القائمة",
-
   "@msg25ee6612": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg25ee6612": "إخفاء الوقت والتاريخ في القائمة",
-
   "@msg337359a6": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg337359a6": "إخفاء تاريخ ووقت التعديل بالكامل للملفات والمجلدات",
-
   "@msga517863e": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msga517863e": "حساب وعرض إجمالي عدد الملفات والمجلدات في الدليل",
-
   "@msg59a24fcb": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg59a24fcb": "حساب وعرض إجمالي حجم جميع الملفات في الدليل (قد يؤثر على أداء القائمة)",
-
   "@msg309e2a28": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg309e2a28": "عرض شريط التنقل في الأعلى أو الأسفل",
-
   "@msge34c23ff": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msge34c23ff": "الأعلى",
-
   "@msg3341e3ed": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg3341e3ed": "أزرار الإجراءات معروضة في أعلى الصفحة",
-
   "@msg8c414b06": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg8c414b06": "الأسفل",
-
   "@msg5d2c8e7f": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg5d2c8e7f": "أزرار الإجراءات معروضة في أسفل الصفحة",
-
   "@msg9b7639ac": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg9b7639ac": "إظهار الأيقونات فقط في شريط إجراءات التحديد في صفحات التصفح والوسائط",
-
   "@msgdd69671b": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgdd69671b": "وميض قصير والتمرير إلى المجلد المغادور عند الرجوع",
-
   "@msg57736228": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg57736228": "إظهار صور مصغرة فعلية للصور والفيديو بدلاً من أيقونات الملفات العامة",
-
   "@msg1eda8a50": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg1eda8a50": "السماح بأسماء الملفات بالالتفاف إلى 3 أسطر بدلاً من القطع",
-
   "@msgc7196afd": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgc7196afd": "إخفاء زر القائمة ذات النقاط الثلاث بجانب المجلدات والملفات",
-
   "@msgad54815d": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgad54815d": "اضغط مطولاً واسحب المجلدات أو الملفات لنقلها إلى مجلدات أخرى",
-
   "@msg5dff8f2d": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg5dff8f2d": "إظهار نافذة خيارات عند السحب والإفلات للملفات (نسخ، نقل، ضغط)",
-
   "@msg4b0a7063": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg4b0a7063": "السماح بفتح مجلدات متعددة في علامات تبويب منفصلة للتنقل السريع",
-
   "@msgf04ac00d": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgf04ac00d": "تصفح دليلين جنباً إلى جنب ونقل الملفات بسهولة",
-
   "@msgd1591ba4": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgd1591ba4": "فتح آخر مجلد تم تصفحه عند بدء التطبيق",
-
   "@msg25792550": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg25792550": "نقل الملفات والمجلدات المحذوفة إلى سلة محذوفات مخفية بدلاً من الحذف الدائم",
-
   "@msg1b9633fe": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg1b9633fe": "لون السمة / السمة الديناميكية",
-
   "@msg64db4c2d": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg64db4c2d": "نمط أيقونة المجلد",
-
   "@msgece44aa5": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgece44aa5": "نمط زر القائمة الجانبية للتطبيق",
-
   "@amoled1": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "amoled1": "وضع الأسود النقي AMOLED",
-
   "@amoled2": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "amoled2": "استخدام خلفية سوداء نقية لشاشات AMOLED في الوضع الداكن",
-
   "@msg5228b59f": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg5228b59f": "طباعة التطبيق / الخط",
-
   "@msge7d18d73": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msge7d18d73": "اختصارات مخصصة",
-
   "@msg036fe6a4": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg036fe6a4": "إعادة ترتيب وتبديل ظهور عناصر الفئات السريعة",
-
   "@msgead3e5c5": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgead3e5c5": "البحث في الإعدادات...",
-
   "@msg2590095f": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg2590095f": "فئات الإعدادات",
-
   "@msgfdae44c3": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgfdae44c3": "عام وسلوك",
-
   "@msgeae34685": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgeae34685": "الشاشة الافتراضية وعناصر التحكم في التنقل والاختصارات",
-
   "@msg91b228b8": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg91b228b8": "السمة وأيقونة التطبيق ونمط المجلد والطباعة",
-
   "@msgad6e8bb8": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgad6e8bb8": "خيارات متصفح الملفات",
-
   "@msg8ddc4963": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg8ddc4963": "شريط العنوان والملفات المخفية وعلامات التبويب والسحب والإفلات",
-
   "@msg45db4e2a": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg45db4e2a": "حجم المجلد والعدد وتنسيق التاريخ/الوقت",
-
   "@msg09ca4d86": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg09ca4d86": "عرض المعرض الافتراضي ومعاينة الصور المصغرة",
-
   "@msgeb3693fb": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgeb3693fb": "تكوين إجراءات الفتح والعارض الافتراضي",
-
   "@msg3a6a39ae": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg3a6a39ae": "مفتاح سلة المحذوفات ومدة الحذف التلقائي",
-
   "@msg9edfaff3": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg9edfaff3": "نسخ احتياطي أو استعادة جميع إعدادات التطبيق",
-
   "@msg99c9cc56": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg99c9cc56": "حاول البحث بكلمات مفتاحية أخرى",
-
   "@msga432d127": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msga432d127": "الصفحة الرئيسية الافتراضية",
-
   "@msg226fc6ae": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg226fc6ae": "صفحة الفئات",
-
   "@msgd48a082d": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgd48a082d": "السحب لتبديل الصفحات",
-
   "@msgaac01f32": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgaac01f32": "السحب بإصبع واحد",
-
   "@msg59c7debc": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg59c7debc": "تذكر آخر مجلد مفتوح",
-
   "@msgce732d8a": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgce732d8a": "إخفاء التسميات النصية في الشريط السفلي (الرئيسي/التصفح) لمظهر أنظف وأكثر إحكاماً",
-
   "@msg1cfeaace": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg1cfeaace": "متصفح الملفات والتنقل",
-
   "@msgd33e3082": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgd33e3082": "تمييز المجلد المغادور",
-
   "@msga4333788": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msga4333788": "الوسائط والإجراءات الافتراضية",
-
   "@msg20c87c8e": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg20c87c8e": "العرض المفضل للمعرض الافتراضي",
-
   "@msg72b1f919": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg72b1f919": "تم إعادة تعيين جميع اختيارات العارض الافتراضي",
-
   "@msge99f4762": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msge99f4762": "تمكين سلة المحذوفات",
-
   "@msg2c8a394a": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg2c8a394a": "صفحة التصفح",
-
   "@msg2c3c5a35": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg2c3c5a35": "شكل الأيقونة",
-
   "@msg267fcd86": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg267fcd86": "كل 3 أيام",
-
   "@msg9104c0c5": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg9104c0c5": "كل أسبوعين",
-
   "@days": {
     "type": "text"
-
   },
   "days": "كل {days} أيام",
-
   "@msg673ad9d4": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg673ad9d4": "تم مسح ذاكرة التخزين المؤقت للخادم البعيد",
-
   "@msgd9f142c4": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgd9f142c4": "مسح تلقائي لذاكرة التخزين المؤقت",
-
   "@msg5472ef41": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg5472ef41": "مسح الملفات المخزنة مؤقتاً المنزلة من الخوادم الشبكية فوراً",
-
   "@msgac7687d9": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgac7687d9": "تصفح دليل ملفات ذاكرة التخزين المؤقت للخادم البعيد",
-
   "@msg225f6249": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg225f6249": "إظهار معاينات الصور المصغرة للصور والفيديو على الخوادم الشبكية",
-
   "@materialyou": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "materialyou": "Material You (لون ديناميكي للخلفية)",
-
   "@msg05cff3ad": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg05cff3ad": "برتقالي نابض",
-
   "@msg5ed35657": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg5ed35657": "أرجواني ملكي",
-
   "@msge74a7283": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msge74a7283": "ذهبي عنبري",
-
   "@msg3904ba87": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg3904ba87": "وردي سيبراني",
-
   "@msgd58d230a": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgd58d230a": "أزرق ياقوتي",
-
   "@msg508b005e": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg508b005e": "أخضر غابي",
-
   "@msgefdde083": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgefdde083": "خوخي غروب",
-
   "@msg628e73a9": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg628e73a9": "أزرق افتراضي (الأزرق المميز)",
-
   "@msg8244d240": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg8244d240": "كلاسيكي مصمت",
-
   "@msgf08d9b15": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgf08d9b15": "مستدير حديث",
-
   "@msge5fba3dd": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msge5fba3dd": "نجمة خاصة",
-
   "@msgfe4254dc": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgfe4254dc": "شظية مستند",
-
   "@msg84719fd5": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg84719fd5": "حد أدنى",
-
   "@zenfile4": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "zenfile4": "حد ZenFile المتقطع",
-
   "@vuesax": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "vuesax": "شبكة الفئات / شبكة Vuesax",
-
   "@msg5dc988f4": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg5dc988f4": "قائمة هامبرغر / قائمة كلاسيكية",
-
   "@msgd06ba04f": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgd06ba04f": "تعبيري M3 1",
-
   "@msg5090469e": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg5090469e": "تعبيري M3 2",
-
   "@d": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "d": "تعبيري M3 3",
-
   "@msg67836b24": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg67836b24": "بسيط",
-
   "@msgf08c8dc4": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgf08c8dc4": "زجاجي",
-
   "msgdesign6": "سايبربانك",
-
   "@msgdesign6": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgdesign7": "نيومورفيزم",
-
   "@msgdesign7": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgdesign8": "كلاسيكي 2",
-
   "@msgdesign8": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgdesign9": "كلاسيكي 3",
-
   "@msgdesign9": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgdesign10": "تصميم المستخدم 1",
-
   "@msgdesign10": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgdesign11": "تصميم المستخدم 2",
-
   "@msgdesign11": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "@msg7372dc9f": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg7372dc9f": "أيقونة مخصصة",
-
   "@msg3004e40a": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg3004e40a": "الشعار الافتراضي (Zen الطبيعي)",
-
   "@msgc540e940": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgc540e940": "مصفوفة نقطية و Sans Serif",
-
   "@msg00ea5776": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg00ea5776": "Ofit Sans Serif حديث",
-
   "@msg7bdbfaa5": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg7bdbfaa5": "Jienao Tech أحادي المسافة",
-
   "@msgdcb4082d": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgdcb4082d": "Mont Urban Sans Serif",
-
   "@msg9d7001d9": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg9d7001d9": "خط مخصص مستورد",
-
   "@msgc2f5e9e4": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgc2f5e9e4": "المميز الافتراضي",
-
   "@msg6a7c758f": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg6a7c758f": "أبداً (تعطيل الحذف التلقائي)",
-
   "@days1": {
     "type": "text"
-
   },
   "days1": "بعد {days} أيام",
-
   "@msgfe76ae54": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgfe76ae54": "اختر الصفحة الافتراضية عند تشغيل التطبيق",
-
   "@msg8af2412a": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg8af2412a": "إظهار صفحة الفئات السريعة عند البدء",
-
   "@msg245c3258": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg245c3258": "إظهار صفحة تصفح الملفات عند البدء",
-
   "@msg4439669d": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg4439669d": "اختر السحب بإصبع واحد أو اثنين لتبديل الصفحات",
-
   "@msg46978666": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg46978666": "السحب بإصبع واحد لتبديل صفحة الفئات/التصفح أو فتح القائمة الجانبية",
-
   "@msgbc9bf336": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgbc9bf336": "السحب بإصبعين",
-
   "@msg563871d3": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg563871d3": "السحب بإصبعين لتبديل صفحة الفئات/التصفح أو فتح القائمة الجانبية",
-
   "@msgca71ac0c": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgca71ac0c": "اختر لون السمة",
-
   "@msg732630c1": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg732630c1": "اختر نمط أيقونة المجلد",
-
   "@msgf9224d98": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgf9224d98": "اختر نمط زر القائمة الجانبية",
-
   "@msgc337ecfa": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgc337ecfa": "اختر شكل أيقونة الفئة",
-
   "@msgf18bc3d9": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgf18bc3d9": "أيقونة مشغل التطبيقات",
-
   "@logo": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "logo": "اختر شعاراً مخصصاً لأيقونة مشغل التطبيقات. قد يستغرق بعض المشغلات بضع ثوانٍ للتحديث.",
-
   "@msg64a6476a": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg64a6476a": "الافتراضي",
-
   "@title": {
     "type": "text"
-
   },
   "title": "تم تغيير أيقونة التطبيق إلى {title}",
-
   "@msgad76161f": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgad76161f": "اختر أيقونة مخصصة",
-
   "@pngjpgwebp": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "pngjpgwebp": "يرجى اختيار ملف صورة (PNG/JPG/WEBP)",
-
   "@msgb06c5c34": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgb06c5c34": "تم تطبيق الأيقونة المخصصة",
-
   "@e12": {
     "type": "text"
-
   },
   "e12": "فشل تطبيق الأيقونة المخصصة: {e}",
-
   "@msg375c9eb8": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg375c9eb8": "نمط هندسي بسيط خام",
-
   "@msg817e321b": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg817e321b": "عنوان مصفوفة نقطية رجوي عالي التقنية + نص نظيف",
-
   "@msg3c2a24cc": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg3c2a24cc": "جمالية هندسية فائقة النعومة والبساطة والفخامة",
-
   "@msg978f8d11": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg978f8d11": "نمط أحادي المسافة للمطورين نظيف ومستقبلي",
-
   "@msg93b657aa": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg93b657aa": "طباعة جريئة وحديثة وجذابة",
-
   "@msg9db40ad6": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg9db40ad6": "ملف الخط المخصص المحمل الخاص بك",
-
   "@zenfile5": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "zenfile5": "اختر خطاً جميلاً لتخصيص المظهر البصري العام لـ ZenFile",
-
   "@msg7372efa5": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg7372efa5": "استبدال ملف الخط المخصص",
-
   "@msg3186839b": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg3186839b": "فشل تحميل ملف الخط المحدد.",
-
   "@opentypeotftruetypettf": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "opentypeotftruetypettf": "يرجى اختيار ملف خط OpenType (.otf) أو TrueType (.ttf) صالح.",
-
   "@msgcf42dedc": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgcf42dedc": "إزالة الخط المخصص",
-
   "@msg2b9abfaa": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg2b9abfaa": "تم إزالة الخط المخصص.",
-
   "@msgfdef8c23": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgfdef8c23": "7 أيام",
-
   "@msg25436ba3": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg25436ba3": "15 يوماً",
-
   "@msg85e7f60c": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg85e7f60c": "30 يوماً (موصى به)",
-
   "@msgd61e706f": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgd61e706f": "أبداً (مسح يدوي)",
-
   "@msgf0ef894a": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msgf0ef894a": "مدة الحذف التلقائي لسلة المحذوفات",
-
   "@msg1200d6b7": {
     "description": "ui\\screens\\more_settings_screen.dart"
-
   },
   "msg1200d6b7": "سيتم حذف العناصر في سلة المحذوفات بشكل دائم بعد هذه المدة.",
-
   "@msg432fbb31": {
     "description": "ui\\screens\\network_category_screen.dart"
-
   },
   "msg432fbb31": "حذف الاتصال",
-
   "@msgdeleteconn": {
     "type": "text"
-
   },
   "msgdeleteconn": "هل أنت متأكد أنك تريد حذف \"{name}\"؟",
-
   "@msg3358aa10": {
     "description": "ui\\screens\\network_category_screen.dart"
-
   },
   "msg3358aa10": "إضافة اتصال",
-
   "@msgc9c900d0": {
     "description": "ui\\screens\\network_category_screen.dart"
-
   },
   "msgc9c900d0": "لا توجد اتصالات بعيدة بعد",
-
   "@ftpsftpwebdavsmb1": {
     "description": "ui\\screens\\network_category_screen.dart"
-
   },
   "ftpsftpwebdavsmb1": "إضافة اتصال FTP أو SFTP أو WebDav أو SMB",
-
   "@e13": {
     "type": "text"
-
   },
   "e13": "فشل الاتصال: {e}",
-
   "@msgb5bc0bf1": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
-
   },
   "msgb5bc0bf1": "جارٍ تحليل عنوان المضيف...",
-
   "@msgc3d4e5f6": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
-
   },
   "msgc3d4e5f6": "جارٍ التحقق من حالة المنفذ...",
-
   "@msg3005ba4d": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
-
   },
   "msg3005ba4d": "جارٍ التحقق من بيانات الاعتماد...",
-
   "@msgab36a8c6": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
-
   },
   "msgab36a8c6": "جارٍ تركيب وحدة التخزين...",
-
   "name1": "تمت إضافة \"{name}\" بنجاح!",
-
   "@name1": {
     "type": "text"
-
   },
   "@connectedtype": {
     "type": "text"
-
   },
   "connectedtype": "تم الاتصال بـ \"{name}\" بنجاح!",
-
   "@msgdf434415": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
-
   },
   "msgdf434415": "تطبيق النظام معطل",
-
   "@documentsui": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
-
   },
   "documentsui": "جهازك لا يحتوي على تطبيق النظام الافتراضي للملفات/المستندات (DocumentsUI) مفعل،",
-
   "@androidnn": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
-
   },
   "androidnn": "هذا مطلوب لنظام Android لاختيار وتركيب الأدلة.\n\n",
-
   "@msgb2af4e30": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
-
   },
   "msgb2af4e30": "يرجى التحقق مما إذا كان تطبيق النظام 'الملفات' أو 'المستندات' معطلاً في إعدادات الجهاز،",
-
   "@safe": {
     "type": "text"
-
   },
   "safe": "فشل طلب مجلد SAF: {e}",
-
   "@msg65c7ecb6": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
-
   },
   "msg65c7ecb6": "يرجى إدخال اسم الاتصال",
-
   "@msg69e3963c": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
-
   },
   "msg69e3963c": "يرجى إدخال عنوان الخادم/اسم المضيف",
-
   "@msgce1ec2ce": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
-
   },
   "msgce1ec2ce": "اتصال بعيد",
-
   "@msg25557d1f": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
-
   },
   "msg25557d1f": "بروتوكول نقل الملفات القياسي",
-
   "@ssh": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
-
   },
   "ssh": "خادم نقل الملفات الآمن عبر SSH",
-
   "@http": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
-
   },
   "http": "HTTP Web Distributed Authoring",
-
   "@androidsd": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
-
   },
   "androidsd": "إطار الوصول إلى تخزين Android (بطاقة SD / التخزين الخارجي)",
-
   "@msg8486035b": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
-
   },
   "msg8486035b": "اختر خدمة الشبكة",
-
   "@naszenfile": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
-
   },
   "naszenfile": "تركيب خادم بعيد أو مشاركة NAS كقرص ديناميكي في قائمة تخزين ZenFile.",
-
   "@selectedtype": {
     "type": "text"
-
   },
   "selectedtype": "إعدادات {_selectedType}",
-
   "@msg5c808d9a": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
-
   },
   "msg5c808d9a": "أدخل تفاصيل الاتصال لربط وحدة التخزين الشبكية هذه.",
-
   "@nas": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
-
   },
   "nas": "مثال: NAS المكتب، مشاركة المنزل",
-
   "@dav": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
-
   },
   "dav": "مثال: 192.168.1.100 أو 192.168.1.100/dav",
-
   "@naslocal": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
-
   },
   "naslocal": "مثال: 192.168.1.100 أو nas.local",
-
   "@dav1": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
-
   },
   "dav1": "مثال: /dav أو /",
-
   "@anonymousadmin": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
-
   },
   "anonymousadmin": "مثال: anonymous أو admin",
-
   "@msgeec70cd2": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
-
   },
   "msgeec70cd2": "كلمة المرور (اختياري)",
-
   "@msgf1fa9d44": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
-
   },
   "msgf1fa9d44": "جارٍ إنشاء نقطة التركيب...",
-
   "@selectedtype1": {
     "type": "text"
-
   },
   "selectedtype1": "يرجى الانتظار، نحن نقوم بإنشاء اتصال موثوق بخادم {_selectedType}.",
-
   "@e14": {
     "type": "text"
-
   },
   "e14": "خطأ في استعادة العنصر: {e}",
-
   "@e15": {
     "type": "text"
-
   },
   "e15": "خطأ في حذف العنصر: {e}",
-
   "@msg62187f1b": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
-
   },
   "msg62187f1b": "هل أنت متأكد أنك تريد حذف جميع العناصر في سلة المحذوفات بشكل دائم؟ هذا الإجراء لا يمكن التراجع عنه.",
-
   "@msg8cd6bc18": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
-
   },
   "msg8cd6bc18": "تفريغ سلة المحذوفات",
-
   "@msga4dfc0c6": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
-
   },
   "msga4dfc0c6": "تم تفريغ سلة المحذوفات بنجاح",
-
   "@msg07d80ac5": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
-
   },
   "msg07d80ac5": "البحث عن الملفات المحذوفة...",
-
   "@msg96d2b75f": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
-
   },
   "msg96d2b75f": "حذف بشكل دائم",
-
   "@msg0d824a24": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
-
   },
   "msg0d824a24": "سلة المحذوفات فارغة",
-
   "@msg4c478216": {
     "description": "ui\\screens\\recycle_bin_screen.dart"
-
   },
   "msg4c478216": "الموقع الأصلي",
-
   "@msgc44a57b6": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
-
   },
   "msgc44a57b6": "جارٍ تنزيل النص...",
-
   "@msgd6d8292d": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
-
   },
   "msgd6d8292d": "جارٍ تخزين الوسائط مؤقتاً...",
-
   "@e16": {
     "type": "text"
-
   },
   "e16": "فشل التنزيل: {e}",
-
   "@msg66d723c5": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
-
   },
   "msg66d723c5": "انتهت مهلة التخزين المؤقت، يرجى التحقق من اتصال الشبكة",
-
   "@msg53082c55": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
-
   },
   "msg53082c55": "لا يمكن اللصق في نفس الموقع",
-
   "@msg108feeed": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
-
   },
   "msg108feeed": "جارٍ النسخ...",
-
   "@msg2d4b44ec": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
-
   },
   "msg2d4b44ec": "تم لصق العناصر بنجاح",
-
   "@filenamee": {
     "type": "text"
-
   },
   "filenamee": "فشل رفع \"{fileName}\": {e}",
-
   "@newname": {
     "type": "text"
-
   },
   "newname": "تمت إعادة التسمية إلى \"{newName}\"",
-
   "@msg4b342999": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
-
   },
   "msg4b342999": "حذف عنصر",
-
   "@e17": {
     "type": "text"
-
   },
   "e17": "فشل الحذف: {e}",
-
   "@msg79d7fef7": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
-
   },
   "msg79d7fef7": "مجلد بعيد جديد",
-
   "@msga98473f2": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
-
   },
   "msga98473f2": "اسم المجلد",
-
   "@e18": {
     "type": "text"
-
   },
   "e18": "فشل إنشاء المجلد: {e}",
-
   "@msg5ca05a9b": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
-
   },
   "msg5ca05a9b": "الدليل البعيد",
-
   "@msga636c09d": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
-
   },
   "msga636c09d": "النسخ إلى الجهاز المحلي",
-
   "@msga4c461a4": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
-
   },
   "msga4c461a4": "تنزيل الملف إلى الحافظة المحلية",
-
   "@msg425502fa": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
-
   },
   "msg425502fa": "تنزيل والحذف من الخادم",
-
   "@msgc2b9f4b9": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
-
   },
   "msgc2b9f4b9": "الدليل الجذري",
-
   "@msg2f7cd487": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
-
   },
   "msg2f7cd487": "رفع الحافظة المحلية إلى الخادم",
-
   "@msg905c34fa": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
-
   },
   "msg905c34fa": "لصق الحافظة البعيدة",
-
   "@msg8439c155": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
-
   },
   "msg8439c155": "تم قطع الاتصال",
-
   "@msgda43df27": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
-
   },
   "msgda43df27": "إعادة محاولة الاتصال",
-
   "@msga21f6ab1": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
-
   },
   "msga21f6ab1": "دليل فارغ",
-
   "@msge1c538b8": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
-
   },
   "msge1c538b8": "رفع محتوى الحافظة هنا",
-
   "@e19": {
     "type": "text"
-
   },
   "e19": "فشل التنزيل: {e}",
-
   "@msg50eaf94d": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
-
   },
   "msg50eaf94d": "تأكيد الحذف",
-
   "@msgcb0da17b": {
     "description": "ui\\screens\\remote_explorer_screen.dart"
-
   },
   "msgcb0da17b": "جارٍ الحذف...",
-
   "@msg4805c385": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
-
   },
   "msg4805c385": "إدارة التطبيقات",
-
   "@msg93bc1f09": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
-
   },
   "msg93bc1f09": "تحديث القائمة",
-
   "@msg32e490fe": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
-
   },
   "msg32e490fe": "تطبيقات المستخدم المثبتة",
-
   "@apk2": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
-
   },
   "apk2": "ملفات APK المحفوظة احتياطياً",
-
   "@msg8936ded6": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
-
   },
   "msg8936ded6": "البحث عن اسم الحزمة أو اسم التطبيق...",
-
   "@msgd8b3fc58": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
-
   },
   "msgd8b3fc58": "فرز حسب الحجم",
-
   "@msgbe1399f0": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
-
   },
   "msgbe1399f0": "فرز أبجدياً",
-
   "@msg9ad67f11": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
-
   },
   "msg9ad67f11": "فرز حسب تاريخ النسخ الاحتياطي",
-
   "@msgb0681bd4": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
-
   },
   "msgb0681bd4": "حساب دقيق للتخزين",
-
   "@msg34cd846c": {
     "description": "ui\\screens\\storage_analyzer\\app_manager_screen.dart"
-
   },
   "msg34cd846c": "منح إذن الوصول إلى الاستخدام",
-
   "@msga22ddaae": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
-
   },
   "msga22ddaae": "تحليل التخزين",
-
   "@msgaae779d4": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
-
   },
   "msgaae779d4": "إعادة مسح التخزين",
-
   "@msg7ae97495": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
-
   },
   "msg7ae97495": "جارٍ مسح تخزين الجهاز",
-
   "@msga5e5bf71": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
-
   },
   "msga5e5bf71": "إجمالي التخزين",
-
   "@msg652be256": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
-
   },
   "msg652be256": "التفصيل حسب الفئات",
-
   "@msgb1a2c3d4": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
-
   },
   "msgb1a2c3d4": "Initializing...",
-
   "@msgc2d3e4f5": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
-
   },
   "msgc2d3e4f5": "Reading system memory...",
-
   "@msgd3e4f5a6": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
-
   },
   "msgd3e4f5a6": "Calculating app storage...",
-
   "@msge4f5a6b7": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
-
   },
   "msge4f5a6b7": "Analyzing files, categorizing assets, and reading installed apps space...",
-
   "@msgf5a6b7c8": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart",
-
     "type": "text",
-
     "placeholders": {
       "size": {}
     }
   },
   "msgf5a6b7c8": "{size} free",
-
   "@msga6b7c8d9": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart",
-
     "type": "text",
-
     "placeholders": {
       "size": {},
       "percent": {}
     }
   },
   "msga6b7c8d9": "{size} used ({percent}%)",
-
   "@msgb7c8d9e0": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart",
-
     "type": "text",
-
     "placeholders": {
       "percent": {}
     }
   },
   "msgb7c8d9e0": "{percent}% of total storage",
-
   "@msgc8d9e0f1": {
     "description": "ui\\screens\\storage_analyzer\\storage_analyzer_screen.dart"
-
   },
   "msgc8d9e0f1": "System / Other",
-
   "ui_drag_archive_created": "Archive \"{name}\" created successfully",
-
   "@ui_drag_archive_created": {
     "description": "Drag drop action dialog snackbar",
-
     "type": "text",
-
     "placeholders": {
       "name": {}
     }
   },
   "ui_drag_archive_failed": "Failed to create archive: {error}",
-
   "@ui_drag_archive_failed": {
     "description": "Drag drop action dialog snackbar",
-
     "type": "text",
-
     "placeholders": {
       "error": {}
     }
   },
   "ui_backup_success": "تم حفظ الإعدادات في ZenFile/Backups/Settings/",
-
   "@ui_backup_success": {
     "description": "Settings backup service snackbar"
-
   },
   "ui_backup_failed": "فشل النسخ الاحتياطي: {error}",
-
   "@ui_backup_failed": {
     "description": "Settings backup service snackbar",
-
     "type": "text",
-
     "placeholders": {
       "error": {}
     }
   },
   "ui_restore_invalid_file": "يرجى تحديد ملف نسخ احتياطي للإعدادات .json صالح",
-
   "@ui_restore_invalid_file": {
     "description": "Settings restore snackbar"
-
   },
   "ui_restore_success": "تمت استعادة الإعدادات بنجاح!",
-
   "@ui_restore_success": {
     "description": "Settings restore snackbar"
-
   },
   "ui_restore_failed": "فشل الاستعادة: {error}",
-
   "@ui_restore_failed": {
     "description": "Settings restore snackbar",
-
     "type": "text",
-
     "placeholders": {
       "error": {}
     }
   },
   "@msgeb3d7d70": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_batch_action_bar.dart"
-
   },
   "msgeb3d7d70": "إلغاء تثبيت التطبيق",
-
   "@msg6eb319a1": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_batch_action_bar.dart"
-
   },
   "msg6eb319a1": "جارٍ النسخ الاحتياطي للتطبيق المحدد...",
-
   "@msg7fbfdce6": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_list_tab.dart"
-
   },
   "msg7fbfdce6": "لم يتم العثور على تطبيقات",
-
   "@msg753cdb55": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
-
   },
   "msg753cdb55": "تشغيل التطبيق",
-
   "@apk3": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
-
   },
   "apk3": "نسخ APK احتياطياً",
-
   "@apk4": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
-
   },
   "apk4": "جارٍ النسخ الاحتياطي لـ APK...",
-
   "@apk5": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
-
   },
   "apk5": "فشل النسخ الاحتياطي لـ APK",
-
   "@apk6": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\app_options_sheet.dart"
-
   },
+  "copy_package_name": "نسخ اسم الحزمة",
   "apk6": "مشاركة ملف APK",
-
   "@msga0b18169": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\backup_list_tab.dart"
-
   },
   "msga0b18169": "مشاركة ملف النسخ الاحتياطي",
-
   "@msgb443cd06": {
     "description": "ui\\screens\\storage_analyzer\\widgets\\backup_list_tab.dart"
-
   },
   "msgb443cd06": "حذف ملف النسخ الاحتياطي",
-
   "@e20": {
     "type": "text"
-
   },
   "e20": "خطأ في تحميل الملف: {e}",
-
   "@msg24c6ab0f": {
     "description": "ui\\screens\\text_editor_screen.dart"
-
   },
   "msg24c6ab0f": "تم حفظ الملف بنجاح",
-
   "@count3": {
     "type": "text"
-
   },
   "count3": "تم استبدال {count} تكرار",
-
   "@msgffb01e5b": {
     "description": "ui\\screens\\text_editor_screen.dart"
-
   },
   "msgffb01e5b": "نص عادي",
-
   "@msg7902d9c0": {
     "description": "ui\\screens\\text_editor_screen.dart"
-
   },
   "msg7902d9c0": "اختر الصيغة",
-
   "@msgc856a077": {
     "description": "ui\\screens\\text_editor_screen.dart"
-
   },
   "msgc856a077": "بحث / استبدال",
-
   "@msg7f2c95cd": {
     "description": "ui\\screens\\text_editor_screen.dart"
-
   },
   "msg7f2c95cd": "حفظ الملف",
-
   "@msg084e9388": {
     "description": "ui\\screens\\text_editor_screen.dart"
-
   },
   "msg084e9388": "إلغاء قفل التكبير",
-
   "@msgf387265a": {
     "description": "ui\\screens\\text_editor_screen.dart"
-
   },
   "msgf387265a": "التفاف النص: تشغيل",
-
   "@msg1045ba75": {
     "description": "ui\\screens\\text_editor_screen.dart"
-
   },
   "msg1045ba75": "التفاف النص: إيقاف",
-
   "@msg96f0ad7d": {
     "description": "ui\\screens\\text_editor_screen.dart"
-
   },
   "msg96f0ad7d": "قفل التحرير: تشغيل",
-
   "@msg349ab61d": {
     "description": "ui\\screens\\text_editor_screen.dart"
-
   },
   "msg349ab61d": "قفل التحرير: إيقاف",
-
   "@msg0cee3cd1": {
     "description": "ui\\screens\\text_editor_screen.dart"
-
   },
   "msg0cee3cd1": "إخفاء أرقام الأسطر",
-
   "@selectedlanguage": {
     "type": "text"
-
   },
   "selectedlanguage": "الصيغة ({_selectedLanguage})",
-
   "@msg0dac421f": {
     "description": "ui\\screens\\text_editor_screen.dart"
-
   },
   "msg0dac421f": "استبدال بـ...",
-
   "@msg52709ae1": {
     "description": "ui\\screens\\text_editor_screen.dart"
-
   },
   "msg52709ae1": "استبدال الكل",
-
   "@msg4ecba8f6": {
     "description": "ui\\screens\\text_editor_screen.dart"
-
   },
   "msg4ecba8f6": "Tab",
-
   "@e21": {
     "type": "text"
-
   },
   "e21": "خطأ في تحميل الخزنة: {e}",
-
   "@msg4828116a": {
     "description": "ui\\screens\\vault_explorer_screen.dart"
-
   },
   "msg4828116a": "الملفات المخفية",
-
   "@msg3bf31dfe": {
     "description": "ui\\screens\\vault_lock_screen.dart"
-
   },
   "msg3bf31dfe": "أدخل كلمة المرور للفتح",
-
   "@pin": {
     "description": "ui\\screens\\vault_lock_screen.dart"
-
   },
   "pin": "أدخل رقم التعريف الشخصي لفتح المحفظة",
-
   "@pin1": {
     "description": "ui\\screens\\vault_lock_screen.dart"
-
   },
   "pin1": "عيّن رقم التعريف الشخصي المكون من 4 أرقام للمحفظة",
-
   "@pin2": {
     "description": "ui\\screens\\vault_lock_screen.dart"
-
   },
   "pin2": "أكد رقم التعريف الشخصي المكون من 4 أرقام",
-
   "@msgbb590f19": {
     "description": "ui\\screens\\vault_lock_screen.dart"
-
   },
   "msgbb590f19": "الخزنة الخاصة",
-
   "@msgaa43fa46": {
     "description": "ui\\screens\\vault_lock_screen.dart"
-
   },
   "msgaa43fa46": "مسح الكل",
-
   "@msgc16eed0e": {
     "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
-
   },
   "msgc16eed0e": "سرعة التشغيل",
-
   "@msg8f106217": {
     "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
-
   },
   "msg8f106217": "قفل عناصر التحكم",
-
   "@msg1f41f25d": {
     "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
-
   },
   "msg1f41f25d": "وضع التكرار",
-
   "@msg4d2abc8c": {
     "description": "ui\\screens\\video_player\\video_controls_overlay.dart"
-
   },
   "msg4d2abc8c": "تم نسخ مسار الوسائط إلى الحافظة.",
-
   "@http1": {
     "description": "ui\\screens\\web_sharing_screen.dart"
-
   },
   "http1": "تم إيقاف خادم مشاركة HTTP المحلي.",
-
   "@msg2904d894": {
     "description": "ui\\screens\\web_sharing_screen.dart"
-
   },
   "msg2904d894": "جارٍ إنشاء وكيل آمن...",
-
   "@msga1b2c3d4": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
-
   },
   "msga1b2c3d4": "العودة إلى المجلد الأصل",
-
   "@msga1b2c3d5": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
-
   },
   "msga1b2c3d5": "كيفية إعداد Shizuku؟",
-
   "@msga1b2c3d6": {
     "description": "ui\\main.dart"
-
   },
   "msga1b2c3d6": "يلزم إذن التخزين",
-
   "@msga1b2c3d7": {
     "description": "ui\\main.dart"
-
   },
   "msga1b2c3d7": "منح الإذن",
-
   "msg_media_only_permission_title": "صلاحية ملفات الوسائط فقط",
-
   "@msg_media_only_permission_title": {
     "description": "Title for media-only permission warning"
-
   },
   "msg_media_only_permission_desc": "تم منح حق الوصول إلى ملفات الوسائط فقط حاليًا. لن يتمكن مدير الملفات من استخدام وظائف إعادة التسمية والقص والحذف وغيرها بشكل صحيح. يرجى منح \"الوصول إلى جميع الملفات\" للحصول على الوظائف الكاملة.",
-
   "@msg_media_only_permission_desc": {
     "description": "Description for media-only permission warning"
-
   },
   "msg_grant_full_storage_permission": "منح وصول التخزين الكامل",
-
   "@msg_grant_full_storage_permission": {
     "description": "Button text to grant full storage permission"
-
   },
   "ui_open_settings": "فتح الإعدادات",
-
   "@ui_open_settings": {
     "description": "ui\\main.dart"
-
   },
   "ui_open_settings_desc": "تم رفض إذن التخزين بشكل دائم. يرجى الذهاب إلى إعدادات النظام لمنح إذن إدارة الملفات يدوياً.",
-
   "@ui_open_settings_desc": {
     "description": "ui\\main.dart"
-
   },
   "@msg2c146598": {
     "description": "ui\\screens\\web_sharing_screen.dart"
-
   },
   "msg2c146598": "نفق الإنترنت السحابي متصل! تم تفعيل الرابط المؤقت.",
-
   "@msg4a5d26f4": {
     "description": "ui\\screens\\web_sharing_screen.dart"
-
   },
   "msg4a5d26f4": "تم نسخ الرابط إلى الحافظة!",
-
   "@type": {
     "type": "text"
-
   },
   "type": "امسح بجهاز آخر لفتح {type} فوراً.",
-
   "@msgc8390d74": {
     "description": "ui\\screens\\web_sharing_screen.dart"
-
   },
   "msgc8390d74": "مركز مشاركة الويب",
-
   "@msg5345cdce": {
     "description": "ui\\screens\\web_sharing_screen.dart"
-
   },
   "msg5345cdce": "رابط مشاركة الإنترنت",
-
   "@http2": {
     "description": "ui\\screens\\web_sharing_screen.dart"
-
   },
   "http2": "خادم مشاركة HTTP المحلي",
-
   "@wifi": {
     "description": "ui\\screens\\web_sharing_screen.dart"
-
   },
   "wifi": "السماح للأجهزة الأخرى على نفس شبكة Wi-Fi بالوصول وعرض وبث ملفاتك عبر متصفح الويب.",
-
   "@msg73c512df": {
     "description": "ui\\screens\\web_sharing_screen.dart"
-
   },
   "msg73c512df": "الخادم متصل ويبث",
-
   "@url1": {
     "description": "ui\\screens\\web_sharing_screen.dart"
-
   },
   "url1": "نسخ الرابط",
-
   "@msg22b03c02": {
     "description": "ui\\screens\\web_sharing_screen.dart"
-
   },
   "msg22b03c02": "رمز QR",
-
   "@sharedir": {
     "type": "text"
-
   },
   "sharedir": "دليل المشاركة: {shareDir}",
-
   "@msge6a29aa4": {
     "description": "ui\\screens\\web_sharing_screen.dart"
-
   },
   "msge6a29aa4": "الخادم غير نشط",
-
   "@wifi1": {
     "description": "ui\\screens\\web_sharing_screen.dart"
-
   },
   "wifi1": "يرجى التأكد من أن الأجهزة الأخرى على نفس شبكة Wi-Fi، ثم ابدأ الخادم.",
-
   "@msg974465c1": {
     "description": "ui\\screens\\web_sharing_screen.dart"
-
   },
   "msg974465c1": "بدء خادم الويب",
-
   "@msg27d5bd3c": {
     "description": "ui\\screens\\web_sharing_screen.dart"
-
   },
   "msg27d5bd3c": "إنشاء رابط نفق عام مؤقت آمن. شارك هذا الرابط مع أي شخص في أي مكان على الإنترنت لتنزيل الملفات بسرعة عالية، بغض النظر عن حجم الملف.",
-
   "@msg66a09a42": {
     "description": "ui\\screens\\web_sharing_screen.dart"
-
   },
   "msg66a09a42": "رابط مشاركة مؤقت (صالح لمدة 24 ساعة):",
-
   "@msg879058ce": {
     "description": "ui\\screens\\web_sharing_screen.dart"
-
   },
   "msg879058ce": "نسخ الرابط",
-
   "@msg7ed199f8": {
     "description": "ui\\screens\\web_sharing_screen.dart"
-
   },
   "msg7ed199f8": "عملاء المتصفح المتصلون",
-
   "@msgb77e4adf": {
     "description": "ui\\screens\\web_sharing_screen.dart"
-
   },
   "msgb77e4adf": "في انتظار تنزيلات الإنترنت الواردة...",
-
   "@msga61778bc": {
     "description": "ui\\screens\\web_sharing_screen.dart"
-
   },
   "msga61778bc": "مشاركة الإنترنت غير مفعلة",
-
   "@msga3c80551": {
     "description": "ui\\screens\\web_sharing_screen.dart"
-
   },
   "msga3c80551": "إلغاء تفعيل المشاركة السحابية",
-
   "@msg6466e61e": {
     "description": "ui\\screens\\web_sharing_screen.dart"
-
   },
   "msg6466e61e": "تفعيل رابط مشاركة الإنترنت",
-
   "@msg67bd9375": {
     "description": "ui\\widgets\\background_operation_progress_dialog.dart"
-
   },
   "msg67bd9375": "جارٍ المعالجة...",
-
   "@msg3fa72416": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
-
   },
   "msg3fa72416": "جارٍ إعادة تسمية الملفات...",
-
   "@msg7dbbef0e": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
-
   },
   "msg7dbbef0e": "يرجى الانتظار، جارٍ تحديث محتويات المجلد",
-
   "@msg1a2d9a44": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
-
   },
   "msg1a2d9a44": "الاسم الأصلي (%)",
-
   "@msgcb029197": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
-
   },
   "msgcb029197": "رقم تسلسلي (#)",
-
   "@msgb6d8a14f": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
-
   },
   "msgb6d8a14f": "رقم تسلسلي من ثلاثة أرقام (###)",
-
   "@n": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
-
   },
   "n": "اسم الملف بدون امتداد ({n})",
-
   "@de": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
-
   },
   "de": "الامتداد مع النقطة ({de})",
-
   "@e22": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
-
   },
   "e22": "الامتداد بدون النقطة ({e})",
-
   "@n1": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
-
   },
   "n1": "اسم الملف الكامل مع الامتداد ({N})",
-
   "@msg0e9dc63a": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
-
   },
   "msg0e9dc63a": "نمط الاسم",
-
   "@msg4a63edba": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
-
   },
   "msg4a63edba": "الامتداد",
-
   "@msga420ad79": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
-
   },
   "msga420ad79": "رقم البداية",
-
   "@msg9857973d": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
-
   },
   "msg9857973d": "البحث عن نص",
-
   "@msg1605701e": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
-
   },
   "msg1605701e": "الاستبدال بـ",
-
   "@msgd35f80c8": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
-
   },
   "msgd35f80c8": "استبدال المحتوى",
-
   "@msg32c61dab": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
-
   },
   "msg32c61dab": "معاينة إعادة التسمية",
-
   "@msg92642e0e": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
-
   },
   "msg92642e0e": "العودة للتحرير",
-
   "@msgde88d67a": {
     "description": "ui\\widgets\\conflict_dialog.dart"
-
   },
   "msgde88d67a": "الملف موجود بالفعل",
-
   "@msge59e35b5": {
     "description": "ui\\widgets\\conflict_dialog.dart"
-
   },
   "msge59e35b5": "تطبيق على جميع التعارضات المتبقية",
-
   "@msg27dfaae5": {
     "description": "ui\\widgets\\conflict_dialog.dart"
-
   },
   "msg27dfaae5": "الاحتفاظ بالاثنين",
-
   "@msg6cfbf05d": {
     "description": "ui\\widgets\\conflict_dialog.dart"
-
   },
   "msg6cfbf05d": "إعادة تسمية الملف",
-
   "@msg25f747ce": {
     "description": "ui\\widgets\\create_archive_dialog.dart"
-
   },
   "msg25f747ce": "إنشاء أرشيف",
-
   "@msged5f808e": {
     "description": "ui\\widgets\\create_archive_dialog.dart"
-
   },
   "msged5f808e": "تنسيق الضغط",
-
   "@mb": {
     "description": "ui\\widgets\\create_archive_dialog.dart"
-
   },
   "mb": "حجم التقسيم (ميجابايت، اختياري)",
-
   "@msgac52af6a": {
     "description": "ui\\widgets\\create_archive_dialog.dart"
-
   },
   "msgac52af6a": "اتركه فارغاً لإنشاء أرشيف واحد",
-
   "@msgdf2ef7f5": {
     "description": "ui\\widgets\\create_archive_dialog.dart"
-
   },
   "msgdf2ef7f5": "إنشاء أرشيف منفصل لكل ملف",
-
   "@msgb52d4a73": {
     "description": "ui\\widgets\\directory_tab_bar.dart"
-
   },
   "msgb52d4a73": "علامة تبويب جديدة",
-
   "@msg4e9c344a": {
     "description": "ui\\widgets\\directory_tab_bar.dart"
-
   },
   "msg4e9c344a": "نسخ علامة التبويب",
-
   "@msg7716532d": {
     "description": "ui\\widgets\\directory_tab_bar.dart"
-
   },
   "msg7716532d": "إغلاق علامات التبويب الأخرى",
-
   "@msgd78603eb": {
     "description": "ui\\widgets\\directory_tab_bar.dart"
-
   },
   "msgd78603eb": "نقر مزدوج لإغلاق علامة التبويب",
-
   "@selectedcount": {
     "type": "text"
-
   },
   "selectedcount": "{selectedCount} عنصر",
-
   "@e23": {
     "type": "text"
-
   },
   "e23": "فشل إنشاء الأرشيف: {e}",
-
   "@msgc4d7eece": {
     "description": "ui\\widgets\\extract_archive_dialog.dart"
-
   },
   "msgc4d7eece": "استخراج الأرشيف",
-
   "@msgf15821d0": {
     "description": "ui\\widgets\\extract_archive_dialog.dart"
-
   },
   "msgf15821d0": "استخراج إلى المجلد",
-
   "@msgff69affd": {
     "description": "ui\\widgets\\extract_archive_dialog.dart"
-
   },
   "msg_extract_to": "استخراج إلى…",
-
   "@msg_extract_to": {
     "description": "Extract archive dialog title"
-
   },
   "ui_current_directory": "المجلد الحالي",
-
   "@ui_current_directory": {
     "description": "Extract to current directory checkbox"
-
   },
   "ui_custom_directory": "مجلد مخصص",
-
   "@ui_custom_directory": {
     "description": "Extract to custom directory checkbox"
-
   },
   "msgff69affd": "كلمة المرور (إذا كانت مشفرة)",
-
   "@msg67eda5e6": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
-
   },
   "msg67eda5e6": "جميع الملفات",
-
   "@msg8b2fcb31": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
-
   },
   "msg8b2fcb31": "إظهار جميع الملفات والمجلدات في هذا الدليل",
-
   "@pdfword": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
-
   },
   "pdfword": "PDF ومستندات Word وجداول البيانات والنصوص والكتب الإلكترونية",
-
   "@jpegpngwebp": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
-
   },
   "jpegpngwebp": "JPEG و PNG و WebP وتنسيقات الصور الخام",
-
   "@mp3wavaac": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
-
   },
   "mp3wavaac": "MP3 و WAV و AAC وصوت عالي الدقة",
-
   "@mp4mkvwebm": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
-
   },
   "mp4mkvwebm": "MP4 و MKV و WebD ومقاطع فيديو عالية الدقة",
-
   "@zip7zrar": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
-
   },
   "zip7zrar": "ZIP و 7Z و RAR وملفات مضغوطة أخرى",
-
   "@msg6d3e48cc": {
     "description": "ui\\widgets\\file_filter_bottom_sheet.dart"
-
   },
   "msg6d3e48cc": "اختر فئة لإظهار الملفات المطابقة فقط",
-
   "@e24": {
     "type": "text"
-
   },
   "e24": "فشل تحميل الصورة المصغرة البعيدة: {e}",
-
   "@msg32a1bd25": {
     "description": "ui\\widgets\\file_item.dart"
-
   },
   "msg32a1bd25": "عنصر واحد",
-
   "@count4": {
     "type": "text"
-
   },
   "count4": "{count} عنصر",
-
   "@msg9d69d7a0": {
     "description": "ui\\widgets\\file_operation_progress_dialog.dart"
-
   },
   "msg9d69d7a0": "جارٍ نقل الملفات...",
-
   "@ui_transferring_files": {
     "description": "ui\\widgets\\file_operation_progress_dialog.dart"
-
   },
   "ui_transferring_files": "جارٍ نقل الملفات",
-
   "@ui_time_remaining": {
     "description": "ui\\widgets\\file_operation_progress_dialog.dart"
-
   },
   "ui_time_remaining": "متبقي",
-
   "@zenfile6": {
     "description": "ui\\widgets\\open_with_sheet.dart"
-
   },
   "zenfile6": "تجربة أصلية مخصصة لـ ZenFile",
-
   "@msg42be43e6": {
     "description": "ui\\widgets\\open_with_sheet.dart"
-
   },
   "msg42be43e6": "تطبيق خارجي للنظام",
-
   "@msgd1fca831": {
     "description": "ui\\widgets\\open_with_sheet.dart"
-
   },
   "msgd1fca831": "فتح بتطبيق طرف ثالث على الجهاز",
-
   "@msgdb75b769": {
     "description": "ui\\widgets\\open_with_sheet.dart"
-
   },
   "msgdb75b769": "مرة واحدة فقط",
-
   "@msg959429a5": {
     "description": "ui\\widgets\\premium_storage_overview.dart"
-
   },
   "msg959429a5": "تصفح ملفات الجهاز",
-
   "@msgc31116e3": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
-
   },
   "msgc31116e3": "إضافة اتصال جديد",
-
   "@msgf1d4ff50": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
-
   },
   "msgf1d4ff50": "مخصص",
-
   "@msg490ac572": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
-
   },
   "msg490ac572": "لا توجد اختصارات مثبتة. اضغط تخصيص للإضافة.",
-
   "@msg445a43cb": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
-
   },
   "msg445a43cb": "اسحب المقبض (=) لإعادة ترتيب أيقونات الصفحة الرئيسية.",
-
   "@msg944d5ecd": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
-
   },
   "msg944d5ecd": "إضافة اختصار مجلد/ملف",
-
   "@msg4f356348": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
-
   },
   "msg4f356348": "مسار مخصص",
-
   "@msg94733bec": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
-
   },
   "msg94733bec": "حذف الاختصار",
-
   "@msg5c29ad2f": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
-
   },
   "msg5c29ad2f": "استعادة الموقع",
-
   "@msg21de5dd7": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
-
   },
   "msg21de5dd7": "موقع المسح المخصص:",
-
   "@msg4bb81f99": {
     "description": "ui\\widgets\\quick_categories_grid.dart"
-
   },
   "msg4bb81f99": "لم تتم إضافة مسارات مخصصة.",
-
   "@msgf544c399": {
     "description": "ui\\widgets\\recent_files_section.dart"
-
   },
   "msgf544c399": "أكتوبر",
-
   "@msgc0615eb3": {
     "description": "ui\\widgets\\recent_files_section.dart"
-
   },
   "msgc0615eb3": "ديسمبر",
-
   "@msg54355dd8": {
     "description": "ui\\widgets\\recent_files_section.dart"
-
   },
   "msg54355dd8": "الملفات الأخيرة",
-
   "@msgd5eac3a3": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
-
   },
   "msgd5eac3a3": "المجلدات النظامية المقيدة",
-
   "@android11androiddataandroidobbzenfile": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
-
   },
   "android11androiddataandroidobbzenfile": "يقيّد Android 11+ الوصول القياسي إلى مجلدات Android/data و Android/obb لحماية بيانات التطبيقات. لعرض وتعديل هذه الملفات، يحتاج ZenFile إلى أذونات متقدمة.",
-
   "@root": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
-
   },
   "root": "استخدام وصول الجذر (المستخدم المتميز)",
-
   "@shizukuroot": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
-
   },
   "shizukuroot": "منح وصول Shizuku (لا يتطلب جذر)",
-
   "@selectedcount1": {
     "type": "text"
-
   },
   "selectedcount1": "تم تحديد {selectedCount} عنصر",
-
   "@selectedcount2": {
     "type": "text"
-
   },
   "selectedcount2": "هل أنت متأكد أنك تريد حذف {selectedCount} عنصر؟ لا يمكن التراجع عن هذا الإجراء.",
-
   "@msga9b87614": {
     "description": "ui\\widgets\\selection_action_bar.dart"
-
   },
   "msga9b87614": "تم إلغاء تثبيت العناصر المحددة",
-
   "@msg84e4fac9": {
     "description": "ui\\widgets\\selection_action_bar.dart"
-
   },
   "msg84e4fac9": "إلغاء التثبيت",
-
   "@msg3be9abab": {
     "description": "ui\\widgets\\selection_action_bar.dart"
-
   },
   "msg3be9abab": "جارٍ حساب الحجم...",
-
   "@msg7704aa2c": {
     "description": "ui\\widgets\\selection_action_bar.dart"
-
   },
   "msg7704aa2c": "المسار المحدد:",
-
   "@label1": {
     "type": "text"
-
   },
   "label1": "تم نسخ {label} إلى الحافظة",
-
   "@selectedcount3": {
     "type": "text"
-
   },
   "selectedcount3": "تم تحديد {selectedCount} عنصر",
-
   "@msg8b73264b": {
     "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
-
   },
   "msg8b73264b": "الملفات (اضغط مطولاً لاختيار الفتح باستخدام)",
-
   "@msgc5c0646c": {
     "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
-
   },
   "msgc5c0646c": "نسخ المحدد",
-
   "@msg8e6d4604": {
     "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
-
   },
   "msg8e6d4604": "قص المحدد",
-
   "@msg1058354c": {
     "description": "ui\\widgets\\selection_context_bottom_sheet.dart"
-
   },
   "msg1058354c": "الخصائص والمعلومات",
-
   "@usedstoragestr": {
     "type": "text"
-
   },
   "usedstoragestr": "مستخدم {usedStorageStr}",
-
   "@freestoragestr": {
     "type": "text"
-
   },
   "freestoragestr": "{freeStorageStr} متاح",
-
   "@msgc823e21b": {
     "description": "ui\\widgets\\tab_options_sheet.dart"
-
   },
   "msgc823e21b": "إلغاء تثبيت علامة التبويب",
-
   "@msg7d6c1284": {
     "description": "ui\\widgets\\zenfile_address_bar.dart"
-
   },
   "msg7d6c1284": "لم يتم العثور على أدلة أو ملفات مطابقة",
-
   "@path": {
     "type": "text"
-
   },
   "path": "المسار غير موجود: {path}",
-
   "@msg6cbbf7d9": {
     "description": "ui\\widgets\\zenfile_address_bar.dart"
-
   },
   "msg6cbbf7d9": "أدخل المسار المطلق...",
-
   "@msgf13fc21c": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
-
   },
   "msgf13fc21c": "شبكة",
-
   "@msg41e625d1": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
-
   },
   "msg41e625d1": "إضافة اتصال بعيد",
-
   "@msg8755e992": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
-
   },
   "msg8755e992": "الوضع الفاتح",
-
   "@msg1cf6fcd3": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
-
   },
   "msg1cf6fcd3": "إعدادات إضافية",
-
   "@msgeef7e30c": {
     "description": "ui\\widgets\\zenfile_drawer.dart"
-
   },
   "msgeef7e30c": "مجموعة الوسائط المميزة",
-
   "msg2ad64aa7": "لا يمكن فتح الرابط: {urlString}",
-
   "msg30d17f96": "أبرز الميزات",
-
   "msgaba638c4": "أمان الخزنة",
-
   "msgd309e9ea": "مركز الخوادم",
-
   "msg4a5f936c": "التواصل والمشاركة",
-
   "msg4d48a010": "ZenFile - مدير ملفات جميل",
-
   "msg1f4c0192": "اشترِ للكاتب قهوة",
-
   "msg2eceaa85": "أترك إكرامية للكاتب",
-
   "msg305734ce": "سجل التغييرات",
-
   "msg1c80891a": "تمت إضافة معاينة الصور المصغرة للملفات البعيدة في صفحة التصفح",
-
   "msg212f8f9e": "تم الإصلاح: الملفات البعيدة لا يمكن فتحها/تشغيلها",
-
   "msgd0cf310e": "تم تحسين الإدارة الموحدة لدليل ذاكرة التخزين المؤقت للملفات البعيدة",
-
   "msg072f2022": "تم تغيير السحب بإصبع واحد إلى السحب بإصبعين (لتجنب إيماءة الرجوع العرضية)",
-
   "msg66517dc4": "تمت ترجمة عناوين خيارات الخط بالكامل",
-
   "msgacad92c8": "تمت إزالة ميزة 'منع فتح القائمة الجانبية بإيماءة الرجوع اليسرى'",
-
   "msg09d0e1b6": "تم الإصلاح: تبديل الأيقونة البديلة لا يعمل",
-
   "msg2d1872c8": "تمت ترجمة قائمة محرر النصوص بالكامل",
-
   "msg2e35eef7": "متصفح الملفات ذو اللوحة المزدوجة",
-
   "msge96aa2cd": "مشغل وسائط مدمج",
-
   "msg49a6c41e": "تبديل أيقونة التطبيق (أنماط متعددة متاحة)",
-
   "msg4d82be7c": "خطة تحديث الإصدار التالي",
-
   "msg2c8957dd": "مشاكل معروفة",
-
   "msg11cb01fc": "تشغيل فيديو الخادم البعيد أثناء التخزين المؤقت",
-
   "msg60a4d643": "الأيقونة المخصصة لن تغير أيقونة سطح المكتب بعد الرفع (سيتم تحسينها في الإصدار التالي)",
-
   "msg9e68ea42": "فشل الحفظ، يرجى المحاولة مرة أخرى",
-
   "cat_images": "الصور",
-
   "cat_videos": "الفيديو",
-
   "cat_audios": "الصوتيات",
-
   "cat_documents": "المستندات",
-
   "cat_downloads": "التنزيلات",
-
   "cat_screenshots": "لقطات الشاشة",
-
   "cat_recent": "الأخيرة",
-
   "cat_network": "الشبكة",
-
   "cat_apps": "التطبيقات",
-
   "cat_settings": "الإعدادات",
-
   "cat_storage": "المساحة",
-
   "cat_service": "الخدمة",
-
   "cat_manage": "الإدارة",
-
   "cat_config": "التكوين",
-
   "cat_analyze": "التحليل",
-
   "cat_vault": "خزنة",
-
   "cat_vault_desc": "تخزين آمن",
-
   "cat_quick_categories": "الفئات",
-
   "ui_nav": "محلي",
-
   "ui_home": "الرئيسية",
-
   "ui_recycle_bin": "سلة المحذوفات",
-
   "ui_dark_mode": "الوضع الداكن",
-
   "ui_personalize_settings": "إعدادات",
-
   "ui_compress": "ضغط",
-
   "ui_copy": "نسخ",
-
   "ui_cut": "قص",
-
   "ui_move": "Move",
-
   "@ui_move": {
     "description": "Drag drop action dialog"
-
   },
   "ui_apply": "Apply",
-
   "@ui_apply": {
     "description": "Drag drop action dialog confirm button"
-
   },
   "ui_delete": "حذف",
-
   "ui_select_all": "تحديد الكل",
-
   "ui_cancel": "إلغاء",
-
   "ui_confirm": "تأكيد",
-
-  "ui_share": "مشاركة",
-
   "ui_move_here": "النقل هنا",
-
   "ui_properties": "الخصائص",
-
   "ui_info": "المعلومات",
-
   "ui_open": "فتح",
-
   "ui_close": "إغلاق",
-
   "ui_more": "المزيد",
-
   "ui_appearance_theme": "المظهر والسمة",
-
   "ui_list_layout_style": "نمط القائمة والتخطيط",
-
   "ui_media_preferences": "تفضيلات الوسائط",
-
   "ui_file_actions_viewers": "إجراءات الملفات والعارضات",
-
   "ui_no_settings_found": "لم يتم العثور على إعدادات",
-
   "ui_show_action_bar": "إظهار شريط الإجراءات",
-
   "ui_use_24h_format": "استخدام تنسيق 24 ساعة",
-
   "ui_show_folder_contents_count": "إظهار محتويات المجلدات",
-
   "ui_set_as_home": "تعيين كصفحة رئيسية",
-
   "@ui_set_as_home": {
     "description": "Set current folder as home directory"
-
   },
   "ui_show_folder_size": "إظهار حجم المجلد",
-
   "ui_show_bottom_action_bar": "موقع شريط التنقل",
-
   "ui_hide_action_text": "إخفاء تسميات نص شريط الإجراءات",
-
   "ui_show_media_previews": "صور مصغرة للوسائط المحلية",
-
   "ui_adaptive_multiline_names": "أسماء ملفات متعددة الأسطر التكيفية",
-
   "ui_hide_action_menu_buttons": "إخفاء أزرار قائمة الإجراءات",
-
   "ui_show_action_menu_buttons": "إظهار أزرار قائمة الإجراءات",
-
   "ui_action_menu_subtitle": "اختر وضع العرض لزر القائمة ثلاثي النقاط. عند الإيقاف، لا يظهر زر بجانب الملفات والمجلدات.",
-
   "ui_action_menu_mode_all": "إظهار في كل الأوضاع",
-
   "ui_action_menu_mode_single": "وضع النافذة المنفردة فقط",
-
   "ui_action_menu_mode_dual": "وضع النافذة المزدوجة فقط",
-
   "ui_enable_drag_drop": "تمكين السحب والإفلات",
-
   "ui_confirm_drag_drop": "تأكيد السحب والإفلات",
-
   "ui_enable_multi_tabs": "تمكين علامات تبويب متعددة",
-
   "ui_enable_split_screen": "تمكين تقسيم الشاشة",
-
   "ui_app_icon": "أيقونة التطبيق",
-
   "ui_emerald_green": "أخضر زمردي",
-
   "ui_deep_red": "أحمر داكن",
-
   "ui_square": "مربع",
-
   "ui_circle": "دائرة",
-
   "ui_1_day_after": "بعد يوم واحد",
-
   "ui_no_auto_clean": "بدون مسح تلقائي",
-
   "ui_daily": "يومياً",
-
   "ui_weekly": "أسبوعياً",
-
   "ui_monthly": "شهرياً",
-
   "ui_every_n_days": "كل {days} أيام",
-
   "@ui_every_n_days": {
     "description": "ui\\screens\\more_settings_screen.dart",
-
     "type": "text"
-
   },
   "ui_clear_cache_failed": "فشل مسح ذاكرة التخزين المؤقت: {e}",
-
   "@ui_clear_cache_failed": {
     "description": "ui\\screens\\more_settings_screen.dart",
-
     "type": "text"
-
   },
   "ui_clear_remote_cache": "مسح ذاكرة التخزين المؤقت البعيدة",
-
   "ui_view_cache_dir": "عرض دليل ذاكرة التخزين المؤقت",
-
   "ui_remote_media_thumbnail": "صور مصغرة للوسائط البعيدة",
-
   "ui_auto_clean_remote_cache": "مسح تلقائي لذاكرة التخزين المؤقت للخادم البعيد دورياً: {label}",
-
   "@ui_auto_clean_remote_cache": {
     "description": "ui\\screens\\more_settings_screen.dart",
-
     "type": "text"
-
   },
   "ui_custom_font_with_name": "خط مخصص ({name})",
-
   "@ui_custom_font_with_name": {
     "description": "ui\\screens\\more_settings_screen.dart",
-
     "type": "text"
-
   },
   "ui_import_custom_font": "استيراد ملف خط مخصص (.ttf/.otf)",
-
   "ui_custom_font_applied": "تم تطبيق الخط المخصص \"{name}\" بنجاح!",
-
   "@ui_custom_font_applied": {
     "description": "ui\\screens\\more_settings_screen.dart",
-
     "type": "text"
-
   },
   "ui_invalid_file_type": "نوع ملف غير صالح",
-
   "ui_language": "اللغة",
-
   "ui_hide_nav_labels": "إخفاء تسميات التنقل السفلية",
-
   "ui_reset_default_viewers": "إعادة تعيين العارضات الافتراضية",
-
   "ui_trailing_info_when_hidden": "المعلومات النهائية عند إخفاء القائمة",
-
   "ui_go_up": "أعلى",
-
   "@ui_go_up": {
     "description": "directory_screen.dart"
-
   },
   "ui_cut_copy_items": "{prefix} · {count} عنصر",
-
   "@ui_cut_copy_items": {
     "description": "directory_screen.dart",
-
     "placeholders": {
       "prefix": {
         "type": "String"
-
       },
       "count": {
         "type": "int"
-
       }
     }
   },
   "ui_clear": "مسح",
-
   "@ui_clear": {
     "description": "directory_screen.dart"
-
   },
   "ui_paste": "لصق",
-
   "@ui_paste": {
     "description": "directory_screen.dart"
-
   },
   "ui_file_name": "اسم الملف",
-
   "@ui_file_name": {
     "description": "directory_screen.dart"
-
   },
   "ui_create": "إنشاء",
-
   "@ui_create": {
     "description": "directory_screen.dart"
-
   },
   "ui_create_new_directory": "إنشاء دليل جديد",
-
   "@ui_create_new_directory": {
     "description": "directory_screen.dart"
-
   },
   "ui_layout_mode": "وضع التخطيط",
-
   "@ui_layout_mode": {
     "description": "directory_screen.dart"
-
   },
   "ui_grid_view": "عرض الشبكة",
-
   "@ui_grid_view": {
     "description": "directory_screen.dart"
-
   },
   "ui_name_asc": "الاسم (أ-ي)",
-
   "@ui_name_asc": {
     "description": "directory_screen.dart"
-
   },
   "ui_newest": "الأحدث",
-
   "@ui_newest": {
     "description": "directory_screen.dart"
-
   },
   "ui_oldest": "الأقدم",
-
   "@ui_oldest": {
     "description": "directory_screen.dart"
-
   },
   "ui_size_small": "الحجم (صغير)",
-
   "@ui_size_small": {
     "description": "directory_screen.dart"
-
   },
   "ui_type": "النوع",
-
   "@ui_type": {
     "description": "ui widgets"
-
   },
   "ui_storage_volume": "حجم التخزين",
-
   "@ui_storage_volume": {
     "description": "directory_screen.dart"
-
   },
   "ui_browse": "التصفح",
-
   "@ui_browse": {
     "description": "directory_screen.dart"
-
   },
   "ui_new": "جديد",
-
   "@ui_new": {
     "description": "directory_screen.dart"
-
   },
   "ui_folders_count": "المجلدات: {count}",
-
   "@ui_folders_count": {
     "description": "directory_screen.dart",
-
     "placeholders": {
       "count": {
         "type": "int"
-
       }
     }
   },
   "ui_files_count": "الملفات: {count}",
-
   "@ui_files_count": {
     "description": "directory_screen.dart",
-
     "placeholders": {
       "count": {
         "type": "int"
-
       }
     }
   },
   "ui_selection_mode": "وضع التحديد",
-
   "@ui_selection_mode": {
     "description": "directory_screen.dart"
-
   },
   "ui_storage_and_sd": "التخزين وبطاقة SD",
-
   "@ui_storage_and_sd": {
     "description": "directory_screen.dart"
-
   },
   "ui_images_only": "الصور فقط",
-
   "@ui_images_only": {
     "description": "ui widgets"
-
   },
   "ui_videos_only": "الفيديو فقط",
-
   "@ui_videos_only": {
     "description": "ui widgets"
-
   },
   "ui_show_folders": "إظهار المجلدات",
-
   "@ui_show_folders": {
     "description": "directory_screen.dart"
-
   },
   "ui_files": "الملفات",
-
   "@ui_files": {
     "description": "directory_screen.dart"
-
   },
   "ui_delete_file_confirm": "هل أنت متأكد أنك تريد حذف هذا الملف؟ لا يمكن التراجع عن هذا الإجراء.",
-
   "@ui_delete_file_confirm": {
     "description": "directory_screen.dart"
-
   },
   "ui_done": "تم",
-
   "@ui_done": {
     "description": "ui widgets"
-
   },
   "ui_name": "الاسم",
-
   "@ui_name": {
     "description": "ui widgets"
-
   },
   "ui_path": "المسار",
-
   "@ui_path": {
     "description": "ui widgets"
-
   },
   "ui_size": "الحجم",
-
   "@ui_size": {
     "description": "ui widgets"
-
   },
   "ui_permissions": "الأذونات",
-
   "@ui_permissions": {
     "description": "ui widgets"
-
   },
   "ui_contains": "يحتوي",
-
   "@ui_contains": {
     "description": "ui widgets"
-
   },
   "ui_extract": "استخراج",
-
   "@ui_extract": {
     "description": "ui widgets"
-
   },
   "ui_pin_to_top": "تثبيت في الأعلى",
-
   "@ui_pin_to_top": {
     "description": "ui widgets"
-
   },
   "msg_select_all": "تحديد الكل",
-
   "@msg_select_all": {
     "description": "selection_context_bottom_sheet.dart"
-
   },
   "ui_pinned_selected": "تم تثبيت العناصر المحددة",
-
   "@ui_pinned_selected": {
     "description": "ui widgets"
-
   },
   "ui_filter_by_type": "تصفية الملفات حسب النوع",
-
   "@ui_filter_by_type": {
     "description": "ui widgets"
-
   },
   "ui_default_scan_locations": "مواقع المسح الافتراضية:",
-
   "@ui_default_scan_locations": {
     "description": "ui widgets"
-
   },
   "ui_exclude_location": "استبعاد الموقع",
-
   "@ui_exclude_location": {
     "description": "ui widgets"
-
   },
   "ui_add_custom_path": "إضافة مسار مخصص",
-
   "@ui_add_custom_path": {
     "description": "ui widgets"
-
   },
   "ui_added_custom_paths": "تمت إضافة {count} مسار مخصص",
-
   "@ui_added_custom_paths": {
     "description": "ui widgets",
-
     "placeholders": {
       "count": {
         "type": "int"
-
       }
     }
   },
   "ui_close_tab": "إغلاق علامة التبويب",
-
   "@ui_close_tab": {
     "description": "ui widgets"
-
   },
   "ui_not_found_title": "لم يتم العثور على {title}",
-
   "@ui_not_found_title": {
     "description": "ui widgets",
-
     "placeholders": {
       "title": {
         "type": "String"
-
       }
     }
   },
   "ui_oldest_first": "الأقدم أولاً",
-
   "@ui_oldest_first": {
     "description": "ui widgets"
-
   },
   "ui_sort_options": "خيارات الفرز",
-
   "@ui_sort_options": {
     "description": "ui widgets"
-
   },
   "ui_refresh": "تحديث",
-
   "@ui_refresh": {
     "description": "ui widgets"
-
   },
   "ui_selected_count": "{count} محدد",
-
   "@ui_selected_count": {
     "description": "ui widgets",
-
     "placeholders": {
       "count": {
         "type": "int"
-
       }
     }
   },
   "ui_permanently_delete_name": "حذف \"{name}\" بشكل دائم؟",
-
   "@ui_permanently_delete_name": {
     "description": "ui widgets",
-
     "placeholders": {
       "name": {
         "type": "String"
-
       }
     }
   },
   "ui_copied_count": "تم نسخ {count} عنصر إلى الحافظة",
-
   "@ui_copied_count": {
     "description": "ui widgets",
-
     "placeholders": {
       "count": {
         "type": "int"
-
       }
     }
   },
   "ui_cut_count": "تم قص {count} عنصر إلى الحافظة",
-
   "@ui_cut_count": {
     "description": "ui widgets",
-
     "placeholders": {
       "count": {
         "type": "int"
-
       }
     }
   },
   "ui_read": "قراءة",
-
   "@ui_read": {
     "description": "ui widgets"
-
   },
   "ui_write": "كتابة",
-
   "@ui_write": {
     "description": "ui widgets"
-
   },
   "ui_file": "ملف",
-
   "@ui_file": {
     "description": "ui widgets"
-
   },
   "ui_backup_settings": "نسخ الإعدادات احتياطياً",
-
   "ui_restore_settings": "استعادة الإعدادات",
-
   "ui_backup_info": "معلومات النسخ الاحتياطي",
-
   "ui_backup_file": "ملف النسخ الاحتياطي",
-
   "ui_no_backup_file": "لا يوجد ملف نسخ احتياطي",
-
   "ui_remote_connection": "اتصال بعيد",
-
   "ui_step_n_of_3": "الخطوة {step} / 3",
-
   "ui_choose_network_service": "اختر خدمة الشبكة",
-
   "ui_connection_name": "اسم الاتصال",
-
   "ui_protocol": "البروتوكول",
-
   "ui_port": "المنفذ",
-
   "ui_path_label": "المسار",
-
   "ui_username_optional": "اسم المستخدم (اختياري)",
-
   "ui_share_name_optional": "اسم المشاركة (اختياري)",
-
   "ui_share_name_hint": "مثال: /Public أو اتركه فارغاً للكشف التلقائي",
-
   "ui_smb_desc": "شبكة محلية ومشاركة SMB NAS",
-
   "ui_connection_suffix": "اتصال",
-
   "ui_back": "رجوع",
-
   "ui_connect": "اتصال",
-
   "ui_web_share": "مشاركة الويب",
-
   "ui_network": "الشبكة",
-
   "log_i18n_full": "تدويل كامل لواجهة الصينية/الإنجليزية",
-
   "log_fix_selection_count": "تم الإصلاح: عدد الملفات المحددة لا يظهر",
-
   "log_fix_remote_title": "تم الإصلاح: مشكلة عرض عنوان صفحة الاتصال البعيد",
-
   "log_svg_thumbnail_category": "الصور المصغرة لـ SVG تعرض الآن في صفحات الفئات",
-
   "log_language_btn_top": "تم نقل زر تبديل اللغة إلى أعلى الإعدادات",
-
   "log_fix_category_missing": "تم الإصلاح: بعض الفئات لا تظهر في الوضع الإنجليزي",
-
   "log_text_editor": "ميزات جديدة لمحرر النصوص: ملف جديد، حفظ باسم، تراجع/إعادة",
-
   "log_text_editor_settings": "استمرارية إعدادات محرر النصوص (التفاف الكلمات، أرقام الأسطر، وضع القراءة)",
-
   "log_10_languages": "دعم 10 لغات (الصينية، الإنجليزية، اليابانية، الكورية، الألمانية، الفرنسية، الإسبانية، الروسية، العربية)",
-
   "log_fix_l10n_hardcode": "إصلاح مشاكل النصوص الثابتة l10n المتعددة",
-
   "log_language_scroll": "تحسين مربع حوار اختيار اللغة مع دعم التمرير",
-
   "log_remote_media_cache": "يتم فتح الملفات البعيدة فوراً مع تقدم التخزين المؤقت في الخلفية",
-
   "log_remote_to_remote": "إضافة نسخ/قص بين الخوادم البعيدة",
-
   "log_remote_cut_progress": "إصلاح شريط التقدم لعمليات القص البعيدة",
-
   "log_audio_scan_stable": "تحسين استقرار فحص فئة الصوت",
-
   "log_extract_dialog_redesign": "إعادة تصميم مربع حوار فك الضغط مع اختيار الدليل الحالي/المخصص",
-
   "log_vault_quick_category": "تمت إضافة اختصار الخزنة إلى الفئات السريعة (إيقاف افتراضي)",
-
   "log_vault_l10n_fix": "إصلاح النصوص الإنجليزية الثابتة وتجميد إضافة ملفات متعددة في الخزنة",
-
   "log_compression_path_fix": "توحيد مسارات الضغط لزر النقاط الثلاث وقائمة الضغط المطول",
-
   "log_compression_progress": "تحسين مربع حوار تقدم الضغط مع عرض متعدد المراحل وإغلاق تلقائي موثوق",
-
   "log_web_share_category": "بوابة مشاركة الويب تعرض الملفات في أقسام مصنفة (مجلدات، فيديو، صوت، صور، مستندات، أخرى)",
-
   "log_web_share_l10n": "بوابة مشاركة الويب تدعم الآن العرض متعدد اللغات بناءً على لغة التطبيق",
-
-    "log_music_lyrics_fullscreen_removed": "إزالة لوحة歌词 الكاملة من قائمة مشغل الموسيقى",
-
-    "log_music_lyrics_centered": "توسيط عرض الكلمات الحالية في مشغل الموسيقى",
-
-    "log_music_player_button": "إضافة زر مشغل الموسيقى أعلى فئة الموسيقى",
-
-    "log_music_remember_progress": "مشغل الموسيقى يتذكر موضع التشغيل ويستأنف تلقائياً",
-
-    "log_image_icon_redesign": "إعادة تصميم أيقونات ملفات الصور مع تسمية التنسيق (jpg, png, إلخ)",
-
-    "log_doc_icon_redesign": "إعادة تصميم أيقونات ملفات المستندات مع تسمية التنسيق",
-
-    "log_archive_icon_redesign": "إعادة تصميم أيقونات الأرشيف مع تسمية التنسيق (zip, 7z, rar, إلخ)",
-
-    "log_music_lrc_lyrics": "دعم التحميل التلقائي لكلمات LRC واختيار ملف الكلمات يدوياً",
-
-      "log_remote_copy_paste_fix": "إصلاح مشكلة النسخ من الخادم البعيد: شريط التقدم 0% والملفات لا تظهر",
-
-    "log_navbar_position_setting": "Added navigation bar position setting, support top or bottom display",
-
-    "log_browse_top_area_optimize": "Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space",
-
-    "log_thanks_feedback": "شكراً للمستخدمين التاليين على ملاحظاتهم واقتراحاتهم: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose, Silence",
-
-    "log_smb_native_rewrite": "إعادة كتابة كاملة لعميل SMB باستخدام مكتبة smbj الأصلية لأندرويد لبروتوكول SMB حقيقي، مع اكتشاف تلقائي لاسم المشاركة",
-
-    "log_ftp_sftp_streaming": "إصلاح تشغيل FTP/SFTP بتدفق باستخدام Socket خام مع اتصال بيانات مستقل، دعم التخزين المؤقت التدريجي",
-
-    "log_remote_l10n_fix": "إصلاح النصوص الثابتة في صفحة الاتصال البعيد، إضافة مفاتيح l10n لوصف بروتوكول SMB ولاحقة اسم الاتصال",
-
-    "log_image_viewer_menu": "تغيير قائمة عارض الصور في الزاوية اليمنى العلوية إلى ورقة سفلية مع 9 عناصر إجراء، خلفية سوداء شبه شفافة لتحسين الرؤية",
-
-    "log_breadcrumb_border": "إضافة حدود كاملة على شكل V لأزرار مسار التنقل باستخدام CustomPaint، ضمان اتصال سلس وحدود واضحة",
-
-    "log_three_dot_button_position": "نقل أزرار الإجراء ثلاثية النقاط للملفات/المجلدات إلى الزاوية اليمنى العلوية للبطاقات لتجنب اللمس العرضي أثناء السحب",
-
-    "log_three_dot_button_setting": "إعادة تسمية إعداد زر ثلاثي النقاط إلى 'إظهار أزرار ثلاثية النقاط' مع ثلاثة أوضاع: الكل/نافذة واحدة فقط/نافذة مزدوجة فقط",
-
-    "log_category_back_select": "في وضع التحديد المتعدد للفئات، زر الرجوع الآن يلغي التحديد بدلاً من الخروج من الفئة",
-
-    "log_desktop_lyric": "إضافة نافذة كلمات عائمة مع فحص الإذن، موضع قابل للسحب، والنقر لتبديل التشغيل/الإيقاف المؤقت",
-
-    "log_notification_panel": "إصلاح لوحة الإشعارات التي لا تعرض ضوابط التشغيل، الاحتفاظ بالإشعار عند الإيقاف المؤقت، مع مطالبات رفض الإذن",
-
-    "log_lyric_word_highlight": "دعم الكلمات العائمة للتظليل كلمة بكلمة باستخدام SpannableStringBuilder لتأثير الكاريوكي",
-
-    "log_floating_window_resize": "دعم نافذة الكلمات العائمة للضغط المطول لإظهار مقبض تغيير الحجم، السحب لضبط حجم النافذة والنص",
-
-    "log_background_play_fix": "إصلاح إيقاف الموسيقى مؤقتاً عند تمكين التشغيل في الخلفية، إعادة استخدام مثيل المشغل بدون انقطاع",
-
-    "log_category_button_sync": "إصلاح زر التشغيل في صفحة الفئات الذي يعرض معلومات صوتية قديمة عند إيقاف التشغيل في الخلفية، يتم التحديث عند العودة",
-
-    "log_build_stability": "إصلاح خطأ R8 OOM في التجميع، شاشة بيضاء عند بدء تشغيل x86_64/armv7، ضبط ذاكرة Gradle JVM وتنزيلات ABI",
-
-    "log_lyric_scale_animation": "إضافة تأثير التكبير لانتقال الكلمات كلمة بكلمة، إصلاح مشاكل المزامنة، تثبيت مدة الانتقال 300 مللي ثانية",
-
+  "log_music_lyrics_fullscreen_removed": "إزالة لوحة歌词 الكاملة من قائمة مشغل الموسيقى",
+  "log_music_lyrics_centered": "توسيط عرض الكلمات الحالية في مشغل الموسيقى",
+  "log_music_player_button": "إضافة زر مشغل الموسيقى أعلى فئة الموسيقى",
+  "log_music_remember_progress": "مشغل الموسيقى يتذكر موضع التشغيل ويستأنف تلقائياً",
+  "log_image_icon_redesign": "إعادة تصميم أيقونات ملفات الصور مع تسمية التنسيق (jpg, png, إلخ)",
+  "log_doc_icon_redesign": "إعادة تصميم أيقونات ملفات المستندات مع تسمية التنسيق",
+  "log_archive_icon_redesign": "إعادة تصميم أيقونات الأرشيف مع تسمية التنسيق (zip, 7z, rar, إلخ)",
+  "log_music_lrc_lyrics": "دعم التحميل التلقائي لكلمات LRC واختيار ملف الكلمات يدوياً",
+  "log_remote_copy_paste_fix": "إصلاح مشكلة النسخ من الخادم البعيد: شريط التقدم 0% والملفات لا تظهر",
+  "log_navbar_position_setting": "Added navigation bar position setting, support top or bottom display",
+  "log_browse_top_area_optimize": "Optimized browse page top area layout when bottom navigation bar is enabled, increasing file list display space",
+  "log_thanks_feedback": "شكراً للمستخدمين التاليين على ملاحظاتهم واقتراحاتهم: 越界, 猕猴桃, Sir Jagadeesh Chandra Bose, Silence",
+  "log_smb_native_rewrite": "إعادة كتابة كاملة لعميل SMB باستخدام مكتبة smbj الأصلية لأندرويد لبروتوكول SMB حقيقي، مع اكتشاف تلقائي لاسم المشاركة",
+  "log_ftp_sftp_streaming": "إصلاح تشغيل FTP/SFTP بتدفق باستخدام Socket خام مع اتصال بيانات مستقل، دعم التخزين المؤقت التدريجي",
+  "log_remote_l10n_fix": "إصلاح النصوص الثابتة في صفحة الاتصال البعيد، إضافة مفاتيح l10n لوصف بروتوكول SMB ولاحقة اسم الاتصال",
+  "log_image_viewer_menu": "تغيير قائمة عارض الصور في الزاوية اليمنى العلوية إلى ورقة سفلية مع 9 عناصر إجراء، خلفية سوداء شبه شفافة لتحسين الرؤية",
+  "log_breadcrumb_border": "إضافة حدود كاملة على شكل V لأزرار مسار التنقل باستخدام CustomPaint، ضمان اتصال سلس وحدود واضحة",
+  "log_three_dot_button_position": "نقل أزرار الإجراء ثلاثية النقاط للملفات/المجلدات إلى الزاوية اليمنى العلوية للبطاقات لتجنب اللمس العرضي أثناء السحب",
+  "log_three_dot_button_setting": "إعادة تسمية إعداد زر ثلاثي النقاط إلى 'إظهار أزرار ثلاثية النقاط' مع ثلاثة أوضاع: الكل/نافذة واحدة فقط/نافذة مزدوجة فقط",
+  "log_category_back_select": "في وضع التحديد المتعدد للفئات، زر الرجوع الآن يلغي التحديد بدلاً من الخروج من الفئة",
+  "log_desktop_lyric": "إضافة نافذة كلمات عائمة مع فحص الإذن، موضع قابل للسحب، والنقر لتبديل التشغيل/الإيقاف المؤقت",
+  "log_notification_panel": "إصلاح لوحة الإشعارات التي لا تعرض ضوابط التشغيل، الاحتفاظ بالإشعار عند الإيقاف المؤقت، مع مطالبات رفض الإذن",
+  "log_lyric_word_highlight": "دعم الكلمات العائمة للتظليل كلمة بكلمة باستخدام SpannableStringBuilder لتأثير الكاريوكي",
+  "log_floating_window_resize": "دعم نافذة الكلمات العائمة للضغط المطول لإظهار مقبض تغيير الحجم، السحب لضبط حجم النافذة والنص",
+  "log_background_play_fix": "إصلاح إيقاف الموسيقى مؤقتاً عند تمكين التشغيل في الخلفية، إعادة استخدام مثيل المشغل بدون انقطاع",
+  "log_category_button_sync": "إصلاح زر التشغيل في صفحة الفئات الذي يعرض معلومات صوتية قديمة عند إيقاف التشغيل في الخلفية، يتم التحديث عند العودة",
+  "log_build_stability": "إصلاح خطأ R8 OOM في التجميع، شاشة بيضاء عند بدء تشغيل x86_64/armv7، ضبط ذاكرة Gradle JVM وتنزيلات ABI",
+  "log_lyric_scale_animation": "إضافة تأثير التكبير لانتقال الكلمات كلمة بكلمة، إصلاح مشاكل المزامنة، تثبيت مدة الانتقال 300 مللي ثانية",
   "msg_file_exists": "الملف موجود بالفعل",
-
   "@msg_file_exists": {
     "description": "Conflict dialog title"
-
   },
   "msg_file_exists_desc": "يوجد ملف بنفس الاسم \"{fileName}\" في المجلد الهدف بالفعل. كيف تريد المتابعة؟",
-
   "@msg_file_exists_desc": {
     "description": "Conflict dialog description",
-
     "placeholders": {
       "fileName": {
         "type": "String"
-
       }
     }
   },
   "msg_existing_file": "الملف الموجود",
-
   "@msg_existing_file": {
     "description": "Existing file label in conflict dialog"
-
   },
   "msg_cancel_paste": "إلغاء اللصق",
-
   "@msg_cancel_paste": {
     "description": "Cancel paste button"
-
   },
   "msg_skip_file": "تخطي",
-
   "@msg_skip_file": {
     "description": "Skip file button in conflict dialog"
-
   },
   "msg_overwrite_file": "استبدال",
-
   "@msg_overwrite_file": {
     "description": "Overwrite file button in conflict dialog"
-
   },
   "msg_newer": "أحدث",
-
   "@msg_newer": {
     "description": "Newer badge in conflict dialog"
-
   },
   "msg_new_file_name": "اسم الملف الجديد",
-
   "@msg_new_file_name": {
     "description": "New file name label in rename dialog"
-
   },
   "msg_remember_choice": "تذكر هذا الاختيار للعمليات المستقبلية",
-
   "ui_caching": "جاري التخزين المؤقت، يرجى الانتظار...",
-
   "ui_username": "اسم المستخدم",
-
   "ui_anonymous": "مجهول",
-
   "ui_start": "بدء",
-
   "ui_stop": "إيقاف",
-
   "ui_connected": "متصل",
-
   "ui_activated": "مفعّل",
-
   "ui_web_sharing_center": "مركز مشاركة الويب",
-
   "ui_local_web_share": "مشاركة الويب المحلية",
-
   "ui_http_local_share_server": "خادم مشاركة HTTP المحلي",
-
   "ui_server_idle": "الخادم غير نشط",
-
   "ui_pick_files_folders": "اختيار الملفات والمجلدات",
-
   "ui_secure_storage": "تخزين آمن",
-
   "ui_protected_total_space": "المساحة الإجمالية المحمية",
-
   "ui_hidden_files_count": "الملفات المخفية",
-
   "ui_search_obfuscated": "البحث عن الملفات المشفرة...",
-
   "ui_vault_empty": "خزنتك الآمنة فارغة",
-
   "ui_hide_files": "إخفاء الملفات",
-
   "ui_global_search": "بحث شامل",
-
   "ui_all": "الكل",
-
   "ui_folders": "المجلدات",
-
   "ui_images": "الصور",
-
   "ui_videos": "الفيديو",
-
   "ui_audio": "الصوتيات",
-
   "ui_documents": "المستندات",
-
   "ui_no_matching_files": "لم يتم العثور على ملفات مطابقة",
-
   "ui_try_modify_search": "حاول تعديل نص البحث للعثور على العناصر المخفية.",
-
   "ui_vault_empty_desc": "توقيعات التشويش XOR تجعل الملفات غير قابلة للفتح تماماً ومخفية من قاعدة بيانات فاحص النظام. انقر على الزر أدناه لحمايتها.",
-
   "ui_copied_n_items": "تم نسخ {count} عنصر(ات) إلى الحافظة",
-
   "ui_cut_n_items": "تم قص {count} عنصر(ات) إلى الحافظة",
-
   "ui_copy_tooltip": "نسخ",
-
   "ui_cut_tooltip": "قص",
-
   "ui_delete_tooltip": "حذف",
-
   "ui_search_this_folder": "البحث في هذا المجلد",
-
   "ui_search_files_subfolders_in": "البحث عن الملفات والمجلدات الفرعية في: {path}",
-
   "ui_no_results": "لم يتم العثور على نتائج",
-
   "ui_no_match_for": "لم يتم العثور على نتائج لـ \"{query}\"",
-
   "ui_n_selected": "{count} محدد ({size})",
-
   "ui_select_language_title": "اختر اللغة",
-
   "ui_select_language_desc": "يرجى اختيار لغتك المفضلة",
-
   "ui_language_chinese": "中文",
-
   "ui_language_english": "English",
-
   "msgDefaultZoom": "التكبير الافتراضي ({fontSize}pt)",
-
   "msgLockZoom": "قفل التكبير",
-
   "ui_background": "الخلفية",
-
   "ui_overall_progress": "التقدم العام",
-
   "ui_archive_name": "اسم الأرشيف",
-
   "ui_compression_level": "مستوى الضغط",
-
   "ui_delete_source_after": "حذف الملفات المصدر بعد الاكتمال",
-
   "ui_no_compression": "بدون (تخزين فقط)",
-
   "ui_fast": "سريع",
-
   "ui_standard": "قياسي",
-
   "ui_maximum": "أقصى",
-
   "ui_new_txt": "ملف نصي جديد",
-
   "ui_save_as": "حفظ باسم",
-
   "ui_undo": "تراجع",
-
   "ui_redo": "إعادة",
-
   "ui_add_selected": "إضافة المحدد ({count})",
-
   "msg_vault_choose_mode": "اختر وضع الحماية",
-
   "msg_vault_mode_desc": "اختر كيفية حماية ملفاتك المحددة. يتم تشفير الملفات الآمنة فورًا باستخدام XOR.",
-
   "ui_secure_import": "استيراد آمن (صندوق عزل)",
-
   "ui_in_place_scramble": "التشويش في المكان (سريع)",
-
   "msg_scrambling": "جاري التشويش والحماية...",
-
   "msg_protected_count": "تم حماية {successCount} عنصر بنجاح.",
-
   "msg_protect_failed_count": "فشل قفل {failCount} عنصر.",
-
   "msg_restored": "تم استعادة 「{name}」 إلى موقعه الأصلي.",
-
   "msg_restore_failed": "فشل استعادة الملف: {error}",
-
   "msg_decrypting": "جاري فك التشفير بأمان...",
-
   "msg_security_details": "تفاصيل الأمان",
-
   "ui_restore_unhide": "استعادة (إظهار)",
-
   "msg_permanent_delete": "حذف نهائي؟",
-
   "msg_permanent_delete_content": "هل أنت متأكد من أنك تريد حذف 「{name}」 نهائيًا؟ لا يمكن التراجع عن هذا الإجراء.",
-
   "msg_file_deleted": "تم حذف الملف نهائيًا.",
-
   "msg_delete_failed": "فشل حذف الملف: {error}",
-
   "msg_original_name": "الاسم الأصلي",
-
   "msg_original_path": "المسار الأصلي",
-
   "msg_scrambled_path": "المسار المشفر",
-
   "msg_size_label": "الحجم",
-
   "msg_locked_at": "وقت القفل",
-
   "msg_protection_mode": "وضع الحماية",
-
   "msg_in_place_scrambling": "التشويش في المكان",
-
   "msg_isolated_move": "النقل المعزول (صندوق عزل)",
-
   "web_share_search": "البحث عن الملفات والمجلدات...",
-
   "web_share_upload": "رفع",
-
   "web_share_drop_title": "أسحب الملفات هنا للرفع",
-
   "web_share_drop_desc": "سيتم رفع ملفاتك فوراً إلى هذا المجلد المشترك",
-
   "web_share_empty_search": "لا توجد عناصر تطابق بحثك",
-
   "web_share_empty_desc": "تحقق من الإملاء أو جرب مصطلح بحث مختلف",
-
   "web_share_copy_link": "نسخ الرابط",
-
   "web_share_download": "تحميل",
-
   "web_share_uploading": "جاري رفع {name}...",
-
   "@web_share_uploading": {
     "description": "Upload progress title",
-
     "placeholders": {
       "name": {
         "type": "String"
-
       }
     }
   },
   "web_share_upload_success": "اكتمل الرفع بنجاح",
-
   "web_share_upload_failed": "فشل رفع {name}",
-
   "@web_share_upload_failed": {
     "description": "Upload failed message",
-
     "placeholders": {
       "name": {
         "type": "String"
-
       }
     }
   },
   "web_share_preview_unsupported": "المعاينة غير مدعومة لنوع الملف هذا",
-
   "web_share_preview_download": "انقر على تحميل أدناه لحفظه على جهازك",
-
   "web_share_footer": "مشاركة وبث الملفات بأمان عبر ZenFile",
-
   "web_share_parent_dir": "الدليل الأصلي",
-
   "web_share_go_up": "الانتقال إلى المستوى الأعلى",
-
   "web_share_items_count": "{count} عناصر",
-
   "@web_share_items_count": {
     "description": "Item count display",
-
     "placeholders": {
       "count": {
         "type": "int"
-
       }
     }
   },
   "web_share_link_copied": "تم نسخ الرابط إلى الحافظة",
-
   "web_share_copy_failed": "فشل نسخ الرابط",
-
   "web_share_local": "مشاركة Wi-Fi المحلية",
-
   "web_share_internet": "مشاركة الإنترنت",
-
   "web_share_category_folders": "مجلدات",
-
   "web_share_category_videos": "مقاطع الفيديو",
-
   "web_share_category_audio": "صوت",
-
   "web_share_category_images": "صور",
-
   "web_share_category_documents": "مستندات",
-
   "web_share_category_others": "أخرى",
-
   "web_share_loading_preview": "جاري تحميل المعاينة...",
-
   "web_share_preview_error": "تعذر بث المستند. يمكنك still تحميله مباشرة.",
-
   "msg_custom_shortcut": "أيقونة مخصصة",
-
   "msg_add_custom_shortcut": "إضافة إلى الشاشة الرئيسية",
-
   "msg_shortcut_added": "تمت الإضافة إلى الشاشة الرئيسية",
-
   "msg_shortcut_failed": "فشل الإضافة",
-
   "ui_lyrics_loaded": "تم تحميل كلمات الأغنية",
-
   "ui_lyrics_load_failed": "تعذر تحليل ملف كلمات الأغنية",
-
   "ui_select_lyrics_file": "استيراد كلمات محلية",
-
   "ui_search_lyrics_online": "البحث عن كلمات الأغنية عبر الإنترنت",
-
   "ui_no_lyrics_found": "لم يتم العثور على كلمات الأغنية",
-
   "ui_lyrics_auto_load_hint": "ضع ملف .lrc في نفس مجلد الملف الصوتي\n(بنفس الاسم) لتحميله تلقائيًا",
-
   "ui_lyrics_panel": "لوحة كلمات الأغنية",
-
   "ui_show_lyrics": "إظهار كلمات الأغنية",
-
   "ui_hide_lyrics": "إخفاء كلمات الأغنية",
-
   "ui_sound_effects_speed": "المؤثرات الصوتية والسرعة",
-
   "ui_pitch_adjustment": "ضبط النغمة",
-
   "ui_restore_default": "استعادة الافتراضي",
-
   "ui_sound_effects": "المؤثرات الصوتية",
-
   "ui_playback_queue": "قائمة الانتظار",
-
   "ui_repeat_off": "التكرار: إيقاف",
-
   "ui_repeat_one": "التكرار: واحد",
-
   "ui_repeat_all": "التكرار: الكل",
-
   "ui_shuffle_on": "العشوائي: تشغيل",
-
   "ui_minutes_format": "{minutes} دقيقة",
-
   "ui_sleep_timer_set": "تم ضبط مؤقت النوم على {minutes} دقيقة.",
-
   "ui_enter_minutes": "أدخل الدقائق",
-
   "ui_sleep_timer_end": "انتهى المؤقت، تم إيقاف التشغيل مؤقتًا",
-
   "ui_close_player": "إغلاق المشغل",
-
   "ui_open_player": "فتح المشغل",
-
   "ui_now_playing": "يتم التشغيل الآن",
-
   "ui_resume_playback": "استئناف التشغيل",
-
   "ui_single": "فردي",
-
   "ui_add_remote_path": "إضافة مسار بعيد",
-
   "ui_select_remote_server": "تحديد الخادم البعيد",
-
   "ui_no_remote_connections": "لا توجد اتصالات بعيدة، يرجى إضافة اتصال شبكة أولاً",
-
   "ui_retry": "إعادة المحاولة",
-
   "ui_no_subfolders": "لا توجد مجلدات فرعية",
-
   "ui_select_this_folder": "تحديد هذا المجلد",
-
   "ui_downloading_file": "جارٍ التنزيل: {file}",
-
   "@ui_downloading_file": {
     "placeholders": {
       "file": {
         "type": "String"
-
       }
     }
   },
   "ui_sent": "تم الإرسال: {amount}",
-
   "@ui_sent": {
     "placeholders": {
       "amount": {
         "type": "String"
-
       }
     }
   },
   "@ui_minutes_format": {
     "description": "Minutes format for sleep timer options",
-
     "placeholders": {
       "minutes": {
         "type": "int"
-
       }
     }
   },
   "@ui_sleep_timer_set": {
     "description": "Sleep timer set confirmation",
-
     "placeholders": {
       "minutes": {
         "type": "int"
-
       }
     }
   },
   "ui_recycle_restore_success": "تمت استعادة {count} عنصر بنجاح",
-
   "@ui_recycle_restore_success": {
     "description": "Recycle bin restore success message",
-
     "placeholders": {
       "count": {
         "type": "int"
-
       }
     }
   },
   "ui_recycle_restore_failed": "خطأ في استعادة العناصر: {error}",
-
   "@ui_recycle_restore_failed": {
     "description": "Recycle bin restore failed message",
-
     "placeholders": {
       "error": {
         "type": "String"
-
       }
     }
   },
   "ui_recycle_perm_delete_title": "حذف نهائي؟",
-
   "@ui_recycle_perm_delete_title": {
     "description": "Recycle bin permanent delete confirm dialog title"
-
   },
   "ui_recycle_perm_delete_message": "هل أنت متأكد من أنك تريد حذف هذه العناصر {count} بشكل نهائي؟ لا يمكن التراجع عن هذا الإجراء.",
-
   "@ui_recycle_perm_delete_message": {
     "description": "Recycle bin permanent delete confirm dialog message",
-
     "placeholders": {
       "count": {
         "type": "int"
-
       }
     }
   },
   "ui_recycle_perm_delete_success": "تم حذف {count} عنصر بشكل نهائي",
-
   "@ui_recycle_perm_delete_success": {
     "description": "Recycle bin permanent delete success message",
-
     "placeholders": {
       "count": {
         "type": "int"
-
       }
     }
   },
   "ui_recycle_perm_delete_failed": "خطأ في حذف العناصر: {error}",
-
   "@ui_recycle_perm_delete_failed": {
     "description": "Recycle bin permanent delete failed message",
-
     "placeholders": {
       "error": {
         "type": "String"
-
       }
     }
   },
   "ui_recycle_empty_title": "إفراغ سلة المحذوفات؟",
-
   "@ui_recycle_empty_title": {
     "description": "Recycle bin empty confirm dialog title"
-
   },
   "ui_recycle_empty_failed": "خطأ في إفراغ سلة المحذوفات: {error}",
-
   "@ui_recycle_empty_failed": {
     "description": "Recycle bin empty failed message",
-
     "placeholders": {
       "error": {
         "type": "String"
-
       }
     }
   },
   "ui_recycle_selected_count": "تم تحديد {count}",
-
   "@ui_recycle_selected_count": {
     "description": "Recycle bin selected items count",
-
     "placeholders": {
       "count": {
         "type": "int"
-
       }
     }
   },
   "ui_recycle_deleted_at": "تم الحذف: {date} • {size}",
-
   "@ui_recycle_deleted_at": {
     "description": "Recycle bin item deleted date and size",
-
     "placeholders": {
       "date": {
         "type": "String"
-
       },
       "size": {
         "type": "String"
-
       }
     }
   },
   "ui_recycle_restore": "استعادة",
-
   "@ui_recycle_restore": {
     "description": "Recycle bin restore action"
-
   },
   "ui_recycle_empty_hint": "ستظهر العناصر التي تحذفها عند تمكين سلة المحذوفات هنا. يمكنك استعادتها أو حذفها نهائيًا.",
-
   "@ui_recycle_empty_hint": {
     "description": "Recycle bin empty state hint"
-
   },
   "ui_recycle_deleted_date": "تاريخ الحذف",
-
   "@ui_recycle_deleted_date": {
     "description": "Recycle bin deleted date label"
-
   },
   "ui_recycle_type": "النوع",
-
   "@ui_recycle_type": {
     "description": "Recycle bin item type label"
-
   },
   "ui_recycle_file": "ملف",
-
   "@ui_recycle_file": {
     "description": "Recycle bin file type"
-
   },
   "ui_db_browse_data": "استعراض البيانات",
-
   "@ui_db_browse_data": {
     "description": "Database reader browse data tab"
-
   },
   "ui_db_table_schema": "بنية الجدول",
-
   "@ui_db_table_schema": {
     "description": "Database reader table schema tab"
-
   },
   "ui_db_sql_console": "وحدة تحكم SQL",
-
   "@ui_db_sql_console": {
     "description": "Database reader SQL console tab"
-
   },
   "ui_db_export_success": "تم التصدير بنجاح إلى {fileName}",
-
   "@ui_db_export_success": {
     "description": "Database reader CSV export success message",
-
     "placeholders": {
       "fileName": {
         "type": "String"
-
       }
     }
   },
   "ui_db_export_failed": "فشل التصدير: {error}",
-
   "@ui_db_export_failed": {
     "description": "Database reader CSV export failed message",
-
     "placeholders": {
       "error": {
         "type": "String"
-
       }
     }
   },
   "ui_db_export_csv": "تصدير الجدول إلى CSV",
-
   "@ui_db_export_csv": {
     "description": "Database reader export CSV tooltip"
-
   },
   "ui_db_primary_key": "مفتاح أساسي",
-
   "@ui_db_primary_key": {
     "description": "Database reader primary key label"
-
   },
   "ui_db_not_null": "غير فارغ",
-
   "@ui_db_not_null": {
     "description": "Database reader not null label"
-
   },
   "ui_db_type": "النوع: {type}",
-
   "@ui_db_type": {
     "description": "Database reader column type label",
-
     "placeholders": {
       "type": {
         "type": "String"
-
       }
     }
   },
   "ui_db_default": "الافتراضي: {value}",
-
   "@ui_db_default": {
     "description": "Database reader column default value label",
-
     "placeholders": {
       "value": {
         "type": "String"
-
       }
     }
   },
   "ui_db_execute_query": "تنفيذ الاستعلام",
-
   "@ui_db_execute_query": {
     "description": "Database reader execute query button"
-
   },
   "ui_db_enter_query": "أدخل استعلام SELECT هنا...",
-
   "@ui_db_enter_query": {
     "description": "Database reader SQL query hint text"
-
   },
   "ui_db_showing_range": "يعرض {start} - {end}",
-
   "@ui_db_showing_range": {
     "description": "Database reader pagination range text",
-
     "placeholders": {
       "start": {
         "type": "int"
-
       },
       "end": {
         "type": "int"
-
       }
     }
   },
   "ui_db_query_returned": "أرجع الاستعلام {count} صفاً",
-
   "@ui_db_query_returned": {
     "description": "Database reader query result row count",
-
     "placeholders": {
       "count": {
         "type": "int"
-
       }
     }
   },
   "ui_app_installed_user_apps": "التطبيقات المستخدمة المثبتة",
-
   "@ui_app_installed_user_apps": {
     "description": "App Manager installed user apps tab"
-
   },
   "ui_app_system_packages": "حزم النظام",
-
   "@ui_app_system_packages": {
     "description": "App Manager system packages tab"
-
   },
   "ui_app_backup_apk": "ملفات APK المحمولة",
-
   "@ui_app_backup_apk": {
     "description": "App Manager backup APKs tab"
-
   },
   "ui_app_precise_storage": "حساب التخزين الدقيق",
-
   "@ui_app_precise_storage": {
     "description": "App Manager precise storage calculation title"
-
   },
   "ui_app_grant_usage_access": "منح صلاحية الوصول إلى الاستخدام",
-
   "@ui_app_grant_usage_access": {
     "description": "App Manager grant usage access button"
-
   },
   "ui_app_usage_access_description": "لعرض الحجم الدقيق لتخزين التطبيقات (APK + البيانات + ذاكرة التخزين المؤقت) بدلاً من حجم المثبت الخام، يرجى تمكين إذن الوصول إلى الاستخدام لـ ZenFile في إعدادات النظام.",
-
   "@ui_app_usage_access_description": {
     "description": "App Manager usage access permission description"
-
   },
   "ui_backup_apk_open_folder": "فتح مجلد النسخ الاحتياطي",
-
   "@ui_backup_apk_open_folder": {
     "description": "Open APK backup folder after backup success"
-
   },
   "ui_backup_apk_success_with_path": "تم النسخ الاحتياطي إلى {path}. فتح المجلد؟",
-
   "@ui_backup_apk_success_with_path": {
     "description": "Backup success message showing the file path, asking if user wants to open the folder",
-
     "placeholders": {
       "path": {
         "type": "String"
-
       }
     }
   },
   "ui_backup_apk_open": "فتح",
-
   "@ui_backup_apk_open": {
     "description": "Open button label"
-
   },
   "ui_clear_remote_cache_success": "تم مسح ذاكرة التخزين المؤقت البعيدة.",
-
   "@ui_clear_remote_cache_success": {
     "description": "Successfully cleared remote cache"
-
   },
   "ui_clear_remote_cache_failed": "فشل مسح ذاكرة التخزين المؤقت البعيدة.",
-
   "@ui_clear_remote_cache_failed": {
     "description": "Failed to clear remote cache"
-
   },
   "ui_app_system_settings": "إعدادات النظام / التفاصيل",
-
   "@ui_app_system_settings": {
     "description": "Open app system settings / details page"
-
   },
   "ui_app_restore_install": "استعادة / تثبيت التطبيق",
-
   "@ui_app_restore_install": {
     "description": "Restore / install APK from backup"
-
   },
   "ui_app_size_label": "الحجم:",
-
   "@ui_app_size_label": {
     "description": "Size label in app info header"
-
   },
   "ui_app_installed_label": "تاريخ التثبيت:",
-
   "@ui_app_installed_label": {
     "description": "Install date label in app info header"
-
   },
   "ui_app_backup_date_label": "تاريخ النسخ:",
-
   "@ui_app_backup_date_label": {
     "description": "Backup date label in backup info header"
-
   },
   "ui_batch_backup_progress": "جارٍ نسخ التطبيقات المحددة احتياطيًا...",
-
   "@ui_batch_backup_progress": {
     "description": "Progress message during batch APK backup"
-
   },
   "ui_batch_backup_success": "تم نسخ {count} تطبيق(ات) بنجاح إلى ZenFile/Backups/Apps/",
-
   "@ui_batch_backup_success": {
     "description": "Success message after batch APK backup",
-
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "ui_batch_backup_failed": "فشل نسخ بعض التطبيقات احتياطيًا: {error}",
-
   "@ui_batch_backup_failed": {
     "description": "Error message after batch APK backup",
-
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
   "ui_app_search_backup": "البحث عن نسخ احتياطي...",
-
   "@ui_app_search_backup": {
     "description": "App Manager search backup hint"
-
   },
   "ui_app_sort_by_install_date": "الفرز حسب تاريخ التثبيت",
-
   "@ui_app_sort_by_install_date": {
     "description": "App Manager sort by install date option"
-
   },
-  "ui_select_all": "تحديد الكل",
-
   "@ui_select_all": {
     "description": "Select all items"
-
   },
   "ui_app_no_backup_found": "لم يتم العثور على نسخ احتياطية",
-
   "@ui_app_no_backup_found": {
     "description": "App Manager no backup found empty state title"
-
   },
   "ui_app_backup_empty_subtitle": "ستظهر هنا قائمة بملفات APK و APKS التي قمت بنسخها احتياطيًا.",
-
   "@ui_app_backup_empty_subtitle": {
     "description": "Backup list empty state subtitle"
-
   },
   "ui_app_backup_search_not_found": "لم نعثر على أي نسخ احتياطية تطابق \"{query}\"",
-
   "@ui_app_backup_search_not_found": {
     "description": "Backup list search empty state subtitle",
-
     "placeholders": {
       "query": {
         "type": "String"
-
       }
     }
   },
   "ui_app_backup_size_date": "الحجم: {size} • تاريخ النسخ الاحتياطي: {date}",
-
   "@ui_app_backup_size_date": {
     "description": "Backup item size and date label",
-
     "placeholders": {
       "size": {
         "type": "String"
-
       },
       "date": {
         "type": "String"
-
       }
     }
   },
   "ui_app_split_apk": "APK مقسم (APKS)",
-
   "@ui_app_split_apk": {
     "description": "App Manager split APK (APKS) label"
-
   },
   "ui_app_single_apk": "APK واحد",
-
   "@ui_app_single_apk": {
     "description": "App Manager single APK label"
-
   },
   "ui_desktop_lyric": "كلمات سطح المكتب",
-
   "@ui_desktop_lyric": {
     "description": "Desktop lyric floating window toggle in audio player more menu"
-
   },
   "msg_overlay_permission_required": "يلزم إذن النافذة العائمة لعرض كلمات سطح المكتب. يرجى منحه في الإعدادات وإعادة المحاولة.",
-
   "@msg_overlay_permission_required": {
     "description": "Shown when overlay permission is denied while enabling desktop lyric"
-
   },
   "msg_notification_permission_denied": "يلزم إذن الإشعارات لعرض لوحة التحكم بالتشغيل. هل تريد فتح الإعدادات لمنحه؟",
-
   "@msg_notification_permission_denied": {
     "description": "Shown when notification permission is denied while enabling background playback"
-
   },
   "msg_open_settings": "اذهب إلى الإعدادات",
-
   "@msg_open_settings": {
     "description": "Action button on the SnackBar to open app settings when notification permission is denied"
-
   },
   "msg_notification_not_granted": "إذن الإشعارات غير ممنوح، لذا لا يمكن إظهار إشعار التحكم في التشغيل. يرجى تمكين إذن الإشعارات في الإعدادات.",
-
   "@msg_notification_not_granted": {
     "description": "Shown when notification permission is detected as not granted after enabling background playback"
-
   },
   "msg_notification_blocked_hint": "الإشعار لا يظهر. قد تكون قناة الإشعارات معطلة أو أن تحسين البطارية يقيّد التشغيل في الخلفية. يرجى التحقق من إذن الإشعارات وإعدادات تحسين البطارية.",
-
   "@msg_notification_blocked_hint": {
     "description": "Shown when notification fails to appear despite permission being granted, typically due to ROM restrictions"
-
   },
   "msg_audio_service_init_failed": "فشل تهيئة خدمة التشغيل في الخلفية، لذا لا يمكن إظهار أزرار التحكم في الإشعارات. يرجى محاولة إعادة تشغيل التطبيق؛ إذا استمرت المشكلة، امسح بيانات التطبيق في إعدادات النظام وأعد الفتح.",
-
   "@msg_audio_service_init_failed": {
     "description": "Shown when AudioService.init fails - the background playback service cannot be registered with the OS"
-
   },
   "msg_notification_channel_disabled": "تم تعطيل قناة الإشعارات. انتقل إلى الإعدادات → إدارة التطبيقات → ZenFile → الإشعارات، وابحث عن قناة \"ZenFile Audio Player\" وقم بتمكينها.",
-
   "@msg_notification_channel_disabled": {
     "description": "Shown when the notification channel is disabled by the user or system"
-
   },
   "ui_lyric_search_song_title": "اسم الأغنية",
-
   "ui_lyric_search_artist": "الفنان",
-
   "msg_rotate_video": "تدوير الفيديو",
-
   "@msg_rotate_video": {
     "description": "Rotate video clockwise in video player"
-
   },
   "msg_aspect_fit": "ملاءمة الشاشة",
-
   "@msg_aspect_fit": {
     "description": "Video aspect ratio mode: fit to screen"
-
   },
   "msg_aspect_fill": "تمديد للتعبئة",
-
   "@msg_aspect_fill": {
     "description": "Video aspect ratio mode: stretch to fill"
-
   },
   "msg_aspect_center": "توسيط",
-
   "@msg_aspect_center": {
     "description": "Video aspect ratio mode: centered original size"
-
   },
   "msg_aspect_16_9": "16:9",
-
   "@msg_aspect_16_9": {
     "description": "Video aspect ratio mode: 16:9"
-
   },
   "msg_aspect_4_3": "4:3",
-
   "@msg_aspect_4_3": {
     "description": "Video aspect ratio mode: 4:3"
-
   },
   "msg_aspect_custom": "مخصص",
-
   "@msg_aspect_custom": {
     "description": "Video aspect ratio mode: custom"
-
   },
   "msg_custom_aspect_ratio": "نسبة العرض المخصصة",
-
   "@msg_custom_aspect_ratio": {
     "description": "Video player menu item for custom aspect ratio"
-
   },
   "drawer_tools": "أدوات",
-
   "open_with_native": "فتح بهذا التطبيق",
-
   "open_with_external": "فتح بالتطبيق الخارجي",
-
   "open_once": "مرة واحدة فقط",
-
   "open_always": "دائمًا",
-
   "drawer_edit_connection": "تحرير",
-
   "cat_system": "النظام",
-
   "cat_storage_volume": "التخزين",
-
   "ui_columns_per_row": "الأعمدة لكل صف",
-
   "ui_3columns": "3 أعمدة",
-
   "ui_4columns": "4 أعمدة",
-
   "msge8b8e9b3": "إجراءات سريعة",
-
   "@msge8b8e9b3": {
     "description": "Right side menu header title"
-
   },
   "msg04b7de53": "وصول سريع للوظائف الشائعة",
-
   "@msg04b7de53": {
     "description": "Right side menu header subtitle"
-
-  }
-,
+  },
   "prop_read": "Read",
-
   "prop_write": "Write",
-
   "prop_folder_directory": "Folder / Directory",
-
   "prop_file": "File",
-
   "prop_contains_format": "{folderCount} subfolder(s), {fileCount} file(s)",
-
   "@prop_contains_format": {
     "placeholders": {
       "folderCount": {
         "type": "int"
-
       },
       "fileCount": {
         "type": "int"
-
       }
     }
   },
   "prop_bytes": "bytes",
-
   "prop_items_selected": "{count} items selected",
-
   "@prop_items_selected": {
     "placeholders": {
       "count": {
         "type": "int"
-
       }
     }
   },
   "prop_items_summary": "{count} items ({folderCount} folder(s), {fileCount} file(s))",
-
   "@prop_items_summary": {
     "placeholders": {
       "count": {
         "type": "int"
-
       },
       "folderCount": {
         "type": "int"
-
       },
       "fileCount": {
         "type": "int"
-
       }
     }
   },
   "msg_add_subtitle": "إضافة ترجمة",
-
-  "@msg_add_subtitle": {"description": "Add subtitle option in video player more menu"},
+  "@msg_add_subtitle": {
+    "description": "Add subtitle option in video player more menu"
+  },
   "msg_subtitle_menu": "الترجمات",
-
   "@msg_subtitle_menu": {
     "description": "Subtitles menu item in video player more menu"
-
   },
   "msg_subtitle_size": "حجم الترجمة",
-
   "@msg_subtitle_size": {
     "description": "Subtitle font size label in subtitle settings"
-
   },
   "msg_subtitle_position": "موضع الترجمة",
-
   "@msg_subtitle_position": {
     "description": "Subtitle vertical position label in subtitle settings"
-
   },
   "msg_subtitle_pos_top": "أعلى",
-
   "@msg_subtitle_pos_top": {
     "description": "Top label for subtitle position slider"
-
   },
   "msg_subtitle_pos_bottom": "أسفل",
-
   "@msg_subtitle_pos_bottom": {
     "description": "Bottom label for subtitle position slider"
-
   },
   "msg_subtitle_no_background": "إزالة خلفية الترجمة",
-
   "@msg_subtitle_no_background": {
     "description": "Toggle to remove subtitle background transparent layer"
-
   },
   "msg_auto_clean_cache": "تنظيف ذاكرة التخزين المؤقت تلقائيًا",
-
   "@msg_auto_clean_cache": {
     "description": "Auto clean cache setting title"
-
   },
   "msg_auto_clean_cache_hint": "اضغط لضبط الفاصل الزمني للتنظيف",
-
   "@msg_auto_clean_cache_hint": {
     "description": "Hint text for auto clean cache setting"
-
   },
   "msg_auto_clean_cache_picker_hint": "اسحب لتحديد الفاصل الزمني للتنظيف",
-
   "@msg_auto_clean_cache_picker_hint": {
     "description": "Hint text in the duration picker bottom sheet"
-
   },
   "msg_cache_clean_unit_day": "أيام",
-
   "@msg_cache_clean_unit_day": {
     "description": "Day unit label in cache clean duration picker"
-
   },
   "msg_cache_clean_unit_hour": "ساعات",
-
   "@msg_cache_clean_unit_hour": {
     "description": "Hour unit label in cache clean duration picker"
-
   },
   "msg_cache_clean_unit_minute": "دقائق",
-
   "@msg_cache_clean_unit_minute": {
     "description": "Minute unit label in cache clean duration picker"
-
   },
   "msg_cache_clean_confirm": "تأكيد",
-
   "@msg_cache_clean_confirm": {
     "description": "Confirm button in cache clean duration picker"
-
   },
   "msg_quick_actions": "إجراءات سريعة",
-
   "@msg_quick_actions": {
     "description": "Top title of quick actions page"
-
   },
   "msg_hwdec": "HW",
-
-  "@msg_hwdec": {"description": "Hardware decoding badge in video player header"},
+  "@msg_hwdec": {
+    "description": "Hardware decoding badge in video player header"
+  },
   "msg_subtitle_on": "تشغيل الترجمة",
-
-  "@msg_subtitle_on": {"description": "Tooltip to turn on subtitles in video player"},
+  "@msg_subtitle_on": {
+    "description": "Tooltip to turn on subtitles in video player"
+  },
   "msg_subtitle_off": "إيقاف الترجمة",
-
-  "@msg_subtitle_off": {"description": "Tooltip to turn off subtitles in video player"},
+  "@msg_subtitle_off": {
+    "description": "Tooltip to turn off subtitles in video player"
+  },
   "msg_no_subtitle": "لا توجد ترجمة",
-
-  "@msg_no_subtitle": {"description": "Tooltip when no subtitle is loaded in video player"},
+  "@msg_no_subtitle": {
+    "description": "Tooltip when no subtitle is loaded in video player"
+  },
   "msg_playlist": "قائمة التشغيل",
-
   "@msg_playlist": {
     "description": "Playlist button tooltip in video player"
-
   },
   "msg_no_playlist": "لا توجد قائمة تشغيل",
-
   "@msg_no_playlist": {
     "description": "Message when no playlist available in video player"
-
   },
   "msg_slide_to_unlock": "اسحب / اضغط للفتح",
-
   "@msg_slide_to_unlock": {
     "description": "Text on lock button in video player"
-
   },
   "msg_seconds_short": "ث",
-
   "@msg_seconds_short": {
     "description": "Short unit for seconds in seek indicator (e.g. 10s)"
-
   },
   "msg_speed_2x": "السرعة 2.0x",
-
   "@msg_speed_2x": {
     "description": "Long press speed badge text in video player"
-
   },
   "ui_close_category": "إيقاف الفئة",
-
   "@ui_close_category": {
     "description": "Button to disable a category in quick categories grid context menu"
-
   },
   "ui_open_category": "تفعيل الفئة",
-
   "@ui_open_category": {
     "description": "Button to enable a category in quick categories grid context menu"
-
   },
   "msg_custom_scan_paths": "مسوحات مخصصة",
-
   "@msg_custom_scan_paths": {
     "description": "Menu item to configure custom scan paths for media categories"
-
   },
   "notification_web_share_local_title": "ZenFile مشاركة الويب المحلية",
-
   "notification_web_share_internet_title": "ZenFile مشاركة الويب عبر الإنترنت",
-
   "notification_web_share_running": "يعمل على {url}",
-
   "@notification_web_share_running": {
     "placeholders": {
       "url": {}
     }
   },
   "notification_ftp_title": "ZenFile خادم FTP",
-
   "notification_ftp_running": "يعمل على ftp://{ip}:{port}",
-
   "@notification_ftp_running": {
     "placeholders": {
       "ip": {},
       "port": {}
     }
-  }
-,
+  },
   "ui_download_links": "روابط التحميل",
-
   "@ui_download_links": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "changelog_v1121_new_features_title": "ميزات جديدة",
-
   "@changelog_v1121_new_features_title": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
-  "changelog_v1121_new_feature_1": "عرض الصفحة الرئيسية المخصص: في صفحة التصفح، اضغط على قائمة النقاط الثلاث للمجلد واختر \"تعيين كصفحة رئيسية\"، أو اضغط مطولاً على المجلد وابحث عن \"تعيين كصفحة رئيسية\" في قائمة \"المزيد\". في وضع النافذة المزدوجة، يمكن لكل نافذة تعيين مسار رئيسي مختلف بشكل مستقل، مما يحسن كفاءة إدارة الأدلة المتعددة.",
-
+  "changelog_v1121_new_feature_1": "إدارة التطبيقات: تمت إضافة خيار «نسخ اسم الحزمة» في قائمة التطبيق المنبثقة، مما يتيح نسخ اسم الحزمة بنقرة واحدة.",
   "@changelog_v1121_new_feature_1": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
-  "changelog_v1121_new_feature_2": "تعزيز المشاركة عبر الويب: يدعم مسارات المشاركة المخصصة، ويصلح المشكلة السابقة التي لم يكن من الممكن من خلالها تصفح المجلدات فقط دون عرض محتوى الملف. كما يضيف أزرار عمليات الملفات الشائعة مثل النسخ واللصق والقص والحذف وإعادة التسمية، مما يجعل الإدارة عن بُعد أكثر ملاءمة.",
-
+  "changelog_v1121_new_feature_2": "شريط المسار: الضغط المطول على شريط المسار يُفعّل وضع التحرير، ويدعم إدخال مسار محدد والانتقال إليه.",
   "@changelog_v1121_new_feature_2": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
-  "changelog_v1121_new_feature_3": "تنظيف ذاكرة التخزين المؤقت البعيدة: تمت إضافة وظيفة تنظيف ذاكرة التخزين المؤقت البعيدة المخصصة لإدارة مساحة التخزين بمرونة.",
-
-  "@changelog_v1121_new_feature_3": {
-    "description": "ui\\screens\\about_screen.dart"
-
+  "changelog_v1121_opt_title": "تحسينات",
+  "@changelog_v1121_opt_title": {
+    "description": "Changelog v1.1.22 optimizations section title",
+    "placeholders": {}
+  },
+  "changelog_v1121_opt_1": "تمت إزالة بعض الأيقونات الاحتياطية والرمز الزائد لتقليل حجم التطبيق وتحسين قابلية صيانة الكود.",
+  "@changelog_v1121_opt_1": {
+    "description": "Changelog v1.1.22 optimization item 1",
+    "placeholders": {}
   },
   "changelog_v1121_bugfixes_title": "إصلاحات الأخطاء",
-
   "@changelog_v1121_bugfixes_title": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
-  "changelog_v1121_bugfix_1": "تم إصلاح المشكلة التي كانت تعرض فيها دليل فارغًا عند عودة عميل SMB من أي دليل مشترك.",
-
+  "changelog_v1121_bugfix_1": "تم إصلاح مشكلة تعذّر بحث البحث العام عن ملفات داخل مجلد data.",
   "@changelog_v1121_bugfix_1": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
-  "changelog_v1121_bugfix_2": "تم إصلاح بعض مشاكل النصوص الصينية المُبرمَجة في الواجهة، مما يحسن توافق العرض في البيئات متعددة اللغات.",
-
+  "changelog_v1121_bugfix_2": "تم إصلاح مشكلة خروج زر «إلغاء التثبيت» في نافذة إدارة التطبيقات عن الجزء السفلي من الشاشة على بعض الأجهزة، مما جعل النقر عليه صعباً.",
   "@changelog_v1121_bugfix_2": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "changelog_v1121_known_issues_title": "المشاكل المعروفة (سيتم إصلاحها في الإصدار التالي)",
-
   "@changelog_v1121_known_issues_title": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "changelog_v1121_known_issue_1": "يتعطل التطبيق بعد مسح بيانات التطبيق وإعادة فتحه.",
-
   "@changelog_v1121_known_issue_1": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "changelog_v1121_known_issue_2": "ضبط حجم عرض الترجمة الخارجية في مشغل الفيديو لا يؤتي ثماره مؤقتًا.",
-
   "@changelog_v1121_known_issue_2": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "changelog_v1121_known_issue_3": "حاليًا يدعم عميل WebDAV فقط تشغيل الوسائط المتدفقة، بينما لا تدعم العملاء الآخرون ذلك بعد.",
-
   "@changelog_v1121_known_issue_3": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "changelog_v1121_known_issue_4": "عند نسخ احتياطي لحزم APK كبيرة، قد تتوقف الواجهة في حالة التنفيذ، لكن النسخ الاحتياطي الفعلي لا يزال قيد التشغيل في الخلفية. يرجى الضغط على زر الرجوع والانتقال إلى \"APK المنسوخ احتياطيًا\" لعرض ملفات النسخ الاحتياطي. مسار النسخ الاحتياطي هو في دليل ZenFile/Backups في التخزين الرئيسي.",
-
   "@changelog_v1121_known_issue_4": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "changelog_v1121_known_issue_5": "بعد تمكين خدمة مشاركة FTP، تظهر الأدلة فارغة عند الاتصال بعملاء FTP الآخرين.",
-
   "@changelog_v1121_known_issue_5": {
     "description": "ui\\screens\\about_screen.dart"
-
   },
   "msg_editor_lines": "سطر",
-
-  "msg_editor_modified": "تم التعديل"
+  "msg_editor_modified": "تم التعديل",
+  "go_to_path": "الانتقال إلى المسار",
+  "copy_path": "نسخ المسار",
+  "enter_path_hint": "أدخل المسار المطلق...",
+  "breadcrumb_context_title": "خيارات مسار التصفح"
 }

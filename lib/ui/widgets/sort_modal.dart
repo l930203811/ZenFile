@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../providers/file_manager_provider.dart';
-import '../../models/file_item_model.dart';
 
 class SortModal {
   static void show(BuildContext context, FileManagerProvider provider) {

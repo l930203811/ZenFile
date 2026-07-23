@@ -1817,6 +1817,9 @@ class L10nZh extends L10n {
   String get apk6 => '分享APK文件';
 
   @override
+  String get copy_package_name => '复制包名';
+
+  @override
   String get msga0b18169 => '分享备份文件';
 
   @override
@@ -4151,23 +4154,26 @@ class L10nZh extends L10n {
 
   @override
   String get changelog_v1121_new_feature_1 =>
-      '自定义首页显示：浏览页中，点击文件夹的三点菜单选择\"设为首页\"，或长按文件夹后在\"更多\"菜单中找到\"设为首页\"选项。双窗口模式下，两个窗口可独立设置不同的首页路径，提升多目录管理效率。';
+      '应用管理：点击应用弹窗新增「复制包名」选项，可一键复制应用包名。';
 
   @override
-  String get changelog_v1121_new_feature_2 =>
-      'WEB共享增强：支持自定义共享路径，修复了此前仅能浏览文件夹而无法查看文件内容的问题。同时新增复制、粘贴、剪切、删除、重命名等常用文件操作按钮，远程管理更便捷。';
+  String get changelog_v1121_new_feature_2 => '路径栏：长按路径栏进入编辑模式，支持输入并跳转到指定路径。';
 
   @override
-  String get changelog_v1121_new_feature_3 => '远程缓存清理：新增自定义清理远程缓存功能，可灵活管理存储空间。';
+  String get changelog_v1121_opt_title => '优化';
+
+  @override
+  String get changelog_v1121_opt_1 => '移除部分备用图标与冗余代码，减小安装包体积并提升代码可维护性。';
 
   @override
   String get changelog_v1121_bugfixes_title => '问题修复';
 
   @override
-  String get changelog_v1121_bugfix_1 => '修复 SMB 客户端进入任意共享目录后返回时目录显示为空的问题。';
+  String get changelog_v1121_bugfix_1 => '修复全局搜索无法检索 data 目录下文件的问题。';
 
   @override
-  String get changelog_v1121_bugfix_2 => '修复部分界面存在中文硬编码的问题，提升多语言环境下的显示兼容性。';
+  String get changelog_v1121_bugfix_2 =>
+      '修复应用管理弹窗中「卸载应用」按钮在部分机型上溢出屏幕底部、难以点击的问题。';
 
   @override
   String get changelog_v1121_known_issues_title => '已知问题（预计下个版本修复）';
@@ -4195,6 +4201,18 @@ class L10nZh extends L10n {
 
   @override
   String get msg_editor_modified => '已修改';
+
+  @override
+  String get go_to_path => '跳转路径';
+
+  @override
+  String get copy_path => '复制路径';
+
+  @override
+  String get enter_path_hint => '输入绝对路径...';
+
+  @override
+  String get breadcrumb_context_title => '面包屑选项';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -6009,6 +6027,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get apk6 => '分享APK檔案';
+
+  @override
+  String get copy_package_name => '複製包名';
 
   @override
   String get msga0b18169 => '分享備份檔案';
@@ -8301,23 +8322,26 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get changelog_v1121_new_feature_1 =>
-      '自定義首頁顯示：瀏覽頁中，點擊文件夾的三點選單選擇\"設為首頁\"，或長按文件夾後在\"更多\"選單中找到\"設為首頁\"選項。雙視窗模式下，兩個視窗可獨立設定不同的首頁路徑，提升多目錄管理效率。';
+      '應用管理：點擊應用彈窗新增「複製套件名稱」選項，可一鍵複製應用套件名稱。';
 
   @override
-  String get changelog_v1121_new_feature_2 =>
-      'WEB共享增強：支援自定義共享路徑，修復了此前僅能瀏覽文件夾而無法查看文件內容的問題。同時新增複製、貼上、剪下、刪除、重新命名等常用文件操作按鈕，遠端管理更便捷。';
+  String get changelog_v1121_new_feature_2 => '路徑欄：長按路徑欄進入編輯模式，支援輸入並跳轉到指定路徑。';
 
   @override
-  String get changelog_v1121_new_feature_3 => '遠端快取清理：新增自定義清理遠端快取功能，可靈活管理儲存空間。';
+  String get changelog_v1121_opt_title => '優化';
+
+  @override
+  String get changelog_v1121_opt_1 => '移除部分備用圖示與冗餘程式碼，減小安裝包體積並提升程式碼可維護性。';
 
   @override
   String get changelog_v1121_bugfixes_title => '問題修復';
 
   @override
-  String get changelog_v1121_bugfix_1 => '修復 SMB 客戶端進入任意共享目錄後返回時目錄顯示為空的問題。';
+  String get changelog_v1121_bugfix_1 => '修復全域搜尋無法檢索 data 目錄下檔案的問題。';
 
   @override
-  String get changelog_v1121_bugfix_2 => '修復部分介面存在中文硬編碼的問題，提升多語言環境下的顯示相容性。';
+  String get changelog_v1121_bugfix_2 =>
+      '修復應用管理彈窗中「解除安裝」按鈕在部分機型上溢出螢幕底部、難以點擊的問題。';
 
   @override
   String get changelog_v1121_known_issues_title => '已知問題（預計下個版本修復）';
@@ -8345,4 +8369,16 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get msg_editor_modified => '已修改';
+
+  @override
+  String get go_to_path => '跳轉路徑';
+
+  @override
+  String get copy_path => '複製路徑';
+
+  @override
+  String get enter_path_hint => '輸入絕對路徑...';
+
+  @override
+  String get breadcrumb_context_title => '麵包屑選項';
 }

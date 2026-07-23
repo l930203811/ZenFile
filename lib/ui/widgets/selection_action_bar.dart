@@ -9,7 +9,6 @@ import '../../core/utils.dart';
 import '../../services/pin_service.dart';
 import 'file_action_dialogs.dart';
 import 'create_archive_dialog.dart';
-import 'package:share_plus/share_plus.dart';
 import 'batch_rename_dialog.dart';
 import '../../services/folder_share_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';

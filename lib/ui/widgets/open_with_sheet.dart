@@ -22,7 +22,6 @@ class _OpenWithSheetState extends State<OpenWithSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final ext = widget.fileExtension;
 
     return SafeArea(
       child: SingleChildScrollView(

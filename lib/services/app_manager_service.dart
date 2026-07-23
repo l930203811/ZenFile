@@ -357,34 +357,3 @@ class AppManagerService {
   }
 }
 
-/// 在 isolate 中复制文件（顶层函数，供 compute 调用）
-/// 使用流式复制，避免一次性读取大文件到内存
-Future<void> _copyFileIsolate(Map<String, String> args) async {
-  final source = File(args['source']!);
-  final dest = File(args['dest']!);
-  const bufferSize = 64 * 1024; // 64KB
-  await source.openRead().pipe(dest.openWrite());
-}
-
-/// 在 isolate 中创建 ZIP 文件（顶层函数，供 compute 调用）
-Future<void> _createZipIsolate(Map<String, dynamic> args) async {
-  final basePath = args['basePath'] as String;
-  final splitPaths = (args['splitPaths'] as List).cast<String>();
-  final destPath = args['destPath'] as String;
-
-  final encoder = ZipFileEncoder();
-  encoder.create(destPath);
-
-  final baseFile = File(basePath);
-  if (baseFile.existsSync()) {
-    encoder.addFile(baseFile, 'base.apk');
-  }
-
-  for (final splitPath in splitPaths) {
-    final splitFile = File(splitPath);
-    if (splitFile.existsSync()) {
-      encoder.addFile(splitFile, p.basename(splitPath));
-    }
-  }
-  encoder.close();
-}

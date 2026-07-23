@@ -6,6 +6,7 @@ import 'package:path/path.dart' as p;
 import '../../providers/file_manager_provider.dart';
 import '../../providers/media_provider.dart';
 import '../../models/file_item_model.dart';
+import '../../services/root_shizuku_service.dart';
 import '../widgets/file_item.dart';
 import '../widgets/folder_item.dart';
 import '../widgets/file_action_dialogs.dart';
@@ -32,7 +33,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   
   List<FileItemModel> _results = [];
   bool _isSearching = false;
-  StreamSubscription<FileSystemEntity>? _searchSubscription;
+  StreamSubscription<void>? _searchSubscription;
 
   final Set<String> _selectedPaths = {};
   bool get _isSelectionMode => _selectedPaths.isNotEmpty;
@@ -201,53 +202,17 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
       });
     }
 
-    // 2. Stream across filesystem for full coverage (Folders and other files)
-    final rootDir = Directory(rootPath);
-    if (!rootDir.existsSync()) {
-      setState(() {
-        _isSearching = false;
-      });
-      return;
-    }
-
-    _searchSubscription = rootDir.list(recursive: true, followLinks: false).listen(
-      (entity) {
-        final name = p.basename(entity.path);
-        if (name.toLowerCase().contains(qLower)) {
-          final isDir = entity is Directory;
-          
-          bool matchFilter = false;
-          if (_selectedFilter == L10n.of(context).ui_all) {
-            matchFilter = true;
-          } else if (_selectedFilter == L10n.of(context).ui_folders && isDir) {
-            matchFilter = true;
-          } else if (_selectedFilter == L10n.of(context).ui_images && !isDir && _isImage(name)) {
-            matchFilter = true;
-          } else if (_selectedFilter == L10n.of(context).ui_videos && !isDir && _isVideo(name)) {
-            matchFilter = true;
-          } else if (_selectedFilter == L10n.of(context).ui_audio && !isDir && _isAudio(name)) {
-            matchFilter = true;
-          } else if (_selectedFilter == L10n.of(context).ui_documents && !isDir && _isDoc(name)) {
-            matchFilter = true;
-          }
-
-          if (matchFilter && !seenPaths.contains(entity.path)) {
-            seenPaths.add(entity.path);
-            FileItemModel.fromEntityAsync(entity).then((item) {
-              if (mounted) {
-                setState(() {
-                  _results.add(item);
-                });
-              }
-            });
-          }
-        }
-      },
-      onError: (e) {
-        debugPrint('搜索文件系统时出错: $e');
+    // 2. 自定义递归搜索，跳过无权限目录继续搜索其他目录
+    _searchSubscription = _recursiveSearch(
+      rootPath: rootPath,
+      qLower: qLower,
+      isGlobal: isGlobal,
+      rootPathFilter: rootPath,
+      seenPaths: seenPaths,
+      onResult: (item) {
         if (mounted) {
           setState(() {
-            _isSearching = false;
+            _results.add(item);
           });
         }
       },
@@ -258,6 +223,140 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
           });
         }
       },
+      onError: (e) {
+        debugPrint('搜索文件系统时出错: $e');
+      },
+    );
+  }
+
+  /// 自定义递归搜索，跳过无权限目录继续搜索其他目录
+  StreamSubscription<void> _recursiveSearch({
+    required String rootPath,
+    required String qLower,
+    required bool isGlobal,
+    required String rootPathFilter,
+    required Set<String> seenPaths,
+    required void Function(FileItemModel) onResult,
+    required VoidCallback onDone,
+    required void Function(dynamic) onError,
+  }) {
+    final controller = StreamController<void>();
+    var activeTasks = 0;
+    var isCancelled = false;
+
+    void handleError(dynamic e) {
+      if (!isCancelled) {
+        debugPrint('搜索目录 $rootPath 时出错: $e');
+        onError(e);
+      }
+    }
+
+    Future<void> searchDirectory(String dirPath) async {
+      try {
+        // 检查是否为受限路径，如果是则使用 Shizuku/Root 访问
+        final fileProvider = context.read<FileManagerProvider>();
+        List<FileSystemEntity> entities;
+        
+        if (fileProvider.isRestrictedPath(dirPath)) {
+          final status = await RootShizukuService.checkStatus();
+          if (!status.isRootAvailable && !status.isShizukuAvailable) {
+            debugPrint('搜索: 跳过无权限目录 $dirPath (Shizuku/Root 不可用)');
+            return;
+          }
+          
+          final useRoot = status.isRootAvailable && !status.isShizukuAvailable;
+          final items = await RootShizukuService.listFiles(
+            dirPath, 
+            useRoot: useRoot, 
+            showHiddenFiles: fileProvider.showHiddenFiles,
+          );
+          // 将 FileItemModel 转换为 FileSystemEntity 兼容格式
+          entities = items.map((item) => item.isDirectory ? Directory(item.path) : File(item.path)).toList();
+        } else {
+          final dir = Directory(dirPath);
+          if (!await dir.exists()) return;
+          entities = await dir.list(followLinks: false).toList();
+        }
+
+        for (final entity in entities) {
+          final name = p.basename(entity.path);
+
+          // 检查文件名是否匹配搜索词
+          if (name.toLowerCase().contains(qLower)) {
+            final isDir = entity is Directory;
+
+            bool matchFilter = false;
+            if (_selectedFilter == L10n.of(context).ui_all) {
+              matchFilter = true;
+            } else if (_selectedFilter == L10n.of(context).ui_folders && isDir) {
+              matchFilter = true;
+            } else if (_selectedFilter == L10n.of(context).ui_images && !isDir && _isImage(name)) {
+              matchFilter = true;
+            } else if (_selectedFilter == L10n.of(context).ui_videos && !isDir && _isVideo(name)) {
+              matchFilter = true;
+            } else if (_selectedFilter == L10n.of(context).ui_audio && !isDir && _isAudio(name)) {
+              matchFilter = true;
+            } else if (_selectedFilter == L10n.of(context).ui_documents && !isDir && _isDoc(name)) {
+              matchFilter = true;
+            }
+
+            if (matchFilter && !seenPaths.contains(entity.path)) {
+              seenPaths.add(entity.path);
+              try {
+                final item = await FileItemModel.fromEntityAsync(entity);
+                if (!isCancelled) {
+                  onResult(item);
+                }
+              } catch (e) {
+                debugPrint('解析文件 ${entity.path} 时出错: $e');
+              }
+            }
+          }
+
+          // 如果是目录，递归搜索（跳过符号链接和特殊目录）
+          if (entity is Directory && !isCancelled) {
+            activeTasks++;
+            searchDirectory(entity.path).then((_) {
+              activeTasks--;
+              if (activeTasks == 0 && !isCancelled) {
+            controller.close();
+              }
+            }).catchError((e) {
+              activeTasks--;
+              handleError(e);
+              if (activeTasks == 0 && !isCancelled) {
+                controller.close();
+              }
+            });
+          }
+        }
+      } catch (e) {
+        handleError(e);
+      }
+    }
+
+    activeTasks++;
+    searchDirectory(rootPath).then((_) {
+      activeTasks--;
+      if (activeTasks == 0 && !isCancelled) {
+        controller.close();
+      }
+    }).catchError((e) {
+      activeTasks--;
+      handleError(e);
+      if (activeTasks == 0 && !isCancelled) {
+        controller.close();
+      }
+    });
+
+    return controller.stream.listen(
+      (_) {},
+      onDone: () {
+        if (!isCancelled) {
+          onDone();
+        }
+      },
+      onError: onError,
     );
   }
 

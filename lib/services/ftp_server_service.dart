@@ -389,7 +389,7 @@ class FtpSession {
   String _resolvePasvAddress(Socket control) {
     try {
       final remote = control.remoteAddress;
-      if (remote == null || remote.type != InternetAddressType.IPv4) {
+      if (remote.type != InternetAddressType.IPv4) {
         return server.ipAddress;
       }
       final remoteIp = remote.address;
@@ -421,7 +421,7 @@ class FtpSession {
   String? controlSocketToLocalIp(Socket control) {
     try {
       final local = control.address;
-      if (local != null && local.type == InternetAddressType.IPv4) {
+      if (local.type == InternetAddressType.IPv4) {
         return local.address;
       }
     } catch (_) {}

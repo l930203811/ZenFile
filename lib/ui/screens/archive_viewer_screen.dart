@@ -304,7 +304,6 @@ class _ArchiveViewerScreenState extends State<ArchiveViewerScreen> {
 
     if (selectedPaths != null && selectedPaths.isNotEmpty) {
       setState(() => _isLoading = true);
-      int successCount = 0;
 
       for (final path in selectedPaths) {
         final type = FileSystemEntity.typeSync(path);
@@ -317,21 +316,19 @@ class _ArchiveViewerScreenState extends State<ArchiveViewerScreen> {
             if (entity is File) {
               final relPath = entity.path.substring(path.length + 1);
               final targetInternalPath = p.join(_currentInternalPath, folderBaseName, p.dirname(relPath)).replaceAll('\\', '/');
-              final success = await ArchiveService.addFileToArchive(
+              await ArchiveService.addFileToArchive(
                 archivePath: widget.archivePath,
                 filePathToAdd: entity.path,
                 internalPath: targetInternalPath == '.' ? '' : '$targetInternalPath/',
               );
-              if (success) successCount++;
             }
           }
         } else {
-          final success = await ArchiveService.addFileToArchive(
+          await ArchiveService.addFileToArchive(
             archivePath: widget.archivePath,
             filePathToAdd: path,
             internalPath: _currentInternalPath,
           );
-          if (success) successCount++;
         }
       }
 
@@ -351,7 +348,6 @@ class _ArchiveViewerScreenState extends State<ArchiveViewerScreen> {
 
     setState(() => _isLoading = true);
 
-    int count = 0;
     for (final path in provider.clipboardPaths) {
       final success = await ArchiveService.addFileToArchive(
         archivePath: widget.archivePath,
@@ -359,7 +355,6 @@ class _ArchiveViewerScreenState extends State<ArchiveViewerScreen> {
         internalPath: _currentInternalPath,
       );
       if (success) {
-        count++;
         if (provider.isCut) {
           try {
             await File(path).delete();

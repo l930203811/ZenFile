@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart' as p;
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/utils.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
@@ -93,7 +92,6 @@ class _ConflictDialogState extends State<ConflictDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final accentColor = theme.colorScheme.primary;
 
     return AlertDialog(
       title: Row(

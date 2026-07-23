@@ -16,16 +16,11 @@ class StorageOverviewCard extends StatelessWidget {
         ? provider.totalStorageBytes.toDouble() 
         : 128 * 1024 * 1024 * 1024.0;
     
-    final double usedBytes = provider.usedStorageBytes > 0 
-        ? provider.usedStorageBytes.toDouble() 
-        : 82.4 * 1024 * 1024 * 1024.0;
-        
     final double usedPercentage = provider.totalStorageBytes > 0 
         ? provider.storageUsedPercentage 
         : 0.65;
 
     final String totalStorageStr = FileUtils.formatBytes(totalBytes.toInt(), 1);
-    final String usedStorageStr = FileUtils.formatBytes(usedBytes.toInt(), 1);
     final int usedPercentInt = (usedPercentage * 100).toInt();
     
     return Container(

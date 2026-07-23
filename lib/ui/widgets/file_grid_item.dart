@@ -380,7 +380,7 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
     try {
       final provider = context.read<FileManagerProvider>();
       final activeTab = provider.activeTab;
-      if (activeTab == null || activeTab.remoteClient == null) return;
+      if (activeTab.remoteClient == null) return;
       final client = activeTab.remoteClient!;
 
       final thumbDir = Directory('/storage/emulated/0/ZenFile/cache/thumbnails/remote');

@@ -10,7 +10,6 @@ import '../../models/file_item_model.dart';
 import '../widgets/file_item.dart';
 import '../widgets/folder_item.dart';
 import '../widgets/file_action_dialogs.dart';
-import '../widgets/selection_context_bottom_sheet.dart';
 import '../widgets/selection_action_bar.dart';
 import '../widgets/create_archive_dialog.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';

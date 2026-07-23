@@ -27,7 +27,6 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
   final ScrollController _scrollController = ScrollController();
   late List<GlobalKey> _itemKeys;
   int _currentLineIndex = -1;
-  int _currentWordIndex = -1;
   bool _isUserScrolling = false;
 
   /// 逐字过渡动画控制器：驱动每帧重绘以实现颜色渐变
@@ -50,13 +49,6 @@ class _LyricsViewWidgetState extends State<LyricsViewWidget>
 
   void _updateCurrentIndices() {
     _currentLineIndex = LyricParser.findCurrentLineIndex(widget.lyrics, widget.position);
-    _currentWordIndex = -1;
-    if (_currentLineIndex >= 0 && _currentLineIndex < widget.lyrics.length) {
-      _currentWordIndex = LyricParser.findCurrentWordIndex(
-        widget.lyrics[_currentLineIndex],
-        widget.position,
-      );
-    }
   }
 
   @override

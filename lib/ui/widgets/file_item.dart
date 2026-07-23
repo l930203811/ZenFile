@@ -20,11 +20,8 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'file_action_dialogs.dart';
 import 'archive_type_icon.dart';
 import 'file_type_icon.dart';
-import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 // SVG 缩略图缓存
-final Map<String, Uint8List> _svgThumbCache = {};
-
 class FileItem extends StatelessWidget {
   final FileItemModel file;
   final VoidCallback onTap;
@@ -314,9 +311,9 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
       // 从 widget 树获取 remoteClient
       final provider = context.read<FileManagerProvider>();
       final activeTab = provider.activeTab;
-      if (activeTab?.remoteClient == null) return;
+      if (activeTab.remoteClient == null) return;
       
-      final client = activeTab!.remoteClient!;
+      final client = activeTab.remoteClient!;
       
       // 构造缩略图缓存路径
       Directory thumbDir;

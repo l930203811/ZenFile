@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../core/icon_fonts/broken_icons.dart';
 import '../../../models/app_info_model.dart';
 import '../../../services/app_manager_service.dart';
-import '../../../core/utils.dart';
 import 'widgets/app_list_tab.dart';
 import 'widgets/backup_list_tab.dart';
 import 'widgets/app_options_sheet.dart';

@@ -12,7 +12,6 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'internal_file_picker_screen.dart';
 import 'backup_settings_screen.dart';
-import '../../services/settings_backup_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../../main.dart';
 
@@ -222,7 +221,6 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
     final confirmDragVis = fileManager.enableDragDrop && _shouldShow(L10n.of(context).ui_confirm_drag_drop, L10n.of(context).msg5dff8f2d);
     final multipleTabsVis = _shouldShow(L10n.of(context).ui_enable_multi_tabs, L10n.of(context).msg4b0a7063);
     final splitScreenVis = _shouldShow(L10n.of(context).ui_enable_split_screen, L10n.of(context).msgf04ac00d);
-    final disableLeftBackVis = false; // 已移除该功能
     final rememberLastFolderVis = _shouldShow(L10n.of(context).msg59c7debc, L10n.of(context).msgd1591ba4);
 
     final generalStartupList = [
@@ -2243,17 +2241,8 @@ String _getMenuIconStyleLabel(BuildContext context, String option) {
 
 String _getAppIconLabel(BuildContext context, String option) {
   switch (option) {
-    case 'design1': return L10n.of(context).msgd06ba04f;
-    case 'design2': return L10n.of(context).msg5090469e;
     case 'design3': return L10n.of(context).d;
-    case 'design4': return L10n.of(context).msg67836b24;
-    case 'design5': return L10n.of(context).msgf08c8dc4;
-    case 'design6': return L10n.of(context).msgdesign6;
     case 'design7': return L10n.of(context).msgdesign7;
-    case 'design8': return L10n.of(context).msgdesign8;
-    case 'design9': return L10n.of(context).msgdesign9;
-    case 'design10': return L10n.of(context).msgdesign10;
-    case 'design11': return L10n.of(context).msgdesign11;
     case 'custom': return L10n.of(context).msg7372dc9f;
     case 'default':
     default:
@@ -2958,22 +2947,6 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
                                 context,
                                 fileManager,
                                 theme,
-                                id: 'design1',
-                                title: L10n.of(context).msgd06ba04f,
-                                imagePath: 'assets/logo/zf_m3_expressive_1.png',
-                              ),
-                              _buildIconOptionCard(
-                                context,
-                                fileManager,
-                                theme,
-                                id: 'design2',
-                                title: L10n.of(context).msg5090469e,
-                                imagePath: 'assets/logo/zf_m3_expressive_2.png',
-                              ),
-                              _buildIconOptionCard(
-                                context,
-                                fileManager,
-                                theme,
                                 id: 'design3',
                                 title: L10n.of(context).d,
                                 imagePath: 'assets/logo/zf_m3_expressive_3.png',
@@ -2982,65 +2955,9 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
                                 context,
                                 fileManager,
                                 theme,
-                                id: 'design4',
-                                title: L10n.of(context).msg67836b24,
-                                imagePath: 'assets/logo/zf_minimal_flat.png',
-                              ),
-                              _buildIconOptionCard(
-                                context,
-                                fileManager,
-                                theme,
-                                id: 'design5',
-                                title: L10n.of(context).msgf08c8dc4,
-                                imagePath: 'assets/logo/zf_glassmorphism.png',
-                              ),
-                              _buildIconOptionCard(
-                                context,
-                                fileManager,
-                                theme,
-                                id: 'design6',
-                                title: L10n.of(context).msgdesign6,
-                                imagePath: 'assets/logo/zf_cyberpunk.png',
-                              ),
-                              _buildIconOptionCard(
-                                context,
-                                fileManager,
-                                theme,
                                 id: 'design7',
                                 title: L10n.of(context).msgdesign7,
                                 imagePath: 'assets/logo/zf_neumorphism.png',
-                              ),
-                              _buildIconOptionCard(
-                                context,
-                                fileManager,
-                                theme,
-                                id: 'design8',
-                                title: L10n.of(context).msgdesign8,
-                                imagePath: 'assets/logo/zf_Classic2.png',
-                              ),
-                              _buildIconOptionCard(
-                                context,
-                                fileManager,
-                                theme,
-                                id: 'design9',
-                                title: L10n.of(context).msgdesign9,
-                                imagePath: 'assets/logo/zf_Classic3.png',
-                              ),
-                              _buildIconOptionCard(
-                                context,
-                                fileManager,
-                                theme,
-                                id: 'design10',
-                                title: L10n.of(context).msgdesign10,
-                                imagePath: 'assets/logo/zf_user_design_1.png',
-                              ),
-                              _buildIconOptionCard(
-                                context,
-                                fileManager,
-                                theme,
-                                id: 'design11',
-                                title: L10n.of(context).msgdesign11,
-                                imagePath: 'assets/logo/zf_user_design_2.png',
                               ),
                               _buildCustomIconOptionCard(
                                 context,

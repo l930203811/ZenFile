@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../providers/file_manager_provider.dart';
-import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/utils.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
@@ -41,7 +40,6 @@ class FileOperationProgressDialog extends StatelessWidget {
             return const SizedBox.shrink();
           }
 
-          final percent = (progress.percentage * 100).clamp(0, 100).toInt();
           final isDark = theme.brightness == Brightness.dark;
           final circleBgColor = isDark
               ? const Color(0xFF1E1E2E)

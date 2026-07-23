@@ -442,7 +442,7 @@ class LanClient extends RemoteClient {
     } on TimeoutException {
       throw Exception('SMB upload timed out');
     } finally {
-      progressTimer?.cancel();
+      progressTimer.cancel();
     }
   }
 

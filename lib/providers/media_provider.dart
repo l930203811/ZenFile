@@ -1,4 +1,3 @@
-import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 import 'dart:async';
 import 'dart:convert';
@@ -16,7 +15,6 @@ import '../services/network_connections_service.dart';
 import '../services/media_thumbnail_service.dart';
 import '../models/custom_shortcut_model.dart';
 import '../models/file_item_model.dart';
-import '../models/network_connection_model.dart';
 import '../core/utils.dart';
 import '../services/remote/remote_client.dart';
 import 'file_manager_provider.dart';
@@ -141,7 +139,6 @@ class ThumbnailCache {
       }
       final connectionId = uriPart.substring(0, separatorIndex);
       final remoteFilePath = uriPart.substring(separatorIndex + 1);
-      final fileName = p.basename(remoteFilePath);
 
       // 查找连接并创建客户端
       final connections = NetworkConnectionsService.getConnections();

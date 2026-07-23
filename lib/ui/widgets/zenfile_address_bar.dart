@@ -466,17 +466,6 @@ class _ZenFileAddressBarState extends State<ZenFileAddressBar> {
                     )
                   : GestureDetector(
                       onTap: _startEditing,
-                      onLongPress: () {
-                        Clipboard.setData(ClipboardData(text: provider.currentPath));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('已复制: ${provider.currentPath}'),
-                            behavior: SnackBarBehavior.floating,
-                            backgroundColor: theme.colorScheme.secondary,
-                            duration: const Duration(seconds: 1),
-                          ),
-                        );
-                      },
                       behavior: HitTestBehavior.opaque,
                       child: Container(
                         color: Colors.transparent,
@@ -564,12 +553,11 @@ class _ZenFileAddressBarState extends State<ZenFileAddressBar> {
                                         ),
                                       );
 
-                                      segmentWidget = LongPressDraggable<DragPayload>(
+                                      segmentWidget = Draggable<DragPayload>(
                                         data: DragPayload(path: segment.path, isDirectory: true, paths: [segment.path]),
                                         feedback: feedback,
                                         dragAnchorStrategy: childDragAnchorStrategy,
                                         feedbackOffset: const Offset(0, -30),
-                                        delay: const Duration(milliseconds: 500),
                                         child: segmentWidget,
                                       );
                                     }
@@ -652,7 +640,7 @@ class _ZenFileAddressBarState extends State<ZenFileAddressBar> {
                       ),
                     ),
             ),
-            
+
             // Right Submit Navigation Button (Visible in edit mode)
             if (_isEditing)
               IconButton(
@@ -662,6 +650,24 @@ class _ZenFileAddressBarState extends State<ZenFileAddressBar> {
                   color: theme.colorScheme.primary,
                 ),
                 onPressed: _submitNavigation,
+              ),
+
+            // Go to Path Button (Visible in browse mode)
+            if (!_isEditing)
+              SizedBox(
+                width: 40,
+                height: 40,
+                child: IconButton(
+                  icon: Icon(
+                    Icons.directions_rounded,
+                    size: 20,
+                    color: theme.colorScheme.primary,
+                  ),
+                  tooltip: L10n.of(context).go_to_path,
+                  onPressed: () {
+                    _startEditing();
+                  },
+                ),
               ),
           ],
         ),

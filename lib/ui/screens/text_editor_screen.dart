@@ -174,7 +174,6 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
     '\t', '{', '}', '[', ']', '(', ')', '<', '>', '/', '\\', '=', '"', '\x27', ':', ';', ',', '.', '+', '-', '*', '&', '|', '!'
   ];
 
-  late final String _initialPath;
   late String _currentFilePath;
 
   @override
@@ -185,7 +184,6 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
     if (widget.filePath.startsWith('/') && !norm.startsWith('/')) {
       norm = '/$norm';
     }
-    _initialPath = norm;
     _currentFilePath = norm;
 
     _controller = CodeTextEditingController(fontSize: _fontSize);
@@ -992,26 +990,6 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
     );
   }
 
-  Widget _buildMenuItem({
-    required String label,
-    required VoidCallback onPressed,
-    required ThemeData theme,
-  }) {
-    return InkWell(
-      onTap: onPressed,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        alignment: Alignment.centerLeft,
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            color: theme.colorScheme.onSurface,
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildTextField(ThemeData theme) {
     return Padding(

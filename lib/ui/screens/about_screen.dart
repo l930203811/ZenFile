@@ -721,7 +721,6 @@ class AboutZenFileScreen extends StatelessWidget {
 
   Widget _buildV1121Changelog(BuildContext ctx, ThemeData theme) {
     final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
-    final headerStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.9), fontWeight: FontWeight.bold);
     final sectionStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.primary, fontWeight: FontWeight.w600);
 
     Widget gap([double h = 6]) => SizedBox(height: h);
@@ -747,10 +746,10 @@ class AboutZenFileScreen extends StatelessWidget {
                   color: theme.colorScheme.primary.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text('v1.1.21', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+                child: Text('v1.1.22', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
               ),
               const SizedBox(width: 10),
-              Text('2026-07-16', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+              Text('2026-07-24', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
             ],
           ),
           gap(14),
@@ -761,8 +760,12 @@ class AboutZenFileScreen extends StatelessWidget {
           bulletText(L10n.of(ctx).changelog_v1121_new_feature_1),
           gap(6),
           bulletText(L10n.of(ctx).changelog_v1121_new_feature_2),
-          gap(6),
-          bulletText(L10n.of(ctx).changelog_v1121_new_feature_3),
+          gap(14),
+
+          // ── 优化 ──
+          Text(L10n.of(ctx).changelog_v1121_opt_title, style: sectionStyle),
+          gap(4),
+          bulletText(L10n.of(ctx).changelog_v1121_opt_1),
           gap(14),
 
           // ── 问题修复 ──
@@ -785,62 +788,6 @@ class AboutZenFileScreen extends StatelessWidget {
           bulletText(L10n.of(ctx).changelog_v1121_known_issue_4),
           gap(6),
           bulletText(L10n.of(ctx).changelog_v1121_known_issue_5),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildVersionSection(BuildContext ctx, ThemeData theme, String version, String date, List<String> changes) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.06)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(version, style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
-              ),
-              const SizedBox(width: 10),
-              Text(date, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
-            ],
-          ),
-          const SizedBox(height: 12),
-          ...changes.map((c) {
-            // 检测是否为分类标题行（以 emoji 开头，如 📹 🎵 📂 🗂️）
-            final isHeader = c.isNotEmpty && c.runes.first >= 0x1F000;
-            if (isHeader) {
-              return Padding(
-                padding: EdgeInsets.only(top: c == changes.first ? 0 : 10, bottom: 4),
-                child: Text(c, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withOpacity(0.9))),
-              );
-            }
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: Container(width: 5, height: 5, decoration: BoxDecoration(shape: BoxShape.circle, color: theme.colorScheme.primary.withOpacity(0.5))),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(child: Text(c, style: TextStyle(fontSize: 13.5, height: 1.4, color: theme.colorScheme.onSurface.withOpacity(0.8)))),
-                ],
-              ),
-            );
-          }),
         ],
       ),
     );
@@ -908,23 +855,16 @@ class AboutZenFileScreen extends StatelessWidget {
       }
 
       final String fileName = assetPath.split('/').last;
-      final result = await PhotoManager.editor.saveImage(
+      await PhotoManager.editor.saveImage(
         bytes,
         title: fileName,
         filename: fileName,
       );
 
-      if (result != null && context.mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('图片已保存到相册'),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      } else if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('保存失败，请重试'),
             behavior: SnackBarBehavior.floating,
           ),
         );

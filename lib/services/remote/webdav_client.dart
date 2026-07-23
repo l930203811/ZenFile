@@ -425,7 +425,6 @@ class WebDavRemoteClient extends RemoteClient {
         .replaceFirst('http://', '')
         .replaceFirst('https://', '')
         .split('/').first;
-    final credBase64 = base64.encode(utf8.encode('$username:$password'));
     // media_kit / libmpv supports HTTP Basic Auth via URL credentials
     return '$protocol://$username:$password@$cleanHost:$port${Uri.encodeFull(normalizedPath)}';
   }

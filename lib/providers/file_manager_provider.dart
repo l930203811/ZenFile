@@ -44,7 +44,6 @@ import '../services/remote/lan_client.dart';
 import '../services/remote/saf_client.dart';
 import '../services/remote_streaming_service.dart';
 import '../services/network_connections_service.dart';
-import '../services/remote/saf_client.dart';
 
 enum FileSortType {
   nameAsc,
@@ -103,7 +102,6 @@ class FileManagerProvider extends ChangeNotifier {
     _showHiddenFiles = PreferencesService.getShowHiddenFiles();
     _showFloatingAddButton = PreferencesService.getShowFloatingAddButton();
     _defaultToBrowseScreen = PreferencesService.getDefaultToBrowseScreen();
-    _enableDualFingerSwipe = false; // deprecated, use _swipeMode
     _swipeMode = PreferencesService.getSwipeMode();
     _showFolderFileCount = PreferencesService.getShowFolderFileCount();
     _showBottomActionBar = PreferencesService.getShowBottomActionBar();
@@ -653,7 +651,6 @@ class FileManagerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool _enableDualFingerSwipe = false; // deprecated, use swipeMode
   bool get enableDualFingerSwipe => _swipeMode == 'dual';
 
   // 滑动切换页面模式：'single' 或 'dual'
@@ -1434,6 +1431,12 @@ class FileManagerProvider extends ChangeNotifier {
   bool get isRootAvailable => activeTab.isRootAvailable;
   Set<String> get selectedPaths => activeTab.selectedPaths;
   bool get isSelectionMode => selectedPaths.isNotEmpty;
+
+  // 路径栏手动编辑态（跨组件共享，供 home_screen 返回键判断是否停留在浏览页）
+  bool _isPathEditing = false;
+  bool get isPathEditing => _isPathEditing;
+  void setPathEditing(bool value) => _isPathEditing = value;
+  void exitPathEditing() => _isPathEditing = false;
 
   // --- Global Clipboard ---
   final List<String> _clipboardPaths = [];

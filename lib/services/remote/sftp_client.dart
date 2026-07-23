@@ -80,10 +80,10 @@ class SftpRemoteClient extends RemoteClient {
       var isDir = item.attr.isDirectory;
       // If mode is null, try parsing the longname field first (no network call)
       if (item.attr.mode == null) {
-        if (item.longname != null && item.longname!.isNotEmpty) {
+        if (item.longname.isNotEmpty) {
           // Unix-style longname: first character indicates file type
           // 'd' = directory, '-' = regular file, 'l' = symlink
-          isDir = item.longname!.startsWith('d');
+          isDir = item.longname.startsWith('d');
         } else {
           // No longname available — mark for batch stat
           final statPath = (targetPath == '.' || targetPath == '')
@@ -132,19 +132,17 @@ class SftpRemoteClient extends RemoteClient {
         );
 
         for (int j = 0; j < results.length; j++) {
-          if (results[j] != null) {
-            final itemIdx = batchIndices[j];
-            final name = items[itemIdx].filename;
-            final idx = nameToIdx[name];
-            if (idx != null) {
-              list[idx] = RemoteFileItem(
-                name: list[idx].name,
-                path: list[idx].path,
-                isDirectory: results[j]!.isDirectory,
-                size: list[idx].size,
-                modified: list[idx].modified,
-              );
-            }
+          final itemIdx = batchIndices[j];
+          final name = items[itemIdx].filename;
+          final idx = nameToIdx[name];
+          if (idx != null) {
+            list[idx] = RemoteFileItem(
+              name: list[idx].name,
+              path: list[idx].path,
+              isDirectory: results[j].isDirectory,
+              size: list[idx].size,
+              modified: list[idx].modified,
+            );
           }
         }
       }

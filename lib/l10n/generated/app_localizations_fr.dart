@@ -1941,6 +1941,9 @@ class L10nFr extends L10n {
   String get apk6 => 'Partager le fichier APK';
 
   @override
+  String get copy_package_name => 'Copier le nom du paquet';
+
+  @override
   String get msga0b18169 => 'Partager le fichier de sauvegarde';
 
   @override
@@ -4382,26 +4385,29 @@ class L10nFr extends L10n {
 
   @override
   String get changelog_v1121_new_feature_1 =>
-      'Affichage personnalisé de la page d\'accueil : dans la page de navigation, appuyez sur le menu à trois points d\'un dossier et sélectionnez \"Définir comme accueil\", ou appuyez longuement sur un dossier et recherchez \"Définir comme accueil\" dans le menu \"Plus\". En mode double fenêtre, chaque fenêtre peut définir indépendamment un chemin d\'accueil différent, améliorant l\'efficacité de la gestion de plusieurs répertoires.';
+      'Gestion des applications : ajout de l’option « Copier le nom du package » dans le menu contextuel de l’application, permettant de copier le nom du package en un clic.';
 
   @override
   String get changelog_v1121_new_feature_2 =>
-      'Amélioration du partage WEB : prend en charge les chemins partagés personnalisés, corrigeant le problème précédent où seuls les dossiers pouvaient être parcourus sans pouvoir voir le contenu des fichiers. Ajoute également des boutons d\'opérations de fichiers courants tels que copier, coller, couper, supprimer et renommer, rendant la gestion à distance plus pratique.';
+      'Barre de chemin : un appui long sur la barre de chemin active le mode édition, permettant de saisir et d’accéder à un chemin spécifié.';
 
   @override
-  String get changelog_v1121_new_feature_3 =>
-      'Nettoyage du cache distant : ajout de la fonction de nettoyage personnalisé du cache distant pour une gestion flexible de l\'espace de stockage.';
+  String get changelog_v1121_opt_title => 'Optimisations';
+
+  @override
+  String get changelog_v1121_opt_1 =>
+      'Suppression de certaines icônes de secours et du code redondant, réduisant la taille de l’application et améliorant la maintenabilité du code.';
 
   @override
   String get changelog_v1121_bugfixes_title => 'Corrections de bugs';
 
   @override
   String get changelog_v1121_bugfix_1 =>
-      'Correction du problème où le client SMB affichait un répertoire vide lors du retour de n\'importe quel répertoire partagé.';
+      'Correction du problème empêchant la recherche globale de trouver les fichiers dans le répertoire data.';
 
   @override
   String get changelog_v1121_bugfix_2 =>
-      'Correction de certains problèmes de texte chinois codé en dur dans l\'interface, améliorant la compatibilité d\'affichage dans les environnements multilingues.';
+      'Correction du problème où le bouton « Désinstaller » de la fenêtre de gestion des applications dépassait le bas de l’écran sur certains appareils, le rendant difficile à toucher.';
 
   @override
   String get changelog_v1121_known_issues_title =>
@@ -4432,4 +4438,16 @@ class L10nFr extends L10n {
 
   @override
   String get msg_editor_modified => 'Modifié';
+
+  @override
+  String get go_to_path => 'Aller au chemin';
+
+  @override
+  String get copy_path => 'Copier le chemin';
+
+  @override
+  String get enter_path_hint => 'Entrer le chemin absolu...';
+
+  @override
+  String get breadcrumb_context_title => 'Options de fil d\'Ariane';
 }

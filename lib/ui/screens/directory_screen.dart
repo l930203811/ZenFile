@@ -1,13 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart' as p;
 import '../../providers/file_manager_provider.dart';
 import '../../models/file_filter_type.dart';
 import '../../models/drag_payload.dart';
-import '../widgets/file_filter_bottom_sheet.dart';
 import '../widgets/file_item.dart';
 import '../widgets/folder_item.dart';
 import '../widgets/file_grid_item.dart';
@@ -16,11 +14,8 @@ import '../widgets/drag_drop_handler.dart';
 import '../widgets/file_action_dialogs.dart';
 import '../widgets/drag_drop_action_dialog.dart';
 import '../widgets/create_archive_dialog.dart';
-import '../widgets/sort_modal.dart';
 import '../widgets/batch_rename_dialog.dart';
 import '../widgets/selection_action_bar.dart';
-import '../widgets/selection_context_bottom_sheet.dart';
-import '../widgets/quick_categories_grid.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import 'internal_file_picker_screen.dart';
 import '../widgets/restricted_folder_banner.dart';
@@ -57,6 +52,10 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   final ScrollController _scrollController = ScrollController();
   final ScrollController _breadcrumbController = ScrollController();
   final ScrollController _tabScrollController = ScrollController();
+  final TextEditingController _pathEditController = TextEditingController();
+  final FocusNode _pathFocusNode = FocusNode();
+  final GlobalKey<EditableTextState> _pathTextFieldKey = GlobalKey<EditableTextState>();
+  bool _isEditingPath = false;
 
   @override
   void initState() {
@@ -71,6 +70,8 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     _scrollController.dispose();
     _breadcrumbController.dispose();
     _tabScrollController.dispose();
+    _pathEditController.dispose();
+    _pathFocusNode.dispose();
     super.dispose();
   }
 
@@ -83,6 +84,42 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         final savedOffset = provider.getSavedScrollOffset(path);
         _scrollController.jumpTo(savedOffset);
       }
+    });
+  }
+
+  /// 进入路径编辑模式：用当前路径填充输入框并请求焦点
+  void _startPathEditing(FileManagerProvider provider) {
+    setState(() {
+      _isEditingPath = true;
+      _pathEditController.text = provider.currentPath;
+      _pathEditController.selection = TextSelection.fromPosition(
+        TextPosition(offset: _pathEditController.text.length),
+      );
+    });
+    provider.setPathEditing(true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _pathFocusNode.requestFocus();
+    });
+  }
+
+  /// 提交路径跳转：读取输入框路径并导航
+  void _submitPathNavigation(FileManagerProvider provider) {
+    final path = _pathEditController.text.trim();
+    if (path.isEmpty) return;
+    _pathFocusNode.unfocus();
+    setState(() {
+      _isEditingPath = false;
+    });
+    provider.setPathEditing(false);
+    provider.loadDirectory(path);
+  }
+
+  /// 编辑态长按路径栏：全选整个路径地址并弹出系统级操作菜单（复制 / 剪切 / 删除 / 粘贴）。
+  /// 系统菜单由 Flutter 的 TextSelectionControls 提供，已随 MaterialLocalizations 自动多语言。
+  void _selectAllPath() {
+    FocusScope.of(context).requestFocus(_pathFocusNode);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _pathTextFieldKey.currentState?.selectAll(SelectionChangedCause.longPress);
     });
   }
 
@@ -180,12 +217,6 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             onTap: () {
                     if (targetPath != currentPath) provider.loadDirectory(targetPath);
                   },
-            onLongPress: () {
-              Clipboard.setData(ClipboardData(text: targetPath));
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(L10n.of(context).targetpath(targetPath)), behavior: SnackBarBehavior.floating, duration: Duration(seconds: 2)),
-              );
-            },
             child: itemWidgets[i],
           ),
         ),
@@ -302,7 +333,57 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Expanded(child: _buildPathBreadcrumb(context, provider)),
+                  // 路径栏：浏览态显示面包屑，编辑态显示输入框。
+                  // 浏览态长按路径栏 → 进入编辑态；编辑态长按路径栏 → 全选路径并弹出系统级菜单（复制/剪切/删除/粘贴）。
+                  // 编辑态下单击 → 取消全选（由 TextField 原生处理）。
+                  Expanded(
+                    child: GestureDetector(
+                      onLongPress: () {
+                        if (_isEditingPath) {
+                          _selectAllPath();
+                        } else {
+                          _startPathEditing(provider);
+                        }
+                      },
+                      child: _isEditingPath
+                          ? TextField(
+                              key: _pathTextFieldKey,
+                              focusNode: _pathFocusNode,
+                              controller: _pathEditController,
+                              enableInteractiveSelection: true,
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                              decoration: InputDecoration(
+                                isDense: true,
+                                contentPadding: const EdgeInsets.symmetric(vertical: 2),
+                                border: InputBorder.none,
+                                hintText: L10n.of(context).go_to_path,
+                              ),
+                              textInputAction: TextInputAction.go,
+                              autocorrect: false,
+                              onSubmitted: (_) => _submitPathNavigation(provider),
+                            )
+                          : _buildPathBreadcrumb(context, provider),
+                    ),
+                  ),
+                  // 编辑态跳转按钮：提交路径并导航
+                  if (_isEditingPath)
+                    GestureDetector(
+                      onTap: () => _submitPathNavigation(provider),
+                      child: Container(
+                        height: 22,
+                        width: 22,
+                        margin: const EdgeInsets.only(left: 8),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary.withOpacity(0.10),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: theme.colorScheme.primary.withOpacity(0.25),
+                            width: 1,
+                          ),
+                        ),
+                        child: Icon(Broken.arrow_right_3, size: 14, color: theme.colorScheme.primary),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -363,12 +444,6 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
               PopupMenuItem(value: 'archive', child: Row(children: [Icon(Broken.archive, size: 20), SizedBox(width: 12), Text(L10n.of(context).msg68ac91eb, style: TextStyle(fontWeight: FontWeight.w600))])),
               PopupMenuItem(value: 'favorite', child: Row(children: [Icon(Broken.folder_favorite, size: 20), SizedBox(width: 12), Text(L10n.of(context).ui_new_favorite, style: TextStyle(fontWeight: FontWeight.w600))])),
             ],
-          ),
-          // 复制标签页：双屏模式下复制激活 tab 到未激活 pane；单窗口模式下新建标签页
-          IconButton(
-            icon: Icon(Broken.copy, color: theme.colorScheme.primary),
-            tooltip: L10n.of(context).msg4e9c344a,
-            onPressed: () => provider.duplicateActiveTab(),
           ),
           // 向上（返回上一层路径）
           IconButton(
@@ -767,79 +842,6 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     }
   }
 
-  void _showAddBottomSheet(BuildContext context, FileManagerProvider provider) {
-    final theme = Theme.of(context);
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: theme.scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(28), topRight: Radius.circular(28)),
-      ),
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(color: Colors.grey.withOpacity(0.3), borderRadius: BorderRadius.circular(2)),
-              ),
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-                leading: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(color: theme.colorScheme.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                  child: Icon(Broken.folder_add, color: theme.colorScheme.primary, size: 24),
-                ),
-                title: Text(L10n.of(context).msgf3a485df, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                subtitle: Text(L10n.of(context).ui_create_new_directory, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6))),
-                onTap: () {
-                  Navigator.pop(context);
-                  _handleMenuAction(context, 'folder', provider);
-                },
-              ),
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-                leading: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(color: theme.colorScheme.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                  child: Icon(Broken.document_1, color: theme.colorScheme.primary, size: 24),
-                ),
-                title: Text(L10n.of(context).msge48a7157, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                subtitle: Text(L10n.of(context).msgbd165c40, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6))),
-                onTap: () {
-                  Navigator.pop(context);
-                  _handleMenuAction(context, 'file', provider);
-                },
-              ),
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-                leading: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(color: theme.colorScheme.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                  child: Icon(Broken.box_add, color: theme.colorScheme.primary, size: 24),
-                ),
-                title: Text(L10n.of(context).msg68ac91eb, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                subtitle: Text(L10n.of(context).msg881f6a80, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6))),
-                onTap: () {
-                  Navigator.pop(context);
-                  _handleMenuAction(context, 'archive', provider);
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showSortModal(BuildContext context, FileManagerProvider provider) {
-    SortModal.show(context, provider);
-  }
-
   void _showStorageVolumeModal(BuildContext context, FileManagerProvider provider) {
     final theme = Theme.of(context);
     showModalBottomSheet(
@@ -1127,6 +1129,16 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
           canPop: false,
           onPopInvoked: (didPop) {
             if (didPop) return;
+            // 编辑路径态下，返回键优先退出编辑而非导航。
+            // 注意：此处只清除本地编辑态，共享标记 provider.isPathEditing 交由 home_screen 的
+            // PopScope 统一处理，避免嵌套 PopScope 调用顺序导致返回键仍切到分类页。
+            if (_isEditingPath) {
+              setState(() {
+                _isEditingPath = false;
+              });
+              _pathFocusNode.unfocus();
+              return;
+            }
             if (isSelectionMode) {
               provider.clearSelection();
             } else if (provider.canGoBack) {

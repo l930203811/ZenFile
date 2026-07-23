@@ -168,7 +168,6 @@ class LyricSearchService {
   static Future<List<LyricSearchResult>> search(String query) async {
     if (query.trim().isEmpty) return [];
 
-    final encodedQuery = Uri.encodeQueryComponent(query);
     final params = <String, String>{
       ..._commonParams(),
       'format': 'json',

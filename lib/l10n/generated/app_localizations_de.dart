@@ -1929,6 +1929,9 @@ class L10nDe extends L10n {
   String get apk6 => 'APK-Datei teilen';
 
   @override
+  String get copy_package_name => 'Paketnamen kopieren';
+
+  @override
   String get msga0b18169 => 'Sicherungsdatei teilen';
 
   @override
@@ -4355,26 +4358,29 @@ class L10nDe extends L10n {
 
   @override
   String get changelog_v1121_new_feature_1 =>
-      'Benutzerdefinierte Startseitenanzeige: Auf der Durchsuchen-Seite tippen Sie auf das Drei-Punkte-Menü eines Ordners und wählen \"Als Startseite festlegen\", oder halten Sie einen Ordner gedrückt und suchen Sie \"Als Startseite festlegen\" im \"Mehr\"-Menü. Im Dual-Fenster-Modus kann jedes Fenster unabhängig einen anderen Startpfad festlegen, was die Effizienz der Verwaltung mehrerer Verzeichnisse verbessert.';
+      'App-Verwaltung: Im Popup-Menü der App wurde die Option „Paketnamen kopieren“ hinzugefügt, mit der der Paketname per Fingertipp kopiert werden kann.';
 
   @override
   String get changelog_v1121_new_feature_2 =>
-      'WEB-Freigabe-Verbesserung: Unterstützt benutzerdefinierte Freigabepfade und behebt das vorherige Problem, bei dem nur Ordner durchsucht, aber keine Dateiinhalte angezeigt werden konnten. Fügt außerdem gängige Dateioperations-Schaltflächen wie Kopieren, Einfügen, Ausschneiden, Löschen und Umbenennen hinzu, was die Fernverwaltung bequemer macht.';
+      'Pfadleiste: Langes Drücken der Pfadleiste aktiviert den Bearbeitungsmodus und ermöglicht die Eingabe und Navigation zu einem angegebenen Pfad.';
 
   @override
-  String get changelog_v1121_new_feature_3 =>
-      'Remote-Cache-Bereinigung: Es wurde eine benutzerdefinierte Remote-Cache-Bereinigungsfunktion hinzugefügt, um den Speicherplatz flexibel zu verwalten.';
+  String get changelog_v1121_opt_title => 'Optimierungen';
+
+  @override
+  String get changelog_v1121_opt_1 =>
+      'Einige Backup-Symbole und redundanter Code wurden entfernt, um die App-Größe zu verringern und die Wartbarkeit des Codes zu verbessern.';
 
   @override
   String get changelog_v1121_bugfixes_title => 'Fehlerbehebungen';
 
   @override
   String get changelog_v1121_bugfix_1 =>
-      'Es wurde ein Problem behoben, bei dem der SMB-Client beim Zurückkehren aus einem beliebigen freigegebenen Verzeichnis ein leeres Verzeichnis anzeigte.';
+      'Behoben: Die globale Suche fand keine Dateien im data-Verzeichnis.';
 
   @override
   String get changelog_v1121_bugfix_2 =>
-      'Einige Probleme mit fest codiertem chinesischem Text in der Benutzeroberfläche wurden behoben, was die Anzeigekompatibilität in mehrsprachigen Umgebungen verbessert.';
+      'Behoben: Der „Deinstallieren“-Button im Popup der App-Verwaltung lief auf einigen Geräten über den unteren Bildschirmrand hinaus und ließ sich schwer antippen.';
 
   @override
   String get changelog_v1121_known_issues_title =>
@@ -4405,4 +4411,16 @@ class L10nDe extends L10n {
 
   @override
   String get msg_editor_modified => 'Geändert';
+
+  @override
+  String get go_to_path => 'Zum Pfad wechseln';
+
+  @override
+  String get copy_path => 'Pfad kopieren';
+
+  @override
+  String get enter_path_hint => 'Absoluten Pfad eingeben...';
+
+  @override
+  String get breadcrumb_context_title => 'Breadcrumb-Optionen';
 }

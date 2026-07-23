@@ -275,7 +275,6 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
   final GlobalKey _gridKey = GlobalKey();
   // 长按菜单→拖拽切换用
   Offset? _longPressOrigin;
-  String? _longPressLabelKey;
 
   // 标准媒体类别（有自定义扫描路径功能）
   static const _standardMediaCategories = [
@@ -692,7 +691,6 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                     return GestureDetector(
                       onLongPressStart: (details) {
                         _longPressOrigin = details.globalPosition;
-                        _longPressLabelKey = labelKey;
                         _showCategoryContextMenu(
                           position: details.globalPosition,
                           labelKey: labelKey,
@@ -726,7 +724,6 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                           _endDrag(context.read<MediaProvider>(), allCatMap);
                         }
                         _longPressOrigin = null;
-                        _longPressLabelKey = null;
                       },
                       child: Opacity(
                         opacity: isBeingDragged ? 0.3 : (isTarget ? 0.6 : 1.0),
@@ -1219,10 +1216,7 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                               final cat = categoriesMap[label];
                               if (cat == null) return const SizedBox.shrink(key: ValueKey('empty'));
 
-                              final icon = cat['icon'] as IconData;
-                              final color = cat['color'] as Color;
                               final isEnabled = activeCats.contains(label);
-                              final isCustom = cat['isCustom'] == true;
 
                               return Container(
                                 key: _getItemKey(label),

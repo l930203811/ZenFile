@@ -1,6 +1,5 @@
 import 'package:flutter/services.dart';
 import 'remote_client.dart';
-import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class SafRemoteClient extends RemoteClient {
   final String rootUri;

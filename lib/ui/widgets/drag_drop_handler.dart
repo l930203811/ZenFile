@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -40,69 +39,14 @@ class DragDropHandler extends StatefulWidget {
 
 class _DragDropHandlerState extends State<DragDropHandler> {
   bool _isDragOver = false;
-  bool _hasMoved = false;
   Timer? _hoverTimer;
   Timer? _scrollTimer;
-  Offset? _currentDragPosition;
 
   @override
   void dispose() {
     _hoverTimer?.cancel();
     _scrollTimer?.cancel();
     super.dispose();
-  }
-
-  void _startScrollTimerIfNeeded() {
-    if (_scrollTimer != null) return;
-    
-    _scrollTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
-      if (_currentDragPosition == null || !mounted) {
-        timer.cancel();
-        _scrollTimer = null;
-        return;
-      }
-      
-      final scrollable = Scrollable.maybeOf(context);
-      if (scrollable == null) {
-        timer.cancel();
-        _scrollTimer = null;
-        return;
-      }
-      
-      final renderBox = scrollable.context.findRenderObject() as RenderBox?;
-      if (renderBox == null) return;
-      
-      final scrollableHeight = renderBox.size.height;
-      final localY = renderBox.globalToLocal(_currentDragPosition!).dy;
-      
-      const double edgeThreshold = 70.0;
-      const double baseScrollSpeed = 16.0;
-      
-      if (localY < edgeThreshold && localY > 0) {
-        final fraction = (edgeThreshold - localY) / edgeThreshold;
-        final speed = baseScrollSpeed * fraction.clamp(0.2, 1.0);
-        final target = (scrollable.position.pixels - speed).clamp(
-          scrollable.position.minScrollExtent,
-          scrollable.position.maxScrollExtent,
-        );
-        if (target != scrollable.position.pixels) {
-          scrollable.position.jumpTo(target);
-        }
-      } else if (localY > scrollableHeight - edgeThreshold && localY < scrollableHeight) {
-        final fraction = (localY - (scrollableHeight - edgeThreshold)) / edgeThreshold;
-        final speed = baseScrollSpeed * fraction.clamp(0.2, 1.0);
-        final target = (scrollable.position.pixels + speed).clamp(
-          scrollable.position.minScrollExtent,
-          scrollable.position.maxScrollExtent,
-        );
-        if (target != scrollable.position.pixels) {
-          scrollable.position.jumpTo(target);
-        }
-      } else {
-        timer.cancel();
-        _scrollTimer = null;
-      }
-    });
   }
 
   @override

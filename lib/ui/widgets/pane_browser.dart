@@ -17,15 +17,12 @@ import 'drag_drop_action_dialog.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../../services/app_manager_service.dart';
 import '../../core/utils.dart';
-import 'file_item.dart';
-import 'folder_item.dart';
 import 'file_grid_item.dart';
 import 'folder_grid_item.dart';
 import 'drag_drop_handler.dart';
 import 'archive_type_icon.dart';
 import 'file_type_icon.dart';
 import 'restricted_folder_banner.dart';
-import 'selection_context_bottom_sheet.dart';
 import 'file_action_dialogs.dart';
 import 'create_archive_dialog.dart';
 import 'batch_rename_dialog.dart';
@@ -922,7 +919,6 @@ class _PaneBrowserState extends State<PaneBrowser> {
     final theme = Theme.of(context);
     final isHighlighted = provider.forceHighlightedPaths.contains(file.path) || (provider.enableFolderHighlight && provider.highlightedPaths.contains(file.path));
     final iconColor = FileUtils.getColorForFile(file.path, context);
-    final isArchive = FileUtils.isArchive(file.path);
 
     final itemLongPress = () {
       _activatePane(provider);
@@ -1256,7 +1252,6 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
       }
 
       // 生成缩略图
-      final provider = context.read<MediaProvider>();
       Uint8List? thumbBytes;
       if (isVideo) {
         thumbBytes = await MediaThumbnailService.generateVideoThumbnail(tempPath);

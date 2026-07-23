@@ -177,7 +177,6 @@ class BackupSettingsScreen extends StatelessWidget {
     required Color cardBg,
     required Color borderCol,
   }) {
-    final backupDir = Directory(SettingsBackupService.backupDirPath);
     final backupFile = File(SettingsBackupService.backupFilePath);
 
     return Card(

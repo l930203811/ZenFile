@@ -153,7 +153,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     final canPopHomeScreen = _currentIndex == 1 && !provider.isSelectionMode && provider.canGoBack;
 
     return PopScope(
-      canPop: canPopHomeScreen,
+      // 编辑路径态下禁止路由返回，交由下方 onPopInvoked 取消编辑并停留在浏览页
+      canPop: canPopHomeScreen && !provider.isPathEditing,
       onPopInvoked: (didPop) {
         if (didPop) return;
         // 抽屉打开时优先关闭抽屉
@@ -164,6 +165,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
         // 右侧菜单打开时优先关闭
         if (_scaffoldKey.currentState?.isEndDrawerOpen ?? false) {
           _scaffoldKey.currentState?.closeEndDrawer();
+          return;
+        }
+        // 浏览页路径栏处于编辑态时，返回键仅退出编辑并停留在浏览页（不切换标签页/不导航）
+        if (_currentIndex == 1 && provider.isPathEditing) {
+          provider.exitPathEditing();
           return;
         }
         // 浏览页有选中状态时，清除选中而非切换页面

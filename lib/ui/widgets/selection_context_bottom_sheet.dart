@@ -8,7 +8,6 @@ import '../../core/utils.dart';
 import 'selection_action_bar.dart'; // To access PropertiesModalDialog
 import 'file_action_dialogs.dart';
 import 'create_archive_dialog.dart';
-import 'package:share_plus/share_plus.dart';
 import 'batch_rename_dialog.dart';
 import '../../services/folder_share_service.dart';
 import '../../services/pin_service.dart';

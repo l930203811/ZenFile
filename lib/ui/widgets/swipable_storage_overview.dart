@@ -148,12 +148,10 @@ class _SwipableStorageOverviewState extends State<SwipableStorageOverview> {
                     : 0;
               }
 
-              final int freeBytes = totalBytes - usedBytes;
               final double usedPercentage = totalBytes > 0 ? (usedBytes / totalBytes) : 0.0;
 
               // Format with 2 decimals to display precise storage e.g. 6.22 GB free / 128.00 GB total
               final String totalStorageStr = FileUtils.formatBytes(totalBytes, 2);
-              final String freeStorageStr = FileUtils.formatBytes(freeBytes, 2);
 
               // Gradients & Colors tailored by storage type
               List<Color> gradientColors;

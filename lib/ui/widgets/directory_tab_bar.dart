@@ -103,26 +103,68 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
               },
             ),
           ),
+          // 多标签页按钮：长按/点击从顶部弹出菜单（复制 / 新建 / 关闭标签页）
           IconButton(
             constraints: const BoxConstraints(),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             icon: const Icon(Broken.add, size: 20),
-            tooltip: L10n.of(context).msgb52d4a73,
-            onPressed: () {
-              provider.addTab(provider.rootPath);
-              // 自动滚动到新标签页
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                scrollController?.animateTo(
-                  scrollController?.position.maxScrollExtent ?? 0,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeOut,
-                );
-              });
-            },
+            tooltip: L10n.of(context).msg47b760ed,
+            onPressed: () => _showTabActionsMenu(context, provider),
+            onLongPress: () => _showTabActionsMenu(context, provider),
           ),
         ],
       ),
     );
+  }
+
+  /// 多标签页菜单：从顶部弹出，含 复制 / 新建 / 关闭标签页（关闭项右侧显示“双击关闭”提示）
+  Future<void> _showTabActionsMenu(BuildContext context, FileManagerProvider provider) async {
+    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    final size = overlay.size;
+    // 锚定在顶部右侧，菜单从顶部向下弹出
+    final position = RelativeRect.fromLTRB(size.width - 8, 0, size.width, 0);
+    final value = await showMenu<String>(
+      context: context,
+      position: position,
+      items: [
+        PopupMenuItem(
+          value: 'copy',
+          child: Row(children: [
+            const Icon(Broken.copy, size: 20),
+            const SizedBox(width: 12),
+            Text(L10n.of(context).msg4e9c344a),
+          ]),
+        ),
+        PopupMenuItem(
+          value: 'new',
+          child: Row(children: [
+            const Icon(Broken.add, size: 20),
+            const SizedBox(width: 12),
+            Text(L10n.of(context).msgb52d4a73),
+          ]),
+        ),
+        PopupMenuItem(
+          value: 'close',
+          child: Row(children: [
+            const Icon(Broken.close_circle, size: 20),
+            const SizedBox(width: 12),
+            Text(L10n.of(context).ui_close_tab),
+            const Spacer(),
+            Text(
+              L10n.of(context).msgd78603eb,
+              style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
+            ),
+          ]),
+        ),
+      ],
+    );
+    if (value == 'copy') {
+      provider.duplicateActiveTab();
+    } else if (value == 'new') {
+      provider.addTab(provider.rootPath);
+    } else if (value == 'close') {
+      if (provider.tabs.length > 1) provider.closeTab(provider.activeTabIndex);
+    }
   }
 
   void _showCloseTabSheet(BuildContext context, FileManagerProvider provider, int index) {
@@ -175,13 +217,6 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
                         style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
-                      ),
-                    ),
-                    Text(
-                      L10n.of(context).msgd78603eb,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.4),
-                        fontSize: 11,
                       ),
                     ),
                   ],

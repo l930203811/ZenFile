@@ -3508,6 +3508,12 @@ abstract class L10n {
   /// **'分享APK文件'**
   String get apk6;
 
+  /// No description provided for @copy_package_name.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制包名'**
+  String get copy_package_name;
+
   /// ui\screens\storage_analyzer\widgets\backup_list_tab.dart
   ///
   /// In zh, this message translates to:
@@ -7807,20 +7813,26 @@ abstract class L10n {
   /// ui\screens\about_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'自定义首页显示：浏览页中，点击文件夹的三点菜单选择\"设为首页\"，或长按文件夹后在\"更多\"菜单中找到\"设为首页\"选项。双窗口模式下，两个窗口可独立设置不同的首页路径，提升多目录管理效率。'**
+  /// **'应用管理：点击应用弹窗新增「复制包名」选项，可一键复制应用包名。'**
   String get changelog_v1121_new_feature_1;
 
   /// ui\screens\about_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'WEB共享增强：支持自定义共享路径，修复了此前仅能浏览文件夹而无法查看文件内容的问题。同时新增复制、粘贴、剪切、删除、重命名等常用文件操作按钮，远程管理更便捷。'**
+  /// **'路径栏：长按路径栏进入编辑模式，支持输入并跳转到指定路径。'**
   String get changelog_v1121_new_feature_2;
 
-  /// ui\screens\about_screen.dart
+  /// Changelog v1.1.22 optimizations section title
   ///
   /// In zh, this message translates to:
-  /// **'远程缓存清理：新增自定义清理远程缓存功能，可灵活管理存储空间。'**
-  String get changelog_v1121_new_feature_3;
+  /// **'优化'**
+  String get changelog_v1121_opt_title;
+
+  /// Changelog v1.1.22 optimization item 1
+  ///
+  /// In zh, this message translates to:
+  /// **'移除部分备用图标与冗余代码，减小安装包体积并提升代码可维护性。'**
+  String get changelog_v1121_opt_1;
 
   /// ui\screens\about_screen.dart
   ///
@@ -7831,13 +7843,13 @@ abstract class L10n {
   /// ui\screens\about_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'修复 SMB 客户端进入任意共享目录后返回时目录显示为空的问题。'**
+  /// **'修复全局搜索无法检索 data 目录下文件的问题。'**
   String get changelog_v1121_bugfix_1;
 
   /// ui\screens\about_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'修复部分界面存在中文硬编码的问题，提升多语言环境下的显示兼容性。'**
+  /// **'修复应用管理弹窗中「卸载应用」按钮在部分机型上溢出屏幕底部、难以点击的问题。'**
   String get changelog_v1121_bugfix_2;
 
   /// ui\screens\about_screen.dart
@@ -7887,6 +7899,30 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'已修改'**
   String get msg_editor_modified;
+
+  /// No description provided for @go_to_path.
+  ///
+  /// In zh, this message translates to:
+  /// **'跳转路径'**
+  String get go_to_path;
+
+  /// No description provided for @copy_path.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制路径'**
+  String get copy_path;
+
+  /// No description provided for @enter_path_hint.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入绝对路径...'**
+  String get enter_path_hint;
+
+  /// No description provided for @breadcrumb_context_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'面包屑选项'**
+  String get breadcrumb_context_title;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

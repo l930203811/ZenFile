@@ -261,11 +261,6 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
     }
   }
 
-  void _enterEditMode() {
-    _undoStack.add(_textController.text);
-    setState(() => _isEditing = true);
-  }
-
   void _showPdfSettings() {
     showModalBottomSheet(
       context: context,

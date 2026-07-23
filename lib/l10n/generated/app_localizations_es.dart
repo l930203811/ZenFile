@@ -1940,6 +1940,9 @@ class L10nEs extends L10n {
   String get apk6 => 'Compartir Archivo APK';
 
   @override
+  String get copy_package_name => 'Copiar nombre del paquete';
+
+  @override
   String get msga0b18169 => 'Compartir Archivo de Respaldo';
 
   @override
@@ -4379,26 +4382,29 @@ class L10nEs extends L10n {
 
   @override
   String get changelog_v1121_new_feature_1 =>
-      'Pantalla de inicio personalizada: en la página de exploración, toca el menú de tres puntos de una carpeta y selecciona \"Establecer como inicio\", o mantén presionada una carpeta y busca \"Establecer como inicio\" en el menú \"Más\". En el modo de doble ventana, cada ventana puede establecer una ruta de inicio diferente de forma independiente, mejorando la eficiencia de la gestión de múltiples directorios.';
+      'Gestión de aplicaciones: se añadió la opción ‘Copiar nombre de paquete’ en el menú emergente de la aplicación, que permite copiar el nombre del paquete con un toque.';
 
   @override
   String get changelog_v1121_new_feature_2 =>
-      'Mejora de compartir WEB: admite rutas compartidas personalizadas, solucionando el problema anterior de que solo se podían explorar carpetas pero no ver el contenido de los archivos. Además, se agregan botones de operaciones de archivos comunes como copiar, pegar, cortar, eliminar y renombrar, haciendo que la gestión remota sea más conveniente.';
+      'Barra de ruta: mantener pulsada la barra de ruta entra en modo edición, permitiendo introducir y navegar a una ruta especificada.';
 
   @override
-  String get changelog_v1121_new_feature_3 =>
-      'Limpieza de caché remota: se agregó la función de limpieza personalizada de caché remota para gestionar el espacio de almacenamiento de forma flexible.';
+  String get changelog_v1121_opt_title => 'Optimizaciones';
+
+  @override
+  String get changelog_v1121_opt_1 =>
+      'Se eliminaron algunos iconos de respaldo y código redundante para reducir el tamaño de la aplicación y mejorar la mantenibilidad del código.';
 
   @override
   String get changelog_v1121_bugfixes_title => 'Correcciones de errores';
 
   @override
   String get changelog_v1121_bugfix_1 =>
-      'Se corrigió el problema donde el cliente SMB mostraba un directorio vacío al regresar de cualquier directorio compartido.';
+      'Se corrigió el problema por el que la búsqueda global no encontraba archivos en el directorio data.';
 
   @override
   String get changelog_v1121_bugfix_2 =>
-      'Se corrigieron algunos problemas de texto chino codificado de forma rígida en la interfaz, mejorando la compatibilidad de visualización en entornos multilingües.';
+      'Se corrigió el problema por el que el botón ‘Desinstalar’ en la ventana de gestión de aplicaciones se salía por la parte inferior de la pantalla en algunos dispositivos, dificultando su pulsación.';
 
   @override
   String get changelog_v1121_known_issues_title =>
@@ -4429,4 +4435,16 @@ class L10nEs extends L10n {
 
   @override
   String get msg_editor_modified => 'Modificado';
+
+  @override
+  String get go_to_path => 'Ir a la ruta';
+
+  @override
+  String get copy_path => 'Copiar ruta';
+
+  @override
+  String get enter_path_hint => 'Introducir ruta absoluta...';
+
+  @override
+  String get breadcrumb_context_title => 'Opciones de ruta';
 }

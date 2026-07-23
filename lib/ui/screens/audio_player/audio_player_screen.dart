@@ -8,7 +8,6 @@ import 'package:audio_service/audio_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart' as p;
-import 'package:mime/mime.dart';
 import '../../../core/icon_fonts/broken_icons.dart';
 import '../../../core/utils.dart';
 import '../../../services/audio_background_handler.dart';
@@ -17,7 +16,6 @@ import '../../../services/desktop_lyric_controller.dart';
 import '../../../services/preferences_service.dart';
 import '../../../services/lyric_parser.dart';
 import '../../../services/lyric_search_service.dart';
-import '../../../services/remote/remote_client.dart';
 import '../../../services/remote_streaming_service.dart';
 import '../../../services/network_connections_service.dart';
 import '../../../providers/file_manager_provider.dart';
@@ -130,13 +128,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   bool _desktopLyricEnabled = false;
   // 标记用户已跳转系统设置请求悬浮窗权限，等待返回应用时复检
   bool _desktopLyricPendingPermission = false;
-  String? _lastDesktopLyricText; // 上一次推送给悬浮窗的文本，用于节流
-  int _lastDesktopHighlightLen = -1; // 上一次推送给悬浮窗的高亮字符数
   StreamSubscription<void>? _desktopLyricClickSub;
-  // 心跳计数器：每 N 次更新检查一次原生层 isShowing，发现消失则自动恢复
-  int _desktopLyricHeartbeatCounter = 0;
-  static const int _desktopLyricHeartbeatInterval = 20; // 约 10 秒检查一次（按 500ms 更新周期）
-  bool _desktopLyricRecovering = false; // 防止恢复逻辑重入
 
   // 远程流式播放
   String? _currentStreamUrl; // 当前远程流式播放的代理 URL
@@ -463,10 +455,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     // 清理桌面歌词悬浮窗
     _desktopLyricClickSub?.cancel();
     _desktopLyricClickSub = null;
-    _lastDesktopLyricText = null;
-    _lastDesktopHighlightLen = -1;
-    _desktopLyricHeartbeatCounter = 0;
-    _desktopLyricRecovering = false;
     // 清理远程流式会话
     _stopCurrentStream();
     if (_isBackgroundMode) {
@@ -858,7 +846,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   /// 返回 [highlightColor, normalColor]。
   List<int> _getDesktopLyricColors() {
     final accent = Theme.of(context).colorScheme.primary;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     // 高亮色 = 主题主色（已唱部分）
     final highlightColor = accent.value;
     // 普通色 = 主题主色 35% 透明度（未唱部分）
@@ -888,8 +875,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     if (_desktopLyricEnabled) {
       DesktopLyricController.instance.stop();
       await DesktopLyricService.instance.hide();
-      _lastDesktopLyricText = null;
-      _lastDesktopHighlightLen = -1;
       setState(() => _desktopLyricEnabled = false);
       await PreferencesService.saveDesktopLyricEnabled(false);
       return;
@@ -985,69 +970,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     // 此方法保留用于向后兼容，未来可移除
   }
 
-  /// 检查悬浮窗是否仍显示，若已消失则自动恢复
-  Future<void> _checkAndRecoverDesktopLyric() async {
-    if (!_desktopLyricEnabled || _desktopLyricRecovering) return;
-    final stillShowing = await DesktopLyricService.instance.isShowing();
-    if (!stillShowing && _desktopLyricEnabled && mounted) {
-      _desktopLyricRecovering = true;
-      try {
-        await _enableDesktopLyric();
-      } finally {
-        _desktopLyricRecovering = false;
-      }
-    }
-  }
 
-  /// 计算桌面歌词悬浮窗的逐字高亮字符数
-  ///
-  /// - 若歌词行有逐字时间戳（word timestamps），则累加已唱字的字符数，
-  ///   并对当前正在唱的字按进度插值。
-  /// - 若无逐字时间戳，返回 0（不高亮）或全文高亮（由原生端控制）。
-  int _calcDesktopHighlightLen(LyricLine? line) {
-    if (line == null || !line.hasWordTimestamps || line.words == null) {
-      // 无逐字时间戳：如果当前行正在播放，全文高亮
-      return line != null ? line.text.length : 0;
-    }
-
-    final words = line.words!;
-    final posMs = position.inMilliseconds;
-    int charCount = 0;
-
-    for (int i = 0; i < words.length; i++) {
-      final word = words[i];
-      final wordTs = word.timestamp.inMilliseconds;
-
-      if (posMs < wordTs) {
-        // 当前字尚未开始
-        break;
-      }
-
-      // 当前字的持续时长
-      int wordDuration = 300; // 默认 300ms
-      if (i + 1 < words.length) {
-        final nextTs = words[i + 1].timestamp.inMilliseconds;
-        final gap = nextTs - wordTs;
-        if (gap > 0 && gap < 5000) {
-          wordDuration = gap;
-        }
-      }
-
-      final elapsed = posMs - wordTs;
-      final progress = (elapsed / wordDuration).clamp(0.0, 1.0);
-
-      if (progress >= 1.0) {
-        // 当前字已完全唱完
-        charCount += word.text.length;
-      } else {
-        // 当前字正在唱：按进度插值字符数
-        charCount += (word.text.length * progress).round();
-        break;
-      }
-    }
-
-    return charCount.clamp(0, line.text.length);
-  }
 
   /// 获取当前应显示的歌词行
   LyricLine? _getCurrentLyricLine() {

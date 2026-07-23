@@ -21,13 +21,6 @@ import '../../services/remote/saf_client.dart';
 import '../widgets/zenfile_drawer.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
-// Clipboard for remote→local operations
-class _RemoteClipboard {
-  final List<RemoteFileItem> items;
-  final bool isCut;
-
-  const _RemoteClipboard({required this.items, required this.isCut});
-}
 
 class RemoteExplorerScreen extends StatefulWidget {
   final NetworkConnectionModel connection;
@@ -508,7 +501,6 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) {
-        final theme = Theme.of(ctx);
         return AlertDialog(
           title: Text(L10n.of(context).msg4b342999, style: TextStyle(fontFamily: 'LexendDeca', fontWeight: FontWeight.bold)),
           content: Text('从服务器永久删除"${item.name}"？'),
@@ -606,7 +598,6 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
   void _showItemActions(RemoteFileItem item) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final provider = context.read<FileManagerProvider>();
 
     showModalBottomSheet(
       context: context,
@@ -840,8 +831,6 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
         drawer: ZenFileDrawer(
           width: MediaQuery.of(context).size.width * 0.675,
           toggleTheme: () {
-            final brightness = Theme.of(context).brightness;
-            final isDark = brightness == Brightness.dark;
             // 通知父级切换主题
           },
           onNavigateTab: (index) {
@@ -1392,49 +1381,6 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       _selectedPaths.clear();
       _selectedPaths.add(item.path);
     });
-  }
-
-  /// 批量下载选中的文件到设备
-  Future<void> _batchDownloadSelected() async {
-    if (_client == null || _selectedPaths.isEmpty) return;
-    final selectedItems = _items.where((item) => _selectedPaths.contains(item.path)).toList();
-    final localBase = '/storage/emulated/0/ZenFile';
-
-    setState(() {
-      _isTransferring = true;
-      _transferProgress = 0.0;
-      _transferLabel = '正在下载 ${selectedItems.length} 个文件...';
-    });
-
-    try {
-      int completed = 0;
-      for (final item in selectedItems) {
-        _transferFileName = item.name;
-        final localPath = '$localBase/${item.path.replaceAll('/', '_')}';
-        final localFile = File(localPath);
-        await localFile.parent.create(recursive: true);
-        await _client!.downloadFile(item.path, localPath, (_) {});
-        completed++;
-        setState(() => _transferProgress = completed / selectedItems.length);
-      }
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('已下载 ${completed} 个文件'), behavior: SnackBarBehavior.floating),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        _showSnack(L10n.of(context).e19(e), isError: true);
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isTransferring = false;
-          _isSelectionMode = false;
-          _selectedPaths.clear();
-        });
-      }
-    }
   }
 
   /// 批量复制选中的远程文件到远程剪贴板

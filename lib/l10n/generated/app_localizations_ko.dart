@@ -1821,6 +1821,9 @@ class L10nKo extends L10n {
   String get apk6 => 'APK 파일 공유';
 
   @override
+  String get copy_package_name => '패키지 이름 복사';
+
+  @override
   String get msga0b18169 => '백업 파일 공유';
 
   @override
@@ -4185,26 +4188,29 @@ class L10nKo extends L10n {
 
   @override
   String get changelog_v1121_new_feature_1 =>
-      '사용자 정의 홈 페이지 표시: 탐색 페이지에서 폴더의 세 점 메뉴를 탭하여 \"홈으로 설정\"을 선택하거나, 폴더를 길게 누른 후 \"더보기\" 메뉴에서 \"홈으로 설정\"을 찾으세요. 이중 창 모드에서는 두 창이 서로 다른 홈 경로를 독립적으로 설정할 수 있어 여러 디렉토리 관리 효율성이 향상됩니다.';
+      '앱 관리: 앱 팝업 메뉴에 「패키지 이름 복사」 옵션을 추가하여 앱 패키지 이름을 한 번의 탭으로 복사할 수 있습니다.';
 
   @override
   String get changelog_v1121_new_feature_2 =>
-      'WEB 공유 강화: 사용자 정의 공유 경로를 지원하고, 이전에는 폴드만 탐색할 수 있었던 파일 내용을 볼 수 없던 문제를 수정했습니다. 또한 복사, 붙여넣기, 잘라내기, 삭제, 이름 바꾸기 등의 일반적인 파일 작업 버튼을 추가하여 원격 관리를 더욱 편리하게 만들었습니다.';
+      '경로 표시줄: 경로 표시줄을 길게 누르면 편집 모드로 전환되며, 지정한 경로를 입력해 이동할 수 있습니다.';
 
   @override
-  String get changelog_v1121_new_feature_3 =>
-      '원격 캐시 정리: 사용자 정의 원격 캐시 정리 기능을 추가하여 스토리지 공간을 유연하게 관리할 수 있습니다.';
+  String get changelog_v1121_opt_title => '최적화';
+
+  @override
+  String get changelog_v1121_opt_1 =>
+      '일부 백업 아이콘과 중복 코드를 제거하여 앱 크기를 줄이고 코드 유지보수성을 향상했습니다.';
 
   @override
   String get changelog_v1121_bugfixes_title => '버그 수정';
 
   @override
   String get changelog_v1121_bugfix_1 =>
-      'SMB 클라이언트가 공유 디렉토리에 들어갔다가 돌아올 때 디렉토리가 비어 있게 표시되는 문제를 수정했습니다.';
+      '전역 검색에서 data 디렉터리 내 파일을 찾지 못하던 문제를 수정했습니다.';
 
   @override
   String get changelog_v1121_bugfix_2 =>
-      '일부 인터페이스에 중국어 하드코딩이 있는 문제를 수정하여 다국어 환경에서의 표시 호환성을 향상시켰습니다.';
+      '일부 기기에서 앱 관리 팝업의 「제거」 버튼이 화면 하단을 벗어나 탭하기 어려웠던 문제를 수정했습니다.';
 
   @override
   String get changelog_v1121_known_issues_title => '알려진 문제 (다음 버전에서 수정 예정)';
@@ -4233,4 +4239,16 @@ class L10nKo extends L10n {
 
   @override
   String get msg_editor_modified => '수정됨';
+
+  @override
+  String get go_to_path => '경로로 이동';
+
+  @override
+  String get copy_path => '경로 복사';
+
+  @override
+  String get enter_path_hint => '절대 경로 입력...';
+
+  @override
+  String get breadcrumb_context_title => '경로 탐색 옵션';
 }

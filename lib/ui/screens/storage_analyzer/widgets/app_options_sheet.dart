@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/icon_fonts/broken_icons.dart';
 import '../../../../models/app_info_model.dart';
@@ -35,10 +36,12 @@ class AppOptionsSheet extends StatelessWidget {
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
       child: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        top: false,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             Row(
               children: [
                 Container(
@@ -107,6 +110,23 @@ class AppOptionsSheet extends StatelessWidget {
               onTap: () {
                 Navigator.pop(context);
                 AppManagerService.launchApp(app.packageName);
+              },
+            ),
+            _buildBottomSheetActionItem(
+              theme: theme,
+              icon: Icons.copy_rounded,
+              label: L10n.of(context).copy_package_name,
+              color: Colors.cyan,
+              onTap: () {
+                Navigator.pop(context);
+                Clipboard.setData(ClipboardData(text: app.packageName));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('${L10n.of(context).copy_package_name}: ${app.packageName}'),
+                    behavior: SnackBarBehavior.floating,
+                    duration: const Duration(seconds: 1),
+                  ),
+                );
               },
             ),
             _buildBottomSheetActionItem(
@@ -219,6 +239,7 @@ class AppOptionsSheet extends StatelessWidget {
                 },
               ),
           ],
+        ),
         ),
       ),
     );

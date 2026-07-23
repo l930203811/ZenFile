@@ -1899,6 +1899,9 @@ class L10nEn extends L10n {
   String get apk6 => 'Share APK File';
 
   @override
+  String get copy_package_name => 'Copy package name';
+
+  @override
   String get msga0b18169 => 'Share Backup File';
 
   @override
@@ -4314,26 +4317,29 @@ class L10nEn extends L10n {
 
   @override
   String get changelog_v1121_new_feature_1 =>
-      'Custom Home Page Display: In the browse page, tap the three-dot menu of a folder and select \"Set as Home\", or long-press a folder and find \"Set as Home\" in the \"More\" menu. In dual-window mode, each window can independently set a different home path, improving multi-directory management efficiency.';
+      'App Management: Added a ‘Copy Package Name’ option in the app popup menu, allowing one-tap copy of the app\'s package name.';
 
   @override
   String get changelog_v1121_new_feature_2 =>
-      'WEB Sharing Enhancement: Supports custom shared paths, fixing the previous issue where only folders could be browsed but file contents could not be viewed. Also adds common file operation buttons such as copy, paste, cut, delete, and rename, making remote management more convenient.';
+      'Path bar: Long-press the path bar to enter edit mode, allowing you to input and navigate to a specified path.';
 
   @override
-  String get changelog_v1121_new_feature_3 =>
-      'Remote Cache Cleanup: Added custom remote cache cleanup function for flexible storage space management.';
+  String get changelog_v1121_opt_title => 'Optimizations';
+
+  @override
+  String get changelog_v1121_opt_1 =>
+      'Removed some backup icons and redundant code to reduce the app size and improve code maintainability.';
 
   @override
   String get changelog_v1121_bugfixes_title => 'Bug Fixes';
 
   @override
   String get changelog_v1121_bugfix_1 =>
-      'Fixed the issue where the SMB client would show an empty directory when returning from any shared directory.';
+      'Fixed the issue where the global search could not find files in the data directory.';
 
   @override
   String get changelog_v1121_bugfix_2 =>
-      'Fixed some interface hardcoded Chinese text issues, improving display compatibility in multilingual environments.';
+      'Fixed the issue where the ‘Uninstall’ button in the App Management popup overflowed the bottom of the screen on some devices, making it hard to tap.';
 
   @override
   String get changelog_v1121_known_issues_title =>
@@ -4364,4 +4370,16 @@ class L10nEn extends L10n {
 
   @override
   String get msg_editor_modified => 'Modified';
+
+  @override
+  String get go_to_path => 'Go to path';
+
+  @override
+  String get copy_path => 'Copy path';
+
+  @override
+  String get enter_path_hint => 'Enter absolute path...';
+
+  @override
+  String get breadcrumb_context_title => 'Breadcrumb Options';
 }

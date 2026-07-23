@@ -1,4 +1,3 @@
-import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 import 'dart:io';
 import 'package:flutter/material.dart';
