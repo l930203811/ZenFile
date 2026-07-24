@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import '../models/file_item_model.dart';
@@ -1783,6 +1784,21 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   Future<void> init() async {
+    // 清除应用数据后权限状态可能不一致：若缺少“所有文件管理”权限，
+    // 主动请求一次（与首次安装行为一致），避免后续 loadDirectory 因无权限访问而失败。
+    if (Platform.isAndroid) {
+      try {
+        if (!await Permission.manageExternalStorage.isGranted) {
+          final status = await Permission.manageExternalStorage.request();
+          if (!status.isGranted) {
+            debugPrint('[ZenFile] init: 存储权限未授予，目录加载可能受限');
+          }
+        }
+      } catch (e) {
+        debugPrint('[ZenFile] init 请求存储权限失败: $e');
+      }
+    }
+
     String initialPath = '/';
     if (Platform.isAndroid) {
       initialPath = '/storage/emulated/0';
@@ -1873,10 +1889,20 @@ class FileManagerProvider extends ChangeNotifier {
 
     await _detectStorageVolumes();
     final path0 = _tabs.isNotEmpty ? _tabs[0].currentPath : (homeLeft ?? initialPath);
-    await loadDirectory(path0, showLoading: false);
+    // 清除应用数据后权限状态可能不一致（系统显示已授权但实际被拒），
+    // 直接 loadDirectory 会抛异常导致闪退。这里做保护：加载失败仅记录，不崩溃。
+    try {
+      await loadDirectory(path0, showLoading: false);
+    } catch (e) {
+      debugPrint('[ZenFile] init loadDirectory 失败 (path=$path0): $e');
+    }
     if (_enableSplitScreen) {
       final path1 = _tabs.length > 1 ? _tabs[1].currentPath : (homeRight ?? initialPath);
-      await loadDirectoryForTab(1, path1, showLoading: false);
+      try {
+        await loadDirectoryForTab(1, path1, showLoading: false);
+      } catch (e) {
+        debugPrint('[ZenFile] init loadDirectoryForTab 失败 (path=$path1): $e');
+      }
     }
   }
 

@@ -285,6 +285,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
 
   void _applySubtitle(String subtitlePath) {
     try {
+      final platform = player.platform;
+      if (platform is NativePlayer) {
+        // 每次（重新）加载字幕轨后重新声明覆盖，确保字号/位置等样式真正生效
+        platform.setProperty('sub-ass-override', 'force');
+      }
       player.setSubtitleTrack(
         SubtitleTrack.uri(subtitlePath, title: 'External'),
       );
@@ -656,10 +661,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     try {
       final platform = player.platform;
       if (platform is NativePlayer) {
+        // 仅使用 sub-font-size 设置绝对字号。之前同时设置 sub-scale 会导致
+        // SRT 双重缩放、ASS 因内嵌样式被忽略而“大小不生效”，故移除 sub-scale。
         platform.setProperty('sub-font-size', size.round().toString());
-        // 同时设置 sub-scale 以确保字幕大小变化可见
-        // sub-font-size 单独在部分设备/字幕格式上可能不生效
-        platform.setProperty('sub-scale', (size / 24).toStringAsFixed(2));
       }
     } catch (e) {
       debugPrint('设置字幕大小失败: $e');

@@ -171,20 +171,31 @@ class AppOptionsSheet extends StatelessWidget {
                   ),
                 );
 
-                // 执行备份
-                final backupPath = await AppManagerService.backupApp(app);
-
-                // 关闭加载对话框（使用 rootNavigator）
-                rootNavigator.pop();
+                // 执行备份。
+                // 大 APK 时原生拷贝可能长时间不返回结果（实际仍在后台进行），
+                // 导致对话框一直卡在“执行中”。这里用 try/finally 保证对话框必定关闭，
+                // 并以 10 分钟兜底超时，避免 UI 永久卡死（与 native 端超时一致）。
+                String? backupPath;
+                try {
+                  backupPath = await AppManagerService.backupApp(app)
+                      .timeout(const Duration(minutes: 10));
+                } catch (e) {
+                  debugPrint('备份等待超时或异常（备份可能仍在后台进行）: $e');
+                  backupPath = null;
+                } finally {
+                  // 无论如何都关闭“执行中”对话框
+                  if (rootNavigator.canPop()) rootNavigator.pop();
+                }
 
                 if (backupPath != null) {
+                  final String path = backupPath;
                   // 备份成功，显示路径并询问是否打开目录
                   final openFolder = await showDialog<bool>(
                     context: context,
                     useRootNavigator: true,
                     builder: (ctx) => AlertDialog(
                       title: Text(l10n.ui_backup_apk_open_folder),
-                      content: Text(l10n.ui_backup_apk_success_with_path(backupPath)),
+                      content: Text(l10n.ui_backup_apk_success_with_path(path)),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(ctx, false),
@@ -198,10 +209,10 @@ class AppOptionsSheet extends StatelessWidget {
                     ),
                   );
                   if (openFolder == true) {
-                    final dirPath = backupPath.substring(0, backupPath.lastIndexOf('/'));
+                    final dirPath = path.substring(0, path.lastIndexOf('/'));
                     navigator.popUntil((route) => route.isFirst);
                     Future.delayed(const Duration(milliseconds: 200), () {
-                      provider.setPendingBrowseNavigation(dirPath, [backupPath]);
+                      provider.setPendingBrowseNavigation(dirPath, [path]);
                       provider.setNavigateToBrowseTab(true);
                     });
                   }

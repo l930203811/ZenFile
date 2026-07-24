@@ -237,6 +237,22 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
 
     // 非首次启动：正常检查权限
     await _checkStoragePermission();
+    // 清除应用数据后，系统可能仍显示“所有文件管理”已授权、但实际访问被拒
+    // （权限状态不一致），导致后续 loadDirectory 直接抛异常闪退。
+    // 与首次启动流程一致：若权限显示已授予，重新 request() 以激活，确保真正生效。
+    if (Platform.isAndroid) {
+      try {
+        final manageGranted = await Permission.manageExternalStorage.isGranted;
+        if (manageGranted) {
+          final status = await Permission.manageExternalStorage.request();
+          if (!status.isGranted && mounted) {
+            setState(() => _hasPermission = false);
+          }
+        }
+      } catch (e) {
+        debugPrint('[ZenFile] 存储权限重新激活失败: $e');
+      }
+    }
     // Only run cache cleanup and intent observer after permission is granted
     if (_hasPermission == true) {
       _migrateOldCacheDir();

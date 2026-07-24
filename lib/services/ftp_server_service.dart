@@ -519,7 +519,12 @@ class FtpSession {
     }
     
     try {
-      String listPath = arg.isEmpty ? currentDir : arg;
+      // FTP 客户端常在 LIST 后附带参数（如 "LIST -la" / "LIST -al"），
+      // 这些以 "-" 开头的标志会被误当作路径，拼接后得到不存在的目录而返回空列表。
+      // 这里剥离所有以 "-" 开头的参数，仅保留真正的路径参数。
+      final argTokens = arg.split(' ').where((t) => t.trim().isNotEmpty).toList();
+      final pathTokens = argTokens.where((t) => !t.startsWith('-')).toList();
+      String listPath = pathTokens.isEmpty ? currentDir : pathTokens.join(' ');
       final targetPath = _getAbsolutePath(listPath);
       final dir = Directory(targetPath);
       
