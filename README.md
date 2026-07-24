@@ -2,8 +2,7 @@
 
 # ZenFile
 
-A beautifully crafted, open-source file manager and offline media center for Android. Built with Flutter for极致性能 and stunning glassmorphism aesthetics.
-
+A beautifully crafted, open-source file manager and offline media center for Android. Built with Flutter to deliver ultimate performance and stunning glassmorphism aesthetics.
 > **Note**: This project is a fork of [Senzme/NFile](https://github.com/Senzme/NFile). Thanks to the original author!
 
 ---
@@ -15,6 +14,7 @@ A beautifully crafted, open-source file manager and offline media center for And
 ✨ New Features
 
 · App Management: Added a ‘Copy Package Name’ option in the app popup menu, allowing one-tap copy of the app's package name.
+
 · Path bar: Long-press the path bar to enter edit mode, allowing you to input and navigate to a specified path.
 
 🔧 Optimizations
@@ -24,6 +24,7 @@ A beautifully crafted, open-source file manager and offline media center for And
 🐛 Bug Fixes
 
 · Fixed the issue where the global search could not find files in the data directory.
+
 · Fixed the issue where the ‘Uninstall’ button in the App Management popup overflowed the bottom of the screen on some devices, making it hard to tap.
 
 ⚠️ Known Issues (to be fixed in the next version)
