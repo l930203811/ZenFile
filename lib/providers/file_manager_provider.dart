@@ -1678,6 +1678,9 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   void setRootPath(String path) {
+    // 选择本地根目录即意味着退出远程浏览模式，避免本地路径被误路由到远程客户端
+    // （曾导致“返回根目录显示空目录，重启才恢复”的问题）。
+    if (_tabs.isNotEmpty) exitRemoteMode();
     _rootPath = path;
     if (_tabs.isNotEmpty) {
       activeTab.currentPath = path;
@@ -1813,6 +1816,7 @@ class FileManagerProvider extends ChangeNotifier {
       _rootPath = initialPath;
     }
 
+    try {
     final homeLeft = PreferencesService.getHomeDirectoryLeft();
     final homeRight = PreferencesService.getHomeDirectoryRight();
 
@@ -1904,6 +1908,13 @@ class FileManagerProvider extends ChangeNotifier {
         debugPrint('[ZenFile] init loadDirectoryForTab 失败 (path=$path1): $e');
       }
     }
+    } catch (e) {
+      // 清除应用数据后各类偏好/存储状态可能不一致，任何异常都绝不让启动闪退：
+      // 退化为单个本地 tab，由 loadDirectory 的逐次保护保证后续可用。
+      debugPrint('[ZenFile] init 恢复 tab 异常，使用默认本地 tab: $e');
+      _tabs = [FolderTab(id: DateTime.now().millisecondsSinceEpoch.toString(), currentPath: initialPath)];
+      _activeTabIndex = 0;
+    }
   }
 
   bool isRestrictedPath(String path) {
@@ -1948,6 +1959,21 @@ class FileManagerProvider extends ChangeNotifier {
       notifyListeners();
       await loadDirectory(currentPath, showLoading: true);
     }
+  }
+
+  /// 退出当前激活 tab 的远程浏览模式，复位为本地浏览。
+  /// 当显式选择本地存储卷/根目录时调用，避免本地路径被误路由到远程客户端，
+  /// 导致 loadDirectory 进入远程分支返回空列表（即“返回根目录显示空目录”问题）。
+  void exitRemoteMode() {
+    final tab = activeTab;
+    if (!tab.isRemote) return;
+    try {
+      tab.remoteClient?.disconnect();
+    } catch (_) {}
+    tab.remoteClient = null;
+    tab.remoteConnection = null;
+    tab.isRemote = false;
+    notifyListeners();
   }
 
   Future<void> loadDirectory(String path, {bool showLoading = true, bool clearCache = false, bool recordHistory = true, bool forceRefresh = false}) async {

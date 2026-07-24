@@ -299,6 +299,12 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       _applySubtitleFontSize(_subtitleFontSize);
       _applySubtitlePosition(_subtitlePosition);
       _applySubtitleBackground();
+      // 字幕轨刚加载时 mpv 可能尚未应用样式，延迟一帧重新应用，确保大小/位置生效
+      Future.microtask(() {
+        if (!mounted) return;
+        _applySubtitleFontSize(_subtitleFontSize);
+        _applySubtitlePosition(_subtitlePosition);
+      });
     } catch (e) {
       debugPrint('应用字幕失败: $e');
     }
@@ -316,6 +322,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         _applySubtitleFontSize(_subtitleFontSize);
         _applySubtitlePosition(_subtitlePosition);
         _applySubtitleBackground();
+        Future.microtask(() {
+          if (!mounted) return;
+          _applySubtitleFontSize(_subtitleFontSize);
+          _applySubtitlePosition(_subtitlePosition);
+        });
       } else {
         player.setSubtitleTrack(SubtitleTrack.no());
       }

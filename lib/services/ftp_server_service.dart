@@ -585,7 +585,14 @@ class FtpSession {
           }
         }
       } catch (e) {
-        if (kDebugMode) print('FTP LIST read error: $e');
+        // 列出目录失败（常见原因：受限存储无读取权限）不应静默返回空列表，
+        // 否则客户端看到“空目录”。改为返回错误响应并始终记录，让问题可见。
+        print('[ZenFile] FTP LIST 读取失败 (${targetPath}): $e');
+        try {
+          sendResponse('550 Failed to list directory: $e');
+          await dataSocket.close();
+        } catch (_) {}
+        return;
       }
       
       dataSocket.write(buffer.toString());
