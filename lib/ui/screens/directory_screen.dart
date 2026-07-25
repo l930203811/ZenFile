@@ -445,6 +445,12 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
               PopupMenuItem(value: 'favorite', child: Row(children: [Icon(Broken.folder_favorite, size: 20), SizedBox(width: 12), Text(L10n.of(context).ui_new_favorite, style: TextStyle(fontWeight: FontWeight.w600))])),
             ],
           ),
+          // 复制标签页
+          IconButton(
+            icon: Icon(Broken.copy, color: theme.colorScheme.primary),
+            tooltip: L10n.of(context).msg4e9c344a,
+            onPressed: () => provider.duplicateActiveTab(),
+          ),
           // 向上（返回上一层路径）
           IconButton(
             icon: Icon(
