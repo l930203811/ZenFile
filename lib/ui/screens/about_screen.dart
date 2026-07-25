@@ -754,6 +754,14 @@ class AboutZenFileScreen extends StatelessWidget {
           ),
           gap(14),
 
+          // ── 新增功能 ──
+          Text('✨ 新增功能', style: sectionStyle),
+          gap(4),
+          bulletText('应用管理：点击应用弹窗新增「复制包名」选项，可一键复制应用包名。'),
+          gap(6),
+          bulletText('路径栏：长按路径栏进入编辑模式，支持输入并跳转到指定路径。'),
+          gap(14),
+
           // ── 优化 ──
           Text('🔧 优化', style: sectionStyle),
           gap(4),
@@ -767,6 +775,10 @@ class AboutZenFileScreen extends StatelessWidget {
           // ── 问题修复 ──
           Text('🐛 问题修复', style: sectionStyle),
           gap(4),
+          bulletText('修复全局搜索无法检索 data 目录下文件的问题。'),
+          gap(6),
+          bulletText('修复应用管理弹窗中「卸载应用」按钮在部分机型上溢出屏幕底部、难以点击的问题。'),
+          gap(6),
           bulletText('修复浏览远程目录时返回本地空目录的问题。'),
           gap(6),
           bulletText('修复列表视图下视频缩略图不显示的问题（网格视图原本已正常显示）。'),
