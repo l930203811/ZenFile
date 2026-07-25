@@ -9,39 +9,35 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 ## 🚀 What's New in v1.1.23
 
----
+### ✨ New Features
 
-✨ New Features
+- App Management: Added a 'Copy Package Name' option in the app popup menu, allowing one-tap copy of the app's package name.
+- Path bar: Long-press the path bar to enter edit mode, allowing you to input and navigate to a specified path.
 
-· App Management: Added a 'Copy Package Name' option in the app popup menu, allowing one-tap copy of the app's package name.
+### 🔧 Optimizations
 
-· Path bar: Long-press the path bar to enter edit mode, allowing you to input and navigate to a specified path.
+- Category media browsing (images, videos, audio, screenshots) now uses recursive filesystem scanning instead of system-level media library indexing (MediaStore). Category recognition is now more accurate and stable — files that are moved or renamed no longer disappear from their category. The scanning logic is unified with the Web Sharing page.
+- Video and audio thumbnails are now generated natively (via MediaMetadataRetriever) instead of relying on system media thumbnails.
+- Recycle Bin management is now unified: the enable switch and auto-delete duration setting were moved out of Settings into the Recycle Bin page (opened from Drawer → Local → Recycle Bin), so the toggle and the bin contents are managed in one place.
 
-🔧 Optimizations
+### 🐛 Bug Fixes
 
-· Category media browsing (images, videos, audio, screenshots) now uses recursive filesystem scanning instead of system-level media library indexing (MediaStore). Category recognition is now more accurate and stable — files that are moved or renamed no longer disappear from their category. The scanning logic is unified with the Web Sharing page.
-· Video and audio thumbnails are now generated natively (via MediaMetadataRetriever) instead of relying on system media thumbnails.
-· Recycle Bin management is now unified: the enable switch and auto-delete duration setting were moved out of Settings into the Recycle Bin page (opened from Drawer → Local → Recycle Bin), so the toggle and the bin contents are managed in one place.
+- Fixed the issue where the global search could not find files in the data directory.
+- Fixed the issue where the 'Uninstall' button in the App Management popup overflowed the bottom of the screen on some devices, making it hard to tap.
+- Fixed an issue where browsing a remote directory would return an empty local directory.
+- Fixed missing video thumbnails in list view (thumbnails already worked in grid view).
+- Fixed the "Select All" button failing to select all items after long-pressing to enter selection mode on category pages.
+- Improved selection highlighting on category pages: selected items now show a clear colored border and tinted background instead of only a small corner checkmark.
+- Fixed an issue where the app would crash on launch (at the language selection page) after clearing app data/cache. The system could report the all-files permission as granted while actual storage access was denied (permission state inconsistency); permission is now verified with a real directory probe before granting access.
+- Fixed an issue where backing up a large APK succeeded in the background but showed no completion dialog. The progress dialog now uses the root navigator's overlay context and is non-dismissible, so the success dialog always appears when the backup finishes.
+- Fixed external subtitle size and position not taking effect. External subtitles are now rendered via a Flutter overlay driven by parsed SRT/ASS cues, so the size and position sliders work reliably for all subtitle formats.
+- Improved online lyrics search: it now lists candidate songs so you can manually pick the correct one, avoiding wrong matches when songs share the same title but have different artists (previously it auto-matched the first result).
+- Fixed FTP sharing showing an empty directory to other clients after a successful connection. The PASV passive-mode response previously returned the server's anyIPv4 address (0.0.0.0), which a remote client cannot connect back to; it now returns a concrete, reachable LAN address (or loopback for same-device clients), so the directory listing is delivered correctly.
 
-🐛 Bug Fixes
+### ⚠️ Known Issues (to be fixed in the next version)
 
-· Fixed the issue where the global search could not find files in the data directory.
-· Fixed the issue where the 'Uninstall' button in the App Management popup overflowed the bottom of the screen on some devices, making it hard to tap.
-· Fixed an issue where browsing a remote directory would return an empty local directory.
-· Fixed missing video thumbnails in list view (thumbnails already worked in grid view).
-· Fixed the "Select All" button failing to select all items after long-pressing to enter selection mode on category pages.
-· Improved selection highlighting on category pages: selected items now show a clear colored border and tinted background instead of only a small corner checkmark.
-· Fixed an issue where the app would crash on launch (at the language selection page) after clearing app data/cache. The system could report the all-files permission as granted while actual storage access was denied (permission state inconsistency); permission is now verified with a real directory probe before granting access.
-· Fixed an issue where backing up a large APK succeeded in the background but showed no completion dialog. The progress dialog now uses the root navigator's overlay context and is non-dismissible, so the success dialog always appears when the backup finishes.
-· Fixed external subtitle size and position not taking effect. External subtitles are now rendered via a Flutter overlay driven by parsed SRT/ASS cues, so the size and position sliders work reliably for all subtitle formats.
-· Improved online lyrics search: it now lists candidate songs so you can manually pick the correct one, avoiding wrong matches when songs share the same title but have different artists (previously it auto-matched the first result).
-· Fixed FTP sharing showing an empty directory to other clients after a successful connection. The PASV passive-mode response previously returned the server's anyIPv4 address (0.0.0.0), which a remote client cannot connect back to; it now returns a concrete, reachable LAN address (or loopback for same-device clients), so the directory listing is delivered correctly.
+- Currently, only the WebDAV client supports media file streaming; other clients do not yet support this feature.
 
-⚠️ Known Issues (to be fixed in the next version)
-
-· Currently, only the WebDAV client supports media file streaming; other clients do not yet support this feature.
-
----
 ---
 
 ## ✨ Features
