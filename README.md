@@ -2,8 +2,7 @@
 
 # ZenFile
 
-A beautifully crafted, open-source file manager and offline media center for Android. Built with Flutter for extreme performance and stunning glassmorphism aesthetics.
-
+A beautifully crafted, open-source file manager and offline media center for Android. Built with Flutter to deliver ultimate performance and stunning glassmorphism aesthetics.
 > **Note**: This project is a fork of [Senzme/NFile](https://github.com/Senzme/NFile). Thanks to the original author!
 
 ---
@@ -11,6 +10,12 @@ A beautifully crafted, open-source file manager and offline media center for And
 ## 🚀 What's New in v1.1.23
 
 ---
+
+✨ New Features
+
+· App Management: Added a 'Copy Package Name' option in the app popup menu, allowing one-tap copy of the app's package name.
+
+· Path bar: Long-press the path bar to enter edit mode, allowing you to input and navigate to a specified path.
 
 🔧 Optimizations
 
@@ -20,6 +25,8 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 🐛 Bug Fixes
 
+· Fixed the issue where the global search could not find files in the data directory.
+· Fixed the issue where the 'Uninstall' button in the App Management popup overflowed the bottom of the screen on some devices, making it hard to tap.
 · Fixed an issue where browsing a remote directory would return an empty local directory.
 · Fixed missing video thumbnails in list view (thumbnails already worked in grid view).
 · Fixed the "Select All" button failing to select all items after long-pressing to enter selection mode on category pages.
@@ -34,6 +41,7 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 · Currently, only the WebDAV client supports media file streaming; other clients do not yet support this feature.
 
+---
 ---
 
 ## ✨ Features
