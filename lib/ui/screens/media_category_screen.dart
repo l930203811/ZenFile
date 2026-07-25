@@ -14,6 +14,7 @@ import '../../services/preferences_service.dart';
 import '../../services/audio_background_handler.dart';
 import '../../core/utils.dart';
 import '../../services/app_manager_service.dart';
+import '../../services/media_thumbnail_service.dart';
 import 'image_viewer_screen.dart';
 import 'video_player/video_player_screen.dart';
 import 'audio_player/audio_player_screen.dart';
@@ -184,11 +185,11 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     final assetIds = <String>{};
 
     if (widget.mediaType == MediaType.images) {
-      assetIds.addAll(provider.images.map((e) => e.id));
+      filePaths.addAll(provider.images.whereType<FileSystemEntity>().map((e) => e.path));
     } else if (widget.mediaType == MediaType.videos) {
-      assetIds.addAll(provider.videos.map((e) => e.id));
+      filePaths.addAll(provider.videos.whereType<FileSystemEntity>().map((e) => e.path));
     } else if (widget.mediaType == MediaType.screenshots) {
-      assetIds.addAll(provider.screenshots.map((e) => e.id));
+      filePaths.addAll(provider.screenshots.whereType<FileSystemEntity>().map((e) => e.path));
     } else if (widget.mediaType == MediaType.audios) {
       filePaths.addAll(provider.audios.map((e) => e.data));
     } else if (widget.mediaType == MediaType.archives) {
@@ -961,7 +962,13 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       body: Column(
         children: [
           if (widget.album == null && (widget.mediaType == MediaType.images || widget.mediaType == MediaType.videos))
-            _buildFoldersToggle(theme),
+            Consumer<MediaProvider>(
+              builder: (context, provider, child) {
+                final albums = widget.mediaType == MediaType.images ? provider.imageAlbums : provider.videoAlbums;
+                if (albums.isEmpty) return const SizedBox.shrink();
+                return _buildFoldersToggle(theme);
+              },
+            ),
           if (widget.album == null && widget.mediaType == MediaType.audios)
             _buildResumePlayerButton(theme),
           if (widget.album == null && widget.mediaType == MediaType.videos)
@@ -972,35 +979,42 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                 if (widget.album == null && _showFoldersMode) {
                   final albums = widget.mediaType == MediaType.images ? provider.imageAlbums : provider.videoAlbums;
                   if (albums.isEmpty) {
-                    return _buildEmptyState(theme);
+                    // 文件系统扫描不再提供相册列表，自动切回文件视图
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted && _showFoldersMode) {
+                        setState(() => _showFoldersMode = false);
+                      }
+                    });
+                    // 继续走下方的文件网格视图
+                  } else {
+                    return GridView.builder(
+                      padding: const EdgeInsets.all(12),
+                      physics: const BouncingScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 0.95,
+                      ),
+                      itemCount: albums.length,
+                      itemBuilder: (context, index) {
+                        final album = albums[index];
+                        return FolderGridItem(
+                          album: album,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              _slideRoute(MediaCategoryScreen(
+                                mediaType: widget.mediaType,
+                                album: album,
+                                onNavigateTab: widget.onNavigateTab,
+                              )),
+                            );
+                          },
+                        );
+                      },
+                    );
                   }
-                  return GridView.builder(
-                    padding: const EdgeInsets.all(12),
-                    physics: const BouncingScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: 0.95,
-                    ),
-                    itemCount: albums.length,
-                    itemBuilder: (context, index) {
-                      final album = albums[index];
-                      return FolderGridItem(
-                        album: album,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            _slideRoute(MediaCategoryScreen(
-                              mediaType: widget.mediaType,
-                              album: album,
-                              onNavigateTab: widget.onNavigateTab,
-                            )),
-                          );
-                        },
-                      );
-                    },
-                  );
                 }
 
                 if (widget.album != null) {
@@ -1502,9 +1516,14 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             } catch (_) {}
           }
           final dateStr = FileUtils.formatDate(date);
-          return isGridView
-              ? _buildImageTile(item, theme, isSelected, showDate, dateStr, images)
-              : _buildImageListTile(item, theme, isSelected, showDate, dateStr, images);
+          return _SelectedFrame(
+            selected: isSelected,
+            isList: !isGridView,
+            theme: theme,
+            child: isGridView
+                ? _buildImageTile(item, theme, isSelected, showDate, dateStr, images)
+                : _buildImageListTile(item, theme, isSelected, showDate, dateStr, images),
+          );
         },
       );
     }
@@ -1528,7 +1547,12 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             } catch (_) {}
           }
           final dateStr = FileUtils.formatDate(date);
-          return _buildImageTile(item, theme, isSelected, isDateWise, dateStr, images);
+          return _SelectedFrame(
+            selected: isSelected,
+            isList: false,
+            theme: theme,
+            child: _buildImageTile(item, theme, isSelected, isDateWise, dateStr, images),
+          );
         },
       );
     }
@@ -1549,7 +1573,12 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           } catch (_) {}
         }
         final dateStr = FileUtils.formatDate(date);
-        return _buildImageListTile(item, theme, isSelected, isDateWise, dateStr, images);
+        return _SelectedFrame(
+          selected: isSelected,
+          isList: true,
+          theme: theme,
+          child: _buildImageListTile(item, theme, isSelected, isDateWise, dateStr, images),
+        );
       },
     );
   }
@@ -1754,24 +1783,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             onLongPress: () => _toggleSelection(path, null),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: Container(
-                color: theme.colorScheme.surfaceVariant,
-                padding: const EdgeInsets.all(8),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Broken.video, size: 28, color: theme.colorScheme.primary),
-                    const SizedBox(height: 6),
-                    Text(
-                      title,
-                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
+              child: _LocalVideoTile(filePath: path, title: title, theme: theme),
             ),
           ),
         if (showDate)
@@ -1844,9 +1856,14 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             } catch (_) {}
           }
           final dateStr = FileUtils.formatDate(date);
-          return isGridView
-              ? _buildVideoTile(item, theme, isSelected, showDate, dateStr, videos)
-              : _buildVideoListTile(item, theme, isSelected, showDate, dateStr, videos);
+          return _SelectedFrame(
+            selected: isSelected,
+            isList: !isGridView,
+            theme: theme,
+            child: isGridView
+                ? _buildVideoTile(item, theme, isSelected, showDate, dateStr, videos)
+                : _buildVideoListTile(item, theme, isSelected, showDate, dateStr, videos),
+          );
         },
       );
     }
@@ -1870,7 +1887,12 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             } catch (_) {}
           }
           final dateStr = FileUtils.formatDate(date);
-          return _buildVideoTile(item, theme, isSelected, isDateWise, dateStr, videos);
+          return _SelectedFrame(
+            selected: isSelected,
+            isList: false,
+            theme: theme,
+            child: _buildVideoTile(item, theme, isSelected, isDateWise, dateStr, videos),
+          );
         },
       );
     }
@@ -1891,7 +1913,12 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           } catch (_) {}
         }
         final dateStr = FileUtils.formatDate(date);
-        return _buildVideoListTile(item, theme, isSelected, isDateWise, dateStr, videos);
+        return _SelectedFrame(
+          selected: isSelected,
+          isList: true,
+          theme: theme,
+          child: _buildVideoListTile(item, theme, isSelected, isDateWise, dateStr, videos),
+        );
       },
     );
   }
@@ -1948,15 +1975,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               PreferencesService.getRemoteMediaThumbnailPreview())
             _VideoListThumbnail(remotePath: path, size: 40)
           else
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primaryContainer.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Center(child: Icon(Broken.video, size: 22)),
-            ),
+            _VideoListThumbnail(filePath: path, size: 40),
           if (_isSelectionMode || isSelected)
             Positioned(
               bottom: 0,
@@ -2090,9 +2109,14 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           } catch (_) {}
           final dateStr = modified != null ? FileUtils.formatDate(modified) : L10n.of(context).msg424a0110;
           final index = audios.indexOf(audio);
-          return isGridView
-              ? _buildAudioGridTile(audio, theme, isSelected, showDate, dateStr, index, audios)
-              : _buildAudioTile(audio, theme, isSelected, showDate, dateStr, index, audios);
+          return _SelectedFrame(
+            selected: isSelected,
+            isList: !isGridView,
+            theme: theme,
+            child: isGridView
+                ? _buildAudioGridTile(audio, theme, isSelected, showDate, dateStr, index, audios)
+                : _buildAudioTile(audio, theme, isSelected, showDate, dateStr, index, audios),
+          );
         },
       );
     }
@@ -2111,7 +2135,12 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             modified = File(path).statSync().modified;
           } catch (_) {}
           final dateStr = modified != null ? FileUtils.formatDate(modified) : L10n.of(context).msg424a0110;
-          return _buildAudioGridTile(audio, theme, isSelected, isDateWise, dateStr, index, audios);
+          return _SelectedFrame(
+            selected: isSelected,
+            isList: false,
+            theme: theme,
+            child: _buildAudioGridTile(audio, theme, isSelected, isDateWise, dateStr, index, audios),
+          );
         },
       );
     }
@@ -2127,7 +2156,12 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           modified = File(path).statSync().modified;
         } catch (_) {}
         final dateStr = modified != null ? FileUtils.formatDate(modified) : L10n.of(context).msg424a0110;
-        return _buildAudioTile(audio, theme, isSelected, isDateWise, dateStr, index, audios);
+        return _SelectedFrame(
+          selected: isSelected,
+          isList: true,
+          theme: theme,
+          child: _buildAudioTile(audio, theme, isSelected, isDateWise, dateStr, index, audios),
+        );
       },
     );
   }
@@ -2329,9 +2363,14 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             size = st.size;
             modified = st.modified;
           } catch (_) {}
-          return isGridView
-              ? _buildDocumentGridTile(doc, theme, isSelected, showDate, size, modified)
-              : _buildDocumentTile(doc, theme, isSelected, showDate, size, modified);
+          return _SelectedFrame(
+            selected: isSelected,
+            isList: !isGridView,
+            theme: theme,
+            child: isGridView
+                ? _buildDocumentGridTile(doc, theme, isSelected, showDate, size, modified)
+                : _buildDocumentTile(doc, theme, isSelected, showDate, size, modified),
+          );
         },
       );
     }
@@ -2351,7 +2390,12 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             size = st.size;
             modified = st.modified;
           } catch (_) {}
-          return _buildDocumentGridTile(doc, theme, isSelected, isDateWise, size, modified);
+          return _SelectedFrame(
+            selected: isSelected,
+            isList: false,
+            theme: theme,
+            child: _buildDocumentGridTile(doc, theme, isSelected, isDateWise, size, modified),
+          );
         },
       );
     }
@@ -2369,7 +2413,12 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           size = st.size;
           modified = st.modified;
         } catch (_) {}
-        return _buildDocumentTile(doc, theme, isSelected, isDateWise, size, modified);
+        return _SelectedFrame(
+          selected: isSelected,
+          isList: true,
+          theme: theme,
+          child: _buildDocumentTile(doc, theme, isSelected, isDateWise, size, modified),
+        );
       },
     );
   }
@@ -2569,9 +2618,14 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             size = st.size;
             modified = st.modified;
           } catch (_) {}
-          return isGridView
-              ? _buildGenericFileGridTile(file, theme, isSelected, showDate, size, modified)
-              : _buildGenericFileTile(file, theme, isSelected, showDate, size, modified);
+          return _SelectedFrame(
+            selected: isSelected,
+            isList: !isGridView,
+            theme: theme,
+            child: isGridView
+                ? _buildGenericFileGridTile(file, theme, isSelected, showDate, size, modified)
+                : _buildGenericFileTile(file, theme, isSelected, showDate, size, modified),
+          );
         },
       );
     }
@@ -2591,7 +2645,12 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             size = st.size;
             modified = st.modified;
           } catch (_) {}
-          return _buildGenericFileGridTile(file, theme, isSelected, isDateWise, size, modified);
+          return _SelectedFrame(
+            selected: isSelected,
+            isList: false,
+            theme: theme,
+            child: _buildGenericFileGridTile(file, theme, isSelected, isDateWise, size, modified),
+          );
         },
       );
     }
@@ -2609,7 +2668,12 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           size = st.size;
           modified = st.modified;
         } catch (_) {}
-        return _buildGenericFileTile(file, theme, isSelected, isDateWise, size, modified);
+        return _SelectedFrame(
+          selected: isSelected,
+          isList: true,
+          theme: theme,
+          child: _buildGenericFileTile(file, theme, isSelected, isDateWise, size, modified),
+        );
       },
     );
   }
@@ -3464,11 +3528,13 @@ class _RemoteVideoTileWidgetState extends State<_RemoteVideoTileWidget> {
 class _VideoListThumbnail extends StatefulWidget {
   final AssetEntity? asset;
   final String? remotePath;
+  final String? filePath;
   final double size;
 
   const _VideoListThumbnail({
     this.asset,
     this.remotePath,
+    this.filePath,
     this.size = 40,
   });
 
@@ -3513,6 +3579,17 @@ class _VideoListThumbnailState extends State<_VideoListThumbnail> {
             _loaded = true;
           });
         }
+      } else if (widget.filePath != null && widget.filePath!.isNotEmpty) {
+        // 本地视频文件：复用原生 MediaMetadataRetriever 生成首帧缩略图
+        final data = await MediaThumbnailService.generateVideoThumbnail(widget.filePath!);
+        if (mounted) {
+          setState(() {
+            _thumbnail = data;
+            _loaded = true;
+          });
+        }
+      } else {
+        if (mounted) setState(() => _loaded = true);
       }
     } catch (_) {
       if (mounted) setState(() => _loaded = true);
@@ -3526,7 +3603,9 @@ class _VideoListThumbnailState extends State<_VideoListThumbnail> {
     final oldAssetId = oldWidget.asset?.id;
     final newRemote = widget.remotePath;
     final oldRemote = oldWidget.remotePath;
-    if (newAssetId != oldAssetId || newRemote != oldRemote) {
+    final newFile = widget.filePath;
+    final oldFile = oldWidget.filePath;
+    if (newAssetId != oldAssetId || newRemote != oldRemote || newFile != oldFile) {
       _loaded = false;
       _thumbnail = null;
       _loadThumbnail();
@@ -3544,7 +3623,7 @@ class _VideoListThumbnailState extends State<_VideoListThumbnail> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            if (_loaded && _thumbnail != null)
+            if (_thumbnail != null)
               Image.memory(
                 _thumbnail!,
                 fit: BoxFit.cover,
@@ -3555,6 +3634,11 @@ class _VideoListThumbnailState extends State<_VideoListThumbnail> {
                   color: theme.colorScheme.primaryContainer.withOpacity(0.3),
                   child: Center(child: Icon(Broken.video, size: 20, color: theme.colorScheme.onPrimaryContainer.withOpacity(0.6))),
                 ),
+              )
+            else if (_loaded)
+              Container(
+                color: theme.colorScheme.primaryContainer.withOpacity(0.3),
+                child: Center(child: Icon(Broken.video, size: 20, color: theme.colorScheme.onPrimaryContainer.withOpacity(0.6))),
               )
             else
               Container(
@@ -3693,6 +3777,175 @@ class _CachedVideoTileState extends State<_CachedVideoTile> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// 本地视频文件（FileSystemEntity）缩略图：通过原生 MediaMetadataRetriever 生成首帧，
+/// 与 Web 共享 / 文件网格一致的视频缩略图方案。带内存缓存与占位回退。
+class _LocalVideoTile extends StatefulWidget {
+  final String filePath;
+  final String title;
+  final ThemeData theme;
+
+  const _LocalVideoTile({required this.filePath, required this.title, required this.theme});
+
+  @override
+  State<_LocalVideoTile> createState() => _LocalVideoTileState();
+}
+
+class _LocalVideoTileState extends State<_LocalVideoTile> {
+  Uint8List? _thumb;
+
+  // 内存缓存，避免滚动复用/重建时重复调用原生缩略图生成。
+  static final Map<String, Uint8List> _memCache = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final cached = _memCache[widget.filePath];
+    if (cached != null) {
+      if (mounted) setState(() {
+        _thumb = cached;
+      });
+      return;
+    }
+    try {
+      final bytes = await MediaThumbnailService.generateVideoThumbnail(widget.filePath);
+      if (bytes != null && bytes.isNotEmpty) {
+        _memCache[widget.filePath] = bytes;
+        if (mounted) setState(() {
+          _thumb = bytes;
+        });
+        return;
+      }
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_thumb != null) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.memory(
+            _thumb!,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+            gaplessPlayback: true,
+            errorBuilder: (context, error, stackTrace) => Container(
+              color: Colors.grey.withOpacity(0.1),
+              child: const Center(child: Icon(Broken.video, size: 24, color: Colors.grey)),
+            ),
+          ),
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.transparent, Colors.black.withOpacity(0.5)],
+                ),
+              ),
+            ),
+          ),
+          Center(
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), shape: BoxShape.circle),
+              child: const Icon(Icons.play_arrow, color: Colors.white, size: 22),
+            ),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              color: Colors.black.withOpacity(0.55),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+              child: Text(
+                widget.title,
+                style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w500),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    // 回退：未生成到缩略图时显示占位图标 + 文件名（与旧版一致）。
+    return Container(
+      color: widget.theme.colorScheme.surfaceVariant,
+      padding: const EdgeInsets.all(8),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Broken.video, size: 28, color: widget.theme.colorScheme.primary),
+          const SizedBox(height: 6),
+          Text(
+            widget.title,
+            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 选中项高亮：主色边框 + 浅色底色，应用于各分类网格/列表 tile，使选中状态更醒目。
+class _SelectedFrame extends StatelessWidget {
+  final bool selected;
+  final bool isList;
+  final ThemeData theme;
+  final Widget child;
+
+  const _SelectedFrame({
+    required this.selected,
+    required this.isList,
+    required this.theme,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (!selected) return child;
+    final primary = theme.colorScheme.primary;
+    if (isList) {
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+        decoration: BoxDecoration(
+          color: primary.withOpacity(0.14),
+          border: Border.all(color: primary, width: 2),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: child,
+      );
+    }
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        child,
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: primary, width: 3),
+              borderRadius: BorderRadius.circular(10),
+              color: primary.withOpacity(0.16),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

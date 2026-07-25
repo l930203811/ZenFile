@@ -3741,6 +3741,10 @@ class L10nKo extends L10n {
       '휴지통이 활성화된 상태에서 삭제한 항목이 여기에 표시됩니다. 복원하거나 영구적으로 삭제할 수 있습니다.';
 
   @override
+  String get ui_recycle_disabled_hint =>
+      '回收站已关闭。开启后，删除的文件和文件夹将暂存到这里，可随时恢复或永久删除。';
+
+  @override
   String get ui_recycle_deleted_date => '삭제 날짜';
 
   @override

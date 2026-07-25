@@ -3742,6 +3742,10 @@ class L10nJa extends L10n {
       'ごみ箱が有効なときに削除した項目がここに表示されます。復元するか完全に削除することができます。';
 
   @override
+  String get ui_recycle_disabled_hint =>
+      '回收站已关闭。开启后，删除的文件和文件夹将暂存到这里，可随时恢复或永久删除。';
+
+  @override
   String get ui_recycle_deleted_date => '削除日';
 
   @override

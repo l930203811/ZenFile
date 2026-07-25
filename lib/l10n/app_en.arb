@@ -3758,6 +3758,10 @@
   "@ui_recycle_empty_hint": {
     "description": "Recycle bin empty state hint"
   },
+  "ui_recycle_disabled_hint": "Recycle Bin is off. When enabled, deleted files and folders are temporarily stored here so you can restore or permanently delete them anytime.",
+  "@ui_recycle_disabled_hint": {
+    "description": "Recycle bin disabled hint"
+  },
   "ui_recycle_deleted_date": "Deleted Date",
   "@ui_recycle_deleted_date": {
     "description": "Recycle bin deleted date label"

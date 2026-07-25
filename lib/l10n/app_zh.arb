@@ -3923,6 +3923,10 @@
   "@ui_recycle_empty_hint": {
     "description": "Recycle bin empty state hint"
   },
+  "ui_recycle_disabled_hint": "回收站已关闭。开启后，删除的文件和文件夹将暂存到这里，可随时恢复或永久删除。",
+  "@ui_recycle_disabled_hint": {
+    "description": "Recycle bin disabled hint"
+  },
   "ui_recycle_deleted_date": "回收日期",
   "@ui_recycle_deleted_date": {
     "description": "Recycle bin deleted date label"

@@ -11,6 +11,7 @@ import 'package:zenfile/l10n/generated/app_localizations.dart';
 import 'package:zenfile/services/preferences_service.dart';
 import 'package:zenfile/services/remote_streaming_service.dart';
 import 'package:zenfile/services/network_connections_service.dart';
+import 'package:zenfile/services/subtitle_parser.dart';
 import 'package:zenfile/providers/file_manager_provider.dart';
 import 'package:provider/provider.dart';
 import '../internal_file_picker_screen.dart';
@@ -101,6 +102,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   double _subtitleFontSize = 24;
   double _subtitlePosition = 100; // 0=顶部, 100=底部
   bool _subtitleNoBackground = false;
+  // 外挂字幕改用 Flutter overlay 渲染，确保字号/位置滑块对所有格式 100% 生效
+  List<SubtitleCue> _externalCues = [];
+  int _activeCueIndex = -1;
+  StreamSubscription<Duration>? _positionSub;
 
   // Playback Progress
   Timer? _progressSaveTimer;
@@ -287,9 +292,31 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     try {
       final platform = player.platform;
       if (platform is NativePlayer) {
-        // 每次（重新）加载字幕轨后重新声明覆盖，确保字号/位置等样式真正生效
+        // 重新声明覆盖（仅对仍走 mpv 渲染的兜底路径有意义）
         platform.setProperty('sub-ass-override', 'force');
       }
+      // 解析外挂字幕，改用 Flutter overlay 渲染，确保字号/位置滑块 100% 生效
+      final ext = p.extension(subtitlePath).toLowerCase();
+      final isAss = ext == '.ass' || ext == '.ssa';
+      List<SubtitleCue>? cues;
+      try {
+        final content = File(subtitlePath).readAsStringSync();
+        cues = SubtitleParser.parse(content, isAss: isAss);
+      } catch (e) {
+        debugPrint('解析外挂字幕失败，回退到 mpv 渲染: $e');
+      }
+      if (cues != null && cues.isNotEmpty) {
+        _externalCues = cues;
+        // 关闭 mpv 内嵌字幕渲染，避免与 overlay 双重显示
+        try {
+          player.setSubtitleTrack(SubtitleTrack.no());
+        } catch (_) {}
+        _startSubtitlePositionSync();
+        _updateActiveCue(_position);
+        if (mounted) setState(() {});
+        return;
+      }
+      // 解析失败兜底：仍用 mpv 渲染
       player.setSubtitleTrack(
         SubtitleTrack.uri(subtitlePath, title: 'External'),
       );
@@ -310,11 +337,42 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     }
   }
 
+  /// 监听播放进度，更新当前应显示的外挂字幕 cue
+  void _startSubtitlePositionSync() {
+    _positionSub?.cancel();
+    _positionSub = player.stream.position.listen((pos) {
+      _updateActiveCue(pos);
+    });
+  }
+
+  void _updateActiveCue(Duration pos) {
+    if (_externalCues.isEmpty) {
+      if (_activeCueIndex != -1) {
+        _activeCueIndex = -1;
+        if (mounted) setState(() {});
+      }
+      return;
+    }
+    var idx = -1;
+    for (var i = 0; i < _externalCues.length; i++) {
+      if (pos >= _externalCues[i].start && pos <= _externalCues[i].end) {
+        idx = i;
+        break;
+      }
+    }
+    if (idx != _activeCueIndex) {
+      _activeCueIndex = idx;
+      if (mounted) setState(() {});
+    }
+  }
+
   void _toggleSubtitle() {
     setState(() {
       _subtitleEnabled = !_subtitleEnabled;
     });
     try {
+      // 外挂字幕走 Flutter overlay，切换可见性即可，无需动 mpv 轨道
+      if (_externalCues.isNotEmpty) return;
       if (_subtitleEnabled && _subtitlePath != null) {
         player.setSubtitleTrack(
           SubtitleTrack.uri(_subtitlePath!, title: 'External'),
@@ -569,6 +627,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                                       onChanged: (v) {
                                         setModalState(() => _subtitleFontSize = v);
                                         _applySubtitleFontSize(v);
+                                        if (mounted) setState(() {});
                                       },
                                       onChangeEnd: (v) {
                                         PreferencesService.saveSubtitleFontSize(v);
@@ -620,6 +679,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                                       onChanged: (v) {
                                         setModalState(() => _subtitlePosition = v);
                                         _applySubtitlePosition(v);
+                                        if (mounted) setState(() {});
                                       },
                                       onChangeEnd: (v) {
                                         PreferencesService.saveSubtitlePosition(v);
@@ -1163,6 +1223,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   @override
   void dispose() {
     _hideTimer?.cancel();
+    _positionSub?.cancel();
     _seekIndicatorTimer?.cancel();
     _sliderTimer?.cancel();
     _cacheCheckTimer?.cancel();
@@ -1335,6 +1396,38 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         children: [
           // Main Video Surface (支持顺时针旋转 + 伸缩比例切换)
           _buildVideoSurface(),
+
+          // 外挂字幕 Flutter overlay（字号/位置由滑块控制，对所有格式 100% 生效）
+          if (_subtitleEnabled && _externalCues.isNotEmpty && _activeCueIndex >= 0)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: Align(
+                  alignment: Alignment(0.0, (_subtitlePosition / 100 * 2) - 1),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      _externalCues[_activeCueIndex].text,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: _subtitleFontSize,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                        backgroundColor: _subtitleNoBackground
+                            ? null
+                            : Colors.black.withOpacity(0.55),
+                        shadows: const [
+                          Shadow(
+                            offset: Offset(1, 1),
+                            blurRadius: 2,
+                            color: Colors.black,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
 
           // Brightness Dimming Overlay
           IgnorePointer(

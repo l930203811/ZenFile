@@ -487,4 +487,45 @@ class LyricSearchService {
       return null;
     }
   }
+
+  /// 下载指定歌曲的歌词（用户从搜索结果列表中手动选择后调用）。
+  ///
+  /// 不再自动匹配，避免同名不同歌手时匹配错误。返回解析后的歌词与路径，失败返回 null。
+  static Future<({List<LyricLine> lyrics, String sourcePath})?> downloadForSong({
+    required LyricSearchResult song,
+    required String audioPath,
+    String? saveDir,
+  }) async {
+    if (kDebugMode) {
+      debugPrint('[LyricSearch] Downloading selected: ${song.title} - ${song.singer} (${song.songmid})');
+    }
+
+    final lyricResult = await fetchLyric(song.songmid);
+    if (lyricResult == null) return null;
+
+    final lrcContent = lyricResult.best;
+    if (lrcContent == null) return null;
+
+    final dir = saveDir ?? p.dirname(audioPath);
+    final baseName = p.basenameWithoutExtension(audioPath);
+    final lrcPath = p.join(dir, '$baseName.lrc');
+
+    try {
+      final file = File(lrcPath);
+      final fixedContent =
+          lrcContent.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+      await file.writeAsString(fixedContent, flush: true);
+
+      final lyrics = LyricParser.parse(fixedContent);
+      if (lyrics.isEmpty) return null;
+
+      await PreferencesService.saveLyricMapping(audioPath, lrcPath);
+
+      debugPrint('[LyricSearch] Saved selected lyric: ${song.title} (${lyrics.length} lines)');
+      return (lyrics: lyrics, sourcePath: lrcPath);
+    } catch (e) {
+      debugPrint('[LyricSearch] Save selected lyric error: $e');
+      return null;
+    }
+  }
 }

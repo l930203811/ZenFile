@@ -3905,6 +3905,10 @@ class L10nDe extends L10n {
       'Elemente, die Sie löschen, wenn der Papierkorb aktiviert ist, werden hier angezeigt. Sie können sie wiederherstellen oder endgültig löschen.';
 
   @override
+  String get ui_recycle_disabled_hint =>
+      '回收站已关闭。开启后，删除的文件和文件夹将暂存到这里，可随时恢复或永久删除。';
+
+  @override
   String get ui_recycle_deleted_date => 'Löschdatum';
 
   @override

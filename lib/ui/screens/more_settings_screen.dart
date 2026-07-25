@@ -7,7 +7,6 @@ import '../../core/utils.dart';
 import '../widgets/quick_categories_grid.dart';
 import '../../services/preferences_service.dart';
 import '../../services/app_manager_service.dart';
-import '../../services/recycle_bin_service.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'internal_file_picker_screen.dart';
@@ -263,10 +262,6 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
       hideActionTextVis,
     ];
 
-    final recycleBinVis = _shouldShow(L10n.of(context).msge99f4762, L10n.of(context).msg25792550);
-    final autoDeleteDurationVis = RecycleBinService.isEnabled() && _shouldShow(L10n.of(context).msgf0ef894a, _getAutoDeleteDaysLabel(context, RecycleBinService.getAutoDeleteDays()));
-    final recycleBinList = [recycleBinVis, autoDeleteDurationVis];
-
     final accentColorVis = _shouldShow(L10n.of(context).msg1b9633fe, _getAccentColorLabel(context, fileManager.accentColorOption));
     final folderIconVis = _shouldShow(L10n.of(context).msg64db4c2d, _getFolderIconLabel(context, fileManager.folderIconOption));
     final menuIconStyleVis = _shouldShow(L10n.of(context).msgece44aa5, _getMenuIconStyleLabel(context, fileManager.menuIconStyle));
@@ -283,7 +278,6 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
         listLayoutList.contains(true) ||
         mediaActionsList.contains(true) ||
         selectionActionBarList.contains(true) ||
-        recycleBinList.contains(true) ||
         appearanceList.contains(true) ||
         homeScreenList.contains(true);
 
@@ -422,14 +416,6 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                   title: L10n.of(context).ui_file_actions_viewers,
                   subtitle: L10n.of(context).msgeb3693fb,
                   targetScreen: const ActionsSettingsScreen(),
-                ),
-                _buildCategoryCard(
-                  context,
-                  theme,
-                  icon: Broken.trash,
-                  title: L10n.of(context).ui_recycle_bin,
-                  subtitle: L10n.of(context).msg3a6a39ae,
-                  targetScreen: const TrashSettingsScreen(),
                 ),
                 SettingsTile(
                   icon: Broken.refresh_circle,
@@ -964,43 +950,6 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                             );
                           }
                         },
-                      ),
-                  ],
-                  if (_shouldShowHeader(recycleBinList)) ...[
-                    const SizedBox(height: 24),
-                    _buildSectionHeader(theme, L10n.of(context).ui_recycle_bin),
-                    if (recycleBinVis)
-                      SettingsTile(
-                        icon: Broken.trash,
-                        title: L10n.of(context).msge99f4762,
-                        subtitle: L10n.of(context).msg25792550,
-                        trailing: Transform.scale(
-                          scale: 0.85,
-                          child: Switch(
-                            value: RecycleBinService.isEnabled(),
-                            activeColor: theme.colorScheme.primary,
-                            onChanged: (val) {
-                              setState(() {
-                                RecycleBinService.setEnabled(val);
-                              });
-                            },
-                          ),
-                        ),
-                        onTap: () {
-                          final val = !RecycleBinService.isEnabled();
-                          setState(() {
-                            RecycleBinService.setEnabled(val);
-                          });
-                        },
-                      ),
-                    if (autoDeleteDurationVis)
-                      SettingsTile(
-                        icon: Icons.access_time_rounded,
-                        title: L10n.of(context).msgf0ef894a,
-                        subtitle: _getAutoDeleteDaysLabel(context, RecycleBinService.getAutoDeleteDays()),
-                        onTap: () => _showAutoDeleteDaysPickerDialog(context, theme, () {
-                          setState(() {});
-                        }),
                       ),
                   ],
                 ],
@@ -2131,70 +2080,6 @@ class ActionsSettingsScreen extends StatelessWidget {
   }
 }
 
-class TrashSettingsScreen extends StatefulWidget {
-  const TrashSettingsScreen({super.key});
-
-  @override
-  State<TrashSettingsScreen> createState() => _TrashSettingsScreenState();
-}
-
-class _TrashSettingsScreenState extends State<TrashSettingsScreen> {
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(L10n.of(context).ui_recycle_bin),
-        leading: IconButton(
-          icon: const Icon(Broken.arrow_left),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: SafeArea(
-        child: ListView(
-          physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.of(context).padding.bottom + 16),
-          children: [
-            SettingsTile(
-              icon: Broken.trash,
-              title: L10n.of(context).msge99f4762,
-              subtitle: L10n.of(context).msg25792550,
-              trailing: Transform.scale(
-                scale: 0.85,
-                child: Switch(
-                  value: RecycleBinService.isEnabled(),
-                  activeColor: theme.colorScheme.primary,
-                  onChanged: (val) {
-                    setState(() {
-                      RecycleBinService.setEnabled(val);
-                    });
-                  },
-                ),
-              ),
-              onTap: () {
-                final val = !RecycleBinService.isEnabled();
-                setState(() {
-                  RecycleBinService.setEnabled(val);
-                });
-              },
-            ),
-            if (RecycleBinService.isEnabled())
-              SettingsTile(
-                icon: Icons.access_time_rounded,
-                title: L10n.of(context).msgf0ef894a,
-                subtitle: _getAutoDeleteDaysLabel(context, RecycleBinService.getAutoDeleteDays()),
-                onTap: () => _showAutoDeleteDaysPickerDialog(context, theme, () {
-                  setState(() {});
-                }),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 // ----------------------------------------------------
 // Global Helper Labels & Dialogs for Themes & Settings
 // ----------------------------------------------------
@@ -2261,12 +2146,6 @@ String _getFontFamilyLabel(BuildContext context, String option) {
     default:
       return L10n.of(context).msgc2f5e9e4;
   }
-}
-
-String _getAutoDeleteDaysLabel(BuildContext context, int days) {
-  if (days <= 0) return L10n.of(context).msg6a7c758f;
-  if (days == 1) return L10n.of(context).ui_1_day_after;
-  return L10n.of(context).days1(days);
 }
 
 void _showDefaultHomeDialog(BuildContext context, FileManagerProvider fileManager) {
@@ -3461,103 +3340,6 @@ void _showFontFamilyPickerDialog(BuildContext context, FileManagerProvider fileM
                 ],
               ),
             ),
-          ),
-        ),
-      );
-    },
-  );
-}
-
-void _showAutoDeleteDaysPickerDialog(BuildContext context, ThemeData theme, VoidCallback onChanged) {
-  showModalBottomSheet(
-    context: context,
-    backgroundColor: theme.scaffoldBackgroundColor,
-    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-    builder: (ctx) {
-      final current = RecycleBinService.getAutoDeleteDays();
-      final options = [
-        {'days': 7, 'label': L10n.of(context).msgfdef8c23},
-        {'days': 15, 'label': L10n.of(context).msg25436ba3},
-        {'days': 30, 'label': L10n.of(context).msg85e7f60c},
-        {'days': 0, 'label': L10n.of(context).msgd61e706f},
-      ];
-
-      return SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.onSurface.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Text(
-                  L10n.of(context).msgf0ef894a,
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Text(
-                  L10n.of(context).msg1200d6b7,
-                  style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.5)),
-                ),
-              ),
-              const SizedBox(height: 16),
-              ...options.map((opt) {
-                final days = opt['days'] as int;
-                final label = opt['label'] as String;
-                final isSelected = current == days;
-
-                return Card(
-                  color: isSelected ? theme.colorScheme.primary.withOpacity(0.12) : theme.colorScheme.surface,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: isSelected ? theme.colorScheme.primary : theme.dividerColor.withOpacity(0.08)),
-                  ),
-                  margin: const EdgeInsets.symmetric(vertical: 6),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () {
-                      RecycleBinService.setAutoDeleteDays(days);
-                      onChanged();
-                      Navigator.pop(ctx);
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      child: Row(
-                        children: [
-                          Icon(Icons.access_time_rounded, color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.6)),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Text(
-                              label,
-                              style: TextStyle(
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                                color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface,
-                              ),
-                            ),
-                          ),
-                          if (isSelected) Icon(Icons.check_circle, color: theme.colorScheme.primary),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              }),
-            ],
           ),
         ),
       );

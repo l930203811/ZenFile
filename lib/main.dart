@@ -235,30 +235,10 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
       return;
     }
 
-    // 非首次启动：正常检查权限
+    // 非首次启动：检查权限（_checkStoragePermission 内部已用真实目录枚举探测，
+    // 避免「清除数据/缓存」后系统误报已授权导致误判）。权限确认后由 _checkStoragePermission
+    // 内部完成缓存迁移、监听与媒体加载，无需在此重复。
     await _checkStoragePermission();
-    // 清除应用数据后，系统可能仍显示“所有文件管理”已授权、但实际访问被拒
-    // （权限状态不一致），导致后续 loadDirectory 直接抛异常闪退。
-    // 与首次启动流程一致：若权限显示已授予，重新 request() 以激活，确保真正生效。
-    if (Platform.isAndroid) {
-      try {
-        final manageGranted = await Permission.manageExternalStorage.isGranted;
-        if (manageGranted) {
-          final status = await Permission.manageExternalStorage.request();
-          if (!status.isGranted && mounted) {
-            setState(() => _hasPermission = false);
-          }
-        }
-      } catch (e) {
-        debugPrint('[ZenFile] 存储权限重新激活失败: $e');
-      }
-    }
-    // Only run cache cleanup and intent observer after permission is granted
-    if (_hasPermission == true) {
-      _migrateOldCacheDir();
-      _startAutoCleanTimer();
-      _setupSharingIntentObserver();
-    }
   }
 
   /// 迁移旧的 Download/ZenFile_Remote 缓存目录到新的 /ZenFile 目录。
@@ -396,36 +376,12 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
     // 先标记 _isFirstLaunch = false，让 didChangeAppLifecycleState 能正常工作
     _isFirstLaunch = false;
 
-    // 检查权限
+    // 检查权限（_checkStoragePermission 已用真实目录枚举探测确认，
+    // 不会因「清除数据/缓存」后的权限状态不一致而误判为已授权）。
+    // 权限确认后由 _checkStoragePermission 内部完成缓存迁移、监听与媒体加载；
+    // 无权限时 _hasPermission = false，build 会显示 _StoragePermissionShield，
+    // 由用户主动点击按钮请求权限（与原项目 NFile 交互一致）。
     await _checkStoragePermission();
-
-    // 如果检测到有权限，可能是清除数据后权限状态不一致（系统显示有权限但实际无权限）。
-    // 调用 request() 重新确认权限，确保权限真正生效。
-    if (_hasPermission == true) {
-      try {
-        // 重新请求权限以激活它（如果已授予，request() 会立即返回 granted）
-        final status = await Permission.manageExternalStorage.request();
-        if (!status.isGranted) {
-          // request() 返回未授予，说明权限实际未生效
-          if (mounted) {
-            setState(() {
-              _hasPermission = false;
-              _isPermanentlyDenied = status.isPermanentlyDenied;
-            });
-          }
-          return;
-        }
-      } catch (e) {
-        debugPrint('[ZenFile] Permission re-confirm failed: $e');
-      }
-
-      _migrateOldCacheDir();
-      _startAutoCleanTimer();
-      _setupSharingIntentObserver();
-      _loadMediaAfterPermission();
-    }
-    // 无权限时：_hasPermission = false 会触发 build 方法显示 _StoragePermissionShield 页面，
-    // 由用户主动点击按钮来请求权限（与原项目 NFile 的交互方式一致）。
   }
 
   /// 在获得完整权限后加载媒体数据。
@@ -488,13 +444,35 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
     );
   }
 
+  /// 真实探测 MANAGE_EXTERNAL_STORAGE 是否真正可用。
+  /// 系统权限状态在「清除数据 / 清除缓存」后可能与实际访问能力不一致
+  /// （isGranted 返回 true，但枚举存储会抛异常），因此用一次真实的目录枚举来验证，
+  /// 避免误判为已授权而导致 loadDirectory / 媒体扫描在无权限时闪退。
+  Future<bool> _verifyManageStorageAccess() async {
+    try {
+      final dir = Directory('/storage/emulated/0');
+      await dir
+          .list(followLinks: false, recursive: false)
+          .first
+          .timeout(const Duration(seconds: 3));
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<void> _checkStoragePermission() async {
     if (Platform.isAndroid) {
       bool manageStorageGranted = false;
       bool mediaOnlyPermission = false;
       try {
         // 与 NFile 原项目一致：使用 permission_handler 检查权限
-        manageStorageGranted = await Permission.manageExternalStorage.isGranted;
+        // 仅信任 isGranted 会在「清除数据/缓存」后出现误判（报已授权但实际被拒），
+        // 故用一次真实目录枚举再次确认，确保后续扫描不会在无权限时闪退。
+        final rawManageGranted = await Permission.manageExternalStorage.isGranted;
+        if (rawManageGranted) {
+          manageStorageGranted = await _verifyManageStorageAccess();
+        }
 
         // 检查媒体权限
         final standardStorageGranted = await Permission.storage.isGranted;
@@ -545,7 +523,9 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
     if (Platform.isAndroid) {
       try {
         // 与 NFile 原项目一致：使用 permission_handler 的 request() 方法
-        final manageStorageGranted = await Permission.manageExternalStorage.request().isGranted;
+        // 真实探测：防止系统误报已授权而实际仍被拒，导致后续扫描闪退。
+        final manageStorageGrantedRaw = await Permission.manageExternalStorage.request().isGranted;
+        final manageStorageGranted = manageStorageGrantedRaw && await _verifyManageStorageAccess();
         bool standardStorageGranted = false;
         bool audioGranted = true;
         try {

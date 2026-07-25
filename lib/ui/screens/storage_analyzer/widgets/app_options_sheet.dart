@@ -151,26 +151,28 @@ class AppOptionsSheet extends StatelessWidget {
                 final scaffoldMessenger = ScaffoldMessenger.of(context);
                 final l10n = L10n.of(context);
                 final provider = context.read<FileManagerProvider>();
+                // 使用根 Navigator 的 Overlay context，即使 bottom sheet 已销毁也能安全弹窗
+                final rootContext = rootNavigator.overlay?.context ?? context;
 
                 // 关闭 bottom sheet
                 navigator.pop();
 
                 // 显示加载对话框（使用 rootNavigator，不受 bottom sheet 销毁影响）
-                // 显示可取消的加载对话框。大 APK 时原生拷贝可能长时间不返回
-                // （实际仍在后台进行），允许关闭对话框后前往“已备份 APK”查看结果，
-                // 避免 UI 卡死在“执行中”。
                 bool backupDialogOpen = true;
                 showDialog(
-                  context: context,
-                  barrierDismissible: true,
+                  context: rootContext,
+                  barrierDismissible: false,
                   useRootNavigator: true,
-                  builder: (ctx) => AlertDialog(
-                    content: Row(
-                      children: [
-                        const CircularProgressIndicator(),
-                        const SizedBox(width: 20),
-                        Expanded(child: Text(l10n.apk4)),
-                      ],
+                  builder: (ctx) => PopScope(
+                    canPop: false,
+                    child: AlertDialog(
+                      content: Row(
+                        children: [
+                          const CircularProgressIndicator(),
+                          const SizedBox(width: 20),
+                          Expanded(child: Text(l10n.apk4)),
+                        ],
+                      ),
                     ),
                   ),
                 ).then((_) => backupDialogOpen = false);
@@ -190,39 +192,32 @@ class AppOptionsSheet extends StatelessWidget {
                   if (backupDialogOpen && rootNavigator.canPop()) {
                     rootNavigator.pop(); // 关闭进度框后询问打开目录
                   }
-                  if (backupDialogOpen) {
-                    // 备份成功，显示路径并询问是否打开目录
-                    final openFolder = await showDialog<bool>(
-                      context: context,
-                      useRootNavigator: true,
-                      builder: (ctx) => AlertDialog(
-                        title: Text(l10n.ui_backup_apk_open_folder),
-                        content: Text(l10n.ui_backup_apk_success_with_path(path)),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, false),
-                            child: Text(MaterialLocalizations.of(ctx).cancelButtonLabel),
-                          ),
-                          FilledButton(
-                            onPressed: () => Navigator.pop(ctx, true),
-                            child: Text(l10n.ui_backup_apk_open),
-                          ),
-                        ],
-                      ),
-                    );
-                    if (openFolder == true) {
-                      final dirPath = path.substring(0, path.lastIndexOf('/'));
-                      navigator.popUntil((route) => route.isFirst);
-                      Future.delayed(const Duration(milliseconds: 200), () {
-                        provider.setPendingBrowseNavigation(dirPath, [path]);
-                        provider.setNavigateToBrowseTab(true);
-                      });
-                    }
-                  } else {
-                    // 用户已提前返回，用 SnackBar 提示完成
-                    scaffoldMessenger.showSnackBar(
-                      SnackBar(content: Text(l10n.ui_backup_apk_success_with_path(path))),
-                    );
+                  // 备份成功，始终显示“打开目录”结果弹窗（使用安全的 rootContext）
+                  final openFolder = await showDialog<bool>(
+                    context: rootContext,
+                    useRootNavigator: true,
+                    builder: (ctx) => AlertDialog(
+                      title: Text(l10n.ui_backup_apk_open_folder),
+                      content: Text(l10n.ui_backup_apk_success_with_path(path)),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: Text(MaterialLocalizations.of(ctx).cancelButtonLabel),
+                        ),
+                        FilledButton(
+                          onPressed: () => Navigator.pop(ctx, true),
+                          child: Text(l10n.ui_backup_apk_open),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (openFolder == true) {
+                    final dirPath = path.substring(0, path.lastIndexOf('/'));
+                    navigator.popUntil((route) => route.isFirst);
+                    Future.delayed(const Duration(milliseconds: 200), () {
+                      provider.setPendingBrowseNavigation(dirPath, [path]);
+                      provider.setNavigateToBrowseTab(true);
+                    });
                   }
                   onRefreshNeeded();
                 } else {

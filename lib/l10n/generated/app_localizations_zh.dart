@@ -3710,6 +3710,10 @@ class L10nZh extends L10n {
   String get ui_recycle_empty_hint => '启用回收站后删除的项目将显示在这里。您可以恢复它们或永久删除。';
 
   @override
+  String get ui_recycle_disabled_hint =>
+      '回收站已关闭。开启后，删除的文件和文件夹将暂存到这里，可随时恢复或永久删除。';
+
+  @override
   String get ui_recycle_deleted_date => '回收日期';
 
   @override

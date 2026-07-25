@@ -386,30 +386,33 @@ class FtpSession {
   /// Resolve the IP that the client should use to connect back to the
   /// PASV data port. Prefer the IP of the interface the control connection
   /// came in on; otherwise fall back to the server's primary IP.
+  ///
+  /// NOTE: On Android a socket bound to [InternetAddress.anyIPv4] reports its
+  /// local address as `0.0.0.0`. Returning that to a remote client makes the
+  /// data connection impossible to establish, so the LIST silently fails and
+  /// the client sees an empty directory. We therefore never return `0.0.0.0`
+  /// (or loopback for a remote client) and fall back to a concrete LAN IP.
   String _resolvePasvAddress(Socket control) {
     try {
       final remote = control.remoteAddress;
-      if (remote.type != InternetAddressType.IPv4) {
-        return server.ipAddress;
-      }
-      final remoteIp = remote.address;
 
-      // Find a local interface that shares the same /24 subnet as the client
-      // so the client can route back to the data port.
-      final remoteParts = remoteIp.split('.');
-      if (remoteParts.length != 4) return server.ipAddress;
-      final remotePrefix = '${remoteParts[0]}.${remoteParts[1]}.${remoteParts[2]}';
+      // A client connecting from loopback (another app on the same device)
+      // must also use loopback for the data connection.
+      if (remote.isLoopback) return '127.0.0.1';
 
-      // Use synchronous lookup to keep this method sync; the list is small.
-      // ignore: deprecated_member_use
-      // NetworkInterface.list is async; instead inspect localAddress.
+      // Prefer the local address of the control socket, but only when it is a
+      // concrete, routable LAN address. `0.0.0.0` (anyIPv4) is NOT reachable
+      // for a remote client, and loopback must not be used for remote clients.
       final local = controlSocketToLocalIp(control);
-      if (local != null && local.isNotEmpty) {
+      if (local != null &&
+          local.isNotEmpty &&
+          !local.startsWith('0.') &&
+          !local.startsWith('127.')) {
         return local;
       }
-      // No match found - return the server's chosen IP, but the client
-      // may need to use EPSV if it supports it.
-      return remotePrefix.isNotEmpty ? remoteIp : server.ipAddress;
+
+      // Fall back to the server's primary reachable IP (detected at start()).
+      return server.ipAddress;
     } catch (_) {
       return server.ipAddress;
     }

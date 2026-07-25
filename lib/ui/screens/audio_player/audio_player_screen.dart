@@ -643,7 +643,8 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     return null;
   }
 
-  /// 弹出在线歌词搜索对话框，自动填入歌曲名和歌手名，可手动修改后搜索
+  /// 弹出在线歌词搜索对话框：先搜索，列出候选结果，由用户手动选择，
+  /// 避免同名不同歌手时自动匹配错误。
   Future<void> _showLyricSearchDialog() async {
     // 使用原始歌手名（空字符串），而非界面显示的"未知艺术家"翻译
     String songTitle = _currentTitle;
@@ -667,36 +668,132 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
 
     String? errorMessage;
     bool isSearching = false;
+    List<LyricSearchResult> results = [];
+    var view = 'form'; // form | results | notFound
 
     final result = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) {
-          return AlertDialog(
-            backgroundColor: isDark ? const Color(0xFF1E1E2E) : theme.colorScheme.surface,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-            title: Row(
-              children: [
-                Icon(Broken.music_filter, color: theme.colorScheme.primary, size: 22),
-                const SizedBox(width: 10),
-                Text(
-                  l10n.ui_search_lyrics_online,
-                  style: TextStyle(
-                    color: isDark ? Colors.white : theme.colorScheme.onSurface,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
+          // 执行搜索，列出候选结果
+          Future<void> doSearch() async {
+            final title = titleController.text.trim();
+            final artist = artistController.text.trim();
+            if (title.isEmpty) {
+              setDialogState(() => errorMessage = l10n.ui_lyrics_not_found_online);
+              return;
+            }
+            setDialogState(() {
+              isSearching = true;
+              errorMessage = null;
+            });
+            // 先按 歌名+歌手 搜，结果少则仅按歌名搜
+            var list = await LyricSearchService.search('$title $artist');
+            if (list.isEmpty) list = await LyricSearchService.search(title);
+            if (!ctx.mounted) return;
+            setDialogState(() {
+              isSearching = false;
+              if (list.isEmpty) {
+                view = 'notFound';
+              } else {
+                results = list;
+                view = 'results';
+              }
+            });
+          }
+
+          // 用户手动选择某一首后下载
+          Future<void> pickSong(LyricSearchResult song) async {
+            setDialogState(() => isSearching = true);
+            final download = await LyricSearchService.downloadForSong(
+              song: song,
+              audioPath: _currentPath,
+            );
+            if (!ctx.mounted) return;
+            if (download != null) {
+              Navigator.pop(ctx, true);
+            } else {
+              setDialogState(() {
+                isSearching = false;
+                errorMessage = l10n.ui_lyrics_not_found_online;
+              });
+            }
+          }
+
+          // 主体内容
+          Widget body;
+          if (view == 'results') {
+            body = SizedBox(
+              width: 320,
+              height: 380,
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: results.length,
+                separatorBuilder: (_, __) => Divider(color: Colors.white12, height: 1),
+                itemBuilder: (_, i) {
+                  final song = results[i];
+                  final subParts = <String>[
+                    if (song.singer.isNotEmpty) song.singer,
+                    if (song.albumName != null && song.albumName!.isNotEmpty) song.albumName!,
+                  ];
+                  return ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                    title: Text(
+                      song.title,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : theme.colorScheme.onSurface,
+                        fontSize: 15,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: subParts.isNotEmpty
+                        ? Text(
+                            subParts.join(' · '),
+                            style: TextStyle(color: Colors.white54, fontSize: 12),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          )
+                        : null,
+                    trailing: isSearching
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.chevron_right, color: Colors.white38),
+                    onTap: isSearching ? null : () => pickSong(song),
+                  );
+                },
+              ),
+            );
+          } else if (view == 'notFound') {
+            body = SizedBox(
+              width: 300,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 16),
+                  Icon(Icons.search_off_rounded, color: Colors.orange.shade400, size: 40),
+                  const SizedBox(height: 12),
+                  Text(
+                    l10n.ui_lyrics_not_found_online,
+                    style: TextStyle(
+                      color: isDark ? Colors.white70 : theme.colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                ),
-              ],
-            ),
-            content: SizedBox(
+                ],
+              ),
+            );
+          } else {
+            body = SizedBox(
               width: 300,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // 歌曲名输入框
                   TextField(
                     controller: titleController,
                     enabled: !isSearching,
@@ -714,7 +811,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // 歌手名输入框
                   TextField(
                     controller: artistController,
                     enabled: !isSearching,
@@ -731,7 +827,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                       prefixIcon: Icon(Icons.person_rounded, color: theme.colorScheme.primary.withOpacity(0.6), size: 20),
                     ),
                   ),
-                  // 搜索中指示器 / 错误提示
                   if (isSearching) ...[
                     const SizedBox(height: 20),
                     const Center(child: CircularProgressIndicator()),
@@ -773,51 +868,58 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                   ],
                 ],
               ),
-            ),
-            actions: [
+            );
+          }
+
+          // 操作按钮
+          List<Widget> actions;
+          if (view == 'results' || view == 'notFound') {
+            actions = [
+              TextButton(
+                onPressed: isSearching
+                    ? null
+                    : () => setDialogState(() {
+                          view = 'form';
+                          results = [];
+                          errorMessage = null;
+                        }),
+                child: Text(l10n.ui_back, style: TextStyle(color: isDark ? Colors.white70 : theme.colorScheme.onSurface.withOpacity(0.6))),
+              ),
+            ];
+          } else {
+            actions = [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
                 child: Text(l10n.ui_cancel, style: TextStyle(color: isDark ? Colors.white70 : theme.colorScheme.onSurface.withOpacity(0.6))),
               ),
               TextButton(
-                onPressed: isSearching
-                    ? null
-                    : () async {
-                        final title = titleController.text.trim();
-                        final artist = artistController.text.trim();
-                        if (title.isEmpty) {
-                          setDialogState(() {
-                            errorMessage = l10n.ui_lyrics_not_found_online;
-                          });
-                          return;
-                        }
-
-                        setDialogState(() {
-                          isSearching = true;
-                          errorMessage = null;
-                        });
-
-                        // 在对话框中执行搜索
-                        final searchResult = await LyricSearchService.searchAndDownload(
-                          title: title,
-                          artist: artist,
-                          audioPath: _currentPath,
-                        );
-
-                        if (!ctx.mounted) return;
-
-                        if (searchResult != null) {
-                          Navigator.pop(ctx, true); // 关闭对话框，返回成功
-                        } else {
-                          setDialogState(() {
-                            isSearching = false;
-                            errorMessage = l10n.ui_lyrics_not_found_online;
-                          });
-                        }
-                      },
+                onPressed: isSearching ? null : doSearch,
                 child: Text(l10n.ui_search_lyrics_online, style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
               ),
-            ],
+            ];
+          }
+
+          return AlertDialog(
+            backgroundColor: isDark ? const Color(0xFF1E1E2E) : theme.colorScheme.surface,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            title: Row(
+              children: [
+                Icon(Broken.music_filter, color: theme.colorScheme.primary, size: 22),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    l10n.ui_search_lyrics_online,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : theme.colorScheme.onSurface,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            content: body,
+            actions: actions,
           );
         },
       ),
@@ -829,7 +931,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
 
     if (!mounted || result != true) return;
 
-    // 对话框返回 true 表示搜索成功，reload lyrics
+    // 对话框返回 true 表示下载成功，reload lyrics
     _loadLyrics();
   }
 

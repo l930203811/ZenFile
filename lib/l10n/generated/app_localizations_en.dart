@@ -3865,6 +3865,10 @@ class L10nEn extends L10n {
       'Items you delete when Recycle Bin is enabled will appear here. You can restore them or permanently delete them.';
 
   @override
+  String get ui_recycle_disabled_hint =>
+      'Recycle Bin is off. When enabled, deleted files and folders are temporarily stored here so you can restore or permanently delete them anytime.';
+
+  @override
   String get ui_recycle_deleted_date => 'Deleted Date';
 
   @override

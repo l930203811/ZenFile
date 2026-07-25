@@ -9,7 +9,6 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-import 'package:device_info_plus/device_info_plus.dart';
 import '../services/preferences_service.dart';
 import '../services/network_connections_service.dart';
 import '../services/media_thumbnail_service.dart';
@@ -357,14 +356,14 @@ class MediaProvider extends ChangeNotifier {
     _customCategoryLabels = PreferencesService.getCustomCategoryLabels();
   }
 
-  List<AssetEntity> _images = [];
-  List<AssetEntity> _videos = [];
+  List<FileSystemEntity> _images = [];
+  List<FileSystemEntity> _videos = [];
   List<SongModel> _audios = [];
   List<FileSystemEntity> _documents = [];
   List<FileSystemEntity> _archives = [];
   List<FileSystemEntity> _downloads = [];
   List<FileSystemEntity> _apks = [];
-  List<AssetEntity> _screenshots = [];
+  List<FileSystemEntity> _screenshots = [];
   List<FileSystemEntity> _customImages = [];
   List<FileSystemEntity> _customVideos = [];
   List<FileSystemEntity> _customScreenshots = [];
@@ -379,6 +378,8 @@ class MediaProvider extends ChangeNotifier {
   List<AssetPathEntity> _imageAlbums = [];
   List<AssetPathEntity> _videoAlbums = [];
 
+  /// 分类页统一采用文件系统扫描后，不再依赖 PhotoManager 的相册列表，
+  /// 保持空列表以兼容旧调用，界面会隐藏文件夹模式入口。
   List<AssetPathEntity> get imageAlbums => _imageAlbums;
   List<AssetPathEntity> get videoAlbums => _videoAlbums;
 
@@ -433,19 +434,7 @@ class MediaProvider extends ChangeNotifier {
 
   String? _getItemPath(dynamic item) {
     if (item is FileSystemEntity) return item.path;
-    if (item is AssetEntity) {
-      final rel = item.relativePath;
-      if (rel != null) {
-        final cleanRel = rel.endsWith('/') ? rel.substring(0, rel.length - 1) : rel;
-        if (cleanRel.startsWith('/storage/emulated/0') || cleanRel.startsWith('/storage/')) {
-          return cleanRel;
-        }
-        if (cleanRel.startsWith('storage/emulated/0') || cleanRel.startsWith('storage/')) {
-          return '/$cleanRel';
-        }
-        return '/storage/emulated/0/$cleanRel';
-      }
-    }
+    if (item is SongModel) return item.data;
     return null;
   }
 
@@ -458,41 +447,48 @@ class MediaProvider extends ChangeNotifier {
     return false;
   }
 
+  /// 媒体去重：按路径去重，避免自定义目录与文件系统全扫结果重复。
+  List<dynamic> _dedupeMediaByPath(List<dynamic> raw) {
+    final seen = <String>{};
+    final list = <dynamic>[];
+    for (final item in raw) {
+      final pth = _normalizeMediaPath(_getItemPath(item) ?? '');
+      if (pth.isEmpty || seen.contains(pth)) continue;
+      seen.add(pth);
+      list.add(item);
+    }
+    return list;
+  }
+
   List<dynamic> get images {
     final excluded = _excludedDefaultPaths['图片'] ?? [];
-    final excludeGallery = excluded.contains('设备相册（自动）');
     final list = [..._images, ..._customImages].where((item) {
-      if (item is AssetEntity && excludeGallery) return false;
       final path = _getItemPath(item);
       if (path != null && _isPathExcluded(path, excluded)) {
         return false;
       }
       return true;
     }).toList();
-    _sortDynamicList(list);
+    _sortDynamicList(_dedupeMediaByPath(list));
     return list;
   }
 
   List<dynamic> get videos {
     final excluded = _excludedDefaultPaths['视频'] ?? [];
-    final excludeGallery = excluded.contains('设备相册（自动）');
     final list = [..._videos, ..._customVideos].where((item) {
-      if (item is AssetEntity && excludeGallery) return false;
       final path = _getItemPath(item);
       if (path != null && _isPathExcluded(path, excluded)) {
         return false;
       }
       return true;
     }).toList();
-    _sortDynamicList(list);
+    _sortDynamicList(_dedupeMediaByPath(list));
     return list;
   }
 
   List<SongModel> get audios {
     final excluded = _excludedDefaultPaths['音频'] ?? [];
-    final excludeLibrary = excluded.contains('设备音频库（自动）');
     return _audios.where((song) {
-      if (excludeLibrary && song.id < 900000) return false;
       final path = song.data;
       if (_isPathExcluded(path, excluded)) return false;
       return true;
@@ -545,16 +541,14 @@ class MediaProvider extends ChangeNotifier {
 
   List<dynamic> get screenshots {
     final excluded = _excludedDefaultPaths['截图'] ?? [];
-    final excludeGallery = excluded.contains('设备相册（截图）');
     final list = [..._screenshots, ..._customScreenshots].where((item) {
-      if (item is AssetEntity && excludeGallery) return false;
       final path = _getItemPath(item);
       if (path != null && _isPathExcluded(path, excluded)) {
         return false;
       }
       return true;
     }).toList();
-    _sortDynamicList(list);
+    _sortDynamicList(_dedupeMediaByPath(list));
     return list;
   }
   List<FileItemModel> get recentFiles => _recentFiles;
@@ -591,7 +585,14 @@ class MediaProvider extends ChangeNotifier {
   }
 
   DateTime _getDateTime(dynamic item) {
-    if (item is AssetEntity) return item.createDateTime;
+    if (item is SongModel) {
+      final f = File(item.data);
+      if (f.existsSync()) {
+        try {
+          return f.lastModifiedSync();
+        } catch (_) {}
+      }
+    }
     if (item is FileSystemEntity) {
       try {
         return File(item.path).lastModifiedSync();
@@ -601,12 +602,14 @@ class MediaProvider extends ChangeNotifier {
   }
 
   int _getSize(dynamic item) {
-    if (item is AssetEntity) {
-      return item.width * item.height;
-    }
     if (item is FileSystemEntity) {
       try {
         return File(item.path).lengthSync();
+      } catch (_) {}
+    }
+    if (item is SongModel) {
+      try {
+        return item.size;
       } catch (_) {}
     }
     return 0;
@@ -617,8 +620,6 @@ class MediaProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isLoaded => _isLoaded;
   MediaSortOrder get sortOrder => _sortOrder;
-
-  final OnAudioQuery _audioQuery = OnAudioQuery();
 
   void toggleCategory(String label) {
     if (_activeCategories.contains(label)) {
@@ -827,6 +828,73 @@ class MediaProvider extends ChangeNotifier {
             _recentFiles = cached;
           }
         }
+
+        // 恢复文件系统扫描到的媒体文件缓存，避免每次启动都重新全量扫描
+        if (map.containsKey('fsImages')) {
+          final paths = List<String>.from(map['fsImages'] ?? []);
+          final cached = <FileSystemEntity>[];
+          for (final path in paths) {
+            final f = File(path);
+            if (f.existsSync()) cached.add(f);
+          }
+          if (cached.isNotEmpty && _images.isEmpty) {
+            _images = cached;
+          }
+        }
+
+        if (map.containsKey('fsVideos')) {
+          final paths = List<String>.from(map['fsVideos'] ?? []);
+          final cached = <FileSystemEntity>[];
+          for (final path in paths) {
+            final f = File(path);
+            if (f.existsSync()) cached.add(f);
+          }
+          if (cached.isNotEmpty && _videos.isEmpty) {
+            _videos = cached;
+          }
+        }
+
+        if (map.containsKey('fsScreenshots')) {
+          final paths = List<String>.from(map['fsScreenshots'] ?? []);
+          final cached = <FileSystemEntity>[];
+          for (final path in paths) {
+            final f = File(path);
+            if (f.existsSync()) cached.add(f);
+          }
+          if (cached.isNotEmpty && _screenshots.isEmpty) {
+            _screenshots = cached;
+          }
+        }
+
+        if (map.containsKey('fsAudios')) {
+          final audioEntries = List<Map<String, dynamic>>.from(
+            (map['fsAudios'] as List?)?.map((e) => Map<String, dynamic>.from(e as Map)) ?? [],
+          );
+          final cached = <SongModel>[];
+          for (final entry in audioEntries) {
+            try {
+              final path = entry['data'] as String?;
+              if (path == null) continue;
+              final f = File(path);
+              if (!f.existsSync()) continue;
+              cached.add(SongModel({
+                '_id': entry['id'] ?? 800000 + cached.length,
+                '_data': path,
+                'title': entry['title'] ?? p.basenameWithoutExtension(path),
+                'artist': entry['artist'] ?? '',
+                'album': entry['album'] ?? '',
+                'duration': entry['duration'] ?? 0,
+                'size': entry['size'] ?? 0,
+                'display_name': entry['display_name'] ?? p.basename(path),
+                'display_name_wo_ext': entry['display_name_wo_ext'] ?? p.basenameWithoutExtension(path),
+                'is_music': entry['is_music'] ?? true,
+              }));
+            } catch (_) {}
+          }
+          if (cached.isNotEmpty && _audios.isEmpty) {
+            _audios = cached;
+          }
+        }
       }
     } catch (_) {}
   }
@@ -847,6 +915,22 @@ class MediaProvider extends ChangeNotifier {
           'size': e.size,
           'modified': e.modified.millisecondsSinceEpoch,
         }).toList(),
+        // 文件系统扫描结果缓存：分类页不再依赖系统索引，缓存完整结果以加速下次启动
+        'fsImages': _images.map((e) => e.path).toList(),
+        'fsVideos': _videos.map((e) => e.path).toList(),
+        'fsScreenshots': _screenshots.map((e) => e.path).toList(),
+        'fsAudios': _audios.map((s) => {
+          'id': s.id,
+          'data': s.data,
+          'title': s.title,
+          'artist': s.artist,
+          'album': s.album,
+          'duration': s.duration,
+          'size': s.size,
+          'display_name': s.displayName,
+          'display_name_wo_ext': s.displayNameWOExt,
+          'is_music': s.isMusic,
+        }).toList(),
       };
       await cacheFile.writeAsString(jsonEncode(map), flush: true);
     } catch (_) {}
@@ -854,59 +938,16 @@ class MediaProvider extends ChangeNotifier {
 
   Future<void> refreshMediaBackground() async {
     try {
-      final futures = <Future<void>>[];
-
       bool isStorageGranted = false;
       try {
         isStorageGranted = await Permission.manageExternalStorage.isGranted;
       } catch (_) {}
 
-      PermissionState ps = PermissionState.denied;
-      bool hasAudioPermission = false;
+      if (!isStorageGranted) return;
 
-      if (isStorageGranted) {
-        ps = PermissionState.authorized;
-        hasAudioPermission = true;
-        if (Platform.isAndroid) {
-          try {
-            final info = await DeviceInfoPlugin().androidInfo;
-            final sdk = info.version.sdkInt;
-            if (sdk < 33) {
-              PhotoManager.setIgnorePermissionCheck(true);
-            } else {
-              try {
-                ps = await PhotoManager.requestPermissionExtend();
-              } catch (_) {}
-
-              try {
-                hasAudioPermission = await _audioQuery.permissionsStatus();
-                if (!hasAudioPermission) {
-                  final status = await Permission.audio.request();
-                  hasAudioPermission = status.isGranted;
-                }
-              } catch (_) {}
-            }
-          } catch (_) {}
-        } else {
-          try {
-            ps = await PhotoManager.requestPermissionExtend();
-          } catch (_) {}
-          hasAudioPermission = true;
-        }
-      } else {
-        if (Platform.isAndroid) {
-          try {
-            PhotoManager.setIgnorePermissionCheck(true);
-          } catch (_) {}
-        }
-      }
-
-      if (ps.isAuth || isStorageGranted) {
-        futures.add(_loadImagesAndVideos());
-      }
-      if (hasAudioPermission || isStorageGranted) {
-        futures.add(_loadAudios(hasPermission: hasAudioPermission || isStorageGranted));
-      }
+      final futures = <Future<void>>[];
+      futures.add(_loadImagesAndVideos());
+      futures.add(_loadAudios());
       futures.add(_loadDocuments());
       futures.add(_loadArchivesDownloadsAndApks());
 
@@ -953,61 +994,15 @@ class MediaProvider extends ChangeNotifier {
         isStorageGranted = await Permission.manageExternalStorage.isGranted;
       } catch (_) {}
 
-      PermissionState ps = PermissionState.denied;
-      bool hasAudioPermission = false;
-
-      if (isStorageGranted) {
-        ps = PermissionState.authorized;
-        hasAudioPermission = true;
-        if (Platform.isAndroid) {
-          try {
-            final info = await DeviceInfoPlugin().androidInfo;
-            final sdk = info.version.sdkInt;
-            if (sdk < 33) {
-              PhotoManager.setIgnorePermissionCheck(true);
-            } else {
-              try {
-                ps = await PhotoManager.requestPermissionExtend();
-              } catch (_) {}
-
-              try {
-                hasAudioPermission = await _audioQuery.permissionsStatus();
-                if (!hasAudioPermission) {
-                  final status = await Permission.audio.request();
-                  hasAudioPermission = status.isGranted;
-                }
-              } catch (_) {}
-            }
-          } catch (_) {}
-        } else {
-          try {
-            ps = await PhotoManager.requestPermissionExtend();
-          } catch (_) {}
-          hasAudioPermission = true;
-        }
-      } else {
-        if (Platform.isAndroid) {
-          try {
-            PhotoManager.setIgnorePermissionCheck(true);
-          } catch (_) {}
-        }
+      if (!isStorageGranted) {
+        _isLoading = false;
+        notifyListeners();
+        return;
       }
 
       final futures = <Future<void>>[];
-      if (ps.isAuth || isStorageGranted) {
-        if (isStorageGranted && !ps.isAuth) {
-          try {
-            PhotoManager.setIgnorePermissionCheck(true);
-          } catch (_) {}
-        }
-        try {
-          PhotoManager.clearFileCache();
-        } catch (_) {}
-        futures.add(_loadImagesAndVideos());
-      }
-      if (hasAudioPermission || isStorageGranted) {
-        futures.add(_loadAudios(hasPermission: hasAudioPermission || isStorageGranted));
-      }
+      futures.add(_loadImagesAndVideos());
+      futures.add(_loadAudios());
       futures.add(_loadDocuments());
       futures.add(_loadArchivesDownloadsAndApks());
 
@@ -1040,97 +1035,89 @@ class MediaProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> _loadImagesAndVideos() async {
+  static const List<String> _imageExtensions = [
+    '.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg', '.ico',
+    '.tiff', '.tif', '.heic', '.heif', '.avif', '.raw',
+  ];
+  static const List<String> _videoExtensions = [
+    '.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.3gp',
+    '.ts', '.m4v', '.rmvb', '.rm', '.asf', '.f4v',
+  ];
+  static const List<String> _audioExtensions = [
+    '.mp3', '.wav', '.flac', '.m4a', '.ogg', '.wma', '.aac', '.opus',
+    '.amr', '.mid', '.midi',
+  ];
+
+  /// 从文件系统扫描图片、视频、音频、截图（与 Web 共享页面一致的扫描方式）。
+  /// 完全不再依赖 PhotoManager / on_audio_query 的系统媒体库索引。
+  Future<void> _loadMediaFromFileSystem() async {
     try {
-      List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(onlyAll: false);
-      List<AssetEntity> allScreenshots = [];
-      for (final album in albums) {
-        if (album.name.toLowerCase().contains('screenshot')) {
-          allScreenshots = await album.getAssetListPaged(page: 0, size: 5000);
-          break;
-        }
-      }
+      final images = <FileSystemEntity>[];
+      final videos = <FileSystemEntity>[];
+      final audios = <SongModel>[];
+      final screenshots = <FileSystemEntity>[];
+      final seenAudios = <String>{};
 
-      if (albums.isNotEmpty) {
-        List<AssetEntity> allMedia = await albums[0].getAssetListPaged(page: 0, size: 10000);
-        _images = allMedia.where((e) => e.type == AssetType.image).toList();
-        _videos = allMedia.where((e) => e.type == AssetType.video).toList();
-        if (allScreenshots.isEmpty) {
-          _screenshots = _images.where((e) => (e.title ?? '').toLowerCase().contains('screenshot') || (e.relativePath ?? '').toLowerCase().contains('screenshot')).toList();
-        } else {
-          _screenshots = allScreenshots;
-        }
-      }
-
-      // Fetch distinct image albums
-      final imgAlbums = await PhotoManager.getAssetPathList(type: RequestType.image);
-      final filteredImgAlbums = <AssetPathEntity>[];
-      for (final album in imgAlbums) {
-        final count = await album.assetCountAsync;
-        if (count > 0) {
-          filteredImgAlbums.add(album);
-        }
-      }
-      _imageAlbums = filteredImgAlbums;
-
-      // Fetch distinct video albums
-      final vidAlbums = await PhotoManager.getAssetPathList(type: RequestType.video);
-      final filteredVidAlbums = <AssetPathEntity>[];
-      for (final album in vidAlbums) {
-        final count = await album.assetCountAsync;
-        if (count > 0) {
-          filteredVidAlbums.add(album);
-        }
-      }
-      _videoAlbums = filteredVidAlbums;
-
-      // Scan common directories for SVG files (PhotoManager doesn't index SVG)
-      try {
-        final svgDirs = [
-          Directory('/storage/emulated/0/DCIM'),
-          Directory('/storage/emulated/0/Pictures'),
-          Directory('/storage/emulated/0/Download'),
-          Directory('/storage/emulated/0/Pictures/Screenshots'),
-        ];
-        final svgFiles = <FileSystemEntity>[];
-        for (final dir in svgDirs) {
-          if (await dir.exists()) {
-            await for (final entity in dir.list(recursive: true, followLinks: false)) {
-              if (entity is File && entity.path.toLowerCase().endsWith('.svg')) {
-                svgFiles.add(entity);
+      final searchDirs = await _getUserSearchDirs();
+      for (final dir in searchDirs) {
+        await _scanDirectoryRecursively(
+          dir,
+          (_) => true,
+          (file) {
+            final lower = file.path.toLowerCase();
+            final ext = p.extension(lower);
+            if (_videoExtensions.contains(ext)) {
+              videos.add(file);
+            } else if (_audioExtensions.contains(ext)) {
+              final norm = _normalizeMediaPath(file.path);
+              if (seenAudios.contains(norm)) return;
+              seenAudios.add(norm);
+              int fileSize = 0;
+              try {
+                fileSize = file.statSync().size;
+              } catch (_) {}
+              final fileName = p.basename(file.path);
+              final nameNoExt = p.basenameWithoutExtension(file.path);
+              audios.add(SongModel({
+                '_id': 800000 + seenAudios.length,
+                '_data': file.path,
+                'title': nameNoExt,
+                'artist': '',
+                'album': '',
+                'duration': 0,
+                'size': fileSize,
+                'display_name': fileName,
+                'display_name_wo_ext': nameNoExt,
+                'is_music': true,
+              }));
+            } else if (_imageExtensions.contains(ext)) {
+              if (lower.contains('screenshot') || lower.contains('截图')) {
+                screenshots.add(file);
+              } else {
+                images.add(file);
               }
             }
-          }
-        }
-        if (svgFiles.isNotEmpty) {
-          _customImages = [...svgFiles, ..._customImages];
-        }
-      } catch (_) {}
-    } catch (_) {}
+          },
+        );
+      }
+
+      _images = images;
+      _videos = videos;
+      _audios = audios;
+      _screenshots = screenshots;
+      debugPrint('[ZenFile] _loadMediaFromFileSystem: images=${images.length}, videos=${videos.length}, audios=${audios.length}, screenshots=${screenshots.length}');
+    } catch (e) {
+      debugPrint('[ZenFile] _loadMediaFromFileSystem error: $e');
+    }
   }
 
-  Future<void> _loadAudios({bool hasPermission = true}) async {
-    try {
-      if (!hasPermission) {
-        // Double-check with on_audio_query's own permission check
-        final hasPerm = await _audioQuery.permissionsStatus();
-        if (!hasPerm) {
-          debugPrint('_loadAudios: no audio permission');
-          _audios = [];
-          return;
-        }
-      }
-      _audios = await _audioQuery.querySongs(
-        sortType: null,
-        orderType: OrderType.ASC_OR_SMALLER,
-        uriType: UriType.EXTERNAL,
-        ignoreCase: true,
-      );
-      debugPrint('_loadAudios: loaded ${_audios.length} songs');
-    } catch (e) {
-      debugPrint('_loadAudios error: $e');
-      _audios = [];
-    }
+  Future<void> _loadImagesAndVideos() async {
+    await _loadMediaFromFileSystem();
+  }
+
+  Future<void> _loadAudios() async {
+    // 音频已与图片、视频在 _loadMediaFromFileSystem 中一并扫描完成，
+    // 此处无需单独调用系统音频库，避免重复扫描。
   }
 
   static const List<String> _docExtensions = [
@@ -1487,6 +1474,9 @@ class MediaProvider extends ChangeNotifier {
     return p.isWithin(customPath, filePath);
   }
 
+  /// 归一化路径用于去重比较（合并连续斜杠）。
+  String _normalizeMediaPath(String path) => path.replaceAll(RegExp(r'/+'), '/');
+
   Future<List<File>> _scanCustomPaths(List<String> paths, bool Function(String path) filter) async {
     final files = <File>[];
     for (final path in paths) {
@@ -1721,44 +1711,67 @@ class MediaProvider extends ChangeNotifier {
   }
 
   void _applySort() {
-    if (_sortOrder == MediaSortOrder.newest ||
-        _sortOrder == MediaSortOrder.newestGrouped ||
-        _sortOrder == MediaSortOrder.dateWise) {
-      _images.sort((a, b) => b.createDateTime.compareTo(a.createDateTime));
-      _videos.sort((a, b) => b.createDateTime.compareTo(a.createDateTime));
-      _screenshots.sort((a, b) => b.createDateTime.compareTo(a.createDateTime));
-      _audios.sort(
-          (a, b) => (b.dateAdded ?? 0).compareTo(a.dateAdded ?? 0));
-    } else if (_sortOrder == MediaSortOrder.oldest ||
-               _sortOrder == MediaSortOrder.oldestGrouped) {
-      _images.sort((a, b) => a.createDateTime.compareTo(b.createDateTime));
-      _videos.sort((a, b) => a.createDateTime.compareTo(b.createDateTime));
-      _screenshots.sort((a, b) => a.createDateTime.compareTo(b.createDateTime));
-      _audios.sort(
-          (a, b) => (a.dateAdded ?? 0).compareTo(b.dateAdded ?? 0));
-    } else if (_sortOrder == MediaSortOrder.sizeLargest ||
-               _sortOrder == MediaSortOrder.sizeSmallest) {
-      final isSmallest = _sortOrder == MediaSortOrder.sizeSmallest;
-      _images.sort((a, b) {
-        final aRes = a.width * a.height;
-        final bRes = b.width * b.height;
-        return isSmallest ? aRes.compareTo(bRes) : bRes.compareTo(aRes);
-      });
-      _videos.sort((a, b) {
-        final aRes = a.width * a.height;
-        final bRes = b.width * b.height;
-        return isSmallest ? aRes.compareTo(bRes) : bRes.compareTo(aRes);
-      });
-      _screenshots.sort((a, b) {
-        final aRes = a.width * a.height;
-        final bRes = b.width * b.height;
-        return isSmallest ? aRes.compareTo(bRes) : bRes.compareTo(aRes);
-      });
-      _audios.sort((a, b) {
+    int mediaSortByDate(FileSystemEntity a, FileSystemEntity b) {
+      try {
+        final aTime = (a as File).lastModifiedSync();
+        final bTime = (b as File).lastModifiedSync();
+        return (_sortOrder == MediaSortOrder.oldest || _sortOrder == MediaSortOrder.oldestGrouped)
+            ? aTime.compareTo(bTime)
+            : bTime.compareTo(aTime);
+      } catch (_) {
+        return 0;
+      }
+    }
+
+    int mediaSortBySize(FileSystemEntity a, FileSystemEntity b) {
+      try {
+        final isSmallest = _sortOrder == MediaSortOrder.sizeSmallest;
+        final aSize = (a as File).lengthSync();
+        final bSize = (b as File).lengthSync();
+        return isSmallest ? aSize.compareTo(bSize) : bSize.compareTo(aSize);
+      } catch (_) {
+        return 0;
+      }
+    }
+
+    int audioSortByDate(SongModel a, SongModel b) {
+      try {
+        final aTime = File(a.data).lastModifiedSync();
+        final bTime = File(b.data).lastModifiedSync();
+        return (_sortOrder == MediaSortOrder.oldest || _sortOrder == MediaSortOrder.oldestGrouped)
+            ? aTime.compareTo(bTime)
+            : bTime.compareTo(aTime);
+      } catch (_) {
+        return 0;
+      }
+    }
+
+    int audioSortBySize(SongModel a, SongModel b) {
+      try {
+        final isSmallest = _sortOrder == MediaSortOrder.sizeSmallest;
         final aSize = a.size;
         final bSize = b.size;
         return isSmallest ? aSize.compareTo(bSize) : bSize.compareTo(aSize);
-      });
+      } catch (_) {
+        return 0;
+      }
+    }
+
+    if (_sortOrder == MediaSortOrder.newest ||
+        _sortOrder == MediaSortOrder.newestGrouped ||
+        _sortOrder == MediaSortOrder.dateWise ||
+        _sortOrder == MediaSortOrder.oldest ||
+        _sortOrder == MediaSortOrder.oldestGrouped) {
+      _images.sort(mediaSortByDate);
+      _videos.sort(mediaSortByDate);
+      _screenshots.sort(mediaSortByDate);
+      _audios.sort(audioSortByDate);
+    } else if (_sortOrder == MediaSortOrder.sizeLargest ||
+               _sortOrder == MediaSortOrder.sizeSmallest) {
+      _images.sort(mediaSortBySize);
+      _videos.sort(mediaSortBySize);
+      _screenshots.sort(mediaSortBySize);
+      _audios.sort(audioSortBySize);
     }
 
     int fileSort(FileSystemEntity a, FileSystemEntity b) {
@@ -1790,15 +1803,8 @@ class MediaProvider extends ChangeNotifier {
 
   Future<void> deleteMediaItems({
     required List<String> filePaths,
-    required List<String> assetIds,
+    List<String>? assetIds,
   }) async {
-    if (assetIds.isNotEmpty) {
-      try {
-        await PhotoManager.editor.deleteWithIds(assetIds);
-      } catch (e) {
-        debugPrint('Error deleting assets: $e');
-      }
-    }
     for (final path in filePaths) {
       try {
         final f = File(path);
@@ -1809,17 +1815,10 @@ class MediaProvider extends ChangeNotifier {
     }
 
     // Local List Optimization - instant updates without full-disk scans
-    if (assetIds.isNotEmpty) {
-      _images.removeWhere((item) => assetIds.contains(item.id));
-      _videos.removeWhere((item) => assetIds.contains(item.id));
-      _screenshots.removeWhere((item) => assetIds.contains(item.id));
-    }
-
     if (filePaths.isNotEmpty) {
-      // In case any image/video matches by path/title
-      _images.removeWhere((item) => filePaths.contains(item.title));
-      _videos.removeWhere((item) => filePaths.contains(item.title));
-      _screenshots.removeWhere((item) => filePaths.contains(item.title));
+      _images.removeWhere((item) => filePaths.contains(item.path));
+      _videos.removeWhere((item) => filePaths.contains(item.path));
+      _screenshots.removeWhere((item) => filePaths.contains(item.path));
 
       _customImages.removeWhere((item) => filePaths.contains(item.path));
       _customVideos.removeWhere((item) => filePaths.contains(item.path));

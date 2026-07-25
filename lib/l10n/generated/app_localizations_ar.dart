@@ -3847,6 +3847,10 @@ class L10nAr extends L10n {
       'ستظهر العناصر التي تحذفها عند تمكين سلة المحذوفات هنا. يمكنك استعادتها أو حذفها نهائيًا.';
 
   @override
+  String get ui_recycle_disabled_hint =>
+      '回收站已关闭。开启后，删除的文件和文件夹将暂存到这里，可随时恢复或永久删除。';
+
+  @override
   String get ui_recycle_deleted_date => 'تاريخ الحذف';
 
   @override

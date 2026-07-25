@@ -3929,6 +3929,10 @@ class L10nFr extends L10n {
       'Les éléments que vous supprimez lorsque la corbeille est activée apparaîtront ici. Vous pouvez les restaurer ou les supprimer définitivement.';
 
   @override
+  String get ui_recycle_disabled_hint =>
+      '回收站已关闭。开启后，删除的文件和文件夹将暂存到这里，可随时恢复或永久删除。';
+
+  @override
   String get ui_recycle_deleted_date => 'Date de suppression';
 
   @override

@@ -160,7 +160,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   const SizedBox(height: 6),
                   // 版本号文本（硬编码，无需 l10n；以后升级版本只改这里）
                   Text(
-                    'v1.1.2',
+                    'v1.1.23',
                     style: TextStyle(
                       color: theme.colorScheme.onSurface.withOpacity(0.7),
                       fontSize: 13,
@@ -708,7 +708,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   Text(L10n.of(context).msg305734ce, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
 
-                  _buildV1121Changelog(ctx, theme),
+                  _buildV1123Changelog(ctx, theme),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -719,7 +719,7 @@ class AboutZenFileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildV1121Changelog(BuildContext ctx, ThemeData theme) {
+  Widget _buildV1123Changelog(BuildContext ctx, ThemeData theme) {
     final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
     final sectionStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.primary, fontWeight: FontWeight.w600);
 
@@ -746,48 +746,50 @@ class AboutZenFileScreen extends StatelessWidget {
                   color: theme.colorScheme.primary.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text('v1.1.22', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+                child: Text('v1.1.23', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
               ),
               const SizedBox(width: 10),
-              Text('2026-07-24', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+              Text('2026-07-25', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
             ],
           ),
           gap(14),
 
-          // ── 新增功能 ──
-          Text(L10n.of(ctx).changelog_v1121_new_features_title, style: sectionStyle),
-          gap(4),
-          bulletText(L10n.of(ctx).changelog_v1121_new_feature_1),
-          gap(6),
-          bulletText(L10n.of(ctx).changelog_v1121_new_feature_2),
-          gap(14),
-
           // ── 优化 ──
-          Text(L10n.of(ctx).changelog_v1121_opt_title, style: sectionStyle),
+          Text('🔧 优化', style: sectionStyle),
           gap(4),
-          bulletText(L10n.of(ctx).changelog_v1121_opt_1),
+          bulletText('分类媒体浏览（图片、视频、音频、截图）改为递归文件系统扫描，不再依赖系统级媒体库索引（MediaStore）。类别识别更精准、稳定——文件移动或重命名后不再从分类中消失。'),
+          gap(6),
+          bulletText('视频与音频缩略图改为原生生成（通过 MediaMetadataRetriever），不再依赖系统媒体缩略图。'),
+          gap(6),
+          bulletText('回收站管理现已统一：启用开关与自动删除时长设置从「设置」迁移至「回收站」页面（抽屉 → 本地 → 回收站进入），开关与回收内容在同一处管理，更方便。'),
           gap(14),
 
           // ── 问题修复 ──
-          Text(L10n.of(ctx).changelog_v1121_bugfixes_title, style: sectionStyle),
+          Text('🐛 问题修复', style: sectionStyle),
           gap(4),
-          bulletText(L10n.of(ctx).changelog_v1121_bugfix_1),
+          bulletText('修复浏览远程目录时返回本地空目录的问题。'),
           gap(6),
-          bulletText(L10n.of(ctx).changelog_v1121_bugfix_2),
+          bulletText('修复列表视图下视频缩略图不显示的问题（网格视图原本已正常显示）。'),
+          gap(6),
+          bulletText('修复分类页长按进入多选模式后，顶部「全选」按钮无法全选的问题。'),
+          gap(6),
+          bulletText('优化分类页选中高亮效果：选中项现在显示清晰的主色边框与浅色底色，不再只是角落的小勾。'),
+          gap(6),
+          bulletText('修复清除应用数据/缓存后启动闪退的问题（卡在语言选择页）。此场景下系统可能误报「所有文件管理」已授权、但实际访问被拒；现已在授予访问前用真实目录枚举探测确认权限。'),
+          gap(6),
+          bulletText('修复备份较大 APK 时后台已成功但无完成弹窗的问题。'),
+          gap(6),
+          bulletText('修复视频播放器外挂字幕大小和位置调整不生效的问题。外挂字幕现改用基于解析后 SRT/ASS 时间轴的 Flutter 浮层渲染，字号与位置滑块对所有字幕格式都能稳定生效。'),
+          gap(6),
+          bulletText('优化在线歌词搜索：现在会列出候选歌曲供手动选择，避免在歌名相同、歌手不同的情况下误匹配。'),
+          gap(6),
+          bulletText('修复 FTP 共享后其他客户端连接成功却显示空目录的问题。被动模式（PASV）响应此前返回的是服务端 anyIPv4 地址（0.0.0.0），远程客户端无法回连该地址；现改为返回具体可达的局域网地址（同设备客户端返回 127.0.0.1），目录列表得以正确送达。'),
           gap(14),
 
           // ── 已知问题 ──
-          Text(L10n.of(ctx).changelog_v1121_known_issues_title, style: sectionStyle),
+          Text('⚠️ 已知问题（预计下个版本修复）', style: sectionStyle),
           gap(4),
-          bulletText(L10n.of(ctx).changelog_v1121_known_issue_1),
-          gap(6),
-          bulletText(L10n.of(ctx).changelog_v1121_known_issue_2),
-          gap(6),
-          bulletText(L10n.of(ctx).changelog_v1121_known_issue_3),
-          gap(6),
-          bulletText(L10n.of(ctx).changelog_v1121_known_issue_4),
-          gap(6),
-          bulletText(L10n.of(ctx).changelog_v1121_known_issue_5),
+          bulletText('目前仅 WebDAV 客户端支持媒体文件流式播放，其他客户端暂不支持。'),
         ],
       ),
     );

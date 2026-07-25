@@ -1976,7 +1976,35 @@ class FileManagerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 判断给定路径是否属于本地存储卷（而非远程路径）。
+  /// 用于在远程 tab 中导航到本地路径时自动退出远程模式。
+  bool _isPathOnLocalStorage(String path) {
+    final normalized = path.replaceAll(RegExp(r'/+'), '/');
+    if (normalized == '/storage/emulated/0' || normalized.startsWith('/storage/emulated/0/')) return true;
+    for (final volume in _storageVolumes) {
+      final volPath = volume.path.replaceAll(RegExp(r'/+'), '/');
+      if (normalized == volPath || normalized.startsWith('$volPath/')) return true;
+    }
+    return false;
+  }
+
   Future<void> loadDirectory(String path, {bool showLoading = true, bool clearCache = false, bool recordHistory = true, bool forceRefresh = false}) async {
+    // ── Remote → Local transition guard ──
+    // 当当前 tab 处于远程模式，但请求的路径明显是本地存储路径时（例如从共
+    // 享的历史栈退回到本地根目录），自动退出远程模式，避免远程客户端用本地
+    // 路径请求返回空列表。
+    if (activeTab.isRemote && activeTab.remoteClient != null && _isPathOnLocalStorage(path)) {
+      final client = activeTab.remoteClient;
+      activeTab.remoteClient = null;
+      activeTab.remoteConnection = null;
+      activeTab.isRemote = false;
+      if (client != null) {
+        unawaited(client.disconnect().catchError((_) {}));
+      }
+      notifyListeners();
+      // 继续走下方本地分支
+    }
+
     // ── Remote branch ──
     if (activeTab.isRemote && activeTab.remoteClient != null) {
       if (showLoading) {
