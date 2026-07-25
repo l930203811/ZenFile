@@ -1142,27 +1142,23 @@ class MediaProvider extends ChangeNotifier {
     try {
       final rootDir = Directory('/storage/emulated/0');
       if (await rootDir.exists()) {
-        await for (final entity in rootDir.list(recursive: false)) {
-          try {
-            if (entity is Directory) {
-              final name = p.basename(entity.path);
-              if (name != 'Android' && !name.startsWith('.')) {
-                searchDirs.add(entity.path);
-              }
-            }
-          } catch (_) {}
-        }
+        // 直接以主目录 /storage/emulated/0 为扫描根。
+        // _scanDirectoryRecursively 在递归时自动跳过 Android 与隐藏目录，
+        // 同时能够扫到主目录下的直接文件（图片/视频/音频等），
+        // 解决「文件放在主目录下时所有类别都扫描不出来」的问题。
+        searchDirs.add(rootDir.path);
+        return searchDirs;
       }
     } catch (_) {}
-    if (searchDirs.isEmpty) {
-      searchDirs.addAll([
-        '/storage/emulated/0/Download',
-        '/storage/emulated/0/Downloads',
-        '/storage/emulated/0/Documents',
-        '/storage/emulated/0/Telegram',
-        '/storage/emulated/0/WhatsApp/Media',
-      ]);
-    }
+
+    // 退回：主目录不可用时，扫描常见媒体目录
+    searchDirs.addAll([
+      '/storage/emulated/0/Download',
+      '/storage/emulated/0/Downloads',
+      '/storage/emulated/0/Documents',
+      '/storage/emulated/0/Telegram',
+      '/storage/emulated/0/WhatsApp/Media',
+    ]);
     return searchDirs;
   }
 
