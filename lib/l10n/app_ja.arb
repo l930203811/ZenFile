@@ -4301,5 +4301,9 @@
   "go_to_path": "パスに移動",
   "copy_path": "パスをコピー",
   "enter_path_hint": "絶対パスを入力...",
-  "breadcrumb_context_title": "パンくずリストオプション"
+  "breadcrumb_context_title": "パンくずリストオプション",
+  "ui_instrumental_track_hint": "この曲には歌詞がありません、音楽をお楽しみください。",
+  "@ui_instrumental_track_hint": {
+    "description": "Hint shown when a track has no lyrics (instrumental)."
+  }
 }

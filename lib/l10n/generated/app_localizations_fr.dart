@@ -4454,4 +4454,7 @@ class L10nFr extends L10n {
 
   @override
   String get breadcrumb_context_title => 'Options de fil d\'Ariane';
+
+  @override
+  String get ui_instrumental_track_hint => "Ce morceau n'a pas de paroles, profitez de la musique.";
 }

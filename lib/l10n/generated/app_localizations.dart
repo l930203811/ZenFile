@@ -7929,6 +7929,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'面包屑选项'**
   String get breadcrumb_context_title;
+
+  /// No description provided for @ui_instrumental_track_hint.
+  ///
+  /// In zh, this message translates to:
+  /// **'此歌曲为没有填词的纯音乐，请您欣赏'**
+  String get ui_instrumental_track_hint;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

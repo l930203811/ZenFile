@@ -4297,5 +4297,9 @@
   "go_to_path": "الانتقال إلى المسار",
   "copy_path": "نسخ المسار",
   "enter_path_hint": "أدخل المسار المطلق...",
-  "breadcrumb_context_title": "خيارات مسار التصفح"
+  "breadcrumb_context_title": "خيارات مسار التصفح",
+  "ui_instrumental_track_hint": "هذا المسار لا يحتوي على كلمات، استمتع بالموسيقى.",
+  "@ui_instrumental_track_hint": {
+    "description": "Hint shown when a track has no lyrics (instrumental)."
+  }
 }

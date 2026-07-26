@@ -4427,4 +4427,7 @@ class L10nDe extends L10n {
 
   @override
   String get breadcrumb_context_title => 'Breadcrumb-Optionen';
+
+  @override
+  String get ui_instrumental_track_hint => "Dieser Titel enthält keinen Liedtext, genießen Sie die Musik.";
 }

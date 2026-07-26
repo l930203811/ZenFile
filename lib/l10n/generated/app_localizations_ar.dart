@@ -4370,4 +4370,7 @@ class L10nAr extends L10n {
 
   @override
   String get breadcrumb_context_title => 'خيارات مسار التصفح';
+
+  @override
+  String get ui_instrumental_track_hint => "هذا المسار لا يحتوي على كلمات، استمتع بالموسيقى.";
 }

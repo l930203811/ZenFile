@@ -242,7 +242,13 @@ class SftpRemoteClient extends RemoteClient {
     // 64KB flush 可达到 ~10-20MB/s，满足高清视频播放需求。
     const flushInterval = 64 * 1024; // 64KB
     try {
-      final stream = file.read().timeout(
+      // dartssh2 默认 read 参数为 16KB chunk + 64 pending（约 1MB 在途窗口），
+      // 在高速/low-latency 网络下无法跑满带宽。调整为 256KB chunk + 64 pending，
+      // 在途窗口达到 16MB，可显著提升 SFTP 下载吞吐。
+      final stream = file.read(
+        chunkSize: 256 * 1024,
+        maxPendingRequests: 64,
+      ).timeout(
         const Duration(seconds: 120),
         onTimeout: (eventSink) {
           eventSink.addError(
@@ -284,8 +290,14 @@ class SftpRemoteClient extends RemoteClient {
     final sink = localFile.openWrite();
 
     try {
-      // dartssh2 的 read() 原生支持 offset + length，底层发起 SSH_FXP_READ 请求
-      final stream = file.read(offset: startByte, length: length).timeout(
+      // dartssh2 的 read() 原生支持 offset + length，底层发起 SSH_FXP_READ 请求。
+      // 使用 256KB chunk + 64 pending 提升 seek/下载片段吞吐。
+      final stream = file.read(
+        offset: startByte,
+        length: length,
+        chunkSize: 256 * 1024,
+        maxPendingRequests: 64,
+      ).timeout(
         const Duration(seconds: 60),
         onTimeout: (eventSink) {
           eventSink.addError(Exception('SFTP readRange timed out: no data for 60s'));
@@ -331,24 +343,34 @@ class SftpRemoteClient extends RemoteClient {
     onProgress(0.0);
 
     try {
-      // 使用 write(Stream) 流水线模式而非 writeBytes 逐块写入
-      // writeBytes 每次都要等待服务器返回 SSH_FXP_STATUS（串行往返），
-      // 导致速度仅 ~1.5MB/s（64KB / 40ms RTT）。
-      // write(Stream) 内部做流水线，吞吐量提升 10-30 倍。
-      // 通过自定义 Stream 拦截每个 chunk 实现取消和进度回调。
+      // dartssh2 的 remoteFile.write(Stream) 默认使用 16KB chunk + 64 pending，
+      // 在途窗口仅约 1MB，无法跑满高速链路。这里改为手动分块 + 多缓冲并发：
+      // openRead 默认返回 64KB chunk，最多允许 64 个 writeBytes 调用并发执行，
+      // 整体在途数据约 4MB；writeBytes 内部还会把每块再拆成 16KB 并发写入，
+      // 进一步填充 SSH 管道，提升上传吞吐。
+      const maxConcurrentWrites = 64;
+
+      int offset = 0;
       int uploaded = 0;
-      final transformedStream = localFile.openRead().map((chunk) {
+      final pending = <Future<void>>[];
+
+      await for (final chunk in localFile.openRead()) {
         if (isCancelled) {
           throw Exception('Cancelled');
         }
-        uploaded += chunk.length;
+        final data = Uint8List.fromList(chunk);
+        pending.add(remoteFile.writeBytes(data, offset: offset));
+        offset += data.length;
+        uploaded += data.length;
         if (totalSize > 0) {
           onProgress((uploaded / totalSize).clamp(0.0, 1.0));
         }
-        return Uint8List.fromList(chunk);
-      });
-      final writer = remoteFile.write(transformedStream);
-      await writer.done;
+        while (pending.length > maxConcurrentWrites) {
+          await pending.removeAt(0);
+        }
+      }
+
+      await Future.wait(pending);
     } finally {
       await remoteFile.close();
     }

@@ -1351,6 +1351,8 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
   /// 获取远程文件缩略图路径，如果不存在则下载
   Future<String?> _getRemoteThumbnailPath(RemoteFileItem item) async {
     if (_client == null) return null;
+    // 开关关闭时直接返回 null，避免任何下载/缓存读取
+    if (!PreferencesService.getRemoteMediaThumbnailPreview()) return null;
     try {
       // 优先使用外部存储，失败则回退到应用私有目录
       Directory? thumbDir;

@@ -17,12 +17,15 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 - All remote clients (SMB / FTP / SFTP / WebDAV) now support streaming media playback without downloading the whole file; streaming uses an independent connection so seeking is instant and no longer affects the remote browsing session.
 - SMB downloads now use an 8MB SMB2 read/write window (SMB2 large MTU limit), drastically cutting RTT round-trips so the link can be saturated on fast LANs.
+- SFTP transfer optimization: downloads now use 256 KB chunks with 64 pending requests (~16 MB in-flight window), and uploads use multi-buffer concurrent writes (~4 MB in-flight), greatly reducing RTT overhead and improving throughput.
 
 ### 🐛 Bug Fixes
 
 - Fixed an issue where, after cutting/moving a file from a remote location to local (or local to remote), the source directory still showed the original file until manually refreshed.
 - Fixed the audio player's "Play in background" toggle not refreshing its on/off state immediately in the menu (previously required reopening the menu).
 - Fixed media playback control buttons not showing in the notification shade on Android 13+. Patched a local fork of `audio_service` 0.18.18 so compact-view action buttons are set on all API versions and the `MediaSession`/foreground service is activated for any non-idle playback state, ensuring the Android 13+ media card appears.
+- Fixed remote thumbnails still being shown for SMB / FTP / SFTP / WebDAV after the "Remote Media Thumbnails" switch was turned off; all remote thumbnail loading paths now respect the switch.
+- Fixed the audio player showing a hardcoded Chinese placeholder when a track has no lyrics; the message is now fully localized (Chinese / Traditional Chinese / English / German / Spanish / French / Japanese / Korean / Arabic / Russian).
 
 ---
 

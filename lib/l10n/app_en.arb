@@ -4342,5 +4342,9 @@
   "go_to_path": "Go to path",
   "copy_path": "Copy path",
   "enter_path_hint": "Enter absolute path...",
-  "breadcrumb_context_title": "Breadcrumb Options"
+  "breadcrumb_context_title": "Breadcrumb Options",
+  "ui_instrumental_track_hint": "This track has no lyrics, enjoy the music.",
+  "@ui_instrumental_track_hint": {
+    "description": "Hint shown when a track has no lyrics (instrumental)."
+  }
 }

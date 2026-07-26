@@ -4297,5 +4297,9 @@
   "go_to_path": "경로로 이동",
   "copy_path": "경로 복사",
   "enter_path_hint": "절대 경로 입력...",
-  "breadcrumb_context_title": "경로 탐색 옵션"
+  "breadcrumb_context_title": "경로 탐색 옵션",
+  "ui_instrumental_track_hint": "이 곡에는 가사가 없습니다, 음악을 즐기세요.",
+  "@ui_instrumental_track_hint": {
+    "description": "Hint shown when a track has no lyrics (instrumental)."
+  }
 }

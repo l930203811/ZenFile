@@ -4559,5 +4559,9 @@
   "go_to_path": "跳转路径",
   "copy_path": "复制路径",
   "enter_path_hint": "输入绝对路径...",
-  "breadcrumb_context_title": "面包屑选项"
+  "breadcrumb_context_title": "面包屑选项",
+  "ui_instrumental_track_hint": "此歌曲为没有填词的纯音乐，请您欣赏",
+  "@ui_instrumental_track_hint": {
+    "description": "Hint shown when a track has no lyrics (instrumental)."
+  }
 }

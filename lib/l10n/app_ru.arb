@@ -4297,5 +4297,9 @@
   "go_to_path": "Перейти к пути",
   "copy_path": "Копировать путь",
   "enter_path_hint": "Введите абсолютный путь...",
-  "breadcrumb_context_title": "Параметры навигации"
+  "breadcrumb_context_title": "Параметры навигации",
+  "ui_instrumental_track_hint": "В этом треке нет текста песни, наслаждайтесь музыкой.",
+  "@ui_instrumental_track_hint": {
+    "description": "Hint shown when a track has no lyrics (instrumental)."
+  }
 }

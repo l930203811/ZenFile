@@ -4297,5 +4297,9 @@
   "go_to_path": "Aller au chemin",
   "copy_path": "Copier le chemin",
   "enter_path_hint": "Entrer le chemin absolu...",
-  "breadcrumb_context_title": "Options de fil d'Ariane"
+  "breadcrumb_context_title": "Options de fil d'Ariane",
+  "ui_instrumental_track_hint": "Ce morceau n'a pas de paroles, profitez de la musique.",
+  "@ui_instrumental_track_hint": {
+    "description": "Hint shown when a track has no lyrics (instrumental)."
+  }
 }

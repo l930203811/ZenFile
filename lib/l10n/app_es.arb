@@ -4297,5 +4297,9 @@
   "go_to_path": "Ir a la ruta",
   "copy_path": "Copiar ruta",
   "enter_path_hint": "Introducir ruta absoluta...",
-  "breadcrumb_context_title": "Opciones de ruta"
+  "breadcrumb_context_title": "Opciones de ruta",
+  "ui_instrumental_track_hint": "Esta pista no tiene letra, disfruta la música.",
+  "@ui_instrumental_track_hint": {
+    "description": "Hint shown when a track has no lyrics (instrumental)."
+  }
 }

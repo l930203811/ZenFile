@@ -4386,4 +4386,7 @@ class L10nEn extends L10n {
 
   @override
   String get breadcrumb_context_title => 'Breadcrumb Options';
+
+  @override
+  String get ui_instrumental_track_hint => "This track has no lyrics, enjoy the music.";
 }

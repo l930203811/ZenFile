@@ -377,6 +377,8 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
 
   Future<void> _loadRemoteThumbnail() async {
     if (!mounted) return;
+    // 尊重「远程媒体缩略图」开关：关闭后不再发起任何远程缩略图下载
+    if (!PreferencesService.getRemoteMediaThumbnailPreview()) return;
     try {
       final provider = context.read<FileManagerProvider>();
       final activeTab = provider.activeTab;
@@ -467,7 +469,9 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
 
   @override
   Widget build(BuildContext context) {
-    final showMediaPreviews = context.select<FileManagerProvider, bool>((p) => p.showMediaPreviews);
+    final showMediaPreviews = context.select<FileManagerProvider, bool>((p) => p.showMediaPreviews) &&
+        // 远程文件额外受「远程媒体缩略图」开关控制
+        (!widget.file.isRemote || PreferencesService.getRemoteMediaThumbnailPreview());
     final isImg = FileUtils.isImage(widget.file.path);
     final isVid = FileUtils.isVideo(widget.file.path);
     final isAud = FileUtils.isAudio(widget.file.path);

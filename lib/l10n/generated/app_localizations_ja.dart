@@ -4258,4 +4258,7 @@ class L10nJa extends L10n {
 
   @override
   String get breadcrumb_context_title => 'パンくずリストオプション';
+
+  @override
+  String get ui_instrumental_track_hint => "この曲には歌詞がありません、音楽をお楽しみください。";
 }

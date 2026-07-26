@@ -4438,5 +4438,9 @@
   "go_to_path": "跳轉路徑",
   "copy_path": "複製路徑",
   "enter_path_hint": "輸入絕對路徑...",
-  "breadcrumb_context_title": "麵包屑選項"
+  "breadcrumb_context_title": "麵包屑選項",
+  "ui_instrumental_track_hint": "此歌曲為沒有填詞的純音樂，請您欣賞",
+  "@ui_instrumental_track_hint": {
+    "description": "Hint shown when a track has no lyrics (instrumental)."
+  }
 }

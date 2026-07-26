@@ -123,6 +123,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   bool _isLoadingLyrics = false;
   bool _showInlineLyrics = false; // 是否在播放器界面显示完整内联歌词
   int _lyricsLoadGeneration = 0; // 防止歌词加载竞态
+  bool _lyricsWerePlaceholder = false; // 检测歌词为占位文本时显示多语言提示
 
   // 桌面歌词悬浮窗
   bool _desktopLyricEnabled = false;
@@ -519,6 +520,35 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     );
   }
 
+  /// 检测歌词是否只是占位文本（如第三方歌词源返回的“无歌词/纯音乐”提示）。
+  /// 如果是，则视为无歌词，让 UI 显示多语言提示。
+  List<LyricLine>? _sanitizeLyrics(List<LyricLine>? lyrics) {
+    if (lyrics == null || lyrics.isEmpty) return lyrics;
+    // 只针对单行占位文本
+    if (lyrics.length > 1) return lyrics;
+    final text = lyrics.first.text.trim();
+    const placeholderSubstrings = {
+      '此歌曲为没有填词的纯音乐',
+      '此歌曲為沒有填詞的純音樂',
+      '请您欣赏',
+      '請您欣賞',
+      '没有填词',
+      '沒有填詞',
+      '纯音乐',
+      '純音樂',
+      'This track has no lyrics',
+      'No lyrics',
+    };
+    final lower = text.toLowerCase();
+    for (final p in placeholderSubstrings) {
+      if (lower.contains(p.toLowerCase())) {
+        _lyricsWerePlaceholder = true;
+        return null;
+      }
+    }
+    return lyrics;
+  }
+
   /// 自动加载当前歌曲的歌词
   void _loadLyrics() {
     final audioPath = _currentPath;
@@ -530,6 +560,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       _lyrics = null;
       _lyricSourcePath = null;
       _isLoadingLyrics = true;
+      _lyricsWerePlaceholder = false;
     });
 
     // 异步加载歌词
@@ -541,14 +572,15 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       if (generation != _lyricsLoadGeneration) return;
 
       if (loaded != null) {
+        final sanitized = _sanitizeLyrics(loaded.lyrics);
         if (mounted) {
           setState(() {
-            _lyrics = loaded.lyrics;
-            _lyricSourcePath = loaded.sourcePath;
+            _lyrics = sanitized;
+            _lyricSourcePath = sanitized != null ? loaded.sourcePath : null;
             _isLoadingLyrics = false;
           });
           if (_desktopLyricEnabled) {
-            DesktopLyricController.instance.setLyrics(loaded.lyrics);
+            DesktopLyricController.instance.setLyrics(sanitized);
           }
         }
         return;
@@ -566,10 +598,11 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
 
       // 只应用最新一次加载的结果
       if (mounted && generation == _lyricsLoadGeneration) {
+        final sanitized = _sanitizeLyrics(onlineResult?.lyrics);
         setState(() {
-          if (onlineResult != null) {
-            _lyrics = onlineResult.lyrics;
-            _lyricSourcePath = onlineResult.sourcePath;
+          if (sanitized != null) {
+            _lyrics = sanitized;
+            _lyricSourcePath = onlineResult!.sourcePath;
           } else {
             _lyrics = null;
             _lyricSourcePath = null;
@@ -577,7 +610,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
           _isLoadingLyrics = false;
         });
         if (_desktopLyricEnabled) {
-          DesktopLyricController.instance.setLyrics(onlineResult?.lyrics);
+          DesktopLyricController.instance.setLyrics(sanitized);
         }
       }
     });
@@ -1130,7 +1163,9 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                       key: const ValueKey('empty'),
                       width: double.infinity,
                       child: Text(
-                        L10n.of(context).ui_no_lyrics_found,
+                        _lyricsWerePlaceholder
+                            ? L10n.of(context).ui_instrumental_track_hint
+                            : L10n.of(context).ui_no_lyrics_found,
                         textAlign: TextAlign.center,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -1337,7 +1372,9 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
             ),
             const SizedBox(height: 12),
             Text(
-              L10n.of(context).ui_no_lyrics_found,
+              _lyricsWerePlaceholder
+                  ? L10n.of(context).ui_instrumental_track_hint
+                  : L10n.of(context).ui_no_lyrics_found,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,

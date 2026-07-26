@@ -4294,5 +4294,9 @@
   "go_to_path": "Zum Pfad wechseln",
   "copy_path": "Pfad kopieren",
   "enter_path_hint": "Absoluten Pfad eingeben...",
-  "breadcrumb_context_title": "Breadcrumb-Optionen"
+  "breadcrumb_context_title": "Breadcrumb-Optionen",
+  "ui_instrumental_track_hint": "Dieser Titel enthält keinen Liedtext, genießen Sie die Musik.",
+  "@ui_instrumental_track_hint": {
+    "description": "Hint shown when a track has no lyrics (instrumental)."
+  }
 }
