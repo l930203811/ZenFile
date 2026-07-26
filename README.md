@@ -12,49 +12,24 @@ A beautifully crafted, open-source file manager and offline media center for And
 ### ✨ New Features
 
 - Category pages now offer a "Group by Folder" view, so media files can be browsed grouped by their source folders for quick location.
+- Added multilingual copyright attribution on the About page, preserving the original NFile attribution and adding the ZenFile modification attribution.
 
 ### 🔧 Optimizations
 
 - All remote clients (SMB / FTP / SFTP / WebDAV) now support streaming media playback without downloading the whole file; streaming uses an independent connection so seeking is instant and no longer affects the remote browsing session.
 - SMB downloads now use an 8MB SMB2 read/write window (SMB2 large MTU limit), drastically cutting RTT round-trips so the link can be saturated on fast LANs.
-- SFTP transfer optimization: downloads now use 256 KB chunks with 64 pending requests (~16 MB in-flight window), and uploads use multi-buffer concurrent writes (~4 MB in-flight), greatly reducing RTT overhead and improving throughput.
+- Release builds are now split per ABI (`--split-per-abi`), significantly reducing the arm64 package size.
 
 ### 🐛 Bug Fixes
 
 - Fixed an issue where, after cutting/moving a file from a remote location to local (or local to remote), the source directory still showed the original file until manually refreshed.
 - Fixed the audio player's "Play in background" toggle not refreshing its on/off state immediately in the menu (previously required reopening the menu).
-- Fixed media playback control buttons not showing in the notification shade on Android 13+. Patched a local fork of `audio_service` 0.18.18 so compact-view action buttons are set on all API versions and the `MediaSession`/foreground service is activated for any non-idle playback state, ensuring the Android 13+ media card appears.
+- Further adapted the audio background-service type and `MediaSession` activation logic for Android 13+ media controls; some OEM ROMs may still hide the media card due to system restrictions and are under continued investigation.
 - Fixed remote thumbnails still being shown for SMB / FTP / SFTP / WebDAV after the "Remote Media Thumbnails" switch was turned off; all remote thumbnail loading paths now respect the switch.
 - Fixed the audio player showing a hardcoded Chinese placeholder when a track has no lyrics; the message is now fully localized (Chinese / Traditional Chinese / English / German / Spanish / French / Japanese / Korean / Arabic / Russian).
-
----
-
-## 🚀 What's New in v1.1.23
-
-### ✨ New Features
-
-- App Management: Added a 'Copy Package Name' option in the app popup menu, allowing one-tap copy of the app's package name.
-- Path bar: Long-press the path bar to enter edit mode, allowing you to input and navigate to a specified path.
-
-### 🔧 Optimizations
-
-- Category media browsing (images, videos, audio, screenshots) now uses recursive filesystem scanning instead of system-level media library indexing (MediaStore). Category recognition is now more accurate and stable — files that are moved or renamed no longer disappear from their category. The scanning logic is unified with the Web Sharing page.
-- Video and audio thumbnails are now generated natively (via MediaMetadataRetriever) instead of relying on system media thumbnails.
-- Recycle Bin management is now unified: the enable switch and auto-delete duration setting were moved out of Settings into the Recycle Bin page (opened from Drawer → Local → Recycle Bin), so the toggle and the bin contents are managed in one place.
-
-### 🐛 Bug Fixes
-
-- Fixed the issue where the global search could not find files in the data directory.
-- Fixed the issue where the 'Uninstall' button in the App Management popup overflowed the bottom of the screen on some devices, making it hard to tap.
-- Fixed an issue where browsing a remote directory would return an empty local directory.
-- Fixed missing video thumbnails in list view (thumbnails already worked in grid view).
-- Fixed the "Select All" button failing to select all items after long-pressing to enter selection mode on category pages.
-- Improved selection highlighting on category pages: selected items now show a clear colored border and tinted background instead of only a small corner checkmark.
-- Fixed an issue where the app would crash on launch (at the language selection page) after clearing app data/cache. The system could report the all-files permission as granted while actual storage access was denied (permission state inconsistency); permission is now verified with a real directory probe before granting access.
-- Fixed an issue where backing up a large APK succeeded in the background but showed no completion dialog. The progress dialog now uses the root navigator's overlay context and is non-dismissible, so the success dialog always appears when the backup finishes.
-- Fixed external subtitle size and position not taking effect. External subtitles are now rendered via a Flutter overlay driven by parsed SRT/ASS cues, so the size and position sliders work reliably for all subtitle formats.
-- Improved online lyrics search: it now lists candidate songs so you can manually pick the correct one, avoiding wrong matches when songs share the same title but have different artists (previously it auto-matched the first result).
-- Fixed FTP sharing showing an empty directory to other clients after a successful connection. The PASV passive-mode response previously returned the server's anyIPv4 address (0.0.0.0), which a remote client cannot connect back to; it now returns a concrete, reachable LAN address (or loopback for same-device clients), so the directory listing is delivered correctly.
+- Fixed the FTP transfer progress bar jumping instantly to full due to incorrect SIZE response parsing.
+- Fixed SFTP connections to FnOS NAS only showing some shared directories (root-path listing parsing).
+- Fixed SFTP remote video playback stopping after ~1 second, the progress bar not moving, and seeking getting stuck at "buffering" (restored compatible read strategy and correctly pass file size).
 
 ---
 

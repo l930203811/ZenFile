@@ -4223,6 +4223,49 @@ class L10nZh extends L10n {
 
   @override
   String get ui_instrumental_track_hint => '此歌曲为没有填词的纯音乐，请您欣赏';
+
+  @override
+  String get changelog_section_new => '✨ 新增功能';
+
+  @override
+  String get changelog_section_optimizations => '🔧 优化';
+
+  @override
+  String get changelog_section_fixes => '🐛 问题修复';
+
+  @override
+  String get changelog_section_known_issues => '⚠️ 已知问题';
+
+  @override
+  String get changelog_v1124_new_1 =>
+      '关于页新增多语言版权署名，保留 NFile 原署名并增加 ZenFile 修改署名。';
+
+  @override
+  String get changelog_v1124_opt_1 =>
+      '构建产物改为按 ABI 分包（--split-per-abi），arm64 安装包体积显著减小。';
+
+  @override
+  String get changelog_v1124_opt_2 =>
+      '音频后台播放服务在 Android 13+ 上进一步适配前台服务类型与 MediaSession 激活逻辑（部分 ROM 仍可能因系统限制无法显示媒体卡片）。';
+
+  @override
+  String get changelog_v1124_fix_1 =>
+      '修复 FTP 客户端传输文件时进度条瞬间满格、不准确的问题（修正 SIZE 响应解析）。';
+
+  @override
+  String get changelog_v1124_fix_2 =>
+      '修复 SFTP 连接飞牛 NAS 时只显示部分共享目录的问题（根路径列表解析）。';
+
+  @override
+  String get changelog_v1124_fix_3 =>
+      '修复 SFTP 远程视频播放约 1 秒后停止、进度条不走、拖动进度条后一直卡在“正在缓存中”的问题（恢复兼容的读取策略并正确传递文件大小）。';
+
+  @override
+  String get changelog_v1124_fix_4 => '修复关于页“查看更新”弹窗仍显示 v1.1.23 更新日志的问题。';
+
+  @override
+  String get changelog_v1124_known_1 =>
+      'Android 13+ 通知栏媒体控制按钮在部分国产 ROM 上仍可能无法显示，正在持续调研系统级限制。';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -8397,4 +8440,47 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_instrumental_track_hint => '此歌曲為沒有填詞的純音樂，請您欣賞';
+
+  @override
+  String get changelog_section_new => '✨ 新增功能';
+
+  @override
+  String get changelog_section_optimizations => '🔧 最佳化';
+
+  @override
+  String get changelog_section_fixes => '🐛 問題修復';
+
+  @override
+  String get changelog_section_known_issues => '⚠️ 已知問題';
+
+  @override
+  String get changelog_v1124_new_1 =>
+      '關於頁新增多語言版權署名，保留 NFile 原署名並增加 ZenFile 修改署名。';
+
+  @override
+  String get changelog_v1124_opt_1 =>
+      '建構產物改為按 ABI 分包（--split-per-abi），arm64 安裝包體積顯著減少。';
+
+  @override
+  String get changelog_v1124_opt_2 =>
+      '音訊背景播放服務在 Android 13+ 上進一步適配前景服務類型與 MediaSession 啟動邏輯（部分 ROM 仍可能因系統限制無法顯示媒體卡片）。';
+
+  @override
+  String get changelog_v1124_fix_1 =>
+      '修復 FTP 客戶端傳輸檔案時進度條瞬間滿格、不準確的問題（修正 SIZE 回應解析）。';
+
+  @override
+  String get changelog_v1124_fix_2 =>
+      '修復 SFTP 連接飛牛 NAS 時只顯示部分共用目錄的問題（根路徑列表解析）。';
+
+  @override
+  String get changelog_v1124_fix_3 =>
+      '修復 SFTP 遠端影片播放約 1 秒後停止、進度條不走、拖動進度條後一直卡在「正在緩衝中」的問題（恢復相容的讀取策略並正確傳遞檔案大小）。';
+
+  @override
+  String get changelog_v1124_fix_4 => '修復關於頁「查看更新」彈窗仍顯示 v1.1.23 更新日誌的問題。';
+
+  @override
+  String get changelog_v1124_known_1 =>
+      'Android 13+ 通知欄媒體控制按鈕在部分國產 ROM 上仍可能無法顯示，正在持續調研系統級限制。';
 }

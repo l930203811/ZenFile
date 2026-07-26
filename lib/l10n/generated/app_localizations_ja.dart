@@ -4264,4 +4264,48 @@ class L10nJa extends L10n {
 
   @override
   String get ui_instrumental_track_hint => 'この曲には歌詞がありません、音楽をお楽しみください。';
+
+  @override
+  String get changelog_section_new => '✨ New Features';
+
+  @override
+  String get changelog_section_optimizations => '🔧 Optimizations';
+
+  @override
+  String get changelog_section_fixes => '🐛 Bug Fixes';
+
+  @override
+  String get changelog_section_known_issues => '⚠️ Known Issues';
+
+  @override
+  String get changelog_v1124_new_1 =>
+      'Added multilingual copyright attribution on the About page, preserving the original NFile attribution and adding the ZenFile modification attribution.';
+
+  @override
+  String get changelog_v1124_opt_1 =>
+      'Release builds are now split per ABI (--split-per-abi), significantly reducing the arm64 package size.';
+
+  @override
+  String get changelog_v1124_opt_2 =>
+      'Further adapted the audio background-service type and MediaSession activation logic for Android 13+ (some OEM ROMs may still hide the media card due to system restrictions).';
+
+  @override
+  String get changelog_v1124_fix_1 =>
+      'Fixed the FTP transfer progress bar jumping instantly to full due to incorrect SIZE response parsing.';
+
+  @override
+  String get changelog_v1124_fix_2 =>
+      'Fixed SFTP connections to FnOS NAS only showing some shared directories (root-path listing parsing).';
+
+  @override
+  String get changelog_v1124_fix_3 =>
+      'Fixed SFTP remote video playback stopping after ~1 second, the progress bar not moving, and seeking getting stuck at \'buffering\' (restored compatible read strategy and correctly pass file size).';
+
+  @override
+  String get changelog_v1124_fix_4 =>
+      'Fixed the About page \'What\'s New\' sheet still showing the v1.1.23 changelog.';
+
+  @override
+  String get changelog_v1124_known_1 =>
+      'Media playback controls in the notification shade may still fail to appear on some Android 13+ OEM ROMs; system-level restrictions are still being investigated.';
 }

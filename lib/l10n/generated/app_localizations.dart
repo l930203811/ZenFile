@@ -7941,6 +7941,78 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'此歌曲为没有填词的纯音乐，请您欣赏'**
   String get ui_instrumental_track_hint;
+
+  /// ui\screensbout_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'✨ 新增功能'**
+  String get changelog_section_new;
+
+  /// ui\screensbout_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'🔧 优化'**
+  String get changelog_section_optimizations;
+
+  /// ui\screensbout_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'🐛 问题修复'**
+  String get changelog_section_fixes;
+
+  /// ui\screensbout_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'⚠️ 已知问题'**
+  String get changelog_section_known_issues;
+
+  /// ui\screensbout_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'关于页新增多语言版权署名，保留 NFile 原署名并增加 ZenFile 修改署名。'**
+  String get changelog_v1124_new_1;
+
+  /// ui\screensbout_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'构建产物改为按 ABI 分包（--split-per-abi），arm64 安装包体积显著减小。'**
+  String get changelog_v1124_opt_1;
+
+  /// ui\screensbout_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'音频后台播放服务在 Android 13+ 上进一步适配前台服务类型与 MediaSession 激活逻辑（部分 ROM 仍可能因系统限制无法显示媒体卡片）。'**
+  String get changelog_v1124_opt_2;
+
+  /// ui\screensbout_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'修复 FTP 客户端传输文件时进度条瞬间满格、不准确的问题（修正 SIZE 响应解析）。'**
+  String get changelog_v1124_fix_1;
+
+  /// ui\screensbout_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'修复 SFTP 连接飞牛 NAS 时只显示部分共享目录的问题（根路径列表解析）。'**
+  String get changelog_v1124_fix_2;
+
+  /// ui\screensbout_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'修复 SFTP 远程视频播放约 1 秒后停止、进度条不走、拖动进度条后一直卡在“正在缓存中”的问题（恢复兼容的读取策略并正确传递文件大小）。'**
+  String get changelog_v1124_fix_3;
+
+  /// ui\screensbout_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'修复关于页“查看更新”弹窗仍显示 v1.1.23 更新日志的问题。'**
+  String get changelog_v1124_fix_4;
+
+  /// ui\screensbout_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'Android 13+ 通知栏媒体控制按钮在部分国产 ROM 上仍可能无法显示，正在持续调研系统级限制。'**
+  String get changelog_v1124_known_1;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

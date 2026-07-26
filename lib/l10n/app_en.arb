@@ -4351,5 +4351,53 @@
   "ui_instrumental_track_hint": "This track has no lyrics, enjoy the music.",
   "@ui_instrumental_track_hint": {
     "description": "Hint shown when a track has no lyrics (instrumental)."
-  }
+  },
+  "@changelog_section_new": {
+    "description": "ui\\screens\u0007bout_screen.dart"
+  },
+  "changelog_section_new": "✨ New Features",
+  "@changelog_section_optimizations": {
+    "description": "ui\\screens\u0007bout_screen.dart"
+  },
+  "changelog_section_optimizations": "🔧 Optimizations",
+  "@changelog_section_fixes": {
+    "description": "ui\\screens\u0007bout_screen.dart"
+  },
+  "changelog_section_fixes": "🐛 Bug Fixes",
+  "@changelog_section_known_issues": {
+    "description": "ui\\screens\u0007bout_screen.dart"
+  },
+  "changelog_section_known_issues": "⚠️ Known Issues",
+  "@changelog_v1124_new_1": {
+    "description": "ui\\screens\u0007bout_screen.dart"
+  },
+  "changelog_v1124_new_1": "Added multilingual copyright attribution on the About page, preserving the original NFile attribution and adding the ZenFile modification attribution.",
+  "@changelog_v1124_opt_1": {
+    "description": "ui\\screens\u0007bout_screen.dart"
+  },
+  "changelog_v1124_opt_1": "Release builds are now split per ABI (--split-per-abi), significantly reducing the arm64 package size.",
+  "@changelog_v1124_opt_2": {
+    "description": "ui\\screens\u0007bout_screen.dart"
+  },
+  "changelog_v1124_opt_2": "Further adapted the audio background-service type and MediaSession activation logic for Android 13+ (some OEM ROMs may still hide the media card due to system restrictions).",
+  "@changelog_v1124_fix_1": {
+    "description": "ui\\screens\u0007bout_screen.dart"
+  },
+  "changelog_v1124_fix_1": "Fixed the FTP transfer progress bar jumping instantly to full due to incorrect SIZE response parsing.",
+  "@changelog_v1124_fix_2": {
+    "description": "ui\\screens\u0007bout_screen.dart"
+  },
+  "changelog_v1124_fix_2": "Fixed SFTP connections to FnOS NAS only showing some shared directories (root-path listing parsing).",
+  "@changelog_v1124_fix_3": {
+    "description": "ui\\screens\u0007bout_screen.dart"
+  },
+  "changelog_v1124_fix_3": "Fixed SFTP remote video playback stopping after ~1 second, the progress bar not moving, and seeking getting stuck at 'buffering' (restored compatible read strategy and correctly pass file size).",
+  "@changelog_v1124_fix_4": {
+    "description": "ui\\screens\u0007bout_screen.dart"
+  },
+  "changelog_v1124_fix_4": "Fixed the About page 'What's New' sheet still showing the v1.1.23 changelog.",
+  "@changelog_v1124_known_1": {
+    "description": "ui\\screens\u0007bout_screen.dart"
+  },
+  "changelog_v1124_known_1": "Media playback controls in the notification shade may still fail to appear on some Android 13+ OEM ROMs; system-level restrictions are still being investigated."
 }
