@@ -1257,6 +1257,12 @@ class SmbService {
                         var bytesRead: Int
                         while (input.read(buffer).also { bytesRead = it } != -1) {
                             output.write(buffer, 0, bytesRead)
+                            // 关键：每写入一块立即 flush 到磁盘，使本地 partial 文件随下载渐进增长。
+                            // RemoteStreamingService 依赖读取磁盘上逐步增大的文件来实现「边下边播」：
+                            // 若只在结束时 flush 一次，代理在下载完成前读到的始终是 0 字节，导致无法
+                            // 真正流式播放，且大文件（下载 > 60s）会被代理判定超时而失败。
+                            // flush() 仅把 Java 缓冲推送到内核 write()，开销极低，不会触发 fsync。
+                            output.flush()
                         }
                         output.flush()
                     }
