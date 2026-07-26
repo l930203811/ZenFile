@@ -391,9 +391,16 @@ class FtpRemoteClient extends RemoteClient {
       try {
         final sizeResp = await sendCommand('SIZE $remotePath')
             .timeout(const Duration(seconds: 3));
-        final match = RegExp(r'(\d+)').firstMatch(sizeResp);
+        // SIZE 响应形如 "213 1234567"（状态码 + 空格 + 文件字节数）。
+        // 必须取状态码之后的数字，不能取首个数字——否则会把状态码 213
+        // 当成文件大小，导致下载 213 字节后进度就到 100%（进度条瞬间满格）。
+        final match = RegExp(r'^\d{3}[ -](\d+)').firstMatch(sizeResp.trim());
         if (match != null) {
-          fileSize = int.parse(match.group(1)!);
+          fileSize = int.tryParse(match.group(1)!) ?? 0;
+        } else {
+          // 兜底：取最后一个纯数字字段
+          final parts = sizeResp.trim().split(RegExp(r'\s+'));
+          if (parts.length >= 2) fileSize = int.tryParse(parts.last) ?? 0;
         }
       } catch (_) {
         // SIZE 查询超时或失败 — 继续下载，进度按字节无法报告

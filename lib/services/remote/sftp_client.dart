@@ -33,6 +33,20 @@ class SftpRemoteClient extends RemoteClient {
       socket,
       username: username,
       onPasswordRequest: () => password,
+      // 优先协商 AES-GCM（AEAD 模式）。dartssh2 默认算法列表只含 CTR/CBC，
+      // 未启用 GCM。GCM 在纯 Dart 下免独立 HMAC 校验，整体加解密开销更低，
+      // 可缓解 SFTP 在手机 CPU 上的吞吐瓶颈（其他客户端用原生 SSH 可达更高速率）。
+      // 若服务端不支持 GCM，自动回退到 aes128ctr 等默认算法。
+      algorithms: SSHAlgorithms(
+        cipher: const [
+          SSHCipherType.aes128gcm,
+          SSHCipherType.aes256gcm,
+          SSHCipherType.aes128ctr,
+          SSHCipherType.aes128cbc,
+          SSHCipherType.aes256ctr,
+          SSHCipherType.aes256cbc,
+        ],
+      ),
     );
     _sftpClient = await _sshClient!.sftp();
   }
@@ -50,17 +64,22 @@ class SftpRemoteClient extends RemoteClient {
     if (_sftpClient == null) throw Exception('SFTP not connected');
     
     var targetPath = path;
-    if (targetPath.isEmpty || targetPath == '/') {
-      targetPath = '.';
+    if (targetPath.isEmpty) {
+      targetPath = '/';
     }
-    
+    // 注意：根路径使用绝对路径 '/' 而不是 '.'（登录后的 home）。
+    // 飞牛 NAS 等服务把所有共享目录挂在绝对根 '/' 下；若列 '.'（home 目录）
+    // 只会显示 home 内的部分共享，表现为"只显示部分共享目录"。其他同类客户端
+    // 列的是 '/'，因此能看到全部共享。若 '/' 无权限，再回退到 '.'。
+    // （dartssh2 的 listdir 已正确处理分页，不是分页导致的截断。）
+
     late final List<SftpName> items;
     try {
       items = await _sftpClient!.listdir(targetPath).timeout(const Duration(seconds: 30));
     } catch (e) {
-      if (targetPath == '.') {
+      if (targetPath == '/') {
         try {
-          items = await _sftpClient!.listdir('').timeout(const Duration(seconds: 30));
+          items = await _sftpClient!.listdir('.').timeout(const Duration(seconds: 30));
         } catch (e2) {
           throw Exception('Failed to list directory: $e');
         }
@@ -128,7 +147,7 @@ class SftpRemoteClient extends RemoteClient {
         final results = await Future.wait(
           batchIndices.map((idx) => _sftpClient!.stat(needStat[idx]!)
               .timeout(const Duration(seconds: 5))
-              .catchError((_) => null)),
+              .catchError((_) => SftpFileAttrs())),
         );
 
         for (int j = 0; j < results.length; j++) {
