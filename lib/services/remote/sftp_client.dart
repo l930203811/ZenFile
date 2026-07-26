@@ -247,13 +247,11 @@ class SftpRemoteClient extends RemoteClient {
     // 64KB flush 可达到 ~10-20MB/s，满足高清视频播放需求。
     const flushInterval = 64 * 1024; // 64KB
     try {
-      // dartssh2 默认 read 参数为 16KB chunk + 64 pending（约 1MB 在途窗口），
-      // 在高速/low-latency 网络下无法跑满带宽。调整为 256KB chunk + 64 pending，
-      // 在途窗口达到 16MB，可显著提升 SFTP 下载吞吐。
-      final stream = file.read(
-        chunkSize: 256 * 1024,
-        maxPendingRequests: 64,
-      ).timeout(
+      // 使用 dartssh2 默认 read() 参数（默认 chunkSize + 64 并发在途请求）。
+      // 注意：曾尝试把 chunkSize 提到 256KB 以提速，但飞牛 NAS 等部分 SFTP
+      // 服务端对单次大读取请求返回异常 EOF 状态，导致 read() 提前 break、
+      // 下载只到开头几 MB，串流播放 ~1 秒即停。故恢复默认参数以保证兼容与串流稳定。
+      final stream = file.read().timeout(
         const Duration(seconds: 120),
         onTimeout: (eventSink) {
           eventSink.addError(
@@ -296,12 +294,10 @@ class SftpRemoteClient extends RemoteClient {
 
     try {
       // dartssh2 的 read() 原生支持 offset + length，底层发起 SSH_FXP_READ 请求。
-      // 使用 256KB chunk + 64 pending 提升 seek/下载片段吞吐。
+      // 使用默认参数，避免大 chunk 在部分服务端触发异常 EOF（与 downloadFile 同源坑）。
       final stream = file.read(
         offset: startByte,
         length: length,
-        chunkSize: 256 * 1024,
-        maxPendingRequests: 64,
       ).timeout(
         const Duration(seconds: 60),
         onTimeout: (eventSink) {
