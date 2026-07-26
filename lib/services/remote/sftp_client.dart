@@ -33,20 +33,6 @@ class SftpRemoteClient extends RemoteClient {
       socket,
       username: username,
       onPasswordRequest: () => password,
-      // 优先协商 AES-GCM（AEAD 模式）。dartssh2 默认算法列表只含 CTR/CBC，
-      // 未启用 GCM。GCM 在纯 Dart 下免独立 HMAC 校验，整体加解密开销更低，
-      // 可缓解 SFTP 在手机 CPU 上的吞吐瓶颈（其他客户端用原生 SSH 可达更高速率）。
-      // 若服务端不支持 GCM，自动回退到 aes128ctr 等默认算法。
-      algorithms: SSHAlgorithms(
-        cipher: const [
-          SSHCipherType.aes128gcm,
-          SSHCipherType.aes256gcm,
-          SSHCipherType.aes128ctr,
-          SSHCipherType.aes128cbc,
-          SSHCipherType.aes256ctr,
-          SSHCipherType.aes256cbc,
-        ],
-      ),
     );
     _sftpClient = await _sshClient!.sftp();
   }
