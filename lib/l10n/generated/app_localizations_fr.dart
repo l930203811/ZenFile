@@ -245,7 +245,11 @@ class L10nFr extends L10n {
   String get bysequel => 'Créé avec ❤️ par Sequel';
 
   @override
-  String get zenfile2 => 'Copyright © 2026 ZenFile. Tous droits réservés.';
+  String get zenfile2 => 'Modifications © 2026 ZenFile. Tous droits réservés.';
+
+  @override
+  String get based_on_nfile =>
+      'Basé sur NFile par Senzme. Copyright original © 2026 NFile.';
 
   @override
   String get msg138d3725 => 'Votre soutien me motive ❤️';

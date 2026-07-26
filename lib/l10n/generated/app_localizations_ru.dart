@@ -246,7 +246,11 @@ class L10nRu extends L10n {
   String get bysequel => 'Создано с ❤️ от Sequel';
 
   @override
-  String get zenfile2 => 'Copyright © 2026 ZenFile. Все права защищены.';
+  String get zenfile2 => 'Изменения © 2026 ZenFile. Все права защищены.';
+
+  @override
+  String get based_on_nfile =>
+      'Основано на NFile от Senzme. Исходный copyright © 2026 NFile.';
 
   @override
   String get msg138d3725 => 'Ваша поддержка помогает мне двигаться дальше ❤️';

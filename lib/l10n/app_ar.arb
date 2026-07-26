@@ -276,7 +276,12 @@
   "@zenfile2": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfile2": "حقوق النشر © 2026 ZenFile. جميع الحقوق محفوظة.",
+  "zenfile2": "التعديلات © 2026 ZenFile. جميع الحقوق محفوظة.",
+  "@based_on_nfile": {
+    "description": "About screen derived-from-NFile attribution"
+  },
+  "based_on_nfile": "مبني على NFile من Senzme. حقوق النشر الأصلية © 2026 NFile.",
+
   "@msg138d3725": {
     "description": "ui\\screens\\about_screen.dart"
   },

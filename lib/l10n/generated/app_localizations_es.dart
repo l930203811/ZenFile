@@ -247,7 +247,11 @@ class L10nEs extends L10n {
 
   @override
   String get zenfile2 =>
-      'Copyright © 2026 ZenFile. Todos los derechos reservados.';
+      'Modificaciones © 2026 ZenFile. Todos los derechos reservados.';
+
+  @override
+  String get based_on_nfile =>
+      'Basado en NFile de Senzme. Copyright original © 2026 NFile.';
 
   @override
   String get msg138d3725 => 'Tu apoyo me mantiene adelante ❤️';

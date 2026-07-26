@@ -240,7 +240,10 @@ class L10nJa extends L10n {
   String get bysequel => '心を込めて作成 ❤️ by Sequel';
 
   @override
-  String get zenfile2 => 'Copyright © 2026 ZenFile. All rights reserved.';
+  String get zenfile2 => '修正版 © 2026 ZenFile. 全著作権所有。';
+
+  @override
+  String get based_on_nfile => 'Senzme の NFile をベースに開発。オリジナル著作権 © 2026 NFile.';
 
   @override
   String get msg138d3725 => 'あなたのサポートが更新の原動力です ❤️';

@@ -280,7 +280,12 @@
   "@zenfile2": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfile2": "Copyright © 2026 ZenFile. All rights reserved.",
+  "zenfile2": "修正版 © 2026 ZenFile. 全著作権所有。",
+  "@based_on_nfile": {
+    "description": "About screen derived-from-NFile attribution"
+  },
+  "based_on_nfile": "Senzme の NFile をベースに開発。オリジナル著作権 © 2026 NFile.",
+
   "@msg138d3725": {
     "description": "ui\\screens\\about_screen.dart"
   },

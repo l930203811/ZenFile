@@ -241,7 +241,11 @@ class L10nAr extends L10n {
   String get bysequel => 'صنع بـ ❤️ بواسطة Sequel';
 
   @override
-  String get zenfile2 => 'حقوق النشر © 2026 ZenFile. جميع الحقوق محفوظة.';
+  String get zenfile2 => 'التعديلات © 2026 ZenFile. جميع الحقوق محفوظة.';
+
+  @override
+  String get based_on_nfile =>
+      'مبني على NFile من Senzme. حقوق النشر الأصلية © 2026 NFile.';
 
   @override
   String get msg138d3725 => 'دعمك ي.keepني مستمراً ❤️';

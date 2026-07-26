@@ -381,6 +381,14 @@ class AboutZenFileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
+                    L10n.of(context).based_on_nfile,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: theme.colorScheme.onSurface.withOpacity(0.35),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
                     L10n.of(context).zenfile2,
                     style: TextStyle(
                       fontSize: 11,

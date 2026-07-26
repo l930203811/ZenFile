@@ -239,7 +239,10 @@ class L10nZh extends L10n {
   String get bysequel => '用心打造 ❤️ by Sequel';
 
   @override
-  String get zenfile2 => '版权所有 © 2026 ZenFile。保留所有权利。';
+  String get zenfile2 => '修改版本 © 2026 ZenFile。保留所有权利。';
+
+  @override
+  String get based_on_nfile => '基于 Senzme 的 NFile 开发。原始版权 © 2026 NFile。';
 
   @override
   String get msg138d3725 => '您的支持是我持续更新的动力 ❤️';
@@ -4457,7 +4460,10 @@ class L10nZhTw extends L10nZh {
   String get bysequel => '用心打造 ❤️ by Sequel';
 
   @override
-  String get zenfile2 => '版權所有 © 2026 ZenFile。保留所有權利。';
+  String get zenfile2 => '修改版本 © 2026 ZenFile。保留所有權利。';
+
+  @override
+  String get based_on_nfile => '基於 Senzme 的 NFile 開發。原始版權 © 2026 NFile。';
 
   @override
   String get msg138d3725 => '您的支援是我持續更新的動力 ❤️';

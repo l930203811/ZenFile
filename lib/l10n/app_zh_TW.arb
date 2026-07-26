@@ -286,7 +286,12 @@
   "@bysequel": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "zenfile2": "版權所有 © 2026 ZenFile。保留所有權利。",
+  "zenfile2": "修改版本 © 2026 ZenFile。保留所有權利。",
+  "@based_on_nfile": {
+    "description": "About screen derived-from-NFile attribution"
+  },
+  "based_on_nfile": "基於 Senzme 的 NFile 開發。原始版權 © 2026 NFile。",
+
   "@zenfile2": {
     "description": "ui\\screens\\about_screen.dart"
   },

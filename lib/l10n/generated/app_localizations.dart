@@ -529,8 +529,14 @@ abstract class L10n {
   /// ui\screens\about_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'版权所有 © 2026 ZenFile。保留所有权利。'**
+  /// **'修改版本 © 2026 ZenFile。保留所有权利。'**
   String get zenfile2;
+
+  /// About screen derived-from-NFile attribution
+  ///
+  /// In zh, this message translates to:
+  /// **'基于 Senzme 的 NFile 开发。原始版权 © 2026 NFile。'**
+  String get based_on_nfile;
 
   /// ui\screens\about_screen.dart
   ///

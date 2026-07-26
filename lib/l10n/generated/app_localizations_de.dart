@@ -246,7 +246,11 @@ class L10nDe extends L10n {
   String get bysequel => 'Erstellt mit ❤️ von Sequel';
 
   @override
-  String get zenfile2 => 'Copyright © 2026 ZenFile. Alle Rechte vorbehalten.';
+  String get zenfile2 => 'Änderungen © 2026 ZenFile. Alle Rechte vorbehalten.';
+
+  @override
+  String get based_on_nfile =>
+      'Basiert auf NFile von Senzme. Ursprüngliches Copyright © 2026 NFile.';
 
   @override
   String get msg138d3725 => 'Ihre Unterstützung hält mich am Laufen ❤️';

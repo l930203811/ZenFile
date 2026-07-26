@@ -238,7 +238,10 @@ class L10nKo extends L10n {
   String get bysequel => 'Sequel이 ❤️로 제작';
 
   @override
-  String get zenfile2 => 'Copyright © 2026 ZenFile. All rights reserved.';
+  String get zenfile2 => '수정본 © 2026 ZenFile. 모든 권리 보유.';
+
+  @override
+  String get based_on_nfile => 'Senzme의 NFile을 기반으로 함. 원본 저작권 © 2026 NFile.';
 
   @override
   String get msg138d3725 => '여러분의 지원이 제게 힘이 됩니다 ❤️';
