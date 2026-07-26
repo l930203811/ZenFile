@@ -4345,9 +4345,17 @@ class FileManagerProvider extends ChangeNotifier {
           }
 
           // 非 HTTP 流协议（FTP/SFTP 等）：通过本地代理服务器
+          RemoteClient? seekClient;
           try {
-            final proxyUrl = await RemoteStreamingService.instance.startStreaming(remoteClient, remotePath, fileName);
-            // 代理服务器持有客户端引用，不 disconnect
+            // 独立连接用于按需随机读取（拖动进度条），与后台顺序下载分开会话，
+            // 避免 smbj 单会话并发不安全；代理 dispose 时会断开这两个独立连接，
+            // 不影响远程浏览页/标签页的会话。
+            seekClient = createRemoteClient(conn);
+            await seekClient.connect();
+            final proxyUrl = await RemoteStreamingService.instance.startStreaming(
+              remoteClient, remotePath, fileName,
+              seekClient: seekClient,
+            );
             if (openAction == 'external') {
               // 系统选择器打开代理 URL（VLC 等可流式播放）
               await openWithSystemChooser(proxyUrl, mimeType: fileMime);
@@ -4361,6 +4369,7 @@ class FileManagerProvider extends ChangeNotifier {
             return;
           } catch (e) {
             debugPrint('远程流式代理启动失败，回退到下载模式: $e');
+            if (seekClient != null) { try { await seekClient.disconnect(); } catch (_) {} }
           }
         }
 
@@ -4413,13 +4422,24 @@ class FileManagerProvider extends ChangeNotifier {
           }
 
           // 非 HTTP 流协议（FTP/SFTP 等）：通过本地代理服务器实现边缓存边播放
+          RemoteClient? downloadClient;
+          RemoteClient? seekClient;
           try {
             // 从当前文件列表获取文件大小，避免 getFileSize 网络调用（可耗 10-15s）
             final fileItem = currentFiles.where((f) => f.path == path).firstOrNull;
             final knownSize = (fileItem != null && fileItem.size > 0) ? fileItem.size : null;
+            // 使用独立连接（download + seek 各一）做流式传输，避免播放器关闭时
+            // 代理 dispose 断开当前标签页（activeTab）的浏览会话，导致返回后
+            // 远程文件列表变空。
+            final conn = activeTab.remoteConnection!;
+            downloadClient = createRemoteClient(conn);
+            await downloadClient.connect();
+            seekClient = createRemoteClient(conn);
+            await seekClient.connect();
             final proxyUrl = await RemoteStreamingService.instance.startStreaming(
-              remoteClient, path, p.basename(path),
+              downloadClient, path, p.basename(path),
               fileSize: knownSize,
+              seekClient: seekClient,
             );
             if (openAction == 'external') {
               // 系统选择器打开代理 URL
@@ -4434,6 +4454,9 @@ class FileManagerProvider extends ChangeNotifier {
             return;
           } catch (e) {
             debugPrint('流式代理启动失败，回退到下载模式: $e');
+            // 回退前断开已建立的独立连接，避免连接泄漏
+            if (downloadClient != null) { try { await downloadClient.disconnect(); } catch (_) {} }
+            if (seekClient != null) { try { await seekClient.disconnect(); } catch (_) {} }
           }
         }
 

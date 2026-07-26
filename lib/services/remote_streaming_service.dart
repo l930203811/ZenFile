@@ -19,6 +19,73 @@ import 'remote/remote_client.dart';
 /// * For known file size: responds 206 + Content-Range + Content-Length.
 ///   media_kit can seek by issuing a new request with a different Range.
 /// * For unknown file size: responds 200 + chunked, no seek support.
+///
+/// On-demand seek: when a Range request targets a position beyond the bytes
+/// already on disk, the proxy uses a dedicated [seekClient] to fetch just that
+/// byte range from the server (random read) and splices it into the partial
+/// file. This makes dragging the progress bar near-instant instead of waiting
+/// for the sequential download to catch up. [seekClient] is a separate
+/// connection from the background downloader so the two never contend on the
+/// same (non-thread-safe) server session.
+class _Mutex {
+  Future<void>? _chain;
+
+  Future<T> run<T>(Future<T> Function() fn) {
+    final previous = _chain;
+    final completer = Completer<T>();
+    _chain = completer.future;
+    Future<T> runIt() async {
+      if (previous != null) {
+        try {
+          await previous;
+        } catch (_) {
+          // 上一个任务失败不影响后续
+        }
+      }
+      return await fn();
+    }
+
+    runIt().then(completer.complete).catchError(completer.completeError);
+    return completer.future;
+  }
+}
+
+/// Fetch [start, start+length) from the remote server via [session.seekClient]
+/// (random read) and write it to [tempSeekPath].
+///
+/// Runs serialized via [session._seekLock] so concurrent HTTP range requests
+/// never issue overlapping random reads on the same server session. The data is
+/// copied in small blocks (never loaded fully into memory) so seeking near the
+/// end of a huge file is safe. The fetched bytes are served directly from this
+/// temp file — they are NOT merged into the background-downloaded partial file,
+/// which avoids creating sparse-file gaps (zeros) that the player could read.
+Future<void> _fetchRangeToFile(
+  _StreamSession session,
+  int start,
+  int length,
+  String tempSeekPath,
+) async {
+  final seekClient = session.seekClient;
+  if (seekClient == null || length <= 0) return;
+  if (start < 0) return;
+
+  final sc = seekClient; // 非 null 绑定，供闭包内使用（避免闭包内可空收窄失效）
+  await session._seekLock.run(() async {
+    // 重新检查：后台顺序下载可能在此期间已覆盖该区间
+    if (start < session.downloadedBytes) return;
+
+    try {
+      await sc.downloadRange(session.remotePath, tempSeekPath, start, length);
+      final src = File(tempSeekPath);
+      if (!await src.exists()) {
+        debugPrint('RemoteStreamingService: on-demand range file not created');
+      }
+    } catch (e) {
+      debugPrint('RemoteStreamingService: on-demand range fetch failed: $e');
+    }
+  });
+}
+
 class RemoteStreamingService {
   static final instance = RemoteStreamingService._();
   RemoteStreamingService._();
@@ -30,6 +97,7 @@ class RemoteStreamingService {
     String remotePath,
     String fileName, {
     int? fileSize,
+    RemoteClient? seekClient,
   }) async {
     _cleanupStale();
 
@@ -39,6 +107,15 @@ class RemoteStreamingService {
       final session = entry.value;
       if (session.remotePath == remotePath && !session.disposed) {
         debugPrint('RemoteStreamingService: reusing existing session for $remotePath (port ${entry.key})');
+        // 本次调用传入的 client/seekClient 不会被使用，立即断开以免泄漏连接
+        try {
+          await client.disconnect();
+        } catch (_) {}
+        if (seekClient != null) {
+          try {
+            await seekClient.disconnect();
+          } catch (_) {}
+        }
         final ext = p.extension(fileName);
         return 'http://127.0.0.1:${entry.key}/stream$ext';
       }
@@ -52,6 +129,7 @@ class RemoteStreamingService {
       fileName: fileName,
       server: server,
       knownFileSize: fileSize,
+      seekClient: seekClient,
     );
     _sessions[server.port] = session;
 
@@ -167,11 +245,41 @@ class RemoteStreamingService {
     }
 
     final clampedEnd = end.clamp(0, fileSize - 1);
-    final contentLength = clampedEnd - start + 1;
+
+    // 是否需要按需随机读取（拖动进度条跳转到尚未顺序下载的位置）：
+    // 用独立的 seek 连接抓取该区间到临时文件并直接输出，不写回 partial，
+    // 避免与后台顺序下载在同一文件产生稀疏空洞（空洞读到的是 0）。
+    final needSeek = start > 0 &&
+        session.seekClient != null &&
+        start >= session.downloadedBytes &&
+        start < fileSize;
+
+    String readFilePath;
+    int readFileStart;
+    int rangeStart;
+    int rangeEnd;
+
+    if (needSeek) {
+      const seekChunk = 8 * 1024 * 1024; // 单次按需读取上限
+      final fetchLen = (clampedEnd - start + 1).clamp(1, seekChunk);
+      final tempSeek = '${session.localPath}.seek.tmp';
+      await _fetchRangeToFile(session, start, fetchLen, tempSeek);
+      readFilePath = tempSeek;
+      readFileStart = 0;
+      rangeStart = start;
+      rangeEnd = start + fetchLen - 1;
+    } else {
+      readFilePath = session.partialPath;
+      readFileStart = start;
+      rangeStart = start;
+      rangeEnd = clampedEnd;
+    }
+
+    final contentLength = rangeEnd - rangeStart + 1;
 
     // Set response headers
     response.statusCode = 206;
-    response.headers.set(HttpHeaders.contentRangeHeader, 'bytes $start-$clampedEnd/$fileSize');
+    response.headers.set(HttpHeaders.contentRangeHeader, 'bytes $rangeStart-$rangeEnd/$fileSize');
     response.headers.set(HttpHeaders.contentLengthHeader, contentLength.toString());
     response.headers.set(HttpHeaders.contentTypeHeader, mimeType);
     response.headers.set(HttpHeaders.acceptRangesHeader, 'bytes');
@@ -187,8 +295,15 @@ class RemoteStreamingService {
       debugPrint('RemoteStreamingService: flush headers failed: $e');
     }
 
-    // Stream bytes as they arrive
-    await _streamFrom(session, response, start, clampedEnd + 1);
+    // Stream bytes as they arrive (from partial for normal playback, from the
+    // seek temp file for on-demand seeks).
+    await _streamFrom(session, response, readFilePath, readFileStart, rangeEnd + 1, !needSeek);
+
+    if (needSeek) {
+      try {
+        await File(readFilePath).delete();
+      } catch (_) {}
+    }
   }
 
   /// Serve with unknown file size: chunked transfer, no seek.
@@ -209,30 +324,29 @@ class RemoteStreamingService {
       debugPrint('RemoteStreamingService: flush headers (unknown) failed: $e');
     }
 
-    await _streamFrom(session, response, 0, -1);
+    await _streamFrom(session, response, session.partialPath, 0, -1, true);
   }
 
-  /// Stream bytes [start, endExclusive) to the response as they arrive.
-  /// When [endExclusive] is -1, stream until download completes.
+  /// Stream bytes [fileStart, endExclusive) from [filePath] to the response as
+  /// they arrive. When [endExclusive] is -1, stream until download completes.
   ///
-  /// Key behaviors:
-  /// - Waits for the partial file to be created (up to 60s) before opening.
-  /// - Opens the file ONCE and keeps the handle cached.
-  /// - Reads only up to [session.downloadedBytes] (actual file length on disk).
-  /// - Flushes the HTTP response after every write for immediate delivery.
+  /// [isPartial] indicates the source is the background-downloaded partial file
+  /// (whose available length grows over time via [session.downloadedBytes]);
+  /// when false, [filePath] is a complete on-demand seek temp file whose full
+  /// length is available immediately.
   Future<void> _streamFrom(
     _StreamSession session,
     HttpResponse response,
-    int start,
+    String filePath,
+    int fileStart,
     int endExclusive,
+    bool isPartial,
   ) async {
     const chunkSize = 256 * 1024; // 256KB read chunks
     final target = endExclusive < 0 ? 0x7FFFFFFFFFFFFFFF : endExclusive;
 
-    // Wait for the partial file to exist and have at least 1 byte.
-    // The download might still be in getFileSize() phase, so the file
-    // may not be created yet. Wait up to 60s for it to appear.
-    File readFile = File(session.partialPath);
+    // Wait for the source file to exist and have at least 1 byte.
+    File readFile = File(filePath);
     bool fileReady = false;
     for (int i = 0; i < 300; i++) { // 300 * 200ms = 60s max
       if (session.disposed || session.downloadFailed) break;
@@ -242,15 +356,15 @@ class RemoteStreamingService {
           fileReady = true;
           break;
         }
-        // File exists but empty — download just started, data not yet
-        // flushed to disk by IOSink. Wait a bit more.
       }
-      // Also check the final path (download may have completed already)
-      final finalFile = File(session.localPath);
-      if (await finalFile.exists() && finalFile.lengthSync() > 0) {
-        readFile = finalFile;
-        fileReady = true;
-        break;
+      if (isPartial) {
+        // 后台下载可能已完成并重命名为最终路径
+        final finalFile = File(session.localPath);
+        if (await finalFile.exists() && finalFile.lengthSync() > 0) {
+          readFile = finalFile;
+          fileReady = true;
+          break;
+        }
       }
       await Future.delayed(const Duration(milliseconds: 200));
     }
@@ -259,7 +373,7 @@ class RemoteStreamingService {
       if (session.downloadFailed) {
         debugPrint('RemoteStreamingService: download failed, cannot stream');
       } else {
-        debugPrint('RemoteStreamingService: partial file never appeared');
+        debugPrint('RemoteStreamingService: source file never appeared');
       }
       try {
         await response.close();
@@ -267,22 +381,19 @@ class RemoteStreamingService {
       return;
     }
 
-    // Open the file and keep the handle for the entire stream.
-    // Declared `late` because the open happens in a try block; if it fails we
-    // return early, so all subsequent accesses are guaranteed to be assigned.
     late RandomAccessFile raf;
     try {
       raf = await readFile.open(mode: FileMode.read);
-      await raf.setPosition(start);
+      await raf.setPosition(fileStart);
     } catch (e) {
-      debugPrint('RemoteStreamingService: failed to open partial file: $e');
+      debugPrint('RemoteStreamingService: failed to open source file: $e');
       try {
         await response.close();
       } catch (_) {}
       return;
     }
 
-    int readOffset = start;
+    int readOffset = fileStart;
     bool hasRetried = false;
     int idleCount = 0;
 
@@ -290,13 +401,13 @@ class RemoteStreamingService {
       while (readOffset < target) {
         if (session.disposed || session.downloadFailed) break;
 
-        // downloadedBytes reflects actual file length on disk.
-        final downloaded = session.downloadedBytes;
+        // 已可读取的字节数：partial 取自后台下载进度；临时 seek 文件取其实际长度
+        final downloaded = isPartial
+            ? session.downloadedBytes
+            : (await readFile.lengthSync());
         if (downloaded <= readOffset) {
-          if (session.downloadComplete) {
-            // Download done but file might have been renamed to final path
-            if (readOffset == start) {
-              // We never sent any data — try reading from final path
+          if (isPartial && session.downloadComplete) {
+            if (readOffset == fileStart) {
               final finalFile = File(session.localPath);
               if (await finalFile.exists()) {
                 try {
@@ -306,7 +417,6 @@ class RemoteStreamingService {
                 await raf.setPosition(readOffset);
                 final len = await finalFile.length();
                 if (len > readOffset) {
-                  // File has data — continue reading
                   idleCount = 0;
                   continue;
                 }
@@ -314,13 +424,12 @@ class RemoteStreamingService {
             }
             break;
           }
-          // Wait for new data with a short timeout
+          if (!isPartial) break; // 临时 seek 文件已完整，无更多数据
           await session.waitForMoreBytes(readOffset + 1).timeout(
             const Duration(seconds: 5),
             onTimeout: () {},
           );
           idleCount++;
-          // If idle for too long (60s = 12 * 5s), give up
           if (idleCount > 12) {
             debugPrint('RemoteStreamingService: idle timeout at $readOffset');
             break;
@@ -328,12 +437,13 @@ class RemoteStreamingService {
           continue;
         }
 
-        idleCount = 0; // Reset idle counter on new data
+        idleCount = 0;
 
         final available = downloaded.clamp(0, target);
         final toRead = (available - readOffset).clamp(0, chunkSize).toInt();
         if (toRead <= 0) {
-          if (session.downloadComplete) break;
+          if (isPartial && session.downloadComplete) break;
+          if (!isPartial) break;
           continue;
         }
 
@@ -341,12 +451,12 @@ class RemoteStreamingService {
           await raf.setPosition(readOffset);
           final data = await raf.read(toRead);
           if (data.isEmpty) {
-            if (session.downloadComplete) break;
+            if (isPartial && session.downloadComplete) break;
+            if (!isPartial) break;
             await Future.delayed(const Duration(milliseconds: 10));
             continue;
           }
           response.add(data);
-          // Flush immediately so media_kit receives data without delay.
           await response.flush();
           readOffset += data.length;
           hasRetried = false;
@@ -354,21 +464,19 @@ class RemoteStreamingService {
           debugPrint('RemoteStreamingService: read error at $readOffset: $e');
           if (hasRetried) break;
           hasRetried = true;
+          if (!isPartial) break;
           try {
             await raf.close();
           } catch (_) {}
-          try {
-            // Try reopening from partial or final path
-            File reopenFile = File(session.partialPath);
-            if (!await reopenFile.exists()) {
-              reopenFile = File(session.localPath);
-            }
-            if (await reopenFile.exists()) {
-              raf = await reopenFile.open(mode: FileMode.read);
-              await raf.setPosition(readOffset);
-              continue;
-            }
-          } catch (_) {}
+          File reopenFile = File(session.partialPath);
+          if (!await reopenFile.exists()) {
+            reopenFile = File(session.localPath);
+          }
+          if (await reopenFile.exists()) {
+            raf = await reopenFile.open(mode: FileMode.read);
+            await raf.setPosition(readOffset);
+            continue;
+          }
           break;
         }
       }
@@ -385,6 +493,7 @@ class RemoteStreamingService {
 
 class _StreamSession {
   final RemoteClient client;
+  final RemoteClient? seekClient;
   final String remotePath;
   final String fileName;
   final HttpServer server;
@@ -395,6 +504,7 @@ class _StreamSession {
   Future<void>? _downloadFuture;
   bool _disposed = false;
   Timer? _lengthPollTimer;
+  final _seekLock = _Mutex();
 
   int _totalBytes = -1;
   bool _downloadComplete = false;
@@ -414,6 +524,7 @@ class _StreamSession {
     required this.fileName,
     required this.server,
     this.knownFileSize,
+    this.seekClient,
   }) : createdAt = DateTime.now();
 
   String get localPath {
@@ -607,6 +718,16 @@ class _StreamSession {
       await client.disconnect();
     } catch (e) {
       debugPrint('RemoteStreamingService: dispose disconnect error: $e');
+    }
+    // 断开独立的 seek 连接（用于按需随机读取）。注意：这里断开的是流式代理
+    // 自己持有的独立连接，不会影响到远程浏览页（explorer）自身的会话。
+    final sc = seekClient;
+    if (sc != null) {
+      try {
+        await sc.disconnect();
+      } catch (e) {
+        debugPrint('RemoteStreamingService: dispose seekClient disconnect error: $e');
+      }
     }
     // 等待下载 Future 结束（disconnect 会中断网络读取，使其快速失败）
     if (_downloadFuture != null) {

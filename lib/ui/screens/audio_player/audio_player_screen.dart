@@ -372,12 +372,20 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       }
 
       // 非 HTTP 流协议（FTP/SFTP 等）：通过本地代理服务器
+      // 独立连接用于按需随机读取（拖动进度条），与后台顺序下载分开会话
+      final seekClient = FileManagerProvider.createRemoteClient(conn);
       try {
-        final proxyUrl = await RemoteStreamingService.instance.startStreaming(remoteClient, remoteFilePath, fileName);
-        // 代理服务器持有客户端引用，不 disconnect
+        await seekClient.connect();
+        final proxyUrl = await RemoteStreamingService.instance.startStreaming(
+          remoteClient, remoteFilePath, fileName,
+          seekClient: seekClient,
+        );
         return proxyUrl;
       } catch (e) {
         debugPrint('远程流式代理启动失败，回退到下载模式: $e');
+        try {
+          await seekClient.disconnect();
+        } catch (_) {}
       }
 
       // 回退：完整下载后播放

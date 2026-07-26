@@ -172,20 +172,41 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
         await provider.openFile(context, streamUrl, isRemoteStream: true);
         return;
       }
-      // Non-HTTP protocols (FTP/SFTP/SMB): use local streaming proxy
+      // Non-HTTP protocols (FTP/SFTP/SMB): use local streaming proxy.
+      // 使用独立的连接（download + seek 各一）做流式传输，这样播放器关闭时
+      // 代理 dispose 断开的是这两个独立连接，不会影响本页（explorer）用于
+      // 浏览/列表的 _client 会话——此前正是代理断开了共享会话，导致返回后
+      // SMB 浏览页列表变空、必须重启应用才能恢复。
+      RemoteClient? downloadClient;
+      RemoteClient? seekClient;
       try {
+        final conn = widget.connection;
+        // 用工厂创建与连接类型匹配的客户端（SMB/FTP/SFTP 各自正确的实现）
+        downloadClient = FileManagerProvider.createRemoteClient(conn);
+        seekClient = FileManagerProvider.createRemoteClient(conn);
+        await downloadClient.connect();
+        await seekClient.connect();
         final proxyUrl = await RemoteStreamingService.instance.startStreaming(
-          _client!,
+          downloadClient,
           item.path,
           item.name,
           fileSize: item.size > 0 ? item.size : null,
+          seekClient: seekClient,
         );
-        if (!mounted) return;
+        if (!mounted) {
+          // 用户在连接建立期间离开：断开独立连接，避免泄漏
+          try { await downloadClient.disconnect(); } catch (_) {}
+          try { await seekClient.disconnect(); } catch (_) {}
+          return;
+        }
         final provider = context.read<FileManagerProvider>();
         await provider.openFile(context, proxyUrl, isRemoteStream: true);
         return;
       } catch (e) {
         debugPrint('Streaming proxy failed, falling back to download: $e');
+        // 回退到下载模式前断开已建立的独立连接，避免连接泄漏
+        if (downloadClient != null) { try { await downloadClient.disconnect(); } catch (_) {} }
+        if (seekClient != null) { try { await seekClient.disconnect(); } catch (_) {} }
       }
       // Fallback: delegate to openFile which handles download
       if (!mounted) return;
