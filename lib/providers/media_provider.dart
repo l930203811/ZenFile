@@ -383,6 +383,45 @@ class MediaProvider extends ChangeNotifier {
   List<AssetPathEntity> get imageAlbums => _imageAlbums;
   List<AssetPathEntity> get videoAlbums => _videoAlbums;
 
+  // ===== 按父目录分组（分类页「文件夹」视图用）=====
+  // 键为父目录绝对路径，值为该目录下的媒体文件（含其递归扫描到的文件）。
+  Map<String, List<FileSystemEntity>> _imageFolders = {};
+  Map<String, List<FileSystemEntity>> _videoFolders = {};
+  Map<String, List<SongModel>> _audioFolders = {};
+
+  Map<String, List<FileSystemEntity>> get imageFolders => _imageFolders;
+  Map<String, List<FileSystemEntity>> get videoFolders => _videoFolders;
+  Map<String, List<SongModel>> get audioFolders => _audioFolders;
+
+  /// 根据当前扁平列表重算按父目录的分组，供分类页文件夹视图使用。
+  /// 在缓存恢复与递归扫描赋值后调用。
+  void _rebuildFolderGroups() {
+    _imageFolders = _groupByParentDir(_images);
+    _videoFolders = _groupByParentDir(_videos);
+    _audioFolders = _groupAudiosByParentDir(_audios);
+  }
+
+  static Map<String, List<FileSystemEntity>> _groupByParentDir(List<FileSystemEntity> files) {
+    final map = <String, List<FileSystemEntity>>{};
+    for (final f in files) {
+      final dir = FileSystemEntity.parentOf(f.path);
+      (map[dir] ??= []).add(f);
+    }
+    return map;
+  }
+
+  static Map<String, List<SongModel>> _groupAudiosByParentDir(List<SongModel> songs) {
+    final map = <String, List<SongModel>>{};
+    for (final s in songs) {
+      final data = s.data;
+      if (data.isNotEmpty) {
+        final dir = p.dirname(data);
+        (map[dir] ??= []).add(s);
+      }
+    }
+    return map;
+  }
+
   List<String> _categoryOrder = [
     '系统',
     '存储',
@@ -895,6 +934,8 @@ class MediaProvider extends ChangeNotifier {
             _audios = cached;
           }
         }
+        // 缓存恢复完成后按父目录重算分组，供分类页文件夹视图使用
+        _rebuildFolderGroups();
       }
     } catch (_) {}
   }
@@ -1105,6 +1146,7 @@ class MediaProvider extends ChangeNotifier {
       _videos = videos;
       _audios = audios;
       _screenshots = screenshots;
+      _rebuildFolderGroups();
       debugPrint('[ZenFile] _loadMediaFromFileSystem: images=${images.length}, videos=${videos.length}, audios=${audios.length}, screenshots=${screenshots.length}');
     } catch (e) {
       debugPrint('[ZenFile] _loadMediaFromFileSystem error: $e');

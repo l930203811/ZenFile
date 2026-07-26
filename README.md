@@ -7,6 +7,23 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 ---
 
+## 🚀 What's New in v1.1.24
+
+### ✨ New Features
+
+- Category pages now offer a "Group by Folder" view, so media files can be browsed grouped by their source folders for quick location.
+
+### 🔧 Optimizations
+
+- All remote clients (SMB / FTP / SFTP / WebDAV) now support streaming media playback without downloading the whole file; streaming uses an independent connection so seeking is instant and no longer affects the remote browsing session.
+- SMB downloads now use an 8MB SMB2 read/write window (SMB2 large MTU limit), drastically cutting RTT round-trips so the link can be saturated on fast LANs.
+
+### 🐛 Bug Fixes
+
+- Fixed an issue where, after cutting/moving a file from a remote location to local (or local to remote), the source directory still showed the original file until manually refreshed.
+
+---
+
 ## 🚀 What's New in v1.1.23
 
 ### ✨ New Features
@@ -33,10 +50,6 @@ A beautifully crafted, open-source file manager and offline media center for And
 - Fixed external subtitle size and position not taking effect. External subtitles are now rendered via a Flutter overlay driven by parsed SRT/ASS cues, so the size and position sliders work reliably for all subtitle formats.
 - Improved online lyrics search: it now lists candidate songs so you can manually pick the correct one, avoiding wrong matches when songs share the same title but have different artists (previously it auto-matched the first result).
 - Fixed FTP sharing showing an empty directory to other clients after a successful connection. The PASV passive-mode response previously returned the server's anyIPv4 address (0.0.0.0), which a remote client cannot connect back to; it now returns a concrete, reachable LAN address (or loopback for same-device clients), so the directory listing is delivered correctly.
-
-### ⚠️ Known Issues (to be fixed in the next version)
-
-- Currently, only the WebDAV client supports media file streaming; other clients do not yet support this feature.
 
 ---
 

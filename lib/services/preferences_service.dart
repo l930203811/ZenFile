@@ -378,7 +378,9 @@ class PreferencesService {
   static const String _keySkipOpenWithDialog = 'skip_open_with_dialog';
 
   static bool getPreferFoldersInMedia() {
-    return _prefs?.getBool(_keyPreferFoldersInMedia) ?? false;
+    // 默认开启文件夹视图：分类页（图片/视频/音频）按父目录分组，避免扁平列表杂乱。
+    // 用户可在分类页顶部「文件夹 / 全部项目」开关中切换回扁平列表。
+    return _prefs?.getBool(_keyPreferFoldersInMedia) ?? true;
   }
 
   static Future<void> savePreferFoldersInMedia(bool val) async {

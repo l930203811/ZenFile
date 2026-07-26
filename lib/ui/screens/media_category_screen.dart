@@ -33,8 +33,10 @@ class MediaCategoryScreen extends StatefulWidget {
   final MediaType mediaType;
   final AssetPathEntity? album;
   final Function(int)? onNavigateTab;
+  /// 文件夹视图下钻：非 null 时只显示该父目录下的媒体文件（扁平列表）。
+  final String? folderPath;
 
-  const MediaCategoryScreen({super.key, required this.mediaType, this.album, this.onNavigateTab});
+  const MediaCategoryScreen({super.key, required this.mediaType, this.album, this.onNavigateTab, this.folderPath});
 
   @override
   State<MediaCategoryScreen> createState() => _MediaCategoryScreenState();
@@ -46,6 +48,19 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
 
   // Helper: check if artist string is effectively empty (null, empty, or "unknown" from plugin)
   static bool _isUnknownArtist(String? artist) => FileUtils.isUnknownArtist(artist);
+
+  /// 文件夹显示名：根目录显示「内部存储」，其余显示目录名。
+  static String _folderDisplayName(String dir) {
+    if (dir == '/storage/emulated/0') return '内部存储';
+    return path_helper.basename(dir);
+  }
+
+  /// 从媒体条目（File 或 SongModel）提取文件路径，用于文件夹封面。
+  static String? _sampleItemPath(dynamic item) {
+    if (item is FileSystemEntity) return item.path;
+    if (item is SongModel) return item.data;
+    return null;
+  }
 
   Set<String> _selectedFilePaths = {};
   Set<String> _selectedAssetIds = {};
@@ -67,7 +82,11 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       duration: const Duration(milliseconds: 1500),
     )..repeat();
 
-    if (widget.album == null && (widget.mediaType == MediaType.images || widget.mediaType == MediaType.videos)) {
+    if (widget.album == null &&
+        widget.folderPath == null &&
+        (widget.mediaType == MediaType.images ||
+            widget.mediaType == MediaType.videos ||
+            widget.mediaType == MediaType.audios)) {
       _showFoldersMode = PreferencesService.getPreferFoldersInMedia();
     }
 
@@ -119,6 +138,9 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
   String get _title {
     if (widget.album != null) {
       return widget.album!.name;
+    }
+    if (widget.folderPath != null) {
+      return _folderDisplayName(widget.folderPath!);
     }
     switch (widget.mediaType) {
       case MediaType.images:
@@ -961,11 +983,19 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       ),
       body: Column(
         children: [
-          if (widget.album == null && (widget.mediaType == MediaType.images || widget.mediaType == MediaType.videos))
+          if (widget.album == null &&
+              widget.folderPath == null &&
+              (widget.mediaType == MediaType.images ||
+                  widget.mediaType == MediaType.videos ||
+                  widget.mediaType == MediaType.audios))
             Consumer<MediaProvider>(
               builder: (context, provider, child) {
-                final albums = widget.mediaType == MediaType.images ? provider.imageAlbums : provider.videoAlbums;
-                if (albums.isEmpty) return const SizedBox.shrink();
+                final folders = widget.mediaType == MediaType.images
+                    ? provider.imageFolders
+                    : widget.mediaType == MediaType.videos
+                        ? provider.videoFolders
+                        : provider.audioFolders;
+                if (folders.isEmpty) return const SizedBox.shrink();
                 return _buildFoldersToggle(theme);
               },
             ),
@@ -976,17 +1006,26 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           Expanded(
             child: Consumer<MediaProvider>(
               builder: (context, provider, child) {
-                if (widget.album == null && _showFoldersMode) {
-                  final albums = widget.mediaType == MediaType.images ? provider.imageAlbums : provider.videoAlbums;
-                  if (albums.isEmpty) {
-                    // 文件系统扫描不再提供相册列表，自动切回文件视图
+                if (widget.album == null && _showFoldersMode && widget.folderPath == null) {
+                  final folders = widget.mediaType == MediaType.images
+                      ? provider.imageFolders
+                      : widget.mediaType == MediaType.videos
+                          ? provider.videoFolders
+                          : provider.audioFolders;
+                  if (folders.isEmpty) {
+                    // 没有可分组文件夹，自动切回文件视图
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       if (mounted && _showFoldersMode) {
                         setState(() => _showFoldersMode = false);
                       }
                     });
-                    // 继续走下方的文件网格视图
                   } else {
+                    final entries = folders.entries.where((e) => e.value.isNotEmpty).toList();
+                    entries.sort((a, b) {
+                      final cmp = b.value.length.compareTo(a.value.length);
+                      if (cmp != 0) return cmp;
+                      return path_helper.basename(a.key).compareTo(path_helper.basename(b.key));
+                    });
                     return GridView.builder(
                       padding: const EdgeInsets.all(12),
                       physics: const BouncingScrollPhysics(),
@@ -996,17 +1035,23 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                         mainAxisSpacing: 12,
                         childAspectRatio: 0.95,
                       ),
-                      itemCount: albums.length,
+                      itemCount: entries.length,
                       itemBuilder: (context, index) {
-                        final album = albums[index];
-                        return FolderGridItem(
-                          album: album,
+                        final entry = entries[index];
+                        final dir = entry.key;
+                        final items = entry.value;
+                        final samplePath = _sampleItemPath(items.first);
+                        return _MediaFolderTile(
+                          folderPath: dir,
+                          count: items.length,
+                          mediaType: widget.mediaType,
+                          samplePath: samplePath,
                           onTap: () {
                             Navigator.push(
                               context,
                               _slideRoute(MediaCategoryScreen(
                                 mediaType: widget.mediaType,
-                                album: album,
+                                folderPath: dir,
                                 onNavigateTab: widget.onNavigateTab,
                               )),
                             );
@@ -1060,13 +1105,22 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                 Widget? content;
                 switch (widget.mediaType) {
                   case MediaType.images:
-                    content = provider.images.isNotEmpty ? _buildImageGrid(provider.images, theme, isDateWise, isGrouped, _isGridView) : null;
+                    final list = widget.folderPath != null
+                        ? provider.images.where((f) => path_helper.dirname(f.path) == widget.folderPath).toList()
+                        : provider.images;
+                    content = list.isNotEmpty ? _buildImageGrid(list, theme, isDateWise, isGrouped, _isGridView) : null;
                     break;
                   case MediaType.videos:
-                    content = provider.videos.isNotEmpty ? _buildVideoGrid(provider.videos, theme, isDateWise, isGrouped, _isGridView) : null;
+                    final list = widget.folderPath != null
+                        ? provider.videos.where((f) => path_helper.dirname(f.path) == widget.folderPath).toList()
+                        : provider.videos;
+                    content = list.isNotEmpty ? _buildVideoGrid(list, theme, isDateWise, isGrouped, _isGridView) : null;
                     break;
                   case MediaType.audios:
-                    content = provider.audios.isNotEmpty ? _buildAudioList(provider.audios, theme, isDateWise, isGrouped, _isGridView) : null;
+                    final list = widget.folderPath != null
+                        ? provider.audios.where((s) => path_helper.dirname(s.data) == widget.folderPath).toList()
+                        : provider.audios;
+                    content = list.isNotEmpty ? _buildAudioList(list, theme, isDateWise, isGrouped, _isGridView) : null;
                     break;
                   case MediaType.screenshots:
                     content = provider.screenshots.isNotEmpty ? _buildImageGrid(provider.screenshots, theme, isDateWise, isGrouped, _isGridView) : null;
@@ -4059,6 +4113,161 @@ class _FolderGridItemState extends State<FolderGridItem> {
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
                       ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 分类页「文件夹」视图的文件夹封面缩略图（按媒体类型渲染）。
+class _MediaFolderCover extends StatelessWidget {
+  final MediaType mediaType;
+  final String samplePath;
+
+  const _MediaFolderCover({required this.mediaType, required this.samplePath});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    if (mediaType == MediaType.audios) {
+      // 音频无封面，显示音乐图标
+      return Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [theme.colorScheme.surfaceContainerHighest, theme.colorScheme.surface],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Center(
+          child: Icon(Broken.music, color: theme.colorScheme.primary.withOpacity(0.5), size: 40),
+        ),
+      );
+    }
+    if (mediaType == MediaType.videos) {
+      return FutureBuilder<Uint8List?>(
+        future: MediaThumbnailService.generateVideoThumbnail(samplePath),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done && snapshot.data != null) {
+            return Image.memory(snapshot.data!, fit: BoxFit.cover);
+          }
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [theme.colorScheme.surfaceContainerHighest, theme.colorScheme.surface],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: Center(
+              child: Icon(Broken.video, color: theme.colorScheme.primary.withOpacity(0.5), size: 40),
+            ),
+          );
+        },
+      );
+    }
+    // 图片：直接读取本地文件
+    if (samplePath.toLowerCase().endsWith('.svg')) {
+      return SvgPicture.file(
+        File(samplePath),
+        fit: BoxFit.cover,
+        placeholderBuilder: (context) => Container(color: Colors.grey.withOpacity(0.1)),
+      );
+    }
+    return Image.file(
+      File(samplePath),
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) => Container(
+        color: Colors.grey.withOpacity(0.1),
+        child: Center(
+          child: Icon(Broken.image, color: theme.colorScheme.primary.withOpacity(0.5), size: 40),
+        ),
+      ),
+    );
+  }
+}
+
+/// 分类页「文件夹」视图的文件夹卡片：封面 + 文件夹名 + 数量。
+class _MediaFolderTile extends StatelessWidget {
+  final String folderPath;
+  final int count;
+  final MediaType mediaType;
+  final String? samplePath;
+  final VoidCallback onTap;
+
+  const _MediaFolderTile({
+    required this.folderPath,
+    required this.count,
+    required this.mediaType,
+    this.samplePath,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final name = _MediaCategoryScreenState._folderDisplayName(folderPath);
+    return GestureDetector(
+      onTap: onTap,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+            border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.4)),
+          ),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (samplePath != null)
+                _MediaFolderCover(mediaType: mediaType, samplePath: samplePath!)
+              else
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [theme.colorScheme.surfaceContainerHighest, theme.colorScheme.surface],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: Icon(Broken.folder_2, color: theme.colorScheme.primary.withOpacity(0.5), size: 40),
+                ),
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.transparent, Colors.black.withOpacity(0.85)],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      stops: const [0.4, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 12,
+                left: 12,
+                right: 12,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      name,
+                      style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$count items',
+                      style: TextStyle(color: Colors.white.withOpacity(0.75), fontSize: 11, fontWeight: FontWeight.w500),
                     ),
                   ],
                 ),
