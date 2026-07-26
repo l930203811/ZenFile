@@ -1075,8 +1075,22 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       final seekClient = FileManagerProvider.createRemoteClient(conn);
       try {
         await seekClient.connect();
+        // 取文件大小，让代理以 206 可 seek 方式响应：
+        //   1) 进度条需要总时长才能走动；
+        //   2) 拖动进度条依赖 Range 随机读取（seekClient）。
+        // 不传大小时代理只能用 chunked 200（不可 seek），表现为进度条不走、
+        // 拖动后卡在"正在缓存中"。
+        int? fileSize;
+        try {
+          final size = await remoteClient.getFileSize(remoteFilePath)
+              .timeout(const Duration(seconds: 5));
+          if (size > 0) fileSize = size;
+        } catch (_) {
+          fileSize = null;
+        }
         final proxyUrl = await RemoteStreamingService.instance.startStreaming(
           remoteClient, remoteFilePath, fileName,
+          fileSize: fileSize,
           seekClient: seekClient,
         );
         return proxyUrl;

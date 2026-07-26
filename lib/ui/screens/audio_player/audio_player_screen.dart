@@ -377,8 +377,18 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       final seekClient = FileManagerProvider.createRemoteClient(conn);
       try {
         await seekClient.connect();
+        // 取文件大小以支持可 seek 流式（进度条/拖动进度条所需）。
+        int? fileSize;
+        try {
+          final size = await remoteClient.getFileSize(remoteFilePath)
+              .timeout(const Duration(seconds: 5));
+          if (size > 0) fileSize = size;
+        } catch (_) {
+          fileSize = null;
+        }
         final proxyUrl = await RemoteStreamingService.instance.startStreaming(
           remoteClient, remoteFilePath, fileName,
+          fileSize: fileSize,
           seekClient: seekClient,
         );
         return proxyUrl;

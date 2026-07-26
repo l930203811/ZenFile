@@ -4408,8 +4408,18 @@ class FileManagerProvider extends ChangeNotifier {
             // 不影响远程浏览页/标签页的会话。
             seekClient = createRemoteClient(conn);
             await seekClient.connect();
+            // 取文件大小以支持可 seek 流式（进度条/拖动进度条所需）。
+            int? fileSize;
+            try {
+              final size = await remoteClient.getFileSize(remotePath)
+                  .timeout(const Duration(seconds: 5));
+              if (size > 0) fileSize = size;
+            } catch (_) {
+              fileSize = null;
+            }
             final proxyUrl = await RemoteStreamingService.instance.startStreaming(
               remoteClient, remotePath, fileName,
+              fileSize: fileSize,
               seekClient: seekClient,
             );
             if (openAction == 'external') {
