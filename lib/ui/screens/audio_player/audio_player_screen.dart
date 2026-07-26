@@ -1731,9 +1731,11 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     _updateBackgroundItem();
   }
 
-  void _handleBackgroundToggle(BuildContext ctx) {
+  void _handleBackgroundToggle(BuildContext ctx, [VoidCallback? onSheetState]) {
     if (_isBackgroundMode) {
       _toggleBackgroundMode();
+      // 关闭后台播放时弹窗仍保持打开，需主动刷新弹窗内的开关状态
+      onSheetState?.call();
     } else {
       Navigator.pop(ctx);
       _toggleBackgroundMode();
@@ -2046,11 +2048,11 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                       value: _isBackgroundMode,
                       activeColor: Colors.greenAccent,
                       onChanged: (_) {
-                        _handleBackgroundToggle(ctx);
+                        _handleBackgroundToggle(ctx, () => setSheet(() {}));
                       },
                     ),
                     onTap: () {
-                      _handleBackgroundToggle(ctx);
+                      _handleBackgroundToggle(ctx, () => setSheet(() {}));
                     },
                   ),
                   // ── 桌面歌词悬浮窗 ────────────────────────────────────────────────

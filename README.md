@@ -21,6 +21,8 @@ A beautifully crafted, open-source file manager and offline media center for And
 ### 🐛 Bug Fixes
 
 - Fixed an issue where, after cutting/moving a file from a remote location to local (or local to remote), the source directory still showed the original file until manually refreshed.
+- Fixed the audio player's "Play in background" toggle not refreshing its on/off state immediately in the menu (previously required reopening the menu).
+- Fixed media playback control buttons not showing in the notification shade on Android 13+. Patched a local fork of `audio_service` 0.18.18 so compact-view action buttons are set on all API versions and the `MediaSession`/foreground service is activated for any non-idle playback state, ensuring the Android 13+ media card appears.
 
 ---
 
