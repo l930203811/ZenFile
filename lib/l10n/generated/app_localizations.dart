@@ -7930,7 +7930,7 @@ abstract class L10n {
   /// **'面包屑选项'**
   String get breadcrumb_context_title;
 
-  /// No description provided for @ui_instrumental_track_hint.
+  /// Hint shown when a track has no lyrics (instrumental).
   ///
   /// In zh, this message translates to:
   /// **'此歌曲为没有填词的纯音乐，请您欣赏'**

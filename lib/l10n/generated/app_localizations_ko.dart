@@ -4257,5 +4257,5 @@ class L10nKo extends L10n {
   String get breadcrumb_context_title => '경로 탐색 옵션';
 
   @override
-  String get ui_instrumental_track_hint => "이 곡에는 가사가 없습니다, 음악을 즐기세요.";
+  String get ui_instrumental_track_hint => '이 곡에는 가사가 없습니다, 음악을 즐기세요.';
 }

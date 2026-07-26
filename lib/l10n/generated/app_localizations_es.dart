@@ -4453,5 +4453,6 @@ class L10nEs extends L10n {
   String get breadcrumb_context_title => 'Opciones de ruta';
 
   @override
-  String get ui_instrumental_track_hint => "Esta pista no tiene letra, disfruta la música.";
+  String get ui_instrumental_track_hint =>
+      'Esta pista no tiene letra, disfruta la música.';
 }

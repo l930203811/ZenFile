@@ -4435,5 +4435,6 @@ class L10nRu extends L10n {
   String get breadcrumb_context_title => 'Параметры навигации';
 
   @override
-  String get ui_instrumental_track_hint => "В этом треке нет текста песни, наслаждайтесь музыкой.";
+  String get ui_instrumental_track_hint =>
+      'В этом треке нет текста песни, наслаждайтесь музыкой.';
 }

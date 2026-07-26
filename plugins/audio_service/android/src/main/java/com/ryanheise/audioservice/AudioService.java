@@ -317,13 +317,18 @@ public class AudioService extends MediaBrowserServiceCompat {
 
         configure(new AudioServiceConfig(getApplicationContext()));
 
-        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_QUEUE_COMMANDS);
+        mediaSession.setFlags(
+                MediaSessionCompat.FLAG_HANDLES_QUEUE_COMMANDS
+                        | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
         PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder()
                 .setActions(AUTO_ENABLED_ACTIONS);
         mediaSession.setPlaybackState(stateBuilder.build());
         mediaSession.setCallback(mediaSessionCallback = new MediaSessionCallback());
         setSessionToken(mediaSession.getSessionToken());
         mediaSession.setQueue(queue);
+        // 服务启动后立即激活 MediaSession,避免 Android 13+ 上"active=false"导致系统媒体卡片不识别。
+        // idle 状态的 PlaybackState 不会显示控件,所以不会误触发空通知。
+        mediaSession.setActive(true);
 
         PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
         wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, AudioService.class.getName());
@@ -564,11 +569,14 @@ public class AudioService extends MediaBrowserServiceCompat {
         // 改为：任何非 idle 状态都进入前台播放态，确保 13+ 媒体卡片出现；idle 才退出。
         if (processingState != AudioProcessingState.idle) {
             if (!inPlayingState) {
-                enterPlayingState();
+                // Android 13+ 对 startForeground() 调用线程和时机要求更严格,
+                // 从 background engine 线程直接调用可能导致前台服务无法启动,
+                // 从而系统媒体卡片识别不到 active session。切到主线程执行。
+                handler.post(() -> enterPlayingState());
                 inPlayingState = true;
             }
         } else if (inPlayingState) {
-            exitPlayingState();
+            handler.post(() -> exitPlayingState());
             inPlayingState = false;
         }
 

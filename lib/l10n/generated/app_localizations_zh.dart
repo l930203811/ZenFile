@@ -4219,7 +4219,7 @@ class L10nZh extends L10n {
   String get breadcrumb_context_title => '面包屑选项';
 
   @override
-  String get ui_instrumental_track_hint => "此歌曲为没有填词的纯音乐，请您欣赏";
+  String get ui_instrumental_track_hint => '此歌曲为没有填词的纯音乐，请您欣赏';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -8390,5 +8390,5 @@ class L10nZhTw extends L10nZh {
   String get breadcrumb_context_title => '麵包屑選項';
 
   @override
-  String get ui_instrumental_track_hint => "此歌曲為沒有填詞的純音樂，請您欣賞";
+  String get ui_instrumental_track_hint => '此歌曲為沒有填詞的純音樂，請您欣賞';
 }
