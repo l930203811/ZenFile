@@ -94,7 +94,23 @@ int _calculateDirectorySizeSync(String path) {
   return totalSize;
 }
 
+/// 远程源目录因剪切/移动等操作发生变化后广播的事件。
+/// 全屏 [RemoteExplorerScreen] 订阅此事件，当事件来源连接与自身一致时刷新
+/// 当前目录，避免“原文件残留 / 返回后页面丢失”。（远程 tab 由 provider 直接刷新。）
+class RemoteSourceChanged {
+  final NetworkConnectionModel connection;
+  final String dir;
+  RemoteSourceChanged(this.connection, this.dir);
+}
+
 class FileManagerProvider extends ChangeNotifier {
+  // 远程源目录变化广播：剪切/移动远程文件后，通知全屏 RemoteExplorerScreen 刷新，
+  // 避免“原文件残留 / 返回后页面丢失”。远程 tab 由 provider 直接刷新。
+  final StreamController<RemoteSourceChanged> _remoteSourceChangedController =
+      StreamController<RemoteSourceChanged>.broadcast();
+  Stream<RemoteSourceChanged> get remoteSourceChangedStream =>
+      _remoteSourceChangedController.stream;
+
   FileManagerProvider() {
     _sortType = PreferencesService.getSortType();
     _isGridView = PreferencesService.getIsGridView();
@@ -1492,6 +1508,24 @@ class FileManagerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 剪切本地文件到远程后，刷新来源本地目录。
+  /// 精确匹配 currentPath == 源目录 的本地 tab 并重新加载，使被移动的
+  /// 原文件立即从来源浏览器消失（无需手动刷新）。
+  Future<void> refreshLocalSourceAfterCut(List<String> sourcePaths) async {
+    if (sourcePaths.isEmpty) return;
+    final sourceDir = p.dirname(sourcePaths.first);
+    for (int i = 0; i < _tabs.length; i++) {
+      if (!_tabs[i].isRemote && _tabs[i].currentPath == sourceDir) {
+        try {
+          await loadDirectoryForTab(i, sourceDir, showLoading: false, clearCache: true);
+        } catch (e) {
+          debugPrint('Failed to refresh local source tab: $e');
+        }
+        break;
+      }
+    }
+  }
+
   final Set<String> _highlightedPaths = {};
   Set<String> get highlightedPaths => _highlightedPaths;
 
@@ -2845,6 +2879,14 @@ class FileManagerProvider extends ChangeNotifier {
       return;
     }
 
+    // clearClipboard() 会在 finally 中清空 _isCut/_remoteClipboardItems，故先缓存
+    // 剪切来源信息，供结束后刷新源目录使用。
+    final bool remoteWasCut = _isCut;
+    final NetworkConnectionModel? remoteSourceConn = _remoteClipboardConnection;
+    final String remoteSourceDir = _remoteClipboardItems.isNotEmpty
+        ? p.dirname(_remoteClipboardItems.first.path)
+        : '/';
+
     RemoteClient? client;
     if (conn.type == 'FTP') {
       client = FtpRemoteClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
@@ -3069,22 +3111,25 @@ class FileManagerProvider extends ChangeNotifier {
       }
       activeTab.isLoading = false;
       await loadDirectory(currentPath, showLoading: false, clearCache: true);
-      // 如果是剪切操作，刷新远程源目录所在的tab
-      if (_isCut && _remoteClipboardItems.isNotEmpty) {
-        final sourceDir = p.dirname(_remoteClipboardItems.first.path);
+      // 剪切操作：刷新远程源目录。clearClipboard() 已清空 _isCut/_remoteClipboardItems，
+      // 故使用前面缓存的 remoteWasCut/remoteSourceConn/remoteSourceDir。
+      if (remoteWasCut && remoteSourceConn != null) {
         for (int i = 0; i < _tabs.length; i++) {
-          if (_tabs[i].isRemote && _tabs[i].currentPath == sourceDir) {
+          if (_tabs[i].isRemote && _tabs[i].currentPath == remoteSourceDir) {
             try {
               final tabClient = createRemoteClient(_tabs[i].remoteConnection!);
               await tabClient.connect();
               _tabs[i].remoteClient = tabClient;
-              await loadDirectoryForTab(i, sourceDir, showLoading: false, clearCache: true);
+              await loadDirectoryForTab(i, remoteSourceDir, showLoading: false, clearCache: true);
             } catch (e) {
               debugPrint('Failed to refresh remote source tab: $e');
             }
             break;
           }
         }
+        // 广播给全屏 RemoteExplorerScreen（非 tab），使其刷新当前目录，
+        // 避免“原文件残留 / 返回后页面丢失”。
+        _remoteSourceChangedController.add(RemoteSourceChanged(remoteSourceConn, remoteSourceDir));
       }
       notifyListeners();
     }
@@ -3096,6 +3141,11 @@ class FileManagerProvider extends ChangeNotifier {
       progressNotifier.value = null;
       return;
     }
+
+    // clearClipboard() 会在 finally 中清空 _isCut/_clipboardPaths，故先缓存
+    // 剪切来源信息，供结束后刷新本地源目录使用。
+    final bool localWasCut = _isCut;
+    final List<String> localSourcePaths = List<String>.from(_clipboardPaths);
 
     _activeTransferClient = client;
     // 共享客户端（activeTab.remoteClient）可能残留上次取消的标志，传输前重置
@@ -3301,15 +3351,10 @@ class FileManagerProvider extends ChangeNotifier {
       progressNotifier.value = null;
       if (clearAfterPaste) clearClipboard();
       await loadDirectory(currentPath, showLoading: false, clearCache: true);
-      // 如果是剪切操作，刷新本地源目录
-      if (_isCut && _clipboardPaths.isNotEmpty) {
-        final sourceDir = p.dirname(_clipboardPaths.first);
-        for (int i = 0; i < _tabs.length; i++) {
-          if (!_tabs[i].isRemote && _tabs[i].currentPath == sourceDir) {
-            await loadDirectoryForTab(i, sourceDir, showLoading: false, clearCache: true);
-            break;
-          }
-        }
+      // 剪切操作：刷新本地源目录。clearClipboard() 已清空 _isCut/_clipboardPaths，
+      // 故使用前面缓存的 localWasCut/localSourcePaths。
+      if (localWasCut && localSourcePaths.isNotEmpty) {
+        await refreshLocalSourceAfterCut(localSourcePaths);
       }
       activeTab.isLoading = false;
       _isPasting = false;
@@ -3324,6 +3369,14 @@ class FileManagerProvider extends ChangeNotifier {
       progressNotifier.value = null;
       return;
     }
+
+    // clearClipboard() 会在 finally 中清空 _isCut/_remoteClipboardItems，故先缓存
+    // 剪切来源信息，供结束后刷新源目录使用。
+    final bool r2rWasCut = _isCut;
+    final NetworkConnectionModel? r2rConn = _remoteClipboardConnection;
+    final String r2rSourceDir = _remoteClipboardItems.isNotEmpty
+        ? p.dirname(_remoteClipboardItems.first.path)
+        : '/';
 
     progressNotifier.backgroundMode = false;
     _isOperationCancelled = false;
@@ -3562,22 +3615,25 @@ class FileManagerProvider extends ChangeNotifier {
       progressNotifier.value = null;
       if (clearAfterPaste) clearClipboard();
       await loadDirectory(currentPath, showLoading: false, clearCache: true);
-      // Refresh source tab if cut
-      if (_isCut && _remoteClipboardItems.isNotEmpty) {
-        final sourceDir = p.dirname(_remoteClipboardItems.first.path);
+      // 剪切操作：刷新远程源目录。clearClipboard() 已清空 _isCut/_remoteClipboardItems，
+      // 故使用前面缓存的 r2rWasCut/r2rConn/r2rSourceDir。
+      if (r2rWasCut && r2rConn != null) {
         for (int i = 0; i < _tabs.length; i++) {
-          if (_tabs[i].isRemote && _tabs[i].currentPath == sourceDir) {
+          if (_tabs[i].isRemote && _tabs[i].currentPath == r2rSourceDir) {
             try {
               final tabClient = createRemoteClient(_tabs[i].remoteConnection!);
               await tabClient.connect();
               _tabs[i].remoteClient = tabClient;
-              await loadDirectoryForTab(i, sourceDir, showLoading: false, clearCache: true);
+              await loadDirectoryForTab(i, r2rSourceDir, showLoading: false, clearCache: true);
             } catch (e) {
               debugPrint('Failed to refresh remote source tab: $e');
             }
             break;
           }
         }
+        // 广播给全屏 RemoteExplorerScreen（非 tab），使其刷新当前目录，
+        // 避免“原文件残留 / 返回后页面丢失”。
+        _remoteSourceChangedController.add(RemoteSourceChanged(r2rConn, r2rSourceDir));
       }
       activeTab.isLoading = false;
       _isPasting = false;
@@ -4693,6 +4749,7 @@ class FileManagerProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    _remoteSourceChangedController.close();
     _navigateToBrowseTabNotifier.dispose();
     super.dispose();
   }

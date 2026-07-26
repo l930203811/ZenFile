@@ -33,6 +33,7 @@ class RemoteExplorerScreen extends StatefulWidget {
 
 class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
   RemoteClient? _client;
+  StreamSubscription<RemoteSourceChanged>? _remoteChangedSub;
   bool _isConnected = false;
   bool _isLoading = true;
   String _errorMsg = '';
@@ -57,11 +58,22 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
         ? widget.connection.rootPath
         : '/';
     _currentPath = _rootPath;
+    // 订阅远程源目录变化事件：本连接上的文件被剪切/移动后，自动刷新当前目录，
+    // 避免“原文件残留 / 返回后页面丢失”。
+    _remoteChangedSub = context
+        .read<FileManagerProvider>()
+        .remoteSourceChangedStream
+        .listen((event) {
+      if (event.connection.id == widget.connection.id && mounted) {
+        _loadDirectoryContents(_currentPath, forceRefresh: true);
+      }
+    });
     _initClient();
   }
 
   @override
   void dispose() {
+    _remoteChangedSub?.cancel();
     _client?.disconnect();
     super.dispose();
   }
@@ -419,7 +431,11 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
 
     if (mounted) {
       setState(() => _isTransferring = false);
-      if (isCut) provider.clearClipboard();
+      if (isCut) {
+        // 刷新本地源目录，使被剪切（移动）的原文件立即从本地浏览器消失
+        provider.refreshLocalSourceAfterCut(paths);
+        provider.clearClipboard();
+      }
       _showSnack('Uploaded ${paths.length} file(s) successfully');
       await _loadDirectoryContents(_currentPath);
     }
