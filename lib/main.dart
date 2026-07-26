@@ -95,7 +95,7 @@ void main() {
       await AudioService.init(
         builder: () => getAudioHandler(),
         config: const AudioServiceConfig(
-          androidNotificationChannelId: 'com.sequl.zenfile.audio',
+          androidNotificationChannelId: 'com.sequl.zenfile.audio.v2',
           androidNotificationChannelName: 'ZenFile Audio Player',
           androidNotificationIcon: 'mipmap/ic_launcher',
           androidShowNotificationBadge: true,

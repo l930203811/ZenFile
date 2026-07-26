@@ -251,6 +251,15 @@ class ZenFileAudioHandler extends BaseAudioHandler
     _persistCurrentMediaItem();
   }
 
+  /// Re-emit the current playback state without re-attaching the player.
+  /// Used as a safety net when the first emit may have failed to create
+  /// the foreground notification (e.g. startForeground race / permission delay).
+  void reattachState() {
+    if (_player != null) {
+      _emitPlaybackState(playing: _player.state.playing);
+    }
+  }
+
   // ─── Private helpers ─────────────────────────────────────────────────────
 
   void _emitPlaybackState({

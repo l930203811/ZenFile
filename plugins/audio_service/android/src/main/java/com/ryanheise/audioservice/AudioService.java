@@ -357,6 +357,16 @@ public class AudioService extends MediaBrowserServiceCompat {
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
         MediaButtonReceiver.handleIntent(mediaSession, intent);
+        // 安全网：若已标记为播放态但通知尚未创建（enterPlayingState 的 handler.post
+        // 可能因主线程繁忙而延迟），在 onStartCommand 里立即补一次 startForeground，
+        // 确保系统不会因“startForegroundService 后 5 秒未 startForeground”而杀服务。
+        if (inPlayingState && !notificationCreated && mediaSession != null) {
+            try {
+                internalStartForeground();
+            } catch (Exception e) {
+                System.out.println("### onStartCommand internalStartForeground failed: " + e);
+            }
+        }
         return START_NOT_STICKY;
     }
 
@@ -572,7 +582,16 @@ public class AudioService extends MediaBrowserServiceCompat {
                 // Android 13+ 对 startForeground() 调用线程和时机要求更严格,
                 // 从 background engine 线程直接调用可能导致前台服务无法启动,
                 // 从而系统媒体卡片识别不到 active session。切到主线程执行。
-                handler.post(() -> enterPlayingState());
+                handler.post(() -> {
+                    try {
+                        enterPlayingState();
+                    } catch (Exception e) {
+                        // startForeground 可能因权限/渠道/类型等原因抛异常，
+                        // 捕获并回退标记，使下一次 setState 能重试。
+                        System.out.println("### enterPlayingState failed: " + e);
+                        inPlayingState = false;
+                    }
+                });
                 inPlayingState = true;
             }
         } else if (inPlayingState) {
@@ -706,10 +725,16 @@ public class AudioService extends MediaBrowserServiceCompat {
     @RequiresApi(Build.VERSION_CODES.O)
     private void createChannel() {
         NotificationManager notificationManager = getNotificationManager();
+        // 迁移：删除旧的低重要性渠道（IMPORTANCE_LOW 在部分国产 ROM 上会被默认隐藏），
+        // 新渠道使用 IMPORTANCE_DEFAULT 保证通知可见。
+        notificationManager.deleteNotificationChannel("com.sequl.zenfile.audio");
         NotificationChannel channel = notificationManager.getNotificationChannel(notificationChannelId);
         if (channel == null) {
-            channel = new NotificationChannel(notificationChannelId, config.androidNotificationChannelName, NotificationManager.IMPORTANCE_LOW);
+            channel = new NotificationChannel(notificationChannelId, config.androidNotificationChannelName, NotificationManager.IMPORTANCE_DEFAULT);
             channel.setShowBadge(config.androidShowNotificationBadge);
+            // 禁用声音和振动，避免每次开始播放都打扰用户（IMPORTANCE_DEFAULT 默认有声音）
+            channel.setSound(null, null);
+            channel.enableVibration(false);
             if (config.androidNotificationChannelDescription != null)
                 channel.setDescription(config.androidNotificationChannelDescription);
             notificationManager.createNotificationChannel(channel);
@@ -744,7 +769,16 @@ public class AudioService extends MediaBrowserServiceCompat {
     }
 
     private void internalStartForeground() {
-        startForeground(NOTIFICATION_ID, buildNotification());
+        Notification notification = buildNotification();
+        // Android 14 (API 34)+ 且 targetSdk≥34 时，startForeground(int, Notification)
+        // 不带前台服务类型会抛 MissingForegroundServiceTypeException，导致前台服务
+        // 无法启动、通知不显示、系统媒体卡片不识别。必须显式传入 mediaPlayback 类型。
+        if (Build.VERSION.SDK_INT >= 34) {
+            startForeground(NOTIFICATION_ID, notification,
+                    android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
+        } else {
+            startForeground(NOTIFICATION_ID, notification);
+        }
         notificationCreated = true;
     }
 

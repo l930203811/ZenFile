@@ -1859,6 +1859,15 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     setState(() => _isBackgroundMode = true);
     await PreferencesService.saveAudioBackgroundPlay(true);
 
+    // 安全网：延迟 800ms 后重新 emit 一次 playbackState。
+    // 首次 attach() 的 emit 可能因 startForeground 竞态/权限延迟而未成功创建通知，
+    // 重新 emit 会触发原生侧 retry enterPlayingState()。
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (mounted && _isBackgroundMode) {
+        getAudioHandler().reattachState();
+      }
+    });
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -1898,7 +1907,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
           await AudioService.init(
             builder: () => getAudioHandler(),
             config: const AudioServiceConfig(
-              androidNotificationChannelId: 'com.sequl.zenfile.audio',
+              androidNotificationChannelId: 'com.sequl.zenfile.audio.v2',
               androidNotificationChannelName: 'ZenFile Audio Player',
               androidNotificationIcon: 'mipmap/ic_launcher',
               androidShowNotificationBadge: true,
