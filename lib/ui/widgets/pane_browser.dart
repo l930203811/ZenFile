@@ -344,6 +344,22 @@ class _PaneBrowserState extends State<PaneBrowser> {
           );
         }
         break;
+      case 'favorite':
+        final name = p.posix.basename(path);
+        final isRemote = provider.currIsRemote;
+        final connectionId = provider.activeTab.remoteConnection?.id;
+        final isDir = isRemote ? true : await Directory(path).exists();
+        provider.addFavorite(path, name, isDir, isRemote: isRemote, connectionId: connectionId);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(L10n.of(context).msg_favorited(name)),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+        break;
     }
   }
 

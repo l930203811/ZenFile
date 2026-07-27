@@ -596,31 +596,17 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         return;
       }
 
-      // 2. 本地未找到，尝试在线搜索（静默后台）
-      debugPrint('[LyricSearch] 本地未找到歌词，尝试在线搜索: $title - $artist');
-      if (generation != _lyricsLoadGeneration) return;
-
-      final onlineResult = await LyricSearchService.searchAndDownload(
-        title: title,
-        artist: artist,
-        audioPath: audioPath,
-      );
-
-      // 只应用最新一次加载的结果
+      // 2. 本地未找到歌词 — 不再自动在线搜索，保持无歌词状态
+      //    用户可通过歌词面板的「在线搜索」按钮手动触发搜索
+      debugPrint('[LyricSearch] 本地未找到歌词，跳过自动在线搜索: $title - $artist');
       if (mounted && generation == _lyricsLoadGeneration) {
-        final sanitized = _sanitizeLyrics(onlineResult?.lyrics);
         setState(() {
-          if (sanitized != null) {
-            _lyrics = sanitized;
-            _lyricSourcePath = onlineResult!.sourcePath;
-          } else {
-            _lyrics = null;
-            _lyricSourcePath = null;
-          }
+          _lyrics = null;
+          _lyricSourcePath = null;
           _isLoadingLyrics = false;
         });
         if (_desktopLyricEnabled) {
-          DesktopLyricController.instance.setLyrics(sanitized);
+          DesktopLyricController.instance.setLyrics(null);
         }
       }
     });

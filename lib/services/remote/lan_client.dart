@@ -180,6 +180,22 @@ class LanClient extends RemoteClient {
     }
   }
 
+  @override
+  void cancel() {
+    final session = _sessionId;
+    if (session != null) {
+      _channel.invokeMethod<void>('cancelTransfer', {'sessionId': session});
+    }
+  }
+
+  @override
+  void resetCancel() {
+    final session = _sessionId;
+    if (session != null) {
+      _channel.invokeMethod<void>('resetCancel', {'sessionId': session});
+    }
+  }
+
   String _normalizePath(String path) {
     if (path.isEmpty) return '/';
     if (!path.startsWith('/')) path = '/$path';
@@ -402,35 +418,22 @@ class LanClient extends RemoteClient {
       'remotePath': _normalizePath(remotePath),
     });
 
-    // Since the native upload is a blocking call with no progress reporting,
-    // we report a slowly increasing fake progress so the UI shows activity
-    // instead of being stuck at 0%.
+    // Poll remote file size for real progress
     Timer? progressTimer;
-    double fakeProgress = 0.0;
     if (totalSize > 0) {
-      // Estimate upload time based on a conservative 2 MB/s speed
-      final estimatedSeconds = (totalSize / (2 * 1024 * 1024)).ceil();
-      final increment = 1.0 / (estimatedSeconds * 10); // 10 ticks per second
-      progressTimer = Timer.periodic(const Duration(milliseconds: 100), (_) {
-        fakeProgress = (fakeProgress + increment).clamp(0.0, 0.95);
-        onProgress(fakeProgress);
-      });
-    } else {
-      // For empty or unknown-size files, just report a small tick
-      progressTimer = Timer.periodic(const Duration(milliseconds: 200), (_) {
-        fakeProgress = (fakeProgress + 0.02).clamp(0.0, 0.95);
-        onProgress(fakeProgress);
+      progressTimer = Timer.periodic(const Duration(milliseconds: 200), (_) async {
+        try {
+          final current = await getFileSize(remotePath);
+          if (current > 0) {
+            onProgress((current / totalSize).clamp(0.0, 0.99));
+          }
+        } catch (_) {}
       });
     }
 
     try {
-      // 根据文件大小动态调整超时：
-      // - 默认 30 分钟（适用于大部分文件）
-      // - 超过 1GB 的大文件按 10 MB/s 估算额外时间，避免大文件超时失败
-      //   注意：原生层已使用 64KB 缓冲区 + 60s socket 超时，传输效率与稳定性已提升
       Duration timeout = const Duration(minutes: 30);
       if (totalSize > 1024 * 1024 * 1024) {
-        // 超过 1GB：按 10 MB/s 估算 + 10 分钟余量
         final estimatedMinutes = (totalSize / (10 * 1024 * 1024) / 60).ceil() + 10;
         timeout = Duration(minutes: estimatedMinutes.clamp(30, 240));
       }
@@ -442,7 +445,7 @@ class LanClient extends RemoteClient {
     } on TimeoutException {
       throw Exception('SMB upload timed out');
     } finally {
-      progressTimer.cancel();
+      progressTimer?.cancel();
     }
   }
 

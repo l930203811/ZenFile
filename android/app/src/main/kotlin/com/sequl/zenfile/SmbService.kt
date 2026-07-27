@@ -53,6 +53,7 @@ class SmbService {
     )
 
     private val sessions = ConcurrentHashMap<String, SmbSessionEntry>()
+    private val cancelFlags = ConcurrentHashMap<String, Boolean>()
 
     companion object {
         val instance: SmbService = SmbService()
@@ -1258,17 +1259,15 @@ class SmbService {
                 localFile.parentFile?.mkdirs()
                 file.getInputStream().use { input ->
                     localFile.outputStream().use { output ->
-                        // 使用 1MB 缓冲区分块读取，配合 SmbConfig.withReadSizeLimit(8MB)
-                        // 减少 read() 系统调用次数，提升高速局域网下的下载吞吐
                         val buffer = ByteArray(1024 * 1024)
                         var bytesRead: Int
                         while (input.read(buffer).also { bytesRead = it } != -1) {
+                            if (isCancelled(sessionId)) {
+                                // 删除未完成的文件
+                                try { localFile.delete() } catch (_: Exception) {}
+                                return false
+                            }
                             output.write(buffer, 0, bytesRead)
-                            // 关键：每写入一块立即 flush 到磁盘，使本地 partial 文件随下载渐进增长。
-                            // RemoteStreamingService 依赖读取磁盘上逐步增大的文件来实现「边下边播」：
-                            // 若只在结束时 flush 一次，代理在下载完成前读到的始终是 0 字节，导致无法
-                            // 真正流式播放，且大文件（下载 > 60s）会被代理判定超时而失败。
-                            // flush() 仅把 Java 缓冲推送到内核 write()，开销极低，不会触发 fsync。
                             output.flush()
                         }
                         output.flush()
@@ -1374,11 +1373,12 @@ class SmbService {
                 if (!localFile.exists()) throw Exception("Local file does not exist: $localPath")
                 localFile.inputStream().use { input ->
                     file.getOutputStream().use { output ->
-                        // 使用 1MB 缓冲区分块写入，配合 SmbConfig.withWriteSizeLimit(8MB)
-                // 减少 write() 系统调用次数，提升高速局域网下的上传吞吐
                         val buffer = ByteArray(1024 * 1024)
                         var bytesRead: Int
                         while (input.read(buffer).also { bytesRead = it } != -1) {
+                            if (isCancelled(sessionId)) {
+                                return false
+                            }
                             output.write(buffer, 0, bytesRead)
                         }
                         output.flush()
@@ -1394,9 +1394,23 @@ class SmbService {
     }
 
     /**
-     * Returns the size in bytes of [remotePath] or -1 when the file cannot be
-     * opened (e.g. it does not exist or is inaccessible).
+     * 取消指定会话的下载/上传操作。
+     * 原生层在循环中检查此标志，设置后尽快退出。
      */
+    fun cancelTransfer(sessionId: String) {
+        cancelFlags[sessionId] = true
+    }
+
+    /**
+     * 重置取消标志，供下次传输前调用。
+     */
+    fun resetCancel(sessionId: String) {
+        cancelFlags.remove(sessionId)
+    }
+
+    private fun isCancelled(sessionId: String): Boolean {
+        return cancelFlags[sessionId] == true
+    }
     fun getFileSize(sessionId: String, remotePath: String): Long {
         val entry = sessions[sessionId] ?: throw Exception("Invalid or disconnected session id")
         val (shareName, pathInShare) = resolveShareAndPath(remotePath)

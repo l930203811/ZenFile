@@ -13,6 +13,20 @@ class FtpRemoteClient extends RemoteClient {
 
   FTPConnect? _ftpConnect;
 
+  @override
+  void cancel() {
+    // FTP 协议没有原生取消命令，通过断开连接来中断进行中的传输
+    // 进行中的 downloadFile/uploadFile 会因 socket 关闭而抛出异常，
+    // 上层捕获后视为取消
+    _ftpConnect?.disconnect();
+  }
+
+  @override
+  void resetCancel() {
+    // FTP 取消后需要重新连接，resetCancel 由上层在传输前调用
+    // 这里不做任何操作，因为 cancel 已经断开了连接
+  }
+
   FtpRemoteClient({
     required this.host,
     required this.port,
@@ -61,40 +75,15 @@ class FtpRemoteClient extends RemoteClient {
 
     List<FTPEntry> allEntries;
     try {
-      // Navigate to directory with timeout
-      if (targetPath != '/') {
-        final ok = await _ftpConnect!
-            .changeDirectory(targetPath)
-            .timeout(const Duration(seconds: 30));
-        if (!ok) throw Exception('Cannot open directory: $targetPath');
-      } else {
-        await _ftpConnect!
-            .changeDirectory('/')
-            .timeout(const Duration(seconds: 30));
-      }
-
+      // 直接使用 LIST 命令列出目录，不预先 changeDirectory
+      // 某些 FTP 服务器（如 FileZilla Server、vsftpd）对 changeDirectory 到根路径或
+      // 某些特殊路径支持不一致，直接用 listDirectoryContent 更可靠
       allEntries = await _ftpConnect!
           .listDirectoryContent()
           .timeout(const Duration(seconds: 30));
     } catch (e) {
-      // If changeDirectory failed, attempt to reconnect once
-      if (e.toString().contains('Cannot open directory') ||
-          e.toString().contains('TimeoutException')) {
-        try {
-          await _ftpConnect?.disconnect();
-        } catch (_) {}
-        _ftpConnect = FTPConnect(
-          host,
-          port: port,
-          user: username.isEmpty ? 'anonymous' : username,
-          pass: password.isEmpty ? 'anonymous@' : password,
-          timeout: 15,
-        );
-        final reconnected = await _ftpConnect!.connect();
-        if (!reconnected) {
-          throw Exception('FTP reconnection failed after error: $e');
-        }
-        // Retry the listing once
+      // 如果直接列表失败，尝试 changeDirectory 后再列表
+      try {
         if (targetPath != '/') {
           final ok = await _ftpConnect!
               .changeDirectory(targetPath)
@@ -108,8 +97,31 @@ class FtpRemoteClient extends RemoteClient {
         allEntries = await _ftpConnect!
             .listDirectoryContent()
             .timeout(const Duration(seconds: 30));
-      } else {
-        rethrow;
+      } catch (e2) {
+        // 尝试重新连接后再次列表
+        try {
+          await _ftpConnect?.disconnect();
+        } catch (_) {}
+        _ftpConnect = FTPConnect(
+          host,
+          port: port,
+          user: username.isEmpty ? 'anonymous' : username,
+          pass: password.isEmpty ? 'anonymous@' : password,
+          timeout: 15,
+        );
+        final reconnected = await _ftpConnect!.connect();
+        if (!reconnected) {
+          throw Exception('FTP reconnection failed after error: $e2');
+        }
+        if (targetPath != '/') {
+          final ok = await _ftpConnect!
+              .changeDirectory(targetPath)
+              .timeout(const Duration(seconds: 30));
+          if (!ok) throw Exception('Cannot open directory: $targetPath');
+        }
+        allEntries = await _ftpConnect!
+            .listDirectoryContent()
+            .timeout(const Duration(seconds: 30));
       }
     }
 
@@ -176,8 +188,16 @@ class FtpRemoteClient extends RemoteClient {
     for (int attempt = 0; attempt < maxRetries; attempt++) {
       try {
         if (isDir) {
+          // 先切换到父目录，再删除子目录
+          final parentPath = p.dirname(path);
+          final dirName = p.basename(path);
+          if (parentPath.isNotEmpty && parentPath != '/') {
+            await _ftpConnect!.changeDirectory(parentPath);
+          } else {
+            await _ftpConnect!.changeDirectory('/');
+          }
           final ok = await _ftpConnect!
-              .deleteDirectory(path)
+              .deleteDirectory(dirName)
               .timeout(const Duration(seconds: 30));
           if (!ok) throw Exception('Failed to delete directory: $path');
         } else {
