@@ -2273,6 +2273,23 @@ class FileManagerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 上传完成后延迟片刻再刷新一次远程目录。
+  ///
+  /// 部分 NAS（如飞牛）在 STOR 完成后会延迟重命名/清理 file-<随机> 临时文件，
+  /// 传输结束时的即时刷新可能仍读到脏数据，表现为“必须重新进入目录才刷新 UI”。
+  /// 这里延迟 ~800ms 再刷一次（若用户已离开该目录或开始新操作则跳过），
+  /// 让 UI 自行恢复到干净状态，无需手动重新进入。
+  void scheduleRemoteRefreshAfterUpload(String dir) {
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (activeTab.isRemote &&
+          activeTab.currentPath == dir &&
+          !_isPasting) {
+        loadDirectory(dir, showLoading: false, clearCache: true)
+            .catchError((_) {});
+      }
+    });
+  }
+
   void copyFile(String path) {
     if (currIsRemote) {
       if (currentFiles.isEmpty) {
@@ -3367,6 +3384,8 @@ class FileManagerProvider extends ChangeNotifier {
       progressNotifier.value = null;
       if (clearAfterPaste) clearClipboard();
       await loadDirectory(currentPath, showLoading: false, clearCache: true);
+      // 上传后服务端可能延迟清理临时文件，延迟再刷一次以保证 UI 干净。
+      scheduleRemoteRefreshAfterUpload(currentPath);
       // 剪切操作：刷新本地源目录。clearClipboard() 已清空 _isCut/_clipboardPaths，
       // 故使用前面缓存的 localWasCut/localSourcePaths。
       if (localWasCut && localSourcePaths.isNotEmpty) {
@@ -3631,6 +3650,8 @@ class FileManagerProvider extends ChangeNotifier {
       progressNotifier.value = null;
       if (clearAfterPaste) clearClipboard();
       await loadDirectory(currentPath, showLoading: false, clearCache: true);
+      // 上传后服务端可能延迟清理临时文件，延迟再刷一次以保证 UI 干净。
+      scheduleRemoteRefreshAfterUpload(currentPath);
       // 剪切操作：刷新远程源目录。clearClipboard() 已清空 _isCut/_remoteClipboardItems，
       // 故使用前面缓存的 r2rWasCut/r2rConn/r2rSourceDir。
       if (r2rWasCut && r2rConn != null) {

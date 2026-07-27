@@ -651,7 +651,14 @@ class FtpRemoteClient extends RemoteClient {
       int uploaded = 0;
 
       await for (final chunk in localFile.openRead()) {
-        if (isCancelled) throw Exception('Cancelled');
+        if (isCancelled) {
+          // 取消：先销毁数据连接中止 STOR，再用 listing 会话删除已上传的半截
+          // 目标文件与服务端可能生成的 file-<随机> 临时文件，避免残留。
+          try { dataSocket?.destroy(); } catch (_) {}
+          _activeUploadDataSocket = null;
+          try { await _abortAndCleanupUpload(remoteDir, remoteFileName); } catch (_) {}
+          throw Exception('Cancelled');
+        }
         dataSocket.add(chunk);
         uploaded += chunk.length;
         if (fileSize > 0) {
@@ -672,6 +679,12 @@ class FtpRemoteClient extends RemoteClient {
 
       // Graceful quit
       try { controlSocket.write('QUIT\r\n'); } catch (_) {}
+
+      // 传输成功后清理服务端可能残留的 file-<随机> 临时文件：
+      // 部分 NAS（如飞牛）在 STOR 期间生成该临时文件，传输完成应被重命名，
+      // 但个别情况下延迟清理，导致 UI 立即刷新时仍显示脏数据。
+      try { await _cleanupStrayTemp(remoteDir, remoteFileName); } catch (_) {}
+
       onProgress(1.0);
     } catch (e) {
       // cancel() 会销毁 socket，进行中的上传会在此抛异常；此时应视为取消
@@ -684,6 +697,43 @@ class FtpRemoteClient extends RemoteClient {
       _activeUploadDataSocket = null;
       _activeUploadControlSocket = null;
     }
+  }
+
+  /// 取消上传时清理服务端残留：删除已上传的半截目标文件，以及 STOR 期间
+  /// 服务端（如飞牛 NAS）生成的 file-<随机数字> 临时文件。
+  ///
+  /// 使用独立的 listing 会话（[_ftpConnect]）执行删除，与进行中的上传数据
+  /// 连接互不干扰，确保取消后目录里不留下残缺文件。
+  Future<void> _abortAndCleanupUpload(String remoteDir, String remoteFileName) async {
+    if (_ftpConnect == null) return;
+    try {
+      await delete(p.join(remoteDir, remoteFileName), false);
+    } catch (_) {}
+    try {
+      await _cleanupStrayTemp(remoteDir, remoteFileName);
+    } catch (_) {}
+  }
+
+  /// 删除目标目录中残留的 file-<随机数字>（无后缀）临时文件。
+  ///
+  /// 这些临时文件由服务端在 STOR 过程中创建，正常情况下会在传输完成后被
+  /// 重命名；个别 NAS 会延迟清理，导致 UI 立即刷新时仍显示脏数据。这里仅
+  /// 删除“本次上传期间产生、且与目标名不同”的此类文件（并限制 2 分钟内
+  /// 新建），以最大限度避免误删同名合法文件。
+  Future<void> _cleanupStrayTemp(String remoteDir, String targetName) async {
+    if (_ftpConnect == null) return;
+    try {
+      final items = await listDirectory(remoteDir, forceRefresh: true);
+      final cutoff = DateTime.now().subtract(const Duration(seconds: 120));
+      for (final item in items) {
+        if (item.isDirectory) continue;
+        if (item.name == targetName) continue;
+        if (RegExp(r'^file-\d+$').hasMatch(item.name) &&
+            item.modified.isAfter(cutoff)) {
+          try { await delete(item.path, false); } catch (_) {}
+        }
+      }
+    } catch (_) {}
   }
 
   @override
