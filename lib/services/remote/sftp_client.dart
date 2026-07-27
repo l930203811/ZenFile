@@ -225,62 +225,118 @@ class SftpRemoteClient extends RemoteClient {
   Future<void> downloadFile(String remotePath, String localPath, Function(double progress) onProgress) async {
     if (_sftpClient == null) throw Exception('SFTP not connected');
 
-    final file = await _sftpClient!.open(remotePath);
-    // stat 可能耗时，用 5s 超时获取文件大小用于进度报告
+    // stat 获取文件大小，用于划分并发窗口与进度报告（5s 超时）
     int totalSize = 0;
     try {
-      final stat = await _sftpClient!.stat(remotePath)
-          .timeout(const Duration(seconds: 5));
+      final stat = await _sftpClient!.stat(remotePath).timeout(const Duration(seconds: 5));
       totalSize = stat.size ?? 0;
-    } catch (_) {
-      // stat 超时或失败 — 继续下载，进度不更新
-    }
+    } catch (_) {}
 
     final localFile = File(localPath);
-    final sink = localFile.openWrite();
 
-    int downloaded = 0;
-    int sinceFlush = 0;
-    bool isFirstChunk = true;
-    // 首块立即 flush（让代理尽快看到数据），后续每 64KB flush 一次。
-    // 之前 4KB+1ms delay 限制了吞吐量到 ~1.5MB/s（4KB/3ms≈1.3MB/s）。
-    // 64KB flush 可达到 ~10-20MB/s，满足高清视频播放需求。
-    const flushInterval = 64 * 1024; // 64KB
-    try {
-      // 使用 dartssh2 默认 read() 参数（默认 chunkSize + 64 并发在途请求）。
-      // 注意：曾尝试把 chunkSize 提到 256KB 以提速，但飞牛 NAS 等部分 SFTP
-      // 服务端对单次大读取请求返回异常 EOF 状态，导致 read() 提前 break、
-      // 下载只到开头几 MB，串流播放 ~1 秒即停。故恢复默认参数以保证兼容与串流稳定。
-      final stream = file.read().timeout(
-        const Duration(seconds: 120),
-        onTimeout: (eventSink) {
-          eventSink.addError(
-            Exception('SFTP read timed out: no data for 120s'),
-          );
-          eventSink.close();
-        },
-      );
-      await for (final chunk in stream) {
-        if (isCancelled) break;
-        sink.add(chunk);
-        downloaded += chunk.length;
-        sinceFlush += chunk.length;
-        if (totalSize > 0) {
-          onProgress((downloaded / totalSize).clamp(0.0, 1.0));
+    // 大小未知时退回顺序读取，保证兼容与串流稳定（飞牛 NAS 等大块读取会 EOF）
+    if (totalSize <= 0) {
+      final file = await _sftpClient!.open(remotePath);
+      final sink = localFile.openWrite();
+      try {
+        final stream = file.read().timeout(
+          const Duration(seconds: 120),
+          onTimeout: (eventSink) {
+            eventSink.addError(Exception('SFTP read timed out: no data for 120s'));
+            eventSink.close();
+          },
+        );
+        await for (final chunk in stream) {
+          if (isCancelled) break;
+          sink.add(chunk);
         }
-        // Flush immediately on first chunk so the streaming proxy sees the
-        // file has data without waiting for the 100ms polling interval.
-        // For subsequent chunks, flush every flushInterval bytes.
-        if (isFirstChunk || sinceFlush >= flushInterval) {
-          await sink.flush();
-          sinceFlush = 0;
-          isFirstChunk = false;
+      } finally {
+        await sink.flush();
+        await sink.close();
+        await file.close();
+      }
+      return;
+    }
+
+    // 滑动窗口并发 Range 读（参考 MaterialFiles 的 1MB 预读 + 异步双缓冲思路）。
+    // 单流顺序 read 一次只在途一个 SSH_FXP_READ，round-trip 等待限制吞吐到
+    // ~1.5-2MB/s。改为开启多个 SFTP 句柄，各自按偏移并发读取 64KB 块并写入本地
+    // 文件对应偏移：多个在途读取可填满 SSH 通道，显著提升带宽利用率。
+    // 每块限制 64KB 以避开飞牛 NAS 等服务端对“单次大读取”返回异常 EOF 的问题。
+    const int concurrency = 12;
+    const int chunkSize = 64 * 1024; // 64KB/块，在途约 768KB
+
+    final raf = await localFile.open(mode: FileMode.write);
+    try {
+      await raf.truncate(totalSize);
+
+      // 写入串行化：多个 worker 并发读取后会乱序写回，必须用锁保证
+      // setPosition + writeFrom 的原子性，否则偏移错位导致文件损坏。
+      Future<void> writeLock = Future.value();
+      Future<void> writeAt(int pos, List<int> data) {
+        final prev = writeLock;
+        final completer = Completer<void>();
+        writeLock = completer.future;
+        return prev.then((_) async {
+          try {
+            await raf.setPosition(pos);
+            await raf.writeFrom(data);
+          } finally {
+            completer.complete();
+          }
+        });
+      }
+
+      int nextOffset = 0;
+      int downloaded = 0;
+      Object? firstError;
+      // 同步取值，事件循环内无 await，offset 分配无竞态
+      int take() {
+        final o = nextOffset;
+        nextOffset += chunkSize;
+        return o;
+      }
+
+      Future<void> worker(SftpFile handle) async {
+        while (true) {
+          final start = take();
+          if (start >= totalSize) return;
+          final len = (start + chunkSize <= totalSize) ? chunkSize : (totalSize - start);
+          List<int> bytes;
+          try {
+            bytes = await handle
+                .read(offset: start, length: len)
+                .expand((e) => e)
+                .toList();
+          } catch (e) {
+            firstError ??= e;
+            return;
+          }
+          await writeAt(start, Uint8List.fromList(bytes));
+          downloaded += len;
+          if (totalSize > 0) onProgress((downloaded / totalSize).clamp(0.0, 1.0));
+          if (isCancelled) throw Exception('Cancelled');
         }
       }
+
+      final handles = <SftpFile>[];
+      try {
+        for (int i = 0; i < concurrency; i++) {
+          handles.add(await _sftpClient!.open(remotePath));
+        }
+        await Future.wait(handles.map(worker));
+      } finally {
+        for (final h in handles) {
+          try {
+            await h.close();
+          } catch (_) {}
+        }
+      }
+      if (firstError != null) throw Exception('SFTP download failed: $firstError');
+      if (isCancelled) throw Exception('Cancelled');
+      onProgress(1.0);
     } finally {
-      await sink.flush();
-      await sink.close();
-      await file.close();
+      await raf.close();
     }
   }
 
