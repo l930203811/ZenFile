@@ -75,54 +75,25 @@ class FtpRemoteClient extends RemoteClient {
 
     List<FTPEntry> allEntries;
     try {
-      // 直接使用 LIST 命令列出目录，不预先 changeDirectory
-      // 某些 FTP 服务器（如 FileZilla Server、vsftpd）对 changeDirectory 到根路径或
-      // 某些特殊路径支持不一致，直接用 listDirectoryContent 更可靠
-      allEntries = await _ftpConnect!
-          .listDirectoryContent()
-          .timeout(const Duration(seconds: 30));
+      allEntries = await _listCurrentDirectory(targetPath);
     } catch (e) {
-      // 如果直接列表失败，尝试 changeDirectory 后再列表
+      // 列表失败（网络抖动 / 服务器临时锁目录 / CWD 漂移）：重连后重试一次。
+      // 重连会重置会话的当前工作目录，避免残留的 CWD 状态影响后续导航。
       try {
-        if (targetPath != '/') {
-          final ok = await _ftpConnect!
-              .changeDirectory(targetPath)
-              .timeout(const Duration(seconds: 30));
-          if (!ok) throw Exception('Cannot open directory: $targetPath');
-        } else {
-          await _ftpConnect!
-              .changeDirectory('/')
-              .timeout(const Duration(seconds: 30));
-        }
-        allEntries = await _ftpConnect!
-            .listDirectoryContent()
-            .timeout(const Duration(seconds: 30));
-      } catch (e2) {
-        // 尝试重新连接后再次列表
-        try {
-          await _ftpConnect?.disconnect();
-        } catch (_) {}
-        _ftpConnect = FTPConnect(
-          host,
-          port: port,
-          user: username.isEmpty ? 'anonymous' : username,
-          pass: password.isEmpty ? 'anonymous@' : password,
-          timeout: 15,
-        );
-        final reconnected = await _ftpConnect!.connect();
-        if (!reconnected) {
-          throw Exception('FTP reconnection failed after error: $e2');
-        }
-        if (targetPath != '/') {
-          final ok = await _ftpConnect!
-              .changeDirectory(targetPath)
-              .timeout(const Duration(seconds: 30));
-          if (!ok) throw Exception('Cannot open directory: $targetPath');
-        }
-        allEntries = await _ftpConnect!
-            .listDirectoryContent()
-            .timeout(const Duration(seconds: 30));
+        await _ftpConnect?.disconnect();
+      } catch (_) {}
+      _ftpConnect = FTPConnect(
+        host,
+        port: port,
+        user: username.isEmpty ? 'anonymous' : username,
+        pass: password.isEmpty ? 'anonymous@' : password,
+        timeout: 15,
+      );
+      final reconnected = await _ftpConnect!.connect();
+      if (!reconnected) {
+        throw Exception('FTP reconnection failed after error: $e');
       }
+      allEntries = await _listCurrentDirectory(targetPath);
     }
 
     final list = <RemoteFileItem>[];
@@ -142,6 +113,37 @@ class FtpRemoteClient extends RemoteClient {
       ));
     }
     return list;
+  }
+
+  /// 切换到 [targetPath] 并列出“当前工作目录”的内容。
+  ///
+  /// 关键修复：ftpconnect 的 [FTPConnect.listDirectoryContent] 始终列出 FTP 会话的
+  /// 当前工作目录（CWD），不带任何路径参数。若不在列表前先 [changeDirectory]，则无论
+  /// 传入什么路径都会列出 CWD，导致：
+  ///   - 点击子文件夹后列表看起来“没变化”（实际仍列着父目录）→ 表现为“点击无响应”；
+  ///   - 其它操作（上传/删除/重命名）改变了 CWD 后，列表会列出错误目录 → 表现为
+  ///     “进入目录偶尔为空”。
+  /// 因此这里统一先 CWD 到目标目录再 LIST。
+  Future<List<FTPEntry>> _listCurrentDirectory(String targetPath) async {
+    if (targetPath != '/') {
+      final ok = await _ftpConnect!
+          .changeDirectory(targetPath)
+          .timeout(const Duration(seconds: 30));
+      if (!ok) throw Exception('Cannot open directory: $targetPath');
+    } else {
+      // 根目录：尝试 CWD /。部分服务器登录后 CWD 已位于根目录，即便 CWD /
+      // 返回失败也不影响，直接按当前工作目录列出即可，保证根目录始终可用。
+      try {
+        await _ftpConnect!
+            .changeDirectory('/')
+            .timeout(const Duration(seconds: 30));
+      } catch (_) {
+        // 忽略，继续以当前工作目录列出
+      }
+    }
+    return await _ftpConnect!
+        .listDirectoryContent()
+        .timeout(const Duration(seconds: 30));
   }
 
   @override
