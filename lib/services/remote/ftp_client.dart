@@ -654,7 +654,7 @@ class FtpRemoteClient extends RemoteClient {
         if (isCancelled) {
           // 取消：先销毁数据连接中止 STOR，再用 listing 会话删除已上传的半截
           // 目标文件与服务端可能生成的 file-<随机> 临时文件，避免残留。
-          try { dataSocket?.destroy(); } catch (_) {}
+          try { dataSocket.destroy(); } catch (_) {}
           _activeUploadDataSocket = null;
           try { await _abortAndCleanupUpload(remoteDir, remoteFileName); } catch (_) {}
           throw Exception('Cancelled');
@@ -680,10 +680,18 @@ class FtpRemoteClient extends RemoteClient {
       // Graceful quit
       try { controlSocket.write('QUIT\r\n'); } catch (_) {}
 
-      // 传输成功后清理服务端可能残留的 file-<随机> 临时文件：
-      // 部分 NAS（如飞牛）在 STOR 期间生成该临时文件，传输完成应被重命名，
-      // 但个别情况下延迟清理，导致 UI 立即刷新时仍显示脏数据。
-      try { await _cleanupStrayTemp(remoteDir, remoteFileName); } catch (_) {}
+      // 等待服务端完成最终化：部分 NAS（如飞牛）在 STOR 期间把真实数据写入
+      // file-<随机> 临时文件，传输结束后再重命名为目标文件。立即返回并刷新
+      // UI 会读到“目标文件很小 + 临时文件很大”的脏状态。这里轮询等待目标
+      // 文件大小稳定（≥本地文件大小且连续两次不变）或超时。
+      try {
+        await _waitForUploadFinalized(
+          remoteDir,
+          remoteFileName,
+          fileSize,
+          timeout: const Duration(seconds: 15),
+        );
+      } catch (_) {}
 
       onProgress(1.0);
     } catch (e) {
@@ -714,12 +722,11 @@ class FtpRemoteClient extends RemoteClient {
     } catch (_) {}
   }
 
-  /// 删除目标目录中残留的 file-<随机数字>（无后缀）临时文件。
+  /// 取消上传时清理服务端残留的 file-<随机数字>（无后缀）临时文件。
   ///
   /// 这些临时文件由服务端在 STOR 过程中创建，正常情况下会在传输完成后被
-  /// 重命名；个别 NAS 会延迟清理，导致 UI 立即刷新时仍显示脏数据。这里仅
-  /// 删除“本次上传期间产生、且与目标名不同”的此类文件（并限制 2 分钟内
-  /// 新建），以最大限度避免误删同名合法文件。
+  /// 重命名为目标文件。成功上传时不能删除它们（里面可能是真实数据），只
+  /// 有在取消上传时才删除，避免目录里留下残缺垃圾。
   Future<void> _cleanupStrayTemp(String remoteDir, String targetName) async {
     if (_ftpConnect == null) return;
     try {
@@ -734,6 +741,73 @@ class FtpRemoteClient extends RemoteClient {
         }
       }
     } catch (_) {}
+  }
+
+  /// 等待服务端把 STOR 数据最终化到目标文件。
+  ///
+  /// 部分 NAS（如飞牛）在 STOR 期间把真实数据先写入 file-<随机> 临时文件，
+  /// 关闭数据连接后再重命名为目标名。此过程可能持续数秒，若上传函数立即
+  /// 返回，UI 刷新时会看到“目标文件很小 + 临时文件很大”的脏状态。
+  ///
+  /// 轮询策略：每隔 [pollInterval] 列一次目录，直到
+  ///   - 目标文件存在且大小 ≥ [expectedSize] 的 99%，且连续两次大小相同；或
+  ///   - 目标文件存在且大小正确，同时没有 file-<随机> 临时文件；或
+  ///   - 超过 [timeout]。
+  Future<void> _waitForUploadFinalized(
+    String remoteDir,
+    String targetName,
+    int expectedSize, {
+    Duration timeout = const Duration(seconds: 15),
+    Duration pollInterval = const Duration(milliseconds: 500),
+  }) async {
+    if (_ftpConnect == null || expectedSize <= 0) return;
+
+    final deadline = DateTime.now().add(timeout);
+    int? lastTargetSize;
+    int stableCount = 0;
+
+    while (DateTime.now().isBefore(deadline)) {
+      try {
+        final items = await listDirectory(remoteDir, forceRefresh: true);
+        RemoteFileItem? targetItem;
+        RemoteFileItem? tempItem;
+        for (final item in items) {
+          if (item.isDirectory) continue;
+          if (item.name == targetName) {
+            targetItem = item;
+          } else if (RegExp(r'^file-\d+$').hasMatch(item.name)) {
+            // 只保留尺寸最大的那个临时文件（真实数据所在）
+            if (tempItem == null || item.size > tempItem.size) {
+              tempItem = item;
+            }
+          }
+        }
+
+        // 目标文件已存在且大小达到预期并稳定
+        if (targetItem != null) {
+          final targetSize = targetItem.size;
+          if (targetSize >= expectedSize * 0.99) {
+            if (lastTargetSize == targetSize) {
+              stableCount++;
+              if (stableCount >= 2) return;
+            } else {
+              stableCount = 0;
+            }
+            lastTargetSize = targetSize;
+            // 大小正确且没有临时文件：服务端已完成
+            if (tempItem == null) return;
+          } else {
+            // 目标文件偏小但已稳定，且没有更大临时文件：也算完成（expectedSize
+            // 可能因本地文件系统块大小/元数据略有偏差）
+            if (lastTargetSize == targetSize && tempItem == null) return;
+            lastTargetSize = targetSize;
+            stableCount = 0;
+          }
+        }
+      } catch (_) {}
+
+      await Future.delayed(pollInterval);
+    }
   }
 
   @override

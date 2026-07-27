@@ -2273,21 +2273,24 @@ class FileManagerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 上传完成后延迟片刻再刷新一次远程目录。
+  /// 上传完成后分多次延迟刷新远程目录。
   ///
   /// 部分 NAS（如飞牛）在 STOR 完成后会延迟重命名/清理 file-<随机> 临时文件，
   /// 传输结束时的即时刷新可能仍读到脏数据，表现为“必须重新进入目录才刷新 UI”。
-  /// 这里延迟 ~800ms 再刷一次（若用户已离开该目录或开始新操作则跳过），
-  /// 让 UI 自行恢复到干净状态，无需手动重新进入。
+  /// 这里在 800ms、2.5s、5s、10s 分别再刷一次（若用户已离开该目录或开始新
+  /// 操作则跳过），让 UI 最终与服务端状态一致。
   void scheduleRemoteRefreshAfterUpload(String dir) {
-    Future.delayed(const Duration(milliseconds: 800), () {
-      if (activeTab.isRemote &&
-          activeTab.currentPath == dir &&
-          !_isPasting) {
-        loadDirectory(dir, showLoading: false, clearCache: true)
-            .catchError((_) {});
-      }
-    });
+    const delays = <int>[800, 2500, 5000, 10000];
+    for (final ms in delays) {
+      Future.delayed(Duration(milliseconds: ms), () {
+        if (activeTab.isRemote &&
+            activeTab.currentPath == dir &&
+            !_isPasting) {
+          loadDirectory(dir, showLoading: false, clearCache: true)
+              .catchError((_) {});
+        }
+      });
+    }
   }
 
   void copyFile(String path) {
