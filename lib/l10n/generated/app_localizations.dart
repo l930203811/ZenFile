@@ -8013,6 +8013,120 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'Android 13+ 通知栏媒体控制按钮在部分国产 ROM 上仍可能无法显示，正在持续调研系统级限制。'**
   String get changelog_v1124_known_1;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'批量重命名'**
+  String get batch_rename_title;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在配置 {count} 个项目'**
+  String batch_rename_subtitle(Object count);
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'（空）'**
+  String get batch_rename_empty_preview;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'不带扩展名的文件名 ({n})'**
+  String batch_rename_tooltip_basename(Object n);
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'带点的扩展名 ({de})'**
+  String batch_rename_tooltip_ext_with_dot(Object de);
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'不带点的扩展名 ({e})'**
+  String batch_rename_tooltip_ext_no_dot(Object e);
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'带扩展名的完整文件名 ({N})'**
+  String batch_rename_tooltip_full_name(Object N);
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'例如：Image_#'**
+  String get batch_rename_hint_pattern;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'txt'**
+  String get batch_rename_hint_extension;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'填充'**
+  String get batch_rename_label_padding;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'例如：3'**
+  String get batch_rename_hint_padding;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'例如：1'**
+  String get batch_rename_hint_start;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索词'**
+  String get batch_rename_hint_find;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'更少选项'**
+  String get batch_rename_label_fewer_options;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'预览'**
+  String get batch_rename_btn_preview;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'取消'**
+  String get batch_rename_btn_cancel;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'确定'**
+  String get batch_rename_btn_confirm;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在查看 {count} 个项目'**
+  String batch_rename_preview_subtitle(Object count);
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'应用更改'**
+  String get batch_rename_btn_apply;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

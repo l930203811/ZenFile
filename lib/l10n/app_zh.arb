@@ -4616,5 +4616,81 @@
   "@changelog_v1124_known_1": {
     "description": "ui\\screens\u0007bout_screen.dart"
   },
-  "changelog_v1124_known_1": "Android 13+ 通知栏媒体控制按钮在部分国产 ROM 上仍可能无法显示，正在持续调研系统级限制。"
+  "changelog_v1124_known_1": "Android 13+ 通知栏媒体控制按钮在部分国产 ROM 上仍可能无法显示，正在持续调研系统级限制。",
+  "@batch_rename_title": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_title": "批量重命名",
+  "@batch_rename_subtitle": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_subtitle": "正在配置 {count} 个项目",
+  "@batch_rename_empty_preview": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_empty_preview": "（空）",
+  "@batch_rename_tooltip_basename": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_tooltip_basename": "不带扩展名的文件名 ({n})",
+  "@batch_rename_tooltip_ext_with_dot": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_tooltip_ext_with_dot": "带点的扩展名 ({de})",
+  "@batch_rename_tooltip_ext_no_dot": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_tooltip_ext_no_dot": "不带点的扩展名 ({e})",
+  "@batch_rename_tooltip_full_name": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_tooltip_full_name": "带扩展名的完整文件名 ({N})",
+  "@batch_rename_hint_pattern": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_hint_pattern": "例如：Image_#",
+  "@batch_rename_hint_extension": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_hint_extension": "txt",
+  "@batch_rename_label_padding": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_label_padding": "填充",
+  "@batch_rename_hint_padding": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_hint_padding": "例如：3",
+  "@batch_rename_hint_start": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_hint_start": "例如：1",
+  "@batch_rename_hint_find": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_hint_find": "搜索词",
+  "@batch_rename_label_fewer_options": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_label_fewer_options": "更少选项",
+  "@batch_rename_btn_preview": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_btn_preview": "预览",
+  "@batch_rename_btn_cancel": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_btn_cancel": "取消",
+  "@batch_rename_btn_confirm": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_btn_confirm": "确定",
+  "@batch_rename_preview_subtitle": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_preview_subtitle": "正在查看 {count} 个项目",
+  "@batch_rename_btn_apply": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_btn_apply": "应用更改"
 }

@@ -4266,6 +4266,75 @@ class L10nZh extends L10n {
   @override
   String get changelog_v1124_known_1 =>
       'Android 13+ 通知栏媒体控制按钮在部分国产 ROM 上仍可能无法显示，正在持续调研系统级限制。';
+
+  @override
+  String get batch_rename_title => '批量重命名';
+
+  @override
+  String batch_rename_subtitle(Object count) {
+    return '正在配置 $count 个项目';
+  }
+
+  @override
+  String get batch_rename_empty_preview => '（空）';
+
+  @override
+  String batch_rename_tooltip_basename(Object n) {
+    return '不带扩展名的文件名 ($n)';
+  }
+
+  @override
+  String batch_rename_tooltip_ext_with_dot(Object de) {
+    return '带点的扩展名 ($de)';
+  }
+
+  @override
+  String batch_rename_tooltip_ext_no_dot(Object e) {
+    return '不带点的扩展名 ($e)';
+  }
+
+  @override
+  String batch_rename_tooltip_full_name(Object N) {
+    return '带扩展名的完整文件名 ($N)';
+  }
+
+  @override
+  String get batch_rename_hint_pattern => '例如：Image_#';
+
+  @override
+  String get batch_rename_hint_extension => 'txt';
+
+  @override
+  String get batch_rename_label_padding => '填充';
+
+  @override
+  String get batch_rename_hint_padding => '例如：3';
+
+  @override
+  String get batch_rename_hint_start => '例如：1';
+
+  @override
+  String get batch_rename_hint_find => '搜索词';
+
+  @override
+  String get batch_rename_label_fewer_options => '更少选项';
+
+  @override
+  String get batch_rename_btn_preview => '预览';
+
+  @override
+  String get batch_rename_btn_cancel => '取消';
+
+  @override
+  String get batch_rename_btn_confirm => '确定';
+
+  @override
+  String batch_rename_preview_subtitle(Object count) {
+    return '正在查看 $count 个项目';
+  }
+
+  @override
+  String get batch_rename_btn_apply => '应用更改';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -8483,4 +8552,73 @@ class L10nZhTw extends L10nZh {
   @override
   String get changelog_v1124_known_1 =>
       'Android 13+ 通知欄媒體控制按鈕在部分國產 ROM 上仍可能無法顯示，正在持續調研系統級限制。';
+
+  @override
+  String get batch_rename_title => '批次重新命名';
+
+  @override
+  String batch_rename_subtitle(Object count) {
+    return '正在配置 $count 個項目';
+  }
+
+  @override
+  String get batch_rename_empty_preview => '（空）';
+
+  @override
+  String batch_rename_tooltip_basename(Object n) {
+    return '不帶擴展名的檔案名 ($n)';
+  }
+
+  @override
+  String batch_rename_tooltip_ext_with_dot(Object de) {
+    return '帶點的擴展名 ($de)';
+  }
+
+  @override
+  String batch_rename_tooltip_ext_no_dot(Object e) {
+    return '不帶點的擴展名 ($e)';
+  }
+
+  @override
+  String batch_rename_tooltip_full_name(Object N) {
+    return '帶擴展名的完整檔案名 ($N)';
+  }
+
+  @override
+  String get batch_rename_hint_pattern => '例如：Image_#';
+
+  @override
+  String get batch_rename_hint_extension => 'txt';
+
+  @override
+  String get batch_rename_label_padding => '填充';
+
+  @override
+  String get batch_rename_hint_padding => '例如：3';
+
+  @override
+  String get batch_rename_hint_start => '例如：1';
+
+  @override
+  String get batch_rename_hint_find => '搜尋詞';
+
+  @override
+  String get batch_rename_label_fewer_options => '更少選項';
+
+  @override
+  String get batch_rename_btn_preview => '預覽';
+
+  @override
+  String get batch_rename_btn_cancel => '取消';
+
+  @override
+  String get batch_rename_btn_confirm => '確定';
+
+  @override
+  String batch_rename_preview_subtitle(Object count) {
+    return '正在查看 $count 個項目';
+  }
+
+  @override
+  String get batch_rename_btn_apply => '應用更改';
 }

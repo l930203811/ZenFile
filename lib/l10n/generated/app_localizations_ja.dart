@@ -4308,4 +4308,73 @@ class L10nJa extends L10n {
   @override
   String get changelog_v1124_known_1 =>
       'Media playback controls in the notification shade may still fail to appear on some Android 13+ OEM ROMs; system-level restrictions are still being investigated.';
+
+  @override
+  String get batch_rename_title => 'Batch Rename';
+
+  @override
+  String batch_rename_subtitle(Object count) {
+    return 'Configuring $count items';
+  }
+
+  @override
+  String get batch_rename_empty_preview => '(Empty)';
+
+  @override
+  String batch_rename_tooltip_basename(Object n) {
+    return 'Filename without extension ($n)';
+  }
+
+  @override
+  String batch_rename_tooltip_ext_with_dot(Object de) {
+    return 'Extension with dot ($de)';
+  }
+
+  @override
+  String batch_rename_tooltip_ext_no_dot(Object e) {
+    return 'Extension without dot ($e)';
+  }
+
+  @override
+  String batch_rename_tooltip_full_name(Object N) {
+    return 'Full filename with extension ($N)';
+  }
+
+  @override
+  String get batch_rename_hint_pattern => 'e.g.: Image_#';
+
+  @override
+  String get batch_rename_hint_extension => 'txt';
+
+  @override
+  String get batch_rename_label_padding => 'Padding';
+
+  @override
+  String get batch_rename_hint_padding => 'e.g.: 3';
+
+  @override
+  String get batch_rename_hint_start => 'e.g.: 1';
+
+  @override
+  String get batch_rename_hint_find => 'Search term';
+
+  @override
+  String get batch_rename_label_fewer_options => 'Fewer options';
+
+  @override
+  String get batch_rename_btn_preview => 'Preview';
+
+  @override
+  String get batch_rename_btn_cancel => 'Cancel';
+
+  @override
+  String get batch_rename_btn_confirm => 'Confirm';
+
+  @override
+  String batch_rename_preview_subtitle(Object count) {
+    return 'Viewing $count items';
+  }
+
+  @override
+  String get batch_rename_btn_apply => 'Apply Changes';
 }

@@ -4358,5 +4358,81 @@
   "@changelog_v1124_known_1": {
     "description": "ui\\screens\u0007bout_screen.dart"
   },
-  "changelog_v1124_known_1": "Media playback controls in the notification shade may still fail to appear on some Android 13+ OEM ROMs; system-level restrictions are still being investigated."
+  "changelog_v1124_known_1": "Media playback controls in the notification shade may still fail to appear on some Android 13+ OEM ROMs; system-level restrictions are still being investigated.",
+  "@batch_rename_title": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_title": "Batch Rename",
+  "@batch_rename_subtitle": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_subtitle": "Configuring {count} items",
+  "@batch_rename_empty_preview": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_empty_preview": "(Empty)",
+  "@batch_rename_tooltip_basename": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_tooltip_basename": "Filename without extension ({n})",
+  "@batch_rename_tooltip_ext_with_dot": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_tooltip_ext_with_dot": "Extension with dot ({de})",
+  "@batch_rename_tooltip_ext_no_dot": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_tooltip_ext_no_dot": "Extension without dot ({e})",
+  "@batch_rename_tooltip_full_name": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_tooltip_full_name": "Full filename with extension ({N})",
+  "@batch_rename_hint_pattern": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_hint_pattern": "e.g.: Image_#",
+  "@batch_rename_hint_extension": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_hint_extension": "txt",
+  "@batch_rename_label_padding": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_label_padding": "Padding",
+  "@batch_rename_hint_padding": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_hint_padding": "e.g.: 3",
+  "@batch_rename_hint_start": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_hint_start": "e.g.: 1",
+  "@batch_rename_hint_find": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_hint_find": "Search term",
+  "@batch_rename_label_fewer_options": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_label_fewer_options": "Fewer options",
+  "@batch_rename_btn_preview": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_btn_preview": "Preview",
+  "@batch_rename_btn_cancel": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_btn_cancel": "Cancel",
+  "@batch_rename_btn_confirm": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_btn_confirm": "Confirm",
+  "@batch_rename_preview_subtitle": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_preview_subtitle": "Viewing {count} items",
+  "@batch_rename_btn_apply": {
+    "description": "ui\\widgets\\batch_rename_dialog.dart"
+  },
+  "batch_rename_btn_apply": "Apply Changes"
 }

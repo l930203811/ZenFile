@@ -298,7 +298,7 @@ class _BatchRenameDialogState extends State<BatchRenameDialog> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '批量重命名',
+                        L10n.of(context).batch_rename_title,
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                           letterSpacing: -0.5,
@@ -306,7 +306,7 @@ class _BatchRenameDialogState extends State<BatchRenameDialog> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '正在配置 ${widget.selectedPaths.length} 个项目',
+                        L10n.of(context).batch_rename_subtitle(widget.selectedPaths.length.toString()),
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurface.withOpacity(0.55),
                           fontWeight: FontWeight.w500,
@@ -375,7 +375,7 @@ class _BatchRenameDialogState extends State<BatchRenameDialog> {
                           Expanded(
                             flex: 6,
                             child: Text(
-                              previewName.isEmpty ? '（空）' : previewName,
+                              previewName.isEmpty ? L10n.of(context).batch_rename_empty_preview : previewName,
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 fontWeight: FontWeight.w600,
                                 color: previewName.isEmpty
@@ -425,28 +425,28 @@ class _BatchRenameDialogState extends State<BatchRenameDialog> {
                   _buildShortcutButton(
                     icon: Icons.abc_rounded,
                     label: '{n} (Base)',
-                    tooltip: '不带扩展名的文件名 ({n})',
+                    tooltip: L10n.of(context).batch_rename_tooltip_basename('{n}'),
                     onTap: () => _insertPlaceholder('{n}'),
                     theme: theme,
                   ),
                   _buildShortcutButton(
                     icon: Icons.extension_rounded,
                     label: '{de} (.ext)',
-                    tooltip: '带点的扩展名 ({de})',
+                    tooltip: L10n.of(context).batch_rename_tooltip_ext_with_dot('{de}'),
                     onTap: () => _insertPlaceholder('{de}'),
                     theme: theme,
                   ),
                   _buildShortcutButton(
                     icon: Icons.extension_off_rounded,
                     label: '{e} (ext)',
-                    tooltip: '不带点的扩展名 ({e})',
+                    tooltip: L10n.of(context).batch_rename_tooltip_ext_no_dot('{e}'),
                     onTap: () => _insertPlaceholder('{e}'),
                     theme: theme,
                   ),
                   _buildShortcutButton(
                     icon: Icons.note_rounded,
                     label: '{N} (Full)',
-                    tooltip: '带扩展名的完整文件名 ({N})',
+                    tooltip: L10n.of(context).batch_rename_tooltip_full_name('{N}'),
                     onTap: () => _insertPlaceholder('{N}'),
                     theme: theme,
                   ),
@@ -465,7 +465,7 @@ class _BatchRenameDialogState extends State<BatchRenameDialog> {
                     controller: _patternController,
                     decoration: InputDecoration(
                       labelText: L10n.of(context).msg0e9dc63a,
-                      hintText: '例如：Image_#',
+                      hintText: L10n.of(context).batch_rename_hint_pattern,
                       floatingLabelBehavior: FloatingLabelBehavior.always,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -489,7 +489,7 @@ class _BatchRenameDialogState extends State<BatchRenameDialog> {
                     controller: _extensionController,
                     decoration: InputDecoration(
                       labelText: L10n.of(context).msg4a63edba,
-                      hintText: 'txt',
+                      hintText: L10n.of(context).batch_rename_hint_extension,
                       floatingLabelBehavior: FloatingLabelBehavior.always,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -516,8 +516,8 @@ class _BatchRenameDialogState extends State<BatchRenameDialog> {
                             controller: _paddingController,
                             keyboardType: TextInputType.number,
                             decoration: InputDecoration(
-                              labelText: '填充',
-                              hintText: '例如：3',
+                              labelText: L10n.of(context).batch_rename_label_padding,
+                              hintText: L10n.of(context).batch_rename_hint_padding,
                               floatingLabelBehavior: FloatingLabelBehavior.always,
                               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -531,7 +531,7 @@ class _BatchRenameDialogState extends State<BatchRenameDialog> {
                             keyboardType: TextInputType.number,
                             decoration: InputDecoration(
                               labelText: L10n.of(context).msga420ad79,
-                              hintText: '例如：1',
+                              hintText: L10n.of(context).batch_rename_hint_start,
                               floatingLabelBehavior: FloatingLabelBehavior.always,
                               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -550,7 +550,7 @@ class _BatchRenameDialogState extends State<BatchRenameDialog> {
                             controller: _findController,
                             decoration: InputDecoration(
                               labelText: L10n.of(context).msg9857973d,
-                              hintText: '搜索词',
+                              hintText: L10n.of(context).batch_rename_hint_find,
                               floatingLabelBehavior: FloatingLabelBehavior.always,
                               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -602,7 +602,7 @@ class _BatchRenameDialogState extends State<BatchRenameDialog> {
                             : Icons.keyboard_arrow_down_rounded,
                         size: 20,
                       ),
-                      label: Text(_isMoreExpanded ? '更少选项' : L10n.of(context).msg3007c452),
+                      label: Text(_isMoreExpanded ? L10n.of(context).batch_rename_label_fewer_options : L10n.of(context).msg3007c452),
                     ),
                   ],
                 ),
@@ -613,7 +613,7 @@ class _BatchRenameDialogState extends State<BatchRenameDialog> {
                     OutlinedButton.icon(
                       onPressed: _showFullPreviewSheet,
                       icon: const Icon(Broken.eye, size: 16),
-                      label: const Text('预览'),
+                      label: Text(L10n.of(context).batch_rename_btn_preview),
                       style: OutlinedButton.styleFrom(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -624,7 +624,7 @@ class _BatchRenameDialogState extends State<BatchRenameDialog> {
                     const Spacer(),
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('取消'),
+                      child: Text(L10n.of(context).batch_rename_btn_cancel),
                     ),
                     const SizedBox(width: 4),
                     ElevatedButton(
@@ -635,7 +635,7 @@ class _BatchRenameDialogState extends State<BatchRenameDialog> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text('确定'),
+                      child: Text(L10n.of(context).batch_rename_btn_confirm),
                     ),
                   ],
                 ),
@@ -691,7 +691,7 @@ class _BatchRenameDialogState extends State<BatchRenameDialog> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            '正在查看 ${widget.selectedPaths.length} 个项目',
+                            L10n.of(context).batch_rename_preview_subtitle(widget.selectedPaths.length.toString()),
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: theme.colorScheme.onSurface.withOpacity(0.55),
                             ),
@@ -766,7 +766,7 @@ class _BatchRenameDialogState extends State<BatchRenameDialog> {
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
-                                      previewName.isEmpty ? '（空）' : previewName,
+                                      previewName.isEmpty ? L10n.of(context).batch_rename_empty_preview : previewName,
                                       style: theme.textTheme.titleMedium?.copyWith(
                                         fontWeight: FontWeight.bold,
                                         color: previewName.isEmpty
@@ -800,9 +800,9 @@ class _BatchRenameDialogState extends State<BatchRenameDialog> {
                             ),
                           ),
                           onPressed: () => Navigator.pop(ctx),
-                          child: const Text(
-                            '返回编辑',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                          child: Text(
+                            L10n.of(context).msg92642e0e,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
@@ -822,9 +822,9 @@ class _BatchRenameDialogState extends State<BatchRenameDialog> {
                             Navigator.pop(ctx); // Close sheet
                             _executeRename(); // Execute
                           },
-                          child: const Text(
-                            '应用更改',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                          child: Text(
+                            L10n.of(context).batch_rename_btn_apply,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
