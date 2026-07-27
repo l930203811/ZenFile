@@ -14,6 +14,11 @@ class WebDavRemoteClient extends RemoteClient {
   
   late HttpClient _httpClient;
 
+  /// 当前正在进行的上传请求（PUT），用于在取消时立即中断底层 socket。
+  /// 若不中断，request.add 的数据会在后台继续发送，导致取消后仍传输十几秒，
+  /// 且挂起的连接会污染连接池，使后续 DELETE 复用坏连接而失败。
+  HttpClientRequest? _activeUploadRequest;
+
   WebDavRemoteClient({
     required this.host,
     required this.port,
@@ -73,6 +78,23 @@ class WebDavRemoteClient extends RemoteClient {
   @override
   Future<void> disconnect() async {
     _httpClient.close();
+  }
+
+  @override
+  void cancel() {
+    super.cancel();
+    // 立即中断正在进行的 PUT 请求：否则请求体仍会在后台发送，取消后上传仍持续
+    // 十几秒；且挂起的连接会污染 HttpClient 连接池，导致后续 DELETE 复用该坏
+    // 连接而失败（表现就是“残留的部分文件无法删除”）。
+    try {
+      _activeUploadRequest?.abort();
+    } catch (_) {}
+  }
+
+  @override
+  void resetCancel() {
+    super.resetCancel();
+    _activeUploadRequest = null;
   }
 
   @override
@@ -384,6 +406,7 @@ class WebDavRemoteClient extends RemoteClient {
 
     final url = Uri.parse(_baseUrl + Uri.encodeFull(normalizedPath));
     final request = await _httpClient.openUrl('PUT', url);
+    _activeUploadRequest = request;
     final auth = _authHeader();
     if (auth.isNotEmpty) {
       request.headers.set('Authorization', auth);
@@ -394,22 +417,32 @@ class WebDavRemoteClient extends RemoteClient {
     int uploaded = 0;
     onProgress(0.0);
 
-    await for (final chunk in localFile.openRead()) {
-      if (isCancelled) throw Exception('Cancelled');
-      request.add(chunk);
-      uploaded += chunk.length;
-      if (totalSize > 0) {
-        onProgress((uploaded / totalSize).clamp(0.0, 1.0));
+    try {
+      await for (final chunk in localFile.openRead()) {
+        if (isCancelled) {
+          // 立即中断底层 socket，停止上传，避免“取消后仍传输十几秒”与挂起连接。
+          try {
+            request.abort();
+          } catch (_) {}
+          throw Exception('Cancelled');
+        }
+        request.add(chunk);
+        uploaded += chunk.length;
+        if (totalSize > 0) {
+          onProgress((uploaded / totalSize).clamp(0.0, 1.0));
+        }
       }
-    }
 
-    final response = await request.close();
-    await response.drain();
+      final response = await request.close();
+      await response.drain();
 
-    if (response.statusCode >= 400) {
-      throw Exception('WebDAV upload error: ${response.statusCode}');
+      if (response.statusCode >= 400) {
+        throw Exception('WebDAV upload error: ${response.statusCode}');
+      }
+      onProgress(1.0);
+    } finally {
+      _activeUploadRequest = null;
     }
-    onProgress(1.0);
   }
 
   @override
