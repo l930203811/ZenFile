@@ -2028,6 +2028,13 @@ class FileManagerProvider extends ChangeNotifier {
     // 享的历史栈退回到本地根目录），自动退出远程模式，避免远程客户端用本地
     // 路径请求返回空列表。
     if (activeTab.isRemote && activeTab.remoteClient != null && _isPathOnLocalStorage(path)) {
+      // 传输（含取消后）过程中的重载不应把远程 Tab 翻转为本地，否则会出现
+      // “正在浏览远程服务器却莫名变成本地浏览页”的现象。传输结束后再允许翻转。
+      if (_isPasting) {
+        debugPrint('[ZenFile] loadDirectory 跳过远程→本地翻转（传输中）: $path');
+        notifyListeners();
+        return;
+      }
       final client = activeTab.remoteClient;
       activeTab.remoteClient = null;
       activeTab.remoteConnection = null;
@@ -3296,27 +3303,34 @@ class FileManagerProvider extends ChangeNotifier {
             bytesProcessed: bytesDone,
           );
 
-          await client.uploadFile(srcPath, destPath, (prog) {
-            bytesDone = previousFilesBytes + (fileSize * prog).round();
-            final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
-            final speedMBs = elapsedSeconds > 0 && totalBytesAll > 0
-                ? (bytesDone / (1024 * 1024)) / elapsedSeconds
-                : 0.0;
-            final remainingBytes = totalBytesAll - bytesDone;
-            final etaSeconds = speedMBs > 0 ? (remainingBytes / (1024 * 1024)) / speedMBs : 0.0;
+          try {
+            await client.uploadFile(srcPath, destPath, (prog) {
+              bytesDone = previousFilesBytes + (fileSize * prog).round();
+              final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
+              final speedMBs = elapsedSeconds > 0 && totalBytesAll > 0
+                  ? (bytesDone / (1024 * 1024)) / elapsedSeconds
+                  : 0.0;
+              final remainingBytes = totalBytesAll - bytesDone;
+              final etaSeconds = speedMBs > 0 ? (remainingBytes / (1024 * 1024)) / speedMBs : 0.0;
 
-            final currentProcessed = processedFileCount + prog;
-            progressNotifier.value = FileOperationProgress(
-              totalFiles: totalFileCount,
-              currentFileIndex: processedFileCount + 1,
-              currentFileName: name,
-              percentage: currentProcessed / totalFileCount,
-              speedMBs: speedMBs,
-              eta: Duration(seconds: etaSeconds.round()),
-              totalBytes: totalBytesAll,
-              bytesProcessed: bytesDone,
-            );
-          });
+              final currentProcessed = processedFileCount + prog;
+              progressNotifier.value = FileOperationProgress(
+                totalFiles: totalFileCount,
+                currentFileIndex: processedFileCount + 1,
+                currentFileName: name,
+                percentage: currentProcessed / totalFileCount,
+                speedMBs: speedMBs,
+                eta: Duration(seconds: etaSeconds.round()),
+                totalBytes: totalBytesAll,
+                bytesProcessed: bytesDone,
+              );
+            });
+          } catch (e) {
+            // 客户端在 cancel() 后可能直接抛异常（如 FTP socket 关闭），
+            // 此时统一按“已取消”处理，确保传输立即停止并提示“操作已取消”
+            if (client.isCancelled) throw Exception('Cancelled');
+            rethrow;
+          }
           previousFilesBytes += fileSize;
           bytesDone = previousFilesBytes;
           processedFileCount++;

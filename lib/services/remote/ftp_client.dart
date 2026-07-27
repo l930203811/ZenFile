@@ -15,16 +15,20 @@ class FtpRemoteClient extends RemoteClient {
 
   @override
   void cancel() {
-    // FTP 协议没有原生取消命令，通过断开连接来中断进行中的传输
-    // 进行中的 downloadFile/uploadFile 会因 socket 关闭而抛出异常，
-    // 上层捕获后视为取消
+    // 必须同步置位基类的 _cancelled 标志，否则 isCancelled 永远为 false，
+    // 所有基于 isCancelled 的取消检查（如下载循环的 if (isCancelled) break）
+    // 都会失效。FTP 没有原生取消命令，同时断开连接让进行中的传输因
+    // socket 关闭而抛异常，上层捕获后视为取消。
+    super.cancel();
     _ftpConnect?.disconnect();
   }
 
   @override
   void resetCancel() {
-    // FTP 取消后需要重新连接，resetCancel 由上层在传输前调用
-    // 这里不做任何操作，因为 cancel 已经断开了连接
+    // FTP 取消后需要重新连接，resetCancel 由上层在传输前调用。
+    // 这里必须重置基类标志，否则一次取消后 isCancelled 永远为 true，
+    // 后续所有传输都会被误判为已取消。
+    super.resetCancel();
   }
 
   FtpRemoteClient({
@@ -545,15 +549,21 @@ class FtpRemoteClient extends RemoteClient {
 
     onProgress(0.0);
 
-    final ok = await _ftpConnect!.uploadFile(
-      localFile,
-      sRemoteName: remoteFileName,
-      onProgress: (progressPercent, sent, fileSize) {
-        onProgress((progressPercent / 100.0).clamp(0.0, 1.0));
-      },
-    );
+    try {
+      final ok = await _ftpConnect!.uploadFile(
+        localFile,
+        sRemoteName: remoteFileName,
+        onProgress: (progressPercent, sent, fileSize) {
+          onProgress((progressPercent / 100.0).clamp(0.0, 1.0));
+        },
+      );
+      if (!ok) throw Exception('Upload failed for: $localPath');
+    } catch (e) {
+      // cancel() 会断开 socket，进行中的上传会在此抛异常；此时应视为取消
+      if (isCancelled) throw Exception('Cancelled');
+      rethrow;
+    }
 
-    if (!ok) throw Exception('Upload failed for: $localPath');
     onProgress(1.0);
   }
 

@@ -181,7 +181,10 @@ class LanClient extends RemoteClient {
   }
 
   @override
+  @override
   void cancel() {
+    // 同步置位基类标志，保证 Dart 层 isCancelled 可见，供上层安全网判断取消。
+    super.cancel();
     final session = _sessionId;
     if (session != null) {
       _channel.invokeMethod<void>('cancelTransfer', {'sessionId': session});
@@ -190,6 +193,8 @@ class LanClient extends RemoteClient {
 
   @override
   void resetCancel() {
+    // 必须重置基类标志，否则一次取消后 isCancelled 永远为 true。
+    super.resetCancel();
     final session = _sessionId;
     if (session != null) {
       _channel.invokeMethod<void>('resetCancel', {'sessionId': session});
@@ -438,6 +443,8 @@ class LanClient extends RemoteClient {
         timeout = Duration(minutes: estimatedMinutes.clamp(30, 240));
       }
       final success = await uploadFuture.timeout(timeout);
+      // 原生层因取消返回 false 时，优先按“已取消”处理（而非“传输失败”）
+      if (isCancelled) throw Exception('Cancelled');
       if (success != true) {
         throw Exception('SMB upload returned false');
       }

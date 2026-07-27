@@ -395,6 +395,7 @@ class WebDavRemoteClient extends RemoteClient {
     onProgress(0.0);
 
     await for (final chunk in localFile.openRead()) {
+      if (isCancelled) throw Exception('Cancelled');
       request.add(chunk);
       uploaded += chunk.length;
       if (totalSize > 0) {
