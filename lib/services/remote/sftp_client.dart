@@ -233,13 +233,26 @@ class SftpRemoteClient extends RemoteClient {
     } catch (_) {}
 
     final localFile = File(localPath);
+    final sink = localFile.openWrite();
+    int downloaded = 0;
+    int sinceFlush = 0;
+    bool isFirstChunk = true;
+    // 首块立即 flush（让流式代理尽快看到数据），后续每 64KB flush 一次。
+    const flushInterval = 64 * 1024;
 
-    // 大小未知时退回顺序读取，保证兼容与串流稳定（飞牛 NAS 等大块读取会 EOF）
-    if (totalSize <= 0) {
+    try {
       final file = await _sftpClient!.open(remotePath);
-      final sink = localFile.openWrite();
       try {
-        final stream = file.read().timeout(
+        // 使用 dartssh2 自带的滑动窗口流水线读：内部按 maxPendingRequests 并发
+        // 发起 SSH_FXP_READ，并按偏移「有序」yield。因此写入本地的字节始终是从
+        // 偏移 0 开始的连续前缀——这既保证文件无空洞（流式播放不会读到 0 字节），
+        // 又让多个在途读取填满 SSH 通道。
+        // 飞牛 NAS 等对“单次超大读取”会返回异常 EOF，故每块控制在 32KB（远小于曾
+        // 触发 EOF 的 256KB），在途窗口放大到 128 并发以尽量逼近链路上限。
+        final stream = file.read(
+          chunkSize: 32 * 1024,
+          maxPendingRequests: 128,
+        ).timeout(
           const Duration(seconds: 120),
           onTimeout: (eventSink) {
             eventSink.addError(Exception('SFTP read timed out: no data for 120s'));
@@ -249,95 +262,24 @@ class SftpRemoteClient extends RemoteClient {
         await for (final chunk in stream) {
           if (isCancelled) break;
           sink.add(chunk);
+          downloaded += chunk.length;
+          sinceFlush += chunk.length;
+          if (totalSize > 0) onProgress((downloaded / totalSize).clamp(0.0, 1.0));
+          if (isFirstChunk || sinceFlush >= flushInterval) {
+            await sink.flush();
+            sinceFlush = 0;
+            isFirstChunk = false;
+          }
         }
       } finally {
-        await sink.flush();
-        await sink.close();
         await file.close();
       }
-      return;
-    }
-
-    // 滑动窗口并发 Range 读（参考 MaterialFiles 的 1MB 预读 + 异步双缓冲思路）。
-    // 单流顺序 read 一次只在途一个 SSH_FXP_READ，round-trip 等待限制吞吐到
-    // ~1.5-2MB/s。改为开启多个 SFTP 句柄，各自按偏移并发读取 64KB 块并写入本地
-    // 文件对应偏移：多个在途读取可填满 SSH 通道，显著提升带宽利用率。
-    // 每块限制 64KB 以避开飞牛 NAS 等服务端对“单次大读取”返回异常 EOF 的问题。
-    const int concurrency = 12;
-    const int chunkSize = 64 * 1024; // 64KB/块，在途约 768KB
-
-    final raf = await localFile.open(mode: FileMode.write);
-    try {
-      await raf.truncate(totalSize);
-
-      // 写入串行化：多个 worker 并发读取后会乱序写回，必须用锁保证
-      // setPosition + writeFrom 的原子性，否则偏移错位导致文件损坏。
-      Future<void> writeLock = Future.value();
-      Future<void> writeAt(int pos, List<int> data) {
-        final prev = writeLock;
-        final completer = Completer<void>();
-        writeLock = completer.future;
-        return prev.then((_) async {
-          try {
-            await raf.setPosition(pos);
-            await raf.writeFrom(data);
-          } finally {
-            completer.complete();
-          }
-        });
-      }
-
-      int nextOffset = 0;
-      int downloaded = 0;
-      Object? firstError;
-      // 同步取值，事件循环内无 await，offset 分配无竞态
-      int take() {
-        final o = nextOffset;
-        nextOffset += chunkSize;
-        return o;
-      }
-
-      Future<void> worker(SftpFile handle) async {
-        while (true) {
-          final start = take();
-          if (start >= totalSize) return;
-          final len = (start + chunkSize <= totalSize) ? chunkSize : (totalSize - start);
-          List<int> bytes;
-          try {
-            bytes = await handle
-                .read(offset: start, length: len)
-                .expand((e) => e)
-                .toList();
-          } catch (e) {
-            firstError ??= e;
-            return;
-          }
-          await writeAt(start, Uint8List.fromList(bytes));
-          downloaded += len;
-          if (totalSize > 0) onProgress((downloaded / totalSize).clamp(0.0, 1.0));
-          if (isCancelled) throw Exception('Cancelled');
-        }
-      }
-
-      final handles = <SftpFile>[];
-      try {
-        for (int i = 0; i < concurrency; i++) {
-          handles.add(await _sftpClient!.open(remotePath));
-        }
-        await Future.wait(handles.map(worker));
-      } finally {
-        for (final h in handles) {
-          try {
-            await h.close();
-          } catch (_) {}
-        }
-      }
-      if (firstError != null) throw Exception('SFTP download failed: $firstError');
-      if (isCancelled) throw Exception('Cancelled');
-      onProgress(1.0);
     } finally {
-      await raf.close();
+      await sink.flush();
+      await sink.close();
     }
+    if (isCancelled) throw Exception('Cancelled');
+    if (totalSize > 0) onProgress(1.0);
   }
 
   @override
@@ -378,6 +320,14 @@ class SftpRemoteClient extends RemoteClient {
     }
   }
 
+  /// 把本地文件按块读出，并在取消时提前结束（让 write(Stream) 干净停止）。
+  Stream<Uint8List> _localFileStream(File file) async* {
+    await for (final chunk in file.openRead()) {
+      if (isCancelled) return;
+      yield Uint8List.fromList(chunk);
+    }
+  }
+
   @override
   Future<void> uploadFile(
     String localPath,
@@ -400,41 +350,23 @@ class SftpRemoteClient extends RemoteClient {
     onProgress(0.0);
 
     try {
-      // dartssh2 的 remoteFile.write(Stream) 默认使用 16KB chunk + 64 pending，
-      // 在途窗口仅约 1MB，无法跑满高速链路。这里改为手动分块 + 多缓冲并发：
-      // openRead 默认返回 64KB chunk，最多允许 64 个 writeBytes 调用并发执行，
-      // 整体在途数据约 4MB；writeBytes 内部还会把每块再拆成 16KB 并发写入，
-      // 进一步填充 SSH 管道，提升上传吞吐。
-      const maxConcurrentWrites = 64;
-
-      int offset = 0;
-      int uploaded = 0;
-      final pending = <Future<void>>[];
-
-      await for (final chunk in localFile.openRead()) {
-        if (isCancelled) {
-          throw Exception('Cancelled');
-        }
-        final data = Uint8List.fromList(chunk);
-        pending.add(remoteFile.writeBytes(data, offset: offset));
-        offset += data.length;
-        uploaded += data.length;
-        if (totalSize > 0) {
-          onProgress((uploaded / totalSize).clamp(0.0, 1.0));
-        }
-        while (pending.length > maxConcurrentWrites) {
-          await pending.removeAt(0);
-        }
-      }
-
-      await Future.wait(pending);
+      // 改为 dartssh2 自带的顺序流式写：write(Stream) 内部按「递增 offset」顺序写、
+      // 内置 1MB 在途窗口。之前 64 并发 writeBytes 带显式 offset 会造成乱序写，
+      // 触发飞牛 NAS 等服务端生成 file-<随机> 临时文件（关闭后才落盘成真名），
+      // 表现为“远端文件名错乱、重新访问才正常”。顺序写可避免该临时文件。
+      final writer = remoteFile.write(
+        _localFileStream(localFile),
+        onProgress: (bytes) {
+          if (totalSize > 0) onProgress((bytes / totalSize).clamp(0.0, 1.0));
+        },
+      );
+      await writer;
     } finally {
       await remoteFile.close();
     }
 
-    if (!isCancelled) {
-      onProgress(1.0);
-    }
+    if (isCancelled) throw Exception('Cancelled');
+    if (!isCancelled) onProgress(1.0);
   }
 
   @override
