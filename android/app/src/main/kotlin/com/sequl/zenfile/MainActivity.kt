@@ -1156,9 +1156,9 @@ class MainActivity : AudioServiceFragmentActivity() {
                         }
                         else -> runOnUiThread { result.notImplemented() }
                     }
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     e.printStackTrace()
-                    runOnUiThread { result.error("SMB_ERROR", e.message, null) }
+                    runOnUiThread { result.error("SMB_ERROR", e.message ?: e.toString(), null) }
                 }
             }
         }

@@ -368,6 +368,8 @@ class LanClient extends RemoteClient {
       final success = await downloadFuture.timeout(
         const Duration(minutes: 30),
       );
+      // 原生层因取消返回 false 时，优先按“已取消”处理（而非“传输失败”）
+      if (isCancelled) throw Exception('Cancelled');
       if (success != true) {
         throw Exception('SMB download returned false');
       }

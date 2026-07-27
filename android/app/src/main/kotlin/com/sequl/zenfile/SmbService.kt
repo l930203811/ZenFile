@@ -1240,9 +1240,11 @@ class SmbService {
     }
 
     /**
-     * Downloads [remotePath] from the share to [localPath] on the local file system.
-     * Parent directories of [localPath] are created when missing.
+     * 下载结束哨兵。不能用 null 作哨兵：因为主循环改用 queue.poll(timeout)，
+     * 超时同样返回 null，会与“正常结束”混淆，导致取消/网络停滞时主循环陷入死循环。
      */
+    private val SMB_EOF = Any()
+
     fun downloadFile(sessionId: String, remotePath: String, localPath: String): Boolean {
         val entry = sessions[sessionId] ?: throw Exception("Invalid or disconnected session id")
         val (shareName, pathInShare) = resolveShareAndPath(remotePath)
@@ -1265,58 +1267,71 @@ class SmbService {
                 try {
                     localFile.outputStream().use { output ->
                         // 双缓冲预取：后台线程提前把下一块读入队列，主线程边写边消费，
-                        // 使网络读取与本地写入重叠，减少顺序"读→写"串行化带来的停滞
-                        // （参考 MaterialFiles 的预读思路）。队列容量 2 ≈ 2MB 预读窗口。
-                        val queue = java.util.concurrent.ArrayBlockingQueue<ByteArray?>(2)
-                        // 标记预取线程是否在读取阶段出错（此时哨兵 null 代表"异常 EOF"而非正常结束）
+                        // 使网络读取与本地写入重叠，减少顺序"读→写"串行化带来的停滞。
+                        //
+                        // 关键修复（取消死锁 / 取消无效 / 退出视频播放闪退）：
+                        //  - 预取线程用「非阻塞 offer + 自旋让步」写入队列，永不因 queue.put 阻塞；
+                        //    主线程 join 时预取线程必然已在合理时间内退出，杜绝永久挂起。
+                        //  - 主循环用 poll(timeout) 取代 take()：即使队列空、预取线程正被网络读阻塞，
+                        //    每 200ms 也会重新检查取消标志，确保取消在亚秒内生效。
+                        val queue = java.util.concurrent.LinkedBlockingQueue<Any?>(4)
                         var prefetchFailed = false
                         val prefetcher = Thread {
                             try {
                                 val buf = ByteArray(1024 * 1024)
-                                var n = input.read(buf)
-                                while (n != -1) {
-                                    // 取消时尽快退出预取循环（真正解阻塞依靠消费端关闭 input）
-                                    if (isCancelled(sessionId)) { queue.put(null); return@Thread }
-                                    queue.put(buf.copyOf(n))
-                                    n = input.read(buf)
+                                while (true) {
+                                    if (isCancelled(sessionId)) return@Thread
+                                    val n = try { input.read(buf) } catch (_: Throwable) { -1 }
+                                    if (n == -1) break
+                                    if (isCancelled(sessionId)) return@Thread
+                                    val chunk = buf.copyOf(n)
+                                    // 队列满时非阻塞让步，避免阻塞导致 join() 死锁
+                                    while (!queue.offer(chunk)) {
+                                        if (isCancelled(sessionId)) return@Thread
+                                        Thread.sleep(5)
+                                    }
                                 }
-                                queue.put(null) // 正常 EOF 哨兵
+                                queue.offer(SMB_EOF)
                             } catch (_: Throwable) {
                                 prefetchFailed = true
-                                try { queue.put(null) } catch (_: Throwable) {}
+                                queue.offer(SMB_EOF)
                             }
                         }
                         prefetcher.start()
+                        var ok = true
                         try {
                             while (true) {
                                 if (isCancelled(sessionId)) {
-                                    // 删除未完成的文件
+                                    // 关闭输入流使预取线程的阻塞 read() 立即抛异常退出；
+                                    // Thread.interrupt 无法中断阻塞态的 read()，故以关闭 input 为主手段。
                                     try { localFile.delete() } catch (_: Exception) {}
-                                    // 关闭输入流，使阻塞在 input.read() 的预取线程立即抛异常退出；
-                                    // 否则 Thread.interrupt() 无法中断阻塞态的 read()，prefetcher.join()
-                                    // 会永久挂起，导致 executor 线程泄漏（多次取消/断开后线程累积 → OOM 崩溃）。
                                     try { input.close() } catch (_: Exception) {}
                                     prefetcher.interrupt()
-                                    return@use false
+                                    ok = false
+                                    break
                                 }
-                                val chunk = queue.take() ?: break
-                                output.write(chunk)
+                                val chunk = queue.poll(200, TimeUnit.MILLISECONDS)
+                                if (chunk == null) {
+                                    // 超时：继续循环重新检查取消（即使队列空、预取被网络读阻塞）
+                                    continue
+                                }
+                                if (chunk === SMB_EOF) break
+                                output.write(chunk as ByteArray)
                                 output.flush()
                             }
-                            // 预取线程报错（如网络中断、被取消/断开导致连接关闭）时：
-                            // 若因取消/断开，按"已取消"处理；否则文件不完整，如实抛错。
-                            if (prefetchFailed) {
-                                if (isCancelled(sessionId)) return@use false
-                                throw java.io.IOException("SMB read failed during prefetch")
-                            }
-                            true
                         } finally {
-                            // 关键：join 前先关闭 input，确保预取线程的阻塞 read() 抛出并退出，
-                            // 避免 executor 线程泄漏。
                             try { input.close() } catch (_: Exception) {}
                             prefetcher.interrupt()
-                            prefetcher.join()
+                            // 带超时的 join，杜绝任何情况下永久挂起导致线程泄漏 / OOM
+                            try { prefetcher.join(2000) } catch (_: InterruptedException) {}
                         }
+                        // 预取阶段出错（网络中断 / 被取消或断开导致连接关闭）：
+                        // 若因取消/断开按“已取消”处理；否则文件不完整，如实抛错。
+                        if (ok && prefetchFailed) {
+                            if (isCancelled(sessionId)) ok = false
+                            else throw java.io.IOException("SMB read failed during prefetch")
+                        }
+                        ok
                     }
                 } finally {
                     try { input.close() } catch (_: Exception) {}
@@ -1409,6 +1424,7 @@ class SmbService {
         // 记录已写入字节数（供 Dart 端安全轮询进度），传输结束（成功/取消/异常）时清理。
         transferProgress[sessionId] = 0L
         var cancelled = false
+        var uploadOk = true
         try {
             val share = getShare(entry, shareName)
             val file = share.openFile(
@@ -1429,8 +1445,10 @@ class SmbService {
                         var bytesRead: Int
                         var uploaded: Long = 0
                         while (input.read(buffer).also { bytesRead = it } != -1) {
+                            // 写之前也检查一次取消，缩短慢速网络上取消的响应延迟
                             if (isCancelled(sessionId)) {
                                 cancelled = true
+                                uploadOk = false
                                 return@use
                             }
                             output.write(buffer, 0, bytesRead)
@@ -1443,8 +1461,12 @@ class SmbService {
             } finally {
                 try { file.close() } catch (_: Exception) {}
             }
+            // 取消时删除远端残留的半截文件（best-effort，避免留下无法使用的碎片）
+            if (cancelled) {
+                try { delete(sessionId, remotePath, false) } catch (_: Exception) {}
+            }
             transferProgress.remove(sessionId)
-            return !cancelled
+            return uploadOk && !cancelled
         } catch (e: Exception) {
             transferProgress.remove(sessionId)
             throw Exception("Failed to upload file '$localPath' to '$remotePath': ${e.message}", e)
