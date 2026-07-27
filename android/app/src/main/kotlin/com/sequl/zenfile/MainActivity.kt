@@ -1134,6 +1134,21 @@ class MainActivity : AudioServiceFragmentActivity() {
                             val size = smb.getFileSize(sessionId, remotePath)
                             runOnUiThread { result.success(size) }
                         }
+                        "cancelTransfer" -> {
+                            val sessionId = call.argument<String>("sessionId") ?: ""
+                            smb.cancelTransfer(sessionId)
+                            runOnUiThread { result.success(true) }
+                        }
+                        "resetCancel" -> {
+                            val sessionId = call.argument<String>("sessionId") ?: ""
+                            smb.resetCancel(sessionId)
+                            runOnUiThread { result.success(true) }
+                        }
+                        "getTransferProgress" -> {
+                            val sessionId = call.argument<String>("sessionId") ?: ""
+                            val p = smb.getTransferProgress(sessionId)
+                            runOnUiThread { result.success(p) }
+                        }
                         "disconnect" -> {
                             val sessionId = call.argument<String>("sessionId") ?: ""
                             val res = smb.disconnect(sessionId)

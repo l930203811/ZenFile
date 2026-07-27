@@ -2920,6 +2920,8 @@ class FileManagerProvider extends ChangeNotifier {
     }
 
     _activeTransferClient = client;
+    // 共享客户端可能残留上次取消的标志，传输前重置（与上传路径保持一致）
+    client.resetCancel();
     progressNotifier.backgroundMode = false;
     _isOperationCancelled = false;
     _isPasting = true;

@@ -54,6 +54,10 @@ class SmbService {
 
     private val sessions = ConcurrentHashMap<String, SmbSessionEntry>()
     private val cancelFlags = ConcurrentHashMap<String, Boolean>()
+    // 记录每个会话当前「上传」已写入的字节数，供 Dart 侧安全轮询进度。
+    // 关键：避免像之前那样并发调用原生 getFileSize（与上传共用同一 smbj 会话），
+    // 否则会阻塞/死锁会话导致上传 future 永不返回（进度卡在 100%）。
+    private val transferProgress = ConcurrentHashMap<String, Long>()
 
     companion object {
         val instance: SmbService = SmbService()
@@ -1257,10 +1261,11 @@ class SmbService {
             val success: Boolean = try {
                 val localFile = java.io.File(localPath)
                 localFile.parentFile?.mkdirs()
-                file.getInputStream().use { input ->
+                val input = file.getInputStream()
+                try {
                     localFile.outputStream().use { output ->
                         // 双缓冲预取：后台线程提前把下一块读入队列，主线程边写边消费，
-                        // 使网络读取与本地写入重叠，减少顺序“读→写”串行化带来的停滞
+                        // 使网络读取与本地写入重叠，减少顺序"读→写"串行化带来的停滞
                         // （参考 MaterialFiles 的预读思路）。队列容量 2 ≈ 2MB 预读窗口。
                         val queue = java.util.concurrent.ArrayBlockingQueue<ByteArray?>(2)
                         // 标记预取线程是否在读取阶段出错（此时哨兵 null 代表"异常 EOF"而非正常结束）
@@ -1270,13 +1275,15 @@ class SmbService {
                                 val buf = ByteArray(1024 * 1024)
                                 var n = input.read(buf)
                                 while (n != -1) {
+                                    // 取消时尽快退出预取循环（真正解阻塞依靠消费端关闭 input）
+                                    if (isCancelled(sessionId)) { queue.put(null); return@Thread }
                                     queue.put(buf.copyOf(n))
                                     n = input.read(buf)
                                 }
                                 queue.put(null) // 正常 EOF 哨兵
                             } catch (_: Throwable) {
                                 prefetchFailed = true
-                                queue.put(null) // 异常 EOF 哨兵
+                                try { queue.put(null) } catch (_: Throwable) {}
                             }
                         }
                         prefetcher.start()
@@ -1285,6 +1292,10 @@ class SmbService {
                                 if (isCancelled(sessionId)) {
                                     // 删除未完成的文件
                                     try { localFile.delete() } catch (_: Exception) {}
+                                    // 关闭输入流，使阻塞在 input.read() 的预取线程立即抛异常退出；
+                                    // 否则 Thread.interrupt() 无法中断阻塞态的 read()，prefetcher.join()
+                                    // 会永久挂起，导致 executor 线程泄漏（多次取消/断开后线程累积 → OOM 崩溃）。
+                                    try { input.close() } catch (_: Exception) {}
                                     prefetcher.interrupt()
                                     return@use false
                                 }
@@ -1292,17 +1303,26 @@ class SmbService {
                                 output.write(chunk)
                                 output.flush()
                             }
-                            // 预取线程报错（如网络中断）时，文件实际不完整，必须如实抛错而非误报成功
-                            if (prefetchFailed) throw java.io.IOException("SMB read failed during prefetch")
+                            // 预取线程报错（如网络中断、被取消/断开导致连接关闭）时：
+                            // 若因取消/断开，按"已取消"处理；否则文件不完整，如实抛错。
+                            if (prefetchFailed) {
+                                if (isCancelled(sessionId)) return@use false
+                                throw java.io.IOException("SMB read failed during prefetch")
+                            }
                             true
                         } finally {
+                            // 关键：join 前先关闭 input，确保预取线程的阻塞 read() 抛出并退出，
+                            // 避免 executor 线程泄漏。
+                            try { input.close() } catch (_: Exception) {}
                             prefetcher.interrupt()
                             prefetcher.join()
                         }
                     }
+                } finally {
+                    try { input.close() } catch (_: Exception) {}
                 }
             } finally {
-                file.close()
+                try { file.close() } catch (_: Exception) {}
             }
             success
         } catch (e: Exception) {
@@ -1386,7 +1406,10 @@ class SmbService {
         val (shareName, pathInShare) = resolveShareAndPath(remotePath)
         if (shareName.isEmpty()) throw Exception("Invalid path: no share name specified")
 
-        return try {
+        // 记录已写入字节数（供 Dart 端安全轮询进度），传输结束（成功/取消/异常）时清理。
+        transferProgress[sessionId] = 0L
+        var cancelled = false
+        try {
             val share = getShare(entry, shareName)
             val file = share.openFile(
                 pathInShare,
@@ -1401,22 +1424,29 @@ class SmbService {
                 if (!localFile.exists()) throw Exception("Local file does not exist: $localPath")
                 localFile.inputStream().use { input ->
                     file.getOutputStream().use { output ->
+                        // 1MB 缓冲区分块写入（SMB2 每次 WRITE 请求携带更多数据，减少往返开销）
                         val buffer = ByteArray(1024 * 1024)
                         var bytesRead: Int
+                        var uploaded: Long = 0
                         while (input.read(buffer).also { bytesRead = it } != -1) {
                             if (isCancelled(sessionId)) {
-                                return false
+                                cancelled = true
+                                return@use
                             }
                             output.write(buffer, 0, bytesRead)
+                            uploaded += bytesRead
+                            transferProgress[sessionId] = uploaded
                         }
                         output.flush()
                     }
                 }
             } finally {
-                file.close()
+                try { file.close() } catch (_: Exception) {}
             }
-            true
+            transferProgress.remove(sessionId)
+            return !cancelled
         } catch (e: Exception) {
+            transferProgress.remove(sessionId)
             throw Exception("Failed to upload file '$localPath' to '$remotePath': ${e.message}", e)
         }
     }
@@ -1427,6 +1457,7 @@ class SmbService {
      */
     fun cancelTransfer(sessionId: String) {
         cancelFlags[sessionId] = true
+        transferProgress.remove(sessionId)
     }
 
     /**
@@ -1434,6 +1465,12 @@ class SmbService {
      */
     fun resetCancel(sessionId: String) {
         cancelFlags.remove(sessionId)
+        transferProgress.remove(sessionId)
+    }
+
+    /** 返回当前会话「上传」已写入的字节数；未上传或已结束返回 -1。供 Dart 侧安全轮询进度。 */
+    fun getTransferProgress(sessionId: String): Long {
+        return transferProgress[sessionId] ?: -1L
     }
 
     private fun isCancelled(sessionId: String): Boolean {
@@ -1473,6 +1510,10 @@ class SmbService {
      * session id was unknown.
      */
     fun disconnect(sessionId: String): Boolean {
+        // 先置取消标志，让在途的下载/上传尽快干净退出（而非在连接被关闭的瞬间抛异常），
+        // 避免退出播放器时因结果交付竞态导致崩溃。
+        cancelFlags[sessionId] = true
+        transferProgress.remove(sessionId)
         val entry = sessions.remove(sessionId) ?: return false
         try {
             entry.shares.values.forEach { share ->

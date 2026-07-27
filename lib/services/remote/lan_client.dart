@@ -423,13 +423,15 @@ class LanClient extends RemoteClient {
       'remotePath': _normalizePath(remotePath),
     });
 
-    // Poll remote file size for real progress
+    // 轮询「原生侧维护的上传字节计数」来显示进度。
+    // 注意：不要在此轮询 getFileSize(remotePath) —— 它会与正在进行的上传
+    // 争用同一个 smbj 会话，可能阻塞/死锁会话导致上传 future 永不返回（卡在 100%）。
     Timer? progressTimer;
     if (totalSize > 0) {
       progressTimer = Timer.periodic(const Duration(milliseconds: 200), (_) async {
         try {
-          final current = await getFileSize(remotePath);
-          if (current > 0) {
+          final current = await getTransferProgress();
+          if (current > 0 && current <= totalSize) {
             onProgress((current / totalSize).clamp(0.0, 0.99));
           }
         } catch (_) {}
@@ -475,6 +477,22 @@ class LanClient extends RemoteClient {
       return result?.toInt() ?? -1;
     } catch (e) {
       debugPrint('SMB getFileSize error: $e');
+      return -1;
+    }
+  }
+
+  /// 返回当前会话「上传」已写入的字节数（原生侧在 uploadFile 循环中维护）。
+  /// 用于安全轮询上传进度：只读取原生端的内存计数，不触发任何 SMB 操作，
+  /// 因此不会与正在进行的上传争用同一会话而阻塞/死锁。未上传或已结束返回 -1。
+  Future<int> getTransferProgress() async {
+    final session = _requireSession;
+    try {
+      final result = await _channel.invokeMethod<num>('getTransferProgress', {
+        'sessionId': session,
+      }).timeout(const Duration(seconds: 5));
+      return result?.toInt() ?? -1;
+    } catch (e) {
+      debugPrint('SMB getTransferProgress error: $e');
       return -1;
     }
   }
