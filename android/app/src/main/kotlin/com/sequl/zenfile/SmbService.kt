@@ -1254,29 +1254,57 @@ class SmbService {
                 SMB2CreateDisposition.FILE_OPEN,
                 null
             )
-            try {
+            val success: Boolean = try {
                 val localFile = java.io.File(localPath)
                 localFile.parentFile?.mkdirs()
                 file.getInputStream().use { input ->
                     localFile.outputStream().use { output ->
-                        val buffer = ByteArray(1024 * 1024)
-                        var bytesRead: Int
-                        while (input.read(buffer).also { bytesRead = it } != -1) {
-                            if (isCancelled(sessionId)) {
-                                // 删除未完成的文件
-                                try { localFile.delete() } catch (_: Exception) {}
-                                return false
+                        // 双缓冲预取：后台线程提前把下一块读入队列，主线程边写边消费，
+                        // 使网络读取与本地写入重叠，减少顺序“读→写”串行化带来的停滞
+                        // （参考 MaterialFiles 的预读思路）。队列容量 2 ≈ 2MB 预读窗口。
+                        val queue = java.util.concurrent.ArrayBlockingQueue<ByteArray?>(2)
+                        // 标记预取线程是否在读取阶段出错（此时哨兵 null 代表"异常 EOF"而非正常结束）
+                        var prefetchFailed = false
+                        val prefetcher = Thread {
+                            try {
+                                val buf = ByteArray(1024 * 1024)
+                                var n = input.read(buf)
+                                while (n != -1) {
+                                    queue.put(buf.copyOf(n))
+                                    n = input.read(buf)
+                                }
+                                queue.put(null) // 正常 EOF 哨兵
+                            } catch (_: Throwable) {
+                                prefetchFailed = true
+                                queue.put(null) // 异常 EOF 哨兵
                             }
-                            output.write(buffer, 0, bytesRead)
-                            output.flush()
                         }
-                        output.flush()
+                        prefetcher.start()
+                        try {
+                            while (true) {
+                                if (isCancelled(sessionId)) {
+                                    // 删除未完成的文件
+                                    try { localFile.delete() } catch (_: Exception) {}
+                                    prefetcher.interrupt()
+                                    return@use false
+                                }
+                                val chunk = queue.take() ?: break
+                                output.write(chunk)
+                                output.flush()
+                            }
+                            // 预取线程报错（如网络中断）时，文件实际不完整，必须如实抛错而非误报成功
+                            if (prefetchFailed) throw java.io.IOException("SMB read failed during prefetch")
+                            true
+                        } finally {
+                            prefetcher.interrupt()
+                            prefetcher.join()
+                        }
                     }
                 }
             } finally {
                 file.close()
             }
-            true
+            success
         } catch (e: Exception) {
             throw Exception("Failed to download file '$remotePath' to '$localPath': ${e.message}", e)
         }
