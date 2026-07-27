@@ -320,14 +320,6 @@ class SftpRemoteClient extends RemoteClient {
     }
   }
 
-  /// 把本地文件按块读出，并在取消时提前结束（让 write(Stream) 干净停止）。
-  Stream<Uint8List> _localFileStream(File file) async* {
-    await for (final chunk in file.openRead()) {
-      if (isCancelled) return;
-      yield Uint8List.fromList(chunk);
-    }
-  }
-
   @override
   Future<void> uploadFile(
     String localPath,
@@ -350,23 +342,30 @@ class SftpRemoteClient extends RemoteClient {
     onProgress(0.0);
 
     try {
-      // 改为 dartssh2 自带的顺序流式写：write(Stream) 内部按「递增 offset」顺序写、
-      // 内置 1MB 在途窗口。之前 64 并发 writeBytes 带显式 offset 会造成乱序写，
-      // 触发飞牛 NAS 等服务端生成 file-<随机> 临时文件（关闭后才落盘成真名），
-      // 表现为“远端文件名错乱、重新访问才正常”。顺序写可避免该临时文件。
-      final writer = remoteFile.write(
-        _localFileStream(localFile),
-        onProgress: (bytes) {
-          if (totalSize > 0) onProgress((bytes / totalSize).clamp(0.0, 1.0));
-        },
-      );
-      await writer;
+      // dartssh2 的 SftpFileWriter 把流拆成 16KB chunk 后顺序调用 writeBytes，
+      // 导致在途窗口被硬编码为 1MB（chunkSize * 64），无法跑满高速链路。
+      // 这里改为手动顺序写：每次读入 4MB 大块后调用 writeBytes，后者内部会把
+      // 这 4MB 拆成 256 个 16KB 分包并发发送，整体在途窗口扩大到 4MB；同时
+      // offset 严格递增，避免之前“多并发 writeBytes 带显式 offset”造成的乱序写，
+      // 从而不再触发飞牛 NAS 等服务端生成 file-<随机> 临时文件。
+      const blockSize = 4 * 1024 * 1024; // 4MB
+      int offset = 0;
+      int uploaded = 0;
+
+      await for (final chunk in localFile.openRead(blockSize)) {
+        if (isCancelled) throw Exception('Cancelled');
+        final data = Uint8List.fromList(chunk);
+        await remoteFile.writeBytes(data, offset: offset);
+        offset += data.length;
+        uploaded += data.length;
+        if (totalSize > 0) onProgress((uploaded / totalSize).clamp(0.0, 1.0));
+      }
     } finally {
       await remoteFile.close();
     }
 
     if (isCancelled) throw Exception('Cancelled');
-    if (!isCancelled) onProgress(1.0);
+    onProgress(1.0);
   }
 
   @override
