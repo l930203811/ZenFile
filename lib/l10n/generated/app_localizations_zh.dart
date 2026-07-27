@@ -32,6 +32,9 @@ class L10nZh extends L10n {
   String get msg05d3c93c => '成功移动项目';
 
   @override
+  String get msgb7e3a1c2 => '成功复制项目';
+
+  @override
   String e1(Object e) {
     return '传输失败：$e';
   }
@@ -4363,6 +4366,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get msg05d3c93c => '成功移動專案';
+
+  @override
+  String get msgb7e3a1c2 => '成功複製專案';
 
   @override
   String e1(Object e) {

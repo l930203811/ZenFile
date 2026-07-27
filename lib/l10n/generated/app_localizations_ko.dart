@@ -32,6 +32,9 @@ class L10nKo extends L10n {
   String get msg05d3c93c => '항목을 성공적으로 이동했습니다';
 
   @override
+  String get msgb7e3a1c2 => '成功复制项目';
+
+  @override
   String e1(Object e) {
     return '전송 실패: $e';
   }

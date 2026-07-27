@@ -33,6 +33,9 @@ class L10nEn extends L10n {
   String get msg05d3c93c => 'Items moved successfully';
 
   @override
+  String get msgb7e3a1c2 => 'Items copied successfully';
+
+  @override
   String e1(Object e) {
     return 'Transfer failed: $e';
   }

@@ -33,6 +33,9 @@ class L10nDe extends L10n {
   String get msg05d3c93c => 'Elemente erfolgreich verschoben';
 
   @override
+  String get msgb7e3a1c2 => '成功复制项目';
+
+  @override
   String e1(Object e) {
     return 'Übertragung fehlgeschlagen: $e';
   }

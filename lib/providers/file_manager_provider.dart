@@ -2481,7 +2481,7 @@ class FileManagerProvider extends ChangeNotifier {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(_isCut ? '成功移动项目' : '成功复制项目'),
+              content: Text(_isCut ? L10n.of(context).msg05d3c93c : L10n.of(context).msgb7e3a1c2),
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -2491,7 +2491,7 @@ class FileManagerProvider extends ChangeNotifier {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('传输失败：{e}'),
+              content: Text(L10n.of(context).e1(e)),
               backgroundColor: Colors.redAccent,
               behavior: SnackBarBehavior.floating,
             ),
@@ -2524,7 +2524,7 @@ class FileManagerProvider extends ChangeNotifier {
           if (context.mounted) {
             await FileActionDialogs.showWarningDialog(
               context,
-              title: '操作已取消',
+              title: L10n.of(context).msga45bac47,
               content: 'Cannot cut and paste a file into the same folder.',
             );
           }
@@ -3103,7 +3103,7 @@ class FileManagerProvider extends ChangeNotifier {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString().contains('Cancelled') ? '操作已取消' : '传输失败：{e}'),
+            content: Text(e.toString().contains('Cancelled') ? L10n.of(context).msga45bac47 : L10n.of(context).e1(e)),
             backgroundColor: e.toString().contains('Cancelled') ? null : Colors.redAccent,
             behavior: SnackBarBehavior.floating,
           ),
@@ -3356,7 +3356,7 @@ class FileManagerProvider extends ChangeNotifier {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString().contains('Cancelled') ? '操作已取消' : '传输失败：{e}'),
+            content: Text(e.toString().contains('Cancelled') ? L10n.of(context).msga45bac47 : L10n.of(context).e1(e)),
             backgroundColor: e.toString().contains('Cancelled') ? null : Colors.redAccent,
             behavior: SnackBarBehavior.floating,
           ),
@@ -3604,7 +3604,7 @@ class FileManagerProvider extends ChangeNotifier {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_isCut ? '成功移动项目' : '成功复制项目'),
+            content: Text(_isCut ? L10n.of(context).msg05d3c93c : L10n.of(context).msgb7e3a1c2),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -3614,7 +3614,7 @@ class FileManagerProvider extends ChangeNotifier {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString().contains('Cancelled') ? '操作已取消' : '传输失败：{e}'),
+            content: Text(e.toString().contains('Cancelled') ? L10n.of(context).msga45bac47 : L10n.of(context).e1(e)),
             backgroundColor: e.toString().contains('Cancelled') ? null : Colors.redAccent,
             behavior: SnackBarBehavior.floating,
           ),

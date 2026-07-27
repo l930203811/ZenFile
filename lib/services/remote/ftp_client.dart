@@ -12,6 +12,8 @@ class FtpRemoteClient extends RemoteClient {
   final String password;
 
   FTPConnect? _ftpConnect;
+  Socket? _activeUploadControlSocket;
+  Socket? _activeUploadDataSocket;
 
   @override
   void cancel() {
@@ -20,6 +22,9 @@ class FtpRemoteClient extends RemoteClient {
     // 都会失效。FTP 没有原生取消命令，同时断开连接让进行中的传输因
     // socket 关闭而抛异常，上层捕获后视为取消。
     super.cancel();
+    // 手动上传使用独立的控制/数据 socket，必须一并销毁才能立即中断传输。
+    try { _activeUploadControlSocket?.destroy(); } catch (_) {}
+    try { _activeUploadDataSocket?.destroy(); } catch (_) {}
     _ftpConnect?.disconnect();
   }
 
@@ -490,6 +495,12 @@ class FtpRemoteClient extends RemoteClient {
         if (maxLength != null && downloaded >= maxLength) break;
       }
 
+      if (isCancelled) {
+        // 取消时删除本地未完成的半截文件，避免用户看到虚假的成功文件。
+        try { file.deleteSync(); } catch (_) {}
+        throw Exception('Cancelled');
+      }
+
       await sink.flush();
       await sink.close();
       sink = null;
@@ -540,31 +551,139 @@ class FtpRemoteClient extends RemoteClient {
     final remoteFileName = p.basename(remotePath);
     final remoteDir = p.dirname(remotePath);
 
-    // Navigate to the destination directory
-    if (remoteDir.isNotEmpty && remoteDir != '/') {
-      await _ftpConnect!.createFolderIfNotExist(remoteDir);
-      final ok = await _ftpConnect!.changeDirectory(remoteDir);
-      if (!ok) throw Exception('Cannot open remote directory: $remoteDir');
-    }
-
-    onProgress(0.0);
+    Socket? controlSocket;
+    Socket? dataSocket;
+    StreamSubscription? controlSub;
+    Completer<String>? responseCompleter;
 
     try {
-      final ok = await _ftpConnect!.uploadFile(
-        localFile,
-        sRemoteName: remoteFileName,
-        onProgress: (progressPercent, sent, fileSize) {
-          onProgress((progressPercent / 100.0).clamp(0.0, 1.0));
+      // 独立建立控制连接：ftpconnect 的 uploadFile 用 dataSocket.addStream，
+      // 无法响应取消且默认 ASCII 传输会破坏二进制文件。这里手动实现 STOR，
+      // 分块读取本地文件并检查 isCancelled，取消时立即销毁 socket。
+      controlSocket = await Socket.connect(host, port,
+          timeout: const Duration(seconds: 15));
+      _activeUploadControlSocket = controlSocket;
+
+      final buffer = <int>[];
+      controlSub = controlSocket.listen(
+        (data) {
+          buffer.addAll(data);
+          while (true) {
+            final str = String.fromCharCodes(buffer);
+            final crlfIndex = str.indexOf('\r\n');
+            if (crlfIndex < 0) break;
+            final line = str.substring(0, crlfIndex);
+            buffer.removeRange(0, crlfIndex + 2);
+            // Final line: 3-digit code followed by space
+            if (line.length >= 4 && line[3] == ' ') {
+              final c = responseCompleter;
+              responseCompleter = null;
+              c?.complete(line);
+              break;
+            }
+            // Multi-line response (code + '-') — keep reading
+          }
+        },
+        onError: (e) {
+          final c = responseCompleter;
+          responseCompleter = null;
+          c?.completeError(e);
+        },
+        onDone: () {
+          final c = responseCompleter;
+          responseCompleter = null;
+          c?.completeError(Exception('Control connection closed'));
         },
       );
-      if (!ok) throw Exception('Upload failed for: $localPath');
+
+      Future<String> sendCommand(String cmd) {
+        responseCompleter = Completer<String>();
+        controlSocket!.write('$cmd\r\n');
+        return responseCompleter!.future.timeout(const Duration(seconds: 15));
+      }
+
+      // Read welcome banner
+      responseCompleter = Completer<String>();
+      try {
+        await responseCompleter!.future.timeout(const Duration(seconds: 5));
+      } catch (_) {}
+
+      // Authenticate
+      final user = username.isEmpty ? 'anonymous' : username;
+      final pass = password.isEmpty ? 'anonymous@' : password;
+      final userResp = await sendCommand('USER $user');
+      if (userResp.startsWith('3')) {
+        await sendCommand('PASS $pass');
+      }
+
+      // Binary mode — critical for video and other binary files
+      await sendCommand('TYPE I');
+
+      // Navigate to destination directory and create if needed
+      if (remoteDir.isNotEmpty && remoteDir != '/') {
+        try {
+          await sendCommand('CWD $remoteDir');
+        } catch (_) {
+          await sendCommand('MKD $remoteDir');
+          await sendCommand('CWD $remoteDir');
+        }
+      }
+
+      // Passive mode
+      final pasvResp = await sendCommand('PASV');
+      final pasvPort = _parsePasvPort(pasvResp);
+
+      // Connect data socket
+      dataSocket = await Socket.connect(host, pasvPort,
+          timeout: const Duration(seconds: 15));
+      _activeUploadDataSocket = dataSocket;
+
+      // Issue STOR — wait for 150/125 after sending command
+      controlSocket.write('STOR $remoteFileName\r\n');
+      responseCompleter = Completer<String>();
+      try {
+        await responseCompleter!.future.timeout(const Duration(seconds: 10));
+      } catch (_) {}
+
+      onProgress(0.0);
+
+      final fileSize = localFile.lengthSync();
+      int uploaded = 0;
+
+      await for (final chunk in localFile.openRead()) {
+        if (isCancelled) throw Exception('Cancelled');
+        dataSocket.add(chunk);
+        uploaded += chunk.length;
+        if (fileSize > 0) {
+          onProgress((uploaded / fileSize).clamp(0.0, 1.0));
+        }
+      }
+
+      await dataSocket.flush();
+      await dataSocket.close();
+      dataSocket = null;
+      _activeUploadDataSocket = null;
+
+      // Read final 226 response
+      responseCompleter = Completer<String>();
+      try {
+        await responseCompleter!.future.timeout(const Duration(seconds: 10));
+      } catch (_) {}
+
+      // Graceful quit
+      try { controlSocket.write('QUIT\r\n'); } catch (_) {}
+      onProgress(1.0);
     } catch (e) {
-      // cancel() 会断开 socket，进行中的上传会在此抛异常；此时应视为取消
+      // cancel() 会销毁 socket，进行中的上传会在此抛异常；此时应视为取消
       if (isCancelled) throw Exception('Cancelled');
       rethrow;
+    } finally {
+      await controlSub?.cancel();
+      try { dataSocket?.destroy(); } catch (_) {}
+      try { controlSocket?.destroy(); } catch (_) {}
+      _activeUploadDataSocket = null;
+      _activeUploadControlSocket = null;
     }
-
-    onProgress(1.0);
   }
 
   @override

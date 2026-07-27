@@ -33,6 +33,9 @@ class L10nJa extends L10n {
   String get msg05d3c93c => 'アイテムの移動に成功しました';
 
   @override
+  String get msgb7e3a1c2 => '成功复制项目';
+
+  @override
   String e1(Object e) {
     return '転送に失敗しました: $e';
   }

@@ -33,6 +33,9 @@ class L10nAr extends L10n {
   String get msg05d3c93c => 'تم نقل العناصر بنجاح';
 
   @override
+  String get msgb7e3a1c2 => '成功复制项目';
+
+  @override
   String e1(Object e) {
     return 'فشل النقل: $e';
   }

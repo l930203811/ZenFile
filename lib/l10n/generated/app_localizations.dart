@@ -157,6 +157,12 @@ abstract class L10n {
   /// providers\file_manager_provider.dart
   ///
   /// In zh, this message translates to:
+  /// **'成功复制项目'**
+  String get msgb7e3a1c2;
+
+  /// providers\file_manager_provider.dart
+  ///
+  /// In zh, this message translates to:
   /// **'传输失败：{e}'**
   String e1(Object e);
 

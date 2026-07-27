@@ -28,6 +28,10 @@
     "description": "providers\\file_manager_provider.dart"
   },
   "msg05d3c93c": "Items moved successfully",
+  "@msgb7e3a1c2": {
+    "description": "providers\\file_manager_provider.dart"
+  },
+  "msgb7e3a1c2": "Items copied successfully",
   "@e1": {
     "type": "text"
   },
