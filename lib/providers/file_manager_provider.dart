@@ -1637,8 +1637,13 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   Future<bool> goBack() async {
-    if (!canGoBack) return false;
     final tab = activeTab;
+    // 远程根目录：返回本地浏览根目录（激活一个本地 tab），
+    // 而不是弹出路由跳到分类页。
+    if (tab.isRemote && !canGoBack) {
+      return _switchToLocalTabOrRoot();
+    }
+    if (!canGoBack) return false;
     final exitedPath = tab.currentPath;
     // 回退历史索引
     tab.historyIndex--;
@@ -1653,6 +1658,20 @@ class FileManagerProvider extends ChangeNotifier {
       }
     });
     return true;
+  }
+
+  /// 在远程根目录按返回时，切换到本地浏览 tab（定位到其当前目录），实现
+  /// “远程根目录返回 → 本地根目录”的导航体验。若没有本地 tab 则返回 false
+  /// （交由上层按原逻辑处理，例如切换到分类页）。
+  Future<bool> _switchToLocalTabOrRoot() async {
+    for (int i = 0; i < _tabs.length; i++) {
+      if (!_tabs[i].isRemote) {
+        _activeTabIndex = i;
+        notifyListeners();
+        return true;
+      }
+    }
+    return false;
   }
 
   Future<bool> goForward() async {
@@ -2335,6 +2354,26 @@ class FileManagerProvider extends ChangeNotifier {
   /// 后台轮询每 600ms 都会去刷新 activeTab——一旦用户切到本地面板，轮询会把
   /// 本地 tab 的 currentPath 写成远程路径、并可能触发远程→本地翻转，导致地址
   /// 栏“始终显示本地路径”且状态被持久化（重启后才恢复）。
+  /// 等待 FTP 服务端完成上传最终化（把 file-<随机> 临时文件重命名为目标文件）。
+  ///
+  /// 上传时客户端把数据写完 socket 后，服务端往往还在刷盘/重命名，此时若立即
+  /// 收起进度条，用户会看到“进度 100% 但文件还没出现”。本方法循环轮询直到目标
+  /// 文件出现或超时（约 15 秒），让进度条在服务端真正落盘后才消失。
+  ///
+  /// 非 FTP 客户端无需此等待（其上传为原子操作），直接返回。
+  Future<void> _awaitUploadFinalized(RemoteClient client, String dir, String name, int expectedSize) async {
+    if (client is! FtpRemoteClient) return;
+    const maxAttempts = 30;
+    for (int i = 0; i < maxAttempts; i++) {
+      await Future.delayed(const Duration(milliseconds: 500));
+      bool ok = false;
+      try {
+        ok = await client.finalizeUpload(dir, name, expectedSize);
+      } catch (_) {}
+      if (ok) return;
+    }
+  }
+
   void scheduleRemoteRefreshAfterUpload(String dir, int? targetTabIndex, {String targetName = '', int expectedSize = 0}) {
     // 服务端临时文件命名规则常见为 file-<随机数字>，部分 NAS 还会追加原文件
     // 扩展名（如 file-319563935.mp4），因此正则不能只匹配无后缀的情况。
@@ -3504,6 +3543,12 @@ class FileManagerProvider extends ChangeNotifier {
           }
         }
       }
+      // 上传循环结束后，等待 FTP 服务端把临时文件最终化为目标文件，
+      // 避免“进度条 100% 但远程目录仍为空/文件丢失”。其它客户端为原子上传，
+      // _awaitUploadFinalized 内部直接返回。
+      if (lastUploadedName != null && lastUploadedName!.isNotEmpty) {
+        await _awaitUploadFinalized(client, currentPath, lastUploadedName!, lastUploadedSize);
+      }
     } catch (e) {
       debugPrint('Error pasting local to remote: $e');
       if (context.mounted) {
@@ -3772,6 +3817,12 @@ class FileManagerProvider extends ChangeNotifier {
             debugPrint('Failed to delete remote source item after cut: $e');
           }
         }
+      }
+
+      // 等待 FTP 服务端最终化（远程→远程上传同样存在临时文件最终化窗口），
+      // 避免进度条过早消失、文件丢失。
+      if (targetClient is FtpRemoteClient && lastUploadedName != null && lastUploadedName!.isNotEmpty) {
+        await _awaitUploadFinalized(targetClient, currentPath, lastUploadedName!, lastUploadedSize);
       }
 
       if (context.mounted) {

@@ -417,6 +417,20 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
           if (mounted) setState(() => _transferProgress = prog);
         });
 
+        // 等待 FTP 服务端把 file-<随机> 临时文件最终化为目标文件，避免进度条
+        // 过早消失、且文件在服务器刷盘完成前被误判为“已上传完成”。
+        if (_client is FtpRemoteClient) {
+          for (int i = 0; i < 30; i++) {
+            await Future.delayed(const Duration(milliseconds: 500));
+            bool ok = false;
+            try {
+              ok = await (_client as FtpRemoteClient).finalizeUpload(
+                _currentPath, fileName, file.lengthSync());
+            } catch (_) {}
+            if (ok) break;
+          }
+        }
+
         if (isCut) {
           try { file.deleteSync(); } catch (_) {}
         }
@@ -859,10 +873,17 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
     final atRoot = _currentPath == _rootPath;
 
     return PopScope(
-      canPop: atRoot,
+      canPop: false,
       onPopInvoked: (didPop) {
         if (didPop) return;
-        _navigateUp();
+        // 远程根目录：返回本地浏览根目录（与双窗口行为一致），而非跳到分类页；
+        // 子目录：返回上一级目录。
+        if (_currentPath == _rootPath) {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+          context.read<FileManagerProvider>().setNavigateToBrowseTab(true);
+        } else {
+          _navigateUp();
+        }
       },
       child: Scaffold(
         drawer: ZenFileDrawer(

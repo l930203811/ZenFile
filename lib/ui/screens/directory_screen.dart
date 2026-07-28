@@ -1147,7 +1147,9 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             }
             if (isSelectionMode) {
               provider.clearSelection();
-            } else if (provider.canGoBack) {
+            } else {
+              // 始终尝试返回：provider.goBack 内部已处理“远程根目录→本地根目录”
+              // 以及“本地根目录→分类页”等边界情况，不应在此用 canGoBack 短路。
               _goBack(provider);
             }
           },

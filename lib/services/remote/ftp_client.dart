@@ -753,7 +753,7 @@ class FtpRemoteClient extends RemoteClient {
       for (final item in items) {
         if (item.isDirectory) continue;
         if (item.name == targetName) continue;
-        if (RegExp(r'^file-\d+$').hasMatch(item.name) &&
+        if (RegExp(r'^file-\d+(\.|$)').hasMatch(item.name) &&
             item.modified.isAfter(cutoff)) {
           try { await delete(item.path, false); } catch (_) {}
         }
@@ -762,17 +762,15 @@ class FtpRemoteClient extends RemoteClient {
   }
 
   /// 上传完成后最终化：部分 FTP/NAS 在 STOR 期间把真实数据写入 file-<随机>
-  /// 临时文件，关闭数据连接后应重命名为目标文件。若服务端因目标文件已存在
-  /// 等原因未自动完成重命名，此处主动处理：
+  /// 临时文件，关闭数据连接后才重命名为目标文件。本方法在“目标缺失”且临时
+  /// 文件已完整时，主动把临时文件重命名为目标文件。
   ///
-  /// 1. 找到目标目录下符合 `file-<数字>` 且最近创建的临时文件；
-  /// 2. 若临时文件大小 >= [expectedSize] 的 95%，视为完整上传，删除旧目标
-  ///    文件（如果存在）并把临时文件重命名为目标文件名；
-  /// 3. 若临时文件明显不完整，则直接删除临时文件，避免目录里残留垃圾；
-  /// 4. 若不存在临时文件，返回 false（无需处理）。
+  /// **重要（数据完整性）**：本方法绝不删除临时文件。上传结束后服务端仍在
+  /// 把内存中的数据刷盘/重命名，此时 LIST 看到的临时文件可能“不完整”，若
+  /// 贸然删除会直接销毁刚上传的文件（表现为“目录为空、刷新/重启后文件仍
+  /// 丢失”）。因此不完整时只返回 false，交由后续轮询再检查；完整时才重命名。
   ///
-  /// 整个操作有 10 秒超时保护，避免挂起。返回值表示是否发现并处理了临时
-  /// 文件。
+  /// 返回值：目标文件是否已存在（含本次重命名成功）。
   Future<bool> finalizeUpload(String remoteDir, String targetName, int expectedSize) async {
     if (_ftpConnect == null) return false;
     try {
@@ -791,30 +789,43 @@ class FtpRemoteClient extends RemoteClient {
             targetItem = item;
           }
         }
-        if (tempItem == null) return false;
 
-        final tempPath = tempItem.path;
-        final targetPath = remoteDir == '/' ? '/$targetName' : '$remoteDir/$targetName';
+        // 目标文件已存在且大小足够 → 服务端已完成最终化，无需处理
+        if (targetItem != null &&
+            (expectedSize <= 0 || targetItem.size >= (expectedSize * 0.95).round())) {
+          return true;
+        }
+        // 没有临时文件 → 服务端未使用临时文件（已直接落盘）或已最终化；
+        // 此时目标是否存在即最终结果。
+        if (tempItem == null) return targetItem != null;
 
-        // 临时文件足够完整 → 用它替换目标文件
-        if (expectedSize > 0 && tempItem.size >= (expectedSize * 0.95).round()) {
-          if (targetItem != null) {
-            try { await delete(targetItem.path, false); } catch (_) {}
-          }
+        // 临时文件尚不完整 → 绝不删除（服务端正在写入），等待下次轮询再处理。
+        if (expectedSize > 0 && tempItem.size < (expectedSize * 0.95).round()) {
+          return false;
+        }
+
+        // 临时文件完整、目标缺失 → 主动重命名为目标文件（使用相对 CWD 的基名）。
+        // listDirectory 已把会话 CWD 切到 remoteDir，故此处用基名即可；为稳妥
+        // 先显式 CWD 一次，避免 CWD 漂移导致 RNFR/RNTO 路径错误。
+        if (targetItem == null) {
           try {
-            await rename(tempPath, targetPath);
+            if (remoteDir.isNotEmpty && remoteDir != '/') {
+              await _ftpConnect!
+                  .changeDirectory(remoteDir)
+                  .timeout(const Duration(seconds: 15));
+            } else {
+              await _ftpConnect!
+                  .changeDirectory('/')
+                  .timeout(const Duration(seconds: 15));
+            }
+            await rename(tempItem.name, targetName);
             return true;
           } catch (e) {
             debugPrint('FTP finalizeUpload rename failed: $e');
-            // rename 失败时至少删掉临时文件，避免用户看到两个文件
-            try { await delete(tempPath, false); } catch (_) {}
-            return true;
+            return false;
           }
-        } else {
-          // 临时文件不完整 → 删除
-          try { await delete(tempPath, false); } catch (_) {}
-          return true;
         }
+        return false;
       })().timeout(const Duration(seconds: 10));
     } catch (e) {
       debugPrint('FTP finalizeUpload error: $e');

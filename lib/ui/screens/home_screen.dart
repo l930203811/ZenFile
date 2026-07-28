@@ -150,7 +150,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<FileManagerProvider>();
-    final canPopHomeScreen = _currentIndex == 1 && !provider.isSelectionMode && provider.canGoBack;
+    // 浏览页内的返回（返回上一级 / 远程根→本地根）由内部 directory_screen /
+    // pane_browser 的 PopScope 与 provider.goBack 处理；home 层绝不在此弹出
+    // 路由，否则会直接跳到分类页。分类页等非浏览 tab 的返回仍走下方 onPopInvoked。
+    final canPopHomeScreen = false;
 
     return PopScope(
       // 编辑路径态下禁止路由返回，交由下方 onPopInvoked 取消编辑并停留在浏览页
