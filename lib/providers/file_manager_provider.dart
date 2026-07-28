@@ -2278,16 +2278,19 @@ class FileManagerProvider extends ChangeNotifier {
   /// 部分 NAS（如飞牛）在 STOR 期间把真实数据写入 file-<随机> 临时文件，
   /// 关闭数据连接后才重命名/清理，过程可能持续数秒甚至更久。此前的“单次
   /// 刷新”和“uploadFile 内部同步等待”都会导致 UI 卡顿——前者来不及(服务端
-  /// 还没重命名)，后者阻塞 uploadFile 返回使进度弹窗卡在 100%。
+  /// 还没重命名），后者阻塞 uploadFile 返回使进度弹窗卡在 100%。
   ///
   /// 这里改为：在 finally 之后的**异步任务**里，每 ~600ms 刷新一次目录，直到
   /// 目录里不再出现 file-<随机> 临时文件（说明服务端已最终化）或达到上限。
-  /// 该任务不 await、不阻塞上传流程与进度弹询，UI 全程可响应；若用户已离开
+  /// 该任务不 await、不阻塞上传流程与进度弹窗，UI 全程可响应；若用户已离开
   /// 该目录或开始新的粘贴/操作则自动停止。
   void scheduleRemoteRefreshAfterUpload(String dir) {
-    const tempFileRe = r'^file-\d+$';
+    // 服务端临时文件命名规则常见为 file-<随机数字>，部分 NAS 还会追加原文件
+    // 扩展名（如 file-319563935.mp4），因此正则不能只匹配无后缀的情况。
+    const tempFileRe = r'^file-\d+(\.|$)';
+    debugPrint('scheduleRemoteRefreshAfterUpload: start for $dir');
     unawaited(Future(() async {
-      const maxAttempts = 30;
+      const maxAttempts = 40;
       const interval = Duration(milliseconds: 600);
       for (int i = 0; i < maxAttempts; i++) {
         await Future.delayed(interval);
@@ -2296,6 +2299,7 @@ class FileManagerProvider extends ChangeNotifier {
             activeTab.currentPath != dir ||
             _isPasting ||
             _isOperationCancelled) {
+          debugPrint('scheduleRemoteRefreshAfterUpload: stop early (i=$i, remote=${activeTab.isRemote}, path=${activeTab.currentPath}, pasting=$_isPasting, cancelled=$_isOperationCancelled)');
           return;
         }
         try {
@@ -2304,12 +2308,18 @@ class FileManagerProvider extends ChangeNotifier {
           final hasTemp = activeTab.currentFiles.any(
             (e) => !e.isDirectory && RegExp(tempFileRe).hasMatch(e.name),
           );
-          if (!hasTemp) return; // 已干净，停止
+          debugPrint('scheduleRemoteRefreshAfterUpload: attempt $i, hasTemp=$hasTemp, files=${activeTab.currentFiles.map((e) => e.name).toList()}');
+          if (!hasTemp) {
+            debugPrint('scheduleRemoteRefreshAfterUpload: finalized, stop');
+            return;
+          }
           notifyListeners();
-        } catch (_) {
+        } catch (e) {
           // 列表失败（网络抖动/服务器忙）属正常，继续下一轮
+          debugPrint('scheduleRemoteRefreshAfterUpload: list error $e');
         }
       }
+      debugPrint('scheduleRemoteRefreshAfterUpload: maxAttempts reached');
     }));
   }
 
@@ -3407,8 +3417,6 @@ class FileManagerProvider extends ChangeNotifier {
       progressNotifier.value = null;
       if (clearAfterPaste) clearClipboard();
       await loadDirectory(currentPath, showLoading: false, clearCache: true);
-      // 上传后服务端可能延迟清理临时文件，延迟再刷一次以保证 UI 干净。
-      scheduleRemoteRefreshAfterUpload(currentPath);
       // 剪切操作：刷新本地源目录。clearClipboard() 已清空 _isCut/_clipboardPaths，
       // 故使用前面缓存的 localWasCut/localSourcePaths。
       if (localWasCut && localSourcePaths.isNotEmpty) {
@@ -3417,6 +3425,10 @@ class FileManagerProvider extends ChangeNotifier {
       activeTab.isLoading = false;
       _isPasting = false;
       notifyListeners();
+      // 上传后服务端可能延迟清理临时文件，延迟再刷一次以保证 UI 干净。
+      // 注意：必须在 _isPasting = false 之后启动，否则后台轮询会因 _isPasting
+      // 仍为 true 而立即退出，导致 UI 不自动刷新。
+      scheduleRemoteRefreshAfterUpload(currentPath);
     }
   }
 
@@ -3698,6 +3710,10 @@ class FileManagerProvider extends ChangeNotifier {
       activeTab.isLoading = false;
       _isPasting = false;
       notifyListeners();
+      // 上传后服务端可能延迟清理临时文件，延迟再刷一次以保证 UI 干净。
+      // 注意：必须在 _isPasting = false 之后启动，否则后台轮询会因 _isPasting
+      // 仍为 true 而立即退出，导致 UI 不自动刷新。
+      scheduleRemoteRefreshAfterUpload(currentPath);
     }
   }
 
