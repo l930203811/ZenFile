@@ -2273,24 +2273,44 @@ class FileManagerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 上传完成后分多次延迟刷新远程目录。
+  /// 上传完成后在后台异步轮询刷新远程目录，直到服务端完成临时文件重命名。
   ///
-  /// 部分 NAS（如飞牛）在 STOR 完成后会延迟重命名/清理 file-<随机> 临时文件，
-  /// 传输结束时的即时刷新可能仍读到脏数据，表现为“必须重新进入目录才刷新 UI”。
-  /// 这里在 800ms、2.5s、5s、10s 分别再刷一次（若用户已离开该目录或开始新
-  /// 操作则跳过），让 UI 最终与服务端状态一致。
+  /// 部分 NAS（如飞牛）在 STOR 期间把真实数据写入 file-<随机> 临时文件，
+  /// 关闭数据连接后才重命名/清理，过程可能持续数秒甚至更久。此前的“单次
+  /// 刷新”和“uploadFile 内部同步等待”都会导致 UI 卡顿——前者来不及(服务端
+  /// 还没重命名)，后者阻塞 uploadFile 返回使进度弹窗卡在 100%。
+  ///
+  /// 这里改为：在 finally 之后的**异步任务**里，每 ~600ms 刷新一次目录，直到
+  /// 目录里不再出现 file-<随机> 临时文件（说明服务端已最终化）或达到上限。
+  /// 该任务不 await、不阻塞上传流程与进度弹询，UI 全程可响应；若用户已离开
+  /// 该目录或开始新的粘贴/操作则自动停止。
   void scheduleRemoteRefreshAfterUpload(String dir) {
-    const delays = <int>[800, 2500, 5000, 10000];
-    for (final ms in delays) {
-      Future.delayed(Duration(milliseconds: ms), () {
-        if (activeTab.isRemote &&
-            activeTab.currentPath == dir &&
-            !_isPasting) {
-          loadDirectory(dir, showLoading: false, clearCache: true)
-              .catchError((_) {});
+    const tempFileRe = r'^file-\d+$';
+    unawaited(Future(() async {
+      const maxAttempts = 30;
+      const interval = Duration(milliseconds: 600);
+      for (int i = 0; i < maxAttempts; i++) {
+        await Future.delayed(interval);
+        // 用户已离开该目录 / 正在新粘贴 / 操作已取消 → 停止轮询
+        if (!activeTab.isRemote ||
+            activeTab.currentPath != dir ||
+            _isPasting ||
+            _isOperationCancelled) {
+          return;
         }
-      });
-    }
+        try {
+          await loadDirectory(dir, showLoading: false, clearCache: true);
+          // 目录里还有服务端临时文件 → 服务端尚未最终化，继续轮询刷新
+          final hasTemp = activeTab.currentFiles.any(
+            (e) => !e.isDirectory && RegExp(tempFileRe).hasMatch(e.name),
+          );
+          if (!hasTemp) return; // 已干净，停止
+          notifyListeners();
+        } catch (_) {
+          // 列表失败（网络抖动/服务器忙）属正常，继续下一轮
+        }
+      }
+    }));
   }
 
   void copyFile(String path) {

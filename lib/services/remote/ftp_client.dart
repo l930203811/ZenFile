@@ -680,19 +680,9 @@ class FtpRemoteClient extends RemoteClient {
       // Graceful quit
       try { controlSocket.write('QUIT\r\n'); } catch (_) {}
 
-      // 等待服务端完成最终化：部分 NAS（如飞牛）在 STOR 期间把真实数据写入
-      // file-<随机> 临时文件，传输结束后再重命名为目标文件。立即返回并刷新
-      // UI 会读到“目标文件很小 + 临时文件很大”的脏状态。这里轮询等待目标
-      // 文件大小稳定（≥本地文件大小且连续两次不变）或超时。
-      try {
-        await _waitForUploadFinalized(
-          remoteDir,
-          remoteFileName,
-          fileSize,
-          timeout: const Duration(seconds: 15),
-        );
-      } catch (_) {}
-
+      // 注意：此处**不再**同步等待服务端最终化（之前的 _waitForUploadFinalized
+      // 会阻塞 uploadFile 返回，导致进度弹窗卡在 100% 很久）。服务端重命名的
+      // 等待改由 provider 在后台异步轮询 loadDirectory 完成，UI 全程可响应。
       onProgress(1.0);
     } catch (e) {
       // cancel() 会销毁 socket，进行中的上传会在此抛异常；此时应视为取消
@@ -711,14 +701,21 @@ class FtpRemoteClient extends RemoteClient {
   /// 服务端（如飞牛 NAS）生成的 file-<随机数字> 临时文件。
   ///
   /// 使用独立的 listing 会话（[_ftpConnect]）执行删除，与进行中的上传数据
-  /// 连接互不干扰，确保取消后目录里不留下残缺文件。
+  /// 连接互不干扰，确保取消后目录里不留下残缺文件。整体有超时保护：FTP
+  /// 服务器在取消瞬间可能卡住 delete，若等待过久会拖住 [uploadFile] 返回、
+  /// 导致进度弹窗卡住，故 6s 后放弃清理（残留文件由 provider 的延迟刷新或
+  /// 用户重新进入目录时再处理）。
   Future<void> _abortAndCleanupUpload(String remoteDir, String remoteFileName) async {
     if (_ftpConnect == null) return;
     try {
-      await delete(p.join(remoteDir, remoteFileName), false);
-    } catch (_) {}
-    try {
-      await _cleanupStrayTemp(remoteDir, remoteFileName);
+      await (() async {
+        try {
+          await delete(p.join(remoteDir, remoteFileName), false);
+        } catch (_) {}
+        try {
+          await _cleanupStrayTemp(remoteDir, remoteFileName);
+        } catch (_) {}
+      })().timeout(const Duration(seconds: 6));
     } catch (_) {}
   }
 
@@ -741,73 +738,6 @@ class FtpRemoteClient extends RemoteClient {
         }
       }
     } catch (_) {}
-  }
-
-  /// 等待服务端把 STOR 数据最终化到目标文件。
-  ///
-  /// 部分 NAS（如飞牛）在 STOR 期间把真实数据先写入 file-<随机> 临时文件，
-  /// 关闭数据连接后再重命名为目标名。此过程可能持续数秒，若上传函数立即
-  /// 返回，UI 刷新时会看到“目标文件很小 + 临时文件很大”的脏状态。
-  ///
-  /// 轮询策略：每隔 [pollInterval] 列一次目录，直到
-  ///   - 目标文件存在且大小 ≥ [expectedSize] 的 99%，且连续两次大小相同；或
-  ///   - 目标文件存在且大小正确，同时没有 file-<随机> 临时文件；或
-  ///   - 超过 [timeout]。
-  Future<void> _waitForUploadFinalized(
-    String remoteDir,
-    String targetName,
-    int expectedSize, {
-    Duration timeout = const Duration(seconds: 15),
-    Duration pollInterval = const Duration(milliseconds: 500),
-  }) async {
-    if (_ftpConnect == null || expectedSize <= 0) return;
-
-    final deadline = DateTime.now().add(timeout);
-    int? lastTargetSize;
-    int stableCount = 0;
-
-    while (DateTime.now().isBefore(deadline)) {
-      try {
-        final items = await listDirectory(remoteDir, forceRefresh: true);
-        RemoteFileItem? targetItem;
-        RemoteFileItem? tempItem;
-        for (final item in items) {
-          if (item.isDirectory) continue;
-          if (item.name == targetName) {
-            targetItem = item;
-          } else if (RegExp(r'^file-\d+$').hasMatch(item.name)) {
-            // 只保留尺寸最大的那个临时文件（真实数据所在）
-            if (tempItem == null || item.size > tempItem.size) {
-              tempItem = item;
-            }
-          }
-        }
-
-        // 目标文件已存在且大小达到预期并稳定
-        if (targetItem != null) {
-          final targetSize = targetItem.size;
-          if (targetSize >= expectedSize * 0.99) {
-            if (lastTargetSize == targetSize) {
-              stableCount++;
-              if (stableCount >= 2) return;
-            } else {
-              stableCount = 0;
-            }
-            lastTargetSize = targetSize;
-            // 大小正确且没有临时文件：服务端已完成
-            if (tempItem == null) return;
-          } else {
-            // 目标文件偏小但已稳定，且没有更大临时文件：也算完成（expectedSize
-            // 可能因本地文件系统块大小/元数据略有偏差）
-            if (lastTargetSize == targetSize && tempItem == null) return;
-            lastTargetSize = targetSize;
-            stableCount = 0;
-          }
-        }
-      } catch (_) {}
-
-      await Future.delayed(pollInterval);
-    }
   }
 
   @override
