@@ -302,7 +302,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
             actionText: L10n.of(context).msgc8ce4b36,
           );
           if (newName != null && newName.isNotEmpty) {
-            await provider.renameFile(path, newName);
+            await provider.renameFile(path, newName, context);
             if (isMulti) {
               provider.clearSelection();
             }

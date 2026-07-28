@@ -4088,27 +4088,84 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> renameFile(String oldPath, String newName) async {
+  Future<void> renameFile(String oldPath, String newName, [BuildContext? context]) async {
     try {
+      String finalNewPath;
       if (activeTab.isRemote && activeTab.remoteClient != null) {
         final newPath = '${p.url.dirname(oldPath)}/$newName';
         await activeTab.remoteClient!.rename(oldPath, newPath);
+        finalNewPath = newPath;
       } else if (isRestrictedPath(oldPath)) {
         await RootShizukuService.renameItem(oldPath, newName, useRoot: useRootMode);
+        finalNewPath = p.join(p.dirname(oldPath), newName);
       } else {
         final newPath = p.join(p.dirname(oldPath), newName);
+        finalNewPath = newPath;
+        // 冲突处理：目标名已存在且与自身不同，弹出冲突对话框，避免静默覆盖/误删。
+        // 与粘贴等其它操作保持一致的交互（覆盖 / 保留两者 / 重命名 / 取消）。
+        if (context != null) {
+          final targetType = FileSystemEntity.typeSync(newPath);
+          if (targetType != FileSystemEntityType.notFound &&
+              p.normalize(newPath) != p.normalize(oldPath)) {
+            final response = await ConflictDialog.show(
+              context,
+              fileName: newName,
+              sourceFile: File(oldPath),
+              destFile: File(newPath),
+            );
+            if (response == null ||
+                response.result == ConflictResult.cancel ||
+                response.result == ConflictResult.skip) {
+              return; // 用户取消，不执行重命名
+            }
+            if (response.result == ConflictResult.keepBoth) {
+              finalNewPath = _getUniquePath(newPath, targetType == FileSystemEntityType.directory);
+            } else if (response.result == ConflictResult.rename &&
+                response.customName != null &&
+                response.customName!.isNotEmpty) {
+              finalNewPath = p.join(p.dirname(oldPath), response.customName!);
+            }
+            // ConflictResult.overwrite：保持 finalNewPath = newPath，直接覆盖
+          }
+        }
         final type = FileSystemEntity.typeSync(oldPath);
         if (type == FileSystemEntityType.directory) {
-          await _renameWithFallback(Directory(oldPath), newPath);
+          await _renameWithFallback(Directory(oldPath), finalNewPath);
         } else {
-          await _renameWithFallback(File(oldPath), newPath);
+          await _renameWithFallback(File(oldPath), finalNewPath);
         }
       }
-      await loadDirectory(currentPath, showLoading: false, clearCache: true);
+      // 刷新被重命名文件所在目录对应的 tab（而非全局 activeTab），
+      // 避免双窗口下刷新错面板导致列表/缩略图仍显示旧内容（如旧截图）。
+      await _refreshTabForPath(p.dirname(oldPath));
+      // 清理新旧路径的缩略图缓存，确保重命名后缩略图立即以真实内容刷新。
+      _evictImageCache(oldPath);
+      _evictImageCache(finalNewPath);
     } catch (e) {
       debugPrint('Error renaming file: $e');
       rethrow;
     }
+  }
+
+  /// 刷新包含指定目录路径的本地 tab（优先匹配）；找不到对应 tab 时回退到 activeTab。
+  /// 用于重命名/删除等操作后精准刷新目标面板，而不是盲目刷新全局 activeTab。
+  Future<void> _refreshTabForPath(String dirPath) async {
+    final normalized = p.normalize(dirPath);
+    for (int i = 0; i < _tabs.length; i++) {
+      if (!_tabs[i].isRemote && p.normalize(_tabs[i].currentPath) == normalized) {
+        await loadDirectoryForTab(i, _tabs[i].currentPath, showLoading: false, clearCache: true, recordHistory: false);
+        return;
+      }
+    }
+    await loadDirectory(currentPath, showLoading: false, clearCache: true);
+  }
+
+  /// 从 Flutter 全局图片缓存中剔除指定路径的缩略图，强制下次重新解码，
+  /// 避免重命名/覆盖后列表仍显示旧的缩略图（如旧截图）。
+  void _evictImageCache(String path) {
+    try {
+      PaintingBinding.instance.imageCache.evict(FileImage(File(path)));
+    } catch (_) {}
   }
 
   /// 重命名实体，若 rename() 失败（跨文件系统/路径过长/权限等），

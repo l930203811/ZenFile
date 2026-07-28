@@ -693,7 +693,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
           );
           if (newName != null && newName.isNotEmpty) {
             try {
-              await provider.renameFile(path, newName);
+              await provider.renameFile(path, newName, context);
             } catch (e) {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(

@@ -346,7 +346,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     if (newName.isEmpty) return;
 
     try {
-      await context.read<FileManagerProvider>().renameFile(file.path, newName);
+      await context.read<FileManagerProvider>().renameFile(file.path, newName, context);
       final newPath = p.join(file.parent.path, newName);
 
       if (widget.siblingItems != null && _currentIndex < widget.siblingItems!.length) {

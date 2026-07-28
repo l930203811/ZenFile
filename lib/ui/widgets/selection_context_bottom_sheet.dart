@@ -189,7 +189,7 @@ class SelectionContextBottomSheet extends StatelessWidget {
                     actionText: L10n.of(context).msgc8ce4b36,
                   );
                   if (newName != null && newName.isNotEmpty) {
-                    await provider.renameFile(targetPath, newName);
+                    await provider.renameFile(targetPath, newName, effectiveContext);
                     provider.clearSelection();
                   }
                 },
