@@ -2282,33 +2282,57 @@ class FileManagerProvider extends ChangeNotifier {
   ///
   /// 这里改为：在 finally 之后的**异步任务**里，每 ~600ms 刷新一次目录，直到
   /// 目录里不再出现 file-<随机> 临时文件（说明服务端已最终化）或达到上限。
-  /// 该任务不 await、不阻塞上传流程与进度弹窗，UI 全程可响应；若用户已离开
-  /// 该目录或开始新的粘贴/操作则自动停止。
-  void scheduleRemoteRefreshAfterUpload(String dir) {
+  /// 该任务不 await、不阻塞上传流程与进度弹窗，UI 全程可响应。
+  ///
+  /// **关键**：刷新必须用 [loadDirectoryForTab] 直接针对“目标远程 tab”进行，
+  /// 绝对不能调用 [loadDirectory]（它操作的是全局活跃面板 activeTab）。否则
+  /// 后台轮询每 600ms 都会去刷新 activeTab——一旦用户切到本地面板，轮询会把
+  /// 本地 tab 的 currentPath 写成远程路径、并可能触发远程→本地翻转，导致地址
+  /// 栏“始终显示本地路径”且状态被持久化（重启后才恢复）。
+  void scheduleRemoteRefreshAfterUpload(String dir, [int? targetTabIndex]) {
     // 服务端临时文件命名规则常见为 file-<随机数字>，部分 NAS 还会追加原文件
     // 扩展名（如 file-319563935.mp4），因此正则不能只匹配无后缀的情况。
     const tempFileRe = r'^file-\d+(\.|$)';
-    debugPrint('scheduleRemoteRefreshAfterUpload: start for $dir');
+    debugPrint('scheduleRemoteRefreshAfterUpload: start for $dir target=$targetTabIndex');
     unawaited(Future(() async {
       const maxAttempts = 40;
       const interval = Duration(milliseconds: 600);
       for (int i = 0; i < maxAttempts; i++) {
         await Future.delayed(interval);
-        // 用户已离开该目录 / 正在新粘贴 / 操作已取消 → 停止轮询
-        if (!activeTab.isRemote ||
-            activeTab.currentPath != dir ||
-            _isPasting ||
-            _isOperationCancelled) {
-          debugPrint('scheduleRemoteRefreshAfterUpload: stop early (i=$i, remote=${activeTab.isRemote}, path=${activeTab.currentPath}, pasting=$_isPasting, cancelled=$_isOperationCancelled)');
+        // 正在新粘贴 / 操作已取消 → 停止轮询，避免与新的上传/加载相互干扰
+        if (_isPasting || _isOperationCancelled) {
+          debugPrint('scheduleRemoteRefreshAfterUpload: stop (pasting=$_isPasting, cancelled=$_isOperationCancelled)');
           return;
         }
+        // 定位目标远程 tab：优先使用上传目标 tabIndex，否则按 currentPath 匹配
+        int? idx = (targetTabIndex != null &&
+                targetTabIndex >= 0 &&
+                targetTabIndex < _tabs.length &&
+                _tabs[targetTabIndex].isRemote)
+            ? targetTabIndex
+            : null;
+        if (idx == null) {
+          for (int t = 0; t < _tabs.length; t++) {
+            if (_tabs[t].isRemote && _tabs[t].currentPath == dir) {
+              idx = t;
+              break;
+            }
+          }
+        }
+        if (idx == null) {
+          debugPrint('scheduleRemoteRefreshAfterUpload: no remote tab for $dir, stop');
+          return;
+        }
+        final tab = _tabs[idx];
         try {
-          await loadDirectory(dir, showLoading: false, clearCache: true);
+          // 以该远程 tab 的身份刷新（loadDirectoryForTab 内部临时切换 activeTab
+          // 再还原），绝不污染其它面板，也不会误触发远程→本地翻转。
+          await loadDirectoryForTab(idx, dir, showLoading: false, clearCache: true);
           // 目录里还有服务端临时文件 → 服务端尚未最终化，继续轮询刷新
-          final hasTemp = activeTab.currentFiles.any(
+          final hasTemp = tab.currentFiles.any(
             (e) => !e.isDirectory && RegExp(tempFileRe).hasMatch(e.name),
           );
-          debugPrint('scheduleRemoteRefreshAfterUpload: attempt $i, hasTemp=$hasTemp, files=${activeTab.currentFiles.map((e) => e.name).toList()}');
+          debugPrint('scheduleRemoteRefreshAfterUpload: attempt $i tab$idx hasTemp=$hasTemp, files=${tab.currentFiles.map((e) => e.name).toList()}');
           if (!hasTemp) {
             debugPrint('scheduleRemoteRefreshAfterUpload: finalized, stop');
             return;
@@ -3200,6 +3224,9 @@ class FileManagerProvider extends ChangeNotifier {
       progressNotifier.value = null;
       return;
     }
+    // 记录上传目标 tab 索引：上传目标是当前活跃远程 tab，但传输过程中用户可能
+    // 切换到其它面板，故此处先捕获，供结束后精准刷新目标 tab（避免污染活跃面板）。
+    final int targetTabIndex = activeTabIndex;
 
     // clearClipboard() 会在 finally 中清空 _isCut/_clipboardPaths，故先缓存
     // 剪切来源信息，供结束后刷新本地源目录使用。
@@ -3416,7 +3443,10 @@ class FileManagerProvider extends ChangeNotifier {
       _activeTransferClient = null;
       progressNotifier.value = null;
       if (clearAfterPaste) clearClipboard();
-      await loadDirectory(currentPath, showLoading: false, clearCache: true);
+      // 精准刷新目标远程 tab（loadDirectoryForTab 内部临时切换 activeTab 再还原，
+      // 不会污染其它面板），替代原先的 loadDirectory(currentPath)（它操作全局
+      // 活跃面板，用户切到本地时会被写成远程路径，导致地址栏错乱）。
+      await loadDirectoryForTab(targetTabIndex, currentPath, showLoading: false, clearCache: true);
       // 剪切操作：刷新本地源目录。clearClipboard() 已清空 _isCut/_clipboardPaths，
       // 故使用前面缓存的 localWasCut/localSourcePaths。
       if (localWasCut && localSourcePaths.isNotEmpty) {
@@ -3428,7 +3458,7 @@ class FileManagerProvider extends ChangeNotifier {
       // 上传后服务端可能延迟清理临时文件，延迟再刷一次以保证 UI 干净。
       // 注意：必须在 _isPasting = false 之后启动，否则后台轮询会因 _isPasting
       // 仍为 true 而立即退出，导致 UI 不自动刷新。
-      scheduleRemoteRefreshAfterUpload(currentPath);
+      scheduleRemoteRefreshAfterUpload(currentPath, targetTabIndex);
     }
   }
 
@@ -3439,6 +3469,8 @@ class FileManagerProvider extends ChangeNotifier {
       progressNotifier.value = null;
       return;
     }
+    // 记录上传目标 tab 索引（上传目标是当前活跃远程 tab），供结束后精准刷新。
+    final int targetTabIndex = activeTabIndex;
 
     // clearClipboard() 会在 finally 中清空 _isCut/_remoteClipboardItems，故先缓存
     // 剪切来源信息，供结束后刷新源目录使用。
@@ -3684,9 +3716,8 @@ class FileManagerProvider extends ChangeNotifier {
       } catch (_) {}
       progressNotifier.value = null;
       if (clearAfterPaste) clearClipboard();
-      await loadDirectory(currentPath, showLoading: false, clearCache: true);
-      // 上传后服务端可能延迟清理临时文件，延迟再刷一次以保证 UI 干净。
-      scheduleRemoteRefreshAfterUpload(currentPath);
+      // 精准刷新目标远程 tab，避免污染全局活跃面板。
+      await loadDirectoryForTab(targetTabIndex, currentPath, showLoading: false, clearCache: true);
       // 剪切操作：刷新远程源目录。clearClipboard() 已清空 _isCut/_remoteClipboardItems，
       // 故使用前面缓存的 r2rWasCut/r2rConn/r2rSourceDir。
       if (r2rWasCut && r2rConn != null) {
@@ -3713,7 +3744,7 @@ class FileManagerProvider extends ChangeNotifier {
       // 上传后服务端可能延迟清理临时文件，延迟再刷一次以保证 UI 干净。
       // 注意：必须在 _isPasting = false 之后启动，否则后台轮询会因 _isPasting
       // 仍为 true 而立即退出，导致 UI 不自动刷新。
-      scheduleRemoteRefreshAfterUpload(currentPath);
+      scheduleRemoteRefreshAfterUpload(currentPath, targetTabIndex);
     }
   }
 
