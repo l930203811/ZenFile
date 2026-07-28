@@ -761,6 +761,67 @@ class FtpRemoteClient extends RemoteClient {
     } catch (_) {}
   }
 
+  /// 上传完成后最终化：部分 FTP/NAS 在 STOR 期间把真实数据写入 file-<随机>
+  /// 临时文件，关闭数据连接后应重命名为目标文件。若服务端因目标文件已存在
+  /// 等原因未自动完成重命名，此处主动处理：
+  ///
+  /// 1. 找到目标目录下符合 `file-<数字>` 且最近创建的临时文件；
+  /// 2. 若临时文件大小 >= [expectedSize] 的 95%，视为完整上传，删除旧目标
+  ///    文件（如果存在）并把临时文件重命名为目标文件名；
+  /// 3. 若临时文件明显不完整，则直接删除临时文件，避免目录里残留垃圾；
+  /// 4. 若不存在临时文件，返回 false（无需处理）。
+  ///
+  /// 整个操作有 10 秒超时保护，避免挂起。返回值表示是否发现并处理了临时
+  /// 文件。
+  Future<bool> finalizeUpload(String remoteDir, String targetName, int expectedSize) async {
+    if (_ftpConnect == null) return false;
+    try {
+      return await (() async {
+        final items = await listDirectory(remoteDir, forceRefresh: true);
+        RemoteFileItem? tempItem;
+        RemoteFileItem? targetItem;
+        for (final item in items) {
+          if (item.isDirectory) continue;
+          if (RegExp(r'^file-\d+(\.|$)').hasMatch(item.name)) {
+            // 取最新创建的临时文件（服务端可能残留历史临时文件）
+            if (tempItem == null || item.modified.isAfter(tempItem.modified)) {
+              tempItem = item;
+            }
+          } else if (item.name == targetName) {
+            targetItem = item;
+          }
+        }
+        if (tempItem == null) return false;
+
+        final tempPath = tempItem.path;
+        final targetPath = remoteDir == '/' ? '/$targetName' : '$remoteDir/$targetName';
+
+        // 临时文件足够完整 → 用它替换目标文件
+        if (expectedSize > 0 && tempItem.size >= (expectedSize * 0.95).round()) {
+          if (targetItem != null) {
+            try { await delete(targetItem.path, false); } catch (_) {}
+          }
+          try {
+            await rename(tempPath, targetPath);
+            return true;
+          } catch (e) {
+            debugPrint('FTP finalizeUpload rename failed: $e');
+            // rename 失败时至少删掉临时文件，避免用户看到两个文件
+            try { await delete(tempPath, false); } catch (_) {}
+            return true;
+          }
+        } else {
+          // 临时文件不完整 → 删除
+          try { await delete(tempPath, false); } catch (_) {}
+          return true;
+        }
+      })().timeout(const Duration(seconds: 10));
+    } catch (e) {
+      debugPrint('FTP finalizeUpload error: $e');
+      return false;
+    }
+  }
+
   @override
   Future<int> getFileSize(String remotePath) async {
     if (_ftpConnect == null) throw Exception('FTP not connected');

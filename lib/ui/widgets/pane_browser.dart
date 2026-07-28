@@ -232,7 +232,9 @@ class _PaneBrowserState extends State<PaneBrowser> {
     if (_scrollController.hasClients) {
       provider.saveScrollOffset(provider.tabs[widget.tabIndex].currentPath, _scrollController.offset);
     }
-    provider.loadDirectory(path).then((_) {
+    // 必须使用 loadDirectoryForTab，否则双窗口下点击非 active pane 的文件夹
+    // 会加载到全局 activeTab 对应的面板，导致两个 pane 路径/内容错乱。
+    provider.loadDirectoryForTab(widget.tabIndex, path).then((_) {
       if (_scrollController.hasClients) {
         final savedOffset = provider.getSavedScrollOffset(path);
         _scrollController.jumpTo(savedOffset);

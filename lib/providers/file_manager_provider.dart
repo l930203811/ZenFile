@@ -1083,7 +1083,18 @@ class FileManagerProvider extends ChangeNotifier {
     bool forceRefresh = false,
     bool recordHistory = false,
   }) async {
-    if (tabIndex >= 0 && tabIndex < _tabs.length) {
+    if (tabIndex < 0 || tabIndex >= _tabs.length) return;
+
+    // 串行化：防止两个 pane 并发刷新导致 _activeTabIndex 被覆盖、刷新目标错乱。
+    while (_loadDirectoryForTabLock != null) {
+      try {
+        await _loadDirectoryForTabLock!.future;
+      } catch (_) {}
+    }
+    final lock = Completer<void>();
+    _loadDirectoryForTabLock = lock;
+
+    try {
       final oldIndex = _activeTabIndex;
       _activeTabIndex = tabIndex;
       try {
@@ -1101,12 +1112,21 @@ class FileManagerProvider extends ChangeNotifier {
         _activeTabIndex = oldIndex;
         notifyListeners();
       }
+    } finally {
+      lock.complete();
+      if (_loadDirectoryForTabLock == lock) {
+        _loadDirectoryForTabLock = null;
+      }
     }
   }
 
   // --- Tab Management ---
   List<FolderTab> _tabs = [];
   int _activeTabIndex = 0;
+  // loadDirectoryForTab 会临时切换全局 _activeTabIndex，若两个 pane 并发刷新
+  // （如同时下拉刷新或后台轮询与手动刷新重叠），_activeTabIndex 会被覆盖，
+  // 导致刷新目标错乱。用简单 Future 锁串行化。
+  Completer<void>? _loadDirectoryForTabLock;
 
   List<FolderTab> get tabs => _tabs;
   int get activeTabIndex => _activeTabIndex;
@@ -2315,11 +2335,11 @@ class FileManagerProvider extends ChangeNotifier {
   /// 后台轮询每 600ms 都会去刷新 activeTab——一旦用户切到本地面板，轮询会把
   /// 本地 tab 的 currentPath 写成远程路径、并可能触发远程→本地翻转，导致地址
   /// 栏“始终显示本地路径”且状态被持久化（重启后才恢复）。
-  void scheduleRemoteRefreshAfterUpload(String dir, [int? targetTabIndex]) {
+  void scheduleRemoteRefreshAfterUpload(String dir, int? targetTabIndex, {String targetName = '', int expectedSize = 0}) {
     // 服务端临时文件命名规则常见为 file-<随机数字>，部分 NAS 还会追加原文件
     // 扩展名（如 file-319563935.mp4），因此正则不能只匹配无后缀的情况。
     const tempFileRe = r'^file-\d+(\.|$)';
-    debugPrint('scheduleRemoteRefreshAfterUpload: start for $dir target=$targetTabIndex');
+    debugPrint('scheduleRemoteRefreshAfterUpload: start for $dir target=$targetTabIndex expectedSize=$expectedSize');
     unawaited(Future(() async {
       const maxAttempts = 40;
       const interval = Duration(milliseconds: 600);
@@ -2351,6 +2371,21 @@ class FileManagerProvider extends ChangeNotifier {
         }
         final tab = _tabs[idx];
         try {
+          // 主动最终化：若目录里仍有服务端临时文件，尝试让客户端执行
+          // finalizeUpload（删除旧目标文件并重命名临时文件）。这对飞牛等
+          // NAS 特别有效——它们在目标文件已存在时可能不会自动完成重命名。
+          final client = tab.remoteClient;
+          if (client is FtpRemoteClient && expectedSize > 0 && targetName.isNotEmpty) {
+            try {
+              final finalized = await client.finalizeUpload(dir, targetName, expectedSize);
+              if (finalized) {
+                debugPrint('scheduleRemoteRefreshAfterUpload: client finalized temp file');
+              }
+            } catch (e) {
+              debugPrint('scheduleRemoteRefreshAfterUpload: finalizeUpload error $e');
+            }
+          }
+
           // 以该远程 tab 的身份刷新（loadDirectoryForTab 内部临时切换 activeTab
           // 再还原），绝不污染其它面板，也不会误触发远程→本地翻转。
           await loadDirectoryForTab(idx, dir, showLoading: false, clearCache: true);
@@ -3277,6 +3312,10 @@ class FileManagerProvider extends ChangeNotifier {
     activeTab.isLoading = true;
     notifyListeners();
 
+    // 记录最后一个上传文件的信息，供 scheduleRemoteRefreshAfterUpload 主动最终化
+    String? lastUploadedName;
+    int lastUploadedSize = 0;
+
     try {
       final totalTopLevel = _clipboardPaths.length;
 
@@ -3448,6 +3487,8 @@ class FileManagerProvider extends ChangeNotifier {
           previousFilesBytes += fileSize;
           bytesDone = previousFilesBytes;
           processedFileCount++;
+          lastUploadedName = p.basename(destPath);
+          lastUploadedSize = fileSize;
         }
 
         if (_isCut) {
@@ -3493,7 +3534,12 @@ class FileManagerProvider extends ChangeNotifier {
       // 上传后服务端可能延迟清理临时文件，延迟再刷一次以保证 UI 干净。
       // 注意：必须在 _isPasting = false 之后启动，否则后台轮询会因 _isPasting
       // 仍为 true 而立即退出，导致 UI 不自动刷新。
-      scheduleRemoteRefreshAfterUpload(currentPath, targetTabIndex);
+      scheduleRemoteRefreshAfterUpload(
+        currentPath,
+        targetTabIndex,
+        targetName: lastUploadedName ?? '',
+        expectedSize: lastUploadedSize,
+      );
     }
   }
 
@@ -3523,6 +3569,10 @@ class FileManagerProvider extends ChangeNotifier {
 
     final tempDir = Directory('/storage/emulated/0/ZenFile/.temp_${DateTime.now().millisecondsSinceEpoch}');
     if (!tempDir.existsSync()) tempDir.createSync(recursive: true);
+
+    // 记录最后一个上传文件的信息，供 scheduleRemoteRefreshAfterUpload 主动最终化
+    String? lastUploadedName;
+    int lastUploadedSize = 0;
 
     try {
       await sourceClient.connect();
@@ -3710,6 +3760,8 @@ class FileManagerProvider extends ChangeNotifier {
           });
           previousFilesBytes += fileSize * 2;
           processedFileCount++;
+          lastUploadedName = p.basename(destPath);
+          lastUploadedSize = fileSize;
         }
 
         // Step 3: Delete source if cut
@@ -3779,7 +3831,12 @@ class FileManagerProvider extends ChangeNotifier {
       // 上传后服务端可能延迟清理临时文件，延迟再刷一次以保证 UI 干净。
       // 注意：必须在 _isPasting = false 之后启动，否则后台轮询会因 _isPasting
       // 仍为 true 而立即退出，导致 UI 不自动刷新。
-      scheduleRemoteRefreshAfterUpload(currentPath, targetTabIndex);
+      scheduleRemoteRefreshAfterUpload(
+        currentPath,
+        targetTabIndex,
+        targetName: lastUploadedName ?? '',
+        expectedSize: lastUploadedSize,
+      );
     }
   }
 
