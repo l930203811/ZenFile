@@ -1075,13 +1075,32 @@ class FileManagerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> loadDirectoryForTab(int tabIndex, String path, {bool showLoading = true, bool clearCache = false, bool forceRefresh = false}) async {
+  Future<void> loadDirectoryForTab(
+    int tabIndex,
+    String path, {
+    bool showLoading = true,
+    bool clearCache = false,
+    bool forceRefresh = false,
+    bool recordHistory = false,
+  }) async {
     if (tabIndex >= 0 && tabIndex < _tabs.length) {
       final oldIndex = _activeTabIndex;
       _activeTabIndex = tabIndex;
-      await loadDirectory(path, showLoading: showLoading, clearCache: clearCache, forceRefresh: forceRefresh);
-      _activeTabIndex = oldIndex;
-      notifyListeners();
+      try {
+        await loadDirectory(
+          path,
+          showLoading: showLoading,
+          clearCache: clearCache,
+          forceRefresh: forceRefresh,
+          recordHistory: recordHistory,
+        );
+      } finally {
+        // 必须恢复原来的 activeTabIndex，否则异步刷新期间若用户切换了 pane
+        // 或发生异常，activeTabIndex 会永久停留在目标 tab，导致地址栏/返回
+        // 等全局状态错乱。
+        _activeTabIndex = oldIndex;
+        notifyListeners();
+      }
     }
   }
 
@@ -1366,6 +1385,8 @@ class FileManagerProvider extends ChangeNotifier {
       isRemote: active.isRemote,
       remoteClient: active.remoteClient,
       remoteConnection: active.remoteConnection,
+      pathHistory: List<String>.from(active.pathHistory),
+      historyIndex: active.historyIndex,
     );
     // 双窗口模式下，复制激活 tab 到未激活的 pane（索引 0 或 1），
     // 而不是新增 tab（否则 tabs 数量 > 2，PaneBrowser 看不到新增的 tab）
@@ -1409,6 +1430,8 @@ class FileManagerProvider extends ChangeNotifier {
         isRootAvailable: tab.isRootAvailable,
         scrollPositions: Map.from(tab.scrollPositions),
         isPinned: tab.isPinned,
+        pathHistory: List<String>.from(tab.pathHistory),
+        historyIndex: tab.historyIndex,
       );
       _tabs.insert(index + 1, dup);
       _activeTabIndex = index + 1;
@@ -1567,37 +1590,39 @@ class FileManagerProvider extends ChangeNotifier {
   String _rootPath = '';
   String get rootPath => _rootPath;
 
-  // 路径历史栈，用于支持前进/后退导航
-  // _pathHistory: 所有访问过的路径（按访问顺序）
-  // _historyIndex: 当前所在位置在 _pathHistory 中的索引
-  final List<String> _pathHistory = [];
-  int _historyIndex = -1;
+  // 路径历史栈已迁移到 FolderTab，双窗口模式下每个 pane 拥有独立的历史，
+  // 避免左/右窗口路径混在一起导致“在远程窗口按返回跳到本地路径”的问题。
 
   bool get canGoBack {
-    // 至少有 2 个历史记录且当前不在最早的记录上才能后退
-    return _pathHistory.length >= 2 && _historyIndex > 0;
+    final tab = activeTab;
+    return tab.pathHistory.length >= 2 && tab.historyIndex > 0;
   }
 
-  bool get canGoForward => _historyIndex >= 0 && _historyIndex < _pathHistory.length - 1;
+  bool get canGoForward {
+    final tab = activeTab;
+    return tab.historyIndex >= 0 && tab.historyIndex < tab.pathHistory.length - 1;
+  }
 
   void _pushPathToHistory(String path) {
+    final tab = activeTab;
     // 如果当前不是历史栈的最后一个，截断后面的历史（用户从中间位置导航到新路径）
-    if (_historyIndex < _pathHistory.length - 1) {
-      _pathHistory.removeRange(_historyIndex + 1, _pathHistory.length);
+    if (tab.historyIndex < tab.pathHistory.length - 1) {
+      tab.pathHistory.removeRange(tab.historyIndex + 1, tab.pathHistory.length);
     }
     // 如果路径与当前最后一个不同，才添加
-    if (_pathHistory.isEmpty || _pathHistory.last != path) {
-      _pathHistory.add(path);
-      _historyIndex = _pathHistory.length - 1;
+    if (tab.pathHistory.isEmpty || tab.pathHistory.last != path) {
+      tab.pathHistory.add(path);
+      tab.historyIndex = tab.pathHistory.length - 1;
     }
   }
 
   Future<bool> goBack() async {
     if (!canGoBack) return false;
-    final exitedPath = currentPath;
+    final tab = activeTab;
+    final exitedPath = tab.currentPath;
     // 回退历史索引
-    _historyIndex--;
-    final targetPath = _pathHistory[_historyIndex];
+    tab.historyIndex--;
+    final targetPath = tab.pathHistory[tab.historyIndex];
     await loadDirectory(targetPath, showLoading: false, recordHistory: false);
     _highlightedPaths.clear();
     _highlightedPaths.add(exitedPath);
@@ -1612,9 +1637,10 @@ class FileManagerProvider extends ChangeNotifier {
 
   Future<bool> goForward() async {
     if (!canGoForward) return false;
+    final tab = activeTab;
     // 前进历史索引
-    _historyIndex++;
-    final nextPath = _pathHistory[_historyIndex];
+    tab.historyIndex++;
+    final nextPath = tab.pathHistory[tab.historyIndex];
     await loadDirectory(nextPath, showLoading: false, recordHistory: false);
     notifyListeners();
     return true;
@@ -2507,6 +2533,11 @@ class FileManagerProvider extends ChangeNotifier {
     final oldIndex = _activeTabIndex;
     _activeTabIndex = targetTabIndex;
 
+    // 标记本次粘贴的目标 tab 是否为远程，用于最后决定是否恢复 activeTab。
+    // 远程上传/粘贴完成后，保持 active 在目标远程 tab，避免双窗口模式下
+    // 顶部地址栏显示成源（本地）pane 的路径。
+    final bool targetIsRemote = _tabs[targetTabIndex].isRemote;
+
     // 在清除剪贴板之前保存源目录路径，用于后续刷新
     final String? savedSourcePath = _isCut && _clipboardPaths.isNotEmpty
         ? _clipboardPaths.first
@@ -2949,7 +2980,11 @@ class FileManagerProvider extends ChangeNotifier {
       notifyListeners();
     }
   } finally {
-    _activeTabIndex = oldIndex;
+    // 远程粘贴/上传完成后，保持 activeTab 在目标远程 pane，使顶部地址栏
+    // 与当前查看的远程窗口保持一致。本地粘贴则恢复原来的 activeTab。
+    if (!targetIsRemote) {
+      _activeTabIndex = oldIndex;
+    }
   }
 }
 

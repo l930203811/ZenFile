@@ -694,6 +694,27 @@ class FtpRemoteClient extends RemoteClient {
       try { controlSocket?.destroy(); } catch (_) {}
       _activeUploadDataSocket = null;
       _activeUploadControlSocket = null;
+
+      // 上传使用的独立控制/数据连接断开后，部分 FTP 服务器会重置或影响主
+      // listing 会话，导致后续 listDirectory 在旧 _ftpConnect 上挂起。
+      // 因此无论上传成功还是取消，都立即重建 _ftpConnect，保证后续刷新
+      // 和轮询能正常进行。
+      try {
+        await _ftpConnect?.disconnect();
+      } catch (_) {}
+      _ftpConnect = FTPConnect(
+        host,
+        port: port,
+        user: username.isEmpty ? 'anonymous' : username,
+        pass: password.isEmpty ? 'anonymous@' : password,
+        timeout: 15,
+      );
+      try {
+        await _ftpConnect!.connect().timeout(const Duration(seconds: 15));
+      } catch (e) {
+        debugPrint('FTP reconnect after upload failed: $e');
+        _ftpConnect = null;
+      }
     }
   }
 

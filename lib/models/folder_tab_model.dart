@@ -22,6 +22,10 @@ class FolderTab {
   RemoteClient? remoteClient;
   NetworkConnectionModel? remoteConnection;
 
+  // ── Per-tab navigation history ──
+  final List<String> pathHistory;
+  int historyIndex;
+
   FolderTab({
     required this.id,
     required this.currentPath,
@@ -39,6 +43,9 @@ class FolderTab {
     this.isRemote = false,
     this.remoteClient,
     this.remoteConnection,
-  }) : selectedPaths = selectedPaths ?? {},
-       scrollPositions = scrollPositions ?? {};
+    List<String>? pathHistory,
+    this.historyIndex = -1,
+  })  : selectedPaths = selectedPaths ?? {},
+        scrollPositions = scrollPositions ?? {},
+        pathHistory = pathHistory ?? [];
 }
