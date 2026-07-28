@@ -671,6 +671,12 @@ class FtpRemoteClient extends RemoteClient {
       dataSocket = null;
       _activeUploadDataSocket = null;
 
+      // 取消可能发生在数据刚写完、尚未读到 226 的窗口期；此时直接视为取消，
+      // 避免等待服务端 226 响应（最多 10s）导致进度弹窗卡住。
+      if (isCancelled) {
+        throw Exception('Cancelled');
+      }
+
       // Read final 226 response
       responseCompleter = Completer<String>();
       try {
@@ -721,23 +727,104 @@ class FtpRemoteClient extends RemoteClient {
   /// 取消上传时清理服务端残留：删除已上传的半截目标文件，以及 STOR 期间
   /// 服务端（如飞牛 NAS）生成的 file-<随机数字> 临时文件。
   ///
-  /// 使用独立的 listing 会话（[_ftpConnect]）执行删除，与进行中的上传数据
-  /// 连接互不干扰，确保取消后目录里不留下残缺文件。整体有超时保护：FTP
-  /// 服务器在取消瞬间可能卡住 delete，若等待过久会拖住 [uploadFile] 返回、
-  /// 导致进度弹窗卡住，故 6s 后放弃清理（残留文件由 provider 的延迟刷新或
-  /// 用户重新进入目录时再处理）。
+  /// 取消瞬间服务端可能仍处于 STOR 中断的异常状态，复用主 listing 会话（
+  /// [_ftpConnect]）删除容易卡住或失败，因此这里使用**全新独立连接**执行
+  /// 删除，并以“列表验证”确认残留确实被清除；全程有超时保护，避免拖住
+  /// [uploadFile] 返回导致进度弹窗卡死。清理失败不会静默吞掉——会记录日志，
+  /// 最多重试 3 次，确保残留文件（目标 + 临时）被尽可能删除。
   Future<void> _abortAndCleanupUpload(String remoteDir, String remoteFileName) async {
-    if (_ftpConnect == null) return;
-    try {
-      await (() async {
+    const maxAttempts = 3;
+    for (int attempt = 0; attempt < maxAttempts; attempt++) {
+      FTPConnect? cleanupConn;
+      try {
+        await (() async {
+          cleanupConn = FTPConnect(
+            host,
+            port: port,
+            user: username.isEmpty ? 'anonymous' : username,
+            pass: password.isEmpty ? 'anonymous@' : password,
+            timeout: 15,
+          );
+          final ok = await cleanupConn!.connect().timeout(const Duration(seconds: 15));
+          if (!ok) throw Exception('cleanup connect failed');
+
+          // 删除目标文件（若服务端已写入半截目标文件）。
+          try {
+            if (remoteDir.isNotEmpty && remoteDir != '/') {
+              await cleanupConn!.changeDirectory(remoteDir).timeout(const Duration(seconds: 15));
+            } else {
+              await cleanupConn!.changeDirectory('/').timeout(const Duration(seconds: 15));
+            }
+            await cleanupConn!.deleteFile(remoteFileName).timeout(const Duration(seconds: 15));
+          } catch (e) {
+            debugPrint('FTP cleanup delete target failed (may not exist): $e');
+          }
+
+          // 删除所有 file-<随机> 临时文件。
+          try {
+            final items = await _listWith(cleanupConn!, remoteDir);
+            final cutoff = DateTime.now().subtract(const Duration(seconds: 300));
+            for (final item in items) {
+              if (item.isDirectory) continue;
+              if (item.name == remoteFileName) continue;
+              if (RegExp(r'^file-\d+(\.|$)').hasMatch(item.name) &&
+                  item.modified.isAfter(cutoff)) {
+                try {
+                  await cleanupConn!.deleteFile(item.name).timeout(const Duration(seconds: 15));
+                } catch (e) {
+                  debugPrint('FTP cleanup delete temp failed: $e');
+                }
+              }
+            }
+          } catch (e) {
+            debugPrint('FTP cleanup list temp failed: $e');
+          }
+        })().timeout(const Duration(seconds: 10));
+
+        // 验证：列一遍目录，确认目标与临时文件都已消失，才认为清理成功。
         try {
-          await delete(p.join(remoteDir, remoteFileName), false);
+          final remaining = await _listWith(cleanupConn!, remoteDir);
+          final stillThere = remaining.any((it) =>
+              !it.isDirectory &&
+              (it.name == remoteFileName || RegExp(r'^file-\d+(\.|$)').hasMatch(it.name)));
+          if (!stillThere) return; // 清理成功，无需重试
         } catch (_) {}
-        try {
-          await _cleanupStrayTemp(remoteDir, remoteFileName);
-        } catch (_) {}
-      })().timeout(const Duration(seconds: 6));
-    } catch (_) {}
+      } catch (e) {
+        debugPrint('FTP _abortAndCleanupUpload attempt $attempt failed: $e');
+      } finally {
+        try { await cleanupConn?.disconnect(); } catch (_) {}
+      }
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+  }
+
+  /// 使用给定的 [conn]（而非 [this._ftpConnect]）列出 [path] 内容，便于在取消
+  /// 清理等场景下用独立连接操作，避免复用可能处于异常状态的会话。
+  Future<List<RemoteFileItem>> _listWith(FTPConnect conn, String path) async {
+    final targetPath = (path.isEmpty || path == '/') ? '/' : path;
+    if (targetPath != '/') {
+      final ok = await conn.changeDirectory(targetPath).timeout(const Duration(seconds: 30));
+      if (!ok) throw Exception('Cannot open directory: $targetPath');
+    } else {
+      try {
+        await conn.changeDirectory('/').timeout(const Duration(seconds: 30));
+      } catch (_) {}
+    }
+    final entries = await conn.listDirectoryContent().timeout(const Duration(seconds: 30));
+    final list = <RemoteFileItem>[];
+    for (final entry in entries) {
+      if (entry.name == '.' || entry.name == '..') continue;
+      if (entry.type == FTPEntryType.unknown) continue;
+      final fullPath = path == '/' ? '/${entry.name}' : '$path/${entry.name}';
+      list.add(RemoteFileItem(
+        name: entry.name,
+        path: fullPath,
+        isDirectory: entry.type == FTPEntryType.dir,
+        size: entry.size ?? 0,
+        modified: entry.modifyTime ?? DateTime.now(),
+      ));
+    }
+    return list;
   }
 
   /// 取消上传时清理服务端残留的 file-<随机数字>（无后缀）临时文件。
@@ -762,20 +849,23 @@ class FtpRemoteClient extends RemoteClient {
   }
 
   /// 上传完成后最终化：部分 FTP/NAS 在 STOR 期间把真实数据写入 file-<随机>
-  /// 临时文件，关闭数据连接后才重命名为目标文件。本方法在“目标缺失”且临时
-  /// 文件已完整时，主动把临时文件重命名为目标文件。
+  /// 临时文件，关闭数据连接后才重命名为目标文件。
   ///
-  /// **重要（数据完整性）**：本方法绝不删除临时文件。上传结束后服务端仍在
-  /// 把内存中的数据刷盘/重命名，此时 LIST 看到的临时文件可能“不完整”，若
-  /// 贸然删除会直接销毁刚上传的文件（表现为“目录为空、刷新/重启后文件仍
-  /// 丢失”）。因此不完整时只返回 false，交由后续轮询再检查；完整时才重命名。
+  /// **判定能否返回“已最终化”的唯一可靠标准**：目录里 **目标文件存在** 且
+  /// **没有任何 file-<随机> 临时文件** 残留，且目标大小达标。只要还有临时文件
+  /// 残留，就视为服务端仍在最终化（重命名），返回 false 等待下次轮询。
   ///
-  /// 返回值：目标文件是否已存在（含本次重命名成功）。
+  /// **重要（数据完整性）**：本方法在“临时文件完整、目标缺失”时才会主动把
+  /// 临时文件重命名为目标文件；**绝不删除**临时文件——上传结束后服务端仍在把
+  /// 内存数据刷盘/重命名，此时 LIST 看到的临时文件可能“不完整”，贸然删除会
+  /// 直接销毁刚上传的文件（表现为“目录为空、刷新/重启后文件仍丢失”）。
+  ///
+  /// 返回值：目标文件是否已最终化（存在、无临时文件、大小达标）。
   Future<bool> finalizeUpload(String remoteDir, String targetName, int expectedSize) async {
     if (_ftpConnect == null) return false;
     try {
       return await (() async {
-        final items = await listDirectory(remoteDir, forceRefresh: true);
+        final items = await listDirectoryContentSafe(remoteDir);
         RemoteFileItem? tempItem;
         RemoteFileItem? targetItem;
         for (final item in items) {
@@ -790,46 +880,72 @@ class FtpRemoteClient extends RemoteClient {
           }
         }
 
-        // 目标文件已存在且大小足够 → 服务端已完成最终化，无需处理
-        if (targetItem != null &&
-            (expectedSize <= 0 || targetItem.size >= (expectedSize * 0.95).round())) {
-          return true;
-        }
-        // 没有临时文件 → 服务端未使用临时文件（已直接落盘）或已最终化；
-        // 此时目标是否存在即最终结果。
-        if (tempItem == null) return targetItem != null;
-
-        // 临时文件尚不完整 → 绝不删除（服务端正在写入），等待下次轮询再处理。
-        if (expectedSize > 0 && tempItem.size < (expectedSize * 0.95).round()) {
+        // 有临时间文件残留：根据完整性决定主动最终化还是继续等待。
+        if (tempItem != null) {
+          // 临时文件已完整（大小达标或未知期望大小）→ 主动重命名为目标文件。
+          // rename 是“移动而非删除”，绝不破坏数据；若服务端也在重命名导致
+          // 竞态失败，下次轮询会重试。这能处理“目标已存在时服务端不自动
+          // 重命名”（如飞牛 NAS 覆盖场景）的情况。
+          if (expectedSize <= 0 || tempItem.size >= (expectedSize * 0.95).round()) {
+            try {
+              if (remoteDir.isNotEmpty && remoteDir != '/') {
+                await _ftpConnect!
+                    .changeDirectory(remoteDir)
+                    .timeout(const Duration(seconds: 15));
+              } else {
+                await _ftpConnect!
+                    .changeDirectory('/')
+                    .timeout(const Duration(seconds: 15));
+              }
+              await rename(tempItem.name, targetName);
+              return true;
+            } catch (e) {
+              debugPrint('FTP finalizeUpload rename failed: $e');
+              return false;
+            }
+          }
+          // 临时文件不完整 → 服务端仍在刷盘，等待，绝不删除。
           return false;
         }
 
-        // 临时文件完整、目标缺失 → 主动重命名为目标文件（使用相对 CWD 的基名）。
-        // listDirectory 已把会话 CWD 切到 remoteDir，故此处用基名即可；为稳妥
-        // 先显式 CWD 一次，避免 CWD 漂移导致 RNFR/RNTO 路径错误。
+        // 没有任何临时文件：
         if (targetItem == null) {
-          try {
-            if (remoteDir.isNotEmpty && remoteDir != '/') {
-              await _ftpConnect!
-                  .changeDirectory(remoteDir)
-                  .timeout(const Duration(seconds: 15));
-            } else {
-              await _ftpConnect!
-                  .changeDirectory('/')
-                  .timeout(const Duration(seconds: 15));
-            }
-            await rename(tempItem.name, targetName);
-            return true;
-          } catch (e) {
-            debugPrint('FTP finalizeUpload rename failed: $e');
-            return false;
-          }
+          // 目标也不存在 → 尚未落盘，继续等待。
+          return false;
         }
-        return false;
+        // 目标存在且无临时文件 → 校验大小（若已知期望大小）。
+        if (expectedSize > 0 && targetItem.size < (expectedSize * 0.95).round()) {
+          // 大小不足：可能是旧文件或上传不完整，继续等待。
+          return false;
+        }
+        return true;
       })().timeout(const Duration(seconds: 10));
     } catch (e) {
       debugPrint('FTP finalizeUpload error: $e');
       return false;
+    }
+  }
+
+  /// 列出目录内容（带重连保护），供 finalizeUpload / _cleanupStrayTemp 复用，
+  /// 避免在异常会话上 LIST 卡死。
+  Future<List<RemoteFileItem>> listDirectoryContentSafe(String targetPath) async {
+    try {
+      return await listDirectory(targetPath, forceRefresh: true);
+    } catch (e) {
+      // 列表失败：重连一次后重试。
+      try {
+        await _ftpConnect?.disconnect();
+      } catch (_) {}
+      _ftpConnect = FTPConnect(
+        host,
+        port: port,
+        user: username.isEmpty ? 'anonymous' : username,
+        pass: password.isEmpty ? 'anonymous@' : password,
+        timeout: 15,
+      );
+      final reconnected = await _ftpConnect!.connect();
+      if (!reconnected) throw Exception('FTP reconnection failed: $e');
+      return await listDirectory(targetPath, forceRefresh: true);
     }
   }
 

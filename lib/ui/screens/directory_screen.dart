@@ -638,7 +638,10 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     }
     final prevPath = p.posix.dirname(provider.currentPath);
     final handled = await provider.goBack();
-    if (handled && _scrollController.hasClients) {
+    if (!handled) {
+      // 已无更上层可返回（本地根目录）：切到分类页。
+      widget.onNavigateTab?.call(0);
+    } else if (_scrollController.hasClients) {
       final savedOffset = provider.getSavedScrollOffset(prevPath);
       _scrollController.jumpTo(savedOffset);
     }

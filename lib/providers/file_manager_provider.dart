@@ -1613,14 +1613,48 @@ class FileManagerProvider extends ChangeNotifier {
   // 路径历史栈已迁移到 FolderTab，双窗口模式下每个 pane 拥有独立的历史，
   // 避免左/右窗口路径混在一起导致“在远程窗口按返回跳到本地路径”的问题。
 
+  /// 是否可“返回上一级目录”。基于当前 tab 的路径判断（而非历史栈）：
+  /// - 远程 tab：任意层级（含根）都可返回——子目录回上一级，根目录回本地。
+  /// - 本地 tab：只要不在本地存储根目录即可返回上一级。
   bool get canGoBack {
     final tab = activeTab;
-    return tab.pathHistory.length >= 2 && tab.historyIndex > 0;
+    if (tab.isRemote) return true;
+    return tab.currentPath.isNotEmpty && tab.currentPath != _rootPath;
   }
 
   bool get canGoForward {
     final tab = activeTab;
     return tab.historyIndex >= 0 && tab.historyIndex < tab.pathHistory.length - 1;
+  }
+
+  /// 返回 [path] 的父目录（不改变原对象）。'/' 与空串保持自身；本地路径不会
+  /// 越过存储根目录。
+  String _parentOf(String path) {
+    if (path.isEmpty || path == '/') return path;
+    final parent = p.dirname(path);
+    final resolved = parent.isEmpty ? '/' : parent;
+    // 本地路径越过根目录（如 /storage/emulated/0 → /storage/emulated）时回到自身
+    if (!activeTab.isRemote && resolved.length < _rootPath.length) return path;
+    return resolved;
+  }
+
+  /// 返回当前 tab 的“根路径”：远程取连接自身的 rootPath（如 SMB/WebDAV 共享
+  /// 根可能非 '/'），兜底为 '/'；本地为存储根目录。
+  String get _activeTabRoot {
+    final tab = activeTab;
+    if (!tab.isRemote) return _rootPath;
+    final rp = tab.remoteConnection?.rootPath;
+    return (rp != null && rp.isNotEmpty) ? rp : '/';
+  }
+
+  /// 高亮刚刚离开的目录，2 秒后自动取消高亮（返回/导航时的视觉反馈）。
+  void _highlightExited(String exited) {
+    if (exited.isEmpty) return;
+    _highlightedPaths.add(exited);
+    notifyListeners();
+    Timer(const Duration(milliseconds: 2000), () {
+      if (_highlightedPaths.remove(exited)) notifyListeners();
+    });
   }
 
   void _pushPathToHistory(String path) {
@@ -1636,28 +1670,43 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
+  /// 返回上一级目录（基于路径，而非历史栈）。
+  ///
+  /// 返回语义（与用户预期一致）：
+  /// - 远程子目录 → 返回远程父目录；
+  /// - 远程根目录 → 切换到本地浏览 tab（远程根→本地根）；
+  /// - 本地子目录 → 返回本地父目录；
+  /// - 本地根目录 → 返回 false（交由上层切到分类页）。
+  ///
+  /// 返回值：true 表示已执行一次导航；false 表示已无更上层可返回。
   Future<bool> goBack() async {
     final tab = activeTab;
-    // 远程根目录：返回本地浏览根目录（激活一个本地 tab），
-    // 而不是弹出路由跳到分类页。
-    if (tab.isRemote && !canGoBack) {
-      return _switchToLocalTabOrRoot();
-    }
-    if (!canGoBack) return false;
-    final exitedPath = tab.currentPath;
-    // 回退历史索引
-    tab.historyIndex--;
-    final targetPath = tab.pathHistory[tab.historyIndex];
-    await loadDirectory(targetPath, showLoading: false, recordHistory: false);
-    _highlightedPaths.clear();
-    _highlightedPaths.add(exitedPath);
-    notifyListeners();
-    Timer(const Duration(milliseconds: 2000), () {
-      if (_highlightedPaths.remove(exitedPath)) {
-        notifyListeners();
+    if (tab.isRemote) {
+      // 远程根目录：切换到本地浏览 tab，而非弹出路由跳到分类页。
+      if (tab.currentPath == _activeTabRoot) {
+        return _switchToLocalTabOrRoot();
       }
-    });
-    return true;
+      final parent = _parentOf(tab.currentPath);
+      if (parent != tab.currentPath) {
+        final exited = tab.currentPath;
+        await loadDirectory(parent, showLoading: false, recordHistory: false);
+        _highlightExited(exited);
+        return true;
+      }
+      // 已是最顶层（如 '/'），回退到本地浏览。
+      return _switchToLocalTabOrRoot();
+    } else {
+      // 本地根目录：无更上层，返回 false 交由上层切分类页。
+      if (tab.currentPath.isEmpty || tab.currentPath == _rootPath) {
+        return false;
+      }
+      final parent = _parentOf(tab.currentPath);
+      if (parent == tab.currentPath) return false;
+      final exited = tab.currentPath;
+      await loadDirectory(parent, showLoading: false, recordHistory: false);
+      _highlightExited(exited);
+      return true;
+    }
   }
 
   /// 在远程根目录按返回时，切换到本地浏览 tab（定位到其当前目录），实现
@@ -2363,7 +2412,9 @@ class FileManagerProvider extends ChangeNotifier {
   /// 非 FTP 客户端无需此等待（其上传为原子操作），直接返回。
   Future<void> _awaitUploadFinalized(RemoteClient client, String dir, String name, int expectedSize) async {
     if (client is! FtpRemoteClient) return;
-    const maxAttempts = 30;
+    // 最多等待约 45s（90 × 500ms），覆盖飞牛等 NAS 在 STOR 结束后较慢的
+    // 重命名/刷盘过程。期间进度弹窗保持显示，避免“进度 100% 但目录仍为空”。
+    const maxAttempts = 90;
     for (int i = 0; i < maxAttempts; i++) {
       await Future.delayed(const Duration(milliseconds: 500));
       bool ok = false;
@@ -2411,7 +2462,7 @@ class FileManagerProvider extends ChangeNotifier {
         final tab = _tabs[idx];
         try {
           // 主动最终化：若目录里仍有服务端临时文件，尝试让客户端执行
-          // finalizeUpload（删除旧目标文件并重命名临时文件）。这对飞牛等
+          // finalizeUpload（在临时文件完整时主动重命名为目标文件）。这对飞牛等
           // NAS 特别有效——它们在目标文件已存在时可能不会自动完成重命名。
           final client = tab.remoteClient;
           if (client is FtpRemoteClient && expectedSize > 0 && targetName.isNotEmpty) {

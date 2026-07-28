@@ -181,10 +181,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
           return;
         }
         if (_currentIndex == 1) {
-          if (!provider.canGoBack) {
-            _switchTab(0);
-            context.read<MediaProvider>().refreshMediaBackground();
-          }
+          // 浏览页的返回（返回上一级 / 远程根→本地根 / 本地根→分类页）由内部
+          // directory_screen 的 PopScope 与 provider.goBack 统一处理。home 层
+          // 在此不再切换标签页或弹出路由，避免双 PopScope 叠加导致返回键跳到
+          // 分类页。抽屉/编辑态/选中态已在上方单独处理。
+          return;
         } else {
           _handleBackPress(context);
         }
