@@ -22,11 +22,15 @@ import 'remote/remote_client.dart';
 ///
 /// On-demand seek: when a Range request targets a position beyond the bytes
 /// already on disk, the proxy uses a dedicated [seekClient] to fetch just that
-/// byte range from the server (random read) and splices it into the partial
-/// file. This makes dragging the progress bar near-instant instead of waiting
-/// for the sequential download to catch up. [seekClient] is a separate
-/// connection from the background downloader so the two never contend on the
-/// same (non-thread-safe) server session.
+/// byte range from the server (random read). The fetched bytes are merged into
+/// a per-session seek cache file (`.seekcache`) at the correct offset, so the
+/// same (or overlapping) region is served from local disk on the next request
+/// instead of being re-fetched from the remote server. This is what makes
+/// dragging the progress bar smooth: without the cache, every 8 MB step of
+/// forward playback after a seek would trigger another remote random read
+/// (and, for FTP, another full login handshake), which shows up as stutter.
+/// [seekClient] is a separate connection from the background downloader so the
+/// two never contend on the same (non-thread-safe) server session.
 class _Mutex {
   Future<void>? _chain;
 
@@ -84,6 +88,37 @@ Future<void> _fetchRangeToFile(
       debugPrint('RemoteStreamingService: on-demand range fetch failed: $e');
     }
   });
+}
+
+/// Merge the on-demand range bytes in [tempPath] into the session's seek cache
+/// file [session.seekCachePath] at the real byte offset [start]. Returns the
+/// number of bytes merged (so the caller can remember the cached range).
+///
+/// Keeping fetched ranges in a persistent per-session cache (instead of a
+/// throwaway temp file) is what makes seeking smooth: the next request for the
+/// same region — and libmpv routinely re-requests overlapping ranges right
+/// after a drag — is served from local disk, not from another remote read.
+///
+/// The cache file is written in [FileMode.append] so existing bytes are
+/// preserved (no truncation) and the write lands at the exact offset.
+Future<int> _spliceIntoSeekCache(
+  _StreamSession session,
+  String tempPath,
+  int start,
+) async {
+  final temp = File(tempPath);
+  if (!await temp.exists()) return 0;
+  final length = await temp.length();
+  if (length <= 0) return 0;
+  final raf = await File(session.seekCachePath).open(mode: FileMode.append);
+  try {
+    await raf.setPosition(start);
+    // temp holds at most seekChunk (32MB); a single read is acceptable here.
+    await raf.writeFrom(await temp.readAsBytes());
+    return length;
+  } finally {
+    await raf.close();
+  }
 }
 
 class RemoteStreamingService {
@@ -247,9 +282,16 @@ class RemoteStreamingService {
     final clampedEnd = end.clamp(0, fileSize - 1);
 
     // 是否需要按需随机读取（拖动进度条跳转到尚未顺序下载的位置）：
-    // 用独立的 seek 连接抓取该区间到临时文件并直接输出，不写回 partial，
-    // 避免与后台顺序下载在同一文件产生稀疏空洞（空洞读到的是 0）。
-    final needSeek = start > 0 &&
+    // 用独立的 seek 连接抓取该区间，并合并进会话级 seek 缓存文件
+    // （.seekcache，按真实偏移写入）。之后对该区间（及重叠区间）的请求
+    // 直接从本地缓存读取，避免重复远程读取 —— 这正是之前拖动后卡顿的根因：
+    // 旧实现把读取结果写进一次性临时文件、服务完即删除，导致后续每个 8MB
+    // 步进都要再发起一次远程随机读（FTP 还要重新登录握手），表现为持续卡顿。
+    final inCache = session._mergedStart >= 0 &&
+        start >= session._mergedStart &&
+        clampedEnd < session._mergedEnd;
+    final needSeek = !inCache &&
+        start > 0 &&
         session.seekClient != null &&
         start >= session.downloadedBytes &&
         start < fileSize;
@@ -260,14 +302,26 @@ class RemoteStreamingService {
     int rangeEnd;
 
     if (needSeek) {
-      const seekChunk = 8 * 1024 * 1024; // 单次按需读取上限
-      final fetchLen = (clampedEnd - start + 1).clamp(1, seekChunk);
+      const seekChunk = 32 * 1024 * 1024; // 单次预取上限：更大区间减少拖动后的远程往返
+      final fetchLen = (fileSize - start).clamp(1, seekChunk);
       final tempSeek = '${session.localPath}.seek.tmp';
       await _fetchRangeToFile(session, start, fetchLen, tempSeek);
-      readFilePath = tempSeek;
-      readFileStart = 0;
+      // 将远程读取结果合并进本地 seek 缓存（按偏移写入 .seekcache），之后复用
+      final cachedLen = await _spliceIntoSeekCache(session, tempSeek, start);
+      session._mergedStart = start;
+      session._mergedEnd = start + cachedLen;
+      try {
+        await File(tempSeek).delete();
+      } catch (_) {}
+      readFilePath = session.seekCachePath;
+      readFileStart = start;
       rangeStart = start;
-      rangeEnd = start + fetchLen - 1;
+      rangeEnd = start + cachedLen - 1;
+    } else if (inCache) {
+      readFilePath = session.seekCachePath;
+      readFileStart = start;
+      rangeStart = start;
+      rangeEnd = clampedEnd;
     } else {
       readFilePath = session.partialPath;
       readFileStart = start;
@@ -296,14 +350,8 @@ class RemoteStreamingService {
     }
 
     // Stream bytes as they arrive (from partial for normal playback, from the
-    // seek temp file for on-demand seeks).
+    // seek cache file for on-demand seeks — fully on local disk, served fast).
     await _streamFrom(session, response, readFilePath, readFileStart, rangeEnd + 1, !needSeek);
-
-    if (needSeek) {
-      try {
-        await File(readFilePath).delete();
-      } catch (_) {}
-    }
   }
 
   /// Serve with unknown file size: chunked transfer, no seek.
@@ -401,10 +449,10 @@ class RemoteStreamingService {
       while (readOffset < target) {
         if (session.disposed || session.downloadFailed) break;
 
-        // 已可读取的字节数：partial 取自后台下载进度；临时 seek 文件取其实际长度
+        // 已可读取的字节数：partial 取自后台下载进度；seek 缓存文件取其实际长度
         final downloaded = isPartial
             ? session.downloadedBytes
-            : (await readFile.lengthSync());
+            : readFile.lengthSync();
         if (downloaded <= readOffset) {
           if (isPartial && session.downloadComplete) {
             if (readOffset == fileStart) {
@@ -533,6 +581,18 @@ class _StreamSession {
   }
 
   String get partialPath => '$localPath.partial';
+
+  /// Per-session seek cache file. On-demand random reads (from dragging the
+  /// progress bar) are written here at their real byte offset, so subsequent
+  /// requests for the same/overlapping region are served from local disk
+  /// instead of triggering another remote read. Kept separate from the
+  /// background `.partial` file to avoid sparse-file gaps and writer races.
+  String get seekCachePath => '$localPath.seekcache';
+
+  /// [start, end) of the byte range currently held in [seekCachePath].
+  /// -1 means no region is cached yet. Used to short-circuit repeat seeks.
+  int _mergedStart = -1;
+  int _mergedEnd = -1;
 
   bool get downloadComplete => _downloadComplete;
   bool get downloadFailed => _downloadFailed;
@@ -742,6 +802,8 @@ class _StreamSession {
         if (await f.exists()) await f.delete();
         final p = File('$_localPath.partial');
         if (await p.exists()) await p.delete();
+        final s = File('$_localPath.seekcache');
+        if (await s.exists()) await s.delete();
       }
     } catch (_) {}
   }
