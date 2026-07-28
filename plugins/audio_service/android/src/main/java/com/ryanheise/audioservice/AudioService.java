@@ -682,6 +682,9 @@ public class AudioService extends MediaBrowserServiceCompat {
         // setShowActionsInCompactView 才能在通知栏直接显示控制按钮。统一对所有版本设置，
         // 保证 Android 12- 与 13+ 的按钮显示行为一致。
         style.setShowActionsInCompactView(compactActionIndices);
+        // Android 12+ 媒体卡片/锁屏控件要求通知可见性为 PUBLIC，否则系统媒体卡片
+        // 不会显示（仅本地播放、无敏感信息，使用 PUBLIC 安全）。
+        builder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
         if (config.androidNotificationOngoing) {
             style.setShowCancelButton(true);
             style.setCancelButtonIntent(buildMediaButtonPendingIntent(PlaybackStateCompat.ACTION_STOP));

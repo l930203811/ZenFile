@@ -88,4 +88,9 @@ dependencies {
     }
     implementation("com.google.guava:guava:33.5.0-android")
     implementation("com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava")
+    // AndroidX Media3 —— 用于安卓 13+ 媒体通知控制面板（参照 Echo-Music 实现）。
+    // MediaSessionService + MediaSession + DefaultMediaNotificationProvider 自动生成 MediaStyle 通知，
+    // 比旧的 MediaSessionCompat(legacy) 在 Android 13+ 上更稳健。
+    implementation("androidx.media3:media3-session:1.7.1")
+    implementation("androidx.media3:media3-common:1.7.1")
 }

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 媒体播放通知渠道名称（Media3 DefaultMediaNotificationProvider 需要） -->
+    <string name="zenfile_audio_channel">ZenFile Audio Player</string>
+</resources>

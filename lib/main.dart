@@ -22,7 +22,7 @@ import 'services/intent_handler_service.dart';
 import 'services/pin_service.dart';
 import 'services/recycle_bin_service.dart';
 import 'services/audio_background_handler.dart';
-import 'package:audio_service/audio_service.dart';
+import 'services/media3_bridge.dart';
 import 'ui/screens/home_screen.dart';
 
 final GlobalKey<_ZenFileAppState> appStateKey = GlobalKey<_ZenFileAppState>();
@@ -89,26 +89,16 @@ void main() {
       debugPrint('Error loading custom font at startup: $e');
     }
 
-    // Initialize audio_service for background media notification
-    // Wrapped in try-catch — app must still launch even if this fails
+    // 初始化 Media3 媒体会话桥接（安卓13+ 通知栏控制面板，参照 Echo-Music 的 Media3 实现）。
+    // 取代旧 audio_service 的 MediaSessionCompat(legacy) 方案，在 13+ 上更稳健。
+    // Wrapped in try-catch — app must still launch even if this fails.
     try {
-      await AudioService.init(
-        builder: () => getAudioHandler(),
-        config: const AudioServiceConfig(
-          androidNotificationChannelId: 'com.sequl.zenfile.audio.v2',
-          androidNotificationChannelName: 'ZenFile Audio Player',
-          androidNotificationIcon: 'mipmap/ic_launcher',
-          androidShowNotificationBadge: true,
-          androidStopForegroundOnPause: false,
-          notificationColor: Color(0xFF6200EE),
-        ),
-      );
+      await Media3Bridge.instance.ensureStarted();
       isAudioServiceInitialized = true;
     } catch (e) {
-      // audio_service init failed – background playback unavailable but app continues
-      // 标记未初始化，后续 _enableBackgroundMode 会在诊断中检测到并提示用户
+      // Media3 桥接失败 —— 后台播放通知不可用但应用继续运行
       isAudioServiceInitialized = false;
-      debugPrint('[ZenFile] AudioService.init failed: $e');
+      debugPrint('[ZenFile] Media3Bridge init failed: $e');
     }
 
     runApp(

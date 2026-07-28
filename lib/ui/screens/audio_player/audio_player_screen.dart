@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:audio_service/audio_service.dart';
+import '../../../services/media3_bridge.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart' as p;
@@ -1894,28 +1895,18 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     if (!mounted) return;
 
     try {
-      // 1. 优先检查 AudioService 是否初始化成功
+      // 1. 优先检查 Media3 桥接是否初始化成功
       //    这是最常见的"权限都开了但不显示"的根因
       if (!isAudioServiceInitialized) {
         // 尝试重新初始化一次
         bool reInitOk = false;
         try {
-          await AudioService.init(
-            builder: () => getAudioHandler(),
-            config: const AudioServiceConfig(
-              androidNotificationChannelId: 'com.sequl.zenfile.audio.v2',
-              androidNotificationChannelName: 'ZenFile Audio Player',
-              androidNotificationIcon: 'mipmap/ic_launcher',
-              androidShowNotificationBadge: true,
-              androidStopForegroundOnPause: false,
-              notificationColor: Color(0xFF6200EE),
-            ),
-          );
+          await Media3Bridge.instance.ensureStarted();
           isAudioServiceInitialized = true;
           reInitOk = true;
-          debugPrint('[ZenFile] AudioService re-init succeeded');
+          debugPrint('[ZenFile] Media3Bridge re-init succeeded');
         } catch (e) {
-          debugPrint('[ZenFile] AudioService re-init failed: $e');
+          debugPrint('[ZenFile] Media3Bridge re-init failed: $e');
         }
 
         if (!reInitOk) {
@@ -1928,7 +1919,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         }
 
         // 重新初始化成功后，重新 attach 播放器
-        // 因为之前的 attach 调用可能没有正确注册到 audio_service
+        // 因为之前的 attach 调用可能没有正确注册到 Media3 桥接
         if (mounted) {
           _startBackgroundMode();
         }

@@ -155,6 +155,8 @@ class MainActivity : AudioServiceFragmentActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        // 注入 Flutter 信使给 ZenMediaSessionService，使其能与 Dart 双向通信（媒体状态/指令）
+        ZenMediaSessionService.flutterMessenger = flutterEngine.dartExecutor.binaryMessenger
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "checkStatus" -> {
@@ -1180,6 +1182,16 @@ class MainActivity : AudioServiceFragmentActivity() {
             }
 
             when (call.method) {
+                "startMediaSession" -> {
+                    // 启动 Media3 媒体会话服务（安卓13+ 通知栏控制面板）
+                    try {
+                        val intent = Intent(this, ZenMediaSessionService::class.java)
+                        androidx.core.content.ContextCompat.startForegroundService(this, intent)
+                        result.success(true)
+                    } catch (e: Exception) {
+                        result.success(false)
+                    }
+                }
                 "showProgressNotification" -> {
                     val id = call.argument<Int>("id") ?: 100
                     val title = call.argument<String>("title") ?: "Processing..."
@@ -1243,7 +1255,11 @@ class MainActivity : AudioServiceFragmentActivity() {
                 "checkAudioChannelStatus" -> {
                     // 检查 audio_service 的通知渠道是否被禁用
                     // 返回 Map: {"enabled": bool, "importance": int, "exists": bool}
-                    val audioChannelId = "com.sequl.zenfile.audio"
+                    // 注意：必须使用 audio_service 实际创建的渠道 id（与 main.dart
+                    // AudioServiceConfig.androidNotificationChannelId 以及 fork 内
+                    // createChannel 创建的渠道保持一致），旧 id "com.sequl.zenfile.audio"
+                    // 已被 fork 主动删除，检查它会恒定返回 exists=false 并误报"通知被屏蔽"。
+                    val audioChannelId = "com.sequl.zenfile.audio.v2"
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         val channel = notificationManager.getNotificationChannel(audioChannelId)
                         if (channel == null) {

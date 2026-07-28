@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:audio_service/audio_service.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/foundation.dart';
 import '../ui/screens/audio_player/audio_artwork_widget.dart';
+import 'media3_bridge.dart';
 import 'preferences_service.dart';
 
 /// Global singleton handler instance
@@ -134,6 +136,89 @@ class ZenFileAudioHandler extends BaseAudioHandler
         PreferencesService.savePlaybackPosition(path, pos.inMilliseconds);
       }
     });
+
+    // ── Media3（安卓13+ 通知栏控制面板）桥接 ──
+    _startMedia3();
+  }
+
+  /// 启动 Media3 媒体会话桥接：把 media_kit 状态实时同步到原生 MediaSession，
+  /// 并把通知栏/锁屏/耳机指令回传驱动 media_kit。
+  void _startMedia3() {
+    Media3Bridge.instance.setCommandHandler((action, positionMs) {
+      switch (action) {
+        case 'play':
+          play();
+          break;
+        case 'pause':
+          pause();
+          break;
+        case 'seek':
+          if (positionMs != null) seek(Duration(milliseconds: positionMs));
+          break;
+        case 'next':
+          skipToNext();
+          break;
+        case 'previous':
+          skipToPrevious();
+          break;
+        case 'stop':
+          stop();
+          break;
+      }
+    });
+
+    // 监听媒体项与播放状态变化，自动同步到原生 MediaSession
+    _subs.add(mediaItem.listen((item) {
+      if (item != null) _pushMetadata(item);
+    }));
+    _subs.add(playbackState.listen((state) {
+      _pushState(state);
+    }));
+
+    // 拉起原生 Media3 服务并推送当前队列/元数据/状态
+    unawaited(Media3Bridge.instance.startService());
+    final q = queue.value;
+    final idx = q.isEmpty ? 0 : (q.indexOf(mediaItem.value ?? q.first)).clamp(0, q.length - 1);
+    Media3Bridge.instance.updateQueue(
+      q.map((m) => <String, dynamic>{
+        'id': m.id,
+        'title': m.title,
+        'artist': m.artist,
+      }).toList(),
+      idx,
+    );
+    if (mediaItem.value != null) _pushMetadata(mediaItem.value!);
+    _pushState(playbackState.value);
+  }
+
+  /// 把当前 MediaItem 的元数据（标题/艺人/时长/封面）推送到原生 MediaSession。
+  void _pushMetadata(MediaItem item) {
+    final durationMs = item.duration?.inMilliseconds ?? 0;
+    // 封面：getArtworkUri 返回本地临时文件 Uri，读取为字节推给原生（原生直接 setArtworkData）
+    unawaited(() async {
+      Uint8List? bytes;
+      if (item.artUri != null) {
+        try {
+          final f = File.fromUri(item.artUri!);
+          if (await f.exists()) bytes = await f.readAsBytes();
+        } catch (_) {}
+      }
+      Media3Bridge.instance.updateMetadata(
+        title: item.title,
+        artist: item.artist,
+        durationMs: durationMs,
+        artworkBytes: bytes,
+      );
+    }());
+  }
+
+  /// 把当前 PlaybackState（播放/暂停、进度、缓冲）推送到原生 MediaSession。
+  void _pushState(PlaybackState state) {
+    Media3Bridge.instance.updatePlaybackState(
+      playing: state.playing,
+      positionMs: state.position.inMilliseconds,
+      bufferedMs: state.bufferedPosition.inMilliseconds,
+    );
   }
 
   void detach() {
@@ -162,6 +247,7 @@ class ZenFileAudioHandler extends BaseAudioHandler
   Future<void> stop() async {
     _positionSaveTimer?.cancel();
     _positionSaveTimer = null;
+    Media3Bridge.instance.stopService();
     playbackState.add(PlaybackState(
       controls: [],
       playing: false,
@@ -189,6 +275,7 @@ class ZenFileAudioHandler extends BaseAudioHandler
       playing: false,
       processingState: AudioProcessingState.idle,
     ));
+    Media3Bridge.instance.stopService();
     detach();
   }
 
