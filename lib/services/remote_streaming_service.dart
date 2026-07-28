@@ -75,8 +75,9 @@ Future<void> _fetchRangeToFile(
 
   final sc = seekClient; // 非 null 绑定，供闭包内使用（避免闭包内可空收窄失效）
   await session._seekLock.run(() async {
-    // 重新检查：后台顺序下载可能在此期间已覆盖该区间
+    // 重新检查：后台顺序下载或本会话 seek 缓存可能已覆盖该区间，避免重复远程读取
     if (start < session.downloadedBytes) return;
+    if (start >= session._mergedStart && start < session._mergedEnd) return;
 
     try {
       await sc.downloadRange(session.remotePath, tempSeekPath, start, length);
@@ -281,52 +282,74 @@ class RemoteStreamingService {
 
     final clampedEnd = end.clamp(0, fileSize - 1);
 
-    // 是否需要按需随机读取（拖动进度条跳转到尚未顺序下载的位置）：
-    // 用独立的 seek 连接抓取该区间，并合并进会话级 seek 缓存文件
-    // （.seekcache，按真实偏移写入）。之后对该区间（及重叠区间）的请求
-    // 直接从本地缓存读取，避免重复远程读取 —— 这正是之前拖动后卡顿的根因：
-    // 旧实现把读取结果写进一次性临时文件、服务完即删除，导致后续每个 8MB
-    // 步进都要再发起一次远程随机读（FTP 还要重新登录握手），表现为持续卡顿。
-    final inCache = session._mergedStart >= 0 &&
-        start >= session._mergedStart &&
-        clampedEnd < session._mergedEnd;
-    final needSeek = !inCache &&
-        start > 0 &&
-        session.seekClient != null &&
-        start >= session.downloadedBytes &&
-        start < fileSize;
+    // 本地可用字节（后台顺序下载已落盘的部分）；下载完成后等于 fileSize。
+    final partialAvail = session.downloadedBytes;
 
+    // 会话级 seek 缓存覆盖的连续区间 [_mergedStart, _mergedEnd)。
+    final seekStart = session._mergedStart;
+    final seekEnd = session._mergedEnd;
+    final seekCoversStart = seekEnd > 0 && start >= seekStart && start < seekEnd;
+
+    // 选择数据源（核心修复：拖动后卡顿的根因）
+    // ------------------------------------------------------------------
+    // 旧实现：inCache 分支仍用 isPartial=true 读取 seekcache，导致
+    // `_streamFrom` 用「后台下载进度 downloadedBytes」来门控本地已缓存数据。
+    // 一旦后台下载停滞（或拖动位置领先下载头），明明 seekcache 里已有该段
+    // 数据，代理却按停滞的 downloadedBytes 把输出「饿死」，表现为
+    // 「播放几帧 → 正在缓存 → 播放几帧 → 正在缓存」的循环，即使网速已停。
+    // 新逻辑：
+    //  1) 后台下载已覆盖 start → 读 partial（按 downloadedBytes 门控，渐进流式）
+    //  2) 后台未覆盖，但 seek 缓存已覆盖 → 读 seekcache，按文件【真实长度】
+    //     门控（isPartial=false），不再被后台停滞进度饿死
+    //  3) 两者都未覆盖 → 按需远程随机读，并入 seekcache 后再从本地读
     String readFilePath;
     int readFileStart;
     int rangeStart;
     int rangeEnd;
+    bool isPartial;
 
-    if (needSeek) {
-      const seekChunk = 32 * 1024 * 1024; // 单次预取上限：更大区间减少拖动后的远程往返
+    if (start < partialAvail) {
+      // 后台下载已覆盖该位置，直接读 partial（按下载进度门控）
+      readFilePath = session.partialPath;
+      readFileStart = start;
+      rangeStart = start;
+      rangeEnd = clampedEnd;
+      isPartial = true;
+    } else if (seekCoversStart) {
+      // 后台未覆盖，但 seek 缓存已覆盖：从 seekcache 读真实长度（不门控后台进度）
+      readFilePath = session.seekCachePath;
+      readFileStart = start;
+      rangeStart = start;
+      rangeEnd = clampedEnd < seekEnd - 1 ? clampedEnd : seekEnd - 1;
+      isPartial = false;
+    } else {
+      // 需要按需远程随机读取（拖动到尚未下载到的位置）
+      const seekChunk = 64 * 1024 * 1024; // 单次预取上限：更大区间减少拖动后的远程往返
       final fetchLen = (fileSize - start).clamp(1, seekChunk);
       final tempSeek = '${session.localPath}.seek.tmp';
       await _fetchRangeToFile(session, start, fetchLen, tempSeek);
       // 将远程读取结果合并进本地 seek 缓存（按偏移写入 .seekcache），之后复用
       final cachedLen = await _spliceIntoSeekCache(session, tempSeek, start);
-      session._mergedStart = start;
-      session._mergedEnd = start + cachedLen;
       try {
         await File(tempSeek).delete();
       } catch (_) {}
-      readFilePath = session.seekCachePath;
-      readFileStart = start;
-      rangeStart = start;
-      rangeEnd = start + cachedLen - 1;
-    } else if (inCache) {
-      readFilePath = session.seekCachePath;
-      readFileStart = start;
-      rangeStart = start;
-      rangeEnd = clampedEnd;
-    } else {
-      readFilePath = session.partialPath;
-      readFileStart = start;
-      rangeStart = start;
-      rangeEnd = clampedEnd;
+      if (cachedLen <= 0) {
+        // 远程抓取失败：降级为读 partial 并等待后台下载（不夸大 Content-Length）
+        readFilePath = session.partialPath;
+        readFileStart = start;
+        rangeStart = start;
+        rangeEnd = clampedEnd;
+        isPartial = true;
+      } else {
+        session._mergedStart = start;
+        session._mergedEnd = start + cachedLen;
+        readFilePath = session.seekCachePath;
+        readFileStart = start;
+        rangeStart = start;
+        // 仅声明已真正抓取到的字节，避免 Content-Length 夸大导致播放器空等
+        rangeEnd = clampedEnd < session._mergedEnd - 1 ? clampedEnd : session._mergedEnd - 1;
+        isPartial = false;
+      }
     }
 
     final contentLength = rangeEnd - rangeStart + 1;
@@ -351,7 +374,7 @@ class RemoteStreamingService {
 
     // Stream bytes as they arrive (from partial for normal playback, from the
     // seek cache file for on-demand seeks — fully on local disk, served fast).
-    await _streamFrom(session, response, readFilePath, readFileStart, rangeEnd + 1, !needSeek);
+    await _streamFrom(session, response, readFilePath, readFileStart, rangeEnd + 1, isPartial);
   }
 
   /// Serve with unknown file size: chunked transfer, no seek.
