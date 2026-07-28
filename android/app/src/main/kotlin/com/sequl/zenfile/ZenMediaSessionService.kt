@@ -54,8 +54,6 @@ class ZenMediaSessionService : MediaSessionService() {
         super.onCreate()
         createChannel()
 
-        zenPlayer = ZenMediaPlayer(Looper.getMainLooper())
-
         val sessionIntent = Intent(this, MainActivity::class.java).apply {
             action = Intent.ACTION_MAIN
             addCategory(Intent.CATEGORY_LAUNCHER)
@@ -65,28 +63,35 @@ class ZenMediaSessionService : MediaSessionService() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        mediaSession = MediaSession.Builder(this, zenPlayer)
-            .setSessionActivity(sessionActivity)
-            .build()
-
         // 先放置一个占位前台通知，满足 startForegroundService 的 5 秒时限
         // （之后再交由 Media3 的 DefaultMediaNotificationProvider 接管更新）
         val placeholder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle(getString(R.string.zenfile_audio_channel))
             .setContentText("")
+            .setContentIntent(sessionActivity)
+            .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .build()
         startForeground(NOTIFICATION_ID, placeholder)
 
-        // Media3 自动生成 MediaStyle 通知（13+ 系统媒体卡片），无需手写 MediaStyle
-        val provider = DefaultMediaNotificationProvider.Builder(this)
-            .setNotificationId(NOTIFICATION_ID)
-            .setChannelId(CHANNEL_ID)
-            .setChannelName(R.string.zenfile_audio_channel)
-            .build()
+        // Media3 自动生成 MediaStyle 通知（系统媒体卡片），无需手写 MediaStyle。
+        // 注意：必须先 setMediaNotificationProvider，再创建 Player 与 MediaSession，
+        // 否则低版本 Android（如 Android 11）上 provider 无法接管通知，会永远卡在 placeholder。
+        val provider = DefaultMediaNotificationProvider(
+            this,
+            { NOTIFICATION_ID },
+            CHANNEL_ID,
+            R.string.zenfile_audio_channel
+        )
         provider.setSmallIcon(R.mipmap.ic_launcher)
         setMediaNotificationProvider(provider)
+
+        zenPlayer = ZenMediaPlayer(Looper.getMainLooper())
+        mediaSession = MediaSession.Builder(this, zenPlayer)
+            .setSessionActivity(sessionActivity)
+            .build()
 
         flutterMessenger?.let { messenger ->
             channel = MethodChannel(messenger, METHOD_CHANNEL)
@@ -128,6 +133,9 @@ class ZenMediaSessionService : MediaSessionService() {
                 val positionMs = call.argument<Long>("positionMs") ?: 0L
                 val bufferedMs = call.argument<Long>("bufferedMs") ?: positionMs
                 zenPlayer.updatePlaybackState(playing, positionMs, bufferedMs)
+                // 强制刷新通知：低版本 Android（尤其 Android 11）上 DefaultMediaNotificationProvider
+                // 可能不会在 SimpleBasePlayer 第一次状态变化时自动重建通知，需手动触发。
+                mediaSession.setCustomLayout(emptyList())
                 result.success(null)
             }
             "setQueue" -> {

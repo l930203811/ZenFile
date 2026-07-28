@@ -138,12 +138,12 @@ class ZenFileAudioHandler extends BaseAudioHandler
     });
 
     // ── Media3（安卓13+ 通知栏控制面板）桥接 ──
-    _startMedia3();
+    unawaited(_startMedia3());
   }
 
   /// 启动 Media3 媒体会话桥接：把 media_kit 状态实时同步到原生 MediaSession，
   /// 并把通知栏/锁屏/耳机指令回传驱动 media_kit。
-  void _startMedia3() {
+  Future<void> _startMedia3() async {
     Media3Bridge.instance.setCommandHandler((action, positionMs) {
       switch (action) {
         case 'play':
@@ -175,11 +175,13 @@ class ZenFileAudioHandler extends BaseAudioHandler
       _pushState(state);
     }));
 
-    // 拉起原生 Media3 服务并推送当前队列/元数据/状态
-    unawaited(Media3Bridge.instance.startService());
+    // 拉起原生 Media3 服务并推送当前队列/元数据/状态。
+    // 必须 await startService() 完成后再 push，否则服务尚未 ready 时调用会被静默吞掉，
+    // 导致通知永远卡在 placeholder。
+    await Media3Bridge.instance.startService();
     final q = queue.value;
     final idx = q.isEmpty ? 0 : (q.indexOf(mediaItem.value ?? q.first)).clamp(0, q.length - 1);
-    Media3Bridge.instance.updateQueue(
+    await Media3Bridge.instance.updateQueue(
       q.map((m) => <String, dynamic>{
         'id': m.id,
         'title': m.title,
