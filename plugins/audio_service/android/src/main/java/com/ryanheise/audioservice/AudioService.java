@@ -285,6 +285,7 @@ public class AudioService extends MediaBrowserServiceCompat {
     private int repeatMode;
     private int shuffleMode;
     private boolean notificationCreated;
+    private Runnable updateNotificationRunnable;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private VolumeProviderCompat volumeProvider;
 
@@ -355,11 +356,18 @@ public class AudioService extends MediaBrowserServiceCompat {
 
         flutterEngine = AudioServicePlugin.getFlutterEngine(this);
         System.out.println("flutterEngine warmed up");
+        System.out.println("[ZenFileAudio] onCreate SDK=" + Build.VERSION.SDK_INT
+                + " channelId=" + notificationChannelId
+                + " active=" + mediaSession.isActive());
     }
 
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
         MediaButtonReceiver.handleIntent(mediaSession, intent);
+        System.out.println("[ZenFileAudio] onStartCommand action=" + (intent != null ? intent.getAction() : "null")
+                + " inPlayingState=" + inPlayingState
+                + " notificationCreated=" + notificationCreated
+                + " SDK=" + Build.VERSION.SDK_INT);
         // 安全网（仅 Android 12+）：若已标记为播放态但通知尚未创建（enterPlayingState 的 handler.post
         // 可能因主线程繁忙而延迟），在 onStartCommand 里立即补一次 startForeground，
         // 确保系统不会因“startForegroundService 后 5 秒未 startForeground”而杀服务。
@@ -412,9 +420,20 @@ public class AudioService extends MediaBrowserServiceCompat {
 
     public void configure(AudioServiceConfig config) {
         this.config = config;
-        notificationChannelId = (config.androidNotificationChannelId != null)
+        String newChannelId = (config.androidNotificationChannelId != null)
             ? config.androidNotificationChannelId
             : getApplication().getPackageName() + ".channel";
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                && notificationChannelId != null
+                && !notificationChannelId.equals(newChannelId)) {
+            getNotificationManager().deleteNotificationChannel(notificationChannelId);
+        }
+        notificationChannelId = newChannelId;
+        System.out.println("[ZenFileAudio] configure channelId=" + notificationChannelId
+                + " SDK=" + Build.VERSION.SDK_INT);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            createChannel();
+        }
 
         if (config.activityClassName != null) {
             Context context = getApplicationContext();
@@ -584,6 +603,8 @@ public class AudioService extends MediaBrowserServiceCompat {
         // Android 11 及以下保持 audio_service 0.18.x 原始「暂停→播放」切换逻辑，避免部分
         // 国产 ROM 在暂停/ready 态反复进入前台服务导致通知不显示。
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            System.out.println("[ZenFileAudio] setState SDK>=S proc=" + processingState
+                    + " playing=" + playing + " inPlayingState=" + inPlayingState);
             if (processingState != AudioProcessingState.idle) {
                 if (!inPlayingState) {
                     // Android 12+ 对 startForeground() 调用线程和时机要求更严格,
@@ -606,6 +627,8 @@ public class AudioService extends MediaBrowserServiceCompat {
                 inPlayingState = false;
             }
         } else {
+            System.out.println("[ZenFileAudio] setState SDK<S wasPlaying=" + wasPlaying
+                    + " playing=" + playing);
             if (!wasPlaying && playing) {
                 enterPlayingState();
             } else if (wasPlaying && !playing) {
@@ -765,6 +788,7 @@ public class AudioService extends MediaBrowserServiceCompat {
     }
 
     private void enterPlayingState() {
+        System.out.println("[ZenFileAudio] enterPlayingState");
         ContextCompat.startForegroundService(this, new Intent(AudioService.this, AudioService.class));
         if (!mediaSession.isActive())
             mediaSession.setActive(true);
@@ -787,6 +811,8 @@ public class AudioService extends MediaBrowserServiceCompat {
 
     private void internalStartForeground() {
         Notification notification;
+        System.out.println("[ZenFileAudio] internalStartForeground SDK=" + Build.VERSION.SDK_INT
+                + " type=" + (Build.VERSION.SDK_INT >= 31 ? "mediaPlayback" : "none"));
         try {
             notification = buildNotification();
         } catch (Exception e) {
@@ -811,6 +837,7 @@ public class AudioService extends MediaBrowserServiceCompat {
             startForeground(NOTIFICATION_ID, notification);
         }
         notificationCreated = true;
+        System.out.println("[ZenFileAudio] internalStartForeground done notificationCreated=true");
     }
 
     private void acquireWakeLock() {
@@ -887,8 +914,11 @@ public class AudioService extends MediaBrowserServiceCompat {
         }
         this.mediaMetadata = mediaMetadata;
         mediaSession.setMetadata(mediaMetadata);
-        handler.removeCallbacksAndMessages(null);
-        handler.post(this::updateNotification);
+        if (updateNotificationRunnable == null) {
+            updateNotificationRunnable = this::updateNotification;
+        }
+        handler.removeCallbacks(updateNotificationRunnable);
+        handler.post(updateNotificationRunnable);
     }
 
     private MediaMetadataCompat putArtToMetadata(MediaMetadataCompat mediaMetadata) {
