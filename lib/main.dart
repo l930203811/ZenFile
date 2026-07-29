@@ -101,6 +101,9 @@ void main() {
           androidNotificationIcon: 'mipmap/ic_launcher',
           androidShowNotificationBadge: true,
           androidStopForegroundOnPause: false,
+          // 避免 AudioService 在未获取 activityClassName 时设置 contentIntent=null，
+          // 部分 ROM 对 setContentIntent(null) 处理不一致。
+          androidNotificationClickStartsActivity: false,
           notificationColor: Color(0xFF6200EE),
         ),
       );

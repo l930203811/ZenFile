@@ -294,7 +294,7 @@ class ZenFileAudioHandler extends BaseAudioHandler
           playing ? MediaControl.pause : MediaControl.play,
           MediaControl.skipToNext,
           const MediaControl(
-            androidIcon: 'drawable/ic_close',
+            androidIcon: 'drawable/audio_service_stop',
             label: '关闭',
             action: MediaAction.stop,
           ),

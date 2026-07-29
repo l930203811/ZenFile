@@ -1908,6 +1908,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
               androidNotificationIcon: 'mipmap/ic_launcher',
               androidShowNotificationBadge: true,
               androidStopForegroundOnPause: false,
+              androidNotificationClickStartsActivity: false,
               notificationColor: Color(0xFF6200EE),
             ),
           );

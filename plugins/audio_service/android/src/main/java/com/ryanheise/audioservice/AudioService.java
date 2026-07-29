@@ -316,6 +316,11 @@ public class AudioService extends MediaBrowserServiceCompat {
         mediaSession = new MediaSessionCompat(this, "media-session");
 
         configure(new AudioServiceConfig(getApplicationContext()));
+        // 服务启动时立即创建通知渠道，避免首次 buildNotification 失败时渠道不存在，
+        // 也便于系统设置中能看到 "ZenFile Audio Player" 渠道。
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            createChannel();
+        }
 
         mediaSession.setFlags(
                 MediaSessionCompat.FLAG_HANDLES_QUEUE_COMMANDS
@@ -772,11 +777,26 @@ public class AudioService extends MediaBrowserServiceCompat {
     }
 
     private void internalStartForeground() {
-        Notification notification = buildNotification();
-        // Android 14 (API 34)+ 且 targetSdk≥34 时，startForeground(int, Notification)
-        // 不带前台服务类型会抛 MissingForegroundServiceTypeException，导致前台服务
-        // 无法启动、通知不显示、系统媒体卡片不识别。必须显式传入 mediaPlayback 类型。
-        if (Build.VERSION.SDK_INT >= 34) {
+        Notification notification;
+        try {
+            notification = buildNotification();
+        } catch (Exception e) {
+            System.out.println("### buildNotification failed: " + e);
+            e.printStackTrace();
+            // 即使通知构建失败，也要调用 startForeground 避免系统因 5 秒规则杀服务。
+            // 用极简通知兜底。
+            notification = new NotificationCompat.Builder(this, notificationChannelId)
+                    .setSmallIcon(getResourceId(config.androidNotificationIcon))
+                    .setContentTitle("ZenFile")
+                    .setContentText("Media playback")
+                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                    .setShowWhen(false)
+                    .build();
+        }
+        // Android 12 (API 31)+ 且 targetSdk≥31 时，startForeground(int, Notification)
+        // 不带前台服务类型会抛 MissingForegroundServiceTypeException / IllegalArgumentException，
+        // 导致前台服务无法启动、通知不显示、系统媒体卡片不识别。必须显式传入 mediaPlayback 类型。
+        if (Build.VERSION.SDK_INT >= 31) {
             startForeground(NOTIFICATION_ID, notification,
                     android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
         } else {
