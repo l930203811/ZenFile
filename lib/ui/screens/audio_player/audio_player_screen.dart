@@ -107,6 +107,9 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   double _playbackSpeed = 1.0;
   double _pitch = 1.0;
 
+  // Playback mode: 0=sequential, 1=list loop, 2=single loop, 3=shuffle
+  int _playbackMode = 0;
+
   // Shuffle
   bool _isShuffled = false;
   late List<int> _shuffleQueue; // shuffled indices of _allSongs
@@ -117,11 +120,13 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   // 标记用户已跳转系统设置请求通知权限，等待返回应用时复检
   bool _backgroundPlayPendingPermission = false;
 
+  // 歌词显示模式：0=关闭, 1=单行, 2=多行内联, 3=全屏面板
+  int _lyricsDisplayMode = 0;
+
   // 歌词
   List<LyricLine>? _lyrics;
   String? _lyricSourcePath; // 实际歌词文件路径
   bool _isLoadingLyrics = false;
-  bool _showInlineLyrics = false; // 是否在播放器界面显示完整内联歌词
   int _lyricsLoadGeneration = 0; // 防止歌词加载竞态
   bool _lyricsWerePlaceholder = false; // 检测歌词为占位文本时显示多语言提示
 
@@ -269,10 +274,20 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
 
   void _onTrackComplete() {
     if (_repeatMode == 1) {
+      // 单曲循环
       player.seek(Duration.zero);
       player.play();
-    } else if (_repeatMode == 2 || _allSongs.isNotEmpty) {
+    } else if (_repeatMode == 2 || _isShuffled) {
+      // 列表循环 / 随机播放：一直播下去
       _playNext();
+    } else if (_allSongs.isNotEmpty) {
+      // 列表播放：顺序播放到最后一首后停止
+      if (_currentIndex < _allSongs.length - 1) {
+        _playNext();
+      } else {
+        player.seek(Duration.zero);
+        player.pause();
+      }
     }
   }
 
@@ -502,13 +517,60 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     _shufflePos = 0;
   }
 
-  void _toggleShuffle() {
-    setState(() {
-      _isShuffled = !_isShuffled;
-      if (_isShuffled) {
+  /// 将统一的播放模式映射到 _repeatMode / _isShuffled
+  void _applyPlaybackMode(int mode) {
+    switch (mode) {
+      case 0: // 列表播放
+        _repeatMode = 0;
+        _isShuffled = false;
+        break;
+      case 1: // 列表循环
+        _repeatMode = 2;
+        _isShuffled = false;
+        break;
+      case 2: // 单曲循环
+        _repeatMode = 1;
+        _isShuffled = false;
+        break;
+      case 3: // 随机播放
+        _repeatMode = 0;
+        _isShuffled = true;
         _buildShuffleQueue();
-      }
+        break;
+    }
+  }
+
+  void _cyclePlaybackMode() {
+    final l10n = L10n.of(context);
+    setState(() {
+      _playbackMode = (_playbackMode + 1) % 4;
+      _applyPlaybackMode(_playbackMode);
     });
+    final String message;
+    switch (_playbackMode) {
+      case 0:
+        message = l10n.ui_play_mode_sequential;
+        break;
+      case 1:
+        message = l10n.ui_play_mode_list_loop;
+        break;
+      case 2:
+        message = l10n.ui_play_mode_single_loop;
+        break;
+      case 3:
+      default:
+        message = l10n.ui_play_mode_shuffle;
+        break;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 1),
+      ),
+    );
   }
 
   void _showQueueSheet(Color accentColor) {
@@ -631,7 +693,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         setState(() {
           _lyrics = lyrics;
           _lyricSourcePath = lrcPath;
-          _showInlineLyrics = true;
+          _lyricsDisplayMode = 2;
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -973,10 +1035,13 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   }
 
   /// 切换完整内联歌词显示（用歌词视图替换封面）
-  void _toggleInlineLyrics() {
+  void _cycleLyricsDisplayMode() {
     setState(() {
-      _showInlineLyrics = !_showInlineLyrics;
+      _lyricsDisplayMode = (_lyricsDisplayMode + 1) % 4;
     });
+    if (_lyricsDisplayMode == 3) {
+      _showLyricsPanel();
+    }
   }
 
   // ─── 桌面歌词悬浮窗 ────────────────────────────────────────────────────
@@ -1121,6 +1186,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
 
   /// 构建单行歌词显示（支持逐字高亮）
   Widget _buildSingleLineLyrics(Color accent, ThemeData theme, bool isDark) {
+    if (_lyricsDisplayMode != 1) return const SizedBox.shrink();
     final line = _getCurrentLyricLine();
     return GestureDetector(
       onTap: _showLyricsPanel,
@@ -1294,7 +1360,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
 
   /// 构建 artwork 或完整内联歌词视图
   Widget _buildArtworkOrLyrics(Color accent, ThemeData theme, bool isDark) {
-    if (!_showInlineLyrics) {
+    if (_lyricsDisplayMode != 2) {
       // 显示封面
       return Stack(
         alignment: Alignment.center,
@@ -2048,32 +2114,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // ── Shuffle toggle ────────────────────────────────────────────────
-                  ListTile(
-                    leading: Icon(
-                      Icons.shuffle_rounded,
-                      color: _isShuffled ? Colors.deepPurpleAccent : Colors.white,
-                    ),
-                    title: Text(
-                      _isShuffled ? L10n.of(context).ui_shuffle_on : L10n.of(context).msg3038d9b8,
-                      style: TextStyle(
-                        color: _isShuffled ? Colors.deepPurpleAccent : Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    trailing: Switch(
-                      value: _isShuffled,
-                      activeColor: Colors.deepPurpleAccent,
-                      onChanged: (_) {
-                        _toggleShuffle();
-                        setSheet(() {});
-                      },
-                    ),
-                    onTap: () {
-                      _toggleShuffle();
-                      setSheet(() {});
-                    },
-                  ),
                   // ── Play in Background ────────────────────────────────────────────
                   ListTile(
                     leading: Icon(
@@ -2366,15 +2406,15 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                     onPlayPause: () => player.playOrPause(),
                     onPrevious: _allSongs.length > 1 ? _playPrevious : null,
                     onNext: _allSongs.length > 1 ? _playNext : null,
-                    onShowLyrics: _toggleInlineLyrics,
+                    onShowLyrics: _cycleLyricsDisplayMode,
                     onShowSleepTimer: _showSleepTimerDialog,
                     onShowEqualizer: _showEqualizerDialog,
                     onShowQueue: () => _showQueueSheet(accent),
-                    repeatMode: _repeatMode,
-                    onToggleRepeat: () => setState(() => _repeatMode = (_repeatMode + 1) % 3),
+                    playbackMode: _playbackMode,
+                    onTogglePlaybackMode: _cyclePlaybackMode,
                     accentColor: accent,
                     hasLyrics: _lyrics != null && _lyrics!.isNotEmpty,
-                    isShowingLyrics: _showInlineLyrics,
+                    lyricsDisplayMode: _lyricsDisplayMode,
                   ),
                 ],
               ),
@@ -2517,15 +2557,15 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                           onPlayPause: () => player.playOrPause(),
                           onPrevious: _allSongs.length > 1 ? _playPrevious : null,
                           onNext: _allSongs.length > 1 ? _playNext : null,
-                          onShowLyrics: _toggleInlineLyrics,
+                          onShowLyrics: _cycleLyricsDisplayMode,
                           onShowSleepTimer: _showSleepTimerDialog,
                           onShowEqualizer: _showEqualizerDialog,
                           onShowQueue: () => _showQueueSheet(accent),
-                          repeatMode: _repeatMode,
-                          onToggleRepeat: () => setState(() => _repeatMode = (_repeatMode + 1) % 3),
+                          playbackMode: _playbackMode,
+                          onTogglePlaybackMode: _cyclePlaybackMode,
                           accentColor: accent,
                           hasLyrics: _lyrics != null && _lyrics!.isNotEmpty,
-                          isShowingLyrics: _showInlineLyrics,
+                          lyricsDisplayMode: _lyricsDisplayMode,
                         ),
                       ],
                     ),

@@ -3765,6 +3765,30 @@ class L10nEn extends L10n {
   String get ui_shuffle_on => 'Shuffle: On';
 
   @override
+  String get ui_play_mode_sequential => 'Sequential';
+
+  @override
+  String get ui_play_mode_list_loop => 'Loop list';
+
+  @override
+  String get ui_play_mode_single_loop => 'Loop single';
+
+  @override
+  String get ui_play_mode_shuffle => 'Shuffle';
+
+  @override
+  String get ui_lyrics_mode_off => 'Lyrics off';
+
+  @override
+  String get ui_lyrics_mode_single_line => 'Single-line lyrics';
+
+  @override
+  String get ui_lyrics_mode_multi_line => 'Multi-line lyrics';
+
+  @override
+  String get ui_lyrics_mode_full_panel => 'Full lyrics panel';
+
+  @override
   String ui_minutes_format(int minutes) {
     return '$minutes minutes';
   }

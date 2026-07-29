@@ -3829,6 +3829,30 @@ class L10nFr extends L10n {
   String get ui_shuffle_on => 'Lecture aléatoire : Activée';
 
   @override
+  String get ui_play_mode_sequential => 'Séquentiel';
+
+  @override
+  String get ui_play_mode_list_loop => 'Répéter la liste';
+
+  @override
+  String get ui_play_mode_single_loop => 'Répéter le titre';
+
+  @override
+  String get ui_play_mode_shuffle => 'Lecture aléatoire';
+
+  @override
+  String get ui_lyrics_mode_off => 'Paroles désactivées';
+
+  @override
+  String get ui_lyrics_mode_single_line => 'Paroles sur une ligne';
+
+  @override
+  String get ui_lyrics_mode_multi_line => 'Paroles sur plusieurs lignes';
+
+  @override
+  String get ui_lyrics_mode_full_panel => 'Panneau complet des paroles';
+
+  @override
   String ui_minutes_format(int minutes) {
     return '$minutes minutes';
   }

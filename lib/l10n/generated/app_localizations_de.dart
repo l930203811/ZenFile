@@ -3804,6 +3804,30 @@ class L10nDe extends L10n {
   String get ui_shuffle_on => 'Zufallswiedergabe: An';
 
   @override
+  String get ui_play_mode_sequential => 'Sequenziell';
+
+  @override
+  String get ui_play_mode_list_loop => 'Liste wiederholen';
+
+  @override
+  String get ui_play_mode_single_loop => 'Titel wiederholen';
+
+  @override
+  String get ui_play_mode_shuffle => 'Zufallswiedergabe';
+
+  @override
+  String get ui_lyrics_mode_off => 'Liedtext aus';
+
+  @override
+  String get ui_lyrics_mode_single_line => 'Einzeiliger Liedtext';
+
+  @override
+  String get ui_lyrics_mode_multi_line => 'Mehrzeiliger Liedtext';
+
+  @override
+  String get ui_lyrics_mode_full_panel => 'Vollständiges Liedtext-Panel';
+
+  @override
   String ui_minutes_format(int minutes) {
     return '$minutes Minuten';
   }

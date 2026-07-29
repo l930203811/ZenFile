@@ -13,11 +13,13 @@ class AudioControlsWidget extends StatelessWidget {
   final VoidCallback onShowSleepTimer;
   final VoidCallback onShowEqualizer;
   final VoidCallback onShowQueue;
-  final int repeatMode; // 0=none, 1=one, 2=all
-  final VoidCallback onToggleRepeat;
+  // 0=sequential, 1=list loop, 2=single loop, 3=shuffle
+  final int playbackMode;
+  final VoidCallback onTogglePlaybackMode;
   final Color accentColor;
   final bool hasLyrics;
-  final bool isShowingLyrics;
+  // 0=off, 1=single line, 2=multi line, 3=full panel
+  final int lyricsDisplayMode;
 
   const AudioControlsWidget({
     super.key,
@@ -31,11 +33,11 @@ class AudioControlsWidget extends StatelessWidget {
     required this.onShowSleepTimer,
     required this.onShowEqualizer,
     required this.onShowQueue,
-    required this.repeatMode,
-    required this.onToggleRepeat,
+    required this.playbackMode,
+    required this.onTogglePlaybackMode,
     required this.accentColor,
     this.hasLyrics = false,
-    this.isShowingLyrics = false,
+    this.lyricsDisplayMode = 0,
   });
 
   String _formatDuration(Duration d) {
@@ -179,21 +181,29 @@ class AudioControlsWidget extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Repeat toggle
+                    // Playback mode toggle
                     IconButton(
                       icon: Icon(
-                        repeatMode == 0
-                            ? Icons.repeat_rounded
-                            : repeatMode == 1
-                                ? Icons.repeat_one_rounded
-                                : Icons.repeat_rounded,
+                        playbackMode == 0
+                            ? Icons.playlist_play_rounded
+                            : playbackMode == 1
+                                ? Icons.repeat_rounded
+                                : playbackMode == 2
+                                    ? Icons.repeat_one_rounded
+                                    : Icons.shuffle_rounded,
                       ),
                       iconSize: 22,
                       constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
                       padding: EdgeInsets.zero,
-                      tooltip: repeatMode == 0 ? L10n.of(context).ui_repeat_off : repeatMode == 1 ? L10n.of(context).ui_repeat_one : L10n.of(context).ui_repeat_all,
-                      color: repeatMode != 0 ? accentColor : theme.colorScheme.onSurface.withOpacity(0.6),
-                      onPressed: onToggleRepeat,
+                      tooltip: playbackMode == 0
+                          ? L10n.of(context).ui_play_mode_sequential
+                          : playbackMode == 1
+                              ? L10n.of(context).ui_play_mode_list_loop
+                              : playbackMode == 2
+                                  ? L10n.of(context).ui_play_mode_single_loop
+                                  : L10n.of(context).ui_play_mode_shuffle,
+                      color: accentColor,
+                      onPressed: onTogglePlaybackMode,
                     ),
                     // Sound FX / Equalizer
                     IconButton(
@@ -205,19 +215,23 @@ class AudioControlsWidget extends StatelessWidget {
                       color: theme.colorScheme.onSurface.withOpacity(0.8),
                       onPressed: onShowEqualizer,
                     ),
-                    // Lyrics
+                    // Lyrics display mode toggle
                     IconButton(
-                      icon: Icon(
-                        isShowingLyrics ? Broken.document : Broken.document,
-                      ),
+                      icon: const Icon(Broken.document),
                       iconSize: 22,
                       constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
                       padding: EdgeInsets.zero,
-                      tooltip: isShowingLyrics ? L10n.of(context).ui_hide_lyrics : L10n.of(context).ui_show_lyrics,
-                      color: isShowingLyrics
+                      tooltip: lyricsDisplayMode == 0
+                          ? L10n.of(context).ui_lyrics_mode_off
+                          : lyricsDisplayMode == 1
+                              ? L10n.of(context).ui_lyrics_mode_single_line
+                              : lyricsDisplayMode == 2
+                                  ? L10n.of(context).ui_lyrics_mode_multi_line
+                                  : L10n.of(context).ui_lyrics_mode_full_panel,
+                      color: lyricsDisplayMode != 0
                           ? accentColor
                           : hasLyrics
-                              ? accentColor.withOpacity(0.7)
+                              ? accentColor.withOpacity(0.6)
                               : theme.colorScheme.onSurface.withOpacity(0.8),
                       onPressed: onShowLyrics,
                     ),

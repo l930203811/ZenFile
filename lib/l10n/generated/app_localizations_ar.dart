@@ -3747,6 +3747,30 @@ class L10nAr extends L10n {
   String get ui_shuffle_on => 'العشوائي: تشغيل';
 
   @override
+  String get ui_play_mode_sequential => 'تشغيل تسلسلي';
+
+  @override
+  String get ui_play_mode_list_loop => 'تكرار القائمة';
+
+  @override
+  String get ui_play_mode_single_loop => 'تكرار المقطوعة';
+
+  @override
+  String get ui_play_mode_shuffle => 'تشغيل عشوائي';
+
+  @override
+  String get ui_lyrics_mode_off => 'كلمات الأغاني متوقفة';
+
+  @override
+  String get ui_lyrics_mode_single_line => 'كلمات أغنية سطر واحد';
+
+  @override
+  String get ui_lyrics_mode_multi_line => 'كلمات أغنية متعددة الأسطر';
+
+  @override
+  String get ui_lyrics_mode_full_panel => 'لوحة كلمات كاملة';
+
+  @override
   String ui_minutes_format(int minutes) {
     return '$minutes دقيقة';
   }

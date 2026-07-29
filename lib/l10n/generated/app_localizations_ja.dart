@@ -3642,6 +3642,30 @@ class L10nJa extends L10n {
   String get ui_shuffle_on => 'シャッフル：オン';
 
   @override
+  String get ui_play_mode_sequential => '順番再生';
+
+  @override
+  String get ui_play_mode_list_loop => 'リストループ';
+
+  @override
+  String get ui_play_mode_single_loop => '1曲ループ';
+
+  @override
+  String get ui_play_mode_shuffle => 'シャッフル';
+
+  @override
+  String get ui_lyrics_mode_off => '歌詞オフ';
+
+  @override
+  String get ui_lyrics_mode_single_line => '1行歌詞';
+
+  @override
+  String get ui_lyrics_mode_multi_line => '複数行歌詞';
+
+  @override
+  String get ui_lyrics_mode_full_panel => '全画面歌詞';
+
+  @override
   String ui_minutes_format(int minutes) {
     return '$minutes分';
   }

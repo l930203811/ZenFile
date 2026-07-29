@@ -3611,6 +3611,30 @@ class L10nZh extends L10n {
   String get ui_shuffle_on => '随机播放：开';
 
   @override
+  String get ui_play_mode_sequential => '列表播放';
+
+  @override
+  String get ui_play_mode_list_loop => '列表循环';
+
+  @override
+  String get ui_play_mode_single_loop => '单曲循环';
+
+  @override
+  String get ui_play_mode_shuffle => '随机播放';
+
+  @override
+  String get ui_lyrics_mode_off => '歌词关闭';
+
+  @override
+  String get ui_lyrics_mode_single_line => '单行歌词';
+
+  @override
+  String get ui_lyrics_mode_multi_line => '多行歌词';
+
+  @override
+  String get ui_lyrics_mode_full_panel => '全屏歌词';
+
+  @override
   String ui_minutes_format(int minutes) {
     return '$minutes 分钟';
   }
@@ -7908,6 +7932,30 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_shuffle_on => '隨機播放：開';
+
+  @override
+  String get ui_play_mode_sequential => '列表播放';
+
+  @override
+  String get ui_play_mode_list_loop => '列表循環';
+
+  @override
+  String get ui_play_mode_single_loop => '單曲循環';
+
+  @override
+  String get ui_play_mode_shuffle => '隨機播放';
+
+  @override
+  String get ui_lyrics_mode_off => '歌詞關閉';
+
+  @override
+  String get ui_lyrics_mode_single_line => '單行歌詞';
+
+  @override
+  String get ui_lyrics_mode_multi_line => '多行歌詞';
+
+  @override
+  String get ui_lyrics_mode_full_panel => '全螢幕歌詞';
 
   @override
   String ui_minutes_format(int minutes) {

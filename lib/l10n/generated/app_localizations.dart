@@ -6850,6 +6850,54 @@ abstract class L10n {
   /// **'随机播放：开'**
   String get ui_shuffle_on;
 
+  /// No description provided for @ui_play_mode_sequential.
+  ///
+  /// In zh, this message translates to:
+  /// **'列表播放'**
+  String get ui_play_mode_sequential;
+
+  /// No description provided for @ui_play_mode_list_loop.
+  ///
+  /// In zh, this message translates to:
+  /// **'列表循环'**
+  String get ui_play_mode_list_loop;
+
+  /// No description provided for @ui_play_mode_single_loop.
+  ///
+  /// In zh, this message translates to:
+  /// **'单曲循环'**
+  String get ui_play_mode_single_loop;
+
+  /// No description provided for @ui_play_mode_shuffle.
+  ///
+  /// In zh, this message translates to:
+  /// **'随机播放'**
+  String get ui_play_mode_shuffle;
+
+  /// No description provided for @ui_lyrics_mode_off.
+  ///
+  /// In zh, this message translates to:
+  /// **'歌词关闭'**
+  String get ui_lyrics_mode_off;
+
+  /// No description provided for @ui_lyrics_mode_single_line.
+  ///
+  /// In zh, this message translates to:
+  /// **'单行歌词'**
+  String get ui_lyrics_mode_single_line;
+
+  /// No description provided for @ui_lyrics_mode_multi_line.
+  ///
+  /// In zh, this message translates to:
+  /// **'多行歌词'**
+  String get ui_lyrics_mode_multi_line;
+
+  /// No description provided for @ui_lyrics_mode_full_panel.
+  ///
+  /// In zh, this message translates to:
+  /// **'全屏歌词'**
+  String get ui_lyrics_mode_full_panel;
+
   /// Minutes format for sleep timer options
   ///
   /// In zh, this message translates to:

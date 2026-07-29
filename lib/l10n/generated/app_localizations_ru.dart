@@ -3809,6 +3809,30 @@ class L10nRu extends L10n {
   String get ui_shuffle_on => 'Случайный порядок: Вкл';
 
   @override
+  String get ui_play_mode_sequential => 'Последовательно';
+
+  @override
+  String get ui_play_mode_list_loop => 'Повтор списка';
+
+  @override
+  String get ui_play_mode_single_loop => 'Повтор трека';
+
+  @override
+  String get ui_play_mode_shuffle => 'Случайный порядок';
+
+  @override
+  String get ui_lyrics_mode_off => 'Текст выключен';
+
+  @override
+  String get ui_lyrics_mode_single_line => 'Однострочный текст';
+
+  @override
+  String get ui_lyrics_mode_multi_line => 'Многострочный текст';
+
+  @override
+  String get ui_lyrics_mode_full_panel => 'Полная панель текста';
+
+  @override
   String ui_minutes_format(int minutes) {
     return '$minutes минут';
   }

@@ -3641,6 +3641,30 @@ class L10nKo extends L10n {
   String get ui_shuffle_on => '임의 재생: 켬';
 
   @override
+  String get ui_play_mode_sequential => '순차 재생';
+
+  @override
+  String get ui_play_mode_list_loop => '목록 반복';
+
+  @override
+  String get ui_play_mode_single_loop => '한 곡 반복';
+
+  @override
+  String get ui_play_mode_shuffle => '셔플';
+
+  @override
+  String get ui_lyrics_mode_off => '가사 끄기';
+
+  @override
+  String get ui_lyrics_mode_single_line => '한 줄 가사';
+
+  @override
+  String get ui_lyrics_mode_multi_line => '여러 줄 가사';
+
+  @override
+  String get ui_lyrics_mode_full_panel => '전체 가사 패널';
+
+  @override
   String ui_minutes_format(int minutes) {
     return '$minutes분';
   }
