@@ -1086,6 +1086,10 @@
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
   "msg5dc1fa7b": "Закрепить эту папку",
+  "selectStorageDrive": "Выбрать диск хранения",
+  "@selectStorageDrive": {
+    "description": "ui\\screens\\internal_file_picker_screen.dart"
+  },
   "@markdown": {
     "description": "ui\\screens\\markdown_viewer_screen.dart"
   },

@@ -1750,6 +1750,12 @@ abstract class L10n {
   /// **'固定此文件夹'**
   String get msg5dc1fa7b;
 
+  /// ui\screens\internal_file_picker_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'选择存储驱动器'**
+  String get selectStorageDrive;
+
   /// ui\screens\markdown_viewer_screen.dart
   ///
   /// In zh, this message translates to:

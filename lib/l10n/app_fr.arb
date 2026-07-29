@@ -1086,6 +1086,10 @@
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
   "msg5dc1fa7b": "Épingler ce dossier",
+  "selectStorageDrive": "Sélectionner le lecteur de stockage",
+  "@selectStorageDrive": {
+    "description": "ui\\screens\\internal_file_picker_screen.dart"
+  },
   "@markdown": {
     "description": "ui\\screens\\markdown_viewer_screen.dart"
   },

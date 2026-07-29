@@ -912,6 +912,9 @@ class L10nAr extends L10n {
   String get msg5dc1fa7b => 'تثبيت هذا المجلد';
 
   @override
+  String get selectStorageDrive => 'اختر محرك التخزين';
+
+  @override
   String get markdown => 'معاينة Markdown';
 
   @override

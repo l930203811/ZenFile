@@ -1117,6 +1117,10 @@
   "@msg5dc1fa7b": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
+  "selectStorageDrive": "選擇儲存裝置",
+  "@selectStorageDrive": {
+    "description": "ui\\screens\\internal_file_picker_screen.dart"
+  },
   "markdown": "Markdown 預覽",
   "@markdown": {
     "description": "ui\\screens\\markdown_viewer_screen.dart"

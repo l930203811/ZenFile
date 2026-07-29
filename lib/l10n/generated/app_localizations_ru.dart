@@ -929,6 +929,9 @@ class L10nRu extends L10n {
   String get msg5dc1fa7b => 'Закрепить эту папку';
 
   @override
+  String get selectStorageDrive => 'Выбрать диск хранения';
+
+  @override
   String get markdown => 'Предпросмотр Markdown';
 
   @override

@@ -929,6 +929,9 @@ class L10nDe extends L10n {
   String get msg5dc1fa7b => 'Diesen Ordner anheften';
 
   @override
+  String get selectStorageDrive => 'Speicherlaufwerk auswählen';
+
+  @override
   String get markdown => 'Markdown-Vorschau';
 
   @override

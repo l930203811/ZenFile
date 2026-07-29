@@ -1086,6 +1086,10 @@
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
   "msg5dc1fa7b": "이 폴더를 고정",
+  "selectStorageDrive": "저장 드라이브 선택",
+  "@selectStorageDrive": {
+    "description": "ui\\screens\\internal_file_picker_screen.dart"
+  },
   "@markdown": {
     "description": "ui\\screens\\markdown_viewer_screen.dart"
   },

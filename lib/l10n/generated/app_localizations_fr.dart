@@ -930,6 +930,9 @@ class L10nFr extends L10n {
   String get msg5dc1fa7b => 'Épingler ce dossier';
 
   @override
+  String get selectStorageDrive => 'Sélectionner le lecteur de stockage';
+
+  @override
   String get markdown => 'Aperçu Markdown';
 
   @override

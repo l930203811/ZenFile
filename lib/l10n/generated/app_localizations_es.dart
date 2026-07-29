@@ -933,6 +933,9 @@ class L10nEs extends L10n {
   String get msg5dc1fa7b => 'Fijar esta carpeta';
 
   @override
+  String get selectStorageDrive => 'Seleccionar unidad de almacenamiento';
+
+  @override
   String get markdown => 'Vista Previa Markdown';
 
   @override

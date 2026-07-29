@@ -1117,6 +1117,10 @@
   "@msg5dc1fa7b": {
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
+  "selectStorageDrive": "选择存储驱动器",
+  "@selectStorageDrive": {
+    "description": "ui\\screens\\internal_file_picker_screen.dart"
+  },
   "markdown": "Markdown 预览",
   "@markdown": {
     "description": "ui\\screens\\markdown_viewer_screen.dart"

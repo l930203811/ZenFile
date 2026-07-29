@@ -916,6 +916,9 @@ class L10nEn extends L10n {
   String get msg5dc1fa7b => 'Pin this folder';
 
   @override
+  String get selectStorageDrive => 'Select Storage Drive';
+
+  @override
   String get markdown => 'Markdown Preview';
 
   @override

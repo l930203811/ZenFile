@@ -877,6 +877,9 @@ class L10nZh extends L10n {
   String get msg5dc1fa7b => '固定此文件夹';
 
   @override
+  String get selectStorageDrive => '选择存储驱动器';
+
+  @override
   String get markdown => 'Markdown 预览';
 
   @override
@@ -5211,6 +5214,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get msg5dc1fa7b => '固定此資料夾';
+
+  @override
+  String get selectStorageDrive => '選擇儲存裝置';
 
   @override
   String get markdown => 'Markdown 預覽';

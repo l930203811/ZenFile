@@ -880,6 +880,9 @@ class L10nJa extends L10n {
   String get msg5dc1fa7b => 'このフォルダをピン留め';
 
   @override
+  String get selectStorageDrive => 'ストレージドライブを選択';
+
+  @override
   String get markdown => 'Markdownプレビュー';
 
   @override

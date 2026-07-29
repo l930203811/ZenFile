@@ -253,7 +253,7 @@ class _InternalFilePickerScreenState extends State<InternalFilePickerScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
                       child: Text(
-                        '选择存储驱动器',
+                        L10n.of(context).selectStorageDrive,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                           fontSize: 18,

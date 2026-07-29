@@ -879,6 +879,9 @@ class L10nKo extends L10n {
   String get msg5dc1fa7b => '이 폴더를 고정';
 
   @override
+  String get selectStorageDrive => '저장 드라이브 선택';
+
+  @override
   String get markdown => 'Markdown 미리보기';
 
   @override
