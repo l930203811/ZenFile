@@ -321,7 +321,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       final initialSize = file.existsSync() ? file.lengthSync() : 0;
       if (initialSize < 1024) { // less than 1KB = placeholder file
         setState(() => _isWaitingForCache = true);
-        _cacheCheckTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
+        _cacheCheckTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) async {
           if (!mounted) {
             timer.cancel();
             return;
@@ -334,7 +334,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
               timer.cancel();
               if (mounted) {
                 setState(() => _isWaitingForCache = false);
-                player.open(Media(playPath), play: true);
+                await _openMediaSafe(Media(playPath), play: true);
                 player.setRate(_playbackSpeed);
                 player.setPitch(_pitch);
                 _resetFade();
@@ -346,7 +346,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         return;
       }
     }
-    player.open(Media(playPath), play: true);
+    if (!await _openMediaSafe(Media(playPath), play: true)) return;
     player.setRate(_playbackSpeed);
     player.setPitch(_pitch);
     _resetFade();
@@ -358,6 +358,54 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       await RemoteStreamingService.instance.stopStreaming(_currentStreamUrl!);
       _currentStreamUrl = null;
     }
+  }
+
+  /// 打开音频文件；若底层文件访问失败（典型为「所有文件管理」权限在清除数据后
+  /// 处于幽灵授权状态，media_kit 直接 open 失败），不再让未捕获异常导致应用闪退，
+  /// 而是弹出引导对话框，请用户前往设置「关闭并重新开启所有文件管理权限」后重试。
+  /// 返回 true 表示已成功发起播放，false 表示失败并已引导用户重新授权。
+  Future<bool> _openMediaSafe(Media media, {bool play = true}) async {
+    try {
+      await player.open(media, play: play);
+      return true;
+    } catch (e) {
+      debugPrint('[ZenFile] audio open failed (likely storage permission): $e');
+      if (mounted) _showStoragePermissionDialog();
+      return false;
+    }
+  }
+
+  /// 音频访问失败时的引导：提示重新授予「所有文件管理」权限（与清除数据后
+  /// 手动「关闭再开启」该权限即可恢复的行为一致），避免直接闪退。
+  void _showStoragePermissionDialog() {
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: Text(L10n.of(context).msg_grant_full_storage_permission),
+        content: const Text(
+          '无法访问该音频文件，可能是「所有文件管理」权限未完全生效。\n'
+          '请前往系统设置中先关闭、再重新开启该权限后重试。',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              const channel = MethodChannel('com.sequl.zenfile/permissions');
+              channel
+                  .invokeMethod('openManageExternalStorageSettings')
+                  .catchError((_) => openAppSettings());
+            },
+            child: Text(L10n.of(context).ui_open_settings),
+          ),
+        ],
+      ),
+    );
   }
 
   /// 解析 remote://{connectionId}|{remotePath} 为可播放的流式 URL

@@ -51,3 +51,7 @@
 -dontwarn java.rmi.**
 -dontwarn com.rapid7.client.dcerpc.**
 
+# JSch SSH/SFTP client — 全部保留（其 cipher 通过 Class.forName 反射加载，混淆会破坏）
+-keep class com.jcraft.jsch.** { *; }
+-dontwarn com.jcraft.jsch.**
+

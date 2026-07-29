@@ -161,7 +161,7 @@ class _InternalFilePickerScreenState extends State<InternalFilePickerScreen> {
       context,
       title: L10n.of(context).msgf3a485df,
       hint: L10n.of(context).msgfba1f416,
-      actionText: '创建',
+      actionText: L10n.of(context).ui_create,
     );
     if (newFolderName != null && newFolderName.isNotEmpty) {
       setState(() => _isLoading = true);
@@ -185,7 +185,7 @@ class _InternalFilePickerScreenState extends State<InternalFilePickerScreen> {
         debugPrint('Error creating folder in picker: $e');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('创建文件夹出错：{e}')),
+            SnackBar(content: Text(L10n.of(context).e3(e))),
           );
         }
       } finally {

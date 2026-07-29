@@ -4354,59 +4354,6 @@ class L10nEn extends L10n {
   String get ui_download_links => 'Download Links';
 
   @override
-  String get changelog_v1121_new_features_title => 'New Features';
-
-  @override
-  String get changelog_v1121_new_feature_1 =>
-      'App Management: Added a ‘Copy Package Name’ option in the app popup menu, allowing one-tap copy of the app\'s package name.';
-
-  @override
-  String get changelog_v1121_new_feature_2 =>
-      'Path bar: Long-press the path bar to enter edit mode, allowing you to input and navigate to a specified path.';
-
-  @override
-  String get changelog_v1121_opt_title => 'Optimizations';
-
-  @override
-  String get changelog_v1121_opt_1 =>
-      'Removed some backup icons and redundant code to reduce the app size and improve code maintainability.';
-
-  @override
-  String get changelog_v1121_bugfixes_title => 'Bug Fixes';
-
-  @override
-  String get changelog_v1121_bugfix_1 =>
-      'Fixed the issue where the global search could not find files in the data directory.';
-
-  @override
-  String get changelog_v1121_bugfix_2 =>
-      'Fixed the issue where the ‘Uninstall’ button in the App Management popup overflowed the bottom of the screen on some devices, making it hard to tap.';
-
-  @override
-  String get changelog_v1121_known_issues_title =>
-      'Known Issues (to be fixed in next version)';
-
-  @override
-  String get changelog_v1121_known_issue_1 =>
-      'App crashes after clearing app data and reopening.';
-
-  @override
-  String get changelog_v1121_known_issue_2 =>
-      'Adjusting external subtitle display size in the video player does not take effect temporarily.';
-
-  @override
-  String get changelog_v1121_known_issue_3 =>
-      'Currently only the WebDAV client supports media file streaming playback; other clients do not support it yet.';
-
-  @override
-  String get changelog_v1121_known_issue_4 =>
-      'When backing up large APK installation packages, the interface may get stuck in the execution state, but the actual backup is still running in the background. Please press the back button and go to \"Backed up APKs\" to view the backup files. The backup path is in the main storage ZenFile/Backups directory.';
-
-  @override
-  String get changelog_v1121_known_issue_5 =>
-      'After the FTP sharing service is enabled, directories appear empty when connecting with other FTP clients.';
-
-  @override
   String get msg_editor_lines => 'lines';
 
   @override
@@ -4439,38 +4386,6 @@ class L10nEn extends L10n {
 
   @override
   String get changelog_section_known_issues => '⚠️ Known Issues';
-
-  @override
-  String get changelog_v1124_new_1 =>
-      'Added multilingual copyright attribution on the About page, preserving the original NFile attribution and adding the ZenFile modification attribution.';
-
-  @override
-  String get changelog_v1124_opt_1 =>
-      'Release builds are now split per ABI (--split-per-abi), significantly reducing the arm64 package size.';
-
-  @override
-  String get changelog_v1124_opt_2 =>
-      'Further adapted the audio background-service type and MediaSession activation logic for Android 13+ (some OEM ROMs may still hide the media card due to system restrictions).';
-
-  @override
-  String get changelog_v1124_fix_1 =>
-      'Fixed the FTP transfer progress bar jumping instantly to full due to incorrect SIZE response parsing.';
-
-  @override
-  String get changelog_v1124_fix_2 =>
-      'Fixed SFTP connections to FnOS NAS only showing some shared directories (root-path listing parsing).';
-
-  @override
-  String get changelog_v1124_fix_3 =>
-      'Fixed SFTP remote video playback stopping after ~1 second, the progress bar not moving, and seeking getting stuck at \'buffering\' (restored compatible read strategy and correctly pass file size).';
-
-  @override
-  String get changelog_v1124_fix_4 =>
-      'Fixed the About page \'What\'s New\' sheet still showing the v1.1.23 changelog.';
-
-  @override
-  String get changelog_v1124_known_1 =>
-      'Media playback controls in the notification shade may still fail to appear on some Android 13+ OEM ROMs; system-level restrictions are still being investigated.';
 
   @override
   String get batch_rename_title => 'Batch Rename';
@@ -4540,4 +4455,67 @@ class L10nEn extends L10n {
 
   @override
   String get batch_rename_btn_apply => 'Apply Changes';
+
+  @override
+  String get msg_pdf_quick_presets => 'Quick Performance Presets';
+
+  @override
+  String get msg_pdf_smooth_mode => 'Smooth Mode';
+
+  @override
+  String get msg_pdf_detail_tuning => 'Detail Tuning Options';
+
+  @override
+  String get msg_pdf_single_page_scroll => 'Single page (swipe page by page)';
+
+  @override
+  String get msg_pdf_horizontal_scroll => 'Horizontal (swipe left to right)';
+
+  @override
+  String get msg_pdf_continuous => 'Continuous';
+
+  @override
+  String get msg_pdf_single_page => 'Single';
+
+  @override
+  String get msg_pdf_vertical => 'Vertical';
+
+  @override
+  String get msg_pdf_horizontal => 'Horizontal';
+
+  @override
+  String get changelog_v1125_new_1 =>
+      'The audio player\'s lyrics button now cycles through four states, and shuffle is merged into the playback-mode button.';
+
+  @override
+  String get changelog_v1125_opt_1 =>
+      'Optimized media scan scheduling at startup (concurrency and throttling) to mitigate the app freezing a few seconds after launch on some devices.';
+
+  @override
+  String get changelog_v1125_opt_2 =>
+      'The \"Network\" category now shows the number of saved servers in real time.';
+
+  @override
+  String get changelog_v1125_opt_3 =>
+      'Localized the item-count text on category pages and the \"Select Storage Drive\" title.';
+
+  @override
+  String get changelog_v1125_fix_1 =>
+      'Fixed the \"All files access\" permission prompt not reappearing after clearing app data, which then caused crashes when opening audio files.';
+
+  @override
+  String get changelog_v1125_fix_2 =>
+      'Fixed the notification media control card not showing on Android 13+ and Android 11 (create the notification channel earlier and branch playback-state logic by system version).';
+
+  @override
+  String get changelog_v1125_fix_3 =>
+      'Fixed selected items in the category grid view not being deselectable with another tap.';
+
+  @override
+  String get changelog_v1125_fix_4 =>
+      'Improved SMB / FTP / SFTP remote video streaming stability; fixed the video freezing a few seconds into playback and eventually crashing the app.';
+
+  @override
+  String get changelog_v1125_known_1 =>
+      'SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.';
 }

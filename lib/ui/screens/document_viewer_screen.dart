@@ -359,7 +359,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '快速性能预设',
+                              L10n.of(context).msg_pdf_quick_presets,
                               style: theme.textTheme.titleSmall?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: theme.colorScheme.primary,
@@ -389,7 +389,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                                 Expanded(
                                   child: _buildPresetButton(
                                     context: context,
-                                    label: '流畅模式',
+                                    label: L10n.of(context).msg_pdf_smooth_mode,
                                     subtitle: L10n.of(context).msgb2b08d54,
                                     isActive: _pdfLayoutMode == PdfPageLayoutMode.single && !_pdfEnableTextSelection,
                                     onTap: () {
@@ -411,7 +411,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
 
                       // Detail Tuning header
                       Text(
-                        '详细调节选项',
+                        L10n.of(context).msg_pdf_detail_tuning,
                         style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 16),
@@ -422,23 +422,23 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                         title: L10n.of(context).msg8b519c02,
                         subtitle: _pdfLayoutMode == PdfPageLayoutMode.continuous
                             ? L10n.of(context).msg7f2cd152
-                            : '单页（逐页滑动）',
+                            : L10n.of(context).msg_pdf_single_page_scroll,
                         child: SegmentedButton<PdfPageLayoutMode>(
                           showSelectedIcon: false,
                           style: SegmentedButton.styleFrom(
                             selectedBackgroundColor: theme.colorScheme.primary.withOpacity(0.12),
                             selectedForegroundColor: theme.colorScheme.primary,
                           ),
-                          segments: const [
+                          segments: [
                             ButtonSegment<PdfPageLayoutMode>(
                               value: PdfPageLayoutMode.continuous,
-                              icon: Icon(Icons.view_day_outlined, size: 18),
-                              label: Text('连续'),
+                              icon: const Icon(Icons.view_day_outlined, size: 18),
+                              label: Text(L10n.of(context).msg_pdf_continuous),
                             ),
                             ButtonSegment<PdfPageLayoutMode>(
                               value: PdfPageLayoutMode.single,
-                              icon: Icon(Icons.auto_stories_outlined, size: 18),
-                              label: Text('单页'),
+                              icon: const Icon(Icons.auto_stories_outlined, size: 18),
+                              label: Text(L10n.of(context).msg_pdf_single_page),
                             ),
                           ],
                           selected: {_pdfLayoutMode},
@@ -463,23 +463,23 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                         title: L10n.of(context).msg151ea324,
                         subtitle: _pdfScrollDirection == PdfScrollDirection.vertical
                             ? L10n.of(context).msg7d45ded6
-                            : '水平（从左到右滑动）',
+                            : L10n.of(context).msg_pdf_horizontal_scroll,
                         child: SegmentedButton<PdfScrollDirection>(
                           showSelectedIcon: false,
                           style: SegmentedButton.styleFrom(
                             selectedBackgroundColor: theme.colorScheme.primary.withOpacity(0.12),
                             selectedForegroundColor: theme.colorScheme.primary,
                           ),
-                          segments: const [
+                          segments: [
                             ButtonSegment<PdfScrollDirection>(
                               value: PdfScrollDirection.vertical,
-                              icon: Icon(Icons.swap_vert_rounded, size: 18),
-                              label: Text('垂直'),
+                              icon: const Icon(Icons.swap_vert_rounded, size: 18),
+                              label: Text(L10n.of(context).msg_pdf_vertical),
                             ),
                             ButtonSegment<PdfScrollDirection>(
                               value: PdfScrollDirection.horizontal,
-                              icon: Icon(Icons.swap_horiz_rounded, size: 18),
-                              label: Text('水平'),
+                              icon: const Icon(Icons.swap_horiz_rounded, size: 18),
+                              label: Text(L10n.of(context).msg_pdf_horizontal),
                             ),
                           ],
                           selected: {_pdfScrollDirection},
@@ -507,9 +507,9 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                             color: theme.colorScheme.primary,
                           ),
                           title: Text(L10n.of(context).msg176ef589, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                          subtitle: const Text(
-                            '关闭可显著提升页面渲染速度并消除滚动卡顿。',
-                            style: TextStyle(fontSize: 12),
+                          subtitle: Text(
+                            L10n.of(context).msg864f8706,
+                            style: const TextStyle(fontSize: 12),
                           ),
                           value: _pdfEnableTextSelection,
                           activeColor: theme.colorScheme.primary,

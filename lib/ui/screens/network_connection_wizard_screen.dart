@@ -40,6 +40,9 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
   bool _isTesting = false;
   int _testStepIndex = 0;
 
+  // UI states
+  bool _obscurePassword = true;
+
   @override
   void initState() {
     super.initState();
@@ -655,7 +658,16 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
             controller: _passwordController,
             hint: '••••••••',
             icon: Broken.lock,
-            obscure: true,
+            obscure: _obscurePassword,
+            suffix: IconButton(
+              icon: Icon(
+                _obscurePassword ? Broken.eye_slash : Broken.eye,
+                size: 18,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+              ),
+              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+              splashRadius: 20,
+            ),
           ),
 
           const SizedBox(height: 40),
@@ -857,6 +869,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
     required IconData icon,
     bool obscure = false,
     TextInputType keyboardType = TextInputType.text,
+    Widget? suffix,
   }) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -870,6 +883,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
         hintText: hint,
         hintStyle: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.35)),
         prefixIcon: Icon(icon, size: 18, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+        suffixIcon: suffix,
         filled: true,
         fillColor: isDark ? const Color(0xFF1E293B) : theme.colorScheme.primary.withOpacity(0.04),
         contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),

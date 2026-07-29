@@ -9,6 +9,7 @@ import '../screens/vault_lock_screen.dart';
 import '../screens/ftp_server_screen.dart';
 import '../../services/network_connections_service.dart';
 import '../screens/network_connection_wizard_screen.dart';
+import '../screens/network_category_screen.dart';
 import '../../models/network_connection_model.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
@@ -177,14 +178,22 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                           context,
                           icon: Icons.add_link_rounded,
                           title: L10n.of(context).msg41e625d1,
-                          onTap: () {
-                            Navigator.pop(context);
-                            Navigator.push(
-                              context,
+                          onTap: () async {
+                            final navigator = Navigator.of(context);
+                            navigator.pop(); // 关闭抽屉
+                            final added = await navigator.push<bool>(
                               MaterialPageRoute(
                                 builder: (_) => const NetworkConnectionWizardScreen(),
                               ),
                             );
+                            // 添加成功后跳到已保存连接列表页，与分类页—网络行为一致
+                            if (added == true && navigator.mounted) {
+                              await navigator.push(
+                                MaterialPageRoute(
+                                  builder: (_) => NetworkCategoryScreen(onNavigateTab: widget.onNavigateTab),
+                                ),
+                              );
+                            }
                           },
                         ),
                       ],
@@ -291,7 +300,7 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12.0),
               child: Text(
-                'ZenFile v1.1.24',
+                'ZenFile v1.1.25',
                 style: TextStyle(fontSize: 11.5, color: theme.colorScheme.onSurface.withOpacity(0.4), fontWeight: FontWeight.w600),
               ),
             ),

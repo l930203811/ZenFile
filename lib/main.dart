@@ -494,8 +494,20 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
         mediaOnlyPermission = false;
       }
 
-      // 与 NFile 原项目一致：manageExternalStorage 或 媒体权限 都可以进入首页
-      final hasPermission = manageStorageGranted || mediaOnlyPermission;
+      // 必须授予「所有文件管理」(MANAGE_EXTERNAL_STORAGE) 权限才能进入首页。
+      // 仅媒体权限不足以放行：此前错误地允许仅媒体权限直接进入，导致后续音频播放
+      // 等需要完整文件访问的功能在无权限时崩溃（「清除应用数据后仅音频闪退」的根因）。
+      // 缺少全部文件权限时返回 false，由 _StoragePermissionShield(isMediaOnly) 重新引导
+      // 用户前往设置授予「所有文件管理权限」——与首次启动行为一致。
+      //
+      // 额外防护：部分 ROM（如澎湃OS）在「清除应用数据」后，系统仍报告
+      // MANAGE_EXTERNAL_STORAGE 已授权（permission_handler 的 isGranted 返回 true），
+      // 但实际访问被拒（幽灵授权），仅音频等需完整文件访问的功能会崩溃。此时
+      // SharedPreferences 中的 permissionSetupDone 标志已被清空，故用
+      // `manageStorageGranted && setupDone` 强制重新弹窗，引导用户前往设置
+      // 「关闭并重新开启所有文件管理权限」，与首次安装行为完全一致。
+      final setupDone = PreferencesService.getPermissionSetupDone();
+      final hasPermission = manageStorageGranted && setupDone;
 
       final wasPermissionDenied = _hasPermission == false || _hasPermission == null;
 
@@ -511,6 +523,13 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
           _migrateOldCacheDir();
           _startAutoCleanTimer();
         }
+        _setupSharingIntentObserver();
+        _loadMediaAfterPermission();
+      } else if (manageStorageGranted && _isMediaOnlyPermission) {
+        // 此前处于「仅媒体权限」状态（缺全部文件权限），现已升级为「所有文件管理」权限，
+        // 需重新加载媒体——之前因缺权限媒体扫描为空。
+        _migrateOldCacheDir();
+        _startAutoCleanTimer();
         _setupSharingIntentObserver();
         _loadMediaAfterPermission();
       }
@@ -541,7 +560,14 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
         } catch (_) {}
 
         final mediaOnlyPermission = !manageStorageGranted && (standardStorageGranted && audioGranted);
-        final hasPermission = manageStorageGranted || mediaOnlyPermission;
+        // 必须授予「所有文件管理」权限才放行（见 _checkStoragePermission 说明）。
+        // 授权成功后持久化「已完成权限配置」标志：清除应用数据会清空该标志，
+        // 从而让下一次启动重新弹窗引导（与首次安装一致）。
+        if (manageStorageGranted) {
+          await PreferencesService.setPermissionSetupDone(true);
+        }
+        final setupDone = PreferencesService.getPermissionSetupDone();
+        final hasPermission = manageStorageGranted && setupDone;
 
         if (mounted) {
           setState(() {

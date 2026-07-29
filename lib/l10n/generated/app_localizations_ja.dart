@@ -4226,58 +4226,6 @@ class L10nJa extends L10n {
   String get ui_download_links => 'ダウンロードリンク';
 
   @override
-  String get changelog_v1121_new_features_title => '新機能';
-
-  @override
-  String get changelog_v1121_new_feature_1 =>
-      'アプリ管理：アプリのポップアップメニューに「パッケージ名をコピー」オプションを追加し、ワンタップでパッケージ名をコピーできるようになりました。';
-
-  @override
-  String get changelog_v1121_new_feature_2 =>
-      'パスバー：パスバーを長押しすると編集モードになり、指定したパスを入力して移動できるようになりました。';
-
-  @override
-  String get changelog_v1121_opt_title => '最適化';
-
-  @override
-  String get changelog_v1121_opt_1 =>
-      '一部の予備アイコンと冗長なコードを削除し、アプリのサイズを削減しつつコードの保守性を向上しました。';
-
-  @override
-  String get changelog_v1121_bugfixes_title => 'バグ修正';
-
-  @override
-  String get changelog_v1121_bugfix_1 =>
-      'グローバル検索で data ディレクトリ内のファイルが検索できなかった問題を修正しました。';
-
-  @override
-  String get changelog_v1121_bugfix_2 =>
-      'アプリ管理のポップアップで「アンインストール」ボタンが一部の端末で画面下部にはみ出し、タップしづらくなっていた問題を修正しました。';
-
-  @override
-  String get changelog_v1121_known_issues_title => '既知の問題（次のバージョンで修正予定）';
-
-  @override
-  String get changelog_v1121_known_issue_1 =>
-      'アプリデータをクリアしてから再度開くと、クラッシュが発生します。';
-
-  @override
-  String get changelog_v1121_known_issue_2 =>
-      'ビデオプレーヤーで外部字幕の表示サイズを調整しても、一時的に効果がありません。';
-
-  @override
-  String get changelog_v1121_known_issue_3 =>
-      '現在、WebDAVクライアントのみがメディアファイルのストリーミング再生をサポートしており、他のクライアントはまだサポートしていません。';
-
-  @override
-  String get changelog_v1121_known_issue_4 =>
-      '大きなAPKインストールパッケージをバックアップする際、インターフェースが実行状態で停止する可能性がありますが、実際のバックアップはバックグラウンドで引き続き実行されています。戻るボタンを押してから「バックアップ済みAPK」に移動して、バックアップファイルを確認してください。バックアップパスは、メインストレージのZenFile/Backupsディレクトリにあります。';
-
-  @override
-  String get changelog_v1121_known_issue_5 =>
-      'FTP共有サービスを有効にした後、他のFTPクライアントで接続するとディレクトリが空で表示されます。';
-
-  @override
   String get msg_editor_lines => '行';
 
   @override
@@ -4309,38 +4257,6 @@ class L10nJa extends L10n {
 
   @override
   String get changelog_section_known_issues => '⚠️ Known Issues';
-
-  @override
-  String get changelog_v1124_new_1 =>
-      'Added multilingual copyright attribution on the About page, preserving the original NFile attribution and adding the ZenFile modification attribution.';
-
-  @override
-  String get changelog_v1124_opt_1 =>
-      'Release builds are now split per ABI (--split-per-abi), significantly reducing the arm64 package size.';
-
-  @override
-  String get changelog_v1124_opt_2 =>
-      'Further adapted the audio background-service type and MediaSession activation logic for Android 13+ (some OEM ROMs may still hide the media card due to system restrictions).';
-
-  @override
-  String get changelog_v1124_fix_1 =>
-      'Fixed the FTP transfer progress bar jumping instantly to full due to incorrect SIZE response parsing.';
-
-  @override
-  String get changelog_v1124_fix_2 =>
-      'Fixed SFTP connections to FnOS NAS only showing some shared directories (root-path listing parsing).';
-
-  @override
-  String get changelog_v1124_fix_3 =>
-      'Fixed SFTP remote video playback stopping after ~1 second, the progress bar not moving, and seeking getting stuck at \'buffering\' (restored compatible read strategy and correctly pass file size).';
-
-  @override
-  String get changelog_v1124_fix_4 =>
-      'Fixed the About page \'What\'s New\' sheet still showing the v1.1.23 changelog.';
-
-  @override
-  String get changelog_v1124_known_1 =>
-      'Media playback controls in the notification shade may still fail to appear on some Android 13+ OEM ROMs; system-level restrictions are still being investigated.';
 
   @override
   String get batch_rename_title => 'Batch Rename';
@@ -4410,4 +4326,67 @@ class L10nJa extends L10n {
 
   @override
   String get batch_rename_btn_apply => 'Apply Changes';
+
+  @override
+  String get msg_pdf_quick_presets => 'クイックパフォーマンスプリセット';
+
+  @override
+  String get msg_pdf_smooth_mode => 'スムーズモード';
+
+  @override
+  String get msg_pdf_detail_tuning => '詳細調整オプション';
+
+  @override
+  String get msg_pdf_single_page_scroll => '単一ページ（ページごとにスワイプ）';
+
+  @override
+  String get msg_pdf_horizontal_scroll => '水平（左から右へスワイプ）';
+
+  @override
+  String get msg_pdf_continuous => '連続';
+
+  @override
+  String get msg_pdf_single_page => '単一';
+
+  @override
+  String get msg_pdf_vertical => '垂直';
+
+  @override
+  String get msg_pdf_horizontal => '水平';
+
+  @override
+  String get changelog_v1125_new_1 =>
+      'オーディオプレーヤーの歌詞ボタンが4つの状態を循環切替できるようになり、シャッフル再生は再生モードボタンに統合されました。';
+
+  @override
+  String get changelog_v1125_opt_1 =>
+      '起動時のメディアスキャンのスケジューリング（並行数・スロットリング）を最適化し、一部端末で起動数秒後にフリーズする問題を緩和しました。';
+
+  @override
+  String get changelog_v1125_opt_2 =>
+      'カテゴリページの「ネットワーク」に保存済みサーバー数がリアルタイムで表示されるようになりました。';
+
+  @override
+  String get changelog_v1125_opt_3 =>
+      'カテゴリページの件数表示と「ストレージドライブを選択」タイトルを多言語化しました。';
+
+  @override
+  String get changelog_v1125_fix_1 =>
+      'アプリデータ消去後に「すべてのファイルへのアクセス」許可ダイアログが再表示されず、音声ファイルを開くとクラッシュする問題を修正しました。';
+
+  @override
+  String get changelog_v1125_fix_2 =>
+      'Android 13+ と Android 11 で通知のメディアコントロールカードが表示されない問題を修正しました（通知チャンネルの事前作成とシステムバージョン別の再生状態ロジック分岐）。';
+
+  @override
+  String get changelog_v1125_fix_3 =>
+      'カテゴリページのグリッド表示で選択済み項目を再タップしても選択解除できない問題を修正しました。';
+
+  @override
+  String get changelog_v1125_fix_4 =>
+      'SMB / FTP / SFTP リモート動画ストリーミングの安定性を改善し、再生数秒後に映像が固まり最終的にアプリがクラッシュする問題を修正しました。';
+
+  @override
+  String get changelog_v1125_known_1 =>
+      'SMB / FTP / SFTP リモート動画再生は一部の環境でまだカクつく場合があります。継続的に最適化中です。';
 }

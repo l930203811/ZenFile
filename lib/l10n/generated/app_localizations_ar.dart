@@ -4338,59 +4338,6 @@ class L10nAr extends L10n {
   String get ui_download_links => 'روابط التحميل';
 
   @override
-  String get changelog_v1121_new_features_title => 'ميزات جديدة';
-
-  @override
-  String get changelog_v1121_new_feature_1 =>
-      'إدارة التطبيقات: تمت إضافة خيار «نسخ اسم الحزمة» في قائمة التطبيق المنبثقة، مما يتيح نسخ اسم الحزمة بنقرة واحدة.';
-
-  @override
-  String get changelog_v1121_new_feature_2 =>
-      'شريط المسار: الضغط المطول على شريط المسار يُفعّل وضع التحرير، ويدعم إدخال مسار محدد والانتقال إليه.';
-
-  @override
-  String get changelog_v1121_opt_title => 'تحسينات';
-
-  @override
-  String get changelog_v1121_opt_1 =>
-      'تمت إزالة بعض الأيقونات الاحتياطية والرمز الزائد لتقليل حجم التطبيق وتحسين قابلية صيانة الكود.';
-
-  @override
-  String get changelog_v1121_bugfixes_title => 'إصلاحات الأخطاء';
-
-  @override
-  String get changelog_v1121_bugfix_1 =>
-      'تم إصلاح مشكلة تعذّر بحث البحث العام عن ملفات داخل مجلد data.';
-
-  @override
-  String get changelog_v1121_bugfix_2 =>
-      'تم إصلاح مشكلة خروج زر «إلغاء التثبيت» في نافذة إدارة التطبيقات عن الجزء السفلي من الشاشة على بعض الأجهزة، مما جعل النقر عليه صعباً.';
-
-  @override
-  String get changelog_v1121_known_issues_title =>
-      'المشاكل المعروفة (سيتم إصلاحها في الإصدار التالي)';
-
-  @override
-  String get changelog_v1121_known_issue_1 =>
-      'يتعطل التطبيق بعد مسح بيانات التطبيق وإعادة فتحه.';
-
-  @override
-  String get changelog_v1121_known_issue_2 =>
-      'ضبط حجم عرض الترجمة الخارجية في مشغل الفيديو لا يؤتي ثماره مؤقتًا.';
-
-  @override
-  String get changelog_v1121_known_issue_3 =>
-      'حاليًا يدعم عميل WebDAV فقط تشغيل الوسائط المتدفقة، بينما لا تدعم العملاء الآخرون ذلك بعد.';
-
-  @override
-  String get changelog_v1121_known_issue_4 =>
-      'عند نسخ احتياطي لحزم APK كبيرة، قد تتوقف الواجهة في حالة التنفيذ، لكن النسخ الاحتياطي الفعلي لا يزال قيد التشغيل في الخلفية. يرجى الضغط على زر الرجوع والانتقال إلى \"APK المنسوخ احتياطيًا\" لعرض ملفات النسخ الاحتياطي. مسار النسخ الاحتياطي هو في دليل ZenFile/Backups في التخزين الرئيسي.';
-
-  @override
-  String get changelog_v1121_known_issue_5 =>
-      'بعد تمكين خدمة مشاركة FTP، تظهر الأدلة فارغة عند الاتصال بعملاء FTP الآخرين.';
-
-  @override
   String get msg_editor_lines => 'سطر';
 
   @override
@@ -4423,38 +4370,6 @@ class L10nAr extends L10n {
 
   @override
   String get changelog_section_known_issues => '⚠️ Known Issues';
-
-  @override
-  String get changelog_v1124_new_1 =>
-      'Added multilingual copyright attribution on the About page, preserving the original NFile attribution and adding the ZenFile modification attribution.';
-
-  @override
-  String get changelog_v1124_opt_1 =>
-      'Release builds are now split per ABI (--split-per-abi), significantly reducing the arm64 package size.';
-
-  @override
-  String get changelog_v1124_opt_2 =>
-      'Further adapted the audio background-service type and MediaSession activation logic for Android 13+ (some OEM ROMs may still hide the media card due to system restrictions).';
-
-  @override
-  String get changelog_v1124_fix_1 =>
-      'Fixed the FTP transfer progress bar jumping instantly to full due to incorrect SIZE response parsing.';
-
-  @override
-  String get changelog_v1124_fix_2 =>
-      'Fixed SFTP connections to FnOS NAS only showing some shared directories (root-path listing parsing).';
-
-  @override
-  String get changelog_v1124_fix_3 =>
-      'Fixed SFTP remote video playback stopping after ~1 second, the progress bar not moving, and seeking getting stuck at \'buffering\' (restored compatible read strategy and correctly pass file size).';
-
-  @override
-  String get changelog_v1124_fix_4 =>
-      'Fixed the About page \'What\'s New\' sheet still showing the v1.1.23 changelog.';
-
-  @override
-  String get changelog_v1124_known_1 =>
-      'Media playback controls in the notification shade may still fail to appear on some Android 13+ OEM ROMs; system-level restrictions are still being investigated.';
 
   @override
   String get batch_rename_title => 'Batch Rename';
@@ -4524,4 +4439,67 @@ class L10nAr extends L10n {
 
   @override
   String get batch_rename_btn_apply => 'Apply Changes';
+
+  @override
+  String get msg_pdf_quick_presets => 'إعدادات الأداء السريعة';
+
+  @override
+  String get msg_pdf_smooth_mode => 'الوضع السلس';
+
+  @override
+  String get msg_pdf_detail_tuning => 'خيارات الضبط التفصيلي';
+
+  @override
+  String get msg_pdf_single_page_scroll => 'صفحة واحدة (تمرير صفحة بصفحة)';
+
+  @override
+  String get msg_pdf_horizontal_scroll => 'أفقي (تمرير من اليسار إلى اليمين)';
+
+  @override
+  String get msg_pdf_continuous => 'متواصل';
+
+  @override
+  String get msg_pdf_single_page => 'واحدة';
+
+  @override
+  String get msg_pdf_vertical => 'عمودي';
+
+  @override
+  String get msg_pdf_horizontal => 'أفقي';
+
+  @override
+  String get changelog_v1125_new_1 =>
+      'زر كلمات الأغاني في مشغّل الصوت يتنقّل الآن بين أربع حالات، وتم دمج التشغيل العشوائي في زر وضع التشغيل.';
+
+  @override
+  String get changelog_v1125_opt_1 =>
+      'تحسين جدولة فحص الوسائط عند بدء التشغيل (التزامن والتقييد) لتخفيف تجمّد التطبيق بعد ثوانٍ من فتحه على بعض الأجهزة.';
+
+  @override
+  String get changelog_v1125_opt_2 =>
+      'تعرض فئة «الشبكة» الآن عدد الخوادم المحفوظة في الوقت الفعلي.';
+
+  @override
+  String get changelog_v1125_opt_3 =>
+      'تمت ترجمة نص العدد في صفحات الفئات وعنوان «اختيار محرك التخزين».';
+
+  @override
+  String get changelog_v1125_fix_1 =>
+      'إصلاح عدم ظهور نافذة إذن «الوصول إلى جميع الملفات» مجددًا بعد مسح بيانات التطبيق، مما كان يسبب انهيار التطبيق عند فتح ملفات الصوت.';
+
+  @override
+  String get changelog_v1125_fix_2 =>
+      'إصلاح عدم ظهور بطاقة التحكم بالوسائط في الإشعارات على Android 13+ و Android 11 (إنشاء قناة الإشعارات مبكرًا وتفريع منطق حالة التشغيل حسب إصدار النظام).';
+
+  @override
+  String get changelog_v1125_fix_3 =>
+      'إصلاح تعذّر إلغاء تحديد العناصر المحددة في عرض الشبكة بصفحة الفئات بالنقر مرة أخرى.';
+
+  @override
+  String get changelog_v1125_fix_4 =>
+      'تحسين استقرار بث الفيديو عن بُعد عبر SMB / FTP / SFTP، وإصلاح تجمّد الصورة بعد ثوانٍ من التشغيل وانهيار التطبيق في النهاية.';
+
+  @override
+  String get changelog_v1125_known_1 =>
+      'قد يظل تشغيل الفيديو عن بُعد عبر SMB / FTP / SFTP متقطعًا في بعض الحالات؛ التحسين مستمر.';
 }

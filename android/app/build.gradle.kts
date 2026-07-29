@@ -88,4 +88,6 @@ dependencies {
     }
     implementation("com.google.guava:guava:33.5.0-android")
     implementation("com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava")
+    // 原生 SSH/SFTP（JSch）：加解密走 Android JCE/OpenSSL 硬件加速，突破纯 Dart 加密速率上限
+    implementation("com.jcraft:jsch:0.1.55")
 }

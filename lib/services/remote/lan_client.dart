@@ -325,7 +325,10 @@ class LanClient extends RemoteClient {
   ) async {
     final session = _requireSession;
     final file = File(localPath);
-    if (file.existsSync()) file.deleteSync();
+    // 不删除已存在的目标文件：原生侧 FileOutputStream 打开时会自行截断覆盖
+    //（同一路径、同一 inode）。此处 deleteSync 会把流式代理【预创建并可能已
+    // 打开读句柄】的 .partial 变成孤儿 inode——代理旧句柄永远读到空数据，
+    // 表现为播放几秒后画面卡死。
     file.parent.createSync(recursive: true);
 
     // Kick off the download on the native side. The native helper streams

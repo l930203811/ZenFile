@@ -102,24 +102,83 @@ Future<void> _fetchRangeToFile(
 ///
 /// The cache file is written in [FileMode.append] so existing bytes are
 /// preserved (no truncation) and the write lands at the exact offset.
+/// 把 [tempPath] 的内容以 [start] 偏移写入 [targetPath]（不截断已有内容）。
+///
+/// 关键点：用 append 模式打开后再 [FileRandomAccessFile.setPosition]，可在
+/// 任意偏移写入而不破坏其它位置已有字节——这正是把「按需随机读」与「后台分块
+/// 下载」各自落盘的数据拼回同一 `.partial` / `.seekcache` 的正确方式（write
+/// 模式会清空整文件，append 模式才不会）。
+/// 把 [tempPath] 的内容以 [start] 偏移写入 [targetPath]（不截断已有内容）。
+///
+/// 关键点：用 append 模式打开后再 [FileRandomAccessFile.setPosition]，可在
+/// 任意偏移写入而不破坏其它位置已有字节——这正是把「按需随机读」与「后台分块
+/// 下载」各自落盘的数据拼回同一 `.partial` / `.seekcache` 的正确方式（write
+/// 模式会清空整文件，append 模式才不会）。
+///
+/// 重要：改为**分块流式拷贝**（64KB/块），不再用 [File.readAsBytes] 一次性把
+/// 整段（后台块 16MB、按需 seek 最多 64MB）载入内存。旧实现会把 16~64MB 一次性
+/// 读进 RAM 再整体写回，在主 isolate 上造成 100~300ms 的同步阻塞——这正是
+/// 退出播放器后整个浏览页（甚至本地浏览页）卡死/崩溃的根因。分块拷贝每次只
+/// 处理 64KB，且每个 await 之间事件循环可响应 UI，彻底消除主线程长阻塞。
+/// [isCancelled] 允许在拷贝中途（如 dispose 已触发）立即中止，避免无谓的 IO。
+/// 把 [tempPath] 的内容按 [start] 偏移写入【已打开的】[raf]。
+///
+/// 关键修复（v2 回归）：早期实现用 `FileMode.append` 打开目标文件再
+/// `setPosition(start)` 写入，但在 Linux/Android（O_APPEND）上，append 模式的
+/// 写操作【始终追加到文件末尾】，setPosition 对写无效。于是当 [start] 不是文件
+/// 末尾（例如拖动进度条后的随机偏移、或 reseed 跳到播放头）时，数据被写错位置，
+/// partial / seekcache 出现错位脏数据，播放器读到乱码 → 「播放一两秒后卡死闪退」。
+///
+/// 正确做法：由调用方持有【以 `FileMode.write` 打开、会话级持久】的 RandomAccessFile
+/// 句柄（write 模式非 O_APPEND，setPosition 对写生效），本函数【自己不开关文件】，
+/// 只在给定句柄的精确偏移处写入。无论顺序下载还是随机 seek 写入，落盘偏移都精确
+/// 等于 [start]，彻底消除错位。
+Future<int> _spliceIntoFile(
+  RandomAccessFile raf,
+  String tempPath,
+  int start, {
+  bool Function()? isCancelled,
+}) async {
+  final temp = File(tempPath);
+  if (!await temp.exists()) return 0;
+  final length = await temp.length();
+  if (length <= 0) return 0;
+    var remaining = length;
+    try {
+      await raf.setPosition(start);
+      final inFile = await temp.open(mode: FileMode.read);
+      try {
+        const block = 64 * 1024;
+        while (remaining > 0) {
+        if (isCancelled?.call() == true) break;
+        final toRead = remaining > block ? block : remaining;
+        final data = await inFile.read(toRead);
+        if (data.isEmpty) break;
+        await raf.writeFrom(data);
+        remaining -= data.length;
+      }
+    } finally {
+      await inFile.close();
+    }
+    return length - remaining;
+  } catch (e) {
+    debugPrint('RemoteStreamingService: splice error: $e');
+    return 0;
+  }
+}
+
 Future<int> _spliceIntoSeekCache(
   _StreamSession session,
   String tempPath,
   int start,
 ) async {
-  final temp = File(tempPath);
-  if (!await temp.exists()) return 0;
-  final length = await temp.length();
-  if (length <= 0) return 0;
-  final raf = await File(session.seekCachePath).open(mode: FileMode.append);
-  try {
-    await raf.setPosition(start);
-    // temp holds at most seekChunk (32MB); a single read is acceptable here.
-    await raf.writeFrom(await temp.readAsBytes());
-    return length;
-  } finally {
-    await raf.close();
-  }
+  final raf = await session._seekCacheWriteHandle();
+  return _spliceIntoFile(
+    raf,
+    tempPath,
+    start,
+    isCancelled: () => session.disposed,
+  );
 }
 
 class RemoteStreamingService {
@@ -273,6 +332,13 @@ class RemoteStreamingService {
       }
     }
 
+    // 注意：此处不再触发 reseed（后台下载跳到播放头）。
+    // reseed 会把数据写到 partial 的远端偏移，中间留下稀疏空洞（全 0），
+    // 而 _syncFileLength 用「文件长度」当可读水位 → 空洞把 downloadedBytes
+    // 瞬间撑大 → 顺序读取的 _streamFrom 读到空洞区全 0 字节喂给 libmpv
+    // → 视频冻结、音频缓冲耗尽后崩溃。所有 seek（moov 元数据 / 拖动）改由
+    // 按需 seekClient → seekCache 提供，partial 保持严格顺序连续。
+
     if (start >= fileSize) {
       response.statusCode = 416;
       response.headers.set(HttpHeaders.contentRangeHeader, 'bytes */$fileSize');
@@ -308,8 +374,15 @@ class RemoteStreamingService {
     int rangeEnd;
     bool isPartial;
 
-    if (start < partialAvail) {
-      // 后台下载已覆盖该位置，直接读 partial（按下载进度门控）
+    // 播放头位于「后台下载头」附近（含略微落后）→ 直接读 partial 并跟随后台下载
+    // 推进，绝不在此发起按需远程 seek。旧实现用严格 `<`，当 start 恰好等于
+    // partialAvail（正好在下载头）时落入 on-demand seek，而 on-demand seek 依赖
+    // 脆弱的 downloadRange(pos>0)（见 _doDownload 说明），会失败并导致画面几秒后
+    // 冻结。改用「<= + 8MB 前瞻」：正常播放（跟随下载头）一律读 partial 并等待下载
+    // 推进，只有用户大幅拖动（领先 > 8MB）才走按需 seek（极少触发、可容忍失败回退）。
+    final lookahead = 8 * 1024 * 1024;
+    if (start <= partialAvail + lookahead) {
+      // 后台下载已覆盖该位置（或即将覆盖），直接读 partial（按下载进度门控）
       readFilePath = session.partialPath;
       readFileStart = start;
       rangeStart = start;
@@ -324,7 +397,8 @@ class RemoteStreamingService {
       isPartial = false;
     } else {
       // 需要按需远程随机读取（拖动到尚未下载到的位置）
-      const seekChunk = 64 * 1024 * 1024; // 单次预取上限：更大区间减少拖动后的远程往返
+      const seekChunk = 16 * 1024 * 1024; // 单次预取上限：拖动后 1~2s 内即可恢复播放，
+      // 过大（如 64MB）会让拖动后长时间停在“正在缓存”而被误判为“拖动失效”。
       final fetchLen = (fileSize - start).clamp(1, seekChunk);
       final tempSeek = '${session.localPath}.seek.tmp';
       await _fetchRangeToFile(session, start, fetchLen, tempSeek);
@@ -341,6 +415,11 @@ class RemoteStreamingService {
         rangeEnd = clampedEnd;
         isPartial = true;
       } else {
+        // 只记录【本次按需抓取】的精确区间 [start, start+cachedLen)，不取并集。
+        // 取并集会把两次不相邻的抓取（如 moov 在文件尾 + 拖动到文件头）合并成
+        // 一个大区间，中间的稀疏空洞（全 0）会被 seekCoversStart 误判为命中，
+        // 导致 _streamFrom 读到全 0 字节喂给 libmpv → 视频冻结/崩溃。
+        // 覆盖式记录虽会令跨区间重复请求重新抓取，但绝不会把空洞当命中，安全。
         session._mergedStart = start;
         session._mergedEnd = start + cachedLen;
         readFilePath = session.seekCachePath;
@@ -372,9 +451,192 @@ class RemoteStreamingService {
       debugPrint('RemoteStreamingService: flush headers failed: $e');
     }
 
-    // Stream bytes as they arrive (from partial for normal playback, from the
-    // seek cache file for on-demand seeks — fully on local disk, served fast).
-    await _streamFrom(session, response, readFilePath, readFileStart, rangeEnd + 1, isPartial);
+    // 连续服务整个请求区间：在「后台顺序 partial」与「按需 seek 缓存」之间按字节
+    // 动态切换数据源。彻底消除旧逻辑「从 seek 缓存服务一段后直接 break、HTTP 连接
+    // 提前关闭」导致的「播放 1~2 秒后画面卡死、音频继续十几秒后崩溃」。
+    await _streamRange(session, response, start, rangeEnd + 1, fileSize);
+  }
+
+  /// 连续服务整个请求区间 [rangeStart, endExclusive)，在「后台顺序下载的 partial」
+  /// 与「按需随机读取的 seek 缓存」之间按字节位置动态切换数据源，彻底消除旧实现
+  /// 「从 seek 缓存服务 16MB 后直接 break、HTTP 连接提前关闭」导致的「播放 1~2 秒
+  /// 后画面卡死、音频继续十几秒后崩溃」。
+  ///
+  /// 设计要点：
+  ///  - 当前位置已被后台 partial 覆盖 → 从 partial 读，并跟随后台下载进度
+  ///    （未覆盖时等待本地落盘增长，不提前断开）。
+  ///  - 当前位置尚未被 partial 覆盖 → 先确认 seek 缓存是否覆盖；未覆盖则按需经
+  ///    seekClient 拉取下一段并并入 seek 缓存，再从 seek 缓存读。
+  ///  - 拉取失败（seekClient 异常/返回 0 字节）时回落等待后台下载推进；后台推进后
+  ///    自然切回 partial 分支，数据流永不无故中断。
+  Future<void> _streamRange(
+    _StreamSession session,
+    HttpResponse response,
+    int rangeStart,
+    int endExclusive,
+    int fileSize,
+  ) async {
+    const chunkSize = 1024 * 1024; // 1MB 读块，降低单帧 UI 占用
+    int readOffset = rangeStart;
+    RandomAccessFile? partialRaf;
+    RandomAccessFile? seekRaf;
+    bool bootstrapped = false;
+    try {
+      while (readOffset < endExclusive) {
+        if (session.disposed || session.downloadFailed) break;
+
+        final downloaded = session.downloadedBytes;
+        final seekStart = session._mergedStart;
+        final seekEnd = session._mergedEnd;
+        final seekCovers = seekEnd > 0 && readOffset >= seekStart && readOffset < seekEnd;
+
+        // A) 后台顺序下载已覆盖当前位置 → 从 partial 读，跟随后台下载推进（主路径）
+        if (readOffset < downloaded) {
+          partialRaf ??= await File(session.partialPath).open(mode: FileMode.read);
+          final avail = downloaded.clamp(0, endExclusive);
+          final toRead = (avail - readOffset).clamp(0, chunkSize).toInt();
+          if (toRead > 0) {
+            await partialRaf.setPosition(readOffset);
+            final data = await partialRaf.read(toRead);
+            if (data.isNotEmpty) {
+              response.add(data);
+              await response.flush();
+              readOffset += data.length;
+              continue;
+            }
+            // 读到空数据但门控说有数据：读句柄可能指向被下载客户端「删除重建」
+            // 的旧 inode（孤儿文件永远读到空）。关闭重开句柄指向新文件，
+            // 并用真实延时让出事件循环，避免快速自旋。
+            try {
+              await partialRaf.close();
+            } catch (_) {}
+            partialRaf = null;
+            await Future.delayed(const Duration(milliseconds: 50));
+            continue;
+          }
+          // partial 文件瞬时滞后（竞争窗口）→ 落到下方「等待下载推进」
+        }
+
+        // B) seek 缓存覆盖当前位置 → 从本地 seekcache 读（拖动缓冲 / 初始 16MB 引导缓冲）
+        if (seekCovers) {
+          seekRaf ??= await File(session.seekCachePath).open(mode: FileMode.read);
+          final segEnd = seekEnd.clamp(readOffset, endExclusive);
+          final toRead = (segEnd - readOffset).clamp(0, chunkSize).toInt();
+          if (toRead > 0) {
+            await seekRaf.setPosition(readOffset);
+            final data = await seekRaf.read(toRead);
+            if (data.isNotEmpty) {
+              response.add(data);
+              await response.flush();
+              readOffset += data.length;
+              continue;
+            }
+          }
+          // 本段缓存读完 → 重新评估（切回 partial 或再次按需拉取）
+        }
+
+        // C) 下载已完成且文件完整落盘 → 直接顺序服务剩余部分，不再轮询等待。
+        //    v3 后数据一直留在 partialPath（不重命名），必须回退检查 partial，
+        //    否则只查 localPath 会误判无数据而提前断流。
+        if (session.downloadComplete) {
+          File finalFile = File(session.localPath);
+          bool srcOk = false;
+          try {
+            srcOk = finalFile.existsSync() && finalFile.lengthSync() > readOffset;
+          } catch (_) {}
+          if (!srcOk) {
+            finalFile = File(session.partialPath);
+            try {
+              srcOk = finalFile.existsSync() && finalFile.lengthSync() > readOffset;
+            } catch (_) {}
+          }
+          if (srcOk) {
+            try {
+              await partialRaf?.close();
+            } catch (_) {}
+            try {
+              await seekRaf?.close();
+            } catch (_) {}
+            partialRaf = null;
+            seekRaf = null;
+            final raf = await finalFile.open(mode: FileMode.read);
+            try {
+              await raf.setPosition(readOffset);
+              while (readOffset < endExclusive) {
+                final toRead = (endExclusive - readOffset).clamp(0, chunkSize).toInt();
+                final data = await raf.read(toRead);
+                if (data.isEmpty) break;
+                response.add(data);
+                await response.flush();
+                readOffset += data.length;
+              }
+            } finally {
+              await raf.close();
+            }
+            break;
+          }
+          break;
+        }
+
+        // D) 真实「随机跳转」领先下载头（拖动到尚未下载到的位置）→ 按需经独立 seekClient 拉取
+        final aheadBy = readOffset - downloaded;
+        if (aheadBy > 1024 * 1024 && !seekCovers) {
+          final fetchLen = (endExclusive - readOffset).clamp(1, 16 * 1024 * 1024).toInt();
+          final tempSeek = '${session.localPath}.seek.tmp';
+          await _fetchRangeToFile(session, readOffset, fetchLen, tempSeek);
+          final cachedLen = await _spliceIntoSeekCache(session, tempSeek, readOffset);
+          try {
+            await File(tempSeek).delete();
+          } catch (_) {}
+          if (cachedLen > 0) {
+            session._mergedStart = readOffset;
+            session._mergedEnd = readOffset + cachedLen;
+          }
+          if (readOffset < session.downloadedBytes) continue;
+          final grew = await _waitForLocalGrowth(session, readOffset, File(session.partialPath));
+          if (!grew) break;
+          continue;
+        }
+
+        // E) 启动引导：partial 仍为空时，先用独立 seekClient 拉前 16MB 作为初始缓冲，
+        //    使播放器立即拿到数据，避免等待首个分块下载完成才出画面（否则开局即卡）。
+        if (!bootstrapped && downloaded <= 0 && !seekCovers) {
+          bootstrapped = true;
+          final tempSeek = '${session.localPath}.seek.tmp';
+          await _fetchRangeToFile(session, readOffset, 16 * 1024 * 1024, tempSeek);
+          final cachedLen = await _spliceIntoSeekCache(session, tempSeek, readOffset);
+          try {
+            await File(tempSeek).delete();
+          } catch (_) {}
+          if (cachedLen > 0) {
+            session._mergedStart = readOffset;
+            session._mergedEnd = readOffset + cachedLen;
+          }
+          if (readOffset < session.downloadedBytes) continue;
+          final grew = await _waitForLocalGrowth(session, readOffset, File(session.partialPath));
+          if (!grew) break;
+          continue;
+        }
+
+        // F) 已追平下载头（readOffset == downloaded）且仍在下载 → 等待后台下载推进更多字节，
+        //    【绝不】在此发起新的按需拉取。旧实现正是此处误触发 16MB 按需抓取 + 等待，
+        //    造成「播放几帧 → 停顿 → 播放几帧」的周期性卡顿（前 5 秒靠初始缓冲流畅，
+        //    缓冲耗尽后即反复卡顿）。WebDAV 直连由 libmpv 原生跟随播放头因而流畅，
+        //    代理必须同样连续地跟随后台下载，而非周期性另起抓取。
+        final grew = await _waitForLocalGrowth(session, readOffset, File(session.partialPath));
+        if (!grew) break;
+      }
+    } finally {
+      try {
+        await partialRaf?.close();
+      } catch (_) {}
+      try {
+        await seekRaf?.close();
+      } catch (_) {}
+      try {
+        await response.close();
+      } catch (_) {}
+    }
   }
 
   /// Serve with unknown file size: chunked transfer, no seek.
@@ -466,7 +728,6 @@ class RemoteStreamingService {
 
     int readOffset = fileStart;
     bool hasRetried = false;
-    int idleCount = 0;
 
     try {
       while (readOffset < target) {
@@ -488,7 +749,6 @@ class RemoteStreamingService {
                 await raf.setPosition(readOffset);
                 final len = await finalFile.length();
                 if (len > readOffset) {
-                  idleCount = 0;
                   continue;
                 }
               }
@@ -496,19 +756,15 @@ class RemoteStreamingService {
             break;
           }
           if (!isPartial) break; // 临时 seek 文件已完整，无更多数据
-          await session.waitForMoreBytes(readOffset + 1).timeout(
-            const Duration(seconds: 5),
-            onTimeout: () {},
-          );
-          idleCount++;
-          if (idleCount > 12) {
-            debugPrint('RemoteStreamingService: idle timeout at $readOffset');
-            break;
-          }
+          // 顺序下载尚未覆盖该位置：直接轮询本地文件长度（而非依赖进度信号），
+          // 直到有新数据或下载失败/完成。放宽超时（30s）避免瞬时下载抖动就切断流——
+          // 旧实现仅 ~2.4s（idleCount>12）就断开，任何下载突发停顿都会表现为
+          // “播放几帧→暂停→播放几帧”的卡顿。WebDAV 直连服务器由 libmpv 原生处理
+          // Range 因而流畅，代理必须更宽容地等待本地落盘字节。
+          final grew = await _waitForLocalGrowth(session, readOffset, readFile);
+          if (!grew) break;
           continue;
         }
-
-        idleCount = 0;
 
         final available = downloaded.clamp(0, target);
         final toRead = (available - readOffset).clamp(0, chunkSize).toInt();
@@ -560,6 +816,69 @@ class RemoteStreamingService {
       } catch (_) {}
     }
   }
+
+  /// 轮询本地 partial 文件长度，直到 [readOffset] 之后出现新数据，或下载
+  /// 失败/完成/超时（30s）。返回 true 表示有新数据可读，false 表示应结束流。
+  ///
+  /// 设计：直接读本地磁盘文件长度（而非依赖进度回调信号），给后台顺序下载
+  /// 更宽容的等待窗口。旧实现仅 ~2.4s（idleCount>12）就断开流，任何下载
+  /// 瞬时停顿都会表现为「播放几帧→暂停→播放几帧」。WebDAV 由 libmpv 直连
+  /// 服务器原生处理 Range 因而流畅，本代理必须同样宽容地等待本地落盘字节。
+  Future<bool> _waitForLocalGrowth(
+    _StreamSession session,
+    int readOffset,
+    File readFile,
+  ) async {
+    const timeout = Duration(seconds: 30);
+    final sw = Stopwatch()..start();
+    while (sw.elapsed < timeout) {
+      if (session.disposed || session.downloadFailed) return false;
+      // 下载可能已完成。注意 v3 后数据一直留在 partialPath（本服务不重命名），
+      // 必须同时检查 partial 与最终路径，否则会误判「无数据」提前断流。
+      if (session.downloadComplete) {
+        session._syncFileLength();
+        try {
+          final finalFile = File(session.localPath);
+          if (finalFile.existsSync() && finalFile.lengthSync() > readOffset) {
+            return true;
+          }
+          final partial = File(session.partialPath);
+          if (partial.existsSync() && partial.lengthSync() > readOffset) {
+            return true;
+          }
+        } catch (_) {}
+        return false;
+      }
+      // 直接查本地磁盘：partial 已落盘字节数（比 100ms 轮询更即时）。
+      // lengthSync 对瞬时不存在的文件会抛 FileSystemException（SMB 客户端
+      // 启动时可能删除重建目标文件），必须容错，否则异常穿透断流。
+      int len = 0;
+      try {
+        len = readFile.existsSync() ? readFile.lengthSync() : 0;
+      } catch (_) {}
+      if (len > readOffset) {
+        // ★ 崩溃根因修复（ANR 死循环）★
+        // 旧实现此处【同步立即 return true】：外层 _streamRange 的 while 循环
+        // 「A 分支门控值 downloadedBytes 过期 → 落到 F → 本函数立即 true →
+        // 再循环」全程只产生【微任务】，不含任何真实异步等待（计时器/IO 事件）。
+        // Dart 事件循环规则是「微任务队列非空则永不处理事件队列」，于是
+        // 100ms 的 _lengthPollTimer 永远得不到执行 → downloadedBytes 永远
+        // 停留在旧值 → 死循环永不退出 → 主 isolate 被微任务榨干：UI 彻底
+        // 冻结（画面卡住）、音频靠 libmpv 原生缓冲继续放十几秒、随后系统
+        // ANR 杀进程（闪退）。内置播放与第三方播放器共用本代理，故都崩。
+        // 修复：① 立即用磁盘真实长度刷新 downloadedBytes（A 分支马上可推进）；
+        // ② 用真实计时器（Duration.zero 也走 Timer/事件队列）让出事件循环，
+        //    彻底杜绝微任务垄断。
+        session._syncFileLength();
+        await Future.delayed(Duration.zero);
+        return true;
+      }
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+    // 30s 内本地仍无新字节（下载可能已停但状态未更新）——保守结束流，避免
+    // 把播放器永远吊在「正在缓存」。播放器会按需再发 Range 请求重试。
+    return false;
+  }
 }
 
 class _StreamSession {
@@ -589,6 +908,22 @@ class _StreamSession {
   int _downloadedBytes = 0;
   Completer<void>? _progressSignal;
 
+  // 会话级持久写句柄：以 FileMode.write 打开（非 O_APPEND），
+  // setPosition 对写生效，彻底消除 O_APPEND 下写入偏移被强制到文件末尾
+  // 导致的错位（这是「播放一两秒后卡死闪退」v2 回归的根因）。
+  RandomAccessFile? _partialRaf;
+  RandomAccessFile? _seekCacheRaf;
+
+  Future<RandomAccessFile> _partialWriteHandle() async {
+    _partialRaf ??= await File(partialPath).open(mode: FileMode.write);
+    return _partialRaf!;
+  }
+
+  Future<RandomAccessFile> _seekCacheWriteHandle() async {
+    _seekCacheRaf ??= await File(seekCachePath).open(mode: FileMode.write);
+    return _seekCacheRaf!;
+  }
+
   _StreamSession({
     required this.client,
     required this.remotePath,
@@ -616,6 +951,10 @@ class _StreamSession {
   /// -1 means no region is cached yet. Used to short-circuit repeat seeks.
   int _mergedStart = -1;
   int _mergedEnd = -1;
+
+  // reseed 机制已移除：后台下载严格从 0 顺序写入 partial，绝不乱序偏移写入，
+  // 避免 partial 出现稀疏空洞导致 _streamFrom 读取全 0 字节喂给播放器崩溃。
+  // 所有 seek（moov / 拖动）由按需 seekClient → seekCache 提供。
 
   bool get downloadComplete => _downloadComplete;
   bool get downloadFailed => _downloadFailed;
@@ -698,76 +1037,71 @@ class _StreamSession {
   }
 
   Future<void> _doDownload() async {
+    // 跳过大文件 stat：直接用 knownFileSize（来自文件列表元数据）或 -1。
+    // 未知大小时不阻塞，改为逐块下载时通过「实际返回量 < 请求量」探测 EOF。
+    if (knownFileSize != null && knownFileSize! > 0) {
+      _totalBytes = knownFileSize!;
+      debugPrint('RemoteStreamingService: using knownFileSize=$_totalBytes');
+    } else {
+      _totalBytes = -1;
+      debugPrint('RemoteStreamingService: unknown size, will detect EOF per chunk');
+    }
+    if (!_sizeCompleter.isCompleted) {
+      _sizeCompleter.complete(_totalBytes);
+    }
+
+    // 准备 .partial 文件
+    final partial = File(partialPath);
+    if (!await partial.parent.exists()) {
+      await partial.parent.create(recursive: true);
+    }
+    if (await partial.exists()) {
+      await partial.delete();
+    }
+
+    // 预创建空 .partial 文件：避免 _streamRange 在 downloadFile 落盘前打开读
+    // 句柄时因文件不存在而抛异常（进而提前关闭 HTTP 响应 → 卡顿）。
     try {
-      // Skip getFileSize entirely to avoid blocking the download.
-      // getFileSize can take 10-15s (SFTP stat, FTP SIZE, SMB native call),
-      // and client.downloadFile may ALSO query size internally.
-      // Instead, rely on knownFileSize (from file list metadata) or -1.
-      // The HTTP handler uses waitForSize().timeout(2s) — if size is unknown
-      // by then, it falls back to chunked 200 (no seek, but plays immediately).
-      // downloadFile's internal stat/getFileSize also has a 2s timeout, so
-      // data starts flowing ASAP.
-      if (knownFileSize != null && knownFileSize! > 0) {
-        _totalBytes = knownFileSize!;
-        debugPrint('RemoteStreamingService: using knownFileSize=$_totalBytes');
-      } else {
-        _totalBytes = -1;
-        debugPrint('RemoteStreamingService: unknown size, will use chunked 200');
-      }
-      if (!_sizeCompleter.isCompleted) {
-        _sizeCompleter.complete(_totalBytes);
-      }
+      await partial.create();
+    } catch (_) {}
 
-      // Ensure parent directory exists
-      final partial = File(partialPath);
-      if (!await partial.parent.exists()) {
-        await partial.parent.create(recursive: true);
-      }
-      // If a stale partial file exists from a previous run, remove it
-      if (await partial.exists()) {
-        await partial.delete();
-      }
-
-      // Download to partial file. The client manages its own file handle
-      // and writes directly to partialPath.
-      // The progress callback is used as a wake-up signal to immediately
-      // re-check file length (via _syncFileLength), giving faster updates
-      // than the 100ms timer alone.
-      await client.downloadFile(remotePath, partialPath, (progress) {
-        // Immediately sync file length on progress update — this detects
-        // new data faster than waiting for the 100ms timer.
-        _syncFileLength();
-        _notifyProgress();
-      });
-
-      // Stop polling — we'll do a final sync below
-      _lengthPollTimer?.cancel();
-      _lengthPollTimer = null;
-
-      // Final sync: update _downloadedBytes and _totalBytes
-      if (await partial.exists()) {
-        _downloadedBytes = await partial.length();
-        if (_totalBytes <= 0) {
-          _totalBytes = _downloadedBytes;
-        } else {
-          _downloadedBytes = _totalBytes;
-        }
-      }
+    // 关键修复（v3）：改用 client.downloadFile() 把整个远程文件顺序下载到
+    // partialPath，再由代理从「不断增长的 partial 文件」流式服务给播放器。
+    //
+    // 为何不用旧的分块 downloadRange 循环：
+    // 旧实现逐块调用 client.downloadRange(remotePath, temp, pos, length)，而
+    // downloadRange 在三个客户端上【第二块（pos>0）必然失败】——
+    //   · 原生 SFTP（JSch）：downloadRange 用 ch.get(remotePath) 从文件头读 +
+    //     InputStream.skip(startByte) 跳转偏移，但 JSch 的 SFTP 输入流 skip
+    //     不可靠（常一次跳不足或返回 0），pos>0 区间取到错误/0 字节；
+    //   · smbj / FTP 在共享会话上并发区间读易异常。
+    // 于是第二块 actual<=0 → 重试 3 次 → downloadFailed=true → _streamRange
+    // 断流 → 画面播几秒后冻结、音频缓冲耗尽崩溃。WebDAV 直连不经代理故正常。
+    //
+    // downloadFile() 是 App 内「保存远程文件」共用的可靠通道：SFTP 原生走 JSch
+    // get 顺序流式落盘、FTP 走 raw socket 32KB 块刷盘、SMB 走原生顺序写，均
+    // 「边下边落盘」——partial 文件长度即真实已下载字节，代理从此只读增长的
+    // partial，彻底绕开 downloadRange(pos>0) 的脆弱性。
+    try {
+      await client.downloadFile(
+        remotePath,
+        partialPath,
+        (progress) {
+          _syncFileLength();
+          _notifyProgress();
+        },
+      );
+      if (_disposed) return;
       _downloadComplete = true;
+      _syncFileLength();
+      _notifyProgress();
       debugPrint('RemoteStreamingService: download complete, totalBytes=$_totalBytes downloaded=$_downloadedBytes');
-      _notifyProgress();
     } catch (e) {
-      _lengthPollTimer?.cancel();
-      _lengthPollTimer = null;
+      if (_disposed) return;
+      debugPrint('RemoteStreamingService: downloadFile failed: $e');
       _downloadFailed = true;
-      debugPrint('RemoteStreamingService: download failed: $e');
-      if (!_sizeCompleter.isCompleted) {
-        _sizeCompleter.complete(-1);
-      }
+      _syncFileLength();
       _notifyProgress();
-      // Do NOT rethrow — the error is already handled (flags set, partial
-      // file deleted, logged). Rethrowing causes an unhandled async
-      // exception since startDownload() does not await this future.
     }
   }
 
@@ -794,9 +1128,14 @@ class _StreamSession {
     try {
       await server.close(force: true);
     } catch (_) {}
-    // 尝试取消下载：调用 client.disconnect() 中断底层连接
-    // 这是关键修复：之前 dispose 不取消下载，导致退出播放器后
-    // SFTP/FTP/SMB 下载在后台继续运行，占用网络带宽和 CPU
+    // 尝试取消下载：先 cancel() 置取消标志（原生通道据此提前结束传输），
+    // 再 disconnect() 中断底层连接。这是关键修复：之前 dispose 不取消下载，
+    // 导致退出播放器后 SFTP/FTP/SMB 下载在后台继续运行，占用网络带宽和 CPU。
+    try {
+      client.cancel();
+    } catch (e) {
+      debugPrint('RemoteStreamingService: dispose cancel error: $e');
+    }
     try {
       await client.disconnect();
     } catch (e) {
@@ -828,6 +1167,13 @@ class _StreamSession {
         final s = File('$_localPath.seekcache');
         if (await s.exists()) await s.delete();
       }
+    } catch (_) {}
+    // 关闭会话级持久写句柄，避免文件描述符泄漏
+    try {
+      await _partialRaf?.close();
+    } catch (_) {}
+    try {
+      await _seekCacheRaf?.close();
     } catch (_) {}
   }
 }

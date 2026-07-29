@@ -7,29 +7,28 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 ---
 
-## 🚀 What's New in v1.1.24
+## 🚀 What's New in v1.1.25
 
 ### ✨ New Features
 
-- Category pages now offer a "Group by Folder" view, so media files can be browsed grouped by their source folders for quick location.
-- Added multilingual copyright attribution on the About page, preserving the original NFile attribution and adding the ZenFile modification attribution.
+- The audio player's lyrics button now cycles through four states, and shuffle is merged into the playback-mode button.
 
 ### 🔧 Optimizations
 
-- All remote clients (SMB / FTP / SFTP / WebDAV) now support streaming media playback without downloading the whole file; streaming uses an independent connection so seeking is instant and no longer affects the remote browsing session.
-- SMB downloads now use an 8MB SMB2 read/write window (SMB2 large MTU limit), drastically cutting RTT round-trips so the link can be saturated on fast LANs.
-- Release builds are now split per ABI (`--split-per-abi`), significantly reducing the arm64 package size.
+- Optimized media scan scheduling at startup (concurrency and throttling) to mitigate the app freezing a few seconds after launch on some devices.
+- The "Network" category now shows the number of saved servers in real time.
+- Localized the item-count text on category pages and the "Select Storage Drive" title.
 
 ### 🐛 Bug Fixes
 
-- Fixed an issue where, after cutting/moving a file from a remote location to local (or local to remote), the source directory still showed the original file until manually refreshed.
-- Fixed the audio player's "Play in background" toggle not refreshing its on/off state immediately in the menu (previously required reopening the menu).
-- Further adapted the audio background-service type and `MediaSession` activation logic for Android 13+ media controls; some OEM ROMs may still hide the media card due to system restrictions and are under continued investigation.
-- Fixed remote thumbnails still being shown for SMB / FTP / SFTP / WebDAV after the "Remote Media Thumbnails" switch was turned off; all remote thumbnail loading paths now respect the switch.
-- Fixed the audio player showing a hardcoded Chinese placeholder when a track has no lyrics; the message is now fully localized (Chinese / Traditional Chinese / English / German / Spanish / French / Japanese / Korean / Arabic / Russian).
-- Fixed the FTP transfer progress bar jumping instantly to full due to incorrect SIZE response parsing.
-- Fixed SFTP connections to FnOS NAS only showing some shared directories (root-path listing parsing).
-- Fixed SFTP remote video playback stopping after ~1 second, the progress bar not moving, and seeking getting stuck at "buffering" (restored compatible read strategy and correctly pass file size).
+- Fixed the "All files access" permission prompt not reappearing after clearing app data, which then caused crashes when opening audio files.
+- Fixed the notification media control card not showing on Android 13+ and Android 11 (create the notification channel earlier and branch playback-state logic by system version).
+- Fixed selected items in the category grid view not being deselectable with another tap.
+- Improved SMB / FTP / SFTP remote video streaming stability; fixed the video freezing a few seconds into playback and eventually crashing the app.
+
+### ⚠️ Known Issues
+
+- SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.
 
 ---
 

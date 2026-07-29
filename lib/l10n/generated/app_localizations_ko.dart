@@ -4224,57 +4224,6 @@ class L10nKo extends L10n {
   String get ui_download_links => '다운로드 링크';
 
   @override
-  String get changelog_v1121_new_features_title => '새로운 기능';
-
-  @override
-  String get changelog_v1121_new_feature_1 =>
-      '앱 관리: 앱 팝업 메뉴에 「패키지 이름 복사」 옵션을 추가하여 앱 패키지 이름을 한 번의 탭으로 복사할 수 있습니다.';
-
-  @override
-  String get changelog_v1121_new_feature_2 =>
-      '경로 표시줄: 경로 표시줄을 길게 누르면 편집 모드로 전환되며, 지정한 경로를 입력해 이동할 수 있습니다.';
-
-  @override
-  String get changelog_v1121_opt_title => '최적화';
-
-  @override
-  String get changelog_v1121_opt_1 =>
-      '일부 백업 아이콘과 중복 코드를 제거하여 앱 크기를 줄이고 코드 유지보수성을 향상했습니다.';
-
-  @override
-  String get changelog_v1121_bugfixes_title => '버그 수정';
-
-  @override
-  String get changelog_v1121_bugfix_1 =>
-      '전역 검색에서 data 디렉터리 내 파일을 찾지 못하던 문제를 수정했습니다.';
-
-  @override
-  String get changelog_v1121_bugfix_2 =>
-      '일부 기기에서 앱 관리 팝업의 「제거」 버튼이 화면 하단을 벗어나 탭하기 어려웠던 문제를 수정했습니다.';
-
-  @override
-  String get changelog_v1121_known_issues_title => '알려진 문제 (다음 버전에서 수정 예정)';
-
-  @override
-  String get changelog_v1121_known_issue_1 => '앱 데이터를 지운 후 다시 열었을 때 충돌이 발생합니다.';
-
-  @override
-  String get changelog_v1121_known_issue_2 =>
-      '비디오 플레이어에서 외부 자막 표시 크기를 조정핸도 일시적으로 효과가 없습니다.';
-
-  @override
-  String get changelog_v1121_known_issue_3 =>
-      '현재 WebDAV 클라이언트만 미디어 파일 스트리밍 재생을 지원하며, 다른 클라이언트는 아직 지원하지 않습니다.';
-
-  @override
-  String get changelog_v1121_known_issue_4 =>
-      '큰 APK 설치 패키지를 백업할 때 인터페이스가 실행 상태에서 멈출 수 있지만, 실제 백업은 백그라운드에서 계속 실행됩니다. 뒤로 가기 버튼을 누르고 \"백업된 APK\"로 이동하여 백업 파일을 확인하세요. 백업 경로는 메인 스토리지의 ZenFile/Backups 디렉토리에 있습니다.';
-
-  @override
-  String get changelog_v1121_known_issue_5 =>
-      'FTP 공유 서비스를 활성화한 후 다른 FTP 클라이언트로 연결하면 디렉토리가 비어 있게 표시됩니다.';
-
-  @override
   String get msg_editor_lines => '줄';
 
   @override
@@ -4306,38 +4255,6 @@ class L10nKo extends L10n {
 
   @override
   String get changelog_section_known_issues => '⚠️ Known Issues';
-
-  @override
-  String get changelog_v1124_new_1 =>
-      'Added multilingual copyright attribution on the About page, preserving the original NFile attribution and adding the ZenFile modification attribution.';
-
-  @override
-  String get changelog_v1124_opt_1 =>
-      'Release builds are now split per ABI (--split-per-abi), significantly reducing the arm64 package size.';
-
-  @override
-  String get changelog_v1124_opt_2 =>
-      'Further adapted the audio background-service type and MediaSession activation logic for Android 13+ (some OEM ROMs may still hide the media card due to system restrictions).';
-
-  @override
-  String get changelog_v1124_fix_1 =>
-      'Fixed the FTP transfer progress bar jumping instantly to full due to incorrect SIZE response parsing.';
-
-  @override
-  String get changelog_v1124_fix_2 =>
-      'Fixed SFTP connections to FnOS NAS only showing some shared directories (root-path listing parsing).';
-
-  @override
-  String get changelog_v1124_fix_3 =>
-      'Fixed SFTP remote video playback stopping after ~1 second, the progress bar not moving, and seeking getting stuck at \'buffering\' (restored compatible read strategy and correctly pass file size).';
-
-  @override
-  String get changelog_v1124_fix_4 =>
-      'Fixed the About page \'What\'s New\' sheet still showing the v1.1.23 changelog.';
-
-  @override
-  String get changelog_v1124_known_1 =>
-      'Media playback controls in the notification shade may still fail to appear on some Android 13+ OEM ROMs; system-level restrictions are still being investigated.';
 
   @override
   String get batch_rename_title => 'Batch Rename';
@@ -4407,4 +4324,67 @@ class L10nKo extends L10n {
 
   @override
   String get batch_rename_btn_apply => 'Apply Changes';
+
+  @override
+  String get msg_pdf_quick_presets => '빠른 성능 사전 설정';
+
+  @override
+  String get msg_pdf_smooth_mode => '부드러운 모드';
+
+  @override
+  String get msg_pdf_detail_tuning => '세부 조정 옵션';
+
+  @override
+  String get msg_pdf_single_page_scroll => '한 페이지씩 넘기기';
+
+  @override
+  String get msg_pdf_horizontal_scroll => '가로 (왼쪽에서 오른쪽으로)';
+
+  @override
+  String get msg_pdf_continuous => '연속';
+
+  @override
+  String get msg_pdf_single_page => '한 페이지';
+
+  @override
+  String get msg_pdf_vertical => '세로';
+
+  @override
+  String get msg_pdf_horizontal => '가로';
+
+  @override
+  String get changelog_v1125_new_1 =>
+      '오디오 플레이어의 가사 버튼이 4가지 상태를 순환 전환하도록 개선되었고, 셔플 재생이 재생 모드 버튼에 통합되었습니다.';
+
+  @override
+  String get changelog_v1125_opt_1 =>
+      '앱 시작 시 미디어 스캔 스케줄링(동시성·스로틀링)을 최적화하여 일부 기기에서 실행 몇 초 후 멈추는 문제를 완화했습니다.';
+
+  @override
+  String get changelog_v1125_opt_2 =>
+      '카테고리 페이지의 「네트워크」 카테고리에 저장된 서버 수가 실시간으로 표시됩니다.';
+
+  @override
+  String get changelog_v1125_opt_3 =>
+      '카테고리 페이지의 개수 텍스트와 「저장소 드라이브 선택」 제목을 현지화했습니다.';
+
+  @override
+  String get changelog_v1125_fix_1 =>
+      '앱 데이터 삭제 후 「모든 파일 접근」 권한 팝업이 다시 표시되지 않아 오디오 파일을 열면 강제 종료되는 문제를 수정했습니다.';
+
+  @override
+  String get changelog_v1125_fix_2 =>
+      'Android 13+ 및 Android 11에서 알림 미디어 제어 카드가 표시되지 않는 문제를 수정했습니다(알림 채널 사전 생성 및 시스템 버전별 재생 상태 로직 분기).';
+
+  @override
+  String get changelog_v1125_fix_3 =>
+      '카테고리 페이지 그리드 보기에서 선택된 항목을 다시 탭해도 선택 해제되지 않는 문제를 수정했습니다.';
+
+  @override
+  String get changelog_v1125_fix_4 =>
+      'SMB / FTP / SFTP 원격 동영상 스트리밍 안정성을 개선하고, 재생 몇 초 후 화면이 멈추고 결국 앱이 강제 종료되는 문제를 수정했습니다.';
+
+  @override
+  String get changelog_v1125_known_1 =>
+      'SMB / FTP / SFTP 원격 동영상 재생이 일부 상황에서 여전히 끊길 수 있으며, 지속적으로 최적화 중입니다.';
 }

@@ -7882,90 +7882,6 @@ abstract class L10n {
   /// **'下载链接'**
   String get ui_download_links;
 
-  /// ui\screens\about_screen.dart
-  ///
-  /// In zh, this message translates to:
-  /// **'新增功能'**
-  String get changelog_v1121_new_features_title;
-
-  /// ui\screens\about_screen.dart
-  ///
-  /// In zh, this message translates to:
-  /// **'应用管理：点击应用弹窗新增「复制包名」选项，可一键复制应用包名。'**
-  String get changelog_v1121_new_feature_1;
-
-  /// ui\screens\about_screen.dart
-  ///
-  /// In zh, this message translates to:
-  /// **'路径栏：长按路径栏进入编辑模式，支持输入并跳转到指定路径。'**
-  String get changelog_v1121_new_feature_2;
-
-  /// Changelog v1.1.22 optimizations section title
-  ///
-  /// In zh, this message translates to:
-  /// **'优化'**
-  String get changelog_v1121_opt_title;
-
-  /// Changelog v1.1.22 optimization item 1
-  ///
-  /// In zh, this message translates to:
-  /// **'移除部分备用图标与冗余代码，减小安装包体积并提升代码可维护性。'**
-  String get changelog_v1121_opt_1;
-
-  /// ui\screens\about_screen.dart
-  ///
-  /// In zh, this message translates to:
-  /// **'问题修复'**
-  String get changelog_v1121_bugfixes_title;
-
-  /// ui\screens\about_screen.dart
-  ///
-  /// In zh, this message translates to:
-  /// **'修复全局搜索无法检索 data 目录下文件的问题。'**
-  String get changelog_v1121_bugfix_1;
-
-  /// ui\screens\about_screen.dart
-  ///
-  /// In zh, this message translates to:
-  /// **'修复应用管理弹窗中「卸载应用」按钮在部分机型上溢出屏幕底部、难以点击的问题。'**
-  String get changelog_v1121_bugfix_2;
-
-  /// ui\screens\about_screen.dart
-  ///
-  /// In zh, this message translates to:
-  /// **'已知问题（预计下个版本修复）'**
-  String get changelog_v1121_known_issues_title;
-
-  /// ui\screens\about_screen.dart
-  ///
-  /// In zh, this message translates to:
-  /// **'清除应用数据后重新打开会出现闪退。'**
-  String get changelog_v1121_known_issue_1;
-
-  /// ui\screens\about_screen.dart
-  ///
-  /// In zh, this message translates to:
-  /// **'视频播放器中调整外挂字幕显示大小暂不生效。'**
-  String get changelog_v1121_known_issue_2;
-
-  /// ui\screens\about_screen.dart
-  ///
-  /// In zh, this message translates to:
-  /// **'目前仅 WebDAV 客户端支持媒体文件流式播放，其他客户端暂不支持。'**
-  String get changelog_v1121_known_issue_3;
-
-  /// ui\screens\about_screen.dart
-  ///
-  /// In zh, this message translates to:
-  /// **'备份较大 APK 安装包时，界面会卡在执行状态，实际备份仍在后台进行。请按返回键后前往\"已备份 APK\"查看备份文件，备份路径位于主存储 ZenFile/Backups 目录。'**
-  String get changelog_v1121_known_issue_4;
-
-  /// ui\screens\about_screen.dart
-  ///
-  /// In zh, this message translates to:
-  /// **'FTP 共享服务开启后，使用其他 FTP 客户端连接时目录显示为空。'**
-  String get changelog_v1121_known_issue_5;
-
   /// No description provided for @msg_editor_lines.
   ///
   /// In zh, this message translates to:
@@ -8031,54 +7947,6 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'⚠️ 已知问题'**
   String get changelog_section_known_issues;
-
-  /// ui\screensbout_screen.dart
-  ///
-  /// In zh, this message translates to:
-  /// **'关于页新增多语言版权署名，保留 NFile 原署名并增加 ZenFile 修改署名。'**
-  String get changelog_v1124_new_1;
-
-  /// ui\screensbout_screen.dart
-  ///
-  /// In zh, this message translates to:
-  /// **'构建产物改为按 ABI 分包（--split-per-abi），arm64 安装包体积显著减小。'**
-  String get changelog_v1124_opt_1;
-
-  /// ui\screensbout_screen.dart
-  ///
-  /// In zh, this message translates to:
-  /// **'音频后台播放服务在 Android 13+ 上进一步适配前台服务类型与 MediaSession 激活逻辑（部分 ROM 仍可能因系统限制无法显示媒体卡片）。'**
-  String get changelog_v1124_opt_2;
-
-  /// ui\screensbout_screen.dart
-  ///
-  /// In zh, this message translates to:
-  /// **'修复 FTP 客户端传输文件时进度条瞬间满格、不准确的问题（修正 SIZE 响应解析）。'**
-  String get changelog_v1124_fix_1;
-
-  /// ui\screensbout_screen.dart
-  ///
-  /// In zh, this message translates to:
-  /// **'修复 SFTP 连接飞牛 NAS 时只显示部分共享目录的问题（根路径列表解析）。'**
-  String get changelog_v1124_fix_2;
-
-  /// ui\screensbout_screen.dart
-  ///
-  /// In zh, this message translates to:
-  /// **'修复 SFTP 远程视频播放约 1 秒后停止、进度条不走、拖动进度条后一直卡在“正在缓存中”的问题（恢复兼容的读取策略并正确传递文件大小）。'**
-  String get changelog_v1124_fix_3;
-
-  /// ui\screensbout_screen.dart
-  ///
-  /// In zh, this message translates to:
-  /// **'修复关于页“查看更新”弹窗仍显示 v1.1.23 更新日志的问题。'**
-  String get changelog_v1124_fix_4;
-
-  /// ui\screensbout_screen.dart
-  ///
-  /// In zh, this message translates to:
-  /// **'Android 13+ 通知栏媒体控制按钮在部分国产 ROM 上仍可能无法显示，正在持续调研系统级限制。'**
-  String get changelog_v1124_known_1;
 
   /// ui\widgets\batch_rename_dialog.dart
   ///
@@ -8193,6 +8061,114 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'应用更改'**
   String get batch_rename_btn_apply;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'快速性能预设'**
+  String get msg_pdf_quick_presets;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'流畅模式'**
+  String get msg_pdf_smooth_mode;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'详细调节选项'**
+  String get msg_pdf_detail_tuning;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'单页（逐页滑动）'**
+  String get msg_pdf_single_page_scroll;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'水平（从左到右滑动）'**
+  String get msg_pdf_horizontal_scroll;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'连续'**
+  String get msg_pdf_continuous;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'单页'**
+  String get msg_pdf_single_page;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'垂直'**
+  String get msg_pdf_vertical;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'水平'**
+  String get msg_pdf_horizontal;
+
+  /// v1.1.25 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'音频播放器歌词按钮支持四种状态循环切换，播放模式按钮整合随机播放。'**
+  String get changelog_v1125_new_1;
+
+  /// v1.1.25 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'优化应用启动时的媒体扫描调度（并发与节流），缓解部分机型打开应用几秒后卡死的问题。'**
+  String get changelog_v1125_opt_1;
+
+  /// v1.1.25 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'分类页「网络」分类现在实时显示已保存的服务器数量。'**
+  String get changelog_v1125_opt_2;
+
+  /// v1.1.25 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'分类页数量文本与「选择存储驱动器」标题加入多语言翻译。'**
+  String get changelog_v1125_opt_3;
+
+  /// v1.1.25 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'修复清除应用数据后重新打开应用不再弹出「所有文件访问」授权弹窗、随后打开音频文件闪退的问题。'**
+  String get changelog_v1125_fix_1;
+
+  /// v1.1.25 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'修复安卓 13+ 与安卓 11 通知栏媒体控制卡片不显示的问题（提前创建通知渠道并按系统版本分流播放态逻辑）。'**
+  String get changelog_v1125_fix_2;
+
+  /// v1.1.25 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'修复分类页网格视图中已选中的项目无法再次点击取消选中的问题。'**
+  String get changelog_v1125_fix_3;
+
+  /// v1.1.25 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'改进 SMB / FTP / SFTP 远程视频流式播放稳定性，修复播放几秒后画面卡死、最终导致应用无响应闪退的问题。'**
+  String get changelog_v1125_fix_4;
+
+  /// v1.1.25 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。'**
+  String get changelog_v1125_known_1;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

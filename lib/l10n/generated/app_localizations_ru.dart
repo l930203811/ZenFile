@@ -4401,59 +4401,6 @@ class L10nRu extends L10n {
   String get ui_download_links => 'Ссылки для скачивания';
 
   @override
-  String get changelog_v1121_new_features_title => 'Новые функции';
-
-  @override
-  String get changelog_v1121_new_feature_1 =>
-      'Управление приложениями: в контекстном меню приложения добавлен пункт «Копировать имя пакета», позволяющий скопировать имя пакета одним нажатием.';
-
-  @override
-  String get changelog_v1121_new_feature_2 =>
-      'Строка пути: длительное нажатие на строку пути переводит в режим редактирования, поддерживается ввод и переход к указанному пути.';
-
-  @override
-  String get changelog_v1121_opt_title => 'Оптимизация';
-
-  @override
-  String get changelog_v1121_opt_1 =>
-      'Удалены некоторые резервные значки и избыточный код, что уменьшает размер приложения и повышает удобство сопровождения кода.';
-
-  @override
-  String get changelog_v1121_bugfixes_title => 'Исправления ошибок';
-
-  @override
-  String get changelog_v1121_bugfix_1 =>
-      'Исправлена проблема, из-за которой глобальный поиск не находил файлы в каталоге data.';
-
-  @override
-  String get changelog_v1121_bugfix_2 =>
-      'Исправлена проблема, из-за которой кнопка «Удалить» в окне управления приложениями выходила за нижний край экрана на некоторых устройствах и нажать на неё было трудно.';
-
-  @override
-  String get changelog_v1121_known_issues_title =>
-      'Известные проблемы (будут исправлены в следующей версии)';
-
-  @override
-  String get changelog_v1121_known_issue_1 =>
-      'Приложение вылетает после очистки данных приложения и повторного открытия.';
-
-  @override
-  String get changelog_v1121_known_issue_2 =>
-      'Регулировка размера отображения внешних субтитров в видеопроигрывателе временно не работает.';
-
-  @override
-  String get changelog_v1121_known_issue_3 =>
-      'В настоящее время только клиент WebDAV поддерживает потоковое воспроизведение медиафайлов, другие клиенты пока не поддерживают.';
-
-  @override
-  String get changelog_v1121_known_issue_4 =>
-      'При резервном копировании больших пакетов APK интерфейс может зависнуть в состоянии выполнения, но фактическое резервное копирование всё ещё выполняется в фоновом режиме. Пожалуйста, нажмите кнопку назад и перейдите в \"Резервные APK\", чтобы просмотреть файлы резервных копий. Путь резервного копирования находится в каталоге ZenFile/Backups в основном хранилище.';
-
-  @override
-  String get changelog_v1121_known_issue_5 =>
-      'После включения службы общего доступа FTP каталоги отображаются пустыми при подключении с помощью других FTP-клиентов.';
-
-  @override
   String get msg_editor_lines => 'строк';
 
   @override
@@ -4486,38 +4433,6 @@ class L10nRu extends L10n {
 
   @override
   String get changelog_section_known_issues => '⚠️ Known Issues';
-
-  @override
-  String get changelog_v1124_new_1 =>
-      'Added multilingual copyright attribution on the About page, preserving the original NFile attribution and adding the ZenFile modification attribution.';
-
-  @override
-  String get changelog_v1124_opt_1 =>
-      'Release builds are now split per ABI (--split-per-abi), significantly reducing the arm64 package size.';
-
-  @override
-  String get changelog_v1124_opt_2 =>
-      'Further adapted the audio background-service type and MediaSession activation logic for Android 13+ (some OEM ROMs may still hide the media card due to system restrictions).';
-
-  @override
-  String get changelog_v1124_fix_1 =>
-      'Fixed the FTP transfer progress bar jumping instantly to full due to incorrect SIZE response parsing.';
-
-  @override
-  String get changelog_v1124_fix_2 =>
-      'Fixed SFTP connections to FnOS NAS only showing some shared directories (root-path listing parsing).';
-
-  @override
-  String get changelog_v1124_fix_3 =>
-      'Fixed SFTP remote video playback stopping after ~1 second, the progress bar not moving, and seeking getting stuck at \'buffering\' (restored compatible read strategy and correctly pass file size).';
-
-  @override
-  String get changelog_v1124_fix_4 =>
-      'Fixed the About page \'What\'s New\' sheet still showing the v1.1.23 changelog.';
-
-  @override
-  String get changelog_v1124_known_1 =>
-      'Media playback controls in the notification shade may still fail to appear on some Android 13+ OEM ROMs; system-level restrictions are still being investigated.';
 
   @override
   String get batch_rename_title => 'Batch Rename';
@@ -4587,4 +4502,70 @@ class L10nRu extends L10n {
 
   @override
   String get batch_rename_btn_apply => 'Apply Changes';
+
+  @override
+  String get msg_pdf_quick_presets =>
+      'Быстрые предустановки производительности';
+
+  @override
+  String get msg_pdf_smooth_mode => 'Плавный режим';
+
+  @override
+  String get msg_pdf_detail_tuning => 'Параметры детальной настройки';
+
+  @override
+  String get msg_pdf_single_page_scroll =>
+      'Одна страница (пролистывать по странице)';
+
+  @override
+  String get msg_pdf_horizontal_scroll =>
+      'Горизонтально (пролистывать слева направо)';
+
+  @override
+  String get msg_pdf_continuous => 'Непрерывный';
+
+  @override
+  String get msg_pdf_single_page => 'Одна';
+
+  @override
+  String get msg_pdf_vertical => 'Вертикально';
+
+  @override
+  String get msg_pdf_horizontal => 'Горизонтально';
+
+  @override
+  String get changelog_v1125_new_1 =>
+      'Кнопка текста песни в аудиоплеере теперь циклически переключается между четырьмя состояниями, а случайное воспроизведение объединено с кнопкой режима воспроизведения.';
+
+  @override
+  String get changelog_v1125_opt_1 =>
+      'Оптимизировано планирование сканирования медиа при запуске (параллелизм и троттлинг), что уменьшает зависание приложения через несколько секунд после запуска на некоторых устройствах.';
+
+  @override
+  String get changelog_v1125_opt_2 =>
+      'Категория «Сеть» теперь отображает количество сохранённых серверов в реальном времени.';
+
+  @override
+  String get changelog_v1125_opt_3 =>
+      'Локализованы текст количества на страницах категорий и заголовок «Выбор накопителя».';
+
+  @override
+  String get changelog_v1125_fix_1 =>
+      'Исправлено: после очистки данных приложения запрос разрешения «Доступ ко всем файлам» не появлялся снова, что приводило к сбоям при открытии аудиофайлов.';
+
+  @override
+  String get changelog_v1125_fix_2 =>
+      'Исправлено: карточка управления мультимедиа в уведомлениях не отображалась на Android 13+ и Android 11 (раннее создание канала уведомлений и ветвление логики состояния воспроизведения по версии системы).';
+
+  @override
+  String get changelog_v1125_fix_3 =>
+      'Исправлено: выбранные элементы в сетке страницы категорий нельзя было снять с выбора повторным нажатием.';
+
+  @override
+  String get changelog_v1125_fix_4 =>
+      'Улучшена стабильность потокового воспроизведения удалённого видео по SMB / FTP / SFTP; исправлено зависание изображения через несколько секунд с последующим сбоем приложения.';
+
+  @override
+  String get changelog_v1125_known_1 =>
+      'Воспроизведение удалённого видео по SMB / FTP / SFTP в некоторых сценариях всё ещё может подтормаживать; оптимизация продолжается.';
 }

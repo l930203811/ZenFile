@@ -1163,6 +1163,111 @@ class MainActivity : AudioServiceFragmentActivity() {
             }
         }
 
+        // 原生 SSH/SFTP 通道（JSch，硬件加速加解密）
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/sftpNative").setMethodCallHandler { call, result ->
+            val ssh = SshSftpService.instance
+            executor.execute {
+                try {
+                    when (call.method) {
+                        "connect" -> {
+                            val host = call.argument<String>("host") ?: ""
+                            val port = call.argument<Int>("port") ?: 22
+                            val username = call.argument<String>("username") ?: ""
+                            val password = call.argument<String>("password") ?: ""
+                            val id = ssh.connect(host, port, username, password)
+                            runOnUiThread { result.success(id) }
+                        }
+                        "listDirectory" -> {
+                            val id = call.argument<String>("sessionId") ?: ""
+                            val path = call.argument<String>("path") ?: "/"
+                            val forceRefresh = call.argument<Boolean>("forceRefresh") ?: false
+                            val items = ssh.listDirectory(id, path, forceRefresh)
+                            runOnUiThread { result.success(items) }
+                        }
+                        "createDirectory" -> {
+                            val id = call.argument<String>("sessionId") ?: ""
+                            val path = call.argument<String>("path") ?: ""
+                            ssh.createDirectory(id, path)
+                            runOnUiThread { result.success(true) }
+                        }
+                        "createFile" -> {
+                            val id = call.argument<String>("sessionId") ?: ""
+                            val path = call.argument<String>("path") ?: ""
+                            ssh.createFile(id, path)
+                            runOnUiThread { result.success(true) }
+                        }
+                        "delete" -> {
+                            val id = call.argument<String>("sessionId") ?: ""
+                            val path = call.argument<String>("path") ?: ""
+                            val isDir = call.argument<Boolean>("isDir") ?: false
+                            ssh.delete(id, path, isDir)
+                            runOnUiThread { result.success(true) }
+                        }
+                        "rename" -> {
+                            val id = call.argument<String>("sessionId") ?: ""
+                            val oldPath = call.argument<String>("oldPath") ?: ""
+                            val newPath = call.argument<String>("newPath") ?: ""
+                            ssh.rename(id, oldPath, newPath)
+                            runOnUiThread { result.success(true) }
+                        }
+                        "downloadFile" -> {
+                            val id = call.argument<String>("sessionId") ?: ""
+                            val remotePath = call.argument<String>("remotePath") ?: ""
+                            val localPath = call.argument<String>("localPath") ?: ""
+                            val ok = ssh.downloadFile(id, remotePath, localPath)
+                            runOnUiThread { result.success(ok) }
+                        }
+                        "downloadRange" -> {
+                            val id = call.argument<String>("sessionId") ?: ""
+                            val remotePath = call.argument<String>("remotePath") ?: ""
+                            val localPath = call.argument<String>("localPath") ?: ""
+                            val startByte = (call.argument<Number>("startByte") ?: 0).toLong()
+                            val length = (call.argument<Number>("length") ?: 0).toLong()
+                            ssh.downloadRange(id, remotePath, localPath, startByte, length)
+                            runOnUiThread { result.success(true) }
+                        }
+                        "uploadFile" -> {
+                            val id = call.argument<String>("sessionId") ?: ""
+                            val localPath = call.argument<String>("localPath") ?: ""
+                            val remotePath = call.argument<String>("remotePath") ?: ""
+                            val ok = ssh.uploadFile(id, localPath, remotePath)
+                            runOnUiThread { result.success(ok) }
+                        }
+                        "getFileSize" -> {
+                            val id = call.argument<String>("sessionId") ?: ""
+                            val remotePath = call.argument<String>("remotePath") ?: ""
+                            val size = ssh.getFileSize(id, remotePath)
+                            runOnUiThread { result.success(size) }
+                        }
+                        "getProgress" -> {
+                            val id = call.argument<String>("sessionId") ?: ""
+                            val p = ssh.getProgress(id)
+                            runOnUiThread { result.success(p) }
+                        }
+                        "cancelTransfer" -> {
+                            val id = call.argument<String>("sessionId") ?: ""
+                            ssh.cancelTransfer(id)
+                            runOnUiThread { result.success(true) }
+                        }
+                        "resetCancel" -> {
+                            val id = call.argument<String>("sessionId") ?: ""
+                            ssh.resetCancel(id)
+                            runOnUiThread { result.success(true) }
+                        }
+                        "disconnect" -> {
+                            val id = call.argument<String>("sessionId") ?: ""
+                            ssh.disconnect(id)
+                            runOnUiThread { result.success(true) }
+                        }
+                        else -> runOnUiThread { result.notImplemented() }
+                    }
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                    runOnUiThread { result.error("SSH_ERROR", e.message ?: e.toString(), null) }
+                }
+            }
+        }
+
         // 桌面歌词悬浮窗服务
         DesktopLyricService.register(this, flutterEngine.dartExecutor.binaryMessenger)
 

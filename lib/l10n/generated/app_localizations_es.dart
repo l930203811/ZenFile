@@ -4419,59 +4419,6 @@ class L10nEs extends L10n {
   String get ui_download_links => 'Enlaces de descarga';
 
   @override
-  String get changelog_v1121_new_features_title => 'Nuevas funciones';
-
-  @override
-  String get changelog_v1121_new_feature_1 =>
-      'Gestión de aplicaciones: se añadió la opción ‘Copiar nombre de paquete’ en el menú emergente de la aplicación, que permite copiar el nombre del paquete con un toque.';
-
-  @override
-  String get changelog_v1121_new_feature_2 =>
-      'Barra de ruta: mantener pulsada la barra de ruta entra en modo edición, permitiendo introducir y navegar a una ruta especificada.';
-
-  @override
-  String get changelog_v1121_opt_title => 'Optimizaciones';
-
-  @override
-  String get changelog_v1121_opt_1 =>
-      'Se eliminaron algunos iconos de respaldo y código redundante para reducir el tamaño de la aplicación y mejorar la mantenibilidad del código.';
-
-  @override
-  String get changelog_v1121_bugfixes_title => 'Correcciones de errores';
-
-  @override
-  String get changelog_v1121_bugfix_1 =>
-      'Se corrigió el problema por el que la búsqueda global no encontraba archivos en el directorio data.';
-
-  @override
-  String get changelog_v1121_bugfix_2 =>
-      'Se corrigió el problema por el que el botón ‘Desinstalar’ en la ventana de gestión de aplicaciones se salía por la parte inferior de la pantalla en algunos dispositivos, dificultando su pulsación.';
-
-  @override
-  String get changelog_v1121_known_issues_title =>
-      'Problemas conocidos (se corregirán en la próxima versión)';
-
-  @override
-  String get changelog_v1121_known_issue_1 =>
-      'La aplicación se bloquea después de borrar los datos de la aplicación y volver a abrirla.';
-
-  @override
-  String get changelog_v1121_known_issue_2 =>
-      'Ajustar el tamaño de visualización de los subtítulos externos en el reproductor de video no surte efecto temporalmente.';
-
-  @override
-  String get changelog_v1121_known_issue_3 =>
-      'Actualmente solo el cliente WebDAV admite la reproducción por streaming de archivos multimedia; otros clientes aún no lo admiten.';
-
-  @override
-  String get changelog_v1121_known_issue_4 =>
-      'Al hacer copias de seguridad de paquetes APK grandes, la interfaz puede quedarse atascada en el estado de ejecución, pero la copia de seguridad real aún se está ejecutando en segundo plano. Presione el botón de retroceso y vaya a \"APK respaldados\" para ver los archivos de copia de seguridad. La ruta de copia de seguridad está en el directorio ZenFile/Backups del almacenamiento principal.';
-
-  @override
-  String get changelog_v1121_known_issue_5 =>
-      'Después de habilitar el servicio de compartir FTP, los directorios aparecen vacíos al conectarse con otros clientes FTP.';
-
-  @override
   String get msg_editor_lines => 'líneas';
 
   @override
@@ -4504,38 +4451,6 @@ class L10nEs extends L10n {
 
   @override
   String get changelog_section_known_issues => '⚠️ Known Issues';
-
-  @override
-  String get changelog_v1124_new_1 =>
-      'Added multilingual copyright attribution on the About page, preserving the original NFile attribution and adding the ZenFile modification attribution.';
-
-  @override
-  String get changelog_v1124_opt_1 =>
-      'Release builds are now split per ABI (--split-per-abi), significantly reducing the arm64 package size.';
-
-  @override
-  String get changelog_v1124_opt_2 =>
-      'Further adapted the audio background-service type and MediaSession activation logic for Android 13+ (some OEM ROMs may still hide the media card due to system restrictions).';
-
-  @override
-  String get changelog_v1124_fix_1 =>
-      'Fixed the FTP transfer progress bar jumping instantly to full due to incorrect SIZE response parsing.';
-
-  @override
-  String get changelog_v1124_fix_2 =>
-      'Fixed SFTP connections to FnOS NAS only showing some shared directories (root-path listing parsing).';
-
-  @override
-  String get changelog_v1124_fix_3 =>
-      'Fixed SFTP remote video playback stopping after ~1 second, the progress bar not moving, and seeking getting stuck at \'buffering\' (restored compatible read strategy and correctly pass file size).';
-
-  @override
-  String get changelog_v1124_fix_4 =>
-      'Fixed the About page \'What\'s New\' sheet still showing the v1.1.23 changelog.';
-
-  @override
-  String get changelog_v1124_known_1 =>
-      'Media playback controls in the notification shade may still fail to appear on some Android 13+ OEM ROMs; system-level restrictions are still being investigated.';
 
   @override
   String get batch_rename_title => 'Batch Rename';
@@ -4605,4 +4520,69 @@ class L10nEs extends L10n {
 
   @override
   String get batch_rename_btn_apply => 'Apply Changes';
+
+  @override
+  String get msg_pdf_quick_presets => 'Ajustes rápidos de rendimiento';
+
+  @override
+  String get msg_pdf_smooth_mode => 'Modo fluido';
+
+  @override
+  String get msg_pdf_detail_tuning => 'Opciones de ajuste detallado';
+
+  @override
+  String get msg_pdf_single_page_scroll =>
+      'Página única (deslizar página por página)';
+
+  @override
+  String get msg_pdf_horizontal_scroll =>
+      'Horizontal (deslizar de izquierda a derecha)';
+
+  @override
+  String get msg_pdf_continuous => 'Continuo';
+
+  @override
+  String get msg_pdf_single_page => 'Única';
+
+  @override
+  String get msg_pdf_vertical => 'Vertical';
+
+  @override
+  String get msg_pdf_horizontal => 'Horizontal';
+
+  @override
+  String get changelog_v1125_new_1 =>
+      'El botón de letras del reproductor de audio ahora alterna entre cuatro estados, y la reproducción aleatoria se ha integrado en el botón de modo de reproducción.';
+
+  @override
+  String get changelog_v1125_opt_1 =>
+      'Optimizada la programación del escaneo de medios al iniciar (concurrencia y limitación) para mitigar bloqueos unos segundos después de abrir la app en algunos dispositivos.';
+
+  @override
+  String get changelog_v1125_opt_2 =>
+      'La categoría «Red» ahora muestra en tiempo real el número de servidores guardados.';
+
+  @override
+  String get changelog_v1125_opt_3 =>
+      'Se localizaron el texto de recuento en las páginas de categorías y el título «Seleccionar unidad de almacenamiento».';
+
+  @override
+  String get changelog_v1125_fix_1 =>
+      'Corregido: tras borrar los datos de la app no volvía a aparecer el aviso de permiso «Acceso a todos los archivos», lo que causaba cierres al abrir archivos de audio.';
+
+  @override
+  String get changelog_v1125_fix_2 =>
+      'Corregido: la tarjeta de control multimedia en las notificaciones no se mostraba en Android 13+ y Android 11 (crear antes el canal de notificaciones y ramificar la lógica de estado de reproducción según la versión del sistema).';
+
+  @override
+  String get changelog_v1125_fix_3 =>
+      'Corregido: los elementos seleccionados en la vista de cuadrícula no podían deseleccionarse con otro toque.';
+
+  @override
+  String get changelog_v1125_fix_4 =>
+      'Mejorada la estabilidad de la transmisión de vídeo remoto SMB / FTP / SFTP; corregido que el vídeo se congelara a los pocos segundos y la app terminara cerrándose.';
+
+  @override
+  String get changelog_v1125_known_1 =>
+      'La reproducción de vídeo remoto SMB / FTP / SFTP aún puede entrecortarse en algunos escenarios; la optimización continúa.';
 }

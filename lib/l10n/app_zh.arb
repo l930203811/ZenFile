@@ -295,7 +295,6 @@
     "description": "About screen derived-from-NFile attribution"
   },
   "based_on_nfile": "基于 Senzme 的 NFile 开发。原始版权 © 2026 NFile。",
-
   "@zenfile2": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -3802,7 +3801,6 @@
   "ui_repeat_one": "循环：单曲",
   "ui_repeat_all": "循环：全部",
   "ui_shuffle_on": "随机播放：开",
-
   "ui_play_mode_sequential": "列表播放",
   "ui_play_mode_list_loop": "列表循环",
   "ui_play_mode_single_loop": "单曲循环",
@@ -4522,64 +4520,6 @@
   "@ui_download_links": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "changelog_v1121_new_features_title": "新增功能",
-  "@changelog_v1121_new_features_title": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_new_feature_1": "应用管理：点击应用弹窗新增「复制包名」选项，可一键复制应用包名。",
-  "@changelog_v1121_new_feature_1": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_new_feature_2": "路径栏：长按路径栏进入编辑模式，支持输入并跳转到指定路径。",
-  "@changelog_v1121_new_feature_2": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_opt_title": "优化",
-  "@changelog_v1121_opt_title": {
-    "description": "Changelog v1.1.22 optimizations section title",
-    "placeholders": {}
-  },
-  "changelog_v1121_opt_1": "移除部分备用图标与冗余代码，减小安装包体积并提升代码可维护性。",
-  "@changelog_v1121_opt_1": {
-    "description": "Changelog v1.1.22 optimization item 1",
-    "placeholders": {}
-  },
-  "changelog_v1121_bugfixes_title": "问题修复",
-  "@changelog_v1121_bugfixes_title": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_bugfix_1": "修复全局搜索无法检索 data 目录下文件的问题。",
-  "@changelog_v1121_bugfix_1": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_bugfix_2": "修复应用管理弹窗中「卸载应用」按钮在部分机型上溢出屏幕底部、难以点击的问题。",
-  "@changelog_v1121_bugfix_2": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_known_issues_title": "已知问题（预计下个版本修复）",
-  "@changelog_v1121_known_issues_title": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_known_issue_1": "清除应用数据后重新打开会出现闪退。",
-  "@changelog_v1121_known_issue_1": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_known_issue_2": "视频播放器中调整外挂字幕显示大小暂不生效。",
-  "@changelog_v1121_known_issue_2": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_known_issue_3": "目前仅 WebDAV 客户端支持媒体文件流式播放，其他客户端暂不支持。",
-  "@changelog_v1121_known_issue_3": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_known_issue_4": "备份较大 APK 安装包时，界面会卡在执行状态，实际备份仍在后台进行。请按返回键后前往\"已备份 APK\"查看备份文件，备份路径位于主存储 ZenFile/Backups 目录。",
-  "@changelog_v1121_known_issue_4": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_known_issue_5": "FTP 共享服务开启后，使用其他 FTP 客户端连接时目录显示为空。",
-  "@changelog_v1121_known_issue_5": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
   "msg_editor_lines": "行",
   "msg_editor_modified": "已修改",
   "go_to_path": "跳转路径",
@@ -4606,38 +4546,6 @@
     "description": "ui\\screens\u0007bout_screen.dart"
   },
   "changelog_section_known_issues": "⚠️ 已知问题",
-  "@changelog_v1124_new_1": {
-    "description": "ui\\screens\u0007bout_screen.dart"
-  },
-  "changelog_v1124_new_1": "关于页新增多语言版权署名，保留 NFile 原署名并增加 ZenFile 修改署名。",
-  "@changelog_v1124_opt_1": {
-    "description": "ui\\screens\u0007bout_screen.dart"
-  },
-  "changelog_v1124_opt_1": "构建产物改为按 ABI 分包（--split-per-abi），arm64 安装包体积显著减小。",
-  "@changelog_v1124_opt_2": {
-    "description": "ui\\screens\u0007bout_screen.dart"
-  },
-  "changelog_v1124_opt_2": "音频后台播放服务在 Android 13+ 上进一步适配前台服务类型与 MediaSession 激活逻辑（部分 ROM 仍可能因系统限制无法显示媒体卡片）。",
-  "@changelog_v1124_fix_1": {
-    "description": "ui\\screens\u0007bout_screen.dart"
-  },
-  "changelog_v1124_fix_1": "修复 FTP 客户端传输文件时进度条瞬间满格、不准确的问题（修正 SIZE 响应解析）。",
-  "@changelog_v1124_fix_2": {
-    "description": "ui\\screens\u0007bout_screen.dart"
-  },
-  "changelog_v1124_fix_2": "修复 SFTP 连接飞牛 NAS 时只显示部分共享目录的问题（根路径列表解析）。",
-  "@changelog_v1124_fix_3": {
-    "description": "ui\\screens\u0007bout_screen.dart"
-  },
-  "changelog_v1124_fix_3": "修复 SFTP 远程视频播放约 1 秒后停止、进度条不走、拖动进度条后一直卡在“正在缓存中”的问题（恢复兼容的读取策略并正确传递文件大小）。",
-  "@changelog_v1124_fix_4": {
-    "description": "ui\\screens\u0007bout_screen.dart"
-  },
-  "changelog_v1124_fix_4": "修复关于页“查看更新”弹窗仍显示 v1.1.23 更新日志的问题。",
-  "@changelog_v1124_known_1": {
-    "description": "ui\\screens\u0007bout_screen.dart"
-  },
-  "changelog_v1124_known_1": "Android 13+ 通知栏媒体控制按钮在部分国产 ROM 上仍可能无法显示，正在持续调研系统级限制。",
   "@batch_rename_title": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
@@ -4713,5 +4621,77 @@
   "@batch_rename_btn_apply": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
-  "batch_rename_btn_apply": "应用更改"
+  "batch_rename_btn_apply": "应用更改",
+  "msg_pdf_quick_presets": "快速性能预设",
+  "@msg_pdf_quick_presets": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_smooth_mode": "流畅模式",
+  "@msg_pdf_smooth_mode": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_detail_tuning": "详细调节选项",
+  "@msg_pdf_detail_tuning": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_single_page_scroll": "单页（逐页滑动）",
+  "@msg_pdf_single_page_scroll": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_horizontal_scroll": "水平（从左到右滑动）",
+  "@msg_pdf_horizontal_scroll": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_continuous": "连续",
+  "@msg_pdf_continuous": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_single_page": "单页",
+  "@msg_pdf_single_page": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_vertical": "垂直",
+  "@msg_pdf_vertical": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_horizontal": "水平",
+  "@msg_pdf_horizontal": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "@changelog_v1125_new_1": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_new_1": "音频播放器歌词按钮支持四种状态循环切换，播放模式按钮整合随机播放。",
+  "@changelog_v1125_opt_1": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_opt_1": "优化应用启动时的媒体扫描调度（并发与节流），缓解部分机型打开应用几秒后卡死的问题。",
+  "@changelog_v1125_opt_2": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_opt_2": "分类页「网络」分类现在实时显示已保存的服务器数量。",
+  "@changelog_v1125_opt_3": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_opt_3": "分类页数量文本与「选择存储驱动器」标题加入多语言翻译。",
+  "@changelog_v1125_fix_1": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_fix_1": "修复清除应用数据后重新打开应用不再弹出「所有文件访问」授权弹窗、随后打开音频文件闪退的问题。",
+  "@changelog_v1125_fix_2": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_fix_2": "修复安卓 13+ 与安卓 11 通知栏媒体控制卡片不显示的问题（提前创建通知渠道并按系统版本分流播放态逻辑）。",
+  "@changelog_v1125_fix_3": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_fix_3": "修复分类页网格视图中已选中的项目无法再次点击取消选中的问题。",
+  "@changelog_v1125_fix_4": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_fix_4": "改进 SMB / FTP / SFTP 远程视频流式播放稳定性，修复播放几秒后画面卡死、最终导致应用无响应闪退的问题。",
+  "@changelog_v1125_known_1": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_known_1": "SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。"
 }

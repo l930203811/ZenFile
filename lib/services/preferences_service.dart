@@ -124,6 +124,20 @@ class PreferencesService {
     await _prefs?.setBool(_keyShowHomeBrowseNav, val);
   }
 
+  /// 是否已成功完成「所有文件管理」权限配置。
+  /// 该标志持久化在 SharedPreferences；清除应用数据会被清空，从而让
+  /// 清除数据后的下一次启动重新引导用户授予／重新开启「所有文件管理」权限
+  /// （部分 ROM 在清除数据后系统仍报告已授权，但实际访问被拒——幽灵授权）。
+  static bool getPermissionSetupDone() {
+    return _prefs?.getBool(_keyPermissionSetupDone) ?? false;
+  }
+
+  static Future<void> setPermissionSetupDone(bool val) async {
+    await _prefs?.setBool(_keyPermissionSetupDone, val);
+  }
+
+  static const String _keyPermissionSetupDone = 'permission_setup_done';
+
   static const String _keyHomeDirectoryLeft = 'home_directory_left';
   static const String _keyHomeDirectoryRight = 'home_directory_right';
 

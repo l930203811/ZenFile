@@ -278,7 +278,6 @@
     "description": "About screen derived-from-NFile attribution"
   },
   "based_on_nfile": "Basiert auf NFile von Senzme. Ursprüngliches Copyright © 2026 NFile.",
-
   "@msg138d3725": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -3615,7 +3614,6 @@
   "ui_repeat_one": "Wiederholen: Einzeln",
   "ui_repeat_all": "Wiederholen: Alle",
   "ui_shuffle_on": "Zufallswiedergabe: An",
-
   "ui_play_mode_sequential": "Sequenziell",
   "ui_play_mode_list_loop": "Liste wiederholen",
   "ui_play_mode_single_loop": "Titel wiederholen",
@@ -4253,64 +4251,6 @@
   "@ui_download_links": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "changelog_v1121_new_features_title": "Neue Funktionen",
-  "@changelog_v1121_new_features_title": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_new_feature_1": "App-Verwaltung: Im Popup-Menü der App wurde die Option „Paketnamen kopieren“ hinzugefügt, mit der der Paketname per Fingertipp kopiert werden kann.",
-  "@changelog_v1121_new_feature_1": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_new_feature_2": "Pfadleiste: Langes Drücken der Pfadleiste aktiviert den Bearbeitungsmodus und ermöglicht die Eingabe und Navigation zu einem angegebenen Pfad.",
-  "@changelog_v1121_new_feature_2": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_opt_title": "Optimierungen",
-  "@changelog_v1121_opt_title": {
-    "description": "Changelog v1.1.22 optimizations section title",
-    "placeholders": {}
-  },
-  "changelog_v1121_opt_1": "Einige Backup-Symbole und redundanter Code wurden entfernt, um die App-Größe zu verringern und die Wartbarkeit des Codes zu verbessern.",
-  "@changelog_v1121_opt_1": {
-    "description": "Changelog v1.1.22 optimization item 1",
-    "placeholders": {}
-  },
-  "changelog_v1121_bugfixes_title": "Fehlerbehebungen",
-  "@changelog_v1121_bugfixes_title": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_bugfix_1": "Behoben: Die globale Suche fand keine Dateien im data-Verzeichnis.",
-  "@changelog_v1121_bugfix_1": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_bugfix_2": "Behoben: Der „Deinstallieren“-Button im Popup der App-Verwaltung lief auf einigen Geräten über den unteren Bildschirmrand hinaus und ließ sich schwer antippen.",
-  "@changelog_v1121_bugfix_2": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_known_issues_title": "Bekannte Probleme (werden in der nächsten Version behoben)",
-  "@changelog_v1121_known_issues_title": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_known_issue_1": "Die App stürzt ab, nachdem die App-Daten gelöscht und die App erneut geöffnet wurden.",
-  "@changelog_v1121_known_issue_1": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_known_issue_2": "Die Anpassung der Anzeigegröße externer Untertitel im Videoplayer funktioniert vorübergehend nicht.",
-  "@changelog_v1121_known_issue_2": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_known_issue_3": "Derzeit unterstützt nur der WebDAV-Client das Streaming von Mediendateien; andere Clients unterstützen dies noch nicht.",
-  "@changelog_v1121_known_issue_3": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_known_issue_4": "Bei der Sicherung großer APK-Pakete kann die Benutzeroberfläche im Ausführungszustand hängen bleiben, aber die eigentliche Sicherung läuft weiterhin im Hintergrund. Bitte drücken Sie die Zurück-Taste und gehen Sie zu \"Gesicherte APKs\", um die Sicherungsdateien anzusehen. Der Sicherungspfad befindet sich im Verzeichnis ZenFile/Backups des Hauptspeichers.",
-  "@changelog_v1121_known_issue_4": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_known_issue_5": "Nach Aktivierung des FTP-Freigabedienstes erscheinen Verzeichnisse leer, wenn sie mit anderen FTP-Clients verbunden werden.",
-  "@changelog_v1121_known_issue_5": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
   "msg_editor_lines": "Zeilen",
   "msg_editor_modified": "Geändert",
   "go_to_path": "Zum Pfad wechseln",
@@ -4337,38 +4277,6 @@
     "description": "ui\\screens\u0007bout_screen.dart"
   },
   "changelog_section_known_issues": "⚠️ Known Issues",
-  "@changelog_v1124_new_1": {
-    "description": "ui\\screens\u0007bout_screen.dart"
-  },
-  "changelog_v1124_new_1": "Added multilingual copyright attribution on the About page, preserving the original NFile attribution and adding the ZenFile modification attribution.",
-  "@changelog_v1124_opt_1": {
-    "description": "ui\\screens\u0007bout_screen.dart"
-  },
-  "changelog_v1124_opt_1": "Release builds are now split per ABI (--split-per-abi), significantly reducing the arm64 package size.",
-  "@changelog_v1124_opt_2": {
-    "description": "ui\\screens\u0007bout_screen.dart"
-  },
-  "changelog_v1124_opt_2": "Further adapted the audio background-service type and MediaSession activation logic for Android 13+ (some OEM ROMs may still hide the media card due to system restrictions).",
-  "@changelog_v1124_fix_1": {
-    "description": "ui\\screens\u0007bout_screen.dart"
-  },
-  "changelog_v1124_fix_1": "Fixed the FTP transfer progress bar jumping instantly to full due to incorrect SIZE response parsing.",
-  "@changelog_v1124_fix_2": {
-    "description": "ui\\screens\u0007bout_screen.dart"
-  },
-  "changelog_v1124_fix_2": "Fixed SFTP connections to FnOS NAS only showing some shared directories (root-path listing parsing).",
-  "@changelog_v1124_fix_3": {
-    "description": "ui\\screens\u0007bout_screen.dart"
-  },
-  "changelog_v1124_fix_3": "Fixed SFTP remote video playback stopping after ~1 second, the progress bar not moving, and seeking getting stuck at 'buffering' (restored compatible read strategy and correctly pass file size).",
-  "@changelog_v1124_fix_4": {
-    "description": "ui\\screens\u0007bout_screen.dart"
-  },
-  "changelog_v1124_fix_4": "Fixed the About page 'What's New' sheet still showing the v1.1.23 changelog.",
-  "@changelog_v1124_known_1": {
-    "description": "ui\\screens\u0007bout_screen.dart"
-  },
-  "changelog_v1124_known_1": "Media playback controls in the notification shade may still fail to appear on some Android 13+ OEM ROMs; system-level restrictions are still being investigated.",
   "@batch_rename_title": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
@@ -4444,5 +4352,77 @@
   "@batch_rename_btn_apply": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
-  "batch_rename_btn_apply": "Apply Changes"
+  "batch_rename_btn_apply": "Apply Changes",
+  "msg_pdf_quick_presets": "Schnelle Leistungsvoreinstellungen",
+  "@msg_pdf_quick_presets": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_smooth_mode": "Flüssiger Modus",
+  "@msg_pdf_smooth_mode": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_detail_tuning": "Detaillierte Einstellungen",
+  "@msg_pdf_detail_tuning": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_single_page_scroll": "Einzelseite (Seite für Seite wischen)",
+  "@msg_pdf_single_page_scroll": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_horizontal_scroll": "Horizontal (von links nach rechts wischen)",
+  "@msg_pdf_horizontal_scroll": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_continuous": "Kontinuierlich",
+  "@msg_pdf_continuous": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_single_page": "Einzeln",
+  "@msg_pdf_single_page": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_vertical": "Vertikal",
+  "@msg_pdf_vertical": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_horizontal": "Horizontal",
+  "@msg_pdf_horizontal": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "@changelog_v1125_new_1": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_new_1": "Die Songtext-Schaltfläche des Audioplayers wechselt jetzt zyklisch zwischen vier Zuständen; die Zufallswiedergabe wurde in die Wiedergabemodus-Schaltfläche integriert.",
+  "@changelog_v1125_opt_1": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_opt_1": "Medienscan beim App-Start optimiert (Parallelität und Drosselung), um Einfrieren wenige Sekunden nach dem Start auf einigen Geräten zu mildern.",
+  "@changelog_v1125_opt_2": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_opt_2": "Die Kategorie „Netzwerk“ zeigt jetzt die Anzahl der gespeicherten Server in Echtzeit an.",
+  "@changelog_v1125_opt_3": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_opt_3": "Anzahl-Texte auf Kategorieseiten und der Titel „Speicherlaufwerk auswählen“ wurden lokalisiert.",
+  "@changelog_v1125_fix_1": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_fix_1": "Behoben: Nach dem Löschen der App-Daten erschien die Berechtigungsabfrage „Zugriff auf alle Dateien“ nicht erneut, was beim Öffnen von Audiodateien zu Abstürzen führte.",
+  "@changelog_v1125_fix_2": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_fix_2": "Behoben: Mediensteuerung in der Benachrichtigungsleiste wurde unter Android 13+ und Android 11 nicht angezeigt (Benachrichtigungskanal früher erstellen und Wiedergabestatus-Logik nach Systemversion verzweigen).",
+  "@changelog_v1125_fix_3": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_fix_3": "Behoben: Ausgewählte Elemente in der Rasteransicht der Kategorieseite konnten nicht durch erneutes Tippen abgewählt werden.",
+  "@changelog_v1125_fix_4": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_fix_4": "Stabilität des SMB-/FTP-/SFTP-Remote-Video-Streamings verbessert; behoben, dass das Bild nach wenigen Sekunden einfror und die App schließlich abstürzte.",
+  "@changelog_v1125_known_1": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_known_1": "SMB-/FTP-/SFTP-Remote-Videowiedergabe kann in einigen Szenarien weiterhin stocken; die Optimierung wird fortgesetzt."
 }

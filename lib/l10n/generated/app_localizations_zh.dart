@@ -4190,53 +4190,6 @@ class L10nZh extends L10n {
   String get ui_download_links => '下载链接';
 
   @override
-  String get changelog_v1121_new_features_title => '新增功能';
-
-  @override
-  String get changelog_v1121_new_feature_1 =>
-      '应用管理：点击应用弹窗新增「复制包名」选项，可一键复制应用包名。';
-
-  @override
-  String get changelog_v1121_new_feature_2 => '路径栏：长按路径栏进入编辑模式，支持输入并跳转到指定路径。';
-
-  @override
-  String get changelog_v1121_opt_title => '优化';
-
-  @override
-  String get changelog_v1121_opt_1 => '移除部分备用图标与冗余代码，减小安装包体积并提升代码可维护性。';
-
-  @override
-  String get changelog_v1121_bugfixes_title => '问题修复';
-
-  @override
-  String get changelog_v1121_bugfix_1 => '修复全局搜索无法检索 data 目录下文件的问题。';
-
-  @override
-  String get changelog_v1121_bugfix_2 =>
-      '修复应用管理弹窗中「卸载应用」按钮在部分机型上溢出屏幕底部、难以点击的问题。';
-
-  @override
-  String get changelog_v1121_known_issues_title => '已知问题（预计下个版本修复）';
-
-  @override
-  String get changelog_v1121_known_issue_1 => '清除应用数据后重新打开会出现闪退。';
-
-  @override
-  String get changelog_v1121_known_issue_2 => '视频播放器中调整外挂字幕显示大小暂不生效。';
-
-  @override
-  String get changelog_v1121_known_issue_3 =>
-      '目前仅 WebDAV 客户端支持媒体文件流式播放，其他客户端暂不支持。';
-
-  @override
-  String get changelog_v1121_known_issue_4 =>
-      '备份较大 APK 安装包时，界面会卡在执行状态，实际备份仍在后台进行。请按返回键后前往\"已备份 APK\"查看备份文件，备份路径位于主存储 ZenFile/Backups 目录。';
-
-  @override
-  String get changelog_v1121_known_issue_5 =>
-      'FTP 共享服务开启后，使用其他 FTP 客户端连接时目录显示为空。';
-
-  @override
   String get msg_editor_lines => '行';
 
   @override
@@ -4268,37 +4221,6 @@ class L10nZh extends L10n {
 
   @override
   String get changelog_section_known_issues => '⚠️ 已知问题';
-
-  @override
-  String get changelog_v1124_new_1 =>
-      '关于页新增多语言版权署名，保留 NFile 原署名并增加 ZenFile 修改署名。';
-
-  @override
-  String get changelog_v1124_opt_1 =>
-      '构建产物改为按 ABI 分包（--split-per-abi），arm64 安装包体积显著减小。';
-
-  @override
-  String get changelog_v1124_opt_2 =>
-      '音频后台播放服务在 Android 13+ 上进一步适配前台服务类型与 MediaSession 激活逻辑（部分 ROM 仍可能因系统限制无法显示媒体卡片）。';
-
-  @override
-  String get changelog_v1124_fix_1 =>
-      '修复 FTP 客户端传输文件时进度条瞬间满格、不准确的问题（修正 SIZE 响应解析）。';
-
-  @override
-  String get changelog_v1124_fix_2 =>
-      '修复 SFTP 连接飞牛 NAS 时只显示部分共享目录的问题（根路径列表解析）。';
-
-  @override
-  String get changelog_v1124_fix_3 =>
-      '修复 SFTP 远程视频播放约 1 秒后停止、进度条不走、拖动进度条后一直卡在“正在缓存中”的问题（恢复兼容的读取策略并正确传递文件大小）。';
-
-  @override
-  String get changelog_v1124_fix_4 => '修复关于页“查看更新”弹窗仍显示 v1.1.23 更新日志的问题。';
-
-  @override
-  String get changelog_v1124_known_1 =>
-      'Android 13+ 通知栏媒体控制按钮在部分国产 ROM 上仍可能无法显示，正在持续调研系统级限制。';
 
   @override
   String get batch_rename_title => '批量重命名';
@@ -4368,6 +4290,65 @@ class L10nZh extends L10n {
 
   @override
   String get batch_rename_btn_apply => '应用更改';
+
+  @override
+  String get msg_pdf_quick_presets => '快速性能预设';
+
+  @override
+  String get msg_pdf_smooth_mode => '流畅模式';
+
+  @override
+  String get msg_pdf_detail_tuning => '详细调节选项';
+
+  @override
+  String get msg_pdf_single_page_scroll => '单页（逐页滑动）';
+
+  @override
+  String get msg_pdf_horizontal_scroll => '水平（从左到右滑动）';
+
+  @override
+  String get msg_pdf_continuous => '连续';
+
+  @override
+  String get msg_pdf_single_page => '单页';
+
+  @override
+  String get msg_pdf_vertical => '垂直';
+
+  @override
+  String get msg_pdf_horizontal => '水平';
+
+  @override
+  String get changelog_v1125_new_1 => '音频播放器歌词按钮支持四种状态循环切换，播放模式按钮整合随机播放。';
+
+  @override
+  String get changelog_v1125_opt_1 =>
+      '优化应用启动时的媒体扫描调度（并发与节流），缓解部分机型打开应用几秒后卡死的问题。';
+
+  @override
+  String get changelog_v1125_opt_2 => '分类页「网络」分类现在实时显示已保存的服务器数量。';
+
+  @override
+  String get changelog_v1125_opt_3 => '分类页数量文本与「选择存储驱动器」标题加入多语言翻译。';
+
+  @override
+  String get changelog_v1125_fix_1 =>
+      '修复清除应用数据后重新打开应用不再弹出「所有文件访问」授权弹窗、随后打开音频文件闪退的问题。';
+
+  @override
+  String get changelog_v1125_fix_2 =>
+      '修复安卓 13+ 与安卓 11 通知栏媒体控制卡片不显示的问题（提前创建通知渠道并按系统版本分流播放态逻辑）。';
+
+  @override
+  String get changelog_v1125_fix_3 => '修复分类页网格视图中已选中的项目无法再次点击取消选中的问题。';
+
+  @override
+  String get changelog_v1125_fix_4 =>
+      '改进 SMB / FTP / SFTP 远程视频流式播放稳定性，修复播放几秒后画面卡死、最终导致应用无响应闪退的问题。';
+
+  @override
+  String get changelog_v1125_known_1 =>
+      'SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -8509,53 +8490,6 @@ class L10nZhTw extends L10nZh {
   String get ui_download_links => '下載連結';
 
   @override
-  String get changelog_v1121_new_features_title => '新增功能';
-
-  @override
-  String get changelog_v1121_new_feature_1 =>
-      '應用管理：點擊應用彈窗新增「複製套件名稱」選項，可一鍵複製應用套件名稱。';
-
-  @override
-  String get changelog_v1121_new_feature_2 => '路徑欄：長按路徑欄進入編輯模式，支援輸入並跳轉到指定路徑。';
-
-  @override
-  String get changelog_v1121_opt_title => '優化';
-
-  @override
-  String get changelog_v1121_opt_1 => '移除部分備用圖示與冗餘程式碼，減小安裝包體積並提升程式碼可維護性。';
-
-  @override
-  String get changelog_v1121_bugfixes_title => '問題修復';
-
-  @override
-  String get changelog_v1121_bugfix_1 => '修復全域搜尋無法檢索 data 目錄下檔案的問題。';
-
-  @override
-  String get changelog_v1121_bugfix_2 =>
-      '修復應用管理彈窗中「解除安裝」按鈕在部分機型上溢出螢幕底部、難以點擊的問題。';
-
-  @override
-  String get changelog_v1121_known_issues_title => '已知問題（預計下個版本修復）';
-
-  @override
-  String get changelog_v1121_known_issue_1 => '清除應用資料後重新打開會出現閃退。';
-
-  @override
-  String get changelog_v1121_known_issue_2 => '視頻播放器中調整外掛字幕顯示大小暫不生效。';
-
-  @override
-  String get changelog_v1121_known_issue_3 =>
-      '目前僅 WebDAV 客戶端支援媒體文件流式播放，其他客戶端暫不支援。';
-
-  @override
-  String get changelog_v1121_known_issue_4 =>
-      '備份較大 APK 安裝包時，介面會卡在執行狀態，實際備份仍在後台進行。請按返回鍵後前往\"已備份 APK\"查看備份文件，備份路徑位於主存儲 ZenFile/Backups 目錄。';
-
-  @override
-  String get changelog_v1121_known_issue_5 =>
-      'FTP 共享服務開啟後，使用其他 FTP 客戶端連接時目錄顯示為空。';
-
-  @override
   String get msg_editor_lines => '行';
 
   @override
@@ -8587,37 +8521,6 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get changelog_section_known_issues => '⚠️ 已知問題';
-
-  @override
-  String get changelog_v1124_new_1 =>
-      '關於頁新增多語言版權署名，保留 NFile 原署名並增加 ZenFile 修改署名。';
-
-  @override
-  String get changelog_v1124_opt_1 =>
-      '建構產物改為按 ABI 分包（--split-per-abi），arm64 安裝包體積顯著減少。';
-
-  @override
-  String get changelog_v1124_opt_2 =>
-      '音訊背景播放服務在 Android 13+ 上進一步適配前景服務類型與 MediaSession 啟動邏輯（部分 ROM 仍可能因系統限制無法顯示媒體卡片）。';
-
-  @override
-  String get changelog_v1124_fix_1 =>
-      '修復 FTP 客戶端傳輸檔案時進度條瞬間滿格、不準確的問題（修正 SIZE 回應解析）。';
-
-  @override
-  String get changelog_v1124_fix_2 =>
-      '修復 SFTP 連接飛牛 NAS 時只顯示部分共用目錄的問題（根路徑列表解析）。';
-
-  @override
-  String get changelog_v1124_fix_3 =>
-      '修復 SFTP 遠端影片播放約 1 秒後停止、進度條不走、拖動進度條後一直卡在「正在緩衝中」的問題（恢復相容的讀取策略並正確傳遞檔案大小）。';
-
-  @override
-  String get changelog_v1124_fix_4 => '修復關於頁「查看更新」彈窗仍顯示 v1.1.23 更新日誌的問題。';
-
-  @override
-  String get changelog_v1124_known_1 =>
-      'Android 13+ 通知欄媒體控制按鈕在部分國產 ROM 上仍可能無法顯示，正在持續調研系統級限制。';
 
   @override
   String get batch_rename_title => '批次重新命名';
@@ -8687,4 +8590,63 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get batch_rename_btn_apply => '應用更改';
+
+  @override
+  String get msg_pdf_quick_presets => '快速性能預設';
+
+  @override
+  String get msg_pdf_smooth_mode => '流暢模式';
+
+  @override
+  String get msg_pdf_detail_tuning => '詳細調節選項';
+
+  @override
+  String get msg_pdf_single_page_scroll => '單頁（逐頁滑動）';
+
+  @override
+  String get msg_pdf_horizontal_scroll => '水平（從左到右滑動）';
+
+  @override
+  String get msg_pdf_continuous => '連續';
+
+  @override
+  String get msg_pdf_single_page => '單頁';
+
+  @override
+  String get msg_pdf_vertical => '垂直';
+
+  @override
+  String get msg_pdf_horizontal => '水平';
+
+  @override
+  String get changelog_v1125_new_1 => '音訊播放器歌詞按鈕支援四種狀態循環切換，播放模式按鈕整合隨機播放。';
+
+  @override
+  String get changelog_v1125_opt_1 =>
+      '最佳化應用程式啟動時的媒體掃描排程（並行與節流），緩解部分機型開啟應用程式幾秒後卡死的問題。';
+
+  @override
+  String get changelog_v1125_opt_2 => '分類頁「網路」分類現在即時顯示已儲存的伺服器數量。';
+
+  @override
+  String get changelog_v1125_opt_3 => '分類頁數量文字與「選擇儲存磁碟機」標題加入多語言翻譯。';
+
+  @override
+  String get changelog_v1125_fix_1 =>
+      '修復清除應用程式資料後重新開啟應用程式不再彈出「所有檔案存取」授權彈窗、隨後開啟音訊檔案閃退的問題。';
+
+  @override
+  String get changelog_v1125_fix_2 =>
+      '修復 Android 13+ 與 Android 11 通知列媒體控制卡片不顯示的問題（提前建立通知頻道並按系統版本分流播放狀態邏輯）。';
+
+  @override
+  String get changelog_v1125_fix_3 => '修復分類頁網格檢視中已選取的項目無法再次點擊取消選取的問題。';
+
+  @override
+  String get changelog_v1125_fix_4 =>
+      '改進 SMB / FTP / SFTP 遠端影片串流播放穩定性，修復播放幾秒後畫面卡死、最終導致應用程式無回應閃退的問題。';
+
+  @override
+  String get changelog_v1125_known_1 =>
+      'SMB / FTP / SFTP 遠端影片播放在部分場景下仍可能出現卡頓，正在持續最佳化中。';
 }

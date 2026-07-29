@@ -124,20 +124,13 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   }
 
   /// 构建当前路径面包屑导航（层叠式）
+  ///
+  /// 用 Row + 负边距实现层叠，避免旧实现里手动计算 Stack Positioned 宽度时
+  /// 在部分字体/路径组合下出现段丢失或整栏空白的问题。
   Widget _buildPathBreadcrumb(BuildContext context, FileManagerProvider provider) {
     final theme = Theme.of(context);
     final currentPath = provider.currentPath;
     final parts = currentPath.split('/').where((n) => n.isNotEmpty).toList();
-
-    // 如果路径为根目录或太短，显示存储卷名称
-    // 存储卷弹窗由左侧向下箭头按钮专责触发，此处仅显示文本避免误触
-    if (parts.isEmpty) {
-      return Text(
-        currentPath,
-        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: theme.colorScheme.onSurface),
-        overflow: TextOverflow.ellipsis,
-      );
-    }
 
     // 自动滚动到末尾
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -150,86 +143,47 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
       }
     });
 
-    // Stack 层叠面包屑：从右向左渲染，确保左侧项的右箭头绘制在右侧项上方
     // overlap 必须与 _buildBreadcrumbItem 中的 arrowWidth 一致（8.0），
     // 这样左项的右箭头凸出恰好填入右项的左凹陷，无缝隙也无覆盖。
     const overlap = 8.0;
-    final itemWidgets = <Widget>[];
-    // 先构建所有项
-    itemWidgets.add(
-      _buildBreadcrumbItem(
-        context, theme,
-        label: parts[0],
-        isFirst: true,
-        isActive: parts.length <= 1,
-      ),
-    );
-    for (int i = 1; i < parts.length; i++) {
-      itemWidgets.add(
-        _buildBreadcrumbItem(
-          context, theme,
-          label: parts[i],
-          isFirst: false,
-          isActive: i == parts.length - 1,
-        ),
-      );
-    }
 
-    // 计算总宽度：相邻项通过 overlap 重叠（左项右箭头插入右项左凹陷），
-    // 最右项右箭头需要额外 overlap 空间露出。
-    double totalWidth = 0;
-    final textPainter = TextPainter(textDirection: TextDirection.ltr);
-    for (int i = 0; i < itemWidgets.length; i++) {
-      textPainter.text = TextSpan(text: parts[i], style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500));
-      textPainter.layout();
-      final textW = textPainter.width;
-      final isFirst = i == 0;
-      final leftPad = isFirst ? 6.0 : overlap + 3.0;
-      final rightPad = overlap + 3.0;
-      totalWidth += leftPad + textW + rightPad;
-      if (i < itemWidgets.length - 1) totalWidth -= overlap; // 与右项重叠
-      if (i == itemWidgets.length - 1) totalWidth += overlap; // 最右项右箭头露出
-    }
-
-    // 从右到左布局，Stack 中先添加的在下层，后添加的在上层
-    final stackChildren = <Widget>[];
-    double cursor = totalWidth;
-    for (int i = itemWidgets.length - 1; i >= 0; i--) {
-      final isFirst = i == 0;
-      final isRightmost = i == itemWidgets.length - 1;
-      textPainter.text = TextSpan(text: parts[i], style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500));
-      textPainter.layout();
-      final textW = textPainter.width;
-      final leftPad = isFirst ? 6.0 : overlap + 3.0;
-      final rightPad = overlap + 3.0;
-      final itemW = leftPad + textW + rightPad;
-      cursor -= itemW;
-      if (!isRightmost) cursor += overlap; // 与右项重叠，让左项右箭头插入右项左凹陷
-
-      final targetPath = '/${parts.sublist(0, i + 1).join('/')}';
-      stackChildren.add(
-        Positioned(
-          left: cursor,
-          top: 0,
-          bottom: 0,
-          width: itemW,
-          child: GestureDetector(
-            onTap: () {
-                    if (targetPath != currentPath) provider.loadDirectory(targetPath);
-                  },
-            child: itemWidgets[i],
-          ),
-        ),
-      );
-    }
+    // 路径段为空时（如根目录），也显示一个可点击的“根目录”段，避免地址栏空白。
+    final segments = parts.isEmpty
+        ? [L10n.of(context).msgc2b9f4b9]
+        : parts;
 
     return SingleChildScrollView(
       controller: _breadcrumbController,
       scrollDirection: Axis.horizontal,
-      child: SizedBox(
-        width: totalWidth,
-        height: 22,
-        child: Stack(children: stackChildren),
+      child: Padding(
+        // 为最右项的右箭头凸出留出空间，避免被 ScrollView 裁剪。
+        padding: const EdgeInsets.only(right: overlap),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: List.generate(segments.length, (index) {
+            final isFirst = index == 0;
+            final isLast = index == segments.length - 1;
+            final targetPath = parts.isEmpty
+                ? '/'
+                : '/${parts.sublist(0, index + 1).join('/')}';
+            return Container(
+              // 负边距让后一项真正向左 overlap，消除 Row 布局在绘制位置之外的额外空隙。
+              margin: EdgeInsets.only(left: isFirst ? 0 : -overlap),
+              child: GestureDetector(
+                onTap: () {
+                  if (targetPath != currentPath) provider.loadDirectory(targetPath);
+                },
+                child: _buildBreadcrumbItem(
+                  context, theme,
+                  label: segments[index],
+                  isFirst: isFirst,
+                  isActive: isLast,
+                ),
+              ),
+            );
+          }),
+        ),
       ),
     );
   }

@@ -352,6 +352,11 @@ class WebDavRemoteClient extends RemoteClient {
       await sink.flush();
       await sink.close();
     }
+    if (isCancelled) {
+      // 取消下载：删除本地未完成的半截文件，避免留下虚假文件。
+      try { await file.delete(); } catch (_) {}
+      throw Exception('Cancelled');
+    }
   }
 
   @override
@@ -424,6 +429,8 @@ class WebDavRemoteClient extends RemoteClient {
           try {
             request.abort();
           } catch (_) {}
+          // 取消上传：删除服务端尚未完成的半截目标文件，避免留下残缺文件。
+          try { await delete(remotePath, false); } catch (_) {}
           throw Exception('Cancelled');
         }
         request.add(chunk);

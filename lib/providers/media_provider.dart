@@ -469,6 +469,9 @@ class MediaProvider extends ChangeNotifier {
 
   bool _isLoading = false;
   bool _isLoaded = false;
+  // 后台刷新防抖：避免 home_screen 在每次 onResume 都触发一次全量扫描，
+  // 多个扫描并发跑在主线程会把 UI 撑爆（表现为「打开 app 几秒后卡死」）。
+  DateTime? _lastBackgroundRefresh;
   MediaSortOrder _sortOrder = MediaSortOrder.newest;
 
   String? _getItemPath(dynamic item) {
@@ -759,6 +762,12 @@ class MediaProvider extends ChangeNotifier {
   }
 
   int getCategoryItemCount(String category) {
+    // 网络连接在独立存储（NetworkConnectionsService）中，不参与媒体扫描，
+    // 其数量与 _isLoaded 无关，必须始终返回真实已保存的连接数，
+    // 否则扫描完成前会回落到从未写入的 cat_count_网络 偏好（恒为 0）。
+    if (category == '网络') {
+      return NetworkConnectionsService.getConnections().length;
+    }
     if (_isLoaded) {
       switch (category) {
         case '图片': return images.length;
@@ -986,6 +995,17 @@ class MediaProvider extends ChangeNotifier {
 
       if (!isStorageGranted) return;
 
+      // 防并发：若已有扫描在跑，直接跳过，避免多个全量扫描堆叠把主线程撑爆。
+      if (_isLoading) return;
+      // 节流：与上一次刷新间隔不足 30s 时跳过，避免在 onResume 频繁触发时
+      // 反复全量扫描导致 UI 卡死（「打开 app 几秒后卡死」的根因之一）。
+      final now = DateTime.now();
+      if (_lastBackgroundRefresh != null &&
+          now.difference(_lastBackgroundRefresh!) < const Duration(seconds: 30)) {
+        return;
+      }
+      _lastBackgroundRefresh = now;
+
       final futures = <Future<void>>[];
       futures.add(_loadImagesAndVideos());
       futures.add(_loadAudios());
@@ -1015,6 +1035,9 @@ class MediaProvider extends ChangeNotifier {
 
   Future<void> loadMedia({bool forceRefresh = false}) async {
     try {
+      // 防并发：已有扫描在跑时直接返回，避免重复全量扫描叠加导致主线程卡死。
+      if (_isLoading) return;
+
       if (_isLoaded && !forceRefresh) {
         await _scanCustomCategories();
         _applySort();
@@ -1104,7 +1127,7 @@ class MediaProvider extends ChangeNotifier {
         await _scanDirectoryRecursively(
           dir,
           (_) => true,
-          (file) {
+          (file) async {
             final lower = file.path.toLowerCase();
             final ext = p.extension(lower);
             if (_videoExtensions.contains(ext)) {
@@ -1114,8 +1137,9 @@ class MediaProvider extends ChangeNotifier {
               if (seenAudios.contains(norm)) return;
               seenAudios.add(norm);
               int fileSize = 0;
+              // 用异步 stat() 取代同步 statSync()，避免逐个文件阻塞主线程
               try {
-                fileSize = file.statSync().size;
+                fileSize = (await file.stat()).size;
               } catch (_) {}
               final fileName = p.basename(file.path);
               final nameNoExt = p.basenameWithoutExtension(file.path);
@@ -1207,9 +1231,13 @@ class MediaProvider extends ChangeNotifier {
   Future<void> _scanDirectoryRecursively(
     String startPath,
     bool Function(String ext) shouldInclude,
-    void Function(File file) onFound,
+    FutureOr<void> Function(File file) onFound,
   ) async {
     final queue = <String>[startPath];
+    // 周期性让出主线程：大存储设备（如澎湃OS 手机 256G+）下递归枚举会产生
+    // 数十万实体，若不在循环里让出事件循环，主 isolate 会被长时间占满，
+    // 表现为「打开 app 几秒后卡死 / ANR」。
+    var processed = 0;
     while (queue.isNotEmpty) {
       final currentPath = queue.removeAt(0);
       final dir = Directory(currentPath);
@@ -1224,7 +1252,10 @@ class MediaProvider extends ChangeNotifier {
             } else if (entity is File) {
               final ext = p.extension(entity.path).toLowerCase();
               if (shouldInclude(ext)) {
-                onFound(entity);
+                await onFound(entity);
+                if (++processed % 256 == 0) {
+                  await Future.delayed(Duration.zero);
+                }
               }
             }
           } catch (_) {}

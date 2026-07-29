@@ -285,7 +285,6 @@
     "description": "About screen derived-from-NFile attribution"
   },
   "based_on_nfile": "Based on NFile by Senzme. Original copyright © 2026 NFile.",
-
   "@msg138d3725": {
     "description": "ui\\screens\\about_screen.dart"
   },
@@ -3637,7 +3636,6 @@
   "ui_repeat_one": "Repeat: One",
   "ui_repeat_all": "Repeat: All",
   "ui_shuffle_on": "Shuffle: On",
-
   "ui_play_mode_sequential": "Sequential",
   "ui_play_mode_list_loop": "Loop list",
   "ui_play_mode_single_loop": "Loop single",
@@ -4305,64 +4303,6 @@
   "@ui_download_links": {
     "description": "ui\\screens\\about_screen.dart"
   },
-  "changelog_v1121_new_features_title": "New Features",
-  "@changelog_v1121_new_features_title": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_new_feature_1": "App Management: Added a ‘Copy Package Name’ option in the app popup menu, allowing one-tap copy of the app's package name.",
-  "@changelog_v1121_new_feature_1": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_new_feature_2": "Path bar: Long-press the path bar to enter edit mode, allowing you to input and navigate to a specified path.",
-  "@changelog_v1121_new_feature_2": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_opt_title": "Optimizations",
-  "@changelog_v1121_opt_title": {
-    "description": "Changelog v1.1.22 optimizations section title",
-    "placeholders": {}
-  },
-  "changelog_v1121_opt_1": "Removed some backup icons and redundant code to reduce the app size and improve code maintainability.",
-  "@changelog_v1121_opt_1": {
-    "description": "Changelog v1.1.22 optimization item 1",
-    "placeholders": {}
-  },
-  "changelog_v1121_bugfixes_title": "Bug Fixes",
-  "@changelog_v1121_bugfixes_title": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_bugfix_1": "Fixed the issue where the global search could not find files in the data directory.",
-  "@changelog_v1121_bugfix_1": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_bugfix_2": "Fixed the issue where the ‘Uninstall’ button in the App Management popup overflowed the bottom of the screen on some devices, making it hard to tap.",
-  "@changelog_v1121_bugfix_2": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_known_issues_title": "Known Issues (to be fixed in next version)",
-  "@changelog_v1121_known_issues_title": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_known_issue_1": "App crashes after clearing app data and reopening.",
-  "@changelog_v1121_known_issue_1": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_known_issue_2": "Adjusting external subtitle display size in the video player does not take effect temporarily.",
-  "@changelog_v1121_known_issue_2": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_known_issue_3": "Currently only the WebDAV client supports media file streaming playback; other clients do not support it yet.",
-  "@changelog_v1121_known_issue_3": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_known_issue_4": "When backing up large APK installation packages, the interface may get stuck in the execution state, but the actual backup is still running in the background. Please press the back button and go to \"Backed up APKs\" to view the backup files. The backup path is in the main storage ZenFile/Backups directory.",
-  "@changelog_v1121_known_issue_4": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
-  "changelog_v1121_known_issue_5": "After the FTP sharing service is enabled, directories appear empty when connecting with other FTP clients.",
-  "@changelog_v1121_known_issue_5": {
-    "description": "ui\\screens\\about_screen.dart"
-  },
   "msg_editor_lines": "lines",
   "msg_editor_modified": "Modified",
   "go_to_path": "Go to path",
@@ -4389,38 +4329,6 @@
     "description": "ui\\screens\u0007bout_screen.dart"
   },
   "changelog_section_known_issues": "⚠️ Known Issues",
-  "@changelog_v1124_new_1": {
-    "description": "ui\\screens\u0007bout_screen.dart"
-  },
-  "changelog_v1124_new_1": "Added multilingual copyright attribution on the About page, preserving the original NFile attribution and adding the ZenFile modification attribution.",
-  "@changelog_v1124_opt_1": {
-    "description": "ui\\screens\u0007bout_screen.dart"
-  },
-  "changelog_v1124_opt_1": "Release builds are now split per ABI (--split-per-abi), significantly reducing the arm64 package size.",
-  "@changelog_v1124_opt_2": {
-    "description": "ui\\screens\u0007bout_screen.dart"
-  },
-  "changelog_v1124_opt_2": "Further adapted the audio background-service type and MediaSession activation logic for Android 13+ (some OEM ROMs may still hide the media card due to system restrictions).",
-  "@changelog_v1124_fix_1": {
-    "description": "ui\\screens\u0007bout_screen.dart"
-  },
-  "changelog_v1124_fix_1": "Fixed the FTP transfer progress bar jumping instantly to full due to incorrect SIZE response parsing.",
-  "@changelog_v1124_fix_2": {
-    "description": "ui\\screens\u0007bout_screen.dart"
-  },
-  "changelog_v1124_fix_2": "Fixed SFTP connections to FnOS NAS only showing some shared directories (root-path listing parsing).",
-  "@changelog_v1124_fix_3": {
-    "description": "ui\\screens\u0007bout_screen.dart"
-  },
-  "changelog_v1124_fix_3": "Fixed SFTP remote video playback stopping after ~1 second, the progress bar not moving, and seeking getting stuck at 'buffering' (restored compatible read strategy and correctly pass file size).",
-  "@changelog_v1124_fix_4": {
-    "description": "ui\\screens\u0007bout_screen.dart"
-  },
-  "changelog_v1124_fix_4": "Fixed the About page 'What's New' sheet still showing the v1.1.23 changelog.",
-  "@changelog_v1124_known_1": {
-    "description": "ui\\screens\u0007bout_screen.dart"
-  },
-  "changelog_v1124_known_1": "Media playback controls in the notification shade may still fail to appear on some Android 13+ OEM ROMs; system-level restrictions are still being investigated.",
   "@batch_rename_title": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
@@ -4496,5 +4404,77 @@
   "@batch_rename_btn_apply": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
-  "batch_rename_btn_apply": "Apply Changes"
+  "batch_rename_btn_apply": "Apply Changes",
+  "msg_pdf_quick_presets": "Quick Performance Presets",
+  "@msg_pdf_quick_presets": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_smooth_mode": "Smooth Mode",
+  "@msg_pdf_smooth_mode": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_detail_tuning": "Detail Tuning Options",
+  "@msg_pdf_detail_tuning": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_single_page_scroll": "Single page (swipe page by page)",
+  "@msg_pdf_single_page_scroll": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_horizontal_scroll": "Horizontal (swipe left to right)",
+  "@msg_pdf_horizontal_scroll": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_continuous": "Continuous",
+  "@msg_pdf_continuous": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_single_page": "Single",
+  "@msg_pdf_single_page": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_vertical": "Vertical",
+  "@msg_pdf_vertical": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "msg_pdf_horizontal": "Horizontal",
+  "@msg_pdf_horizontal": {
+    "description": "ui\\screens\\document_viewer_screen.dart"
+  },
+  "@changelog_v1125_new_1": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_new_1": "The audio player's lyrics button now cycles through four states, and shuffle is merged into the playback-mode button.",
+  "@changelog_v1125_opt_1": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_opt_1": "Optimized media scan scheduling at startup (concurrency and throttling) to mitigate the app freezing a few seconds after launch on some devices.",
+  "@changelog_v1125_opt_2": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_opt_2": "The \"Network\" category now shows the number of saved servers in real time.",
+  "@changelog_v1125_opt_3": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_opt_3": "Localized the item-count text on category pages and the \"Select Storage Drive\" title.",
+  "@changelog_v1125_fix_1": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_fix_1": "Fixed the \"All files access\" permission prompt not reappearing after clearing app data, which then caused crashes when opening audio files.",
+  "@changelog_v1125_fix_2": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_fix_2": "Fixed the notification media control card not showing on Android 13+ and Android 11 (create the notification channel earlier and branch playback-state logic by system version).",
+  "@changelog_v1125_fix_3": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_fix_3": "Fixed selected items in the category grid view not being deselectable with another tap.",
+  "@changelog_v1125_fix_4": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_fix_4": "Improved SMB / FTP / SFTP remote video streaming stability; fixed the video freezing a few seconds into playback and eventually crashing the app.",
+  "@changelog_v1125_known_1": {
+    "description": "v1.1.25 changelog entry"
+  },
+  "changelog_v1125_known_1": "SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing."
 }
