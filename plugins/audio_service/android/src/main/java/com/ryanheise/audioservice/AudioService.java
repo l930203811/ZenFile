@@ -316,11 +316,6 @@ public class AudioService extends MediaBrowserServiceCompat {
         mediaSession = new MediaSessionCompat(this, "media-session");
 
         configure(new AudioServiceConfig(getApplicationContext()));
-        // 服务启动时立即创建通知渠道，避免首次 buildNotification 失败时渠道不存在，
-        // 也便于系统设置中能看到 "ZenFile Audio Player" 渠道。
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createChannel();
-        }
 
         mediaSession.setFlags(
                 MediaSessionCompat.FLAG_HANDLES_QUEUE_COMMANDS
@@ -412,9 +407,22 @@ public class AudioService extends MediaBrowserServiceCompat {
 
     public void configure(AudioServiceConfig config) {
         this.config = config;
-        notificationChannelId = (config.androidNotificationChannelId != null)
+        String newChannelId = (config.androidNotificationChannelId != null)
             ? config.androidNotificationChannelId
             : getApplication().getPackageName() + ".channel";
+        // 如果 channel id 发生变化，删除旧渠道并创建新渠道，避免 Dart 端更改 id 后
+        // 系统设置里残留旧渠道且新渠道未创建。
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                && notificationChannelId != null
+                && !notificationChannelId.equals(newChannelId)) {
+            getNotificationManager().deleteNotificationChannel(notificationChannelId);
+        }
+        notificationChannelId = newChannelId;
+        // 在 configure 时立即创建通知渠道，确保服务启动后系统设置里就能看到渠道，
+        // 也避免首次 buildNotification 失败时渠道不存在。
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            createChannel();
+        }
 
         if (config.activityClassName != null) {
             Context context = getApplicationContext();
