@@ -23,7 +23,6 @@ import 'services/intent_handler_service.dart';
 import 'services/pin_service.dart';
 import 'services/recycle_bin_service.dart';
 import 'services/audio_background_handler.dart';
-import 'services/media3_bridge.dart';
 import 'ui/screens/home_screen.dart';
 
 final GlobalKey<_ZenFileAppState> appStateKey = GlobalKey<_ZenFileAppState>();
@@ -47,21 +46,6 @@ void main() {
       MediaKit.ensureInitialized();
     } catch (e) {
       debugPrint('[ZenFile] MediaKit.ensureInitialized failed: $e');
-    }
-
-    // 探测安卓版本：安卓 13+（SDK >= 33）走 Media3 媒体会话链路，
-    // 安卓 12 及以下沿用 audio_service（低版本上 Media3 的通知生成不稳，
-    // 而 audio_service 在 12- 上本就正常显示）。两条链路互斥。
-    if (Platform.isAndroid) {
-      try {
-        final info = await DeviceInfoPlugin().androidInfo;
-        isAndroid13Plus = info.version.sdkInt >= 33;
-      } catch (e) {
-        // 探测失败一律回落到 audio_service（安卓12及以下的已知可用链路），
-        // 绝不能默认 Media3——否则低版本设备会被错误路由到 Media3 导致其通知不显示。
-        debugPrint('[ZenFile] Device SDK query failed, defaulting to audio_service: $e');
-        isAndroid13Plus = false;
-      }
     }
 
     try {
@@ -105,27 +89,21 @@ void main() {
       debugPrint('Error loading custom font at startup: $e');
     }
 
-    // 初始化媒体通知链路。
-    // - 安卓 13+：使用 Media3（ZenMediaSessionService），控制面板在 13+ 上更稳健
-    // - 安卓 12 及以下：使用 audio_service（原生 MediaSessionCompat + MediaStyle 通知）
-    //   —— 低版本上 Media3 通知生成不稳定，而 audio_service 本就正常显示
-    // 两条链路在运行时互斥，不会冲突。Wrapped in try-catch。
+    // 初始化媒体通知链路：统一使用 audio_service（原生 MediaSessionCompat + MediaStyle 通知）。
+    // audio_service 0.18.18 全安卓版本通用；安卓 13+ 的通知权限由
+    // audio_background_handler 在首次播放时经 permission_handler 动态申请。
     try {
-      if (isAndroid13Plus) {
-        await Media3Bridge.instance.ensureStarted();
-      } else {
-        await AudioService.init(
-          builder: () => getAudioHandler(),
-          config: const AudioServiceConfig(
-            androidNotificationChannelId: 'com.sequl.zenfile.audio.v2',
-            androidNotificationChannelName: 'ZenFile Audio Player',
-            androidNotificationIcon: 'mipmap/ic_launcher',
-            androidShowNotificationBadge: true,
-            androidStopForegroundOnPause: false,
-            notificationColor: Color(0xFF6200EE),
-          ),
-        );
-      }
+      await AudioService.init(
+        builder: () => getAudioHandler(),
+        config: const AudioServiceConfig(
+          androidNotificationChannelId: 'com.sequl.zenfile.audio.v2',
+          androidNotificationChannelName: 'ZenFile Audio Player',
+          androidNotificationIcon: 'mipmap/ic_launcher',
+          androidShowNotificationBadge: true,
+          androidStopForegroundOnPause: false,
+          notificationColor: Color(0xFF6200EE),
+        ),
+      );
       isAudioServiceInitialized = true;
     } catch (e) {
       isAudioServiceInitialized = false;

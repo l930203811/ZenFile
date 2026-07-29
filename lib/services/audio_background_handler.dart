@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:audio_service/audio_service.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/foundation.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../ui/screens/audio_player/audio_artwork_widget.dart';
-import 'media3_bridge.dart';
 import 'preferences_service.dart';
 
 /// Global singleton handler instance
@@ -16,11 +15,6 @@ ZenFileAudioHandler? _audioHandlerInstance;
 /// 若为 false，表示 audio_service 框架未注册，通知栏无法显示，
 /// 此时 playbackState 的更新不会到达系统通知层。
 bool isAudioServiceInitialized = false;
-
-/// 当前设备是否为安卓 13+（SDK >= 33）。
-/// 安卓 13+ 使用 Media3（ZenMediaSessionService）媒体会话，低版本沿用 audio_service。
-/// 在 [main] 启动时由 device_info_plus 初始化，供各模块判断走哪条媒体通知链路。
-bool isAndroid13Plus = false;
 
 /// Returns the global audio handler, creating it lazily if needed.
 ZenFileAudioHandler getAudioHandler() {
@@ -142,98 +136,23 @@ class ZenFileAudioHandler extends BaseAudioHandler
       }
     });
 
-    // ── Media3（安卓13+ 通知栏控制面板）桥接 ──
-    unawaited(_startMedia3());
+    // ── 申请通知栏权限（安卓13+ 必须，否则系统拦截通知不显示）──
+    unawaited(_requestNotificationPermission());
   }
 
-  /// 启动 Media3 媒体会话桥接：把 media_kit 状态实时同步到原生 MediaSession，
-  /// 并把通知栏/锁屏/耳机指令回传驱动 media_kit。
-  /// 仅安卓 13+ 启用；低版本由 audio_service 原生通知承担，不走此链路。
-  Future<void> _startMedia3() async {
-    if (!isAndroid13Plus) return;
-    Media3Bridge.instance.setCommandHandler((action, positionMs) {
-      switch (action) {
-        case 'play':
-          play();
-          break;
-        case 'pause':
-          pause();
-          break;
-        case 'seek':
-          if (positionMs != null) seek(Duration(milliseconds: positionMs));
-          break;
-        case 'next':
-          skipToNext();
-          break;
-        case 'previous':
-          skipToPrevious();
-          break;
-        case 'stop':
-          stop();
-          break;
+  /// 申请通知栏权限（安卓 13+ 必须，否则系统拦截通知不显示）。
+  /// permission_handler 会自动按版本处理：安卓 12- 返回已授予不弹框，
+  /// 安卓 13+ 才弹系统授权框。低版本与已授权时直接跳过，绝不阻塞播放器启动。
+  Future<void> _requestNotificationPermission() async {
+    if (!Platform.isAndroid) return;
+    try {
+      final status = await Permission.notification.status;
+      if (status.isDenied) {
+        await Permission.notification.request();
       }
-    });
-
-    // 监听媒体项与播放状态变化，自动同步到原生 MediaSession
-    _subs.add(mediaItem.listen((item) {
-      if (item != null) _pushMetadata(item);
-    }));
-    _subs.add(playbackState.listen((state) {
-      _pushState(state);
-    }));
-
-    // 拉起原生 Media3 服务并推送当前队列/元数据/状态。
-    // 必须 await startService() 完成后再 push，否则服务尚未 ready 时调用会被静默吞掉，
-    // 导致通知永远卡在 placeholder。
-    await Media3Bridge.instance.startService();
-    final q = queue.value;
-    final idx = q.isEmpty ? 0 : (q.indexOf(mediaItem.value ?? q.first)).clamp(0, q.length - 1);
-    await Media3Bridge.instance.updateQueue(
-      q.map((m) => <String, dynamic>{
-        'id': m.id,
-        'title': m.title,
-        'artist': m.artist,
-      }).toList(),
-      idx,
-    );
-    if (mediaItem.value != null) _pushMetadata(mediaItem.value!);
-    _pushState(playbackState.value);
-
-    // 权限可能在进入本方法后才异步授予（首次打开播放器时系统弹窗），
-    // 服务会延后启动，导致上面首批推送丢失。延迟补推一次，确保元数据/状态到达。
-    await Future.delayed(const Duration(milliseconds: 1500));
-    if (mediaItem.value != null) _pushMetadata(mediaItem.value!);
-    _pushState(playbackState.value);
-  }
-
-  /// 把当前 MediaItem 的元数据（标题/艺人/时长/封面）推送到原生 MediaSession。
-  void _pushMetadata(MediaItem item) {
-    final durationMs = item.duration?.inMilliseconds ?? 0;
-    // 封面：getArtworkUri 返回本地临时文件 Uri，读取为字节推给原生（原生直接 setArtworkData）
-    unawaited(() async {
-      Uint8List? bytes;
-      if (item.artUri != null) {
-        try {
-          final f = File.fromUri(item.artUri!);
-          if (await f.exists()) bytes = await f.readAsBytes();
-        } catch (_) {}
-      }
-      Media3Bridge.instance.updateMetadata(
-        title: item.title,
-        artist: item.artist,
-        durationMs: durationMs,
-        artworkBytes: bytes,
-      );
-    }());
-  }
-
-  /// 把当前 PlaybackState（播放/暂停、进度、缓冲）推送到原生 MediaSession。
-  void _pushState(PlaybackState state) {
-    Media3Bridge.instance.updatePlaybackState(
-      playing: state.playing,
-      positionMs: state.position.inMilliseconds,
-      bufferedMs: state.bufferedPosition.inMilliseconds,
-    );
+    } catch (e) {
+      debugPrint('[ZenFile] request notification permission failed: $e');
+    }
   }
 
   void detach() {
@@ -262,7 +181,6 @@ class ZenFileAudioHandler extends BaseAudioHandler
   Future<void> stop() async {
     _positionSaveTimer?.cancel();
     _positionSaveTimer = null;
-    Media3Bridge.instance.stopService();
     playbackState.add(PlaybackState(
       controls: [],
       playing: false,
@@ -290,7 +208,6 @@ class ZenFileAudioHandler extends BaseAudioHandler
       playing: false,
       processingState: AudioProcessingState.idle,
     ));
-    Media3Bridge.instance.stopService();
     detach();
   }
 

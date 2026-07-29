@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:audio_service/audio_service.dart';
-import '../../../services/media3_bridge.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart' as p;
@@ -1901,21 +1900,17 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         // 尝试重新初始化一次
         bool reInitOk = false;
         try {
-          if (isAndroid13Plus) {
-            await Media3Bridge.instance.ensureStarted();
-          } else {
-            await AudioService.init(
-              builder: () => getAudioHandler(),
-              config: const AudioServiceConfig(
-                androidNotificationChannelId: 'com.sequl.zenfile.audio.v2',
-                androidNotificationChannelName: 'ZenFile Audio Player',
-                androidNotificationIcon: 'mipmap/ic_launcher',
-                androidShowNotificationBadge: true,
-                androidStopForegroundOnPause: false,
-                notificationColor: Color(0xFF6200EE),
-              ),
-            );
-          }
+          await AudioService.init(
+            builder: () => getAudioHandler(),
+            config: const AudioServiceConfig(
+              androidNotificationChannelId: 'com.sequl.zenfile.audio.v2',
+              androidNotificationChannelName: 'ZenFile Audio Player',
+              androidNotificationIcon: 'mipmap/ic_launcher',
+              androidShowNotificationBadge: true,
+              androidStopForegroundOnPause: false,
+              notificationColor: Color(0xFF6200EE),
+            ),
+          );
           isAudioServiceInitialized = true;
           reInitOk = true;
           debugPrint('[ZenFile] Media notification re-init succeeded');

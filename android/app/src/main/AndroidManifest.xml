@@ -318,39 +318,19 @@
             android:exported="false"
             android:foregroundServiceType="dataSync" />
 
-        <!-- Echo-Music 风格的 Media3 媒体播放服务（安卓13+ 通知栏控制面板） -->
-        <service
-            android:name=".ZenMediaSessionService"
-            android:exported="true"
-            android:foregroundServiceType="mediaPlayback">
-            <intent-filter>
-                <action android:name="androidx.media3.session.MediaSessionService" />
-                <action android:name="android.media.browse.MediaBrowserService" />
-            </intent-filter>
-        </service>
-
-        <!-- Media3 媒体按钮接收器（蓝牙/有线耳机/系统媒体键，安卓13+） -->
-        <receiver
-            android:name="androidx.media3.session.MediaButtonReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
-            </intent-filter>
-        </receiver>
-
-        <!-- 低版本（安卓12及以下）的 audio_service 媒体播放后台服务（MediaSessionCompat + MediaStyle 通知） -->
+        <!-- audio_service 媒体播放后台服务（MediaSessionCompat + MediaStyle 通知，全安卓版本通用） -->
         <service
             android:name="com.ryanheise.audioservice.AudioService"
             android:exported="true"
             android:foregroundServiceType="mediaPlayback">
             <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
+                <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
         </service>
 
-        <!-- audio_service 媒体按钮接收器（安卓12及以下，MediaSessionCompat 用） -->
+        <!-- audio_service 媒体按钮接收器（蓝牙/有线耳机/系统媒体键，全版本通用） -->
         <receiver
-            android:name="androidx.media.session.MediaButtonReceiver"
+            android:name="com.ryanheise.audioservice.MediaButtonReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
