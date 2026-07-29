@@ -17,6 +17,11 @@ ZenFileAudioHandler? _audioHandlerInstance;
 /// 此时 playbackState 的更新不会到达系统通知层。
 bool isAudioServiceInitialized = false;
 
+/// 当前设备是否为安卓 13+（SDK >= 33）。
+/// 安卓 13+ 使用 Media3（ZenMediaSessionService）媒体会话，低版本沿用 audio_service。
+/// 在 [main] 启动时由 device_info_plus 初始化，供各模块判断走哪条媒体通知链路。
+bool isAndroid13Plus = false;
+
 /// Returns the global audio handler, creating it lazily if needed.
 ZenFileAudioHandler getAudioHandler() {
   _audioHandlerInstance ??= ZenFileAudioHandler._();
@@ -143,7 +148,9 @@ class ZenFileAudioHandler extends BaseAudioHandler
 
   /// 启动 Media3 媒体会话桥接：把 media_kit 状态实时同步到原生 MediaSession，
   /// 并把通知栏/锁屏/耳机指令回传驱动 media_kit。
+  /// 仅安卓 13+ 启用；低版本由 audio_service 原生通知承担，不走此链路。
   Future<void> _startMedia3() async {
+    if (!isAndroid13Plus) return;
     Media3Bridge.instance.setCommandHandler((action, positionMs) {
       switch (action) {
         case 'play':

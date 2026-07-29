@@ -1183,13 +1183,19 @@ class MainActivity : AudioServiceFragmentActivity() {
 
             when (call.method) {
                 "startMediaSession" -> {
-                    // 启动 Media3 媒体会话服务（安卓13+ 通知栏控制面板）
-                    try {
-                        val intent = Intent(this, ZenMediaSessionService::class.java)
-                        androidx.core.content.ContextCompat.startForegroundService(this, intent)
-                        result.success(true)
-                    } catch (e: Exception) {
+                    // 启动 Media3 媒体会话服务（安卓13+ 通知栏控制面板）。
+                    // 低版本（安卓12及以下）不启用 Media3，改用 audio_service，
+                    // 因此此处直接返回 false 不启动，避免前台服务冲突与通知异常。
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
                         result.success(false)
+                    } else {
+                        try {
+                            val intent = Intent(this, ZenMediaSessionService::class.java)
+                            androidx.core.content.ContextCompat.startForegroundService(this, intent)
+                            result.success(true)
+                        } catch (e: Exception) {
+                            result.success(false)
+                        }
                     }
                 }
                 "showProgressNotification" -> {

@@ -10,6 +10,7 @@ import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:audio_service/audio_service.dart';
 
 import 'core/theme.dart';
 import 'core/icon_fonts/broken_icons.dart';
@@ -46,6 +47,19 @@ void main() {
       MediaKit.ensureInitialized();
     } catch (e) {
       debugPrint('[ZenFile] MediaKit.ensureInitialized failed: $e');
+    }
+
+    // 探测安卓版本：安卓 13+（SDK >= 33）走 Media3 媒体会话链路，
+    // 安卓 12 及以下沿用 audio_service（低版本上 Media3 的通知生成不稳，
+    // 而 audio_service 在 12- 上本就正常显示）。两条链路互斥。
+    if (Platform.isAndroid) {
+      try {
+        final info = await DeviceInfoPlugin().androidInfo;
+        isAndroid13Plus = info.version.sdkInt >= 33;
+      } catch (e) {
+        debugPrint('[ZenFile] Device SDK query failed, defaulting to Media3: $e');
+        isAndroid13Plus = true;
+      }
     }
 
     try {
@@ -89,16 +103,31 @@ void main() {
       debugPrint('Error loading custom font at startup: $e');
     }
 
-    // 初始化 Media3 媒体会话桥接（安卓13+ 通知栏控制面板，参照 Echo-Music 的 Media3 实现）。
-    // 取代旧 audio_service 的 MediaSessionCompat(legacy) 方案，在 13+ 上更稳健。
-    // Wrapped in try-catch — app must still launch even if this fails.
+    // 初始化媒体通知链路。
+    // - 安卓 13+：使用 Media3（ZenMediaSessionService），控制面板在 13+ 上更稳健
+    // - 安卓 12 及以下：使用 audio_service（原生 MediaSessionCompat + MediaStyle 通知）
+    //   —— 低版本上 Media3 通知生成不稳定，而 audio_service 本就正常显示
+    // 两条链路在运行时互斥，不会冲突。Wrapped in try-catch。
     try {
-      await Media3Bridge.instance.ensureStarted();
+      if (isAndroid13Plus) {
+        await Media3Bridge.instance.ensureStarted();
+      } else {
+        await AudioService.init(
+          builder: () => getAudioHandler(),
+          config: const AudioServiceConfig(
+            androidNotificationChannelId: 'com.sequl.zenfile.audio.v2',
+            androidNotificationChannelName: 'ZenFile Audio Player',
+            androidNotificationIcon: 'mipmap/ic_launcher',
+            androidShowNotificationBadge: true,
+            androidStopForegroundOnPause: false,
+            notificationColor: Color(0xFF6200EE),
+          ),
+        );
+      }
       isAudioServiceInitialized = true;
     } catch (e) {
-      // Media3 桥接失败 —— 后台播放通知不可用但应用继续运行
       isAudioServiceInitialized = false;
-      debugPrint('[ZenFile] Media3Bridge init failed: $e');
+      debugPrint('[ZenFile] Media notification init failed: $e');
     }
 
     runApp(

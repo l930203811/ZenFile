@@ -1895,18 +1895,32 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     if (!mounted) return;
 
     try {
-      // 1. 优先检查 Media3 桥接是否初始化成功
-      //    这是最常见的"权限都开了但不显示"的根因
+      // 1. 检查媒体通知链路是否初始化成功
+      //    安卓 13+ 用 Media3 桥接，低版本用 audio_service。两者初始化失败都会导致不显示。
       if (!isAudioServiceInitialized) {
         // 尝试重新初始化一次
         bool reInitOk = false;
         try {
-          await Media3Bridge.instance.ensureStarted();
+          if (isAndroid13Plus) {
+            await Media3Bridge.instance.ensureStarted();
+          } else {
+            await AudioService.init(
+              builder: () => getAudioHandler(),
+              config: const AudioServiceConfig(
+                androidNotificationChannelId: 'com.sequl.zenfile.audio.v2',
+                androidNotificationChannelName: 'ZenFile Audio Player',
+                androidNotificationIcon: 'mipmap/ic_launcher',
+                androidShowNotificationBadge: true,
+                androidStopForegroundOnPause: false,
+                notificationColor: Color(0xFF6200EE),
+              ),
+            );
+          }
           isAudioServiceInitialized = true;
           reInitOk = true;
-          debugPrint('[ZenFile] Media3Bridge re-init succeeded');
+          debugPrint('[ZenFile] Media notification re-init succeeded');
         } catch (e) {
-          debugPrint('[ZenFile] Media3Bridge re-init failed: $e');
+          debugPrint('[ZenFile] Media notification re-init failed: $e');
         }
 
         if (!reInitOk) {
