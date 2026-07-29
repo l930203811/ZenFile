@@ -52,50 +52,59 @@ class ZenMediaSessionService : MediaSessionService() {
 
     override fun onCreate() {
         super.onCreate()
-        createChannel()
+        try {
+            createChannel()
 
-        val sessionIntent = Intent(this, MainActivity::class.java).apply {
-            action = Intent.ACTION_MAIN
-            addCategory(Intent.CATEGORY_LAUNCHER)
-        }
-        val sessionActivity = PendingIntent.getActivity(
-            this, 0, sessionIntent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
+            val sessionIntent = Intent(this, MainActivity::class.java).apply {
+                action = Intent.ACTION_MAIN
+                addCategory(Intent.CATEGORY_LAUNCHER)
+            }
+            val sessionActivity = PendingIntent.getActivity(
+                this, 0, sessionIntent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
 
-        // 先放置一个占位前台通知，满足 startForegroundService 的 5 秒时限
-        // （之后再交由 Media3 的 DefaultMediaNotificationProvider 接管更新）
-        val placeholder = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle(getString(R.string.zenfile_audio_channel))
-            .setContentText("")
-            .setContentIntent(sessionActivity)
-            .setOngoing(true)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .build()
-        startForeground(NOTIFICATION_ID, placeholder)
+            // 先放置一个占位前台通知，满足 startForegroundService 的 5 秒时限
+            // （之后再交由 Media3 的 DefaultMediaNotificationProvider 接管更新）
+            val placeholder = NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle(getString(R.string.zenfile_audio_channel))
+                .setContentText("")
+                .setContentIntent(sessionActivity)
+                .setOngoing(true)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .build()
+            startForeground(NOTIFICATION_ID, placeholder)
 
-        // Media3 自动生成 MediaStyle 通知（系统媒体卡片），无需手写 MediaStyle。
-        // 注意：必须先 setMediaNotificationProvider，再创建 Player 与 MediaSession，
-        // 否则低版本 Android（如 Android 11）上 provider 无法接管通知，会永远卡在 placeholder。
-        val provider = DefaultMediaNotificationProvider(
-            this,
-            { NOTIFICATION_ID },
-            CHANNEL_ID,
-            R.string.zenfile_audio_channel
-        )
-        provider.setSmallIcon(R.mipmap.ic_launcher)
-        setMediaNotificationProvider(provider)
+            // Media3 自动生成 MediaStyle 通知（系统媒体卡片），无需手写 MediaStyle。
+            // 注意：必须先 setMediaNotificationProvider，再创建 Player 与 MediaSession，
+            // 否则低版本 Android（如 Android 11）上 provider 无法接管通知，会永远卡在 placeholder。
+            val provider = DefaultMediaNotificationProvider(
+                this,
+                { NOTIFICATION_ID },
+                CHANNEL_ID,
+                R.string.zenfile_audio_channel
+            )
+            provider.setSmallIcon(R.mipmap.ic_launcher)
+            setMediaNotificationProvider(provider)
 
-        zenPlayer = ZenMediaPlayer(Looper.getMainLooper())
-        mediaSession = MediaSession.Builder(this, zenPlayer)
-            .setSessionActivity(sessionActivity)
-            .build()
+            zenPlayer = ZenMediaPlayer(Looper.getMainLooper())
+            mediaSession = MediaSession.Builder(this, zenPlayer)
+                .setSessionActivity(sessionActivity)
+                .build()
 
-        flutterMessenger?.let { messenger ->
-            channel = MethodChannel(messenger, METHOD_CHANNEL)
-            channel?.setMethodCallHandler { call, result -> handleDartCall(call, result) }
+            flutterMessenger?.let { messenger ->
+                channel = MethodChannel(messenger, METHOD_CHANNEL)
+                channel?.setMethodCallHandler { call, result -> handleDartCall(call, result) }
+            }
+        } catch (t: Throwable) {
+            // 任何异常都不应拖垮宿主 App 进程（前台服务与 App 同进程）。
+            // 失败时停止自身：通知栏不显示，但 App 继续正常运行。
+            try {
+                stopSelf()
+            } catch (_: Throwable) {
+            }
         }
     }
 

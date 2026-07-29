@@ -55,6 +55,12 @@ class MainActivity : AudioServiceFragmentActivity() {
     private var safPermissionResult: MethodChannel.Result? = null
     private val SAF_REQUEST_CODE = 10002
 
+    // 安卓13+ 启动 Media3 前台媒体会话需持有 POST_NOTIFICATIONS，否则 startForeground 会
+    // 抛 SecurityException 并拖垮整个 App 进程。统一在此把关：未授权时请求权限，
+    // 授权回调里再启动服务；拒绝则不启动（通知栏不显示，但 App 不崩溃）。
+    private val REQ_MEDIA3_NOTIF = 10003
+    private var pendingMediaSessionStart = false
+
     private val ACTION_CANCEL_OPERATION = "com.sequl.zenfile.ACTION_CANCEL_OPERATION"
     private var notificationsChannel: MethodChannel? = null
 
@@ -63,6 +69,39 @@ class MainActivity : AudioServiceFragmentActivity() {
             if (intent?.action == ACTION_CANCEL_OPERATION) {
                 notificationsChannel?.invokeMethod("cancelOperationFromNotification", null)
             }
+        }
+    }
+
+    /** 启动 Media3 前台媒体会话服务；内部异常全部吞掉，绝不让前台服务拖垮宿主 App 进程。 */
+    private fun startMedia3Service(result: MethodChannel.Result) {
+        try {
+            val intent = Intent(this, ZenMediaSessionService::class.java)
+            androidx.core.content.ContextCompat.startForegroundService(this, intent)
+            result.success(true)
+        } catch (e: Exception) {
+            result.success(false)
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQ_MEDIA3_NOTIF && pendingMediaSessionStart) {
+            pendingMediaSessionStart = false
+            val granted = grantResults.isNotEmpty() &&
+                grantResults[0] == PackageManager.PERMISSION_GRANTED
+            if (granted) {
+                // 权限已授予，启动 Media3 前台媒体服务（内部已做异常保护）
+                try {
+                    val intent = Intent(this, ZenMediaSessionService::class.java)
+                    androidx.core.content.ContextCompat.startForegroundService(this, intent)
+                } catch (_: Exception) {
+                }
+            }
+            // 拒绝：不启动 Media3，通知栏不显示但 App 不崩溃
         }
     }
 
@@ -1183,19 +1222,25 @@ class MainActivity : AudioServiceFragmentActivity() {
 
             when (call.method) {
                 "startMediaSession" -> {
-                    // 启动 Media3 媒体会话服务（安卓13+ 通知栏控制面板）。
-                    // 低版本（安卓12及以下）不启用 Media3，改用 audio_service，
-                    // 因此此处直接返回 false 不启动，避免前台服务冲突与通知异常。
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                        result.success(false)
-                    } else {
-                        try {
-                            val intent = Intent(this, ZenMediaSessionService::class.java)
-                            androidx.core.content.ContextCompat.startForegroundService(this, intent)
-                            result.success(true)
-                        } catch (e: Exception) {
+                    // 安卓13+ 启动前台媒体会话必须持有 POST_NOTIFICATIONS：未授予时
+                    // startForeground 会抛 SecurityException 拖垮 App。故先检查权限，
+                    // 未授予则请求权限并在 onRequestPermissionsResult 中启动；立即返回
+                    // 避免 Dart 端 invokeMethod 长时间挂起。低版本无运行时通知权限直接启动。
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        val perm = android.Manifest.permission.POST_NOTIFICATIONS
+                        val granted = androidx.core.content.ContextCompat
+                            .checkSelfPermission(this, perm) == PackageManager.PERMISSION_GRANTED
+                        if (granted) {
+                            startMedia3Service(result)
+                        } else {
+                            pendingMediaSessionStart = true
+                            androidx.core.app.ActivityCompat.requestPermissions(
+                                this, arrayOf(perm), REQ_MEDIA3_NOTIF
+                            )
                             result.success(false)
                         }
+                    } else {
+                        startMedia3Service(result)
                     }
                 }
                 "showProgressNotification" -> {

@@ -198,6 +198,12 @@ class ZenFileAudioHandler extends BaseAudioHandler
     );
     if (mediaItem.value != null) _pushMetadata(mediaItem.value!);
     _pushState(playbackState.value);
+
+    // 权限可能在进入本方法后才异步授予（首次打开播放器时系统弹窗），
+    // 服务会延后启动，导致上面首批推送丢失。延迟补推一次，确保元数据/状态到达。
+    await Future.delayed(const Duration(milliseconds: 1500));
+    if (mediaItem.value != null) _pushMetadata(mediaItem.value!);
+    _pushState(playbackState.value);
   }
 
   /// 把当前 MediaItem 的元数据（标题/艺人/时长/封面）推送到原生 MediaSession。

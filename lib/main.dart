@@ -57,8 +57,10 @@ void main() {
         final info = await DeviceInfoPlugin().androidInfo;
         isAndroid13Plus = info.version.sdkInt >= 33;
       } catch (e) {
-        debugPrint('[ZenFile] Device SDK query failed, defaulting to Media3: $e');
-        isAndroid13Plus = true;
+        // 探测失败一律回落到 audio_service（安卓12及以下的已知可用链路），
+        // 绝不能默认 Media3——否则低版本设备会被错误路由到 Media3 导致其通知不显示。
+        debugPrint('[ZenFile] Device SDK query failed, defaulting to audio_service: $e');
+        isAndroid13Plus = false;
       }
     }
 
