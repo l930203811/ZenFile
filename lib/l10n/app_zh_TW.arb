@@ -1122,6 +1122,10 @@
     "description": "ui\\screens\\internal_file_picker_screen.dart"
   },
   "markdown": "Markdown 預覽",
+  "@items": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "items": "個項目",
   "@markdown": {
     "description": "ui\\screens\\markdown_viewer_screen.dart"
   },

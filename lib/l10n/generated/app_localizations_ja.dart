@@ -886,6 +886,9 @@ class L10nJa extends L10n {
   String get markdown => 'Markdownプレビュー';
 
   @override
+  String get items => '項目';
+
+  @override
   String count1(Object count) {
     return '選択した$count個のアイテムを完全に削除しますか？';
   }

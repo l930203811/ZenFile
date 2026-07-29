@@ -935,6 +935,9 @@ class L10nRu extends L10n {
   String get markdown => 'Предпросмотр Markdown';
 
   @override
+  String get items => 'элементов';
+
+  @override
   String count1(Object count) {
     return 'Вы уверены, что хотите окончательно удалить $count выбранных элементов?';
   }

@@ -918,6 +918,9 @@ class L10nAr extends L10n {
   String get markdown => 'معاينة Markdown';
 
   @override
+  String get items => 'عناصر';
+
+  @override
   String count1(Object count) {
     return 'هل أنت متأكد أنك تريد حذف $count عنصر محدد بشكل دائم؟';
   }

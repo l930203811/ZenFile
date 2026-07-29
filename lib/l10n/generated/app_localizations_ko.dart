@@ -885,6 +885,9 @@ class L10nKo extends L10n {
   String get markdown => 'Markdown 미리보기';
 
   @override
+  String get items => '항목';
+
+  @override
   String count1(Object count) {
     return '선택한 $count개 항목을 영구적으로 삭제하시겠습니까?';
   }

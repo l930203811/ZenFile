@@ -605,7 +605,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                 if (dimensionsOrDuration.isNotEmpty) _buildCopyableRow(L10n.of(context).msg5bab3781, dimensionsOrDuration, ctx),
                 if (permissionsStr.isNotEmpty) _buildCopyableRow(L10n.of(context).ui_permissions, permissionsStr, ctx),
               ] else ...[
-                _buildCopyableRow(L10n.of(context).msg880a18f3, '$count items', ctx),
+                _buildCopyableRow(L10n.of(context).msg880a18f3, '$count ${L10n.of(context).items}', ctx),
                 _buildCopyableRow(L10n.of(context).msgea9ecb93, '${FileUtils.formatBytes(totalBytes, 2)} ($totalBytes bytes)', ctx),
               ],
             ],
@@ -3991,11 +3991,13 @@ class _SelectedFrame extends StatelessWidget {
       children: [
         child,
         Positioned.fill(
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: primary, width: 3),
-              borderRadius: BorderRadius.circular(10),
-              color: primary.withOpacity(0.16),
+          child: IgnorePointer(
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: primary, width: 3),
+                borderRadius: BorderRadius.circular(10),
+                color: primary.withOpacity(0.16),
+              ),
             ),
           ),
         ),
@@ -4107,7 +4109,7 @@ class _FolderGridItemState extends State<FolderGridItem> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '$_count items',
+                      '$_count ${L10n.of(context).items}',
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.75),
                         fontSize: 11,
@@ -4266,7 +4268,7 @@ class _MediaFolderTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '$count items',
+                      '$count ${L10n.of(context).items}',
                       style: TextStyle(color: Colors.white.withOpacity(0.75), fontSize: 11, fontWeight: FontWeight.w500),
                     ),
                   ],

@@ -1765,6 +1765,12 @@ abstract class L10n {
   /// ui\screens\media_category_screen.dart
   ///
   /// In zh, this message translates to:
+  /// **'个项目'**
+  String get items;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
   /// **'确定要永久删除选中的 {count} 个项目吗？'**
   String count1(Object count);
 

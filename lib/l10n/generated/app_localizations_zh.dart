@@ -883,6 +883,9 @@ class L10nZh extends L10n {
   String get markdown => 'Markdown 预览';
 
   @override
+  String get items => '个项目';
+
+  @override
   String count1(Object count) {
     return '确定要永久删除选中的 $count 个项目吗？';
   }
@@ -5220,6 +5223,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get markdown => 'Markdown 預覽';
+
+  @override
+  String get items => '個項目';
 
   @override
   String count1(Object count) {

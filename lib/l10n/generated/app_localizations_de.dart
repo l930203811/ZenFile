@@ -935,6 +935,9 @@ class L10nDe extends L10n {
   String get markdown => 'Markdown-Vorschau';
 
   @override
+  String get items => 'Elemente';
+
+  @override
   String count1(Object count) {
     return 'Sind Sie sicher, dass Sie $count ausgewählte Elemente dauerhaft löschen möchten?';
   }
