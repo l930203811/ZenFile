@@ -326,9 +326,12 @@ public class AudioService extends MediaBrowserServiceCompat {
         mediaSession.setCallback(mediaSessionCallback = new MediaSessionCallback());
         setSessionToken(mediaSession.getSessionToken());
         mediaSession.setQueue(queue);
-        // 服务启动后立即激活 MediaSession,避免 Android 13+ 上"active=false"导致系统媒体卡片不识别。
-        // idle 状态的 PlaybackState 不会显示控件,所以不会误触发空通知。
-        mediaSession.setActive(true);
+        // Android 12+ 需要 MediaSession 尽早激活，系统媒体卡片才能识别到 active session；
+        // Android 11 及以下保持 audio_service 0.18.x 原始行为（在 enterPlayingState 中激活），
+        // 避免部分国产 ROM 在 onCreate 阶段激活会话导致通知/前台服务异常。
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            mediaSession.setActive(true);
+        }
 
         PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
         wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, AudioService.class.getName());
@@ -357,10 +360,12 @@ public class AudioService extends MediaBrowserServiceCompat {
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
         MediaButtonReceiver.handleIntent(mediaSession, intent);
-        // 安全网：若已标记为播放态但通知尚未创建（enterPlayingState 的 handler.post
+        // 安全网（仅 Android 12+）：若已标记为播放态但通知尚未创建（enterPlayingState 的 handler.post
         // 可能因主线程繁忙而延迟），在 onStartCommand 里立即补一次 startForeground，
         // 确保系统不会因“startForegroundService 后 5 秒未 startForeground”而杀服务。
-        if (inPlayingState && !notificationCreated && mediaSession != null) {
+        // Android 11 及以下使用原始播放态切换逻辑，无需此补偿。
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                && inPlayingState && !notificationCreated && mediaSession != null) {
             try {
                 internalStartForeground();
             } catch (Exception e) {
@@ -538,6 +543,7 @@ public class AudioService extends MediaBrowserServiceCompat {
             }
         }
         this.compactActionIndices = compactActionIndices;
+        boolean wasPlaying = this.playing;
         AudioProcessingState oldProcessingState = this.processingState;
         this.processingState = processingState;
         this.playing = playing;
@@ -573,30 +579,38 @@ public class AudioService extends MediaBrowserServiceCompat {
         mediaSession.setShuffleMode(shuffleMode);
         mediaSession.setCaptioningEnabled(captioningEnabled);
 
-        // 原逻辑仅在「从暂停→播放」时激活 MediaSession/前台服务，导致在
-        // Android 13+ 上若后台播放于暂停态（或非该转换）启用，MediaSession 未激活，
-        // 系统媒体卡片不出现、控制按钮不可见（Android 12- 因紧凑视图按钮不受影响）。
-        // 改为：任何非 idle 状态都进入前台播放态，确保 13+ 媒体卡片出现；idle 才退出。
-        if (processingState != AudioProcessingState.idle) {
-            if (!inPlayingState) {
-                // Android 13+ 对 startForeground() 调用线程和时机要求更严格,
-                // 从 background engine 线程直接调用可能导致前台服务无法启动,
-                // 从而系统媒体卡片识别不到 active session。切到主线程执行。
-                handler.post(() -> {
-                    try {
-                        enterPlayingState();
-                    } catch (Exception e) {
-                        // startForeground 可能因权限/渠道/类型等原因抛异常，
-                        // 捕获并回退标记，使下一次 setState 能重试。
-                        System.out.println("### enterPlayingState failed: " + e);
-                        inPlayingState = false;
-                    }
-                });
-                inPlayingState = true;
+        // Android 12+ 需要 MediaSession 在前台服务激活期间保持 active，系统才会显示媒体卡片；
+        // 因此非 idle 状态即进入前台播放态，并由主线程调用 startForeground。
+        // Android 11 及以下保持 audio_service 0.18.x 原始「暂停→播放」切换逻辑，避免部分
+        // 国产 ROM 在暂停/ready 态反复进入前台服务导致通知不显示。
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (processingState != AudioProcessingState.idle) {
+                if (!inPlayingState) {
+                    // Android 12+ 对 startForeground() 调用线程和时机要求更严格,
+                    // 从 background engine 线程直接调用可能导致前台服务无法启动,
+                    // 从而系统媒体卡片识别不到 active session。切到主线程执行。
+                    handler.post(() -> {
+                        try {
+                            enterPlayingState();
+                        } catch (Exception e) {
+                            // startForeground 可能因权限/渠道/类型等原因抛异常，
+                            // 捕获并回退标记，使下一次 setState 能重试。
+                            System.out.println("### enterPlayingState failed: " + e);
+                            inPlayingState = false;
+                        }
+                    });
+                    inPlayingState = true;
+                }
+            } else if (inPlayingState) {
+                handler.post(() -> exitPlayingState());
+                inPlayingState = false;
             }
-        } else if (inPlayingState) {
-            handler.post(() -> exitPlayingState());
-            inPlayingState = false;
+        } else {
+            if (!wasPlaying && playing) {
+                enterPlayingState();
+            } else if (wasPlaying && !playing) {
+                exitPlayingState();
+            }
         }
 
         if (oldProcessingState != AudioProcessingState.idle && processingState == AudioProcessingState.idle) {
