@@ -485,7 +485,17 @@ class RemoteStreamingService {
       while (readOffset < endExclusive) {
         if (session.disposed || session.downloadFailed) break;
 
-        final downloaded = session.downloadedBytes;
+        // 修复C（问题2）：用磁盘真实已落盘字节作可读水位，而非可能过期的
+        // session.downloadedBytes（100ms 轮询延迟）。数据一落盘立即可读，消除
+        // 「播放头紧跟下载头时因门控过期而周期性落入等待分支」的饥饿卡顿。
+        int realLen = 0;
+        try {
+          final pf = File(session.partialPath);
+          realLen = pf.existsSync() ? pf.lengthSync() : 0;
+        } catch (_) {
+          realLen = 0;
+        }
+        final downloaded = realLen > 0 ? realLen : session.downloadedBytes;
         final seekStart = session._mergedStart;
         final seekEnd = session._mergedEnd;
         final seekCovers = seekEnd > 0 && readOffset >= seekStart && readOffset < seekEnd;
@@ -873,7 +883,22 @@ class RemoteStreamingService {
         await Future.delayed(Duration.zero);
         return true;
       }
-      await Future.delayed(const Duration(milliseconds: 100));
+      // 修复C（问题2）：用「进度信号」替代纯 100ms 轮询——后台下载每落盘一批
+      // （_syncFileLength → _notifyProgress 完成 _progressSignal），本等待立即被
+      // 唤醒，无需等下一个轮询周期，让播放头更紧密跟随后台下载，消除周期性饥饿。
+      final signal = session._progressSignal;
+      final woke = await Future.any<bool>([
+        Future.delayed(const Duration(milliseconds: 100), () => false),
+        if (signal != null)
+          signal.future.then((_) => true)
+        else
+          Future<bool>.value(false),
+      ]);
+      if (woke) {
+        // 被下载进度唤醒，立即回到循环顶部重新评估真实磁盘水位。
+        continue;
+      }
+      // 否则 100ms 已耗尽，进入下一轮（重新查磁盘长度）。
     }
     // 30s 内本地仍无新字节（下载可能已停但状态未更新）——保守结束流，避免
     // 把播放器永远吊在「正在缓存」。播放器会按需再发 Range 请求重试。
@@ -970,7 +995,8 @@ class _StreamSession {
     // of truth for _downloadedBytes — it only counts bytes that have been
     // flushed to the OS by the client's IOSink, so the streaming reader
     // never tries to read bytes that aren't yet on disk.
-    _lengthPollTimer = Timer.periodic(const Duration(milliseconds: 100), (_) {
+    // 修复C（问题2）：轮询间隔 100ms→50ms，降低水位感知延迟，代价极小。
+    _lengthPollTimer = Timer.periodic(const Duration(milliseconds: 50), (_) {
       _syncFileLength();
     });
 

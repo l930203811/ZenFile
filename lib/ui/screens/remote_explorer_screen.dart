@@ -47,6 +47,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
 
   // Transfer overlay
   bool _isTransferring = false;
+  bool _transferCancelled = false;
   double _transferProgress = 0.0;
   String _transferFileName = '';
   String _transferLabel = 'Transferring...';
@@ -398,7 +399,16 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
     final paths = List<String>.from(provider.clipboardPaths);
     final isCut = provider.isCut;
 
+    _transferCancelled = false;
+    // 注册活跃传输客户端，使取消按钮能通过 provider.cancelOperation() 中断传输
+    provider.setActiveTransferClient(_client);
+    String? lastUploadedName;
+    int lastUploadedSize = 0;
+
+    try {
     for (final localPath in paths) {
+      if (_transferCancelled || _client!.isCancelled) break;
+
       final file = File(localPath);
       if (!file.existsSync()) continue;
 
@@ -421,6 +431,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
         // 过早消失、且文件在服务器刷盘完成前被误判为“已上传完成”。
         if (_client is FtpRemoteClient) {
           for (int i = 0; i < 30; i++) {
+            if (_transferCancelled) break;
             await Future.delayed(const Duration(milliseconds: 500));
             bool ok = false;
             try {
@@ -431,27 +442,47 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
           }
         }
 
-        if (isCut) {
-          try { file.deleteSync(); } catch (_) {}
+        if (!_transferCancelled) {
+          lastUploadedName = fileName;
+          try { lastUploadedSize = file.lengthSync(); } catch (_) {}
+          if (isCut) {
+            try { file.deleteSync(); } catch (_) {}
+          }
         }
       } catch (e) {
+        // 取消导致的异常，跳出循环不再上传后续文件
+        if (_client!.isCancelled || _transferCancelled) break;
         if (mounted) {
           setState(() => _isTransferring = false);
           _showSnack(L10n.of(context).filenamee(e, fileName), isError: true);
-          return;
         }
+        break;
       }
     }
 
     if (mounted) {
       setState(() => _isTransferring = false);
-      if (isCut) {
-        // 刷新本地源目录，使被剪切（移动）的原文件立即从本地浏览器消失
-        provider.refreshLocalSourceAfterCut(paths);
-        provider.clearClipboard();
+      if (_transferCancelled) {
+        _showSnack(L10n.of(context).msga45bac47);
+      } else {
+        if (isCut) {
+          provider.refreshLocalSourceAfterCut(paths);
+          provider.clearClipboard();
+        }
+        _showSnack('Uploaded ${paths.length} file(s) successfully');
       }
-      _showSnack('Uploaded ${paths.length} file(s) successfully');
+      // 立即刷新一次，随后通过 scheduleRemoteRefreshAfterUpload 轮询
+      // 确保 FTP 服务端临时文件最终化后 UI 自动更新。
       await _loadDirectoryContents(_currentPath);
+      provider.scheduleRemoteRefreshAfterUpload(
+        _currentPath,
+        null,
+        targetName: lastUploadedName ?? '',
+        expectedSize: lastUploadedSize,
+      );
+    }
+    } finally {
+      provider.setActiveTransferClient(null);
     }
   }
 

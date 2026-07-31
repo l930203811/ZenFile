@@ -181,7 +181,6 @@ class LanClient extends RemoteClient {
   }
 
   @override
-  @override
   void cancel() {
     // 同步置位基类标志，保证 Dart 层 isCancelled 可见，供上层安全网判断取消。
     super.cancel();

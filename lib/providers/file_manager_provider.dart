@@ -219,6 +219,12 @@ class FileManagerProvider extends ChangeNotifier {
     _activeTransferClient?.cancel();
   }
 
+  /// 设置活跃传输客户端，供 remote_explorer_screen 的上传流程使用，
+  /// 使 cancelOperation() 能正确中断 _uploadFromLocalClipboard 中的传输。
+  void setActiveTransferClient(RemoteClient? client) {
+    _activeTransferClient = client;
+  }
+
   /// 切换到后台运行：关闭进度对话框，传输继续在后台执行。
   /// 设置 backgroundMode = true 后，进度通知器会忽略所有非 null 赋值，
   /// 传输 Future 不受影响，仍在后台运行。设置 null 会正常生效以关闭对话框。
@@ -2183,7 +2189,9 @@ class FileManagerProvider extends ChangeNotifier {
             .toList();
       } catch (e) {
         debugPrint('Error loading remote directory: $e');
-        activeTab.currentFiles = [];
+        // 修复A（问题1）：取消/网络抖动/服务端临时错误不应清空已显示的远程目录，
+        // 保留上次成功的列表，避免目录瞬间变空（用户可下拉重试）。isLoading 已在
+        // 下方统一置 false 并 notifyListeners()，这里不再 currentFiles = []。
       }
       activeTab.isLoading = false;
       _persistTabs();
@@ -2433,8 +2441,8 @@ class FileManagerProvider extends ChangeNotifier {
     unawaited(Future(() async {
       const maxAttempts = 40;
       const interval = Duration(milliseconds: 600);
+      bool? isFtpCache;
       for (int i = 0; i < maxAttempts; i++) {
-        await Future.delayed(interval);
         // 正在新粘贴 / 操作已取消 → 停止轮询，避免与新的上传/加载相互干扰
         if (_isPasting || _isOperationCancelled) {
           debugPrint('scheduleRemoteRefreshAfterUpload: stop (pasting=$_isPasting, cancelled=$_isOperationCancelled)');
@@ -2460,6 +2468,12 @@ class FileManagerProvider extends ChangeNotifier {
           return;
         }
         final tab = _tabs[idx];
+        // 修复E（问题3）：非 FTP 客户端（SFTP/SMB/WebDAV）上传为原子操作，首刷
+        // 无需等待服务端重命名临时文件，立即刷新；仅 FTP 保留每轮 600ms 延迟。
+        isFtpCache ??= tab.remoteClient is FtpRemoteClient;
+        if (i > 0 || isFtpCache) {
+          await Future.delayed(interval);
+        }
         try {
           // 主动最终化：若目录里仍有服务端临时文件，尝试让客户端执行
           // finalizeUpload（在临时文件完整时主动重命名为目标文件）。这对飞牛等
@@ -3626,6 +3640,9 @@ class FileManagerProvider extends ChangeNotifier {
       }
       activeTab.isLoading = false;
       _isPasting = false;
+      // 重置取消标志：即使传输被取消，也需要 scheduleRemoteRefreshAfterUpload
+      // 执行至少一次刷新，清理目录中残留的临时文件显示。
+      _isOperationCancelled = false;
       notifyListeners();
       // 上传后服务端可能延迟清理临时文件，延迟再刷一次以保证 UI 干净。
       // 注意：必须在 _isPasting = false 之后启动，否则后台轮询会因 _isPasting
@@ -3929,6 +3946,9 @@ class FileManagerProvider extends ChangeNotifier {
       }
       activeTab.isLoading = false;
       _isPasting = false;
+      // 重置取消标志：即使传输被取消，也需要 scheduleRemoteRefreshAfterUpload
+      // 执行至少一次刷新，清理目录中残留的临时文件显示。
+      _isOperationCancelled = false;
       notifyListeners();
       // 上传后服务端可能延迟清理临时文件，延迟再刷一次以保证 UI 干净。
       // 注意：必须在 _isPasting = false 之后启动，否则后台轮询会因 _isPasting

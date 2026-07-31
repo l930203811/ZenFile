@@ -189,8 +189,30 @@ class SshSftpService {
         cancelFlags[id] = false
         val monitor = makeMonitor(id)
         try {
-            FileOutputStream(localPath).use { fos ->
-                ch.get(remotePath, fos, monitor)
+            // 修复D（问题2）：放弃 JSch 内部 ch.get(remotePath, fos, monitor) 的整体传输
+            // （其内部无显式 flush，数据落盘时机不透明，lengthSync 看到的增长与真正
+            // 可读字节脱节，导致流媒体代理周期性饥饿卡顿）。改为显式读循环 + 定期
+            // flush，与 downloadRange 风格一致：数据每落盘一批立即可被代理读到。
+            ch.get(remotePath).use { remote ->
+                FileOutputStream(localPath).use { fos ->
+                    val buf = ByteArray(64 * 1024)
+                    var sinceFlush: Long = 0
+                    while (true) {
+                        if (cancelFlags[id] ?: false) break
+                        val n = remote.read(buf, 0, buf.size)
+                        if (n < 0) break
+                        fos.write(buf, 0, n)
+                        sinceFlush += n
+                        // 每约 256KB 强制刷盘一次，缩短「已下载但仍在 OS page cache」的窗口。
+                        if (sinceFlush >= 256 * 1024) {
+                            fos.flush()
+                            sinceFlush = 0
+                        }
+                        // 进度由 monitor.count 统一累计；返回 false 表示被取消，立即中止。
+                        if (!(monitor.count(n.toLong()))) break
+                    }
+                    fos.flush()
+                }
             }
         } finally {
             // 传输结束后重建 sftp 子通道，保证后续 listDirectory/stat 在干净通道上进行。

@@ -19,13 +19,16 @@ class FtpRemoteClient extends RemoteClient {
   void cancel() {
     // 必须同步置位基类的 _cancelled 标志，否则 isCancelled 永远为 false，
     // 所有基于 isCancelled 的取消检查（如下载循环的 if (isCancelled) break）
-    // 都会失效。FTP 没有原生取消命令，同时断开连接让进行中的传输因
-    // socket 关闭而抛异常，上层捕获后视为取消。
+    // 都会失效。
     super.cancel();
     // 手动上传使用独立的控制/数据 socket，必须一并销毁才能立即中断传输。
     try { _activeUploadControlSocket?.destroy(); } catch (_) {}
     try { _activeUploadDataSocket?.destroy(); } catch (_) {}
-    _ftpConnect?.disconnect();
+    // 修复B（问题1）：不再调用 _ftpConnect?.disconnect()。浏览会话 _ftpConnect 与
+    // 传输所用的独立 socket 解耦——下载走 _downloadWithRawSocket（独立 socket +
+    // isCancelled 检查），上传走独立控制/数据 socket 且 finally 会重建 _ftpConnect。
+    // 断开浏览会话对中断传输无益，却会破坏取消后的目录刷新（配合修复A 保留旧列表，
+    // 但若 _ftpConnect 被断则手动刷新会失败）。因此取消时只销毁活跃传输 socket。
   }
 
   @override
