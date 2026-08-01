@@ -1329,7 +1329,7 @@ class L10nEn extends L10n {
   String get msg84719fd5 => 'Minimal Outline';
 
   @override
-  String get zenfile4 => 'ZenFile Broken Line Outline';
+  String get zenfile4 => 'Broken Line Outline';
 
   @override
   String get vuesax => 'Category Grid / Vuesax Grid';

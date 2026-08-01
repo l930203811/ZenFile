@@ -1363,7 +1363,7 @@ class L10nEs extends L10n {
   String get msg84719fd5 => 'Contorno Minimalista';
 
   @override
-  String get zenfile4 => 'Contorno de Línea Rota ZenFile';
+  String get zenfile4 => 'Contorno de Línea Rota';
 
   @override
   String get vuesax => 'Cuadrícula de Categoría / Cuadrícula Vuesax';

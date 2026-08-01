@@ -1266,7 +1266,7 @@ class L10nJa extends L10n {
   String get msg84719fd5 => 'ミニマルストローク';
 
   @override
-  String get zenfile4 => 'ZenFileブレイクストローク';
+  String get zenfile4 => 'ブレイクストローク';
 
   @override
   String get vuesax => 'カテゴリグリッド / Vuesaxグリッド';

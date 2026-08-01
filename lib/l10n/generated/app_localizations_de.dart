@@ -1353,7 +1353,7 @@ class L10nDe extends L10n {
   String get msg84719fd5 => 'Minimalistisch Umriss';
 
   @override
-  String get zenfile4 => 'ZenFile Gestrichelte Linie Umriss';
+  String get zenfile4 => 'Gestrichelte Linie Umriss';
 
   @override
   String get vuesax => 'Kategorie-Raster / Vuesax-Raster';

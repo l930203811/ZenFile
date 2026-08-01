@@ -511,7 +511,7 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 2.0),
+      padding: const EdgeInsets.only(left: 12.0, right: 4.0, top: 2.0, bottom: 2.0),
       child: Material(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(16),
@@ -544,8 +544,9 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
           splashColor: theme.colorScheme.primary.withOpacity(0.15),
           highlightColor: theme.colorScheme.primary.withOpacity(0.08),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+            padding: const EdgeInsets.fromLTRB(16.0, 12.0, 0.0, 12.0),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Icon(icon, size: 22, color: theme.colorScheme.onSurface.withOpacity(0.8)),
                 const SizedBox(width: 16),
@@ -553,13 +554,21 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                   child: Text(
                     title,
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withOpacity(0.9)),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                IconButton(
-                  icon: Icon(Icons.more_vert_rounded, size: 20, color: theme.colorScheme.onSurface.withOpacity(0.5)),
-                  onPressed: showOptionsSheet,
-                  padding: const EdgeInsets.all(4),
-                  constraints: const BoxConstraints(),
+                GestureDetector(
+                  onTap: showOptionsSheet,
+                  behavior: HitTestBehavior.translucent,
+                  child: SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Icon(Icons.more_vert_rounded, size: 20, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                    ),
+                  ),
                 ),
               ],
             ),

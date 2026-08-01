@@ -1323,7 +1323,7 @@ class L10nAr extends L10n {
   String get msg84719fd5 => 'حد أدنى';
 
   @override
-  String get zenfile4 => 'حد ZenFile المتقطع';
+  String get zenfile4 => 'حد المتقطع';
 
   @override
   String get vuesax => 'شبكة الفئات / شبكة Vuesax';

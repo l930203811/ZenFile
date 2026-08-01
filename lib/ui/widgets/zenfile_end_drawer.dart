@@ -1,4 +1,3 @@
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:zenfile/l10n/generated/app_localizations.dart';
@@ -85,11 +84,11 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
                       PreferencesService.saveDrawerSectionExpanded('quick_actions', expanded);
                     },
                     leading: Icon(Broken.command, color: theme.colorScheme.primary, size: 24),
-                    title: AutoSizeText(
+                    title: Text(
                       L10n.of(context).msge8b8e9b3,
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
-                      maxLines: 1,
-                      minFontSize: 12,
+                      maxLines: 2,
+                      softWrap: true,
                       overflow: TextOverflow.ellipsis,
                     ),
                     childrenPadding: const EdgeInsets.symmetric(horizontal: 12),
@@ -167,11 +166,11 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
                         PreferencesService.saveDrawerSectionExpanded('favorites', expanded);
                       },
                       leading: Icon(Broken.folder_favorite, color: theme.colorScheme.primary, size: 24),
-                      title: AutoSizeText(
+                      title: Text(
                         L10n.of(context).ui_favorites,
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
-                        maxLines: 1,
-                        minFontSize: 12,
+                        maxLines: 2,
+                        softWrap: true,
                         overflow: TextOverflow.ellipsis,
                       ),
                       childrenPadding: const EdgeInsets.symmetric(horizontal: 12),
@@ -370,15 +369,15 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
                 Icon(icon, size: 24, color: color),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: AutoSizeText(
+                  child: Text(
                     title,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: theme.colorScheme.onSurface.withOpacity(0.9),
                     ),
-                    maxLines: 1,
-                    minFontSize: 12,
+                    maxLines: 2,
+                    softWrap: true,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),

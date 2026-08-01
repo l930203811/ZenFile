@@ -1360,7 +1360,7 @@ class L10nFr extends L10n {
   String get msg84719fd5 => 'Contour minimaliste';
 
   @override
-  String get zenfile4 => 'Contour en pointillés ZenFile';
+  String get zenfile4 => 'Contour en pointillés';
 
   @override
   String get vuesax => 'Grille de catégories / Grille Vuesax';

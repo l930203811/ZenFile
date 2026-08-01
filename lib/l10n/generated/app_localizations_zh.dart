@@ -1262,7 +1262,7 @@ class L10nZh extends L10n {
   String get msg84719fd5 => '极简描边';
 
   @override
-  String get zenfile4 => 'ZenFile 断线描边';
+  String get zenfile4 => '断线描边';
 
   @override
   String get vuesax => '分类网格 / Vuesax 网格';
@@ -5609,7 +5609,7 @@ class L10nZhTw extends L10nZh {
   String get msg84719fd5 => '極簡描邊';
 
   @override
-  String get zenfile4 => 'ZenFile 斷線描邊';
+  String get zenfile4 => '斷線描邊';
 
   @override
   String get vuesax => '分類網格 / Vuesax 網格';

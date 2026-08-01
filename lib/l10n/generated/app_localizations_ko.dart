@@ -1264,7 +1264,7 @@ class L10nKo extends L10n {
   String get msg84719fd5 => '미니멀 아웃라인';
 
   @override
-  String get zenfile4 => 'ZenFile 점선 아웃라인';
+  String get zenfile4 => '점선 아웃라인';
 
   @override
   String get vuesax => '카테고리 그리드 / Vuesax 그리드';

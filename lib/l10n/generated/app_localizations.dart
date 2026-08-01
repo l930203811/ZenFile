@@ -2503,7 +2503,7 @@ abstract class L10n {
   /// ui\screens\more_settings_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'ZenFile 断线描边'**
+  /// **'断线描边'**
   String get zenfile4;
 
   /// ui\screens\more_settings_screen.dart

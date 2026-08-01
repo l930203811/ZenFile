@@ -1357,7 +1357,7 @@ class L10nRu extends L10n {
   String get msg84719fd5 => 'Минималистичный Контур';
 
   @override
-  String get zenfile4 => 'Контур Пунктирной Линии ZenFile';
+  String get zenfile4 => 'Контур Пунктирной Линии';
 
   @override
   String get vuesax => 'Сетка Категорий / Сетка Vuesax';
