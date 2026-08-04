@@ -29,6 +29,8 @@ import 'batch_rename_dialog.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../services/remote/remote_client.dart';
 import '../../services/media_thumbnail_service.dart';
+import '../../services/preferences_service.dart';
+import 'package:photo_manager/photo_manager.dart';
 import 'package:path_provider/path_provider.dart';
 
 class PaneBrowser extends StatefulWidget {
@@ -768,7 +770,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
         child: Stack(
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
               decoration: BoxDecoration(
                 color: isSelected
                     ? theme.colorScheme.primaryContainer.withOpacity(0.4)
@@ -787,8 +789,8 @@ class _PaneBrowserState extends State<PaneBrowser> {
                   GestureDetector(
                     onTap: itemLongPress,
                     child: Container(
-                      width: 32,
-                      height: 32,
+                      width: 24,
+                      height: 24,
                       decoration: BoxDecoration(
                         color: isSelected
                             ? theme.colorScheme.primary
@@ -802,15 +804,15 @@ class _PaneBrowserState extends State<PaneBrowser> {
                         color: isSelected
                             ? theme.colorScheme.onPrimary
                             : theme.colorScheme.primary,
-                        size: 18,
+                        size: 16,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 4),
                   Expanded(
                     child: Padding(
-                      // 右侧为三点按钮预留 24px，避免文字与按钮重叠
-                      padding: const EdgeInsets.only(right: 24),
+                      // 右侧为三点按钮预留 20px，避免文字与按钮重叠
+                      padding: const EdgeInsets.only(right: 20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
@@ -819,7 +821,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                             folder.name,
                             style: theme.textTheme.bodyMedium?.copyWith(
                               fontWeight: FontWeight.w600,
-                              fontSize: 13,
+                              fontSize: 12,
                             ),
                             maxLines: provider.adaptiveMultiLineNames ? 3 : 1,
                             overflow: TextOverflow.ellipsis,
@@ -867,11 +869,11 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                           overflow: TextOverflow.ellipsis,
                                         );
                                       } else {
-                                        return Text(
-                                          '$countStr • ${FileUtils.formatDate(folder.modified, use24Hour: provider.use24HourFormat)}',
-                                          style: theme.textTheme.bodySmall?.copyWith(
-                                            color: theme.textTheme.bodySmall?.color?.withOpacity(0.55),
-                                            fontSize: 10.5,
+                                  return Text(
+                                      '$countStr • ${FileUtils.formatDate(folder.modified, use24Hour: provider.use24HourFormat)}',
+                                      style: theme.textTheme.bodySmall?.copyWith(
+                                        color: theme.textTheme.bodySmall?.color?.withOpacity(0.55),
+                                        fontSize: 10,
                                           ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
@@ -905,9 +907,9 @@ class _PaneBrowserState extends State<PaneBrowser> {
                 top: 0,
                 right: 0,
                 child: IconButton(
-                  icon: const Icon(Broken.more, size: 16),
+                  icon: const Icon(Broken.more, size: 13),
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+                  constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
                   onPressed: () {
                     _activatePane(provider);
                     FileActionSheet.show(
@@ -963,7 +965,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
         child: Stack(
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
               decoration: BoxDecoration(
                 color: isSelected
                     ? theme.colorScheme.primaryContainer.withOpacity(0.4)
@@ -982,8 +984,8 @@ class _PaneBrowserState extends State<PaneBrowser> {
                   GestureDetector(
                     onTap: itemLongPress,
                     child: Container(
-                      width: 32,
-                      height: 32,
+                      width: 24,
+                      height: 24,
                       decoration: BoxDecoration(
                         color: isSelected
                             ? theme.colorScheme.primary
@@ -1001,11 +1003,11 @@ class _PaneBrowserState extends State<PaneBrowser> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 4),
                   Expanded(
                     child: Padding(
-                      // 右侧为三点按钮预留 24px，避免文字与按钮重叠
-                      padding: const EdgeInsets.only(right: 24),
+                      // 右侧为三点按钮预留 20px，避免文字与按钮重叠
+                      padding: const EdgeInsets.only(right: 20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
@@ -1014,7 +1016,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                             file.name,
                             style: theme.textTheme.bodyMedium?.copyWith(
                               fontWeight: FontWeight.w600,
-                              fontSize: 13,
+                              fontSize: 12,
                             ),
                             maxLines: provider.adaptiveMultiLineNames ? 3 : 1,
                             overflow: TextOverflow.ellipsis,
@@ -1023,24 +1025,26 @@ class _PaneBrowserState extends State<PaneBrowser> {
                           Row(
                             children: [
                               if (!provider.hideTimeAndDate) ...[
-                                Flexible(
+                                Expanded(
                                   child: Text(
-                                    FileUtils.formatDate(file.modified, use24Hour: provider.use24HourFormat),
+                                    FileUtils.formatDateCompact(file.modified, use24Hour: provider.use24HourFormat),
                                     style: theme.textTheme.bodySmall?.copyWith(
                                       color: theme.textTheme.bodySmall?.color?.withOpacity(0.55),
-                                      fontSize: 10.5,
+                                      fontSize: 9,
+                                      letterSpacing: -0.2,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                const SizedBox(width: 6),
+                                const SizedBox(width: 3),
                               ],
                               Text(
-                                FileUtils.formatBytes(file.size, 1),
+                                FileUtils.formatBytesCompact(file.size, 1),
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: theme.textTheme.bodySmall?.color?.withOpacity(0.55),
-                                  fontSize: 10.5,
+                                  fontSize: 9,
+                                  letterSpacing: -0.2,
                                 ),
                               ),
                             ],
@@ -1057,9 +1061,9 @@ class _PaneBrowserState extends State<PaneBrowser> {
                 top: 0,
                 right: 0,
                 child: IconButton(
-                  icon: const Icon(Broken.more, size: 16),
+                  icon: const Icon(Broken.more, size: 13),
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+                  constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
                   onPressed: () {
                     _activatePane(provider);
                     FileActionSheet.show(
@@ -1200,12 +1204,12 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
   void initState() {
     super.initState();
     final lowerPath = widget.file.path.toLowerCase();
-    // 远程文件优先走远程缩略图加载逻辑
-    if (widget.file.isRemote && widget.remoteClient != null) {
+    // 远程文件优先走远程缩略图加载逻辑（受「远程媒体缩略图」开关控制）
+    if (widget.file.isRemote && widget.remoteClient != null && PreferencesService.getRemoteMediaThumbnailPreview()) {
       _loadRemoteThumb();
-    } else if (FileUtils.isVideo(widget.file.path)) {
+    } else if (!widget.file.isRemote && FileUtils.isVideo(widget.file.path)) {
       _loadVideoThumb();
-    } else if (FileUtils.isAudio(widget.file.path)) {
+    } else if (!widget.file.isRemote && FileUtils.isAudio(widget.file.path)) {
       _loadAudioThumb();
     } else if (lowerPath.endsWith('.apk') || lowerPath.endsWith('.xapk') || lowerPath.endsWith('.apks') || lowerPath.endsWith('.apkm')) {
       _loadApkIcon();
@@ -1348,40 +1352,39 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
   Future<void> _loadVideoThumb() async {
     if (!mounted) return;
     try {
-      final mediaProvider = context.read<MediaProvider>();
-      final match = mediaProvider.videos.where((v) {
-        final titleLower = (v.title ?? '').toLowerCase();
-        final nameLower = widget.file.name.toLowerCase();
-        
-        // Case 1: title matches filename exactly
-        if (titleLower == nameLower) return true;
-        
-        // Case 2: title is basename without extension, e.g. title="my_video", filename="my_video.mp4"
-        final extIndex = nameLower.lastIndexOf('.');
-        final ext = extIndex != -1 ? nameLower.substring(extIndex) : '';
-        if (ext.isNotEmpty) {
-          final baseName = nameLower.substring(0, extIndex);
-          if (titleLower == baseName || '${titleLower}${ext}' == nameLower) {
-            return true;
+      // mediaProvider.videos 返回的是 File（文件系统扫描），不是 AssetEntity，
+      // 无法用 ThumbnailCache.get(asset)。直接走 PhotoManager 路径匹配 + 原生生成。
+      final assetEntities = await PhotoManager.getAssetListRange(
+        start: 0,
+        end: 1000,
+        type: RequestType.video,
+      );
+      for (final asset in assetEntities) {
+        try {
+          final assetPath = await asset.originFile.then((f) => f?.path);
+          if (assetPath != null && assetPath.toLowerCase() == widget.file.path.toLowerCase()) {
+            final thumbData = await asset.thumbnailDataWithSize(
+              const ThumbnailSize.square(300),
+              quality: 80,
+            );
+            if (mounted && thumbData != null && thumbData.isNotEmpty) {
+              setState(() {
+                _videoThumb = thumbData;
+              });
+              return;
+            }
+            break;
           }
-        }
-        
-        // Case 3: Match via mimeType
-        final mimeExt = v.mimeType?.split("/").last.toLowerCase();
-        if (mimeExt != null && '${titleLower}.$mimeExt' == nameLower) {
-          return true;
-        }
-        
-        return false;
-      }).firstOrNull;
+        } catch (_) {}
+      }
 
-      if (match != null) {
-        final thumb = await ThumbnailCache.get(match);
-        if (mounted && thumb != null) {
-          setState(() {
-            _videoThumb = thumb;
-          });
-        }
+      // 回退：文件不在系统相册中（下载目录、NAS 挂载目录等），
+      // 直接通过原生 MediaMetadataRetriever 从文件路径生成首帧缩略图。
+      final thumbBytes = await MediaThumbnailService.generateVideoThumbnail(widget.file.path);
+      if (mounted && thumbBytes != null && thumbBytes.isNotEmpty) {
+        setState(() {
+          _videoThumb = thumbBytes;
+        });
       }
     } catch (_) {}
   }
@@ -1418,6 +1421,24 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
     }
 
     if (!showMediaPreviews) {
+      if (isImg) {
+        return FileTypeIcon(
+          icon: Broken.image,
+          label: FileUtils.getImageTypeLabel(widget.file.path),
+          color: widget.iconColor,
+          iconScale: 18 / 28,
+        );
+      }
+      return Icon(
+        FileUtils.getIconForFile(widget.file.path),
+        color: widget.iconColor,
+        size: 18,
+      );
+    }
+
+    // 远程文件缩略图额外受「远程媒体缩略图」开关控制
+    final showRemoteThumb = !widget.file.isRemote || PreferencesService.getRemoteMediaThumbnailPreview();
+    if (!showRemoteThumb) {
       if (isImg) {
         return FileTypeIcon(
           icon: Broken.image,

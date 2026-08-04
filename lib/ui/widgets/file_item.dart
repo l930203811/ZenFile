@@ -138,12 +138,13 @@ class FileItem extends StatelessWidget {
                             return Row(
                               children: [
                                 if (!provider.hideTimeAndDate) ...[
-                                  Flexible(
+                                  Expanded(
                                     child: Text(
-                                      FileUtils.formatDate(file.modified, use24Hour: provider.use24HourFormat),
+                                      FileUtils.formatDateShort(file.modified, use24Hour: provider.use24HourFormat),
                                       style: theme.textTheme.bodySmall?.copyWith(
                                         color: theme.textTheme.bodySmall?.color?.withOpacity(0.6),
                                       ),
+                                      maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
@@ -463,50 +464,14 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
   }
 
   Future<void> _loadVideoThumb() async {
-    if (!mounted) return;
-    try {
-      // 方法1：从系统媒体库查找匹配的视频
-      final mediaProvider = context.read<MediaProvider>();
-      final match = mediaProvider.videos.where((v) {
-        final titleLower = (v.title ?? '').toLowerCase();
-        final nameLower = widget.file.name.toLowerCase();
-        
-        // Case 1: title matches filename exactly
-        if (titleLower == nameLower) return true;
-        
-        // Case 2: title is basename without extension
-        final extIndex = nameLower.lastIndexOf('.');
-        final ext = extIndex != -1 ? nameLower.substring(extIndex) : '';
-        if (ext.isNotEmpty) {
-          final baseName = nameLower.substring(0, extIndex);
-          if (titleLower == baseName || '${titleLower}${ext}' == nameLower) {
-            return true;
-          }
-        }
-        
-        // Case 3: Match via mimeType
-        final mimeExt = v.mimeType?.split("/").last.toLowerCase();
-        if (mimeExt != null && '${titleLower}.$mimeExt' == nameLower) {
-          return true;
-        }
-        
-        return false;
-      }).firstOrNull;
-
-      if (match != null) {
-        final thumb = await ThumbnailCache.get(match);
-        if (mounted && thumb != null) {
-          setState(() => _videoThumb = thumb);
-          return;
-        }
-      }
-
-      // 方法2：直接通过文件路径获取视频缩略图（不依赖系统媒体库）
-      await _loadVideoThumbFromFile();
-    } catch (_) {}
+    // mediaProvider.videos 返回的是 File（文件系统扫描），不是 AssetEntity，
+    // 无法用 ThumbnailCache.get(asset) 获取缩略图。直接走路径匹配 + 原生生成。
+    await _loadVideoThumbFromFile();
   }
 
   /// 直接从视频文件路径生成缩略图
+  /// 不依赖系统媒体库/相册（相册只收录 DCIM/Movies 等目录，下载目录、NAS 挂载
+  /// 目录等不在相册中的视频通过此回退生成缩略图）。
   Future<void> _loadVideoThumbFromFile() async {
     if (!mounted) return;
     try {
@@ -514,14 +479,15 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
       final file = File(filePath);
       if (!await file.exists()) return;
 
-      // 尝试通过 photo_manager 从路径获取 AssetEntity
+      // 回退1：通过 PhotoManager 按路径查找 AssetEntity（系统媒体库已收录但
+      // mediaProvider.videos 未加载或文件名不匹配的情况），用 thumbnailDataWithSize
+      // 获取缩略图（走系统媒体库 API，不直接读取文件，权限更可靠）
       final assetEntities = await PhotoManager.getAssetListRange(
         start: 0,
         end: 1000,
         type: RequestType.video,
       );
-      
-      // 查找路径匹配的视频
+
       AssetEntity? matchedAsset;
       for (final asset in assetEntities) {
         try {
@@ -540,7 +506,15 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         );
         if (mounted && thumbData != null && thumbData.isNotEmpty) {
           setState(() => _videoThumb = thumbData);
+          return;
         }
+      }
+
+      // 回退2：文件不在系统相册中（下载目录、NAS 挂载目录等），
+      // 直接通过原生 MediaMetadataRetriever 从文件路径生成首帧缩略图。
+      final thumbBytes = await MediaThumbnailService.generateVideoThumbnail(filePath);
+      if (mounted && thumbBytes != null && thumbBytes.isNotEmpty) {
+        setState(() => _videoThumb = thumbBytes);
       }
     } catch (_) {}
   }

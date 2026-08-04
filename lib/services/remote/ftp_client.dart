@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:ftpconnect/ftpconnect.dart';
 import 'package:path/path.dart' as p;
@@ -14,6 +15,30 @@ class FtpRemoteClient extends RemoteClient {
   FTPConnect? _ftpConnect;
   Socket? _activeUploadControlSocket;
   Socket? _activeUploadDataSocket;
+  // 下载使用的独立控制/数据 socket（由 _downloadWithRawSocket 设置），
+  // 取消时一并销毁，才能立即中断进行中的下载（否则后台会持续读 socket 直到完成）。
+  Socket? _activeDownloadControlSocket;
+  Socket? _activeDownloadDataSocket;
+
+  /// 异步互斥锁（Future 链）：串行化所有依赖单连接的 CWD 状态的操作
+  /// （[listDirectory] / [finalizeUpload] 内的 rename）。FTP 是单连接协议，
+  /// CWD+LIST 不可并发；同一 `_ftpConnect` 的并发 LIST 会导致 CWD 状态错乱、
+  /// 应用闪退（问题3）。通过此队列保证任意时刻只有一个 CWD 相关操作在执行。
+  Future<void>? _serialQueue;
+
+  /// 把 [fn] 串行进队执行，返回其结果。前一个任务异常不会阻塞队列推进。
+  Future<T> _serialize<T>(Future<T> Function() fn) {
+    final completer = Completer<T>();
+    final prev = _serialQueue ?? Future<void>.value();
+    _serialQueue = prev.then((_) async {
+      try {
+        completer.complete(await fn());
+      } catch (e) {
+        completer.completeError(e);
+      }
+    }).catchError((_) {/* 吞咽前一任务的异常，继续推进队列 */});
+    return completer.future;
+  }
 
   @override
   void cancel() {
@@ -24,6 +49,10 @@ class FtpRemoteClient extends RemoteClient {
     // 手动上传使用独立的控制/数据 socket，必须一并销毁才能立即中断传输。
     try { _activeUploadControlSocket?.destroy(); } catch (_) {}
     try { _activeUploadDataSocket?.destroy(); } catch (_) {}
+    // 下载同样使用独立 socket：销毁后才能立即中断进行中的下载，
+    // 否则后台会持续读取数据 socket 直到整文件传输完成。
+    try { _activeDownloadControlSocket?.destroy(); } catch (_) {}
+    try { _activeDownloadDataSocket?.destroy(); } catch (_) {}
     // 修复B（问题1）：不再调用 _ftpConnect?.disconnect()。浏览会话 _ftpConnect 与
     // 传输所用的独立 socket 解耦——下载走 _downloadWithRawSocket（独立 socket +
     // isCancelled 检查），上传走独立控制/数据 socket 且 finally 会重建 _ftpConnect。
@@ -81,6 +110,13 @@ class FtpRemoteClient extends RemoteClient {
 
   @override
   Future<List<RemoteFileItem>> listDirectory(String path, {bool forceRefresh = false}) async {
+    // 串行化：FTP 单连接，CWD+LIST 不可并发（问题3 闪退根因之一）。
+    return _serialize(() => _listDirectoryInner(path, forceRefresh: forceRefresh));
+  }
+
+  /// [listDirectory] 的实际实现（必须在 [_serialize] 内调用，禁止再加锁，
+  /// 否则 finalizeUpload 持锁调用时会死锁）。
+  Future<List<RemoteFileItem>> _listDirectoryInner(String path, {bool forceRefresh = false}) async {
     if (_ftpConnect == null) throw Exception('FTP not connected');
 
     final targetPath = (path.isEmpty || path == '/') ? '/' : path;
@@ -274,6 +310,12 @@ class FtpRemoteClient extends RemoteClient {
       await _downloadWithRawSocket(remotePath, localPath, onProgress);
       return;
     } catch (e) {
+      // 取消导致的异常（isCancelled 为 true）一律不再回退到不可取消的
+      // ftpconnect 缓冲路径，否则会「点了取消后台仍下载到完成」。
+      if (isCancelled) {
+        try { File(localPath).deleteSync(); } catch (_) {}
+        throw Exception('Cancelled');
+      }
       debugPrint('FTP raw socket download failed, falling back to ftpconnect: $e');
     }
 
@@ -309,12 +351,22 @@ class FtpRemoteClient extends RemoteClient {
           fileName,
           localFile,
           onProgress: (progressPercent, received, fileSize) {
+            // 兜底路径同样响应取消：ftpconnect 会把整文件缓冲到 IOSink，
+            // 若不在此拦截则取消无效（后台持续下载到完成）。
+            if (isCancelled) {
+              throw Exception('Cancelled');
+            }
             onProgress((progressPercent / 100.0).clamp(0.0, 1.0));
           },
         )
         .timeout(Duration(minutes: timeoutMinutes));
 
     if (!ok) throw Exception('Download failed for: $remotePath');
+    // 下载完成后若已处于取消状态（onProgress 拦截未生效），删除半截文件并抛出。
+    if (isCancelled) {
+      try { localFile.deleteSync(); } catch (_) {}
+      throw Exception('Cancelled');
+    }
     onProgress(1.0);
   }
 
@@ -358,6 +410,7 @@ class FtpRemoteClient extends RemoteClient {
       // Connect control connection
       controlSocket = await Socket.connect(host, port,
           timeout: const Duration(seconds: 15));
+      _activeDownloadControlSocket = controlSocket;
 
       final buffer = <int>[];
       Completer<String>? responseCompleter;
@@ -447,6 +500,7 @@ class FtpRemoteClient extends RemoteClient {
       // Connect data socket
       dataSocket = await Socket.connect(host, pasvPort,
           timeout: const Duration(seconds: 15));
+      _activeDownloadDataSocket = dataSocket;
 
       // FTP REST 命令：指定下载起始字节偏移（用于 range 下载）
       if (startByte > 0) {
@@ -469,12 +523,15 @@ class FtpRemoteClient extends RemoteClient {
       sink = file.openWrite();
 
       // Read data from data socket, write to file with periodic flushing.
-      // 首块立即 flush（让代理尽快看到数据），后续每 64KB flush 一次。
-      // 之前 4KB+1ms delay 限制了吞吐量到 ~1.5MB/s。
+      // 首块立即 flush（让代理尽快看到数据），后续每 1MB flush 一次。
+      // 关键修复：原先每 64KB flush 一次，在千兆网下「await sink.flush()」会卡住
+      // 读循环、收缩 TCP 接收窗口，导致服务端被限到 30-40MB/s；放大到 1MB 后读
+      // 循环几乎不被打断，FTP 下载可跑满带宽（与上传 512KB flush 同思路）。
+      // （上传用 512KB flush 即满速；下载写盘略慢，故用更大的 1MB 间隔。）
       int downloaded = 0;
       int sinceFlush = 0;
       bool isFirstChunk = true;
-      const flushInterval = 64 * 1024; // 64KB
+      const flushInterval = 1024 * 1024; // 1MB
 
       await for (final chunk in dataSocket) {
         if (isCancelled) break;
@@ -521,12 +578,14 @@ class FtpRemoteClient extends RemoteClient {
       // Quit
       controlSocket.write('QUIT\r\n');
       onProgress(1.0);
-    } finally {
-      await controlSub?.cancel();
-      await sink?.close();
-      await dataSocket?.close();
-      await controlSocket?.close();
-    }
+      } finally {
+        await controlSub?.cancel();
+        try { await sink?.close(); } catch (_) {}
+        try { await dataSocket?.close(); } catch (_) {}
+        try { await controlSocket?.close(); } catch (_) {}
+        _activeDownloadControlSocket = null;
+        _activeDownloadDataSocket = null;
+      }
   }
 
   /// Parse the data port from a PASV response like:
@@ -652,21 +711,40 @@ class FtpRemoteClient extends RemoteClient {
 
       final fileSize = localFile.lengthSync();
       int uploaded = 0;
+      int sinceFlush = 0;
 
-      await for (final chunk in localFile.openRead()) {
-        if (isCancelled) {
-          // 取消：先销毁数据连接中止 STOR，再用 listing 会话删除已上传的半截
-          // 目标文件与服务端可能生成的 file-<随机> 临时文件，避免残留。
-          try { dataSocket.destroy(); } catch (_) {}
-          _activeUploadDataSocket = null;
-          try { await _abortAndCleanupUpload(remoteDir, remoteFileName); } catch (_) {}
-          throw Exception('Cancelled');
+      // 用 1MB readBuffer 通过 RandomAccessFile 读取，替代 openRead() 的 64KB 默认分块。
+      // 更大的读取块减少 dataSocket.add() 调用次数和 TCP 小包数量，提升上传吞吐。
+      // flush 间隔也从 512KB 增大到 1MB，与下载路径对称，减少 flush 阻塞打断发送循环。
+      final raf = await localFile.open();
+      const chunkSize = 1024 * 1024; // 1MB
+      final readBuffer = Uint8List(chunkSize);
+      try {
+        while (true) {
+          if (isCancelled) {
+            try { dataSocket.destroy(); } catch (_) {}
+            _activeUploadDataSocket = null;
+            try { await _abortAndCleanupUpload(remoteDir, remoteFileName); } catch (_) {}
+            throw Exception('Cancelled');
+          }
+          final n = await raf.readInto(readBuffer);
+          if (n <= 0) break;
+          // 仅发送实际读取到的字节（最后一块可能不足 1MB）
+          final chunk = n < chunkSize ? Uint8List.sublistView(readBuffer, 0, n) : readBuffer;
+          dataSocket.add(chunk);
+          uploaded += n;
+          sinceFlush += n;
+          // 每 1MB flush 一次，确保数据从 Dart Socket 缓冲区真正发送到网络。
+          if (sinceFlush >= chunkSize) {
+            await dataSocket.flush();
+            sinceFlush = 0;
+          }
+          if (fileSize > 0) {
+            onProgress((uploaded / fileSize).clamp(0.0, 0.95));
+          }
         }
-        dataSocket.add(chunk);
-        uploaded += chunk.length;
-        if (fileSize > 0) {
-          onProgress((uploaded / fileSize).clamp(0.0, 1.0));
-        }
+      } finally {
+        await raf.close();
       }
 
       await dataSocket.flush();
@@ -867,73 +945,89 @@ class FtpRemoteClient extends RemoteClient {
   Future<bool> finalizeUpload(String remoteDir, String targetName, int expectedSize) async {
     if (_ftpConnect == null) return false;
     try {
-      return await (() async {
-        final items = await listDirectoryContentSafe(remoteDir);
-        RemoteFileItem? tempItem;
-        RemoteFileItem? targetItem;
-        for (final item in items) {
-          if (item.isDirectory) continue;
-          if (RegExp(r'^file-\d+(\.|$)').hasMatch(item.name)) {
-            // 取最新创建的临时文件（服务端可能残留历史临时文件）
-            if (tempItem == null || item.modified.isAfter(tempItem.modified)) {
-              tempItem = item;
-            }
-          } else if (item.name == targetName) {
-            targetItem = item;
-          }
-        }
-
-        // 有临时间文件残留：根据完整性决定主动最终化还是继续等待。
-        if (tempItem != null) {
-          // 临时文件已完整（大小达标或未知期望大小）→ 主动重命名为目标文件。
-          // rename 是“移动而非删除”，绝不破坏数据；若服务端也在重命名导致
-          // 竞态失败，下次轮询会重试。这能处理“目标已存在时服务端不自动
-          // 重命名”（如飞牛 NAS 覆盖场景）的情况。
-          if (expectedSize <= 0 || tempItem.size >= (expectedSize * 0.95).round()) {
-            try {
-              if (remoteDir.isNotEmpty && remoteDir != '/') {
-                await _ftpConnect!
-                    .changeDirectory(remoteDir)
-                    .timeout(const Duration(seconds: 15));
-              } else {
-                await _ftpConnect!
-                    .changeDirectory('/')
-                    .timeout(const Duration(seconds: 15));
-              }
-              await rename(tempItem.name, targetName);
-              return true;
-            } catch (e) {
-              debugPrint('FTP finalizeUpload rename failed: $e');
-              return false;
-            }
-          }
-          // 临时文件不完整 → 服务端仍在刷盘，等待，绝不删除。
-          return false;
-        }
-
-        // 没有任何临时文件：
-        if (targetItem == null) {
-          // 目标也不存在 → 尚未落盘，继续等待。
-          return false;
-        }
-        // 目标存在且无临时文件 → 校验大小（若已知期望大小）。
-        if (expectedSize > 0 && targetItem.size < (expectedSize * 0.95).round()) {
-          // 大小不足：可能是旧文件或上传不完整，继续等待。
-          return false;
-        }
-        return true;
-      })().timeout(const Duration(seconds: 10));
+      // 在 [_serialize] 内执行：本方法会 LIST 并在 rename 分支里 changeDirectory，
+      // 与并发的手动刷新 LIST 共享同一单连接，必须串行以避免 CWD 错乱（问题3）。
+      return await _serialize(() => _finalizeUploadInner(remoteDir, targetName, expectedSize))
+          .timeout(const Duration(seconds: 10));
     } catch (e) {
       debugPrint('FTP finalizeUpload error: $e');
       return false;
     }
   }
 
+  Future<bool> _finalizeUploadInner(String remoteDir, String targetName, int expectedSize) async {
+    // 直接调用 _listDirectoryInner（持锁内），避免经公共 listDirectory 重复加锁死锁。
+    final items = await _listDirectoryInner(remoteDir, forceRefresh: true);
+    RemoteFileItem? tempItem;
+    RemoteFileItem? targetItem;
+    for (final item in items) {
+      if (item.isDirectory) continue;
+      if (RegExp(r'^file-\d+(\.|$)').hasMatch(item.name)) {
+        // 取最新创建的临时文件（服务端可能残留历史临时文件）
+        if (tempItem == null || item.modified.isAfter(tempItem.modified)) {
+          tempItem = item;
+        }
+      } else if (item.name == targetName) {
+        targetItem = item;
+      }
+    }
+
+    // 有临时文件残留：根据完整性决定主动最终化还是继续等待。
+    if (tempItem != null) {
+      // 临时文件已完整（大小达标或未知期望大小）
+      if (expectedSize <= 0 || tempItem.size >= (expectedSize * 0.95).round()) {
+        // 目标文件不存在 → 主动 rename（飞牛 NAS 覆盖场景：服务端不会自动 rename）
+        if (targetItem == null) {
+          try {
+            if (remoteDir.isNotEmpty && remoteDir != '/') {
+              await _ftpConnect!
+                  .changeDirectory(remoteDir)
+                  .timeout(const Duration(seconds: 15));
+            } else {
+              await _ftpConnect!
+                  .changeDirectory('/')
+                  .timeout(const Duration(seconds: 15));
+            }
+            await rename(tempItem.name, targetName);
+            return true;
+          } catch (e) {
+            debugPrint('FTP finalizeUpload rename failed: $e');
+            return false;
+          }
+        }
+        // 目标文件已存在 → 服务端正在自己处理（如 openlist 流式写入目标
+        // 文件）。**不主动 rename**：部分服务端（如 openlist 本机储存）
+        // 的 rename 可能退化为"复制+删除"，对大文件会导致与重新上传
+        // 相当的数据复制量。等待服务端自己清理临时文件即可。
+        if (expectedSize > 0 && targetItem.size < (expectedSize * 0.95).round()) {
+          return false; // 目标文件大小未达标，继续等待
+        }
+        return true; // 目标文件已达标，临时文件由服务端清理
+      }
+      // 临时文件不完整 → 服务端仍在刷盘，等待，绝不删除。
+      return false;
+    }
+
+    // 没有任何临时文件：
+    if (targetItem == null) {
+      // 目标也不存在 → 尚未落盘，继续等待。
+      return false;
+    }
+    // 目标存在且无临时文件 → 校验大小（若已知期望大小）。
+    if (expectedSize > 0 && targetItem.size < (expectedSize * 0.95).round()) {
+      // 大小不足：可能是旧文件或上传不完整，继续等待。
+      return false;
+    }
+    return true;
+  }
+
   /// 列出目录内容（带重连保护），供 finalizeUpload / _cleanupStrayTemp 复用，
   /// 避免在异常会话上 LIST 卡死。
+  /// 注意：调用方必须已在 [_serialize] 内（如 finalizeUpload），或自行串行，
+  /// 故此处直接调用 [_listDirectoryInner]（不再经公共 listDirectory 加锁）。
   Future<List<RemoteFileItem>> listDirectoryContentSafe(String targetPath) async {
     try {
-      return await listDirectory(targetPath, forceRefresh: true);
+      return await _listDirectoryInner(targetPath, forceRefresh: true);
     } catch (e) {
       // 列表失败：重连一次后重试。
       try {
@@ -948,7 +1042,7 @@ class FtpRemoteClient extends RemoteClient {
       );
       final reconnected = await _ftpConnect!.connect();
       if (!reconnected) throw Exception('FTP reconnection failed: $e');
-      return await listDirectory(targetPath, forceRefresh: true);
+      return await _listDirectoryInner(targetPath, forceRefresh: true);
     }
   }
 

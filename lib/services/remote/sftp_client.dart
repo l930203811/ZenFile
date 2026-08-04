@@ -27,6 +27,24 @@ class SftpRemoteClient extends RemoteClient {
   /// 仅在 Android 平台尝试原生 SSH；其余平台（桌面/Web/iOS）走 dartssh2。
   final bool _isAndroid = !kIsWeb && Platform.isAndroid;
 
+  /// 异步互斥锁（Future 链）：串行化 dartssh2 单会话下所有依赖目录列举的操作，
+  /// 避免同一 SSH 会话并发 listdir 的理论竞争（原生通道由 Java 侧自行处理并发，
+  /// 不在此列）。与 FTP 同理，可消除手动刷新与后台轮询并发时的异常。
+  Future<void>? _serialQueue;
+
+  Future<T> _serialize<T>(Future<T> Function() fn) {
+    final completer = Completer<T>();
+    final prev = _serialQueue ?? Future<void>.value();
+    _serialQueue = prev.then((_) async {
+      try {
+        completer.complete(await fn());
+      } catch (e) {
+        completer.completeError(e);
+      }
+    }).catchError((_) {/* 吞咽前一任务的异常，继续推进队列 */});
+    return completer.future;
+  }
+
   /// 单文件下载时并行开的 SSH 连接数。注意：Dart 单 isolate 下所有连接的
   /// 加解密仍共用同一 CPU 核心，多连接主要收益在「高 RTT / 跨网」场景（吃满
   /// 带宽时延积、绕过服务端单连接限速）；同局域网若瓶颈是单核纯 Dart 加密，
@@ -94,11 +112,16 @@ class SftpRemoteClient extends RemoteClient {
 
   @override
   Future<List<RemoteFileItem>> listDirectory(String path, {bool forceRefresh = false}) async {
+    // 串行化 dartssh2 单会话的目录列举，避免并发 listdir 竞争。
+    return _serialize(() => _listDirectoryInner(path, forceRefresh: forceRefresh));
+  }
+
+  Future<List<RemoteFileItem>> _listDirectoryInner(String path, {bool forceRefresh = false}) async {
     if (_useNative && _nativeSessionId != null) {
       return _nativeListDirectory(path, forceRefresh);
     }
     if (_sftpClient == null) throw Exception('SFTP not connected');
-    
+
     var targetPath = path;
     if (targetPath.isEmpty) {
       targetPath = '/';
@@ -587,6 +610,50 @@ class SftpRemoteClient extends RemoteClient {
       return stat.size ?? -1;
     } catch (_) {
       return -1;
+    }
+  }
+
+  /// 上传完成后最终化：openlist 挂载本机储存时，SFTP 上传后服务端生成
+  /// `file-<数字>` 临时文件，并在后台逐步把数据复制到目标文件。
+  ///
+  /// **重要**：不能主动 rename 临时文件！openlist 的 SFTP 服务端有自己的
+  /// 内部状态机管理临时文件→目标文件的生命周期。客户端主动 rename 会破坏
+  /// 这个状态机，导致**临时文件和目标文件都被删除**，数据丢失。
+  ///
+  /// 策略：只做检测，不主动 rename。等待 openlist 自己完成最终化：
+  /// - 临时文件存在 → 服务端仍在处理，返回 false 继续等待
+  /// - 临时文件消失、目标文件大小达标 → 返回 true
+  @override
+  Future<bool> finalizeUpload(String remoteDir, String targetName, int expectedSize) async {
+    try {
+      final items = await listDirectory(remoteDir, forceRefresh: true)
+          .timeout(const Duration(seconds: 15));
+      RemoteFileItem? tempItem;
+      RemoteFileItem? targetItem;
+      for (final item in items) {
+        if (item.isDirectory) continue;
+        if (RegExp(r'^file-\d+(\.|$)').hasMatch(item.name)) {
+          if (tempItem == null || item.modified.isAfter(tempItem.modified)) {
+            tempItem = item;
+          }
+        } else if (item.name == targetName) {
+          targetItem = item;
+        }
+      }
+
+      // 有临时文件 → openlist 仍在处理，等待
+      if (tempItem != null) {
+        return false;
+      }
+
+      // 没有临时文件
+      if (targetItem == null) return false; // 目标也不存在，等待
+      if (expectedSize > 0 && targetItem.size < (expectedSize * 0.95).round()) {
+        return false; // 目标大小未达标，等待
+      }
+      return true; // 目标已达标
+    } catch (_) {
+      return false;
     }
   }
 

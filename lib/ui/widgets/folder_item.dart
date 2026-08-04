@@ -195,7 +195,7 @@ class FolderItem extends StatelessWidget {
                                     parts.add(FileUtils.formatBytes(size, 1));
                                   }
                                   if (!provider.hideTimeAndDate) {
-                                    parts.add(FileUtils.formatDate(folder.modified, use24Hour: provider.use24HourFormat));
+                                    parts.add(FileUtils.formatDateShort(folder.modified, use24Hour: provider.use24HourFormat));
                                   }
 
                                   if (parts.isEmpty) return const SizedBox.shrink();

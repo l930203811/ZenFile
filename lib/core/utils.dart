@@ -16,9 +16,46 @@ class FileUtils {
     return '${b.toStringAsFixed(decimals)} ${suffixes[i]}';
   }
 
+  /// 紧凑文件大小（双窗口分屏使用）：去掉单位与数字间的空格，并去掉 KB/MB 中的 B，
+  /// 例如 117.6 KB → 117.6K、68.1 MB → 68.1M，进一步节省水平空间。
+  static String formatBytesCompact(int bytes, int decimals) {
+    if (bytes <= 0) return "0B";
+    const suffixes = ["B", "K", "M", "G", "T", "P", "E", "Z", "Y"];
+    var i = 0;
+    double b = bytes.toDouble();
+    while (b > 1024) {
+      b /= 1024;
+      i++;
+    }
+    return '${b.toStringAsFixed(decimals)}${suffixes[i]}';
+  }
+
   static String formatDate(DateTime date, {bool use24Hour = true}) {
     final timePattern = use24Hour ? 'HH:mm' : 'hh:mm a';
     return DateFormat('yyyy-MM-dd  $timePattern').format(date);
+  }
+
+  /// 紧凑日期（对标 MT 管理器）：今年内「yy-MM-dd HH:mm」（两位年份），
+  /// 跨年「yy-MM-dd」（省时间）。比 yyyy-MM-dd HH:mm 短 2~6 字符，
+  /// 让日期+时间+文件大小在同一行都能完整显示。
+  static String formatDateShort(DateTime date, {bool use24Hour = true}) {
+    final now = DateTime.now();
+    final timePattern = use24Hour ? 'HH:mm' : 'hh:mm a';
+    if (date.year == now.year) {
+      return DateFormat('yy-MM-dd $timePattern').format(date);
+    }
+    return DateFormat('yy-MM-dd').format(date);
+  }
+
+  /// 超紧凑日期（双窗口分屏使用）：今年内省略年份只保留「MM-dd HH:mm」，
+  /// 跨年仍显示「yy-MM-dd」。在窄 pane 下仍能保证日期+时间+大小完整显示。
+  static String formatDateCompact(DateTime date, {bool use24Hour = true}) {
+    final now = DateTime.now();
+    final timePattern = use24Hour ? 'HH:mm' : 'hh:mm a';
+    if (date.year == now.year) {
+      return DateFormat('MM-dd $timePattern').format(date);
+    }
+    return DateFormat('yy-MM-dd').format(date);
   }
 
   /// 判断艺术家字符串是否为未知（null、空、或 "unknown"/"<unknown>" 等变体）。

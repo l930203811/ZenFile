@@ -420,12 +420,13 @@ class WebDavRemoteClient extends RemoteClient {
     request.headers.contentType = ContentType.binary;
 
     int uploaded = 0;
+    int sinceFlush = 0;
     onProgress(0.0);
 
     try {
       await for (final chunk in localFile.openRead()) {
         if (isCancelled) {
-          // 立即中断底层 socket，停止上传，避免“取消后仍传输十几秒”与挂起连接。
+          // 立即中断底层 socket，停止上传，避免"取消后仍传输十几秒"与挂起连接。
           try {
             request.abort();
           } catch (_) {}
@@ -435,11 +436,24 @@ class WebDavRemoteClient extends RemoteClient {
         }
         request.add(chunk);
         uploaded += chunk.length;
+        sinceFlush += chunk.length;
+        // 每 512KB flush 一次，确保数据从 Dart IOSink 内部缓冲区真正发送到
+        // 网络 socket。不 flush 时 add() 只写入内存缓冲区，uploaded 以本地
+        // SSD 读取速率增长（约 800MB/s），远快于网络发送（约 110MB/s），
+        // 导致进度条过早完成、实时速率虚高约 2-7 倍。
+        if (sinceFlush >= 512 * 1024) {
+          await request.flush();
+          sinceFlush = 0;
+        }
         if (totalSize > 0) {
-          onProgress((uploaded / totalSize).clamp(0.0, 1.0));
+          // 限制到 0.95：flush 只保证数据从 Dart 层移到 OS socket 层，
+          // TCP 发送缓冲区中仍有部分未真正发出。预留 5% 直到 response
+          // 返回才报 100%，避免进度条过早完成。
+          onProgress((uploaded / totalSize).clamp(0.0, 0.95));
         }
       }
 
+      await request.flush();
       final response = await request.close();
       await response.drain();
 

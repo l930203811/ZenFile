@@ -5,6 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../services/web_sharing_service.dart';
+import '../../services/preferences_service.dart';
 import 'internal_file_picker_screen.dart';
 import 'dart:math' as math;
 import 'package:zenfile/l10n/generated/app_localizations.dart';
@@ -21,6 +22,7 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
   final _webService = WebSharingService.instance;
   int _activeTab = 0; // 0: Local Share, 1: Internet Share
   String _shareDir = ''; // 空字符串表示使用默认内部存储根目录
+  int _port = 8080; // Web 共享端口，从配置加载
 
   @override
   void initState() {
@@ -29,6 +31,9 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
       vsync: this,
       duration: const Duration(seconds: 2),
     );
+
+    // Load configured port
+    _port = PreferencesService.getWebSharePort();
 
     // Listen to changes in server activity to animate the broadcast waves
     _webService.addListener(_onServiceChanged);
@@ -95,6 +100,58 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
         );
       }
     }
+  }
+
+  Future<void> _editPort() async {
+    final controller = TextEditingController(text: '$_port');
+    final result = await showDialog<int>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Port'),
+          content: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: const InputDecoration(
+              hintText: '8080',
+              helperText: 'Range: 1024 - 65535',
+            ),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(L10n.of(context).ui_cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                final p = int.tryParse(controller.text.trim());
+                Navigator.pop(context, p);
+              },
+              child: Text(L10n.of(context).ui_confirm),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result == null) return;
+    if (result < 1024 || result > 65535) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Port must be between 1024 and 65535'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+    await PreferencesService.saveWebSharePort(result);
+    setState(() {
+      _port = result;
+    });
   }
 
   void _toggleInternetTunnel(String shareDir) {
@@ -636,6 +693,44 @@ class _WebSharingScreenState extends State<WebSharingScreen> with SingleTickerPr
                           _shareDir.isEmpty ? '/storage/emulated/0' : _shareDir,
                           style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withOpacity(0.8), fontWeight: FontWeight.w600),
                           overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.chevron_right_rounded, size: 20, color: theme.colorScheme.onSurface.withOpacity(0.4)),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          // Port configuration
+          InkWell(
+            onTap: _webService.isLocalActive ? null : _editPort,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+              child: Row(
+                children: [
+                  Icon(Icons.lan_outlined, size: 18, color: theme.colorScheme.primary),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Port',
+                          style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.5), fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '$_port',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: _webService.isLocalActive
+                                ? theme.colorScheme.onSurface.withOpacity(0.4)
+                                : theme.colorScheme.onSurface.withOpacity(0.8),
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ],
                     ),

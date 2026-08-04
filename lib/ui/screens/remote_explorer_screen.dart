@@ -427,21 +427,9 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
           if (mounted) setState(() => _transferProgress = prog);
         });
 
-        // 等待 FTP 服务端把 file-<随机> 临时文件最终化为目标文件，避免进度条
-        // 过早消失、且文件在服务器刷盘完成前被误判为“已上传完成”。
-        if (_client is FtpRemoteClient) {
-          for (int i = 0; i < 30; i++) {
-            if (_transferCancelled) break;
-            await Future.delayed(const Duration(milliseconds: 500));
-            bool ok = false;
-            try {
-              ok = await (_client as FtpRemoteClient).finalizeUpload(
-                _currentPath, fileName, file.lengthSync());
-            } catch (_) {}
-            if (ok) break;
-          }
-        }
-
+        // FTP 服务端最终化不再阻塞：之前这里同步等待最多 15s（30×500ms），
+        // 导致进度条卡在 100% 不消失。现在交给 provider 的
+        // scheduleRemoteRefreshAfterUpload 后台轮询处理。
         if (!_transferCancelled) {
           lastUploadedName = fileName;
           try { lastUploadedSize = file.lengthSync(); } catch (_) {}

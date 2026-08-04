@@ -327,12 +327,15 @@ public class AudioService extends MediaBrowserServiceCompat {
         mediaSession.setCallback(mediaSessionCallback = new MediaSessionCallback());
         setSessionToken(mediaSession.getSessionToken());
         mediaSession.setQueue(queue);
-        // Android 12+ 需要 MediaSession 尽早激活，系统媒体卡片才能识别到 active session；
-        // Android 11 及以下保持 audio_service 0.18.x 原始行为（在 enterPlayingState 中激活），
-        // 避免部分国产 ROM 在 onCreate 阶段激活会话导致通知/前台服务异常。
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            mediaSession.setActive(true);
-        }
+        // 不在 onCreate 激活 MediaSession（恢复 audio_service 0.18.x 原始行为：仅在
+        // enterPlayingState 播放时激活）。1.1.24 fork 曾为"Android 12+ 系统媒体卡片尽早识别"
+        // 在此 setActive(true)，但红米 K70（澎湃OS, Android 14）上会导致 MediaSession 在不
+        // 播放时也持续活跃，系统频繁回调占满主线程 → 键盘幻灯片卡顿 + 输入约0.5s延迟
+        // （1.1.23 pub 版不在 onCreate 激活故不卡）。播放时 enterPlayingState 仍会 setActive，
+        // 通知/锁屏媒体卡片正常显示。
+        // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        //     mediaSession.setActive(true);
+        // }
 
         PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
         wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, AudioService.class.getName());

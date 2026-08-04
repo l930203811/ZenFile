@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -26,6 +27,166 @@ enum MediaSortOrder {
   oldestGrouped,
   sizeLargest,
   sizeSmallest,
+}
+
+/// 传给 isolate 的扫描参数（所有字段均可跨 isolate 结构化克隆）。
+class _FSScanParams {
+  final List<String> rootDirs;
+  final List<String> imageExtensions;
+  final List<String> videoExtensions;
+  final List<String> audioExtensions;
+  final List<String> docExtensions;
+  final List<String> archiveExtensions;
+  final List<String> apkExtensions;
+  final List<String> downloadDirs;
+  const _FSScanParams({
+    required this.rootDirs,
+    required this.imageExtensions,
+    required this.videoExtensions,
+    required this.audioExtensions,
+    required this.docExtensions,
+    required this.archiveExtensions,
+    required this.apkExtensions,
+    required this.downloadDirs,
+  });
+}
+
+/// isolate 返回的扫描结果（仅含可跨 isolate 传递的路径/Map 数据）。
+class _FSScanResult {
+  final List<String> images;
+  final List<String> videos;
+  final List<String> screenshots;
+  final List<Map<String, dynamic>> audios;
+  final List<String> documents;
+  final List<String> archives;
+  final List<String> downloads;
+  final List<String> apks;
+  // 按父目录分组的路径（分类页「文件夹」视图用）。在 isolate 内一次性算好，
+  // 避免主线程对几十万文件再做 O(n) 遍历分组。
+  final Map<String, List<String>> imageFolders;
+  final Map<String, List<String>> videoFolders;
+  final Map<String, List<String>> audioFolders;
+  const _FSScanResult({
+    this.images = const [],
+    this.videos = const [],
+    this.screenshots = const [],
+    this.audios = const [],
+    this.documents = const [],
+    this.archives = const [],
+    this.downloads = const [],
+    this.apks = const [],
+    this.imageFolders = const {},
+    this.videoFolders = const {},
+    this.audioFolders = const {},
+  });
+}
+
+/// 在 isolate 内按父目录对路径列表分组（供分类页文件夹视图），纯字符串运算。
+Map<String, List<String>> _groupPathsByParentDir(List<String> paths) {
+  final map = <String, List<String>>{};
+  for (final p in paths) {
+    final dir = p.replaceAll(RegExp(r'/+'), '/');
+    final idx = dir.lastIndexOf('/');
+    final parent = idx > 0 ? dir.substring(0, idx) : dir;
+    (map[parent] ??= []).add(p);
+  }
+  return map;
+}
+
+String _normalizeMediaPathIsolate(String path) => path.replaceAll(RegExp(r'/+'), '/');
+
+/// 在独立 isolate 中递归遍历 [params.rootDirs]，按扩展名一次性收集所有类别。
+/// 与 1.1.22 系统级索引（MediaStore 独立进程）等价：扫描完全不占用 UI 主线程。
+/// 此函数不依赖任何类实例/闭包，也不调用 platform channel，可在 isolate 安全运行。
+@pragma('vm:entry-point')
+Future<_FSScanResult> _scanMediaFileSystemIsolate(_FSScanParams params) async {
+  final images = <String>[];
+  final videos = <String>[];
+  final screenshots = <String>[];
+  final audios = <Map<String, dynamic>>[];
+  final documents = <String>[];
+  final archives = <String>[];
+  final downloads = <String>[];
+  final apks = <String>[];
+  final seenAudios = <String>{};
+  final seenDownloads = <String>{};
+  final queue = <String>[...params.rootDirs];
+  while (queue.isNotEmpty) {
+    final current = queue.removeAt(0);
+    final isDownloadDir = params.downloadDirs.contains(current);
+    try {
+      await for (final entity in Directory(current).list(recursive: false)) {
+        if (entity is Directory) {
+          final name = p.basename(entity.path);
+          if (!name.startsWith('.') && name != 'Android') {
+            queue.add(entity.path);
+          }
+        } else if (entity is File) {
+          final lower = entity.path.toLowerCase();
+          final ext = p.extension(lower);
+          if (isDownloadDir && !seenDownloads.contains(entity.path)) {
+            seenDownloads.add(entity.path);
+            downloads.add(entity.path);
+          }
+          if (params.videoExtensions.contains(ext)) {
+            videos.add(entity.path);
+          } else if (params.audioExtensions.contains(ext)) {
+            final norm = _normalizeMediaPathIsolate(entity.path);
+            if (!seenAudios.contains(norm)) {
+              seenAudios.add(norm);
+              int size = 0;
+              try {
+                size = (await entity.stat()).size;
+              } catch (_) {}
+              final nameNoExt = p.basenameWithoutExtension(entity.path);
+              audios.add({
+                '_id': 800000 + seenAudios.length,
+                '_data': entity.path,
+                'title': nameNoExt,
+                'artist': '',
+                'album': '',
+                'duration': 0,
+                'size': size,
+                'display_name': p.basename(entity.path),
+                'display_name_wo_ext': nameNoExt,
+                'is_music': true,
+              });
+            }
+          } else if (params.imageExtensions.contains(ext)) {
+            if (lower.contains('screenshot') || lower.contains('截图')) {
+              screenshots.add(entity.path);
+            } else {
+              images.add(entity.path);
+            }
+          } else if (params.docExtensions.contains(ext)) {
+            documents.add(entity.path);
+          } else if (params.archiveExtensions.contains(ext)) {
+            archives.add(entity.path);
+          } else if (params.apkExtensions.contains(ext)) {
+            apks.add(entity.path);
+          }
+        }
+      }
+    } catch (_) {}
+  }
+  // 在 isolate 内完成按父目录分组，主线程直接赋值，不再做 O(n) 遍历。
+  final imageFolders = _groupPathsByParentDir(images);
+  final videoFolders = _groupPathsByParentDir(videos);
+  final audioFolders = _groupPathsByParentDir(
+      audios.map((m) => (m['_data'] as String?) ?? '').where((p) => p.isNotEmpty).toList());
+  return _FSScanResult(
+    images: images,
+    videos: videos,
+    screenshots: screenshots,
+    audios: audios,
+    documents: documents,
+    archives: archives,
+    downloads: downloads,
+    apks: apks,
+    imageFolders: imageFolders,
+    videoFolders: videoFolders,
+    audioFolders: audioFolders,
+  );
 }
 
 class ThumbnailCache {
@@ -384,39 +545,40 @@ class MediaProvider extends ChangeNotifier {
   List<AssetPathEntity> get videoAlbums => _videoAlbums;
 
   // ===== 按父目录分组（分类页「文件夹」视图用）=====
-  // 键为父目录绝对路径，值为该目录下的媒体文件（含其递归扫描到的文件）。
-  Map<String, List<FileSystemEntity>> _imageFolders = {};
-  Map<String, List<FileSystemEntity>> _videoFolders = {};
-  Map<String, List<SongModel>> _audioFolders = {};
+  // 键为父目录绝对路径，值为该目录下的媒体文件路径。仅存路径（不持有 File/SongModel
+  // 对象），分组在扫描 isolate 内一次性算好，主线程直接赋值，不再做 O(n) 遍历。
+  Map<String, List<String>> _imageFolders = {};
+  Map<String, List<String>> _videoFolders = {};
+  Map<String, List<String>> _audioFolders = {};
 
-  Map<String, List<FileSystemEntity>> get imageFolders => _imageFolders;
-  Map<String, List<FileSystemEntity>> get videoFolders => _videoFolders;
-  Map<String, List<SongModel>> get audioFolders => _audioFolders;
+  Map<String, List<String>> get imageFolders => _imageFolders;
+  Map<String, List<String>> get videoFolders => _videoFolders;
+  Map<String, List<String>> get audioFolders => _audioFolders;
 
-  /// 根据当前扁平列表重算按父目录的分组，供分类页文件夹视图使用。
-  /// 在缓存恢复与递归扫描赋值后调用。
+  /// 根据当前扁平列表重算按父目录的分组（仅存路径），供分类页文件夹视图使用。
+  /// 仅在缓存恢复后调用；扫描结果的分组已在 isolate 内算好、直接赋值，不走此路径。
   void _rebuildFolderGroups() {
     _imageFolders = _groupByParentDir(_images);
     _videoFolders = _groupByParentDir(_videos);
     _audioFolders = _groupAudiosByParentDir(_audios);
   }
 
-  static Map<String, List<FileSystemEntity>> _groupByParentDir(List<FileSystemEntity> files) {
-    final map = <String, List<FileSystemEntity>>{};
+  static Map<String, List<String>> _groupByParentDir(List<FileSystemEntity> files) {
+    final map = <String, List<String>>{};
     for (final f in files) {
       final dir = FileSystemEntity.parentOf(f.path);
-      (map[dir] ??= []).add(f);
+      (map[dir] ??= []).add(f.path);
     }
     return map;
   }
 
-  static Map<String, List<SongModel>> _groupAudiosByParentDir(List<SongModel> songs) {
-    final map = <String, List<SongModel>>{};
+  static Map<String, List<String>> _groupAudiosByParentDir(List<SongModel> songs) {
+    final map = <String, List<String>>{};
     for (final s in songs) {
       final data = s.data;
       if (data.isNotEmpty) {
         final dir = p.dirname(data);
-        (map[dir] ??= []).add(s);
+        (map[dir] ??= []).add(data);
       }
     }
     return map;
@@ -806,7 +968,7 @@ class MediaProvider extends ChangeNotifier {
           final cachedDocs = <FileSystemEntity>[];
           for (final p in docPaths) {
             final f = File(p);
-            if (f.existsSync()) cachedDocs.add(f);
+            if (await f.exists()) cachedDocs.add(f);
           }
           if (cachedDocs.isNotEmpty && _documents.isEmpty) {
             _documents = cachedDocs;
@@ -818,7 +980,7 @@ class MediaProvider extends ChangeNotifier {
           final cachedArch = <FileSystemEntity>[];
           for (final p in archPaths) {
             final f = File(p);
-            if (f.existsSync()) cachedArch.add(f);
+            if (await f.exists()) cachedArch.add(f);
           }
           if (cachedArch.isNotEmpty && _archives.isEmpty) {
             _archives = cachedArch;
@@ -830,7 +992,7 @@ class MediaProvider extends ChangeNotifier {
           final cachedDl = <FileSystemEntity>[];
           for (final p in dlPaths) {
             final f = File(p);
-            if (f.existsSync()) cachedDl.add(f);
+            if (await f.exists()) cachedDl.add(f);
           }
           if (cachedDl.isNotEmpty && _downloads.isEmpty) {
             _downloads = cachedDl;
@@ -842,7 +1004,7 @@ class MediaProvider extends ChangeNotifier {
           final cachedApks = <FileSystemEntity>[];
           for (final p in apkPaths) {
             final f = File(p);
-            if (f.existsSync()) cachedApks.add(f);
+            if (await f.exists()) cachedApks.add(f);
           }
           if (cachedApks.isNotEmpty && _apks.isEmpty) {
             _apks = cachedApks;
@@ -859,7 +1021,7 @@ class MediaProvider extends ChangeNotifier {
               final path = entry['path'] as String?;
               if (path == null) continue;
               final f = File(path);
-              if (!f.existsSync()) continue;
+              if (!await f.exists()) continue;
               cached.add(FileItemModel(
                 entity: f,
                 name: p.basename(path),
@@ -883,7 +1045,7 @@ class MediaProvider extends ChangeNotifier {
           final cached = <FileSystemEntity>[];
           for (final path in paths) {
             final f = File(path);
-            if (f.existsSync()) cached.add(f);
+            if (await f.exists()) cached.add(f);
           }
           if (cached.isNotEmpty && _images.isEmpty) {
             _images = cached;
@@ -895,7 +1057,7 @@ class MediaProvider extends ChangeNotifier {
           final cached = <FileSystemEntity>[];
           for (final path in paths) {
             final f = File(path);
-            if (f.existsSync()) cached.add(f);
+            if (await f.exists()) cached.add(f);
           }
           if (cached.isNotEmpty && _videos.isEmpty) {
             _videos = cached;
@@ -907,7 +1069,7 @@ class MediaProvider extends ChangeNotifier {
           final cached = <FileSystemEntity>[];
           for (final path in paths) {
             final f = File(path);
-            if (f.existsSync()) cached.add(f);
+            if (await f.exists()) cached.add(f);
           }
           if (cached.isNotEmpty && _screenshots.isEmpty) {
             _screenshots = cached;
@@ -924,7 +1086,7 @@ class MediaProvider extends ChangeNotifier {
               final path = entry['data'] as String?;
               if (path == null) continue;
               final f = File(path);
-              if (!f.existsSync()) continue;
+              if (!await f.exists()) continue;
               cached.add(SongModel({
                 '_id': entry['id'] ?? 800000 + cached.length,
                 '_data': path,
@@ -982,7 +1144,11 @@ class MediaProvider extends ChangeNotifier {
           'is_music': s.isMusic,
         }).toList(),
       };
-      await cacheFile.writeAsString(jsonEncode(map), flush: true);
+      // 把 CPU 密集的 jsonEncode 移到独立 isolate：海量媒体（数十万文件）序列化
+      // 可达数 MB，主线程直接 encode 会阻塞数秒导致键盘/输入卡顿。compute 返回
+      // 字符串后仅做文件写入（IO 异步，不占主线程）。
+      final json = await compute(jsonEncode, map);
+      await cacheFile.writeAsString(json, flush: true);
     } catch (_) {}
   }
 
@@ -1007,10 +1173,7 @@ class MediaProvider extends ChangeNotifier {
       _lastBackgroundRefresh = now;
 
       final futures = <Future<void>>[];
-      futures.add(_loadImagesAndVideos());
-      futures.add(_loadAudios());
-      futures.add(_loadDocuments());
-      futures.add(_loadArchivesDownloadsAndApks());
+      futures.add(_runFileSystemScanInIsolate());
 
       await Future.wait(futures);
       await _scanCustomCategories();
@@ -1031,6 +1194,41 @@ class MediaProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('refreshMediaBackground error: $e');
     }
+  }
+
+  /// 在独立 isolate 中完成主存储递归扫描，避免主线程被百万级文件枚举占满
+  /// （这是 1.1.22 用系统索引不卡、1.1.23 用主线程递归扫描导致键盘幻灯片式卡顿
+  /// 与输入约 0.5s 延迟的根因。扫描结果回到主线程后再重建 File / SongModel）。
+  Future<void> _runFileSystemScanInIsolate() async {
+    final searchDirs = await _getUserSearchDirs();
+    if (searchDirs.isEmpty) return;
+    final params = _FSScanParams(
+      rootDirs: searchDirs,
+      imageExtensions: _imageExtensions,
+      videoExtensions: _videoExtensions,
+      audioExtensions: _audioExtensions,
+      docExtensions: _docExtensions,
+      archiveExtensions: _archiveExtensions,
+      apkExtensions: _apkExtensions,
+      downloadDirs: [
+        '/storage/emulated/0/Download',
+        '/storage/emulated/0/Downloads',
+      ],
+    );
+    final result = await compute(_scanMediaFileSystemIsolate, params);
+    _images = result.images.map((e) => File(e)).toList();
+    _videos = result.videos.map((e) => File(e)).toList();
+    _screenshots = result.screenshots.map((e) => File(e)).toList();
+    _audios = result.audios.map((m) => SongModel(m)).toList();
+    _documents = result.documents.map((e) => File(e)).toList();
+    _archives = result.archives.map((e) => File(e)).toList();
+    _downloads = result.downloads.map((e) => File(e)).toList();
+    _apks = result.apks.map((e) => File(e)).toList();
+    // 分组已在 isolate 内算好，直接赋值，主线程不再做 O(n) 遍历分组。
+    _imageFolders = result.imageFolders;
+    _videoFolders = result.videoFolders;
+    _audioFolders = result.audioFolders;
+    debugPrint('[ZenFile] isolate scan done: images=${_images.length} videos=${_videos.length} audios=${_audios.length} docs=${_documents.length} arch=${_archives.length} dl=${_downloads.length} apk=${_apks.length}');
   }
 
   Future<void> loadMedia({bool forceRefresh = false}) async {
@@ -1065,10 +1263,7 @@ class MediaProvider extends ChangeNotifier {
       }
 
       final futures = <Future<void>>[];
-      futures.add(_loadImagesAndVideos());
-      futures.add(_loadAudios());
-      futures.add(_loadDocuments());
-      futures.add(_loadArchivesDownloadsAndApks());
+      futures.add(_runFileSystemScanInIsolate());
 
       await Future.wait(futures);
       await _scanCustomCategories();
@@ -1404,7 +1599,7 @@ class MediaProvider extends ChangeNotifier {
           int fileSize = 0;
           if (!file.path.startsWith('remote://')) {
             try {
-              fileSize = file.statSync().size;
+              fileSize = (await file.stat()).size;
             } catch (_) {}
           }
           final fileName = file.path.startsWith('remote://')
@@ -1877,8 +2072,8 @@ class MediaProvider extends ChangeNotifier {
     for (final path in filePaths) {
       try {
         final f = File(path);
-        if (f.existsSync()) {
-          f.deleteSync();
+        if (await f.exists()) {
+          await f.delete();
         }
       } catch (_) {}
     }

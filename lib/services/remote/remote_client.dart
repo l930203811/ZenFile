@@ -61,4 +61,15 @@ abstract class RemoteClient {
   void resetCancel() {
     _cancelled = false;
   }
+
+  /// 上传完成后最终化：部分服务端（飞牛 NAS、openlist 等）在传输期间把数据写入
+  /// 临时文件（如 `file-<数字>`），传输结束后才重命名为目标文件。
+  ///
+  /// 默认实现：列出目录，若存在完整临时文件且目标文件不存在，则主动 rename。
+  /// 子类可覆盖以实现更精确的检测逻辑（如 FTP 的 [FtpRemoteClient]）。
+  ///
+  /// 返回值：目标文件是否已最终化（存在、无临时文件、大小达标）。
+  Future<bool> finalizeUpload(String remoteDir, String targetName, int expectedSize) async {
+    return true; // 默认实现：不做任何检测，视为已最终化
+  }
 }

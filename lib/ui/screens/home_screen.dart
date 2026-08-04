@@ -27,6 +27,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   late AnimationController _refreshIconController;
   bool _isRefreshing = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  // 缓存屏幕宽度，仅在尺寸真正变化时更新；build 不再读取 MediaQuery，
+  // 避免键盘弹起时 viewInsets 逐帧变化触发整个 home_screen 重建。
+  double _screenW = 0;
   // 双指滑动检测
   final Map<int, Offset> _activePointers = {};
   Offset? _dualFingerStartCenter;
@@ -59,6 +62,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    // 缓存屏幕宽度但不订阅 MediaQuery：build 内只用 _screenW，键盘 Insets 逐帧
+    // 变化不会让本 widget 重建。旋转等真实尺寸变化会重新触发本方法更新。
+    _screenW = MediaQuery.of(context).size.width;
     // 检查是否需要从设置页面跳转到浏览标签
     final fileManager = context.read<FileManagerProvider>();
     if (fileManager.navigateToBrowseTab) {
@@ -192,13 +198,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
       },
       child: Scaffold(
         key: _scaffoldKey,
+        // 键盘弹起时不再逐帧重排背后的重界面（文件列表/抽屉），避免"幻灯片式"
+        // 慢弹与输入延迟。对话框(AlertDialog)自带 AnimatedPadding+viewInsets 会上移，
+        // 底部弹窗同理，交互不受影响。
+        resizeToAvoidBottomInset: false,
         drawer: ZenFileDrawer(
           toggleTheme: widget.toggleTheme,
           onNavigateTab: (index) => _switchTab(index),
-          width: MediaQuery.of(context).size.width * 0.675,
+          width: _screenW * 0.675,
         ),
         endDrawer: Drawer(
-          width: MediaQuery.of(context).size.width * 0.675,
+          width: _screenW * 0.675,
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.only(topLeft: Radius.circular(28), bottomLeft: Radius.circular(28)),

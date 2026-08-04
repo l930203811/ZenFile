@@ -9,6 +9,7 @@ import com.hierynomus.mssmb2.SMB2CreateOptions
 import com.hierynomus.mssmb2.SMB2ImpersonationLevel
 import com.hierynomus.mssmb2.SMB2ShareAccess
 import com.hierynomus.mssmb2.SMBApiException
+import com.hierynomus.mssmb2.messages.SMB2ReadResponse
 import com.hierynomus.smbj.SMBClient
 import com.hierynomus.smbj.SmbConfig
 import com.hierynomus.smbj.auth.AuthenticationContext
@@ -26,9 +27,45 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.EnumSet
 import java.util.UUID
+import java.lang.reflect.Method
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
+import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
+
+/**
+ * smbj 的 [com.hierynomus.smbj.share.File.readAsync] 是**包私有**方法，本应用不在该包内，
+ * 无法直接调用。它是 smbj 内部实现 SMB2「多请求在途读」（流水线化）的入口，而公有无异步读 API，
+ * 因此这里用反射调用它来解锁下载侧流水线，把飞牛 NAS 等场景下 SMB 下载从单飞 30-40MB/s 提升到满速。
+ * 通过 ProGuard 规则（-keep）保证 release 混淆后方法名不被改掉。
+ */
+private val smbReadAsyncMethod: Method by lazy {
+    var c: Class<*>? = com.hierynomus.smbj.share.File::class.java
+    while (c != null) {
+        try {
+            // 必须用基本类型 long.class / int.class 才能匹配 readAsync(long, int) 签名；
+            // 用装箱类型（javaObjectType）会匹配不到，导致运行时 NoSuchMethodException。
+            return@lazy c.getDeclaredMethod(
+                "readAsync",
+                Long::class.javaPrimitiveType,
+                Int::class.javaPrimitiveType
+            ).also { it.isAccessible = true }
+        } catch (_: NoSuchMethodException) {
+            c = c.superclass
+        }
+    }
+    throw NoSuchMethodException("com.hierynomus.smbj.share.File#readAsync(long,int) not found")
+}
+
+@Suppress("UNCHECKED_CAST")
+private fun smbFileReadAsync(
+    file: com.hierynomus.smbj.share.File,
+    offset: Long,
+    length: Int
+): Future<com.hierynomus.mssmb2.messages.SMB2ReadResponse> {
+    return smbReadAsyncMethod.invoke(file, offset, length)
+        as Future<com.hierynomus.mssmb2.messages.SMB2ReadResponse>
+}
 
 /**
  * Native SMB client backed by smbj. Exposes a small set of operations that are
@@ -129,6 +166,7 @@ class SmbService {
                 AuthenticationContext(username, password?.toCharArray(), domain)
             }
             val session = connection.authenticate(authContext)
+            Log.d("SmbService", "SMB negotiated maxWrite=${connection.getNegotiatedProtocol().getMaxWriteSize()} maxRead=${connection.getNegotiatedProtocol().getMaxReadSize()}")
             val sessionId = UUID.randomUUID().toString()
             sessions[sessionId] = SmbSessionEntry(client, connection, session, username, host)
             return sessionId
@@ -1239,13 +1277,176 @@ class SmbService {
         }
     }
 
-    /**
-     * 下载结束哨兵。不能用 null 作哨兵：因为主循环改用 queue.poll(timeout)，
-     * 超时同样返回 null，会与“正常结束”混淆，导致取消/网络停滞时主循环陷入死循环。
-     */
-    private val SMB_EOF = Any()
+    // ──────────────────────────────────────────────────────────────────────
+    // 流水线化传输（SMB2 多请求在途，跑满千兆带宽）
+    //
+    // smbj 的同步 SmbFileOutputStream / SmbFileInputStream 每发一笔 SMB2
+    // READ/WRITE 就等待服务端响应（单飞），有效吞吐 ≈ 单请求大小 / RTT。当 NAS 的
+    // SMB MTU 上限为 64KB（未启用 Large MTU）时，单飞仅 ~30-40MB/s。改用底层
+    // writeAsync / readAsync（返回 Future），以滑动窗口保持多笔请求在途，吞吐 ≈
+    // 窗口数 × 单请求大小 / RTT，可轻松跑满 100MB/s。每笔请求带自身绝对 offset，
+    // 顺序无关，SMB2 按 offset 落盘/读取。
+    // ──────────────────────────────────────────────────────────────────────
 
     fun downloadFile(sessionId: String, remotePath: String, localPath: String): Boolean {
+        return try {
+            downloadFilePipelined(sessionId, remotePath, localPath)
+        } catch (e: Exception) {
+            Log.w("SmbService", "pipelined SMB download failed, fallback to streamed: ${e.message}")
+            downloadFileStreamed(sessionId, remotePath, localPath)
+        }
+    }
+
+    fun uploadFile(sessionId: String, localPath: String, remotePath: String): Boolean {
+        // 直接使用单线程顺序写入（streamed），与 downloadFile 对称。
+        //
+        // 原实现的 uploadFilePipelined 使用 window=16 的 writeAsync 窗口化写入，
+        // 导致 16 个 WRITE 请求同时在途（4MB 数据堆积），服务器需要回送大量
+        // WRITE 响应。在飞牛等 NAS 上实测：客户端以 70MB/s 发送数据，但服务器
+        // 实际只接收写入 7-8MB/s，其余带宽被协议开销/响应/重传吞掉，且占用
+        // 服务器上行带宽（正常上传时服务器应只显示下行）。
+        //
+        // 单线程顺序写入（1MB buffer + getOutputStream）每次只发一个 WRITE 请求，
+        // 等响应后再发下一个，避免堆积，与下载的 streamed 架构一致。
+        return uploadFileStreamed(sessionId, localPath, remotePath)
+    }
+
+    private fun uploadFilePipelined(sessionId: String, localPath: String, remotePath: String): Boolean {
+        val entry = sessions[sessionId] ?: throw Exception("Invalid or disconnected session id")
+        val (shareName, pathInShare) = resolveShareAndPath(remotePath)
+        if (shareName.isEmpty()) throw Exception("Invalid path: no share name specified")
+        val localFile = java.io.File(localPath)
+        if (!localFile.exists()) throw Exception("Local file does not exist: $localPath")
+        val share = getShare(entry, shareName)
+        val file = share.openFile(
+            pathInShare,
+            EnumSet.of(AccessMask.GENERIC_WRITE),
+            null,
+            allShareAccess(),
+            SMB2CreateDisposition.FILE_OVERWRITE_IF,
+            null
+        )
+        val maxWrite = entry.connection.getNegotiatedProtocol().getMaxWriteSize()
+        val chunkSize = if (maxWrite < 256 * 1024) maxWrite else 256 * 1024
+        val window = 16
+        val raf = localFile.inputStream().buffered(chunkSize * 2)
+        val pending = java.util.ArrayDeque<Future<Long>>()
+        val buf = ByteArray(chunkSize)
+        var offset = 0L
+        var uploaded: Long = 0
+        var cancelled = false
+        transferProgress[sessionId] = 0L
+        try {
+            while (true) {
+                while (pending.size < window) {
+                    val n = raf.read(buf)
+                    if (n <= 0) break
+                    // 每笔请求用独立副本，避免复用 buf 与在途异步写竞争
+                    val data = buf.copyOf(n)
+                    pending.add(file.writeAsync(data, offset, data.size, data.size))
+                    offset += n
+                }
+                if (pending.isEmpty()) break
+                try {
+                    uploaded += pending.removeFirst().get()
+                } catch (e: Exception) {
+                    if (isCancelled(sessionId)) { cancelled = true; break }
+                    throw e
+                }
+                transferProgress[sessionId] = uploaded
+                if (isCancelled(sessionId)) { cancelled = true; break }
+            }
+            return !cancelled
+        } finally {
+            try { raf.close() } catch (_: Exception) {}
+            try { file.close() } catch (_: Exception) {}
+        }
+    }
+
+    private fun downloadFilePipelined(sessionId: String, remotePath: String, localPath: String): Boolean {
+        val entry = sessions[sessionId] ?: throw Exception("Invalid or disconnected session id")
+        val (shareName, pathInShare) = resolveShareAndPath(remotePath)
+        if (shareName.isEmpty()) throw Exception("Invalid path: no share name specified")
+        val share = getShare(entry, shareName)
+        val file = share.openFile(
+            pathInShare,
+            EnumSet.of(AccessMask.GENERIC_READ),
+            null,
+            allShareAccess(),
+            SMB2CreateDisposition.FILE_OPEN,
+            null
+        )
+        val localFile = java.io.File(localPath)
+        localFile.parentFile?.mkdirs()
+        val maxRead = entry.connection.getNegotiatedProtocol().getMaxReadSize()
+        val chunkSize = if (maxRead < 256 * 1024) maxRead else 256 * 1024
+        val window = 16
+        val out = localFile.outputStream()
+        val pending = java.util.ArrayDeque<Pair<Future<SMB2ReadResponse>, Long>>()
+        val completed = java.util.ArrayDeque<Pair<Long, ByteArray>>()
+        var readOffset: Long = 0
+        var nextOffset: Long = 0
+        var downloaded: Long = 0
+        var ok = true
+        var eof = false
+        try {
+            while (!eof) {
+                while (pending.size < window && !eof) {
+                    pending.add(smbFileReadAsync(file, readOffset, chunkSize) to readOffset)
+                    readOffset += chunkSize
+                }
+                if (pending.isEmpty()) break
+                val (fut, off) = pending.removeFirst()
+                val resp: SMB2ReadResponse? = try {
+                    fut.get()
+                } catch (e: SMBApiException) {
+                    // 读到文件尾（STATUS_END_OF_FILE）时 readAsync 可能抛此异常
+                    eof = true
+                    null
+                } catch (e: Exception) {
+                    if (isCancelled(sessionId)) { ok = false }
+                    throw e
+                }
+                if (resp == null) break
+                val dataLen = resp.getDataLength()
+                if (dataLen <= 0) { eof = true; break }
+                completed.add(off to resp.getData().copyOf(dataLen))
+                // 把已连续到达的块按 offset 顺序落盘，乱序到达的块在 completed 中等待
+                while (completed.isNotEmpty() && completed.first().first == nextOffset) {
+                    val (_, d) = completed.removeFirst()
+                    out.write(d)
+                    nextOffset += d.size
+                    downloaded += d.size
+                    transferProgress[sessionId] = downloaded
+                }
+                // 短读说明已到文件尾（SMB2 READ 仅在 EOF 才返回不足请求长度的数据）
+                if (dataLen < chunkSize) eof = true
+                if (isCancelled(sessionId)) { ok = false; break }
+            }
+            // 排空剩余在途读，再按 offset 排序写出尾部
+            while (pending.isNotEmpty()) {
+                val (fut, off) = pending.removeFirst()
+                try {
+                    val resp = fut.get()
+                    val dataLen = resp.getDataLength()
+                    if (dataLen > 0) completed.add(off to resp.getData().copyOf(dataLen))
+                } catch (_: Exception) {}
+            }
+            completed.sortedBy { it.first }.forEach { (_, d) ->
+                out.write(d)
+                downloaded += d.size
+                transferProgress[sessionId] = downloaded
+            }
+            out.flush()
+            return ok && !isCancelled(sessionId)
+        } finally {
+            try { out.close() } catch (_: Exception) {}
+            try { file.close() } catch (_: Exception) {}
+            if (!ok) try { localFile.delete() } catch (_: Exception) {}
+        }
+    }
+
+    private fun downloadFileStreamed(sessionId: String, remotePath: String, localPath: String): Boolean {
         val entry = sessions[sessionId] ?: throw Exception("Invalid or disconnected session id")
         val (shareName, pathInShare) = resolveShareAndPath(remotePath)
         if (shareName.isEmpty()) throw Exception("Invalid path: no share name specified")
@@ -1263,78 +1464,43 @@ class SmbService {
             val success: Boolean = try {
                 val localFile = java.io.File(localPath)
                 localFile.parentFile?.mkdirs()
-                val input = file.getInputStream()
-                try {
+                file.getInputStream().use { input ->
                     localFile.outputStream().use { output ->
-                        // 双缓冲预取：后台线程提前把下一块读入队列，主线程边写边消费，
-                        // 使网络读取与本地写入重叠，减少顺序"读→写"串行化带来的停滞。
+                        // 与 uploadFile 对称的单线程顺序读写。
                         //
-                        // 关键修复（取消死锁 / 取消无效 / 退出视频播放闪退）：
-                        //  - 预取线程用「非阻塞 offer + 自旋让步」写入队列，永不因 queue.put 阻塞；
-                        //    主线程 join 时预取线程必然已在合理时间内退出，杜绝永久挂起。
-                        //  - 主循环用 poll(timeout) 取代 take()：即使队列空、预取线程正被网络读阻塞，
-                        //    每 200ms 也会重新检查取消标志，确保取消在亚秒内生效。
-                        val queue = java.util.concurrent.LinkedBlockingQueue<Any?>(4)
-                        var prefetchFailed = false
-                        val prefetcher = Thread {
-                            try {
-                                val buf = ByteArray(1024 * 1024)
-                                while (true) {
-                                    if (isCancelled(sessionId)) return@Thread
-                                    val n = try { input.read(buf) } catch (_: Throwable) { -1 }
-                                    if (n == -1) break
-                                    if (isCancelled(sessionId)) return@Thread
-                                    val chunk = buf.copyOf(n)
-                                    // 队列满时非阻塞让步，避免阻塞导致 join() 死锁
-                                    while (!queue.offer(chunk)) {
-                                        if (isCancelled(sessionId)) return@Thread
-                                        Thread.sleep(5)
-                                    }
-                                }
-                                queue.offer(SMB_EOF)
-                            } catch (_: Throwable) {
-                                prefetchFailed = true
-                                queue.offer(SMB_EOF)
-                            }
-                        }
-                        prefetcher.start()
+                        // 原实现使用「预取线程 + LinkedBlockingQueue + 主线程消费」双缓冲模型，
+                        // 但 smbj 的 SMB2FileInputStream 内部已通过 SMB2 READ 批量预取并缓冲数据，
+                        // 外层双缓冲不仅无法重叠网络与磁盘 I/O（队列容量仅 4，预取线程在队列满时
+                        // Thread.sleep 让步），还引入了：
+                        //   - 每块 1MB 的 buf.copyOf(n) 内存拷贝
+                        //   - LinkedBlockingQueue 的 offer/poll 锁竞争
+                        //   - 预取与写入实际串行执行（未真正并行）
+                        // 这些开销在高速局域网下使下载速率只能跑到带宽的 2/3，而上传（单线程
+                        // 直接写）反而跑满带宽。改为与上传对称的单线程模型后，下载速率与上传持平。
+                        //
+                        // 取消响应：循环中每 1MB 检查一次取消标志；正常网络条件下 read() 很快
+                        // 返回（千兆下约 10ms/MB），取消延迟在亚秒级。网络停滞时由 SO_TIMEOUT
+                        // (60s) 兜底超时。
+                        val buffer = ByteArray(1024 * 1024)
                         var ok = true
-                        try {
-                            while (true) {
-                                if (isCancelled(sessionId)) {
-                                    // 关闭输入流使预取线程的阻塞 read() 立即抛异常退出；
-                                    // Thread.interrupt 无法中断阻塞态的 read()，故以关闭 input 为主手段。
-                                    try { localFile.delete() } catch (_: Exception) {}
-                                    try { input.close() } catch (_: Exception) {}
-                                    prefetcher.interrupt()
-                                    ok = false
-                                    break
-                                }
-                                val chunk = queue.poll(200, TimeUnit.MILLISECONDS)
-                                if (chunk == null) {
-                                    // 超时：继续循环重新检查取消（即使队列空、预取被网络读阻塞）
-                                    continue
-                                }
-                                if (chunk === SMB_EOF) break
-                                output.write(chunk as ByteArray)
-                                output.flush()
+                        while (true) {
+                            if (isCancelled(sessionId)) {
+                                try { localFile.delete() } catch (_: Exception) {}
+                                ok = false
+                                break
                             }
-                        } finally {
-                            try { input.close() } catch (_: Exception) {}
-                            prefetcher.interrupt()
-                            // 带超时的 join，杜绝任何情况下永久挂起导致线程泄漏 / OOM
-                            try { prefetcher.join(2000) } catch (_: InterruptedException) {}
+                            val n = try { input.read(buffer) } catch (_: Throwable) { -1 }
+                            if (n == -1) break
+                            if (isCancelled(sessionId)) {
+                                try { localFile.delete() } catch (_: Exception) {}
+                                ok = false
+                                break
+                            }
+                            output.write(buffer, 0, n)
                         }
-                        // 预取阶段出错（网络中断 / 被取消或断开导致连接关闭）：
-                        // 若因取消/断开按“已取消”处理；否则文件不完整，如实抛错。
-                        if (ok && prefetchFailed) {
-                            if (isCancelled(sessionId)) ok = false
-                            else throw java.io.IOException("SMB read failed during prefetch")
-                        }
+                        output.flush()
                         ok
                     }
-                } finally {
-                    try { input.close() } catch (_: Exception) {}
                 }
             } finally {
                 try { file.close() } catch (_: Exception) {}
@@ -1416,7 +1582,7 @@ class SmbService {
      * - 显式 flush 输出流，避免 smbj 缓冲过多数据导致 OOM
      * - 捕获中途写入异常，确保 file handle 在 finally 中关闭，避免远程句柄泄漏
      */
-    fun uploadFile(sessionId: String, localPath: String, remotePath: String): Boolean {
+    private fun uploadFileStreamed(sessionId: String, localPath: String, remotePath: String): Boolean {
         val entry = sessions[sessionId] ?: throw Exception("Invalid or disconnected session id")
         val (shareName, pathInShare) = resolveShareAndPath(remotePath)
         if (shareName.isEmpty()) throw Exception("Invalid path: no share name specified")
@@ -1438,24 +1604,41 @@ class SmbService {
             try {
                 val localFile = java.io.File(localPath)
                 if (!localFile.exists()) throw Exception("Local file does not exist: $localPath")
+
+                // 用 file.write() 同步方法替代 writeAsync().get() 和 getOutputStream()。
+                //
+                // writeAsync().get() 的问题：writeAsync 内部有 while(provider.isAvailable())
+                // 循环，如果 chunkSize 与 maxWriteSize 不匹配会自动发出多个异步请求并堆积，
+                // Future 机制导致请求/响应乱序堆积，反而增加服务器上行（响应）流量。
+                //
+                // getOutputStream() 的问题：FileOutputStream 在 close() 时发送额外 FLUSH
+                // 请求和可能的 SET_INFO 请求，产生上行流量。
+                //
+                // file.write() 是纯同步方法：发送一个 WRITE 请求 → 等待响应 → 返回。
+                // chunkSize 不超过 maxWriteSize 时每次只发一个请求，无额外开销。
+                val maxWrite = entry.connection.getNegotiatedProtocol().getMaxWriteSize()
+                val chunkSize = when {
+                    maxWrite <= 0 -> 1024 * 1024       // 查询失败，用默认 1MB
+                    maxWrite < 64 * 1024 -> 64 * 1024  // 太小，用最小 64KB
+                    maxWrite > 1024 * 1024 -> 1024 * 1024  // 限制到 1MB
+                    else -> maxWrite                   // 用协商值
+                }
+
                 localFile.inputStream().use { input ->
-                    file.getOutputStream().use { output ->
-                        // 1MB 缓冲区分块写入（SMB2 每次 WRITE 请求携带更多数据，减少往返开销）
-                        val buffer = ByteArray(1024 * 1024)
-                        var bytesRead: Int
-                        var uploaded: Long = 0
-                        while (input.read(buffer).also { bytesRead = it } != -1) {
-                            // 写之前也检查一次取消，缩短慢速网络上取消的响应延迟
-                            if (isCancelled(sessionId)) {
-                                cancelled = true
-                                uploadOk = false
-                                return@use
-                            }
-                            output.write(buffer, 0, bytesRead)
-                            uploaded += bytesRead
-                            transferProgress[sessionId] = uploaded
+                    val buffer = ByteArray(chunkSize)
+                    var bytesRead: Int
+                    var offset: Long = 0
+                    while (input.read(buffer).also { bytesRead = it } != -1) {
+                        if (isCancelled(sessionId)) {
+                            cancelled = true
+                            uploadOk = false
+                            return@use
                         }
-                        output.flush()
+                        // 同步写入：发一个 WRITE 请求，等响应后再发下一个。
+                        // write 签名: (byte[] buffer, long fileOffset, int bufferOffset, int length)
+                        file.write(buffer, offset, 0, bytesRead)
+                        offset += bytesRead
+                        transferProgress[sessionId] = offset
                     }
                 }
             } finally {

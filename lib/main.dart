@@ -177,6 +177,9 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
   // 首次启动标志：未选择语言时为 true，用于延迟权限申请直到语言选择完成
   bool _isFirstLaunch = false;
   StreamSubscription<List<SharedMediaFile>>? _sharingIntentSubscription;
+  // 缓存上次的导航栏隐藏开关，避免 MaterialApp.builder 在每次重建（如键盘 Insets
+  // 逐帧变化）时重复调用平台通道 setEnabledSystemUIMode。
+  bool? _lastHideNavigationBar;
 
   @override
   void initState() {
@@ -188,6 +191,7 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
     } else {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
     }
+    _lastHideNavigationBar = hideNav;
     SystemChrome.setSystemUIChangeCallback((bool visible) async {
       if (visible) {
         if (PreferencesService.getHideNavigationBar()) {
@@ -797,10 +801,14 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
 
                 SystemChrome.setSystemUIOverlayStyle(style);
 
-                if (fileManager.hideNavigationBar) {
-                  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
-                } else {
-                  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
+                // 仅在开关变化时调用平台通道，避免键盘 Insets 逐帧变化时每帧调用。
+                if (_lastHideNavigationBar != fileManager.hideNavigationBar) {
+                  _lastHideNavigationBar = fileManager.hideNavigationBar;
+                  if (fileManager.hideNavigationBar) {
+                    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
+                  } else {
+                    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
+                  }
                 }
 
                 final disableLeftBack = fileManager.disableLeftBackGesture;

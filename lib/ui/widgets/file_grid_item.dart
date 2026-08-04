@@ -16,6 +16,7 @@ import '../../services/media_thumbnail_service.dart';
 import '../../providers/media_provider.dart';
 import '../../providers/file_manager_provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:photo_manager/photo_manager.dart';
 import 'file_action_dialogs.dart';
 import 'archive_type_icon.dart';
 import 'file_type_icon.dart';
@@ -337,40 +338,39 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
   Future<void> _loadVideoThumb() async {
     if (!mounted) return;
     try {
-      final mediaProvider = context.read<MediaProvider>();
-      final match = mediaProvider.videos.where((v) {
-        final titleLower = (v.title ?? '').toLowerCase();
-        final nameLower = widget.file.name.toLowerCase();
-        
-        // Case 1: title matches filename exactly
-        if (titleLower == nameLower) return true;
-        
-        // Case 2: title is basename without extension, e.g. title="my_video", filename="my_video.mp4"
-        final extIndex = nameLower.lastIndexOf('.');
-        final ext = extIndex != -1 ? nameLower.substring(extIndex) : '';
-        if (ext.isNotEmpty) {
-          final baseName = nameLower.substring(0, extIndex);
-          if (titleLower == baseName || '${titleLower}${ext}' == nameLower) {
-            return true;
+      // mediaProvider.videos 返回的是 File（文件系统扫描），不是 AssetEntity，
+      // 无法用 ThumbnailCache.get(asset)。直接走 PhotoManager 路径匹配 + 原生生成。
+      final assetEntities = await PhotoManager.getAssetListRange(
+        start: 0,
+        end: 1000,
+        type: RequestType.video,
+      );
+      for (final asset in assetEntities) {
+        try {
+          final assetPath = await asset.originFile.then((f) => f?.path);
+          if (assetPath != null && assetPath.toLowerCase() == widget.file.path.toLowerCase()) {
+            final thumbData = await asset.thumbnailDataWithSize(
+              const ThumbnailSize.square(300),
+              quality: 80,
+            );
+            if (mounted && thumbData != null && thumbData.isNotEmpty) {
+              setState(() {
+                _videoThumb = thumbData;
+              });
+              return;
+            }
+            break;
           }
-        }
-        
-        // Case 3: Match via mimeType
-        final mimeExt = v.mimeType?.split("/").last.toLowerCase();
-        if (mimeExt != null && '${titleLower}.$mimeExt' == nameLower) {
-          return true;
-        }
-        
-        return false;
-      }).firstOrNull;
+        } catch (_) {}
+      }
 
-      if (match != null) {
-        final thumb = await ThumbnailCache.get(match);
-        if (mounted && thumb != null) {
-          setState(() {
-            _videoThumb = thumb;
-          });
-        }
+      // 回退：文件不在系统相册中（下载目录、NAS 挂载目录等），
+      // 直接通过原生 MediaMetadataRetriever 从文件路径生成首帧缩略图。
+      final thumbBytes = await MediaThumbnailService.generateVideoThumbnail(widget.file.path);
+      if (mounted && thumbBytes != null && thumbBytes.isNotEmpty) {
+        setState(() {
+          _videoThumb = thumbBytes;
+        });
       }
     } catch (_) {}
   }

@@ -654,6 +654,7 @@ class PreferencesService {
   static const String _keyRemoteCacheAutoCleanMinutes = 'remote_cache_auto_clean_minutes';
   static const String _keyRemoteCacheLastCleanTime = 'remote_cache_last_clean_time';
   static const String _keyRemoteMediaThumbnailPreview = 'remote_media_thumbnail_preview';
+  static const String _keyWebSharePort = 'web_share_port';
 
   /// 获取自动清理天数，0表示不自动清理
   /// @deprecated 保留兼容旧版本，新代码使用 getRemoteCacheAutoCleanMinutes
@@ -702,6 +703,15 @@ class PreferencesService {
 
   static Future<void> saveRemoteMediaThumbnailPreview(bool val) async {
     await _prefs?.setBool(_keyRemoteMediaThumbnailPreview, val);
+  }
+
+  /// 获取 Web 共享端口，默认 8080
+  static int getWebSharePort() {
+    return _prefs?.getInt(_keyWebSharePort) ?? 8080;
+  }
+
+  static Future<void> saveWebSharePort(int port) async {
+    await _prefs?.setInt(_keyWebSharePort, port);
   }
 
   static Map<String, List<String>> getCustomCategoryPaths() {

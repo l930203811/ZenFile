@@ -57,6 +57,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
 
   /// 从媒体条目（File 或 SongModel）提取文件路径，用于文件夹封面。
   static String? _sampleItemPath(dynamic item) {
+    if (item is String) return item;
     if (item is FileSystemEntity) return item.path;
     if (item is SongModel) return item.data;
     return null;
@@ -1438,12 +1439,17 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     final id = isAsset ? item.id : item.path;
     final path = isAsset ? '' : item.path;
     final title = isAsset ? (item.title ?? 'Image_$id') : path_helper.basename(path);
+    // 本地媒体缩略图开关：控制本地和远程缩略图总开关
+    final showMediaPreviews = context.select<FileManagerProvider, bool>((p) => p.showMediaPreviews);
+    final showRemoteThumb = PreferencesService.getRemoteMediaThumbnailPreview();
+    final isRemote = path.startsWith('remote://');
+    final showThumb = showMediaPreviews && (!isRemote || showRemoteThumb);
 
     return Stack(
       key: ValueKey(id),
       fit: StackFit.expand,
       children: [
-        if (isAsset)
+        if (isAsset && showThumb)
           _CachedImageTile(
             asset: item,
             onTap: () async {
@@ -1462,7 +1468,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             },
             onLongPress: () => _toggleSelection(null, item.id),
           )
-        else
+        else if (!isAsset && showThumb)
           GestureDetector(
             onTap: () {
               if (_isSelectionMode) {
@@ -1499,6 +1505,11 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                       ),
                     ),
             ),
+          )
+        else
+          Container(
+            color: theme.colorScheme.primaryContainer.withOpacity(0.3),
+            child: Center(child: Icon(Broken.image, size: 32, color: theme.colorScheme.onPrimaryContainer.withOpacity(0.6))),
           ),
         if (showDate)
           Positioned(
@@ -1759,12 +1770,20 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     final id = isAsset ? item.id : item.path;
     final path = isAsset ? '' : item.path;
     final title = isAsset ? (item.title ?? 'Video_$id') : path_helper.basename(path);
+    // 本地媒体缩略图开关：控制本地和远程缩略图总开关
+    final showMediaPreviews = context.select<FileManagerProvider, bool>((p) => p.showMediaPreviews);
+    // 远程媒体缩略图开关：仅控制远程文件缩略图
+    final showRemoteThumb = PreferencesService.getRemoteMediaThumbnailPreview();
+    // 是否为远程文件
+    final isRemote = path.startsWith('remote://');
+    // 缩略图总开关开启 且（本地文件 或 远程开关开启）才显示缩略图
+    final showThumb = showMediaPreviews && (!isRemote || showRemoteThumb);
 
     return Stack(
       key: ValueKey(id),
       fit: StackFit.expand,
       children: [
-        if (isAsset)
+        if (isAsset && showThumb)
           _CachedVideoTile(
             asset: item,
             onTap: () async {
@@ -1790,8 +1809,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             },
             onLongPress: () => _toggleSelection(null, item.id),
           )
-        else if (path.startsWith('remote://') &&
-            PreferencesService.getRemoteMediaThumbnailPreview())
+        else if (isRemote && showThumb)
           _RemoteVideoTile(
             remotePath: path,
             onTap: () {
@@ -1990,6 +2008,12 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     final id = isAsset ? item.id : item.path;
     final path = isAsset ? '' : item.path;
     final title = isAsset ? (item.title ?? 'Video_$id') : path_helper.basename(path);
+    // 本地媒体缩略图开关：控制本地和远程缩略图总开关
+    final showMediaPreviews = context.select<FileManagerProvider, bool>((p) => p.showMediaPreviews);
+    // 远程媒体缩略图开关：仅控制远程文件缩略图
+    final showRemoteThumb = PreferencesService.getRemoteMediaThumbnailPreview();
+    final isRemote = path.startsWith('remote://');
+    final showThumb = showMediaPreviews && (!isRemote || showRemoteThumb);
 
     return ListTile(
       key: ValueKey(id),
@@ -2022,14 +2046,16 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       onLongPress: () => _toggleSelection(isAsset ? null : path, isAsset ? id : null),
       leading: Stack(
         children: [
-          // 本地 asset 或远程视频显示缩略图，否则显示默认图标
-          if (isAsset)
+          // 缩略图受开关控制：本地开关关闭时不显示任何缩略图；
+          // 本地开关开启时，远程文件还需远程开关开启
+          if (isAsset && showThumb)
             _VideoListThumbnail(asset: item, size: 40)
-          else if (path.startsWith('remote://') &&
-              PreferencesService.getRemoteMediaThumbnailPreview())
+          else if (isRemote && showThumb)
             _VideoListThumbnail(remotePath: path, size: 40)
+          else if (!isRemote && showThumb)
+            _VideoListThumbnail(filePath: path, size: 40)
           else
-            _VideoListThumbnail(filePath: path, size: 40),
+            Icon(Broken.video, size: 40, color: theme.colorScheme.primary.withOpacity(0.6)),
           if (_isSelectionMode || isSelected)
             Positioned(
               bottom: 0,
@@ -2072,6 +2098,8 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     List<SongModel> audios,
   ) {
     final path = audio.data;
+    // 本地媒体缩略图开关：控制本地音频封面显示
+    final showMediaPreviews = context.select<FileManagerProvider, bool>((p) => p.showMediaPreviews);
     return ListTile(
       key: ValueKey(path),
       onTap: () {
@@ -2107,15 +2135,17 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             width: 40,
             height: 40,
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: theme.colorScheme.primaryContainer),
-            child: QueryArtworkWidget(
-              id: audio.id,
-              type: ArtworkType.AUDIO,
-              artworkBorder: BorderRadius.circular(10),
-              artworkFit: BoxFit.cover,
-              artworkWidth: 40,
-              artworkHeight: 40,
-              nullArtworkWidget: Icon(Icons.music_note, size: 22, color: theme.colorScheme.onPrimaryContainer),
-            ),
+            child: showMediaPreviews
+                ? QueryArtworkWidget(
+                    id: audio.id,
+                    type: ArtworkType.AUDIO,
+                    artworkBorder: BorderRadius.circular(10),
+                    artworkFit: BoxFit.cover,
+                    artworkWidth: 40,
+                    artworkHeight: 40,
+                    nullArtworkWidget: Icon(Icons.music_note, size: 22, color: theme.colorScheme.onPrimaryContainer),
+                  )
+                : Icon(Icons.music_note, size: 22, color: theme.colorScheme.onPrimaryContainer),
           ),
           if (_isSelectionMode || isSelected)
             Positioned(

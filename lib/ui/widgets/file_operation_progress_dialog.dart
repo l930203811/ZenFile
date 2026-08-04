@@ -132,7 +132,9 @@ class FileOperationProgressDialog extends StatelessWidget {
 
                         // 副标题
                         Text(
-                          L10n.of(context).ui_transferring_files,
+                          progress.speedMBs > 0
+                              ? '${FileUtils.formatBytes((progress.speedMBs * 1024 * 1024).round(), 1)}/s'
+                              : '—',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,

@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:dartssh2/dartssh2.dart';
+import 'preferences_service.dart';
 
 class WebSharingService extends ChangeNotifier {
   static final WebSharingService instance = WebSharingService._();
@@ -28,7 +29,7 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
   HttpServer? _localServer;
   bool _isLocalActive = false;
   String _localIpAddress = '';
-  final int _port = 8080;
+  int _port = 8080;
 
   bool _isInternetActive = false;
   String _internetShareLink = '';
@@ -129,12 +130,15 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
       // 1. Resolve local Wi-Fi IP address
       _localIpAddress = await _detectLocalIp();
 
-      // 2. Bind HttpServer
+      // 2. Load configured port (default 8080)
+      _port = PreferencesService.getWebSharePort();
+
+      // 3. Bind HttpServer
       _localServer = await HttpServer.bind(InternetAddress.anyIPv4, _port);
       _isLocalActive = true;
       notifyListeners();
 
-      // 3. Start Native Background Foreground Service
+      // 4. Start Native Background Foreground Service
       try {
         await _channel.invokeMethod('startWebSharingService', {
           'url': 'http://$_localIpAddress:$_port',
@@ -146,7 +150,7 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         debugPrint('Failed to start native web sharing service: $e');
       }
 
-      // 4. Listen to incoming requests
+      // 5. Listen to incoming requests
       _localServer!.listen((HttpRequest request) async {
         try {
           await _handleHttpRequest(request, rootDir);
@@ -203,7 +207,9 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
 
     // Map URL path to target local filesystem path
     final targetPath = p.join(rootDir, uriPath.startsWith('/') ? uriPath.substring(1) : uriPath);
-    final entityType = FileSystemEntity.typeSync(targetPath);
+
+    // 异步获取实体类型，避免 typeSync 阻塞主 isolate（UI 线程）
+    final entityType = await FileSystemEntity.type(targetPath);
 
     // Handle API operations (copy, cut, rename, delete, etc.)
     if (uriPath.startsWith('/api/')) {
@@ -217,8 +223,9 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
       if (fileNameHeader != null) {
         try {
           final decodedFileName = Uri.decodeComponent(fileNameHeader);
-          final uploadDestination = FileSystemEntity.isDirectorySync(targetPath) 
-              ? p.join(targetPath, decodedFileName) 
+          final isDir = entityType == FileSystemEntityType.directory;
+          final uploadDestination = isDir
+              ? p.join(targetPath, decodedFileName)
               : p.join(p.dirname(targetPath), decodedFileName);
 
           // Verify destination path safety to prevent directory traversal
@@ -252,13 +259,10 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
       final dir = Directory(targetPath);
       List<FileSystemEntity> items = [];
       try {
-        items = dir.listSync();
+        // 异步列目录，避免 listSync 阻塞 UI（目录条目多时尤其明显）
+        items = await dir.list().toList();
       } catch (e) {
-        debugPrint('WebSharing: listSync failed for $targetPath: $e');
-      }
-      debugPrint('WebSharing: listed ${items.length} items in $targetPath');
-      for (final item in items.take(5)) {
-        debugPrint('WebSharing: item = ${item.path} (type: ${item is Directory ? "dir" : "file"})');
+        debugPrint('WebSharing: list failed for $targetPath: $e');
       }
       items.sort((a, b) {
         final aIsDir = a is Directory;
@@ -297,7 +301,8 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         contentType = 'text/plain; charset=utf-8';
       }
 
-      final fileSize = file.lengthSync();
+      // 异步获取文件大小，避免 lengthSync 阻塞 UI
+      final fileSize = await file.length();
       final client = _trackClientActivity(request, targetPath, fileSize);
       response.headers.add(HttpHeaders.acceptRangesHeader, 'bytes');
       response.headers.contentType = ContentType.parse(contentType);
@@ -345,15 +350,20 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         response.headers.contentLength = fileSize;
       }
 
-      // Stream the file in 64KB blocks for extreme high-speed data transmission
+      // 使用 pipe 流式传输文件，让 dart:io 的事件循环高效调度，
+      // 避免手动 await for 循环长时间占用主 isolate。
       try {
         final stream = file.openRead(start, isRange ? end + 1 : null);
-        await for (final chunk in stream) {
-          response.add(chunk);
-          if (client != null) {
+        if (client != null) {
+          // 包装流以追踪传输进度（不阻塞事件循环）
+          final trackedStream = stream.map((chunk) {
             client.bytesTransferred += chunk.length;
             client.lastActivityTime = DateTime.now();
-          }
+            return chunk;
+          });
+          await response.addStream(trackedStream);
+        } else {
+          await response.addStream(stream);
         }
       } catch (e) {
         debugPrint('Error streaming file chunk to client: $e');
@@ -3009,6 +3019,7 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
 
       final now = DateTime.now();
       final toRemove = <String>[];
+      bool hasChange = false;
 
       _clientsMap.forEach((key, client) {
         // Idle timeout: if no active request chunks or connections for 8 seconds, remove the client display
@@ -3018,7 +3029,12 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         }
 
         final bytesDiff = client.bytesTransferred - client._lastBytesTransferred;
-        client.speed = bytesDiff / (1024 * 1024); // Convert to MB/s
+        final newSpeed = bytesDiff / (1024 * 1024); // Convert to MB/s
+        // 仅在速率或传输字节数变化时才标记需要刷新，避免无变化时空跑 setState
+        if ((newSpeed - client.speed).abs() > 0.01 || bytesDiff != 0) {
+          hasChange = true;
+        }
+        client.speed = newSpeed;
         client._lastBytesTransferred = client.bytesTransferred;
       });
 
@@ -3026,9 +3042,13 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         for (final key in toRemove) {
           _clientsMap.remove(key);
         }
+        hasChange = true;
       }
 
-      notifyListeners();
+      // 仅在状态有变化时通知 UI 刷新，减少无效 rebuild
+      if (hasChange) {
+        notifyListeners();
+      }
     });
   }
 

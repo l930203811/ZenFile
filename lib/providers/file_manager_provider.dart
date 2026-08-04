@@ -2,6 +2,7 @@ import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 import 'dart:io';
 import 'dart:async';
+import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -1134,6 +1135,13 @@ class FileManagerProvider extends ChangeNotifier {
   // 导致刷新目标错乱。用简单 Future 锁串行化。
   Completer<void>? _loadDirectoryForTabLock;
 
+  /// 记录每个 tab 上哪些远程目录正处于上传后最终化等待中（后台轮询
+  /// [scheduleRemoteRefreshAfterUpload] 尚未结束）。
+  /// 用于在 [loadDirectory] 中抑制同一路径的可见目录刷新，防止手动刷新 /
+  /// 自动刷新把 openlist 本机储存的 staging 中间态暴露给用户（问题2/3 的
+  /// 补充防御：即使轮询逻辑之外还有刷新入口，也能保持隐藏）。
+  final Map<int, Set<String>> _pendingFinalizePaths = {};
+
   List<FolderTab> get tabs => _tabs;
   int get activeTabIndex => _activeTabIndex;
 
@@ -2168,6 +2176,14 @@ class FileManagerProvider extends ChangeNotifier {
 
     // ── Remote branch ──
     if (activeTab.isRemote && activeTab.remoteClient != null) {
+      // 若当前 tab/path 正处于上传后最终化等待中，抑制可见目录刷新。
+      // 这样即使手动下拉刷新 / 页面重入等入口调用 loadDirectory，也不会把 openlist
+      // 本机储存的 staging 中间态暴露给用户。最终化完成后 scheduleRemoteRefreshAfterUpload
+      // 会主动揭示一次。
+      if (_pendingFinalizePaths[_activeTabIndex]?.contains(path) == true) {
+        debugPrint('[ZenFile] loadDirectory suppressed for pending finalize: tab=$_activeTabIndex path=$path');
+        return;
+      }
       if (showLoading) {
         activeTab.isLoading = true;
         notifyListeners();
@@ -2418,97 +2434,134 @@ class FileManagerProvider extends ChangeNotifier {
   /// 文件出现或超时（约 15 秒），让进度条在服务端真正落盘后才消失。
   ///
   /// 非 FTP 客户端无需此等待（其上传为原子操作），直接返回。
-  Future<void> _awaitUploadFinalized(RemoteClient client, String dir, String name, int expectedSize) async {
+  /// 后台异步等待 FTP 服务端把 `file-<随机>` 临时文件最终化为目标文件。
+  ///
+  /// **不再阻塞调用方**：之前这里是同步等待（最多 45s），导致进度条卡在 100%
+  /// 不消失。现在改为后台 fire-and-forget，进度条立即消失，UI 可正常交互。
+  /// 最终化后的目录刷新由 [scheduleRemoteRefreshAfterUpload] 的轮询负责。
+  void _awaitUploadFinalized(RemoteClient client, String dir, String name, int expectedSize) {
     if (client is! FtpRemoteClient) return;
-    // 最多等待约 45s（90 × 500ms），覆盖飞牛等 NAS 在 STOR 结束后较慢的
-    // 重命名/刷盘过程。期间进度弹窗保持显示，避免“进度 100% 但目录仍为空”。
-    const maxAttempts = 90;
-    for (int i = 0; i < maxAttempts; i++) {
-      await Future.delayed(const Duration(milliseconds: 500));
-      bool ok = false;
-      try {
-        ok = await client.finalizeUpload(dir, name, expectedSize);
-      } catch (_) {}
-      if (ok) return;
-    }
+    unawaited(Future(() async {
+      const maxAttempts = 90;
+      for (int i = 0; i < maxAttempts; i++) {
+        if (_isOperationCancelled) return;
+        await Future.delayed(const Duration(milliseconds: 500));
+        bool ok = false;
+        try {
+          ok = await client.finalizeUpload(dir, name, expectedSize);
+        } catch (_) {}
+        if (ok) return;
+      }
+    }));
   }
 
+  /// 上传完成后后台等待服务端“最终化”（临时文件→目标文件），**期间不刷新可见
+  /// 目录**，最终化完成后再一次性揭示目录。
+  ///
+  /// **核心修复（问题2 / 问题3）**：旧逻辑每 2s 调用 [loadDirectoryForTab] 刷新**可见
+  /// 目录**，会把 openlist 本机储存的 staging 状态（临时文件 + 目标文件 0KB 逐步增长）
+  /// 暴露给用户；对 FTP 而言每次刷新都是同一 `_ftpConnect` 单连接的 CWD+LIST，与用户
+  /// 手动刷新并发时会竞争同一连接导致 CWD 错乱甚至闪退。
+  ///
+  /// 新逻辑：轮询 `client.finalizeUpload()`（后台 LIST，不碰可见目录）判断服务端是否
+  /// 已最终化；**只有**最终化完成时才做一次 [loadDirectoryForTab] 揭示。这样用户在整个
+  /// 上传→落盘期间看到的始终是「旧目录」（或干脆完成后的最终目录），绝不会看到中间态，
+  /// 也消除了 FTP 单连接高频 LIST 的并发竞争。
   void scheduleRemoteRefreshAfterUpload(String dir, int? targetTabIndex, {String targetName = '', int expectedSize = 0}) {
-    // 服务端临时文件命名规则常见为 file-<随机数字>，部分 NAS 还会追加原文件
-    // 扩展名（如 file-319563935.mp4），因此正则不能只匹配无后缀的情况。
-    const tempFileRe = r'^file-\d+(\.|$)';
     debugPrint('scheduleRemoteRefreshAfterUpload: start for $dir target=$targetTabIndex expectedSize=$expectedSize');
     unawaited(Future(() async {
-      const maxAttempts = 40;
-      const interval = Duration(milliseconds: 600);
-      bool? isFtpCache;
-      for (int i = 0; i < maxAttempts; i++) {
-        // 正在新粘贴 / 操作已取消 → 停止轮询，避免与新的上传/加载相互干扰
-        if (_isPasting || _isOperationCancelled) {
-          debugPrint('scheduleRemoteRefreshAfterUpload: stop (pasting=$_isPasting, cancelled=$_isOperationCancelled)');
-          return;
-        }
-        // 定位目标远程 tab：优先使用上传目标 tabIndex，否则按 currentPath 匹配
-        int? idx = (targetTabIndex != null &&
-                targetTabIndex >= 0 &&
-                targetTabIndex < _tabs.length &&
-                _tabs[targetTabIndex].isRemote)
-            ? targetTabIndex
-            : null;
-        if (idx == null) {
-          for (int t = 0; t < _tabs.length; t++) {
-            if (_tabs[t].isRemote && _tabs[t].currentPath == dir) {
-              idx = t;
-              break;
-            }
-          }
-        }
-        if (idx == null) {
-          debugPrint('scheduleRemoteRefreshAfterUpload: no remote tab for $dir, stop');
-          return;
-        }
-        final tab = _tabs[idx];
-        // 修复E（问题3）：非 FTP 客户端（SFTP/SMB/WebDAV）上传为原子操作，首刷
-        // 无需等待服务端重命名临时文件，立即刷新；仅 FTP 保留每轮 600ms 延迟。
-        isFtpCache ??= tab.remoteClient is FtpRemoteClient;
-        if (i > 0 || isFtpCache) {
-          await Future.delayed(interval);
-        }
-        try {
-          // 主动最终化：若目录里仍有服务端临时文件，尝试让客户端执行
-          // finalizeUpload（在临时文件完整时主动重命名为目标文件）。这对飞牛等
-          // NAS 特别有效——它们在目标文件已存在时可能不会自动完成重命名。
-          final client = tab.remoteClient;
-          if (client is FtpRemoteClient && expectedSize > 0 && targetName.isNotEmpty) {
-            try {
-              final finalized = await client.finalizeUpload(dir, targetName, expectedSize);
-              if (finalized) {
-                debugPrint('scheduleRemoteRefreshAfterUpload: client finalized temp file');
-              }
-            } catch (e) {
-              debugPrint('scheduleRemoteRefreshAfterUpload: finalizeUpload error $e');
-            }
-          }
+      const maxAttempts = 120;
+      const interval = Duration(milliseconds: 2000);
+      int? idx;
+      RemoteClient? client;
 
-          // 以该远程 tab 的身份刷新（loadDirectoryForTab 内部临时切换 activeTab
-          // 再还原），绝不污染其它面板，也不会误触发远程→本地翻转。
-          await loadDirectoryForTab(idx, dir, showLoading: false, clearCache: true);
-          // 目录里还有服务端临时文件 → 服务端尚未最终化，继续轮询刷新
-          final hasTemp = tab.currentFiles.any(
-            (e) => !e.isDirectory && RegExp(tempFileRe).hasMatch(e.name),
-          );
-          debugPrint('scheduleRemoteRefreshAfterUpload: attempt $i tab$idx hasTemp=$hasTemp, files=${tab.currentFiles.map((e) => e.name).toList()}');
-          if (!hasTemp) {
-            debugPrint('scheduleRemoteRefreshAfterUpload: finalized, stop');
-            return;
+      void markPending(bool pending) {
+        if (idx == null) return;
+        if (pending) {
+          (_pendingFinalizePaths[idx] ??= {}).add(dir);
+        } else {
+          _pendingFinalizePaths[idx]?.remove(dir);
+          if (_pendingFinalizePaths[idx]?.isEmpty == true) {
+            _pendingFinalizePaths.remove(idx);
           }
-          notifyListeners();
-        } catch (e) {
-          // 列表失败（网络抖动/服务器忙）属正常，继续下一轮
-          debugPrint('scheduleRemoteRefreshAfterUpload: list error $e');
         }
       }
+
+      try {
+        for (int i = 0; i < maxAttempts; i++) {
+          // 正在新粘贴 / 操作已取消 → 停止轮询，避免与新的上传/加载相互干扰
+          if (_isPasting || _isOperationCancelled) {
+            debugPrint('scheduleRemoteRefreshAfterUpload: stop (pasting=$_isPasting, cancelled=$_isOperationCancelled)');
+            return;
+          }
+          // 定位目标远程 tab：优先使用上传目标 tabIndex，否则按 currentPath 匹配
+          idx = (targetTabIndex != null &&
+                  targetTabIndex >= 0 &&
+                  targetTabIndex < _tabs.length &&
+                  _tabs[targetTabIndex].isRemote)
+              ? targetTabIndex
+              : null;
+          if (idx == null) {
+            for (int t = 0; t < _tabs.length; t++) {
+              if (_tabs[t].isRemote && _tabs[t].currentPath == dir) {
+                idx = t;
+                break;
+              }
+            }
+          }
+          if (idx == null) {
+            debugPrint('scheduleRemoteRefreshAfterUpload: no remote tab for $dir, stop');
+            return;
+          }
+          final tab = _tabs[idx];
+          client = tab.remoteClient;
+          if (client == null) {
+            debugPrint('scheduleRemoteRefreshAfterUpload: no client for tab$idx, stop');
+            return;
+          }
+          // 标记该 tab/path 正在最终化，抑制同路径的可见目录刷新（补充防御）。
+          markPending(true);
+
+          // 首轮立即检测（不延迟），让 WebDAV/SMB/网盘等原子上传立刻完成最终化，
+          // 避免额外的揭示延迟；FTP/SFTP 在 openlist 上一般尚未最终化，会进入等待。
+          if (i > 0) {
+            await Future.delayed(interval);
+          }
+          try {
+            // 只问服务端“是否已最终化”，**不刷新可见目录**（关键修复点）。
+            final ok = await client.finalizeUpload(dir, targetName, expectedSize);
+            if (ok) {
+              // 最终化完成：先取消 pending 标记，再一次性刷新可见目录（否则
+              // loadDirectory 的 pending 防御会把这次必要的揭示也跳过）。
+              markPending(false);
+              try {
+                await loadDirectoryForTab(idx, dir, showLoading: false, clearCache: true, forceRefresh: true);
+              } catch (e) {
+                debugPrint('scheduleRemoteRefreshAfterUpload: final refresh error $e');
+              }
+              notifyListeners();
+              debugPrint('scheduleRemoteRefreshAfterUpload: finalized after $i attempts, stop');
+              return;
+            }
+            debugPrint('scheduleRemoteRefreshAfterUpload: attempt $i not finalized yet');
+          } catch (e) {
+            // finalizeUpload 内部 LIST 失败（网络抖动/服务器忙）属正常，继续下一轮
+            debugPrint('scheduleRemoteRefreshAfterUpload: finalizeUpload error $e');
+          }
+        }
+      // 达到最大轮询次数仍未最终化：做一次尽力刷新，避免 UI 停留在旧状态。
+      // 刷新前取消 pending 标记，否则会被 loadDirectory 的防御跳过。
+      markPending(false);
+      if (idx != null && client != null) {
+        try {
+          await loadDirectoryForTab(idx, dir, showLoading: false, clearCache: true, forceRefresh: true);
+          notifyListeners();
+        } catch (_) {}
+      }
       debugPrint('scheduleRemoteRefreshAfterUpload: maxAttempts reached');
+      } finally {
+        markPending(false);
+      }
     }));
   }
 
@@ -3423,38 +3476,66 @@ class FileManagerProvider extends ChangeNotifier {
     try {
       final totalTopLevel = _clipboardPaths.length;
 
-      // Pre-count total files and estimate total bytes for accurate progress
+      // 精确统计总文件数和总字节数（递归遍历目录），替代原先「目录内文件用
+      // 平均大小估算」的做法，使进度条分母准确。
       int totalFileCount = 0;
       int totalBytesAll = 0;
-      int topLevelFileBytesSum = 0;
-      int topLevelFileCount = 0;
-      int directoryFileCount = 0;
       for (final srcPath in _clipboardPaths) {
         final entityType = FileSystemEntity.typeSync(srcPath);
         if (entityType == FileSystemEntityType.directory) {
-          final dirCount = _countLocalFiles(srcPath);
-          totalFileCount += dirCount;
-          directoryFileCount += dirCount;
+          final r = _countLocalFilesAndBytes(srcPath);
+          totalFileCount += r.fileCount;
+          totalBytesAll += r.totalBytes;
         } else if (entityType == FileSystemEntityType.file) {
           totalFileCount += 1;
-          try {
-            topLevelFileBytesSum += File(srcPath).lengthSync();
-          } catch (_) {}
-          topLevelFileCount++;
+          try { totalBytesAll += File(srcPath).lengthSync(); } catch (_) {}
         }
       }
       if (totalFileCount == 0) totalFileCount = totalTopLevel;
-
-      final int averageFileSize = (topLevelFileCount > 0)
-          ? (topLevelFileBytesSum / topLevelFileCount).round()
-          : 1024 * 1024;
-      totalBytesAll = topLevelFileBytesSum + directoryFileCount * averageFileSize;
       if (totalBytesAll <= 0) totalBytesAll = 1;
 
       int processedFileCount = 0;
       int bytesDone = 0;
       int previousFilesBytes = 0;
-      final stopwatch = Stopwatch()..start();
+      // 滑动窗口实时速率：避免累计平均速率在文件间停顿时持续衰减。
+      final speedTracker = _TransferSpeedTracker(window: const Duration(seconds: 2));
+      // 节流：WebDAV/FTP 的 onProgress 每 64KB 调用一次（千兆下每秒约 16000 次），
+      // 若每次都 speedTracker.add 会触发 O(n) 的 _evict，2 秒窗口内累积数万样本
+      // 导致 O(n²) 性能下降，拖慢事件循环，进度条和速率卡顿不准。
+      // bytesDone/percentage 每次 O(1) 更新，speedTracker.add 限制为每 50ms 一次。
+      int pendingSpeedDelta = 0;
+      DateTime? lastSpeedUpdate;
+
+      // 统一构造进度通知，保证 percentage / bytesProcessed / speed / eta 一致。
+      void emitProgress(String fileName, int currentFileSize, double currentFileProg) {
+        final newBytesDone = previousFilesBytes + (currentFileSize * currentFileProg).round();
+        if (newBytesDone > bytesDone) {
+          pendingSpeedDelta += newBytesDone - bytesDone;
+          bytesDone = newBytesDone;
+          final now = DateTime.now();
+          if (lastSpeedUpdate == null ||
+              now.difference(lastSpeedUpdate!) >= const Duration(milliseconds: 50)) {
+            speedTracker.add(pendingSpeedDelta);
+            pendingSpeedDelta = 0;
+            lastSpeedUpdate = now;
+          }
+        }
+        final pct = (bytesDone / totalBytesAll).clamp(0.0, 1.0);
+        final speedMBs = speedTracker.currentMBs();
+        final remainingBytes = totalBytesAll - bytesDone;
+        final etaSeconds = speedMBs > 0 ? (remainingBytes / (1024 * 1024)) / speedMBs : 0.0;
+        progressNotifier.value = FileOperationProgress(
+          totalFiles: totalFileCount,
+          currentFileIndex: processedFileCount + 1,
+          currentFileName: fileName,
+          percentage: pct,
+          speedMBs: speedMBs,
+          eta: Duration(seconds: etaSeconds.round()),
+          totalBytes: totalBytesAll,
+          bytesProcessed: bytesDone,
+        );
+      }
+
       ConflictResult? cachedResolution;
       for (int i = 0; i < _clipboardPaths.length; i++) {
         if (_isOperationCancelled) throw Exception('Cancelled');
@@ -3505,82 +3586,35 @@ class FileManagerProvider extends ChangeNotifier {
         }
 
         if (isDir) {
-          final dirStartFileCount = processedFileCount;
           await _uploadLocalDirectory(
             client,
             srcPath,
             destPath,
             onFileStart: (fileName) {
               processedFileCount++;
-              bytesDone = previousFilesBytes + ((processedFileCount - dirStartFileCount) * averageFileSize).round();
-              final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
-              final speedMBs = elapsedSeconds > 0 && totalBytesAll > 0
-                  ? (bytesDone / (1024 * 1024)) / elapsedSeconds
-                  : 0.0;
-              final remainingBytes = totalBytesAll - bytesDone;
-              final etaSeconds = speedMBs > 0 ? (remainingBytes / (1024 * 1024)) / speedMBs : 0.0;
-
-              progressNotifier.value = FileOperationProgress(
-                totalFiles: totalFileCount,
-                currentFileIndex: processedFileCount,
-                currentFileName: fileName,
-                percentage: processedFileCount / totalFileCount,
-                speedMBs: speedMBs,
-                eta: Duration(seconds: etaSeconds.round()),
-                totalBytes: totalBytesAll,
-                bytesProcessed: bytesDone,
-              );
+            },
+            onFileProgress: (fileName, fileSize, prog) {
+              emitProgress(fileName, fileSize, prog);
+              // 文件完成时，把真实大小累加到 previousFilesBytes，
+              // 使下一个文件的 bytesDone 基线正确。
+              if (prog >= 1.0) {
+                previousFilesBytes += fileSize;
+              }
             },
           );
-          final dirFileCount = processedFileCount - dirStartFileCount;
-          previousFilesBytes += dirFileCount * averageFileSize;
-          bytesDone = previousFilesBytes;
         } else {
           int fileSize;
           try {
             fileSize = File(srcPath).lengthSync();
           } catch (_) {
-            fileSize = averageFileSize;
+            fileSize = 0;
           }
-          if (fileSize <= 0) fileSize = averageFileSize;
 
-          bytesDone = previousFilesBytes;
-          final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
-          final speedMBs = elapsedSeconds > 0 && totalBytesAll > 0
-              ? (bytesDone / (1024 * 1024)) / elapsedSeconds
-              : 0.0;
-          progressNotifier.value = FileOperationProgress(
-            totalFiles: totalFileCount,
-            currentFileIndex: processedFileCount + 1,
-            currentFileName: name,
-            percentage: processedFileCount / totalFileCount,
-            speedMBs: speedMBs,
-            eta: Duration.zero,
-            totalBytes: totalBytesAll,
-            bytesProcessed: bytesDone,
-          );
+          emitProgress(name, fileSize, 0.0);
 
           try {
             await client.uploadFile(srcPath, destPath, (prog) {
-              bytesDone = previousFilesBytes + (fileSize * prog).round();
-              final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
-              final speedMBs = elapsedSeconds > 0 && totalBytesAll > 0
-                  ? (bytesDone / (1024 * 1024)) / elapsedSeconds
-                  : 0.0;
-              final remainingBytes = totalBytesAll - bytesDone;
-              final etaSeconds = speedMBs > 0 ? (remainingBytes / (1024 * 1024)) / speedMBs : 0.0;
-
-              final currentProcessed = processedFileCount + prog;
-              progressNotifier.value = FileOperationProgress(
-                totalFiles: totalFileCount,
-                currentFileIndex: processedFileCount + 1,
-                currentFileName: name,
-                percentage: currentProcessed / totalFileCount,
-                speedMBs: speedMBs,
-                eta: Duration(seconds: etaSeconds.round()),
-                totalBytes: totalBytesAll,
-                bytesProcessed: bytesDone,
-              );
+              emitProgress(name, fileSize, prog);
             });
           } catch (e) {
             // 客户端在 cancel() 后可能直接抛异常（如 FTP socket 关闭），
@@ -3608,12 +3642,10 @@ class FileManagerProvider extends ChangeNotifier {
           }
         }
       }
-      // 上传循环结束后，等待 FTP 服务端把临时文件最终化为目标文件，
-      // 避免“进度条 100% 但远程目录仍为空/文件丢失”。其它客户端为原子上传，
-      // _awaitUploadFinalized 内部直接返回。
-      if (lastUploadedName != null && lastUploadedName!.isNotEmpty) {
-        await _awaitUploadFinalized(client, currentPath, lastUploadedName!, lastUploadedSize);
-      }
+      // 上传循环结束后，服务端可能还在把临时文件最终化为目标文件。
+      // 最终化检测和目录刷新由 scheduleRemoteRefreshAfterUpload 后台轮询负责，
+      // 不再调用 _awaitUploadFinalized（避免与 scheduleRemoteRefreshAfterUpload
+      // 同时操作 FTP 连接导致竞争和闪退）。
     } catch (e) {
       debugPrint('Error pasting local to remote: $e');
       if (context.mounted) {
@@ -3629,10 +3661,11 @@ class FileManagerProvider extends ChangeNotifier {
       _activeTransferClient = null;
       progressNotifier.value = null;
       if (clearAfterPaste) clearClipboard();
-      // 精准刷新目标远程 tab（loadDirectoryForTab 内部临时切换 activeTab 再还原，
-      // 不会污染其它面板），替代原先的 loadDirectory(currentPath)（它操作全局
-      // 活跃面板，用户切到本地时会被写成远程路径，导致地址栏错乱）。
-      await loadDirectoryForTab(targetTabIndex, currentPath, showLoading: false, clearCache: true);
+      // 注意：**不再**在上传结束后立即刷新目标远程 tab（旧逻辑会立刻 LIST 可见
+      // 目录，把 openlist 本机储存的 staging 中间态——临时文件 + 目标文件 0KB 增长——
+      // 暴露给用户，见问题2/问题3）。最终化完成后的目录揭示统一交给
+      // [scheduleRemoteRefreshAfterUpload]（轮询 finalizeUpload，仅最终化成功后
+      // 一次性刷新可见目录），避免用户看到中间态，也消除 FTP 单连接高频 LIST 竞争。
       // 剪切操作：刷新本地源目录。clearClipboard() 已清空 _isCut/_clipboardPaths，
       // 故使用前面缓存的 localWasCut/localSourcePaths。
       if (localWasCut && localSourcePaths.isNotEmpty) {
@@ -3674,6 +3707,13 @@ class FileManagerProvider extends ChangeNotifier {
         ? p.dirname(_remoteClipboardItems.first.path)
         : '/';
 
+    // 同一远程服务器下的剪切：直接 rename 移动，避免先下载到本地再上传。
+    // 复制（非剪切）仍走 download+upload；跨服务器剪切也必须实际传输。
+    final bool sameServerCut = _isCut &&
+        _remoteClipboardConnection != null &&
+        activeTab.remoteConnection != null &&
+        _isSameRemoteConnection(_remoteClipboardConnection!, activeTab.remoteConnection!);
+
     progressNotifier.backgroundMode = false;
     _isOperationCancelled = false;
     _isPasting = true;
@@ -3691,36 +3731,86 @@ class FileManagerProvider extends ChangeNotifier {
       await sourceClient.connect();
       final totalTopLevel = _remoteClipboardItems.length;
 
-      // Pre-count total files and estimate total bytes for progress tracking
+      // 精确统计总文件数和总字节数（递归遍历远程目录），替代原先「目录内文件
+      // 用平均大小估算」的做法。远程→远程需要下载+上传，总字节数 ×2。
       int totalFileCount = 0;
       int totalBytesAll = 0;
-      int topLevelFileBytesSum = 0;
-      int topLevelFileCount = 0;
-      int directoryFileCount = 0;
-      for (final item in _remoteClipboardItems) {
-        if (item.isDirectory) {
-          final dirCount = await _countRemoteFiles(sourceClient, item.path);
-          totalFileCount += dirCount;
-          directoryFileCount += dirCount;
-        } else {
-          totalFileCount += 1;
-          topLevelFileBytesSum += item.size;
-          topLevelFileCount++;
+      if (sameServerCut) {
+        // 同服务器移动是服务端元数据操作，不实际传输字节，进度按文件数即可。
+        totalFileCount = totalTopLevel;
+        totalBytesAll = 1;
+      } else {
+        for (final item in _remoteClipboardItems) {
+          if (item.isDirectory) {
+            final r = await _countRemoteFilesAndBytes(sourceClient, item.path);
+            totalFileCount += r.fileCount;
+            totalBytesAll += r.totalBytes;
+          } else {
+            totalFileCount += 1;
+            totalBytesAll += item.size;
+          }
         }
+        if (totalFileCount == 0) totalFileCount = totalTopLevel;
+        totalBytesAll *= 2; // 下载 + 上传
+        if (totalBytesAll <= 0) totalBytesAll = 1;
       }
-      if (totalFileCount == 0) totalFileCount = totalTopLevel;
-
-      final int averageFileSize = (topLevelFileCount > 0)
-          ? (topLevelFileBytesSum / topLevelFileCount).round()
-          : 1024 * 1024;
-      totalBytesAll = (topLevelFileBytesSum + directoryFileCount * averageFileSize) * 2;
-      if (totalBytesAll <= 0) totalBytesAll = 1;
 
       int processedFileCount = 0;
       int bytesDone = 0;
       int previousFilesBytes = 0;
       ConflictResult? cachedResolution;
-      final stopwatch = Stopwatch()..start();
+      // 滑动窗口实时速率：避免累计平均速率在文件间停顿时持续衰减。
+      final speedTracker = _TransferSpeedTracker(window: const Duration(seconds: 2));
+      // 节流：同 _pasteLocalToRemote，避免高频 onProgress 导致 O(n²) 性能问题。
+      int pendingSpeedDelta = 0;
+      DateTime? lastSpeedUpdate;
+
+      // 统一构造进度通知，保证 percentage / bytesProcessed / speed / eta 一致。
+      // 远程→远程总字节数 = 真实字节数 ×2（下载+上传），previousFilesBytes
+      // 在下载完成和上传完成时分别累加 fileSize，使 bytesDone 连续递增。
+      void emitProgress(String fileName, int currentFileSize, double currentFileProg) {
+        final newBytesDone = previousFilesBytes + (currentFileSize * currentFileProg).round();
+        if (newBytesDone > bytesDone) {
+          pendingSpeedDelta += newBytesDone - bytesDone;
+          bytesDone = newBytesDone;
+          final now = DateTime.now();
+          if (lastSpeedUpdate == null ||
+              now.difference(lastSpeedUpdate!) >= const Duration(milliseconds: 50)) {
+            speedTracker.add(pendingSpeedDelta);
+            pendingSpeedDelta = 0;
+            lastSpeedUpdate = now;
+          }
+        }
+        final pct = (bytesDone / totalBytesAll).clamp(0.0, 1.0);
+        final speedMBs = speedTracker.currentMBs();
+        final remainingBytes = totalBytesAll - bytesDone;
+        final etaSeconds = speedMBs > 0 ? (remainingBytes / (1024 * 1024)) / speedMBs : 0.0;
+        progressNotifier.value = FileOperationProgress(
+          totalFiles: totalFileCount,
+          currentFileIndex: processedFileCount + 1,
+          currentFileName: fileName,
+          percentage: pct,
+          speedMBs: speedMBs,
+          eta: Duration(seconds: etaSeconds.round()),
+          totalBytes: totalBytesAll,
+          bytesProcessed: bytesDone,
+        );
+      }
+
+      // 同服务器移动用文件数进度（元数据操作无实际字节传输，无速率）。
+      void emitMoveProgress(String name, int index, int total) {
+        final pct = total > 0 ? (index / total).clamp(0.0, 1.0) : 1.0;
+        progressNotifier.value = FileOperationProgress(
+          totalFiles: total,
+          currentFileIndex: index,
+          currentFileName: name,
+          percentage: pct,
+          speedMBs: 0.0,
+          eta: Duration.zero,
+          totalBytes: total,
+          bytesProcessed: index,
+        );
+      }
 
       for (int i = 0; i < _remoteClipboardItems.length; i++) {
         if (_isOperationCancelled) throw Exception('Cancelled');
@@ -3731,8 +3821,8 @@ class FileManagerProvider extends ChangeNotifier {
 
         // Check conflict with existing remote files
         final destExists = activeTab.currentFiles.any((f) => f.name == remoteItem.name);
+        ConflictResult? resolution = cachedResolution;
         if (destExists) {
-          ConflictResult? resolution = cachedResolution;
           if (resolution == null) {
             if (!context.mounted) throw Exception('Cancelled');
             final response = await ConflictDialog.show(
@@ -3767,118 +3857,79 @@ class FileManagerProvider extends ChangeNotifier {
           }
         }
 
-        // Step 1: Download from source remote to local temp
-        if (remoteItem.isDirectory) {
-          final dirStartFileCount = processedFileCount;
-          await _downloadRemoteDirectory(
-            sourceClient,
-            remoteItem.path,
-            tempPath,
-            onFileStart: (fileName) {
-              processedFileCount++;
-              bytesDone = previousFilesBytes + ((processedFileCount - dirStartFileCount) * averageFileSize).round();
-              final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
-              final speedMBs = elapsedSeconds > 0 && totalBytesAll > 0
-                  ? (bytesDone / (1024 * 1024)) / elapsedSeconds
-                  : 0.0;
-              final remainingBytes = totalBytesAll - bytesDone;
-              final etaSeconds = speedMBs > 0 ? (remainingBytes / (1024 * 1024)) / speedMBs : 0.0;
-
-              progressNotifier.value = FileOperationProgress(
-                totalFiles: totalFileCount,
-                currentFileIndex: processedFileCount,
-                currentFileName: fileName,
-                percentage: (processedFileCount / totalFileCount) * 0.5,
-                speedMBs: speedMBs,
-                eta: Duration(seconds: etaSeconds.round()),
-                totalBytes: totalBytesAll,
-                bytesProcessed: bytesDone,
-              );
-            },
-          );
-          final dirFileCount = processedFileCount - dirStartFileCount;
-          previousFilesBytes += dirFileCount * averageFileSize;
-          bytesDone = previousFilesBytes;
-          // Step 2: Upload from local temp to target remote
-          final uploadStartCount = processedFileCount;
-          await _uploadLocalDirectory(
-            targetClient,
-            tempPath,
-            destPath,
-            onFileStart: (fileName) {
-              processedFileCount++;
-              bytesDone = previousFilesBytes + ((processedFileCount - uploadStartCount) * averageFileSize).round();
-              final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
-              final speedMBs = elapsedSeconds > 0 && totalBytesAll > 0
-                  ? (bytesDone / (1024 * 1024)) / elapsedSeconds
-                  : 0.0;
-              final remainingBytes = totalBytesAll - bytesDone;
-              final etaSeconds = speedMBs > 0 ? (remainingBytes / (1024 * 1024)) / speedMBs : 0.0;
-
-              progressNotifier.value = FileOperationProgress(
-                totalFiles: totalFileCount,
-                currentFileIndex: processedFileCount,
-                currentFileName: fileName,
-                percentage: 0.5 + (processedFileCount / totalFileCount) * 0.5,
-                speedMBs: speedMBs,
-                eta: Duration(seconds: etaSeconds.round()),
-                totalBytes: totalBytesAll,
-                bytesProcessed: bytesDone,
-              );
-            },
-          );
-          previousFilesBytes += dirFileCount * averageFileSize;
-          bytesDone = previousFilesBytes;
-        } else {
-          final fileSize = remoteItem.size > 0 ? remoteItem.size : averageFileSize;
-          await sourceClient.downloadFile(remoteItem.path, tempPath, (prog) {
-            bytesDone = previousFilesBytes + (fileSize * prog).round();
-            final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
-            final speedMBs = elapsedSeconds > 0 && totalBytesAll > 0
-                ? (bytesDone / (1024 * 1024)) / elapsedSeconds
-                : 0.0;
-            final remainingBytes = totalBytesAll - bytesDone;
-            final etaSeconds = speedMBs > 0 ? (remainingBytes / (1024 * 1024)) / speedMBs : 0.0;
-
-            progressNotifier.value = FileOperationProgress(
-              totalFiles: totalFileCount,
-              currentFileIndex: processedFileCount + 1,
-              currentFileName: remoteItem.name,
-              percentage: ((processedFileCount + prog) / totalFileCount) * 0.5,
-              speedMBs: speedMBs,
-              eta: Duration(seconds: etaSeconds.round()),
-              totalBytes: totalBytesAll,
-              bytesProcessed: bytesDone,
-            );
-          });
-          await targetClient.uploadFile(tempPath, destPath, (prog) {
-            bytesDone = previousFilesBytes + fileSize + (fileSize * prog).round();
-            final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
-            final speedMBs = elapsedSeconds > 0 && totalBytesAll > 0
-                ? (bytesDone / (1024 * 1024)) / elapsedSeconds
-                : 0.0;
-            final remainingBytes = totalBytesAll - bytesDone;
-            final etaSeconds = speedMBs > 0 ? (remainingBytes / (1024 * 1024)) / speedMBs : 0.0;
-
-            progressNotifier.value = FileOperationProgress(
-              totalFiles: totalFileCount,
-              currentFileIndex: processedFileCount + 1,
-              currentFileName: remoteItem.name,
-              percentage: 0.5 + ((processedFileCount + prog) / totalFileCount) * 0.5,
-              speedMBs: speedMBs,
-              eta: Duration(seconds: etaSeconds.round()),
-              totalBytes: totalBytesAll,
-              bytesProcessed: bytesDone,
-            );
-          });
-          previousFilesBytes += fileSize * 2;
-          processedFileCount++;
-          lastUploadedName = p.basename(destPath);
-          lastUploadedSize = fileSize;
+        // 同服务器剪切：优先服务端 rename 直接移动，避免下载到本地再上传。
+        // rename 失败（个别协议/目录不支持）时回退到下方 download+upload 常规流程。
+        bool movedInPlace = false;
+        if (sameServerCut) {
+          try {
+            // 覆盖已存在目标：WebDAV 的 MOVE 默认不覆盖，需先删除目标；
+            // 其它协议 rename 多数自动覆盖，删除目标亦无副作用。
+            if (destExists && resolution == ConflictResult.overwrite) {
+              try {
+                await targetClient.delete(destPath, remoteItem.isDirectory);
+              } catch (_) {}
+            }
+            await targetClient.rename(remoteItem.path, destPath);
+            processedFileCount++;
+            emitMoveProgress(remoteItem.name, processedFileCount, totalTopLevel);
+            movedInPlace = true;
+          } catch (e) {
+            debugPrint('Remote in-place move failed, fallback to download+upload: $e');
+          }
         }
 
-        // Step 3: Delete source if cut
-        if (_isCut) {
+        if (!movedInPlace) {
+          // Step 1: Download from source remote to local temp
+          if (remoteItem.isDirectory) {
+            await _downloadRemoteDirectory(
+              sourceClient,
+              remoteItem.path,
+              tempPath,
+              onFileStart: (fileName) {
+                processedFileCount++;
+              },
+              onFileProgress: (fileName, fileSize, prog) {
+                emitProgress(fileName, fileSize, prog);
+                if (prog >= 1.0) {
+                  previousFilesBytes += fileSize;
+                }
+              },
+            );
+            // Step 2: Upload from local temp to target remote
+            await _uploadLocalDirectory(
+              targetClient,
+              tempPath,
+              destPath,
+              onFileStart: (fileName) {
+                processedFileCount++;
+              },
+              onFileProgress: (fileName, fileSize, prog) {
+                emitProgress(fileName, fileSize, prog);
+                if (prog >= 1.0) {
+                  previousFilesBytes += fileSize;
+                }
+              },
+            );
+          } else {
+            final fileSize = remoteItem.size > 0 ? remoteItem.size : 0;
+            // 下载阶段
+            await sourceClient.downloadFile(remoteItem.path, tempPath, (prog) {
+              emitProgress(remoteItem.name, fileSize, prog);
+            });
+            previousFilesBytes += fileSize;
+            // 上传阶段
+            await targetClient.uploadFile(tempPath, destPath, (prog) {
+              emitProgress(remoteItem.name, fileSize, prog);
+            });
+            previousFilesBytes += fileSize;
+            processedFileCount++;
+            lastUploadedName = p.basename(destPath);
+            lastUploadedSize = fileSize;
+          }
+        }
+
+        // Step 3: Delete source if cut（rename 路径已移动源文件，无需删除）
+        if (_isCut && !movedInPlace) {
           try {
             await sourceClient.delete(remoteItem.path, remoteItem.isDirectory);
           } catch (e) {
@@ -3887,11 +3938,8 @@ class FileManagerProvider extends ChangeNotifier {
         }
       }
 
-      // 等待 FTP 服务端最终化（远程→远程上传同样存在临时文件最终化窗口），
-      // 避免进度条过早消失、文件丢失。
-      if (targetClient is FtpRemoteClient && lastUploadedName != null && lastUploadedName!.isNotEmpty) {
-        await _awaitUploadFinalized(targetClient, currentPath, lastUploadedName!, lastUploadedSize);
-      }
+      // 服务端最终化检测和目录刷新由 scheduleRemoteRefreshAfterUpload 轮询负责，
+      // 不再调用 _awaitUploadFinalized（避免与轮询同时操作 FTP 连接导致竞争和闪退）。
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -3950,16 +3998,29 @@ class FileManagerProvider extends ChangeNotifier {
       // 执行至少一次刷新，清理目录中残留的临时文件显示。
       _isOperationCancelled = false;
       notifyListeners();
-      // 上传后服务端可能延迟清理临时文件，延迟再刷一次以保证 UI 干净。
-      // 注意：必须在 _isPasting = false 之后启动，否则后台轮询会因 _isPasting
-      // 仍为 true 而立即退出，导致 UI 不自动刷新。
-      scheduleRemoteRefreshAfterUpload(
-        currentPath,
-        targetTabIndex,
-        targetName: lastUploadedName ?? '',
-        expectedSize: lastUploadedSize,
-      );
+      // 同服务器移动走 rename，不产生服务端临时文件，无需 finalize 轮询刷新。
+      if (!sameServerCut) {
+        // 上传后服务端可能延迟清理临时文件，延迟再刷一次以保证 UI 干净。
+        // 注意：必须在 _isPasting = false 之后启动，否则后台轮询会因 _isPasting
+        // 仍为 true 而立即退出，导致 UI 不自动刷新。
+        scheduleRemoteRefreshAfterUpload(
+          currentPath,
+          targetTabIndex,
+          targetName: lastUploadedName ?? '',
+          expectedSize: lastUploadedSize,
+        );
+      }
     }
+  }
+
+  /// 判断两个远程连接是否指向同一服务器（同协议/主机/端口/用户名）。
+  /// rootPath 可能不同（同一服务器的不同挂载根）仍视为同服务器，
+  /// 因为 rename 移动只需在同一服务器的任意两个路径间进行。
+  bool _isSameRemoteConnection(NetworkConnectionModel a, NetworkConnectionModel b) {
+    return a.type == b.type &&
+        a.host == b.host &&
+        a.port == b.port &&
+        a.username == b.username;
   }
 
   Future<RemoteClient?> _createRemoteClient(NetworkConnectionModel conn) async {
@@ -3980,21 +4041,30 @@ class FileManagerProvider extends ChangeNotifier {
     return null;
   }
 
-  /// Recursively counts files in a local directory (no network calls).
-  int _countLocalFiles(String localPath) {
+  /// 递归统计本地目录的真实文件数和总字节数。
+  /// 返回 (fileCount, totalBytes)。替代原先「目录内文件用平均大小估算」
+  /// 的做法，使进度条的分母准确。
+  ({int fileCount, int totalBytes}) _countLocalFilesAndBytes(String localPath) {
     final entity = FileSystemEntity.typeSync(localPath);
     if (entity == FileSystemEntityType.directory) {
       int count = 0;
+      int bytes = 0;
       try {
         for (final item in Directory(localPath).listSync()) {
-          count += _countLocalFiles(item.path);
+          final r = _countLocalFilesAndBytes(item.path);
+          count += r.fileCount;
+          bytes += r.totalBytes;
         }
       } catch (_) {}
-      return count;
+      return (fileCount: count, totalBytes: bytes);
     } else if (entity == FileSystemEntityType.file) {
-      return 1;
+      try {
+        return (fileCount: 1, totalBytes: File(localPath).lengthSync());
+      } catch (_) {
+        return (fileCount: 1, totalBytes: 0);
+      }
     }
-    return 0;
+    return (fileCount: 0, totalBytes: 0);
   }
 
   /// Recursively counts files in a remote directory (requires listDirectory calls).
@@ -4015,11 +4085,37 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
+  /// 递归统计远程目录的真实文件数和总字节数。
+  /// 返回 (fileCount, totalBytes)。需要多次 listDirectory 调用，
+  /// 但只在传输前执行一次，换取进度条分母的准确性。
+  Future<({int fileCount, int totalBytes})> _countRemoteFilesAndBytes(
+    RemoteClient client, String remotePath) async {
+    try {
+      final items = await client.listDirectory(remotePath);
+      int count = 0;
+      int bytes = 0;
+      for (final item in items) {
+        if (item.isDirectory) {
+          final r = await _countRemoteFilesAndBytes(client, item.path);
+          count += r.fileCount;
+          bytes += r.totalBytes;
+        } else {
+          count += 1;
+          bytes += item.size;
+        }
+      }
+      return (fileCount: count, totalBytes: bytes);
+    } catch (_) {
+      return (fileCount: 0, totalBytes: 0);
+    }
+  }
+
   Future<void> _uploadLocalDirectory(
     RemoteClient client,
     String localDirPath,
     String remoteDirPath, {
     void Function(String fileName)? onFileStart,
+    void Function(String fileName, int fileSize, double progress)? onFileProgress,
   }) async {
     await client.createDirectory(remoteDirPath);
     final localDir = Directory(localDirPath);
@@ -4029,10 +4125,16 @@ class FileManagerProvider extends ChangeNotifier {
       final name = p.basename(item.path);
       final remotePath = _buildRemotePath(remoteDirPath, name);
       if (item is Directory) {
-        await _uploadLocalDirectory(client, item.path, remotePath, onFileStart: onFileStart);
+        await _uploadLocalDirectory(client, item.path, remotePath,
+            onFileStart: onFileStart, onFileProgress: onFileProgress);
       } else if (item is File) {
+        int fileSize = 0;
+        try { fileSize = item.lengthSync(); } catch (_) {}
         onFileStart?.call(name);
-        await client.uploadFile(item.path, remotePath, (_) {});
+        onFileProgress?.call(name, fileSize, 0.0);
+        await client.uploadFile(item.path, remotePath, (prog) {
+          onFileProgress?.call(name, fileSize, prog);
+        });
       }
     }
   }
@@ -4042,6 +4144,7 @@ class FileManagerProvider extends ChangeNotifier {
     String remoteDirPath,
     String localDirPath, {
     void Function(String fileName)? onFileStart,
+    void Function(String fileName, int fileSize, double progress)? onFileProgress,
   }) async {
     final localDir = Directory(localDirPath);
     if (!localDir.existsSync()) {
@@ -4055,10 +4158,14 @@ class FileManagerProvider extends ChangeNotifier {
       }
       final destPath = p.join(localDirPath, item.name);
       if (item.isDirectory) {
-        await _downloadRemoteDirectory(client, item.path, destPath, onFileStart: onFileStart);
+        await _downloadRemoteDirectory(client, item.path, destPath,
+            onFileStart: onFileStart, onFileProgress: onFileProgress);
       } else {
         onFileStart?.call(item.name);
-        await client.downloadFile(item.path, destPath, (prog) {});
+        onFileProgress?.call(item.name, item.size, 0.0);
+        await client.downloadFile(item.path, destPath, (prog) {
+          onFileProgress?.call(item.name, item.size, prog);
+        });
       }
     }
   }
@@ -5184,4 +5291,59 @@ class FileOperationProgress {
     required this.totalBytes,
     required this.bytesProcessed,
   });
+}
+
+/// 实时传输速率计算器：基于滑动窗口统计最近一段时间内的字节增量，
+/// 输出当前瞬时速率（MB/s），避免原先「累计平均速率」在文件间停顿时
+/// 持续衰减、无法反映当前链路实际吞吐的问题。
+///
+/// 用法：
+///   final speed = _TransferSpeedTracker(window: const Duration(seconds: 2));
+///   speed.add(bytesDelta);   // 每次有字节完成时调用
+///   speed.currentMBs();      // 取当前瞬时速率
+class _TransferSpeedTracker {
+  _TransferSpeedTracker({this.window = const Duration(seconds: 2)});
+
+  final Duration window;
+  /// Queue 替代 List：removeFirst() 是 O(1)，避免 removeAt(0) 的 O(n) 开销。
+  final Queue<_Sample> _samples = Queue();
+  int _totalBytes = 0;
+  /// 窗口内有效字节累计，替代 currentMBs() 中的 O(n) fold 遍历。
+  int _windowBytes = 0;
+
+  void add(int bytesDelta) {
+    if (bytesDelta <= 0) return;
+    final now = DateTime.now();
+    _samples.addLast(_Sample(now, bytesDelta));
+    _totalBytes += bytesDelta;
+    _windowBytes += bytesDelta;
+    _evict(now);
+  }
+
+  /// 当前瞬时速率（MB/s）。窗口内无样本时返回 0。
+  double currentMBs() {
+    final now = DateTime.now();
+    _evict(now);
+    if (_windowBytes <= 0) return 0.0;
+    final windowSeconds = window.inMilliseconds / 1000.0;
+    if (windowSeconds <= 0) return 0.0;
+    return (_windowBytes / (1024 * 1024)) / windowSeconds;
+  }
+
+  /// 累计已传输字节数（用于 ETA 的剩余字节计算）。
+  int get totalBytes => _totalBytes;
+
+  void _evict(DateTime now) {
+    final cutoff = now.subtract(window);
+    while (_samples.isNotEmpty && _samples.first.time.isBefore(cutoff)) {
+      final removed = _samples.removeFirst();
+      _windowBytes -= removed.bytes;
+    }
+  }
+}
+
+class _Sample {
+  final DateTime time;
+  final int bytes;
+  _Sample(this.time, this.bytes);
 }
