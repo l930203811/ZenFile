@@ -13,7 +13,7 @@
 
 ## 改动记录
 
-### [2026-08-05] WorkBuddy - 固定 Kotlin 版本为 2.2.20，规避 flutter_avif 编译坑【待验证】
+### [2026-08-05] WorkBuddy - 固定 Kotlin 版本为 2.2.20，规避 flutter_avif 编译坑【已解决】
 
 **背景**：
 - 外国用户（克隆本项目的 fork，旧 Groovy `settings.gradle` + Kotlin 2.1.21）执行 `flutter build apk --release --target-platform android-arm64` 失败，报错 `flutter_avif_android:compileReleaseKotlin` → `FlutterAvifPlugin.kt` "Redeclaration"（class 重复声明假象）。
