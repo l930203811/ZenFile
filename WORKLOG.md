@@ -13,6 +13,23 @@
 
 ## 改动记录
 
+### [2026-08-05] WorkBuddy - 固定 Kotlin 版本为 2.2.20，规避 flutter_avif 编译坑【待验证】
+
+**背景**：
+- 外国用户（克隆本项目的 fork，旧 Groovy `settings.gradle` + Kotlin 2.1.21）执行 `flutter build apk --release --target-platform android-arm64` 失败，报错 `flutter_avif_android:compileReleaseKotlin` → `FlutterAvifPlugin.kt` "Redeclaration"（class 重复声明假象）。
+- 根因：`flutter_avif 3.1.0` 的 Kotlin 源码在 **Kotlin 2.1.x** 编译器下会触发该错误；在 **2.2.x** 下正常。错误与本项目代码无关，纯粹是插件 × Kotlin 版本不兼容。
+
+**现状**：
+- 本项目 `android/settings.gradle.kts` 早已通过 plugins 块将 `org.jetbrains.kotlin.android` 固定为 `2.2.20`（已提交于 HEAD 147d6b2），故 1.1.26 构建全程未触发该错误——我们的 fork 本就不踩此坑。
+
+**本次改动（防御性）**：
+- `android/settings.gradle.kts`：在 Kotlin 版本行上方新增注释，明确「固定 2.2.20、勿降回 2.1.x」及原因，防止后续维护者/协作者手滑降低 Kotlin 版本把雷重新挖出。
+- 纯注释变更，无任何行为改动；Gradle 文件语法不变。
+
+**协作边界**：仅改动 `settings.gradle.kts` 注释，未触碰任何 Dart/Kotlin 业务代码。
+
+**验证**：构建机已用 Kotlin 2.2.20 成功产出 1.1.26 三架构 APK，无需重复构建验证注释改动；未来若有人改动 Kotlin 版本，需 `flutter build apk` 复验 flutter_avif 可编译。
+
 ### [2026-08-05] WorkBuddy - 修复部分安卓 15/16 设备 UI 卡顿（Impeller + 键盘 resize）【待验证】
 
 **问题**：
