@@ -4389,4 +4389,31 @@ class L10nJa extends L10n {
   @override
   String get changelog_v1125_known_1 =>
       'SMB / FTP / SFTP リモート動画再生は一部の環境でまだカクつく場合があります。継続的に最適化中です。';
+
+  @override
+  String get changelog_v1126_opt_1 =>
+      'SMB ダウンロード高速化：ダブルバッファの先読みを削除し、シングルスレッドの順次読み書きに変更することで、大容量ファイルの転送速度を大幅に向上しました。';
+
+  @override
+  String get changelog_v1126_opt_2 =>
+      '予備アイコンセットを削除し、アプリ（APK）のインストールサイズを大幅に削減しました。';
+
+  @override
+  String get changelog_v1126_opt_3 =>
+      '細部の改善：ドロワーの「ネットワーク」一覧の三点ボタンを右寄せにし、クイックアクションのページタイトルが自動で折り返されるようにしました。';
+
+  @override
+  String get changelog_v1126_fix_1 =>
+      'FTP ダウンロード速度が誤って 30〜40MB/s に制限されていた問題を修正しました（書き込みフラッシュ間隔が短すぎたため）。';
+
+  @override
+  String get changelog_v1126_fix_2 =>
+      'リモートクライアント（SMB/FTP/SFTP）の 3 つの不具合を修正：転送のキャンセル、一覧の停滞、ページの更新。';
+
+  @override
+  String get changelog_v1126_fix_3 => 'openlist の残骸による異常を修正しました。';
+
+  @override
+  String get changelog_v1126_known_1 =>
+      'SMB / FTP / SFTP のリモート動画再生は、一部の場面でまだカクつくことがあります。継続的に最適化中です。';
 }

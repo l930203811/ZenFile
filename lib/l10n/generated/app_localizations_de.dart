@@ -4561,4 +4561,32 @@ class L10nDe extends L10n {
   @override
   String get changelog_v1125_known_1 =>
       'SMB-/FTP-/SFTP-Remote-Videowiedergabe kann in einigen Szenarien weiterhin stocken; die Optimierung wird fortgesetzt.';
+
+  @override
+  String get changelog_v1126_opt_1 =>
+      'Beschleunigung von SMB-Downloads: Vorabruf mit Doppelpuffer entfernt und auf sequentielles Lesen/Schreiben mit einem Thread umgestellt, was die Übertragungsgeschwindigkeit großer Dateien deutlich erhöht.';
+
+  @override
+  String get changelog_v1126_opt_2 =>
+      'Das Reservikon-Set wurde entfernt, wodurch die Installationsgröße der App (APK) deutlich verringert wurde.';
+
+  @override
+  String get changelog_v1126_opt_3 =>
+      'Detailverbesserungen: Der Drei-Punkte-Button in der «Netzwerk»-Liste der Seitenleiste ist jetzt rechtsbündig, und Titel auf der Schnellaktionsseite werden automatisch umgebrochen.';
+
+  @override
+  String get changelog_v1126_fix_1 =>
+      'Behoben, dass die FTP-Downloadgeschwindigkeit fälschlicherweise auf 30-40 MB/s begrenzt war (Ursache: zu kurzes Schreib-Flush-Intervall).';
+
+  @override
+  String get changelog_v1126_fix_2 =>
+      'Drei Probleme der Remote-Clients (SMB/FTP/SFTP) behoben: Transferabbruch, Listen-Ruckeln und Seitenaktualisierung.';
+
+  @override
+  String get changelog_v1126_fix_3 =>
+      'Durch verbliebene openlist-Referenzen verursachte Fehler behoben.';
+
+  @override
+  String get changelog_v1126_known_1 =>
+      'Die Wiedergabe von Remote-Video über SMB / FTP / SFTP kann in einigen Fällen noch ruckeln; die Optimierung läuft weiter.';
 }

@@ -300,7 +300,7 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12.0),
               child: Text(
-                'ZenFile v1.1.25',
+                'ZenFile v1.1.26',
                 style: TextStyle(fontSize: 11.5, color: theme.colorScheme.onSurface.withOpacity(0.4), fontWeight: FontWeight.w600),
               ),
             ),

@@ -7,24 +7,19 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 ---
 
-## 🚀 What's New in v1.1.25
-
-### ✨ New Features
-
-- The audio player's lyrics button now cycles through four states, and shuffle is merged into the playback-mode button.
+## 🚀 What's New in v1.1.26
 
 ### 🔧 Optimizations
 
-- Optimized media scan scheduling at startup (concurrency and throttling) to mitigate the app freezing a few seconds after launch on some devices.
-- The "Network" category now shows the number of saved servers in real time.
-- Localized the item-count text on category pages and the "Select Storage Drive" title.
+- SMB download acceleration: removed double-buffer prefetch and switched to single-threaded sequential read/write, greatly improving large-file transfer speed.
+- Removed the backup icon set, significantly reducing the app (APK) install size.
+- Polished details: the "Network" drawer list's three-dot button is now right-aligned, and quick-action page titles wrap automatically.
 
 ### 🐛 Bug Fixes
 
-- Fixed the "All files access" permission prompt not reappearing after clearing app data, which then caused crashes when opening audio files.
-- Fixed the notification media control card not showing on Android 13+ and Android 11 (create the notification channel earlier and branch playback-state logic by system version).
-- Fixed selected items in the category grid view not being deselectable with another tap.
-- Improved SMB / FTP / SFTP remote video streaming stability; fixed the video freezing a few seconds into playback and eventually crashing the app.
+- Fixed FTP download speed being wrongly capped at 30–40 MB/s (caused by an overly small write-flush interval).
+- Fixed three remote-client issues (SMB/FTP/SFTP): transfer cancellation, list stuttering, and page refresh.
+- Fixed anomalies caused by leftover openlist references.
 
 ### ⚠️ Known Issues
 

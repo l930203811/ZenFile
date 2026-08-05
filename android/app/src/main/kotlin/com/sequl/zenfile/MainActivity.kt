@@ -95,6 +95,18 @@ class MainActivity : AudioServiceFragmentActivity() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+
+        // 启动修复：确保默认启动图标别名始终处于启用状态。
+        // 旧版本启用 design_* 备用图标时会把 MainActivityDefault 设为 DISABLED，
+        // 而组件启用状态跨应用更新持久化；本版本已移除 design_* 别名，
+        // 若不在此强制启用，之前启用过 design 图标的用户更新后将失去桌面启动图标。
+        try {
+            val pm = packageManager
+            val defaultComponent = android.content.ComponentName(this, "com.sequl.zenfile.MainActivityDefault")
+            pm.setComponentEnabledSetting(defaultComponent, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     override fun onDestroy() {
@@ -421,20 +433,10 @@ class MainActivity : AudioServiceFragmentActivity() {
                     val iconAlias = call.argument<String>("alias") ?: "com.sequl.zenfile.MainActivityDefault"
                     executor.execute {
                         try {
+                            // 仅保留默认启动图标别名。本版本已移除 design_* 备用图标
+                            // 与 MainActivityCustom 别名（自定义图标改用桌面快捷方式实现）。
                             val aliases = listOf(
-                                "com.sequl.zenfile.MainActivityDefault",
-                                "com.sequl.zenfile.MainActivityDesign1",
-                                "com.sequl.zenfile.MainActivityDesign2",
-                                "com.sequl.zenfile.MainActivityDesign3",
-                                "com.sequl.zenfile.MainActivityDesign4",
-                                "com.sequl.zenfile.MainActivityDesign5",
-                                "com.sequl.zenfile.MainActivityDesign6",
-                                "com.sequl.zenfile.MainActivityDesign7",
-                                "com.sequl.zenfile.MainActivityDesign8",
-                                "com.sequl.zenfile.MainActivityDesign9",
-                                "com.sequl.zenfile.MainActivityDesign10",
-                                "com.sequl.zenfile.MainActivityDesign11",
-                                "com.sequl.zenfile.MainActivityCustom"
+                                "com.sequl.zenfile.MainActivityDefault"
                             )
 
                             for (alias in aliases) {

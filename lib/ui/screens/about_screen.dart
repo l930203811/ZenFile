@@ -160,7 +160,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   const SizedBox(height: 6),
                   // 版本号文本（硬编码，无需 l10n；以后升级版本只改这里）
                   Text(
-                    'v1.1.25',
+                    'v1.1.26',
                     style: TextStyle(
                       color: theme.colorScheme.onSurface.withOpacity(0.7),
                       fontSize: 13,
@@ -716,7 +716,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   Text(L10n.of(context).msg305734ce, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
 
-                  _buildV1125Changelog(ctx, theme),
+                  _buildV1126Changelog(ctx, theme),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -727,7 +727,7 @@ class AboutZenFileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildV1125Changelog(BuildContext ctx, ThemeData theme) {
+  Widget _buildV1126Changelog(BuildContext ctx, ThemeData theme) {
     final l10n = L10n.of(ctx);
     final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
     final sectionStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.primary, fontWeight: FontWeight.w600);
@@ -755,46 +755,38 @@ class AboutZenFileScreen extends StatelessWidget {
                   color: theme.colorScheme.primary.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text('v1.1.25', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+                child: Text('v1.1.26', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
               ),
               const SizedBox(width: 10),
-              Text('2026-07-30', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+              Text('2026-08-02', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
             ],
           ),
-          gap(14),
-
-          // ── New Features ──
-          Text(l10n.changelog_section_new, style: sectionStyle),
-          gap(4),
-          bulletText(l10n.changelog_v1125_new_1),
           gap(14),
 
           // ── Optimizations ──
           Text(l10n.changelog_section_optimizations, style: sectionStyle),
           gap(4),
-          bulletText(l10n.changelog_v1125_opt_1),
+          bulletText(l10n.changelog_v1126_opt_1),
           gap(6),
-          bulletText(l10n.changelog_v1125_opt_2),
+          bulletText(l10n.changelog_v1126_opt_2),
           gap(6),
-          bulletText(l10n.changelog_v1125_opt_3),
+          bulletText(l10n.changelog_v1126_opt_3),
           gap(14),
 
           // ── Bug Fixes ──
           Text(l10n.changelog_section_fixes, style: sectionStyle),
           gap(4),
-          bulletText(l10n.changelog_v1125_fix_1),
+          bulletText(l10n.changelog_v1126_fix_1),
           gap(6),
-          bulletText(l10n.changelog_v1125_fix_2),
+          bulletText(l10n.changelog_v1126_fix_2),
           gap(6),
-          bulletText(l10n.changelog_v1125_fix_3),
-          gap(6),
-          bulletText(l10n.changelog_v1125_fix_4),
+          bulletText(l10n.changelog_v1126_fix_3),
           gap(14),
 
           // ── Known Issues ──
           Text(l10n.changelog_section_known_issues, style: sectionStyle),
           gap(4),
-          bulletText(l10n.changelog_v1125_known_1),
+          bulletText(l10n.changelog_v1126_known_1),
         ],
       ),
     );

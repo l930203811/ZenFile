@@ -8169,6 +8169,48 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。'**
   String get changelog_v1125_known_1;
+
+  /// v1.1.26 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'SMB 下载提速：移除双缓冲预取，改为单线程顺序读写，大幅提升大文件传输速度。'**
+  String get changelog_v1126_opt_1;
+
+  /// v1.1.26 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'移除备用图标集，显著减小安装包（APK）体积。'**
+  String get changelog_v1126_opt_2;
+
+  /// v1.1.26 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'细节优化：抽屉「网络」列表三点按钮改为右对齐，快捷操作页标题支持自动换行。'**
+  String get changelog_v1126_opt_3;
+
+  /// v1.1.26 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'修复 FTP 下载速度被错误限制在 30-40MB/s 的问题（写入刷新间隔过小导致）。'**
+  String get changelog_v1126_fix_1;
+
+  /// v1.1.26 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'修复远程客户端（SMB/FTP/SFTP）取消传输、列表卡顿与刷新三类问题。'**
+  String get changelog_v1126_fix_2;
+
+  /// v1.1.26 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'修复 openlist 残留导致的相关异常。'**
+  String get changelog_v1126_fix_3;
+
+  /// v1.1.26 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。'**
+  String get changelog_v1126_known_1;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

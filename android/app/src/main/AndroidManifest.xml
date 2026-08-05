@@ -40,7 +40,7 @@
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
-            android:windowSoftInputMode="adjustResize"
+            android:windowSoftInputMode="adjustPan"
             android:enabled="true">
             <!-- Boot theme while Flutter initializes -->
             <meta-data
@@ -116,166 +116,18 @@
             </intent-filter>
         </activity-alias>
 
-        <activity-alias
-            android:name=".MainActivityDesign1"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@drawable/design_1"
-            android:label="ZenFile"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-
-        <activity-alias
-            android:name=".MainActivityDesign2"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@drawable/design_2"
-            android:label="ZenFile"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-
-        <activity-alias
-            android:name=".MainActivityDesign3"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@drawable/design_3"
-            android:label="ZenFile"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-
-        <activity-alias
-            android:name=".MainActivityDesign4"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@drawable/design_4"
-            android:label="ZenFile"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-
-        <activity-alias
-            android:name=".MainActivityDesign5"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@drawable/design_5"
-            android:label="ZenFile"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-
-        <activity-alias
-            android:name=".MainActivityDesign6"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@drawable/design_6"
-            android:label="ZenFile"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-
-        <activity-alias
-            android:name=".MainActivityDesign7"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@drawable/design_7"
-            android:label="ZenFile"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-
-        <activity-alias
-            android:name=".MainActivityDesign8"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@drawable/design_8"
-            android:label="ZenFile"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-
-        <activity-alias
-            android:name=".MainActivityDesign9"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@drawable/design_9"
-            android:label="ZenFile"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-
-        <activity-alias
-            android:name=".MainActivityDesign10"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@drawable/design_10"
-            android:label="ZenFile"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-
-        <activity-alias
-            android:name=".MainActivityDesign11"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@drawable/design_11"
-            android:label="ZenFile"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-
-        <activity-alias
-            android:name=".MainActivityCustom"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@mipmap/ic_launcher"
-            android:label="ZenFile"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-
         <!-- Flutter plugin registration metadata -->
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- 禁用 Impeller、回退 Skia 渲染器。
+             部分安卓 15/16 设备（特定 GPU 驱动）在 Impeller 下出现 UI 卡顿/掉帧，
+             尤其是打开软键盘时逐帧重绘压力放大；旧设备（如安卓 11）不受影响。
+             回退 Skia 可消除该设备相关卡顿。如后续 Impeller 稳定可改回 true。 -->
+        <meta-data
+            android:name="io.flutter.embedding.android.EnableImpeller"
+            android:value="false" />
 
         <provider
             android:name="rikka.shizuku.ShizukuProvider"

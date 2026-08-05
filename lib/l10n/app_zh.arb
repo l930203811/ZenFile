@@ -4693,5 +4693,33 @@
   "@changelog_v1125_known_1": {
     "description": "v1.1.25 changelog entry"
   },
-  "changelog_v1125_known_1": "SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。"
+  "changelog_v1125_known_1": "SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。",
+  "@changelog_v1126_opt_1": {
+    "description": "v1.1.26 changelog entry"
+  },
+  "changelog_v1126_opt_1": "SMB 下载提速：移除双缓冲预取，改为单线程顺序读写，大幅提升大文件传输速度。",
+  "@changelog_v1126_opt_2": {
+    "description": "v1.1.26 changelog entry"
+  },
+  "changelog_v1126_opt_2": "移除备用图标集，显著减小安装包（APK）体积。",
+  "@changelog_v1126_opt_3": {
+    "description": "v1.1.26 changelog entry"
+  },
+  "changelog_v1126_opt_3": "细节优化：抽屉「网络」列表三点按钮改为右对齐，快捷操作页标题支持自动换行。",
+  "@changelog_v1126_fix_1": {
+    "description": "v1.1.26 changelog entry"
+  },
+  "changelog_v1126_fix_1": "修复 FTP 下载速度被错误限制在 30-40MB/s 的问题（写入刷新间隔过小导致）。",
+  "@changelog_v1126_fix_2": {
+    "description": "v1.1.26 changelog entry"
+  },
+  "changelog_v1126_fix_2": "修复远程客户端（SMB/FTP/SFTP）取消传输、列表卡顿与刷新三类问题。",
+  "@changelog_v1126_fix_3": {
+    "description": "v1.1.26 changelog entry"
+  },
+  "changelog_v1126_fix_3": "修复 openlist 残留导致的相关异常。",
+  "@changelog_v1126_known_1": {
+    "description": "v1.1.26 changelog entry"
+  },
+  "changelog_v1126_known_1": "SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。"
 }

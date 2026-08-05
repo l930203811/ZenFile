@@ -4585,4 +4585,32 @@ class L10nEs extends L10n {
   @override
   String get changelog_v1125_known_1 =>
       'La reproducción de vídeo remoto SMB / FTP / SFTP aún puede entrecortarse en algunos escenarios; la optimización continúa.';
+
+  @override
+  String get changelog_v1126_opt_1 =>
+      'Aceleración de descargas SMB: se eliminó la prefetch de doble búfer y se cambió a lectura/escritura secuencial de un solo hilo, mejorando mucho la velocidad de transferencia de archivos grandes.';
+
+  @override
+  String get changelog_v1126_opt_2 =>
+      'Se eliminó el conjunto de iconos de respaldo, reduciendo significativamente el tamaño de instalación de la app (APK).';
+
+  @override
+  String get changelog_v1126_opt_3 =>
+      'Detalles pulidos: el botón de tres puntos de la lista «Red» del cajón ahora está alineado a la derecha y los títulos de la página de acciones rápidas se ajustan automáticamente.';
+
+  @override
+  String get changelog_v1126_fix_1 =>
+      'Corregida la velocidad de descarga FTP erróneamente limitada a 30-40 MB/s (causada por un intervalo de vaciado de escritura demasiado corto).';
+
+  @override
+  String get changelog_v1126_fix_2 =>
+      'Corregidos tres problemas de los clientes remotos (SMB/FTP/SFTP): cancelación de transferencia, bloqueo de la lista y actualización de página.';
+
+  @override
+  String get changelog_v1126_fix_3 =>
+      'Corregidas las anomalías causadas por referencias residuales de openlist.';
+
+  @override
+  String get changelog_v1126_known_1 =>
+      'La reproducción de vídeo remoto SMB / FTP / SFTP aún puede titubear en algunos escenarios; la optimización continúa.';
 }

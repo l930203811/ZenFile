@@ -13,6 +13,53 @@
 
 ## 改动记录
 
+### [2026-08-05] WorkBuddy - 修复部分安卓 15/16 设备 UI 卡顿（Impeller + 键盘 resize）【待验证】
+
+**问题**：
+- 部分安卓 15 用户反馈打开应用后 UI 很卡
+- 安卓 16 用户反馈一旦打开输入框（重命名、配置远程客户端等）即出现 UI 卡顿
+- 非所有安卓 15/16 用户复现；用户本人的安卓 11 老旧设备从未出现
+
+**根因**：
+1. 主因：Impeller 渲染器在部分新设备 GPU 驱动（Mali/Adreno/PowerVR 等）上 raster/着色性能回退，导致掉帧；旧设备驱动对 Impeller 友好故正常。Flutter 3.22+ 起 Impeller 为安卓默认渲染器（本项目 Flutter 3.44.1）。键盘弹起时的逐帧重绘把该回退放大，故"打开输入框"症状最明显。
+2. 加重因素：`AndroidManifest` 的 `android:windowSoftInputMode="adjustResize"` 会让键盘弹起时整个 Flutter surface 被 OS resize，触发逐帧整屏重排+重绘；`home_screen` 虽已设 `resizeToAvoidBottomInset:false` 且缓存宽度，但底层 native surface resize 仍在。
+3. 排除项：`home_screen` 未重写 `didChangeMetrics`，对话框均为轻量 `AlertDialog`+`TextField`，无应用层逐帧重建风暴——确认是渲染/inset 层面问题，非业务逻辑。
+
+**修复**：
+1. `android/app/src/main/AndroidManifest.xml`：新增 `io.flutter.embedding.android.EnableImpeller=false`，禁用 Impeller 回退 Skia 渲染器（可复现后改回 true）。
+2. 同文件 activity：`android:windowSoftInputMode` 由 `adjustResize` 改为 `adjustPan`。避免键盘弹起整窗 resize 引发的逐帧重排；对话框仍凭 `MediaQuery.viewInsets` 自行上移，各屏幕已手动处理 inset（`more_settings`/`text_editor`/`wizard` 等），无视觉回退。
+
+**验证**：需在安卓 15/16 受影响设备上本地 `assembleRelease` 安装验证：1) 打开应用是否流畅；2) 重命名/远程配置输入框弹起键盘是否不再卡顿。
+
+### [2026-08-05] WorkBuddy - 移除备用图标功能（APK 体积优化）【已解决】
+
+**问题**：
+- 二次开发后 APK 由 NFile 的 52MB 涨到 68MB，用户怀疑备用图标导致体积膨胀（曾添加后又移除部分图标，疑有残留）。
+
+**排查**：
+- `android/app/src/main/res/drawable/design_1..11.png` 共 ~4.81MB；其中选择器 `_showAppIconPickerDialog` 实际只暴露 `default`、`design3`、`design7`、`custom` 四个选项，`design1/2/4/5/6/8/9/10/11` 九个 PNG 完全是死资源（未进 UI、未进 label），但被 `MainActivityDesign1-11` activity-alias 引用故未被 shrinkResources 剔除，真实进包。
+- `assets/logo/zf_m3_expressive_3.png`(281KB)、`zf_neumorphism.png`(489KB) 仅作为 design3/design7 的预览图被选择器引用；assets 不被 shrinkResources 剔除，真实进包。
+- `media_kit` 的 `libmpv.so`（约 12MB/架构）是最大单项，按用户选择**保留**。
+
+**修复（移除备用图标功能）**：
+1. 删除死资源：`res/drawable/design_1..11.png`（~4.81MB）、`assets/logo/zf_m3_expressive_3.png`、`zf_neumorphism.png`（~770KB）。合计约 5.58MB。
+2. `AndroidManifest.xml`：移除 `MainActivityDesign1-11` 与 `MainActivityCustom` activity-alias，保留 `MainActivityDefault` + `ic_launcher_default.png`（默认图标）。自定义图标仍走桌面快捷方式（Option B），不受影响。
+3. `MainActivity.kt`：
+   - `changeAppIcon` 允许列表收窄为仅 `com.sequl.zenfile.MainActivityDefault`。
+   - **新增启动修复**：`onCreate` 中强制 `PackageManager.setComponentEnabledSetting(..., ENABLED, DONT_KILL_APP)` 启用 `MainActivityDefault`。原因：旧版启用 design 别名时会把 `MainActivityDefault` 置为 DISABLED，而组件启用状态跨应用更新持久化；本版本移除 design 别名后，若不在启动时强制启用默认别名，之前启用过 design 图标的用户更新后将**失去桌面启动图标**。
+4. `lib/providers/file_manager_provider.dart`：
+   - init 时把持久化值 `design*` 归一为 `default` 并写回，避免界面状态与实际图标不一致。
+   - `setActiveAppIcon` 删除 design1-11 的 switch 分支，仅保留 default 别名映射与 `custom` 早返回。
+5. `lib/ui/screens/more_settings_screen.dart`：
+   - `_getAppIconLabel` 删除 `design3`/`design7` 分支。
+   - `_showAppIconPickerDialog` 删除 design3/design7 预览卡（保留 `default` + 自定义卡片）。
+
+**校验**：`flutter analyze lib` 0 error（仅预存在的 info/warning 级 lint，与本改动无关）。
+
+**说明**：`build/` 下的 mapping/manifest 缓存是构建产物、每次构建重建且不进 APK，并非"残留缓存"；移除源资源后重新打出的 APK 不再含 design 图标。
+
+**验证**：本地 `assembleRelease` 重新打包，比对 APK 体积（预期 res/drawable 与 assets 减小约 5.5MB+）；并在一台**此前启用过备用图标**的设备上升级安装，确认桌面启动图标正常出现。
+
 ### [2026-08-02] TRAE - 修复 SMB 上传占用上行带宽+速率不达标，FTP 上传速率优化【待验证】
 
 **问题**：
@@ -40,7 +87,19 @@
 
 **注意**：FTP 上传时飞牛显示上行带宽可能部分来自 openlist 内部处理（临时文件写入/复制），此部分非客户端代码可控。
 
-### [2026-08-02] WorkBuddy - 修复 FTP 下载速率被限到 30-40MB/s（flush 间隔过小）【待验证】
+### [2026-08-04] WorkBuddy - 复核 SMB/FTP 上传带宽问题：确认 TRAE 结论 + 定位"上传期下行"真正来源【待验证】
+
+**与 TRAE 结论对齐**：TRAE 已发现同一 `writeAsync` 缓冲偏移越界 bug（L37）并决定 `uploadFile` 直接走同步 `uploadFileStreamed`、弃用 pipelined。WorkBuddy 此前实现的 pipelined 上传因该 bug 实际从未成功执行（首写越界→catch→回退 streamed），故当前行为本就是单飞同步写，与 TRAE 意图一致。WorkBuddy 已回退对 pipelined 的偏移修正，避免与 TRAE 决定冲突。
+
+**关于"上传期还有下行流量"的真正来源（关键）**：SMB 写是纯写，WRITE 响应极小，物理上不可能产生 ~50MB/s 下行。而用户当前构建用的是单飞同步写（纯写）却仍显示 50MB/s 下行 → **反证该下行不是传输层，而是应用层把刚上传的文件又读回**。证据链：`media_provider.dart:320` 的 `downloadRange(...,0,2MB)` 失败会回退**完整下载**（L323「downloadRange 失败，回退完整下载」）；`file_item`/`file_grid_item` 的 `_loadVideoThumb` 也会读回远程文件。目录轮询刷新在上传中途揭示文件 → UI 立即触发缩略图读回 → 与上传重叠，表现为上下行同时占用。TRAE 归因为"writeAsync 响应堆积"对该构建不成立（构建未用 pipelined）。
+
+**FTP 上传 ~1-2MB/s 下行 = 正常 TCP ACK 开销**：满速上传时服务端回送 ACK 约占 2-3% 带宽（≈1-2MB/s），不可避免，非 bug。SMB 的 50MB/s 远超 ACK 量级，故确认为上方"缩略图整文件读回"。
+
+**待办 / 与 TRAE 协调**：
+1. SMB 上传"速率不达标 + 双向占用"的真正修复点是**门控缩略图生成**：上传中或刚上传完成的文件暂不生成缩略图，待操作 settle 后再生成（消除读回与上传重叠，让上传独占带宽）。该改动涉及 media_provider/UI，属 TRAE 媒体域，建议先与 TRAE 沟通再动。
+2. 若门控后单飞同步写上探不到 100MB/s（受 maxWriteSize 限制），再评估是否启用「偏移已修正的 pipelined」——届时需重新验证 pipelined 是否真引入额外下行（与 TRAE 原假设复核）。
+
+### [2026-08-02] WorkBuddy - 修复 FTP 下载速率被限到 30-40MB/s（flush 间隔过小）【已解决】
 
 **问题**：飞牛 NAS 上 SMB 两端 + FTP 下载均只有 30-40MB/s，而 FTP 上传满速 ~100MB/s。
 - 排查：四协议上传代码均只写不读，无反向流量（前轮结论，已排除“读回校验”类假设）。
@@ -363,7 +422,7 @@ FTP 之前已修复（目标已存在时不主动 rename），SFTP 沿用了相�
 
 ---
 
-### [2026-08-01] TRAE - SMB 下载提速：移除双缓冲预取，改为单线程顺序读写【待验证】
+### [2026-08-01] TRAE - SMB 下载提速：移除双缓冲预取，改为单线程顺序读写【已解决】
 
 **问题**：SMB 下载速率只跑到带宽的 2/3，上传反而跑满带宽。
 
@@ -418,15 +477,3 @@ FTP 之前已修复（目标已存在时不主动 rename），SFTP 沿用了相�
   - 确认 `_buildTransferOverlay` 无取消按钮（进度条弹窗 `FileOperationProgressDialog` 已有取消按钮）
 - `lib/services/remote/lan_client.dart`
   - 修复重复的 `@override` 注解
-
----
-
-### [2026-08-01] TRAE - 面包屑地址栏新增跳转按钮【已解决】
-
-**问题**：长按面包屑弹窗不可靠，改为地址栏右侧新增跳转按钮。
-
-**改动文件**：
-- `lib/ui/widgets/zenfile_address_bar.dart`：移除长按弹窗，新增跳转按钮，点击后路径栏切换为输入框
-- `lib/l10n/app_en.arb` / `app_zh.arb` 等：新增 `breadcrumb_jump_to` 等翻译键
-
----

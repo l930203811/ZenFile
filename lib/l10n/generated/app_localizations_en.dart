@@ -4518,4 +4518,32 @@ class L10nEn extends L10n {
   @override
   String get changelog_v1125_known_1 =>
       'SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.';
+
+  @override
+  String get changelog_v1126_opt_1 =>
+      'SMB download acceleration: removed double-buffer prefetch and switched to single-threaded sequential read/write, greatly improving large-file transfer speed.';
+
+  @override
+  String get changelog_v1126_opt_2 =>
+      'Removed the backup icon set, significantly reducing the app (APK) install size.';
+
+  @override
+  String get changelog_v1126_opt_3 =>
+      'Polished details: the \'Network\' drawer list\'s three-dot button is now right-aligned, and quick-action page titles wrap automatically.';
+
+  @override
+  String get changelog_v1126_fix_1 =>
+      'Fixed FTP download speed being wrongly capped at 30-40 MB/s (caused by an overly small write-flush interval).';
+
+  @override
+  String get changelog_v1126_fix_2 =>
+      'Fixed three remote-client issues (SMB/FTP/SFTP): transfer cancellation, list stuttering, and page refresh.';
+
+  @override
+  String get changelog_v1126_fix_3 =>
+      'Fixed anomalies caused by leftover openlist references.';
+
+  @override
+  String get changelog_v1126_known_1 =>
+      'SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.';
 }

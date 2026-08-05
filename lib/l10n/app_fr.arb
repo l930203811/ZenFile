@@ -4427,5 +4427,33 @@
   "@changelog_v1125_known_1": {
     "description": "v1.1.25 changelog entry"
   },
-  "changelog_v1125_known_1": "La lecture vidéo distante SMB / FTP / SFTP peut encore saccader dans certains cas ; l'optimisation se poursuit."
+  "changelog_v1125_known_1": "La lecture vidéo distante SMB / FTP / SFTP peut encore saccader dans certains cas ; l'optimisation se poursuit.",
+  "@changelog_v1126_opt_1": {
+    "description": "v1.1.26 changelog entry"
+  },
+  "changelog_v1126_opt_1": "Accélération des téléchargements SMB : suppression de la prélecture à double tampon et passage à une lecture/écriture séquentielle monothread, améliorant nettement la vitesse de transfert des gros fichiers.",
+  "@changelog_v1126_opt_2": {
+    "description": "v1.1.26 changelog entry"
+  },
+  "changelog_v1126_opt_2": "Suppression du jeu d'icônes de secours, réduisant significativement la taille d'installation de l'application (APK).",
+  "@changelog_v1126_opt_3": {
+    "description": "v1.1.26 changelog entry"
+  },
+  "changelog_v1126_opt_3": "Détails polis : le bouton à trois points de la liste « Réseau » du tiroir est désormais aligné à droite, et les titres de la page d'actions rapides passent à la ligne automatiquement.",
+  "@changelog_v1126_fix_1": {
+    "description": "v1.1.26 changelog entry"
+  },
+  "changelog_v1126_fix_1": "Correction de la vitesse de téléchargement FTP erroneusement plafonnée à 30-40 Mo/s (causée par un intervalle de flush d'écriture trop court).",
+  "@changelog_v1126_fix_2": {
+    "description": "v1.1.26 changelog entry"
+  },
+  "changelog_v1126_fix_2": "Correction de trois problèmes des clients distants (SMB/FTP/SFTP) : annulation de transfert, saccades de la liste et rafraîchissement de page.",
+  "@changelog_v1126_fix_3": {
+    "description": "v1.1.26 changelog entry"
+  },
+  "changelog_v1126_fix_3": "Correction des anomalies provoquées par des références openlist résiduelles.",
+  "@changelog_v1126_known_1": {
+    "description": "v1.1.26 changelog entry"
+  },
+  "changelog_v1126_known_1": "La lecture vidéo distante SMB / FTP / SFTP peut encore saccader dans certains cas ; l'optimisation se poursuit."
 }

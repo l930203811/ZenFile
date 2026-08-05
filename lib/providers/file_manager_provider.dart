@@ -151,6 +151,12 @@ class FileManagerProvider extends ChangeNotifier {
     _showActionMenuButtons = PreferencesService.getShowActionMenuButtons();
     _actionMenuDisplayMode = PreferencesService.getActionMenuDisplayMode();
     _activeAppIcon = PreferencesService.getActiveAppIcon();
+    // 旧版本可选用 design_* 备用图标；本版本已移除这些别名与对应资源，
+    // 若仍持久化 design 值则回退为 default，避免界面状态与实际启动图标不一致。
+    if (_activeAppIcon.startsWith('design')) {
+      _activeAppIcon = 'default';
+      PreferencesService.saveActiveAppIcon('default');
+    }
     _hideActionText = PreferencesService.getHideActionText();
     _disableLeftBackGesture = PreferencesService.getDisableLeftBackGesture();
     _rememberLastFolder = PreferencesService.getRememberLastFolder();
@@ -311,33 +317,9 @@ class FileManagerProvider extends ChangeNotifier {
       return;
     }
 
-    String alias = 'com.sequl.zenfile.MainActivityDefault';
-    switch (val) {
-      case 'design1':
-        alias = 'com.sequl.zenfile.MainActivityDesign1';
-      case 'design2':
-        alias = 'com.sequl.zenfile.MainActivityDesign2';
-      case 'design3':
-        alias = 'com.sequl.zenfile.MainActivityDesign3';
-      case 'design4':
-        alias = 'com.sequl.zenfile.MainActivityDesign4';
-      case 'design5':
-        alias = 'com.sequl.zenfile.MainActivityDesign5';
-      case 'design6':
-        alias = 'com.sequl.zenfile.MainActivityDesign6';
-      case 'design7':
-        alias = 'com.sequl.zenfile.MainActivityDesign7';
-      case 'design8':
-        alias = 'com.sequl.zenfile.MainActivityDesign8';
-      case 'design9':
-        alias = 'com.sequl.zenfile.MainActivityDesign9';
-      case 'design10':
-        alias = 'com.sequl.zenfile.MainActivityDesign10';
-      case 'design11':
-        alias = 'com.sequl.zenfile.MainActivityDesign11';
-    }
-
-    await AppManagerService.changeAppIcon(alias);
+    // 仅保留默认启动图标别名。旧版本 bundled 的 design_* 备用图标已移除以缩减 APK；
+    // 启动时 MainActivity.onCreate 已强制启用 MainActivityDefault。
+    await AppManagerService.changeAppIcon('com.sequl.zenfile.MainActivityDefault');
     notifyListeners();
   }
 

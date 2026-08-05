@@ -4588,4 +4588,32 @@ class L10nFr extends L10n {
   @override
   String get changelog_v1125_known_1 =>
       'La lecture vidéo distante SMB / FTP / SFTP peut encore saccader dans certains cas ; l\'optimisation se poursuit.';
+
+  @override
+  String get changelog_v1126_opt_1 =>
+      'Accélération des téléchargements SMB : suppression de la prélecture à double tampon et passage à une lecture/écriture séquentielle monothread, améliorant nettement la vitesse de transfert des gros fichiers.';
+
+  @override
+  String get changelog_v1126_opt_2 =>
+      'Suppression du jeu d\'icônes de secours, réduisant significativement la taille d\'installation de l\'application (APK).';
+
+  @override
+  String get changelog_v1126_opt_3 =>
+      'Détails polis : le bouton à trois points de la liste « Réseau » du tiroir est désormais aligné à droite, et les titres de la page d\'actions rapides passent à la ligne automatiquement.';
+
+  @override
+  String get changelog_v1126_fix_1 =>
+      'Correction de la vitesse de téléchargement FTP erroneusement plafonnée à 30-40 Mo/s (causée par un intervalle de flush d\'écriture trop court).';
+
+  @override
+  String get changelog_v1126_fix_2 =>
+      'Correction de trois problèmes des clients distants (SMB/FTP/SFTP) : annulation de transfert, saccades de la liste et rafraîchissement de page.';
+
+  @override
+  String get changelog_v1126_fix_3 =>
+      'Correction des anomalies provoquées par des références openlist résiduelles.';
+
+  @override
+  String get changelog_v1126_known_1 =>
+      'La lecture vidéo distante SMB / FTP / SFTP peut encore saccader dans certains cas ; l\'optimisation se poursuit.';
 }

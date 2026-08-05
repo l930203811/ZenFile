@@ -4387,4 +4387,30 @@ class L10nKo extends L10n {
   @override
   String get changelog_v1125_known_1 =>
       'SMB / FTP / SFTP 원격 동영상 재생이 일부 상황에서 여전히 끊길 수 있으며, 지속적으로 최적화 중입니다.';
+
+  @override
+  String get changelog_v1126_opt_1 =>
+      'SMB 다운로드 속도 향상: 더블 버퍼 프리페치를 제거하고 단일 스레드 순차 읽기/쓰기로 변경하여 대용량 파일 전송 속도를 크게 개선했습니다.';
+
+  @override
+  String get changelog_v1126_opt_2 => '백업 아이콘 세트를 제거하여 앱(APK) 설치 크기를 크게 줄였습니다.';
+
+  @override
+  String get changelog_v1126_opt_3 =>
+      '세부 개선: 드로어의 \'네트워크\' 목록의 점 세 개 버튼을 오른쪽 정렬로 변경하고 빠른 작업 페이지 제목이 자동으로 줄 바꿈되도록 했습니다.';
+
+  @override
+  String get changelog_v1126_fix_1 =>
+      'FTP 다운로드 속도가 잘못하여 30~40MB/s로 제한되던 문제를 수정했습니다(쓰기 플러시 간격이 너무 짧았기 때문).';
+
+  @override
+  String get changelog_v1126_fix_2 =>
+      '원격 클라이언트(SMB/FTP/SFTP)의 세 가지 문제 수정: 전송 취소, 목록 지연, 페이지 새로고침.';
+
+  @override
+  String get changelog_v1126_fix_3 => 'openlist 잔여로 인한 이상 현상을 수정했습니다.';
+
+  @override
+  String get changelog_v1126_known_1 =>
+      'SMB / FTP / SFTP 원격 동영상 재생은 일부 상황에서 여전히 버벅일 수 있으며 지속적으로 최적화 중입니다.';
 }

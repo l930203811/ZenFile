@@ -2126,8 +2126,6 @@ String _getMenuIconStyleLabel(BuildContext context, String option) {
 
 String _getAppIconLabel(BuildContext context, String option) {
   switch (option) {
-    case 'design3': return L10n.of(context).d;
-    case 'design7': return L10n.of(context).msgdesign7;
     case 'custom': return L10n.of(context).msg7372dc9f;
     case 'default':
     default:
@@ -2821,22 +2819,6 @@ void _showAppIconPickerDialog(BuildContext context, FileManagerProvider fileMana
                                 id: 'default',
                                 title: L10n.of(context).msg64a6476a,
                                 imagePath: 'assets/logo/zf_Classic1.png',
-                              ),
-                              _buildIconOptionCard(
-                                context,
-                                fileManager,
-                                theme,
-                                id: 'design3',
-                                title: L10n.of(context).d,
-                                imagePath: 'assets/logo/zf_m3_expressive_3.png',
-                              ),
-                              _buildIconOptionCard(
-                                context,
-                                fileManager,
-                                theme,
-                                id: 'design7',
-                                title: L10n.of(context).msgdesign7,
-                                imagePath: 'assets/logo/zf_neumorphism.png',
                               ),
                               _buildCustomIconOptionCard(
                                 context,

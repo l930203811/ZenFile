@@ -4349,6 +4349,29 @@ class L10nZh extends L10n {
   @override
   String get changelog_v1125_known_1 =>
       'SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。';
+
+  @override
+  String get changelog_v1126_opt_1 => 'SMB 下载提速：移除双缓冲预取，改为单线程顺序读写，大幅提升大文件传输速度。';
+
+  @override
+  String get changelog_v1126_opt_2 => '移除备用图标集，显著减小安装包（APK）体积。';
+
+  @override
+  String get changelog_v1126_opt_3 => '细节优化：抽屉「网络」列表三点按钮改为右对齐，快捷操作页标题支持自动换行。';
+
+  @override
+  String get changelog_v1126_fix_1 =>
+      '修复 FTP 下载速度被错误限制在 30-40MB/s 的问题（写入刷新间隔过小导致）。';
+
+  @override
+  String get changelog_v1126_fix_2 => '修复远程客户端（SMB/FTP/SFTP）取消传输、列表卡顿与刷新三类问题。';
+
+  @override
+  String get changelog_v1126_fix_3 => '修复 openlist 残留导致的相关异常。';
+
+  @override
+  String get changelog_v1126_known_1 =>
+      'SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -8649,4 +8672,29 @@ class L10nZhTw extends L10nZh {
   @override
   String get changelog_v1125_known_1 =>
       'SMB / FTP / SFTP 遠端影片播放在部分場景下仍可能出現卡頓，正在持續最佳化中。';
+
+  @override
+  String get changelog_v1126_opt_1 =>
+      'SMB 下載提速：移除雙緩衝預取，改為單執行緒順序讀寫，大幅提升大檔案傳輸速度。';
+
+  @override
+  String get changelog_v1126_opt_2 => '移除備用圖示集，顯著減小安裝套件（APK）體積。';
+
+  @override
+  String get changelog_v1126_opt_3 => '細節優化：側選單「網路」清單的三點按鈕改為右對齊，快速操作頁標題支援自動換行。';
+
+  @override
+  String get changelog_v1126_fix_1 =>
+      '修復 FTP 下載速度被錯誤限制在 30-40MB/s 的問題（寫入刷新間隔過小導致）。';
+
+  @override
+  String get changelog_v1126_fix_2 =>
+      '修復遠端用戶端（SMB/FTP/SFTP）取消傳輸、清單卡頓與重新整理三類問題。';
+
+  @override
+  String get changelog_v1126_fix_3 => '修復 openlist 殘留導致的相關異常。';
+
+  @override
+  String get changelog_v1126_known_1 =>
+      'SMB / FTP / SFTP 遠端影片播放於部分場景下仍可能出現卡頓，持續最佳化中。';
 }
