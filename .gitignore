@@ -25,3 +25,6 @@ android/app/src/main/jniLibs/x86_64/
 android/app/src/main/jniLibs/armeabi-v7a/
 android/libs/
 test_*.lrc
+
+# 本地协作记录（TRAE + WorkBuddy 共用），仅保留在本地，不进远程仓库
+WORKLOG.md
