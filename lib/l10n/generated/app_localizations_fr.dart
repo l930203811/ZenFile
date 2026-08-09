@@ -4506,6 +4506,30 @@ class L10nFr extends L10n {
   String get changelog_section_known_issues => '⚠️ Known Issues';
 
   @override
+  String get changelog_v1127_new_1 =>
+      'Favoris : ajout d\'un bouton \'+\' pour ajouter manuellement des chemins/noms personnalisés en favoris, regroupés par catégorie.';
+
+  @override
+  String get changelog_v1127_new_2 =>
+      'Favoris : les éléments favoris peuvent désormais être modifiés (nom/chemin/groupe) ; les groupes prennent en charge le repli/dépli avec persistance.';
+
+  @override
+  String get changelog_v1127_new_3 =>
+      'Favoris : tous les points d\'entrée d\'ajout (menu à trois points / appui long / bouton \'+\' en haut) peuvent désormais choisir un groupe ; appui long sur un groupe pour renommer/supprimer, appui long sur un élément pour modifier/supprimer.';
+
+  @override
+  String get changelog_v1127_opt_1 =>
+      'Correction systématique des saccades de l\'UI sur Android 15/16 (éviction du repli Impeller au niveau rendu + couche E/S + couche de décodage, optimisation tridimensionnelle).';
+
+  @override
+  String get changelog_v1127_fix_1 =>
+      'Corrigé : en mode sélection, l\'action \'Favori\' n\'affichait pas le sélecteur de groupe.';
+
+  @override
+  String get changelog_v1127_known_1 =>
+      'La lecture vidéo distante SMB / FTP / SFTP peut encore saccader dans certains cas ; l\'optimisation se poursuit.';
+
+  @override
   String get batch_rename_title => 'Batch Rename';
 
   @override

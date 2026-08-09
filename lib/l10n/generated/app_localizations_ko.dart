@@ -4307,6 +4307,30 @@ class L10nKo extends L10n {
   String get changelog_section_known_issues => '⚠️ Known Issues';
 
   @override
+  String get changelog_v1127_new_1 =>
+      '즐겨찾기: 사용자 지정 경로/이름을 수동으로 즐겨찾기에 추가할 수 있는 \'+\' 버튼을 추가했으며, 카테고리별로 그룹화하여 표시됩니다.';
+
+  @override
+  String get changelog_v1127_new_2 =>
+      '즐겨찾기: 즐겨찾기 항목을 편집(이름/경로/그룹)할 수 있게 되었으며, 그룹의 접기/펴기와 영속화를 지원합니다.';
+
+  @override
+  String get changelog_v1127_new_3 =>
+      '즐겨찾기: 모든 즐겨찾기 추가 진입점(三点 메뉴/길게 누르기/상단 \'+\' 버튼)에서 그룹 선택이 가능해졌으며, 그룹을 길게 누르면 이름 변경/삭제, 항목을 길게 누르면 편집/삭제할 수 있습니다.';
+
+  @override
+  String get changelog_v1127_opt_1 =>
+      'Android 15/16의 UI 지연을 체계적으로 수정(렌더링 레이어의 Impeller 폴백 회피 + IO 레이어 + 디코딩 레이어의 3차원 최적화).';
+
+  @override
+  String get changelog_v1127_fix_1 =>
+      '선택 모드의 \'즐겨찾기\' 동작에서 그룹 선택기가 표시되지 않던 문제를 수정.';
+
+  @override
+  String get changelog_v1127_known_1 =>
+      'SMB / FTP / SFTP 원격 동영상 재생은 일부 상황에서 여전히 버벅일 수 있으며 지속적으로 최적화 중입니다.';
+
+  @override
   String get batch_rename_title => 'Batch Rename';
 
   @override

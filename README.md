@@ -7,6 +7,28 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 ---
 
+## 🚀 What's New in v1.1.27
+
+### ✨ New Features
+
+- Favorites: added a '+' button to manually add custom paths/names as favorites, grouped by category.
+- Favorites: favorites items can now be edited (name/path/group); groups support collapse/expand with persistence.
+- Favorites: all add-to-favorites entry points (three-dot menu / long-press / top '+' button) can now choose a group; long-press a group to rename/delete, long-press an item to edit/delete.
+
+### 🔧 Optimizations
+
+- Systematically fixed UI lag on Android 15/16 (rendering-layer Impeller fallback avoidance + IO layer + decode-layer, three-dimensional optimization).
+
+### 🐛 Bug Fixes
+
+- Fixed the selection mode 'Favorite' action not showing the group picker.
+
+### ⚠️ Known Issues
+
+- SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.
+
+---
+
 ## 🚀 What's New in v1.1.26
 
 ### 🔧 Optimizations

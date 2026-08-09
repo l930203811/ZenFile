@@ -4479,6 +4479,30 @@ class L10nDe extends L10n {
   String get changelog_section_known_issues => '⚠️ Known Issues';
 
   @override
+  String get changelog_v1127_new_1 =>
+      'Favoriten: \'+\'‑Button hinzugefügt, um benutzerdefinierte Pfade/Namen manuell als Favoriten hinzuzufügen, gruppiert nach Kategorie.';
+
+  @override
+  String get changelog_v1127_new_2 =>
+      'Favoriten: Favoriteneinträge können nun bearbeitet werden (Name/Pfad/Gruppe); Gruppen unterstützen Einklappen/Ausklappen mit Persistenz.';
+
+  @override
+  String get changelog_v1127_new_3 =>
+      'Favoriten: Alle Hinzufügen‑Einstiegspunkte (Drei‑Punkte‑Menü / Langdrücken / oberer \'+\'‑Button) können nun eine Gruppe wählen; Gruppe langdrücken zum Umbenennen/Löschen, Eintrag langdrücken zum Bearbeiten/Löschen.';
+
+  @override
+  String get changelog_v1127_opt_1 =>
+      'UI‑Ruckeln unter Android 15/16 systematisch behoben (Renderebene: Vermeidung des Impeller‑Fallbacks + IO‑Ebene + Dekodierungsebene, dreidimensionale Optimierung).';
+
+  @override
+  String get changelog_v1127_fix_1 =>
+      'Behoben, dass im Auswahlmodus die \'Favorisieren\'‑Aktion den Gruppenauswahldialog nicht anzeigte.';
+
+  @override
+  String get changelog_v1127_known_1 =>
+      'Die Wiedergabe von Remote‑Video über SMB / FTP / SFTP kann in einigen Fällen noch ruckeln; die Optimierung läuft weiter.';
+
+  @override
   String get batch_rename_title => 'Batch Rename';
 
   @override

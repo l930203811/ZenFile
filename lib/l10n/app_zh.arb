@@ -4613,6 +4613,54 @@
     "description": "ui\\screens\u0007bout_screen.dart"
   },
   "changelog_section_known_issues": "⚠️ 已知问题",
+  "@changelog_v1127_new_1": {
+
+    "description": "Changelog entry for v1.1.27"
+
+  },
+
+  "changelog_v1127_new_1": "收藏夹：新增「+」按钮，可手动添加自定义路径/名称的收藏项，并按分组聚合显示。",
+
+  "@changelog_v1127_new_2": {
+
+    "description": "Changelog entry for v1.1.27"
+
+  },
+
+  "changelog_v1127_new_2": "收藏夹：收藏项现支持编辑（名称/路径/分组）；分组支持折叠/展开并持久化保存。",
+
+  "@changelog_v1127_new_3": {
+
+    "description": "Changelog entry for v1.1.27"
+
+  },
+
+  "changelog_v1127_new_3": "收藏夹：所有收藏入口（三点菜单/长按弹窗/顶部「+」按钮）均可选择分组；长按分组可重命名/删除，长按收藏项可编辑/删除。",
+
+  "@changelog_v1127_opt_1": {
+
+    "description": "Changelog entry for v1.1.27"
+
+  },
+
+  "changelog_v1127_opt_1": "系统性修复安卓 15/16 UI 卡顿（渲染层规避 Impeller 回退 + IO 层 + 解码层三维优化）。",
+
+  "@changelog_v1127_fix_1": {
+
+    "description": "Changelog entry for v1.1.27"
+
+  },
+
+  "changelog_v1127_fix_1": "修复选择模式下「收藏」未弹出分组选择的问题。",
+
+  "@changelog_v1127_known_1": {
+
+    "description": "Changelog entry for v1.1.27"
+
+  },
+
+  "changelog_v1127_known_1": "SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。",
+
   "@batch_rename_title": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },

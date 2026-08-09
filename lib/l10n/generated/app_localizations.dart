@@ -8044,6 +8044,42 @@ abstract class L10n {
   /// **'⚠️ 已知问题'**
   String get changelog_section_known_issues;
 
+  /// Changelog entry for v1.1.27
+  ///
+  /// In zh, this message translates to:
+  /// **'收藏夹：新增「+」按钮，可手动添加自定义路径/名称的收藏项，并按分组聚合显示。'**
+  String get changelog_v1127_new_1;
+
+  /// Changelog entry for v1.1.27
+  ///
+  /// In zh, this message translates to:
+  /// **'收藏夹：收藏项现支持编辑（名称/路径/分组）；分组支持折叠/展开并持久化保存。'**
+  String get changelog_v1127_new_2;
+
+  /// Changelog entry for v1.1.27
+  ///
+  /// In zh, this message translates to:
+  /// **'收藏夹：所有收藏入口（三点菜单/长按弹窗/顶部「+」按钮）均可选择分组；长按分组可重命名/删除，长按收藏项可编辑/删除。'**
+  String get changelog_v1127_new_3;
+
+  /// Changelog entry for v1.1.27
+  ///
+  /// In zh, this message translates to:
+  /// **'系统性修复安卓 15/16 UI 卡顿（渲染层规避 Impeller 回退 + IO 层 + 解码层三维优化）。'**
+  String get changelog_v1127_opt_1;
+
+  /// Changelog entry for v1.1.27
+  ///
+  /// In zh, this message translates to:
+  /// **'修复选择模式下「收藏」未弹出分组选择的问题。'**
+  String get changelog_v1127_fix_1;
+
+  /// Changelog entry for v1.1.27
+  ///
+  /// In zh, this message translates to:
+  /// **'SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。'**
+  String get changelog_v1127_known_1;
+
   /// ui\widgets\batch_rename_dialog.dart
   ///
   /// In zh, this message translates to:

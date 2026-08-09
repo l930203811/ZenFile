@@ -4422,6 +4422,30 @@ class L10nAr extends L10n {
   String get changelog_section_known_issues => '⚠️ Known Issues';
 
   @override
+  String get changelog_v1127_new_1 =>
+      'المفضلة: إضافة زر \'+\' لإضافة مسارات/أسماء مخصصة يدويًا إلى المفضلة، مجمعة حسب الفئة.';
+
+  @override
+  String get changelog_v1127_new_2 =>
+      'المفضلة: أصبح يمكن الآن تحرير عناصر المفضلة (الاسم/المسار/المجموعة)؛ وتدعم المجموعات الطي/التوسيع مع الحفظ.';
+
+  @override
+  String get changelog_v1127_new_3 =>
+      'المفضلة: أصبح بإمكان جميع نقاط الإضافة (قائمة النقاط الثلاث / الضغط المطول / زر \'+\' العلوي) اختيار مجموعة؛ اضغط مطولاً على مجموعة لإعادة تسميتها/حذفها، واضغط مطولاً على عنصر لتحريره/حذفه.';
+
+  @override
+  String get changelog_v1127_opt_1 =>
+      'إصلاح منهجي لبطء الواجهة على Android 15/16 (تجنب الرجوع إلى Impeller في طبقة العرض + طبقة الإدخال/الإخراج + طبقة فك التشفير، تحسين ثلاثي الأبعاد).';
+
+  @override
+  String get changelog_v1127_fix_1 =>
+      'إصلاح عدم ظهور منتقي المجموعة عند إجراء \'إضافة إلى المفضلة\' في وضع التحديد.';
+
+  @override
+  String get changelog_v1127_known_1 =>
+      'قد لا يزال تشغيل الفيديو عن بُعد عبر SMB / FTP / SFTP متقطعاً في بعض الحالات؛ التحسين مستمر.';
+
+  @override
   String get batch_rename_title => 'Batch Rename';
 
   @override

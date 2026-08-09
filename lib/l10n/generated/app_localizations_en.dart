@@ -4438,6 +4438,30 @@ class L10nEn extends L10n {
   String get changelog_section_known_issues => '⚠️ Known Issues';
 
   @override
+  String get changelog_v1127_new_1 =>
+      'Favorites: added a \'+\' button to manually add custom paths/names as favorites, grouped by category.';
+
+  @override
+  String get changelog_v1127_new_2 =>
+      'Favorites: favorites items can now be edited (name/path/group); groups support collapse/expand with persistence.';
+
+  @override
+  String get changelog_v1127_new_3 =>
+      'Favorites: all add-to-favorites entry points (three-dot menu / long-press / top \'+\' button) can now choose a group; long-press a group to rename/delete, long-press an item to edit/delete.';
+
+  @override
+  String get changelog_v1127_opt_1 =>
+      'Systematically fixed UI lag on Android 15/16 (rendering-layer Impeller fallback avoidance + IO layer + decode-layer, three-dimensional optimization).';
+
+  @override
+  String get changelog_v1127_fix_1 =>
+      'Fixed the selection mode \'Favorite\' action not showing the group picker.';
+
+  @override
+  String get changelog_v1127_known_1 =>
+      'SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.';
+
+  @override
   String get batch_rename_title => 'Batch Rename';
 
   @override

@@ -4347,6 +4347,54 @@
     "description": "ui\\screens\u0007bout_screen.dart"
   },
   "changelog_section_known_issues": "⚠️ Known Issues",
+  "@changelog_v1127_new_1": {
+
+    "description": "Changelog entry for v1.1.27"
+
+  },
+
+  "changelog_v1127_new_1": "Favoritos: añadido un botón '+' para agregar manualmente rutas/nombres personalizados como favoritos, agrupados por categoría.",
+
+  "@changelog_v1127_new_2": {
+
+    "description": "Changelog entry for v1.1.27"
+
+  },
+
+  "changelog_v1127_new_2": "Favoritos: los elementos favoritos ahora se pueden editar (nombre/ruta/grupo); los grupos admiten contraer/expandir con persistencia.",
+
+  "@changelog_v1127_new_3": {
+
+    "description": "Changelog entry for v1.1.27"
+
+  },
+
+  "changelog_v1127_new_3": "Favoritos: todos los puntos de entrada para agregar (menú de tres puntos / pulsación larga / botón '+' superior) ahora pueden elegir un grupo; pulsación larga en un grupo para renombrar/eliminar, pulsación larga en un elemento para editar/eliminar.",
+
+  "@changelog_v1127_opt_1": {
+
+    "description": "Changelog entry for v1.1.27"
+
+  },
+
+  "changelog_v1127_opt_1": "Corregido sistemáticamente el lag de la UI en Android 15/16 (evitar la reserva de Impeller en la capa de renderizado + capa de E/S + capa de decodificación, optimización tridimensional).",
+
+  "@changelog_v1127_fix_1": {
+
+    "description": "Changelog entry for v1.1.27"
+
+  },
+
+  "changelog_v1127_fix_1": "Corregido que en modo selección la acción 'Favorito' no mostraba el selector de grupo.",
+
+  "@changelog_v1127_known_1": {
+
+    "description": "Changelog entry for v1.1.27"
+
+  },
+
+  "changelog_v1127_known_1": "La reproducción de vídeo remoto SMB / FTP / SFTP aún puede titubear en algunos escenarios; la optimización continúa.",
+
   "@batch_rename_title": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },

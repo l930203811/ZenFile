@@ -4273,6 +4273,27 @@ class L10nZh extends L10n {
   String get changelog_section_known_issues => '⚠️ 已知问题';
 
   @override
+  String get changelog_v1127_new_1 => '收藏夹：新增「+」按钮，可手动添加自定义路径/名称的收藏项，并按分组聚合显示。';
+
+  @override
+  String get changelog_v1127_new_2 => '收藏夹：收藏项现支持编辑（名称/路径/分组）；分组支持折叠/展开并持久化保存。';
+
+  @override
+  String get changelog_v1127_new_3 =>
+      '收藏夹：所有收藏入口（三点菜单/长按弹窗/顶部「+」按钮）均可选择分组；长按分组可重命名/删除，长按收藏项可编辑/删除。';
+
+  @override
+  String get changelog_v1127_opt_1 =>
+      '系统性修复安卓 15/16 UI 卡顿（渲染层规避 Impeller 回退 + IO 层 + 解码层三维优化）。';
+
+  @override
+  String get changelog_v1127_fix_1 => '修复选择模式下「收藏」未弹出分组选择的问题。';
+
+  @override
+  String get changelog_v1127_known_1 =>
+      'SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。';
+
+  @override
   String get batch_rename_title => '批量重命名';
 
   @override
@@ -8644,6 +8665,27 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get changelog_section_known_issues => '⚠️ 已知問題';
+
+  @override
+  String get changelog_v1127_new_1 => '收藏夾：新增「+」按鈕，可手動新增自訂路徑/名稱的收藏項，並依分組聚合顯示。';
+
+  @override
+  String get changelog_v1127_new_2 => '收藏夾：收藏項現可編輯（名稱/路徑/分組）；分組支援摺疊/展開並持久化儲存。';
+
+  @override
+  String get changelog_v1127_new_3 =>
+      '收藏夾：所有收藏入口（三點選單/長按彈窗/頂部「+」按鈕）均可選擇分組；長按分組可重新命名/刪除，長按收藏項可編輯/刪除。';
+
+  @override
+  String get changelog_v1127_opt_1 =>
+      '系統性修復 Android 15/16 UI 卡頓（渲染層規避 Impeller 回退 + IO 層 + 解碼層三維最佳化）。';
+
+  @override
+  String get changelog_v1127_fix_1 => '修復選擇模式下「收藏」未彈出分組選擇的問題。';
+
+  @override
+  String get changelog_v1127_known_1 =>
+      'SMB / FTP / SFTP 遠端影片播放於部分場景下仍可能出現卡頓，持續最佳化中。';
 
   @override
   String get batch_rename_title => '批次重新命名';

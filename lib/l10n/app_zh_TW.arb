@@ -4492,6 +4492,54 @@
     "description": "ui\\screens\u0007bout_screen.dart"
   },
   "changelog_section_known_issues": "⚠️ 已知問題",
+  "@changelog_v1127_new_1": {
+
+    "description": "Changelog entry for v1.1.27"
+
+  },
+
+  "changelog_v1127_new_1": "收藏夾：新增「+」按鈕，可手動新增自訂路徑/名稱的收藏項，並依分組聚合顯示。",
+
+  "@changelog_v1127_new_2": {
+
+    "description": "Changelog entry for v1.1.27"
+
+  },
+
+  "changelog_v1127_new_2": "收藏夾：收藏項現可編輯（名稱/路徑/分組）；分組支援摺疊/展開並持久化儲存。",
+
+  "@changelog_v1127_new_3": {
+
+    "description": "Changelog entry for v1.1.27"
+
+  },
+
+  "changelog_v1127_new_3": "收藏夾：所有收藏入口（三點選單/長按彈窗/頂部「+」按鈕）均可選擇分組；長按分組可重新命名/刪除，長按收藏項可編輯/刪除。",
+
+  "@changelog_v1127_opt_1": {
+
+    "description": "Changelog entry for v1.1.27"
+
+  },
+
+  "changelog_v1127_opt_1": "系統性修復 Android 15/16 UI 卡頓（渲染層規避 Impeller 回退 + IO 層 + 解碼層三維最佳化）。",
+
+  "@changelog_v1127_fix_1": {
+
+    "description": "Changelog entry for v1.1.27"
+
+  },
+
+  "changelog_v1127_fix_1": "修復選擇模式下「收藏」未彈出分組選擇的問題。",
+
+  "@changelog_v1127_known_1": {
+
+    "description": "Changelog entry for v1.1.27"
+
+  },
+
+  "changelog_v1127_known_1": "SMB / FTP / SFTP 遠端影片播放於部分場景下仍可能出現卡頓，持續最佳化中。",
+
   "@batch_rename_title": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },

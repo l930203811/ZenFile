@@ -4309,6 +4309,29 @@ class L10nJa extends L10n {
   String get changelog_section_known_issues => '⚠️ Known Issues';
 
   @override
+  String get changelog_v1127_new_1 =>
+      'お気に入り：「+」ボタンを追加し、カスタムパス/名前を手動でお気に入りに追加できるようになり、カテゴリ別にグループ化して表示されます。';
+
+  @override
+  String get changelog_v1127_new_2 =>
+      'お気に入り：お気に入り項目の編集（名前/パス/グループ）が可能に；グループの折りたたみ/展開と永続化に対応。';
+
+  @override
+  String get changelog_v1127_new_3 =>
+      'お気に入り：すべてのお気に入り追加エントリ（三点メニュー/長押し/上部「+」ボタン）でグループを選択可能に；グループを長押しで名前変更/削除、項目を長押しで編集/削除。';
+
+  @override
+  String get changelog_v1127_opt_1 =>
+      'Android 15/16 の UI 遅延を体系的に修正（描画層の Impeller フォールバック回避 + IO 層 + デコード層の三次元最適化）。';
+
+  @override
+  String get changelog_v1127_fix_1 => '選択モードの「お気に入り」でグループ選択が表示されない問題を修正。';
+
+  @override
+  String get changelog_v1127_known_1 =>
+      'SMB / FTP / SFTP のリモート動画再生は、一部の場面でまだカクつくことがあります。継続的に最適化中です。';
+
+  @override
   String get batch_rename_title => 'Batch Rename';
 
   @override

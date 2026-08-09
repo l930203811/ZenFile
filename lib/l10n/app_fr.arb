@@ -4347,6 +4347,54 @@
     "description": "ui\\screens\u0007bout_screen.dart"
   },
   "changelog_section_known_issues": "⚠️ Known Issues",
+  "@changelog_v1127_new_1": {
+
+    "description": "Changelog entry for v1.1.27"
+
+  },
+
+  "changelog_v1127_new_1": "Favoris : ajout d'un bouton '+' pour ajouter manuellement des chemins/noms personnalisés en favoris, regroupés par catégorie.",
+
+  "@changelog_v1127_new_2": {
+
+    "description": "Changelog entry for v1.1.27"
+
+  },
+
+  "changelog_v1127_new_2": "Favoris : les éléments favoris peuvent désormais être modifiés (nom/chemin/groupe) ; les groupes prennent en charge le repli/dépli avec persistance.",
+
+  "@changelog_v1127_new_3": {
+
+    "description": "Changelog entry for v1.1.27"
+
+  },
+
+  "changelog_v1127_new_3": "Favoris : tous les points d'entrée d'ajout (menu à trois points / appui long / bouton '+' en haut) peuvent désormais choisir un groupe ; appui long sur un groupe pour renommer/supprimer, appui long sur un élément pour modifier/supprimer.",
+
+  "@changelog_v1127_opt_1": {
+
+    "description": "Changelog entry for v1.1.27"
+
+  },
+
+  "changelog_v1127_opt_1": "Correction systématique des saccades de l'UI sur Android 15/16 (éviction du repli Impeller au niveau rendu + couche E/S + couche de décodage, optimisation tridimensionnelle).",
+
+  "@changelog_v1127_fix_1": {
+
+    "description": "Changelog entry for v1.1.27"
+
+  },
+
+  "changelog_v1127_fix_1": "Corrigé : en mode sélection, l'action 'Favori' n'affichait pas le sélecteur de groupe.",
+
+  "@changelog_v1127_known_1": {
+
+    "description": "Changelog entry for v1.1.27"
+
+  },
+
+  "changelog_v1127_known_1": "La lecture vidéo distante SMB / FTP / SFTP peut encore saccader dans certains cas ; l'optimisation se poursuit.",
+
   "@batch_rename_title": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
