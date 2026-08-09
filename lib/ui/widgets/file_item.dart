@@ -574,6 +574,8 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
+        cacheWidth: 160,
+        cacheHeight: 160,
         errorBuilder: (context, error, stackTrace) => Icon(Broken.mobile, color: widget.iconColor, size: 28 * widget.iconScale),
       );
     }
@@ -611,6 +613,8 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
           fit: BoxFit.cover,
           width: double.infinity,
           height: double.infinity,
+          cacheWidth: 160,
+          cacheHeight: 160,
           errorBuilder: (context, error, stackTrace) => FileTypeIcon(icon: Broken.image, label: FileUtils.getImageTypeLabel(widget.file.path), color: widget.iconColor, iconScale: widget.iconScale),
         );
       }
@@ -649,6 +653,8 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
             fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,
+            cacheWidth: 160,
+            cacheHeight: 160,
             errorBuilder: (context, error, stackTrace) => Icon(Broken.video, color: widget.iconColor, size: 28 * widget.iconScale),
           ),
           Center(
@@ -671,6 +677,8 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
             fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,
+            cacheWidth: 160,
+            cacheHeight: 160,
             errorBuilder: (context, error, stackTrace) => Icon(Broken.music, color: widget.iconColor, size: 28 * widget.iconScale),
           ),
           Center(
@@ -691,6 +699,8 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
+        cacheWidth: 160,
+        cacheHeight: 160,
         errorBuilder: (context, error, stackTrace) => Icon(
           FileUtils.isVideo(widget.file.path) ? Broken.video : Broken.image,
           color: widget.iconColor,

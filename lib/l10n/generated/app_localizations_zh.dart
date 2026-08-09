@@ -647,6 +647,56 @@ class L10nZh extends L10n {
   }
 
   @override
+  String get ui_add_to_favorites => '添加为收藏';
+
+  @override
+  String get ui_group => '分组';
+
+  @override
+  String get ui_new_group => '新建分组';
+
+  @override
+  String get ui_group_name => '分组名称';
+
+  @override
+  String get ui_default_group => '默认分组';
+
+  @override
+  String get ui_add => '添加';
+
+  @override
+  String get ui_edit_favorite => '编辑收藏';
+
+  @override
+  String get ui_select_group => '选择分组';
+
+  @override
+  String get ui_save => '保存';
+
+  @override
+  String get ui_rename_group => '重命名分组';
+
+  @override
+  String get ui_delete_group => '删除分组';
+
+  @override
+  String msg_delete_group_confirm(Object name) {
+    return '删除分组「$name」将同时删除其中的所有收藏，此操作不可撤销。';
+  }
+
+  @override
+  String get msg_please_enter_path => '请输入路径';
+
+  @override
+  String get msg_please_enter_name => '请输入名称';
+
+  @override
+  String get msg_please_enter_group_name => '请输入分组名称';
+
+  @override
+  String get msg_favorite_exists => '该路径已收藏';
+
+  @override
   String get msg4dfc167a => '启用此文件夹的自定义排序';
 
   @override
@@ -5015,6 +5065,56 @@ class L10nZhTw extends L10nZh {
   String msg_favorited(Object name) {
     return '已收藏 $name';
   }
+
+  @override
+  String get ui_add_to_favorites => '新增為收藏';
+
+  @override
+  String get ui_group => '分組';
+
+  @override
+  String get ui_new_group => '新增分組';
+
+  @override
+  String get ui_group_name => '分組名稱';
+
+  @override
+  String get ui_default_group => '預設分組';
+
+  @override
+  String get ui_add => '新增';
+
+  @override
+  String get ui_edit_favorite => '編輯收藏';
+
+  @override
+  String get ui_select_group => '選擇分組';
+
+  @override
+  String get ui_save => '儲存';
+
+  @override
+  String get ui_rename_group => '重新命名分組';
+
+  @override
+  String get ui_delete_group => '刪除分組';
+
+  @override
+  String msg_delete_group_confirm(Object name) {
+    return '刪除分組「$name」將同時刪除其中的所有收藏，此操作無法復原。';
+  }
+
+  @override
+  String get msg_please_enter_path => '請輸入路徑';
+
+  @override
+  String get msg_please_enter_name => '請輸入名稱';
+
+  @override
+  String get msg_please_enter_group_name => '請輸入分組名稱';
+
+  @override
+  String get msg_favorite_exists => '此路徑已收藏';
 
   @override
   String get msg4dfc167a => '啟用此資料夾的自定義排序';

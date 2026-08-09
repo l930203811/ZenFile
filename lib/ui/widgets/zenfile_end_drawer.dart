@@ -4,6 +4,7 @@ import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../providers/file_manager_provider.dart';
 import '../screens/global_search_screen.dart';
+import 'file_action_dialogs.dart';
 import '../../services/preferences_service.dart';
 import '../../services/network_connections_service.dart';
 
@@ -35,12 +36,14 @@ class ZenFileEndDrawer extends StatefulWidget {
 class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
   late bool _isQuickActionsExpanded;
   late bool _isFavoritesExpanded;
+  late Set<String> _collapsedGroups;
 
   @override
   void initState() {
     super.initState();
     _isQuickActionsExpanded = PreferencesService.getDrawerSectionExpanded('quick_actions');
     _isFavoritesExpanded = PreferencesService.getDrawerSectionExpanded('favorites');
+    _collapsedGroups = PreferencesService.getFavoritesGroupCollapsed();
   }
 
   @override
@@ -166,12 +169,25 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
                         PreferencesService.saveDrawerSectionExpanded('favorites', expanded);
                       },
                       leading: Icon(Broken.folder_favorite, color: theme.colorScheme.primary, size: 24),
-                      title: Text(
-                        L10n.of(context).ui_favorites,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
-                        maxLines: 2,
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
+                      title: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              L10n.of(context).ui_favorites,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                              maxLines: 2,
+                              softWrap: true,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Broken.add_circle, color: theme.colorScheme.primary, size: 22),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            tooltip: L10n.of(context).ui_new_favorite,
+                            onPressed: () => _showAddFavoriteDialog(context),
+                          ),
+                        ],
                       ),
                       childrenPadding: const EdgeInsets.symmetric(horizontal: 12),
                       children: widget.provider!.favorites.isEmpty
@@ -185,22 +201,7 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
                                 ),
                               ),
                             ]
-                          : widget.provider!.favorites.map((fav) {
-                              return _buildFavoriteItem(
-                                context,
-                                name: fav['name'] as String,
-                                path: fav['path'] as String,
-                                isDirectory: fav['isDirectory'] as bool,
-                                isRemote: fav['isRemote'] == true,
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  _openFavorite(fav);
-                                },
-                                onRemove: () {
-                                  widget.provider!.removeFavorite(fav['path'] as String);
-                                },
-                              );
-                            }).toList(),
+                          : _buildGroupedFavorites(context),
                     ),
 
                   const SizedBox(height: 24),
@@ -215,13 +216,12 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
 
   Widget _buildFavoriteItem(
     BuildContext context, {
-    required String name,
-    required String path,
-    required bool isDirectory,
-    bool isRemote = false,
+    required Map<String, dynamic> fav,
     required VoidCallback onTap,
-    required VoidCallback onRemove,
   }) {
+    final name = fav['name'] as String;
+    final isDirectory = fav['isDirectory'] as bool;
+    final isRemote = fav['isRemote'] == true;
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
@@ -230,6 +230,7 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
         borderRadius: BorderRadius.circular(12),
         child: InkWell(
           onTap: onTap,
+          onLongPress: () => _showItemMenu(context, fav),
           borderRadius: BorderRadius.circular(12),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -269,11 +270,6 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
                     style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
                     overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                IconButton(
-                  icon: Icon(Broken.trash, size: 18, color: Colors.redAccent.withOpacity(0.7)),
-                  onPressed: onRemove,
-                  padding: EdgeInsets.zero,
                 ),
               ],
             ),
@@ -342,6 +338,370 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
       provider.loadDirectory(isDirectory ? path : p.dirname(path));
     }
     widget.onNavigateToBrowse?.call();
+  }
+
+  /// 按分组渲染收藏列表。
+  /// 无 group 字段的收藏会归入「默认分组」。
+  List<Widget> _buildGroupedFavorites(BuildContext context) {
+    final l10n = L10n.of(context);
+    final favorites = widget.provider!.favorites;
+
+    final groups = <String, List<Map<String, dynamic>>>{};
+    for (final fav in favorites) {
+      final groupName = (fav['group'] as String?)?.trim();
+      final key = groupName?.isNotEmpty == true ? groupName! : '';
+      groups.putIfAbsent(key, () => []).add(fav);
+    }
+
+    final sortedKeys = groups.keys.toList()
+      ..sort((a, b) {
+        if (a.isEmpty && b.isNotEmpty) return -1;
+        if (a.isNotEmpty && b.isEmpty) return 1;
+        return a.compareTo(b);
+      });
+
+    return [
+      for (final key in sortedKeys)
+        _buildGroupSection(
+          context,
+          key,
+          key.isEmpty ? l10n.ui_default_group : key,
+          groups[key]!,
+        ),
+    ];
+  }
+
+  /// 单个收藏分组的折叠区块：标题靠左，支持折叠/展开，状态持久化。
+  Widget _buildGroupSection(BuildContext context, String key, String groupName, List<Map<String, dynamic>> favs) {
+    final theme = Theme.of(context);
+    final collapsed = _collapsedGroups.contains(key);
+    return ExpansionTile(
+      key: ValueKey('fav_group_$key'),
+      initiallyExpanded: !collapsed,
+      onExpansionChanged: (expanded) {
+        setState(() {
+          if (expanded) {
+            _collapsedGroups.remove(key);
+          } else {
+            _collapsedGroups.add(key);
+          }
+        });
+        PreferencesService.saveFavoritesGroupCollapsed(_collapsedGroups);
+      },
+      tilePadding: const EdgeInsets.fromLTRB(16, 2, 16, 2),
+      title: GestureDetector(
+        onLongPress: key.isEmpty ? null : () => _showGroupMenu(context, key, groupName),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                groupName,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.primary,
+                ),
+                textAlign: TextAlign.left,
+              ),
+            ),
+            Text(
+              '${favs.length}',
+              style: TextStyle(
+                fontSize: 11,
+                color: theme.colorScheme.onSurface.withOpacity(0.5),
+              ),
+            ),
+          ],
+        ),
+      ),
+      childrenPadding: const EdgeInsets.only(bottom: 4),
+      children: favs.map((fav) {
+        return _buildFavoriteItem(
+          context,
+          fav: fav,
+          onTap: () {
+            Navigator.pop(context);
+            _openFavorite(fav);
+          },
+        );
+      }).toList(),
+    );
+  }
+
+  /// 编辑已有收藏：弹出对话框修改名称 / 路径 / 分组，再写回。
+  Future<void> _editFavorite(Map<String, dynamic> fav) async {
+    final provider = widget.provider;
+    if (provider == null) return;
+    final initialGroup = (fav['group'] as String?)?.trim().isNotEmpty == true ? fav['group'] as String : null;
+    final result = await FileActionDialogs.showFavoriteEditor(
+      context,
+      existingGroups: _existingGroups(),
+      initialPath: fav['path'] as String,
+      initialName: fav['name'] as String,
+      initialGroup: initialGroup,
+    );
+    if (result == null) return;
+    // 路径变更时检查是否与其他收藏冲突
+    if (provider.isFavorite(result.path) && result.path != fav['path']) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(L10n.of(context).msg_favorite_exists)),
+      );
+      return;
+    }
+    provider.updateFavorite(
+      fav,
+      name: result.name,
+      path: result.path,
+      group: result.group ?? '',
+    );
+  }
+
+  /// 长按分组标题：弹出重命名 / 删除分组菜单（默认分组 key 为空，不响应）。
+  void _showGroupMenu(BuildContext context, String key, String groupName) {
+    final l10n = L10n.of(context);
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(Broken.edit_2, size: 22),
+              title: Text(l10n.ui_rename_group),
+              onTap: () {
+                Navigator.pop(ctx);
+                _renameGroup(key, groupName);
+              },
+            ),
+            ListTile(
+              leading: Icon(Broken.trash, size: 22, color: Colors.redAccent),
+              title: Text(l10n.ui_delete_group),
+              onTap: () {
+                Navigator.pop(ctx);
+                _deleteGroup(key, groupName);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 重命名分组：弹输入框，将该分组下所有收藏的 group 字段更新为新名称。
+  Future<void> _renameGroup(String oldGroup, String oldName) async {
+    final l10n = L10n.of(context);
+    final controller = TextEditingController(text: oldName);
+    final newName = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.ui_rename_group),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(labelText: l10n.ui_group_name),
+          autofocus: true,
+          textInputAction: TextInputAction.done,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.ui_cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              final v = controller.text.trim();
+              if (v.isEmpty || v == oldGroup) {
+                Navigator.pop(ctx);
+                return;
+              }
+              Navigator.pop(ctx, v);
+            },
+            child: Text(l10n.ui_save),
+          ),
+        ],
+      ),
+    );
+    if (newName == null || newName == oldGroup) return;
+    widget.provider?.renameFavoriteGroup(oldGroup, newName);
+  }
+
+  /// 删除分组：二次确认后移除该分组下所有收藏。
+  Future<void> _deleteGroup(String group, String groupName) async {
+    final l10n = L10n.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.ui_delete_group),
+        content: Text(l10n.msg_delete_group_confirm(groupName)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.ui_cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.ui_delete, style: const TextStyle(color: Colors.redAccent)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      widget.provider?.deleteFavoriteGroup(group);
+    }
+  }
+
+  /// 长按收藏项：弹出编辑 / 删除菜单。
+  void _showItemMenu(BuildContext context, Map<String, dynamic> fav) {
+    final l10n = L10n.of(context);
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(Broken.edit_2, size: 22),
+              title: Text(l10n.ui_edit_favorite),
+              onTap: () {
+                Navigator.pop(ctx);
+                _editFavorite(fav);
+              },
+            ),
+            ListTile(
+              leading: Icon(Broken.trash, size: 22, color: Colors.redAccent),
+              title: Text(l10n.ui_delete),
+              onTap: () {
+                Navigator.pop(ctx);
+                widget.provider!.removeFavorite(fav['path'] as String);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 弹出「添加为收藏」对话框：自定义路径、名称、分组（含新建分组）。
+  Future<void> _showAddFavoriteDialog(BuildContext context) async {
+    final l10n = L10n.of(context);
+    final pathController = TextEditingController();
+    final nameController = TextEditingController();
+    final newGroupController = TextEditingController();
+
+    final existingGroups = _existingGroups();
+    const newGroupValue = '__new__';
+    String? selectedGroup;
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) {
+          return AlertDialog(
+            title: Text(l10n.ui_add_to_favorites),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: pathController,
+                    decoration: InputDecoration(labelText: l10n.ui_path),
+                    keyboardType: TextInputType.text,
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: nameController,
+                    decoration: InputDecoration(labelText: l10n.ui_name),
+                    keyboardType: TextInputType.text,
+                  ),
+                  const SizedBox(height: 12),
+                  InputDecorator(
+                    decoration: InputDecoration(labelText: l10n.ui_group),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String?>(
+                        value: selectedGroup,
+                        isDense: true,
+                        isExpanded: true,
+                        items: [
+                          DropdownMenuItem(value: null, child: Text(l10n.ui_default_group)),
+                          ...existingGroups.map(
+                            (g) => DropdownMenuItem(value: g, child: Text(g)),
+                          ),
+                          DropdownMenuItem(value: newGroupValue, child: Text(l10n.ui_new_group)),
+                        ],
+                        onChanged: (value) => setState(() => selectedGroup = value),
+                      ),
+                    ),
+                  ),
+                  if (selectedGroup == newGroupValue) ...[
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: newGroupController,
+                      decoration: InputDecoration(labelText: l10n.ui_group_name),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: Text(l10n.ui_cancel),
+              ),
+              TextButton(
+                onPressed: () {
+                  final path = pathController.text.trim();
+                  final name = nameController.text.trim();
+                  if (path.isEmpty) {
+                    ScaffoldMessenger.of(ctx).showSnackBar(
+                      SnackBar(content: Text(l10n.msg_please_enter_path)),
+                    );
+                    return;
+                  }
+                  if (name.isEmpty) {
+                    ScaffoldMessenger.of(ctx).showSnackBar(
+                      SnackBar(content: Text(l10n.msg_please_enter_name)),
+                    );
+                    return;
+                  }
+
+                  String? group;
+                  if (selectedGroup == newGroupValue) {
+                    group = newGroupController.text.trim();
+                    if (group.isEmpty) {
+                      ScaffoldMessenger.of(ctx).showSnackBar(
+                        SnackBar(content: Text(l10n.msg_please_enter_group_name)),
+                      );
+                      return;
+                    }
+                  } else {
+                    group = selectedGroup;
+                  }
+
+                  if (widget.provider?.isFavorite(path) == true) {
+                    ScaffoldMessenger.of(ctx).showSnackBar(
+                      SnackBar(content: Text(l10n.msg_favorite_exists)),
+                    );
+                    return;
+                  }
+
+                  widget.provider?.addFavorite(path, name, true, group: group);
+                  Navigator.of(ctx).pop();
+                },
+                child: Text(l10n.ui_add),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  List<String> _existingGroups() {
+    final groups = <String>{};
+    for (final fav in widget.provider?.favorites ?? []) {
+      final group = (fav['group'] as String?)?.trim();
+      if (group?.isNotEmpty == true) groups.add(group!);
+    }
+    return groups.toList()..sort();
   }
 
   Widget _buildMenuItem(

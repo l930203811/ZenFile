@@ -799,6 +799,73 @@
   "@msg4dfc167a": {
     "description": "ui\\screens\\directory_screen.dart"
   },
+  "ui_add_to_favorites": "Add to Favorites",
+  "@ui_add_to_favorites": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_group": "Group",
+  "@ui_group": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_new_group": "New Group",
+  "@ui_new_group": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_group_name": "Group Name",
+  "@ui_group_name": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_default_group": "Default",
+  "@ui_default_group": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_add": "Add",
+  "@ui_add": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_edit_favorite": "Edit Favorite",
+  "@ui_edit_favorite": {
+    "description": "favorites edit"
+  },
+  "ui_select_group": "Select Group",
+  "@ui_select_group": {
+    "description": "favorites select group"
+  },
+  "ui_save": "Save",
+  "@ui_save": {
+    "description": "favorites save"
+  },
+  "ui_rename_group": "Rename Group",
+  "@ui_rename_group": {
+    "description": "favorites rename group"
+  },
+  "ui_delete_group": "Delete Group",
+  "@ui_delete_group": {
+    "description": "favorites delete group"
+  },
+  "msg_delete_group_confirm": "Deleting group \"{name}\" will also remove all favorites inside it. This cannot be undone.",
+  "@msg_delete_group_confirm": {
+    "description": "favorites delete group confirm",
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "msg_please_enter_path": "Please enter a path",
+  "@msg_please_enter_path": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "msg_please_enter_name": "Please enter a name",
+  "@msg_please_enter_name": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "msg_please_enter_group_name": "Please enter a group name",
+  "@msg_please_enter_group_name": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "msg_favorite_exists": "This path is already favorited",
+  "@msg_favorite_exists": {
+    "description": "zenfile_end_drawer.dart"
+  },
   "msg4dfc167a": "Enable custom sort for this folder",
   "@msge4c84f81": {
     "description": "ui\\screens\\directory_screen.dart"

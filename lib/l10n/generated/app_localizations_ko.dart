@@ -649,6 +649,56 @@ class L10nKo extends L10n {
   }
 
   @override
+  String get ui_add_to_favorites => '즐겨찾기에 추가';
+
+  @override
+  String get ui_group => '그룹';
+
+  @override
+  String get ui_new_group => '새 그룹';
+
+  @override
+  String get ui_group_name => '그룹 이름';
+
+  @override
+  String get ui_default_group => '기본값';
+
+  @override
+  String get ui_add => '추가';
+
+  @override
+  String get ui_edit_favorite => '즐겨찾기 편집';
+
+  @override
+  String get ui_select_group => '그룹 선택';
+
+  @override
+  String get ui_save => '저장';
+
+  @override
+  String get ui_rename_group => '그룹 이름 바꾸기';
+
+  @override
+  String get ui_delete_group => '그룹 삭제';
+
+  @override
+  String msg_delete_group_confirm(Object name) {
+    return '그룹 «$name»을(를) 삭제하면 포함된 모든 즐겨찾기도 삭제됩니다. 되돌릴 수 없습니다.';
+  }
+
+  @override
+  String get msg_please_enter_path => '경로를 입력하세요';
+
+  @override
+  String get msg_please_enter_name => '이름을 입력하세요';
+
+  @override
+  String get msg_please_enter_group_name => '그룹 이름을 입력하세요';
+
+  @override
+  String get msg_favorite_exists => '이 경로는 이미 즐겨찾기에 있습니다';
+
+  @override
   String get msg4dfc167a => '이 폴더에 사용자 정의 정렬 활성화';
 
   @override

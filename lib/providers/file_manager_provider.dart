@@ -95,6 +95,45 @@ int _calculateDirectorySizeSync(String path) {
   return totalSize;
 }
 
+/// 递归统计单个路径的文件数和总字节数（同步实现，供 isolate 调用）。
+/// 返回 [fileCount, totalBytes]。
+List<int> _countSinglePathSync(String localPath) {
+  final entity = FileSystemEntity.typeSync(localPath);
+  if (entity == FileSystemEntityType.directory) {
+    int count = 0;
+    int bytes = 0;
+    try {
+      for (final item in Directory(localPath).listSync(followLinks: false)) {
+        final r = _countSinglePathSync(item.path);
+        count += r[0];
+        bytes += r[1];
+      }
+    } catch (_) {}
+    return [count, bytes];
+  } else if (entity == FileSystemEntityType.file) {
+    try {
+      return [1, File(localPath).lengthSync()];
+    } catch (_) {
+      return [1, 0];
+    }
+  }
+  return [0, 0];
+}
+
+/// 顶层函数：供 compute() 在独立 isolate 中递归统计多个路径的文件数和总字节数。
+/// 避免在主线程执行同步递归遍历导致 UI 卡顿（粘贴前统计进度条分母）。
+/// 返回 [fileCount, totalBytes]。
+List<int> _countLocalFilesAndBytesIsolate(List<String> paths) {
+  int count = 0;
+  int bytes = 0;
+  for (final path in paths) {
+    final r = _countSinglePathSync(path);
+    count += r[0];
+    bytes += r[1];
+  }
+  return [count, bytes];
+}
+
 /// 远程源目录因剪切/移动等操作发生变化后广播的事件。
 /// 全屏 [RemoteExplorerScreen] 订阅此事件，当事件来源连接与自身一致时刷新
 /// 当前目录，避免“原文件残留 / 返回后页面丢失”。（远程 tab 由 provider 直接刷新。）
@@ -248,7 +287,7 @@ class FileManagerProvider extends ChangeNotifier {
   List<Map<String, dynamic>> _favorites = [];
   List<Map<String, dynamic>> get favorites => _favorites;
 
-  void addFavorite(String path, String name, bool isDirectory, {bool isRemote = false, String? connectionId}) {
+  void addFavorite(String path, String name, bool isDirectory, {bool isRemote = false, String? connectionId, String? group}) {
     if (_favorites.any((e) => e['path'] == path && (e['isRemote'] ?? false) == isRemote)) return;
     _favorites.add({
       'id': DateTime.now().millisecondsSinceEpoch.toString(),
@@ -256,6 +295,7 @@ class FileManagerProvider extends ChangeNotifier {
       'name': name,
       'isDirectory': isDirectory,
       'isRemote': isRemote,
+      'group': group != null && group.trim().isNotEmpty ? group.trim() : null,
       if (isRemote && connectionId != null) 'connectionId': connectionId,
     });
     PreferencesService.saveFavorites(_favorites);
@@ -270,6 +310,72 @@ class FileManagerProvider extends ChangeNotifier {
 
   bool isFavorite(String path) {
     return _favorites.any((e) => e['path'] == path);
+  }
+
+  /// 编辑已有收藏：按 id（优先）或 原始 path 定位，更新名称 / 路径 / 分组。
+  void updateFavorite(Map<String, dynamic> original, {String? name, String? path, String? group}) {
+    final id = original['id'] as String?;
+    final index = id != null
+        ? _favorites.indexWhere((e) => e['id'] == id)
+        : _favorites.indexWhere(
+            (e) => e['path'] == original['path'] && (e['isRemote'] ?? false) == (original['isRemote'] ?? false),
+          );
+    if (index < 0) return;
+    final updated = Map<String, dynamic>.from(_favorites[index]);
+    if (name != null) updated['name'] = name;
+    if (path != null) updated['path'] = path;
+    if (group != null) {
+      final g = group.trim();
+      updated['group'] = g.isNotEmpty ? g : null;
+    }
+    _favorites[index] = updated;
+    PreferencesService.saveFavorites(_favorites);
+    notifyListeners();
+  }
+
+  /// 返回所有非空分组的去重、排序列表（用于分组下拉框）。
+  List<String> getFavoriteGroups() {
+    final groups = <String>{};
+    for (final fav in _favorites) {
+      final group = (fav['group'] as String?)?.trim();
+      if (group?.isNotEmpty == true) groups.add(group!);
+    }
+    return groups.toList()..sort();
+  }
+
+  /// 重命名分组：将该分组下所有收藏的 group 字段更新为新名称。
+  /// 空分组名或新旧同名不做处理。
+  void renameFavoriteGroup(String oldGroup, String newGroup) {
+    final old = oldGroup.trim();
+    final newG = newGroup.trim();
+    if (old.isEmpty || newG.isEmpty || old == newG) return;
+    var changed = false;
+    for (final fav in _favorites) {
+      final g = (fav['group'] as String?)?.trim();
+      if (g != null && g == old) {
+        fav['group'] = newG;
+        changed = true;
+      }
+    }
+    if (changed) {
+      PreferencesService.saveFavorites(_favorites);
+      notifyListeners();
+    }
+  }
+
+  /// 删除分组：移除该分组下所有收藏（group 字段一致的项），默认分组不参与。
+  void deleteFavoriteGroup(String group) {
+    final g = group.trim();
+    if (g.isEmpty) return;
+    final before = _favorites.length;
+    _favorites.removeWhere((e) {
+      final favGroup = (e['group'] as String?)?.trim();
+      return favGroup != null && favGroup == g;
+    });
+    if (_favorites.length != before) {
+      PreferencesService.saveFavorites(_favorites);
+      notifyListeners();
+    }
   }
 
   void addPinnedFolderShortcut(String path, String label) {
@@ -3460,19 +3566,10 @@ class FileManagerProvider extends ChangeNotifier {
 
       // 精确统计总文件数和总字节数（递归遍历目录），替代原先「目录内文件用
       // 平均大小估算」的做法，使进度条分母准确。
-      int totalFileCount = 0;
-      int totalBytesAll = 0;
-      for (final srcPath in _clipboardPaths) {
-        final entityType = FileSystemEntity.typeSync(srcPath);
-        if (entityType == FileSystemEntityType.directory) {
-          final r = _countLocalFilesAndBytes(srcPath);
-          totalFileCount += r.fileCount;
-          totalBytesAll += r.totalBytes;
-        } else if (entityType == FileSystemEntityType.file) {
-          totalFileCount += 1;
-          try { totalBytesAll += File(srcPath).lengthSync(); } catch (_) {}
-        }
-      }
+      // 使用 compute() 将同步递归遍历移至独立 isolate，避免主线程卡顿。
+      final stats = await compute(_countLocalFilesAndBytesIsolate, List<String>.from(_clipboardPaths));
+      int totalFileCount = stats[0];
+      int totalBytesAll = stats[1];
       if (totalFileCount == 0) totalFileCount = totalTopLevel;
       if (totalBytesAll <= 0) totalBytesAll = 1;
 
@@ -4021,32 +4118,6 @@ class FileManagerProvider extends ChangeNotifier {
       return SafRemoteClient(rootUri: conn.rootPath);
     }
     return null;
-  }
-
-  /// 递归统计本地目录的真实文件数和总字节数。
-  /// 返回 (fileCount, totalBytes)。替代原先「目录内文件用平均大小估算」
-  /// 的做法，使进度条的分母准确。
-  ({int fileCount, int totalBytes}) _countLocalFilesAndBytes(String localPath) {
-    final entity = FileSystemEntity.typeSync(localPath);
-    if (entity == FileSystemEntityType.directory) {
-      int count = 0;
-      int bytes = 0;
-      try {
-        for (final item in Directory(localPath).listSync()) {
-          final r = _countLocalFilesAndBytes(item.path);
-          count += r.fileCount;
-          bytes += r.totalBytes;
-        }
-      } catch (_) {}
-      return (fileCount: count, totalBytes: bytes);
-    } else if (entity == FileSystemEntityType.file) {
-      try {
-        return (fileCount: 1, totalBytes: File(localPath).lengthSync());
-      } catch (_) {
-        return (fileCount: 1, totalBytes: 0);
-      }
-    }
-    return (fileCount: 0, totalBytes: 0);
   }
 
   /// Recursively counts files in a remote directory (requires listDirectory calls).

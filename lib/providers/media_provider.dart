@@ -95,6 +95,13 @@ Map<String, List<String>> _groupPathsByParentDir(List<String> paths) {
 
 String _normalizeMediaPathIsolate(String path) => path.replaceAll(RegExp(r'/+'), '/');
 
+/// 分类页递归扫描时按尺寸过滤噪声小文件（移除系统级索引后改为全存储递归扫描，
+/// 会扫到大量 app 图标、通知图标、.ts 流媒体小片段等噪声）：
+/// - 图片小于此值视为图标/缩略图噪声，不进「图片」分类。
+const int _kMinImageBytes = 30 * 1024; // 30 KB
+/// - 视频小于此值视为流媒体小片段/广告碎片（如 .ts 碎片），不进「视频」分类。
+const int _kMinVideoBytes = 1024 * 1024; // 1 MB
+
 /// 在独立 isolate 中递归遍历 [params.rootDirs]，按扩展名一次性收集所有类别。
 /// 与 1.1.22 系统级索引（MediaStore 独立进程）等价：扫描完全不占用 UI 主线程。
 /// 此函数不依赖任何类实例/闭包，也不调用 platform channel，可在 isolate 安全运行。
@@ -129,6 +136,14 @@ Future<_FSScanResult> _scanMediaFileSystemIsolate(_FSScanParams params) async {
             downloads.add(entity.path);
           }
           if (params.videoExtensions.contains(ext)) {
+            // 过滤掉极小视频片段（如 .ts 流媒体碎片），避免污染「视频」分类
+            int size;
+            try {
+              size = entity.lengthSync();
+            } catch (_) {
+              size = 0;
+            }
+            if (size < _kMinVideoBytes) continue;
             videos.add(entity.path);
           } else if (params.audioExtensions.contains(ext)) {
             final norm = _normalizeMediaPathIsolate(entity.path);
@@ -153,6 +168,14 @@ Future<_FSScanResult> _scanMediaFileSystemIsolate(_FSScanParams params) async {
               });
             }
           } else if (params.imageExtensions.contains(ext)) {
+            // 过滤掉极小图片（如 app 图标、通知图标等噪声），避免污染「图片」分类
+            int size;
+            try {
+              size = entity.lengthSync();
+            } catch (_) {
+              size = 0;
+            }
+            if (size < _kMinImageBytes) continue;
             if (lower.contains('screenshot') || lower.contains('截图')) {
               screenshots.add(entity.path);
             } else {
@@ -203,13 +226,14 @@ class ThumbnailCache {
         await folder.create(recursive: true);
       }
       _cacheDir = folder.path;
+      // 异步遍历缓存目录，避免 listSync/readAsBytesSync 阻塞主线程。
+      // 缓存文件较多时（数百张缩略图），同步读取会明显卡顿。
       try {
-        final files = folder.listSync();
-        for (final f in files) {
+        await for (final f in folder.list()) {
           if (f is File && f.path.endsWith('.thumb')) {
             final key = f.path.split('/').last.split('\\').last.replaceAll('.thumb', '');
             if (!_cache.containsKey(key)) {
-              _cache[key] = f.readAsBytesSync();
+              _cache[key] = await f.readAsBytes();
             }
           }
         }
@@ -1179,7 +1203,7 @@ class MediaProvider extends ChangeNotifier {
       await _scanCustomCategories();
       await _scanRecentFiles();
       await _saveCache();
-      _applySort();
+      await _applySort();
 
       PreferencesService.saveCategoryCount('图片', images.length);
       PreferencesService.saveCategoryCount('视频', videos.length);
@@ -1238,7 +1262,7 @@ class MediaProvider extends ChangeNotifier {
 
       if (_isLoaded && !forceRefresh) {
         await _scanCustomCategories();
-        _applySort();
+        await _applySort();
         notifyListeners();
         return;
       }
@@ -1273,7 +1297,7 @@ class MediaProvider extends ChangeNotifier {
 
       await _saveCache();
 
-      _applySort();
+      await _applySort();
 
       PreferencesService.saveCategoryCount('图片', images.length);
       PreferencesService.saveCategoryCount('视频', videos.length);
@@ -1326,6 +1350,12 @@ class MediaProvider extends ChangeNotifier {
             final lower = file.path.toLowerCase();
             final ext = p.extension(lower);
             if (_videoExtensions.contains(ext)) {
+              // 过滤掉极小视频片段（与 isolate 扫描一致）
+              int fileSize = 0;
+              try {
+                fileSize = (await file.stat()).size;
+              } catch (_) {}
+              if (fileSize < _kMinVideoBytes) return;
               videos.add(file);
             } else if (_audioExtensions.contains(ext)) {
               final norm = _normalizeMediaPath(file.path);
@@ -1351,6 +1381,12 @@ class MediaProvider extends ChangeNotifier {
                 'is_music': true,
               }));
             } else if (_imageExtensions.contains(ext)) {
+              // 过滤掉极小图片（与 isolate 扫描一致）
+              int fileSize = 0;
+              try {
+                fileSize = (await file.stat()).size;
+              } catch (_) {}
+              if (fileSize < _kMinImageBytes) return;
               if (lower.contains('screenshot') || lower.contains('截图')) {
                 screenshots.add(file);
               } else {
@@ -1968,57 +2004,71 @@ class MediaProvider extends ChangeNotifier {
     _recentFiles = items;
   }
 
-  void setSortOrder(MediaSortOrder order) {
+  Future<void> setSortOrder(MediaSortOrder order) async {
     _sortOrder = order;
-    _applySort();
+    await _applySort();
     notifyListeners();
   }
 
-  void _applySort() {
-    int mediaSortByDate(FileSystemEntity a, FileSystemEntity b) {
+  /// 批量预加载文件 stat（size + modified），避免排序比较器中 O(N·logN) 次同步 stat。
+  /// 在排序前一次性异步获取所有文件的 stat，存入临时 Map 供比较器读取。
+  static Future<Map<String, ({int size, DateTime modified})>> _preloadStats(
+    List<FileSystemEntity> entities,
+  ) async {
+    final map = <String, ({int size, DateTime modified})>{};
+    await Future.wait(entities.map((e) async {
       try {
-        final aTime = (a as File).lastModifiedSync();
-        final bTime = (b as File).lastModifiedSync();
-        return (_sortOrder == MediaSortOrder.oldest || _sortOrder == MediaSortOrder.oldestGrouped)
-            ? aTime.compareTo(bTime)
-            : bTime.compareTo(aTime);
-      } catch (_) {
-        return 0;
-      }
+        final stat = await File(e.path).stat();
+        map[e.path] = (size: stat.size, modified: stat.modified);
+      } catch (_) {}
+    }));
+    return map;
+  }
+
+  Future<void> _applySort() async {
+    // 预加载所有需要排序的文件 stat，避免比较器中同步 IO
+    final stats = <String, ({int size, DateTime modified})>{};
+    final allLists = [_images, _videos, _screenshots, _documents, _archives, _downloads, _apks];
+    for (final list in allLists) {
+      final s = await _preloadStats(list);
+      stats.addAll(s);
+    }
+    // 音频的 data 路径也需要 stat（按日期排序时）
+    final audioPaths = _audios.map((a) => a.data).where((p) => p.isNotEmpty).toList();
+    final audioStats = await _preloadStats(audioPaths.map((p) => File(p)).toList());
+    stats.addAll(audioStats);
+
+    int mediaSortByDate(FileSystemEntity a, FileSystemEntity b) {
+      final aTime = stats[a.path]?.modified;
+      final bTime = stats[b.path]?.modified;
+      if (aTime == null || bTime == null) return 0;
+      return (_sortOrder == MediaSortOrder.oldest || _sortOrder == MediaSortOrder.oldestGrouped)
+          ? aTime.compareTo(bTime)
+          : bTime.compareTo(aTime);
     }
 
     int mediaSortBySize(FileSystemEntity a, FileSystemEntity b) {
-      try {
-        final isSmallest = _sortOrder == MediaSortOrder.sizeSmallest;
-        final aSize = (a as File).lengthSync();
-        final bSize = (b as File).lengthSync();
-        return isSmallest ? aSize.compareTo(bSize) : bSize.compareTo(aSize);
-      } catch (_) {
-        return 0;
-      }
+      final aSize = stats[a.path]?.size;
+      final bSize = stats[b.path]?.size;
+      if (aSize == null || bSize == null) return 0;
+      final isSmallest = _sortOrder == MediaSortOrder.sizeSmallest;
+      return isSmallest ? aSize.compareTo(bSize) : bSize.compareTo(aSize);
     }
 
     int audioSortByDate(SongModel a, SongModel b) {
-      try {
-        final aTime = File(a.data).lastModifiedSync();
-        final bTime = File(b.data).lastModifiedSync();
-        return (_sortOrder == MediaSortOrder.oldest || _sortOrder == MediaSortOrder.oldestGrouped)
-            ? aTime.compareTo(bTime)
-            : bTime.compareTo(aTime);
-      } catch (_) {
-        return 0;
-      }
+      final aTime = stats[a.data]?.modified;
+      final bTime = stats[b.data]?.modified;
+      if (aTime == null || bTime == null) return 0;
+      return (_sortOrder == MediaSortOrder.oldest || _sortOrder == MediaSortOrder.oldestGrouped)
+          ? aTime.compareTo(bTime)
+          : bTime.compareTo(aTime);
     }
 
     int audioSortBySize(SongModel a, SongModel b) {
-      try {
-        final isSmallest = _sortOrder == MediaSortOrder.sizeSmallest;
-        final aSize = a.size;
-        final bSize = b.size;
-        return isSmallest ? aSize.compareTo(bSize) : bSize.compareTo(aSize);
-      } catch (_) {
-        return 0;
-      }
+      final isSmallest = _sortOrder == MediaSortOrder.sizeSmallest;
+      final aSize = a.size;
+      final bSize = b.size;
+      return isSmallest ? aSize.compareTo(bSize) : bSize.compareTo(aSize);
     }
 
     if (_sortOrder == MediaSortOrder.newest ||
@@ -2039,24 +2089,22 @@ class MediaProvider extends ChangeNotifier {
     }
 
     int fileSort(FileSystemEntity a, FileSystemEntity b) {
-      try {
-        final isSmallest = _sortOrder == MediaSortOrder.sizeSmallest;
-        final isLargest = _sortOrder == MediaSortOrder.sizeLargest;
+      final isSmallest = _sortOrder == MediaSortOrder.sizeSmallest;
+      final isLargest = _sortOrder == MediaSortOrder.sizeLargest;
 
-        if (isSmallest || isLargest) {
-          final aSize = (a as File).lengthSync();
-          final bSize = (b as File).lengthSync();
-          return isSmallest ? aSize.compareTo(bSize) : bSize.compareTo(aSize);
-        }
-
-        final aTime = (a as File).lastModifiedSync();
-        final bTime = (b as File).lastModifiedSync();
-        return (_sortOrder == MediaSortOrder.oldest || _sortOrder == MediaSortOrder.oldestGrouped)
-            ? aTime.compareTo(bTime)
-            : bTime.compareTo(aTime);
-      } catch (_) {
-        return 0;
+      if (isSmallest || isLargest) {
+        final aSize = stats[a.path]?.size;
+        final bSize = stats[b.path]?.size;
+        if (aSize == null || bSize == null) return 0;
+        return isSmallest ? aSize.compareTo(bSize) : bSize.compareTo(aSize);
       }
+
+      final aTime = stats[a.path]?.modified;
+      final bTime = stats[b.path]?.modified;
+      if (aTime == null || bTime == null) return 0;
+      return (_sortOrder == MediaSortOrder.oldest || _sortOrder == MediaSortOrder.oldestGrouped)
+          ? aTime.compareTo(bTime)
+          : bTime.compareTo(aTime);
     }
 
     _documents.sort(fileSort);

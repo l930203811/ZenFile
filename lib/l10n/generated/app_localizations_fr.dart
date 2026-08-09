@@ -695,6 +695,56 @@ class L10nFr extends L10n {
   }
 
   @override
+  String get ui_add_to_favorites => 'Ajouter aux favoris';
+
+  @override
+  String get ui_group => 'Groupe';
+
+  @override
+  String get ui_new_group => 'Nouveau groupe';
+
+  @override
+  String get ui_group_name => 'Nom du groupe';
+
+  @override
+  String get ui_default_group => 'Par défaut';
+
+  @override
+  String get ui_add => 'Ajouter';
+
+  @override
+  String get ui_edit_favorite => 'Modifier le favori';
+
+  @override
+  String get ui_select_group => 'Sélectionner un groupe';
+
+  @override
+  String get ui_save => 'Enregistrer';
+
+  @override
+  String get ui_rename_group => 'Renommer le groupe';
+
+  @override
+  String get ui_delete_group => 'Supprimer le groupe';
+
+  @override
+  String msg_delete_group_confirm(Object name) {
+    return 'Supprimer le groupe « $name » supprimera aussi tous les favoris qu\'il contient. Cette action est irréversible.';
+  }
+
+  @override
+  String get msg_please_enter_path => 'Veuillez entrer un chemin';
+
+  @override
+  String get msg_please_enter_name => 'Veuillez entrer un nom';
+
+  @override
+  String get msg_please_enter_group_name => 'Veuillez entrer un nom de groupe';
+
+  @override
+  String get msg_favorite_exists => 'Ce chemin est déjà dans les favoris';
+
+  @override
   String get msg4dfc167a => 'Activer le tri personnalisé pour ce dossier';
 
   @override

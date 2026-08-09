@@ -796,6 +796,73 @@
   "@msg4dfc167a": {
     "description": "ui\\screens\\directory_screen.dart"
   },
+  "ui_add_to_favorites": "お気に入りに追加",
+  "@ui_add_to_favorites": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_group": "グループ",
+  "@ui_group": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_new_group": "新規グループ",
+  "@ui_new_group": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_group_name": "グループ名",
+  "@ui_group_name": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_default_group": "デフォルト",
+  "@ui_default_group": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_add": "追加",
+  "@ui_add": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_edit_favorite": "お気に入りを編集",
+  "@ui_edit_favorite": {
+    "description": "favorites edit"
+  },
+  "ui_select_group": "グループを選択",
+  "@ui_select_group": {
+    "description": "favorites select group"
+  },
+  "ui_save": "保存",
+  "@ui_save": {
+    "description": "favorites save"
+  },
+  "ui_rename_group": "グループ名を変更",
+  "@ui_rename_group": {
+    "description": "favorites rename group"
+  },
+  "ui_delete_group": "グループを削除",
+  "@ui_delete_group": {
+    "description": "favorites delete group"
+  },
+  "msg_delete_group_confirm": "グループ「{name}」を削除すると、含まれるすべてのお気に入りも削除されます。この操作は元に戻せません。",
+  "@msg_delete_group_confirm": {
+    "description": "favorites delete group confirm",
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "msg_please_enter_path": "パスを入力してください",
+  "@msg_please_enter_path": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "msg_please_enter_name": "名前を入力してください",
+  "@msg_please_enter_name": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "msg_please_enter_group_name": "グループ名を入力してください",
+  "@msg_please_enter_group_name": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "msg_favorite_exists": "このパスは既にお気に入りです",
+  "@msg_favorite_exists": {
+    "description": "zenfile_end_drawer.dart"
+  },
   "msg4dfc167a": "このフォルダのカスタム並べ替えを有効にする",
   "@msge4c84f81": {
     "description": "ui\\screens\\directory_screen.dart"

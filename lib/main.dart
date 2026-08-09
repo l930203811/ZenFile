@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:async';
+import 'dart:isolate';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -249,11 +250,16 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
 
   /// 迁移旧的 Download/ZenFile_Remote 缓存目录到新的 /ZenFile 目录。
   /// 旧目录已废弃，缓存文件不需要保留，直接删除旧目录。
+  /// 在 isolate 中执行，避免同步递归删除阻塞主线程。
   void _migrateOldCacheDir() {
     try {
       final oldDir = Directory('/storage/emulated/0/Download/ZenFile_Remote');
       if (oldDir.existsSync()) {
-        oldDir.deleteSync(recursive: true);
+        Isolate.run(() {
+          try {
+            oldDir.deleteSync(recursive: true);
+          } catch (_) {}
+        });
         debugPrint('[ZenFile] 已移除旧的 Download/ZenFile_Remote 缓存目录');
       }
     } catch (e) {
@@ -1019,52 +1025,51 @@ void _cancelAutoCleanTimer() {
   _autoCleanTimer = null;
 }
 
-/// 自动清理过期缓存
+/// 自动清理过期缓存（在 isolate 中执行，避免阻塞主线程）
 void _autoCleanRemoteCache() {
   try {
     final autoCleanMinutes = PreferencesService.getRemoteCacheAutoCleanMinutes();
     if (autoCleanMinutes <= 0) return; // 未启用自动清理
 
-    // Restrict cleanup to the cache/ subtree to avoid deleting user
-    // settings/APK backups that live alongside the cache.
     final baseDir = Directory('/storage/emulated/0/ZenFile');
     if (!baseDir.existsSync()) return;
 
     final now = DateTime.now();
     final threshold = now.subtract(Duration(minutes: autoCleanMinutes));
 
-    // 遍历缓存目录，删除过期文件
-    int deletedCount = 0;
-    int deletedSize = 0;
+    // 在 isolate 中执行同步递归清理，避免 listSync/statSync/deleteSync 阻塞主线程
+    Isolate.run(() {
+      final cacheRoot = Directory('${baseDir.path}/cache');
+      if (!cacheRoot.existsSync()) return;
 
-    void cleanDirectory(Directory dir) {
-      try {
-        for (final entity in dir.listSync()) {
-          if (entity is File) {
-            final stat = entity.statSync();
-            if (stat.modified.isBefore(threshold)) {
-              deletedSize += entity.lengthSync();
-              entity.deleteSync();
-              deletedCount++;
+      int deletedCount = 0;
+      int deletedSize = 0;
+
+      void cleanDirectory(Directory dir) {
+        try {
+          for (final entity in dir.listSync()) {
+            if (entity is File) {
+              final stat = entity.statSync();
+              if (stat.modified.isBefore(threshold)) {
+                deletedSize += entity.lengthSync();
+                entity.deleteSync();
+                deletedCount++;
+              }
+            } else if (entity is Directory) {
+              cleanDirectory(entity);
             }
-          } else if (entity is Directory) {
-            // 递归清理子目录
-            cleanDirectory(entity);
           }
-        }
-      } catch (e) {
-        debugPrint('清理缓存目录失败: {e}');
+        } catch (_) {}
       }
-    }
 
-    final cacheRoot = Directory('${baseDir.path}/cache');
-    if (cacheRoot.existsSync()) {
       cleanDirectory(cacheRoot);
-    }
 
-    if (deletedCount > 0) {
-      debugPrint('自动清理缓存: 删除 $deletedCount 个文件，释放 ${(deletedSize / 1024 / 1024).toStringAsFixed(1)} MB');
-    }
+      if (deletedCount > 0) {
+        // ignore: avoid_print
+        print('自动清理缓存: 删除 $deletedCount 个文件，释放 ${(deletedSize / 1024 / 1024).toStringAsFixed(1)} MB');
+      }
+    });
+
     // 记录本次清理时间
     PreferencesService.saveRemoteCacheLastCleanTime(now.millisecondsSinceEpoch);
   } catch (e) {

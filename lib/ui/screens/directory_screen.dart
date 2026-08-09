@@ -701,7 +701,14 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         final isRemote = provider.currIsRemote;
         final connectionId = provider.activeTab.remoteConnection?.id;
         final isDir = isRemote ? true : await Directory(path).exists();
-        provider.addFavorite(path, name, isDir, isRemote: isRemote, connectionId: connectionId);
+        final groupResult = await FileActionDialogs.showFavoriteGroupPicker(
+          context,
+          existingGroups: provider.getFavoriteGroups(),
+        );
+        if (!context.mounted) return;
+        if (groupResult == null) break; // 用户取消
+        final group = groupResult.isEmpty ? null : groupResult;
+        provider.addFavorite(path, name, isDir, isRemote: isRemote, connectionId: connectionId, group: group);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(L10n.of(context).msg_favorited(name)), behavior: SnackBarBehavior.floating, duration: const Duration(seconds: 2)),
@@ -795,7 +802,14 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         final name = p.posix.basename(currentPath);
         final isRemote = provider.currIsRemote;
         final connectionId = provider.activeTab.remoteConnection?.id;
-        provider.addFavorite(currentPath, name, true, isRemote: isRemote, connectionId: connectionId);
+        final groupResult = await FileActionDialogs.showFavoriteGroupPicker(
+          context,
+          existingGroups: provider.getFavoriteGroups(),
+        );
+        if (!context.mounted) return;
+        if (groupResult == null) break; // 用户取消
+        final group = groupResult.isEmpty ? null : groupResult;
+        provider.addFavorite(currentPath, name, true, isRemote: isRemote, connectionId: connectionId, group: group);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(L10n.of(context).msg_favorited(name)), behavior: SnackBarBehavior.floating, duration: const Duration(seconds: 2)),

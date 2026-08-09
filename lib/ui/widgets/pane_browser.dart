@@ -353,7 +353,14 @@ class _PaneBrowserState extends State<PaneBrowser> {
         final isRemote = provider.currIsRemote;
         final connectionId = provider.activeTab.remoteConnection?.id;
         final isDir = isRemote ? true : await Directory(path).exists();
-        provider.addFavorite(path, name, isDir, isRemote: isRemote, connectionId: connectionId);
+        final groupResult = await FileActionDialogs.showFavoriteGroupPicker(
+          context,
+          existingGroups: provider.getFavoriteGroups(),
+        );
+        if (!context.mounted) return;
+        if (groupResult == null) break; // 用户取消
+        final group = groupResult.isEmpty ? null : groupResult;
+        provider.addFavorite(path, name, isDir, isRemote: isRemote, connectionId: connectionId, group: group);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -1203,17 +1210,22 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
   @override
   void initState() {
     super.initState();
-    final lowerPath = widget.file.path.toLowerCase();
-    // 远程文件优先走远程缩略图加载逻辑（受「远程媒体缩略图」开关控制）
-    if (widget.file.isRemote && widget.remoteClient != null && PreferencesService.getRemoteMediaThumbnailPreview()) {
-      _loadRemoteThumb();
-    } else if (!widget.file.isRemote && FileUtils.isVideo(widget.file.path)) {
-      _loadVideoThumb();
-    } else if (!widget.file.isRemote && FileUtils.isAudio(widget.file.path)) {
-      _loadAudioThumb();
-    } else if (lowerPath.endsWith('.apk') || lowerPath.endsWith('.xapk') || lowerPath.endsWith('.apks') || lowerPath.endsWith('.apkm')) {
-      _loadApkIcon();
-    }
+    // 延迟到首帧之后执行，避免缩略图加载中的同步 IO 阻塞 build 阶段。
+    // 与 file_grid_item.dart / file_item.dart 的模式保持一致。
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final lowerPath = widget.file.path.toLowerCase();
+      // 远程文件优先走远程缩略图加载逻辑（受「远程媒体缩略图」开关控制）
+      if (widget.file.isRemote && widget.remoteClient != null && PreferencesService.getRemoteMediaThumbnailPreview()) {
+        _loadRemoteThumb();
+      } else if (!widget.file.isRemote && FileUtils.isVideo(widget.file.path)) {
+        _loadVideoThumb();
+      } else if (!widget.file.isRemote && FileUtils.isAudio(widget.file.path)) {
+        _loadAudioThumb();
+      } else if (lowerPath.endsWith('.apk') || lowerPath.endsWith('.xapk') || lowerPath.endsWith('.apks') || lowerPath.endsWith('.apkm')) {
+        _loadApkIcon();
+      }
+    });
   }
 
   Future<void> _loadRemoteThumb() async {
@@ -1221,22 +1233,22 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
     final client = widget.remoteClient;
     if (client == null) return;
     try {
-      // 缩略图缓存目录
+      // 缩略图缓存目录（异步创建，避免阻塞主线程）
       Directory thumbDir;
       try {
         thumbDir = Directory('/storage/emulated/0/ZenFile/cache/thumbnails/remote');
-        if (!thumbDir.existsSync()) thumbDir.createSync(recursive: true);
+        if (!await thumbDir.exists()) await thumbDir.create(recursive: true);
       } catch (_) {
         final appDir = await getApplicationDocumentsDirectory();
         thumbDir = Directory(p.join(appDir.path, 'ZenFile', 'cache', 'thumbnails', 'remote'));
-        if (!thumbDir.existsSync()) thumbDir.createSync(recursive: true);
+        if (!await thumbDir.exists()) await thumbDir.create(recursive: true);
       }
       final thumbName = '${widget.file.path.replaceAll('/', '_').replaceAll('\\', '_')}_thumb.jpg';
       final thumbPath = p.join(thumbDir.path, thumbName);
       final thumbFile = File(thumbPath);
 
       // 检查缓存
-      if (thumbFile.existsSync()) {
+      if (await thumbFile.exists()) {
         final bytes = await thumbFile.readAsBytes();
         if (mounted && bytes.isNotEmpty) {
           setState(() => _remoteThumb = bytes);
@@ -1244,15 +1256,15 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
         return;
       }
 
-      // 下载到临时目录
+      // 下载到临时目录（异步创建）
       Directory tempDir;
       try {
         tempDir = Directory('/storage/emulated/0/ZenFile/cache/temp');
-        if (!tempDir.existsSync()) tempDir.createSync(recursive: true);
+        if (!await tempDir.exists()) await tempDir.create(recursive: true);
       } catch (_) {
         final appDir = await getApplicationDocumentsDirectory();
         tempDir = Directory(p.join(appDir.path, 'ZenFile', 'cache', 'temp'));
-        if (!tempDir.existsSync()) tempDir.createSync(recursive: true);
+        if (!await tempDir.exists()) await tempDir.create(recursive: true);
       }
 
       final ext = p.extension(widget.file.name).toLowerCase();
@@ -1460,6 +1472,8 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
         fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
+        cacheWidth: 80,
+        cacheHeight: 80,
         errorBuilder: (context, error, stackTrace) => Icon(Broken.mobile, color: widget.iconColor, size: 18),
       );
     }
@@ -1474,6 +1488,8 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
             fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,
+            cacheWidth: 80,
+            cacheHeight: 80,
             errorBuilder: (context, error, stackTrace) => Icon(
               FileUtils.getIconForFile(widget.file.path),
               color: widget.iconColor,
@@ -1521,6 +1537,8 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
             fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,
+            cacheWidth: 80,
+            cacheHeight: 80,
             errorBuilder: (context, error, stackTrace) => Icon(Broken.video, color: widget.iconColor, size: 18),
           ),
           Center(
@@ -1543,6 +1561,8 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
             fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,
+            cacheWidth: 80,
+            cacheHeight: 80,
             errorBuilder: (context, error, stackTrace) => Icon(Broken.music, color: widget.iconColor, size: 18),
           ),
           Center(

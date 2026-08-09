@@ -679,6 +679,56 @@ class L10nAr extends L10n {
   }
 
   @override
+  String get ui_add_to_favorites => 'إضافة إلى المفضلة';
+
+  @override
+  String get ui_group => 'المجموعة';
+
+  @override
+  String get ui_new_group => 'مجموعة جديدة';
+
+  @override
+  String get ui_group_name => 'اسم المجموعة';
+
+  @override
+  String get ui_default_group => 'افتراضي';
+
+  @override
+  String get ui_add => 'إضافة';
+
+  @override
+  String get ui_edit_favorite => 'تعديل المفضلة';
+
+  @override
+  String get ui_select_group => 'اختر المجموعة';
+
+  @override
+  String get ui_save => 'حفظ';
+
+  @override
+  String get ui_rename_group => 'إعادة تسمية المجموعة';
+
+  @override
+  String get ui_delete_group => 'حذف المجموعة';
+
+  @override
+  String msg_delete_group_confirm(Object name) {
+    return 'حذف المجموعة «$name» سيؤدي أيضًا إلى حذف جميع المفضلة بداخلها. لا يمكن التراجع عن هذا الإجراء.';
+  }
+
+  @override
+  String get msg_please_enter_path => 'الرجاء إدخال المسار';
+
+  @override
+  String get msg_please_enter_name => 'الرجاء إدخال الاسم';
+
+  @override
+  String get msg_please_enter_group_name => 'الرجاء إدخال اسم المجموعة';
+
+  @override
+  String get msg_favorite_exists => 'هذا المسار موجود بالفعل في المفضلة';
+
+  @override
   String get msg4dfc167a => 'تمكين الفرز المخصص لهذا المجلد';
 
   @override

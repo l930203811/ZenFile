@@ -816,6 +816,73 @@
   "@msgf437ace4": {
     "description": "ui\\screens\\directory_screen.dart"
   },
+  "ui_add_to_favorites": "新增為收藏",
+  "@ui_add_to_favorites": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_group": "分組",
+  "@ui_group": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_new_group": "新增分組",
+  "@ui_new_group": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_group_name": "分組名稱",
+  "@ui_group_name": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_default_group": "預設分組",
+  "@ui_default_group": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_add": "新增",
+  "@ui_add": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_edit_favorite": "編輯收藏",
+  "@ui_edit_favorite": {
+    "description": "favorites edit"
+  },
+  "ui_select_group": "選擇分組",
+  "@ui_select_group": {
+    "description": "favorites select group"
+  },
+  "ui_save": "儲存",
+  "@ui_save": {
+    "description": "favorites save"
+  },
+  "ui_rename_group": "重新命名分組",
+  "@ui_rename_group": {
+    "description": "favorites rename group"
+  },
+  "ui_delete_group": "刪除分組",
+  "@ui_delete_group": {
+    "description": "favorites delete group"
+  },
+  "msg_delete_group_confirm": "刪除分組「{name}」將同時刪除其中的所有收藏，此操作無法復原。",
+  "@msg_delete_group_confirm": {
+    "description": "favorites delete group confirm",
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "msg_please_enter_path": "請輸入路徑",
+  "@msg_please_enter_path": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "msg_please_enter_name": "請輸入名稱",
+  "@msg_please_enter_name": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "msg_please_enter_group_name": "請輸入分組名稱",
+  "@msg_please_enter_group_name": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "msg_favorite_exists": "此路徑已收藏",
+  "@msg_favorite_exists": {
+    "description": "zenfile_end_drawer.dart"
+  },
   "msg4dfc167a": "啟用此資料夾的自定義排序",
   "@msg4dfc167a": {
     "description": "ui\\screens\\directory_screen.dart"

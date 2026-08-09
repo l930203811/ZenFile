@@ -1138,6 +1138,26 @@ class PreferencesService {
     await _prefs?.setBool('$_keyDrawerSectionExpanded$sectionKey', expanded);
   }
 
+  // --- Favorites Group Collapsed State ---
+  static const String _keyFavoritesGroupCollapsed = 'favorites_group_collapsed';
+
+  /// 获取被折叠的收藏分组 key 集合（默认空集合 = 全部展开）
+  static Set<String> getFavoritesGroupCollapsed() {
+    final str = _prefs?.getString(_keyFavoritesGroupCollapsed);
+    if (str == null) return {};
+    try {
+      final decoded = jsonDecode(str) as List<dynamic>;
+      return decoded.map((e) => e as String).toSet();
+    } catch (_) {
+      return {};
+    }
+  }
+
+  /// 保存被折叠的收藏分组 key 集合
+  static Future<void> saveFavoritesGroupCollapsed(Set<String> collapsed) async {
+    await _prefs?.setString(_keyFavoritesGroupCollapsed, jsonEncode(collapsed.toList()));
+  }
+
   // --- Categories Grid Columns ---
   static const String _keyCategoriesGridColumns = 'categories_grid_columns';
 

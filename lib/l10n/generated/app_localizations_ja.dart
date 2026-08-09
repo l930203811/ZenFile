@@ -650,6 +650,56 @@ class L10nJa extends L10n {
   }
 
   @override
+  String get ui_add_to_favorites => 'お気に入りに追加';
+
+  @override
+  String get ui_group => 'グループ';
+
+  @override
+  String get ui_new_group => '新規グループ';
+
+  @override
+  String get ui_group_name => 'グループ名';
+
+  @override
+  String get ui_default_group => 'デフォルト';
+
+  @override
+  String get ui_add => '追加';
+
+  @override
+  String get ui_edit_favorite => 'お気に入りを編集';
+
+  @override
+  String get ui_select_group => 'グループを選択';
+
+  @override
+  String get ui_save => '保存';
+
+  @override
+  String get ui_rename_group => 'グループ名を変更';
+
+  @override
+  String get ui_delete_group => 'グループを削除';
+
+  @override
+  String msg_delete_group_confirm(Object name) {
+    return 'グループ「$name」を削除すると、含まれるすべてのお気に入りも削除されます。この操作は元に戻せません。';
+  }
+
+  @override
+  String get msg_please_enter_path => 'パスを入力してください';
+
+  @override
+  String get msg_please_enter_name => '名前を入力してください';
+
+  @override
+  String get msg_please_enter_group_name => 'グループ名を入力してください';
+
+  @override
+  String get msg_favorite_exists => 'このパスは既にお気に入りです';
+
+  @override
   String get msg4dfc167a => 'このフォルダのカスタム並べ替えを有効にする';
 
   @override

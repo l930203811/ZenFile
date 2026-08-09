@@ -792,6 +792,73 @@
   "@msg4dfc167a": {
     "description": "ui\\screens\\directory_screen.dart"
   },
+  "ui_add_to_favorites": "Ajouter aux favoris",
+  "@ui_add_to_favorites": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_group": "Groupe",
+  "@ui_group": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_new_group": "Nouveau groupe",
+  "@ui_new_group": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_group_name": "Nom du groupe",
+  "@ui_group_name": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_default_group": "Par défaut",
+  "@ui_default_group": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_add": "Ajouter",
+  "@ui_add": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_edit_favorite": "Modifier le favori",
+  "@ui_edit_favorite": {
+    "description": "favorites edit"
+  },
+  "ui_select_group": "Sélectionner un groupe",
+  "@ui_select_group": {
+    "description": "favorites select group"
+  },
+  "ui_save": "Enregistrer",
+  "@ui_save": {
+    "description": "favorites save"
+  },
+  "ui_rename_group": "Renommer le groupe",
+  "@ui_rename_group": {
+    "description": "favorites rename group"
+  },
+  "ui_delete_group": "Supprimer le groupe",
+  "@ui_delete_group": {
+    "description": "favorites delete group"
+  },
+  "msg_delete_group_confirm": "Supprimer le groupe « {name} » supprimera aussi tous les favoris qu'il contient. Cette action est irréversible.",
+  "@msg_delete_group_confirm": {
+    "description": "favorites delete group confirm",
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "msg_please_enter_path": "Veuillez entrer un chemin",
+  "@msg_please_enter_path": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "msg_please_enter_name": "Veuillez entrer un nom",
+  "@msg_please_enter_name": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "msg_please_enter_group_name": "Veuillez entrer un nom de groupe",
+  "@msg_please_enter_group_name": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "msg_favorite_exists": "Ce chemin est déjà dans les favoris",
+  "@msg_favorite_exists": {
+    "description": "zenfile_end_drawer.dart"
+  },
   "msg4dfc167a": "Activer le tri personnalisé pour ce dossier",
   "@msge4c84f81": {
     "description": "ui\\screens\\directory_screen.dart"

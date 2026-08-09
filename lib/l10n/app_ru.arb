@@ -792,6 +792,73 @@
   "@msg4dfc167a": {
     "description": "ui\\screens\\directory_screen.dart"
   },
+  "ui_add_to_favorites": "Добавить в избранное",
+  "@ui_add_to_favorites": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_group": "Группа",
+  "@ui_group": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_new_group": "Новая группа",
+  "@ui_new_group": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_group_name": "Название группы",
+  "@ui_group_name": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_default_group": "По умолчанию",
+  "@ui_default_group": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_add": "Добавить",
+  "@ui_add": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_edit_favorite": "Изменить избранное",
+  "@ui_edit_favorite": {
+    "description": "favorites edit"
+  },
+  "ui_select_group": "Выбрать группу",
+  "@ui_select_group": {
+    "description": "favorites select group"
+  },
+  "ui_save": "Сохранить",
+  "@ui_save": {
+    "description": "favorites save"
+  },
+  "ui_rename_group": "Переименовать группу",
+  "@ui_rename_group": {
+    "description": "favorites rename group"
+  },
+  "ui_delete_group": "Удалить группу",
+  "@ui_delete_group": {
+    "description": "favorites delete group"
+  },
+  "msg_delete_group_confirm": "Удаление группы «{name}» также удалит все содержащиеся в ней избранные элементы. Это действие необратимо.",
+  "@msg_delete_group_confirm": {
+    "description": "favorites delete group confirm",
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "msg_please_enter_path": "Введите путь",
+  "@msg_please_enter_path": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "msg_please_enter_name": "Введите название",
+  "@msg_please_enter_name": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "msg_please_enter_group_name": "Введите название группы",
+  "@msg_please_enter_group_name": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "msg_favorite_exists": "Этот путь уже в избранном",
+  "@msg_favorite_exists": {
+    "description": "zenfile_end_drawer.dart"
+  },
   "msg4dfc167a": "Включить пользовательскую сортировку для этой папки",
   "@msge4c84f81": {
     "description": "ui\\screens\\directory_screen.dart"

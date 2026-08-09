@@ -1306,6 +1306,102 @@ abstract class L10n {
   /// **'已收藏 {name}'**
   String msg_favorited(Object name);
 
+  /// zenfile_end_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'添加为收藏'**
+  String get ui_add_to_favorites;
+
+  /// zenfile_end_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'分组'**
+  String get ui_group;
+
+  /// zenfile_end_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'新建分组'**
+  String get ui_new_group;
+
+  /// zenfile_end_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'分组名称'**
+  String get ui_group_name;
+
+  /// zenfile_end_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'默认分组'**
+  String get ui_default_group;
+
+  /// zenfile_end_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'添加'**
+  String get ui_add;
+
+  /// favorites edit
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑收藏'**
+  String get ui_edit_favorite;
+
+  /// favorites select group
+  ///
+  /// In zh, this message translates to:
+  /// **'选择分组'**
+  String get ui_select_group;
+
+  /// favorites save
+  ///
+  /// In zh, this message translates to:
+  /// **'保存'**
+  String get ui_save;
+
+  /// favorites rename group
+  ///
+  /// In zh, this message translates to:
+  /// **'重命名分组'**
+  String get ui_rename_group;
+
+  /// favorites delete group
+  ///
+  /// In zh, this message translates to:
+  /// **'删除分组'**
+  String get ui_delete_group;
+
+  /// favorites delete group confirm
+  ///
+  /// In zh, this message translates to:
+  /// **'删除分组「{name}」将同时删除其中的所有收藏，此操作不可撤销。'**
+  String msg_delete_group_confirm(Object name);
+
+  /// zenfile_end_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入路径'**
+  String get msg_please_enter_path;
+
+  /// zenfile_end_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入名称'**
+  String get msg_please_enter_name;
+
+  /// zenfile_end_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入分组名称'**
+  String get msg_please_enter_group_name;
+
+  /// zenfile_end_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'该路径已收藏'**
+  String get msg_favorite_exists;
+
   /// ui\screens\directory_screen.dart
   ///
   /// In zh, this message translates to:

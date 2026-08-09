@@ -693,6 +693,56 @@ class L10nRu extends L10n {
   }
 
   @override
+  String get ui_add_to_favorites => 'Добавить в избранное';
+
+  @override
+  String get ui_group => 'Группа';
+
+  @override
+  String get ui_new_group => 'Новая группа';
+
+  @override
+  String get ui_group_name => 'Название группы';
+
+  @override
+  String get ui_default_group => 'По умолчанию';
+
+  @override
+  String get ui_add => 'Добавить';
+
+  @override
+  String get ui_edit_favorite => 'Изменить избранное';
+
+  @override
+  String get ui_select_group => 'Выбрать группу';
+
+  @override
+  String get ui_save => 'Сохранить';
+
+  @override
+  String get ui_rename_group => 'Переименовать группу';
+
+  @override
+  String get ui_delete_group => 'Удалить группу';
+
+  @override
+  String msg_delete_group_confirm(Object name) {
+    return 'Удаление группы «$name» также удалит все содержащиеся в ней избранные элементы. Это действие необратимо.';
+  }
+
+  @override
+  String get msg_please_enter_path => 'Введите путь';
+
+  @override
+  String get msg_please_enter_name => 'Введите название';
+
+  @override
+  String get msg_please_enter_group_name => 'Введите название группы';
+
+  @override
+  String get msg_favorite_exists => 'Этот путь уже в избранном';
+
+  @override
   String get msg4dfc167a =>
       'Включить пользовательскую сортировку для этой папки';
 

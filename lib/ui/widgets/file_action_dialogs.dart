@@ -181,6 +181,210 @@ class FileActionDialogs {
       },
     );
   }
+
+  /// 收藏时选择分组。
+  /// 返回 null 表示用户取消；返回 '' 表示默认分组；返回非空字符串表示分组名。
+  static Future<String?> showFavoriteGroupPicker(
+    BuildContext context, {
+    required List<String> existingGroups,
+    String? currentGroup,
+  }) async {
+    final l10n = L10n.of(context);
+    final newGroupController = TextEditingController(text: currentGroup);
+    const newGroupValue = '__new__';
+    final isExisting = currentGroup != null && currentGroup.isNotEmpty && existingGroups.contains(currentGroup);
+    String? selectedGroup = isExisting
+        ? currentGroup
+        : (currentGroup != null && currentGroup.isNotEmpty ? newGroupValue : null);
+
+    return showDialog<String?>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSt) => AlertDialog(
+          title: Text(l10n.ui_select_group),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                InputDecorator(
+                  decoration: InputDecoration(labelText: l10n.ui_group),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String?>(
+                      value: selectedGroup,
+                      isDense: true,
+                      isExpanded: true,
+                      items: [
+                        DropdownMenuItem(value: null, child: Text(l10n.ui_default_group)),
+                        ...existingGroups.map((g) => DropdownMenuItem(value: g, child: Text(g))),
+                        DropdownMenuItem(value: newGroupValue, child: Text(l10n.ui_new_group)),
+                      ],
+                      onChanged: (v) => setSt(() => selectedGroup = v),
+                    ),
+                  ),
+                ),
+                if (selectedGroup == newGroupValue) ...[
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: newGroupController,
+                    decoration: InputDecoration(labelText: l10n.ui_group_name),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.ui_cancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                String? group;
+                if (selectedGroup == newGroupValue) {
+                  group = newGroupController.text.trim();
+                  if (group.isEmpty) {
+                    ScaffoldMessenger.of(ctx).showSnackBar(
+                      SnackBar(content: Text(l10n.msg_please_enter_group_name)),
+                    );
+                    return;
+                  }
+                } else {
+                  group = selectedGroup;
+                }
+                Navigator.pop(ctx, group ?? '');
+              },
+              style: FilledButton.styleFrom(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: Text(l10n.ui_save),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 编辑已有收藏（名称 / 路径 / 分组）。
+  /// 预填 initial* 值；确认返回 [FavoriteEditResult]，取消返回 null。
+  static Future<FavoriteEditResult?> showFavoriteEditor(
+    BuildContext context, {
+    required List<String> existingGroups,
+    required String initialPath,
+    required String initialName,
+    String? initialGroup,
+  }) async {
+    final l10n = L10n.of(context);
+    final pathController = TextEditingController(text: initialPath);
+    final nameController = TextEditingController(text: initialName);
+    final newGroupController = TextEditingController(text: initialGroup);
+    const newGroupValue = '__new__';
+    final isExisting = initialGroup != null && initialGroup.isNotEmpty && existingGroups.contains(initialGroup);
+    String? selectedGroup = isExisting
+        ? initialGroup
+        : (initialGroup != null && initialGroup.isNotEmpty ? newGroupValue : null);
+
+    return showDialog<FavoriteEditResult>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSt) => AlertDialog(
+          title: Text(l10n.ui_edit_favorite),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: pathController,
+                  decoration: InputDecoration(labelText: l10n.ui_path),
+                  keyboardType: TextInputType.text,
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: nameController,
+                  decoration: InputDecoration(labelText: l10n.ui_name),
+                  keyboardType: TextInputType.text,
+                ),
+                const SizedBox(height: 12),
+                InputDecorator(
+                  decoration: InputDecoration(labelText: l10n.ui_group),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String?>(
+                      value: selectedGroup,
+                      isDense: true,
+                      isExpanded: true,
+                      items: [
+                        DropdownMenuItem(value: null, child: Text(l10n.ui_default_group)),
+                        ...existingGroups.map((g) => DropdownMenuItem(value: g, child: Text(g))),
+                        DropdownMenuItem(value: newGroupValue, child: Text(l10n.ui_new_group)),
+                      ],
+                      onChanged: (v) => setSt(() => selectedGroup = v),
+                    ),
+                  ),
+                ),
+                if (selectedGroup == newGroupValue) ...[
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: newGroupController,
+                    decoration: InputDecoration(labelText: l10n.ui_group_name),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.ui_cancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                final path = pathController.text.trim();
+                final name = nameController.text.trim();
+                if (path.isEmpty) {
+                  ScaffoldMessenger.of(ctx).showSnackBar(
+                    SnackBar(content: Text(l10n.msg_please_enter_path)),
+                  );
+                  return;
+                }
+                if (name.isEmpty) {
+                  ScaffoldMessenger.of(ctx).showSnackBar(
+                    SnackBar(content: Text(l10n.msg_please_enter_name)),
+                  );
+                  return;
+                }
+                String? group;
+                if (selectedGroup == newGroupValue) {
+                  group = newGroupController.text.trim();
+                  if (group.isEmpty) {
+                    ScaffoldMessenger.of(ctx).showSnackBar(
+                      SnackBar(content: Text(l10n.msg_please_enter_group_name)),
+                    );
+                    return;
+                  }
+                } else {
+                  group = selectedGroup;
+                }
+                Navigator.pop(ctx, FavoriteEditResult(path, name, group));
+              },
+              style: FilledButton.styleFrom(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: Text(l10n.ui_save),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 编辑收藏的返回结果
+class FavoriteEditResult {
+  final String path;
+  final String name;
+  final String? group;
+  FavoriteEditResult(this.path, this.name, this.group);
 }
 
 class FileActionSheet {

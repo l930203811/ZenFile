@@ -693,6 +693,56 @@ class L10nDe extends L10n {
   }
 
   @override
+  String get ui_add_to_favorites => 'Zu Favoriten hinzufügen';
+
+  @override
+  String get ui_group => 'Gruppe';
+
+  @override
+  String get ui_new_group => 'Neue Gruppe';
+
+  @override
+  String get ui_group_name => 'Gruppenname';
+
+  @override
+  String get ui_default_group => 'Standard';
+
+  @override
+  String get ui_add => 'Hinzufügen';
+
+  @override
+  String get ui_edit_favorite => 'Favorit bearbeiten';
+
+  @override
+  String get ui_select_group => 'Gruppe auswählen';
+
+  @override
+  String get ui_save => 'Speichern';
+
+  @override
+  String get ui_rename_group => 'Gruppe umbenennen';
+
+  @override
+  String get ui_delete_group => 'Gruppe löschen';
+
+  @override
+  String msg_delete_group_confirm(Object name) {
+    return 'Das Löschen der Gruppe »$name« entfernt auch alle darin enthaltenen Favoriten. Dies kann nicht rückgängig gemacht werden.';
+  }
+
+  @override
+  String get msg_please_enter_path => 'Bitte Pfad eingeben';
+
+  @override
+  String get msg_please_enter_name => 'Bitte Name eingeben';
+
+  @override
+  String get msg_please_enter_group_name => 'Bitte Gruppennamen eingeben';
+
+  @override
+  String get msg_favorite_exists => 'Dieser Pfad ist bereits ein Favorit';
+
+  @override
   String get msg4dfc167a =>
       'Benutzerdefinierte Sortierung für diesen Ordner aktivieren';
 

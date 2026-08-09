@@ -204,12 +204,18 @@ class SelectionActionBar extends StatelessWidget {
                   await FolderShareService.sharePaths(context, selectedPaths);
                 } else if (action == 'favorite') {
                   final selectedPaths = provider.selectedPaths.toList();
+                  if (selectedPaths.isEmpty) return;
+                  final group = await FileActionDialogs.showFavoriteGroupPicker(
+                    context,
+                    existingGroups: provider.getFavoriteGroups(),
+                  );
+                  if (group == null) return;
                   final isRemote = provider.currIsRemote;
                   final connectionId = provider.activeTab.remoteConnection?.id;
                   for (final path in selectedPaths) {
                     final name = p.basename(path);
                     final isDir = isRemote ? true : Directory(path).existsSync();
-                    provider.addFavorite(path, name, isDir, isRemote: isRemote, connectionId: connectionId);
+                    provider.addFavorite(path, name, isDir, isRemote: isRemote, connectionId: connectionId, group: group.isEmpty ? null : group);
                   }
                   provider.clearSelection();
                   if (context.mounted) {

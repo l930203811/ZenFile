@@ -792,6 +792,73 @@
   "@msg4dfc167a": {
     "description": "ui\\screens\\directory_screen.dart"
   },
+  "ui_add_to_favorites": "إضافة إلى المفضلة",
+  "@ui_add_to_favorites": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_group": "المجموعة",
+  "@ui_group": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_new_group": "مجموعة جديدة",
+  "@ui_new_group": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_group_name": "اسم المجموعة",
+  "@ui_group_name": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_default_group": "افتراضي",
+  "@ui_default_group": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_add": "إضافة",
+  "@ui_add": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "ui_edit_favorite": "تعديل المفضلة",
+  "@ui_edit_favorite": {
+    "description": "favorites edit"
+  },
+  "ui_select_group": "اختر المجموعة",
+  "@ui_select_group": {
+    "description": "favorites select group"
+  },
+  "ui_save": "حفظ",
+  "@ui_save": {
+    "description": "favorites save"
+  },
+  "ui_rename_group": "إعادة تسمية المجموعة",
+  "@ui_rename_group": {
+    "description": "favorites rename group"
+  },
+  "ui_delete_group": "حذف المجموعة",
+  "@ui_delete_group": {
+    "description": "favorites delete group"
+  },
+  "msg_delete_group_confirm": "حذف المجموعة «{name}» سيؤدي أيضًا إلى حذف جميع المفضلة بداخلها. لا يمكن التراجع عن هذا الإجراء.",
+  "@msg_delete_group_confirm": {
+    "description": "favorites delete group confirm",
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "msg_please_enter_path": "الرجاء إدخال المسار",
+  "@msg_please_enter_path": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "msg_please_enter_name": "الرجاء إدخال الاسم",
+  "@msg_please_enter_name": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "msg_please_enter_group_name": "الرجاء إدخال اسم المجموعة",
+  "@msg_please_enter_group_name": {
+    "description": "zenfile_end_drawer.dart"
+  },
+  "msg_favorite_exists": "هذا المسار موجود بالفعل في المفضلة",
+  "@msg_favorite_exists": {
+    "description": "zenfile_end_drawer.dart"
+  },
   "msg4dfc167a": "تمكين الفرز المخصص لهذا المجلد",
   "@msge4c84f81": {
     "description": "ui\\screens\\directory_screen.dart"
