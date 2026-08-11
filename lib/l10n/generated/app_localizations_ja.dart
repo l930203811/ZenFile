@@ -515,11 +515,10 @@ class L10nJa extends L10n {
   String get msgb4fbc92c => 'バックアップと復元';
 
   @override
-  String get zenfilebackupssettings1 =>
-      'すべての現在の設定をZenFile/Backups/Settings/に保存';
+  String get zenfilebackupssettings1 => '現在の設定を選択したパスにバックアップ';
 
   @override
-  String get json1 => 'JSONバックアップファイルから設定を選択して復元';
+  String get json1 => '以下のリストからバックアップファイルを選択して復元';
 
   @override
   String get msg534c621a => 'バックアップディレクトリ';
@@ -2347,6 +2346,9 @@ class L10nJa extends L10n {
   String get shizukuroot => 'Shizukuアクセスを許可（Root不要）';
 
   @override
+  String get fusebypass => '一键兼容访问';
+
+  @override
   String selectedcount1(Object selectedCount) {
     return '$selectedCount項目を選択しました';
   }
@@ -2953,10 +2955,10 @@ class L10nJa extends L10n {
   String get ui_file => 'ファイル';
 
   @override
-  String get ui_backup_settings => '設定をバックアップ';
+  String get ui_backup_settings => 'バックアップ';
 
   @override
-  String get ui_restore_settings => '設定を復元';
+  String get ui_restore_settings => '復元';
 
   @override
   String get ui_backup_info => 'バックアップ情報';
@@ -3753,7 +3755,7 @@ class L10nJa extends L10n {
   String get ui_select_remote_server => 'リモートサーバーを選択';
 
   @override
-  String get ui_no_remote_connections => 'リモート接続がありません。ネットワーク接続を追加してください';
+  String get ui_no_remote_connections => '保存済みのリモート接続がありません';
 
   @override
   String get ui_retry => '再試行';
@@ -4489,4 +4491,37 @@ class L10nJa extends L10n {
   @override
   String get changelog_v1126_known_1 =>
       'SMB / FTP / SFTP のリモート動画再生は、一部の場面でまだカクつくことがあります。継続的に最適化中です。';
+
+  @override
+  String get ui_select_backup_path => 'バックアップ先を選択';
+
+  @override
+  String get ui_backup_path_local => 'ローカル';
+
+  @override
+  String get ui_backup_path_remote => 'リモート';
+
+  @override
+  String get ui_select_remote_connection => 'リモート接続を選択';
+
+  @override
+  String get ui_no_backup_files => 'バックアップファイルがありません';
+
+  @override
+  String get ui_please_select_backup_file => '復元するバックアップファイルを選択してください';
+
+  @override
+  String get ui_restore_restart_title => '再起動が必要';
+
+  @override
+  String get ui_restore_restart_message => '一部の設定はアプリの再起動後に反映されます。今すぐ再起動しますか？';
+
+  @override
+  String get ui_restart => '再起動';
+
+  @override
+  String get ui_later => '後で';
+
+  @override
+  String get ui_parent_directory => '親ディレクトリ';
 }

@@ -621,11 +621,11 @@
   "@zenfilebackupssettings1": {
     "description": "ui\\screens\\backup_settings_screen.dart"
   },
-  "zenfilebackupssettings1": "حفظ جميع الإعدادات الحالية إلى ZenFile/Backups/Settings/",
+  "zenfilebackupssettings1": "نسخ جميع الإعدادات الحالية إلى المسار المحدد",
   "@json1": {
     "description": "ui\\screens\\backup_settings_screen.dart"
   },
-  "json1": "اختيار واستعادة الإعدادات من ملف نسخ احتياطي JSON",
+  "json1": "حدد ملف نسخ احتياطي من القائمة أدناه للاستعادة",
   "@msg534c621a": {
     "description": "ui\\screens\\backup_settings_screen.dart"
   },
@@ -3418,8 +3418,8 @@
   "@ui_file": {
     "description": "ui widgets"
   },
-  "ui_backup_settings": "نسخ الإعدادات احتياطياً",
-  "ui_restore_settings": "استعادة الإعدادات",
+  "ui_backup_settings": "نسخ احتياطي",
+  "ui_restore_settings": "استعادة",
   "ui_backup_info": "معلومات النسخ الاحتياطي",
   "ui_backup_file": "ملف النسخ الاحتياطي",
   "ui_no_backup_file": "لا يوجد ملف نسخ احتياطي",
@@ -3703,10 +3703,10 @@
   "ui_single": "فردي",
   "ui_add_remote_path": "إضافة مسار بعيد",
   "ui_select_remote_server": "تحديد الخادم البعيد",
-  "ui_no_remote_connections": "لا توجد اتصالات بعيدة، يرجى إضافة اتصال شبكة أولاً",
+  "ui_no_remote_connections": "لا توجد اتصالات بعيدة محفوظة",
   "ui_retry": "إعادة المحاولة",
   "ui_no_subfolders": "لا توجد مجلدات فرعية",
-  "ui_select_this_folder": "تحديد هذا المجلد",
+  "ui_select_this_folder": "اختيار هذا المجلد",
   "ui_downloading_file": "جارٍ التنزيل: {file}",
   "@ui_downloading_file": {
     "placeholders": {
@@ -4348,53 +4348,29 @@
   },
   "changelog_section_known_issues": "⚠️ Known Issues",
   "@changelog_v1127_new_1": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_new_1": "المفضلة: إضافة زر '+' لإضافة مسارات/أسماء مخصصة يدويًا إلى المفضلة، مجمعة حسب الفئة.",
-
   "@changelog_v1127_new_2": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_new_2": "المفضلة: أصبح يمكن الآن تحرير عناصر المفضلة (الاسم/المسار/المجموعة)؛ وتدعم المجموعات الطي/التوسيع مع الحفظ.",
-
   "@changelog_v1127_new_3": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_new_3": "المفضلة: أصبح بإمكان جميع نقاط الإضافة (قائمة النقاط الثلاث / الضغط المطول / زر '+' العلوي) اختيار مجموعة؛ اضغط مطولاً على مجموعة لإعادة تسميتها/حذفها، واضغط مطولاً على عنصر لتحريره/حذفه.",
-
   "@changelog_v1127_opt_1": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_opt_1": "إصلاح منهجي لبطء الواجهة على Android 15/16 (تجنب الرجوع إلى Impeller في طبقة العرض + طبقة الإدخال/الإخراج + طبقة فك التشفير، تحسين ثلاثي الأبعاد).",
-
   "@changelog_v1127_fix_1": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_fix_1": "إصلاح عدم ظهور منتقي المجموعة عند إجراء 'إضافة إلى المفضلة' في وضع التحديد.",
-
   "@changelog_v1127_known_1": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_known_1": "قد لا يزال تشغيل الفيديو عن بُعد عبر SMB / FTP / SFTP متقطعاً في بعض الحالات؛ التحسين مستمر.",
-
   "@batch_rename_title": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
@@ -4570,5 +4546,55 @@
   "@changelog_v1126_known_1": {
     "description": "v1.1.26 changelog entry"
   },
-  "changelog_v1126_known_1": "قد لا يزال تشغيل الفيديو عن بُعد عبر SMB / FTP / SFTP متقطعاً في بعض الحالات؛ التحسين مستمر."
+  "changelog_v1126_known_1": "قد لا يزال تشغيل الفيديو عن بُعد عبر SMB / FTP / SFTP متقطعاً في بعض الحالات؛ التحسين مستمر.",
+  "ui_select_backup_path": "اختيار مسار النسخ الاحتياطي",
+  "@ui_select_backup_path": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_backup_path_local": "محلي",
+  "@ui_backup_path_local": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_backup_path_remote": "بعيد",
+  "@ui_backup_path_remote": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_select_remote_connection": "اختيار اتصال بعيد",
+  "@ui_select_remote_connection": {
+    "description": "Backup & restore settings screen"
+  },
+  "@ui_select_this_folder": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_no_backup_files": "لا توجد ملفات نسخ احتياطي",
+  "@ui_no_backup_files": {
+    "description": "Backup & restore settings screen"
+  },
+  "@ui_no_remote_connections": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_please_select_backup_file": "يرجى اختيار ملف نسخ احتياطي للاستعادة",
+  "@ui_please_select_backup_file": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_restore_restart_title": "إعادة التشغيل مطلوبة",
+  "@ui_restore_restart_title": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_restore_restart_message": "بعض الإعدادات تتطلب إعادة تشغيل التطبيق لتصبح نافذة. هل تريد إعادة التشغيل الآن؟",
+  "@ui_restore_restart_message": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_restart": "إعادة التشغيل",
+  "@ui_restart": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_later": "لاحقاً",
+  "@ui_later": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_parent_directory": "المجلد الأعلى",
+  "@ui_parent_directory": {
+    "description": "Backup & restore settings screen"
+  }
 }

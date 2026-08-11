@@ -547,10 +547,10 @@ class L10nEn extends L10n {
 
   @override
   String get zenfilebackupssettings1 =>
-      'Save all current settings to ZenFile/Backups/Settings/';
+      'Back up current settings to the selected path';
 
   @override
-  String get json1 => 'Select and restore settings from JSON backup file';
+  String get json1 => 'Select a backup file from the list below to restore';
 
   @override
   String get msg534c621a => 'Backup Directory';
@@ -2424,6 +2424,9 @@ class L10nEn extends L10n {
   String get shizukuroot => 'Grant Shizuku Access (No Root Required)';
 
   @override
+  String get fusebypass => '一键兼容访问';
+
+  @override
   String selectedcount1(Object selectedCount) {
     return '$selectedCount items selected';
   }
@@ -3036,10 +3039,10 @@ class L10nEn extends L10n {
   String get ui_file => 'File';
 
   @override
-  String get ui_backup_settings => 'Backup Settings';
+  String get ui_backup_settings => 'Backup';
 
   @override
-  String get ui_restore_settings => 'Restore Settings';
+  String get ui_restore_settings => 'Restore';
 
   @override
   String get ui_backup_info => 'Backup Info';
@@ -3876,8 +3879,7 @@ class L10nEn extends L10n {
   String get ui_select_remote_server => 'Select Remote Server';
 
   @override
-  String get ui_no_remote_connections =>
-      'No remote connections, please add a network connection first';
+  String get ui_no_remote_connections => 'No saved remote connections';
 
   @override
   String get ui_retry => 'Retry';
@@ -4620,4 +4622,39 @@ class L10nEn extends L10n {
   @override
   String get changelog_v1126_known_1 =>
       'SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.';
+
+  @override
+  String get ui_select_backup_path => 'Select Backup Path';
+
+  @override
+  String get ui_backup_path_local => 'Local';
+
+  @override
+  String get ui_backup_path_remote => 'Remote';
+
+  @override
+  String get ui_select_remote_connection => 'Select Remote Connection';
+
+  @override
+  String get ui_no_backup_files => 'No backup files';
+
+  @override
+  String get ui_please_select_backup_file =>
+      'Please select a backup file to restore';
+
+  @override
+  String get ui_restore_restart_title => 'Restart Required';
+
+  @override
+  String get ui_restore_restart_message =>
+      'Some settings require a restart to take effect. Restart the app now?';
+
+  @override
+  String get ui_restart => 'Restart';
+
+  @override
+  String get ui_later => 'Later';
+
+  @override
+  String get ui_parent_directory => 'Parent Directory';
 }

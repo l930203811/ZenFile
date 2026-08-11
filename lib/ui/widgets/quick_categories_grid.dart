@@ -12,6 +12,7 @@ import '../screens/internal_file_picker_screen.dart';
 import '../screens/storage_analyzer/app_manager_screen.dart';
 import '../screens/more_settings_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
+import '../../core/utils.dart';
 
 import '../screens/network_category_screen.dart';
 import '../screens/all_recent_files_screen.dart';
@@ -33,6 +34,32 @@ class QuickCategoriesGrid extends StatefulWidget {
     final mediaProvider = Provider.of<MediaProvider>(context, listen: false);
     final fileManager = Provider.of<FileManagerProvider>(context, listen: false);
     final l10n = L10n.of(context);
+
+    // 辅助：对有扫描数据的分类组合「大小 (数量)」文本，两者均为 0 时返回 0。
+    String formatSizeCount(String categoryKey) {
+      final size = mediaProvider.getCategoryTotalSize(categoryKey);
+      final count = mediaProvider.getCategoryItemCount(categoryKey);
+      // 若大小未缓存到、且 count 为 0，退化为仅显示数量（首次启动未扫描时不误导用户）。
+      if (size <= 0) return '$count';
+      return '${FileUtils.formatBytes(size, 1)} ($count)';
+    }
+
+    // 「存储」分类：汇总首个内部卷的 已用/总量（参考图片：118 GB / 128 GB）
+    String storageCountText = l10n.msg21cefa9b; // 默认回退文案
+    try {
+      if (fileManager.storageVolumes.isNotEmpty) {
+        final v = fileManager.storageVolumes.firstWhere(
+              (vol) => vol.isInternal,
+          orElse: () => fileManager.storageVolumes.first,
+        );
+        final total = v.totalBytes;
+        final used = v.usedBytes;
+        if (total > 0) {
+          storageCountText = '${FileUtils.formatBytes(used, 1)} / ${FileUtils.formatBytes(total, 1)}';
+        }
+      }
+    } catch (_) {}
+
     final map = <String, Map<String, dynamic>>{
       '系统': {
         'label': l10n.cat_system,
@@ -50,7 +77,7 @@ class QuickCategoriesGrid extends StatefulWidget {
         'label': l10n.cat_storage_volume,
         'icon': Broken.folder_open,
         'color': isDark ? Colors.blueAccent : const Color(0xFF1976D2),
-        'count': l10n.msg21cefa9b,
+        'count': storageCountText,
         'isCustom': false,
         'action': () {
           final internalVolume = fileManager.storageVolumes.isNotEmpty
@@ -67,7 +94,7 @@ class QuickCategoriesGrid extends StatefulWidget {
         'label': l10n.cat_images,
         'icon': Broken.image,
         'color': isDark ? Colors.purpleAccent : Colors.purple,
-        'count': '${mediaProvider.getCategoryItemCount("图片")}',
+        'count': formatSizeCount('图片'),
         'isCustom': false,
         'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.images, onNavigateTab: onNavigateTab),
       },
@@ -75,7 +102,7 @@ class QuickCategoriesGrid extends StatefulWidget {
         'label': l10n.cat_videos,
         'icon': Broken.video,
         'color': isDark ? Colors.redAccent : const Color(0xFFD32F2F),
-        'count': '${mediaProvider.getCategoryItemCount("视频")}',
+        'count': formatSizeCount('视频'),
         'isCustom': false,
         'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.videos, onNavigateTab: onNavigateTab),
       },
@@ -83,7 +110,7 @@ class QuickCategoriesGrid extends StatefulWidget {
         'label': l10n.cat_audios,
         'icon': Broken.music,
         'color': isDark ? Colors.orangeAccent : const Color(0xFFE65100),
-        'count': '${mediaProvider.getCategoryItemCount("音频")}',
+        'count': formatSizeCount('音频'),
         'isCustom': false,
         'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.audios, onNavigateTab: onNavigateTab),
       },
@@ -91,7 +118,7 @@ class QuickCategoriesGrid extends StatefulWidget {
         'label': l10n.cat_documents,
         'icon': Broken.document,
         'color': isDark ? Colors.blueAccent : const Color(0xFF1976D2),
-        'count': '${mediaProvider.getCategoryItemCount("文档")}',
+        'count': formatSizeCount('文档'),
         'isCustom': false,
         'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.documents, onNavigateTab: onNavigateTab),
       },
@@ -99,7 +126,7 @@ class QuickCategoriesGrid extends StatefulWidget {
         'label': l10n.msgc806d0fa,
         'icon': Broken.archive,
         'color': isDark ? Colors.tealAccent : const Color(0xFF00796B),
-        'count': '${mediaProvider.getCategoryItemCount("压缩包")}',
+        'count': formatSizeCount('压缩包'),
         'isCustom': false,
         'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.archives, onNavigateTab: onNavigateTab),
       },
@@ -107,7 +134,7 @@ class QuickCategoriesGrid extends StatefulWidget {
         'label': l10n.cat_downloads,
         'icon': Broken.document_download,
         'color': isDark ? Colors.greenAccent : const Color(0xFF2E7D32),
-        'count': '${mediaProvider.getCategoryItemCount("下载")}',
+        'count': formatSizeCount('下载'),
         'isCustom': false,
         'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.downloads, onNavigateTab: onNavigateTab),
       },
@@ -115,7 +142,7 @@ class QuickCategoriesGrid extends StatefulWidget {
         'label': l10n.msg03070d08,
         'icon': Broken.box,
         'color': isDark ? Colors.amber : const Color(0xFFF57C00),
-        'count': '${mediaProvider.getCategoryItemCount("安装包")}',
+        'count': formatSizeCount('安装包'),
         'isCustom': false,
         'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.apks, onNavigateTab: onNavigateTab),
       },
@@ -123,7 +150,7 @@ class QuickCategoriesGrid extends StatefulWidget {
         'label': l10n.cat_screenshots,
         'icon': Broken.mobile,
         'color': isDark ? Colors.pinkAccent : const Color(0xFFC2185B),
-        'count': '${mediaProvider.getCategoryItemCount("截图")}',
+        'count': formatSizeCount('截图'),
         'isCustom': false,
         'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.screenshots, onNavigateTab: onNavigateTab),
       },
@@ -131,7 +158,7 @@ class QuickCategoriesGrid extends StatefulWidget {
         'label': l10n.cat_recent,
         'icon': Broken.clock,
         'color': isDark ? Colors.indigoAccent : const Color(0xFF3F51B5),
-        'count': '${mediaProvider.getCategoryItemCount("最近")}',
+        'count': formatSizeCount('最近'),
         'isCustom': false,
         'pageBuilder': () => AllRecentFilesScreen(onNavigateTab: onNavigateTab),
       },

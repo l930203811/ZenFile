@@ -621,11 +621,11 @@
   "@zenfilebackupssettings1": {
     "description": "ui\\screens\\backup_settings_screen.dart"
   },
-  "zenfilebackupssettings1": "Sauvegarder tous les paramètres actuels dans ZenFile/Backups/Settings/",
+  "zenfilebackupssettings1": "Sauvegarder les paramètres actuels vers le chemin sélectionné",
   "@json1": {
     "description": "ui\\screens\\backup_settings_screen.dart"
   },
-  "json1": "Sélectionner et restaurer les paramètres depuis un fichier de sauvegarde JSON",
+  "json1": "Sélectionnez un fichier de sauvegarde dans la liste ci-dessous pour restaurer",
   "@msg534c621a": {
     "description": "ui\\screens\\backup_settings_screen.dart"
   },
@@ -3418,8 +3418,8 @@
   "@ui_file": {
     "description": "ui widgets"
   },
-  "ui_backup_settings": "Sauvegarder les paramètres",
-  "ui_restore_settings": "Restaurer les paramètres",
+  "ui_backup_settings": "Sauvegarder",
+  "ui_restore_settings": "Restaurer",
   "ui_backup_info": "Informations de sauvegarde",
   "ui_backup_file": "Fichier de sauvegarde",
   "ui_no_backup_file": "Aucun fichier de sauvegarde",
@@ -3703,7 +3703,7 @@
   "ui_single": "Single",
   "ui_add_remote_path": "Ajouter un chemin distant",
   "ui_select_remote_server": "Sélectionner un serveur distant",
-  "ui_no_remote_connections": "Aucune connexion distante, veuillez d'abord ajouter une connexion réseau",
+  "ui_no_remote_connections": "Aucune connexion distante enregistrée",
   "ui_retry": "Réessayer",
   "ui_no_subfolders": "Aucun sous-dossier",
   "ui_select_this_folder": "Sélectionner ce dossier",
@@ -4348,53 +4348,29 @@
   },
   "changelog_section_known_issues": "⚠️ Known Issues",
   "@changelog_v1127_new_1": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_new_1": "Favoris : ajout d'un bouton '+' pour ajouter manuellement des chemins/noms personnalisés en favoris, regroupés par catégorie.",
-
   "@changelog_v1127_new_2": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_new_2": "Favoris : les éléments favoris peuvent désormais être modifiés (nom/chemin/groupe) ; les groupes prennent en charge le repli/dépli avec persistance.",
-
   "@changelog_v1127_new_3": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_new_3": "Favoris : tous les points d'entrée d'ajout (menu à trois points / appui long / bouton '+' en haut) peuvent désormais choisir un groupe ; appui long sur un groupe pour renommer/supprimer, appui long sur un élément pour modifier/supprimer.",
-
   "@changelog_v1127_opt_1": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_opt_1": "Correction systématique des saccades de l'UI sur Android 15/16 (éviction du repli Impeller au niveau rendu + couche E/S + couche de décodage, optimisation tridimensionnelle).",
-
   "@changelog_v1127_fix_1": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_fix_1": "Corrigé : en mode sélection, l'action 'Favori' n'affichait pas le sélecteur de groupe.",
-
   "@changelog_v1127_known_1": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_known_1": "La lecture vidéo distante SMB / FTP / SFTP peut encore saccader dans certains cas ; l'optimisation se poursuit.",
-
   "@batch_rename_title": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
@@ -4570,5 +4546,55 @@
   "@changelog_v1126_known_1": {
     "description": "v1.1.26 changelog entry"
   },
-  "changelog_v1126_known_1": "La lecture vidéo distante SMB / FTP / SFTP peut encore saccader dans certains cas ; l'optimisation se poursuit."
+  "changelog_v1126_known_1": "La lecture vidéo distante SMB / FTP / SFTP peut encore saccader dans certains cas ; l'optimisation se poursuit.",
+  "ui_select_backup_path": "Sélectionner le chemin de sauvegarde",
+  "@ui_select_backup_path": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_backup_path_local": "Local",
+  "@ui_backup_path_local": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_backup_path_remote": "Distant",
+  "@ui_backup_path_remote": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_select_remote_connection": "Sélectionner la connexion distante",
+  "@ui_select_remote_connection": {
+    "description": "Backup & restore settings screen"
+  },
+  "@ui_select_this_folder": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_no_backup_files": "Aucun fichier de sauvegarde",
+  "@ui_no_backup_files": {
+    "description": "Backup & restore settings screen"
+  },
+  "@ui_no_remote_connections": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_please_select_backup_file": "Veuillez sélectionner un fichier de sauvegarde à restaurer",
+  "@ui_please_select_backup_file": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_restore_restart_title": "Redémarrage requis",
+  "@ui_restore_restart_title": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_restore_restart_message": "Certains paramètres nécessitent un redémarrage de l'application pour prendre effet. Redémarrer maintenant ?",
+  "@ui_restore_restart_message": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_restart": "Redémarrer",
+  "@ui_restart": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_later": "Plus tard",
+  "@ui_later": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_parent_directory": "Dossier parent",
+  "@ui_parent_directory": {
+    "description": "Backup & restore settings screen"
+  }
 }

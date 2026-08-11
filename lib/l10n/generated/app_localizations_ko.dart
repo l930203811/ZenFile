@@ -514,11 +514,10 @@ class L10nKo extends L10n {
   String get msgb4fbc92c => '백업 및 복원';
 
   @override
-  String get zenfilebackupssettings1 =>
-      '모든 현재 설정을 ZenFile/Backups/Settings/에 저장';
+  String get zenfilebackupssettings1 => '현재 설정을 선택한 경로로 백업';
 
   @override
-  String get json1 => 'JSON 백업 파일에서 설정을 선택하고 복원';
+  String get json1 => '아래 목록에서 백업 파일을 선택하여 복원';
 
   @override
   String get msg534c621a => '백업 디렉토리';
@@ -2343,6 +2342,9 @@ class L10nKo extends L10n {
   String get shizukuroot => 'Shizuku 접근 권한 부여 (루트 불필요)';
 
   @override
+  String get fusebypass => '一键兼容访问';
+
+  @override
   String selectedcount1(Object selectedCount) {
     return '$selectedCount개 항목 선택됨';
   }
@@ -2950,10 +2952,10 @@ class L10nKo extends L10n {
   String get ui_file => '파일';
 
   @override
-  String get ui_backup_settings => '설정 백업';
+  String get ui_backup_settings => '백업';
 
   @override
-  String get ui_restore_settings => '설정 복원';
+  String get ui_restore_settings => '복원';
 
   @override
   String get ui_backup_info => '백업 정보';
@@ -3752,7 +3754,7 @@ class L10nKo extends L10n {
   String get ui_select_remote_server => '원격 서버 선택';
 
   @override
-  String get ui_no_remote_connections => '원격 연결이 없습니다. 네트워크 연결을 먼저 추가하세요';
+  String get ui_no_remote_connections => '저장된 원격 연결이 없음';
 
   @override
   String get ui_retry => '재시도';
@@ -3761,7 +3763,7 @@ class L10nKo extends L10n {
   String get ui_no_subfolders => '하위 폴더 없음';
 
   @override
-  String get ui_select_this_folder => '이 폴더 선택';
+  String get ui_select_this_folder => '현재 폴더 선택';
 
   @override
   String ui_downloading_file(String file) {
@@ -4487,4 +4489,38 @@ class L10nKo extends L10n {
   @override
   String get changelog_v1126_known_1 =>
       'SMB / FTP / SFTP 원격 동영상 재생은 일부 상황에서 여전히 버벅일 수 있으며 지속적으로 최적화 중입니다.';
+
+  @override
+  String get ui_select_backup_path => '백업 경로 선택';
+
+  @override
+  String get ui_backup_path_local => '로컬';
+
+  @override
+  String get ui_backup_path_remote => '원격';
+
+  @override
+  String get ui_select_remote_connection => '원격 연결 선택';
+
+  @override
+  String get ui_no_backup_files => '백업 파일 없음';
+
+  @override
+  String get ui_please_select_backup_file => '복원할 백업 파일을 선택하세요';
+
+  @override
+  String get ui_restore_restart_title => '재시작 필요';
+
+  @override
+  String get ui_restore_restart_message =>
+      '일부 설정은 앱을 다시 시작해야 적용됩니다. 지금 다시 시작하시겠습니까?';
+
+  @override
+  String get ui_restart => '다시 시작';
+
+  @override
+  String get ui_later => '나중에';
+
+  @override
+  String get ui_parent_directory => '상위 디렉터리';
 }

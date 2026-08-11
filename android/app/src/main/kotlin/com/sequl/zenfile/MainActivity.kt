@@ -1632,8 +1632,19 @@ class MainActivity : AudioServiceFragmentActivity() {
     private fun checkRootAvailable(): Boolean {
         return try {
             val process = Runtime.getRuntime().exec(arrayOf("su", "-c", "id"))
-            val exitCode = process.waitFor()
-            exitCode == 0
+            // 加超时防止 vivo 等定制 ROM 的 su 弹出权限对话框导致永久挂起，
+            // 进而使 checkStatus / loadDirectory 永远不返回。
+            val completed = process.waitFor(3, java.util.concurrent.TimeUnit.SECONDS)
+            if (!completed) {
+                process.destroy()
+                return false
+            }
+            // 仅退出码为 0 不足以判断（部分厂商 ROM 内置非标准 su 可能返回 0
+            // 但非真正 root）。校验 stdout 输出包含 uid=0，确保是真正的 root 提权，
+            // 避免 useRootMode 误判粘性导致 Android/data 永远走 su 失败显示空。
+            val output = process.inputStream.bufferedReader().use { it.readText() }
+            val exitCode = process.exitValue()
+            exitCode == 0 && output.contains("uid=0")
         } catch (e: Exception) {
             false
         }

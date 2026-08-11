@@ -294,6 +294,28 @@ class PreferencesService {
     await _prefs?.setInt('cat_count_$category', count);
   }
 
+  static const String _keyCategorySizes = 'cat_sizes';
+
+  /// 批量保存各分类的文件总大小（字节，序列化为 JSON Map 字符串）。
+  static Future<void> saveCategorySizes(Map<String, String> sizes) async {
+    final str = jsonEncode(sizes);
+    await _prefs?.setString(_keyCategorySizes, str);
+  }
+
+  /// 获取单个分类的文件总大小缓存（字节），无数据返回 null。
+  static int? getCategorySize(String category) {
+    final str = _prefs?.getString(_keyCategorySizes);
+    if (str == null || str.isEmpty) return null;
+    try {
+      final map = jsonDecode(str) as Map<String, dynamic>;
+      final v = map[category];
+      if (v == null) return null;
+      return int.tryParse(v.toString());
+    } catch (_) {
+      return null;
+    }
+  }
+
   static const String _keyCustomShortcuts = 'custom_shortcuts';
 
   static List<CustomShortcutModel>? getCustomShortcuts() {

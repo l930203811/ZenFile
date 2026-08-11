@@ -72,8 +72,13 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   @override
   void initState() {
     super.initState();
-    _searchFolderPath = widget.searchFolderPath;
     final fileProvider = context.read<FileManagerProvider>();
+    // 默认从「当前所在文件夹」开始搜索（与 ES 一致：在隐私系统/子文件夹内打开搜索即搜该目录），
+    // 仅在处于存储根目录时才退化为全设备全局搜索。
+    // 修复：vivo 隐私系统文件夹从 /storage/emulated/0 全局递归搜不到（需从当前所在路径才能列目录）。
+    final current = fileProvider.currentPath;
+    _searchFolderPath = widget.searchFolderPath ??
+        (current.isNotEmpty ? current : '/storage/emulated/0');
     _lastActivePath = fileProvider.currentPath;
     fileProvider.addListener(_onFileManagerChanged);
   }

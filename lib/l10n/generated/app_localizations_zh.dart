@@ -513,10 +513,10 @@ class L10nZh extends L10n {
   String get msgb4fbc92c => '备份与恢复';
 
   @override
-  String get zenfilebackupssettings1 => '将所有当前设置保存到 ZenFile/Backups/Settings/';
+  String get zenfilebackupssettings1 => '将当前设置备份到已选择的路径';
 
   @override
-  String get json1 => '选择并恢复 JSON 备份文件中的设置';
+  String get json1 => '从下方列表中选择备份文件进行恢复';
 
   @override
   String get msg534c621a => '备份目录';
@@ -2337,6 +2337,9 @@ class L10nZh extends L10n {
   String get shizukuroot => '授予Shizuku访问权限（无需Root）';
 
   @override
+  String get fusebypass => '一键兼容访问';
+
+  @override
   String selectedcount1(Object selectedCount) {
     return '已选择 $selectedCount 项';
   }
@@ -2942,10 +2945,10 @@ class L10nZh extends L10n {
   String get ui_file => '文件';
 
   @override
-  String get ui_backup_settings => '备份设置';
+  String get ui_backup_settings => '备份';
 
   @override
-  String get ui_restore_settings => '恢复设置';
+  String get ui_restore_settings => '恢复';
 
   @override
   String get ui_backup_info => '备份信息';
@@ -3722,7 +3725,7 @@ class L10nZh extends L10n {
   String get ui_select_remote_server => '选择远程服务器';
 
   @override
-  String get ui_no_remote_connections => '暂无远程连接，请先添加网络连接';
+  String get ui_no_remote_connections => '没有已保存的远程连接';
 
   @override
   String get ui_retry => '重试';
@@ -3731,7 +3734,7 @@ class L10nZh extends L10n {
   String get ui_no_subfolders => '无子文件夹';
 
   @override
-  String get ui_select_this_folder => '选择此文件夹';
+  String get ui_select_this_folder => '选择当前文件夹';
 
   @override
   String ui_downloading_file(String file) {
@@ -4443,6 +4446,39 @@ class L10nZh extends L10n {
   @override
   String get changelog_v1126_known_1 =>
       'SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。';
+
+  @override
+  String get ui_select_backup_path => '选择备份路径';
+
+  @override
+  String get ui_backup_path_local => '本地';
+
+  @override
+  String get ui_backup_path_remote => '远程';
+
+  @override
+  String get ui_select_remote_connection => '选择远程连接';
+
+  @override
+  String get ui_no_backup_files => '暂无备份文件';
+
+  @override
+  String get ui_please_select_backup_file => '请选择要恢复的备份文件';
+
+  @override
+  String get ui_restore_restart_title => '需要重启';
+
+  @override
+  String get ui_restore_restart_message => '部分设置需要重启应用才能生效，是否立即重启？';
+
+  @override
+  String get ui_restart => '重启';
+
+  @override
+  String get ui_later => '稍后';
+
+  @override
+  String get ui_parent_directory => '上级目录';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -4954,10 +4990,10 @@ class L10nZhTw extends L10nZh {
   String get msgb4fbc92c => '備份與恢復';
 
   @override
-  String get zenfilebackupssettings1 => '將所有當前設定儲存到 ZenFile/Backups/Settings/';
+  String get zenfilebackupssettings1 => '將目前設定備份到已選擇的路徑';
 
   @override
-  String get json1 => '選擇並恢復 JSON 備份檔案中的設定';
+  String get json1 => '從下方清單中選擇備份檔案進行恢復';
 
   @override
   String get msg534c621a => '備份目錄';
@@ -7377,10 +7413,10 @@ class L10nZhTw extends L10nZh {
   String get ui_file => '檔案';
 
   @override
-  String get ui_backup_settings => '備份設定';
+  String get ui_backup_settings => '備份';
 
   @override
-  String get ui_restore_settings => '恢復設定';
+  String get ui_restore_settings => '恢復';
 
   @override
   String get ui_backup_info => '備份資訊';
@@ -8120,7 +8156,7 @@ class L10nZhTw extends L10nZh {
   String get ui_select_remote_server => '選擇遠端伺服器';
 
   @override
-  String get ui_no_remote_connections => '暫無遠端連線，請先新增網路連線';
+  String get ui_no_remote_connections => '沒有已儲存的遠端連線';
 
   @override
   String get ui_retry => '重試';
@@ -8129,7 +8165,7 @@ class L10nZhTw extends L10nZh {
   String get ui_no_subfolders => '無子資料夾';
 
   @override
-  String get ui_select_this_folder => '選擇此資料夾';
+  String get ui_select_this_folder => '選擇目前資料夾';
 
   @override
   String ui_downloading_file(String file) {
@@ -8839,4 +8875,37 @@ class L10nZhTw extends L10nZh {
   @override
   String get changelog_v1126_known_1 =>
       'SMB / FTP / SFTP 遠端影片播放於部分場景下仍可能出現卡頓，持續最佳化中。';
+
+  @override
+  String get ui_select_backup_path => '選擇備份路徑';
+
+  @override
+  String get ui_backup_path_local => '本機';
+
+  @override
+  String get ui_backup_path_remote => '遠端';
+
+  @override
+  String get ui_select_remote_connection => '選擇遠端連線';
+
+  @override
+  String get ui_no_backup_files => '暫無備份檔案';
+
+  @override
+  String get ui_please_select_backup_file => '請選擇要恢復的備份檔案';
+
+  @override
+  String get ui_restore_restart_title => '需要重新啟動';
+
+  @override
+  String get ui_restore_restart_message => '部分設定需要重新啟動應用程式才能生效，是否立即重新啟動？';
+
+  @override
+  String get ui_restart => '重新啟動';
+
+  @override
+  String get ui_later => '稍後';
+
+  @override
+  String get ui_parent_directory => '上層目錄';
 }

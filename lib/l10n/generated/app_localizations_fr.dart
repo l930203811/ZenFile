@@ -557,11 +557,11 @@ class L10nFr extends L10n {
 
   @override
   String get zenfilebackupssettings1 =>
-      'Sauvegarder tous les paramètres actuels dans ZenFile/Backups/Settings/';
+      'Sauvegarder les paramètres actuels vers le chemin sélectionné';
 
   @override
   String get json1 =>
-      'Sélectionner et restaurer les paramètres depuis un fichier de sauvegarde JSON';
+      'Sélectionnez un fichier de sauvegarde dans la liste ci-dessous pour restaurer';
 
   @override
   String get msg534c621a => 'Répertoire de sauvegarde';
@@ -2476,6 +2476,9 @@ class L10nFr extends L10n {
   String get shizukuroot => 'Accorder l\'accès Shizuku (Pas de root requis)';
 
   @override
+  String get fusebypass => '一键兼容访问';
+
+  @override
   String selectedcount1(Object selectedCount) {
     return '$selectedCount éléments sélectionnés';
   }
@@ -3103,10 +3106,10 @@ class L10nFr extends L10n {
   String get ui_file => 'Fichier';
 
   @override
-  String get ui_backup_settings => 'Sauvegarder les paramètres';
+  String get ui_backup_settings => 'Sauvegarder';
 
   @override
-  String get ui_restore_settings => 'Restaurer les paramètres';
+  String get ui_restore_settings => 'Restaurer';
 
   @override
   String get ui_backup_info => 'Informations de sauvegarde';
@@ -3941,7 +3944,7 @@ class L10nFr extends L10n {
 
   @override
   String get ui_no_remote_connections =>
-      'Aucune connexion distante, veuillez d\'abord ajouter une connexion réseau';
+      'Aucune connexion distante enregistrée';
 
   @override
   String get ui_retry => 'Réessayer';
@@ -4690,4 +4693,40 @@ class L10nFr extends L10n {
   @override
   String get changelog_v1126_known_1 =>
       'La lecture vidéo distante SMB / FTP / SFTP peut encore saccader dans certains cas ; l\'optimisation se poursuit.';
+
+  @override
+  String get ui_select_backup_path => 'Sélectionner le chemin de sauvegarde';
+
+  @override
+  String get ui_backup_path_local => 'Local';
+
+  @override
+  String get ui_backup_path_remote => 'Distant';
+
+  @override
+  String get ui_select_remote_connection =>
+      'Sélectionner la connexion distante';
+
+  @override
+  String get ui_no_backup_files => 'Aucun fichier de sauvegarde';
+
+  @override
+  String get ui_please_select_backup_file =>
+      'Veuillez sélectionner un fichier de sauvegarde à restaurer';
+
+  @override
+  String get ui_restore_restart_title => 'Redémarrage requis';
+
+  @override
+  String get ui_restore_restart_message =>
+      'Certains paramètres nécessitent un redémarrage de l\'application pour prendre effet. Redémarrer maintenant ?';
+
+  @override
+  String get ui_restart => 'Redémarrer';
+
+  @override
+  String get ui_later => 'Plus tard';
+
+  @override
+  String get ui_parent_directory => 'Dossier parent';
 }

@@ -621,11 +621,11 @@
   "@zenfilebackupssettings1": {
     "description": "ui\\screens\\backup_settings_screen.dart"
   },
-  "zenfilebackupssettings1": "Сохранить все текущие настройки в ZenFile/Backups/Settings/",
+  "zenfilebackupssettings1": "Создать резервную копию текущих настроек в выбранный путь",
   "@json1": {
     "description": "ui\\screens\\backup_settings_screen.dart"
   },
-  "json1": "Выбрать и восстановить настройки из файла резервной копии JSON",
+  "json1": "Выберите файл резервной копии из списка ниже для восстановления",
   "@msg534c621a": {
     "description": "ui\\screens\\backup_settings_screen.dart"
   },
@@ -3418,8 +3418,8 @@
   "@ui_file": {
     "description": "ui widgets"
   },
-  "ui_backup_settings": "Резервное Копирование Настроек",
-  "ui_restore_settings": "Восстановление Настроек",
+  "ui_backup_settings": "Резервное копирование",
+  "ui_restore_settings": "Восстановить",
   "ui_backup_info": "Информация о Резервной Копии",
   "ui_backup_file": "Файл Резервной Копии",
   "ui_no_backup_file": "Нет файла резервной копии",
@@ -3703,7 +3703,7 @@
   "ui_single": "Сингл",
   "ui_add_remote_path": "Добавить удалённый путь",
   "ui_select_remote_server": "Выбрать удалённый сервер",
-  "ui_no_remote_connections": "Нет удалённых подключений, сначала добавьте сетевое подключение",
+  "ui_no_remote_connections": "Нет сохраненных удаленных подключений",
   "ui_retry": "Повторить",
   "ui_no_subfolders": "Нет подпапок",
   "ui_select_this_folder": "Выбрать эту папку",
@@ -4348,53 +4348,29 @@
   },
   "changelog_section_known_issues": "⚠️ Known Issues",
   "@changelog_v1127_new_1": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_new_1": "Избранное: добавлена кнопка '+' для ручного добавления пользовательских путей/имён в избранное с группировкой по категориям.",
-
   "@changelog_v1127_new_2": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_new_2": "Избранное: элементы избранного теперь можно редактировать (имя/путь/группа); группы поддерживают сворачивание/разворачивание с сохранением.",
-
   "@changelog_v1127_new_3": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_new_3": "Избранное: все точки добавления (меню из трёх точек / долгое нажатие / верхняя кнопка '+') теперь позволяют выбрать группу; долгое нажатие на группу — переименовать/удалить, на элемент — редактировать/удалить.",
-
   "@changelog_v1127_opt_1": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_opt_1": "Системно устранены подтормаживания UI в Android 15/16 (обход отката на Impeller на уровне рендеринга + уровень ввода-вывода + уровень декодирования, трёхмерная оптимизация).",
-
   "@changelog_v1127_fix_1": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_fix_1": "Исправлено: в режиме выбора действие 'В избранное' не показывало выбор группы.",
-
   "@changelog_v1127_known_1": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_known_1": "Воспроизведение удалённого видео по SMB / FTP / SFTP в некоторых сценариях всё ещё может подтормаживать; оптимизация продолжается.",
-
   "@batch_rename_title": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
@@ -4570,5 +4546,55 @@
   "@changelog_v1126_known_1": {
     "description": "v1.1.26 changelog entry"
   },
-  "changelog_v1126_known_1": "Воспроизведение удалённого видео по SMB / FTP / SFTP в некоторых сценариях всё ещё может подтормаживать; оптимизация продолжается."
+  "changelog_v1126_known_1": "Воспроизведение удалённого видео по SMB / FTP / SFTP в некоторых сценариях всё ещё может подтормаживать; оптимизация продолжается.",
+  "ui_select_backup_path": "Выбрать путь резервной копии",
+  "@ui_select_backup_path": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_backup_path_local": "Локальный",
+  "@ui_backup_path_local": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_backup_path_remote": "Удаленный",
+  "@ui_backup_path_remote": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_select_remote_connection": "Выбрать удаленное подключение",
+  "@ui_select_remote_connection": {
+    "description": "Backup & restore settings screen"
+  },
+  "@ui_select_this_folder": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_no_backup_files": "Нет файлов резервных копий",
+  "@ui_no_backup_files": {
+    "description": "Backup & restore settings screen"
+  },
+  "@ui_no_remote_connections": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_please_select_backup_file": "Пожалуйста, выберите файл резервной копии для восстановления",
+  "@ui_please_select_backup_file": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_restore_restart_title": "Требуется перезагрузка",
+  "@ui_restore_restart_title": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_restore_restart_message": "Некоторые настройки требуют перезапуска приложения для применения. Перезапустить сейчас?",
+  "@ui_restore_restart_message": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_restart": "Перезапустить",
+  "@ui_restart": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_later": "Позже",
+  "@ui_later": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_parent_directory": "Родительский каталог",
+  "@ui_parent_directory": {
+    "description": "Backup & restore settings screen"
+  }
 }

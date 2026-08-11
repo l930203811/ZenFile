@@ -642,11 +642,11 @@
   "@msgb4fbc92c": {
     "description": "ui\\screens\\backup_settings_screen.dart"
   },
-  "zenfilebackupssettings1": "将所有当前设置保存到 ZenFile/Backups/Settings/",
+  "zenfilebackupssettings1": "将当前设置备份到已选择的路径",
   "@zenfilebackupssettings1": {
     "description": "ui\\screens\\backup_settings_screen.dart"
   },
-  "json1": "选择并恢复 JSON 备份文件中的设置",
+  "json1": "从下方列表中选择备份文件进行恢复",
   "@json1": {
     "description": "ui\\screens\\backup_settings_screen.dart"
   },
@@ -2995,6 +2995,10 @@
   "@shizukuroot": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
   },
+  "fusebypass": "一键兼容访问",
+  "@fusebypass": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart - 绕过FUSE限制"
+  },
   "selectedcount1": "已选择 {selectedCount} 项",
   "@selectedcount1": {
     "description": "ui\\widgets\\selection_action_bar.dart",
@@ -3500,8 +3504,8 @@
   "@ui_file": {
     "description": "ui widgets"
   },
-  "ui_backup_settings": "备份设置",
-  "ui_restore_settings": "恢复设置",
+  "ui_backup_settings": "备份",
+  "ui_restore_settings": "恢复",
   "ui_backup_info": "备份信息",
   "ui_backup_file": "备份文件",
   "ui_no_backup_file": "暂无备份文件",
@@ -3887,10 +3891,10 @@
   "ui_single": "单曲",
   "ui_add_remote_path": "添加远程路径",
   "ui_select_remote_server": "选择远程服务器",
-  "ui_no_remote_connections": "暂无远程连接，请先添加网络连接",
+  "ui_no_remote_connections": "没有已保存的远程连接",
   "ui_retry": "重试",
   "ui_no_subfolders": "无子文件夹",
-  "ui_select_this_folder": "选择此文件夹",
+  "ui_select_this_folder": "选择当前文件夹",
   "ui_downloading_file": "下载中: {file}",
   "@ui_downloading_file": {
     "placeholders": {
@@ -4614,53 +4618,29 @@
   },
   "changelog_section_known_issues": "⚠️ 已知问题",
   "@changelog_v1127_new_1": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_new_1": "收藏夹：新增「+」按钮，可手动添加自定义路径/名称的收藏项，并按分组聚合显示。",
-
   "@changelog_v1127_new_2": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_new_2": "收藏夹：收藏项现支持编辑（名称/路径/分组）；分组支持折叠/展开并持久化保存。",
-
   "@changelog_v1127_new_3": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_new_3": "收藏夹：所有收藏入口（三点菜单/长按弹窗/顶部「+」按钮）均可选择分组；长按分组可重命名/删除，长按收藏项可编辑/删除。",
-
   "@changelog_v1127_opt_1": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_opt_1": "系统性修复安卓 15/16 UI 卡顿（渲染层规避 Impeller 回退 + IO 层 + 解码层三维优化）。",
-
   "@changelog_v1127_fix_1": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_fix_1": "修复选择模式下「收藏」未弹出分组选择的问题。",
-
   "@changelog_v1127_known_1": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_known_1": "SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。",
-
   "@batch_rename_title": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
@@ -4836,5 +4816,55 @@
   "@changelog_v1126_known_1": {
     "description": "v1.1.26 changelog entry"
   },
-  "changelog_v1126_known_1": "SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。"
+  "changelog_v1126_known_1": "SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。",
+  "ui_select_backup_path": "选择备份路径",
+  "@ui_select_backup_path": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_backup_path_local": "本地",
+  "@ui_backup_path_local": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_backup_path_remote": "远程",
+  "@ui_backup_path_remote": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_select_remote_connection": "选择远程连接",
+  "@ui_select_remote_connection": {
+    "description": "Backup & restore settings screen"
+  },
+  "@ui_select_this_folder": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_no_backup_files": "暂无备份文件",
+  "@ui_no_backup_files": {
+    "description": "Backup & restore settings screen"
+  },
+  "@ui_no_remote_connections": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_please_select_backup_file": "请选择要恢复的备份文件",
+  "@ui_please_select_backup_file": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_restore_restart_title": "需要重启",
+  "@ui_restore_restart_title": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_restore_restart_message": "部分设置需要重启应用才能生效，是否立即重启？",
+  "@ui_restore_restart_message": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_restart": "重启",
+  "@ui_restart": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_later": "稍后",
+  "@ui_later": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_parent_directory": "上级目录",
+  "@ui_parent_directory": {
+    "description": "Backup & restore settings screen"
+  }
 }

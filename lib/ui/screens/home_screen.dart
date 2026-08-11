@@ -7,6 +7,7 @@ import '../../providers/file_manager_provider.dart';
 import '../../providers/media_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../widgets/quick_categories_grid.dart';
+import '../widgets/storage_overview.dart';
 import '../widgets/zenfile_drawer.dart';
 import '../widgets/zenfile_end_drawer.dart';
 import '../widgets/sort_modal.dart';
@@ -236,7 +237,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
               });
             },
             onNavigateToBrowse: () => _switchTab(1),
-            searchFolderPath: context.read<FileManagerProvider>().rootPath,
+            // 不传 searchFolderPath：让 GlobalSearchScreen 在 initState 用
+            // fileProvider.currentPath 作为搜索范围（与 ES 一致：在当前文件夹内
+            // 打开搜索即搜该目录）。原先传 rootPath（恒为 /storage/emulated/0）
+            // 会导致搜索范围永远是存储根，vivo 隐私系统等隔离挂载点的文件
+            // 从根递归访问不到，搜不到。
             provider: context.read<FileManagerProvider>(),
           ),
         ),
@@ -478,6 +483,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  StorageVolumesOverview(
+                    onNavigateTab: (index) => _switchTab(index),
+                  ),
                   QuickCategoriesGrid(
                     onNavigateTab: (index) => _switchTab(index),
                     showTitle: false,

@@ -1805,6 +1805,7 @@ class FileManagerProvider extends ChangeNotifier {
       final parent = _parentOf(tab.currentPath);
       if (parent == tab.currentPath) return false;
       final exited = tab.currentPath;
+
       await loadDirectory(parent, showLoading: false, recordHistory: false);
       _highlightExited(exited);
       return true;
@@ -2336,13 +2337,19 @@ class FileManagerProvider extends ChangeNotifier {
     if (activeTab.isRestrictedMode) {
       final status = await RootShizukuService.checkStatus();
       activeTab.isRootAvailable = status.isRootAvailable;
-      if (status.isRootAvailable && (activeTab.useRootMode || !status.isShizukuAvailable)) {
-        activeTab.useRootMode = true;
-        activeTab.useShizukuMode = false;
-        activeTab.needsPermission = false;
-      } else if (status.isShizukuAvailable && status.shizukuPermissionGranted) {
+      // Shizuku 已授权时优先于 Root：Shizuku 授权是用户明确行为，比 root 检测可靠。
+      // 修复 useRootMode 粘性 Bug：原逻辑 BRANCH A 条件为
+      // isRootAvailable && (useRootMode || !isShizukuAvailable)，首次进入受限路径时
+      // 若 Shizuku 未运行 + root 误判 → useRootMode=true → su 失败 → 空。之后即使
+      // Shizuku 已授权，useRootMode 卡 true 永远走 root 失败，需导航到非受限路径才能
+      // 重置。调换优先级后，Shizuku 已授权即走 Shizuku，不受 useRootMode 粘性影响。
+      if (status.isShizukuAvailable && status.shizukuPermissionGranted) {
         activeTab.useShizukuMode = true;
         activeTab.useRootMode = false;
+        activeTab.needsPermission = false;
+      } else if (status.isRootAvailable) {
+        activeTab.useRootMode = true;
+        activeTab.useShizukuMode = false;
         activeTab.needsPermission = false;
       } else {
         activeTab.needsPermission = true;
@@ -2418,13 +2425,14 @@ class FileManagerProvider extends ChangeNotifier {
       activeTab.isRestrictedMode = true;
       final status = await RootShizukuService.checkStatus();
       activeTab.isRootAvailable = status.isRootAvailable;
-      if (status.isRootAvailable && (activeTab.useRootMode || !status.isShizukuAvailable)) {
-        activeTab.useRootMode = true;
-        activeTab.useShizukuMode = false;
-        activeTab.needsPermission = false;
-      } else if (status.isShizukuAvailable && status.shizukuPermissionGranted) {
+      // 同主分支：Shizuku 已授权优先于 Root，避免 useRootMode 粘性 Bug。
+      if (status.isShizukuAvailable && status.shizukuPermissionGranted) {
         activeTab.useShizukuMode = true;
         activeTab.useRootMode = false;
+        activeTab.needsPermission = false;
+      } else if (status.isRootAvailable) {
+        activeTab.useRootMode = true;
+        activeTab.useShizukuMode = false;
         activeTab.needsPermission = false;
       } else {
         activeTab.needsPermission = true;

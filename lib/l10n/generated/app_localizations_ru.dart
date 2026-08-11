@@ -557,11 +557,11 @@ class L10nRu extends L10n {
 
   @override
   String get zenfilebackupssettings1 =>
-      'Сохранить все текущие настройки в ZenFile/Backups/Settings/';
+      'Создать резервную копию текущих настроек в выбранный путь';
 
   @override
   String get json1 =>
-      'Выбрать и восстановить настройки из файла резервной копии JSON';
+      'Выберите файл резервной копии из списка ниже для восстановления';
 
   @override
   String get msg534c621a => 'Каталог Резервных Копий';
@@ -2466,6 +2466,9 @@ class L10nRu extends L10n {
   String get shizukuroot => 'Предоставить Доступ к Shizuku (Root Не Требуется)';
 
   @override
+  String get fusebypass => '一键兼容访问';
+
+  @override
   String selectedcount1(Object selectedCount) {
     return '$selectedCount элементов выбрано';
   }
@@ -3086,10 +3089,10 @@ class L10nRu extends L10n {
   String get ui_file => 'Файл';
 
   @override
-  String get ui_backup_settings => 'Резервное Копирование Настроек';
+  String get ui_backup_settings => 'Резервное копирование';
 
   @override
-  String get ui_restore_settings => 'Восстановление Настроек';
+  String get ui_restore_settings => 'Восстановить';
 
   @override
   String get ui_backup_info => 'Информация о Резервной Копии';
@@ -3922,7 +3925,7 @@ class L10nRu extends L10n {
 
   @override
   String get ui_no_remote_connections =>
-      'Нет удалённых подключений, сначала добавьте сетевое подключение';
+      'Нет сохраненных удаленных подключений';
 
   @override
   String get ui_retry => 'Повторить';
@@ -4670,4 +4673,39 @@ class L10nRu extends L10n {
   @override
   String get changelog_v1126_known_1 =>
       'Воспроизведение удалённого видео по SMB / FTP / SFTP в некоторых сценариях всё ещё может подтормаживать; оптимизация продолжается.';
+
+  @override
+  String get ui_select_backup_path => 'Выбрать путь резервной копии';
+
+  @override
+  String get ui_backup_path_local => 'Локальный';
+
+  @override
+  String get ui_backup_path_remote => 'Удаленный';
+
+  @override
+  String get ui_select_remote_connection => 'Выбрать удаленное подключение';
+
+  @override
+  String get ui_no_backup_files => 'Нет файлов резервных копий';
+
+  @override
+  String get ui_please_select_backup_file =>
+      'Пожалуйста, выберите файл резервной копии для восстановления';
+
+  @override
+  String get ui_restore_restart_title => 'Требуется перезагрузка';
+
+  @override
+  String get ui_restore_restart_message =>
+      'Некоторые настройки требуют перезапуска приложения для применения. Перезапустить сейчас?';
+
+  @override
+  String get ui_restart => 'Перезапустить';
+
+  @override
+  String get ui_later => 'Позже';
+
+  @override
+  String get ui_parent_directory => 'Родительский каталог';
 }

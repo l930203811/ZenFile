@@ -549,6 +549,8 @@ class MediaProvider extends ChangeNotifier {
   List<FileSystemEntity> _downloads = [];
   List<FileSystemEntity> _apks = [];
   List<FileSystemEntity> _screenshots = [];
+  /// 各分类文件总大小缓存（字节），扫描完成后统一计算，避免 UI 构建时重复 stat。
+  final Map<String, int> _categorySizeCache = {};
   List<FileSystemEntity> _customImages = [];
   List<FileSystemEntity> _customVideos = [];
   List<FileSystemEntity> _customScreenshots = [];
@@ -974,6 +976,71 @@ class MediaProvider extends ChangeNotifier {
     return PreferencesService.getCategoryCount(category);
   }
 
+  /// 对 FileSystemEntity 列表递归统计文件字节总和（非文件项跳过）。
+  static int _sumEntitySize(List<FileSystemEntity> entities) {
+    int total = 0;
+    for (final e in entities) {
+      try {
+        if (e is File) {
+          total += e.lengthSync();
+        } else if (e is Directory) {
+          // 分类页条目以单个文件为主，目录单独分类时按 0 处理，
+          // 避免主线程对大目录做递归 stat 阻塞 UI。
+        }
+      } catch (_) {}
+    }
+    return total;
+  }
+
+  /// 重新计算各媒体分类的总大小并写入缓存。
+  /// 仅在扫描完成（saveCategoryCount 批量写入处）调用，避免重复计算。
+  void _recalcCategorySizes() {
+    try {
+      _categorySizeCache['图片'] = _sumEntitySize(images.whereType<FileSystemEntity>().toList());
+    } catch (_) { _categorySizeCache['图片'] = 0; }
+    try {
+      _categorySizeCache['视频'] = _sumEntitySize(videos.whereType<FileSystemEntity>().toList());
+    } catch (_) { _categorySizeCache['视频'] = 0; }
+    // SongModel 的 size 字段单位为字节。
+    int audioSize = 0;
+    for (final s in _audios) {
+      try { audioSize += s.size; } catch (_) {}
+    }
+    _categorySizeCache['音频'] = audioSize;
+    _categorySizeCache['文档'] = _sumEntitySize(_documents);
+    _categorySizeCache['压缩包'] = _sumEntitySize(_archives);
+    _categorySizeCache['下载'] = _sumEntitySize(_downloads);
+    _categorySizeCache['安装包'] = _sumEntitySize(_apks);
+    try {
+      _categorySizeCache['截图'] = _sumEntitySize(screenshots.whereType<FileSystemEntity>().toList());
+    } catch (_) { _categorySizeCache['截图'] = 0; }
+    // 「最近」分类的 FileItemModel 自带 size 字段（字节）。
+    int recentSize = 0;
+    for (final r in _recentFiles) {
+      try { recentSize += r.size; } catch (_) {}
+    }
+    _categorySizeCache['最近'] = recentSize;
+    _categorySizeCache['应用'] = 0;
+    _categorySizeCache['设置'] = 0;
+    _categorySizeCache['网络'] = 0;
+    _categorySizeCache['保险箱'] = 0;
+    // 缓存到偏好设置，扫描未完成时可回落显示。
+    PreferencesService.saveCategorySizes(Map<String, String>.from(
+      _categorySizeCache.map((k, v) => MapEntry(k, v.toString())),
+    ));
+  }
+
+  /// 获取指定分类的文件总大小（字节）。优先使用扫描后的缓存，
+  /// 未就绪时回落到偏好设置，均无数据返回 0。
+  int getCategoryTotalSize(String category) {
+    if (_categorySizeCache.containsKey(category) && _isLoaded) {
+      return _categorySizeCache[category] ?? 0;
+    }
+    final pref = PreferencesService.getCategorySize(category);
+    if (pref != null) return pref;
+    return 0;
+  }
+
   Future<void> _loadFromDiskCache() async {
     try {
       final dir = await getTemporaryDirectory();
@@ -1213,6 +1280,7 @@ class MediaProvider extends ChangeNotifier {
       PreferencesService.saveCategoryCount('下载', _downloads.length);
       PreferencesService.saveCategoryCount('安装包', _apks.length);
       PreferencesService.saveCategoryCount('截图', screenshots.length);
+      _recalcCategorySizes();
 
       notifyListeners();
     } catch (e) {
@@ -1307,6 +1375,7 @@ class MediaProvider extends ChangeNotifier {
       PreferencesService.saveCategoryCount('下载', _downloads.length);
       PreferencesService.saveCategoryCount('安装包', _apks.length);
       PreferencesService.saveCategoryCount('截图', screenshots.length);
+      _recalcCategorySizes();
 
       _isLoading = false;
       _isLoaded = true;
@@ -2152,6 +2221,7 @@ class MediaProvider extends ChangeNotifier {
     PreferencesService.saveCategoryCount('下载', _downloads.length);
     PreferencesService.saveCategoryCount('安装包', _apks.length);
     PreferencesService.saveCategoryCount('截图', screenshots.length);
+    _recalcCategorySizes();
 
     await _saveCache();
     notifyListeners();

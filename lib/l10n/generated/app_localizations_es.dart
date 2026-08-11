@@ -560,11 +560,11 @@ class L10nEs extends L10n {
 
   @override
   String get zenfilebackupssettings1 =>
-      'Guardar toda la configuración actual en ZenFile/Backups/Settings/';
+      'Respaldar la configuración actual a la ruta seleccionada';
 
   @override
   String get json1 =>
-      'Seleccionar y restaurar configuración desde archivo de respaldo JSON';
+      'Seleccione un archivo de respaldo de la lista siguiente para restaurar';
 
   @override
   String get msg534c621a => 'Directorio de Respaldo';
@@ -2474,6 +2474,9 @@ class L10nEs extends L10n {
   String get shizukuroot => 'Conceder Acceso a Shizuku (No Requiere Root)';
 
   @override
+  String get fusebypass => '一键兼容访问';
+
+  @override
   String selectedcount1(Object selectedCount) {
     return '$selectedCount elementos seleccionados';
   }
@@ -3101,10 +3104,10 @@ class L10nEs extends L10n {
   String get ui_file => 'Archivo';
 
   @override
-  String get ui_backup_settings => 'Respaldo de Configuración';
+  String get ui_backup_settings => 'Respaldar';
 
   @override
-  String get ui_restore_settings => 'Restaurar Configuración';
+  String get ui_restore_settings => 'Restaurar';
 
   @override
   String get ui_backup_info => 'Información de Respaldo';
@@ -3940,8 +3943,7 @@ class L10nEs extends L10n {
   String get ui_select_remote_server => 'Seleccionar servidor remoto';
 
   @override
-  String get ui_no_remote_connections =>
-      'Sin conexiones remotas, añada una conexión de red primero';
+  String get ui_no_remote_connections => 'No hay conexiones remotas guardadas';
 
   @override
   String get ui_retry => 'Reintentar';
@@ -4687,4 +4689,39 @@ class L10nEs extends L10n {
   @override
   String get changelog_v1126_known_1 =>
       'La reproducción de vídeo remoto SMB / FTP / SFTP aún puede titubear en algunos escenarios; la optimización continúa.';
+
+  @override
+  String get ui_select_backup_path => 'Seleccionar ruta de respaldo';
+
+  @override
+  String get ui_backup_path_local => 'Local';
+
+  @override
+  String get ui_backup_path_remote => 'Remota';
+
+  @override
+  String get ui_select_remote_connection => 'Seleccionar conexión remota';
+
+  @override
+  String get ui_no_backup_files => 'Sin archivos de respaldo';
+
+  @override
+  String get ui_please_select_backup_file =>
+      'Seleccione un archivo de respaldo para restaurar';
+
+  @override
+  String get ui_restore_restart_title => 'Reinicio necesario';
+
+  @override
+  String get ui_restore_restart_message =>
+      'Algunos ajustes requieren reiniciar la aplicación para surtir efecto. ¿Reiniciar ahora?';
+
+  @override
+  String get ui_restart => 'Reiniciar';
+
+  @override
+  String get ui_later => 'Más tarde';
+
+  @override
+  String get ui_parent_directory => 'Directorio superior';
 }

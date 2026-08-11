@@ -1057,13 +1057,13 @@ abstract class L10n {
   /// ui\screens\backup_settings_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'将所有当前设置保存到 ZenFile/Backups/Settings/'**
+  /// **'将当前设置备份到已选择的路径'**
   String get zenfilebackupssettings1;
 
   /// ui\screens\backup_settings_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'选择并恢复 JSON 备份文件中的设置'**
+  /// **'从下方列表中选择备份文件进行恢复'**
   String get json1;
 
   /// ui\screens\backup_settings_screen.dart
@@ -4480,6 +4480,12 @@ abstract class L10n {
   /// **'授予Shizuku访问权限（无需Root）'**
   String get shizukuroot;
 
+  /// ui\widgets\restricted_folder_banner.dart - 绕过FUSE限制
+  ///
+  /// In zh, this message translates to:
+  /// **'一键兼容访问'**
+  String get fusebypass;
+
   /// ui\widgets\selection_action_bar.dart
   ///
   /// In zh, this message translates to:
@@ -5605,13 +5611,13 @@ abstract class L10n {
   /// No description provided for @ui_backup_settings.
   ///
   /// In zh, this message translates to:
-  /// **'备份设置'**
+  /// **'备份'**
   String get ui_backup_settings;
 
   /// No description provided for @ui_restore_settings.
   ///
   /// In zh, this message translates to:
-  /// **'恢复设置'**
+  /// **'恢复'**
   String get ui_restore_settings;
 
   /// No description provided for @ui_backup_info.
@@ -7060,10 +7066,10 @@ abstract class L10n {
   /// **'选择远程服务器'**
   String get ui_select_remote_server;
 
-  /// No description provided for @ui_no_remote_connections.
+  /// Backup & restore settings screen
   ///
   /// In zh, this message translates to:
-  /// **'暂无远程连接，请先添加网络连接'**
+  /// **'没有已保存的远程连接'**
   String get ui_no_remote_connections;
 
   /// No description provided for @ui_retry.
@@ -7078,10 +7084,10 @@ abstract class L10n {
   /// **'无子文件夹'**
   String get ui_no_subfolders;
 
-  /// No description provided for @ui_select_this_folder.
+  /// Backup & restore settings screen
   ///
   /// In zh, this message translates to:
-  /// **'选择此文件夹'**
+  /// **'选择当前文件夹'**
   String get ui_select_this_folder;
 
   /// No description provided for @ui_downloading_file.
@@ -8343,6 +8349,72 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。'**
   String get changelog_v1126_known_1;
+
+  /// Backup & restore settings screen
+  ///
+  /// In zh, this message translates to:
+  /// **'选择备份路径'**
+  String get ui_select_backup_path;
+
+  /// Backup & restore settings screen
+  ///
+  /// In zh, this message translates to:
+  /// **'本地'**
+  String get ui_backup_path_local;
+
+  /// Backup & restore settings screen
+  ///
+  /// In zh, this message translates to:
+  /// **'远程'**
+  String get ui_backup_path_remote;
+
+  /// Backup & restore settings screen
+  ///
+  /// In zh, this message translates to:
+  /// **'选择远程连接'**
+  String get ui_select_remote_connection;
+
+  /// Backup & restore settings screen
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无备份文件'**
+  String get ui_no_backup_files;
+
+  /// Backup & restore settings screen
+  ///
+  /// In zh, this message translates to:
+  /// **'请选择要恢复的备份文件'**
+  String get ui_please_select_backup_file;
+
+  /// Backup & restore settings screen
+  ///
+  /// In zh, this message translates to:
+  /// **'需要重启'**
+  String get ui_restore_restart_title;
+
+  /// Backup & restore settings screen
+  ///
+  /// In zh, this message translates to:
+  /// **'部分设置需要重启应用才能生效，是否立即重启？'**
+  String get ui_restore_restart_message;
+
+  /// Backup & restore settings screen
+  ///
+  /// In zh, this message translates to:
+  /// **'重启'**
+  String get ui_restart;
+
+  /// Backup & restore settings screen
+  ///
+  /// In zh, this message translates to:
+  /// **'稍后'**
+  String get ui_later;
+
+  /// Backup & restore settings screen
+  ///
+  /// In zh, this message translates to:
+  /// **'上级目录'**
+  String get ui_parent_directory;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

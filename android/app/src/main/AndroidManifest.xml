@@ -38,9 +38,9 @@
             android:launchMode="singleTask"
             android:taskAffinity=""
             android:theme="@style/LaunchTheme"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:configChanges="orientation|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
-            android:windowSoftInputMode="adjustPan"
+            android:windowSoftInputMode="adjustResize"
             android:enabled="true">
             <!-- Boot theme while Flutter initializes -->
             <meta-data
@@ -124,7 +124,11 @@
         <!-- 禁用 Impeller、回退 Skia 渲染器。
              部分安卓 15/16 设备（特定 GPU 驱动）在 Impeller 下出现 UI 卡顿/掉帧，
              尤其是打开软键盘时逐帧重绘压力放大；旧设备（如安卓 11）不受影响。
-             回退 Skia 可消除该设备相关卡顿。如后续 Impeller 稳定可改回 true。 -->
+             回退 Skia 可消除该设备相关卡顿。如后续 Impeller 稳定可改回 true。
+             注意：windowSoftInputMode 必须使用 adjustResize（不可用 adjustPan），
+             adjustPan 整页平移会与 HyperOS 安卓16 窗口动画冲突，导致键盘弹出
+             像幻灯片逐帧掉帧；adjustResize 让 Flutter 用 MediaQuery.viewInsets
+             只重布局当前 Scaffold/Dialog，避免整页合成。 -->
         <meta-data
             android:name="io.flutter.embedding.android.EnableImpeller"
             android:value="false" />

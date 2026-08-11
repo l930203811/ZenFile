@@ -621,11 +621,11 @@
   "@zenfilebackupssettings1": {
     "description": "ui\\screens\\backup_settings_screen.dart"
   },
-  "zenfilebackupssettings1": "모든 현재 설정을 ZenFile/Backups/Settings/에 저장",
+  "zenfilebackupssettings1": "현재 설정을 선택한 경로로 백업",
   "@json1": {
     "description": "ui\\screens\\backup_settings_screen.dart"
   },
-  "json1": "JSON 백업 파일에서 설정을 선택하고 복원",
+  "json1": "아래 목록에서 백업 파일을 선택하여 복원",
   "@msg534c621a": {
     "description": "ui\\screens\\backup_settings_screen.dart"
   },
@@ -3418,8 +3418,8 @@
   "@ui_file": {
     "description": "ui widgets"
   },
-  "ui_backup_settings": "설정 백업",
-  "ui_restore_settings": "설정 복원",
+  "ui_backup_settings": "백업",
+  "ui_restore_settings": "복원",
   "ui_backup_info": "백업 정보",
   "ui_backup_file": "백업 파일",
   "ui_no_backup_file": "백업 파일 없음",
@@ -3703,10 +3703,10 @@
   "ui_single": "싱글",
   "ui_add_remote_path": "원격 경로 추가",
   "ui_select_remote_server": "원격 서버 선택",
-  "ui_no_remote_connections": "원격 연결이 없습니다. 네트워크 연결을 먼저 추가하세요",
+  "ui_no_remote_connections": "저장된 원격 연결이 없음",
   "ui_retry": "재시도",
   "ui_no_subfolders": "하위 폴더 없음",
-  "ui_select_this_folder": "이 폴더 선택",
+  "ui_select_this_folder": "현재 폴더 선택",
   "ui_downloading_file": "다운로드 중: {file}",
   "@ui_downloading_file": {
     "placeholders": {
@@ -4348,53 +4348,29 @@
   },
   "changelog_section_known_issues": "⚠️ Known Issues",
   "@changelog_v1127_new_1": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_new_1": "즐겨찾기: 사용자 지정 경로/이름을 수동으로 즐겨찾기에 추가할 수 있는 '+' 버튼을 추가했으며, 카테고리별로 그룹화하여 표시됩니다.",
-
   "@changelog_v1127_new_2": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_new_2": "즐겨찾기: 즐겨찾기 항목을 편집(이름/경로/그룹)할 수 있게 되었으며, 그룹의 접기/펴기와 영속화를 지원합니다.",
-
   "@changelog_v1127_new_3": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_new_3": "즐겨찾기: 모든 즐겨찾기 추가 진입점(三点 메뉴/길게 누르기/상단 '+' 버튼)에서 그룹 선택이 가능해졌으며, 그룹을 길게 누르면 이름 변경/삭제, 항목을 길게 누르면 편집/삭제할 수 있습니다.",
-
   "@changelog_v1127_opt_1": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_opt_1": "Android 15/16의 UI 지연을 체계적으로 수정(렌더링 레이어의 Impeller 폴백 회피 + IO 레이어 + 디코딩 레이어의 3차원 최적화).",
-
   "@changelog_v1127_fix_1": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_fix_1": "선택 모드의 '즐겨찾기' 동작에서 그룹 선택기가 표시되지 않던 문제를 수정.",
-
   "@changelog_v1127_known_1": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_known_1": "SMB / FTP / SFTP 원격 동영상 재생은 일부 상황에서 여전히 버벅일 수 있으며 지속적으로 최적화 중입니다.",
-
   "@batch_rename_title": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
@@ -4570,5 +4546,55 @@
   "@changelog_v1126_known_1": {
     "description": "v1.1.26 changelog entry"
   },
-  "changelog_v1126_known_1": "SMB / FTP / SFTP 원격 동영상 재생은 일부 상황에서 여전히 버벅일 수 있으며 지속적으로 최적화 중입니다."
+  "changelog_v1126_known_1": "SMB / FTP / SFTP 원격 동영상 재생은 일부 상황에서 여전히 버벅일 수 있으며 지속적으로 최적화 중입니다.",
+  "ui_select_backup_path": "백업 경로 선택",
+  "@ui_select_backup_path": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_backup_path_local": "로컬",
+  "@ui_backup_path_local": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_backup_path_remote": "원격",
+  "@ui_backup_path_remote": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_select_remote_connection": "원격 연결 선택",
+  "@ui_select_remote_connection": {
+    "description": "Backup & restore settings screen"
+  },
+  "@ui_select_this_folder": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_no_backup_files": "백업 파일 없음",
+  "@ui_no_backup_files": {
+    "description": "Backup & restore settings screen"
+  },
+  "@ui_no_remote_connections": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_please_select_backup_file": "복원할 백업 파일을 선택하세요",
+  "@ui_please_select_backup_file": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_restore_restart_title": "재시작 필요",
+  "@ui_restore_restart_title": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_restore_restart_message": "일부 설정은 앱을 다시 시작해야 적용됩니다. 지금 다시 시작하시겠습니까?",
+  "@ui_restore_restart_message": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_restart": "다시 시작",
+  "@ui_restart": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_later": "나중에",
+  "@ui_later": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_parent_directory": "상위 디렉터리",
+  "@ui_parent_directory": {
+    "description": "Backup & restore settings screen"
+  }
 }

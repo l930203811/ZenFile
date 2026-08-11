@@ -625,11 +625,11 @@
   "@zenfilebackupssettings1": {
     "description": "ui\\screens\\backup_settings_screen.dart"
   },
-  "zenfilebackupssettings1": "すべての現在の設定をZenFile/Backups/Settings/に保存",
+  "zenfilebackupssettings1": "現在の設定を選択したパスにバックアップ",
   "@json1": {
     "description": "ui\\screens\\backup_settings_screen.dart"
   },
-  "json1": "JSONバックアップファイルから設定を選択して復元",
+  "json1": "以下のリストからバックアップファイルを選択して復元",
   "@msg534c621a": {
     "description": "ui\\screens\\backup_settings_screen.dart"
   },
@@ -3422,8 +3422,8 @@
   "@ui_file": {
     "description": "ui widgets"
   },
-  "ui_backup_settings": "設定をバックアップ",
-  "ui_restore_settings": "設定を復元",
+  "ui_backup_settings": "バックアップ",
+  "ui_restore_settings": "復元",
   "ui_backup_info": "バックアップ情報",
   "ui_backup_file": "バックアップファイル",
   "ui_no_backup_file": "バックアップファイルはありません",
@@ -3707,7 +3707,7 @@
   "ui_single": "シングル",
   "ui_add_remote_path": "リモートパスを追加",
   "ui_select_remote_server": "リモートサーバーを選択",
-  "ui_no_remote_connections": "リモート接続がありません。ネットワーク接続を追加してください",
+  "ui_no_remote_connections": "保存済みのリモート接続がありません",
   "ui_retry": "再試行",
   "ui_no_subfolders": "サブフォルダがありません",
   "ui_select_this_folder": "このフォルダを選択",
@@ -4352,53 +4352,29 @@
   },
   "changelog_section_known_issues": "⚠️ Known Issues",
   "@changelog_v1127_new_1": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_new_1": "お気に入り：「+」ボタンを追加し、カスタムパス/名前を手動でお気に入りに追加できるようになり、カテゴリ別にグループ化して表示されます。",
-
   "@changelog_v1127_new_2": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_new_2": "お気に入り：お気に入り項目の編集（名前/パス/グループ）が可能に；グループの折りたたみ/展開と永続化に対応。",
-
   "@changelog_v1127_new_3": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_new_3": "お気に入り：すべてのお気に入り追加エントリ（三点メニュー/長押し/上部「+」ボタン）でグループを選択可能に；グループを長押しで名前変更/削除、項目を長押しで編集/削除。",
-
   "@changelog_v1127_opt_1": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_opt_1": "Android 15/16 の UI 遅延を体系的に修正（描画層の Impeller フォールバック回避 + IO 層 + デコード層の三次元最適化）。",
-
   "@changelog_v1127_fix_1": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_fix_1": "選択モードの「お気に入り」でグループ選択が表示されない問題を修正。",
-
   "@changelog_v1127_known_1": {
-
     "description": "Changelog entry for v1.1.27"
-
   },
-
   "changelog_v1127_known_1": "SMB / FTP / SFTP のリモート動画再生は、一部の場面でまだカクつくことがあります。継続的に最適化中です。",
-
   "@batch_rename_title": {
     "description": "ui\\widgets\\batch_rename_dialog.dart"
   },
@@ -4574,5 +4550,55 @@
   "@changelog_v1126_known_1": {
     "description": "v1.1.26 changelog entry"
   },
-  "changelog_v1126_known_1": "SMB / FTP / SFTP のリモート動画再生は、一部の場面でまだカクつくことがあります。継続的に最適化中です。"
+  "changelog_v1126_known_1": "SMB / FTP / SFTP のリモート動画再生は、一部の場面でまだカクつくことがあります。継続的に最適化中です。",
+  "ui_select_backup_path": "バックアップ先を選択",
+  "@ui_select_backup_path": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_backup_path_local": "ローカル",
+  "@ui_backup_path_local": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_backup_path_remote": "リモート",
+  "@ui_backup_path_remote": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_select_remote_connection": "リモート接続を選択",
+  "@ui_select_remote_connection": {
+    "description": "Backup & restore settings screen"
+  },
+  "@ui_select_this_folder": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_no_backup_files": "バックアップファイルがありません",
+  "@ui_no_backup_files": {
+    "description": "Backup & restore settings screen"
+  },
+  "@ui_no_remote_connections": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_please_select_backup_file": "復元するバックアップファイルを選択してください",
+  "@ui_please_select_backup_file": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_restore_restart_title": "再起動が必要",
+  "@ui_restore_restart_title": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_restore_restart_message": "一部の設定はアプリの再起動後に反映されます。今すぐ再起動しますか？",
+  "@ui_restore_restart_message": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_restart": "再起動",
+  "@ui_restart": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_later": "後で",
+  "@ui_later": {
+    "description": "Backup & restore settings screen"
+  },
+  "ui_parent_directory": "親ディレクトリ",
+  "@ui_parent_directory": {
+    "description": "Backup & restore settings screen"
+  }
 }

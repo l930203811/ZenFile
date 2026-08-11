@@ -544,10 +544,10 @@ class L10nAr extends L10n {
 
   @override
   String get zenfilebackupssettings1 =>
-      'حفظ جميع الإعدادات الحالية إلى ZenFile/Backups/Settings/';
+      'نسخ جميع الإعدادات الحالية إلى المسار المحدد';
 
   @override
-  String get json1 => 'اختيار واستعادة الإعدادات من ملف نسخ احتياطي JSON';
+  String get json1 => 'حدد ملف نسخ احتياطي من القائمة أدناه للاستعادة';
 
   @override
   String get msg534c621a => 'دليل النسخ الاحتياطي';
@@ -2419,6 +2419,9 @@ class L10nAr extends L10n {
   String get shizukuroot => 'منح وصول Shizuku (لا يتطلب جذر)';
 
   @override
+  String get fusebypass => '一键兼容访问';
+
+  @override
   String selectedcount1(Object selectedCount) {
     return 'تم تحديد $selectedCount عنصر';
   }
@@ -3033,10 +3036,10 @@ class L10nAr extends L10n {
   String get ui_file => 'ملف';
 
   @override
-  String get ui_backup_settings => 'نسخ الإعدادات احتياطياً';
+  String get ui_backup_settings => 'نسخ احتياطي';
 
   @override
-  String get ui_restore_settings => 'استعادة الإعدادات';
+  String get ui_restore_settings => 'استعادة';
 
   @override
   String get ui_backup_info => 'معلومات النسخ الاحتياطي';
@@ -3858,8 +3861,7 @@ class L10nAr extends L10n {
   String get ui_select_remote_server => 'تحديد الخادم البعيد';
 
   @override
-  String get ui_no_remote_connections =>
-      'لا توجد اتصالات بعيدة، يرجى إضافة اتصال شبكة أولاً';
+  String get ui_no_remote_connections => 'لا توجد اتصالات بعيدة محفوظة';
 
   @override
   String get ui_retry => 'إعادة المحاولة';
@@ -3868,7 +3870,7 @@ class L10nAr extends L10n {
   String get ui_no_subfolders => 'لا توجد مجلدات فرعية';
 
   @override
-  String get ui_select_this_folder => 'تحديد هذا المجلد';
+  String get ui_select_this_folder => 'اختيار هذا المجلد';
 
   @override
   String ui_downloading_file(String file) {
@@ -4604,4 +4606,39 @@ class L10nAr extends L10n {
   @override
   String get changelog_v1126_known_1 =>
       'قد لا يزال تشغيل الفيديو عن بُعد عبر SMB / FTP / SFTP متقطعاً في بعض الحالات؛ التحسين مستمر.';
+
+  @override
+  String get ui_select_backup_path => 'اختيار مسار النسخ الاحتياطي';
+
+  @override
+  String get ui_backup_path_local => 'محلي';
+
+  @override
+  String get ui_backup_path_remote => 'بعيد';
+
+  @override
+  String get ui_select_remote_connection => 'اختيار اتصال بعيد';
+
+  @override
+  String get ui_no_backup_files => 'لا توجد ملفات نسخ احتياطي';
+
+  @override
+  String get ui_please_select_backup_file =>
+      'يرجى اختيار ملف نسخ احتياطي للاستعادة';
+
+  @override
+  String get ui_restore_restart_title => 'إعادة التشغيل مطلوبة';
+
+  @override
+  String get ui_restore_restart_message =>
+      'بعض الإعدادات تتطلب إعادة تشغيل التطبيق لتصبح نافذة. هل تريد إعادة التشغيل الآن؟';
+
+  @override
+  String get ui_restart => 'إعادة التشغيل';
+
+  @override
+  String get ui_later => 'لاحقاً';
+
+  @override
+  String get ui_parent_directory => 'المجلد الأعلى';
 }
