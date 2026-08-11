@@ -4087,6 +4087,9 @@ class L10nKo extends L10n {
   String get cat_backup_restore => '백업/복원';
 
   @override
+  String get cat_backup_restore_desc => '백업';
+
+  @override
   String get cat_storage_volume => '저장소';
 
   @override

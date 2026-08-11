@@ -4089,6 +4089,9 @@ class L10nJa extends L10n {
   String get cat_backup_restore => 'バックアップ/復元';
 
   @override
+  String get cat_backup_restore_desc => 'バックアップ';
+
+  @override
   String get cat_storage_volume => 'ストレージ';
 
   @override

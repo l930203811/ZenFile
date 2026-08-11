@@ -4144,6 +4144,7 @@
   "drawer_edit_connection": "Editar",
   "cat_system": "Sistema",
   "cat_backup_restore": "Copia / Restaurar",
+  "cat_backup_restore_desc": "Respaldar",
   "cat_storage_volume": "Almacenamiento",
   "ui_columns_per_row": "Columnas por fila",
   "ui_3columns": "3 Columnas",

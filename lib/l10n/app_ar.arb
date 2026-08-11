@@ -4144,6 +4144,7 @@
   "drawer_edit_connection": "تحرير",
   "cat_system": "النظام",
   "cat_backup_restore": "نسخ احتياطي/استعادة",
+  "cat_backup_restore_desc": "نسخ احتياطي",
   "cat_storage_volume": "التخزين",
   "ui_columns_per_row": "الأعمدة لكل صف",
   "ui_3columns": "3 أعمدة",

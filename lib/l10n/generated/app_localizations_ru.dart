@@ -4261,6 +4261,9 @@ class L10nRu extends L10n {
   String get cat_backup_restore => 'Резервная копия / Восстановление';
 
   @override
+  String get cat_backup_restore_desc => 'Резервное копирование';
+
+  @override
   String get cat_storage_volume => 'Хранилище';
 
   @override

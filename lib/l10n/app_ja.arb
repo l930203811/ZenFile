@@ -4148,6 +4148,7 @@
   "drawer_edit_connection": "編集",
   "cat_system": "システム",
   "cat_backup_restore": "バックアップ/復元",
+  "cat_backup_restore_desc": "バックアップ",
   "cat_storage_volume": "ストレージ",
   "ui_columns_per_row": "1行あたりの列数",
   "ui_3columns": "3列",

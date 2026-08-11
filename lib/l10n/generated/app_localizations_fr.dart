@@ -4282,6 +4282,9 @@ class L10nFr extends L10n {
   String get cat_backup_restore => 'Sauvegarde / Restauration';
 
   @override
+  String get cat_backup_restore_desc => 'Sauvegarder';
+
+  @override
   String get cat_storage_volume => 'Stockage';
 
   @override

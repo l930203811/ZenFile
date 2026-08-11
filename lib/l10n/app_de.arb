@@ -4141,6 +4141,7 @@
   "drawer_edit_connection": "Bearbeiten",
   "cat_system": "System",
   "cat_backup_restore": "Sichern & Wiederherstellen",
+  "cat_backup_restore_desc": "Sichern",
   "cat_storage_volume": "Speicher",
   "ui_columns_per_row": "Spalten pro Zeile",
   "ui_3columns": "3 Spalten",

@@ -4198,6 +4198,9 @@ class L10nAr extends L10n {
   String get cat_backup_restore => 'نسخ احتياطي/استعادة';
 
   @override
+  String get cat_backup_restore_desc => 'نسخ احتياطي';
+
+  @override
   String get cat_storage_volume => 'التخزين';
 
   @override

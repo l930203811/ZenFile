@@ -207,7 +207,7 @@ class QuickCategoriesGrid extends StatefulWidget {
         'label': l10n.cat_backup_restore,
         'icon': Broken.save_2,
         'color': isDark ? Colors.tealAccent : const Color(0xFF009688),
-        'count': '',
+        'count': l10n.cat_backup_restore_desc,
         'isCustom': false,
         'pageBuilder': () => const BackupSettingsScreen(),
       },
