@@ -4192,6 +4192,7 @@
   "open_always": "Always",
   "drawer_edit_connection": "Edit",
   "cat_system": "System",
+  "cat_backup_restore": "Backup / Restore",
   "cat_storage_volume": "Storage",
   "ui_columns_per_row": "Columns per row",
   "ui_3columns": "3 Columns",

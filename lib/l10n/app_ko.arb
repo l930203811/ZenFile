@@ -4143,6 +4143,7 @@
   "open_always": "항상",
   "drawer_edit_connection": "편집",
   "cat_system": "시스템",
+  "cat_backup_restore": "백업/복원",
   "cat_storage_volume": "저장소",
   "ui_columns_per_row": "행당 열 수",
   "ui_3columns": "3열",

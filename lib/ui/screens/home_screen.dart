@@ -7,7 +7,6 @@ import '../../providers/file_manager_provider.dart';
 import '../../providers/media_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../widgets/quick_categories_grid.dart';
-import '../widgets/storage_overview.dart';
 import '../widgets/zenfile_drawer.dart';
 import '../widgets/zenfile_end_drawer.dart';
 import '../widgets/sort_modal.dart';
@@ -483,9 +482,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  StorageVolumesOverview(
-                    onNavigateTab: (index) => _switchTab(index),
-                  ),
                   QuickCategoriesGrid(
                     onNavigateTab: (index) => _switchTab(index),
                     showTitle: false,

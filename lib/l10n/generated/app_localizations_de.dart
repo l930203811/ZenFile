@@ -4252,6 +4252,9 @@ class L10nDe extends L10n {
   String get cat_system => 'System';
 
   @override
+  String get cat_backup_restore => 'Sichern & Wiederherstellen';
+
+  @override
   String get cat_storage_volume => 'Speicher';
 
   @override

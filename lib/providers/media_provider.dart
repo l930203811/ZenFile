@@ -459,6 +459,12 @@ class MediaProvider extends ChangeNotifier {
         _categoryOrder.insert(insertIndex, '存储');
         orderUpdated = true;
       }
+      if (!_categoryOrder.contains('备份/恢复')) {
+        final settingsIndex = _categoryOrder.indexOf('设置');
+        final insertIndex = settingsIndex >= 0 ? settingsIndex + 1 : _categoryOrder.length;
+        _categoryOrder.insert(insertIndex, '备份/恢复');
+        orderUpdated = true;
+      }
       if (orderUpdated) {
         PreferencesService.saveCategoryOrder(_categoryOrder);
       }
@@ -522,6 +528,12 @@ class MediaProvider extends ChangeNotifier {
           _activeCategories.insert(insertIndex, '存储');
           activeUpdated = true;
         }
+        if (!_activeCategories.contains('备份/恢复')) {
+          final settingsIndex = _activeCategories.indexOf('设置');
+          final insertIndex = settingsIndex >= 0 ? settingsIndex + 1 : _activeCategories.length;
+          _activeCategories.insert(insertIndex, '备份/恢复');
+          activeUpdated = true;
+        }
       }
       if (activeUpdated) {
         PreferencesService.saveActiveCategories(_activeCategories);
@@ -582,17 +594,66 @@ class MediaProvider extends ChangeNotifier {
   Map<String, List<String>> get audioFolders => _audioFolders;
 
   /// 根据当前扁平列表重算按父目录的分组（仅存路径），供分类页文件夹视图使用。
-  /// 仅在缓存恢复后调用；扫描结果的分组已在 isolate 内算好、直接赋值，不走此路径。
+  /// 合并了本地扫描结果（_images/_videos/_audios）与自定义扫描路径（_customImages/_customVideos/_customScreenshots），
+  /// 确保远程自定义路径（remote://{connId}|{path}）的媒体文件也能按父目录分组显示在「文件夹」视图中。
   void _rebuildFolderGroups() {
-    _imageFolders = _groupByParentDir(_images);
-    _videoFolders = _groupByParentDir(_videos);
+    _imageFolders = _mergeFolderMaps([
+      _groupByParentDir(_images),
+      _groupByParentDir(_customImages),
+    ]);
+    _videoFolders = _mergeFolderMaps([
+      _groupByParentDir(_videos),
+      _groupByParentDir(_customVideos),
+    ]);
     _audioFolders = _groupAudiosByParentDir(_audios);
+    // 把 _screenshots / _customScreenshots 的分组并入图片文件夹（screenshots 没有独立 folder tabs，
+    // 但在文件列表中本就会和普通图片一起出现，保持一致性）。
+    final screenshotsFolders = _mergeFolderMaps([
+      _groupByParentDir(_screenshots),
+      _groupByParentDir(_customScreenshots),
+    ]);
+    _imageFolders = _mergeFolderMaps([_imageFolders, screenshotsFolders]);
+  }
+
+  /// 合并多个分组 Map（相同父目录下的文件路径列表拼接并去重）。
+  static Map<String, List<String>> _mergeFolderMaps(List<Map<String, List<String>>> maps) {
+    final result = <String, List<String>>{};
+    for (final map in maps) {
+      map.forEach((dir, paths) {
+        if (paths.isEmpty) return;
+        final list = result.putIfAbsent(dir, () => <String>[]);
+        for (final p in paths) {
+          if (!list.contains(p)) list.add(p);
+        }
+      });
+    }
+    return result;
+  }
+
+  /// 判断路径是否来自远程（自定义扫描路径中的 remote://）。
+  static bool isRemotePath(String path) => path.startsWith('remote://');
+
+  /// 统一的「父目录」提取 helper。
+  /// 保证：分组生成（_groupByParentDir / _groupAudiosByParentDir）、
+  /// folderPath 下钻过滤（media_category_screen 中按 folderPath 筛选）、
+  /// 以及 remote:// 前缀的非本地路径在任何平台下都能得到一致的 key。
+  /// 规则：取最后一个 '/' 之前的部分（包含路径前缀），结果与 POSIX 保持一致，
+  /// 不依赖 Dart VM 平台分隔符，避免 Windows 下对 remote:// 字符串误判。
+  static String parentOfPath(String filePath) {
+    if (filePath.isEmpty) return filePath;
+    final normalized = filePath.replaceAll('\\', '/');
+    final lastSlash = normalized.lastIndexOf('/');
+    if (lastSlash <= 0) {
+      // 根级（remote://connId|/ 或 /）返回自身（兼容根的识别）
+      return normalized;
+    }
+    return normalized.substring(0, lastSlash);
   }
 
   static Map<String, List<String>> _groupByParentDir(List<FileSystemEntity> files) {
     final map = <String, List<String>>{};
     for (final f in files) {
-      final dir = FileSystemEntity.parentOf(f.path);
+      final dir = parentOfPath(f.path);
       (map[dir] ??= []).add(f.path);
     }
     return map;
@@ -603,7 +664,7 @@ class MediaProvider extends ChangeNotifier {
     for (final s in songs) {
       final data = s.data;
       if (data.isNotEmpty) {
-        final dir = p.dirname(data);
+        final dir = parentOfPath(data);
         (map[dir] ??= []).add(data);
       }
     }
@@ -627,6 +688,7 @@ class MediaProvider extends ChangeNotifier {
     '压缩包',
     '安装包',
     '设置',
+    '备份/恢复',
     '最近',
     '保险箱',
     '回收站',
@@ -649,6 +711,7 @@ class MediaProvider extends ChangeNotifier {
     '压缩包',
     '安装包',
     '设置',
+    '备份/恢复',
     '最近',
     '保险箱',
     '回收站',
@@ -1001,10 +1064,15 @@ class MediaProvider extends ChangeNotifier {
     try {
       _categorySizeCache['视频'] = _sumEntitySize(videos.whereType<FileSystemEntity>().toList());
     } catch (_) { _categorySizeCache['视频'] = 0; }
-    // SongModel 的 size 字段单位为字节。
+    // SongModel.size 在部分 ROM 返回时长或 0，不可靠；改用 .data 路径的 File.lengthSync()。
     int audioSize = 0;
     for (final s in _audios) {
-      try { audioSize += s.size; } catch (_) {}
+      try {
+        final path = s.data;
+        if (path.isNotEmpty) {
+          audioSize += File(path).lengthSync();
+        }
+      } catch (_) {}
     }
     _categorySizeCache['音频'] = audioSize;
     _categorySizeCache['文档'] = _sumEntitySize(_documents);
@@ -1271,6 +1339,7 @@ class MediaProvider extends ChangeNotifier {
       await _scanRecentFiles();
       await _saveCache();
       await _applySort();
+      _rebuildFolderGroups();
 
       PreferencesService.saveCategoryCount('图片', images.length);
       PreferencesService.saveCategoryCount('视频', videos.length);
@@ -1331,6 +1400,7 @@ class MediaProvider extends ChangeNotifier {
       if (_isLoaded && !forceRefresh) {
         await _scanCustomCategories();
         await _applySort();
+        _rebuildFolderGroups();
         notifyListeners();
         return;
       }
@@ -1366,6 +1436,7 @@ class MediaProvider extends ChangeNotifier {
       await _saveCache();
 
       await _applySort();
+      _rebuildFolderGroups();
 
       PreferencesService.saveCategoryCount('图片', images.length);
       PreferencesService.saveCategoryCount('视频', videos.length);

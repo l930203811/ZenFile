@@ -7624,6 +7624,12 @@ abstract class L10n {
   /// **'系统'**
   String get cat_system;
 
+  /// No description provided for @cat_backup_restore.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份/恢复'**
+  String get cat_backup_restore;
+
   /// No description provided for @cat_storage_volume.
   ///
   /// In zh, this message translates to:

@@ -4051,6 +4051,9 @@ class L10nZh extends L10n {
   String get cat_system => '系统';
 
   @override
+  String get cat_backup_restore => '备份/恢复';
+
+  @override
   String get cat_storage_volume => '存储';
 
   @override
@@ -8476,6 +8479,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get cat_system => '系統';
+
+  @override
+  String get cat_backup_restore => '備份/恢復';
 
   @override
   String get cat_storage_volume => '儲存';

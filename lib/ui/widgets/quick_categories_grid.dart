@@ -21,6 +21,7 @@ import '../screens/web_sharing_screen.dart';
 import '../screens/storage_analyzer/storage_analyzer_screen.dart';
 import '../screens/vault_lock_screen.dart';
 import '../screens/recycle_bin_screen.dart';
+import '../screens/backup_settings_screen.dart';
 import '../../services/recycle_bin_service.dart';
 import '../../services/remote/remote_client.dart';
 
@@ -201,6 +202,14 @@ class QuickCategoriesGrid extends StatefulWidget {
         'count': l10n.cat_config,
         'isCustom': false,
         'pageBuilder': () => const MoreSettingsScreen(),
+      },
+      '备份/恢复': {
+        'label': l10n.cat_backup_restore,
+        'icon': Broken.save_2,
+        'color': isDark ? Colors.tealAccent : const Color(0xFF009688),
+        'count': '',
+        'isCustom': false,
+        'pageBuilder': () => const BackupSettingsScreen(),
       },
       '空间': {
         'label': l10n.cat_storage,
@@ -787,7 +796,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 8),
                             Text(
                               label,
                               style: theme.textTheme.titleMedium?.copyWith(
@@ -798,15 +807,24 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                               overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 2),
-                            Text(
-                              count,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.textTheme.bodySmall?.color?.withOpacity(0.6),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
+                            SizedBox(
+                              width: double.infinity,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.center,
+                                child: Text(
+                                  count,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                    letterSpacing: -0.2,
+                                    height: 1.1,
+                                  ),
+                                  maxLines: 1,
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),

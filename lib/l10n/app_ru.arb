@@ -4143,6 +4143,7 @@
   "open_always": "Всегда",
   "drawer_edit_connection": "Редактировать",
   "cat_system": "Система",
+  "cat_backup_restore": "Резервная копия / Восстановление",
   "cat_storage_volume": "Хранилище",
   "ui_columns_per_row": "Колонки в строке",
   "ui_3columns": "3 Колонки",
