@@ -2792,6 +2792,22 @@ class L10nEn extends L10n {
   String get ui_dual_window => 'Dual Window';
 
   @override
+  String get ui_filter_by_category => 'Filter by Category';
+
+  @override
+  String get ui_all_files => 'All';
+
+  @override
+  String get ui_filter_others => 'Others';
+
+  @override
+  String get ui_remember_filter => 'Remember filter';
+
+  @override
+  String get msg_remember_filter_desc =>
+      'Effective only for this session when off';
+
+  @override
   String get ui_app_icon => 'App Icon';
 
   @override

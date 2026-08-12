@@ -2706,6 +2706,21 @@ class L10nKo extends L10n {
   String get ui_dual_window => '이중 창';
 
   @override
+  String get ui_filter_by_category => '카테고리별 필터';
+
+  @override
+  String get ui_all_files => '전체';
+
+  @override
+  String get ui_filter_others => '기타';
+
+  @override
+  String get ui_remember_filter => '필터 기억';
+
+  @override
+  String get msg_remember_filter_desc => '꺼두면 이번 세션에만 적용';
+
+  @override
   String get ui_app_icon => '앱 아이콘';
 
   @override

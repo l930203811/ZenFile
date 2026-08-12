@@ -388,6 +388,8 @@ class _PaneBrowserState extends State<PaneBrowser> {
         ? provider.activeTabIndex == widget.tabIndex
         : true;
     final isSelectionMode = tab.selectedPaths.isNotEmpty;
+    // 应用全局「按类别过滤」后的显示列表（单/双窗口统一），文件夹始终保留
+    final displayFiles = provider.getDisplayFilesForTab(tab);
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -579,7 +581,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                       CupertinoSliverRefreshControl(
                                         onRefresh: () => provider.loadDirectoryForTab(widget.tabIndex, tab.currentPath, showLoading: false, clearCache: true, forceRefresh: true),
                                       ),
-                                      if (tab.currentFiles.isEmpty)
+                                      if (displayFiles.isEmpty)
                                         SliverFillRemaining(
                                           hasScrollBody: false,
                                           child: Center(
@@ -622,16 +624,19 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                             top: 0,
                                           ),
                                           sliver: provider.isGridView
-                                              ? SliverGrid(
-                                                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                                    crossAxisCount: (MediaQuery.of(context).size.width / (2 * 110 * provider.iconScale)).floor().clamp(1, 6),
-                                                    mainAxisSpacing: (12 * provider.itemPaddingMultiplier).clamp(4.0, 24.0),
-                                                    crossAxisSpacing: (12 * provider.itemPaddingMultiplier).clamp(4.0, 24.0),
-                                                    childAspectRatio: 0.75 / provider.iconScale.clamp(0.7, 1.5),
-                                                  ),
-                                                  delegate: SliverChildBuilderDelegate(
+                                              ? SliverLayoutBuilder(
+                                                  builder: (context, constraints) {
+                                                    final paneWidth = constraints.crossAxisExtent;
+                                                    return SliverGrid(
+                                                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                                        crossAxisCount: (paneWidth / (110 * provider.iconScale)).floor().clamp(2, 10),
+                                                        mainAxisSpacing: (12 * provider.itemPaddingMultiplier).clamp(4.0, 24.0),
+                                                        crossAxisSpacing: (12 * provider.itemPaddingMultiplier).clamp(4.0, 24.0),
+                                                        childAspectRatio: 0.75 / provider.iconScale.clamp(0.7, 1.5),
+                                                      ),
+                                                      delegate: SliverChildBuilderDelegate(
                                                     (context, index) {
-                                                      final item = tab.currentFiles[index];
+                                                      final item = displayFiles[index];
                                                       final isSelected = tab.selectedPaths.contains(item.path);
                                                       if (item.isDirectory) {
                                                         final itemLongPress = () {
@@ -695,13 +700,15 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                                         );
                                                       }
                                                     },
-                                                    childCount: tab.currentFiles.length,
+                                                    childCount: displayFiles.length,
                                                   ),
-                                                )
-                                              : SliverList(
+                                                );
+                                              },
+                                            )
+                                            : SliverList(
                                                   delegate: SliverChildBuilderDelegate(
                                                     (context, index) {
-                                                      final item = tab.currentFiles[index];
+                                                      final item = displayFiles[index];
                                                       final isSelected = tab.selectedPaths.contains(item.path);
                                                       if (item.isDirectory) {
                                                         return _buildCompactFolderItem(
@@ -724,7 +731,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                                         );
                                                       }
                                                     },
-                                                    childCount: tab.currentFiles.length,
+                                                    childCount: displayFiles.length,
                                                   ),
                                                 ),
                                         ),

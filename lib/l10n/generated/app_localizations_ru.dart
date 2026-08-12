@@ -2840,6 +2840,22 @@ class L10nRu extends L10n {
   String get ui_dual_window => 'Двойное окно';
 
   @override
+  String get ui_filter_by_category => 'Фильтр по категории';
+
+  @override
+  String get ui_all_files => 'Все';
+
+  @override
+  String get ui_filter_others => 'Другое';
+
+  @override
+  String get ui_remember_filter => 'Запомнить фильтр';
+
+  @override
+  String get msg_remember_filter_desc =>
+      'Действует только для текущего сеанса, если выключено';
+
+  @override
   String get ui_app_icon => 'Значок Приложения';
 
   @override

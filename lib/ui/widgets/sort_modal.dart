@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../providers/file_manager_provider.dart';
+import '../../models/category_filter_type.dart';
 
 class SortModal {
   static void show(BuildContext context, FileManagerProvider provider) {
@@ -9,13 +10,18 @@ class SortModal {
     bool isAppearanceExpanded = false;
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: theme.colorScheme.surface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setStateModal) {
-            return SafeArea(
-              child: SingleChildScrollView(
+            return FractionallySizedBox(
+              heightFactor: 0.88,
+              child: SafeArea(
+                top: true,
+                bottom: false,
+                child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -146,6 +152,54 @@ class SortModal {
                         ),
                       ),
                       const SizedBox(height: 12),
+                      Text(L10n.of(context).ui_filter_by_category, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: CategoryFilterType.values.map((type) {
+                          return _buildFilterChip(
+                            context,
+                            provider,
+                            setStateModal,
+                            type,
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  L10n.of(context).ui_remember_filter,
+                                  style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  L10n.of(context).msg_remember_filter_desc,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.onSurface.withOpacity(0.55),
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                            Switch.adaptive(
+                              value: provider.rememberCategoryFilter,
+                              activeColor: theme.colorScheme.primary,
+                              onChanged: (val) {
+                                provider.setRememberCategoryFilter(val);
+                                setStateModal(() {});
+                              },
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
                       Text(L10n.of(context).msga2946a1a, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
                       const SizedBox(height: 12),
                       Wrap(
@@ -223,6 +277,7 @@ class SortModal {
                   ),
                 ),
               ),
+            ),
             );
           },
         );
@@ -262,6 +317,55 @@ class SortModal {
             color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface.withOpacity(0.8),
             fontSize: 13,
           ),
+        ),
+      ),
+    );
+  }
+
+  static Widget _buildFilterChip(
+    BuildContext context,
+    FileManagerProvider provider,
+    void Function(void Function()) setStateModal,
+    CategoryFilterType type,
+  ) {
+    final theme = Theme.of(context);
+    final isSelected = type == CategoryFilterType.none
+        ? !provider.isCategoryFilterActive
+        : provider.isCategoryFilterSelected(type);
+    return InkWell(
+      onTap: () {
+        provider.toggleCategoryFilter(type);
+        setStateModal(() {});
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? theme.colorScheme.primary : theme.colorScheme.surfaceVariant.withOpacity(0.5),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? theme.colorScheme.primary.withOpacity(0.25) : theme.dividerColor.withOpacity(0.08),
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              type.icon,
+              size: 14,
+              color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface.withOpacity(0.7),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              type.label(context),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface.withOpacity(0.8),
+                fontSize: 12,
+              ),
+            ),
+          ],
         ),
       ),
     );

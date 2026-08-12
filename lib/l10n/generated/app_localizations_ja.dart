@@ -2709,6 +2709,21 @@ class L10nJa extends L10n {
   String get ui_dual_window => '二画面';
 
   @override
+  String get ui_filter_by_category => 'カテゴリで絞り込み';
+
+  @override
+  String get ui_all_files => 'すべて';
+
+  @override
+  String get ui_filter_others => 'その他';
+
+  @override
+  String get ui_remember_filter => 'フィルターを記憶';
+
+  @override
+  String get msg_remember_filter_desc => 'オフの場合は今回のみ有効';
+
+  @override
   String get ui_app_icon => 'アプリアイコン';
 
   @override

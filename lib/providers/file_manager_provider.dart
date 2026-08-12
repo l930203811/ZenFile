@@ -12,6 +12,7 @@ import 'package:path/path.dart' as p;
 import '../models/file_item_model.dart';
 import '../models/folder_tab_model.dart';
 import '../models/file_filter_type.dart';
+import '../models/category_filter_type.dart';
 import 'package:mime/mime.dart';
 import 'package:open_filex/open_filex.dart';
 import '../ui/screens/image_viewer_screen.dart';
@@ -159,6 +160,12 @@ class FileManagerProvider extends ChangeNotifier {
     _showHiddenFiles = PreferencesService.getShowHiddenFiles();
     _showFloatingAddButton = PreferencesService.getShowFloatingAddButton();
     _showRemoteCloudBadge = PreferencesService.getShowRemoteCloudBadge();
+    _rememberCategoryFilter = PreferencesService.getRememberCategoryFilter();
+    // 仅在「记住过滤」开启时才恢复上次保存的类别过滤；否则每次启动重置为空（不过滤）。
+    // 修复：记住过滤关闭时，重启仍加载了上次过滤条件的问题。
+    _categoryFilter = _rememberCategoryFilter
+        ? PreferencesService.getCategoryFilters()
+        : <CategoryFilterType>{};
     _defaultToBrowseScreen = PreferencesService.getDefaultToBrowseScreen();
     _swipeMode = PreferencesService.getSwipeMode();
     _showFolderFileCount = PreferencesService.getShowFolderFileCount();
@@ -543,11 +550,15 @@ class FileManagerProvider extends ChangeNotifier {
     }
     
     if (_tabs.isNotEmpty) {
-      final folders = currentFiles.where((e) => e.isDirectory).toList();
-      final files = currentFiles.where((e) => !e.isDirectory).toList();
-      _sortList(folders, path);
-      _sortList(files, path);
-      activeTab.currentFiles = [...folders, ...files];
+      // 双窗口下对所有已加载的标签重排，确保左右两面板同步生效
+      for (final tab in _tabs) {
+        if (tab.currentFiles.isEmpty) continue;
+        final folders = tab.currentFiles.where((e) => e.isDirectory).toList();
+        final files = tab.currentFiles.where((e) => !e.isDirectory).toList();
+        _sortList(folders, tab.currentPath);
+        _sortList(files, tab.currentPath);
+        tab.currentFiles = [...folders, ...files];
+      }
     }
     notifyListeners();
   }
@@ -1156,6 +1167,45 @@ class FileManagerProvider extends ChangeNotifier {
   bool _enableSplitScreen = false;
   bool get enableSplitScreen => _enableSplitScreen;
 
+  Set<CategoryFilterType> _categoryFilter = {};
+  Set<CategoryFilterType> get selectedCategoryFilters => _categoryFilter;
+  bool get isCategoryFilterActive => _categoryFilter.isNotEmpty;
+  bool isCategoryFilterSelected(CategoryFilterType type) => _categoryFilter.contains(type);
+
+  bool _rememberCategoryFilter = false;
+  bool get rememberCategoryFilter => _rememberCategoryFilter;
+
+  /// 多选切换：点击某个类别在集合中增删；点击「全部」清空集合（显示所有）。
+  void toggleCategoryFilter(CategoryFilterType type, {bool? remember}) {
+    if (type == CategoryFilterType.none) {
+      _categoryFilter.clear();
+    } else if (_categoryFilter.contains(type)) {
+      _categoryFilter.remove(type);
+    } else {
+      _categoryFilter.add(type);
+    }
+    if (remember != null) {
+      _rememberCategoryFilter = remember;
+      PreferencesService.saveRememberCategoryFilter(remember);
+    }
+    if (_rememberCategoryFilter) {
+      PreferencesService.saveCategoryFilters(_categoryFilter);
+    }
+    notifyListeners();
+  }
+
+  void setRememberCategoryFilter(bool val) {
+    _rememberCategoryFilter = val;
+    PreferencesService.saveRememberCategoryFilter(val);
+    if (val) {
+      PreferencesService.saveCategoryFilters(_categoryFilter);
+    } else {
+      // 关闭记住时清除已持久化的过滤条件，避免残留数据下次开启时复用旧条件。
+      PreferencesService.saveCategoryFilters({});
+    }
+    notifyListeners();
+  }
+
   void toggleSplitScreen() {
     _enableSplitScreen = !_enableSplitScreen;
     PreferencesService.saveEnableSplitScreen(_enableSplitScreen);
@@ -1593,7 +1643,20 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   // --- Active Tab Delegations ---
-  List<FileItemModel> get currentFiles => activeTab.currentFiles;
+  List<FileItemModel> get currentFiles {
+    final items = activeTab.currentFiles;
+    if (_categoryFilter.isEmpty) return items;
+    return items.where((f) => matchesAnyCategory(_categoryFilter, f)).toList();
+  }
+
+  /// 返回某标签在界面上应展示的文件列表：在原始列表基础上套用「按类别过滤」。
+  /// 文件夹始终保留以便继续导航，仅对文件按已选类别集合筛选。单/双窗口共用
+  /// 同一全局 [_categoryFilter]，因此两个面板都会同步过滤，无需重新加载目录。
+  List<FileItemModel> getDisplayFilesForTab(FolderTab tab) {
+    final items = tab.currentFiles;
+    if (_categoryFilter.isEmpty) return items;
+    return items.where((f) => matchesAnyCategory(_categoryFilter, f)).toList();
+  }
   String get currentPath => activeTab.currentPath;
   bool get isLoading => activeTab.isLoading;
   bool get isRestrictedMode => activeTab.isRestrictedMode;

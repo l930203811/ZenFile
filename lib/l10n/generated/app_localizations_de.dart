@@ -2835,6 +2835,22 @@ class L10nDe extends L10n {
   String get ui_dual_window => 'Doppeltes Fenster';
 
   @override
+  String get ui_filter_by_category => 'Nach Kategorie filtern';
+
+  @override
+  String get ui_all_files => 'Alle';
+
+  @override
+  String get ui_filter_others => 'Sonstiges';
+
+  @override
+  String get ui_remember_filter => 'Filter merken';
+
+  @override
+  String get msg_remember_filter_desc =>
+      'Nur für diese Sitzung, wenn deaktiviert';
+
+  @override
   String get ui_app_icon => 'App-Symbol';
 
   @override

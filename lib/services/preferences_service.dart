@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/file_manager_provider.dart';
 import '../models/custom_shortcut_model.dart';
+import '../models/category_filter_type.dart';
 
 class PreferencesService {
   static const String _keyThemeMode = 'theme_mode';
@@ -10,6 +11,8 @@ class PreferencesService {
   static const String _keyShowHiddenFiles = 'show_hidden_files';
   static const String _keyShowFloatingAddButton = 'show_floating_add_button';
   static const String _keyShowRemoteCloudBadge = 'show_remote_cloud_badge';
+  static const String _keyCategoryFilter = 'category_filter';
+  static const String _keyRememberCategoryFilter = 'remember_category_filter';
   static const String _keyDefaultToBrowseScreen = 'default_to_browse_screen';
   static const String _keyIsGridView = 'is_grid_view';
   static const String _keyIconScale = 'icon_scale';
@@ -105,6 +108,23 @@ class PreferencesService {
 
   static Future<void> saveShowRemoteCloudBadge(bool val) async {
     await _prefs?.setBool(_keyShowRemoteCloudBadge, val);
+  }
+
+  static Set<CategoryFilterType> getCategoryFilters() {
+    final str = _prefs?.getString(_keyCategoryFilter);
+    return categoryFilterTypeSetFromString(str);
+  }
+
+  static Future<void> saveCategoryFilters(Set<CategoryFilterType> values) async {
+    await _prefs?.setString(_keyCategoryFilter, categoryFilterTypesToString(values));
+  }
+
+  static bool getRememberCategoryFilter() {
+    return _prefs?.getBool(_keyRememberCategoryFilter) ?? false;
+  }
+
+  static Future<void> saveRememberCategoryFilter(bool val) async {
+    await _prefs?.setBool(_keyRememberCategoryFilter, val);
   }
 
   static bool getShowFolderFileCount() {

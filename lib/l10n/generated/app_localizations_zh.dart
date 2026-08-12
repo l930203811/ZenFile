@@ -2698,6 +2698,21 @@ class L10nZh extends L10n {
   String get ui_dual_window => '双窗口';
 
   @override
+  String get ui_filter_by_category => '按类别过滤';
+
+  @override
+  String get ui_all_files => '全部';
+
+  @override
+  String get ui_filter_others => '其它';
+
+  @override
+  String get ui_remember_filter => '记住过滤';
+
+  @override
+  String get msg_remember_filter_desc => '关闭后仅本次生效';
+
+  @override
   String get ui_app_icon => '应用图标';
 
   @override
@@ -7194,6 +7209,21 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_dual_window => '雙視窗';
+
+  @override
+  String get ui_filter_by_category => '按類別過濾';
+
+  @override
+  String get ui_all_files => '全部';
+
+  @override
+  String get ui_filter_others => '其它';
+
+  @override
+  String get ui_remember_filter => '記住過濾';
+
+  @override
+  String get msg_remember_filter_desc => '關閉後僅本次生效';
 
   @override
   String get ui_app_icon => '應用圖示';

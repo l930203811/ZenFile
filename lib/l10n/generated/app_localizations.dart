@@ -5170,6 +5170,36 @@ abstract class L10n {
   /// **'双窗口'**
   String get ui_dual_window;
 
+  /// No description provided for @ui_filter_by_category.
+  ///
+  /// In zh, this message translates to:
+  /// **'按类别过滤'**
+  String get ui_filter_by_category;
+
+  /// No description provided for @ui_all_files.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部'**
+  String get ui_all_files;
+
+  /// No description provided for @ui_filter_others.
+  ///
+  /// In zh, this message translates to:
+  /// **'其它'**
+  String get ui_filter_others;
+
+  /// No description provided for @ui_remember_filter.
+  ///
+  /// In zh, this message translates to:
+  /// **'记住过滤'**
+  String get ui_remember_filter;
+
+  /// No description provided for @msg_remember_filter_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭后仅本次生效'**
+  String get msg_remember_filter_desc;
+
   /// No description provided for @ui_app_icon.
   ///
   /// In zh, this message translates to:

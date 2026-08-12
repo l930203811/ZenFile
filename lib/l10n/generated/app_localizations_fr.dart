@@ -2855,6 +2855,22 @@ class L10nFr extends L10n {
   String get ui_dual_window => 'Fenêtre double';
 
   @override
+  String get ui_filter_by_category => 'Filtrer par catégorie';
+
+  @override
+  String get ui_all_files => 'Tous';
+
+  @override
+  String get ui_filter_others => 'Autres';
+
+  @override
+  String get ui_remember_filter => 'Mémoriser le filtre';
+
+  @override
+  String get msg_remember_filter_desc =>
+      'Effectif uniquement pour cette session si désactivé';
+
+  @override
   String get ui_app_icon => 'Icône de l\'application';
 
   @override

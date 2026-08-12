@@ -2854,6 +2854,22 @@ class L10nEs extends L10n {
   String get ui_dual_window => 'Ventana doble';
 
   @override
+  String get ui_filter_by_category => 'Filtrar por categoría';
+
+  @override
+  String get ui_all_files => 'Todos';
+
+  @override
+  String get ui_filter_others => 'Otros';
+
+  @override
+  String get ui_remember_filter => 'Recordar filtro';
+
+  @override
+  String get msg_remember_filter_desc =>
+      'Solo efectivo para esta sesión si está desactivado';
+
+  @override
   String get ui_app_icon => 'Icono de la App';
 
   @override

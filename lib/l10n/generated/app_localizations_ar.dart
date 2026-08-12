@@ -2788,6 +2788,21 @@ class L10nAr extends L10n {
   String get ui_dual_window => 'نافذتان';
 
   @override
+  String get ui_filter_by_category => 'تصفية حسب الفئة';
+
+  @override
+  String get ui_all_files => 'الكل';
+
+  @override
+  String get ui_filter_others => 'أخرى';
+
+  @override
+  String get ui_remember_filter => 'تذكر الفلتر';
+
+  @override
+  String get msg_remember_filter_desc => 'فعال لهذه الجلسة فقط عند الإيقاف';
+
+  @override
   String get ui_app_icon => 'أيقونة التطبيق';
 
   @override
