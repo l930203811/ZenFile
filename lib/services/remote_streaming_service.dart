@@ -380,7 +380,8 @@ class RemoteStreamingService {
     // 脆弱的 downloadRange(pos>0)（见 _doDownload 说明），会失败并导致画面几秒后
     // 冻结。改用「<= + 8MB 前瞻」：正常播放（跟随下载头）一律读 partial 并等待下载
     // 推进，只有用户大幅拖动（领先 > 8MB）才走按需 seek（极少触发、可容忍失败回退）。
-    final lookahead = 8 * 1024 * 1024;
+    final lookahead = 16 * 1024 * 1024; // 16MB 前瞻：正常播放更长时间内跟随后台下载，
+    // 减少落入按需 seek 路径的概率（按需 seek 依赖 downloadRange，失败会导致卡顿）。
     if (start <= partialAvail + lookahead) {
       // 后台下载已覆盖该位置（或即将覆盖），直接读 partial（按下载进度门控）
       readFilePath = session.partialPath;
@@ -476,7 +477,7 @@ class RemoteStreamingService {
     int endExclusive,
     int fileSize,
   ) async {
-    const chunkSize = 1024 * 1024; // 1MB 读块，降低单帧 UI 占用
+    const chunkSize = 4 * 1024 * 1024; // 4MB 读块：减少 stat/flush 次数，提升顺序吞吐
     int readOffset = rangeStart;
     RandomAccessFile? partialRaf;
     RandomAccessFile? seekRaf;
@@ -501,30 +502,50 @@ class RemoteStreamingService {
         final seekCovers = seekEnd > 0 && readOffset >= seekStart && readOffset < seekEnd;
 
         // A) 后台顺序下载已覆盖当前位置 → 从 partial 读，跟随后台下载推进（主路径）
+        // 优化：内循环连续读多个 chunk，每 4MB 批量 flush 一次。旧实现每 1MB 就
+        // flush 并回到外循环顶部重新 stat 文件，频繁的 flush 和 stat 产生背压
+        // 导致数据脉冲式供给（播放器周期性饥饿卡顿）。批量 flush 让数据更平滑
+        // 地喂给播放器，贴合 WebDAV 直连的连续流式体验。
         if (readOffset < downloaded) {
           partialRaf ??= await File(session.partialPath).open(mode: FileMode.read);
-          final avail = downloaded.clamp(0, endExclusive);
-          final toRead = (avail - readOffset).clamp(0, chunkSize).toInt();
-          if (toRead > 0) {
-            await partialRaf.setPosition(readOffset);
-            final data = await partialRaf.read(toRead);
+          var raf = partialRaf; // 非null局部引用（??= 已提升类型），供内循环使用
+          int pendingFlush = 0;
+          const flushEvery = 4 * 1024 * 1024; // 每累积 4MB 才 flush 一次
+          while (readOffset < downloaded && readOffset < endExclusive) {
+            final avail = downloaded.clamp(0, endExclusive);
+            final toRead = (avail - readOffset).clamp(0, chunkSize).toInt();
+            if (toRead <= 0) break;
+            await raf.setPosition(readOffset);
+            final data = await raf.read(toRead);
             if (data.isNotEmpty) {
               response.add(data);
-              await response.flush();
               readOffset += data.length;
+              pendingFlush += data.length;
+              if (pendingFlush >= flushEvery) {
+                await response.flush();
+                pendingFlush = 0;
+              }
               continue;
             }
             // 读到空数据但门控说有数据：读句柄可能指向被下载客户端「删除重建」
             // 的旧 inode（孤儿文件永远读到空）。关闭重开句柄指向新文件，
             // 并用真实延时让出事件循环，避免快速自旋。
+            if (pendingFlush > 0) {
+              await response.flush();
+              pendingFlush = 0;
+            }
             try {
-              await partialRaf.close();
+              await raf.close();
             } catch (_) {}
             partialRaf = null;
             await Future.delayed(const Duration(milliseconds: 50));
-            continue;
+            break;
           }
-          // partial 文件瞬时滞后（竞争窗口）→ 落到下方「等待下载推进」
+          // flush 残余未刷出的数据
+          if (pendingFlush > 0) {
+            await response.flush();
+          }
+          continue;
         }
 
         // B) seek 缓存覆盖当前位置 → 从本地 seekcache 读（拖动缓冲 / 初始 16MB 引导缓冲）
@@ -608,12 +629,13 @@ class RemoteStreamingService {
           continue;
         }
 
-        // E) 启动引导：partial 仍为空时，先用独立 seekClient 拉前 16MB 作为初始缓冲，
-        //    使播放器立即拿到数据，避免等待首个分块下载完成才出画面（否则开局即卡）。
+        // E) 启动引导：partial 仍为空时，先用独立 seekClient 拉前 32MB 作为初始缓冲，
+        //    使播放器立即拿到充足数据，避免等待首个分块下载完成才出画面（否则开局即卡）。
+        //    32MB 引导缓冲给予播放器更大初始余量，减少缓冲区耗尽导致的早期卡顿。
         if (!bootstrapped && downloaded <= 0 && !seekCovers) {
           bootstrapped = true;
           final tempSeek = '${session.localPath}.seek.tmp';
-          await _fetchRangeToFile(session, readOffset, 16 * 1024 * 1024, tempSeek);
+          await _fetchRangeToFile(session, readOffset, 32 * 1024 * 1024, tempSeek);
           final cachedLen = await _spliceIntoSeekCache(session, tempSeek, readOffset);
           try {
             await File(tempSeek).delete();
