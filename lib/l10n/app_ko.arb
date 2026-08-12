@@ -4607,5 +4607,13 @@
   "ui_parent_directory": "상위 디렉터리",
   "@ui_parent_directory": {
     "description": "Backup & restore settings screen"
+  },
+  "ui_speed": "속도",
+  "@ui_speed": {
+    "description": "Progress dialog speed label"
+  },
+  "ui_file_size": "파일 크기",
+  "@ui_file_size": {
+    "description": "Progress dialog file size label"
   }
 }

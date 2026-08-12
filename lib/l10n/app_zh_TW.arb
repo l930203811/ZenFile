@@ -4752,5 +4752,13 @@
   "ui_parent_directory": "上層目錄",
   "@ui_parent_directory": {
     "description": "Backup & restore settings screen"
+  },
+  "ui_speed": "速度",
+  "@ui_speed": {
+    "description": "Progress dialog speed label"
+  },
+  "ui_file_size": "檔案大小",
+  "@ui_file_size": {
+    "description": "Progress dialog file size label"
   }
 }

@@ -4760,12 +4760,13 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   Future<void> extractArchiveDirectly(BuildContext context, String path) async {
-    // 默认解压到当前浏览目录
-    final currentDir = currentPath;
+    // 默认解压到压缩包所在位置（ExtractArchiveDialog 会根据 archivePath 自动取 dirname，此处兜底传入压缩包目录）
+    final archiveDir = p.dirname(path);
     final res = await ExtractArchiveDialog.show(
       context,
       archiveName: p.basename(path),
-      currentDir: currentDir,
+      archiveDir: archiveDir,
+      archivePath: path,
     );
     if (res != null && context.mounted) {
       await BackgroundArchiveService.instance.startExtraction(

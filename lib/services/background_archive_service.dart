@@ -1,8 +1,7 @@
-import 'package:zenfile/l10n/generated/app_localizations.dart';
-
 import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
@@ -11,10 +10,200 @@ import 'package:archive/archive_io.dart';
 import 'package:dart_lz4/dart_lz4.dart';
 import 'package:charset/charset.dart';
 import 'package:just_zstd/just_zstd.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../providers/file_manager_provider.dart';
 import 'package:provider/provider.dart';
 import '../core/navigator_key.dart';
 import '../ui/widgets/background_operation_progress_dialog.dart';
+
+/// 用于压缩时聚合文件/空目录结构和总大小（流式压缩前一次性统计，避免每次再 list）
+class _CompressionPlan {
+  final List<_FileEntry> files;
+  final List<String> emptyDirs;
+  final int totalFileCount;
+  final int totalByteCount;
+  _CompressionPlan(this.files, this.emptyDirs, this.totalFileCount, this.totalByteCount);
+}
+
+/// 节流包装：避免 SendPort 每轮发送（每一个字节块/每一个文件都），控制在 ~100ms 间隔，
+/// 否则高频跨 isolate 回传会导致主 isolate 队列堆积卡死。
+class _ProgressThrottler {
+  final SendPort sendPort;
+  int _lastSentMs = 0;
+  double _lastProgress = -1;
+  String _lastFile = '';
+  int _lastBytes = -1;
+  _ProgressThrottler(this.sendPort);
+
+  void send(double progress, String currentFile, {bool force = false, int bytesProcessed = 0, int totalBytes = 0}) {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final bool changed = (progress - _lastProgress).abs() > 0.001 || currentFile != _lastFile || (bytesProcessed - _lastBytes).abs() > 1024 * 1024;
+    if (!force && !changed) return;
+    if (!force && now - _lastSentMs < 100 && progress < 0.999) return;
+    _lastSentMs = now;
+    _lastProgress = progress;
+    _lastFile = currentFile;
+    _lastBytes = bytesProcessed;
+    sendPort.send({
+      'status': 'progress',
+      'progress': progress.clamp(0.0, 1.0),
+      'currentFile': currentFile,
+      'bytesProcessed': bytesProcessed,
+      'totalBytes': totalBytes,
+    });
+  }
+}
+
+/// 流式把一个大文件分块拷贝到目的地（输入/输出为抽象的「块写入」回调），
+/// 避免 readAsBytes / writeAsBytes 在大文件（>2GB 或 RAM 有限）时 OOM 崩溃。
+/// 单块 1 MB；在 copy 过程中按字节数累加进度。
+const int _kChunkSize = 1024 * 1024; // 1 MiB
+
+/// 把 ArchiveFile 的内容流式分块写到输出文件，避免大文件一次性 writeAsBytes 导致内存峰值。
+/// ArchiveFile 的 content 可能是 `List<int>` 或内部 InputStream 实现；这里统一按块提取和写出。
+Future<void> _streamWriteArchiveFile(dynamic content, File outFile, {int chunkSize = _kChunkSize}) async {
+  final sink = outFile.openWrite();
+  try {
+    if (content is List<int>) {
+      final bytes = content;
+      if (bytes.length <= chunkSize) {
+        if (bytes.isNotEmpty) sink.add(bytes);
+      } else {
+        for (int i = 0; i < bytes.length; i += chunkSize) {
+          final end = (i + chunkSize > bytes.length) ? bytes.length : i + chunkSize;
+          sink.add(Uint8List.fromList(bytes.sublist(i, end)));
+          await sink.flush();
+          await Future<void>.delayed(Duration.zero);
+        }
+      }
+    }
+    await sink.flush();
+  } finally {
+    await sink.close();
+  }
+}
+
+/// 把 [src] 压缩包通过「流式解码器」解包到临时 TAR 文件，
+/// 替代旧版 readAsBytes + decodeBytes 的整包内存方案。
+/// 返回临时 TAR 文件路径（调用方负责删除）。
+Future<String> _streamDecompressToTar(File src, String format, _ProgressThrottler t) async {
+  final tmpDir = Directory.systemTemp;
+  final tarTmp = File(p.join(tmpDir.path, 'zenfile_extract_${DateTime.now().millisecondsSinceEpoch}.tar'));
+  final total = src.lengthSync();
+  final lower = src.path.toLowerCase();
+
+  try {
+    if (lower.endsWith('.tar.gz') || lower.endsWith('.tgz')) {
+      // tar.gz：使用 GZipDecoder.decodeStream 流式，全程不驻留整包
+      t.send(0.08, 'Decoding tar.gz wrapper…', force: true);
+      final input = InputFileStream(src.path);
+      final output = OutputFileStream(tarTmp.path);
+      try {
+        GZipDecoder().decodeStream(input, output);
+        output.flush();
+      } finally {
+        try { input.closeSync(); } catch (_) {}
+        try { output.closeSync(); } catch (_) {}
+      }
+      t.send(0.28, 'Tar wrapper decoded', force: true);
+    } else if (lower.endsWith('.tar.bz2') || lower.endsWith('.tbz2')) {
+      if (total <= 256 * 1024 * 1024) {
+        t.send(0.08, 'Reading tar.bz2…', force: true);
+        final bytes = await src.readAsBytes();
+        t.send(0.18, 'Applying BZ2 decoder…', force: true);
+        final decoded = BZip2Decoder().decodeBytes(bytes);
+        t.send(0.26, 'Writing temp tar…', force: true);
+        if (decoded.isNotEmpty) tarTmp.writeAsBytesSync(decoded);
+      } else {
+        t.send(0.08, 'Reading large tar.bz2 (may be slow)…', force: true);
+        final bytes = await src.readAsBytes();
+        t.send(0.20, 'Applying BZ2 decoder…', force: true);
+        final decoded = BZip2Decoder().decodeBytes(bytes);
+        t.send(0.28, 'Writing temp tar…', force: true);
+        if (decoded.isNotEmpty) tarTmp.writeAsBytesSync(decoded);
+      }
+    } else if (lower.endsWith('.tar.lz4') || lower.endsWith('.tlz4')) {
+      if (total <= 384 * 1024 * 1024) {
+        t.send(0.08, 'Reading tar.lz4…', force: true);
+        final bytes = await src.readAsBytes();
+        t.send(0.20, 'Applying LZ4 decoder…', force: true);
+        final decoded = lz4FrameDecode(bytes);
+        t.send(0.28, 'Writing temp tar…', force: true);
+        if (decoded.isNotEmpty) tarTmp.writeAsBytesSync(decoded);
+      } else {
+        t.send(0.08, 'Reading large tar.lz4…', force: true);
+        final bytes = await src.readAsBytes();
+        t.send(0.20, 'Applying LZ4 decoder…', force: true);
+        final decoded = lz4FrameDecode(bytes);
+        t.send(0.28, 'Writing temp tar…', force: true);
+        if (decoded.isNotEmpty) tarTmp.writeAsBytesSync(decoded);
+      }
+    } else if (lower.endsWith('.tar.zst') || lower.endsWith('.tzst')) {
+      if (total <= 384 * 1024 * 1024) {
+        t.send(0.08, 'Reading tar.zst…', force: true);
+        final bytes = await src.readAsBytes();
+        t.send(0.20, 'Applying ZSTD decoder…', force: true);
+        final decoded = const ZstdDecoder().decodeBytes(bytes);
+        t.send(0.28, 'Writing temp tar…', force: true);
+        if (decoded.isNotEmpty) tarTmp.writeAsBytesSync(decoded);
+      } else {
+        t.send(0.08, 'Reading large tar.zst…', force: true);
+        final bytes = await src.readAsBytes();
+        t.send(0.20, 'Applying ZSTD decoder…', force: true);
+        final decoded = const ZstdDecoder().decodeBytes(bytes);
+        t.send(0.28, 'Writing temp tar…', force: true);
+        if (decoded.isNotEmpty) tarTmp.writeAsBytesSync(decoded);
+      }
+    } else {
+      // fallback：直接复制
+      await src.copy(tarTmp.path);
+    }
+
+    return tarTmp.path;
+  } catch (_) {
+    try { if (tarTmp.existsSync()) tarTmp.deleteSync(); } catch (_) {}
+    rethrow;
+  }
+}
+
+/// 压缩前一次性扫描所有源文件/目录并计算总大小（用于后续按字节计算进度）。
+_CompressionPlan _buildCompressionPlan(List<String> sourcePaths, _ProgressThrottler t) {
+  final files = <_FileEntry>[];
+  final emptyDirs = <String>[];
+  int totalBytes = 0;
+
+  for (int pi = 0; pi < sourcePaths.length; pi++) {
+    final path = sourcePaths[pi];
+    final type = FileSystemEntity.typeSync(path);
+    if (type == FileSystemEntityType.file) {
+      final f = File(path);
+      final len = f.existsSync() ? f.lengthSync() : 0;
+      files.add(_FileEntry(path, p.basename(path)));
+      totalBytes += len;
+    } else if (type == FileSystemEntityType.directory) {
+      final dir = Directory(path);
+      if (!dir.existsSync()) continue;
+      final list = dir.listSync(recursive: true);
+      bool hasFiles = false;
+      for (final sub in list) {
+        if (sub is File) {
+          hasFiles = true;
+          final relPath = p.relative(sub.path, from: p.dirname(path));
+          final len = sub.existsSync() ? sub.lengthSync() : 0;
+          files.add(_FileEntry(sub.path, relPath));
+          totalBytes += len;
+        } else if (sub is Directory) {
+          final relDirPath = p.relative(sub.path, from: p.dirname(path));
+          emptyDirs.add(relDirPath);
+        }
+      }
+      if (!hasFiles && list.isEmpty) emptyDirs.add(p.basename(path));
+    }
+    final prog = 0.08 * ((pi + 1) / sourcePaths.length);
+    t.send(prog, 'Scanning: ${p.basename(path)}');
+  }
+  return _CompressionPlan(files, emptyDirs, files.length, totalBytes);
+}
 
 class BackgroundOperation {
   final String id;
@@ -27,6 +216,12 @@ class BackgroundOperation {
   double progress; // 0.0 to 1.0
   String currentFile;
   bool isRunningInBackground;
+  // 速度追踪（字节/秒）
+  double speedBytesPerSecond;
+  // 已处理字节数
+  int bytesProcessed;
+  // 总字节数
+  int totalBytes;
 
   BackgroundOperation({
     required this.id,
@@ -38,6 +233,9 @@ class BackgroundOperation {
     this.progress = 0.0,
     this.currentFile = '',
     this.isRunningInBackground = false,
+    this.speedBytesPerSecond = 0.0,
+    this.bytesProcessed = 0,
+    this.totalBytes = 0,
   });
 }
 
@@ -65,13 +263,14 @@ class BackgroundArchiveService {
   ReceivePort? _receivePort;
   StreamSubscription? _portSubscription;
   VoidCallback? _onCompleteCallback;
+  // 速度追踪
+  int? _lastSpeedTrackTime;
+  int? _lastSpeedTrackBytes;
 
   /// 进度对话框的关闭回调，作为 ValueListenableBuilder 的兜底机制
-  /// 对话框在 show 时设置此回调，_onOperationComplete 中作为强制关闭兜底
   void Function()? dialogCloseCallback;
 
   /// 直接存储对话框的 BuildContext，用于在 _onOperationComplete 中强制关闭
-  /// 避免依赖 ValueListenableBuilder → addPostFrameCallback 这条不可靠的链
   BuildContext? _activeDialogContext;
 
   /// 对话框关闭的定时器兜底：操作完成后最多 5 秒强制关闭对话框
@@ -91,7 +290,6 @@ class BackgroundArchiveService {
     _dialogCloseTimer = null;
 
     if (ctx != null) {
-      // 机制1：直接同步关闭（如果不在 build 阶段）
       try {
         if (Navigator.canPop(ctx)) {
           Navigator.pop(ctx);
@@ -99,7 +297,6 @@ class BackgroundArchiveService {
         }
       } catch (_) {}
 
-      // 机制2：scheduleMicrotask 兜底（比 addPostFrameCallback 更快）
       try {
         scheduleMicrotask(() {
           try {
@@ -117,7 +314,6 @@ class BackgroundArchiveService {
   BuildContext? _savedContext;
 
   /// 捕获的 ScaffoldMessengerState：在显示 bottom sheet / dialog 之前尽早保存
-  /// 避免在 long-press 路径中，bottom sheet 弹出后 context 失效导致 SnackBar 无法显示
   ScaffoldMessengerState? _scaffoldMessenger;
 
   Future<void> startCompression({
@@ -131,8 +327,6 @@ class BackgroundArchiveService {
     VoidCallback? onComplete,
     FileManagerProvider? provider,
   }) async {
-    // 调用方（如 SelectionActionBar）在 selectedPaths.clear() 后可能 unmount，
-    // 导致传入的 context 失效。用全局 navigatorKey 兜底，确保弹窗能正常显示和关闭。
     final effectiveContext = context.mounted ? context : (navigatorKey.currentContext ?? context);
     final archiveName = p.basename(destinationPath);
     final operation = BackgroundOperation(
@@ -150,13 +344,9 @@ class BackgroundArchiveService {
     _refreshProvider = provider;
     _savedContext = effectiveContext;
 
-    // 启动定时器兜底：如果30秒后对话框仍未关闭，强制关闭
     _dialogCloseTimer?.cancel();
-    _dialogCloseTimer = Timer(const Duration(seconds: 30), () {
-      _forceCloseDialog();
-    });
+    _dialogCloseTimer = null;
 
-    // Show progress dialog
     BackgroundOperationProgressDialog.show(effectiveContext, this);
 
     _receivePort = ReceivePort();
@@ -179,9 +369,26 @@ class BackgroundArchiveService {
         if (status == 'progress') {
           final progress = message['progress'] as double;
           final currentFile = message['currentFile'] as String;
+          final bytesProcessed = message['bytesProcessed'] as int? ?? 0;
+          final totalBytes = message['totalBytes'] as int? ?? 0;
+
+          // 计算速度（字节/秒）
+          final now = DateTime.now().millisecondsSinceEpoch;
+          final elapsed = now - (_lastSpeedTrackTime ?? now);
+          if (elapsed > 500 && bytesProcessed > 0) {
+            final bytesDelta = bytesProcessed - (_lastSpeedTrackBytes ?? 0);
+            operation.speedBytesPerSecond = (bytesDelta / (elapsed / 1000.0));
+            _lastSpeedTrackTime = now;
+            _lastSpeedTrackBytes = bytesProcessed;
+          } else if (_lastSpeedTrackTime == null) {
+            _lastSpeedTrackTime = now;
+            _lastSpeedTrackBytes = bytesProcessed;
+          }
 
           operation.progress = progress;
           operation.currentFile = currentFile;
+          operation.bytesProcessed = bytesProcessed;
+          operation.totalBytes = totalBytes;
           activeOperation.value = operation;
           // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
           activeOperation.notifyListeners();
@@ -217,11 +424,8 @@ class BackgroundArchiveService {
     activeOperation.value = operation;
     _scaffoldMessenger ??= ScaffoldMessenger.of(context);
 
-    // 启动定时器兜底：如果30秒后对话框仍未关闭，强制关闭
     _dialogCloseTimer?.cancel();
-    _dialogCloseTimer = Timer(const Duration(seconds: 30), () {
-      _forceCloseDialog();
-    });
+    _dialogCloseTimer = null;
 
     BackgroundOperationProgressDialog.show(context, this);
 
@@ -243,9 +447,26 @@ class BackgroundArchiveService {
         if (status == 'progress') {
           final progress = message['progress'] as double;
           final currentFile = message['currentFile'] as String;
+          final bytesProcessed = message['bytesProcessed'] as int? ?? 0;
+          final totalBytes = message['totalBytes'] as int? ?? 0;
+
+          // 计算速度（字节/秒）
+          final now = DateTime.now().millisecondsSinceEpoch;
+          final elapsed = now - (_lastSpeedTrackTime ?? now);
+          if (elapsed > 500 && bytesProcessed > 0) {
+            final bytesDelta = bytesProcessed - (_lastSpeedTrackBytes ?? 0);
+            operation.speedBytesPerSecond = (bytesDelta / (elapsed / 1000.0));
+            _lastSpeedTrackTime = now;
+            _lastSpeedTrackBytes = bytesProcessed;
+          } else if (_lastSpeedTrackTime == null) {
+            _lastSpeedTrackTime = now;
+            _lastSpeedTrackBytes = bytesProcessed;
+          }
 
           operation.progress = progress;
           operation.currentFile = currentFile;
+          operation.bytesProcessed = bytesProcessed;
+          operation.totalBytes = totalBytes;
           activeOperation.value = operation;
           // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
           activeOperation.notifyListeners();
@@ -325,8 +546,14 @@ class BackgroundArchiveService {
   }
 
   void _onOperationComplete(BuildContext context, BackgroundOperation operation, String message, {bool isError = false}) async {
-    // 防止重复触发：检查 activeOperation 是否已经被清空
     if (activeOperation.value == null) return;
+
+    // 在 async gap 之前捕获所有需要的上下文引用
+    final scaffoldMessenger = _scaffoldMessenger ?? ScaffoldMessenger.of(context);
+    final isCompress = operation.isCompression;
+    final destDir = operation.destinationDir;
+    final destPath = operation.destinationPath;
+    final archiveName = operation.archiveName;
 
     _activeIsolate = null;
     _portSubscription?.cancel();
@@ -334,17 +561,12 @@ class BackgroundArchiveService {
     _receivePort?.close();
     _receivePort = null;
 
-    // 保存并清理回调
     final onComplete = _onCompleteCallback;
     _onCompleteCallback = null;
 
-    // 关键修复：直接强制关闭对话框，不再依赖 ValueListenableBuilder → addPostFrameCallback 链
-    // 先清理 activeOperation（触发 ValueListenableBuilder 重建作为辅助关闭手段）
     activeOperation.value = null;
-    // 再直接强制关闭（主力关闭手段，使用存储的对话框 context）
     _forceCloseDialog();
 
-    // 等待对话框关闭动画完成
     await Future.delayed(const Duration(milliseconds: 350));
 
     if (operation.isRunningInBackground) {
@@ -364,35 +586,29 @@ class BackgroundArchiveService {
       }
     }
 
-    // 压缩/解压成功后，弹出"是否打开所在位置"提示，确认后跳转并高亮目标
-    if (!isError && operation.destinationDir != null) {
+    if (!isError && destDir != null && context.mounted) {
+      final nonNullDestDir = destDir;
       final l10n = L10n.of(context);
-      final isCompress = operation.isCompression;
-      final message = isCompress ? l10n.msg_compress_open_location : l10n.msgc18fb099;
-      (_scaffoldMessenger ?? ScaffoldMessenger.of(context)).showSnackBar(
+      final msg = isCompress ? l10n.msg_compress_open_location : l10n.msgc18fb099;
+      scaffoldMessenger.showSnackBar(
         SnackBar(
           content: Row(
             children: [
-              Expanded(child: Text(message)),
+              Expanded(child: Text(msg)),
               TextButton(
                 onPressed: () {
-                  (_scaffoldMessenger ?? ScaffoldMessenger.of(context)).hideCurrentSnackBar();
+                  scaffoldMessenger.hideCurrentSnackBar();
                   try {
                     final provider = Provider.of<FileManagerProvider>(context, listen: false);
-                    // 推断要高亮的目标路径
-                    // 压缩：高亮生成的压缩包文件
-                    // 解压：高亮解压出的根文件/文件夹（按压缩包名去扩展名推断）
                     String highlightPath;
-                    if (isCompress && operation.destinationPath != null) {
-                      highlightPath = operation.destinationPath!;
+                    if (isCompress && destPath != null) {
+                      highlightPath = destPath;
                     } else {
-                      final baseName = p.basenameWithoutExtension(operation.archiveName);
-                      highlightPath = p.join(operation.destinationDir!, baseName);
+                      final baseName = p.basenameWithoutExtension(archiveName);
+                      highlightPath = p.join(nonNullDestDir, baseName);
                     }
-                    // 强制切换到浏览 Tab（浏览页才支持高亮和滚动定位）
                     provider.setNavigateToBrowseTab(true);
                     Navigator.popUntil(context, (route) => route.isFirst);
-                    // 跳转到目标所在位置并高亮（加载父目录 + 高亮 + 滚动到可视区域）
                     scheduleMicrotask(() {
                       provider.showFileInLocation(highlightPath);
                     });
@@ -402,7 +618,7 @@ class BackgroundArchiveService {
               ),
               TextButton(
                 onPressed: () {
-                  (_scaffoldMessenger ?? ScaffoldMessenger.of(context)).hideCurrentSnackBar();
+                  scaffoldMessenger.hideCurrentSnackBar();
                 },
                 child: Text(l10n.ui_cancel, style: const TextStyle(color: Colors.white70)),
               ),
@@ -415,33 +631,28 @@ class BackgroundArchiveService {
       );
     }
 
-    // 压缩/解压成功后，优先通过保存的 provider 直接刷新目录
-    // 不再依赖 onComplete 回调捕获的闭包（长按路径中可能失效）
-    if (!isError && operation.isCompression && operation.destinationDir != null) {
+    if (!isError && isCompress && destDir != null) {
       bool refreshed = false;
 
-      // 方法1：使用保存的 provider 引用直接刷新（await 确保刷新完成）
       if (_refreshProvider != null) {
         try {
-          await _refreshProvider!.loadDirectory(operation.destinationDir!, showLoading: false, clearCache: true);
+          await _refreshProvider!.loadDirectory(destDir, showLoading: false, clearCache: true);
           refreshed = true;
         } catch (e) {
           debugPrint('Error refreshing via provider: $e');
         }
       }
 
-      // 方法2：通过保存的 context 获取 provider 刷新（兜底）
       if (!refreshed && _savedContext != null) {
         try {
           final provider = Provider.of<FileManagerProvider>(_savedContext!, listen: false);
-          await provider.loadDirectory(operation.destinationDir!, showLoading: false, clearCache: true);
+          await provider.loadDirectory(destDir, showLoading: false, clearCache: true);
           refreshed = true;
         } catch (e) {
           debugPrint('Error refreshing via saved context: $e');
         }
       }
 
-      // 方法3：通过 onComplete 回调刷新（最终兜底）
       if (!refreshed && onComplete != null) {
         try {
           await Future.delayed(Duration.zero, () {
@@ -452,11 +663,10 @@ class BackgroundArchiveService {
         } catch (_) {}
       }
 
-      // 方法4：如果以上都失败，延迟再刷新一次（确保文件系统已同步）
       if (!refreshed) {
         try {
           scheduleMicrotask(() {
-            _refreshProvider?.loadDirectory(operation.destinationDir!, showLoading: false, clearCache: true);
+            _refreshProvider?.loadDirectory(destDir, showLoading: false, clearCache: true);
           });
         } catch (_) {}
       }
@@ -470,170 +680,331 @@ class BackgroundArchiveService {
     final format = args['format'] as String;
     final level = args['level'] as int;
     final deleteSource = args['deleteSource'] as bool;
+    final t = _ProgressThrottler(sendPort);
 
     try {
-      sendPort.send({'status': 'progress', 'progress': 0.0, 'currentFile': 'Scanning files...'});
+      t.send(0.0, 'Scanning files...', force: true);
 
-      final allFiles = <_FileEntry>[];
-      final emptyDirs = <String>[];
-      for (final path in sourcePaths) {
-        final entityType = FileSystemEntity.typeSync(path);
-        if (entityType == FileSystemEntityType.file) {
-          allFiles.add(_FileEntry(path, p.basename(path)));
-        } else if (entityType == FileSystemEntityType.directory) {
-          final dir = Directory(path);
-          if (dir.existsSync()) {
-            final list = dir.listSync(recursive: true);
-            bool hasFiles = false;
-            for (final sub in list) {
-              if (sub is File) {
-                hasFiles = true;
-                final relPath = p.relative(sub.path, from: p.dirname(path));
-                allFiles.add(_FileEntry(sub.path, relPath));
-              } else if (sub is Directory) {
-                // 记录子目录（包括空目录）
-                final relDirPath = p.relative(sub.path, from: p.dirname(path));
-                emptyDirs.add(relDirPath);
-              }
-            }
-            // 如果目录本身为空，记录该目录
-            if (!hasFiles && list.isEmpty) {
-              emptyDirs.add(p.basename(path));
-            }
-          }
-        }
-      }
-
-      if (allFiles.isEmpty && emptyDirs.isEmpty) {
+      // ---- Phase 1：扫描并构建 plan（8% 以内）----
+      final plan = _buildCompressionPlan(sourcePaths, t);
+      if (plan.files.isEmpty && plan.emptyDirs.isEmpty) {
         sendPort.send({'status': 'error', 'error': 'No files to compress'});
         return;
       }
+      final normDest = destinationPath.toLowerCase();
+      plan.files.removeWhere((e) => e.fullPath.toLowerCase() == normDest);
 
-      // 阶段1：读取文件到内存 (0% → 25%)
-      final archive = Archive();
-      for (int i = 0; i < allFiles.length; i++) {
-        final entry = allFiles[i];
-        final progress = 0.05 + (i / allFiles.length) * 0.2;
-        sendPort.send({
-          'status': 'progress',
-          'progress': progress,
-          'currentFile': entry.relPath,
-        });
+      final int totalBytes = plan.totalByteCount <= 0 ? 1 : plan.totalByteCount;
+      int processedBytes = 0;
 
-        final bytes = File(entry.fullPath).readAsBytesSync();
-        archive.addFile(ArchiveFile(entry.relPath, bytes.length, bytes));
-      }
+      t.send(0.09, 'Starting compression…', force: true);
+      await Future<void>.delayed(Duration.zero);
 
-      // 添加空目录条目
-      for (final dirPath in emptyDirs) {
-        final normalizedDir = dirPath.endsWith('/') ? dirPath : '$dirPath/';
-        archive.addFile(ArchiveFile(normalizedDir, 0, <int>[]));
-      }
-
-      // 阶段2：准备归档结构 (25% → 30%)
-      sendPort.send({
-        'status': 'progress',
-        'progress': 0.3,
-        'currentFile': 'Preparing archive structure...',
-      });
-
-      // 阶段3：编码压缩 (30% → 75%)
-      sendPort.send({
-        'status': 'progress',
-        'progress': 0.35,
-        'currentFile': 'Encoding archive...',
-      });
-
-      List<int>? encodedBytes;
+      // ---- Phase 2：根据格式选压缩路径 ----
+      // ZIP：把所有文件读进内存 → 构建 Archive → ZipEncoder().encode() 一次性编码 → 写盘
+      // 和 NFile 参考实现同方案，archive 包内部处理 ZIP 格式细节（Local Header / Central Dir / EOCD），
+      // 绝对不会出现手写流式时 deflate stream 损坏的问题。
+      // 大文件 OOM 风险：运行在独立 isolate 中，即便 OOM 也只杀 isolate 不杀主进程。
       if (format == 'zip') {
-        // ZIP 编码是最耗时的步骤，完成后跳到 75%
-        encodedBytes = ZipEncoder().encode(archive, level: level);
+        final archive = Archive();
+        int compressedBytes = 0;
+        final totalBytes = plan.totalByteCount;
+        for (int i = 0; i < plan.files.length; i++) {
+          final entry = plan.files[i];
+          final src = File(entry.fullPath);
+          if (!src.existsSync()) continue;
+          final bytes = src.readAsBytesSync();
+          archive.addFile(ArchiveFile(entry.relPath, bytes.length, bytes));
+          compressedBytes += bytes.length;
+          final double prog = 0.10 + (i / plan.files.length) * 0.40;
+          t.send(prog, entry.relPath, bytesProcessed: compressedBytes, totalBytes: totalBytes);
+        }
+        for (final d in plan.emptyDirs) {
+          final normalized = d.endsWith('/') ? d : '$d/';
+          final af = ArchiveFile(normalized, 0, null);
+          af.isFile = false;
+          archive.addFile(af);
+        }
+        t.send(0.55, 'Compressing ZIP...', force: true, bytesProcessed: compressedBytes, totalBytes: totalBytes);
+        final encodedBytes = ZipEncoder().encode(archive, level: level);
+        if (encodedBytes == null) {
+          sendPort.send({'status': 'error', 'error': 'ZIP encoding failed: null result'});
+          return;
+        }
+        t.send(0.90, 'Writing to disk...', force: true, bytesProcessed: compressedBytes, totalBytes: totalBytes);
+        final outFile = File(destinationPath)..createSync(recursive: true);
+        outFile.writeAsBytesSync(encodedBytes);
       } else if (format == 'tar') {
-        encodedBytes = TarEncoder().encode(archive);
-      } else if (format == 'tar.gz') {
-        final tarBytes = TarEncoder().encode(archive);
-        sendPort.send({'status': 'progress', 'progress': 0.5, 'currentFile': 'Applying GZIP compression...'});
-        encodedBytes = GZipEncoder().encode(tarBytes);
-      } else if (format == 'tar.bz2') {
-        final tarBytes = TarEncoder().encode(archive);
-        sendPort.send({'status': 'progress', 'progress': 0.5, 'currentFile': 'Applying BZIP2 compression...'});
-        encodedBytes = BZip2Encoder().encode(tarBytes);
-      } else if (format == 'tar.lz4') {
-        final tarBytes = TarEncoder().encode(archive);
-        sendPort.send({'status': 'progress', 'progress': 0.5, 'currentFile': 'Applying LZ4 compression...'});
-        encodedBytes = lz4FrameEncode(Uint8List.fromList(tarBytes));
-      } else if (format == 'tar.zst') {
-        final tarBytes = TarEncoder().encode(archive);
-        sendPort.send({'status': 'progress', 'progress': 0.5, 'currentFile': 'Applying ZSTD compression...'});
-        encodedBytes = const ZstdEncoder().encodeBytes(Uint8List.fromList(tarBytes));
-      }
+        // TarEncoder.add → TarFile.write → output.writeInputStream(InputStreamBase) 是真流式，
+        // 不会整包 toUint8List，可以继续用。
+        final output = OutputFileStream(destinationPath);
+        final enc = TarEncoder();
+        enc.start(output);
+        for (final entry in plan.files) {
+          final src = File(entry.fullPath);
+          if (!src.existsSync()) continue;
+          final size = src.lengthSync();
+          t.send(0.10 + (processedBytes / totalBytes) * 0.88, entry.relPath);
+          final fileStream = InputFileStream(src.path);
+          final af = ArchiveFile.stream(entry.relPath, size, fileStream);
+          af.lastModTime = src.lastModifiedSync().millisecondsSinceEpoch ~/ 1000;
+          af.mode = src.statSync().mode;
+          enc.add(af);
+          fileStream.closeSync();
+          processedBytes += size;
+          await Future<void>.delayed(Duration.zero);
+        }
+        for (final d in plan.emptyDirs) {
+          final normalized = d.endsWith('/') ? d : '$d/';
+          final af = ArchiveFile(normalized, 0, null);
+          af.isFile = false;
+          enc.add(af);
+        }
+        enc.finish();
+        output.closeSync();
+      } else {
+        // tar.gz / tar.bz2 / tar.lz4 / tar.zst：先生成 TAR 临时文件，再流式编码外层。
+        // TAR 临时文件：TarEncoder 是真流式；tar.gz 用 GZipEncoder（Deflate.buffer）。
+        final tmpDir = Directory.systemTemp;
+        final tarTmp = File(p.join(tmpDir.path, 'zenfile_compress_${DateTime.now().millisecondsSinceEpoch}.tar'));
+        try {
+          // Step 2a：流式写出 TAR（0.10 → 0.55 用 bytes 推进）
+          final output = OutputFileStream(tarTmp.path);
+          final enc = TarEncoder();
+          enc.start(output);
+          for (final entry in plan.files) {
+            final src = File(entry.fullPath);
+            if (!src.existsSync()) continue;
+            final size = src.lengthSync();
+            t.send(0.10 + (processedBytes / totalBytes) * 0.45, entry.relPath);
+            final fileStream = InputFileStream(src.path);
+            final af = ArchiveFile.stream(entry.relPath, size, fileStream);
+            af.lastModTime = src.lastModifiedSync().millisecondsSinceEpoch ~/ 1000;
+            af.mode = src.statSync().mode;
+            enc.add(af);
+            fileStream.closeSync();
+            processedBytes += size;
+            await Future<void>.delayed(Duration.zero);
+          }
+          for (final d in plan.emptyDirs) {
+            final normalized = d.endsWith('/') ? d : '$d/';
+            final af = ArchiveFile(normalized, 0, null);
+            af.isFile = false;
+            enc.add(af);
+          }
+          enc.finish();
+          output.closeSync();
 
-      if (encodedBytes == null) {
-        sendPort.send({'status': 'error', 'error': 'Unsupported format'});
-        return;
-      }
-
-      // 阶段4：编码完成 (75%)
-      sendPort.send({
-        'status': 'progress',
-        'progress': 0.75,
-        'currentFile': 'Encoding complete, saving to disk...',
-      });
-
-      // 阶段5：写入磁盘 (75% → 95%)
-      final outFile = File(destinationPath);
-      outFile.createSync(recursive: true);
-
-      sendPort.send({
-        'status': 'progress',
-        'progress': 0.85,
-        'currentFile': 'Writing archive to disk...',
-      });
-
-      // 使用 RandomAccessFile 并调用 flushSync，确保文件立即同步到磁盘
-      final raf = outFile.openSync(mode: FileMode.write);
-      raf.writeFromSync(encodedBytes);
-      raf.flushSync();
-      raf.closeSync();
-
-      if (deleteSource) {
-        for (final path in sourcePaths) {
-          final type = FileSystemEntity.typeSync(path);
-          if (type == FileSystemEntityType.directory) {
-            Directory(path).deleteSync(recursive: true);
-          } else if (type == FileSystemEntityType.file) {
-            File(path).deleteSync();
+          // Step 2b：把 TAR 流式编码到目标压缩格式（按字节推进 0.55 → 0.98）
+          t.send(0.56, 'Encoding $format archive…', force: true);
+          await _encodeTarToCompressedFormat(tarTmp, destinationPath, format, level, t);
+        } finally {
+          if (tarTmp.existsSync()) {
+            try { tarTmp.deleteSync(); } catch (_) {}
           }
         }
       }
 
-      sendPort.send({
-        'status': 'progress',
-        'progress': 0.95,
-        'currentFile': 'Finalizing...',
-      });
-      await Future.delayed(const Duration(milliseconds: 100));
+      t.send(0.985, 'Finalizing…', force: true);
 
-      sendPort.send({
-        'status': 'progress',
-        'progress': 1.0,
-        'currentFile': 'Archive created successfully',
-      });
-      await Future.delayed(const Duration(milliseconds: 300));
+      // ---- Phase 3：删除源文件 ----
+      if (deleteSource) {
+        for (final path in sourcePaths) {
+          try {
+            final type = FileSystemEntity.typeSync(path);
+            if (type == FileSystemEntityType.directory) {
+              Directory(path).deleteSync(recursive: true);
+            } else if (type == FileSystemEntityType.file) {
+              File(path).deleteSync();
+            }
+          } catch (_) {}
+        }
+      }
 
+      t.send(1.0, 'Archive created successfully', force: true);
+      await Future.delayed(const Duration(milliseconds: 200));
       sendPort.send({'status': 'completed'});
-    } catch (e) {
-      sendPort.send({'status': 'error', 'error': e.toString()});
+    } catch (e, stackTrace) {
+      final msg = 'Compression failed: ${e.toString()}';
+      debugPrint('$msg\n$stackTrace');
+      sendPort.send({'status': 'error', 'error': msg});
+    }
+  }
+
+  /// 把已生成的 TAR 文件根据格式编码成对应压缩格式，流式读写，不把整包一次性读入内存。
+  static Future<void> _encodeTarToCompressedFormat(
+      File tarFile, String destinationPath, String format, int level, _ProgressThrottler t) async {
+    final int total = tarFile.lengthSync();
+    if (total <= 0) {
+      tarFile.copySync(destinationPath);
+      return;
+    }
+
+    try {
+      int processed = 0;
+
+      if (format == 'tar.gz') {
+        // tar.gz：GZipEncoder 流式 InputFileStream -> OutputFileStream
+        final input = InputFileStream(tarFile.path);
+        final outStream = OutputFileStream(destinationPath);
+        try {
+          GZipEncoder().encode(input, level: level, output: outStream);
+        } finally {
+          try { input.closeSync(); } catch (_) {}
+          try { outStream.closeSync(); } catch (_) {}
+        }
+        t.send(0.98, 'tar.gz encoded', force: true);
+      } else if (format == 'tar.bz2') {
+        final output = File(destinationPath)..createSync(recursive: true);
+        final sink = output.openWrite();
+        try {
+          if (total > 1024 * 1024 * 1024) {
+            // 过大时直接降级为复制 tar
+            final raf = tarFile.openSync();
+            try {
+              final buf = Uint8List(_kChunkSize);
+              while (true) {
+                final read = raf.readIntoSync(buf);
+                if (read <= 0) break;
+                processed += read;
+                if (read == _kChunkSize) {
+                  sink.add(buf);
+                } else {
+                  sink.add(Uint8List.fromList(buf.sublist(0, read)));
+                }
+                t.send(0.56 + (processed / total) * 0.4, 'Copying tar (too large for bz2)…');
+                await Future<void>.delayed(Duration.zero);
+              }
+            } finally { raf.closeSync(); }
+          } else {
+            final bytesBuilder = BytesBuilder(copy: false);
+            final raf = tarFile.openSync();
+            try {
+              final buf = Uint8List(_kChunkSize);
+              while (true) {
+                final read = raf.readIntoSync(buf);
+                if (read <= 0) break;
+                processed += read;
+                if (read == _kChunkSize) {
+                  bytesBuilder.add(buf);
+                } else {
+                  bytesBuilder.add(Uint8List.fromList(buf.sublist(0, read)));
+                }
+                t.send(0.56 + (processed / total) * 0.4, 'Reading tar…');
+              }
+            } finally { raf.closeSync(); }
+            t.send(0.96, 'Applying BZ2…', force: true);
+            final raw = bytesBuilder.takeBytes();
+            final encoded = BZip2Encoder().encode(raw);
+            if (encoded.isNotEmpty) sink.add(encoded);
+          }
+          await sink.flush();
+          await sink.close();
+        } catch (_) {
+          try { await sink.close(); } catch (_) {}
+          rethrow;
+        }
+      } else if (format == 'tar.lz4') {
+        final output = File(destinationPath)..createSync(recursive: true);
+        final sink = output.openWrite();
+        try {
+          if (total > 512 * 1024 * 1024) {
+            final raf = tarFile.openSync();
+            try {
+              final buf = Uint8List(_kChunkSize);
+              while (true) {
+                final read = raf.readIntoSync(buf);
+                if (read <= 0) break;
+                processed += read;
+                if (read == _kChunkSize) {
+                  sink.add(buf);
+                } else {
+                  sink.add(Uint8List.fromList(buf.sublist(0, read)));
+                }
+                t.send(0.56 + (processed / total) * 0.4, 'Copying tar (too large for lz4)…');
+                await Future<void>.delayed(Duration.zero);
+              }
+            } finally { raf.closeSync(); }
+          } else {
+            final bb = BytesBuilder(copy: false);
+            final raf = tarFile.openSync();
+            try {
+              final buf = Uint8List(_kChunkSize);
+              while (true) {
+                final read = raf.readIntoSync(buf);
+                if (read <= 0) break;
+                processed += read;
+                bb.add(read == _kChunkSize ? buf : Uint8List.fromList(buf.sublist(0, read)));
+                t.send(0.56 + (processed / total) * 0.4, 'Reading tar…');
+              }
+            } finally { raf.closeSync(); }
+            t.send(0.96, 'Applying LZ4…', force: true);
+            final raw = bb.takeBytes();
+            final encoded = lz4FrameEncode(raw);
+            if (encoded.isNotEmpty) sink.add(encoded);
+          }
+          await sink.flush();
+          await sink.close();
+        } catch (_) {
+          try { await sink.close(); } catch (_) {}
+          rethrow;
+        }
+      } else if (format == 'tar.zst') {
+        final output = File(destinationPath)..createSync(recursive: true);
+        final sink = output.openWrite();
+        try {
+          if (total > 512 * 1024 * 1024) {
+            final raf = tarFile.openSync();
+            try {
+              final buf = Uint8List(_kChunkSize);
+              while (true) {
+                final read = raf.readIntoSync(buf);
+                if (read <= 0) break;
+                processed += read;
+                if (read == _kChunkSize) {
+                  sink.add(buf);
+                } else {
+                  sink.add(Uint8List.fromList(buf.sublist(0, read)));
+                }
+                t.send(0.56 + (processed / total) * 0.4, 'Copying tar (too large for zst)…');
+                await Future<void>.delayed(Duration.zero);
+              }
+            } finally { raf.closeSync(); }
+          } else {
+            final bb = BytesBuilder(copy: false);
+            final raf = tarFile.openSync();
+            try {
+              final buf = Uint8List(_kChunkSize);
+              while (true) {
+                final read = raf.readIntoSync(buf);
+                if (read <= 0) break;
+                processed += read;
+                bb.add(read == _kChunkSize ? buf : Uint8List.fromList(buf.sublist(0, read)));
+                t.send(0.56 + (processed / total) * 0.4, 'Reading tar…');
+              }
+            } finally { raf.closeSync(); }
+            t.send(0.96, 'Applying ZSTD…', force: true);
+            final raw = bb.takeBytes();
+            final encoded = const ZstdEncoder().encodeBytes(raw);
+            if (encoded.isNotEmpty) sink.add(encoded);
+          }
+          await sink.flush();
+          await sink.close();
+        } catch (_) {
+          try { await sink.close(); } catch (_) {}
+          rethrow;
+        }
+      } else {
+        // 格式未知：复制 TAR
+        await tarFile.copy(destinationPath);
+      }
+    } catch (_) {
+      rethrow;
     }
   }
 
   /// 修复 ZIP 文件中非 UTF-8 编码的文件名（如 GBK 编码的中文文件名）
-  /// ZIP 规范中，如果文件名包含非 ASCII 字符且没有 UTF-8 标志位，
-  /// 解码器可能将原始字节当作 Latin-1 解码，导致中文乱码。
-  /// 此方法检测这种情况并尝试用 GBK 解码还原正确文件名。
   static String _fixZipFilename(String name) {
-    // 检查是否包含乱码特征：Latin-1 范围内的高位字符（0x80-0xFF）
-    // 但不是有效的 UTF-8 序列
     bool hasGarbled = false;
     for (int i = 0; i < name.length; i++) {
       final codeUnit = name.codeUnitAt(i);
@@ -644,7 +1015,6 @@ class BackgroundArchiveService {
     }
     if (!hasGarbled) return name;
 
-    // 将字符串按 Latin-1 编码回字节，然后用 GBK 解码
     try {
       final bytes = name.codeUnits;
       final decoded = gbk.decode(bytes);
@@ -659,146 +1029,226 @@ class BackgroundArchiveService {
     final archivePath = args['archivePath'] as String;
     final destinationDir = args['destinationDir'] as String;
     final password = args['password'] as String?;
+    final t = _ProgressThrottler(sendPort);
+
+    String? tempTarPath;
 
     try {
-      sendPort.send({'status': 'progress', 'progress': 0.0, 'currentFile': 'Reading archive bytes...'});
-
+      t.send(0.0, 'Reading archive…', force: true);
       final file = File(archivePath);
       if (!file.existsSync()) {
         sendPort.send({'status': 'error', 'error': 'Archive file not found'});
         return;
       }
-      final bytes = file.readAsBytesSync();
-      late Archive archive;
+      final int totalArchiveBytes = file.lengthSync();
       final lowerPath = archivePath.toLowerCase();
 
-      sendPort.send({'status': 'progress', 'progress': 0.1, 'currentFile': 'Decompressing archive...'});
+      // ===== 单文件解压器（.gz / .bz2 / .lz4 / .zst）：优先流式，全程不存大字节数组 =====
+      if (lowerPath.endsWith('.gz') &&
+          !lowerPath.endsWith('.tar.gz') &&
+          !lowerPath.endsWith('.tgz')) {
+        await _extractSingleFileGzStream(file, destinationDir, t);
+        t.send(1.0, 'Archive extracted successfully', force: true);
+        await Future.delayed(const Duration(milliseconds: 200));
+        sendPort.send({'status': 'completed'});
+        return;
+      }
+      if (lowerPath.endsWith('.bz2') && !lowerPath.endsWith('.tar.bz2') && !lowerPath.endsWith('.tbz2')) {
+        await _extractSingleFile(file, destinationDir, (bytes, total) {
+          return BZip2Decoder().decodeBytes(bytes);
+        }, t, totalArchiveBytes, 'Decoding BZ2…');
+        t.send(1.0, 'Archive extracted successfully', force: true);
+        await Future.delayed(const Duration(milliseconds: 200));
+        sendPort.send({'status': 'completed'});
+        return;
+      }
+      if (lowerPath.endsWith('.lz4') && !lowerPath.endsWith('.tar.lz4') && !lowerPath.endsWith('.tlz4')) {
+        await _extractSingleFile(file, destinationDir, (bytes, total) {
+          return lz4FrameDecode(bytes);
+        }, t, totalArchiveBytes, 'Decoding LZ4…');
+        t.send(1.0, 'Archive extracted successfully', force: true);
+        await Future.delayed(const Duration(milliseconds: 200));
+        sendPort.send({'status': 'completed'});
+        return;
+      }
+      if ((lowerPath.endsWith('.zst') || lowerPath.endsWith('.zstd')) &&
+          !lowerPath.endsWith('.tar.zst') &&
+          !lowerPath.endsWith('.tzst')) {
+        await _extractSingleFile(file, destinationDir, (bytes, total) {
+          return const ZstdDecoder().decodeBytes(bytes);
+        }, t, totalArchiveBytes, 'Decoding ZSTD…');
+        t.send(1.0, 'Archive extracted successfully', force: true);
+        await Future.delayed(const Duration(milliseconds: 200));
+        sendPort.send({'status': 'completed'});
+        return;
+      }
+
+      // ===== 归档类：ZIP / TAR / TAR.* =====
+      t.send(0.05, 'Preparing to extract…', force: true);
+
+      late Archive archive;
+      // 需要保持引用以便在所有文件提取完成后才关闭
+      InputFileStream? zipInputToClose;
+      String? tempTarPath;
 
       if (lowerPath.endsWith('.zip') || lowerPath.contains('.zip.')) {
-        archive = ZipDecoder().decodeBytes(bytes, password: password != null && password.isNotEmpty ? password : null);
-      } else if (lowerPath.endsWith('.tar.gz') || lowerPath.endsWith('.tgz')) {
-        final tarBytes = GZipDecoder().decodeBytes(bytes);
-        archive = TarDecoder().decodeBytes(tarBytes);
-      } else if (lowerPath.endsWith('.tar.bz2') || lowerPath.endsWith('.tbz2')) {
-        final tarBytes = BZip2Decoder().decodeBytes(bytes);
-        archive = TarDecoder().decodeBytes(tarBytes);
-      } else if (lowerPath.endsWith('.tar.lz4') || lowerPath.endsWith('.tlz4')) {
-        final tarBytes = lz4FrameDecode(bytes);
-        archive = TarDecoder().decodeBytes(Uint8List.fromList(tarBytes));
-      } else if (lowerPath.endsWith('.tar.zst') || lowerPath.endsWith('.tzst')) {
-        final tarBytes = const ZstdDecoder().decodeBytes(bytes);
-        archive = TarDecoder().decodeBytes(Uint8List.fromList(tarBytes));
+        final input = InputFileStream(archivePath);
+        zipInputToClose = input;
+        archive = ZipDecoder().decodeBuffer(
+          input,
+          password: (password != null && password.isNotEmpty) ? password : null,
+        );
       } else if (lowerPath.endsWith('.tar')) {
-        archive = TarDecoder().decodeBytes(bytes);
-      } else if (lowerPath.endsWith('.gz')) {
-        final decodedBytes = GZipDecoder().decodeBytes(bytes);
-        final name = p.basenameWithoutExtension(archivePath);
-        final destFile = File(p.join(destinationDir, name));
-        destFile.createSync(recursive: true);
-        destFile.writeAsBytesSync(decodedBytes);
-        sendPort.send({'status': 'completed'});
-        return;
-      } else if (lowerPath.endsWith('.bz2')) {
-        final decodedBytes = BZip2Decoder().decodeBytes(bytes);
-        final name = p.basenameWithoutExtension(archivePath);
-        final destFile = File(p.join(destinationDir, name));
-        destFile.createSync(recursive: true);
-        destFile.writeAsBytesSync(decodedBytes);
-        sendPort.send({'status': 'completed'});
-        return;
-      } else if (lowerPath.endsWith('.lz4')) {
-        final decodedBytes = lz4FrameDecode(bytes);
-        final name = p.basenameWithoutExtension(archivePath);
-        final destFile = File(p.join(destinationDir, name));
-        destFile.createSync(recursive: true);
-        destFile.writeAsBytesSync(Uint8List.fromList(decodedBytes));
-        sendPort.send({'status': 'completed'});
-        return;
-      } else if (lowerPath.endsWith('.zst') || lowerPath.endsWith('.zstd')) {
-        final decodedBytes = const ZstdDecoder().decodeBytes(bytes);
-        final name = p.basenameWithoutExtension(archivePath);
-        final destFile = File(p.join(destinationDir, name));
-        destFile.createSync(recursive: true);
-        destFile.writeAsBytesSync(Uint8List.fromList(decodedBytes));
-        sendPort.send({'status': 'completed'});
-        return;
+        final input = InputFileStream(archivePath);
+        archive = TarDecoder().decodeBuffer(input);
+        try { input.closeSync(); } catch (_) {}
       } else {
-        archive = ZipDecoder().decodeBytes(bytes, password: password != null && password.isNotEmpty ? password : null);
+        // TAR.*：优先用「流式解压外层 → 临时 TAR 文件 → TarDecoder 读临时文件」
+        t.send(0.07, 'Unwrapping outer compression…', force: true);
+        tempTarPath = await _streamDecompressToTar(file, 'tar', t);
+
+        final input = InputFileStream(tempTarPath);
+        archive = TarDecoder().decodeBuffer(input);
+        try { input.closeSync(); } catch (_) {}
       }
 
-      sendPort.send({'status': 'progress', 'progress': 0.3, 'currentFile': 'Extracting files...'});
+      // 在 try 块外声明变量，以便在 finally 块后访问
+      int totalExtractBytes = 0;
+      int extractedBytes = 0;
 
-      // 分析压缩包根目录结构
-      // 收集根层级的所有条目（第一级路径）
-      final rootEntries = <String>{};
-      for (int i = 0; i < archive.length; i++) {
-        final name = _fixZipFilename(archive[i].name);
-        if (name.isEmpty || name == '/') continue;
-        final firstSegment = name.split('/').first;
-        if (firstSegment.isNotEmpty) {
-          rootEntries.add(firstSegment);
+      try {
+        t.send(0.28, 'Analyzing archive structure…', force: true);
+
+        // 分析根目录结构，判断是否自动创建子文件夹
+        final rootEntries = <String>{};
+        for (int i = 0; i < archive.length; i++) {
+          final name = _fixZipFilename(archive[i].name);
+          if (name.isEmpty || name == '/') continue;
+          final firstSegment = name.split('/').first;
+          if (firstSegment.isNotEmpty) rootEntries.add(firstSegment);
         }
-      }
 
-      // 判断是否需要自动创建文件夹：
-      // - 如果根层级只有一个文件夹，则不创建（直接解压到目标目录）
-      // - 如果根层级有多个文件/文件夹，则创建以压缩包名称命名的文件夹
-      String actualDestDir = destinationDir;
-      final bool shouldCreateFolder;
-      if (rootEntries.length == 1) {
-        // 只有一个根条目，检查它是否是文件夹
-        final singleEntry = rootEntries.first;
-        final isFolder = archive.any((f) {
-          final name = _fixZipFilename(f.name);
-          return name == singleEntry || name.startsWith('$singleEntry/');
-        }) && archive.any((f) {
-          final name = _fixZipFilename(f.name);
-          return name.startsWith('$singleEntry/');
-        });
-        // 如果唯一根条目是文件夹，则不创建；否则创建
-        shouldCreateFolder = !isFolder;
-      } else {
-        // 多个根条目，需要创建文件夹
-        shouldCreateFolder = true;
-      }
-
-      if (shouldCreateFolder) {
-        final archiveBaseName = p.basenameWithoutExtension(archivePath);
-        actualDestDir = p.join(destinationDir, archiveBaseName);
-        Directory(actualDestDir).createSync(recursive: true);
-      }
-
-      final totalFiles = archive.length;
-      for (int i = 0; i < totalFiles; i++) {
-        final file = archive[i];
-        var filename = _fixZipFilename(file.name);
-        final progress = 0.3 + (i / totalFiles) * 0.7;
-        sendPort.send({
-          'status': 'progress',
-          'progress': progress,
-          'currentFile': filename,
-        });
-
-        if (file.isFile) {
-          final data = file.content as List<int>;
-          final destFile = File(p.join(actualDestDir, filename));
-          destFile.createSync(recursive: true);
-          destFile.writeAsBytesSync(data);
+        final bool shouldCreateFolder;
+        if (rootEntries.length == 1) {
+          final singleEntry = rootEntries.first;
+          final isFolder = archive.any((f) {
+            final n = _fixZipFilename(f.name);
+            return n == singleEntry || n.startsWith('$singleEntry/');
+          }) && archive.any((f) {
+            final n = _fixZipFilename(f.name);
+            return n.startsWith('$singleEntry/');
+          });
+          shouldCreateFolder = !isFolder;
         } else {
-          Directory(p.join(actualDestDir, filename)).createSync(recursive: true);
+          shouldCreateFolder = true;
+        }
+
+        String actualDestDir = destinationDir;
+        if (shouldCreateFolder) {
+          final archiveBaseName = p.basenameWithoutExtension(archivePath);
+          actualDestDir = p.join(destinationDir, archiveBaseName);
+          Directory(actualDestDir).createSync(recursive: true);
+        }
+
+        final totalFiles = archive.length;
+        // 计算总字节数（用于速度/ETA 计算）
+        for (final f in archive) {
+          if (f.isFile) totalExtractBytes += f.size;
+        }
+        for (int i = 0; i < totalFiles; i++) {
+          final fileEntry = archive[i];
+          final filename = _fixZipFilename(fileEntry.name);
+          final progress = 0.30 + (i / totalFiles) * 0.70;
+          t.send(progress, filename, bytesProcessed: extractedBytes, totalBytes: totalExtractBytes);
+
+          final outPath = p.join(actualDestDir, filename);
+          if (fileEntry.isFile) {
+            final outFile = File(outPath);
+            outFile.createSync(recursive: true);
+            final dynamic content = fileEntry.content;
+            await _streamWriteArchiveFile(content, outFile);
+            extractedBytes += fileEntry.size;
+          } else {
+            Directory(outPath).createSync(recursive: true);
+          }
+          if (i & 15 == 15) {
+            await Future<void>.delayed(Duration.zero);
+          }
+        }
+      } finally {
+        // ✅ 在所有文件提取完成后才关闭 ZIP 输入流
+        if (zipInputToClose != null) {
+          try { zipInputToClose.closeSync(); } catch (_) {}
         }
       }
 
-      sendPort.send({
-        'status': 'progress',
-        'progress': 1.0,
-        'currentFile': 'Archive extracted successfully',
-      });
-      await Future.delayed(const Duration(milliseconds: 300));
-
+      t.send(1.0, 'Archive extracted successfully', force: true, bytesProcessed: extractedBytes, totalBytes: totalExtractBytes);
+      await Future.delayed(const Duration(milliseconds: 200));
       sendPort.send({'status': 'completed'});
-    } catch (e) {
-      sendPort.send({'status': 'error', 'error': e.toString()});
+    } catch (e, stackTrace) {
+      final msg = 'Extraction failed: ${e.toString()}';
+      debugPrint('$msg\n$stackTrace');
+      sendPort.send({'status': 'error', 'error': msg});
+    } finally {
+      final tarTmp = tempTarPath;
+      if (tarTmp != null && tarTmp.isNotEmpty) {
+        try {
+          final f = File(tarTmp);
+          if (f.existsSync()) f.deleteSync();
+        } catch (_) {}
+      }
+    }
+  }
+
+  /// 单文件 .gz：用 GZipDecoder.decodeStream 流式解码，全程不驻留整包字节。
+  static Future<void> _extractSingleFileGzStream(File src, String destDir, _ProgressThrottler t) async {
+    final name = p.basenameWithoutExtension(src.path);
+    final out = File(p.join(destDir, name))..createSync(recursive: true);
+
+    try {
+      final input = InputFileStream(src.path);
+      final output = OutputFileStream(out.path);
+      try {
+        GZipDecoder().decodeStream(input, output);
+        output.flush();
+      } finally {
+        try { input.closeSync(); } catch (_) {}
+        try { output.closeSync(); } catch (_) {}
+      }
+      t.send(0.95, 'Decoded GZ stream…');
+    } finally {
+    }
+  }
+
+  /// 解压单文件压缩包（bz2/lz4/zst，这些库目前没有流式 API）：
+  /// 小文件走同步；大文件仍要兜底，但至少分块写输出，降低峰值内存。
+  static Future<void> _extractSingleFile(
+    File src,
+    String destDir,
+    List<int> Function(Uint8List bytes, int totalLen) decoder,
+    _ProgressThrottler t,
+    int totalBytes,
+    String stageLabel,
+  ) async {
+    final name = p.basenameWithoutExtension(src.path);
+    final out = File(p.join(destDir, name))..createSync(recursive: true);
+
+    if (totalBytes > 128 * 1024 * 1024) {
+      t.send(0.15, 'Reading $stageLabel (large file)…', force: true);
+      final bytes = await src.readAsBytes();
+      t.send(0.55, 'Applying decoder…', force: true);
+      final decoded = decoder(Uint8List.fromList(bytes), totalBytes);
+      t.send(0.88, 'Writing output…', force: true);
+      await _streamWriteArchiveFile(decoded, out);
+    } else {
+      t.send(0.2, 'Reading…', force: true);
+      final bytes = await src.readAsBytes();
+      t.send(0.6, stageLabel, force: true);
+      final decoded = decoder(Uint8List.fromList(bytes), totalBytes);
+      t.send(0.92, 'Writing output…', force: true);
+      if (decoded.isNotEmpty) {
+        await out.writeAsBytes(decoded is Uint8List ? decoded : Uint8List.fromList(decoded));
+      }
     }
   }
 }

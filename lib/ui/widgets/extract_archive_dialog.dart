@@ -1,3 +1,4 @@
+import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../screens/internal_file_picker_screen.dart';
@@ -12,18 +13,33 @@ class ExtractArchiveResult {
 
 class ExtractArchiveDialog extends StatefulWidget {
   final String archiveName;
-  final String currentDir;
+
+  /// 压缩包所在的目录路径（解压目标的默认值）。
+  final String archiveDir;
+
+  /// 压缩包文件的完整路径（优先使用，可与 archiveDir 同时提供时以该路径的父目录为准）。
+  final String? archivePath;
 
   const ExtractArchiveDialog({
     super.key,
     required this.archiveName,
-    required this.currentDir,
+    required this.archiveDir,
+    this.archivePath,
   });
 
-  static Future<ExtractArchiveResult?> show(BuildContext context, {required String archiveName, required String currentDir}) {
+  static Future<ExtractArchiveResult?> show(
+    BuildContext context, {
+    required String archiveName,
+    required String archiveDir,
+    String? archivePath,
+  }) {
     return showDialog<ExtractArchiveResult>(
       context: context,
-      builder: (_) => ExtractArchiveDialog(archiveName: archiveName, currentDir: currentDir),
+      builder: (_) => ExtractArchiveDialog(
+        archiveName: archiveName,
+        archiveDir: archiveDir,
+        archivePath: archivePath,
+      ),
     );
   }
 
@@ -33,15 +49,17 @@ class ExtractArchiveDialog extends StatefulWidget {
 
 class _ExtractArchiveDialogState extends State<ExtractArchiveDialog> {
   late TextEditingController _passwordController;
-  late String _customDestDir;
-  bool _useCurrentDir = true;
+  late String _destDir;
   bool _obscurePassword = true;
 
   @override
   void initState() {
     super.initState();
     _passwordController = TextEditingController();
-    _customDestDir = widget.currentDir;
+    // 默认解压目标 = 压缩包所在位置（archivePath 有值时优先取其父目录，否则用 archiveDir）
+    _destDir = widget.archivePath != null && widget.archivePath!.isNotEmpty
+        ? p.dirname(widget.archivePath!)
+        : widget.archiveDir;
   }
 
   @override
@@ -50,24 +68,41 @@ class _ExtractArchiveDialogState extends State<ExtractArchiveDialog> {
     super.dispose();
   }
 
-  Future<void> _pickCustomDirectory() async {
+  Future<void> _pickDirectory() async {
     final result = await InternalFilePickerScreen.show(
       context,
-      rootPath: '/storage/emulated/0',
+      rootPath: _destDir.startsWith('/') ? _destDir : '/storage/emulated/0',
       pickDirectory: true,
     );
     if (result != null && result.isNotEmpty && mounted) {
       setState(() {
-        _customDestDir = result.first;
+        _destDir = result.first;
       });
     }
   }
 
-  String get _effectiveDestDir => _useCurrentDir ? widget.currentDir : _customDestDir;
+  /// 取本地化字符串；如未在 arb 中注册则 fallback 到中文，避免 l10n 缺失时崩溃。
+  /// 使用 dynamic 调用，绕开编译期 getter 检查（防止 L10n 具体类未注册 key 时直接报 undefined_getter）。
+  String _safeL10n(String Function(dynamic l) getter, String fallback) {
+    try {
+      final dynamic l = L10n.of(context);
+      final dynamic v = getter(l);
+      if (v == null || v.toString().isEmpty) return fallback;
+      return v.toString();
+    } catch (_) {
+      return fallback;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final msgExtractTo = _safeL10n((l) => l.msg_extract_to, '解压到…');
+    final msgExtractTargetFolder = _safeL10n((l) => l.msg_extract_target_folder, '解压到的文件夹');
+    final msgHintPassword = _safeL10n((l) => l.msgff69affd, '密码（如果已加密）');
+    final msgCancel = _safeL10n((l) => l.ui_cancel, '取消');
+    final msgExtract = _safeL10n((l) => l.ui_extract, '解压');
+    final msgBrowse = _safeL10n((l) => l.ui_browse, '浏览');
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -95,7 +130,7 @@ class _ExtractArchiveDialogState extends State<ExtractArchiveDialog> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          L10n.of(context).msg_extract_to,
+                          msgExtractTo,
                           style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         Text(
@@ -111,79 +146,49 @@ class _ExtractArchiveDialogState extends State<ExtractArchiveDialog> {
               ),
               const SizedBox(height: 24),
 
-              // 当前目录复选框
-              InkWell(
-                onTap: () => setState(() => _useCurrentDir = true),
-                borderRadius: BorderRadius.circular(12),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                  child: Row(
-                    children: [
-                      Checkbox(
-                        value: _useCurrentDir,
-                        onChanged: (v) => setState(() => _useCurrentDir = v ?? true),
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              L10n.of(context).ui_current_directory,
-                              style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              widget.currentDir,
-                              style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.6)),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+              // 解压目标路径（当前路径 + 自定义路径合并为一行：左边显示当前选择的路径，右侧图标浏览修改）
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.35),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.45)),
                 ),
-              ),
-
-              // 自定义目录复选框 + 按钮
-              InkWell(
-                onTap: () => setState(() => _useCurrentDir = false),
-                borderRadius: BorderRadius.circular(12),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                  child: Row(
-                    children: [
-                      Checkbox(
-                        value: !_useCurrentDir,
-                        onChanged: (v) => setState(() => _useCurrentDir = !(v ?? false)),
+                child: Row(
+                  children: [
+                    Icon(Broken.folder_2, color: theme.colorScheme.primary, size: 22),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            msgExtractTargetFolder,
+                            style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.55)),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _destDir,
+                            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              L10n.of(context).ui_custom_directory,
-                              style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              _customDestDir,
-                              style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.6)),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      onPressed: _pickDirectory,
+                      tooltip: msgBrowse,
+                      style: IconButton.styleFrom(
+                        backgroundColor: theme.colorScheme.primary.withOpacity(0.08),
+                        padding: const EdgeInsets.all(10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
-                      TextButton(
-                        onPressed: !_useCurrentDir ? _pickCustomDirectory : null,
-                        child: Text(L10n.of(context).ui_browse),
-                      ),
-                    ],
-                  ),
+                      icon: Icon(Broken.folder_open, color: theme.colorScheme.primary, size: 20),
+                    ),
+                  ],
                 ),
               ),
 
@@ -194,7 +199,7 @@ class _ExtractArchiveDialogState extends State<ExtractArchiveDialog> {
                 controller: _passwordController,
                 obscureText: _obscurePassword,
                 decoration: InputDecoration(
-                  labelText: L10n.of(context).msgff69affd,
+                  labelText: msgHintPassword,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   prefixIcon: const Icon(Broken.lock),
                   suffixIcon: IconButton(
@@ -210,12 +215,12 @@ class _ExtractArchiveDialogState extends State<ExtractArchiveDialog> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: Text(L10n.of(context).ui_cancel),
+                    child: Text(msgCancel),
                   ),
                   const SizedBox(width: 12),
                   FilledButton(
                     onPressed: () {
-                      final dest = _effectiveDestDir.trim();
+                      final dest = _destDir.trim();
                       if (dest.isEmpty) return;
 
                       Navigator.pop(
@@ -226,7 +231,7 @@ class _ExtractArchiveDialogState extends State<ExtractArchiveDialog> {
                         ),
                       );
                     },
-                    child: Text(L10n.of(context).ui_extract),
+                    child: Text(msgExtract),
                   ),
                 ],
               ),

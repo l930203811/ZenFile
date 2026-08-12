@@ -4604,5 +4604,13 @@
   "ui_parent_directory": "Übergeordnetes Verzeichnis",
   "@ui_parent_directory": {
     "description": "Backup & restore settings screen"
+  },
+  "ui_speed": "Geschwindigkeit",
+  "@ui_speed": {
+    "description": "Progress dialog speed label"
+  },
+  "ui_file_size": "Dateigröße",
+  "@ui_file_size": {
+    "description": "Progress dialog file size label"
   }
 }

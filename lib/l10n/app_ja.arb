@@ -4611,5 +4611,13 @@
   "ui_parent_directory": "親ディレクトリ",
   "@ui_parent_directory": {
     "description": "Backup & restore settings screen"
+  },
+  "ui_speed": "速度",
+  "@ui_speed": {
+    "description": "Progress dialog speed label"
+  },
+  "ui_file_size": "ファイルサイズ",
+  "@ui_file_size": {
+    "description": "Progress dialog file size label"
   }
 }

@@ -4656,5 +4656,21 @@
   "ui_parent_directory": "Parent Directory",
   "@ui_parent_directory": {
     "description": "Backup & restore settings screen"
+  },
+  "ui_compress_progress": "Compressing",
+  "@ui_compress_progress": {
+    "description": "Progress dialog title for compression"
+  },
+  "ui_extract_progress": "Extracting",
+  "@ui_extract_progress": {
+    "description": "Progress dialog title for extraction"
+  },
+  "ui_speed": "Speed",
+  "@ui_speed": {
+    "description": "Progress dialog speed label"
+  },
+  "ui_file_size": "File Size",
+  "@ui_file_size": {
+    "description": "Progress dialog file size label"
   }
 }

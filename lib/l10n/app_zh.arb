@@ -4877,5 +4877,21 @@
   "ui_parent_directory": "上级目录",
   "@ui_parent_directory": {
     "description": "Backup & restore settings screen"
+  },
+  "ui_compress_progress": "正在压缩",
+  "@ui_compress_progress": {
+    "description": "压缩进度对话框标题"
+  },
+  "ui_extract_progress": "正在解压",
+  "@ui_extract_progress": {
+    "description": "解压进度对话框标题"
+  },
+  "ui_speed": "速度",
+  "@ui_speed": {
+    "description": "进度对话框速度标签"
+  },
+  "ui_file_size": "文件大小",
+  "@ui_file_size": {
+    "description": "进度对话框文件大小标签"
   }
 }
