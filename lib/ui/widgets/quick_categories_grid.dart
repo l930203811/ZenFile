@@ -61,11 +61,15 @@ class QuickCategoriesGrid extends StatefulWidget {
       }
     } catch (_) {}
 
+    // 所有类别图标背景统一跟随主题主色，不再使用多种颜色
+    final theme = Theme.of(context);
+    final categoryColor = theme.colorScheme.primary;
+
     final map = <String, Map<String, dynamic>>{
       '系统': {
         'label': l10n.cat_system,
         'icon': Broken.cpu,
-        'color': isDark ? Colors.redAccent : const Color(0xFFE53935),
+        'color': categoryColor,
         'count': l10n.cat_manage,
         'isCustom': false,
         'action': () {
@@ -77,7 +81,7 @@ class QuickCategoriesGrid extends StatefulWidget {
       '存储': {
         'label': l10n.cat_storage_volume,
         'icon': Broken.folder_open,
-        'color': isDark ? Colors.blueAccent : const Color(0xFF1976D2),
+        'color': categoryColor,
         'count': storageCountText,
         'isCustom': false,
         'action': () {
@@ -94,7 +98,7 @@ class QuickCategoriesGrid extends StatefulWidget {
       '图片': {
         'label': l10n.cat_images,
         'icon': Broken.image,
-        'color': isDark ? Colors.purpleAccent : Colors.purple,
+        'color': categoryColor,
         'count': formatSizeCount('图片'),
         'isCustom': false,
         'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.images, onNavigateTab: onNavigateTab),
@@ -102,7 +106,7 @@ class QuickCategoriesGrid extends StatefulWidget {
       '视频': {
         'label': l10n.cat_videos,
         'icon': Broken.video,
-        'color': isDark ? Colors.redAccent : const Color(0xFFD32F2F),
+        'color': categoryColor,
         'count': formatSizeCount('视频'),
         'isCustom': false,
         'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.videos, onNavigateTab: onNavigateTab),
@@ -110,7 +114,7 @@ class QuickCategoriesGrid extends StatefulWidget {
       '音频': {
         'label': l10n.cat_audios,
         'icon': Broken.music,
-        'color': isDark ? Colors.orangeAccent : const Color(0xFFE65100),
+        'color': categoryColor,
         'count': formatSizeCount('音频'),
         'isCustom': false,
         'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.audios, onNavigateTab: onNavigateTab),
@@ -118,7 +122,7 @@ class QuickCategoriesGrid extends StatefulWidget {
       '文档': {
         'label': l10n.cat_documents,
         'icon': Broken.document,
-        'color': isDark ? Colors.blueAccent : const Color(0xFF1976D2),
+        'color': categoryColor,
         'count': formatSizeCount('文档'),
         'isCustom': false,
         'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.documents, onNavigateTab: onNavigateTab),
@@ -126,7 +130,7 @@ class QuickCategoriesGrid extends StatefulWidget {
       '压缩包': {
         'label': l10n.msgc806d0fa,
         'icon': Broken.archive,
-        'color': isDark ? Colors.tealAccent : const Color(0xFF00796B),
+        'color': categoryColor,
         'count': formatSizeCount('压缩包'),
         'isCustom': false,
         'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.archives, onNavigateTab: onNavigateTab),
@@ -134,7 +138,7 @@ class QuickCategoriesGrid extends StatefulWidget {
       '下载': {
         'label': l10n.cat_downloads,
         'icon': Broken.document_download,
-        'color': isDark ? Colors.greenAccent : const Color(0xFF2E7D32),
+        'color': categoryColor,
         'count': formatSizeCount('下载'),
         'isCustom': false,
         'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.downloads, onNavigateTab: onNavigateTab),
@@ -142,7 +146,7 @@ class QuickCategoriesGrid extends StatefulWidget {
       '安装包': {
         'label': l10n.msg03070d08,
         'icon': Broken.box,
-        'color': isDark ? Colors.amber : const Color(0xFFF57C00),
+        'color': categoryColor,
         'count': formatSizeCount('安装包'),
         'isCustom': false,
         'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.apks, onNavigateTab: onNavigateTab),
@@ -150,7 +154,7 @@ class QuickCategoriesGrid extends StatefulWidget {
       '截图': {
         'label': l10n.cat_screenshots,
         'icon': Broken.mobile,
-        'color': isDark ? Colors.pinkAccent : const Color(0xFFC2185B),
+        'color': categoryColor,
         'count': formatSizeCount('截图'),
         'isCustom': false,
         'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.screenshots, onNavigateTab: onNavigateTab),
@@ -158,7 +162,7 @@ class QuickCategoriesGrid extends StatefulWidget {
       '最近': {
         'label': l10n.cat_recent,
         'icon': Broken.clock,
-        'color': isDark ? Colors.indigoAccent : const Color(0xFF3F51B5),
+        'color': categoryColor,
         'count': formatSizeCount('最近'),
         'isCustom': false,
         'pageBuilder': () => AllRecentFilesScreen(onNavigateTab: onNavigateTab),
@@ -166,7 +170,7 @@ class QuickCategoriesGrid extends StatefulWidget {
       '网络': {
         'label': l10n.cat_network,
         'icon': Broken.wifi,
-        'color': isDark ? Colors.cyanAccent : const Color(0xFF00BCD4),
+        'color': categoryColor,
         'count': '${mediaProvider.getCategoryItemCount("网络")}',
         'isCustom': false,
         'pageBuilder': () => NetworkCategoryScreen(onNavigateTab: onNavigateTab),
@@ -174,7 +178,7 @@ class QuickCategoriesGrid extends StatefulWidget {
       'FTP共享': {
         'label': l10n.ftp,
         'icon': Icons.swap_horizontal_circle_rounded,
-        'color': isDark ? Colors.orangeAccent : const Color(0xFFF57C00),
+        'color': categoryColor,
         'count': l10n.cat_service,
         'isCustom': false,
         'pageBuilder': () => const FtpServerScreen(),
@@ -182,7 +186,7 @@ class QuickCategoriesGrid extends StatefulWidget {
       'Web共享': {
         'label': l10n.web,
         'icon': Icons.language_rounded,
-        'color': isDark ? Colors.deepPurpleAccent : const Color(0xFF7B1FA2),
+        'color': categoryColor,
         'count': l10n.cat_service,
         'isCustom': false,
         'pageBuilder': () => const WebSharingScreen(),
@@ -190,7 +194,7 @@ class QuickCategoriesGrid extends StatefulWidget {
       '应用': {
         'label': l10n.cat_apps,
         'icon': Broken.mobile,
-        'color': isDark ? Colors.lightGreenAccent : const Color(0xFF4CAF50),
+        'color': categoryColor,
         'count': l10n.cat_manage,
         'isCustom': false,
         'pageBuilder': () => const AppManagerScreen(),
@@ -198,7 +202,7 @@ class QuickCategoriesGrid extends StatefulWidget {
       '设置': {
         'label': l10n.cat_settings,
         'icon': Broken.setting_2,
-        'color': isDark ? Colors.blueGrey.shade300 : Colors.blueGrey,
+        'color': categoryColor,
         'count': l10n.cat_config,
         'isCustom': false,
         'pageBuilder': () => const MoreSettingsScreen(),
@@ -206,7 +210,7 @@ class QuickCategoriesGrid extends StatefulWidget {
       '备份/恢复': {
         'label': l10n.cat_backup_restore,
         'icon': Broken.save_2,
-        'color': isDark ? Colors.tealAccent : const Color(0xFF009688),
+        'color': categoryColor,
         'count': l10n.cat_backup_restore_desc,
         'isCustom': false,
         'pageBuilder': () => const BackupSettingsScreen(),
@@ -214,7 +218,7 @@ class QuickCategoriesGrid extends StatefulWidget {
       '空间': {
         'label': l10n.cat_storage,
         'icon': Broken.chart_square,
-        'color': isDark ? Colors.cyanAccent : const Color(0xFF00ACC1),
+        'color': categoryColor,
         'count': l10n.cat_analyze,
         'isCustom': false,
         'pageBuilder': () => const StorageAnalyzerScreen(),
@@ -222,7 +226,7 @@ class QuickCategoriesGrid extends StatefulWidget {
       '保险箱': {
         'label': l10n.cat_vault,
         'icon': Broken.security_safe,
-        'color': isDark ? Colors.yellowAccent : const Color(0xFFFFB300),
+        'color': categoryColor,
         'count': l10n.cat_vault_desc,
         'isCustom': false,
         'pageBuilder': () => const VaultLockScreen(),
@@ -230,7 +234,7 @@ class QuickCategoriesGrid extends StatefulWidget {
       '回收站': {
         'label': l10n.ui_recycle_bin,
         'icon': Broken.trash,
-        'color': isDark ? Colors.blueGrey.shade300 : Colors.blueGrey,
+        'color': categoryColor,
         'count': '${RecycleBinService.getTrashItems().length}',
         'isCustom': false,
         'pageBuilder': () => const RecycleBinScreen(),
@@ -241,7 +245,7 @@ class QuickCategoriesGrid extends StatefulWidget {
       map[cs.id] = {
         'label': cs.label,
         'icon': cs.isDirectory ? Broken.folder : Broken.document,
-        'color': isDark ? Colors.cyanAccent : Colors.cyan,
+        'color': categoryColor,
         'count': cs.isDirectory ? L10n.of(context).msg1f4c1042 : L10n.of(context).ui_file,
         'isCustom': true,
         'path': cs.path,
