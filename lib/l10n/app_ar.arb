@@ -3093,6 +3093,8 @@
   "ui_file_actions_viewers": "إجراءات الملفات والعارضات",
   "ui_no_settings_found": "لم يتم العثور على إعدادات",
   "ui_show_action_bar": "إظهار شريط الإجراءات",
+  "ui_show_remote_cloud_badge": "إظهار شارة السحابة للملفات البعيدة",
+  "msg_remote_cloud_badge": "إظهار أيقونة سحابة أعلى يسار أيقونات الملفات والمجلدات البعيدة للتمييز بينها وبين المحلية",
   "ui_use_24h_format": "استخدام تنسيق 24 ساعة",
   "ui_show_folder_contents_count": "إظهار محتويات المجلدات",
   "ui_set_as_home": "تعيين كصفحة رئيسية",

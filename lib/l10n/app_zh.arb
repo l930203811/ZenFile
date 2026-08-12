@@ -3179,6 +3179,8 @@
   "ui_file_actions_viewers": "文件操作与查看器",
   "ui_no_settings_found": "未找到设置",
   "ui_show_action_bar": "显示操作按钮",
+  "ui_show_remote_cloud_badge": "显示远程文件云徽",
+  "msg_remote_cloud_badge": "在浏览页远程文件与文件夹图标左上角显示云图标，便于区分本地与远程文件",
   "ui_use_24h_format": "使用24小时制",
   "ui_show_folder_contents_count": "显示文件夹内容计数",
   "ui_set_as_home": "设为首页",

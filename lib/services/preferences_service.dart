@@ -9,6 +9,7 @@ class PreferencesService {
   static const String _keyAppLocale = 'app_locale';
   static const String _keyShowHiddenFiles = 'show_hidden_files';
   static const String _keyShowFloatingAddButton = 'show_floating_add_button';
+  static const String _keyShowRemoteCloudBadge = 'show_remote_cloud_badge';
   static const String _keyDefaultToBrowseScreen = 'default_to_browse_screen';
   static const String _keyIsGridView = 'is_grid_view';
   static const String _keyIconScale = 'icon_scale';
@@ -96,6 +97,14 @@ class PreferencesService {
 
   static Future<void> saveShowFloatingAddButton(bool val) async {
     await _prefs?.setBool(_keyShowFloatingAddButton, val);
+  }
+
+  static bool getShowRemoteCloudBadge() {
+    return _prefs?.getBool(_keyShowRemoteCloudBadge) ?? true;
+  }
+
+  static Future<void> saveShowRemoteCloudBadge(bool val) async {
+    await _prefs?.setBool(_keyShowRemoteCloudBadge, val);
   }
 
   static bool getShowFolderFileCount() {

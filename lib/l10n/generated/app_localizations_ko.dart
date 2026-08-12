@@ -2638,6 +2638,13 @@ class L10nKo extends L10n {
   String get ui_show_action_bar => '작업 모음 표시';
 
   @override
+  String get ui_show_remote_cloud_badge => '원격 파일 구름 배지 표시';
+
+  @override
+  String get msg_remote_cloud_badge =>
+      '브라우저에서 원격 파일과 폴더 왼쪽 위에 구름 아이콘을 표시해 로컬 항목과 구분합니다';
+
+  @override
   String get ui_use_24h_format => '24시간제 사용';
 
   @override

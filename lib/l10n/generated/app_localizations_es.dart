@@ -2781,6 +2781,14 @@ class L10nEs extends L10n {
   String get ui_show_action_bar => 'Mostrar Barra de Acciones';
 
   @override
+  String get ui_show_remote_cloud_badge =>
+      'Mostrar insignia de nube para archivos remotos';
+
+  @override
+  String get msg_remote_cloud_badge =>
+      'Muestra un icono de nube en archivos y carpetas remotos para distinguirlos de los locales';
+
+  @override
   String get ui_use_24h_format => 'Usar Formato de 24 Horas';
 
   @override

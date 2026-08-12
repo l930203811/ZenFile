@@ -24,6 +24,7 @@ import 'archive_type_icon.dart';
 import 'file_type_icon.dart';
 import 'restricted_folder_banner.dart';
 import 'file_action_dialogs.dart';
+import 'remote_cloud_badge.dart';
 import 'create_archive_dialog.dart';
 import 'batch_rename_dialog.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
@@ -795,24 +796,30 @@ class _PaneBrowserState extends State<PaneBrowser> {
                 children: [
                   GestureDetector(
                     onTap: itemLongPress,
-                    child: Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Icon(
-                        isSelected
-                            ? Broken.tick_circle
-                            : FileUtils.getFolderIcon(provider.folderIconOption),
-                        color: isSelected
-                            ? theme.colorScheme.onPrimary
-                            : theme.colorScheme.primary,
-                        size: 16,
-                      ),
+                    child: Stack(
+                      children: [
+                        Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? theme.colorScheme.primary
+                                : theme.colorScheme.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Icon(
+                            isSelected
+                                ? Broken.tick_circle
+                                : FileUtils.getFolderIcon(provider.folderIconOption),
+                            color: isSelected
+                                ? theme.colorScheme.onPrimary
+                                : theme.colorScheme.primary,
+                            size: 16,
+                          ),
+                        ),
+                        if (folder.isRemote && provider.showRemoteCloudBadge)
+                          RemoteCloudBadge(size: 9),
+                      ],
                     ),
                   ),
                   const SizedBox(width: 4),

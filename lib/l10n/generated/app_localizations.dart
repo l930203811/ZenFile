@@ -5038,6 +5038,18 @@ abstract class L10n {
   /// **'显示操作按钮'**
   String get ui_show_action_bar;
 
+  /// No description provided for @ui_show_remote_cloud_badge.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示远程文件云徽'**
+  String get ui_show_remote_cloud_badge;
+
+  /// No description provided for @msg_remote_cloud_badge.
+  ///
+  /// In zh, this message translates to:
+  /// **'在浏览页远程文件与文件夹图标左上角显示云图标，便于区分本地与远程文件'**
+  String get msg_remote_cloud_badge;
+
   /// No description provided for @ui_use_24h_format.
   ///
   /// In zh, this message translates to:

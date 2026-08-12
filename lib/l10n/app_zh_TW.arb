@@ -3161,6 +3161,8 @@
   "ui_file_actions_viewers": "檔案操作與檢視器",
   "ui_no_settings_found": "未找到設定",
   "ui_show_action_bar": "顯示操作按鈕",
+  "ui_show_remote_cloud_badge": "顯示遠端檔案雲徽",
+  "msg_remote_cloud_badge": "在瀏覽頁遠端檔案與資料夾圖示左上角顯示雲圖示，便於區分本機與遠端檔案",
   "ui_use_24h_format": "使用24小時制",
   "ui_show_folder_contents_count": "顯示資料夾內容計數",
   "ui_set_as_home": "設為首頁",

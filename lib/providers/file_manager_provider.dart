@@ -158,6 +158,7 @@ class FileManagerProvider extends ChangeNotifier {
     _itemPaddingMultiplier = PreferencesService.getItemPaddingMultiplier();
     _showHiddenFiles = PreferencesService.getShowHiddenFiles();
     _showFloatingAddButton = PreferencesService.getShowFloatingAddButton();
+    _showRemoteCloudBadge = PreferencesService.getShowRemoteCloudBadge();
     _defaultToBrowseScreen = PreferencesService.getDefaultToBrowseScreen();
     _swipeMode = PreferencesService.getSwipeMode();
     _showFolderFileCount = PreferencesService.getShowFolderFileCount();
@@ -744,6 +745,15 @@ class FileManagerProvider extends ChangeNotifier {
   void toggleFloatingAddButton() {
     _showFloatingAddButton = !_showFloatingAddButton;
     PreferencesService.saveShowFloatingAddButton(_showFloatingAddButton);
+    notifyListeners();
+  }
+
+  bool _showRemoteCloudBadge = true;
+  bool get showRemoteCloudBadge => _showRemoteCloudBadge;
+
+  void toggleRemoteCloudBadge() {
+    _showRemoteCloudBadge = !_showRemoteCloudBadge;
+    PreferencesService.saveShowRemoteCloudBadge(_showRemoteCloudBadge);
     notifyListeners();
   }
 

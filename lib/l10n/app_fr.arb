@@ -3093,6 +3093,8 @@
   "ui_file_actions_viewers": "Actions et visionneurs de fichiers",
   "ui_no_settings_found": "Aucun paramètre trouvé",
   "ui_show_action_bar": "Afficher la barre d'actions",
+  "ui_show_remote_cloud_badge": "Afficher le badge cloud des fichiers distants",
+  "msg_remote_cloud_badge": "Affiche une icône cloud sur les fichiers et dossiers distants pour les distinguer des locaux",
   "ui_use_24h_format": "Utiliser le format 24 heures",
   "ui_show_folder_contents_count": "Afficher le nombre de contenu du dossier",
   "ui_set_as_home": "Définir comme accueil",

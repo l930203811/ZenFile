@@ -3100,6 +3100,8 @@
   "ui_file_actions_viewers": "File Actions & Viewers",
   "ui_no_settings_found": "No settings found",
   "ui_show_action_bar": "Show Action Bar",
+  "ui_show_remote_cloud_badge": "Show Remote Cloud Badge",
+  "msg_remote_cloud_badge": "Show a cloud icon on remote files and folders in the browser to tell them apart from local ones",
   "ui_use_24h_format": "Use 24-Hour Format",
   "ui_show_folder_contents_count": "Show Folder Contents Count",
   "ui_set_as_home": "Set as Home",

@@ -2724,6 +2724,13 @@ class L10nEn extends L10n {
   String get ui_show_action_bar => 'Show Action Bar';
 
   @override
+  String get ui_show_remote_cloud_badge => 'Show Remote Cloud Badge';
+
+  @override
+  String get msg_remote_cloud_badge =>
+      'Show a cloud icon on remote files and folders in the browser to tell them apart from local ones';
+
+  @override
   String get ui_use_24h_format => 'Use 24-Hour Format';
 
   @override

@@ -10,6 +10,7 @@ import '../../services/app_manager_service.dart';
 import 'package:path/path.dart' as p;
 import 'dart:typed_data';
 import 'file_action_dialogs.dart';
+import 'remote_cloud_badge.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class FolderItem extends StatelessWidget {
@@ -43,6 +44,8 @@ class FolderItem extends StatelessWidget {
       (p) => p.forceHighlightedPaths.contains(folder.path) || (p.enableFolderHighlight && p.highlightedPaths.contains(folder.path)),
     );
 
+    final showRemoteBadge = context.select<FileManagerProvider, bool>((p) => p.showRemoteCloudBadge);
+
     final cardMargin = EdgeInsets.symmetric(
       horizontal: (16 * itemPaddingMultiplier).clamp(4.0, 32.0),
       vertical: (4 * itemPaddingMultiplier).clamp(1.0, 16.0),
@@ -72,14 +75,16 @@ class FolderItem extends StatelessWidget {
                 children: [
                   GestureDetector(
                     onTap: onIconTap ?? onLongPress,
-                    child: Container(
-                      width: 48 * iconScale,
-                      height: 48 * iconScale,
-                      decoration: BoxDecoration(
-                        color: isSelected ? theme.colorScheme.primary : theme.colorScheme.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: (() {
+                    child: Stack(
+                      children: [
+                        Container(
+                          width: 48 * iconScale,
+                          height: 48 * iconScale,
+                          decoration: BoxDecoration(
+                            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: (() {
                         final parentPath = p.dirname(folder.path).toLowerCase();
                         final isPackageFolder = parentPath.endsWith('/android/data') || parentPath.endsWith('/android/obb') || parentPath.endsWith(r'\android\data') || parentPath.endsWith(r'\android\obb');
 
@@ -120,6 +125,10 @@ class FolderItem extends StatelessWidget {
                           size: 28 * iconScale,
                         );
                       })(),
+                    ),
+                        if (folder.isRemote && showRemoteBadge)
+                          RemoteCloudBadge(size: 12 * (1 + (iconScale - 1) * 0.3)),
+                      ],
                     ),
                   ),
                   const SizedBox(width: 16),

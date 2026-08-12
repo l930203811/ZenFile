@@ -3097,6 +3097,8 @@
   "ui_file_actions_viewers": "ファイル操作とビューア",
   "ui_no_settings_found": "設定が見つかりません",
   "ui_show_action_bar": "操作バーを表示",
+  "ui_show_remote_cloud_badge": "リモートファイルの雲バッジを表示",
+  "msg_remote_cloud_badge": "ブラウザでリモートファイルとフォルダの左上に雲アイコンを表示し、ローカルと見分けやすくします",
   "ui_use_24h_format": "24時間制を使用",
   "ui_show_folder_contents_count": "フォルダの内容数を表示",
   "ui_set_as_home": "ホームに設定",

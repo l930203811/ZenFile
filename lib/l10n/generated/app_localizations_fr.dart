@@ -2781,6 +2781,14 @@ class L10nFr extends L10n {
   String get ui_show_action_bar => 'Afficher la barre d\'actions';
 
   @override
+  String get ui_show_remote_cloud_badge =>
+      'Afficher le badge cloud des fichiers distants';
+
+  @override
+  String get msg_remote_cloud_badge =>
+      'Affiche une icône cloud sur les fichiers et dossiers distants pour les distinguer des locaux';
+
+  @override
   String get ui_use_24h_format => 'Utiliser le format 24 heures';
 
   @override

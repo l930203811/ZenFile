@@ -2770,6 +2770,14 @@ class L10nRu extends L10n {
   String get ui_show_action_bar => 'Показать Панель Действий';
 
   @override
+  String get ui_show_remote_cloud_badge =>
+      'Показывать облачный значок для удалённых файлов';
+
+  @override
+  String get msg_remote_cloud_badge =>
+      'Показывает облачный значок в левом верхнем углу удалённых файлов и папок для отличия от локальных';
+
+  @override
   String get ui_use_24h_format => 'Использовать 24-Часовой Формат';
 
   @override

@@ -2719,6 +2719,13 @@ class L10nAr extends L10n {
   String get ui_show_action_bar => 'إظهار شريط الإجراءات';
 
   @override
+  String get ui_show_remote_cloud_badge => 'إظهار شارة السحابة للملفات البعيدة';
+
+  @override
+  String get msg_remote_cloud_badge =>
+      'إظهار أيقونة سحابة أعلى يسار أيقونات الملفات والمجلدات البعيدة للتمييز بينها وبين المحلية';
+
+  @override
   String get ui_use_24h_format => 'استخدام تنسيق 24 ساعة';
 
   @override

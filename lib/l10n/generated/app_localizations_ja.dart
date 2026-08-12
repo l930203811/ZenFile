@@ -2641,6 +2641,13 @@ class L10nJa extends L10n {
   String get ui_show_action_bar => '操作バーを表示';
 
   @override
+  String get ui_show_remote_cloud_badge => 'リモートファイルの雲バッジを表示';
+
+  @override
+  String get msg_remote_cloud_badge =>
+      'ブラウザでリモートファイルとフォルダの左上に雲アイコンを表示し、ローカルと見分けやすくします';
+
+  @override
   String get ui_use_24h_format => '24時間制を使用';
 
   @override

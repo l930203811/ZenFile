@@ -1308,6 +1308,20 @@ class ExplorerSettingsScreen extends StatelessWidget {
               onTap: () => fileManager.toggleFloatingAddButton(),
             ),
             SettingsTile(
+              icon: Broken.cloud,
+              title: L10n.of(context).ui_show_remote_cloud_badge,
+              subtitle: L10n.of(context).msg_remote_cloud_badge,
+              trailing: Transform.scale(
+                scale: 0.85,
+                child: Switch(
+                  value: fileManager.showRemoteCloudBadge,
+                  activeColor: theme.colorScheme.primary,
+                  onChanged: (_) => fileManager.toggleRemoteCloudBadge(),
+                ),
+              ),
+              onTap: () => fileManager.toggleRemoteCloudBadge(),
+            ),
+            SettingsTile(
               icon: Broken.folder_open,
               title: L10n.of(context).msg124d9054,
               subtitle: L10n.of(context).msg7e7765b6,

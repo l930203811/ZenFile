@@ -20,6 +20,7 @@ import 'package:photo_manager/photo_manager.dart';
 import 'file_action_dialogs.dart';
 import 'archive_type_icon.dart';
 import 'file_type_icon.dart';
+import 'remote_cloud_badge.dart';
 
 class FileGridItem extends StatelessWidget {
   final FileItemModel file;
@@ -83,22 +84,28 @@ class FileGridItem extends StatelessWidget {
                     children: [
                       GestureDetector(
                         onTap: onIconTap ?? onLongPress,
-                        child: Container(
-                          width: 48 * iconScale,
-                          height: 48 * iconScale,
-                          decoration: BoxDecoration(
-                            color: isSelected ? theme.colorScheme.primary : iconColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: _MediaThumbnail(
-                              file: file,
-                              iconScale: iconScale,
-                              isSelected: isSelected,
-                              iconColor: iconColor,
+                        child: Stack(
+                          children: [
+                            Container(
+                              width: 48 * iconScale,
+                              height: 48 * iconScale,
+                              decoration: BoxDecoration(
+                                color: isSelected ? theme.colorScheme.primary : iconColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: _MediaThumbnail(
+                                  file: file,
+                                  iconScale: iconScale,
+                                  isSelected: isSelected,
+                                  iconColor: iconColor,
+                                ),
+                              ),
                             ),
-                          ),
+                            if (file.isRemote && context.select<FileManagerProvider, bool>((p) => p.showRemoteCloudBadge))
+                              RemoteCloudBadge(size: 12 * (1 + (iconScale - 1) * 0.3)),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 12),

@@ -3090,6 +3090,8 @@
   "ui_file_actions_viewers": "Dateiaktionen & Betrachter",
   "ui_no_settings_found": "Keine Einstellungen gefunden",
   "ui_show_action_bar": "Aktionsleiste anzeigen",
+  "ui_show_remote_cloud_badge": "Cloud-Symbol für Remote-Dateien anzeigen",
+  "msg_remote_cloud_badge": "Zeigt ein Cloud-Symbol auf entfernten Dateien und Ordnern, um sie von lokalen zu unterscheiden",
   "ui_use_24h_format": "24-Stunden-Format verwenden",
   "ui_show_folder_contents_count": "Ordnerinhaltanzahl anzeigen",
   "ui_set_as_home": "Als Startseite festlegen",

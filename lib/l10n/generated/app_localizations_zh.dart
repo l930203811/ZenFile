@@ -2632,6 +2632,12 @@ class L10nZh extends L10n {
   String get ui_show_action_bar => '显示操作按钮';
 
   @override
+  String get ui_show_remote_cloud_badge => '显示远程文件云徽';
+
+  @override
+  String get msg_remote_cloud_badge => '在浏览页远程文件与文件夹图标左上角显示云图标，便于区分本地与远程文件';
+
+  @override
   String get ui_use_24h_format => '使用24小时制';
 
   @override
@@ -7104,6 +7110,12 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_show_action_bar => '顯示操作按鈕';
+
+  @override
+  String get ui_show_remote_cloud_badge => '顯示遠端檔案雲徽';
+
+  @override
+  String get msg_remote_cloud_badge => '在瀏覽頁遠端檔案與資料夾圖示左上角顯示雲圖示，便於區分本機與遠端檔案';
 
   @override
   String get ui_use_24h_format => '使用24小時制';

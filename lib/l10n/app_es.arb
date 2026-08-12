@@ -3093,6 +3093,8 @@
   "ui_file_actions_viewers": "Acciones de Archivo y Visores",
   "ui_no_settings_found": "No se encontró configuración",
   "ui_show_action_bar": "Mostrar Barra de Acciones",
+  "ui_show_remote_cloud_badge": "Mostrar insignia de nube para archivos remotos",
+  "msg_remote_cloud_badge": "Muestra un icono de nube en archivos y carpetas remotos para distinguirlos de los locales",
   "ui_use_24h_format": "Usar Formato de 24 Horas",
   "ui_show_folder_contents_count": "Mostrar Contenido de Carpetas",
   "ui_set_as_home": "Establecer como inicio",

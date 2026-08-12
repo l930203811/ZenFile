@@ -2763,6 +2763,14 @@ class L10nDe extends L10n {
   String get ui_show_action_bar => 'Aktionsleiste anzeigen';
 
   @override
+  String get ui_show_remote_cloud_badge =>
+      'Cloud-Symbol für Remote-Dateien anzeigen';
+
+  @override
+  String get msg_remote_cloud_badge =>
+      'Zeigt ein Cloud-Symbol auf entfernten Dateien und Ordnern, um sie von lokalen zu unterscheiden';
+
+  @override
   String get ui_use_24h_format => '24-Stunden-Format verwenden';
 
   @override
