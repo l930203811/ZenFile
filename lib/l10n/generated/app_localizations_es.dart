@@ -4772,4 +4772,48 @@ class L10nEs extends L10n {
 
   @override
   String get ui_file_size => 'Tamaño del archivo';
+
+  @override
+  String get changelog_v1128_new_1 =>
+      'Acciones rápidas añade botón de ventana única/dividida, sincronizado con Ajustes → Explorador → Pantalla dividida';
+
+  @override
+  String get changelog_v1128_new_2 =>
+      'Opciones de orden y filtro admiten filtrado por categorías múltiples (imágenes/vídeos/audio/documentos/archivos/paquetes/otros combinables) y recordar filtro';
+
+  @override
+  String get changelog_v1128_new_3 =>
+      'Página de categorías añade atajo de Copia de seguridad/Restaurar, activado por defecto';
+
+  @override
+  String get changelog_v1128_new_4 =>
+      'Archivos y carpetas remotos muestran distintivo en la nube; añadido conmutador \'Mostrar distintivo en la nube\'';
+
+  @override
+  String get changelog_v1128_opt_1 =>
+      'Comprimir archivos grandes o muchos ya no se bloquea: compresión/extracción por streaming (~1MB RAM), con protección de umbral y división/unión';
+
+  @override
+  String get changelog_v1128_opt_2 =>
+      'Reproducción de vídeo remoto (SMB/FTP/SFTP) más fluida, sin tirones';
+
+  @override
+  String get changelog_v1128_opt_3 =>
+      'En modo de ventana dividida, orden, tamaño/espaciado y filtro se aplican a ambos paneles';
+
+  @override
+  String get changelog_v1128_opt_4 =>
+      'Iconos de categorías unificados al color del tema; cada categoría muestra el tamaño usado';
+
+  @override
+  String get changelog_v1128_opt_5 =>
+      'La búsqueda global empieza en la carpeta actual (en la raíz pasa a global)';
+
+  @override
+  String get changelog_v1128_fix_1 =>
+      'Corregido el filtro que persistía tras desactivar \'Recordar filtro\'';
+
+  @override
+  String get changelog_v1128_known_1 =>
+      'El ajuste de tamaño/espaciado aún no funciona en ventana dividida (mejorará en próxima versión)';
 }

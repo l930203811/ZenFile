@@ -160,7 +160,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   const SizedBox(height: 6),
                   // 版本号文本（硬编码，无需 l10n；以后升级版本只改这里）
                   Text(
-                    'v1.1.27',
+                    'v1.1.28',
                     style: TextStyle(
                       color: theme.colorScheme.onSurface.withOpacity(0.7),
                       fontSize: 13,
@@ -716,7 +716,11 @@ class AboutZenFileScreen extends StatelessWidget {
                   Text(L10n.of(context).msg305734ce, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
 
+                  _buildV1128Changelog(ctx, theme),
+                  const SizedBox(height: 16),
                   _buildV1127Changelog(ctx, theme),
+                  const SizedBox(height: 16),
+                  _buildV1126Changelog(ctx, theme),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -854,6 +858,83 @@ class AboutZenFileScreen extends StatelessWidget {
           Text(l10n.changelog_section_known_issues, style: sectionStyle),
           gap(4),
           bulletText(l10n.changelog_v1127_known_1),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildV1128Changelog(BuildContext ctx, ThemeData theme) {
+    final l10n = L10n.of(ctx);
+    final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
+    final sectionStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.primary, fontWeight: FontWeight.w600);
+
+    Widget gap([double h = 6]) => SizedBox(height: h);
+    Widget bulletText(String text) => Text('· $text', style: textStyle);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.06)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Version header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text('v1.1.28', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+              ),
+              const SizedBox(width: 10),
+              Text('2026-08-12', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+            ],
+          ),
+          gap(14),
+
+          // ── New Features ──
+          Text(l10n.changelog_section_new, style: sectionStyle),
+          gap(4),
+          bulletText(l10n.changelog_v1128_new_1),
+          gap(6),
+          bulletText(l10n.changelog_v1128_new_2),
+          gap(6),
+          bulletText(l10n.changelog_v1128_new_3),
+          gap(6),
+          bulletText(l10n.changelog_v1128_new_4),
+          gap(14),
+
+          // ── Optimizations ──
+          Text(l10n.changelog_section_optimizations, style: sectionStyle),
+          gap(4),
+          bulletText(l10n.changelog_v1128_opt_1),
+          gap(6),
+          bulletText(l10n.changelog_v1128_opt_2),
+          gap(6),
+          bulletText(l10n.changelog_v1128_opt_3),
+          gap(6),
+          bulletText(l10n.changelog_v1128_opt_4),
+          gap(6),
+          bulletText(l10n.changelog_v1128_opt_5),
+          gap(14),
+
+          // ── Bug Fixes ──
+          Text(l10n.changelog_section_fixes, style: sectionStyle),
+          gap(4),
+          bulletText(l10n.changelog_v1128_fix_1),
+          gap(14),
+
+          // ── Known Issues ──
+          Text(l10n.changelog_section_known_issues, style: sectionStyle),
+          gap(4),
+          bulletText(l10n.changelog_v1128_known_1),
         ],
       ),
     );

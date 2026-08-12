@@ -7,6 +7,33 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 ---
 
+## 🚀 What's New in v1.1.28
+
+### ✨ New Features
+
+- Quick Actions page adds a single/dual-window toggle, synced with Settings → File Browser → Split Screen.
+- Sort & filter options support multi-select category filtering (images/videos/audio/docs/archives/packages/others, combinable) with a remember-filter option.
+- Categories page adds a Backup/Restore shortcut, enabled by default.
+- Remote files and folders now show a cloud badge; added a 'Show remote cloud badge' toggle.
+
+### 🔧 Optimizations
+
+- Compressing large or many files no longer crashes or freezes: streaming compress/extract with ~1MB resident memory, plus memory-threshold guard and split/merge volumes.
+- Smoother remote video playback (SMB/FTP/SFTP), eliminating stuttering.
+- In dual-window mode, sorting, size/spacing and category filter now apply to both panes.
+- Category icons unified to the app theme color; each category shows its storage usage size.
+- Global search now starts from the current folder (falls back to global search at storage root).
+
+### 🐛 Bug Fixes
+
+- Fixed the filter persisting after 'Remember filter' is turned off.
+
+### ⚠️ Known Issues
+
+- Size/spacing adjustment is not yet effective in dual-window mode; to be improved in a later release.
+
+---
+
 ## 🚀 What's New in v1.1.27
 
 ### ✨ New Features

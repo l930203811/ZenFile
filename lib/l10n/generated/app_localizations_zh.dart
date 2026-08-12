@@ -4524,6 +4524,41 @@ class L10nZh extends L10n {
 
   @override
   String get ui_file_size => '文件大小';
+
+  @override
+  String get changelog_v1128_new_1 => '快捷操作页新增单/双窗口切换按钮，与设置—文件浏览器选项中的「启用分屏」同步';
+
+  @override
+  String get changelog_v1128_new_2 =>
+      '查看与排序选项支持按类别多选过滤（图片/视频/音频/文档/压缩包/安装包/其它可叠加），并可记住过滤条件';
+
+  @override
+  String get changelog_v1128_new_3 => '分类页新增「备份/恢复」快捷入口，并默认启用';
+
+  @override
+  String get changelog_v1128_new_4 => '远程文件与文件夹显示云徽标，新增「显示远程文件云徽」开关';
+
+  @override
+  String get changelog_v1128_opt_1 =>
+      '压缩大文件或多个文件时不再崩溃卡死：改为流式压缩/解压，常驻内存约 1MB，并加入内存阈值保护与分卷切割合并';
+
+  @override
+  String get changelog_v1128_opt_2 => '优化远程视频（SMB/FTP/SFTP）播放卡顿，消除脉冲式卡顿';
+
+  @override
+  String get changelog_v1128_opt_3 => '双窗口模式下，排序、大小/间距、按类别过滤均同步生效';
+
+  @override
+  String get changelog_v1128_opt_4 => '分类页图标统一为应用主题主色；各分类显示存储占用大小';
+
+  @override
+  String get changelog_v1128_opt_5 => '全局搜索默认从当前文件夹开始（存储根目录退化为全局搜索）';
+
+  @override
+  String get changelog_v1128_fix_1 => '修复关闭「记住过滤」后仍持久化上次过滤条件的问题';
+
+  @override
+  String get changelog_v1128_known_1 => '双窗口模式下「大小/间距」调整暂未生效，将于后续版本优化';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -8992,4 +9027,39 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_file_size => '檔案大小';
+
+  @override
+  String get changelog_v1128_new_1 => '快捷操作頁新增單/雙視窗切換按鈕，與設定—檔案瀏覽器選項中的「啟用分屏」同步';
+
+  @override
+  String get changelog_v1128_new_2 =>
+      '查看與排序選項支援依類別多選過濾（圖片/影片/音訊/文件/壓縮包/安裝包/其它可疊加），並可記住過濾條件';
+
+  @override
+  String get changelog_v1128_new_3 => '分類頁新增「備份/還原」快捷入口，並預設啟用';
+
+  @override
+  String get changelog_v1128_new_4 => '遠端檔案與資料夾顯示雲徽標，新增「顯示遠端檔案雲徽」開關';
+
+  @override
+  String get changelog_v1128_opt_1 =>
+      '壓縮大檔案或多個檔案時不再崩潰卡死：改為串流壓縮/解壓，常駐記憶體約 1MB，並加入記憶體閾值保護與分卷切割合併';
+
+  @override
+  String get changelog_v1128_opt_2 => '最佳化遠端影片（SMB/FTP/SFTP）播放卡頓，消除脈衝式卡頓';
+
+  @override
+  String get changelog_v1128_opt_3 => '雙視窗模式下，排序、大小/間距、依類別過濾均同步生效';
+
+  @override
+  String get changelog_v1128_opt_4 => '分類頁圖示統一為應用主題主色；各分類顯示儲存佔用大小';
+
+  @override
+  String get changelog_v1128_opt_5 => '全域搜尋預設從目前資料夾開始（儲存根目錄退化為全域搜尋）';
+
+  @override
+  String get changelog_v1128_fix_1 => '修復關閉「記住過濾」後仍持久化上次過濾條件的問題';
+
+  @override
+  String get changelog_v1128_known_1 => '雙視窗模式下「大小/間距」調整暫未生效，將於後續版本最佳化';
 }

@@ -4569,4 +4569,43 @@ class L10nKo extends L10n {
 
   @override
   String get ui_file_size => '파일 크기';
+
+  @override
+  String get changelog_v1128_new_1 =>
+      '빠른 작업에 단일/분할 창 전환 버튼 추가(설정 → 파일 탐색기 → 분할 화면과 동기화)';
+
+  @override
+  String get changelog_v1128_new_2 =>
+      '정렬 및 필터에서 카테고리 다중 선택 필터 지원(이미지/동영상/오디오/문서/압축/패키지/기타 조합 가능), 필터 기억 기능 추가';
+
+  @override
+  String get changelog_v1128_new_3 => '카테고리 화면에 \'백업/복원\' 바로가기 추가(기본 켜짐)';
+
+  @override
+  String get changelog_v1128_new_4 =>
+      '원격 파일 및 폴더에 클라우드 배지 표시; \'원격 클라우드 배지 표시\' 토글 추가';
+
+  @override
+  String get changelog_v1128_opt_1 =>
+      '크거나 많은 파일 압축 시 충돌/멈춤 해결: 스트리밍 압축/해제(상주 메모리 약 1MB)로 변경, 메모리 임계값 보호 및 분할/병합 지원';
+
+  @override
+  String get changelog_v1128_opt_2 =>
+      '원격 동영상(SMB/FTP/SFTP) 재생 끊김 개선, 간헐적 지연 제거';
+
+  @override
+  String get changelog_v1128_opt_3 => '분할 창에서 정렬·크기/간격·카테고리 필터가 양쪽 창에 동기화 적용';
+
+  @override
+  String get changelog_v1128_opt_4 => '카테고리 아이콘을 테마 색상으로 통일; 각 카테고리 사용량 크기 표시';
+
+  @override
+  String get changelog_v1128_opt_5 => '전체 검색은 현재 폴더부터 시작(저장소 루트에서는 전체 검색으로 폴백)';
+
+  @override
+  String get changelog_v1128_fix_1 => '\'필터 기억\'을 꺼도 이전 필터가 남는 문제 수정';
+
+  @override
+  String get changelog_v1128_known_1 =>
+      '분할 창에서는 크기/간격 조정이 아직 적용되지 않음(추후 버전에서 개선)';
 }

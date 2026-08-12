@@ -8505,6 +8505,72 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'文件大小'**
   String get ui_file_size;
+
+  /// No description provided for @changelog_v1128_new_1.
+  ///
+  /// In zh, this message translates to:
+  /// **'快捷操作页新增单/双窗口切换按钮，与设置—文件浏览器选项中的「启用分屏」同步'**
+  String get changelog_v1128_new_1;
+
+  /// No description provided for @changelog_v1128_new_2.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看与排序选项支持按类别多选过滤（图片/视频/音频/文档/压缩包/安装包/其它可叠加），并可记住过滤条件'**
+  String get changelog_v1128_new_2;
+
+  /// No description provided for @changelog_v1128_new_3.
+  ///
+  /// In zh, this message translates to:
+  /// **'分类页新增「备份/恢复」快捷入口，并默认启用'**
+  String get changelog_v1128_new_3;
+
+  /// No description provided for @changelog_v1128_new_4.
+  ///
+  /// In zh, this message translates to:
+  /// **'远程文件与文件夹显示云徽标，新增「显示远程文件云徽」开关'**
+  String get changelog_v1128_new_4;
+
+  /// No description provided for @changelog_v1128_opt_1.
+  ///
+  /// In zh, this message translates to:
+  /// **'压缩大文件或多个文件时不再崩溃卡死：改为流式压缩/解压，常驻内存约 1MB，并加入内存阈值保护与分卷切割合并'**
+  String get changelog_v1128_opt_1;
+
+  /// No description provided for @changelog_v1128_opt_2.
+  ///
+  /// In zh, this message translates to:
+  /// **'优化远程视频（SMB/FTP/SFTP）播放卡顿，消除脉冲式卡顿'**
+  String get changelog_v1128_opt_2;
+
+  /// No description provided for @changelog_v1128_opt_3.
+  ///
+  /// In zh, this message translates to:
+  /// **'双窗口模式下，排序、大小/间距、按类别过滤均同步生效'**
+  String get changelog_v1128_opt_3;
+
+  /// No description provided for @changelog_v1128_opt_4.
+  ///
+  /// In zh, this message translates to:
+  /// **'分类页图标统一为应用主题主色；各分类显示存储占用大小'**
+  String get changelog_v1128_opt_4;
+
+  /// No description provided for @changelog_v1128_opt_5.
+  ///
+  /// In zh, this message translates to:
+  /// **'全局搜索默认从当前文件夹开始（存储根目录退化为全局搜索）'**
+  String get changelog_v1128_opt_5;
+
+  /// No description provided for @changelog_v1128_fix_1.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复关闭「记住过滤」后仍持久化上次过滤条件的问题'**
+  String get changelog_v1128_fix_1;
+
+  /// No description provided for @changelog_v1128_known_1.
+  ///
+  /// In zh, this message translates to:
+  /// **'双窗口模式下「大小/间距」调整暂未生效，将于后续版本优化'**
+  String get changelog_v1128_known_1;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

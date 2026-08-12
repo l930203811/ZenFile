@@ -4704,4 +4704,48 @@ class L10nEn extends L10n {
 
   @override
   String get ui_file_size => 'File Size';
+
+  @override
+  String get changelog_v1128_new_1 =>
+      'Quick Actions page adds a single/dual-window toggle, synced with Settings → File Browser → Split Screen';
+
+  @override
+  String get changelog_v1128_new_2 =>
+      'Sort & filter options support multi-select category filtering (images/videos/audio/docs/archives/packages/others, combinable) with a remember-filter option';
+
+  @override
+  String get changelog_v1128_new_3 =>
+      'Categories page adds a Backup/Restore shortcut, enabled by default';
+
+  @override
+  String get changelog_v1128_new_4 =>
+      'Remote files and folders now show a cloud badge; added a \'Show remote cloud badge\' toggle';
+
+  @override
+  String get changelog_v1128_opt_1 =>
+      'Compressing large or many files no longer crashes or freezes: switched to streaming compress/extract with ~1MB resident memory, plus memory-threshold guard and split/merge volumes';
+
+  @override
+  String get changelog_v1128_opt_2 =>
+      'Smoother remote video playback (SMB/FTP/SFTP), eliminating stuttering';
+
+  @override
+  String get changelog_v1128_opt_3 =>
+      'In dual-window mode, sorting, size/spacing and category filter now apply to both panes';
+
+  @override
+  String get changelog_v1128_opt_4 =>
+      'Category icons unified to the app theme color; each category shows its storage usage size';
+
+  @override
+  String get changelog_v1128_opt_5 =>
+      'Global search now starts from the current folder (falls back to global search at storage root)';
+
+  @override
+  String get changelog_v1128_fix_1 =>
+      'Fixed the filter persisting after \'Remember filter\' is turned off';
+
+  @override
+  String get changelog_v1128_known_1 =>
+      'Size/spacing adjustment is not yet effective in dual-window mode; to be improved in a later release';
 }

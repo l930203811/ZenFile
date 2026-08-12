@@ -4570,4 +4570,44 @@ class L10nJa extends L10n {
 
   @override
   String get ui_file_size => 'ファイルサイズ';
+
+  @override
+  String get changelog_v1128_new_1 =>
+      'クイックアクションに単一/分割ウィンドウ切替ボタンを追加（設定→ファイルブラウザ→分割画面と同期）';
+
+  @override
+  String get changelog_v1128_new_2 =>
+      '並べ替えとフィルターでカテゴリ複数選択フィルタに対応（画像/動画/音声/ドキュメント/アーカイブ/パッケージ/その他を組み合わせ可）、フィルタ記憶も可能に';
+
+  @override
+  String get changelog_v1128_new_3 => 'カテゴリ画面に「バックアップ/復元」ショートカットを追加（既定で有効）';
+
+  @override
+  String get changelog_v1128_new_4 =>
+      'リモートファイルとフォルダにクラウドバッジを表示；「リモートクラウドバッジを表示」スイッチを追加';
+
+  @override
+  String get changelog_v1128_opt_1 =>
+      '大きい/大量のファイル圧縮時のクラッシュやフリーズを解消：ストリーミング圧縮/展開（常駐メモリ約1MB）に変更し、メモリ閾値保護と分割/統合に対応';
+
+  @override
+  String get changelog_v1128_opt_2 =>
+      'リモート動画（SMB/FTP/SFTP）再生のカクつきを改善し、間欠的な停滞を解消';
+
+  @override
+  String get changelog_v1128_opt_3 =>
+      '分割ウィンドウで並べ替え・サイズ/間隔・カテゴリフィルタが両方のペインに同期適用されるように';
+
+  @override
+  String get changelog_v1128_opt_4 => 'カテゴリアイコンをテーマカラーに統一；各カテゴリの使用容量を表示';
+
+  @override
+  String get changelog_v1128_opt_5 => '全体検索は現在のフォルダから開始（ストレージルートでは全体検索に戻る）';
+
+  @override
+  String get changelog_v1128_fix_1 => '「フィルタを記憶」をオフにしても前回のフィルタが残る不具合を修正';
+
+  @override
+  String get changelog_v1128_known_1 =>
+      '分割ウィンドウではサイズ/間隔の調整はまだ無効（将来のバージョンで改善予定）';
 }

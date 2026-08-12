@@ -4777,4 +4777,48 @@ class L10nFr extends L10n {
 
   @override
   String get ui_file_size => 'Taille du fichier';
+
+  @override
+  String get changelog_v1128_new_1 =>
+      'Actions rapides ajoute un basculement fenêtre unique/double, synchronisé avec Paramètres → Navigateur → Écran partagé';
+
+  @override
+  String get changelog_v1128_new_2 =>
+      'Tri et filtres prennent en charge le filtrage multi-catégories (images/vidéos/audio/docs/archives/paquets/autres combinables) avec mémorisation';
+
+  @override
+  String get changelog_v1128_new_3 =>
+      'Page catégories ajoute un raccourci Sauvegarde/Restauration, activé par défaut';
+
+  @override
+  String get changelog_v1128_new_4 =>
+      'Fichiers et dossiers distants affichent un badge cloud ; ajout de l\'option \'Afficher le badge cloud\'';
+
+  @override
+  String get changelog_v1128_opt_1 =>
+      'Compression de gros ou nombreux fichiers ne plante plus : compression/extraction en streaming (~1MB RAM), avec garde-fou mémoire et découpe/fusion';
+
+  @override
+  String get changelog_v1128_opt_2 =>
+      'Lecture vidéo distante (SMB/FTP/SFTP) plus fluide, sans à-coups';
+
+  @override
+  String get changelog_v1128_opt_3 =>
+      'En mode double fenêtre, tri, taille/espacement et filtre s\'appliquent aux deux volets';
+
+  @override
+  String get changelog_v1128_opt_4 =>
+      'Icônes de catégories uniformisées à la couleur du thème ; chaque catégorie affiche la taille occupée';
+
+  @override
+  String get changelog_v1128_opt_5 =>
+      'La recherche globale démarre dans le dossier courant (racine = recherche globale)';
+
+  @override
+  String get changelog_v1128_fix_1 =>
+      'Corrigé : le filtre persistait après désactivation de \'Mémoriser le filtre\'';
+
+  @override
+  String get changelog_v1128_known_1 =>
+      'Réglage taille/espacement inactif en mode double fenêtre (amélioration à venir)';
 }

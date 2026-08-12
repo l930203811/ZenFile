@@ -4612,5 +4612,16 @@
   "ui_file_size": "Dateigröße",
   "@ui_file_size": {
     "description": "Progress dialog file size label"
-  }
+  },
+  "changelog_v1128_new_1": "Schnellaktionen erhält Schalter für Einzel-/Doppelfenster, synchron mit Einstellungen → Dateibrowser → Geteiltes Fenster",
+  "changelog_v1128_new_2": "Sortier- und Filteroptionen unterstützen Mehrfachauswahl nach Kategorie (Bilder/Videos/Audio/Dokumente/Archive/Pakete/anders kombinierbar) mit Filter-Merken",
+  "changelog_v1128_new_3": "Kategorieseite erhält 'Backup/Wiederherstellen'-Verknüpfung, standardmäßig aktiv",
+  "changelog_v1128_new_4": "Remote-Dateien und -Ordner zeigen ein Cloud-Badge; Schalter 'Remote-Cloud-Badge anzeigen' hinzugefügt",
+  "changelog_v1128_opt_1": "Komprimieren großer oder vieler Dateien stürzt nicht mehr ab: Streaming-Kompression/-Extraktion (~1MB RAM), mit Speicher-Schwellenschutz und Split/Zusammenführen",
+  "changelog_v1128_opt_2": "Flüssigere Remote-Videowiedergabe (SMB/FTP/SFTP), kein Stottern mehr",
+  "changelog_v1128_opt_3": "Im Doppelfenster-Modus werden Sortierung, Größe/Abstand und Kategoriefilter auf beide Fenster angewendet",
+  "changelog_v1128_opt_4": "Kategorie-Icons einheitlich in der Theme-Farbe; jede Kategorie zeigt die belegte Größe",
+  "changelog_v1128_opt_5": "Globale Suche startet ab dem aktuellen Ordner (am Speicherstamm global)",
+  "changelog_v1128_fix_1": "Filter blieb nach 'Filter merken' ausgespeichert bestehen – behoben",
+  "changelog_v1128_known_1": "Größe/Abstand lässt sich im Doppelfenster-Modus noch nicht anpassen (folgt später)"
 }
