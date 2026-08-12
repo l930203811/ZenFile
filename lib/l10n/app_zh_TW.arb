@@ -3184,6 +3184,8 @@
   "ui_confirm_drag_drop": "確認拖放操作",
   "ui_enable_multi_tabs": "啟用多標籤頁",
   "ui_enable_split_screen": "啟用分屏",
+  "ui_single_window": "單一視窗",
+  "ui_dual_window": "雙視窗",
   "ui_app_icon": "應用圖示",
   "ui_emerald_green": "翠綠",
   "ui_deep_red": "深紅",

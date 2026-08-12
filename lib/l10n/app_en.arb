@@ -3123,6 +3123,8 @@
   "ui_confirm_drag_drop": "Confirm Drag & Drop",
   "ui_enable_multi_tabs": "Enable Multiple Tabs",
   "ui_enable_split_screen": "Enable Split Screen",
+  "ui_single_window": "Single Window",
+  "ui_dual_window": "Dual Window",
   "ui_app_icon": "App Icon",
   "ui_emerald_green": "Emerald Green",
   "ui_deep_red": "Deep Red",

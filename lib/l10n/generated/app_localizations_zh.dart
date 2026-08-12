@@ -2692,6 +2692,12 @@ class L10nZh extends L10n {
   String get ui_enable_split_screen => '启用分屏';
 
   @override
+  String get ui_single_window => '单窗口';
+
+  @override
+  String get ui_dual_window => '双窗口';
+
+  @override
   String get ui_app_icon => '应用图标';
 
   @override
@@ -4491,6 +4497,18 @@ class L10nZh extends L10n {
 
   @override
   String get ui_parent_directory => '上级目录';
+
+  @override
+  String get ui_compress_progress => '正在压缩';
+
+  @override
+  String get ui_extract_progress => '正在解压';
+
+  @override
+  String get ui_speed => '速度';
+
+  @override
+  String get ui_file_size => '文件大小';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -7172,6 +7190,12 @@ class L10nZhTw extends L10nZh {
   String get ui_enable_split_screen => '啟用分屏';
 
   @override
+  String get ui_single_window => '單一視窗';
+
+  @override
+  String get ui_dual_window => '雙視窗';
+
+  @override
   String get ui_app_icon => '應用圖示';
 
   @override
@@ -8932,4 +8956,10 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_parent_directory => '上層目錄';
+
+  @override
+  String get ui_speed => '速度';
+
+  @override
+  String get ui_file_size => '檔案大小';
 }

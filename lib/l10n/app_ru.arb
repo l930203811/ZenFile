@@ -3116,6 +3116,8 @@
   "ui_confirm_drag_drop": "Подтверждать Перетаскивание",
   "ui_enable_multi_tabs": "Включить Несколько Вкладок",
   "ui_enable_split_screen": "Включить Разделённый Экран",
+  "ui_single_window": "Одиночное окно",
+  "ui_dual_window": "Двойное окно",
   "ui_app_icon": "Значок Приложения",
   "ui_emerald_green": "Изумрудно-Зелёный",
   "ui_deep_red": "Глубокий Красный",

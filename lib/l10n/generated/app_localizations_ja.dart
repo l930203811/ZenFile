@@ -2703,6 +2703,12 @@ class L10nJa extends L10n {
   String get ui_enable_split_screen => '分割画面を有効にする';
 
   @override
+  String get ui_single_window => '単一ウィンドウ';
+
+  @override
+  String get ui_dual_window => '二画面';
+
+  @override
   String get ui_app_icon => 'アプリアイコン';
 
   @override
@@ -4537,4 +4543,16 @@ class L10nJa extends L10n {
 
   @override
   String get ui_parent_directory => '親ディレクトリ';
+
+  @override
+  String get ui_compress_progress => '正在压缩';
+
+  @override
+  String get ui_extract_progress => '正在解压';
+
+  @override
+  String get ui_speed => '速度';
+
+  @override
+  String get ui_file_size => 'ファイルサイズ';
 }

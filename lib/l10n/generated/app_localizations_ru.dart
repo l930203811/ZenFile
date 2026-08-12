@@ -2834,6 +2834,12 @@ class L10nRu extends L10n {
   String get ui_enable_split_screen => 'Включить Разделённый Экран';
 
   @override
+  String get ui_single_window => 'Одиночное окно';
+
+  @override
+  String get ui_dual_window => 'Двойное окно';
+
+  @override
   String get ui_app_icon => 'Значок Приложения';
 
   @override
@@ -4722,4 +4728,16 @@ class L10nRu extends L10n {
 
   @override
   String get ui_parent_directory => 'Родительский каталог';
+
+  @override
+  String get ui_compress_progress => '正在压缩';
+
+  @override
+  String get ui_extract_progress => '正在解压';
+
+  @override
+  String get ui_speed => 'Скорость';
+
+  @override
+  String get ui_file_size => 'Размер файла';
 }

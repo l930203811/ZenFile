@@ -3120,6 +3120,8 @@
   "ui_confirm_drag_drop": "ドラッグ＆ドロップ操作を確認",
   "ui_enable_multi_tabs": "マルチタブを有効にする",
   "ui_enable_split_screen": "分割画面を有効にする",
+  "ui_single_window": "単一ウィンドウ",
+  "ui_dual_window": "二画面",
   "ui_app_icon": "アプリアイコン",
   "ui_emerald_green": "エメラルドグリーン",
   "ui_deep_red": "ディープレッド",

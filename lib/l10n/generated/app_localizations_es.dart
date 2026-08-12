@@ -2848,6 +2848,12 @@ class L10nEs extends L10n {
   String get ui_enable_split_screen => 'Habilitar Pantalla Dividida';
 
   @override
+  String get ui_single_window => 'Ventana única';
+
+  @override
+  String get ui_dual_window => 'Ventana doble';
+
+  @override
   String get ui_app_icon => 'Icono de la App';
 
   @override
@@ -4738,4 +4744,16 @@ class L10nEs extends L10n {
 
   @override
   String get ui_parent_directory => 'Directorio superior';
+
+  @override
+  String get ui_compress_progress => '正在压缩';
+
+  @override
+  String get ui_extract_progress => '正在解压';
+
+  @override
+  String get ui_speed => 'Velocidad';
+
+  @override
+  String get ui_file_size => 'Tamaño del archivo';
 }

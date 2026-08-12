@@ -3113,6 +3113,8 @@
   "ui_confirm_drag_drop": "Drag & Drop bestätigen",
   "ui_enable_multi_tabs": "Mehrere Tabs aktivieren",
   "ui_enable_split_screen": "Geteilten Bildschirm aktivieren",
+  "ui_single_window": "Einzelnes Fenster",
+  "ui_dual_window": "Doppeltes Fenster",
   "ui_app_icon": "App-Symbol",
   "ui_emerald_green": "Smaragdgrün",
   "ui_deep_red": "Dunkelrot",

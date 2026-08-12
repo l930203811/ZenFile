@@ -3116,6 +3116,8 @@
   "ui_confirm_drag_drop": "Confirmar Arrastrar y Soltar",
   "ui_enable_multi_tabs": "Habilitar Múltiples Pestañas",
   "ui_enable_split_screen": "Habilitar Pantalla Dividida",
+  "ui_single_window": "Ventana única",
+  "ui_dual_window": "Ventana doble",
   "ui_app_icon": "Icono de la App",
   "ui_emerald_green": "Verde Esmeralda",
   "ui_deep_red": "Rojo Profundo",

@@ -2782,6 +2782,12 @@ class L10nAr extends L10n {
   String get ui_enable_split_screen => 'تمكين تقسيم الشاشة';
 
   @override
+  String get ui_single_window => 'نافذة واحدة';
+
+  @override
+  String get ui_dual_window => 'نافذتان';
+
+  @override
   String get ui_app_icon => 'أيقونة التطبيق';
 
   @override
@@ -4654,4 +4660,16 @@ class L10nAr extends L10n {
 
   @override
   String get ui_parent_directory => 'المجلد الأعلى';
+
+  @override
+  String get ui_compress_progress => '正在压缩';
+
+  @override
+  String get ui_extract_progress => '正在解压';
+
+  @override
+  String get ui_speed => 'السرعة';
+
+  @override
+  String get ui_file_size => 'حجم الملف';
 }

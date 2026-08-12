@@ -3116,6 +3116,8 @@
   "ui_confirm_drag_drop": "تأكيد السحب والإفلات",
   "ui_enable_multi_tabs": "تمكين علامات تبويب متعددة",
   "ui_enable_split_screen": "تمكين تقسيم الشاشة",
+  "ui_single_window": "نافذة واحدة",
+  "ui_dual_window": "نافذتان",
   "ui_app_icon": "أيقونة التطبيق",
   "ui_emerald_green": "أخضر زمردي",
   "ui_deep_red": "أحمر داكن",

@@ -3202,6 +3202,8 @@
   "ui_confirm_drag_drop": "确认拖放操作",
   "ui_enable_multi_tabs": "启用多标签页",
   "ui_enable_split_screen": "启用分屏",
+  "ui_single_window": "单窗口",
+  "ui_dual_window": "双窗口",
   "ui_app_icon": "应用图标",
   "ui_emerald_green": "翠绿",
   "ui_deep_red": "深红",

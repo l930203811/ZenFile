@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
+import 'package:provider/provider.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../providers/file_manager_provider.dart';
@@ -50,6 +51,7 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final fileManager = context.watch<FileManagerProvider>();
 
     return SafeArea(
       child: Column(
@@ -137,6 +139,18 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
                         onTap: () {
                           Navigator.pop(context);
                           widget.toggleTheme();
+                        },
+                      ),
+                      _buildMenuItem(
+                        context,
+                        icon: fileManager.enableSplitScreen ? Broken.grid_1 : Broken.grid_2,
+                        title: fileManager.enableSplitScreen
+                            ? L10n.of(context).ui_single_window
+                            : L10n.of(context).ui_dual_window,
+                        color: theme.colorScheme.primary,
+                        onTap: () {
+                          Navigator.pop(context);
+                          fileManager.toggleSplitScreen();
                         },
                       ),
                       _buildMenuItem(

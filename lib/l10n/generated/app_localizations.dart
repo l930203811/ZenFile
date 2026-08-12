@@ -5158,6 +5158,18 @@ abstract class L10n {
   /// **'启用分屏'**
   String get ui_enable_split_screen;
 
+  /// No description provided for @ui_single_window.
+  ///
+  /// In zh, this message translates to:
+  /// **'单窗口'**
+  String get ui_single_window;
+
+  /// No description provided for @ui_dual_window.
+  ///
+  /// In zh, this message translates to:
+  /// **'双窗口'**
+  String get ui_dual_window;
+
   /// No description provided for @ui_app_icon.
   ///
   /// In zh, this message translates to:
@@ -8439,6 +8451,30 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'上级目录'**
   String get ui_parent_directory;
+
+  /// 压缩进度对话框标题
+  ///
+  /// In zh, this message translates to:
+  /// **'正在压缩'**
+  String get ui_compress_progress;
+
+  /// 解压进度对话框标题
+  ///
+  /// In zh, this message translates to:
+  /// **'正在解压'**
+  String get ui_extract_progress;
+
+  /// 进度对话框速度标签
+  ///
+  /// In zh, this message translates to:
+  /// **'速度'**
+  String get ui_speed;
+
+  /// 进度对话框文件大小标签
+  ///
+  /// In zh, this message translates to:
+  /// **'文件大小'**
+  String get ui_file_size;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

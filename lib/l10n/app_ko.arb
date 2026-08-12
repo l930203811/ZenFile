@@ -3116,6 +3116,8 @@
   "ui_confirm_drag_drop": "드래그 앤 드롭 확인",
   "ui_enable_multi_tabs": "여러 탭 활성화",
   "ui_enable_split_screen": "분할 화면 활성화",
+  "ui_single_window": "단일 창",
+  "ui_dual_window": "이중 창",
   "ui_app_icon": "앱 아이콘",
   "ui_emerald_green": "에메랄드 그린",
   "ui_deep_red": "딥 레드",

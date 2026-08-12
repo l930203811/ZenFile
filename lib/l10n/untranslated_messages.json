@@ -33,7 +33,9 @@
     "log_v1_1_1_line10",
     "log_v1_1_1_line11",
     "log_v1_1_1_line12",
-    "log_v1_1_1_line13"
+    "log_v1_1_1_line13",
+    "ui_compress_progress",
+    "ui_extract_progress"
   ],
 
   "de": [
@@ -70,7 +72,9 @@
     "log_v1_1_1_line10",
     "log_v1_1_1_line11",
     "log_v1_1_1_line12",
-    "log_v1_1_1_line13"
+    "log_v1_1_1_line13",
+    "ui_compress_progress",
+    "ui_extract_progress"
   ],
 
   "en": [
@@ -126,7 +130,9 @@
     "log_v1_1_1_line10",
     "log_v1_1_1_line11",
     "log_v1_1_1_line12",
-    "log_v1_1_1_line13"
+    "log_v1_1_1_line13",
+    "ui_compress_progress",
+    "ui_extract_progress"
   ],
 
   "fr": [
@@ -163,7 +169,9 @@
     "log_v1_1_1_line10",
     "log_v1_1_1_line11",
     "log_v1_1_1_line12",
-    "log_v1_1_1_line13"
+    "log_v1_1_1_line13",
+    "ui_compress_progress",
+    "ui_extract_progress"
   ],
 
   "ja": [
@@ -200,7 +208,9 @@
     "log_v1_1_1_line10",
     "log_v1_1_1_line11",
     "log_v1_1_1_line12",
-    "log_v1_1_1_line13"
+    "log_v1_1_1_line13",
+    "ui_compress_progress",
+    "ui_extract_progress"
   ],
 
   "ko": [
@@ -237,7 +247,9 @@
     "log_v1_1_1_line10",
     "log_v1_1_1_line11",
     "log_v1_1_1_line12",
-    "log_v1_1_1_line13"
+    "log_v1_1_1_line13",
+    "ui_compress_progress",
+    "ui_extract_progress"
   ],
 
   "ru": [
@@ -274,7 +286,9 @@
     "log_v1_1_1_line10",
     "log_v1_1_1_line11",
     "log_v1_1_1_line12",
-    "log_v1_1_1_line13"
+    "log_v1_1_1_line13",
+    "ui_compress_progress",
+    "ui_extract_progress"
   ],
 
   "zh_TW": [
@@ -293,6 +307,8 @@
     "log_drawer_font_consistency",
     "log_landscape_layout",
     "log_progress_i18n",
-    "ui_recycle_disabled_hint"
+    "ui_recycle_disabled_hint",
+    "ui_compress_progress",
+    "ui_extract_progress"
   ]
 }

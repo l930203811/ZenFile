@@ -2700,6 +2700,12 @@ class L10nKo extends L10n {
   String get ui_enable_split_screen => '분할 화면 활성화';
 
   @override
+  String get ui_single_window => '단일 창';
+
+  @override
+  String get ui_dual_window => '이중 창';
+
+  @override
   String get ui_app_icon => '앱 아이콘';
 
   @override
@@ -4536,4 +4542,16 @@ class L10nKo extends L10n {
 
   @override
   String get ui_parent_directory => '상위 디렉터리';
+
+  @override
+  String get ui_compress_progress => '正在压缩';
+
+  @override
+  String get ui_extract_progress => '正在解压';
+
+  @override
+  String get ui_speed => '속도';
+
+  @override
+  String get ui_file_size => '파일 크기';
 }

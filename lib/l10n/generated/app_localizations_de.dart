@@ -2829,6 +2829,12 @@ class L10nDe extends L10n {
   String get ui_enable_split_screen => 'Geteilten Bildschirm aktivieren';
 
   @override
+  String get ui_single_window => 'Einzelnes Fenster';
+
+  @override
+  String get ui_dual_window => 'Doppeltes Fenster';
+
+  @override
   String get ui_app_icon => 'App-Symbol';
 
   @override
@@ -4715,4 +4721,16 @@ class L10nDe extends L10n {
 
   @override
   String get ui_parent_directory => 'Übergeordnetes Verzeichnis';
+
+  @override
+  String get ui_compress_progress => '正在压缩';
+
+  @override
+  String get ui_extract_progress => '正在解压';
+
+  @override
+  String get ui_speed => 'Geschwindigkeit';
+
+  @override
+  String get ui_file_size => 'Dateigröße';
 }

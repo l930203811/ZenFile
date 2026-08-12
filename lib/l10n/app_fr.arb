@@ -3116,6 +3116,8 @@
   "ui_confirm_drag_drop": "Confirmer le glisser-déposer",
   "ui_enable_multi_tabs": "Activer les onglets multiples",
   "ui_enable_split_screen": "Activer l'écran partagé",
+  "ui_single_window": "Fenêtre unique",
+  "ui_dual_window": "Fenêtre double",
   "ui_app_icon": "Icône de l'application",
   "ui_emerald_green": "Vert émeraude",
   "ui_deep_red": "Rouge foncé",

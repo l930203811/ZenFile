@@ -2786,6 +2786,12 @@ class L10nEn extends L10n {
   String get ui_enable_split_screen => 'Enable Split Screen';
 
   @override
+  String get ui_single_window => 'Single Window';
+
+  @override
+  String get ui_dual_window => 'Dual Window';
+
+  @override
   String get ui_app_icon => 'App Icon';
 
   @override
@@ -4670,4 +4676,16 @@ class L10nEn extends L10n {
 
   @override
   String get ui_parent_directory => 'Parent Directory';
+
+  @override
+  String get ui_compress_progress => 'Compressing';
+
+  @override
+  String get ui_extract_progress => 'Extracting';
+
+  @override
+  String get ui_speed => 'Speed';
+
+  @override
+  String get ui_file_size => 'File Size';
 }
