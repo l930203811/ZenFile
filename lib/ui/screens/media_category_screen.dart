@@ -1107,19 +1107,19 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                 switch (widget.mediaType) {
                   case MediaType.images:
                     final list = widget.folderPath != null
-                        ? provider.images.where((f) => path_helper.dirname(f.path) == widget.folderPath).toList()
+                        ? provider.images.where((f) => MediaProvider.parentOfPath(f.path) == widget.folderPath).toList()
                         : provider.images;
                     content = list.isNotEmpty ? _buildImageGrid(list, theme, isDateWise, isGrouped, _isGridView) : null;
                     break;
                   case MediaType.videos:
                     final list = widget.folderPath != null
-                        ? provider.videos.where((f) => path_helper.dirname(f.path) == widget.folderPath).toList()
+                        ? provider.videos.where((f) => MediaProvider.parentOfPath(f.path) == widget.folderPath).toList()
                         : provider.videos;
                     content = list.isNotEmpty ? _buildVideoGrid(list, theme, isDateWise, isGrouped, _isGridView) : null;
                     break;
                   case MediaType.audios:
                     final list = widget.folderPath != null
-                        ? provider.audios.where((s) => path_helper.dirname(s.data) == widget.folderPath).toList()
+                        ? provider.audios.where((s) => MediaProvider.parentOfPath(s.data) == widget.folderPath).toList()
                         : provider.audios;
                     content = list.isNotEmpty ? _buildAudioList(list, theme, isDateWise, isGrouped, _isGridView) : null;
                     break;
@@ -1524,6 +1524,19 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               ),
             ),
           ),
+        if (isRemote)
+          Positioned(
+            top: 4,
+            left: 4,
+            child: Container(
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.5),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Broken.cloud, color: Colors.white, size: 12),
+            ),
+          ),
         if (_isSelectionMode || isSelected)
           Positioned(
             top: 6,
@@ -1661,6 +1674,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     final id = isAsset ? item.id : item.path;
     final path = isAsset ? '' : item.path;
     final title = isAsset ? (item.title ?? 'Image_$id') : path_helper.basename(path);
+    final isRemote = !isAsset && MediaProvider.isRemotePath(path);
 
     return ListTile(
       key: ValueKey(id),
@@ -1714,6 +1728,19 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                         ),
             ),
           ),
+          if (isRemote)
+            Positioned(
+              top: 0,
+              left: 0,
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.55),
+                  borderRadius: const BorderRadius.only(bottomRight: Radius.circular(6), topLeft: Radius.circular(8)),
+                ),
+                child: const Icon(Broken.cloud, color: Colors.white, size: 10),
+              ),
+            ),
           if (_isSelectionMode || isSelected)
             Positioned(
               bottom: 0,
@@ -1726,7 +1753,11 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             ),
         ],
       ),
-      title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
+      title: Row(
+        children: [
+          Expanded(child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis)),
+        ],
+      ),
       subtitle: showDate ? Text(dateStr, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.5))) : null,
       trailing: _isSelectionMode
           ? null
@@ -1869,6 +1900,19 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                 dateStr.split(',').first,
                 style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w600),
               ),
+            ),
+          ),
+        if (isRemote)
+          Positioned(
+            top: 4,
+            left: 4,
+            child: Container(
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.5),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Broken.cloud, color: Colors.white, size: 12),
             ),
           ),
         if (_isSelectionMode || isSelected)
@@ -2056,6 +2100,19 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             _VideoListThumbnail(filePath: path, size: 40)
           else
             Icon(Broken.video, size: 40, color: theme.colorScheme.primary.withOpacity(0.6)),
+          if (isRemote)
+            Positioned(
+              top: 0,
+              left: 0,
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.55),
+                  borderRadius: const BorderRadius.only(bottomRight: Radius.circular(6), topLeft: Radius.circular(8)),
+                ),
+                child: const Icon(Broken.cloud, color: Colors.white, size: 10),
+              ),
+            ),
           if (_isSelectionMode || isSelected)
             Positioned(
               bottom: 0,
@@ -2100,6 +2157,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     final path = audio.data;
     // 本地媒体缩略图开关：控制本地音频封面显示
     final showMediaPreviews = context.select<FileManagerProvider, bool>((p) => p.showMediaPreviews);
+    final isRemote = MediaProvider.isRemotePath(path);
     return ListTile(
       key: ValueKey(path),
       onTap: () {
@@ -2147,6 +2205,19 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                   )
                 : Icon(Icons.music_note, size: 22, color: theme.colorScheme.onPrimaryContainer),
           ),
+          if (isRemote)
+            Positioned(
+              top: 0,
+              left: 0,
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.55),
+                  borderRadius: const BorderRadius.only(bottomRight: Radius.circular(6), topLeft: Radius.circular(10)),
+                ),
+                child: const Icon(Broken.cloud, color: Colors.white, size: 10),
+              ),
+            ),
           if (_isSelectionMode || isSelected)
             Positioned(
               bottom: 0,
@@ -4245,6 +4316,7 @@ class _MediaFolderTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final name = _MediaCategoryScreenState._folderDisplayName(folderPath);
+    final isRemote = MediaProvider.isRemotePath(folderPath);
     return GestureDetector(
       onTap: onTap,
       child: ClipRRect(
@@ -4282,6 +4354,23 @@ class _MediaFolderTile extends StatelessWidget {
                   ),
                 ),
               ),
+              if (isRemote)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.45),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Broken.cloud,
+                      color: Colors.white,
+                      size: 14,
+                    ),
+                  ),
+                ),
               Positioned(
                 bottom: 12,
                 left: 12,
@@ -4290,11 +4379,18 @@ class _MediaFolderTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      name,
-                      style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            name,
+                            style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 4),
                     Text(
