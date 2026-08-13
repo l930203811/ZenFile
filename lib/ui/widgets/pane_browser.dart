@@ -824,7 +824,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                             size: 16,
                           ),
                         ),
-                        if (folder.isRemote && provider.showRemoteCloudBadge)
+                        if (folder.isRemote && provider.effectiveShowRemoteCloudBadge)
                           RemoteCloudBadge(size: 9),
                       ],
                     ),
@@ -875,7 +875,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                 }
                                 if (provider.showFolderContentsCount) {
                                   return FutureBuilder<int>(
-                                    future: provider.getFolderItemCount(folder.path),
+                                    future: provider.getFolderItemCount(folder.path, isRemote: folder.isRemote),
                                     builder: (context, snapshot) {
                                       final count = snapshot.data ?? 0;
                                       final countStr = count == 1 ? '1 item' : '$count items';
@@ -1020,6 +1020,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                           isSelected: isSelected,
                           iconColor: iconColor,
                           remoteClient: remoteClient,
+                          connection: file.isRemote ? remoteConnection : null,
                         ),
                       ),
                     ),
@@ -1202,12 +1203,14 @@ class _CompactMediaThumbnail extends StatefulWidget {
   final bool isSelected;
   final Color iconColor;
   final RemoteClient? remoteClient;
+  final NetworkConnectionModel? connection;
 
   const _CompactMediaThumbnail({
     required this.file,
     required this.isSelected,
     required this.iconColor,
     this.remoteClient,
+    this.connection,
   });
 
   @override
@@ -1242,6 +1245,34 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
     });
   }
 
+  @override
+  void didUpdateWidget(covariant _CompactMediaThumbnail oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 路径、修改时间或大小任一变化都说明文件内容已变更，必须清掉旧缩略图重新生成。
+    // 仅判 path 不够：同名文件被删除重建后 path 不变但内容已变，旧缩略图会错误复用。
+    final fileChanged = widget.file.path != oldWidget.file.path ||
+        widget.file.modified != oldWidget.file.modified ||
+        widget.file.size != oldWidget.file.size;
+    if (fileChanged) {
+      setState(() {
+        _videoThumb = null;
+        _audioThumb = null;
+        _apkIcon = null;
+        _remoteThumb = null;
+      });
+      final lowerPath = widget.file.path.toLowerCase();
+      if (widget.file.isRemote && widget.remoteClient != null && PreferencesService.getRemoteMediaThumbnailPreview()) {
+        _loadRemoteThumb();
+      } else if (!widget.file.isRemote && FileUtils.isVideo(widget.file.path)) {
+        _loadVideoThumb();
+      } else if (!widget.file.isRemote && FileUtils.isAudio(widget.file.path)) {
+        _loadAudioThumb();
+      } else if (lowerPath.endsWith('.apk') || lowerPath.endsWith('.xapk') || lowerPath.endsWith('.apks') || lowerPath.endsWith('.apkm')) {
+        _loadApkIcon();
+      }
+    }
+  }
+
   Future<void> _loadRemoteThumb() async {
     if (!mounted) return;
     final client = widget.remoteClient;
@@ -1257,7 +1288,10 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
         thumbDir = Directory(p.join(appDir.path, 'ZenFile', 'cache', 'thumbnails', 'remote'));
         if (!await thumbDir.exists()) await thumbDir.create(recursive: true);
       }
-      final thumbName = '${widget.file.path.replaceAll('/', '_').replaceAll('\\', '_')}_thumb.jpg';
+      // 缓存文件名加入 connection 标识 + modified + size：
+      // ① connection 标识区分不同远程连接（路径/修改时间/大小相同也会串图）；
+      // ② modified/size 区分同名文件删除重建。
+      final thumbName = MediaThumbnailService.remoteThumbName(widget.connection?.id, widget.file.path, widget.file.modified, widget.file.size);
       final thumbPath = p.join(thumbDir.path, thumbName);
       final thumbFile = File(thumbPath);
 
@@ -1265,7 +1299,13 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
       if (await thumbFile.exists()) {
         final bytes = await thumbFile.readAsBytes();
         if (mounted && bytes.isNotEmpty) {
-          setState(() => _remoteThumb = bytes);
+          if (FileUtils.isVideo(widget.file.path)) {
+            setState(() => _videoThumb = bytes);
+          } else if (FileUtils.isAudio(widget.file.path)) {
+            setState(() => _audioThumb = bytes);
+          } else {
+            setState(() => _remoteThumb = bytes);
+          }
         }
         return;
       }
@@ -1282,18 +1322,21 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
       }
 
       final ext = p.extension(widget.file.name).toLowerCase();
-      final tempPath = p.join(tempDir.path, 'remote_temp_${DateTime.now().millisecondsSinceEpoch}$ext');
+      final tempPath = p.join(tempDir.path, MediaThumbnailService.uniqueTempName(ext));
 
       // 远程连接已建立，直接下载
       final isVideo = FileUtils.isVideo(widget.file.path);
       final isAudio = FileUtils.isAudio(widget.file.path);
       if (isVideo || isAudio) {
         // 视频/音频只需头部 2MB 即可提取缩略图/封面
-        try {
-          await client.downloadRange(widget.file.path, tempPath, 0, 2 * 1024 * 1024);
-        } catch (e) {
-          await client.downloadFile(widget.file.path, tempPath, (_) {});
-        }
+        // 并发受限流保护：避免一屏多个远程媒体同时下载造成带宽竞争/超时失败
+        await MediaThumbnailService.withRemoteThrottle(() async {
+          try {
+            await client.downloadRange(widget.file.path, tempPath, 0, 2 * 1024 * 1024);
+          } catch (e) {
+            await client.downloadFile(widget.file.path, tempPath, (_) {});
+          }
+        });
       } else {
         // 图片等完整下载
         await client.downloadFile(widget.file.path, tempPath, (_) {});
@@ -1302,14 +1345,27 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
       // 生成缩略图
       Uint8List? thumbBytes;
       if (isVideo) {
-        thumbBytes = await MediaThumbnailService.generateVideoThumbnail(tempPath);
+        // 少部分视频的 moov 元数据在文件尾部（非 faststart 编码），
+        // 仅头部 2MB 解析失败 → 完整下载重试一次，仍失败才放弃。
+        thumbBytes = await MediaThumbnailService.withRemoteThrottle(() async {
+          var tb = await MediaThumbnailService.generateVideoThumbnail(tempPath);
+          if ((tb == null || tb.length <= 20) && widget.file.size <= 100 * 1024 * 1024) {
+            try {
+              await client.downloadFile(widget.file.path, tempPath, (_) {});
+              tb = await MediaThumbnailService.generateVideoThumbnail(tempPath);
+            } catch (_) {}
+          }
+          return tb;
+        });
         if (thumbBytes != null && thumbBytes.length > 20) {
           await thumbFile.writeAsBytes(thumbBytes);
+          if (mounted) setState(() => _videoThumb = thumbBytes);
         }
       } else if (isAudio) {
         thumbBytes = await MediaThumbnailService.generateAudioThumbnail(tempPath);
         if (thumbBytes != null && thumbBytes.length > 20) {
           await thumbFile.writeAsBytes(thumbBytes);
+          if (mounted) setState(() => _audioThumb = thumbBytes);
         }
       } else {
         // 图片直接复制为缩略图
@@ -1327,7 +1383,13 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
       } catch (_) {}
 
       if (mounted && thumbBytes != null && thumbBytes.isNotEmpty) {
-        setState(() => _remoteThumb = thumbBytes);
+        if (isVideo) {
+          setState(() => _videoThumb = thumbBytes);
+        } else if (isAudio) {
+          setState(() => _audioThumb = thumbBytes);
+        } else {
+          setState(() => _remoteThumb = thumbBytes);
+        }
       }
     } catch (_) {}
   }

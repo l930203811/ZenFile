@@ -175,7 +175,7 @@ class FolderGridItem extends StatelessWidget {
                             }
                             return FutureBuilder<List<int>>(
                               future: Future.wait([
-                                provider.showFolderContentsCount ? provider.getFolderItemCount(folder.path) : Future.value(-1),
+                                provider.showFolderContentsCount ? provider.getFolderItemCount(folder.path, isRemote: folder.isRemote) : Future.value(-1),
                                 provider.showFolderSizes ? provider.getFolderSize(folder.path) : Future.value(-1),
                               ]),
                               builder: (context, snapshot) {

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../models/network_connection_model.dart';
 import 'package:flutter_avif/flutter_avif.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:path_provider/path_provider.dart';
@@ -31,6 +32,7 @@ class FileGridItem extends StatelessWidget {
   final bool isSelected;
   final double iconScale;
   final double itemPaddingMultiplier;
+  final NetworkConnectionModel? connection;
 
   const FileGridItem({
     super.key,
@@ -42,6 +44,7 @@ class FileGridItem extends StatelessWidget {
     this.isSelected = false,
     this.iconScale = 1.0,
     this.itemPaddingMultiplier = 1.0,
+    this.connection,
   });
 
   @override
@@ -100,10 +103,11 @@ class FileGridItem extends StatelessWidget {
                                   iconScale: iconScale,
                                   isSelected: isSelected,
                                   iconColor: iconColor,
+                                  connection: connection,
                                 ),
                               ),
                             ),
-                            if (file.isRemote && context.select<FileManagerProvider, bool>((p) => p.showRemoteCloudBadge))
+                            if (file.isRemote && context.select<FileManagerProvider, bool>((p) => p.effectiveShowRemoteCloudBadge))
                               RemoteCloudBadge(size: 12 * (1 + (iconScale - 1) * 0.3)),
                           ],
                         ),
@@ -228,12 +232,14 @@ class _MediaThumbnail extends StatefulWidget {
   final double iconScale;
   final bool isSelected;
   final Color iconColor;
+  final NetworkConnectionModel? connection;
 
   const _MediaThumbnail({
     required this.file,
     required this.iconScale,
     required this.isSelected,
     required this.iconColor,
+    this.connection,
   });
 
   @override
@@ -274,7 +280,12 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
   @override
   void didUpdateWidget(covariant _MediaThumbnail oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.file.path != oldWidget.file.path) {
+    // 路径、修改时间或大小任一变化都说明文件内容已变更，必须清掉旧缩略图重新生成。
+    // 仅判 path 不够：同名文件被删除重建后 path 不变但内容已变，旧缩略图会错误复用。
+    final fileChanged = widget.file.path != oldWidget.file.path ||
+        widget.file.modified != oldWidget.file.modified ||
+        widget.file.size != oldWidget.file.size;
+    if (fileChanged) {
       setState(() {
         _videoThumb = null;
         _audioThumb = null;
@@ -396,21 +407,30 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
       if (!await thumbDir.exists()) {
         await thumbDir.create(recursive: true);
       }
-      final thumbName = '${widget.file.path.replaceAll('/', '_').replaceAll('\\', '_')}_thumb.jpg';
+      // 缓存文件名加入 connection 标识 + modified + size：
+      // ① connection 标识区分不同远程连接（路径/修改时间/大小相同也会串图）；
+      // ② modified/size 区分同名文件删除重建。
+      final thumbName = MediaThumbnailService.remoteThumbName(widget.connection?.id, widget.file.path, widget.file.modified, widget.file.size);
       final thumbPath = p.join(thumbDir.path, thumbName);
       final thumbFile = File(thumbPath);
 
       if (await thumbFile.exists()) {
         final bytes = await thumbFile.readAsBytes();
         if (mounted && bytes.isNotEmpty) {
-          setState(() => _remoteThumb = bytes);
+          if (FileUtils.isVideo(widget.file.path)) {
+            setState(() => _videoThumb = bytes);
+          } else if (FileUtils.isAudio(widget.file.path)) {
+            setState(() => _audioThumb = bytes);
+          } else {
+            setState(() => _remoteThumb = bytes);
+          }
         }
         return;
       }
 
       final tempDir = await getTemporaryDirectory();
       final ext = p.extension(widget.file.name).toLowerCase();
-      final tempPath = p.join(tempDir.path, 'remote_temp_${DateTime.now().millisecondsSinceEpoch}$ext');
+      final tempPath = p.join(tempDir.path, MediaThumbnailService.uniqueTempName(ext));
       
       try {
         // 视频/音频只需下载头部 2MB 即可由 MediaMetadataRetriever 提取缩略图/封面
@@ -418,13 +438,16 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
         final isVideo = FileUtils.isVideo(widget.file.path);
         final isAudio = FileUtils.isAudio(widget.file.path);
         if (isVideo || isAudio) {
-          try {
-            await client.downloadRange(widget.file.path, tempPath, 0, 2 * 1024 * 1024);
-          } catch (e) {
-            // 部分服务器/客户端不支持 range 下载，回退到完整下载
-            debugPrint('downloadRange 失败，回退完整下载: $e');
-            await client.downloadFile(widget.file.path, tempPath, (_) {});
-          }
+          // 并发受限流保护：避免一屏多个远程媒体同时下载造成带宽竞争/超时失败
+          await MediaThumbnailService.withRemoteThrottle(() async {
+            try {
+              await client.downloadRange(widget.file.path, tempPath, 0, 2 * 1024 * 1024);
+            } catch (e) {
+              // 部分服务器/客户端不支持 range 下载，回退到完整下载
+              debugPrint('downloadRange 失败，回退完整下载: $e');
+              await client.downloadFile(widget.file.path, tempPath, (_) {});
+            }
+          });
         } else {
           await client.downloadFile(widget.file.path, tempPath, (_) {});
         }
@@ -448,23 +471,42 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
           }
           return;
         } else if (isVideo) {
-          // 视频缩略图：通过原生 MediaMetadataRetriever 生成
-          final thumbBytes = await MediaThumbnailService.generateVideoThumbnail(tempPath);
+          // 视频缩略图：通过原生 MediaMetadataRetriever 生成。
+          // 少部分视频的 moov 元数据在文件尾部（非 faststart 编码），
+          // 仅头部 2MB 解析失败返回 null → 完整下载重试一次，仍失败才放弃。
+          final thumbBytes = await MediaThumbnailService.withRemoteThrottle(() async {
+            var tb = await MediaThumbnailService.generateVideoThumbnail(tempPath);
+            if ((tb == null || tb.isEmpty) && widget.file.size <= 100 * 1024 * 1024) {
+              try {
+                await client.downloadFile(widget.file.path, tempPath, (_) {});
+                tb = await MediaThumbnailService.generateVideoThumbnail(tempPath);
+              } catch (_) {}
+            }
+            return tb;
+          });
           if (thumbBytes != null && thumbBytes.isNotEmpty) {
             await thumbFile.writeAsBytes(thumbBytes, flush: true);
+            if (mounted) setState(() => _videoThumb = thumbBytes);
           }
         } else if (FileUtils.isAudio(widget.file.path)) {
           // 音频缩略图：通过原生 MediaMetadataRetriever 提取内嵌封面
           final thumbBytes = await MediaThumbnailService.generateAudioThumbnail(tempPath);
           if (thumbBytes != null && thumbBytes.isNotEmpty) {
             await thumbFile.writeAsBytes(thumbBytes, flush: true);
+            if (mounted) setState(() => _audioThumb = thumbBytes);
           }
         }
-        
+
         if (await thumbFile.exists()) {
           final bytes = await thumbFile.readAsBytes();
           if (mounted && bytes.isNotEmpty) {
-            setState(() => _remoteThumb = bytes);
+            if (FileUtils.isVideo(widget.file.path)) {
+              setState(() => _videoThumb = bytes);
+            } else if (FileUtils.isAudio(widget.file.path)) {
+              setState(() => _audioThumb = bytes);
+            } else {
+              setState(() => _remoteThumb = bytes);
+            }
           }
         }
       } finally {

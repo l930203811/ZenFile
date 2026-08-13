@@ -1283,6 +1283,9 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                             scrollController: scrollController,
                             physics: const BouncingScrollPhysics(),
                             padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 16),
+                            // 拖拽排序期间抑制 home 的左右滑动切页手势
+                            onReorderStart: (_) => fileManager.setCategoryReorderInteracting(true),
+                            onReorderEnd: (_) => fileManager.setCategoryReorderInteracting(false),
                             onReorder: (oldIndex, newIndex) => provider.reorderCategory(oldIndex, newIndex),
                             itemCount: order.length,
                             itemBuilder: (context, index) {

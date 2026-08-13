@@ -152,10 +152,15 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         ? [L10n.of(context).msgc2b9f4b9]
         : parts;
 
-    return SingleChildScrollView(
-      controller: _breadcrumbController,
-      scrollDirection: Axis.horizontal,
-      child: Padding(
+    return Listener(
+      // 面包屑水平滑动不触发 home 的页面左右切换：按下瞬间置位，home 据此跳过本次手势追踪
+      onPointerDown: (_) => provider.setBreadcrumbInteracting(true),
+      onPointerUp: (_) => provider.setBreadcrumbInteracting(false),
+      onPointerCancel: (_) => provider.setBreadcrumbInteracting(false),
+      child: SingleChildScrollView(
+        controller: _breadcrumbController,
+        scrollDirection: Axis.horizontal,
+        child: Padding(
         // 为最右项的右箭头凸出留出空间，避免被 ScrollView 裁剪。
         padding: const EdgeInsets.only(right: overlap),
         child: Row(
@@ -185,6 +190,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
           }),
         ),
       ),
+    ),
     );
   }
 
@@ -1437,6 +1443,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                             isSelected: isSelected,
                                             iconScale: provider.iconScale,
                                             itemPaddingMultiplier: provider.itemPaddingMultiplier,
+                                            connection: item.isRemote ? provider.activeTab.remoteConnection : null,
                                             onTap: () {
                                               if (isSelectionMode) {
                                                 provider.toggleSelection(item.path);
@@ -1501,6 +1508,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                             isSelected: isSelected,
                                             iconScale: provider.iconScale,
                                             itemPaddingMultiplier: provider.itemPaddingMultiplier,
+                                            connection: item.isRemote ? provider.activeTab.remoteConnection : null,
                                             showOpenWithOption: true,
                                             onTap: () {
                                               if (isSelectionMode) {

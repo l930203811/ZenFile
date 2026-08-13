@@ -288,8 +288,17 @@ class ThumbnailCache {
   static bool hasCached(String id) => _cache.containsKey(id) && _cache[id] != null;
 
   /// 为远程视频生成缩略图（下载视频到临时文件后提取帧）
-  static Future<Uint8List?> getForRemoteVideo(String remotePathStr) async {
-    final key = 'remote_vid_${remotePathStr.hashCode}';
+  /// [modified] 与 [size] 用于区分同名文件被删除重建后的不同版本，
+  /// 避免旧缩略图被错误复用；若调用方无元数据可传 null。
+  static Future<Uint8List?> getForRemoteVideo(
+    String remotePathStr, {
+    DateTime? modified,
+    int? size,
+  }) async {
+    final metaTag = (modified != null && size != null)
+        ? '_${modified.millisecondsSinceEpoch}_$size'
+        : '';
+    final key = 'remote_vid_${remotePathStr.hashCode}$metaTag';
     if (_cache.containsKey(key) && _cache[key] != null) return _cache[key];
     if (_pending.containsKey(key)) return _pending[key];
 

@@ -44,7 +44,7 @@ class FolderItem extends StatelessWidget {
       (p) => p.forceHighlightedPaths.contains(folder.path) || (p.enableFolderHighlight && p.highlightedPaths.contains(folder.path)),
     );
 
-    final showRemoteBadge = context.select<FileManagerProvider, bool>((p) => p.showRemoteCloudBadge);
+    final showRemoteBadge = context.select<FileManagerProvider, bool>((p) => p.effectiveShowRemoteCloudBadge);
 
     final cardMargin = EdgeInsets.symmetric(
       horizontal: (16 * itemPaddingMultiplier).clamp(4.0, 32.0),
@@ -186,7 +186,7 @@ class FolderItem extends StatelessWidget {
                               }
                               return FutureBuilder<List<int>>(
                                 future: Future.wait([
-                                  provider.showFolderContentsCount ? provider.getFolderItemCount(folder.path) : Future.value(-1),
+                                  provider.showFolderContentsCount ? provider.getFolderItemCount(folder.path, isRemote: folder.isRemote) : Future.value(-1),
                                   provider.showFolderSizes ? provider.getFolderSize(folder.path) : Future.value(-1),
                                 ]),
                                 builder: (context, snapshot) {

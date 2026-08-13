@@ -36,7 +36,13 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
                 final tab = tabs[index];
                 final isSelected = index == activeIndex;
                 final isRoot = tab.currentPath == provider.rootPath;
-                final title = isRoot ? L10n.of(context).msgfefea1b3 : p.basename(tab.currentPath);
+                // 单窗口模式下，远程标签页固定显示“已保存的远程客户端名称”（如“WebDAV连接”），
+                // 不随当前浏览目录变化，方便区分是哪个远程客户端；本地标签页与双窗口模式保持原状。
+                final bool useRemoteName =
+                    tab.isRemote && tab.remoteConnection != null && !provider.enableSplitScreen;
+                final title = useRemoteName
+                    ? tab.remoteConnection!.name
+                    : (isRoot ? L10n.of(context).msgfefea1b3 : p.basename(tab.currentPath));
 
                 return Container(
                   margin: const EdgeInsets.only(right: 4),
@@ -162,7 +168,11 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        tab.currentPath == provider.rootPath ? L10n.of(context).msgfefea1b3 : p.basename(tab.currentPath),
+                        (tab.isRemote && tab.remoteConnection != null && !provider.enableSplitScreen)
+                            ? tab.remoteConnection!.name
+                            : (tab.currentPath == provider.rootPath
+                                ? L10n.of(context).msgfefea1b3
+                                : p.basename(tab.currentPath)),
                         style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,

@@ -762,6 +762,9 @@ class FileManagerProvider extends ChangeNotifier {
   bool _showRemoteCloudBadge = true;
   bool get showRemoteCloudBadge => _showRemoteCloudBadge;
 
+  /// 实际是否显示远程云徽：用户开关开启 且 单窗口模式。双窗口下云徽会遮挡图标，故强制隐藏。
+  bool get effectiveShowRemoteCloudBadge => _showRemoteCloudBadge && !_enableSplitScreen;
+
   void toggleRemoteCloudBadge() {
     _showRemoteCloudBadge = !_showRemoteCloudBadge;
     PreferencesService.saveShowRemoteCloudBadge(_showRemoteCloudBadge);
@@ -790,6 +793,27 @@ class FileManagerProvider extends ChangeNotifier {
   String _swipeMode = 'single';
   String get swipeMode => _swipeMode;
   bool get enableSingleFingerSwipe => _swipeMode == 'single';
+
+  // 地址栏（面包屑）交互抑制页面滑动切换手势：
+  // 面包屑区域按下/拖拽期间置为 true，home 的滑动 Listener 据此跳过本次手势追踪，
+  // 避免左右滑动面包屑被误判为切换分类页/快捷操作页。
+  bool _breadcrumbInteracting = false;
+  bool get breadcrumbInteracting => _breadcrumbInteracting;
+  void setBreadcrumbInteracting(bool value) {
+    // 故意不 notifyListeners：仅 home 的滑动 Listener 直接读取当前值，无需重建整树。
+    _breadcrumbInteracting = value;
+  }
+
+  // 分类页“长按拖动类别排序”抑制页面滑动切换手势：
+  // 在自定义对话框的 ReorderableListView 拖拽期间置为 true（onReorderStart→true /
+  // onReorderEnd→false），home 的滑动 Listener 据此取消本次手势追踪，
+  // 避免长按拖动排序被误判为切换分类页/快捷操作页。
+  bool _categoryReorderInteracting = false;
+  bool get categoryReorderInteracting => _categoryReorderInteracting;
+  void setCategoryReorderInteracting(bool value) {
+    // 故意不 notifyListeners：仅 home 的滑动 Listener 直接读取当前值，无需重建整树。
+    _categoryReorderInteracting = value;
+  }
 
   void setSwipeMode(String mode) {
     _swipeMode = mode;
@@ -892,28 +916,50 @@ class FileManagerProvider extends ChangeNotifier {
 
   final Map<String, int> _folderItemCounts = {};
 
-  Future<int> getFolderItemCount(String folderPath) async {
-    if (_folderItemCounts.containsKey(folderPath)) {
-      return _folderItemCounts[folderPath]!;
+  /// 计算文件夹的直接子项数量。
+  /// 本地目录使用 dart:io 枚举；远程目录使用当前 tab 的 [RemoteClient.listDirectory]
+  /// 统计，避免在远程路径上误用本地 [Directory] 导致始终返回 0。
+  Future<int> getFolderItemCount(String folderPath, {bool isRemote = false}) async {
+    final cacheKey = isRemote && activeTab.remoteConnection != null
+        ? '${activeTab.remoteConnection!.id}::$folderPath'
+        : folderPath;
+
+    if (_folderItemCounts.containsKey(cacheKey)) {
+      return _folderItemCounts[cacheKey]!;
     }
 
     int count = 0;
-    try {
-      final dir = Directory(folderPath);
-      if (await dir.exists()) {
-        final entities = await dir.list().toList();
+
+    if (isRemote && activeTab.remoteClient != null) {
+      try {
+        final items = await activeTab.remoteClient!.listDirectory(folderPath);
         final showHidden = _showHiddenFiles;
-        for (var entity in entities) {
-          final name = p.basename(entity.path);
+        for (final item in items) {
+          final name = item.name;
           if (!showHidden && name.startsWith('.')) {
             continue;
           }
           count++;
         }
-      }
-    } catch (_) {}
+      } catch (_) {}
+    } else {
+      try {
+        final dir = Directory(folderPath);
+        if (await dir.exists()) {
+          final entities = await dir.list().toList();
+          final showHidden = _showHiddenFiles;
+          for (var entity in entities) {
+            final name = p.basename(entity.path);
+            if (!showHidden && name.startsWith('.')) {
+              continue;
+            }
+            count++;
+          }
+        }
+      } catch (_) {}
+    }
 
-    _folderItemCounts[folderPath] = count;
+    _folderItemCounts[cacheKey] = count;
     return count;
   }
 
@@ -1322,9 +1368,6 @@ class FileManagerProvider extends ChangeNotifier {
   /// Open a remote connection in a new (or existing) tab, reusing the
   /// DirectoryScreen UI instead of the old RemoteExplorerScreen.
   Future<void> openRemoteTab(RemoteClient client, NetworkConnectionModel connection) async {
-    // Close any existing remote tabs first to avoid stale state
-    _tabs.removeWhere((t) => t.isRemote);
-
     final newTab = FolderTab(
       id: 'remote_${connection.name}_${DateTime.now().millisecondsSinceEpoch}',
       currentPath: connection.rootPath,
@@ -1332,12 +1375,22 @@ class FileManagerProvider extends ChangeNotifier {
       remoteClient: client,
       remoteConnection: connection,
     );
-    // 在双窗口模式下，如果已有2个或更多tab，替换未激活的tab
-    if (enableSplitScreen && _tabs.length >= 2) {
-      final inactiveIndex = _activeTabIndex == 0 ? 1 : 0;
-      _tabs[inactiveIndex] = newTab;
-      _activeTabIndex = inactiveIndex;
+
+    if (enableSplitScreen) {
+      // 双窗口模式：保持原行为——先移除所有已有远程 tab，再替换未激活的 tab。
+      // 双窗口只有两个 pane，远程连接始终占用其中一个 pane，覆盖是预期行为。
+      _tabs.removeWhere((t) => t.isRemote);
+      if (_tabs.length >= 2) {
+        final inactiveIndex = _activeTabIndex == 0 ? 1 : 0;
+        _tabs[inactiveIndex] = newTab;
+        _activeTabIndex = inactiveIndex;
+      } else {
+        _tabs.add(newTab);
+        _activeTabIndex = _tabs.length - 1;
+      }
     } else {
+      // 单窗口模式：每个远程客户端都新建独立标签页，不再移除已打开的远程 tab，
+      // 避免后打开的远程连接覆盖先打开的远程连接。
       _tabs.add(newTab);
       _activeTabIndex = _tabs.length - 1;
     }

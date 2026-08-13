@@ -248,6 +248,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
           builder: (context, provider, _) {
             return Listener(
               onPointerDown: (event) {
+                final fileProvider = context.read<FileManagerProvider>();
+                // 地址栏（面包屑）区域的交互不触发页面左右滑动切换：
+                // 起点落在面包屑上时，内层 Listener 已先置位 breadcrumbInteracting，
+                // 此处跳过本次手势追踪（仅登记指针以便 up 时正常清理）。
+                if (fileProvider.breadcrumbInteracting) {
+                  _activePointers[event.pointer] = event.position;
+                  return;
+                }
                 _activePointers[event.pointer] = event.position;
                 if (_activePointers.length == 1) {
                   // 单指开始追踪
@@ -268,6 +276,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
               onPointerMove: (event) {
                 if (_activePointers.containsKey(event.pointer)) {
                   _activePointers[event.pointer] = event.position;
+                }
+                // 分类页拖拽排序期间：放弃本次单指滑动追踪，避免误触切页
+                if (context.read<FileManagerProvider>().categoryReorderInteracting) {
+                  _singleFingerStart = null;
+                  _singleFingerLast = null;
+                  return;
                 }
                 if (_activePointers.length == 1 && _singleFingerLast != null) {
                   _singleFingerLast = event.position;
@@ -305,9 +319,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                 // 单指滑动处理（Listener 级别，不进入手势竞技场）
                 if (_activePointers.length == 1 && _singleFingerStart != null) {
                   final fileProvider = context.read<FileManagerProvider>();
-                  // 拖拽操作期间不处理滑动
-                  if (fileProvider.isDragging) {
+                  // 拖拽操作期间不处理滑动（文件拖拽 or 分类页类别排序拖拽）
+                  if (fileProvider.isDragging || fileProvider.categoryReorderInteracting) {
                     // 拖拽中，不处理滑动
+                    _singleFingerStart = null;
+                    _singleFingerLast = null;
                   } else if (fileProvider.enableSingleFingerSwipe) {
                     final screenWidth = MediaQuery.of(context).size.width;
                     final startX = _singleFingerStart!.dx;

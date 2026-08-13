@@ -1122,7 +1122,11 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: ScrollConfiguration(
                     behavior: const ScrollBehavior().copyWith(overscroll: false),
-                    child: ListView.builder(
+                    child: Listener(
+                      onPointerDown: (_) => Provider.of<FileManagerProvider>(context, listen: false).setBreadcrumbInteracting(true),
+                      onPointerUp: (_) => Provider.of<FileManagerProvider>(context, listen: false).setBreadcrumbInteracting(false),
+                      onPointerCancel: (_) => Provider.of<FileManagerProvider>(context, listen: false).setBreadcrumbInteracting(false),
+                      child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: pathNodes.length,
                       itemBuilder: (context, idx) {
@@ -1154,6 +1158,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
                           ],
                         );
                       },
+                    ),
                     ),
                   ),
                 ),
@@ -1411,7 +1416,9 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
         if (!tempDir.existsSync()) tempDir.createSync(recursive: true);
       }
       
-      final thumbName = '${item.path.replaceAll('/', '_')}_thumb.jpg';
+      // 缓存文件名加入 connection 标识 + modified + size，与 file_item/file_grid_item/pane_browser 保持一致，
+      // 避免不同远程连接或同名文件串图。
+      final thumbName = MediaThumbnailService.remoteThumbName(widget.connection.id, item.path, item.modified, item.size);
       final thumbPath = p.join(thumbDir.path, thumbName);
       final thumbFile = File(thumbPath);
 
@@ -1419,8 +1426,8 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
         return thumbPath;
       }
 
-      // 下载文件到临时位置
-      final tempPath = p.join(tempDir.path, 'remote_temp_${DateTime.now().millisecondsSinceEpoch}${p.extension(item.name)}');
+      // 下载文件到临时位置（唯一命名，避免并发任务互相覆盖）
+      final tempPath = p.join(tempDir.path, MediaThumbnailService.uniqueTempName(p.extension(item.name)));
       await _client!.downloadFile(item.path, tempPath, (_) {});
 
       // 如果是图片，直接复制作为缩略图
