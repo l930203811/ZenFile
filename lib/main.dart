@@ -181,6 +181,16 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
   // 缓存上次的导航栏隐藏开关，避免 MaterialApp.builder 在每次重建（如键盘 Insets
   // 逐帧变化）时重复调用平台通道 setEnabledSystemUIMode。
   bool? _lastHideNavigationBar;
+  // 缓存主题对象，避免键盘 Insets 逐帧变化时每帧重建整套 ThemeData（builder 内仅为取导航栏颜色）。
+  ThemeData? _cachedThemeLight;
+  ThemeData? _cachedThemeDark;
+  String? _cachedThemeLightKey;
+  String? _cachedThemeDarkKey;
+  // 缓存上次的 SystemUiOverlayStyle，避免每帧调用平台通道 setSystemUIOverlayStyle。
+  SystemUiOverlayStyle? _cachedOverlayStyle;
+  String? _lastOverlayKey;
+  // 缓存上次手势排他区域参数，避免每帧调用平台通道（setSystemGestureExclusionRects）。
+  String? _lastGestureKey;
 
   @override
   void initState() {
@@ -211,6 +221,13 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // 系统可能在应用切到后台/恢复时重置系统 UI 样式，恢复时重新应用缓存的样式
+      // （仅在确有缓存时调用，不引入每帧平台通道开销）。
+      if (_cachedOverlayStyle != null) {
+        SystemChrome.setSystemUIOverlayStyle(_cachedOverlayStyle!);
+      }
+    }
     // 首次启动（语言选择流程中）不触发权限检查，避免与语言选择器冲突
     if (state == AppLifecycleState.resumed && _hasPermission != true && !_isFirstLaunch) {
       _checkStoragePermission();
@@ -787,25 +804,62 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
                 final isDark = _themeMode == ThemeMode.system
                     ? (MediaQuery.platformBrightnessOf(context) == Brightness.dark)
                     : (_themeMode == ThemeMode.dark);
-                
-                final theme = isDark
-                    ? AppTheme.getAppTheme(light: false, pitchBlack: fileManager.amoledMode, seed: baseSeedColor, customScheme: activeDarkScheme, fontFamily: fileManager.fontFamilyOption)
-                    : AppTheme.getAppTheme(light: true, seed: baseSeedColor, customScheme: activeLightScheme, fontFamily: fileManager.fontFamilyOption);
+
+                // 主题仅依赖以下输入，键盘 Insets 动画期间这些输入都不变；
+                // 因此缓存 ThemeData，避免每帧重建整套主题（主线程重活，会导致低端机键盘像幻灯片般弹出）。
+                final font = fileManager.fontFamilyOption;
+                final amoled = fileManager.amoledMode;
+                final seedKey = baseSeedColor.toString();
+                final lightSchemeKey = activeLightScheme?.hashCode ?? -1;
+                final darkSchemeKey = activeDarkScheme?.hashCode ?? -1;
+                final themeKey = '$font|$amoled|$seedKey|$lightSchemeKey|$darkSchemeKey';
+
+                ThemeData theme;
+                if (isDark) {
+                  if (_cachedThemeDark == null || _cachedThemeDarkKey != themeKey) {
+                    _cachedThemeDark = AppTheme.getAppTheme(
+                      light: false,
+                      pitchBlack: amoled,
+                      seed: baseSeedColor,
+                      customScheme: activeDarkScheme,
+                      fontFamily: font,
+                    );
+                    _cachedThemeDarkKey = themeKey;
+                  }
+                  theme = _cachedThemeDark!;
+                } else {
+                  if (_cachedThemeLight == null || _cachedThemeLightKey != themeKey) {
+                    _cachedThemeLight = AppTheme.getAppTheme(
+                      light: true,
+                      seed: baseSeedColor,
+                      customScheme: activeLightScheme,
+                      fontFamily: font,
+                    );
+                    _cachedThemeLightKey = themeKey;
+                  }
+                  theme = _cachedThemeLight!;
+                }
 
                 final navBarColor = theme.scaffoldBackgroundColor;
 
-                final style = SystemUiOverlayStyle(
-                  statusBarColor: Colors.transparent,
-                  statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
-                  statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
-                  systemNavigationBarColor: navBarColor,
-                  systemNavigationBarDividerColor: Colors.transparent,
-                  systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
-                  systemNavigationBarContrastEnforced: false,
-                  systemStatusBarContrastEnforced: false,
-                );
-
-                SystemChrome.setSystemUIOverlayStyle(style);
+                // 导航栏颜色与 SystemUiOverlayStyle 仅在 isDark / 主题变化时改变；
+                // 键盘 Insets 逐帧变化时这些输入都不变，因此仅在变化时调用平台通道，
+                // 避免每帧 setSystemUIOverlayStyle 的平台通道往返导致的掉帧。
+                final overlayKey = '${isDark ? "d" : "l"}|${navBarColor.toString()}';
+                if (_lastOverlayKey != overlayKey) {
+                  _lastOverlayKey = overlayKey;
+                  _cachedOverlayStyle = SystemUiOverlayStyle(
+                    statusBarColor: Colors.transparent,
+                    statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+                    statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+                    systemNavigationBarColor: navBarColor,
+                    systemNavigationBarDividerColor: Colors.transparent,
+                    systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+                    systemNavigationBarContrastEnforced: false,
+                    systemStatusBarContrastEnforced: false,
+                  );
+                  SystemChrome.setSystemUIOverlayStyle(_cachedOverlayStyle!);
+                }
 
                 // 仅在开关变化时调用平台通道，避免键盘 Insets 逐帧变化时每帧调用。
                 if (_lastHideNavigationBar != fileManager.hideNavigationBar) {
@@ -820,12 +874,18 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
                 final disableLeftBack = fileManager.disableLeftBackGesture;
                 final size = MediaQuery.of(context).size;
                 final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  _updateSystemGestureExclusion(disableLeftBack, 40.0, size.height, devicePixelRatio);
-                });
+                // 手势排他区域仅在开关或屏幕尺寸变化时改变，键盘 Insets 动画期间完全不变；
+                // 仅在其变化时调度平台通道调用，避免每帧 setSystemGestureExclusionRects。
+                final gestureKey = '$disableLeftBack|${size.height}|$devicePixelRatio';
+                if (_lastGestureKey != gestureKey) {
+                  _lastGestureKey = gestureKey;
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _updateSystemGestureExclusion(disableLeftBack, 40.0, size.height, devicePixelRatio);
+                  });
+                }
 
                 return AnnotatedRegion<SystemUiOverlayStyle>(
-                  value: style,
+                  value: _cachedOverlayStyle!,
                   child: child!,
                 );
               },

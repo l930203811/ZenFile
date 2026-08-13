@@ -34,6 +34,8 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   List<FileItemModel> _results = [];
   bool _isSearching = false;
   StreamSubscription<void>? _searchSubscription;
+  // 搜索防抖：避免在低端机上每输入一个字符就同步遍历整个媒体库，造成输入卡顿。
+  Timer? _searchDebounceTimer;
 
   final Set<String> _selectedPaths = {};
   bool get _isSelectionMode => _selectedPaths.isNotEmpty;
@@ -92,6 +94,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
 
   @override
   void dispose() {
+    _searchDebounceTimer?.cancel();
     _searchSubscription?.cancel();
     _searchController.dispose();
     context.read<FileManagerProvider>().removeListener(_onFileManagerChanged);
@@ -117,7 +120,9 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     setState(() {
       _query = value.trim();
     });
-    _executeSearch();
+    // 防抖：用户连续输入时只在停顿后才真正执行搜索，避免每个字符都遍历整个媒体库导致输入卡顿。
+    _searchDebounceTimer?.cancel();
+    _searchDebounceTimer = Timer(const Duration(milliseconds: 200), _executeSearch);
   }
 
   void _onFilterChanged(String filter) {
@@ -128,6 +133,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   }
 
   void _executeSearch() {
+    _searchDebounceTimer?.cancel();
     _searchSubscription?.cancel();
     _clearSelection();
     if (_query.isEmpty) {
