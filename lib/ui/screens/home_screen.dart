@@ -370,8 +370,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
               return ValueListenableBuilder<bool>(
                 valueListenable: provider.navigateToBrowseTabNotifier,
                 builder: (context, shouldNavigate, __) {
-                  if (shouldNavigate && _currentIndex != 1) {
-                    // 使用 microtask 确保在当前 build 完成后立即切换
+                  if (shouldNavigate) {
+                    // 使用 microtask 确保在当前 build 完成后立即切换。
+                    // 注意：无论当前是否已在浏览标签都执行——若已在该标签，
+                    // _switchTab(1) 为 no-op，但仍会消费 pending 导航（加载目录 + 高亮），
+                    // 使“分类页/最近页/浏览页”任意入口的定位行为完全一致。
                     scheduleMicrotask(() {
                       if (mounted) {
                         _switchTab(1);

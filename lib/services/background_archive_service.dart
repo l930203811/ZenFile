@@ -599,7 +599,15 @@ class BackgroundArchiveService {
                 onPressed: () {
                   scaffoldMessenger.hideCurrentSnackBar();
                   try {
-                    final provider = Provider.of<FileManagerProvider>(context, listen: false);
+                    // 用全局根 navigatorKey 替代可能被回收、或解析到
+                    // 嵌套/弹出路由所在导航器的 context，保证在“分类页压缩包类别 /
+                    // 最近文件 / 浏览页”等任意入口解压后点“确定”都能正确跳转。
+                    final navContext = navigatorKey.currentContext;
+                    if (navContext == null) {
+                      debugPrint('[ZenFile][Archive] 确定: navigatorKey.currentContext 为 null');
+                      return;
+                    }
+                    final provider = Provider.of<FileManagerProvider>(navContext, listen: false);
                     String highlightPath;
                     if (isCompress && destPath != null) {
                       highlightPath = destPath;
@@ -607,12 +615,19 @@ class BackgroundArchiveService {
                       final baseName = p.basenameWithoutExtension(archiveName);
                       highlightPath = p.join(nonNullDestDir, baseName);
                     }
+                    debugPrint('[ZenFile][Archive] 确定: highlightPath=$highlightPath');
+                    // 与全局搜索“打开所在位置”完全一致的导航模式（home 监听器现在
+                    // 无论当前在哪个标签都会消费 pending）：
+                    // 1) 设置待导航目录 + 待高亮文件；
+                    // 2) 触发切到浏览标签的 notifier（内部先置 false 再置 true，保证触发）；
+                    // 3) 用全局根导航器退出所有子页面（压缩包查看器 / 分类子页 / 最近页）。
+                    provider.setPendingBrowseNavigation(p.dirname(highlightPath), [highlightPath]);
                     provider.setNavigateToBrowseTab(true);
-                    Navigator.popUntil(context, (route) => route.isFirst);
-                    scheduleMicrotask(() {
-                      provider.showFileInLocation(highlightPath);
-                    });
-                  } catch (_) {}
+                    navigatorKey.currentState?.popUntil((route) => route.isFirst);
+                    debugPrint('[ZenFile][Archive] 确定: 导航已触发');
+                  } catch (e) {
+                    debugPrint('[ZenFile][Archive] 确定: 导航异常 $e');
+                  }
                 },
                 child: Text(l10n.ui_confirm, style: const TextStyle(color: Colors.white)),
               ),
