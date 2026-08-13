@@ -674,6 +674,81 @@ class ArchiveService {
     return compute(_readArchiveTask, {'archivePath': archivePath, 'password': password});
   }
 
+  /// 在隔离区内以「全新打开、全程保持打开」的流，把指定内部路径的条目解压为纯字节返回。
+  ///
+  /// 为什么需要它：[readArchive] 返回的 Archive 会在 compute 隔离区跨边界序列化，且其条目
+  /// 的 _rawContent 是引用同一 FileBuffer/RandomAccessFile 的文件型流；主隔离区里惰性解压时
+  /// 句柄已失效 / _fileSize 被置 0，导致大条目（尤其 >4MB）读到空/错误字节，dart:io 的 raw
+  /// deflate 解码器抛 `FormatException: Filter error, bad data`。本方法在流打开期间就完成解压，
+  /// 只回传普通 Uint8List，彻底规避跨隔离区文件流问题。
+  ///
+  /// 返回 map：internalPath -> 解压后的字节（失败或缺项为 null）。
+  static Future<Map<String, Uint8List?>> extractEntriesToBytes(
+    String archivePath,
+    List<String> internalPaths, {
+    String? password,
+  }) async {
+    return compute(_extractEntriesToBytesTask, {
+      'archivePath': archivePath,
+      'internalPaths': internalPaths,
+      'password': password,
+    });
+  }
+
+  static String _normalizeForMatch(String path) {
+    var name = path.replaceAll('\\', '/');
+    while (name.startsWith('/')) {
+      name = name.substring(1);
+    }
+    while (name.startsWith('./')) {
+      name = name.substring(2);
+    }
+    return name;
+  }
+
+  static Map<String, Uint8List?> _extractEntriesToBytesTask(Map<String, dynamic> args) {
+    final archivePath = args['archivePath'] as String;
+    final rawPaths = args['internalPaths'] as List;
+    final password = args['password'] as String?;
+    final pwdStr = (password != null && password.isNotEmpty) ? password : null;
+    final requested = rawPaths.map((e) => _normalizeForMatch(e as String)).toList();
+
+    final result = <String, Uint8List?>{};
+    for (final p in requested) {
+      result[p] = null;
+    }
+
+    try {
+      final input = InputFileStream(archivePath);
+      try {
+        final archive = ZipDecoder().decodeBuffer(input, password: pwdStr);
+        _fixArchiveFilenames(archive);
+        for (final p in requested) {
+          try {
+            final fileObj = archive.files.firstWhere(
+              (f) => f.isFile && _normalizeForMatch(f.name) == p,
+            );
+            final content = fileObj.content;
+            if (content is Uint8List) {
+              result[p] = content;
+            } else if (content is List<int>) {
+              result[p] = Uint8List.fromList(content);
+            } else {
+              result[p] = null;
+            }
+          } catch (_) {
+            result[p] = null;
+          }
+        }
+      } finally {
+        try { input.closeSync(); } catch (_) {}
+      }
+    } catch (_) {
+      // 整个压缩包都无法打开时，保留 null 结果
+    }
+    return result;
+  }
+
   /// 修复压缩包中非 UTF-8 编码的文件名（如 GBK 编码的中文文件名）
   static void _fixArchiveFilenames(Archive archive) {
     for (int i = 0; i < archive.length; i++) {

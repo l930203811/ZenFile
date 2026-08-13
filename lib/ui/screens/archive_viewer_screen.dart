@@ -9,6 +9,7 @@ import '../../providers/file_manager_provider.dart';
 import '../../services/archive_service.dart';
 import '../widgets/archive_type_icon.dart';
 import 'internal_file_picker_screen.dart';
+import 'image_viewer_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class ArchiveItem {
@@ -24,6 +25,7 @@ class ArchiveItem {
     required this.size,
   });
 }
+
 
 class ArchiveViewerScreen extends StatefulWidget {
   final String archivePath;
@@ -154,19 +156,119 @@ class _ArchiveViewerScreenState extends State<ArchiveViewerScreen> {
     return true;
   }
 
-  Future<void> _openArchiveItem(ArchiveItem item) async {
+  /// 将单个 ArchiveItem 提取到临时目录，返回临时文件路径（内部复用）
+  /// 单张文件解压失败时返回 null，不向上抛异常，避免同目录其他图片预览被连带失败。
+  /// 注意：内容通过 ArchiveService.extractEntriesToBytes 在隔离区内完成解压后回传，
+  /// 不要直接读 _archive.files[x].content（跨隔离区的文件型流在解压时会失效/读空）。
+  Future<String?> _extractItemToTemp(ArchiveItem item) async {
     try {
-      final fileObj = _archive!.files.firstWhere((f) => _normalizePath(f.name) == item.fullPath);
+      final map = await ArchiveService.extractEntriesToBytes(widget.archivePath, [item.fullPath]);
+      final content = map[item.fullPath];
+      if (content == null || content.isEmpty) return null;
+
       final tempDir = Directory.systemTemp.createTempSync('zip_preview');
       final tempFile = File(p.join(tempDir.path, item.name));
-      tempFile.writeAsBytesSync(fileObj.content as List<int>);
+      await tempFile.writeAsBytes(content);
+      return tempFile.path;
+    } catch (e) {
+      debugPrint('Error extracting archive item ${item.fullPath}: $e');
+      return null;
+    }
+  }
+
+  Future<void> _openArchiveItem(ArchiveItem item) async {
+    try {
+      // 图片文件：收集同目录下所有图片，提取后传入 ImageViewerScreen 支持滑动切换
+      if (FileUtils.isImage(item.name)) {
+        await _openArchiveImagesWithSwipe(item);
+        return;
+      }
+
+      // 其他文件：提取单个文件到临时目录后交给系统默认打开方式
+      final tempPath = await _extractItemToTemp(item);
+      if (tempPath == null) {
+        throw Exception('文件内容为空或解压失败，可能文件过大、已损坏或使用了不支持的压缩方式');
+      }
 
       if (mounted) {
         final provider = context.read<FileManagerProvider>();
-        await provider.openFile(context, tempFile.path);
+        await provider.openFile(context, tempPath);
       }
     } catch (e) {
       debugPrint('Error opening item: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('无法打开: ${e.toString()}')),
+        );
+      }
+    }
+  }
+
+  /// 打开压缩包内的图片，并收集同目录下所有图片作为 siblingPaths 支持左右滑动切换。
+  /// 单张图片解压失败时跳过该张，避免某一张损坏/不支持的图片导致整组无法预览。
+  /// 所有图片一次性在隔离区内解压后回传（解决大图 >4MB 跨隔离区文件流失效导致无法预览的问题）。
+  Future<void> _openArchiveImagesWithSwipe(ArchiveItem item) async {
+    try {
+      // 1. 从已排序的 _currentItems 中收集当前目录下所有图片
+      final currentItems = _currentItems;
+      final imageItems = currentItems.where((i) => !i.isDirectory && FileUtils.isImage(i.name)).toList();
+      if (imageItems.isEmpty) {
+        // 兜底：仅打开当前文件
+        final tempPath = await _extractItemToTemp(item);
+        if (tempPath != null && mounted) {
+          final provider = context.read<FileManagerProvider>();
+          await provider.openFile(context, tempPath);
+        }
+        return;
+      }
+
+      final initialIndex = imageItems.indexWhere((i) => i.fullPath == item.fullPath);
+      final safeInitial = initialIndex >= 0 ? initialIndex : 0;
+
+      // 2. 一次性提取所有图片（隔离区内完成解压，规避跨隔离区文件流问题）
+      final paths = imageItems.map((i) => i.fullPath).toList();
+      final extractedMap = await ArchiveService.extractEntriesToBytes(widget.archivePath, paths);
+
+      final extractedPaths = <String>[];
+      final validIndexes = <int>[];
+      for (int i = 0; i < imageItems.length; i++) {
+        final bytes = extractedMap[imageItems[i].fullPath];
+        if (bytes != null && bytes.isNotEmpty) {
+          final tempDir = Directory.systemTemp.createTempSync('zip_preview');
+          final tempFile = File(p.join(tempDir.path, imageItems[i].name));
+          await tempFile.writeAsBytes(bytes);
+          extractedPaths.add(tempFile.path);
+          validIndexes.add(i);
+        }
+      }
+
+      if (extractedPaths.isEmpty) {
+        throw Exception('所有图片内容为空或无法解压');
+      }
+
+      // 3. 找到当前点击图片在有效列表中的位置；若当前图片失败，则打开第一张可用的
+      var validInitial = validIndexes.indexOf(safeInitial);
+      if (validInitial < 0) validInitial = 0;
+
+      if (!mounted) return;
+
+      // 4. 打开图片浏览器，只传入成功提取的图片路径
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ImageViewerScreen(
+            imagePath: extractedPaths[validInitial],
+            siblingPaths: extractedPaths,
+          ),
+        ),
+      );
+    } catch (e) {
+      debugPrint('Error opening archive image: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('无法预览图片: ${e.toString()}')),
+        );
+      }
     }
   }
 
@@ -178,18 +280,28 @@ class _ArchiveViewerScreenState extends State<ArchiveViewerScreen> {
 
     try {
       if (!item.isDirectory) {
-        final fileObj = _archive!.files.firstWhere((f) => _normalizePath(f.name) == item.fullPath);
+        // 单文件：隔离区内解压后回传纯字节
+        final map = await ArchiveService.extractEntriesToBytes(widget.archivePath, [item.fullPath]);
+        final content = map[item.fullPath];
+        if (content == null || content.isEmpty) {
+          throw Exception('文件内容为空或无法解压（可能文件过大、已损坏或使用了不支持的压缩方式）');
+        }
         final destFile = File(p.join(destDir, item.name));
-        destFile.writeAsBytesSync(fileObj.content as List<int>);
+        await destFile.writeAsBytes(content);
       } else {
-        for (final f in _archive!.files) {
-          final name = _normalizePath(f.name);
-          if (name.startsWith(item.fullPath) && f.isFile) {
-            final rel = name.substring(item.fullPath.length);
-            final destFile = File(p.join(destDir, item.name, rel));
-            destFile.createSync(recursive: true);
-            destFile.writeAsBytesSync(f.content as List<int>);
-          }
+        // 目录：收集该目录树下所有文件条目，一次性提取
+        final subPaths = _archive!.files
+            .where((f) => f.isFile && _normalizePath(f.name).startsWith(item.fullPath))
+            .map((f) => _normalizePath(f.name))
+            .toList();
+        final map = await ArchiveService.extractEntriesToBytes(widget.archivePath, subPaths);
+        for (final entry in map.entries) {
+          final bytes = entry.value;
+          if (bytes == null || bytes.isEmpty) continue;
+          final rel = entry.key.substring(item.fullPath.length);
+          final destFile = File(p.join(destDir, item.name, rel));
+          destFile.createSync(recursive: true);
+          await destFile.writeAsBytes(bytes);
         }
       }
       if (mounted) {
@@ -198,6 +310,11 @@ class _ArchiveViewerScreenState extends State<ArchiveViewerScreen> {
       await provider.loadDirectory(destDir, showLoading: false);
     } catch (e) {
       debugPrint('Error extracting out: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('解压失败: ${e.toString()}')),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -211,29 +328,61 @@ class _ArchiveViewerScreenState extends State<ArchiveViewerScreen> {
       final tempDir = Directory.systemTemp.createTempSync('archive_clipboard');
       final List<String> physicalPaths = [];
 
-      for (final internalPath in _selectedInternalPaths) {
-        final isDir = internalPath.endsWith('/');
-        if (!isDir) {
-          final fileObj = _archive!.files.firstWhere((f) => _normalizePath(f.name) == internalPath);
-          final fileName = p.basename(internalPath);
-          final physicalFile = File(p.join(tempDir.path, fileName));
-          physicalFile.writeAsBytesSync(fileObj.content as List<int>);
-          physicalPaths.add(physicalFile.path);
+      // 收集所有需要提取的内部路径：选中的文件 + 选中目录树内的文件
+      final filePaths = <String>[];
+      final dirPaths = <String>[];
+      for (final p in _selectedInternalPaths) {
+        if (p.endsWith('/')) {
+          dirPaths.add(p);
         } else {
-          final folderName = p.basename(internalPath.substring(0, internalPath.length - 1));
-          final targetSubDir = Directory(p.join(tempDir.path, folderName));
-          targetSubDir.createSync(recursive: true);
-          physicalPaths.add(targetSubDir.path);
-
-          for (final f in _archive!.files) {
-            final name = _normalizePath(f.name);
-            if (name.startsWith(internalPath) && f.isFile) {
-              final rel = name.substring(internalPath.length);
-              final destFile = File(p.join(targetSubDir.path, rel));
-              destFile.createSync(recursive: true);
-              destFile.writeAsBytesSync(f.content as List<int>);
-            }
+          filePaths.add(p);
+        }
+      }
+      final allPaths = <String>[...filePaths];
+      for (final dirPath in dirPaths) {
+        for (final f in _archive!.files) {
+          if (f.isFile && _normalizePath(f.name).startsWith(dirPath)) {
+            allPaths.add(_normalizePath(f.name));
           }
+        }
+      }
+
+      // 隔离区内一次性解压，规避跨隔离区文件流导致大文件解压失败
+      final map = await ArchiveService.extractEntriesToBytes(widget.archivePath, allPaths);
+
+      // 先建立选中的目录结构
+      final Map<String, String> dirTargetPaths = {};
+      for (final dirPath in dirPaths) {
+        final folderName = p.basename(dirPath.substring(0, dirPath.length - 1));
+        final targetSubDir = Directory(p.join(tempDir.path, folderName));
+        targetSubDir.createSync(recursive: true);
+        dirTargetPaths[dirPath] = targetSubDir.path;
+        physicalPaths.add(targetSubDir.path);
+      }
+
+      // 再把每条文件内容写入对应位置
+      for (final internalPath in allPaths) {
+        final bytes = map[internalPath];
+        if (bytes == null || bytes.isEmpty) continue;
+
+        String? matchedDir;
+        for (final dirPath in dirPaths) {
+          if (internalPath.startsWith(dirPath)) {
+            matchedDir = dirPath;
+            break;
+          }
+        }
+        var targetBase = tempDir.path;
+        if (matchedDir != null) {
+          final rel = internalPath.substring(matchedDir.length);
+          targetBase = p.join(dirTargetPaths[matchedDir]!, rel);
+        }
+        final fileName = p.basename(internalPath);
+        final physicalFile = File(p.join(targetBase, fileName));
+        physicalFile.createSync(recursive: true);
+        await physicalFile.writeAsBytes(bytes);
+        if (matchedDir == null) {
+          physicalPaths.add(physicalFile.path);
         }
       }
 
