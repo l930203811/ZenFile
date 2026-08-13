@@ -4816,4 +4816,17 @@ class L10nEs extends L10n {
   @override
   String get changelog_v1128_known_1 =>
       'El ajuste de tamaño/espaciado aún no funciona en ventana dividida (mejorará en próxima versión)';
+
+  @override
+  String get ui_global_search_hint =>
+      'Busca archivos, carpetas, documentos o multimedia al instante en tu dispositivo';
+
+  @override
+  String get ui_delete_item_confirm =>
+      '¿Seguro que quieres eliminar este elemento? Esta acción no se puede deshacer.';
+
+  @override
+  String ui_delete_items_confirm(int count) {
+    return '¿Seguro que quieres eliminar los $count elementos seleccionados? Esta acción no se puede deshacer.';
+  }
 }

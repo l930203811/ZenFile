@@ -4626,5 +4626,22 @@
   "changelog_v1128_opt_4": "Icônes de catégories uniformisées à la couleur du thème ; chaque catégorie affiche la taille occupée",
   "changelog_v1128_opt_5": "La recherche globale démarre dans le dossier courant (racine = recherche globale)",
   "changelog_v1128_fix_1": "Corrigé : le filtre persistait après désactivation de 'Mémoriser le filtre'",
-  "changelog_v1128_known_1": "Réglage taille/espacement inactif en mode double fenêtre (amélioration à venir)"
+  "changelog_v1128_known_1": "Réglage taille/espacement inactif en mode double fenêtre (amélioration à venir)",
+  "ui_global_search_hint": "Trouvez instantanément n'importe quel fichier, dossier, document ou média sur votre appareil",
+  "@ui_global_search_hint": {
+    "description": "Global search empty state subtitle"
+  },
+  "ui_delete_item_confirm": "Voulez-vous vraiment supprimer cet élément ? Cette action est irréversible.",
+  "@ui_delete_item_confirm": {
+    "description": "Global search single item delete confirmation content"
+  },
+  "ui_delete_items_confirm": "Voulez-vous vraiment supprimer les {count} éléments sélectionnés ? Cette action est irréversible.",
+  "@ui_delete_items_confirm": {
+    "description": "Global search multiple items delete confirmation content",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

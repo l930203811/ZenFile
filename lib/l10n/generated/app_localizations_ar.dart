@@ -4731,4 +4731,17 @@ class L10nAr extends L10n {
   @override
   String get changelog_v1128_known_1 =>
       'تعديل الحجم/التباعد غير فعّال بعد في وضع النافذة المزدوجة (سيتحسّن لاحقاً)';
+
+  @override
+  String get ui_global_search_hint =>
+      'ابحث فورًا عن أي ملف أو مجلد أو مستند أو وسائط على جهازك';
+
+  @override
+  String get ui_delete_item_confirm =>
+      'هل أنت متأكد أنك تريد حذف هذا العنصر؟ لا يمكن التراجع عن هذا الإجراء.';
+
+  @override
+  String ui_delete_items_confirm(int count) {
+    return 'هل أنت متأكد أنك تريد حذف $count عناصر محددة؟ لا يمكن التراجع عن هذا الإجراء.';
+  }
 }

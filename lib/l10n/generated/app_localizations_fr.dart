@@ -4821,4 +4821,17 @@ class L10nFr extends L10n {
   @override
   String get changelog_v1128_known_1 =>
       'Réglage taille/espacement inactif en mode double fenêtre (amélioration à venir)';
+
+  @override
+  String get ui_global_search_hint =>
+      'Trouvez instantanément n\'importe quel fichier, dossier, document ou média sur votre appareil';
+
+  @override
+  String get ui_delete_item_confirm =>
+      'Voulez-vous vraiment supprimer cet élément ? Cette action est irréversible.';
+
+  @override
+  String ui_delete_items_confirm(int count) {
+    return 'Voulez-vous vraiment supprimer les $count éléments sélectionnés ? Cette action est irréversible.';
+  }
 }

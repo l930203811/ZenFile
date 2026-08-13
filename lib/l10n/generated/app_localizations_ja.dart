@@ -4610,4 +4610,15 @@ class L10nJa extends L10n {
   @override
   String get changelog_v1128_known_1 =>
       '分割ウィンドウではサイズ/間隔の調整はまだ無効（将来のバージョンで改善予定）';
+
+  @override
+  String get ui_global_search_hint => 'デバイス内のあらゆるファイル、フォルダ、ドキュメント、メディアを即座に検索';
+
+  @override
+  String get ui_delete_item_confirm => 'この項目を削除してもよろしいですか？この操作は元に戻せません。';
+
+  @override
+  String ui_delete_items_confirm(int count) {
+    return '選択した $count 個の項目を削除してもよろしいですか？この操作は元に戻せません。';
+  }
 }

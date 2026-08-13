@@ -4793,4 +4793,17 @@ class L10nDe extends L10n {
   @override
   String get changelog_v1128_known_1 =>
       'Größe/Abstand lässt sich im Doppelfenster-Modus noch nicht anpassen (folgt später)';
+
+  @override
+  String get ui_global_search_hint =>
+      'Finden Sie sofort Dateien, Ordner, Dokumente oder Medien auf Ihrem Gerät';
+
+  @override
+  String get ui_delete_item_confirm =>
+      'Möchten Sie dieses Element wirklich löschen? Dies kann nicht rückgängig gemacht werden.';
+
+  @override
+  String ui_delete_items_confirm(int count) {
+    return 'Möchten Sie die ausgewählten $count Elemente wirklich löschen? Dies kann nicht rückgängig gemacht werden.';
+  }
 }

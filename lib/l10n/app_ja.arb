@@ -4630,5 +4630,22 @@
   "changelog_v1128_opt_4": "カテゴリアイコンをテーマカラーに統一；各カテゴリの使用容量を表示",
   "changelog_v1128_opt_5": "全体検索は現在のフォルダから開始（ストレージルートでは全体検索に戻る）",
   "changelog_v1128_fix_1": "「フィルタを記憶」をオフにしても前回のフィルタが残る不具合を修正",
-  "changelog_v1128_known_1": "分割ウィンドウではサイズ/間隔の調整はまだ無効（将来のバージョンで改善予定）"
+  "changelog_v1128_known_1": "分割ウィンドウではサイズ/間隔の調整はまだ無効（将来のバージョンで改善予定）",
+  "ui_global_search_hint": "デバイス内のあらゆるファイル、フォルダ、ドキュメント、メディアを即座に検索",
+  "@ui_global_search_hint": {
+    "description": "Global search empty state subtitle"
+  },
+  "ui_delete_item_confirm": "この項目を削除してもよろしいですか？この操作は元に戻せません。",
+  "@ui_delete_item_confirm": {
+    "description": "Global search single item delete confirmation content"
+  },
+  "ui_delete_items_confirm": "選択した {count} 個の項目を削除してもよろしいですか？この操作は元に戻せません。",
+  "@ui_delete_items_confirm": {
+    "description": "Global search multiple items delete confirmation content",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

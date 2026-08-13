@@ -4626,5 +4626,22 @@
   "changelog_v1128_opt_4": "توحيد أيقونات الفئات بلون سمة التطبيق؛ كل فئة تعرض الحجم المستخدم",
   "changelog_v1128_opt_5": "البحث العام يبدأ من المجلد الحالي (يتحول إلى عام عند جذر التخزين)",
   "changelog_v1128_fix_1": "إصلاح بقاء التصفية محفوظة بعد إيقاف 'تذكّر التصفية'",
-  "changelog_v1128_known_1": "تعديل الحجم/التباعد غير فعّال بعد في وضع النافذة المزدوجة (سيتحسّن لاحقاً)"
+  "changelog_v1128_known_1": "تعديل الحجم/التباعد غير فعّال بعد في وضع النافذة المزدوجة (سيتحسّن لاحقاً)",
+  "ui_global_search_hint": "ابحث فورًا عن أي ملف أو مجلد أو مستند أو وسائط على جهازك",
+  "@ui_global_search_hint": {
+    "description": "Global search empty state subtitle"
+  },
+  "ui_delete_item_confirm": "هل أنت متأكد أنك تريد حذف هذا العنصر؟ لا يمكن التراجع عن هذا الإجراء.",
+  "@ui_delete_item_confirm": {
+    "description": "Global search single item delete confirmation content"
+  },
+  "ui_delete_items_confirm": "هل أنت متأكد أنك تريد حذف {count} عناصر محددة؟ لا يمكن التراجع عن هذا الإجراء.",
+  "@ui_delete_items_confirm": {
+    "description": "Global search multiple items delete confirmation content",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

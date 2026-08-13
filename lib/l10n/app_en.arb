@@ -4683,5 +4683,22 @@
   "changelog_v1128_opt_4": "Category icons unified to the app theme color; each category shows its storage usage size",
   "changelog_v1128_opt_5": "Global search now starts from the current folder (falls back to global search at storage root)",
   "changelog_v1128_fix_1": "Fixed the filter persisting after 'Remember filter' is turned off",
-  "changelog_v1128_known_1": "Size/spacing adjustment is not yet effective in dual-window mode; to be improved in a later release"
+  "changelog_v1128_known_1": "Size/spacing adjustment is not yet effective in dual-window mode; to be improved in a later release",
+  "ui_global_search_hint": "Find any file, folder, document or media instantly across your device",
+  "@ui_global_search_hint": {
+    "description": "Global search empty state subtitle"
+  },
+  "ui_delete_item_confirm": "Are you sure you want to delete this item? This cannot be undone.",
+  "@ui_delete_item_confirm": {
+    "description": "Global search single item delete confirmation content"
+  },
+  "ui_delete_items_confirm": "Are you sure you want to delete {count} selected item(s)? This cannot be undone.",
+  "@ui_delete_items_confirm": {
+    "description": "Global search multiple items delete confirmation content",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

@@ -8571,6 +8571,24 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'双窗口模式下「大小/间距」调整暂未生效，将于后续版本优化'**
   String get changelog_v1128_known_1;
+
+  /// Global search empty state subtitle
+  ///
+  /// In zh, this message translates to:
+  /// **'在您的设备上即时查找任何文件、文件夹、文档或媒体'**
+  String get ui_global_search_hint;
+
+  /// Global search single item delete confirmation content
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要删除此项目吗？此操作无法撤销。'**
+  String get ui_delete_item_confirm;
+
+  /// Global search multiple items delete confirmation content
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要删除选中的 {count} 个项目吗？此操作无法撤销。'**
+  String ui_delete_items_confirm(int count);
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

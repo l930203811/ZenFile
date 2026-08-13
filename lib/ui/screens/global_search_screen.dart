@@ -555,8 +555,8 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
           context,
           title: isMulti ? L10n.of(context).msgcd0b9aca : L10n.of(context).msg53518c22,
           content: isMulti
-              ? 'Are you sure you want to delete ${_selectedPaths.length} selected item(s)? This cannot be undone.'
-              : 'Are you sure you want to delete this item? This cannot be undone.',
+              ? L10n.of(context).ui_delete_items_confirm(_selectedPaths.length)
+              : L10n.of(context).ui_delete_item_confirm,
         );
         if (confirm) {
           try {
@@ -812,7 +812,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                     Broken.search_normal_1,
                     isGlobal ? L10n.of(context).msg88e45bb8 : L10n.of(context).ui_search_this_folder,
                     isGlobal
-                        ? 'Find any file, folder, document or media instantly across your device'
+                        ? L10n.of(context).ui_global_search_hint
                         : L10n.of(context).ui_search_files_subfolders_in(_searchFolderPath!.split("/").last),
                   )
                 : _results.isEmpty && !_isSearching

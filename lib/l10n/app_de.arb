@@ -4623,5 +4623,22 @@
   "changelog_v1128_opt_4": "Kategorie-Icons einheitlich in der Theme-Farbe; jede Kategorie zeigt die belegte Größe",
   "changelog_v1128_opt_5": "Globale Suche startet ab dem aktuellen Ordner (am Speicherstamm global)",
   "changelog_v1128_fix_1": "Filter blieb nach 'Filter merken' ausgespeichert bestehen – behoben",
-  "changelog_v1128_known_1": "Größe/Abstand lässt sich im Doppelfenster-Modus noch nicht anpassen (folgt später)"
+  "changelog_v1128_known_1": "Größe/Abstand lässt sich im Doppelfenster-Modus noch nicht anpassen (folgt später)",
+  "ui_global_search_hint": "Finden Sie sofort Dateien, Ordner, Dokumente oder Medien auf Ihrem Gerät",
+  "@ui_global_search_hint": {
+    "description": "Global search empty state subtitle"
+  },
+  "ui_delete_item_confirm": "Möchten Sie dieses Element wirklich löschen? Dies kann nicht rückgängig gemacht werden.",
+  "@ui_delete_item_confirm": {
+    "description": "Global search single item delete confirmation content"
+  },
+  "ui_delete_items_confirm": "Möchten Sie die ausgewählten {count} Elemente wirklich löschen? Dies kann nicht rückgängig gemacht werden.",
+  "@ui_delete_items_confirm": {
+    "description": "Global search multiple items delete confirmation content",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

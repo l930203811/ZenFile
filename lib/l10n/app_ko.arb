@@ -4626,5 +4626,22 @@
   "changelog_v1128_opt_4": "카테고리 아이콘을 테마 색상으로 통일; 각 카테고리 사용량 크기 표시",
   "changelog_v1128_opt_5": "전체 검색은 현재 폴더부터 시작(저장소 루트에서는 전체 검색으로 폴백)",
   "changelog_v1128_fix_1": "'필터 기억'을 꺼도 이전 필터가 남는 문제 수정",
-  "changelog_v1128_known_1": "분할 창에서는 크기/간격 조정이 아직 적용되지 않음(추후 버전에서 개선)"
+  "changelog_v1128_known_1": "분할 창에서는 크기/간격 조정이 아직 적용되지 않음(추후 버전에서 개선)",
+  "ui_global_search_hint": "기기 전체에서 파일, 폴터, 문서, 미디어를 즉시 찾아보세요",
+  "@ui_global_search_hint": {
+    "description": "Global search empty state subtitle"
+  },
+  "ui_delete_item_confirm": "이 항목을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+  "@ui_delete_item_confirm": {
+    "description": "Global search single item delete confirmation content"
+  },
+  "ui_delete_items_confirm": "선택한 {count}개 항목을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+  "@ui_delete_items_confirm": {
+    "description": "Global search multiple items delete confirmation content",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

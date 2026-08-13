@@ -4800,4 +4800,17 @@ class L10nRu extends L10n {
   @override
   String get changelog_v1128_known_1 =>
       'Размер/интервал пока не действует в режиме двух окон (будет улучшено)';
+
+  @override
+  String get ui_global_search_hint =>
+      'Мгновенно находите любые файлы, папки, документы или медиа на устройстве';
+
+  @override
+  String get ui_delete_item_confirm =>
+      'Удалить этот элемент? Это действие нельзя отменить.';
+
+  @override
+  String ui_delete_items_confirm(int count) {
+    return 'Удалить выбранные элементы ($count)? Это действие нельзя отменить.';
+  }
 }

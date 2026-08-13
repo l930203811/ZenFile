@@ -4608,4 +4608,15 @@ class L10nKo extends L10n {
   @override
   String get changelog_v1128_known_1 =>
       '분할 창에서는 크기/간격 조정이 아직 적용되지 않음(추후 버전에서 개선)';
+
+  @override
+  String get ui_global_search_hint => '기기 전체에서 파일, 폴터, 문서, 미디어를 즉시 찾아보세요';
+
+  @override
+  String get ui_delete_item_confirm => '이 항목을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.';
+
+  @override
+  String ui_delete_items_confirm(int count) {
+    return '선택한 $count개 항목을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.';
+  }
 }

@@ -4748,4 +4748,17 @@ class L10nEn extends L10n {
   @override
   String get changelog_v1128_known_1 =>
       'Size/spacing adjustment is not yet effective in dual-window mode; to be improved in a later release';
+
+  @override
+  String get ui_global_search_hint =>
+      'Find any file, folder, document or media instantly across your device';
+
+  @override
+  String get ui_delete_item_confirm =>
+      'Are you sure you want to delete this item? This cannot be undone.';
+
+  @override
+  String ui_delete_items_confirm(int count) {
+    return 'Are you sure you want to delete $count selected item(s)? This cannot be undone.';
+  }
 }

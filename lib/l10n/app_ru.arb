@@ -4626,5 +4626,22 @@
   "changelog_v1128_opt_4": "Значки категорий в цвете темы; каждая категория показывает занятый объём",
   "changelog_v1128_opt_5": "Глобальный поиск начинается с текущей папки (в корне — глобальный)",
   "changelog_v1128_fix_1": "Исправлено: фильтр сохранялся после выключения 'Запомнить фильтр'",
-  "changelog_v1128_known_1": "Размер/интервал пока не действует в режиме двух окон (будет улучшено)"
+  "changelog_v1128_known_1": "Размер/интервал пока не действует в режиме двух окон (будет улучшено)",
+  "ui_global_search_hint": "Мгновенно находите любые файлы, папки, документы или медиа на устройстве",
+  "@ui_global_search_hint": {
+    "description": "Global search empty state subtitle"
+  },
+  "ui_delete_item_confirm": "Удалить этот элемент? Это действие нельзя отменить.",
+  "@ui_delete_item_confirm": {
+    "description": "Global search single item delete confirmation content"
+  },
+  "ui_delete_items_confirm": "Удалить выбранные элементы ({count})? Это действие нельзя отменить.",
+  "@ui_delete_items_confirm": {
+    "description": "Global search multiple items delete confirmation content",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

@@ -4559,6 +4559,17 @@ class L10nZh extends L10n {
 
   @override
   String get changelog_v1128_known_1 => '双窗口模式下「大小/间距」调整暂未生效，将于后续版本优化';
+
+  @override
+  String get ui_global_search_hint => '在您的设备上即时查找任何文件、文件夹、文档或媒体';
+
+  @override
+  String get ui_delete_item_confirm => '确定要删除此项目吗？此操作无法撤销。';
+
+  @override
+  String ui_delete_items_confirm(int count) {
+    return '确定要删除选中的 $count 个项目吗？此操作无法撤销。';
+  }
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -9062,4 +9073,15 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get changelog_v1128_known_1 => '雙視窗模式下「大小/間距」調整暫未生效，將於後續版本最佳化';
+
+  @override
+  String get ui_global_search_hint => '在您的裝置上即時查找任何檔案、資料夾、文件或媒體';
+
+  @override
+  String get ui_delete_item_confirm => '確定要刪除此項目嗎？此操作無法復原。';
+
+  @override
+  String ui_delete_items_confirm(int count) {
+    return '確定要刪除選中的 $count 個項目嗎？此操作無法復原。';
+  }
 }

@@ -4904,5 +4904,22 @@
   "changelog_v1128_opt_4": "分类页图标统一为应用主题主色；各分类显示存储占用大小",
   "changelog_v1128_opt_5": "全局搜索默认从当前文件夹开始（存储根目录退化为全局搜索）",
   "changelog_v1128_fix_1": "修复关闭「记住过滤」后仍持久化上次过滤条件的问题",
-  "changelog_v1128_known_1": "双窗口模式下「大小/间距」调整暂未生效，将于后续版本优化"
+  "changelog_v1128_known_1": "双窗口模式下「大小/间距」调整暂未生效，将于后续版本优化",
+  "ui_global_search_hint": "在您的设备上即时查找任何文件、文件夹、文档或媒体",
+  "@ui_global_search_hint": {
+    "description": "Global search empty state subtitle"
+  },
+  "ui_delete_item_confirm": "确定要删除此项目吗？此操作无法撤销。",
+  "@ui_delete_item_confirm": {
+    "description": "Global search single item delete confirmation content"
+  },
+  "ui_delete_items_confirm": "确定要删除选中的 {count} 个项目吗？此操作无法撤销。",
+  "@ui_delete_items_confirm": {
+    "description": "Global search multiple items delete confirmation content",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }
