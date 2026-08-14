@@ -4561,6 +4561,58 @@ class L10nZh extends L10n {
   String get changelog_v1128_known_1 => '双窗口模式下「大小/间距」调整暂未生效，将于后续版本优化';
 
   @override
+  String get changelog_v1129_opt_1 =>
+      '分类页与浏览页顶部/底部导航的「分类」「浏览」按钮合二为一，改为居中翻转切换按钮（分类页显示「浏览」、浏览页显示「分类」）。';
+
+  @override
+  String get changelog_v1129_opt_2 =>
+      '重命名文件时自动选中文件名主体（不含扩展名）、光标落在扩展名前，避免误改后缀名；覆盖所有入口：三点菜单、长按菜单、图片预览、全局搜索、选择态、远程、冲突对话框。';
+
+  @override
+  String get changelog_v1129_opt_3 => '压缩包大图（>4MB）预览修复并支持滑动切换；单张预览失败不再拖垮整组。';
+
+  @override
+  String get changelog_v1129_opt_4 => '远程媒体缩略图加载改为并发限流与唯一临时文件名，加载更稳定、不再串图。';
+
+  @override
+  String get changelog_v1129_opt_5 => '双窗口模式下隐藏远程云徽，界面更简洁。';
+
+  @override
+  String get changelog_v1129_opt_6 => '分类页「图片」与「截图」图标互换（图片显示相机图标、截图显示图片图标）。';
+
+  @override
+  String get changelog_v1129_fix_1 => '修复同名文件缩略图缓存不更新、远程与本地同名文件缩略图串图的问题。';
+
+  @override
+  String get changelog_v1129_fix_2 => '修复压缩包解压完成后点击「确定」无法跳转目录的问题。';
+
+  @override
+  String get changelog_v1129_fix_3 => '修复远程目录「显示文件夹内容计数」始终为 0 的问题。';
+
+  @override
+  String get changelog_v1129_fix_4 =>
+      '修复单窗口模式打开远程客户端时覆盖已打开连接、远程标签页标题未固定为连接名的问题。';
+
+  @override
+  String get changelog_v1129_fix_5 => '修复浏览页面包屑水平滑动误触页面切换的问题。';
+
+  @override
+  String get changelog_v1129_fix_6 => '修复分类页长按拖动类别排序时横向拖动误触左右切页的问题。';
+
+  @override
+  String get changelog_v1129_fix_7 => '修复截图文件在图片类别「按文件夹」下钻后消失的问题。';
+
+  @override
+  String get changelog_v1129_fix_8 => '修复压缩包图片预览因名称归一化不匹配导致全部无法预览、解压失败无反馈等问题。';
+
+  @override
+  String get changelog_v1129_fix_9 => '全局搜索空状态与删除确认文案支持多语言（去除硬编码英文）。';
+
+  @override
+  String get changelog_v1129_known_1 =>
+      'SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。';
+
+  @override
   String get ui_global_search_hint => '在您的设备上即时查找任何文件、文件夹、文档或媒体';
 
   @override
@@ -9073,6 +9125,70 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get changelog_v1128_known_1 => '雙視窗模式下「大小/間距」調整暫未生效，將於後續版本最佳化';
+
+  @override
+  String get changelog_v1129_opt_1 =>
+      'Merged the separate \"Categories\" and \"Browse\" buttons in the category/browse page navigation into a single centered toggle (shows \"Browse\" on the categories page, \"Categories\" on the browse page).';
+
+  @override
+  String get changelog_v1129_opt_2 =>
+      'When renaming a file, the filename body (without extension) is now auto-selected with the cursor placed before the extension, preventing accidental extension changes. Covers all entry points: 3-dot menu, long-press menu, image viewer, global search, selection mode, remote, and conflict dialog.';
+
+  @override
+  String get changelog_v1129_opt_3 =>
+      'Fixed preview of large archive images (>4MB) and added swipe-to-switch between images; a single failed preview no longer breaks the whole group.';
+
+  @override
+  String get changelog_v1129_opt_4 =>
+      'Remote media thumbnails now use concurrency throttling and unique temp filenames for more stable loading without cross-mixing.';
+
+  @override
+  String get changelog_v1129_opt_5 =>
+      'Hide the remote cloud badge in split-screen (dual-pane) mode for a cleaner UI.';
+
+  @override
+  String get changelog_v1129_opt_6 =>
+      'Swapped the icons of the \"Images\" and \"Screenshots\" categories (Images now shows a camera icon, Screenshots shows an image icon).';
+
+  @override
+  String get changelog_v1129_fix_1 =>
+      'Fixed thumbnails not refreshing for same-named files, and cross-mixing of thumbnails between remote and local same-named files.';
+
+  @override
+  String get changelog_v1129_fix_2 =>
+      'Fixed the issue where tapping \"OK\" after extracting an archive did not navigate to the extracted folder.';
+
+  @override
+  String get changelog_v1129_fix_3 =>
+      'Fixed the remote folder \"item count\" always showing 0.';
+
+  @override
+  String get changelog_v1129_fix_4 =>
+      'Fixed single-pane mode overwriting an already-open remote connection when opening a new one, and the remote tab title not being fixed to the connection name.';
+
+  @override
+  String get changelog_v1129_fix_5 =>
+      'Fixed breadcrumb horizontal swipe accidentally triggering page switching in the browse page.';
+
+  @override
+  String get changelog_v1129_fix_6 =>
+      'Fixed long-press dragging of category tiles accidentally triggering left/right page switching.';
+
+  @override
+  String get changelog_v1129_fix_7 =>
+      'Fixed screenshots disappearing after drilling into a folder under the Images category\'s folder view.';
+
+  @override
+  String get changelog_v1129_fix_8 =>
+      'Fixed archive image preview failing entirely due to name normalization mismatch, and missing feedback on extraction failure.';
+
+  @override
+  String get changelog_v1129_fix_9 =>
+      'Global search empty state and delete confirmation texts now support multiple languages (removed hardcoded English).';
+
+  @override
+  String get changelog_v1129_known_1 =>
+      'SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.';
 
   @override
   String get ui_global_search_hint => '在您的裝置上即時查找任何檔案、資料夾、文件或媒體';

@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart' as p;
 import '../../providers/file_manager_provider.dart';
+import '../../providers/media_provider.dart';
 import '../../models/file_filter_type.dart';
 import '../../models/drag_payload.dart';
 import '../widgets/file_item.dart';
@@ -1148,23 +1149,8 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                 onPressed: () => widget.onOpenDrawer?.call(),
                               ),
                               const Spacer(),
-                              // 分类页按钮
-                              IconButton(
-                                icon: Icon(Broken.category, color: theme.colorScheme.primary),
-                                tooltip: L10n.of(context).msg6e0f9cef,
-                                onPressed: () {
-                                  widget.onNavigateTab?.call(0);
-                                },
-                              ),
-                              const SizedBox(width: 32),
-                              // 浏览页按钮
-                              IconButton(
-                                icon: Icon(Broken.folder, color: theme.colorScheme.primary),
-                                tooltip: L10n.of(context).ui_browse,
-                                onPressed: () {
-                                  // 已在浏览页，无需切换
-                                },
-                              ),
+                              // 分类页/浏览页 合一切换按钮（居中）
+                              _buildCategoryBrowseToggle(context),
                               const Spacer(),
                               // 快捷操作按钮（靠右）
                               IconButton(
@@ -1562,19 +1548,8 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                     onPressed: () => widget.onOpenDrawer?.call(),
                                   ),
                                   const Spacer(),
-                                  // 分类页按钮
-                                  IconButton(
-                                    icon: Icon(Broken.category, color: theme.colorScheme.primary),
-                                    tooltip: L10n.of(context).msg6e0f9cef,
-                                    onPressed: () => widget.onNavigateTab?.call(0),
-                                  ),
-                                  const SizedBox(width: 32),
-                                  // 浏览页按钮
-                                  IconButton(
-                                    icon: Icon(Broken.folder, color: theme.colorScheme.primary),
-                                    tooltip: L10n.of(context).ui_browse,
-                                    onPressed: () {},
-                                  ),
+                                  // 分类页/浏览页 合一切换按钮（居中）
+                                  _buildCategoryBrowseToggle(context),
                                   const Spacer(),
                                   // 快捷操作按钮（靠右）
                                   IconButton(
@@ -1602,6 +1577,19 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                         : null),
           ),
         );
+      },
+    );
+  }
+
+  Widget _buildCategoryBrowseToggle(BuildContext context) {
+    final theme = Theme.of(context);
+    // 当前为浏览页：按钮显示「分类」，点击切到分类页并刷新媒体
+    return IconButton(
+      tooltip: L10n.of(context).msg6e0f9cef,
+      icon: Icon(Broken.category, color: theme.colorScheme.primary),
+      onPressed: () {
+        widget.onNavigateTab?.call(0);
+        context.read<MediaProvider>().refreshMediaBackground();
       },
     );
   }

@@ -716,6 +716,8 @@ class AboutZenFileScreen extends StatelessWidget {
                   Text(L10n.of(context).msg305734ce, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
 
+                  _buildV1129Changelog(ctx, theme),
+                  const SizedBox(height: 16),
                   _buildV1128Changelog(ctx, theme),
                   const SizedBox(height: 16),
                   _buildV1127Changelog(ctx, theme),
@@ -935,6 +937,89 @@ class AboutZenFileScreen extends StatelessWidget {
           Text(l10n.changelog_section_known_issues, style: sectionStyle),
           gap(4),
           bulletText(l10n.changelog_v1128_known_1),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildV1129Changelog(BuildContext ctx, ThemeData theme) {
+    final l10n = L10n.of(ctx);
+    final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
+    final sectionStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.primary, fontWeight: FontWeight.w600);
+
+    Widget gap([double h = 6]) => SizedBox(height: h);
+    Widget bulletText(String text) => Text('· $text', style: textStyle);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.06)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Version header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text('v1.1.29', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+              ),
+              const SizedBox(width: 10),
+              Text('2026-08-14', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+            ],
+          ),
+          gap(14),
+
+          // ── Optimizations ──
+          Text(l10n.changelog_section_optimizations, style: sectionStyle),
+          gap(4),
+          bulletText(l10n.changelog_v1129_opt_1),
+          gap(6),
+          bulletText(l10n.changelog_v1129_opt_2),
+          gap(6),
+          bulletText(l10n.changelog_v1129_opt_3),
+          gap(6),
+          bulletText(l10n.changelog_v1129_opt_4),
+          gap(6),
+          bulletText(l10n.changelog_v1129_opt_5),
+          gap(6),
+          bulletText(l10n.changelog_v1129_opt_6),
+          gap(14),
+
+          // ── Bug Fixes ──
+          Text(l10n.changelog_section_fixes, style: sectionStyle),
+          gap(4),
+          bulletText(l10n.changelog_v1129_fix_1),
+          gap(6),
+          bulletText(l10n.changelog_v1129_fix_2),
+          gap(6),
+          bulletText(l10n.changelog_v1129_fix_3),
+          gap(6),
+          bulletText(l10n.changelog_v1129_fix_4),
+          gap(6),
+          bulletText(l10n.changelog_v1129_fix_5),
+          gap(6),
+          bulletText(l10n.changelog_v1129_fix_6),
+          gap(6),
+          bulletText(l10n.changelog_v1129_fix_7),
+          gap(6),
+          bulletText(l10n.changelog_v1129_fix_8),
+          gap(6),
+          bulletText(l10n.changelog_v1129_fix_9),
+          gap(14),
+
+          // ── Known Issues ──
+          Text(l10n.changelog_section_known_issues, style: sectionStyle),
+          gap(4),
+          bulletText(l10n.changelog_v1129_known_1),
         ],
       ),
     );

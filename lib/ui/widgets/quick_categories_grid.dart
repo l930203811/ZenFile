@@ -102,7 +102,7 @@ class QuickCategoriesGrid extends StatefulWidget {
       },
       '图片': {
         'label': l10n.cat_images,
-        'icon': Broken.image,
+        'icon': Broken.camera,
         'color': categoryColor,
         'iconColor': iconColor(270), // 紫
         'count': formatSizeCount('图片'),
@@ -165,7 +165,7 @@ class QuickCategoriesGrid extends StatefulWidget {
       },
       '截图': {
         'label': l10n.cat_screenshots,
-        'icon': Broken.camera,
+        'icon': Broken.image,
         'color': categoryColor,
         'iconColor': iconColor(300), // 品红
         'count': formatSizeCount('截图'),
@@ -753,8 +753,14 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                     final isBeingDragged = _isDragging && _draggingIndex == index;
                     final isTarget = _isDragging && _targetIndex == index && _draggingIndex != index;
 
+                    // 与面包屑一致的可靠方案：长按类别图标开始交互（长按菜单或拖动排序）时，
+                    // 置位 categoryReorderInteracting，使 home 的左右滑动切页检测在本次手势期间被抑制，
+                    // 避免长按拖动排序被误判为切换分类页/快捷操作页。注意：仅在「长按」开始时置位，
+                    // 普通快速横滑（未触发长按）仍可正常切页。
+                    final fm = context.read<FileManagerProvider>();
                     return GestureDetector(
                       onLongPressStart: (details) {
+                        fm.setCategoryReorderInteracting(true);
                         _longPressOrigin = details.globalPosition;
                         _showCategoryContextMenu(
                           position: details.globalPosition,
@@ -788,6 +794,7 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                           );
                           _endDrag(context.read<MediaProvider>(), allCatMap);
                         }
+                        fm.setCategoryReorderInteracting(false);
                         _longPressOrigin = null;
                       },
                       child: Opacity(
@@ -1283,9 +1290,6 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                             scrollController: scrollController,
                             physics: const BouncingScrollPhysics(),
                             padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 16),
-                            // 拖拽排序期间抑制 home 的左右滑动切页手势
-                            onReorderStart: (_) => fileManager.setCategoryReorderInteracting(true),
-                            onReorderEnd: (_) => fileManager.setCategoryReorderInteracting(false),
                             onReorder: (oldIndex, newIndex) => provider.reorderCategory(oldIndex, newIndex),
                             itemCount: order.length,
                             itemBuilder: (context, index) {

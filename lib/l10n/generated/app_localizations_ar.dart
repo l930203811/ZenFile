@@ -4733,6 +4733,70 @@ class L10nAr extends L10n {
       'تعديل الحجم/التباعد غير فعّال بعد في وضع النافذة المزدوجة (سيتحسّن لاحقاً)';
 
   @override
+  String get changelog_v1129_opt_1 =>
+      'Merged the separate \"Categories\" and \"Browse\" buttons in the category/browse page navigation into a single centered toggle (shows \"Browse\" on the categories page, \"Categories\" on the browse page).';
+
+  @override
+  String get changelog_v1129_opt_2 =>
+      'When renaming a file, the filename body (without extension) is now auto-selected with the cursor placed before the extension, preventing accidental extension changes. Covers all entry points: 3-dot menu, long-press menu, image viewer, global search, selection mode, remote, and conflict dialog.';
+
+  @override
+  String get changelog_v1129_opt_3 =>
+      'Fixed preview of large archive images (>4MB) and added swipe-to-switch between images; a single failed preview no longer breaks the whole group.';
+
+  @override
+  String get changelog_v1129_opt_4 =>
+      'Remote media thumbnails now use concurrency throttling and unique temp filenames for more stable loading without cross-mixing.';
+
+  @override
+  String get changelog_v1129_opt_5 =>
+      'Hide the remote cloud badge in split-screen (dual-pane) mode for a cleaner UI.';
+
+  @override
+  String get changelog_v1129_opt_6 =>
+      'Swapped the icons of the \"Images\" and \"Screenshots\" categories (Images now shows a camera icon, Screenshots shows an image icon).';
+
+  @override
+  String get changelog_v1129_fix_1 =>
+      'Fixed thumbnails not refreshing for same-named files, and cross-mixing of thumbnails between remote and local same-named files.';
+
+  @override
+  String get changelog_v1129_fix_2 =>
+      'Fixed the issue where tapping \"OK\" after extracting an archive did not navigate to the extracted folder.';
+
+  @override
+  String get changelog_v1129_fix_3 =>
+      'Fixed the remote folder \"item count\" always showing 0.';
+
+  @override
+  String get changelog_v1129_fix_4 =>
+      'Fixed single-pane mode overwriting an already-open remote connection when opening a new one, and the remote tab title not being fixed to the connection name.';
+
+  @override
+  String get changelog_v1129_fix_5 =>
+      'Fixed breadcrumb horizontal swipe accidentally triggering page switching in the browse page.';
+
+  @override
+  String get changelog_v1129_fix_6 =>
+      'Fixed long-press dragging of category tiles accidentally triggering left/right page switching.';
+
+  @override
+  String get changelog_v1129_fix_7 =>
+      'Fixed screenshots disappearing after drilling into a folder under the Images category\'s folder view.';
+
+  @override
+  String get changelog_v1129_fix_8 =>
+      'Fixed archive image preview failing entirely due to name normalization mismatch, and missing feedback on extraction failure.';
+
+  @override
+  String get changelog_v1129_fix_9 =>
+      'Global search empty state and delete confirmation texts now support multiple languages (removed hardcoded English).';
+
+  @override
+  String get changelog_v1129_known_1 =>
+      'SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.';
+
+  @override
   String get ui_global_search_hint =>
       'ابحث فورًا عن أي ملف أو مجلد أو مستند أو وسائط على جهازك';
 

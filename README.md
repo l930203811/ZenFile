@@ -7,6 +7,35 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 ---
 
+## 🚀 What's New in v1.1.29
+
+### 🔧 Optimizations
+
+- Merged the separate "Categories" and "Browse" buttons in the category/browse page navigation into a single centered toggle (shows "Browse" on the categories page, "Categories" on the browse page).
+- When renaming a file, the filename body (without extension) is now auto-selected with the cursor placed before the extension, preventing accidental extension changes. Covers all entry points: 3-dot menu, long-press menu, image viewer, global search, selection mode, remote, and conflict dialog.
+- Fixed preview of large archive images (>4MB) and added swipe-to-switch between images; a single failed preview no longer breaks the whole group.
+- Remote media thumbnails now use concurrency throttling and unique temp filenames for more stable loading without cross-mixing.
+- Hide the remote cloud badge in split-screen (dual-pane) mode for a cleaner UI.
+- Swapped the icons of the "Images" and "Screenshots" categories (Images now shows a camera icon, Screenshots shows an image icon).
+
+### 🐛 Bug Fixes
+
+- Fixed thumbnails not refreshing for same-named files, and cross-mixing of thumbnails between remote and local same-named files.
+- Fixed the issue where tapping "OK" after extracting an archive did not navigate to the extracted folder.
+- Fixed the remote folder "item count" always showing 0.
+- Fixed single-pane mode overwriting an already-open remote connection when opening a new one, and the remote tab title not being fixed to the connection name.
+- Fixed breadcrumb horizontal swipe accidentally triggering page switching in the browse page.
+- Fixed long-press dragging of category tiles accidentally triggering left/right page switching.
+- Fixed screenshots disappearing after drilling into a folder under the Images category's folder view.
+- Fixed archive image preview failing entirely due to name normalization mismatch, and missing feedback on extraction failure.
+- Global search empty state and delete confirmation texts now support multiple languages (removed hardcoded English).
+
+### ⚠️ Known Issues
+
+- SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.
+
+---
+
 ## 🚀 What's New in v1.1.28
 
 ### ✨ New Features

@@ -249,10 +249,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
             return Listener(
               onPointerDown: (event) {
                 final fileProvider = context.read<FileManagerProvider>();
-                // 地址栏（面包屑）区域的交互不触发页面左右滑动切换：
-                // 起点落在面包屑上时，内层 Listener 已先置位 breadcrumbInteracting，
+                // 地址栏（面包屑）或分类网格的交互不触发页面左右滑动切换：
+                // 起点落在面包屑/类别图标上时，内层 Listener 已先置位对应标志，
                 // 此处跳过本次手势追踪（仅登记指针以便 up 时正常清理）。
-                if (fileProvider.breadcrumbInteracting) {
+                if (fileProvider.breadcrumbInteracting || fileProvider.categoryReorderInteracting) {
                   _activePointers[event.pointer] = event.position;
                   return;
                 }
@@ -369,6 +369,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                 if (_activePointers.isEmpty) {
                   _singleFingerStart = null;
                   _singleFingerLast = null;
+                  // 分类拖拽排序结束：恢复左右滑动切页能力。
+                  // 必须在 home 手势处理完（含切页判定）后才清，否则会与 onReorderEnd
+                  // 竞争，导致抬起瞬间标志已 false 而被误判为「非拖拽」触发切页。
+                  context.read<FileManagerProvider>().setCategoryReorderInteracting(false);
                 }
               },
               onPointerCancel: (event) {
@@ -379,6 +383,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                 if (_activePointers.isEmpty) {
                   _singleFingerStart = null;
                   _singleFingerLast = null;
+                  // 分类拖拽排序结束：恢复左右滑动切页能力。
+                  // 必须在 home 手势处理完（含切页判定）后才清，否则会与 onReorderEnd
+                  // 竞争，导致抬起瞬间标志已 false 而被误判为「非拖拽」触发切页。
+                  context.read<FileManagerProvider>().setCategoryReorderInteracting(false);
                 }
               },
           child: Consumer<FileManagerProvider>(
@@ -434,6 +442,26 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
     );
   }
 
+  Widget _buildCategoryBrowseToggle() {
+    final theme = Theme.of(context);
+    final isCategory = _currentIndex == 0;
+    return IconButton(
+      tooltip: isCategory ? L10n.of(context).ui_browse : L10n.of(context).msg6e0f9cef,
+      icon: Icon(
+        isCategory ? Broken.folder : Broken.category,
+        color: theme.colorScheme.primary,
+      ),
+      onPressed: () {
+        if (isCategory) {
+          _switchTab(1);
+        } else {
+          _switchTab(0);
+          context.read<MediaProvider>().refreshMediaBackground();
+        }
+      },
+    );
+  }
+
   Widget _buildHomeTab() {
     final theme = Theme.of(context);
     final fileManager = context.watch<FileManagerProvider>();
@@ -448,22 +476,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
             onPressed: () => _scaffoldKey.currentState?.openDrawer(),
           ),
           const Spacer(),
-          // 分类页按钮
-          IconButton(
-            onPressed: () {
-              _switchTab(0);
-              context.read<MediaProvider>().refreshMediaBackground();
-            },
-            tooltip: L10n.of(context).msg6e0f9cef,
-            icon: Icon(Broken.category, color: theme.colorScheme.primary),
-          ),
-          const SizedBox(width: 32),
-          // 浏览页按钮
-          IconButton(
-            onPressed: () => _switchTab(1),
-            tooltip: L10n.of(context).ui_browse,
-            icon: Icon(Broken.folder, color: theme.colorScheme.primary),
-          ),
+          // 分类页/浏览页 合一切换按钮（居中）
+          _buildCategoryBrowseToggle(),
           const Spacer(),
           // 快捷操作按钮（靠右）
           IconButton(
@@ -531,22 +545,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                           onPressed: () => _scaffoldKey.currentState?.openDrawer(),
                         ),
                         const Spacer(),
-                        // 分类页按钮
-                        IconButton(
-                          onPressed: () {
-                            _switchTab(0);
-                            context.read<MediaProvider>().refreshMediaBackground();
-                          },
-                          tooltip: L10n.of(context).msg6e0f9cef,
-                          icon: Icon(Broken.category, color: theme.colorScheme.primary),
-                        ),
-                        const SizedBox(width: 32),
-                        // 浏览页按钮
-                        IconButton(
-                          onPressed: () => _switchTab(1),
-                          tooltip: L10n.of(context).ui_browse,
-                          icon: Icon(Broken.folder, color: theme.colorScheme.primary),
-                        ),
+                        // 分类页/浏览页 合一切换按钮（居中）
+                        _buildCategoryBrowseToggle(),
                         const Spacer(),
                         // 快捷操作按钮（靠右）
                         IconButton(

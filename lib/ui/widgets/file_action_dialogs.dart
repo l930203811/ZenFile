@@ -9,12 +9,29 @@ class FileActionDialogs {
     required String hint,
     String initialValue = '',
     required String actionText,
+    /// 为 true 时自动选中文件名主体（不含扩展名），光标落在扩展名前，
+    /// 方便重命名且不易误改后缀名。一般仅重命名场景使用。
+    bool selectNameWithoutExtension = false,
   }) async {
     final controller = TextEditingController(text: initialValue);
-    
+    // 计算初始选择范围：有扩展名则选中主体（不含点），否则全选整个名称。
+    TextSelection? initialSelection;
+    if (selectNameWithoutExtension) {
+      final dot = initialValue.lastIndexOf('.');
+      final cutoff = dot > 0 ? dot : initialValue.length;
+      initialSelection = TextSelection(baseOffset: 0, extentOffset: cutoff);
+      controller.selection = initialSelection;
+    }
+
     return showDialog<String>(
       context: context,
       builder: (context) {
+        // autofocus 可能把光标移到文本末尾，首帧后再强制应用「选中主体」范围。
+        if (initialSelection != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            controller.selection = initialSelection!;
+          });
+        }
         return AlertDialog(
           title: Text(title),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -104,6 +121,7 @@ class FileActionDialogs {
       hint: hint,
       initialValue: currentName,
       actionText: actionText,
+      selectNameWithoutExtension: true,
     );
     if (newName == null || newName.isEmpty || newName == currentName) {
       return newName;

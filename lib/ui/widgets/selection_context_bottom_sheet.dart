@@ -181,11 +181,11 @@ class SelectionContextBottomSheet extends StatelessWidget {
                   final effectiveContext = outerContext ?? context;
                   Navigator.pop(context);
                   final currentName = p.basename(targetPath);
-                  final newName = await FileActionDialogs.showTextInputDialog(
+                  final newName = await FileActionDialogs.showRenameDialog(
                     effectiveContext,
+                    currentName: currentName,
                     title: L10n.of(context).msgc8ce4b36,
                     hint: L10n.of(context).msgf139c5cf,
-                    initialValue: currentName,
                     actionText: L10n.of(context).msgc8ce4b36,
                   );
                   if (newName != null && newName.isNotEmpty) {

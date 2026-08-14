@@ -14,6 +14,7 @@ import '../../providers/media_provider.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/utils.dart';
+import '../../ui/widgets/file_action_dialogs.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 final Uint8List _kTransparentImage = Uint8List.fromList([
@@ -323,31 +324,20 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     if (file == null) return;
     final l10n = L10n.of(context);
 
-    final controller = TextEditingController(text: p.basename(file.path));
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.msgc8ce4b36),
-        content: TextField(
-          controller: controller,
-          decoration: InputDecoration(hintText: l10n.msgf139c5cf),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.ui_cancel)),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.msgc8ce4b36)),
-        ],
-      ),
+    final newName = await FileActionDialogs.showRenameDialog(
+      context,
+      currentName: p.basename(file.path),
+      title: l10n.msgc8ce4b36,
+      hint: l10n.msgf139c5cf,
+      actionText: l10n.msgc8ce4b36,
     );
-
-    if (confirmed != true) return;
-
-    final newName = controller.text.trim();
-    if (newName.isEmpty) return;
+    if (newName == null) return;
+    final trimmed = newName.trim();
+    if (trimmed.isEmpty) return;
 
     try {
-      await context.read<FileManagerProvider>().renameFile(file.path, newName, context);
-      final newPath = p.join(file.parent.path, newName);
+      await context.read<FileManagerProvider>().renameFile(file.path, trimmed, context);
+      final newPath = p.join(file.parent.path, trimmed);
 
       if (widget.siblingItems != null && _currentIndex < widget.siblingItems!.length) {
         final item = widget.siblingItems![_currentIndex];

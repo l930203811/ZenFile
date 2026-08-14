@@ -361,30 +361,39 @@ class _ConflictDialogState extends State<ConflictDialog> {
 
   Future<String?> _showRenameDialog(BuildContext context, String currentName) {
     final controller = TextEditingController(text: currentName);
+    // 选中文件名主体（不含扩展名），光标落在扩展名前，避免误改后缀名。
+    final dot = currentName.lastIndexOf('.');
+    final cutoff = dot > 0 ? dot : currentName.length;
+    controller.selection = TextSelection(baseOffset: 0, extentOffset: cutoff);
     return showDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(L10n.of(context).msg6cfbf05d),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: InputDecoration(
-            labelText: L10n.of(context).msg_new_file_name,
-            border: OutlineInputBorder(),
+      builder: (ctx) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          controller.selection = TextSelection(baseOffset: 0, extentOffset: cutoff);
+        });
+        return AlertDialog(
+          title: Text(L10n.of(context).msg6cfbf05d),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: InputDecoration(
+              labelText: L10n.of(context).msg_new_file_name,
+              border: OutlineInputBorder(),
+            ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('取消'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: Text(L10n.of(context).msgc8ce4b36),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('取消'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+              child: Text(L10n.of(context).msgc8ce4b36),
+            ),
+          ],
+        );
+      },
     );
   }
 }

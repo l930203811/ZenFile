@@ -1106,8 +1106,14 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                 Widget? content;
                 switch (widget.mediaType) {
                   case MediaType.images:
+                    // 打开某个文件夹时，截图也归属该文件夹（扫描时截图按父目录合并进了图片文件夹分组，
+                    // 因此文件夹列表里能看到「截图」夹）。但 provider.images 已把截图排除到 provider.screenshots，
+                    // 若此处仅按 provider.images 过滤，点进「截图」夹会是空的。故下钻时把同目录的截图一并纳入。
                     final list = widget.folderPath != null
-                        ? provider.images.where((f) => MediaProvider.parentOfPath(f.path) == widget.folderPath).toList()
+                        ? <dynamic>[
+                            ...provider.images.where((f) => MediaProvider.parentOfPath(f.path) == widget.folderPath),
+                            ...provider.screenshots.where((f) => MediaProvider.parentOfPath(f.path) == widget.folderPath),
+                          ]
                         : provider.images;
                     content = list.isNotEmpty ? _buildImageGrid(list, theme, isDateWise, isGrouped, _isGridView) : null;
                     break;

@@ -19,6 +19,7 @@ import '../../services/remote/lan_client.dart';
 import '../../services/remote_streaming_service.dart';
 import '../../services/remote/saf_client.dart';
 import '../widgets/zenfile_drawer.dart';
+import '../widgets/file_action_dialogs.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 
@@ -525,35 +526,13 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
   /// 重命名远程文件/文件夹
   Future<void> _renameRemoteItem(RemoteFileItem item) async {
     if (_client == null) return;
-    final controller = TextEditingController(text: item.name);
-    final newName = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(L10n.of(context).msgc8ce4b36, style: TextStyle(fontWeight: FontWeight.bold)),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: InputDecoration(
-             hintText: L10n.of(context).msgf139c5cf,
-            border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.primary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: Text(L10n.of(context).msgc8ce4b36),
-          ),
-        ],
-      ),
+    final newName = await FileActionDialogs.showRenameDialog(
+      context,
+      currentName: item.name,
+      title: L10n.of(context).msgc8ce4b36,
+      hint: L10n.of(context).msgf139c5cf,
+      actionText: L10n.of(context).msgc8ce4b36,
     );
-
     if (newName == null || newName.isEmpty || newName == item.name) return;
 
     try {

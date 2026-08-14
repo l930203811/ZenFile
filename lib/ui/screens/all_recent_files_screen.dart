@@ -293,11 +293,11 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
         break;
       case 'rename':
         final currentName = p.basename(path);
-        final newName = await FileActionDialogs.showTextInputDialog(
+        final newName = await FileActionDialogs.showRenameDialog(
           context,
+          currentName: currentName,
           title: L10n.of(context).msgc8ce4b36,
           hint: L10n.of(context).msgf139c5cf,
-          initialValue: currentName,
           actionText: L10n.of(context).msgc8ce4b36,
         );
         if (newName != null && newName.isNotEmpty) {
