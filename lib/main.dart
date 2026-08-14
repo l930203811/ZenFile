@@ -514,6 +514,15 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
           }
         } catch (_) {}
 
+        // Fallback：部分 ROM（如 MIUI）把「所有文件管理」与传统存储权限合并管理，
+        // Permission.manageExternalStorage.isGranted 返回 false，
+        // 但实际已能访问全部文件。用真实目录枚举再次确认，避免误判为
+        // 仅媒体权限而卡在授权循环。
+        if (!manageStorageGranted && standardStorageGranted) {
+          manageStorageGranted = await _verifyManageStorageAccess();
+          debugPrint('[ZenFile] MIUI-like storage fallback probe: granted=$manageStorageGranted');
+        }
+
         mediaOnlyPermission = !manageStorageGranted && (standardStorageGranted && audioGranted);
       } catch (e) {
         debugPrint('[ZenFile] Permission check failed: $e');
@@ -573,7 +582,7 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
         // 与 NFile 原项目一致：使用 permission_handler 的 request() 方法
         // 真实探测：防止系统误报已授权而实际仍被拒，导致后续扫描闪退。
         final manageStorageGrantedRaw = await Permission.manageExternalStorage.request().isGranted;
-        final manageStorageGranted = manageStorageGrantedRaw && await _verifyManageStorageAccess();
+        bool manageStorageGranted = manageStorageGrantedRaw && await _verifyManageStorageAccess();
         bool standardStorageGranted = false;
         bool audioGranted = true;
         try {
@@ -585,6 +594,14 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
             standardStorageGranted = await Permission.storage.request().isGranted;
           }
         } catch (_) {}
+
+        // Fallback：部分 ROM（如 MIUI）把完整存储访问与传统 storage/audio 权限合并管理，
+        // request() 后 manageExternalStorage 仍返回 false，但实际已能访问全部文件。
+        // 用真实目录枚举再次确认，避免误判为仅媒体权限而卡在授权循环。
+        if (!manageStorageGranted && (standardStorageGranted || audioGranted)) {
+          manageStorageGranted = await _verifyManageStorageAccess();
+          debugPrint('[ZenFile] MIUI-like storage fallback probe after request: granted=$manageStorageGranted');
+        }
 
         final mediaOnlyPermission = !manageStorageGranted && (standardStorageGranted && audioGranted);
         // 必须授予「所有文件管理」权限才放行（见 _checkStoragePermission 说明）。
@@ -1019,12 +1036,15 @@ class _StoragePermissionShield extends StatelessWidget {
                   const SizedBox(height: 32),
                   if (isPermanentlyDenied || isMediaOnly) ...[
                     FilledButton.icon(
-                      onPressed: onOpenSettings,
+                      // media-only 时点击「确定」先尝试重新 request + 真实目录探测放行，
+                      // 避免 MIUI 等 ROM 把传统存储权限与所有文件权限合并管理时
+                      // 跳转设置页出现循环授权、无法进入应用的问题。
+                      onPressed: isMediaOnly ? onRequestPermission : onOpenSettings,
                       style: FilledButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),
-                      icon: const Icon(Broken.setting),
+                      icon: const Icon(Broken.shield_tick),
                       label: Text(L10n.of(context).msg_grant_full_storage_permission,
                           style: const TextStyle(fontWeight: FontWeight.bold)),
                     ),
