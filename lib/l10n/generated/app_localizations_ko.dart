@@ -2278,6 +2278,9 @@ class L10nKo extends L10n {
   String get zenfile6 => 'ZenFile 사용자 정의 네이티브 경험';
 
   @override
+  String get built_in_zenfile_viewer => 'ZenFile 내장 뷰어';
+
+  @override
   String get msg42be43e6 => '시스템 외부 앱';
 
   @override
@@ -4104,6 +4107,33 @@ class L10nKo extends L10n {
 
   @override
   String get open_always => '항상';
+
+  @override
+  String get pick_file_type => '파일 형식 선택';
+
+  @override
+  String get file_type_text => '텍스트';
+
+  @override
+  String get file_type_audio => '오디오';
+
+  @override
+  String get file_type_video => '비디오';
+
+  @override
+  String get file_type_image => '이미지';
+
+  @override
+  String get file_type_text_desc => '텍스트로 열기';
+
+  @override
+  String get file_type_audio_desc => '오디오로 재생';
+
+  @override
+  String get file_type_video_desc => '비디오로 재생';
+
+  @override
+  String get file_type_image_desc => '이미지로 보기';
 
   @override
   String get drawer_edit_connection => '편집';

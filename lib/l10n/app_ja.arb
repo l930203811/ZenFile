@@ -2846,7 +2846,11 @@
     "description": "ui\\widgets\\open_with_sheet.dart"
   },
   "zenfile6": "ZenFileカスタムネイティブ体験",
-  "@msg42be43e6": {
+  "@zenfile6": {
+    "description": "ui\\widgets\\open_with_sheet.dart"
+  },
+  "built_in_zenfile_viewer": "ZenFile 内蔵ビューア",
+  "@built_in_zenfile_viewer": {
     "description": "ui\\widgets\\open_with_sheet.dart"
   },
   "msg42be43e6": "システム外部アプリ",
@@ -4154,6 +4158,15 @@
   "open_with_external": "外部アプリで開く",
   "open_once": "今回のみ",
   "open_always": "常に",
+  "pick_file_type": "ファイルの種類を選択",
+  "file_type_text": "テキスト",
+  "file_type_audio": "オーディオ",
+  "file_type_video": "ビデオ",
+  "file_type_image": "画像",
+  "file_type_text_desc": "テキストとして開く",
+  "file_type_audio_desc": "オーディオとして再生",
+  "file_type_video_desc": "ビデオとして再生",
+  "file_type_image_desc": "画像として表示",
   "drawer_edit_connection": "編集",
   "cat_system": "システム",
   "cat_backup_restore": "バックアップ/復元",

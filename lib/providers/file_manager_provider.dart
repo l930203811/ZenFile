@@ -14,7 +14,6 @@ import '../models/folder_tab_model.dart';
 import '../models/file_filter_type.dart';
 import '../models/category_filter_type.dart';
 import 'package:mime/mime.dart';
-import 'package:open_filex/open_filex.dart';
 import '../ui/screens/image_viewer_screen.dart';
 import '../ui/screens/video_player/video_player_screen.dart';
 import '../ui/screens/audio_player/audio_player_screen.dart';
@@ -33,6 +32,7 @@ import '../services/root_shizuku_service.dart';
 import '../services/recycle_bin_service.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../ui/widgets/open_with_sheet.dart';
+import '../ui/widgets/pick_file_type_sheet.dart';
 import '../ui/widgets/conflict_dialog.dart';
 import '../ui/widgets/file_action_dialogs.dart';
 import '../ui/widgets/file_operation_progress_dialog.dart';
@@ -4848,24 +4848,73 @@ class FileManagerProvider extends ChangeNotifier {
     return true;
   }
 
-  Future<void> openFileNatively(BuildContext context, String path) async {
+  Future<void> openFileNatively(BuildContext context, String path, {bool showTypePickerForUnknown = false}) async {
+    final opened = await _tryOpenBuiltInDirectly(context, path);
+    if (opened) return;
+
+    if (showTypePickerForUnknown) {
+      await _pickAndOpenBuiltInType(context, path, saveDefault: false);
+      return;
+    }
+
+    // 未知格式：先让用户选择「本应用打开」还是「外部系统选择器」
+    final result = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => OpenWithSheet(
+        fileName: p.basename(path),
+        fileExtension: p.extension(path).toLowerCase(),
+      ),
+    );
+
+    if (result == null || !context.mounted) return;
+
+    final isAlways = result.startsWith('always_');
+    final selectedType = result.substring(isAlways ? 'always_'.length : 'just_once_'.length);
+    final ext = p.extension(path).toLowerCase();
+
+    if (selectedType == 'external') {
+      // 使用外部系统选择器打开（系统「打开方式...」）
+      if (isAlways) {
+        await PreferencesService.saveDefaultOpenAction(ext, 'external');
+      }
+      await openWithSystemChooser(path);
+      return;
+    }
+
+    // selectedType == 'native'：在应用内选择具体文件类型后，用内置查看器/播放器打开
+    await _pickAndOpenBuiltInType(context, path, saveDefault: isAlways);
+  }
+
+  /// 尝试按文件实际类型直接用内置查看器/播放器打开。
+  /// 返回是否成功打开（true = 已处理；false = 未知格式，需要让用户选择类型）。
+  Future<bool> _tryOpenBuiltInDirectly(BuildContext context, String path) async {
     final mimeType = lookupMimeType(path) ?? '';
     final ext = p.extension(path).toLowerCase();
     const docExts = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.epub', '.odt'];
 
     if (FileUtils.isArchive(path)) {
+      if (!context.mounted) return true;
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (_) => ArchiveViewerScreen(archivePath: path),
         ),
       );
-      return;
+      return true;
     }
 
     if (mimeType.startsWith('image/')) {
+      if (!context.mounted) return true;
       Navigator.push(context, MaterialPageRoute(builder: (_) => ImageViewerScreen(imagePath: path)));
-    } else if (mimeType.startsWith('video/')) {
+      return true;
+    }
+
+    if (mimeType.startsWith('video/')) {
+      if (!context.mounted) return true;
       final folderVideoFiles = activeTab.currentFiles
           .where((f) => !f.isDirectory && (lookupMimeType(f.path)?.startsWith('video/') == true || FileUtils.isVideo(f.path)))
           .map((f) => f.path)
@@ -4884,11 +4933,15 @@ class FileManagerProvider extends ChangeNotifier {
           ),
         ),
       );
-    } else if (mimeType.startsWith('audio/')) {
+      return true;
+    }
+
+    if (mimeType.startsWith('audio/')) {
+      if (!context.mounted) return true;
       final folderAudioFiles = activeTab.currentFiles
           .where((f) => !f.isDirectory && (lookupMimeType(f.path)?.startsWith('audio/') == true))
           .toList();
-      
+
       List<SongModel>? allSongs;
       int initialIndex = 0;
 
@@ -4927,41 +4980,141 @@ class FileManagerProvider extends ChangeNotifier {
           ),
         ),
       );
-    } else if (FileUtils.isTextOrCode(path)) {
+      return true;
+    }
+
+    if (FileUtils.isTextOrCode(path)) {
+      if (!context.mounted) return true;
       Navigator.push(context, MaterialPageRoute(builder: (_) => TextEditorScreen(filePath: path)));
-    } else if (const ['.db', '.sqlite', '.sqlite3', '.db3'].contains(ext)) {
+      return true;
+    }
+
+    if (const ['.db', '.sqlite', '.sqlite3', '.db3'].contains(ext)) {
+      if (!context.mounted) return true;
       Navigator.push(context, MaterialPageRoute(builder: (_) => DatabaseReaderScreen(filePath: path)));
-    } else if (docExts.contains(ext)) {
+      return true;
+    }
+
+    if (docExts.contains(ext)) {
+      if (!context.mounted) return true;
       Navigator.push(context, MaterialPageRoute(builder: (_) => DocumentViewerScreen(filePath: path)));
-    } else if (ApkInstallerService.isApk(path)) {
+      return true;
+    }
+
+    if (ApkInstallerService.isApk(path)) {
+      if (!context.mounted) return true;
       await ApkInstallerService.installApk(context, path);
-    } else {
-      // 未知格式，弹出打开方式选择
-      final result = await showModalBottomSheet<String>(
-        context: context,
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        builder: (ctx) => OpenWithSheet(
-          fileName: p.basename(path),
-          fileExtension: ext,
-        ),
-      );
+      return true;
+    }
 
-      if (result == null) return;
+    return false;
+  }
 
-      if (result.startsWith('always_')) {
-        final selectedType = result.substring('always_'.length);
-        await PreferencesService.saveDefaultOpenAction(ext, selectedType);
-        if (selectedType == 'native') {
-          await OpenFilex.open(path);
-        } else {
-          await OpenFilex.open(path);
-        }
-      } else if (result.startsWith('just_once_')) {
-        await OpenFilex.open(path);
+  /// 弹出文件类型选择器，按用户选定的 text/audio/video/image 类型打开。
+  /// [saveDefault] 为 true 时把具体类型存为默认动作。
+  Future<void> _pickAndOpenBuiltInType(BuildContext context, String path, {bool saveDefault = false}) async {
+    final ext = p.extension(path).toLowerCase();
+
+    final builtInType = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => PickFileTypeSheet(
+        fileName: p.basename(path),
+        fileExtension: ext,
+      ),
+    );
+
+    if (builtInType == null || !context.mounted) return;
+
+    if (saveDefault) {
+      await PreferencesService.saveDefaultOpenAction(ext, builtInType);
+    }
+
+    await _openBuiltInByType(context, path, builtInType);
+  }
+
+  /// 显示「本应用打开 / 外部系统选择器」BottomSheet，并执行对应打开流程。
+  /// 用于三点菜单 / 长按菜单 / 分类页的「打开方式...」入口。
+  Future<void> showOpenWithSheet(BuildContext context, String path) async {
+    final ext = p.extension(path).toLowerCase();
+
+    final result = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => OpenWithSheet(
+        fileName: p.basename(path),
+        fileExtension: ext,
+      ),
+    );
+
+    if (result == null || !context.mounted) return;
+
+    final isAlways = result.startsWith('always_');
+    final selectedType = result.substring(isAlways ? 'always_'.length : 'just_once_'.length);
+
+    if (selectedType == 'external') {
+      if (isAlways) {
+        await PreferencesService.saveDefaultOpenAction(ext, 'external');
       }
+      await openWithSystemChooser(path);
+      return;
+    }
+
+    // selectedType == 'native'
+    final opened = await _tryOpenBuiltInDirectly(context, path);
+    if (opened) {
+      if (isAlways) {
+        await PreferencesService.saveDefaultOpenAction(ext, 'native');
+      }
+      return;
+    }
+
+    await _pickAndOpenBuiltInType(context, path, saveDefault: isAlways);
+  }
+
+  /// 按指定内置类型（text/audio/video/image）以应用内查看器/播放器打开文件
+  Future<void> _openBuiltInByType(BuildContext context, String path, String type) async {
+    switch (type) {
+      case 'text':
+        Navigator.push(context, MaterialPageRoute(builder: (_) => TextEditorScreen(filePath: path)));
+        break;
+      case 'image':
+        Navigator.push(context, MaterialPageRoute(builder: (_) => ImageViewerScreen(imagePath: path)));
+        break;
+      case 'video':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => VideoPlayerScreen(
+              videoPath: path,
+              playlist: [path],
+              initialIndex: 0,
+              isRemote: activeTab.isRemote,
+            ),
+          ),
+        );
+        break;
+      case 'audio':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => AudioPlayerScreen(
+              audioPath: path,
+              title: p.basename(path),
+              isRemote: activeTab.isRemote,
+            ),
+          ),
+        );
+        break;
+      default:
+        // 兜底：以文本方式打开
+        Navigator.push(context, MaterialPageRoute(builder: (_) => TextEditorScreen(filePath: path)));
     }
   }
 
@@ -4981,7 +5134,7 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> openFile(BuildContext context, String path, {bool showOpenWithPopup = false, bool forceOpenWith = false, bool isRemoteStream = false}) async {
+  Future<void> openFile(BuildContext context, String path, {bool forceNative = false, bool isRemoteStream = false}) async {
     _highlightedPaths.clear();
     _highlightedPaths.add(path);
     notifyListeners();
@@ -5019,8 +5172,8 @@ class FileManagerProvider extends ChangeNotifier {
     final checkExt = p.extension(checkPath).toLowerCase();
 
     String? openAction;
-    if (forceOpenWith) {
-      openAction = 'external';
+    if (forceNative) {
+      openAction = 'native';
     } else {
       final defaultAction = PreferencesService.getDefaultOpenAction(checkExt);
       if (defaultAction == 'external') {
@@ -5234,15 +5387,15 @@ class FileManagerProvider extends ChangeNotifier {
       }
     }
 
-    // 弹窗选择了"使用外部系统选择器打开" → 调用系统选择器
-    if (openAction == 'external' && !forceOpenWith) {
+    // 默认/弹窗选择了"使用外部系统选择器打开" → 调用系统选择器
+    if (openAction == 'external') {
       await openWithSystemChooser(targetPath);
       return;
     }
 
-    // forceOpenWith 来自三点菜单"打开方式..."选项 → 调用系统选择器（不保存默认）
-    if (forceOpenWith) {
-      await openWithSystemChooser(targetPath);
+    // forceNative：来自「打开方式...」选择「本应用打开」，强制用内置查看器打开
+    if (forceNative) {
+      await openFileNatively(context, targetPath, showTypePickerForUnknown: true);
       return;
     }
 
@@ -5254,6 +5407,10 @@ class FileManagerProvider extends ChangeNotifier {
         return;
       } else if (defaultAction == 'external') {
         await openWithSystemChooser(targetPath);
+        return;
+      } else if (const ['text', 'audio', 'video', 'image'].contains(defaultAction)) {
+        // 已保存的具体内置类型：直接以该类型用应用内查看器打开
+        await _openBuiltInByType(context, targetPath, defaultAction!);
         return;
       }
     }

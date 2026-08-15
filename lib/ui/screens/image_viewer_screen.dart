@@ -361,7 +361,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
   void _openWith() {
     final file = _getCurrentFile();
     if (file == null) return;
-    context.read<FileManagerProvider>().openFile(context, file.path, forceOpenWith: true);
+    context.read<FileManagerProvider>().showOpenWithSheet(context, file.path);
   }
 
   void _extractArchive() {

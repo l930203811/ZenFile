@@ -723,7 +723,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         }
         break;
       case 'open_with':
-        provider.openFile(context, path, forceOpenWith: true);
+        provider.showOpenWithSheet(context, path);
         break;
       case 'pin':
         await provider.togglePinPath(path);

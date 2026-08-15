@@ -2842,7 +2842,11 @@
     "description": "ui\\widgets\\open_with_sheet.dart"
   },
   "zenfile6": "ZenFile 사용자 정의 네이티브 경험",
-  "@msg42be43e6": {
+  "@zenfile6": {
+    "description": "ui\\widgets\\open_with_sheet.dart"
+  },
+  "built_in_zenfile_viewer": "ZenFile 내장 뷰어",
+  "@built_in_zenfile_viewer": {
     "description": "ui\\widgets\\open_with_sheet.dart"
   },
   "msg42be43e6": "시스템 외부 앱",
@@ -4150,6 +4154,15 @@
   "open_with_external": "외부 앱으로 열기",
   "open_once": "이번만",
   "open_always": "항상",
+  "pick_file_type": "파일 형식 선택",
+  "file_type_text": "텍스트",
+  "file_type_audio": "오디오",
+  "file_type_video": "비디오",
+  "file_type_image": "이미지",
+  "file_type_text_desc": "텍스트로 열기",
+  "file_type_audio_desc": "오디오로 재생",
+  "file_type_video_desc": "비디오로 재생",
+  "file_type_image_desc": "이미지로 보기",
   "drawer_edit_connection": "편집",
   "cat_system": "시스템",
   "cat_backup_restore": "백업/복원",

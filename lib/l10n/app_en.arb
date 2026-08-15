@@ -2849,7 +2849,12 @@
     "description": "ui\\widgets\\open_with_sheet.dart"
   },
   "zenfile6": "ZenFile Custom Native Experience",
-  "@msg42be43e6": {
+  "built_in_zenfile_viewer": "Built-in ZenFile Viewer",
+  "@built_in_zenfile_viewer": {
+    "description": "ui\\widgets\\open_with_sheet.dart"
+  },
+  "msg42be43e6": "System External App",
+  "@msgd1fca831": {
     "description": "ui\\widgets\\open_with_sheet.dart"
   },
   "msg42be43e6": "System External App",
@@ -4199,6 +4204,15 @@
   "open_with_external": "Open with external app",
   "open_once": "Just once",
   "open_always": "Always",
+  "pick_file_type": "Select file type",
+  "file_type_text": "Text",
+  "file_type_audio": "Audio",
+  "file_type_video": "Video",
+  "file_type_image": "Image",
+  "file_type_text_desc": "Open as text",
+  "file_type_audio_desc": "Play as audio",
+  "file_type_video_desc": "Play as video",
+  "file_type_image_desc": "View as image",
   "drawer_edit_connection": "Edit",
   "cat_system": "System",
   "cat_backup_restore": "Backup / Restore",

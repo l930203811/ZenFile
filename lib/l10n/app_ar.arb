@@ -2842,7 +2842,11 @@
     "description": "ui\\widgets\\open_with_sheet.dart"
   },
   "zenfile6": "تجربة أصلية مخصصة لـ ZenFile",
-  "@msg42be43e6": {
+  "@zenfile6": {
+    "description": "ui\\widgets\\open_with_sheet.dart"
+  },
+  "built_in_zenfile_viewer": "عارض ZenFile المدمج",
+  "@built_in_zenfile_viewer": {
     "description": "ui\\widgets\\open_with_sheet.dart"
   },
   "msg42be43e6": "تطبيق خارجي للنظام",
@@ -4150,6 +4154,15 @@
   "open_with_external": "فتح بالتطبيق الخارجي",
   "open_once": "مرة واحدة فقط",
   "open_always": "دائمًا",
+  "pick_file_type": "اختر نوع الملف",
+  "file_type_text": "نص",
+  "file_type_audio": "صوت",
+  "file_type_video": "فيديو",
+  "file_type_image": "صورة",
+  "file_type_text_desc": "افتح كنص",
+  "file_type_audio_desc": "تشغيل كصوت",
+  "file_type_video_desc": "تشغيل كفيديو",
+  "file_type_image_desc": "عرض كصورة",
   "drawer_edit_connection": "تحرير",
   "cat_system": "النظام",
   "cat_backup_restore": "نسخ احتياطي/استعادة",

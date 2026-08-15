@@ -2273,6 +2273,9 @@ class L10nZh extends L10n {
   String get zenfile6 => 'ZenFile 自定义原生体验';
 
   @override
+  String get built_in_zenfile_viewer => 'ZenFile 内置查看器';
+
+  @override
   String get msg42be43e6 => '系统外部应用';
 
   @override
@@ -4070,6 +4073,33 @@ class L10nZh extends L10n {
 
   @override
   String get open_always => '始终';
+
+  @override
+  String get pick_file_type => '选择文件类型';
+
+  @override
+  String get file_type_text => '文本';
+
+  @override
+  String get file_type_audio => '音频';
+
+  @override
+  String get file_type_video => '视频';
+
+  @override
+  String get file_type_image => '图像';
+
+  @override
+  String get file_type_text_desc => '以文本方式打开';
+
+  @override
+  String get file_type_audio_desc => '以音频方式播放';
+
+  @override
+  String get file_type_video_desc => '以视频方式播放';
+
+  @override
+  String get file_type_image_desc => '以图像方式查看';
 
   @override
   String get drawer_edit_connection => '编辑';
@@ -6887,6 +6917,9 @@ class L10nZhTw extends L10nZh {
   String get zenfile6 => 'ZenFile 自定義原生體驗';
 
   @override
+  String get built_in_zenfile_viewer => 'ZenFile 內建檢視器';
+
+  @override
   String get msg42be43e6 => '系統外部應用';
 
   @override
@@ -8640,6 +8673,33 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get open_always => '始終';
+
+  @override
+  String get pick_file_type => '選擇檔案類型';
+
+  @override
+  String get file_type_text => '文字';
+
+  @override
+  String get file_type_audio => '音訊';
+
+  @override
+  String get file_type_video => '影片';
+
+  @override
+  String get file_type_image => '影像';
+
+  @override
+  String get file_type_text_desc => '以文字方式開啟';
+
+  @override
+  String get file_type_audio_desc => '以音訊方式播放';
+
+  @override
+  String get file_type_video_desc => '以影片方式播放';
+
+  @override
+  String get file_type_image_desc => '以影像方式檢視';
 
   @override
   String get drawer_edit_connection => '編輯';

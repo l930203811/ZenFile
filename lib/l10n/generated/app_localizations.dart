@@ -4357,6 +4357,12 @@ abstract class L10n {
   /// ui\widgets\open_with_sheet.dart
   ///
   /// In zh, this message translates to:
+  /// **'ZenFile 内置查看器'**
+  String get built_in_zenfile_viewer;
+
+  /// ui\widgets\open_with_sheet.dart
+  ///
+  /// In zh, this message translates to:
   /// **'系统外部应用'**
   String get msg42be43e6;
 
@@ -7665,6 +7671,60 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'始终'**
   String get open_always;
+
+  /// No description provided for @pick_file_type.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择文件类型'**
+  String get pick_file_type;
+
+  /// No description provided for @file_type_text.
+  ///
+  /// In zh, this message translates to:
+  /// **'文本'**
+  String get file_type_text;
+
+  /// No description provided for @file_type_audio.
+  ///
+  /// In zh, this message translates to:
+  /// **'音频'**
+  String get file_type_audio;
+
+  /// No description provided for @file_type_video.
+  ///
+  /// In zh, this message translates to:
+  /// **'视频'**
+  String get file_type_video;
+
+  /// No description provided for @file_type_image.
+  ///
+  /// In zh, this message translates to:
+  /// **'图像'**
+  String get file_type_image;
+
+  /// No description provided for @file_type_text_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'以文本方式打开'**
+  String get file_type_text_desc;
+
+  /// No description provided for @file_type_audio_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'以音频方式播放'**
+  String get file_type_audio_desc;
+
+  /// No description provided for @file_type_video_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'以视频方式播放'**
+  String get file_type_video_desc;
+
+  /// No description provided for @file_type_image_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'以图像方式查看'**
+  String get file_type_image_desc;
 
   /// No description provided for @drawer_edit_connection.
   ///

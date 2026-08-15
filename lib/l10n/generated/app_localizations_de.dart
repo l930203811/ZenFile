@@ -2394,6 +2394,9 @@ class L10nDe extends L10n {
   String get zenfile6 => 'ZenFile Benutzerdefiniertes Nativ-Erlebnis';
 
   @override
+  String get built_in_zenfile_viewer => 'ZenFile eingebauter Viewer';
+
+  @override
   String get msg42be43e6 => 'System-Externe App';
 
   @override
@@ -4274,6 +4277,33 @@ class L10nDe extends L10n {
 
   @override
   String get open_always => 'Immer';
+
+  @override
+  String get pick_file_type => 'Dateityp auswählen';
+
+  @override
+  String get file_type_text => 'Text';
+
+  @override
+  String get file_type_audio => 'Audio';
+
+  @override
+  String get file_type_video => 'Video';
+
+  @override
+  String get file_type_image => 'Bild';
+
+  @override
+  String get file_type_text_desc => 'Als Text öffnen';
+
+  @override
+  String get file_type_audio_desc => 'Als Audio abspielen';
+
+  @override
+  String get file_type_video_desc => 'Als Video abspielen';
+
+  @override
+  String get file_type_image_desc => 'Als Bild anzeigen';
 
   @override
   String get drawer_edit_connection => 'Bearbeiten';

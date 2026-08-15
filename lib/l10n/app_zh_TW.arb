@@ -2903,6 +2903,10 @@
   "@zenfile6": {
     "description": "ui\\widgets\\open_with_sheet.dart"
   },
+  "built_in_zenfile_viewer": "ZenFile 內建檢視器",
+  "@built_in_zenfile_viewer": {
+    "description": "ui\\widgets\\open_with_sheet.dart"
+  },
   "msg42be43e6": "系統外部應用",
   "@msg42be43e6": {
     "description": "ui\\widgets\\open_with_sheet.dart"
@@ -4243,6 +4247,15 @@
   "open_with_external": "使用外部系統選擇器開啟",
   "open_once": "僅一次",
   "open_always": "始終",
+  "pick_file_type": "選擇檔案類型",
+  "file_type_text": "文字",
+  "file_type_audio": "音訊",
+  "file_type_video": "影片",
+  "file_type_image": "影像",
+  "file_type_text_desc": "以文字方式開啟",
+  "file_type_audio_desc": "以音訊方式播放",
+  "file_type_video_desc": "以影片方式播放",
+  "file_type_image_desc": "以影像方式檢視",
   "drawer_edit_connection": "編輯",
   "cat_system": "系統",
   "cat_backup_restore": "備份/恢復",

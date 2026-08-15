@@ -2282,6 +2282,9 @@ class L10nJa extends L10n {
   String get zenfile6 => 'ZenFileカスタムネイティブ体験';
 
   @override
+  String get built_in_zenfile_viewer => 'ZenFile 内蔵ビューア';
+
+  @override
   String get msg42be43e6 => 'システム外部アプリ';
 
   @override
@@ -4106,6 +4109,33 @@ class L10nJa extends L10n {
 
   @override
   String get open_always => '常に';
+
+  @override
+  String get pick_file_type => 'ファイルの種類を選択';
+
+  @override
+  String get file_type_text => 'テキスト';
+
+  @override
+  String get file_type_audio => 'オーディオ';
+
+  @override
+  String get file_type_video => 'ビデオ';
+
+  @override
+  String get file_type_image => '画像';
+
+  @override
+  String get file_type_text_desc => 'テキストとして開く';
+
+  @override
+  String get file_type_audio_desc => 'オーディオとして再生';
+
+  @override
+  String get file_type_video_desc => 'ビデオとして再生';
+
+  @override
+  String get file_type_image_desc => '画像として表示';
 
   @override
   String get drawer_edit_connection => '編集';

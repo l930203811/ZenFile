@@ -2842,7 +2842,11 @@
     "description": "ui\\widgets\\open_with_sheet.dart"
   },
   "zenfile6": "Experiencia Nativa Personalizada de ZenFile",
-  "@msg42be43e6": {
+  "@zenfile6": {
+    "description": "ui\\widgets\\open_with_sheet.dart"
+  },
+  "built_in_zenfile_viewer": "Visor integrado ZenFile",
+  "@built_in_zenfile_viewer": {
     "description": "ui\\widgets\\open_with_sheet.dart"
   },
   "msg42be43e6": "App Externa del Sistema",
@@ -4150,6 +4154,15 @@
   "open_with_external": "Abrir con aplicación externa",
   "open_once": "Solo esta vez",
   "open_always": "Siempre",
+  "pick_file_type": "Seleccionar tipo de archivo",
+  "file_type_text": "Texto",
+  "file_type_audio": "Audio",
+  "file_type_video": "Vídeo",
+  "file_type_image": "Imagen",
+  "file_type_text_desc": "Abrir como texto",
+  "file_type_audio_desc": "Reproducir como audio",
+  "file_type_video_desc": "Reproducir como vídeo",
+  "file_type_image_desc": "Ver como imagen",
   "drawer_edit_connection": "Editar",
   "cat_system": "Sistema",
   "cat_backup_restore": "Copia / Restaurar",

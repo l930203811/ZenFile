@@ -2360,6 +2360,9 @@ class L10nEn extends L10n {
   String get zenfile6 => 'ZenFile Custom Native Experience';
 
   @override
+  String get built_in_zenfile_viewer => 'Built-in ZenFile Viewer';
+
+  @override
   String get msg42be43e6 => 'System External App';
 
   @override
@@ -4233,6 +4236,33 @@ class L10nEn extends L10n {
 
   @override
   String get open_always => 'Always';
+
+  @override
+  String get pick_file_type => 'Select file type';
+
+  @override
+  String get file_type_text => 'Text';
+
+  @override
+  String get file_type_audio => 'Audio';
+
+  @override
+  String get file_type_video => 'Video';
+
+  @override
+  String get file_type_image => 'Image';
+
+  @override
+  String get file_type_text_desc => 'Open as text';
+
+  @override
+  String get file_type_audio_desc => 'Play as audio';
+
+  @override
+  String get file_type_video_desc => 'Play as video';
+
+  @override
+  String get file_type_image_desc => 'View as image';
 
   @override
   String get drawer_edit_connection => 'Edit';

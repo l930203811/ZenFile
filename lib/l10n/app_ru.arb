@@ -2842,7 +2842,11 @@
     "description": "ui\\widgets\\open_with_sheet.dart"
   },
   "zenfile6": "Пользовательский Нативный Опыт ZenFile",
-  "@msg42be43e6": {
+  "@zenfile6": {
+    "description": "ui\\widgets\\open_with_sheet.dart"
+  },
+  "built_in_zenfile_viewer": "Встроенный просмотрщик ZenFile",
+  "@built_in_zenfile_viewer": {
     "description": "ui\\widgets\\open_with_sheet.dart"
   },
   "msg42be43e6": "Внешнее Системное Приложение",
@@ -4150,6 +4154,15 @@
   "open_with_external": "Открыть внешним приложением",
   "open_once": "Только один раз",
   "open_always": "Всегда",
+  "pick_file_type": "Выберите тип файла",
+  "file_type_text": "Текст",
+  "file_type_audio": "Аудио",
+  "file_type_video": "Видео",
+  "file_type_image": "Изображение",
+  "file_type_text_desc": "Открыть как текст",
+  "file_type_audio_desc": "Воспроизвести как аудио",
+  "file_type_video_desc": "Воспроизвести как видео",
+  "file_type_image_desc": "Просмотреть как изображение",
   "drawer_edit_connection": "Редактировать",
   "cat_system": "Система",
   "cat_backup_restore": "Резервная копия / Восстановление",

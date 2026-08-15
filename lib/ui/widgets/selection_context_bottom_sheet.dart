@@ -89,7 +89,7 @@ class SelectionContextBottomSheet extends StatelessWidget {
                         HapticFeedback.mediumImpact();
                       } catch (_) {}
                       Navigator.pop(context);
-                      provider.openFile(context, targetPath, forceOpenWith: true);
+                      provider.showOpenWithSheet(context, targetPath);
                     }
                   : null,
               child: Padding(
@@ -266,7 +266,7 @@ class SelectionContextBottomSheet extends StatelessWidget {
                 onTap: () {
                   final effectiveContext = outerContext ?? context;
                   Navigator.pop(context);
-                  provider.openFile(effectiveContext, targetPath, forceOpenWith: true);
+                  provider.showOpenWithSheet(effectiveContext, targetPath);
                 },
               ),
             if (isSingle && !isFolder && FileUtils.isArchive(targetPath))

@@ -247,7 +247,7 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
         widget.onNavigateTab?.call(1);
         break;
       case 'open_with':
-        provider.openFile(context, path, forceOpenWith: true);
+        provider.showOpenWithSheet(context, path);
         break;
       case 'share':
         if (FileSystemEntity.isFileSync(path)) {

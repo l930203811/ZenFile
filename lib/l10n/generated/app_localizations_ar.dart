@@ -2354,6 +2354,9 @@ class L10nAr extends L10n {
   String get zenfile6 => 'تجربة أصلية مخصصة لـ ZenFile';
 
   @override
+  String get built_in_zenfile_viewer => 'عارض ZenFile المدمج';
+
+  @override
   String get msg42be43e6 => 'تطبيق خارجي للنظام';
 
   @override
@@ -4215,6 +4218,33 @@ class L10nAr extends L10n {
 
   @override
   String get open_always => 'دائمًا';
+
+  @override
+  String get pick_file_type => 'اختر نوع الملف';
+
+  @override
+  String get file_type_text => 'نص';
+
+  @override
+  String get file_type_audio => 'صوت';
+
+  @override
+  String get file_type_video => 'فيديو';
+
+  @override
+  String get file_type_image => 'صورة';
+
+  @override
+  String get file_type_text_desc => 'افتح كنص';
+
+  @override
+  String get file_type_audio_desc => 'تشغيل كصوت';
+
+  @override
+  String get file_type_video_desc => 'تشغيل كفيديو';
+
+  @override
+  String get file_type_image_desc => 'عرض كصورة';
 
   @override
   String get drawer_edit_connection => 'تحرير';

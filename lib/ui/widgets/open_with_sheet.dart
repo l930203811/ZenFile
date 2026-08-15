@@ -106,7 +106,7 @@ class _OpenWithSheetState extends State<OpenWithSheet> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Built-in ZenFile Viewer',
+                              L10n.of(context).built_in_zenfile_viewer,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: _selectedType == 'native'

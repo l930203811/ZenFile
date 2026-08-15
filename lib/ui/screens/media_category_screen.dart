@@ -638,7 +638,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                           HapticFeedback.mediumImpact();
                         } catch (_) {}
                         Navigator.pop(ctx);
-                        context.read<FileManagerProvider>().openFile(context, filePath, forceOpenWith: true);
+                        context.read<FileManagerProvider>().showOpenWithSheet(context, filePath);
                       }
                     : null,
                 child: Container(
@@ -800,7 +800,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                   title: Text(L10n.of(context).msg2a4cfb07),
                   onTap: () {
                     Navigator.pop(ctx);
-                    context.read<FileManagerProvider>().openFile(context, filePath, forceOpenWith: true);
+                    context.read<FileManagerProvider>().showOpenWithSheet(context, filePath);
                   },
                 ),
               ListTile(
