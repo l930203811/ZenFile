@@ -3107,6 +3107,12 @@ class L10nFr extends L10n {
   String get ui_sort_options => 'Options de tri';
 
   @override
+  String get ui_show_player_controller => 'Afficher le contrôleur de lecture';
+
+  @override
+  String get ui_hide_player_controller => 'Masquer le contrôleur de lecture';
+
+  @override
   String get ui_refresh => 'Actualiser';
 
   @override

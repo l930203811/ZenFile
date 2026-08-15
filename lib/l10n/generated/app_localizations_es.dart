@@ -3105,6 +3105,12 @@ class L10nEs extends L10n {
   String get ui_sort_options => 'Opciones de Ordenamiento';
 
   @override
+  String get ui_show_player_controller => 'Mostrar controlador del reproductor';
+
+  @override
+  String get ui_hide_player_controller => 'Ocultar controlador del reproductor';
+
+  @override
   String get ui_refresh => 'Actualizar';
 
   @override

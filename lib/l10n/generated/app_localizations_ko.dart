@@ -2951,6 +2951,12 @@ class L10nKo extends L10n {
   String get ui_sort_options => '정렬 옵션';
 
   @override
+  String get ui_show_player_controller => '플레이어 컨트롤러 표시';
+
+  @override
+  String get ui_hide_player_controller => '플레이어 컨트롤러 숨기기';
+
+  @override
   String get ui_refresh => '새로고침';
 
   @override

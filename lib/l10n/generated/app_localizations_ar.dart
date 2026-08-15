@@ -3035,6 +3035,12 @@ class L10nAr extends L10n {
   String get ui_sort_options => 'خيارات الفرز';
 
   @override
+  String get ui_show_player_controller => 'إظهار وحدة تحكم المشغل';
+
+  @override
+  String get ui_hide_player_controller => 'إخفاء وحدة تحكم المشغل';
+
+  @override
   String get ui_refresh => 'تحديث';
 
   @override

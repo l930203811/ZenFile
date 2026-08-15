@@ -3379,6 +3379,14 @@
   "@ui_sort_options": {
     "description": "ui widgets"
   },
+  "ui_show_player_controller": "플레이어 컨트롤러 표시",
+  "@ui_show_player_controller": {
+    "description": "media_category_screen.dart"
+  },
+  "ui_hide_player_controller": "플레이어 컨트롤러 숨기기",
+  "@ui_hide_player_controller": {
+    "description": "media_category_screen.dart"
+  },
   "ui_refresh": "새로고침",
   "@ui_refresh": {
     "description": "ui widgets"

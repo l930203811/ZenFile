@@ -3039,6 +3039,12 @@ class L10nEn extends L10n {
   String get ui_sort_options => 'Sort Options';
 
   @override
+  String get ui_show_player_controller => 'Show Player Controller';
+
+  @override
+  String get ui_hide_player_controller => 'Hide Player Controller';
+
+  @override
   String get ui_refresh => 'Refresh';
 
   @override

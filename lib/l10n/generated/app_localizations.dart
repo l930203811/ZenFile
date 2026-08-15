@@ -5620,6 +5620,18 @@ abstract class L10n {
   /// **'排序选项'**
   String get ui_sort_options;
 
+  /// media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'显示播放器控制器'**
+  String get ui_show_player_controller;
+
+  /// media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏播放器控制器'**
+  String get ui_hide_player_controller;
+
   /// ui widgets
   ///
   /// In zh, this message translates to:

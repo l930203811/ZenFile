@@ -3379,6 +3379,14 @@
   "@ui_sort_options": {
     "description": "ui widgets"
   },
+  "ui_show_player_controller": "Показать панель управления плеером",
+  "@ui_show_player_controller": {
+    "description": "media_category_screen.dart"
+  },
+  "ui_hide_player_controller": "Скрыть панель управления плеером",
+  "@ui_hide_player_controller": {
+    "description": "media_category_screen.dart"
+  },
   "ui_refresh": "Обновить",
   "@ui_refresh": {
     "description": "ui widgets"

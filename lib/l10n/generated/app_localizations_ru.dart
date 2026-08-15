@@ -3090,6 +3090,12 @@ class L10nRu extends L10n {
   String get ui_sort_options => 'Параметры Сортировки';
 
   @override
+  String get ui_show_player_controller => 'Показать панель управления плеером';
+
+  @override
+  String get ui_hide_player_controller => 'Скрыть панель управления плеером';
+
+  @override
   String get ui_refresh => 'Обновить';
 
   @override

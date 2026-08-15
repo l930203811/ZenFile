@@ -2943,6 +2943,12 @@ class L10nZh extends L10n {
   String get ui_sort_options => '排序选项';
 
   @override
+  String get ui_show_player_controller => '显示播放器控制器';
+
+  @override
+  String get ui_hide_player_controller => '隐藏播放器控制器';
+
+  @override
   String get ui_refresh => '刷新';
 
   @override
@@ -7582,6 +7588,12 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_sort_options => '排序選項';
+
+  @override
+  String get ui_show_player_controller => '顯示播放器控制器';
+
+  @override
+  String get ui_hide_player_controller => '隱藏播放器控制器';
 
   @override
   String get ui_refresh => '重新整理';

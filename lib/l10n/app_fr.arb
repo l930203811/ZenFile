@@ -3379,6 +3379,14 @@
   "@ui_sort_options": {
     "description": "ui widgets"
   },
+  "ui_show_player_controller": "Afficher le contrôleur de lecture",
+  "@ui_show_player_controller": {
+    "description": "media_category_screen.dart"
+  },
+  "ui_hide_player_controller": "Masquer le contrôleur de lecture",
+  "@ui_hide_player_controller": {
+    "description": "media_category_screen.dart"
+  },
   "ui_refresh": "Actualiser",
   "@ui_refresh": {
     "description": "ui widgets"

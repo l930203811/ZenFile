@@ -3086,6 +3086,12 @@ class L10nDe extends L10n {
   String get ui_sort_options => 'Sortieroptionen';
 
   @override
+  String get ui_show_player_controller => 'Player-Steuerung anzeigen';
+
+  @override
+  String get ui_hide_player_controller => 'Player-Steuerung ausblenden';
+
+  @override
   String get ui_refresh => 'Aktualisieren';
 
   @override

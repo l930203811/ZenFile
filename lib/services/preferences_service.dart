@@ -239,6 +239,26 @@ class PreferencesService {
     await _prefs?.setBool('$_keyMediaCategoryGridView$mediaType', val);
   }
 
+  // 媒体分类页面是否显示「继续播放」音频/视频控制器
+  static const String _keyShowResumeAudio = 'show_resume_audio_controller';
+  static const String _keyShowResumeVideo = 'show_resume_video_controller';
+
+  static bool getShowResumeAudio({bool defaultValue = true}) {
+    return _prefs?.getBool(_keyShowResumeAudio) ?? defaultValue;
+  }
+
+  static Future<void> saveShowResumeAudio(bool val) async {
+    await _prefs?.setBool(_keyShowResumeAudio, val);
+  }
+
+  static bool getShowResumeVideo({bool defaultValue = true}) {
+    return _prefs?.getBool(_keyShowResumeVideo) ?? defaultValue;
+  }
+
+  static Future<void> saveShowResumeVideo(bool val) async {
+    await _prefs?.setBool(_keyShowResumeVideo, val);
+  }
+
   static double getIconScale() {
     return _prefs?.getDouble(_keyIconScale) ?? 1.0;
   }

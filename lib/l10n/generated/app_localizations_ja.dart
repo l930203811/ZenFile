@@ -2954,6 +2954,12 @@ class L10nJa extends L10n {
   String get ui_sort_options => '並べ替えオプション';
 
   @override
+  String get ui_show_player_controller => 'プレーヤーコントローラーを表示';
+
+  @override
+  String get ui_hide_player_controller => 'プレーヤーコントローラーを非表示';
+
+  @override
   String get ui_refresh => '更新';
 
   @override

@@ -229,8 +229,12 @@ class SelectionActionBar extends StatelessWidget {
                   }
                 } else if (action == 'open_with') {
                   final selectedPaths = provider.selectedPaths.toList();
-                  for (final path in selectedPaths) {
-                    provider.openWithSystemChooser(path);
+                  if (selectedPaths.length == 1) {
+                    await provider.showOpenWithSheet(context, selectedPaths.first);
+                  } else {
+                    for (final path in selectedPaths) {
+                      await provider.openWithSystemChooser(path);
+                    }
                   }
                   provider.clearSelection();
                 } else if (action == 'pin_to_top') {

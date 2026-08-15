@@ -29,6 +29,20 @@ import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 enum MediaType { images, videos, audios, documents, archives, downloads, apks, screenshots }
 
+/// 媒体分类页右上角「查看与排序」菜单动作
+enum _ViewMenuAction {
+  sortNewest,
+  sortOldest,
+  sortDateWise,
+  sortNewestGrouped,
+  sortOldestGrouped,
+  sortSizeLargest,
+  sortSizeSmallest,
+  viewList,
+  viewGrid,
+  togglePlayerController,
+}
+
 class MediaCategoryScreen extends StatefulWidget {
   final MediaType mediaType;
   final AssetPathEntity? album;
@@ -75,6 +89,10 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
   // 当前类别的视图模式：true=网格视图, false=列表视图
   late bool _isGridView;
 
+  // 是否显示「继续播放」音频/视频控制器（保护隐私）
+  late bool _showResumeAudio;
+  late bool _showResumeVideo;
+
   @override
   void initState() {
     super.initState();
@@ -98,6 +116,10 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       widget.mediaType.name,
       defaultValue: defaultGrid,
     );
+
+    // 加载播放器控制器显示状态，默认显示
+    _showResumeAudio = PreferencesService.getShowResumeAudio();
+    _showResumeVideo = PreferencesService.getShowResumeVideo();
 
     if (widget.album != null) {
       _loadAlbumAssets();
@@ -890,85 +912,149 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                 tooltip: L10n.of(context).msg419be096,
                 onPressed: _handlePaste,
               ),
+            // 查看与排序综合菜单：排序选项 + 列表/网格视图 + 播放器控制器显隐
             Consumer<MediaProvider>(
               builder: (context, provider, child) {
-                return PopupMenuButton<MediaSortOrder>(
+                final showPlayerController = widget.mediaType == MediaType.audios
+                    ? _showResumeAudio
+                    : widget.mediaType == MediaType.videos
+                        ? _showResumeVideo
+                        : null;
+
+                return PopupMenuButton<_ViewMenuAction>(
                   icon: const Icon(Icons.sort),
                   tooltip: L10n.of(context).ui_sort_options,
-                  onSelected: (order) => provider.setSortOrder(order),
+                  onSelected: (action) async {
+                    switch (action) {
+                      case _ViewMenuAction.sortNewest:
+                        provider.setSortOrder(MediaSortOrder.newest);
+                        break;
+                      case _ViewMenuAction.sortOldest:
+                        provider.setSortOrder(MediaSortOrder.oldest);
+                        break;
+                      case _ViewMenuAction.sortDateWise:
+                        provider.setSortOrder(MediaSortOrder.dateWise);
+                        break;
+                      case _ViewMenuAction.sortNewestGrouped:
+                        provider.setSortOrder(MediaSortOrder.newestGrouped);
+                        break;
+                      case _ViewMenuAction.sortOldestGrouped:
+                        provider.setSortOrder(MediaSortOrder.oldestGrouped);
+                        break;
+                      case _ViewMenuAction.sortSizeLargest:
+                        provider.setSortOrder(MediaSortOrder.sizeLargest);
+                        break;
+                      case _ViewMenuAction.sortSizeSmallest:
+                        provider.setSortOrder(MediaSortOrder.sizeSmallest);
+                        break;
+                      case _ViewMenuAction.viewList:
+                        setState(() => _isGridView = false);
+                        await PreferencesService.saveMediaCategoryGridView(
+                            widget.mediaType.name, false);
+                        break;
+                      case _ViewMenuAction.viewGrid:
+                        setState(() => _isGridView = true);
+                        await PreferencesService.saveMediaCategoryGridView(
+                            widget.mediaType.name, true);
+                        break;
+                      case _ViewMenuAction.togglePlayerController:
+                        if (widget.mediaType == MediaType.audios) {
+                          final newValue = !_showResumeAudio;
+                          await PreferencesService.saveShowResumeAudio(newValue);
+                          setState(() => _showResumeAudio = newValue);
+                        } else if (widget.mediaType == MediaType.videos) {
+                          final newValue = !_showResumeVideo;
+                          await PreferencesService.saveShowResumeVideo(newValue);
+                          setState(() => _showResumeVideo = newValue);
+                        }
+                        break;
+                    }
+                  },
                   itemBuilder: (context) => [
                     CheckedPopupMenuItem(
-                      value: MediaSortOrder.newest,
+                      value: _ViewMenuAction.sortNewest,
                       checked: provider.sortOrder == MediaSortOrder.newest,
                       child: Text(L10n.of(context).msg5093bc80),
                     ),
                     CheckedPopupMenuItem(
-                      value: MediaSortOrder.oldest,
+                      value: _ViewMenuAction.sortOldest,
                       checked: provider.sortOrder == MediaSortOrder.oldest,
                       child: Text(L10n.of(context).ui_oldest_first),
                     ),
                     CheckedPopupMenuItem(
-                      value: MediaSortOrder.dateWise,
+                      value: _ViewMenuAction.sortDateWise,
                       checked: provider.sortOrder == MediaSortOrder.dateWise,
                       child: Text(L10n.of(context).msgbc74b5a8),
                     ),
                     CheckedPopupMenuItem(
-                      value: MediaSortOrder.newestGrouped,
+                      value: _ViewMenuAction.sortNewestGrouped,
                       checked: provider.sortOrder == MediaSortOrder.newestGrouped,
                       child: Text(L10n.of(context).msgef7ae768),
                     ),
                     CheckedPopupMenuItem(
-                      value: MediaSortOrder.oldestGrouped,
+                      value: _ViewMenuAction.sortOldestGrouped,
                       checked: provider.sortOrder == MediaSortOrder.oldestGrouped,
                       child: Text(L10n.of(context).msgb8140039),
                     ),
                     CheckedPopupMenuItem(
-                      value: MediaSortOrder.sizeLargest,
+                      value: _ViewMenuAction.sortSizeLargest,
                       checked: provider.sortOrder == MediaSortOrder.sizeLargest,
                       child: Text(L10n.of(context).msg2e2a26bb),
                     ),
                     CheckedPopupMenuItem(
-                      value: MediaSortOrder.sizeSmallest,
+                      value: _ViewMenuAction.sortSizeSmallest,
                       checked: provider.sortOrder == MediaSortOrder.sizeSmallest,
                       child: Text(L10n.of(context).ui_size_small),
                     ),
+                    const PopupMenuDivider(),
+                    CheckedPopupMenuItem(
+                      value: _ViewMenuAction.viewList,
+                      checked: !_isGridView,
+                      child: Row(
+                        children: [
+                          const Icon(Broken.row_vertical, size: 18),
+                          const SizedBox(width: 8),
+                          Text(L10n.of(context).msg829cb1dd),
+                        ],
+                      ),
+                    ),
+                    CheckedPopupMenuItem(
+                      value: _ViewMenuAction.viewGrid,
+                      checked: _isGridView,
+                      child: Row(
+                        children: [
+                          const Icon(Broken.element_3, size: 18),
+                          const SizedBox(width: 8),
+                          Text(L10n.of(context).ui_grid_view),
+                        ],
+                      ),
+                    ),
+                    if (showPlayerController != null) ...[
+                      const PopupMenuDivider(),
+                      CheckedPopupMenuItem(
+                        value: _ViewMenuAction.togglePlayerController,
+                        checked: showPlayerController,
+                        child: Row(
+                          children: [
+                            Icon(
+                              showPlayerController
+                                  ? Icons.toggle_on
+                                  : Icons.toggle_off,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              showPlayerController
+                                  ? L10n.of(context).ui_hide_player_controller
+                                  : L10n.of(context).ui_show_player_controller,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
                 );
               },
-            ),
-            // 视图切换菜单：列表视图 / 网格视图
-            PopupMenuButton<bool>(
-              icon: const Icon(Broken.category),
-              tooltip: L10n.of(context).ui_list_layout_style,
-              onSelected: (isGrid) {
-                setState(() => _isGridView = isGrid);
-                PreferencesService.saveMediaCategoryGridView(
-                    widget.mediaType.name, isGrid);
-              },
-              itemBuilder: (context) => [
-                CheckedPopupMenuItem(
-                  value: false,
-                  checked: !_isGridView,
-                  child: Row(
-                    children: [
-                      const Icon(Broken.row_vertical, size: 18),
-                      const SizedBox(width: 8),
-                      Text(L10n.of(context).msg829cb1dd),
-                    ],
-                  ),
-                ),
-                CheckedPopupMenuItem(
-                  value: true,
-                  checked: _isGridView,
-                  child: Row(
-                    children: [
-                      const Icon(Broken.element_3, size: 18),
-                      const SizedBox(width: 8),
-                      Text(L10n.of(context).ui_grid_view),
-                    ],
-                  ),
-                ),
-              ],
             ),
             Consumer<MediaProvider>(
               builder: (context, provider, child) {
@@ -1000,9 +1086,13 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                 return _buildFoldersToggle(theme);
               },
             ),
-          if (widget.album == null && widget.mediaType == MediaType.audios)
+          if (widget.album == null &&
+              widget.mediaType == MediaType.audios &&
+              _showResumeAudio)
             _buildResumePlayerButton(theme),
-          if (widget.album == null && widget.mediaType == MediaType.videos)
+          if (widget.album == null &&
+              widget.mediaType == MediaType.videos &&
+              _showResumeVideo)
             _buildResumeVideoButton(theme),
           Expanded(
             child: Consumer<MediaProvider>(

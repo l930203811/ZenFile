@@ -3387,6 +3387,14 @@
   "@ui_sort_options": {
     "description": "ui widgets"
   },
+  "ui_show_player_controller": "Show Player Controller",
+  "@ui_show_player_controller": {
+    "description": "media_category_screen.dart"
+  },
+  "ui_hide_player_controller": "Hide Player Controller",
+  "@ui_hide_player_controller": {
+    "description": "media_category_screen.dart"
+  },
   "ui_refresh": "Refresh",
   "@ui_refresh": {
     "description": "ui widgets"
