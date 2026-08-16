@@ -457,19 +457,18 @@ class PreferencesService {
   }
 
   // --- Preferred Media Category default view & Open With preferences ---
-  static const String _keyPreferFoldersInMedia = 'prefer_folders_in_media';
+  // 媒体分类页面按类别独立存储「文件夹查看」偏好（true=按文件夹查看，false=按全部项目查看）
+  static const String _keyPreferFoldersInMedia = 'prefer_folders_in_media_';
   static const String _keyHideNavigationBar = 'hide_navigation_bar';
   static const String _keyDefaultOpenActionPrefix = 'default_open_action_';
   static const String _keySkipOpenWithDialog = 'skip_open_with_dialog';
 
-  static bool getPreferFoldersInMedia() {
-    // 默认开启文件夹视图：分类页（图片/视频/音频）按父目录分组，避免扁平列表杂乱。
-    // 用户可在分类页顶部「文件夹 / 全部项目」开关中切换回扁平列表。
-    return _prefs?.getBool(_keyPreferFoldersInMedia) ?? true;
+  static bool getPreferFoldersInMedia(String mediaType, {bool defaultValue = true}) {
+    return _prefs?.getBool('$_keyPreferFoldersInMedia$mediaType') ?? defaultValue;
   }
 
-  static Future<void> savePreferFoldersInMedia(bool val) async {
-    await _prefs?.setBool(_keyPreferFoldersInMedia, val);
+  static Future<void> savePreferFoldersInMedia(String mediaType, bool val) async {
+    await _prefs?.setBool('$_keyPreferFoldersInMedia$mediaType', val);
   }
 
   static bool getHideNavigationBar() {

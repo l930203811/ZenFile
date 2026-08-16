@@ -10,7 +10,10 @@ import 'package:intl/intl.dart';
 import 'package:audio_service/audio_service.dart';
 import '../../providers/media_provider.dart';
 import '../../providers/file_manager_provider.dart';
+import '../../services/remote/remote_client.dart';
 import '../../services/preferences_service.dart';
+import '../../services/category_sync_service.dart';
+import '../../services/remote_guard_service.dart';
 import '../../services/audio_background_handler.dart';
 import '../../core/utils.dart';
 import '../../services/app_manager_service.dart';
@@ -25,6 +28,8 @@ import '../widgets/file_action_dialogs.dart';
 import '../widgets/batch_rename_dialog.dart';
 import '../widgets/archive_type_icon.dart';
 import '../widgets/file_type_icon.dart';
+import '../widgets/remote_path_picker.dart';
+import 'internal_file_picker_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 enum MediaType { images, videos, audios, documents, archives, downloads, apks, screenshots }
@@ -42,6 +47,16 @@ enum _ViewMenuAction {
   viewGrid,
   togglePlayerController,
 }
+
+/// 分类页右上角同步菜单动作
+/// 分类页「备份」菜单动作（仅本地→远程备份，无方向选择）。
+enum _SyncMenuAction {
+  toggleAuto,
+  backupNow,
+}
+
+/// 分类页「本地 / 远程」内容过滤范围
+enum _ScopeFilter { local, remote }
 
 class MediaCategoryScreen extends StatefulWidget {
   final MediaType mediaType;
@@ -93,6 +108,375 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
   late bool _showResumeAudio;
   late bool _showResumeVideo;
 
+  // 当前类别是否开启「自动同步」（即同步菜单中显示三个方向按钮）
+  bool _autoSyncEnabled = false;
+
+  /// 防止自动同步在每次重建时重复触发。
+  bool _autoSyncTriggered = false;
+
+  /// 上次扫描到的本地文件数量，用于检测新增文件时触发自动备份。
+  int _previousFileCount = 0;
+
+  /// 当前「本地 / 远程」过滤范围。默认显示本地内容。
+  _ScopeFilter _scopeFilter = _ScopeFilter.local;
+
+  /// 同步菜单的 GlobalKey，用于在切换自动同步开关后让菜单保持展开。
+  final GlobalKey<PopupMenuButtonState<_SyncMenuAction>> _syncMenuKey =
+      GlobalKey<PopupMenuButtonState<_SyncMenuAction>>();
+
+  /// 支持添加自定义远程目录的类别 → 中文标签。
+  static const Map<MediaType, String> _categoryLabels = {
+    MediaType.images: '图片',
+    MediaType.videos: '视频',
+    MediaType.audios: '音频',
+    MediaType.documents: '文档',
+    MediaType.archives: '压缩包',
+    MediaType.downloads: '下载',
+    MediaType.apks: '安装包',
+    MediaType.screenshots: '截图',
+  };
+
+  String get _categoryLabel => _categoryLabels[widget.mediaType]!;
+
+  /// 该类别是否支持远程同步（即支持添加自定义远程目录）。
+  bool get _supportsRemoteSync => _categoryLabels.containsKey(widget.mediaType);
+
+  /// 该类别是否支持「全部项目 / 文件夹」二级切换（仅图片/视频/音频有文件夹视图）。
+  bool get _supportsFolderView =>
+      widget.mediaType == MediaType.images ||
+      widget.mediaType == MediaType.videos ||
+      widget.mediaType == MediaType.audios;
+
+  /// 是否应在该路径上显示云徽（远程路径，或已同步到远程的本地路径）。
+  bool _showCloudBadge(String path) =>
+      path.startsWith('remote://') || CategorySyncService.isSyncedLocalPath(path);
+
+  /// 判断某个媒体文件是否归属指定的文件夹磁贴。
+  /// 本地文件按父目录精确匹配；远程文件（remote://）若其所在文件夹的 basename
+  /// 与本地文件夹磁贴的 basename 一致，则视为同一逻辑文件夹（配合 provider 的文件夹合并，
+  /// 下钻时不漏掉远程独有文件）。
+  bool _belongsToFolder(String itemPath, String folderPath) {
+    if (MediaProvider.parentOfPath(itemPath) == folderPath) return true;
+    if (itemPath.startsWith('remote://')) {
+      final itemFolderName = path_helper.basename(MediaProvider.parentOfPath(itemPath));
+      final folderName = path_helper.basename(folderPath);
+      if (itemFolderName.isNotEmpty && itemFolderName == folderName) return true;
+    }
+    return false;
+  }
+
+  /// 根据当前 [_scopeFilter] 过滤媒体列表。
+  List<T> _filterByScope<T>(List<T> source, String Function(T) pathOf) {
+    switch (_scopeFilter) {
+      case _ScopeFilter.local:
+        return source.where((item) => !MediaProvider.isRemotePath(pathOf(item))).toList();
+      case _ScopeFilter.remote:
+        return source.where((item) => MediaProvider.isRemotePath(pathOf(item))).toList();
+    }
+  }
+
+  Future<void> _loadAutoSync() async {
+    final enabled = await CategorySyncService.isAutoSyncEnabled(_categoryLabel);
+    if (mounted) {
+      setState(() {
+        _autoSyncEnabled = enabled;
+      });
+    }
+    // 记录初始文件数量，后续扫描后对比以检测新增文件
+    final provider = Provider.of<MediaProvider>(context, listen: false);
+    _previousFileCount = _currentLocalFileCount(provider);
+  }
+
+  /// 获取当前类别的本地文件数量（用于新增文件检测）。
+  int _currentLocalFileCount(MediaProvider provider) {
+    final paths = provider.customCategoryPaths[_categoryLabel] ?? [];
+    final remotePaths = paths.where((p) => p.startsWith('remote://')).toList();
+    if (remotePaths.isEmpty) return 0;
+    // 仅统计本地路径下的分类文件数
+    return _collectCategoryFiles().length;
+  }
+
+  /// 打开类别界面时自动执行一次本地→远程备份（无需手动点击）。
+  /// 若未开启自动备份，则仅在首次进入时记录文件数量基线。
+  Future<void> _maybeAutoSync() async {
+    if (!mounted) return;
+    final provider = Provider.of<MediaProvider>(context, listen: false);
+    final customPaths = provider.customCategoryPaths[_categoryLabel] ?? [];
+    final remotePaths = customPaths.where((p) => p.startsWith('remote://')).toList();
+    if (remotePaths.isEmpty) return;
+    final pairs = await _buildSyncPairs(remotePaths);
+    if (pairs.isEmpty) return;
+    await _runBackup(pairs, auto: true);
+  }
+
+  /// 手动「立即备份」：执行一次本地→远程备份。未添加远程路径时提示用户。
+  Future<void> _runSyncNow() async {
+    final provider = Provider.of<MediaProvider>(context, listen: false);
+    final customPaths = provider.customCategoryPaths[_categoryLabel] ?? [];
+    final remotePaths = customPaths.where((p) => p.startsWith('remote://')).toList();
+    if (remotePaths.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(L10n.of(context).ui_no_remote_path)),
+        );
+      }
+      return;
+    }
+    final pairs = await _buildSyncPairs(remotePaths);
+    if (pairs.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(L10n.of(context).ui_no_remote_path)),
+        );
+      }
+      return;
+    }
+    await _runBackup(pairs);
+  }
+
+  /// 添加本地扫描路径到当前分类。
+  Future<void> _addLocalPath() async {
+    final fileManager = Provider.of<FileManagerProvider>(context, listen: false);
+    final provider = Provider.of<MediaProvider>(context, listen: false);
+    final pickedPaths = await InternalFilePickerScreen.show(
+      context,
+      rootPath: fileManager.rootPath,
+      pickDirectory: true,
+    );
+    if (pickedPaths != null && pickedPaths.isNotEmpty) {
+      for (final p in pickedPaths) {
+        provider.addCustomCategoryPath(_categoryLabel, p);
+      }
+    }
+  }
+
+  /// 添加远程扫描路径到当前分类。
+  Future<void> _addRemotePath() async {
+    final provider = Provider.of<MediaProvider>(context, listen: false);
+    final remotePath = await showRemotePathPicker(context);
+    if (remotePath != null) {
+      provider.addCustomCategoryPath(_categoryLabel, remotePath);
+    }
+  }
+
+  /// 统一的同步菜单项：左侧固定 24px 图标槽 + 12px 间距 + 文本，
+  /// 保证「立即同步」与方向/开关项的标题左对齐，不再突兀。
+  PopupMenuEntry<_SyncMenuAction> _syncMenuItem(
+    _SyncMenuAction value,
+    IconData? icon,
+    String label,
+  ) {
+    final theme = Theme.of(context);
+    return PopupMenuItem<_SyncMenuAction>(
+      value: value,
+      child: Row(
+        children: [
+          SizedBox(
+            width: 24,
+            child: icon == null
+                ? const SizedBox.shrink()
+                : Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
+          ),
+          const SizedBox(width: 12),
+          Text(label),
+        ],
+      ),
+    );
+  }
+
+  /// 切换自动同步开关 / 选择方向后，让菜单保持展开（避免再次点击同步按钮）。
+  void _reopenSyncMenu() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _syncMenuKey.currentState?.showButtonMenu();
+    });
+  }
+
+  /// 根据当前类别构造「文件级」同步单元列表：仅同步实际分类文件，而非整文件夹。
+  /// 本地源绝不包含 remote:// 路径，防止把自定义远程扫描路径里的文件再次同步回远程造成循环/重复。
+  Future<List<CategorySyncPair>> _buildSyncPairs(List<String> remotePaths) async {
+    final provider = Provider.of<MediaProvider>(context, listen: false);
+    // 本地源只取实际分类文件，绝不包含 remote://。
+    List<String> localFiles;
+    String localDir;
+    if (widget.folderPath != null) {
+      // 下钻到某个文件夹后执行备份：该文件夹必须是本地路径。
+      if (widget.folderPath!.startsWith('remote://')) return [];
+      localFiles = _collectCategoryFiles(widget.folderPath);
+      // 以主存储根为镜像基准，保留下钻文件夹名（如 DCIM）在远程结构中。
+      localDir = _mirrorRoot(localFiles, fallback: widget.folderPath!);
+    } else {
+      final customPaths = provider.customCategoryPaths[_categoryLabel] ?? [];
+      final localCustom = customPaths
+          .where((p) => !p.startsWith('remote://') && p.isNotEmpty)
+          .toList();
+      if (localCustom.isNotEmpty) {
+        // 有自定义本地扫描路径：只收集这些路径下的分类文件。
+        localFiles = [];
+        for (final dir in localCustom) {
+          localFiles.addAll(_collectCategoryFiles(dir));
+        }
+        localDir = _mirrorRoot(localFiles, fallback: localCustom.first);
+      } else {
+        localFiles = _collectCategoryFiles();
+        localDir = _mirrorRoot(localFiles, fallback: '/storage/emulated/0');
+      }
+    }
+    // 仅本地→远程备份：本地无文件则无可备份。
+    if (localFiles.isEmpty) return [];
+
+    final pairs = <CategorySyncPair>[];
+    for (final remotePath in remotePaths) {
+      // 根视图直接用远程基准，镜像保留本地相对结构（DCIM/Pictures 等顶层目录）。
+      final remoteBase = (widget.folderPath != null)
+          ? _appendSegment(remotePath, path_helper.basename(widget.folderPath!))
+          : remotePath;
+      pairs.add(CategorySyncPair(
+        localDir: localDir,
+        localFiles: localFiles,
+        remoteTargetPath: remoteBase,
+      ));
+    }
+    return pairs;
+  }
+
+  /// 计算镜像基准目录：优先用主存储根 `/storage/emulated/0`，
+  /// 使 DCIM/Pictures 等顶层目录在远程结构中保留；不在主存储下的文件回退到最长公共目录。
+  String _mirrorRoot(List<String> files, {required String fallback}) {
+    if (files.isEmpty) return fallback;
+    if (files.every((f) => f.startsWith('/storage/emulated/0/') || f == '/storage/emulated/0')) {
+      return '/storage/emulated/0';
+    }
+    return FileManagerProvider.longestCommonDir(files);
+  }
+
+  /// 收集当前类别的本地文件路径（排除 remote://）。可限定在某文件夹 [scopeDir] 下。
+  List<String> _collectCategoryFiles([String? scopeDir]) {
+    final provider = Provider.of<MediaProvider>(context, listen: false);
+    final List<String> paths = [];
+    switch (widget.mediaType) {
+      case MediaType.images:
+        paths.addAll(provider.images.map((f) => f.path));
+        break;
+      case MediaType.videos:
+        paths.addAll(provider.videos.map((f) => f.path));
+        break;
+      case MediaType.audios:
+        paths.addAll(provider.audios
+            .where((s) => !s.data.startsWith('remote://'))
+            .map((s) => s.data));
+        break;
+      case MediaType.screenshots:
+        paths.addAll(provider.screenshots.map((f) => f.path));
+        break;
+      case MediaType.documents:
+        paths.addAll(provider.documents.map((f) => f.path));
+        break;
+      case MediaType.archives:
+        paths.addAll(provider.archives.map((f) => f.path));
+        break;
+      case MediaType.downloads:
+        paths.addAll(provider.downloads.map((f) => f.path));
+        break;
+      case MediaType.apks:
+        paths.addAll(provider.apks.map((f) => f.path));
+        break;
+    }
+    var result = paths
+        .where((p) => !p.startsWith('remote://') && p.isNotEmpty)
+        .toList();
+    if (scopeDir != null && scopeDir.isNotEmpty) {
+      final prefix = scopeDir.endsWith('/') ? scopeDir : '$scopeDir/';
+      result = result.where((p) => p == scopeDir || p.startsWith(prefix)).toList();
+    }
+    return result;
+  }
+
+  /// 在 remote://{connId}|{serverPath} 的 serverPath 末尾追加一段目录名。
+  String _appendSegment(String remotePath, String name) {
+    final sep = remotePath.indexOf('|');
+    if (sep < 0) return remotePath;
+    final prefix = remotePath.substring(0, sep + 1);
+    final serverPath = remotePath.substring(sep + 1);
+    final base = serverPath.endsWith('/') ? serverPath : '$serverPath/';
+    return '$prefix$base$name';
+  }
+
+  /// 执行本地→远程备份。手动调用时显示进度对话框；[auto]=true 时静默执行（用于打开界面自动备份），
+  /// 完成后记录已备份路径以显示云徽。
+  Future<void> _runBackup(List<CategorySyncPair> pairs, {bool auto = false}) async {
+    final fm = Provider.of<FileManagerProvider>(context, listen: false);
+    if (auto) {
+      try {
+        await fm.syncCategoryPairs(
+          pairs: pairs,
+          categoryLabel: _categoryLabel,
+          onStatus: (_) {},
+        );
+        if (mounted) {
+          setState(() {}); // 刷新云徽显示（记录已由 provider 持久化）
+          // 立即触发媒体重扫，使本地/远程新增文件即时显示，无需等待后台扫描。
+          Provider.of<MediaProvider>(context, listen: false).loadMedia(forceRefresh: true);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(L10n.of(context).ui_sync_done)),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(L10n.of(context).ui_backup_failed(e.toString()))),
+          );
+        }
+      }
+      return;
+    }
+    final statusNotifier = ValueNotifier<String>(L10n.of(context).ui_syncing);
+    if (mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          title: Text(L10n.of(ctx).ui_backup),
+          content: ValueListenableBuilder<String>(
+            valueListenable: statusNotifier,
+            builder: (c, status, _) => Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 8),
+                const CircularProgressIndicator(),
+                const SizedBox(height: 12),
+                Text(status),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    try {
+      await fm.syncCategoryPairs(
+        pairs: pairs,
+        categoryLabel: _categoryLabel,
+        onStatus: (s) => statusNotifier.value = s,
+      );
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(L10n.of(context).ui_sync_done)),
+        );
+        setState(() {}); // 刷新云徽显示（记录已由 provider 持久化）
+        // 立即触发媒体重扫，使本地/远程新增文件即时显示，无需等待后台扫描。
+        Provider.of<MediaProvider>(context, listen: false).loadMedia(forceRefresh: true);
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(L10n.of(context).ui_backup_failed(e.toString()))),
+        );
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -106,7 +490,13 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         (widget.mediaType == MediaType.images ||
             widget.mediaType == MediaType.videos ||
             widget.mediaType == MediaType.audios)) {
-      _showFoldersMode = PreferencesService.getPreferFoldersInMedia();
+      // 按类别独立记忆文件夹/全部项目查看模式；视频/音频默认文件夹查看，图片默认全部项目
+      final defaultFolders = widget.mediaType == MediaType.videos ||
+          widget.mediaType == MediaType.audios;
+      _showFoldersMode = PreferencesService.getPreferFoldersInMedia(
+        widget.mediaType.name,
+        defaultValue: defaultFolders,
+      );
     }
 
     // 按类别初始化视图模式：图片/截图默认网格，其余默认列表
@@ -120,6 +510,22 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     // 加载播放器控制器显示状态，默认显示
     _showResumeAudio = PreferencesService.getShowResumeAudio();
     _showResumeVideo = PreferencesService.getShowResumeVideo();
+
+    // 预加载分类同步缓存（云徽判定需在首帧前就绪）
+    CategorySyncService.init();
+    // 若是通过「远程文件夹」下钻进入的，则默认处于远程范围，否则默认本地范围。
+    // 否则新页面 _scopeFilter 会回落到默认的 local，把远程文件夹里的文件按本地范围过滤掉 → 下钻后空白。
+    if (widget.folderPath != null && MediaProvider.isRemotePath(widget.folderPath!)) {
+      // 远程保护开启且未解锁时：验证 PIN 通过后才进入远程范围（首帧后再弹验证页）
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+        if (await RemoteGuardService.guard(context) && mounted) {
+          setState(() => _scopeFilter = _ScopeFilter.remote);
+        }
+      });
+    }
+    // 加载该类别的「自动同步」开关
+    _loadAutoSync();
 
     if (widget.album != null) {
       _loadAlbumAssets();
@@ -261,7 +667,11 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
   }
 
   Future<void> _handleCopyCut(bool isCut) async {
-    final paths = _selectedFilePaths.toList();
+    final fm = context.read<FileManagerProvider>();
+    // 区分远程与本地选中项。
+    final remoteSelected = _selectedFilePaths.where((p) => p.startsWith('remote://')).toList();
+    final localSelected = _selectedFilePaths.where((p) => !p.startsWith('remote://')).toList();
+    final paths = localSelected.toList();
     if (_selectedAssetIds.isNotEmpty) {
       final provider = context.read<MediaProvider>();
       final allAssets = [...provider.images, ...provider.videos, ...provider.screenshots];
@@ -274,10 +684,40 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       }
     }
 
-    if (paths.isNotEmpty && mounted) {
-      context.read<FileManagerProvider>().setClipboard(paths, isCut: isCut);
+    // 远程文件加入远程剪贴板（供远程浏览页粘贴）。
+    if (remoteSelected.isNotEmpty) {
+      final byConn = <String, List<String>>{};
+      for (final rp in remoteSelected) {
+        final parts = FileManagerProvider.parseRemotePathParts(rp);
+        if (parts == null) continue;
+        (byConn[parts[0]] ??= []).add(rp);
+      }
+      if (byConn.length == 1) {
+        final conn = FileManagerProvider.connectionForRemotePath(remoteSelected.first);
+        if (conn != null) {
+          final items = remoteSelected.map((rp) {
+            final parts = FileManagerProvider.parseRemotePathParts(rp)!;
+            final serverName = parts[1].split('/').last;
+            return RemoteFileItem(
+              name: serverName,
+              path: parts[1],
+              isDirectory: false,
+              size: 0,
+              modified: DateTime.now(),
+            );
+          }).toList();
+          fm.setRemoteClipboard(items, isCut: isCut, connection: conn);
+        }
+      }
+    }
+
+    if (paths.isNotEmpty) {
+      fm.setClipboard(paths, isCut: isCut);
+    }
+    if ((paths.isNotEmpty || remoteSelected.isNotEmpty) && mounted) {
+      final total = paths.length + remoteSelected.length;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(isCut ? L10n.of(context).ui_cut_count(paths.length) : L10n.of(context).ui_copied_count(paths.length))),
+        SnackBar(content: Text(isCut ? L10n.of(context).ui_cut_count(total) : L10n.of(context).ui_copied_count(total))),
       );
       _clearSelection();
     }
@@ -305,7 +745,8 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
 
     if (confirm == true && mounted) {
       final mediaProvider = context.read<MediaProvider>();
-      final filePaths = _selectedFilePaths.toList();
+      final filePaths = _selectedFilePaths.where((p) => !p.startsWith('remote://')).toList();
+      final remotePaths = _selectedFilePaths.where((p) => p.startsWith('remote://')).toList();
       final assetIds = _selectedAssetIds.toList();
 
       if (_selectedAssetIds.isNotEmpty) {
@@ -319,7 +760,13 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         }
       }
 
-      await mediaProvider.deleteMediaItems(filePaths: filePaths, assetIds: assetIds);
+      // 远程文件走远程删除。
+      if (remotePaths.isNotEmpty) {
+        await FileManagerProvider.deleteRemotePaths(remotePaths);
+      }
+      if (filePaths.isNotEmpty || assetIds.isNotEmpty) {
+        await mediaProvider.deleteMediaItems(filePaths: filePaths, assetIds: assetIds);
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).count2(count))));
         _clearSelection();
@@ -459,13 +906,21 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           actionText: L10n.of(context).msgc8ce4b36,
         );
         if (newName != null && newName.isNotEmpty && mounted) {
-          try {
-            await context.read<FileManagerProvider>().renameFile(filePath, newName);
-          } catch (e) {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('重命名失败: $e')));
+          if (filePath.startsWith('remote://')) {
+            final ok = await FileManagerProvider.renameRemotePath(filePath, newName);
+            if (!ok && mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('重命名失败')));
+              return;
             }
-            return;
+          } else {
+            try {
+              await context.read<FileManagerProvider>().renameFile(filePath, newName);
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('重命名失败: $e')));
+              }
+              return;
+            }
           }
           _clearSelection();
           await context.read<MediaProvider>().loadMedia(forceRefresh: true);
@@ -475,6 +930,23 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     }
 
     if (!mounted) return;
+
+    // 远程文件批量重命名（本地仍走 BatchRenameDialog）。
+    if (filePaths.every((p) => p.startsWith('remote://'))) {
+      final baseName = await FileActionDialogs.showRenameDialog(
+        context,
+        currentName: path_helper.basename(filePaths.first),
+        title: L10n.of(context).msgc8ce4b36,
+        hint: L10n.of(context).msgf139c5cf,
+        actionText: L10n.of(context).msgc8ce4b36,
+      );
+      if (baseName != null && baseName.isNotEmpty && mounted) {
+        await FileManagerProvider.renameRemotePaths(filePaths, baseName);
+        _clearSelection();
+        await context.read<MediaProvider>().loadMedia(forceRefresh: true);
+      }
+      return;
+    }
 
     await showDialog<void>(
       context: context,
@@ -702,6 +1174,13 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                 title: Text(L10n.of(context).ui_copy),
                 onTap: () async {
                   Navigator.pop(ctx);
+                  if (filePath != null && filePath.startsWith('remote://')) {
+                    context.read<FileManagerProvider>().copyRemotePathToClipboard(filePath, isCut: false);
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Copied $name to clipboard')));
+                    }
+                    return;
+                  }
                   String? target = filePath;
                   if (assetId != null) {
                     final provider = context.read<MediaProvider>();
@@ -723,6 +1202,13 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                 title: Text(L10n.of(context).ui_cut),
                 onTap: () async {
                   Navigator.pop(ctx);
+                  if (filePath != null && filePath.startsWith('remote://')) {
+                    context.read<FileManagerProvider>().copyRemotePathToClipboard(filePath, isCut: true);
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Cut $name to clipboard')));
+                    }
+                    return;
+                  }
                   String? target = filePath;
                   if (assetId != null) {
                     final provider = context.read<MediaProvider>();
@@ -744,6 +1230,16 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                 title: Text(L10n.of(context).ui_delete, style: TextStyle(color: Colors.red)),
                 onTap: () async {
                   Navigator.pop(ctx);
+                  if (filePath != null && filePath.startsWith('remote://')) {
+                    final ok = await FileManagerProvider.deleteRemotePath(filePath);
+                    if (ok && mounted) {
+                      await context.read<MediaProvider>().loadMedia(forceRefresh: true);
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).name(name))));
+                    } else if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('删除失败')));
+                    }
+                    return;
+                  }
                   final confirm = await showDialog<bool>(
                     context: context,
                     builder: (c) => AlertDialog(
@@ -784,6 +1280,25 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                   title: Text(L10n.of(context).msgc8ce4b36),
                   onTap: () async {
                     Navigator.pop(ctx);
+                    if (filePath.startsWith('remote://')) {
+                      final currentName = path_helper.basename(filePath);
+                      final newName = await FileActionDialogs.showRenameDialog(
+                        context,
+                        currentName: currentName,
+                        title: L10n.of(context).msgc8ce4b36,
+                        hint: L10n.of(context).msgf139c5cf,
+                        actionText: L10n.of(context).msgc8ce4b36,
+                      );
+                      if (newName != null && newName.isNotEmpty && mounted) {
+                        final ok = await FileManagerProvider.renameRemotePath(filePath, newName);
+                        if (ok && mounted) {
+                          await context.read<MediaProvider>().loadMedia(forceRefresh: true);
+                        } else if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('重命名失败')));
+                        }
+                      }
+                      return;
+                    }
                     final currentName = path_helper.basename(filePath);
                     final newName = await FileActionDialogs.showRenameDialog(
                       context,
@@ -810,7 +1325,11 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                   leading: Icon(Broken.folder_open, color: theme.colorScheme.primary),
                   title: Text(L10n.of(context).msgcd8264f1),
                   onTap: () {
-                    context.read<FileManagerProvider>().showFileInLocation(filePath);
+                    if (filePath != null && filePath.startsWith('remote://')) {
+                      context.read<FileManagerProvider>().showRemoteFileInLocation(filePath);
+                    } else if (filePath != null) {
+                      context.read<FileManagerProvider>().showFileInLocation(filePath);
+                    }
                     Navigator.pop(ctx);
                     Navigator.popUntil(context, (route) => route.isFirst);
                     widget.onNavigateTab?.call(1);
@@ -1065,6 +1584,24 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                 );
               },
             ),
+            if (_supportsRemoteSync)
+              _buildBackupButton(theme),
+            // 检测新增文件并触发自动备份
+            if (_autoSyncEnabled)
+              Consumer<MediaProvider>(
+                builder: (context, provider, child) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (!mounted) return;
+                    final currentCount = _collectCategoryFiles().length;
+                    if (_previousFileCount > 0 &&
+                        currentCount > _previousFileCount) {
+                      _previousFileCount = currentCount;
+                      _maybeAutoSync();
+                    }
+                  });
+                  return const SizedBox.shrink();
+                },
+              ),
           ],
         ],
       ),
@@ -1072,19 +1609,13 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         children: [
           if (widget.album == null &&
               widget.folderPath == null &&
-              (widget.mediaType == MediaType.images ||
-                  widget.mediaType == MediaType.videos ||
-                  widget.mediaType == MediaType.audios))
-            Consumer<MediaProvider>(
-              builder: (context, provider, child) {
-                final folders = widget.mediaType == MediaType.images
-                    ? provider.imageFolders
-                    : widget.mediaType == MediaType.videos
-                        ? provider.videoFolders
-                        : provider.audioFolders;
-                if (folders.isEmpty) return const SizedBox.shrink();
-                return _buildFoldersToggle(theme);
-              },
+              _supportsRemoteSync)
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildScopeToggle(theme),
+                if (_supportsFolderView) _buildFoldersToggle(theme),
+              ],
             ),
           if (widget.album == null &&
               widget.mediaType == MediaType.audios &&
@@ -1111,7 +1642,13 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                       }
                     });
                   } else {
-                    final entries = folders.entries.where((e) => e.value.isNotEmpty).toList();
+                    final entries = folders.entries
+                        .where((e) => e.value.isNotEmpty)
+                        .where((e) {
+                          final isRemote = e.key.startsWith('remote://');
+                          return _scopeFilter == _ScopeFilter.remote ? isRemote : !isRemote;
+                        })
+                        .toList();
                     entries.sort((a, b) {
                       final cmp = b.value.length.compareTo(a.value.length);
                       if (cmp != 0) return cmp;
@@ -1201,38 +1738,46 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                     // 若此处仅按 provider.images 过滤，点进「截图」夹会是空的。故下钻时把同目录的截图一并纳入。
                     final list = widget.folderPath != null
                         ? <dynamic>[
-                            ...provider.images.where((f) => MediaProvider.parentOfPath(f.path) == widget.folderPath),
-                            ...provider.screenshots.where((f) => MediaProvider.parentOfPath(f.path) == widget.folderPath),
+                            ...provider.images.where((f) => _belongsToFolder(f.path, widget.folderPath!)),
+                            ...provider.screenshots.where((f) => _belongsToFolder(f.path, widget.folderPath!)),
                           ]
                         : provider.images;
-                    content = list.isNotEmpty ? _buildImageGrid(list, theme, isDateWise, isGrouped, _isGridView) : null;
+                    final filtered = _filterByScope(list, (dynamic f) => (f as FileSystemEntity).path);
+                    content = filtered.isNotEmpty ? _buildImageGrid(filtered, theme, isDateWise, isGrouped, _isGridView) : null;
                     break;
                   case MediaType.videos:
                     final list = widget.folderPath != null
-                        ? provider.videos.where((f) => MediaProvider.parentOfPath(f.path) == widget.folderPath).toList()
+                        ? provider.videos.where((f) => _belongsToFolder(f.path, widget.folderPath!)).toList()
                         : provider.videos;
-                    content = list.isNotEmpty ? _buildVideoGrid(list, theme, isDateWise, isGrouped, _isGridView) : null;
+                    final filtered = _filterByScope(list, (dynamic f) => (f as FileSystemEntity).path);
+                    content = filtered.isNotEmpty ? _buildVideoGrid(filtered, theme, isDateWise, isGrouped, _isGridView) : null;
                     break;
                   case MediaType.audios:
                     final list = widget.folderPath != null
-                        ? provider.audios.where((s) => MediaProvider.parentOfPath(s.data) == widget.folderPath).toList()
+                        ? provider.audios.where((s) => _belongsToFolder(s.data, widget.folderPath!)).toList()
                         : provider.audios;
-                    content = list.isNotEmpty ? _buildAudioList(list, theme, isDateWise, isGrouped, _isGridView) : null;
+                    final filtered = _filterByScope(list, (s) => s.data);
+                    content = filtered.isNotEmpty ? _buildAudioList(filtered, theme, isDateWise, isGrouped, _isGridView) : null;
                     break;
                   case MediaType.screenshots:
-                    content = provider.screenshots.isNotEmpty ? _buildImageGrid(provider.screenshots, theme, isDateWise, isGrouped, _isGridView) : null;
+                    final filtered = _filterByScope(provider.screenshots, (dynamic f) => (f as FileSystemEntity).path);
+                    content = filtered.isNotEmpty ? _buildImageGrid(filtered, theme, isDateWise, isGrouped, _isGridView) : null;
                     break;
                   case MediaType.archives:
-                    content = provider.archives.isNotEmpty ? _buildGenericFileList(provider.archives, theme, isDateWise, isGrouped, _isGridView) : null;
+                    final filtered = _filterByScope(provider.archives, (f) => f.path);
+                    content = filtered.isNotEmpty ? _buildGenericFileList(filtered, theme, isDateWise, isGrouped, _isGridView) : null;
                     break;
                   case MediaType.downloads:
-                    content = provider.downloads.isNotEmpty ? _buildGenericFileList(provider.downloads, theme, isDateWise, isGrouped, _isGridView) : null;
+                    final filtered = _filterByScope(provider.downloads, (f) => f.path);
+                    content = filtered.isNotEmpty ? _buildGenericFileList(filtered, theme, isDateWise, isGrouped, _isGridView) : null;
                     break;
                   case MediaType.apks:
-                    content = provider.apks.isNotEmpty ? _buildGenericFileList(provider.apks, theme, isDateWise, isGrouped, _isGridView) : null;
+                    final filtered = _filterByScope(provider.apks, (f) => f.path);
+                    content = filtered.isNotEmpty ? _buildGenericFileList(filtered, theme, isDateWise, isGrouped, _isGridView) : null;
                     break;
                   default:
-                    content = provider.documents.isNotEmpty ? _buildDocumentList(provider.documents, theme, isDateWise, isGrouped, _isGridView) : null;
+                    final filtered = _filterByScope(provider.documents, (f) => f.path);
+                    content = filtered.isNotEmpty ? _buildDocumentList(filtered, theme, isDateWise, isGrouped, _isGridView) : null;
                 }
 
                 if (content != null) {
@@ -1523,6 +2068,71 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     );
   }
 
+  /// 图片缩略图组件：本地路径直接显示，远程路径按需下载到缓存后显示。
+  /// 解决此前远程图片用 `Image.file(File(remote://...))` 导致缩略图不显示的问题。
+  Widget _RemoteAwareImageTile({
+    required String path,
+    required List<dynamic> images,
+    required bool isSelectionMode,
+    required VoidCallback onToggle,
+  }) {
+    if (!path.startsWith('remote://')) {
+      // 本地图片：沿用原先直接 File 读取
+      return GestureDetector(
+        onTap: () {
+          if (isSelectionMode) {
+            onToggle();
+          } else {
+            Navigator.push(context, _slideRoute(ImageViewerScreen(
+              imagePath: path,
+              siblingItems: images,
+            )));
+          }
+        },
+        onLongPress: onToggle,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: path.toLowerCase().endsWith('.svg')
+              ? SvgPicture.file(
+                  File(path),
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                  placeholderBuilder: (context) => Container(
+                    color: Colors.grey.withOpacity(0.1),
+                    child: const Center(child: Icon(Broken.image, size: 24, color: Colors.grey)),
+                  ),
+                )
+              : Image.file(
+                  File(path),
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: Colors.grey.withOpacity(0.1),
+                    child: const Center(child: Icon(Broken.image, size: 24, color: Colors.grey)),
+                  ),
+                ),
+        ),
+      );
+    }
+    // 远程图片：按需下载到缓存后显示
+    return _RemoteImageThumb(
+      path: path,
+      onTap: () {
+        if (isSelectionMode) {
+          onToggle();
+        } else {
+          Navigator.push(context, _slideRoute(ImageViewerScreen(
+            imagePath: path,
+            siblingItems: images,
+          )));
+        }
+      },
+      onLongPress: onToggle,
+    );
+  }
+
   Widget _buildImageTile(
     dynamic item,
     ThemeData theme,
@@ -1565,47 +2175,44 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             onLongPress: () => _toggleSelection(null, item.id),
           )
         else if (!isAsset && showThumb)
+          _RemoteAwareImageTile(
+            path: path,
+            images: images,
+            isSelectionMode: _isSelectionMode,
+            onToggle: () => _toggleSelection(path, null),
+          )
+        else
           GestureDetector(
-            onTap: () {
+            onTap: () async {
               if (_isSelectionMode) {
-                _toggleSelection(path, null);
-              } else {
+                if (isAsset) {
+                  _toggleSelection(null, item.id);
+                } else {
+                  _toggleSelection(path, null);
+                }
+                return;
+              }
+              if (isAsset) {
+                final f = await item.file;
+                if (f != null && mounted) {
+                  Navigator.push(context, _slideRoute(ImageViewerScreen(
+                    imagePath: f.path,
+                    siblingItems: images,
+                    initialAssetId: item.id,
+                  )));
+                }
+              } else if (path.isNotEmpty) {
                 Navigator.push(context, _slideRoute(ImageViewerScreen(
                   imagePath: path,
                   siblingItems: images,
                 )));
               }
             },
-            onLongPress: () => _toggleSelection(path, null),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: path.toLowerCase().endsWith('.svg')
-                  ? SvgPicture.file(
-                      File(path),
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      height: double.infinity,
-                      placeholderBuilder: (context) => Container(
-                        color: Colors.grey.withOpacity(0.1),
-                        child: const Center(child: Icon(Broken.image, size: 24, color: Colors.grey)),
-                      ),
-                    )
-                  : Image.file(
-                      File(path),
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      height: double.infinity,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        color: Colors.grey.withOpacity(0.1),
-                        child: const Center(child: Icon(Broken.image, size: 24, color: Colors.grey)),
-                      ),
-                    ),
+            onLongPress: () => isAsset ? _toggleSelection(null, item.id) : _toggleSelection(path, null),
+            child: Container(
+              color: theme.colorScheme.primaryContainer.withOpacity(0.3),
+              child: Center(child: Icon(Broken.image, size: 32, color: theme.colorScheme.onPrimaryContainer.withOpacity(0.6))),
             ),
-          )
-        else
-          Container(
-            color: theme.colorScheme.primaryContainer.withOpacity(0.3),
-            child: Center(child: Icon(Broken.image, size: 32, color: theme.colorScheme.onPrimaryContainer.withOpacity(0.6))),
           ),
         if (showDate)
           Positioned(
@@ -1620,7 +2227,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               ),
             ),
           ),
-        if (isRemote)
+        if (_showCloudBadge(path))
           Positioned(
             top: 4,
             left: 4,
@@ -1770,7 +2377,6 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     final id = isAsset ? item.id : item.path;
     final path = isAsset ? '' : item.path;
     final title = isAsset ? (item.title ?? 'Image_$id') : path_helper.basename(path);
-    final isRemote = !isAsset && MediaProvider.isRemotePath(path);
 
     return ListTile(
       key: ValueKey(id),
@@ -1824,7 +2430,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                         ),
             ),
           ),
-          if (isRemote)
+          if (_showCloudBadge(path))
             Positioned(
               top: 0,
               left: 0,
@@ -1998,7 +2604,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               ),
             ),
           ),
-        if (isRemote)
+        if (_showCloudBadge(path))
           Positioned(
             top: 4,
             left: 4,
@@ -2196,7 +2802,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             _VideoListThumbnail(filePath: path, size: 40)
           else
             Icon(Broken.video, size: 40, color: theme.colorScheme.primary.withOpacity(0.6)),
-          if (isRemote)
+          if (_showCloudBadge(path))
             Positioned(
               top: 0,
               left: 0,
@@ -2253,7 +2859,6 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     final path = audio.data;
     // 本地媒体缩略图开关：控制本地音频封面显示
     final showMediaPreviews = context.select<FileManagerProvider, bool>((p) => p.showMediaPreviews);
-    final isRemote = MediaProvider.isRemotePath(path);
     return ListTile(
       key: ValueKey(path),
       onTap: () {
@@ -2301,7 +2906,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                   )
                 : Icon(Icons.music_note, size: 22, color: theme.colorScheme.onPrimaryContainer),
           ),
-          if (isRemote)
+          if (_showCloudBadge(path))
             Positioned(
               top: 0,
               left: 0,
@@ -2321,6 +2926,16 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               child: Container(
                 decoration: BoxDecoration(color: theme.colorScheme.surface, shape: BoxShape.circle),
                 child: Icon(isSelected ? Broken.tick_square : Icons.check_box_outline_blank, color: isSelected ? theme.colorScheme.primary : Colors.grey, size: 20),
+              ),
+            ),
+          if (_showCloudBadge(path))
+            Positioned(
+              top: 0,
+              left: 0,
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(color: Colors.black.withOpacity(0.55), shape: BoxShape.circle),
+                child: const Icon(Broken.cloud, color: Colors.white, size: 10),
               ),
             ),
         ],
@@ -2579,6 +3194,16 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                 child: Icon(isSelected ? Broken.tick_square : Icons.check_box_outline_blank, color: isSelected ? theme.colorScheme.primary : Colors.grey, size: 20),
               ),
             ),
+          if (_showCloudBadge(path))
+            Positioned(
+              top: 0,
+              left: 0,
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(color: Colors.black.withOpacity(0.55), shape: BoxShape.circle),
+                child: const Icon(Broken.cloud, color: Colors.white, size: 10),
+              ),
+            ),
         ],
       ),
       title: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w500)),
@@ -2763,6 +3388,16 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                 ),
               ),
             ),
+          if (_showCloudBadge(path))
+            Positioned(
+              top: 4,
+              left: 4,
+              child: Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), shape: BoxShape.circle),
+                child: const Icon(Broken.cloud, color: Colors.white, size: 12),
+              ),
+            ),
         ],
       ),
     );
@@ -2832,6 +3467,16 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               child: Container(
                 decoration: BoxDecoration(color: theme.colorScheme.surface, shape: BoxShape.circle),
                 child: Icon(isSelected ? Broken.tick_square : Icons.check_box_outline_blank, color: isSelected ? theme.colorScheme.primary : Colors.grey, size: 20),
+              ),
+            ),
+          if (_showCloudBadge(path))
+            Positioned(
+              top: 0,
+              left: 0,
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(color: Colors.black.withOpacity(0.55), shape: BoxShape.circle),
+                child: const Icon(Broken.cloud, color: Colors.white, size: 10),
               ),
             ),
         ],
@@ -3020,6 +3665,16 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                 ),
               ),
             ),
+          if (_showCloudBadge(path))
+            Positioned(
+              top: 4,
+              left: 4,
+              child: Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), shape: BoxShape.circle),
+                child: const Icon(Broken.cloud, color: Colors.white, size: 12),
+              ),
+            ),
         ],
       ),
     );
@@ -3067,14 +3722,209 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     );
   }
 
+  Widget _buildScopeToggle(ThemeData theme) {
+    final isLocal = _scopeFilter == _ScopeFilter.local;
+    final outlineColor = theme.colorScheme.outline.withOpacity(0.5);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      child: Row(
+        children: [
+          // 本地按钮 + 添加本地路径
+          Flexible(
+            flex: 1,
+            child: Container(
+              height: 40,
+              decoration: BoxDecoration(
+                color: isLocal ? theme.colorScheme.primary : theme.colorScheme.surfaceContainerHighest.withOpacity(0.4),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isLocal ? theme.colorScheme.primary : outlineColor,
+                  width: isLocal ? 1.5 : 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => setState(() => _scopeFilter = _ScopeFilter.local),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        alignment: Alignment.center,
+                        decoration: const BoxDecoration(
+                          borderRadius: BorderRadius.horizontal(left: Radius.circular(12)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Broken.folder_open,
+                              size: 16,
+                              color: isLocal ? theme.colorScheme.onPrimary : theme.colorScheme.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              L10n.of(context).ui_local,
+                              style: TextStyle(
+                                color: isLocal ? theme.colorScheme.onPrimary : theme.colorScheme.onSurfaceVariant,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  _buildAddButton(
+                    icon: Broken.add_square,
+                    color: isLocal ? theme.colorScheme.onPrimary : theme.colorScheme.onSurfaceVariant,
+                    onTap: _addLocalPath,
+                    tooltip: L10n.of(context).ui_add_custom_path,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // 远程按钮 + 添加远程路径
+          Flexible(
+            flex: 1,
+            child: Container(
+              height: 40,
+              decoration: BoxDecoration(
+                color: !isLocal ? theme.colorScheme.primary : theme.colorScheme.surfaceContainerHighest.withOpacity(0.4),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: !isLocal ? theme.colorScheme.primary : outlineColor,
+                  width: !isLocal ? 1.5 : 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      // 远程保护开启且未解锁时，先验证 PIN 再切换到远程范围
+                      onTap: () async {
+                        if (_scopeFilter == _ScopeFilter.remote) return;
+                        if (!await RemoteGuardService.guard(context)) return;
+                        if (mounted) {
+                          setState(() => _scopeFilter = _ScopeFilter.remote);
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        alignment: Alignment.center,
+                        decoration: const BoxDecoration(
+                          borderRadius: BorderRadius.horizontal(left: Radius.circular(12)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Broken.cloud,
+                              size: 16,
+                              color: !isLocal ? theme.colorScheme.onPrimary : theme.colorScheme.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              L10n.of(context).ui_remote,
+                              style: TextStyle(
+                                color: !isLocal ? theme.colorScheme.onPrimary : theme.colorScheme.onSurfaceVariant,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  _buildAddButton(
+                    icon: Broken.add_square,
+                    color: !isLocal ? theme.colorScheme.onPrimary : theme.colorScheme.onSurfaceVariant,
+                    onTap: _addRemotePath,
+                    tooltip: L10n.of(context).ui_add_remote_path,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 作用域切换条右侧的「+」小按钮，用于快速添加本地/远程扫描路径。
+  Widget _buildAddButton({
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+    required String tooltip,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: SizedBox(
+        width: 34,
+        height: 40,
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: const BorderRadius.horizontal(right: Radius.circular(12)),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: const BorderRadius.horizontal(right: Radius.circular(12)),
+            child: Center(
+              child: Icon(icon, size: 16, color: color),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 备份按钮（本地 → 远程）：仅图标，位于 AppBar 右上角。
+  /// 弹出菜单显示在右上角（offset 不偏移，自然右对齐）。
+  Widget _buildBackupButton(ThemeData theme) {
+    return PopupMenuButton<_SyncMenuAction>(
+      key: _syncMenuKey,
+      icon: const Icon(Icons.backup_outlined),
+      tooltip: L10n.of(context).ui_backup,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      onSelected: (action) async {
+        if (action == _SyncMenuAction.toggleAuto) {
+          final newValue = !_autoSyncEnabled;
+          await CategorySyncService.setAutoSyncEnabled(_categoryLabel, newValue);
+          if (mounted) setState(() => _autoSyncEnabled = newValue);
+          _reopenSyncMenu();
+          return;
+        }
+        if (action == _SyncMenuAction.backupNow) {
+          await _runSyncNow();
+        }
+      },
+      itemBuilder: (context) => [
+        _syncMenuItem(
+          _SyncMenuAction.toggleAuto,
+          _autoSyncEnabled ? Icons.toggle_on : Icons.toggle_off,
+          L10n.of(context).ui_auto_backup,
+        ),
+        const PopupMenuDivider(),
+        _syncMenuItem(
+          _SyncMenuAction.backupNow,
+          Icons.backup_outlined,
+          L10n.of(context).ui_backup_now,
+        ),
+      ],
+    );
+  }
+
   Widget _buildFoldersToggle(ThemeData theme) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
       child: Container(
-        height: 40,
+        height: 30,
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.4),
-          borderRadius: BorderRadius.circular(12),
+          color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.25),
+          borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           children: [
@@ -3082,20 +3932,20 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               child: InkWell(
                 onTap: () {
                   setState(() => _showFoldersMode = false);
-                  PreferencesService.savePreferFoldersInMedia(false);
+                  PreferencesService.savePreferFoldersInMedia(widget.mediaType.name, false);
                 },
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(8),
                 child: Container(
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: !_showFoldersMode ? theme.colorScheme.primary : Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
+                    color: !_showFoldersMode ? theme.colorScheme.secondaryContainer : Colors.transparent,
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     L10n.of(context).msgb19671d6,
                     style: TextStyle(
-                      color: !_showFoldersMode ? theme.colorScheme.onPrimary : theme.colorScheme.onSurfaceVariant,
-                      fontSize: 13,
+                      color: !_showFoldersMode ? theme.colorScheme.onSecondaryContainer : theme.colorScheme.onSurfaceVariant,
+                      fontSize: 11,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -3106,20 +3956,20 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               child: InkWell(
                 onTap: () {
                   setState(() => _showFoldersMode = true);
-                  PreferencesService.savePreferFoldersInMedia(true);
+                  PreferencesService.savePreferFoldersInMedia(widget.mediaType.name, true);
                 },
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(8),
                 child: Container(
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: _showFoldersMode ? theme.colorScheme.primary : Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
+                    color: _showFoldersMode ? theme.colorScheme.secondaryContainer : Colors.transparent,
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     L10n.of(context).msg1f4c1042,
                     style: TextStyle(
-                      color: _showFoldersMode ? theme.colorScheme.onPrimary : theme.colorScheme.onSurfaceVariant,
-                      fontSize: 13,
+                      color: _showFoldersMode ? theme.colorScheme.onSecondaryContainer : theme.colorScheme.onSurfaceVariant,
+                      fontSize: 11,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -3582,6 +4432,72 @@ class _ThumbnailShimmerPlaceholderState extends State<_ThumbnailShimmerPlacehold
           stops: [0.0, _controller.value, 1.0],
         ).createShader(rect),
         child: Container(color: baseColor),
+      ),
+    );
+  }
+}
+
+/// 远程图片缩略图：按需下载到本地缓存后显示，避免 `Image.file(remote://...)` 失败。
+class _RemoteImageThumb extends StatefulWidget {
+  final String path;
+  final VoidCallback onTap;
+  final VoidCallback onLongPress;
+  const _RemoteImageThumb({required this.path, required this.onTap, required this.onLongPress});
+
+  @override
+  State<_RemoteImageThumb> createState() => _RemoteImageThumbState();
+}
+
+class _RemoteImageThumbState extends State<_RemoteImageThumb> {
+  File? _cached;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final local = await FileManagerProvider.downloadRemoteFileToCache(widget.path);
+    if (mounted) {
+      setState(() {
+        _cached = local == null ? null : File(local);
+        _loading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: widget.onTap,
+      onLongPress: widget.onLongPress,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: _loading
+            ? Container(
+                color: Colors.grey.withOpacity(0.1),
+                child: const Center(
+                  child: SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.grey),
+                  ),
+                ),
+              )
+            : (_cached != null && _cached!.existsSync()
+                ? (widget.path.toLowerCase().endsWith('.svg')
+                    ? SvgPicture.file(_cached!, fit: BoxFit.cover, width: double.infinity, height: double.infinity)
+                    : Image.file(_cached!, fit: BoxFit.cover, width: double.infinity, height: double.infinity,
+                        errorBuilder: (c, e, s) => Container(
+                          color: Colors.grey.withOpacity(0.1),
+                          child: const Center(child: Icon(Broken.image, size: 24, color: Colors.grey)),
+                        )))
+                : Container(
+                    color: Colors.grey.withOpacity(0.1),
+                    child: const Center(child: Icon(Broken.image, size: 24, color: Colors.grey)),
+                  )),
       ),
     );
   }
@@ -4412,7 +5328,6 @@ class _MediaFolderTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final name = _MediaCategoryScreenState._folderDisplayName(folderPath);
-    final isRemote = MediaProvider.isRemotePath(folderPath);
     return GestureDetector(
       onTap: onTap,
       child: ClipRRect(
@@ -4450,7 +5365,7 @@ class _MediaFolderTile extends StatelessWidget {
                   ),
                 ),
               ),
-              if (isRemote)
+              if (folderPath.startsWith('remote://') || CategorySyncService.hasSyncedFileUnder(folderPath))
                 Positioned(
                   top: 8,
                   right: 8,

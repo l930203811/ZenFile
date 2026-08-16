@@ -4861,4 +4861,162 @@ class L10nEn extends L10n {
   String ui_delete_items_confirm(int count) {
     return 'Are you sure you want to delete $count selected item(s)? This cannot be undone.';
   }
+
+  @override
+  String get changelog_v1130_new_1 =>
+      'Remote Protection PIN: Set a 4-digit PIN to protect access to saved remote servers, edit pages, and remote scope in category pages';
+
+  @override
+  String get changelog_v1130_new_2 =>
+      'Category page \"Local/Remote\" toggle: All categories with remote directory support can independently switch local/remote content';
+
+  @override
+  String get changelog_v1130_new_3 =>
+      'Backup (Local→Remote): Auto-backup and manual backup with new file detection, only backs up files of the category\'s format';
+
+  @override
+  String get changelog_v1130_new_4 =>
+      'Remote connection wizard adds \"Test\" button to verify connection before saving';
+
+  @override
+  String get changelog_v1130_new_5 =>
+      'Video/Audio category menu adds \"Player Controller Visibility\" toggle';
+
+  @override
+  String get changelog_v1130_new_6 =>
+      'Unified \"Open With\" dialog: Browse/Recent/Category pages all show in-app selection popup';
+
+  @override
+  String get changelog_v1130_new_7 =>
+      'Unknown format files show type picker (Text/Audio/Video/Image) when \"Open with App\" is selected';
+
+  @override
+  String get changelog_v1130_opt_1 =>
+      'Category/Browse page buttons merged into single centered toggle';
+
+  @override
+  String get changelog_v1130_opt_2 =>
+      'Rename auto-selects filename body (without extension), cursor placed before extension';
+
+  @override
+  String get changelog_v1130_opt_3 =>
+      'Grid/List view toggle integrated into sort menu';
+
+  @override
+  String get changelog_v1130_opt_4 =>
+      'Each category independently remembers \"Folder/All Items\" view mode; Video/Audio default to Folder view';
+
+  @override
+  String get changelog_v1130_opt_5 =>
+      'Download category supports remote backup';
+
+  @override
+  String get changelog_v1130_opt_6 =>
+      'Remote image/video thumbnails downloaded on demand';
+
+  @override
+  String get changelog_v1130_opt_7 =>
+      'Local scan excludes app cache directory, fixing duplicate images after enabling remote thumbnails';
+
+  @override
+  String get changelog_v1130_opt_8 =>
+      'Remote file 3-dot menu and long-press batch delete/rename/copy/cut/location operations now work';
+
+  @override
+  String get changelog_v1130_opt_9 =>
+      'Remote folder drill-down preserves directory structure (DCIM/Pictures etc.)';
+
+  @override
+  String get changelog_v1130_fix_1 =>
+      'Fixed MIUI storage permission false positive causing startup popup loop';
+
+  @override
+  String get changelog_v1130_fix_2 =>
+      'Fixed category page long-press drag accidentally triggering page switch';
+
+  @override
+  String get changelog_v1130_fix_3 =>
+      'Fixed screenshots disappearing after drilling into folder in Images category';
+
+  @override
+  String get ui_remote_guard => 'Remote Guard';
+
+  @override
+  String get ui_remote_guard_desc =>
+      'Set a 4-digit PIN to protect remote server access. Enter PIN after app launch or manual lock.';
+
+  @override
+  String get ui_remote_guard_enabled => 'Enabled';
+
+  @override
+  String get ui_remote_guard_disabled => 'Disabled';
+
+  @override
+  String get ui_remote_guard_set_pin => 'Set PIN';
+
+  @override
+  String get ui_remote_guard_enter_pin => 'Enter PIN';
+
+  @override
+  String get ui_remote_guard_confirm_pin => 'Confirm PIN';
+
+  @override
+  String get ui_remote_guard_pin_mismatch =>
+      'PINs do not match. Please try again.';
+
+  @override
+  String get ui_remote_guard_wrong_pin => 'Incorrect PIN. Please try again.';
+
+  @override
+  String get ui_remote_guard_change_pin => 'Change PIN';
+
+  @override
+  String get ui_remote_guard_pin_hint => '4-digit numeric PIN';
+
+  @override
+  String get ui_remote_guard_lock_now => 'Lock Now';
+
+  @override
+  String get ui_remote_guard_lock_now_desc =>
+      'After locking, you must enter your PIN to access remote servers.';
+
+  @override
+  String get ui_auto_backup => 'Auto Backup';
+
+  @override
+  String get ui_backup => 'Backup';
+
+  @override
+  String get ui_backup_now => 'Backup Now';
+
+  @override
+  String get ui_local => 'Local';
+
+  @override
+  String get ui_no_remote_path => 'No custom remote path added';
+
+  @override
+  String get ui_remote => 'Remote';
+
+  @override
+  String get ui_sync_done => 'Backup Complete';
+
+  @override
+  String get ui_syncing => 'Backing up...';
+
+  @override
+  String get ui_test => 'Test';
+
+  @override
+  String get ui_test_failed => 'Test Failed';
+
+  @override
+  String get ui_test_failed_reason => 'Failure Reason';
+
+  @override
+  String get ui_test_success => 'Test Successful';
+
+  @override
+  String get ui_test_success_desc =>
+      'Connection successful, server configuration is correct';
 }

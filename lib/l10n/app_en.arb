@@ -2857,10 +2857,6 @@
   "@msgd1fca831": {
     "description": "ui\\widgets\\open_with_sheet.dart"
   },
-  "msg42be43e6": "System External App",
-  "@msgd1fca831": {
-    "description": "ui\\widgets\\open_with_sheet.dart"
-  },
   "msgd1fca831": "Open with third-party app on device",
   "@msgdb75b769": {
     "description": "ui\\widgets\\open_with_sheet.dart"
@@ -4738,5 +4734,185 @@
         "type": "int"
       }
     }
+  },
+  "changelog_v1130_new_1": "Remote Protection PIN: Set a 4-digit PIN to protect access to saved remote servers, edit pages, and remote scope in category pages",
+  "@changelog_v1130_new_1": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_new_2": "Category page \"Local/Remote\" toggle: All categories with remote directory support can independently switch local/remote content",
+  "@changelog_v1130_new_2": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_new_3": "Backup (Local→Remote): Auto-backup and manual backup with new file detection, only backs up files of the category's format",
+  "@changelog_v1130_new_3": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_new_4": "Remote connection wizard adds \"Test\" button to verify connection before saving",
+  "@changelog_v1130_new_4": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_new_5": "Video/Audio category menu adds \"Player Controller Visibility\" toggle",
+  "@changelog_v1130_new_5": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_new_6": "Unified \"Open With\" dialog: Browse/Recent/Category pages all show in-app selection popup",
+  "@changelog_v1130_new_6": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_new_7": "Unknown format files show type picker (Text/Audio/Video/Image) when \"Open with App\" is selected",
+  "@changelog_v1130_new_7": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_1": "Category/Browse page buttons merged into single centered toggle",
+  "@changelog_v1130_opt_1": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_2": "Rename auto-selects filename body (without extension), cursor placed before extension",
+  "@changelog_v1130_opt_2": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_3": "Grid/List view toggle integrated into sort menu",
+  "@changelog_v1130_opt_3": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_4": "Each category independently remembers \"Folder/All Items\" view mode; Video/Audio default to Folder view",
+  "@changelog_v1130_opt_4": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_5": "Download category supports remote backup",
+  "@changelog_v1130_opt_5": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_6": "Remote image/video thumbnails downloaded on demand",
+  "@changelog_v1130_opt_6": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_7": "Local scan excludes app cache directory, fixing duplicate images after enabling remote thumbnails",
+  "@changelog_v1130_opt_7": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_8": "Remote file 3-dot menu and long-press batch delete/rename/copy/cut/location operations now work",
+  "@changelog_v1130_opt_8": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_9": "Remote folder drill-down preserves directory structure (DCIM/Pictures etc.)",
+  "@changelog_v1130_opt_9": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_fix_1": "Fixed MIUI storage permission false positive causing startup popup loop",
+  "@changelog_v1130_fix_1": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_fix_2": "Fixed category page long-press drag accidentally triggering page switch",
+  "@changelog_v1130_fix_2": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_fix_3": "Fixed screenshots disappearing after drilling into folder in Images category",
+  "@changelog_v1130_fix_3": {
+    "description": "v1.1.30 changelog item"
+  },
+  "ui_remote_guard": "Remote Guard",
+  "@ui_remote_guard": {
+    "description": "ui\\screens\\remote_guard_screen.dart"
+  },
+  "ui_remote_guard_desc": "Set a 4-digit PIN to protect remote server access. Enter PIN after app launch or manual lock.",
+  "@ui_remote_guard_desc": {
+    "description": "ui\\screens\\remote_guard_screen.dart"
+  },
+  "ui_remote_guard_enabled": "Enabled",
+  "@ui_remote_guard_enabled": {
+    "description": "ui\\screens\\remote_guard_screen.dart"
+  },
+  "ui_remote_guard_disabled": "Disabled",
+  "@ui_remote_guard_disabled": {
+    "description": "ui\\screens\\remote_guard_screen.dart"
+  },
+  "ui_remote_guard_set_pin": "Set PIN",
+  "@ui_remote_guard_set_pin": {
+    "description": "ui\\screens\\remote_guard_screen.dart"
+  },
+  "ui_remote_guard_enter_pin": "Enter PIN",
+  "@ui_remote_guard_enter_pin": {
+    "description": "ui\\screens\\remote_guard_screen.dart"
+  },
+  "ui_remote_guard_confirm_pin": "Confirm PIN",
+  "@ui_remote_guard_confirm_pin": {
+    "description": "ui\\screens\\remote_guard_screen.dart"
+  },
+  "ui_remote_guard_pin_mismatch": "PINs do not match. Please try again.",
+  "@ui_remote_guard_pin_mismatch": {
+    "description": "ui\\screens\\remote_guard_screen.dart"
+  },
+  "ui_remote_guard_wrong_pin": "Incorrect PIN. Please try again.",
+  "@ui_remote_guard_wrong_pin": {
+    "description": "ui\\screens\\remote_guard_screen.dart"
+  },
+  "ui_remote_guard_change_pin": "Change PIN",
+  "@ui_remote_guard_change_pin": {
+    "description": "ui\\screens\\remote_guard_screen.dart"
+  },
+  "ui_remote_guard_pin_hint": "4-digit numeric PIN",
+  "@ui_remote_guard_pin_hint": {
+    "description": "ui\\screens\\remote_guard_screen.dart"
+  },
+  "ui_remote_guard_lock_now": "Lock Now",
+  "@ui_remote_guard_lock_now": {
+    "description": "ui\\screens\\remote_guard_screen.dart"
+  },
+  "ui_remote_guard_lock_now_desc": "After locking, you must enter your PIN to access remote servers.",
+  "@ui_remote_guard_lock_now_desc": {
+    "description": "ui\\screens\\remote_guard_screen.dart"
+  },
+  "ui_auto_backup": "Auto Backup",
+  "@ui_auto_backup": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_backup": "Backup",
+  "@ui_backup": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_backup_now": "Backup Now",
+  "@ui_backup_now": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_local": "Local",
+  "@ui_local": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_no_remote_path": "No custom remote path added",
+  "@ui_no_remote_path": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_remote": "Remote",
+  "@ui_remote": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_sync_done": "Backup Complete",
+  "@ui_sync_done": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_syncing": "Backing up...",
+  "@ui_syncing": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_test": "Test",
+  "@ui_test": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "ui_test_failed": "Test Failed",
+  "@ui_test_failed": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "ui_test_failed_reason": "Failure Reason",
+  "@ui_test_failed_reason": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "ui_test_success": "Test Successful",
+  "@ui_test_success": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "ui_test_success_desc": "Connection successful, server configuration is correct",
+  "@ui_test_success_desc": {
+    "description": "ui\\screens\\network_connection_wizard_screen.dart"
   }
 }

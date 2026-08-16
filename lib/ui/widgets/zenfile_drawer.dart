@@ -10,7 +10,9 @@ import '../screens/ftp_server_screen.dart';
 import '../../services/network_connections_service.dart';
 import '../screens/network_connection_wizard_screen.dart';
 import '../screens/network_category_screen.dart';
+import '../screens/remote_guard_screen.dart';
 import '../../models/network_connection_model.dart';
+import '../../services/remote_guard_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 import '../screens/about_screen.dart';
@@ -196,6 +198,22 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                             }
                           },
                         ),
+                        _buildDrawerTile(
+                          context,
+                          icon: Broken.shield_tick,
+                          title: L10n.of(context).ui_remote_guard,
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const RemoteGuardScreen(
+                                  mode: RemoteGuardMode.entry,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       ],
                     ),
 
@@ -300,7 +318,7 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12.0),
               child: Text(
-                'ZenFile v1.1.29',
+                'ZenFile v1.1.30',
                 style: TextStyle(fontSize: 11.5, color: theme.colorScheme.onSurface.withOpacity(0.4), fontWeight: FontWeight.w600),
               ),
             ),
@@ -356,9 +374,17 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
   }
 
   Widget _buildDrawerHeader(BuildContext context, ThemeData theme, bool isDark) {
+    // 蓝色渐变卡片高度：屏幕可用高度的约 8%（约等于抽屉内容区 10%），
+    // 上限压到 72 确保肉眼明显变矮，避免此前 64~120 clamp 几乎看不到变化。
+    final screenH = MediaQuery.of(context).size.height;
+    final safeTop = MediaQuery.of(context).padding.top;
+    final usableH = screenH - safeTop;
+    final cardHeight = (usableH * 0.10).clamp(48.0, 72.0);
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-      padding: const EdgeInsets.all(16.0),
+      height: cardHeight,
+      margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isDark
@@ -367,39 +393,42 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: theme.colorScheme.primary.withOpacity(0.25),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Row(
         children: [
           Container(
-            width: 52,
-            height: 52,
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.2),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Broken.folder, color: Colors.white, size: 28),
+            child: const Icon(Broken.folder, color: Colors.white, size: 20),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
                   'ZenFile',
-                  style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                  style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700, letterSpacing: 0.3),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 0.5),
                 Text(
                   L10n.of(context).msgeef7e30c,
-                  style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12.5, fontWeight: FontWeight.w500),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 11, fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -475,6 +504,8 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                   title: Text(L10n.of(context).drawer_edit_connection),
                   onTap: () async {
                     Navigator.pop(ctx);
+                    // 编辑页可见密码，远程保护开启且未解锁时先验证 PIN
+                    if (!await RemoteGuardService.guard(context)) return;
                     await Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -522,6 +553,8 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
             final onNavigateTab = widget.onNavigateTab;
             final navigator = Navigator.of(context);
             final scaffoldMessenger = ScaffoldMessenger.of(context);
+            // 远程保护开启且未解锁时，先验证 PIN 再连接
+            if (!await RemoteGuardService.guard(context)) return;
             final client = FileManagerProvider.createRemoteClient(conn);
             try {
               await client.connect();

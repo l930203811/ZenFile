@@ -30,7 +30,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
   @override
   void initState() {
     super.initState();
-    _preferFolders = PreferencesService.getPreferFoldersInMedia();
+    _preferFolders = PreferencesService.getPreferFoldersInMedia('images');
   }
 
   @override
@@ -892,7 +892,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                               setState(() {
                                 _preferFolders = val;
                               });
-                              PreferencesService.savePreferFoldersInMedia(val);
+                              PreferencesService.savePreferFoldersInMedia("images", val); PreferencesService.savePreferFoldersInMedia("videos", val); PreferencesService.savePreferFoldersInMedia("audios", val);
                             },
                           ),
                         ),
@@ -901,7 +901,7 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                           setState(() {
                             _preferFolders = val;
                           });
-                          PreferencesService.savePreferFoldersInMedia(val);
+                          PreferencesService.savePreferFoldersInMedia("images", val); PreferencesService.savePreferFoldersInMedia("videos", val); PreferencesService.savePreferFoldersInMedia("audios", val);
                         },
                       ),
                     if (mediaPreviewsVis)
@@ -1577,7 +1577,7 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
   @override
   void initState() {
     super.initState();
-    _preferFolders = PreferencesService.getPreferFoldersInMedia();
+    _preferFolders = PreferencesService.getPreferFoldersInMedia('images');
     _autoCleanMinutes = PreferencesService.getRemoteCacheAutoCleanMinutes();
     _remoteThumbnailPreview = PreferencesService.getRemoteMediaThumbnailPreview();
   }
@@ -1960,7 +1960,7 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
                     setState(() {
                       _preferFolders = val;
                     });
-                    PreferencesService.savePreferFoldersInMedia(val);
+                    PreferencesService.savePreferFoldersInMedia("images", val); PreferencesService.savePreferFoldersInMedia("videos", val); PreferencesService.savePreferFoldersInMedia("audios", val);
                   },
                 ),
               ),
@@ -1969,7 +1969,7 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
                 setState(() {
                   _preferFolders = val;
                 });
-                PreferencesService.savePreferFoldersInMedia(val);
+                PreferencesService.savePreferFoldersInMedia("images", val); PreferencesService.savePreferFoldersInMedia("videos", val); PreferencesService.savePreferFoldersInMedia("audios", val);
               },
             ),
             SettingsTile(

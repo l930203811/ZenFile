@@ -242,26 +242,171 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
     }
   }
 
-  // Trigger Diagnostics & Save
-  void _runDiagnosticsAndSave() async {
-    if (_selectedType == 'WebDav') {
-      _sanitizeWebdavFields();
-    }
-
-    if (_nameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(L10n.of(context).msg65c7ecb6)),
+  // Build a valid RemoteClient from current form inputs (or null if missing required fields).
+  RemoteClient? _buildCurrentClient({String? outHost, int? outPort, String? outUser, String? outPwd, String? outPath}) {
+    final host = (outHost ?? _hostController.text).trim();
+    final port = int.tryParse((outPort != null ? outPort.toString() : _portController.text).trim());
+    if (host.isEmpty || port == null) return null;
+    final username = (outUser ?? _usernameController.text).trim();
+    final password = (outPwd ?? _passwordController.text).trim();
+    final path = (_selectedType == 'WebDav' || _selectedType == L10n.of(context).smb)
+        ? (((outPath != null ? outPath : _pathController.text).trim().isEmpty) ? '/' : (outPath != null ? outPath : _pathController.text).trim())
+        : '/';
+    if (_selectedType == 'FTP') {
+      return FtpRemoteClient(host: host, port: port, username: username, password: password);
+    } else if (_selectedType == 'SFTP') {
+      return SftpRemoteClient(host: host, port: port, username: username, password: password);
+    } else if (_selectedType == 'WebDav') {
+      return WebDavRemoteClient(
+        host: host,
+        port: port,
+        username: username,
+        password: password,
+        protocol: _webdavProtocol,
+        rootPath: path,
       );
+    } else if (_selectedType == L10n.of(context).smb) {
+      return LanClient(host: host, port: port, username: username, password: password);
+    }
+    return null;
+  }
+
+  String? _validateBasicForm() {
+    final l10n = L10n.of(context);
+    if (_nameController.text.trim().isEmpty) return l10n.msg65c7ecb6;
+    if (_hostController.text.trim().isEmpty) return l10n.msg69e3963c;
+    return null;
+  }
+
+  // --- Test connection: show modal progress, connect/disconnect, then show result dialog ---
+  Future<void> _testConnection() async {
+    if (_selectedType == 'WebDav') _sanitizeWebdavFields();
+    final basicErr = _validateBasicForm();
+    if (basicErr != null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(basicErr)));
       return;
     }
-
-    if (_hostController.text.trim().isEmpty) {
+    final client = _buildCurrentClient();
+    if (client == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(L10n.of(context).msg69e3963c)),
       );
       return;
     }
+    final l10n = L10n.of(context);
+    // Show loading dialog
+    final loadingKey = GlobalKey<State>();
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        key: loadingKey,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        content: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 22, height: 22,
+              child: CircularProgressIndicator(strokeWidth: 2.5,
+                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary)),
+            ),
+            const SizedBox(width: 14),
+            Text(l10n.msg3005ba4d, style: const TextStyle(fontSize: 14)),
+          ],
+        ),
+      ),
+    );
 
+    String? errReason;
+    try {
+      await client.connect().timeout(const Duration(seconds: 15));
+      try { await client.disconnect(); } catch (_) {}
+    } catch (e) {
+      errReason = e.toString();
+    }
+
+    if (mounted) {
+      Navigator.of(context, rootNavigator: true).pop(); // close loading
+      final theme = Theme.of(context);
+      if (errReason == null) {
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.green, size: 24),
+                const SizedBox(width: 8),
+                Text(l10n.ui_test_success,
+                  style: const TextStyle(fontFamily: 'LexendDeca', fontSize: 18, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            content: Text(l10n.ui_test_success_desc, style: const TextStyle(fontSize: 14)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                style: TextButton.styleFrom(foregroundColor: theme.colorScheme.primary),
+                child: Text(MaterialLocalizations.of(context).okButtonLabel,
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        );
+      } else {
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Row(
+              children: [
+                const Icon(Icons.error, color: Colors.redAccent, size: 24),
+                const SizedBox(width: 8),
+                Text(l10n.ui_test_failed,
+                  style: const TextStyle(fontFamily: 'LexendDeca', fontSize: 18, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('${l10n.ui_test_failed_reason}：',
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 6),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.redAccent.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(errReason!,
+                    style: TextStyle(fontSize: 12.5, color: theme.colorScheme.onSurface.withOpacity(0.85),
+                      fontFamily: 'monospace')),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                style: TextButton.styleFrom(foregroundColor: theme.colorScheme.primary),
+                child: Text(MaterialLocalizations.of(context).okButtonLabel,
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+  }
+
+  // --- Save connection (regardless of test result) and close wizard ---
+  Future<void> _saveConnection() async {
+    if (_selectedType == 'WebDav') _sanitizeWebdavFields();
+    final basicErr = _validateBasicForm();
+    if (basicErr != null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(basicErr)));
+      return;
+    }
     final port = int.tryParse(_portController.text.trim()) ?? 21;
     final host = _hostController.text.trim();
     final username = _usernameController.text.trim();
@@ -270,104 +415,43 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
         ? (_pathController.text.trim().isEmpty ? '/' : _pathController.text.trim())
         : '/';
 
-    setState(() {
-      _isTesting = true;
-      _testStepIndex = 0;
-    });
-    _nextStep();
+    final connection = NetworkConnectionModel(
+      id: widget.existingConnection?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      name: _nameController.text.trim(),
+      type: _selectedType,
+      host: host,
+      port: port,
+      username: username,
+      password: password,
+      rootPath: path,
+      protocol: _selectedType == 'WebDav' ? _webdavProtocol : 'http',
+    );
 
-    try {
-      // Step 1: Resolving host address
-      await Future.delayed(const Duration(milliseconds: 600));
-      if (mounted) setState(() => _testStepIndex = 1);
+    if (widget.existingConnection != null) {
+      await NetworkConnectionsService.deleteConnection(widget.existingConnection!.id);
+    }
+    await NetworkConnectionsService.saveConnection(connection);
 
-      // Step 2: Pinging server port
-      await Future.delayed(const Duration(milliseconds: 600));
-      if (mounted) setState(() => _testStepIndex = 2);
-
-      // Step 3: Authenticating credentials in real time!
-      RemoteClient? client;
-      if (_selectedType == 'FTP') {
-        client = FtpRemoteClient(host: host, port: port, username: username, password: password);
-      } else if (_selectedType == 'SFTP') {
-        client = SftpRemoteClient(host: host, port: port, username: username, password: password);
-      } else if (_selectedType == 'WebDav') {
-        client = WebDavRemoteClient(
-          host: host,
-          port: port,
-          username: username,
-          password: password,
-          protocol: _webdavProtocol,
-          rootPath: path,
-        );
-      } else if (_selectedType == L10n.of(context).smb) {
-        client = LanClient(host: host, port: port, username: username, password: password);
-      }
-
-      if (client != null) {
-        await client.connect();
-        await client.disconnect();
-      }
-
-      if (mounted) setState(() => _testStepIndex = 3);
-      await Future.delayed(const Duration(milliseconds: 600));
-
-      // Save connection details
-      final connection = NetworkConnectionModel(
-        id: widget.existingConnection?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-        name: _nameController.text.trim(),
-        type: _selectedType,
-        host: host,
-        port: port,
-        username: username,
-        password: password,
-        rootPath: path,
-        protocol: _selectedType == 'WebDav' ? _webdavProtocol : 'http',
-      );
-
-      if (widget.existingConnection != null) {
-        await NetworkConnectionsService.deleteConnection(widget.existingConnection!.id);
-      }
-      await NetworkConnectionsService.saveConnection(connection);
-
-      if (mounted) {
-        setState(() {
-          _isTesting = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Broken.tick_circle, color: Colors.white),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    L10n.of(context).connectedtype(connection.name),
-                    overflow: TextOverflow.ellipsis,
-                  ),
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Broken.tick_circle, color: Colors.white),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '"${connection.name}" ${L10n.of(context).ui_save}！',
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ],
-            ),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: Theme.of(context).colorScheme.primary,
+              ),
+            ],
           ),
-        );
-        Navigator.pop(context, true); // Return success
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isTesting = false;
-        });
-        _prevStep(); // Go back to credentials input
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(L10n.of(context).e13(e.toString())),
-            backgroundColor: Colors.redAccent,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Theme.of(context).colorScheme.primary,
+        ),
+      );
+      Navigator.pop(context, true);
     }
   }
 
@@ -558,11 +642,23 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
 
   // --- Step 2: Configuration Fields Form ---
   Widget _buildCredentialsStep(ThemeData theme, bool isDark) {
+    final l10n = L10n.of(context);
+    final passwordSuffix = IconButton(
+      icon: Icon(
+        _obscurePassword ? Broken.eye_slash : Broken.eye,
+        size: 18,
+        color: theme.colorScheme.onSurface.withOpacity(0.5),
+      ),
+      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+      splashRadius: 20,
+    );
+
     return ScrollConfiguration(
       behavior: const ScrollBehavior().copyWith(overscroll: false),
       child: ListView(
         padding: const EdgeInsets.all(24.0),
         children: [
+          // Header
           Row(
             children: [
               _buildProtocolIcon(_selectedType, size: 30),
@@ -572,7 +668,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '$_selectedType ${L10n.of(context).cat_settings}',
+                      '$_selectedType ${l10n.cat_settings}',
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -580,7 +676,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                       ),
                     ),
                     Text(
-                      L10n.of(context).msg5c808d9a,
+                      l10n.msg5c808d9a,
                       style: TextStyle(
                         fontSize: 12.5,
                         color: theme.colorScheme.onSurface.withOpacity(0.5),
@@ -594,31 +690,29 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
           const SizedBox(height: 28),
 
           // Connection Nickname
-          _buildInputLabel(L10n.of(context).ui_connection_name),
+          _buildInputLabel(l10n.ui_connection_name),
           _buildTextField(
             controller: _nameController,
-            hint: L10n.of(context).nas,
+            hint: l10n.nas,
             icon: Broken.tag,
           ),
           const SizedBox(height: 18),
 
           if (_selectedType == 'WebDav') ...[
-            _buildInputLabel(L10n.of(context).ui_protocol),
+            _buildInputLabel(l10n.ui_protocol),
             _buildProtocolToggle(theme),
             const SizedBox(height: 18),
           ],
 
-          _buildInputLabel(L10n.of(context).msg5d57821d),
+          _buildInputLabel(l10n.msg5d57821d),
           _buildTextField(
             controller: _hostController,
-            hint: _selectedType == 'WebDav'
-                ? L10n.of(context).dav
-                : L10n.of(context).naslocal,
+            hint: _selectedType == 'WebDav' ? l10n.dav : l10n.naslocal,
             icon: Broken.global,
           ),
           const SizedBox(height: 18),
 
-          _buildInputLabel(L10n.of(context).ui_port),
+          _buildInputLabel(l10n.ui_port),
           _buildTextField(
             controller: _portController,
             hint: _selectedType == 'WebDav' ? '80' : '21',
@@ -628,67 +722,76 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
           const SizedBox(height: 18),
 
           if (_selectedType == 'WebDav') ...[
-            _buildInputLabel(L10n.of(context).ui_path_label),
+            _buildInputLabel(l10n.ui_path_label),
             _buildTextField(
               controller: _pathController,
-              hint: L10n.of(context).dav1,
+              hint: l10n.dav1,
               icon: Broken.folder_open,
             ),
             const SizedBox(height: 18),
-          ] else if (_selectedType == L10n.of(context).smb) ...[
-            _buildInputLabel(L10n.of(context).ui_share_name_optional),
+          ] else if (_selectedType == l10n.smb) ...[
+            _buildInputLabel(l10n.ui_share_name_optional),
             _buildTextField(
               controller: _pathController,
-              hint: L10n.of(context).ui_share_name_hint,
+              hint: l10n.ui_share_name_hint,
               icon: Broken.folder_open,
             ),
             const SizedBox(height: 18),
           ],
 
-          _buildInputLabel(L10n.of(context).ui_username_optional),
+          _buildInputLabel(l10n.ui_username_optional),
           _buildTextField(
             controller: _usernameController,
-            hint: L10n.of(context).anonymousadmin,
+            hint: l10n.anonymousadmin,
             icon: Broken.user,
           ),
           const SizedBox(height: 18),
 
-          _buildInputLabel(L10n.of(context).msgeec70cd2),
+          _buildInputLabel(l10n.msgeec70cd2),
           _buildTextField(
             controller: _passwordController,
             hint: '••••••••',
             icon: Broken.lock,
             obscure: _obscurePassword,
-            suffix: IconButton(
-              icon: Icon(
-                _obscurePassword ? Broken.eye_slash : Broken.eye,
-                size: 18,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-              ),
-              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-              splashRadius: 20,
-            ),
+            suffix: passwordSuffix,
           ),
 
           const SizedBox(height: 40),
 
-          // Actions
+          // Three-button action bar: BACK (left) · TEST (center) · SAVE (right, primary)
           Row(
             children: [
               Expanded(
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+                    side: BorderSide(color: theme.colorScheme.outline.withOpacity(0.35)),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    foregroundColor: theme.colorScheme.onSurface,
                   ),
                   onPressed: _prevStep,
-                  child: Text(L10n.of(context).ui_back),
+                  child: Text(l10n.ui_back,
+                    style: const TextStyle(fontWeight: FontWeight.w600)),
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 10),
               Expanded(
-                child: ElevatedButton(
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: theme.colorScheme.primary.withOpacity(0.55)),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    foregroundColor: theme.colorScheme.primary,
+                  ),
+                  onPressed: _testConnection,
+                  icon: const Icon(Broken.shield_tick, size: 18),
+                  label: Text(l10n.ui_test,
+                    style: const TextStyle(fontWeight: FontWeight.w700)),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: theme.colorScheme.primary,
                     foregroundColor: Colors.white,
@@ -696,15 +799,10 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     elevation: 4,
                   ),
-                  onPressed: _runDiagnosticsAndSave,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(L10n.of(context).ui_connect),
-                      const SizedBox(width: 6),
-                      Icon(Icons.arrow_forward_rounded, size: 16, color: Colors.white.withOpacity(0.9)),
-                    ],
-                  ),
+                  onPressed: _saveConnection,
+                  icon: const Icon(Icons.save_rounded, size: 18, color: Colors.white),
+                  label: Text(l10n.ui_save,
+                    style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
                 ),
               ),
             ],
@@ -849,6 +947,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
   }
 
   // --- Helper Layout widgets ---
+
   Widget _buildInputLabel(String label) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6.0, left: 4.0),

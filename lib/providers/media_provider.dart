@@ -29,6 +29,20 @@ enum MediaSortOrder {
   sizeSmallest,
 }
 
+/// 本应用自身的缓存/缩略图目录前缀：本地递归扫描时应跳过这些目录，
+/// 避免把远程媒体下载缓存、远程缩略图缓存等再次当成用户媒体收录（导致「同一图片显示两张」）。
+const List<String> _kAppCacheExcludeDirs = [
+  '/storage/emulated/0/ZenFile',
+];
+
+/// 判断路径是否落在本应用缓存目录下（供 isolate 与主线程扫描共用）。
+bool _isUnderAppCacheDir(String path) {
+  for (final d in _kAppCacheExcludeDirs) {
+    if (path == d || path.startsWith('$d/')) return true;
+  }
+  return false;
+}
+
 /// 传给 isolate 的扫描参数（所有字段均可跨 isolate 结构化克隆）。
 class _FSScanParams {
   final List<String> rootDirs;
@@ -66,6 +80,9 @@ class _FSScanResult {
   final Map<String, List<String>> imageFolders;
   final Map<String, List<String>> videoFolders;
   final Map<String, List<String>> audioFolders;
+  // 各分类文件字节总和（key 与分类名一致：图片/视频/截图/音频/文档/压缩包/下载/安装包）。
+  // 在 isolate 内对每个文件 stat 累计，主线程直接取用，避免对几十万文件同步 lengthSync 阻塞 UI。
+  final Map<String, int> categorySizes;
   const _FSScanResult({
     this.images = const [],
     this.videos = const [],
@@ -78,6 +95,7 @@ class _FSScanResult {
     this.imageFolders = const {},
     this.videoFolders = const {},
     this.audioFolders = const {},
+    this.categorySizes = const {},
   });
 }
 
@@ -117,6 +135,12 @@ Future<_FSScanResult> _scanMediaFileSystemIsolate(_FSScanParams params) async {
   final apks = <String>[];
   final seenAudios = <String>{};
   final seenDownloads = <String>{};
+  // 各分类字节总和：在 isolate 内对每个文件 stat，主线程不再逐个 lengthSync。
+  final sizes = <String, int>{};
+  void addSize(String key, int v) {
+    if (v > 0) sizes[key] = (sizes[key] ?? 0) + v;
+  }
+
   final queue = <String>[...params.rootDirs];
   while (queue.isNotEmpty) {
     final current = queue.removeAt(0);
@@ -125,15 +149,24 @@ Future<_FSScanResult> _scanMediaFileSystemIsolate(_FSScanParams params) async {
       await for (final entity in Directory(current).list(recursive: false)) {
         if (entity is Directory) {
           final name = p.basename(entity.path);
-          if (!name.startsWith('.') && name != 'Android') {
+          // 跳过隐藏目录、Android、以及本应用缓存目录（远程媒体/缩略图缓存，
+          // 避免缓存图片被当成用户媒体重复收录）。
+          if (!name.startsWith('.') &&
+              name != 'Android' &&
+              !_isUnderAppCacheDir(entity.path)) {
             queue.add(entity.path);
           }
         } else if (entity is File) {
+          // 跳过本应用缓存目录内的文件（远程下载缓存、缩略图等）。
+          if (_isUnderAppCacheDir(entity.path)) continue;
           final lower = entity.path.toLowerCase();
           final ext = p.extension(lower);
           if (isDownloadDir && !seenDownloads.contains(entity.path)) {
             seenDownloads.add(entity.path);
             downloads.add(entity.path);
+            try {
+              addSize('下载', entity.lengthSync());
+            } catch (_) {}
           }
           if (params.videoExtensions.contains(ext)) {
             // 过滤掉极小视频片段（如 .ts 流媒体碎片），避免污染「视频」分类
@@ -145,6 +178,7 @@ Future<_FSScanResult> _scanMediaFileSystemIsolate(_FSScanParams params) async {
             }
             if (size < _kMinVideoBytes) continue;
             videos.add(entity.path);
+            addSize('视频', size);
           } else if (params.audioExtensions.contains(ext)) {
             final norm = _normalizeMediaPathIsolate(entity.path);
             if (!seenAudios.contains(norm)) {
@@ -153,6 +187,7 @@ Future<_FSScanResult> _scanMediaFileSystemIsolate(_FSScanParams params) async {
               try {
                 size = (await entity.stat()).size;
               } catch (_) {}
+              addSize('音频', size);
               final nameNoExt = p.basenameWithoutExtension(entity.path);
               audios.add({
                 '_id': 800000 + seenAudios.length,
@@ -178,15 +213,26 @@ Future<_FSScanResult> _scanMediaFileSystemIsolate(_FSScanParams params) async {
             if (size < _kMinImageBytes) continue;
             if (lower.contains('screenshot') || lower.contains('截图')) {
               screenshots.add(entity.path);
+              addSize('截图', size);
             } else {
               images.add(entity.path);
+              addSize('图片', size);
             }
           } else if (params.docExtensions.contains(ext)) {
             documents.add(entity.path);
+            try {
+              addSize('文档', entity.lengthSync());
+            } catch (_) {}
           } else if (params.archiveExtensions.contains(ext)) {
             archives.add(entity.path);
+            try {
+              addSize('压缩包', entity.lengthSync());
+            } catch (_) {}
           } else if (params.apkExtensions.contains(ext)) {
             apks.add(entity.path);
+            try {
+              addSize('安装包', entity.lengthSync());
+            } catch (_) {}
           }
         }
       }
@@ -209,6 +255,7 @@ Future<_FSScanResult> _scanMediaFileSystemIsolate(_FSScanParams params) async {
     imageFolders: imageFolders,
     videoFolders: videoFolders,
     audioFolders: audioFolders,
+    categorySizes: sizes,
   );
 }
 
@@ -572,6 +619,10 @@ class MediaProvider extends ChangeNotifier {
   List<FileSystemEntity> _screenshots = [];
   /// 各分类文件总大小缓存（字节），扫描完成后统一计算，避免 UI 构建时重复 stat。
   final Map<String, int> _categorySizeCache = {};
+  /// isolate 扫描阶段累计的各分类字节数原始值（key 与分类名一致）。
+  /// 主线程 [_recalcCategorySizes] 从该值 + 自定义路径补充重建缓存，避免对
+  /// 几十万文件同步 lengthSync 阻塞 UI（安卓 15/16 键盘/输入卡顿根因之一）。
+  Map<String, int> _fsCategorySizes = const {};
   List<FileSystemEntity> _customImages = [];
   List<FileSystemEntity> _customVideos = [];
   List<FileSystemEntity> _customScreenshots = [];
@@ -605,6 +656,8 @@ class MediaProvider extends ChangeNotifier {
   /// 根据当前扁平列表重算按父目录的分组（仅存路径），供分类页文件夹视图使用。
   /// 合并了本地扫描结果（_images/_videos/_audios）与自定义扫描路径（_customImages/_customVideos/_customScreenshots），
   /// 确保远程自定义路径（remote://{connId}|{path}）的媒体文件也能按父目录分组显示在「文件夹」视图中。
+  /// 本地与远程文件夹在此保持各自独立的 key（本地用真实路径、远程用 remote://...），
+  /// 分类页再按 [_ScopeFilter]（remote:// 前缀）分别显示，避免互相吸收导致远程文件夹/文件消失。
   void _rebuildFolderGroups() {
     _imageFolders = _mergeFolderMaps([
       _groupByParentDir(_images),
@@ -627,12 +680,15 @@ class MediaProvider extends ChangeNotifier {
   /// 合并多个分组 Map（相同父目录下的文件路径列表拼接并去重）。
   static Map<String, List<String>> _mergeFolderMaps(List<Map<String, List<String>>> maps) {
     final result = <String, List<String>>{};
+    // 用 Set 去重，避免对几十万路径逐项 contains 造成 O(n²) 主线程耗时。
+    final seen = <String, Set<String>>{};
     for (final map in maps) {
       map.forEach((dir, paths) {
         if (paths.isEmpty) return;
         final list = result.putIfAbsent(dir, () => <String>[]);
+        final s = seen.putIfAbsent(dir, () => <String>{});
         for (final p in paths) {
-          if (!list.contains(p)) list.add(p);
+          if (s.add(p)) list.add(p);
         }
       });
     }
@@ -762,6 +818,11 @@ class MediaProvider extends ChangeNotifier {
     return list;
   }
 
+  /// 本地文件同步到远程后，远程自定义路径里会出现同名镜像文件，与本地扫描结果重复。
+  /// 现在本地 / 远程通过顶部分类页的 [_ScopeFilter]（remote:// 前缀）严格分离显示，
+  /// 不再需要在 provider 内做跨域去重（那样会把远程页的文件/文件夹整体吸收掉）。
+  /// 文件级去重由 [_dedupeMediaByPath] 按完整路径保证，本地与远程各自独立。
+
   List<dynamic> get images {
     final excluded = _excludedDefaultPaths['图片'] ?? [];
     final list = [..._images, ..._customImages].where((item) {
@@ -790,55 +851,60 @@ class MediaProvider extends ChangeNotifier {
 
   List<SongModel> get audios {
     final excluded = _excludedDefaultPaths['音频'] ?? [];
-    return _audios.where((song) {
+    final list = _audios.where((song) {
       final path = song.data;
       if (_isPathExcluded(path, excluded)) return false;
       return true;
     }).toList();
+    return list;
   }
 
   List<FileSystemEntity> get documents {
     final excluded = _excludedDefaultPaths['文档'] ?? [];
     final excludeAllScanned = excluded.contains('内部存储（扫描所有文件夹）');
-    return _documents.where((file) {
+    final list = _documents.where((file) {
       final docPaths = _customCategoryPaths['文档'] ?? [];
       final isCustom = docPaths.any((dir) => p.isWithin(dir, file.path));
       if (excludeAllScanned && !isCustom) return false;
       if (_isPathExcluded(file.path, excluded)) return false;
       return true;
     }).toList();
+    return list;
   }
 
   List<FileSystemEntity> get archives {
     final excluded = _excludedDefaultPaths['压缩包'] ?? [];
     final excludeAllScanned = excluded.contains('内部存储（扫描所有文件夹）');
-    return _archives.where((file) {
+    final list = _archives.where((file) {
       final archPaths = _customCategoryPaths['压缩包'] ?? [];
       final isCustom = archPaths.any((dir) => p.isWithin(dir, file.path));
       if (excludeAllScanned && !isCustom) return false;
       if (_isPathExcluded(file.path, excluded)) return false;
       return true;
     }).toList();
+    return list;
   }
 
   List<FileSystemEntity> get downloads {
     final excluded = _excludedDefaultPaths['下载'] ?? [];
-    return _downloads.where((file) {
+    final list = _downloads.where((file) {
       if (_isPathExcluded(file.path, excluded)) return false;
       return true;
     }).toList();
+    return list;
   }
 
   List<FileSystemEntity> get apks {
     final excluded = _excludedDefaultPaths['安装包'] ?? [];
     final excludeAllScanned = excluded.contains('内部存储（扫描所有文件夹）');
-    return _apks.where((file) {
+    final list = _apks.where((file) {
       final apkPaths = _customCategoryPaths['安装包'] ?? [];
       final isCustom = apkPaths.any((dir) => p.isWithin(dir, file.path));
       if (excludeAllScanned && !isCustom) return false;
       if (_isPathExcluded(file.path, excluded)) return false;
       return true;
     }).toList();
+    return list;
   }
 
   List<dynamic> get screenshots {
@@ -1066,31 +1132,41 @@ class MediaProvider extends ChangeNotifier {
 
   /// 重新计算各媒体分类的总大小并写入缓存。
   /// 仅在扫描完成（saveCategoryCount 批量写入处）调用，避免重复计算。
+  /// 分类大小已在 isolate 扫描阶段累计（_fsCategorySizes），
+  /// 主线程仅补充自定义路径（通常少量），不再对几十万文件同步 lengthSync 阻塞 UI。
   void _recalcCategorySizes() {
-    try {
-      _categorySizeCache['图片'] = _sumEntitySize(images.whereType<FileSystemEntity>().toList());
-    } catch (_) { _categorySizeCache['图片'] = 0; }
-    try {
-      _categorySizeCache['视频'] = _sumEntitySize(videos.whereType<FileSystemEntity>().toList());
-    } catch (_) { _categorySizeCache['视频'] = 0; }
-    // SongModel.size 在部分 ROM 返回时长或 0，不可靠；改用 .data 路径的 File.lengthSync()。
-    int audioSize = 0;
+    // 从 isolate 扫描结果初始化（文件中已累计字节数，主线程无同步 stat）。
+    _categorySizeCache['图片'] = (_fsCategorySizes['图片'] ?? 0) + _sumEntitySize(_customImages);
+    _categorySizeCache['视频'] = (_fsCategorySizes['视频'] ?? 0) + _sumEntitySize(_customVideos);
+    _categorySizeCache['截图'] = (_fsCategorySizes['截图'] ?? 0) + _sumEntitySize(_customScreenshots);
+
+    // 音频：isolate 已计 base 音频，自定义音频使用 SongModel.size（由 _scanCustomCategories 从 file.stat() 填入，无需 lengthSync）。
+    int audioSize = _fsCategorySizes['音频'] ?? 0;
     for (final s in _audios) {
-      try {
-        final path = s.data;
-        if (path.isNotEmpty) {
-          audioSize += File(path).lengthSync();
-        }
-      } catch (_) {}
+      if (s.id >= 900000) {
+        try { audioSize += s.size; } catch (_) {}
+      }
     }
     _categorySizeCache['音频'] = audioSize;
-    _categorySizeCache['文档'] = _sumEntitySize(_documents);
-    _categorySizeCache['压缩包'] = _sumEntitySize(_archives);
-    _categorySizeCache['下载'] = _sumEntitySize(_downloads);
-    _categorySizeCache['安装包'] = _sumEntitySize(_apks);
-    try {
-      _categorySizeCache['截图'] = _sumEntitySize(screenshots.whereType<FileSystemEntity>().toList());
-    } catch (_) { _categorySizeCache['截图'] = 0; }
+
+    // 文档/压缩包/安装包：isolate 已计 base，自定义路径文件通常少量，直接用 _sumEntitySize 重算。
+    if (_customCategoryPaths['文档']?.isNotEmpty ?? false) {
+      _categorySizeCache['文档'] = _sumEntitySize(_documents);
+    } else {
+      _categorySizeCache['文档'] = _fsCategorySizes['文档'] ?? 0;
+    }
+    if (_customCategoryPaths['压缩包']?.isNotEmpty ?? false) {
+      _categorySizeCache['压缩包'] = _sumEntitySize(_archives);
+    } else {
+      _categorySizeCache['压缩包'] = _fsCategorySizes['压缩包'] ?? 0;
+    }
+    if (_customCategoryPaths['安装包']?.isNotEmpty ?? false) {
+      _categorySizeCache['安装包'] = _sumEntitySize(_apks);
+    } else {
+      _categorySizeCache['安装包'] = _fsCategorySizes['安装包'] ?? 0;
+    }
+
+    _categorySizeCache['下载'] = _fsCategorySizes['下载'] ?? 0;
     // 「最近」分类的 FileItemModel 自带 size 字段（字节）。
     int recentSize = 0;
     for (final r in _recentFiles) {
@@ -1398,6 +1474,9 @@ class MediaProvider extends ChangeNotifier {
     _imageFolders = result.imageFolders;
     _videoFolders = result.videoFolders;
     _audioFolders = result.audioFolders;
+    // 分类大小也已在 isolate 内累计，主线程不再逐个 lengthSync 阻塞 UI。
+    // 存入独立字段，_recalcCategorySizes 每次从原始值重建，避免重复累加。
+    _fsCategorySizes = Map<String, int>.from(result.categorySizes);
     debugPrint('[ZenFile] isolate scan done: images=${_images.length} videos=${_videos.length} audios=${_audios.length} docs=${_documents.length} arch=${_archives.length} dl=${_downloads.length} apk=${_apks.length}');
   }
 
@@ -1626,10 +1705,14 @@ class MediaProvider extends ChangeNotifier {
           try {
             if (entity is Directory) {
               final name = p.basename(entity.path);
-              if (!name.startsWith('.') && name != 'Android') {
+              // 跳过隐藏目录、Android、本应用缓存目录（避免远程媒体/缩略图缓存被重复收录）。
+              if (!name.startsWith('.') &&
+                  name != 'Android' &&
+                  !_isUnderAppCacheDir(entity.path)) {
                 queue.add(entity.path);
               }
             } else if (entity is File) {
+              if (_isUnderAppCacheDir(entity.path)) continue;
               final ext = p.extension(entity.path).toLowerCase();
               if (shouldInclude(ext)) {
                 await onFound(entity);
@@ -1860,30 +1943,10 @@ class MediaProvider extends ChangeNotifier {
     final customDls = <File>[];
     for (final dirPath in customDlPaths) {
       if (dirPath.startsWith('remote://')) {
-        // 远程下载路径扫描（非递归）
+        // 远程下载路径递归扫描（与图片/文档等一致，支持子目录）。
         try {
-          final uriPart = dirPath.substring('remote://'.length);
-          final separatorIndex = uriPart.indexOf('|');
-          if (separatorIndex < 0) continue;
-          final connectionId = uriPart.substring(0, separatorIndex);
-          final remoteBasePath = uriPart.substring(separatorIndex + 1);
-          final connections = NetworkConnectionsService.getConnections();
-          final conn = connections.where((c) => c.id == connectionId).firstOrNull;
-          if (conn == null) continue;
-          final client = FileManagerProvider.createRemoteClient(conn);
-          await client.connect();
-          try {
-            var effectivePath = remoteBasePath;
-            // For SMB keep "/" to scan all shared directories.
-            final items = await client.listDirectory(effectivePath);
-            for (final item in items) {
-              if (!item.isDirectory) {
-                customDls.add(File('remote://$connectionId|${item.path}'));
-              }
-            }
-          } finally {
-            await client.disconnect();
-          }
+          final remoteFiles = await _scanRemotePath(dirPath, (_) => true);
+          customDls.addAll(remoteFiles);
         } catch (e) {
           debugPrint('[ZenFile] Remote downloads scan error: $e');
         }
@@ -1994,8 +2057,14 @@ class MediaProvider extends ChangeNotifier {
       for (final item in items) {
         if (item.isDirectory) {
           await _scanRemoteDirectoryRecursively(client, item.path, filter, onFileFound, depth: depth + 1);
-        } else if (filter(item.name)) {
-          onFileFound(item.path);
+        } else {
+          // 与本地 _scanDirectoryRecursively 保持一致：传「扩展名（含点，小写）」给 filter，
+          // 这样文档/压缩包/安装包的 `(ext) => _xxExtensions.contains(ext)` 才能正确匹配
+          // （此前误传完整文件名导致远程文档等永远扫描不到）。
+          final ext = p.extension(item.name).toLowerCase();
+          if (filter(ext)) {
+            onFileFound(item.path);
+          }
         }
       }
     } catch (e) {
@@ -2058,7 +2127,11 @@ class MediaProvider extends ChangeNotifier {
         for (final entity in rootEntities) {
           if (entity is Directory) {
             final name = p.basename(entity.path);
-            if (!name.startsWith('.') && name != 'Android') {
+            // 跳过隐藏目录、Android、本应用缓存目录（ZenFile），
+            // 避免远程媒体/缩略图缓存进入「最近」。
+            if (!name.startsWith('.') &&
+                name != 'Android' &&
+                !_isUnderAppCacheDir(entity.path)) {
               pathsToScan.add(entity.path);
             }
           }

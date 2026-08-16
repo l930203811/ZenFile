@@ -568,12 +568,12 @@ class FtpRemoteClient extends RemoteClient {
       await dataSocket.close();
       dataSocket = null;
 
-      // Read final 226 response — 服务器在数据传输完成后自动发送
-      // 不使用 sendCommand('')（空命令会破坏协议序列）
-      responseCompleter = Completer<String>();
-      try {
-        await responseCompleter!.future.timeout(const Duration(seconds: 5));
-      } catch (_) {}
+      // 不等待最终 226 响应：150 响应完成时 responseCompleter 已置 null，
+      // 226 到达时被 listen 回调丢弃，此处的等待必然等满 5s 超时——旧实现
+      // 让每次下载（含流式代理的按需 seek downloadRange）结尾白等 5 秒，
+      // 播放器拖动后 6-8s 才拿到数据，mpv seek 超时跳回原位置。
+      // 数据流（dataSocket done）即传输完成，直接 QUIT 即可；服务器随后发来
+      // 的 226/221 响应会被丢弃，无害。
 
       // Quit
       controlSocket.write('QUIT\r\n');

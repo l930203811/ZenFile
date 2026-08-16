@@ -50,6 +50,9 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
   late PageController _pageController;
   List<String> _imageList = [];
   final Map<int, File?> _fileCache = {};
+  // 远程图片（remote://）按需下载到本地缓存后的 File，key 为页索引。
+  final Map<int, File> _remoteCache = {};
+  final Set<int> _remoteLoading = {};
   int _currentIndex = 0;
   bool _showUI = true;
   bool _isZoomed = false;
@@ -113,10 +116,45 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
   }
 
   void _preloadAdjacent(int index) {
-    if (widget.siblingItems == null && widget.siblingAssets == null) return;
-    _loadAssetFile(index);
-    _loadAssetFile(index - 1);
-    _loadAssetFile(index + 1);
+    if (widget.siblingItems != null || widget.siblingAssets != null) {
+      _loadAssetFile(index);
+      _loadAssetFile(index - 1);
+      _loadAssetFile(index + 1);
+    }
+    // 远程图片按需下载（本地路径会被 _loadRemoteFile 自动跳过）。
+    _loadRemoteFile(index);
+    _loadRemoteFile(index - 1);
+    _loadRemoteFile(index + 1);
+  }
+
+  /// 取指定页索引对应的文件路径（远程或本地）。
+  String? _pathAtIndex(int index) {
+    if (widget.siblingItems != null && index >= 0 && index < widget.siblingItems!.length) {
+      final item = widget.siblingItems![index];
+      if (item is FileSystemEntity) return item.path;
+    }
+    if (_imageList.isNotEmpty && index >= 0 && index < _imageList.length) {
+      return _imageList[index];
+    }
+    return null;
+  }
+
+  /// 远程图片按需下载到本地缓存，完成后刷新显示。
+  Future<void> _loadRemoteFile(int index) async {
+    final path = _pathAtIndex(index);
+    if (path == null || !path.startsWith('remote://')) return;
+    if (_remoteCache.containsKey(index) || _remoteLoading.contains(index)) return;
+    _remoteLoading.add(index);
+    try {
+      final local = await FileManagerProvider.downloadRemoteFileToCache(path);
+      if (mounted && local != null) {
+        setState(() {
+          _remoteCache[index] = File(local);
+        });
+      }
+    } catch (_) {} finally {
+      _remoteLoading.remove(index);
+    }
   }
 
   Future<void> _loadAssetFile(int index) async {
@@ -136,9 +174,12 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
           });
         }
       } else if (item is FileSystemEntity) {
-        setState(() {
-          _fileCache[index] = File(item.path);
-        });
+        // 远程路径交由 _loadRemoteFile 处理，这里只缓存本地文件。
+        if (!item.path.startsWith('remote://')) {
+          setState(() {
+            _fileCache[index] = File(item.path);
+          });
+        }
       }
     } else if (widget.siblingAssets != null) {
       final asset = widget.siblingAssets![index];
@@ -164,12 +205,15 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
       if (item is AssetEntity) {
         return _fileCache[_currentIndex];
       } else if (item is FileSystemEntity) {
+        if (item.path.startsWith('remote://')) return _remoteCache[_currentIndex];
         return File(item.path);
       }
     } else if (widget.siblingAssets != null && _currentIndex < widget.siblingAssets!.length) {
       return _fileCache[_currentIndex];
     } else if (_imageList.isNotEmpty && _currentIndex < _imageList.length) {
-      return File(_imageList[_currentIndex]);
+      final fp = _imageList[_currentIndex];
+      if (fp.startsWith('remote://')) return _remoteCache[_currentIndex];
+      return File(fp);
     }
     return null;
   }
@@ -626,7 +670,12 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                     thumbData = ThumbnailCache.getCached(item.id);
                   } else if (item is FileSystemEntity) {
                     tagKey = item.path;
-                    imgFile = File(item.path);
+                    if (item.path.startsWith('remote://')) {
+                      imgFile = _remoteCache[index];
+                      if (imgFile == null) _loadRemoteFile(index);
+                    } else {
+                      imgFile = File(item.path);
+                    }
                   }
                 } else if (widget.siblingAssets != null) {
                   final asset = widget.siblingAssets![index];
@@ -636,7 +685,22 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                 } else {
                   final path = _imageList[index];
                   tagKey = path;
-                  imgFile = File(path);
+                  if (path.startsWith('remote://')) {
+                    imgFile = _remoteCache[index];
+                    if (imgFile == null) _loadRemoteFile(index);
+                  } else {
+                    imgFile = File(path);
+                  }
+                }
+
+                // 远程图片下载中：显示加载指示，避免空白。
+                if (imgFile == null && _pathAtIndex(index)?.startsWith('remote://') == true) {
+                  return PhotoViewGalleryPageOptions.customChild(
+                    child: const Center(
+                      child: CircularProgressIndicator(color: Colors.white70),
+                    ),
+                    heroAttributes: PhotoViewHeroAttributes(tag: tagKey),
+                  );
                 }
 
                 final bool isValidFile = imgFile != null && imgFile.existsSync() && imgFile.lengthSync() > 16;

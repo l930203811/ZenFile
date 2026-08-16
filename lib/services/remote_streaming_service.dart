@@ -477,7 +477,7 @@ class RemoteStreamingService {
     int endExclusive,
     int fileSize,
   ) async {
-    const chunkSize = 4 * 1024 * 1024; // 4MB 读块：减少 stat/flush 次数，提升顺序吞吐
+    const chunkSize = 4 * 1024 * 1024; // 4MB 读块
     int readOffset = rangeStart;
     RandomAccessFile? partialRaf;
     RandomAccessFile? seekRaf;
@@ -510,7 +510,7 @@ class RemoteStreamingService {
           partialRaf ??= await File(session.partialPath).open(mode: FileMode.read);
           var raf = partialRaf; // 非null局部引用（??= 已提升类型），供内循环使用
           int pendingFlush = 0;
-          const flushEvery = 4 * 1024 * 1024; // 每累积 4MB 才 flush 一次
+          const flushEvery = 4 * 1024 * 1024; // 每累积 4MB flush 一次
           while (readOffset < downloaded && readOffset < endExclusive) {
             final avail = downloaded.clamp(0, endExclusive);
             final toRead = (avail - readOffset).clamp(0, chunkSize).toInt();
@@ -622,7 +622,14 @@ class RemoteStreamingService {
           if (cachedLen > 0) {
             session._mergedStart = readOffset;
             session._mergedEnd = readOffset + cachedLen;
+            // 【关键修复】按需拉取成功后立即 continue 回到循环顶部，走 B 分支从
+            // seekcache 向播放器供数据。旧实现此处去等 partial（后台顺序下载）推进到
+            // readOffset——大文件前跳需要数分钟，30s 超时后 break 关闭连接，播放器
+            // seek 失败跳回原位置。seekcache 已有数据，无需等待顺序下载。
+            continue;
           }
+          // 拉取失败（0 字节）：短暂退避防自旋，再重试或等待下载推进。
+          await Future.delayed(const Duration(milliseconds: 200));
           if (readOffset < session.downloadedBytes) continue;
           final grew = await _waitForLocalGrowth(session, readOffset, File(session.partialPath));
           if (!grew) break;
@@ -631,7 +638,6 @@ class RemoteStreamingService {
 
         // E) 启动引导：partial 仍为空时，先用独立 seekClient 拉前 32MB 作为初始缓冲，
         //    使播放器立即拿到充足数据，避免等待首个分块下载完成才出画面（否则开局即卡）。
-        //    32MB 引导缓冲给予播放器更大初始余量，减少缓冲区耗尽导致的早期卡顿。
         if (!bootstrapped && downloaded <= 0 && !seekCovers) {
           bootstrapped = true;
           final tempSeek = '${session.localPath}.seek.tmp';
@@ -643,6 +649,8 @@ class RemoteStreamingService {
           if (cachedLen > 0) {
             session._mergedStart = readOffset;
             session._mergedEnd = readOffset + cachedLen;
+            // 引导数据已入 seekcache，立即 continue 走 B 分支供给播放器。
+            continue;
           }
           if (readOffset < session.downloadedBytes) continue;
           final grew = await _waitForLocalGrowth(session, readOffset, File(session.partialPath));
@@ -905,7 +913,7 @@ class RemoteStreamingService {
         await Future.delayed(Duration.zero);
         return true;
       }
-      // 修复C（问题2）：用「进度信号」替代纯 100ms 轮询——后台下载每落盘一批
+      // 修复C（问题2）：用「进度信号」替代纯轮询——后台下载每落盘一批
       // （_syncFileLength → _notifyProgress 完成 _progressSignal），本等待立即被
       // 唤醒，无需等下一个轮询周期，让播放头更紧密跟随后台下载，消除周期性饥饿。
       final signal = session._progressSignal;
@@ -1131,11 +1139,21 @@ class _StreamSession {
     // 「边下边落盘」——partial 文件长度即真实已下载字节，代理从此只读增长的
     // partial，彻底绕开 downloadRange(pos>0) 的脆弱性。
     try {
+      // 进度回调节流：existsSync+lengthSync 是【同步 IO】，而 FTP 下载每 64KB
+      // chunk 回调一次（20MB/s ≈ 320 次/s），逐次 stat 会同步阻塞主 isolate
+      // 数百 ms/s，下载/推流/UI 同挤一个事件循环互相争抢 → 播放器数据供给
+      // 脉冲化卡顿（WebDAV 直连无此层故同带宽流畅）。≥100ms 节流后同步开销
+      // 降为 10 次/s，事件循环延迟消除；_notifyProgress 轻量仍每次发送。
+      var lastStat = DateTime.fromMillisecondsSinceEpoch(0);
       await client.downloadFile(
         remotePath,
         partialPath,
         (progress) {
-          _syncFileLength();
+          final now = DateTime.now();
+          if (now.difference(lastStat).inMilliseconds >= 100) {
+            lastStat = now;
+            _syncFileLength();
+          }
           _notifyProgress();
         },
       );

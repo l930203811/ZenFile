@@ -27,6 +27,7 @@ import '../ui/widgets/extract_archive_dialog.dart';
 import '../core/utils.dart';
 import '../services/preferences_service.dart';
 import '../services/app_manager_service.dart';
+import '../services/category_sync_service.dart';
 import '../models/custom_shortcut_model.dart';
 import '../services/root_shizuku_service.dart';
 import '../services/recycle_bin_service.dart';
@@ -1573,6 +1574,220 @@ class FileManagerProvider extends ChangeNotifier {
     throw ArgumentError('Unsupported connection type: ${conn.type}');
   }
 
+  /// 将 `remote://{connectionId}|{remotePath}` 文件下载到本地缓存并返回本地路径。
+  /// 供图片查看器等需要本地 File 的场景调用（远程图片无法直接 File() 读取）。
+  /// 已缓存则直接返回。失败返回 null。
+  static Future<String?> downloadRemoteFileToCache(String remotePathStr) async {
+    try {
+      if (!remotePathStr.startsWith('remote://')) return null;
+      final uriPart = remotePathStr.substring('remote://'.length);
+      final sep = uriPart.indexOf('|');
+      if (sep < 0) return null;
+      final connectionId = uriPart.substring(0, sep);
+      final remotePath = uriPart.substring(sep + 1);
+      final conn = NetworkConnectionsService.getConnections()
+          .where((c) => c.id == connectionId)
+          .firstOrNull;
+      if (conn == null) return null;
+      final client = createRemoteClient(conn);
+      await client.connect();
+      try {
+        final cacheDir = Directory('/storage/emulated/0/ZenFile/.remote_cache');
+        if (!cacheDir.existsSync()) cacheDir.createSync(recursive: true);
+        final baseName = p.basename(remotePath);
+        final cacheName = '${remotePathStr.hashCode}_$baseName';
+        final cachePath = p.join(cacheDir.path, cacheName);
+        if (!File(cachePath).existsSync()) {
+          await client.downloadFile(remotePath, cachePath, (_) {});
+        }
+        return cachePath;
+      } finally {
+        await client.disconnect();
+      }
+    } catch (e) {
+      debugPrint('[ZenFile] downloadRemoteFileToCache error: $e');
+      return null;
+    }
+  }
+
+  /// 解析 `remote://{connId}|{serverPath}`，返回 (connectionId, serverPath) 或 null。
+  static List<String>? parseRemotePathParts(String remotePathStr) {
+    if (!remotePathStr.startsWith('remote://')) return null;
+    final uriPart = remotePathStr.substring('remote://'.length);
+    final sep = uriPart.indexOf('|');
+    if (sep < 0) return null;
+    return [uriPart.substring(0, sep), uriPart.substring(sep + 1)];
+  }
+
+  /// 根据 remote:// 路径取对应连接。
+  static NetworkConnectionModel? connectionForRemotePath(String remotePathStr) {
+    final parts = parseRemotePathParts(remotePathStr);
+    if (parts == null) return null;
+    return NetworkConnectionsService.getConnections()
+        .where((c) => c.id == parts[0])
+        .firstOrNull;
+  }
+
+  /// 删除 remote:// 远程文件（分类页远程文件菜单用）。
+  static Future<bool> deleteRemotePath(String remotePathStr) async {
+    try {
+      final parts = parseRemotePathParts(remotePathStr);
+      if (parts == null) return false;
+      final conn = NetworkConnectionsService.getConnections()
+          .where((c) => c.id == parts[0])
+          .firstOrNull;
+      if (conn == null) return false;
+      final client = createRemoteClient(conn);
+      await client.connect();
+      try {
+        await client.delete(parts[1], false);
+        return true;
+      } finally {
+        await client.disconnect();
+      }
+    } catch (e) {
+      debugPrint('[ZenFile] deleteRemotePath error: $e');
+      return false;
+    }
+  }
+
+  /// 重命名 remote:// 远程文件（仅改文件名）。
+  static Future<bool> renameRemotePath(String remotePathStr, String newName) async {
+    try {
+      final parts = parseRemotePathParts(remotePathStr);
+      if (parts == null) return false;
+      final conn = NetworkConnectionsService.getConnections()
+          .where((c) => c.id == parts[0])
+          .firstOrNull;
+      if (conn == null) return false;
+      final client = createRemoteClient(conn);
+      await client.connect();
+      try {
+        final parent = _remoteDirname(parts[1]);
+        final newPath = parent.endsWith('/') ? '$parent$newName' : '$parent/$newName';
+        await client.rename(parts[1], newPath);
+        return true;
+      } finally {
+        await client.disconnect();
+      }
+    } catch (e) {
+      debugPrint('[ZenFile] renameRemotePath error: $e');
+      return false;
+    }
+  }
+
+  /// 将 remote:// 文件加入远程剪贴板（供远程浏览页粘贴）。
+  void copyRemotePathToClipboard(String remotePathStr, {required bool isCut}) {
+    final parts = parseRemotePathParts(remotePathStr);
+    if (parts == null) return;
+    final conn = NetworkConnectionsService.getConnections()
+        .where((c) => c.id == parts[0])
+        .firstOrNull;
+    if (conn == null) return;
+    final item = RemoteFileItem(
+      name: _remoteBasename(parts[1]),
+      path: parts[1],
+      isDirectory: false,
+      size: 0,
+      modified: DateTime.now(),
+    );
+    setRemoteClipboard([item], isCut: isCut, connection: conn);
+  }
+
+  /// 批量删除多个 remote:// 文件，返回成功删除的数量。
+  static Future<int> deleteRemotePaths(List<String> remotePaths) async {
+    int deleted = 0;
+    // 按 connectionId 分组，减少重复建连。
+    final byConn = <String, List<String>>{};
+    for (final rp in remotePaths) {
+      final parts = parseRemotePathParts(rp);
+      if (parts == null) continue;
+      (byConn[parts[0]] ??= []).add(parts[1]);
+    }
+    for (final entry in byConn.entries) {
+      final conn = NetworkConnectionsService.getConnections()
+          .where((c) => c.id == entry.key)
+          .firstOrNull;
+      if (conn == null) continue;
+      final client = createRemoteClient(conn);
+      try {
+        await client.connect();
+        for (final serverPath in entry.value) {
+          try {
+            await client.delete(serverPath, false);
+            deleted++;
+          } catch (e) {
+            debugPrint('[ZenFile] deleteRemotePaths item error: $e');
+          }
+        }
+      } catch (_) {
+      } finally {
+        try {
+          await client.disconnect();
+        } catch (_) {}
+      }
+    }
+    return deleted;
+  }
+
+  /// 批量重命名多个 remote:// 文件（同一新名时自动加序号）。
+  /// 返回成功重命名数量。
+  static Future<int> renameRemotePaths(List<String> remotePaths, String baseName) async {
+    int renamed = 0;
+    // 按 connectionId+parentDir 分组，避免同名。
+    final groups = <String, List<String>>{};
+    for (final rp in remotePaths) {
+      final parts = parseRemotePathParts(rp);
+      if (parts == null) continue;
+      final parent = _remoteDirname(parts[1]);
+      final key = '${parts[0]}|$parent';
+      (groups[key] ??= []).add(rp);
+    }
+    for (final entry in groups.entries) {
+      final sep = entry.key.indexOf('|');
+      final connId = entry.key.substring(0, sep);
+      final parent = entry.key.substring(sep + 1);
+      final conn = NetworkConnectionsService.getConnections()
+          .where((c) => c.id == connId)
+          .firstOrNull;
+      if (conn == null) continue;
+      final client = createRemoteClient(conn);
+      try {
+        await client.connect();
+        final ext = pathExtension(baseName);
+        final nameNoExt = ext.isEmpty ? baseName : baseName.substring(0, baseName.length - ext.length);
+        for (int i = 0; i < entry.value.length; i++) {
+          final rp = entry.value[i];
+          final parts = parseRemotePathParts(rp);
+          if (parts == null) continue;
+          final newName = entry.value.length == 1
+              ? baseName
+              : '$nameNoExt (${i + 1})$ext';
+          final newPath = parent.endsWith('/') ? '$parent$newName' : '$parent/$newName';
+          try {
+            await client.rename(parts[1], newPath);
+            renamed++;
+          } catch (e) {
+            debugPrint('[ZenFile] renameRemotePaths item error: $e');
+          }
+        }
+      } catch (_) {
+      } finally {
+        try {
+          await client.disconnect();
+        } catch (_) {}
+      }
+    }
+    return renamed;
+  }
+
+  /// 取扩展名（含点，小写）。
+  static String pathExtension(String name) {
+    final dot = name.lastIndexOf('.');
+    if (dot < 0) return '';
+    return name.substring(dot).toLowerCase();
+  }
+
   void closeTab(int index) {
     if (_tabs.length <= 1) return;
     final removed = _tabs[index];
@@ -1830,6 +2045,42 @@ class FileManagerProvider extends ChangeNotifier {
     Timer(const Duration(milliseconds: 2000), () {
       _forceHighlightedPaths.remove(filePath);
       if (_highlightedPaths.remove(filePath)) {
+        notifyListeners();
+      }
+    });
+  }
+
+  /// 打开 remote:// 文件所在连接的远程标签页，并定位到其父目录（分类页「查看文件所在位置」用）。
+  Future<void> showRemoteFileInLocation(String remotePathStr) async {
+    final parts = parseRemotePathParts(remotePathStr);
+    if (parts == null) return;
+    final conn = NetworkConnectionsService.getConnections()
+        .where((c) => c.id == parts[0])
+        .firstOrNull;
+    if (conn == null) return;
+    final client = createRemoteClient(conn);
+    try {
+      await client.connect();
+    } catch (e) {
+      debugPrint('[ZenFile] showRemoteFileInLocation connect error: $e');
+      return;
+    }
+    await openRemoteTab(client, conn);
+    final parent = _remoteDirname(parts[1]);
+    if (parent.isNotEmpty && parent != parts[1]) {
+      try {
+        await loadDirectory(parent);
+      } catch (_) {}
+    }
+    _highlightedPaths.clear();
+    _highlightedPaths.add(remotePathStr);
+    _forceHighlightedPaths.clear();
+    _forceHighlightedPaths.add(remotePathStr);
+    _shouldScrollToHighlight = true;
+    notifyListeners();
+    Timer(const Duration(milliseconds: 2000), () {
+      _forceHighlightedPaths.remove(remotePathStr);
+      if (_highlightedPaths.remove(remotePathStr)) {
         notifyListeners();
       }
     });
@@ -4297,6 +4548,7 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
+  /// 递归上传整个本地目录到远程（用于普通复制/粘贴，非分类同步）。
   Future<void> _uploadLocalDirectory(
     RemoteClient client,
     String localDirPath,
@@ -4326,6 +4578,7 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
+  /// 递归下载整个远程目录到本地（用于普通复制/粘贴，非分类同步）。
   Future<void> _downloadRemoteDirectory(
     RemoteClient client,
     String remoteDirPath,
@@ -4337,12 +4590,9 @@ class FileManagerProvider extends ChangeNotifier {
     if (!localDir.existsSync()) {
       localDir.createSync(recursive: true);
     }
-
     final List<RemoteFileItem> remoteItems = await client.listDirectory(remoteDirPath);
     for (final item in remoteItems) {
-      if (_isOperationCancelled) {
-        throw Exception('Cancelled');
-      }
+      if (_isOperationCancelled) throw Exception('Cancelled');
       final destPath = p.join(localDirPath, item.name);
       if (item.isDirectory) {
         await _downloadRemoteDirectory(client, item.path, destPath,
@@ -4355,6 +4605,356 @@ class FileManagerProvider extends ChangeNotifier {
         });
       }
     }
+  }
+
+  // ===================== 分类同步（文件级 · 本地 ↔ 远程） =====================
+
+  /// 计算一组本地文件路径的最长公共目录前缀（镜像式同步的相对基准）。
+  /// 路径以 '/' 分隔（Android 本地路径）。
+  static String longestCommonDir(List<String> paths) {
+    if (paths.isEmpty) return '';
+    if (paths.length == 1) return _localDirname(paths.first);
+    final split = paths.map((s) => s.split('/')).toList();
+    final first = split.first;
+    int common = 0;
+    for (int i = 0; i < first.length; i++) {
+      final seg = first[i];
+      bool ok = true;
+      for (int j = 1; j < split.length; j++) {
+        if (split[j].length <= i || split[j][i] != seg) {
+          ok = false;
+          break;
+        }
+      }
+      if (!ok) break;
+      common++;
+    }
+    return first.sublist(0, common).join('/');
+  }
+
+  static String _localDirname(String path) {
+    final idx = path.lastIndexOf('/');
+    if (idx <= 0) return idx == 0 ? '/' : '';
+    return path.substring(0, idx);
+  }
+
+  static String _localBasename(String path) {
+    final idx = path.lastIndexOf('/');
+    return idx >= 0 ? path.substring(idx + 1) : path;
+  }
+
+  /// 本地文件相对 [base] 的相对路径（以 '/' 分隔）。
+  static String _localRelative(String file, String base) {
+    if (base.isEmpty) return file;
+    final f = file.split('/');
+    final b = base.split('/');
+    int i = 0;
+    while (i < f.length && i < b.length && f[i] == b[i]) {
+      i++;
+    }
+    return f.sublist(i).join('/');
+  }
+
+  /// 远程路径的父目录（按 '/' 分隔，规避平台 context 差异）。
+  static String _remoteDirname(String remotePath) {
+    final idx = remotePath.lastIndexOf('/');
+    if (idx <= 0) return '/';
+    return remotePath.substring(0, idx);
+  }
+
+  static String _remoteBasename(String remotePath) {
+    final idx = remotePath.lastIndexOf('/');
+    return idx >= 0 ? remotePath.substring(idx + 1) : remotePath;
+  }
+
+  /// 拼接远程目录基准与相对路径（rel 以 '/' 分隔）。
+  static String _joinRemote(String base, String rel) {
+    final b = base.endsWith('/') ? base.substring(0, base.length - 1) : base;
+    final r = rel.startsWith('/') ? rel.substring(1) : rel;
+    if (r.isEmpty) return b.isEmpty ? '/' : b;
+    return '$b/$r';
+  }
+
+  int _localFileSize(String path) {
+    try {
+      return File(path).lengthSync();
+    } catch (_) {
+      return -1;
+    }
+  }
+
+  bool _isAlreadyExistsError(Object e) {
+    final s = e.toString().toLowerCase();
+    return s.contains('405') ||
+        s.contains('301') ||
+        s.contains('already exist') ||
+        s.contains('exists') ||
+        s.contains('550');
+  }
+
+  /// 幂等地创建远程目录（逐段创建，已存在的段忽略）。
+  Future<void> _ensureRemoteDir(RemoteClient client, String serverDirPath) async {
+    var clean = serverDirPath;
+    if (!clean.startsWith('/')) clean = '/$clean';
+    final parts = clean.split('/').where((s) => s.isNotEmpty).toList();
+    String cur = '';
+    for (final part in parts) {
+      cur = cur.isEmpty ? '/$part' : '$cur/$part';
+      try {
+        await client.createDirectory(cur);
+      } catch (e) {
+        if (_isAlreadyExistsError(e)) continue;
+        rethrow;
+      }
+    }
+  }
+
+  /// 列出远程目录（带缓存，避免重复请求）。
+  Future<List<RemoteFileItem>> _listRemoteDirCached(
+    RemoteClient client,
+    String dir,
+    Map<String, List<RemoteFileItem>> cache,
+  ) async {
+    if (cache.containsKey(dir)) return cache[dir]!;
+    try {
+      final items = await client.listDirectory(dir);
+      cache[dir] = items;
+      return items;
+    } catch (_) {
+      cache[dir] = const <RemoteFileItem>[];
+      return const <RemoteFileItem>[];
+    }
+  }
+
+  /// 查询远程文件大小；不存在返回 null。
+  Future<int?> _remoteFileSize(
+    RemoteClient client,
+    String remoteFilePath,
+    Map<String, List<RemoteFileItem>> cache,
+  ) async {
+    final parent = _remoteDirname(remoteFilePath);
+    final name = _remoteBasename(remoteFilePath);
+    final items = await _listRemoteDirCached(client, parent, cache);
+    for (final it in items) {
+      if (!it.isDirectory && it.name == name) return it.size;
+    }
+    return null;
+  }
+
+  /// 同步一个或多个「文件级」单元：仅同步 [CategorySyncPair.localFiles] 中列出的
+  /// 实际分类文件（而非整文件夹），并保留其在公共本地基准下的相对结构。
+  /// - 幂等：远程/本地已存在且大小一致则跳过传输（修复「二次同步失败」）。
+  /// - 剪枝：若某文件曾已同步（有记录）但远程/本地副本已被删除，则撤销其云徽记录。
+  Future<CategorySyncResult> syncCategoryPairs({
+    required List<CategorySyncPair> pairs,
+    SyncDirection direction = SyncDirection.localToRemote,
+    required String categoryLabel,
+    void Function(String status)? onStatus,
+    void Function(String name, int size, double progress)? onProgress,
+  }) async {
+    await CategorySyncService.init();
+    final syncedLocalPaths = <String>[];
+    int transferredUnits = 0;
+    _isOperationCancelled = false;
+
+    final allRecords = CategorySyncService.getAllRecords();
+    final keptRecords = <CategorySyncRecord>[];
+    for (final r in allRecords) {
+      if (r.category == categoryLabel) keptRecords.add(r);
+    }
+    final recordByLocal = <String, CategorySyncRecord>{};
+    for (final r in keptRecords) {
+      recordByLocal[r.localPath] = r;
+    }
+
+    void dropRecord(String localPath) {
+      keptRecords.removeWhere((r) => r.localPath == localPath);
+      recordByLocal.remove(localPath);
+    }
+
+    void upsertRecord(CategorySyncRecord rec) {
+      keptRecords.removeWhere(
+          (r) => r.localPath == rec.localPath && r.toRemote == rec.toRemote);
+      keptRecords.add(rec);
+      recordByLocal[rec.localPath] = rec;
+    }
+
+    Future<void> persist() async {
+      final remaining = <CategorySyncRecord>[];
+      for (final r in allRecords) {
+        if (r.category != categoryLabel) remaining.add(r);
+      }
+      remaining.addAll(keptRecords);
+      await CategorySyncService.saveAllRecords(remaining);
+    }
+
+    for (final pair in pairs) {
+      final parsed = _parseRemotePath(pair.remoteTargetPath);
+      if (parsed == null) {
+        onStatus?.call('跳过无效远程路径: ${pair.remoteTargetPath}');
+        continue;
+      }
+      final conn = _connectionById(parsed.connectionId);
+      if (conn == null) {
+        onStatus?.call('未找到远程连接: ${parsed.connectionId}');
+        continue;
+      }
+      final localFiles =
+          pair.localFiles.where((f) => !f.startsWith('remote://')).toList();
+      final localDir = pair.localDir;
+      if (localDir.isEmpty && localFiles.isEmpty) {
+        continue;
+      }
+      final dirCache = <String, List<RemoteFileItem>>{};
+      final client = FileManagerProvider.createRemoteClient(conn);
+      try {
+        await client.connect();
+
+        if (direction == SyncDirection.localToRemote ||
+            direction == SyncDirection.bidirectional) {
+          onStatus?.call('同步本地 → 远程');
+          for (final localFile in localFiles) {
+            if (_isOperationCancelled) throw Exception('Cancelled');
+            final name = _localBasename(localFile);
+            final rel = _localRelative(localFile, localDir);
+            final remoteFilePath = _joinRemote(parsed.remotePath, rel);
+            final localSize = _localFileSize(localFile);
+            final remoteSize =
+                await _remoteFileSize(client, remoteFilePath, dirCache);
+            final rec = recordByLocal[localFile];
+            if (rec != null && remoteSize == null) {
+              // 远程副本已被删除 -> 撤销云徽，且不自动重新上传（尊重用户删除）。
+              onStatus?.call('远程已删除，取消云徽: $name');
+              dropRecord(localFile);
+              continue;
+            }
+            if (remoteSize != null && localSize >= 0 && remoteSize == localSize) {
+              // 已存在且一致 -> 保持云徽，跳过传输。
+              upsertRecord(CategorySyncRecord(
+                category: categoryLabel,
+                localPath: localFile,
+                remotePath: '${pair.remoteTargetPath}/$rel',
+                size: localSize,
+                toRemote: true,
+              ));
+              syncedLocalPaths.add(localFile);
+              continue;
+            }
+            await _ensureRemoteDir(client, _remoteDirname(remoteFilePath));
+            onStatus?.call('上传 $name');
+            onProgress?.call(name, localSize, 0.0);
+            await client.uploadFile(localFile, remoteFilePath, (prog) {
+              onProgress?.call(name, localSize, prog);
+            });
+            upsertRecord(CategorySyncRecord(
+              category: categoryLabel,
+              localPath: localFile,
+              remotePath: '${pair.remoteTargetPath}/$rel',
+              size: localSize,
+              toRemote: true,
+            ));
+            syncedLocalPaths.add(localFile);
+          }
+        }
+
+        if (direction == SyncDirection.remoteToLocal ||
+            direction == SyncDirection.bidirectional) {
+          onStatus?.call('同步远程 → 本地');
+          // 仅下载该类别识别的文件格式（与扫描过滤一致），不同步目录里其它格式文件。
+          final categoryFilter = FileUtils.categoryFileFilter(categoryLabel);
+          Future<void> downloadDir(String remoteDir, String localDest, String relAcc) async {
+            if (_isOperationCancelled) throw Exception('Cancelled');
+            final localDirObj = Directory(localDest);
+            if (!localDirObj.existsSync()) {
+              try {
+                localDirObj.createSync(recursive: true);
+              } catch (_) {}
+            }
+            final List<RemoteFileItem> items =
+                await _listRemoteDirCached(client, remoteDir, dirCache);
+            for (final item in items) {
+              if (_isOperationCancelled) throw Exception('Cancelled');
+              final destPath = p.join(localDest, item.name);
+              final rel = relAcc.isEmpty ? item.name : '$relAcc/${item.name}';
+              if (item.isDirectory) {
+                await downloadDir(item.path, destPath, rel);
+                continue;
+              }
+              // 跳过非本类别格式的文件（如图片类别不同步视频/文档等）。
+              if (!categoryFilter(item.name)) continue;
+              final rec = recordByLocal[destPath];
+              final localExists = File(destPath).existsSync();
+              if (rec != null && !localExists) {
+                onStatus?.call('本地已删除，取消云徽: ${item.name}');
+                dropRecord(destPath);
+                continue;
+              }
+              final localSize = _localFileSize(destPath);
+              if (localExists && localSize >= 0 && item.size == localSize) {
+                upsertRecord(CategorySyncRecord(
+                  category: categoryLabel,
+                  localPath: destPath,
+                  remotePath: '${pair.remoteTargetPath}/$rel',
+                  size: item.size,
+                  toRemote: false,
+                ));
+                syncedLocalPaths.add(destPath);
+                continue;
+              }
+              onStatus?.call('下载 ${item.name}');
+              onProgress?.call(item.name, item.size, 0.0);
+              await client.downloadFile(item.path, destPath, (prog) {
+                onProgress?.call(item.name, item.size, prog);
+              });
+              upsertRecord(CategorySyncRecord(
+                category: categoryLabel,
+                localPath: destPath,
+                remotePath: '${pair.remoteTargetPath}/$rel',
+                size: item.size,
+                toRemote: false,
+              ));
+              syncedLocalPaths.add(destPath);
+            }
+          }
+
+          await downloadDir(parsed.remotePath, localDir, '');
+        }
+        transferredUnits++;
+      } catch (e) {
+        onStatus?.call('同步失败: $e');
+        await persist();
+        rethrow;
+      } finally {
+        try {
+          await client.disconnect();
+        } catch (_) {}
+      }
+      await persist();
+    }
+    return CategorySyncResult(
+      syncedLocalPaths: syncedLocalPaths,
+      transferredUnits: transferredUnits,
+      syncedCount: syncedLocalPaths.length,
+    );
+  }
+
+  _ParsedRemotePath? _parseRemotePath(String path) {
+    if (!path.startsWith('remote://')) return null;
+    final uriPart = path.substring('remote://'.length);
+    final sep = uriPart.indexOf('|');
+    if (sep < 0) return null;
+    return _ParsedRemotePath(
+      connectionId: uriPart.substring(0, sep),
+      remotePath: uriPart.substring(sep + 1),
+    );
+  }
+
+  NetworkConnectionModel? _connectionById(String id) {
+    final conns = NetworkConnectionsService.getConnections();
+    for (final c in conns) {
+      if (c.id == id) return c;
+    }
+    return null;
   }
 
   String _getUniquePath(String destPath, bool isDir) {
@@ -5088,6 +5688,24 @@ class FileManagerProvider extends ChangeNotifier {
         Navigator.push(context, MaterialPageRoute(builder: (_) => ImageViewerScreen(imagePath: path)));
         break;
       case 'video':
+        // 远程标签页且文件未在本地缓存：启动流式播放
+        if (activeTab.isRemote && activeTab.remoteClient != null && !File(path).existsSync()) {
+          final streamUrl = await _setupRemoteMediaStream(path);
+          if (streamUrl != null && context.mounted) {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(videoPath: streamUrl, isRemote: true)));
+            break;
+          }
+          // 流式失败，回退：下载到本地缓存后播放
+          if (context.mounted) {
+            final localPath = await _downloadRemoteFileToCache(path);
+            if (localPath != null) {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => VideoPlayerScreen(
+                videoPath: localPath, playlist: [localPath], initialIndex: 0, isRemote: true,
+              )));
+              break;
+            }
+          }
+        }
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -5101,6 +5719,26 @@ class FileManagerProvider extends ChangeNotifier {
         );
         break;
       case 'audio':
+        // 远程标签页且文件未在本地缓存：启动流式播放
+        if (activeTab.isRemote && activeTab.remoteClient != null && !File(path).existsSync()) {
+          final streamUrl = await _setupRemoteMediaStream(path);
+          if (streamUrl != null && context.mounted) {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => AudioPlayerScreen(
+              audioPath: streamUrl, title: p.basenameWithoutExtension(path), isRemote: true,
+            )));
+            break;
+          }
+          // 流式失败，回退：下载到本地缓存后播放
+          if (context.mounted) {
+            final localPath = await _downloadRemoteFileToCache(path);
+            if (localPath != null) {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => AudioPlayerScreen(
+                audioPath: localPath, title: p.basenameWithoutExtension(path), isRemote: true,
+              )));
+              break;
+            }
+          }
+        }
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -5121,6 +5759,68 @@ class FileManagerProvider extends ChangeNotifier {
   /// 通过系统选择器（Intent.createChooser）打开文件或 URL
   /// 支持本地文件路径和 HTTP(S) URL（远程流式播放）
   static const _platformChannel = MethodChannel('com.sequl.zenfile/root_shizuku');
+
+  /// 为远程文件启动流式播放，返回播放 URL。
+  /// WebDAV 优先走直连 HTTP 流式（libmpv 原生 Range 请求，流畅不卡顿），
+  /// FTP/SFTP 等走本地代理服务器（边下载边推流）。
+  /// 失败时返回 null，调用方应回退到下载模式。
+  Future<String?> _setupRemoteMediaStream(String remotePath) async {
+    try {
+      final conn = activeTab.remoteConnection;
+      if (conn == null) return null;
+
+      // 优先尝试 WebDAV 直连流式 URL（libmpv 原生 HTTP Range 请求，与正常扩展名文件一致）
+      final directClient = createRemoteClient(conn);
+      try {
+        final streamUrl = directClient.getStreamUrl(remotePath);
+        if (streamUrl != null) {
+          debugPrint('_setupRemoteMediaStream: 使用直连流式 URL');
+          return streamUrl;
+        }
+      } finally {
+        // getStreamUrl 不需要 connect，但创建了 client 需要断开以防泄漏
+        try { await directClient.disconnect(); } catch (_) {}
+      }
+
+      // 非 HTTP 流协议（FTP/SFTP 等）：通过本地代理服务器
+      final fileItem = currentFiles.where((f) => f.path == remotePath).firstOrNull;
+      final knownSize = (fileItem != null && fileItem.size > 0) ? fileItem.size : null;
+
+      final downloadClient = createRemoteClient(conn);
+      await downloadClient.connect();
+      final seekClient = createRemoteClient(conn);
+      await seekClient.connect();
+
+      final proxyUrl = await RemoteStreamingService.instance.startStreaming(
+        downloadClient, remotePath, p.basename(remotePath),
+        fileSize: knownSize,
+        seekClient: seekClient,
+      );
+      return proxyUrl;
+    } catch (e) {
+      debugPrint('_setupRemoteMediaStream 失败: $e');
+      return null;
+    }
+  }
+
+  /// 下载远程文件到本地缓存，返回本地路径。
+  /// 失败时返回 null。
+  Future<String?> _downloadRemoteFileToCache(String remotePath) async {
+    try {
+      final remoteClient = activeTab.remoteClient;
+      if (remoteClient == null) return null;
+      final cacheDir = Directory('/storage/emulated/0/ZenFile');
+      if (!cacheDir.existsSync()) cacheDir.createSync(recursive: true);
+      final cachePath = p.join(cacheDir.path, p.basename(remotePath));
+      if (!File(cachePath).existsSync()) {
+        await remoteClient.downloadFile(remotePath, cachePath, (progress) {});
+      }
+      return cachePath;
+    } catch (e) {
+      debugPrint('_downloadRemoteFileToCache 失败: $e');
+      return null;
+    }
+  }
 
   Future<void> openWithSystemChooser(String path, {String? mimeType}) async {
     try {
@@ -5265,22 +5965,23 @@ class FileManagerProvider extends ChangeNotifier {
           }
         }
 
-        // 非媒体文件：完整下载后打开
-        final cacheDir = Directory('/storage/emulated/0/ZenFile');
-        if (!cacheDir.existsSync()) cacheDir.createSync(recursive: true);
-        final cachePath = p.join(cacheDir.path, fileName);
-        if (!File(cachePath).existsSync()) {
-          await remoteClient.downloadFile(remotePath, cachePath, (progress) {});
-        }
-        targetPath = cachePath;
-        // 下载完成后断开连接
-        await remoteClient.disconnect();
-
-        // 用户选择"使用外部系统选择器打开" → 调用系统选择器
+        // 非媒体文件（MIME 未知）
+        // 用户选择"使用外部系统选择器打开" → 完整下载后调用系统选择器
         if (openAction == 'external') {
+          final cacheDir = Directory('/storage/emulated/0/ZenFile');
+          if (!cacheDir.existsSync()) cacheDir.createSync(recursive: true);
+          final cachePath = p.join(cacheDir.path, fileName);
+          if (!File(cachePath).existsSync()) {
+            await remoteClient.downloadFile(remotePath, cachePath, (progress) {});
+          }
+          targetPath = cachePath;
+          await remoteClient.disconnect();
           await openWithSystemChooser(targetPath, mimeType: lookupMimeType(fileExt) ?? '*/*');
           return;
         }
+        // MIME 未知且未选择外部打开：不立即下载，保留原始路径，
+        // 让后续 openFileNatively 的类型选择器决定处理方式。
+        await remoteClient.disconnect();
       } catch (e) {
         debugPrint('远程路径文件打开失败: $e');
       }
@@ -5352,20 +6053,22 @@ class FileManagerProvider extends ChangeNotifier {
           }
         }
 
-        // 非媒体文件：完整下载后打开
-        final cacheDir = Directory('/storage/emulated/0/ZenFile');
-        if (!cacheDir.existsSync()) cacheDir.createSync(recursive: true);
-        final cachePath = p.join(cacheDir.path, p.basename(path));
-        if (!File(cachePath).existsSync()) {
-          await remoteClient.downloadFile(path, cachePath, (progress) {});
-        }
-        targetPath = cachePath;
-
-        // 用户选择"使用外部系统选择器打开" → 调用系统选择器
+        // 非媒体文件（MIME 未知）
+        // 用户选择"使用外部系统选择器打开" → 完整下载后调用系统选择器
         if (openAction == 'external') {
+          final cacheDir = Directory('/storage/emulated/0/ZenFile');
+          if (!cacheDir.existsSync()) cacheDir.createSync(recursive: true);
+          final cachePath = p.join(cacheDir.path, p.basename(path));
+          if (!File(cachePath).existsSync()) {
+            await remoteClient.downloadFile(path, cachePath, (progress) {});
+          }
+          targetPath = cachePath;
           await openWithSystemChooser(targetPath, mimeType: fileMime.isEmpty ? '*/*' : fileMime);
           return;
         }
+        // MIME 未知且未选择外部打开：不立即下载，保留原始路径，
+        // 让后续 openFileNatively 的类型选择器决定处理方式。
+        // 用户选择视频/音频时会在 _openBuiltInByType 中启动流式播放。
       } catch (e) {
         debugPrint('下载远程文件失败: $e');
       }
@@ -5691,4 +6394,44 @@ class _Sample {
   final DateTime time;
   final int bytes;
   _Sample(this.time, this.bytes);
+}
+
+// ===================== 分类同步辅助类型（顶层，供 FileManagerProvider 与 UI 共用） =====================
+
+class _ParsedRemotePath {
+  final String connectionId;
+  final String remotePath;
+  _ParsedRemotePath({required this.connectionId, required this.remotePath});
+}
+
+/// 分类同步方向。
+enum SyncDirection { localToRemote, remoteToLocal, bidirectional }
+
+/// 一个同步单元：把本地目录 [localDir] 与远程目标目录 [remoteTargetPath] 互相同步。
+/// [remoteTargetPath] 形如 `remote://{connectionId}|{serverPath}`。
+class CategorySyncPair {
+  /// 本地基准目录（相对路径基准 / 远程→本地下载落地目录）。
+  final String localDir;
+  /// 需要同步的实际本地分类文件路径列表（仅这些文件，而非整文件夹）。
+  final List<String> localFiles;
+  /// 远程基准路径，形如 `remote://{connectionId}|{serverPath}`。
+  final String remoteTargetPath;
+  const CategorySyncPair({
+    required this.localDir,
+    required this.localFiles,
+    required this.remoteTargetPath,
+  });
+}
+
+/// 同步结果。
+class CategorySyncResult {
+  /// 本次同步覆盖（含跳过未变）的本地文件路径列表（用于云徽刷新）。
+  final List<String> syncedLocalPaths;
+  final int transferredUnits;
+  final int syncedCount;
+  const CategorySyncResult({
+    this.syncedLocalPaths = const [],
+    this.transferredUnits = 0,
+    this.syncedCount = 0,
+  });
 }

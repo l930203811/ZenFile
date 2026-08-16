@@ -4,6 +4,7 @@ import '../../core/icon_fonts/broken_icons.dart';
 import '../../models/network_connection_model.dart';
 import '../../services/network_connections_service.dart';
 import '../../providers/file_manager_provider.dart';
+import '../../services/remote_guard_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 import 'network_connection_wizard_screen.dart';
@@ -208,6 +209,8 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
                             IconButton(
                               icon: Icon(Broken.edit, size: 18, color: theme.colorScheme.primary),
                               onPressed: () async {
+                                // 编辑页可见密码，远程保护开启且未解锁时先验证 PIN
+                                if (!await RemoteGuardService.guard(context)) return;
                                 await Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -225,6 +228,8 @@ class _NetworkCategoryScreenState extends State<NetworkCategoryScreen> {
                         ),
                         onTap: () async {
                           final provider = context.read<FileManagerProvider>();
+                          // 远程保护开启且未解锁时，先验证 PIN 再连接
+                          if (!await RemoteGuardService.guard(context)) return;
                           final client = FileManagerProvider.createRemoteClient(conn);
                           try {
                             await client.connect();

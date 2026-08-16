@@ -285,6 +285,10 @@ class _PaneBrowserState extends State<PaneBrowser> {
       case 'extract':
         await provider.extractArchiveDirectly(context, path);
         break;
+      case 'open_with':
+        // 与单窗口 directory_screen 的 _handleAction 保持一致
+        await provider.showOpenWithSheet(context, path);
+        break;
       case 'copy':
         provider.copyFile(path);
         break;
@@ -1092,6 +1096,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                       context,
                       (action) => _handleAction(context, action, file.path),
                       isArchive: FileUtils.isArchive(file.path),
+                      openWith: !file.isDirectory,
                     );
                   },
                 ),

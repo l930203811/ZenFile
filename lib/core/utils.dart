@@ -203,6 +203,48 @@ class FileUtils {
     return docExts.contains(ext);
   }
 
+  /// 取文件名扩展名（含点，小写），无扩展名返回空串。
+  static String _extOf(String name) {
+    final dot = name.lastIndexOf('.');
+    if (dot < 0) return '';
+    return name.substring(dot).toLowerCase();
+  }
+
+  /// 分类同步用：文档扩展名集合（与 MediaProvider 扫描一致）。
+  static const List<String> syncDocumentExtensions = [
+    '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
+    '.txt', '.csv', '.odt', '.ods', '.odp', '.rtf', '.epub',
+  ];
+  static const List<String> syncArchiveExtensions = ['.zip', '.tar', '.gz', '.bz2', '.rar', '.7z'];
+  static const List<String> syncApkExtensions = ['.apk', '.xapk', '.apks', '.aab'];
+
+  static bool isSyncDocumentFile(String name) => syncDocumentExtensions.contains(_extOf(name));
+  static bool isSyncArchiveFile(String name) => syncArchiveExtensions.contains(_extOf(name));
+  static bool isSyncApkFile(String name) => syncApkExtensions.contains(_extOf(name));
+
+  /// 返回某类别（中文标签）的「文件名过滤器」，用于远程→本地同步时只下载该类别识别的文件。
+  /// 与 MediaProvider 的扫描过滤保持一致。
+  static bool Function(String name) categoryFileFilter(String categoryLabel) {
+    switch (categoryLabel) {
+      case '图片':
+      case '截图':
+        return (name) => name.toLowerCase().endsWith('.svg') || isImage(name);
+      case '视频':
+        return isVideo;
+      case '音频':
+        return isAudio;
+      case '文档':
+        return isSyncDocumentFile;
+      case '压缩包':
+        return isSyncArchiveFile;
+      case '安装包':
+        return isSyncApkFile;
+      case '下载':
+      default:
+        return (_) => true;
+    }
+  }
+
   /// 返回图片格式的简短标签（大写），用于图标显示。
   /// 例如 .jpg → "JPG"，.png → "PNG"
   static String getImageTypeLabel(String path) {

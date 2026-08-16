@@ -220,6 +220,11 @@ class WebDavRemoteClient extends RemoteClient {
       request.headers.set('Authorization', auth);
     }
     final response = await request.close();
+    // 405 Method Not Allowed / 301 已存在：视为创建成功（幂等），避免二次同步报错。
+    if (response.statusCode == 405 || response.statusCode == 301) {
+      await response.drain();
+      return;
+    }
     if (response.statusCode >= 400) {
       throw Exception('WebDAV folder create error: ${response.statusCode}');
     }

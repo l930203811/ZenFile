@@ -4929,4 +4929,143 @@ class L10nEs extends L10n {
   String ui_delete_items_confirm(int count) {
     return '¿Seguro que quieres eliminar los $count elementos seleccionados? Esta acción no se puede deshacer.';
   }
+
+  @override
+  String get changelog_v1130_new_1 =>
+      '远程保护 PIN 码：设置 4 位 PIN 后，访问已保存远程服务器、进入编辑页、分类页切换到远程范围时需先解锁，保护远程数据隐私';
+
+  @override
+  String get changelog_v1130_new_2 => '分类页「本地/远程」切换：所有支持远程目录的类别可独立切换本地/远程内容';
+
+  @override
+  String get changelog_v1130_new_3 =>
+      '备份功能（本地→远程）：支持「自动备份」与「立即备份」，新增文件检测自动触发，只备份该类别格式文件';
+
+  @override
+  String get changelog_v1130_new_4 => '远程连接向导新增「测试」按钮，可先验证连接再保存配置';
+
+  @override
+  String get changelog_v1130_new_5 => '视频/音频类别菜单新增「播放器控制器显隐」开关';
+
+  @override
+  String get changelog_v1130_new_6 => '统一「打开方式」弹窗：浏览页/最近页/分类页 三点与长按菜单均弹应用内选择弹窗';
+
+  @override
+  String get changelog_v1130_new_7 =>
+      '未知格式文件选「本应用打开」后弹出类型选择器（文本/音频/视频/图像）并以内置查看器打开';
+
+  @override
+  String get changelog_v1130_opt_1 => '分类页/浏览页「分类」「浏览」按钮合二为一，居中翻转切换';
+
+  @override
+  String get changelog_v1130_opt_2 => '重命名自动选中文件名主体（不含扩展名），光标落扩展名前';
+
+  @override
+  String get changelog_v1130_opt_3 => '网格/列表视图切换整合进排序菜单';
+
+  @override
+  String get changelog_v1130_opt_4 => '每个类别独立记忆「文件夹/全部项目」查看模式，视频/音频默认文件夹查看';
+
+  @override
+  String get changelog_v1130_opt_5 => '下载类别支持远程备份';
+
+  @override
+  String get changelog_v1130_opt_6 => '远程图片/视频缩略图按需下载显示';
+
+  @override
+  String get changelog_v1130_opt_7 => '本地扫描排除应用缓存目录，修复打开远程缩略图后本地图片重复';
+
+  @override
+  String get changelog_v1130_opt_8 => '远程文件三点菜单与长按批量删除/重命名/复制/剪切/定位操作生效';
+
+  @override
+  String get changelog_v1130_opt_9 => '远程文件夹下钻保留目录结构（DCIM/Pictures 等顶层目录）';
+
+  @override
+  String get changelog_v1130_fix_1 => '修复 MIUI 存储权限误判导致启动弹窗循环卡死';
+
+  @override
+  String get changelog_v1130_fix_2 => '修复分类页长按拖动类别图标误触左右切页';
+
+  @override
+  String get changelog_v1130_fix_3 => '修复截图在图片类别「按文件夹」下钻后消失';
+
+  @override
+  String get ui_remote_guard => '远程守卫';
+
+  @override
+  String get ui_remote_guard_desc =>
+      '设置4位PIN码保护远程服务器访问，每次启动应用或手动锁定后需输入PIN码才能进入远程服务器';
+
+  @override
+  String get ui_remote_guard_enabled => '已启用';
+
+  @override
+  String get ui_remote_guard_disabled => '已禁用';
+
+  @override
+  String get ui_remote_guard_set_pin => '设置PIN码';
+
+  @override
+  String get ui_remote_guard_enter_pin => '输入PIN码';
+
+  @override
+  String get ui_remote_guard_confirm_pin => '确认PIN码';
+
+  @override
+  String get ui_remote_guard_pin_mismatch => '两次输入的PIN码不一致，请重新输入';
+
+  @override
+  String get ui_remote_guard_wrong_pin => 'PIN码错误，请重试';
+
+  @override
+  String get ui_remote_guard_change_pin => '修改PIN码';
+
+  @override
+  String get ui_remote_guard_pin_hint => '4位数字PIN码';
+
+  @override
+  String get ui_remote_guard_lock_now => '立即锁定';
+
+  @override
+  String get ui_remote_guard_lock_now_desc => '锁定后需要重新输入PIN码才能访问远程服务器';
+
+  @override
+  String get ui_auto_backup => '自动备份';
+
+  @override
+  String get ui_backup => '备份';
+
+  @override
+  String get ui_backup_now => '立即备份';
+
+  @override
+  String get ui_local => '本地';
+
+  @override
+  String get ui_no_remote_path => '未添加自定义远程路径';
+
+  @override
+  String get ui_remote => '远程';
+
+  @override
+  String get ui_sync_done => '备份完成';
+
+  @override
+  String get ui_syncing => '正在备份...';
+
+  @override
+  String get ui_test => '测试';
+
+  @override
+  String get ui_test_failed => '测试失败';
+
+  @override
+  String get ui_test_failed_reason => '失败原因';
+
+  @override
+  String get ui_test_success => '测试成功';
+
+  @override
+  String get ui_test_success_desc => '连接成功，服务器配置正确';
 }
