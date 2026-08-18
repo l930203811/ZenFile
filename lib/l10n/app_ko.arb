@@ -3384,6 +3384,7 @@
   "@ui_hide_player_controller": {
     "description": "media_category_screen.dart"
   },
+  "ui_scanning_category": "기본 폴더를 스캔하는 중… 불러온 항목은 계속 사용할 수 있어요",
   "ui_refresh": "새로고침",
   "@ui_refresh": {
     "description": "ui widgets"
@@ -3723,6 +3724,7 @@
   "ui_select_remote_server": "원격 서버 선택",
   "ui_no_remote_connections": "저장된 원격 연결이 없음",
   "ui_retry": "재시도",
+  "ui_media_load_failed": "미디어 로드에 실패했습니다. 저장소 권한을 확인한 후 다시 시도하세요",
   "ui_no_subfolders": "하위 폴더 없음",
   "ui_select_this_folder": "현재 폴더 선택",
   "ui_downloading_file": "다운로드 중: {file}",
@@ -4857,5 +4859,13 @@
   "ui_test_success_desc": "连接成功，服务器配置正确",
   "@ui_test_success_desc": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "ui_show_remote_files": "显示远程文件",
+  "@ui_show_remote_files": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_hide_remote_files": "隐藏远程文件",
+  "@ui_hide_remote_files": {
+    "description": "ui\\screens\\media_category_screen.dart"
   }
 }

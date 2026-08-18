@@ -231,6 +231,17 @@ class PreferencesService {
   // 媒体分类页面按类别独立存储列表/网格视图偏好
   static const String _keyMediaCategoryGridView = 'media_category_grid_view_';
 
+  // 媒体分类页面按类别独立存储「是否显示远程文件」偏好（true=显示远程，false=仅本地）
+  static const String _keyShowRemoteFilesInCategory = 'show_remote_files_in_category_';
+
+  static bool getShowRemoteFilesInCategory(String mediaType, {bool defaultValue = true}) {
+    return _prefs?.getBool('$_keyShowRemoteFilesInCategory$mediaType') ?? defaultValue;
+  }
+
+  static Future<void> saveShowRemoteFilesInCategory(String mediaType, bool val) async {
+    await _prefs?.setBool('$_keyShowRemoteFilesInCategory$mediaType', val);
+  }
+
   static bool getMediaCategoryGridView(String mediaType, {bool defaultValue = false}) {
     return _prefs?.getBool('$_keyMediaCategoryGridView$mediaType') ?? defaultValue;
   }

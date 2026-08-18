@@ -3092,6 +3092,10 @@ class L10nDe extends L10n {
   String get ui_hide_player_controller => 'Player-Steuerung ausblenden';
 
   @override
+  String get ui_scanning_category =>
+      'Standardordner werden gescannt… Geladene Elemente bleiben bedienbar';
+
+  @override
   String get ui_refresh => 'Aktualisieren';
 
   @override
@@ -3963,6 +3967,10 @@ class L10nDe extends L10n {
 
   @override
   String get ui_retry => 'Wiederholen';
+
+  @override
+  String get ui_media_load_failed =>
+      'Medien konnten nicht geladen werden. Bitte Speicherberechtigung prüfen und erneut versuchen';
 
   @override
   String get ui_no_subfolders => 'Keine Unterordner';
@@ -5045,4 +5053,10 @@ class L10nDe extends L10n {
 
   @override
   String get ui_test_success_desc => '连接成功，服务器配置正确';
+
+  @override
+  String get ui_show_remote_files => '显示远程文件';
+
+  @override
+  String get ui_hide_remote_files => '隐藏远程文件';
 }

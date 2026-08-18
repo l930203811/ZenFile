@@ -3045,6 +3045,10 @@ class L10nEn extends L10n {
   String get ui_hide_player_controller => 'Hide Player Controller';
 
   @override
+  String get ui_scanning_category =>
+      'Scanning default folders… Loaded items remain accessible';
+
+  @override
   String get ui_refresh => 'Refresh';
 
   @override
@@ -3921,6 +3925,10 @@ class L10nEn extends L10n {
 
   @override
   String get ui_retry => 'Retry';
+
+  @override
+  String get ui_media_load_failed =>
+      'Failed to load media. Please check storage permission and retry';
 
   @override
   String get ui_no_subfolders => 'No subfolders';
@@ -5019,4 +5027,10 @@ class L10nEn extends L10n {
   @override
   String get ui_test_success_desc =>
       'Connection successful, server configuration is correct';
+
+  @override
+  String get ui_show_remote_files => 'Show Remote Files';
+
+  @override
+  String get ui_hide_remote_files => 'Hide Remote Files';
 }

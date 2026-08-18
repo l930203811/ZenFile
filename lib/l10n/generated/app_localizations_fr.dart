@@ -3113,6 +3113,10 @@ class L10nFr extends L10n {
   String get ui_hide_player_controller => 'Masquer le contrôleur de lecture';
 
   @override
+  String get ui_scanning_category =>
+      'Analyse des dossiers par défaut… Les éléments chargés restent accessibles';
+
+  @override
   String get ui_refresh => 'Actualiser';
 
   @override
@@ -3987,6 +3991,10 @@ class L10nFr extends L10n {
 
   @override
   String get ui_retry => 'Réessayer';
+
+  @override
+  String get ui_media_load_failed =>
+      'Échec du chargement des médias. Vérifiez l\'autorisation de stockage et réessayez';
 
   @override
   String get ui_no_subfolders => 'Aucun sous-dossier';
@@ -5073,4 +5081,10 @@ class L10nFr extends L10n {
 
   @override
   String get ui_test_success_desc => '连接成功，服务器配置正确';
+
+  @override
+  String get ui_show_remote_files => '显示远程文件';
+
+  @override
+  String get ui_hide_remote_files => '隐藏远程文件';
 }

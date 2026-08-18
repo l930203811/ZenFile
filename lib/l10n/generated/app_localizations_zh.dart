@@ -2949,6 +2949,9 @@ class L10nZh extends L10n {
   String get ui_hide_player_controller => '隐藏播放器控制器';
 
   @override
+  String get ui_scanning_category => '正在扫描默认目录，已加载内容可正常操作';
+
+  @override
   String get ui_refresh => '刷新';
 
   @override
@@ -3765,6 +3768,9 @@ class L10nZh extends L10n {
 
   @override
   String get ui_retry => '重试';
+
+  @override
+  String get ui_media_load_failed => '媒体加载失败，请检查存储权限后重试';
 
   @override
   String get ui_no_subfolders => '无子文件夹';
@@ -4797,6 +4803,12 @@ class L10nZh extends L10n {
 
   @override
   String get ui_test_success_desc => '连接成功，服务器配置正确';
+
+  @override
+  String get ui_show_remote_files => '显示远程文件';
+
+  @override
+  String get ui_hide_remote_files => '隐藏远程文件';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -7735,6 +7747,9 @@ class L10nZhTw extends L10nZh {
   String get ui_hide_player_controller => '隱藏播放器控制器';
 
   @override
+  String get ui_scanning_category => '正在掃描預設目錄，已載入內容可正常操作';
+
+  @override
   String get ui_refresh => '重新整理';
 
   @override
@@ -8514,6 +8529,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_retry => '重試';
+
+  @override
+  String get ui_media_load_failed => '媒體載入失敗，請檢查儲存權限後重試';
 
   @override
   String get ui_no_subfolders => '無子資料夾';
@@ -9550,4 +9568,10 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_test_success_desc => '连接成功，服务器配置正确';
+
+  @override
+  String get ui_show_remote_files => '显示远程文件';
+
+  @override
+  String get ui_hide_remote_files => '隐藏远程文件';
 }

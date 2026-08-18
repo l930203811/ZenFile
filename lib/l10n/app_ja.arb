@@ -3388,6 +3388,7 @@
   "@ui_hide_player_controller": {
     "description": "media_category_screen.dart"
   },
+  "ui_scanning_category": "デフォルトフォルダをスキャン中…読み込み済みの項目は操作できます",
   "ui_refresh": "更新",
   "@ui_refresh": {
     "description": "ui widgets"
@@ -3727,6 +3728,7 @@
   "ui_select_remote_server": "リモートサーバーを選択",
   "ui_no_remote_connections": "保存済みのリモート接続がありません",
   "ui_retry": "再試行",
+  "ui_media_load_failed": "メディアの読み込みに失敗しました。ストレージ権限を確認して再試行してください",
   "ui_no_subfolders": "サブフォルダがありません",
   "ui_select_this_folder": "このフォルダを選択",
   "ui_downloading_file": "ダウンロード中: {file}",
@@ -4861,5 +4863,13 @@
   "ui_test_success_desc": "连接成功，服务器配置正确",
   "@ui_test_success_desc": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "ui_show_remote_files": "显示远程文件",
+  "@ui_show_remote_files": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_hide_remote_files": "隐藏远程文件",
+  "@ui_hide_remote_files": {
+    "description": "ui\\screens\\media_category_screen.dart"
   }
 }

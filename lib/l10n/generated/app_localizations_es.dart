@@ -3111,6 +3111,10 @@ class L10nEs extends L10n {
   String get ui_hide_player_controller => 'Ocultar controlador del reproductor';
 
   @override
+  String get ui_scanning_category =>
+      'Escaneando carpetas predeterminadas… Los elementos cargados siguen accesibles';
+
+  @override
   String get ui_refresh => 'Actualizar';
 
   @override
@@ -3986,6 +3990,10 @@ class L10nEs extends L10n {
 
   @override
   String get ui_retry => 'Reintentar';
+
+  @override
+  String get ui_media_load_failed =>
+      'Error al cargar multimedia. Compruebe el permiso de almacenamiento y reintente';
 
   @override
   String get ui_no_subfolders => 'Sin subcarpetas';
@@ -5068,4 +5076,10 @@ class L10nEs extends L10n {
 
   @override
   String get ui_test_success_desc => '连接成功，服务器配置正确';
+
+  @override
+  String get ui_show_remote_files => '显示远程文件';
+
+  @override
+  String get ui_hide_remote_files => '隐藏远程文件';
 }

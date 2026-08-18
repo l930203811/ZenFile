@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:async';
 import 'dart:isolate';
+import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -1105,54 +1106,81 @@ void _cancelAutoCleanTimer() {
   _autoCleanTimer = null;
 }
 
-/// 自动清理过期缓存（在 isolate 中执行，避免阻塞主线程）
+/// ZenFile 根目录：应用所有缓存 / 临时数据的统一存放点。
+const String _zenFileBasePath = '/storage/emulated/0/ZenFile';
+
+/// 自动清理缓存（在 isolate 中执行，避免阻塞主线程）
+///
+/// 行为：清空 [_zenFileBasePath] 下除 `Backups` 外的所有文件/文件夹。
+/// 时间间隔（默认 5 分钟或用户自定义）仅控制「多久触发一次全量清理」，
+/// 触发后一律整目录清空（而非按文件 mtime 筛选），因此与默认/自定义时间无关、必然生效。
+///
+/// 关键修复：此前用 `Isolate.run(() { ... })` 且在闭包中捕获了 `Directory` 对象，
+/// 而 `Directory` 无法跨 isolate 序列化，导致 `Isolate.run` 抛异常被外层 try/catch
+/// 静默吞掉（`debugPrint('自动清理缓存失败')`），清理从来没真正执行过，
+/// 表现为「无论默认还是自定义时间都不生效」。现改为调用顶层函数引用（不捕获任何
+/// 不可序列化的对象），路径用模块级常量，在 isolate 内部再构造 `Directory`。
 void _autoCleanRemoteCache() {
   try {
     final autoCleanMinutes = PreferencesService.getRemoteCacheAutoCleanMinutes();
-    if (autoCleanMinutes <= 0) return; // 未启用自动清理
+    if (autoCleanMinutes <= 0) return; // 未启用自动清理（「不自动清理」选项）
 
-    final baseDir = Directory('/storage/emulated/0/ZenFile');
+    final baseDir = Directory(_zenFileBasePath);
     if (!baseDir.existsSync()) return;
 
-    final now = DateTime.now();
-    final threshold = now.subtract(Duration(minutes: autoCleanMinutes));
-
-    // 在 isolate 中执行同步递归清理，避免 listSync/statSync/deleteSync 阻塞主线程
-    Isolate.run(() {
-      final cacheRoot = Directory('${baseDir.path}/cache');
-      if (!cacheRoot.existsSync()) return;
-
-      int deletedCount = 0;
-      int deletedSize = 0;
-
-      void cleanDirectory(Directory dir) {
-        try {
-          for (final entity in dir.listSync()) {
-            if (entity is File) {
-              final stat = entity.statSync();
-              if (stat.modified.isBefore(threshold)) {
-                deletedSize += entity.lengthSync();
-                entity.deleteSync();
-                deletedCount++;
-              }
-            } else if (entity is Directory) {
-              cleanDirectory(entity);
-            }
-          }
-        } catch (_) {}
-      }
-
-      cleanDirectory(cacheRoot);
-
-      if (deletedCount > 0) {
-        // ignore: avoid_print
-        print('自动清理缓存: 删除 $deletedCount 个文件，释放 ${(deletedSize / 1024 / 1024).toStringAsFixed(1)} MB');
-      }
-    });
+    // 调用顶层函数引用，避免跨 isolate 序列化失败。
+    Isolate.run(_wipeZenFileExceptBackups);
 
     // 记录本次清理时间
-    PreferencesService.saveRemoteCacheLastCleanTime(now.millisecondsSinceEpoch);
+    PreferencesService.saveRemoteCacheLastCleanTime(DateTime.now().millisecondsSinceEpoch);
   } catch (e) {
     debugPrint('自动清理缓存失败: $e');
   }
+}
+
+/// 在独立 isolate 中执行：清空 [_zenFileBasePath] 下除 `Backups` 外的所有内容。
+/// 返回删除的文件数（便于隔离内诊断），调用方忽略返回值。
+int _wipeZenFileExceptBackups() {
+  final baseDir = Directory(_zenFileBasePath);
+  if (!baseDir.existsSync()) return 0;
+
+  int deletedCount = 0;
+  int deletedSize = 0;
+
+  void wipeDirectory(Directory dir) {
+    try {
+      for (final entity in dir.listSync()) {
+        final name = p.basename(entity.path);
+        if (name == 'Backups') continue; // 永远保留用户备份数据
+        if (entity is File) {
+          try {
+            deletedSize += entity.lengthSync();
+            entity.deleteSync();
+            deletedCount++;
+          } catch (_) {}
+        } else if (entity is Directory) {
+          // 递归清空子目录后删除空目录本身
+          wipeDirectory(entity);
+          try {
+            entity.deleteSync();
+          } catch (_) {}
+        }
+      }
+    } catch (_) {}
+  }
+
+  wipeDirectory(baseDir);
+
+  // 清理后重建必要的运行目录，避免调用方因目录缺失而异常
+  for (final sub in const ['cache', '.remote_cache']) {
+    try {
+      Directory(p.join(_zenFileBasePath, sub)).createSync(recursive: true);
+    } catch (_) {}
+  }
+
+  if (deletedCount > 0) {
+    // ignore: avoid_print
+    print('自动清理缓存: 删除 $deletedCount 个文件，释放 ${(deletedSize / 1024 / 1024).toStringAsFixed(1)} MB');
+  }
+  return deletedCount;
 }

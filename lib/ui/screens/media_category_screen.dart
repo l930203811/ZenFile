@@ -46,6 +46,7 @@ enum _ViewMenuAction {
   viewList,
   viewGrid,
   togglePlayerController,
+  toggleShowRemoteFiles,
 }
 
 /// 分类页右上角同步菜单动作
@@ -111,6 +112,9 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
   // 当前类别是否开启「自动同步」（即同步菜单中显示三个方向按钮）
   bool _autoSyncEnabled = false;
 
+  // 当前类别是否显示远程文件（false 时仅显示本地并隐藏本地/远程切换按钮）
+  late bool _showRemoteFiles;
+
   /// 防止自动同步在每次重建时重复触发。
   bool _autoSyncTriggered = false;
 
@@ -166,7 +170,11 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
   }
 
   /// 根据当前 [_scopeFilter] 过滤媒体列表。
+  /// 当 [_showRemoteFiles] 关闭时，强制仅返回本地文件。
   List<T> _filterByScope<T>(List<T> source, String Function(T) pathOf) {
+    if (!_showRemoteFiles) {
+      return source.where((item) => !MediaProvider.isRemotePath(pathOf(item))).toList();
+    }
     switch (_scopeFilter) {
       case _ScopeFilter.local:
         return source.where((item) => !MediaProvider.isRemotePath(pathOf(item))).toList();
@@ -511,6 +519,9 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     _showResumeAudio = PreferencesService.getShowResumeAudio();
     _showResumeVideo = PreferencesService.getShowResumeVideo();
 
+    // 加载当前类别「显示远程文件」开关，默认开启（保持既有行为）
+    _showRemoteFiles = PreferencesService.getShowRemoteFilesInCategory(widget.mediaType.name);
+
     // 预加载分类同步缓存（云徽判定需在首帧前就绪）
     CategorySyncService.init();
     // 若是通过「远程文件夹」下钻进入的，则默认处于远程范围，否则默认本地范围。
@@ -538,6 +549,17 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             }
           });
         } catch (_) {}
+      });
+    }
+
+    // 非媒体类别（文档/压缩包/下载/安装包）懒加载：进入该类别时才触发
+    // 默认目录扫描（启动/onResume 不再自动扫描，避免占用系统资源）。
+    // 已扫描过或正在扫描时为空操作；扫描期间已加载内容可正常操作。
+    if (_isNonMediaScanType && widget.folderPath == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          context.read<MediaProvider>().ensureNonMediaScanned();
+        }
       });
     }
   }
@@ -588,6 +610,29 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         return L10n.of(context).msg03070d08;
       case MediaType.screenshots:
         return L10n.of(context).cat_screenshots;
+    }
+  }
+
+  /// 当前类别是否属于「无系统索引、需全盘递归扫描」的非媒体类别。
+  bool get _isNonMediaScanType =>
+      widget.mediaType == MediaType.documents ||
+      widget.mediaType == MediaType.archives ||
+      widget.mediaType == MediaType.downloads ||
+      widget.mediaType == MediaType.apks;
+
+  /// 非媒体类别对应的 provider 列表（供后台扫描期间判断是否为空）。
+  List _nonMediaListFor(MediaProvider provider) {
+    switch (widget.mediaType) {
+      case MediaType.documents:
+        return provider.documents;
+      case MediaType.archives:
+        return provider.archives;
+      case MediaType.downloads:
+        return provider.downloads;
+      case MediaType.apks:
+        return provider.apks;
+      default:
+        return const [];
     }
   }
 
@@ -1051,23 +1096,34 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       if (count == 1 && nameDisplay.isEmpty) nameDisplay = p.split('/').last;
       if (count == 1) fullPath = p;
       try {
-        final f = File(p);
-        if (f.existsSync()) {
-          final FileStat st = f.statSync();
-          totalBytes += st.size;
-          if (count == 1) {
-            lastMod = st.modified;
-            permissionsStr = '${(st.mode & 0x100) != 0 ? "R" : ""}${(st.mode & 0x80) != 0 ? "/W" : ""}';
-            final ext = path_helper.extension(p).toLowerCase();
-            if (widget.mediaType == MediaType.audios) {
-              mimeType = 'audio/$ext';
-            } else if (widget.mediaType == MediaType.apks) {
-              mimeType = 'application/vnd.android.package-archive';
-            } else if (widget.mediaType == MediaType.archives) {
-              mimeType = 'archive/$ext';
-            } else {
-              mimeType = 'file/$ext';
-            }
+        int size = 0;
+        DateTime? modified;
+        String permissions = '';
+        if (MediaProvider.isRemotePath(p)) {
+          size = MediaProvider.getCachedRemoteFileSize(p);
+          modified = MediaProvider.getCachedRemoteFileModified(p);
+        } else {
+          final f = File(p);
+          if (f.existsSync()) {
+            final FileStat st = f.statSync();
+            size = st.size;
+            modified = st.modified;
+            permissions = '${(st.mode & 0x100) != 0 ? "R" : ""}${(st.mode & 0x80) != 0 ? "/W" : ""}';
+          }
+        }
+        totalBytes += size;
+        if (count == 1) {
+          lastMod = modified;
+          permissionsStr = permissions;
+          final ext = path_helper.extension(p).toLowerCase();
+          if (widget.mediaType == MediaType.audios) {
+            mimeType = 'audio/$ext';
+          } else if (widget.mediaType == MediaType.apks) {
+            mimeType = 'application/vnd.android.package-archive';
+          } else if (widget.mediaType == MediaType.archives) {
+            mimeType = 'archive/$ext';
+          } else {
+            mimeType = 'file/$ext';
           }
         }
       } catch (_) {}
@@ -1487,6 +1543,16 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                           setState(() => _showResumeVideo = newValue);
                         }
                         break;
+                      case _ViewMenuAction.toggleShowRemoteFiles:
+                        final newValue = !_showRemoteFiles;
+                        await PreferencesService.saveShowRemoteFilesInCategory(
+                            widget.mediaType.name, newValue);
+                        setState(() {
+                          _showRemoteFiles = newValue;
+                          // 关闭远程显示时自动切回本地范围，避免列表被远程过滤器清空
+                          if (!newValue) _scopeFilter = _ScopeFilter.local;
+                        });
+                        break;
                     }
                   },
                   itemBuilder: (context) => [
@@ -1571,6 +1637,29 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                         ),
                       ),
                     ],
+                    if (_supportsRemoteSync) ...[
+                      const PopupMenuDivider(),
+                      CheckedPopupMenuItem(
+                        value: _ViewMenuAction.toggleShowRemoteFiles,
+                        checked: _showRemoteFiles,
+                        child: Row(
+                          children: [
+                            Icon(
+                              _showRemoteFiles
+                                  ? Icons.toggle_on
+                                  : Icons.toggle_off,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              _showRemoteFiles
+                                  ? L10n.of(context).ui_hide_remote_files
+                                  : L10n.of(context).ui_show_remote_files,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
                 );
               },
@@ -1609,7 +1698,8 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         children: [
           if (widget.album == null &&
               widget.folderPath == null &&
-              _supportsRemoteSync)
+              _supportsRemoteSync &&
+              _showRemoteFiles)
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -1635,7 +1725,13 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                           ? provider.videoFolders
                           : provider.audioFolders;
                   if (folders.isEmpty) {
-                    // 没有可分组文件夹，自动切回文件视图
+                    // 系统索引仍在查询（冷启动 MediaStore 慢）→ 显示 shimmer；
+                    // 不能在加载中就把文件夹模式切回文件视图，否则数据到达后
+                    // 仍停留在空文件列表（「音频点进去时灵时不灵」的表现之一）
+                    if (!provider.isLoaded) {
+                      return _buildShimmerLoading(theme);
+                    }
+                    // 已加载完成却没有可分组文件夹 → 自动切回文件视图
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       if (mounted && _showFoldersMode) {
                         setState(() => _showFoldersMode = false);
@@ -1784,8 +1880,19 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                   return content;
                 }
 
-                // 数据为空时，根据加载状态决定显示 shimmer 还是空状态
+                // 数据为空时，根据加载状态决定显示 shimmer / 加载失败 / 空状态
                 if (!provider.isLoaded) {
+                  if (provider.isLoading) {
+                    return _buildShimmerLoading(theme);
+                  }
+                  // 扫描失败或权限缺失（此前为无限 shimmer，表现为
+                  // 「类别显示缓存数量但无法打开浏览」的静默失败）→ 显示失败原因与重试入口
+                  return _buildLoadFailedState(theme);
+                }
+
+                // 非媒体类别（文档/压缩包/下载/安装包）的全盘递归扫描已后台化，
+                // 扫描未完成且列表为空（无磁盘缓存可用）时显示 shimmer 而非空状态
+                if (_isNonMediaScanType && !provider.nonMediaScanDone && _nonMediaListFor(provider).isEmpty) {
                   return _buildShimmerLoading(theme);
                 }
 
@@ -1796,8 +1903,56 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           ),
         ],
       ),
-      bottomNavigationBar: _isSelectionMode ? _buildBottomActionBar(theme) : null,
+      bottomNavigationBar: _isSelectionMode ? _buildBottomActionBar(theme) : _buildScanBanner(theme),
       ),
+    );
+  }
+
+  /// 非媒体类别扫描期间底部提示条：告知正在扫描默认目录、已加载内容可
+  /// 正常操作。非模态设计（不遮挡列表交互），扫描完成自动消失。
+  Widget? _buildScanBanner(ThemeData theme) {
+    if (!_isNonMediaScanType) return null;
+    return Consumer<MediaProvider>(
+      builder: (context, provider, _) {
+        // 正在扫描 或 尚未完成（含缓存恢复阶段）都显示提示条
+        if (provider.nonMediaScanDone && !provider.nonMediaScanning) {
+          return const SizedBox.shrink();
+        }
+        return SafeArea(
+          top: false,
+          child: Material(
+            color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        theme.colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      L10n.of(context).ui_scanning_category,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -1948,11 +2103,35 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       } catch (_) {}
       return DateTime.fromMillisecondsSinceEpoch((item.dateAdded ?? 0) * 1000);
     } else if (item is FileSystemEntity) {
-      try {
-        return item.statSync().modified;
-      } catch (_) {}
+      return _fileModifiedOf(item);
     }
     return DateTime.fromMillisecondsSinceEpoch(0);
+  }
+
+  /// 取文件/目录大小，对 remote:// 路径优先使用扫描时缓存的远程大小。
+  int _fileSizeOf(FileSystemEntity entity) {
+    final p = entity.path;
+    if (MediaProvider.isRemotePath(p)) {
+      return MediaProvider.getCachedRemoteFileSize(p);
+    }
+    try {
+      return entity.statSync().size;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  /// 取文件/目录修改时间，对 remote:// 路径优先使用扫描时缓存的远程时间。
+  DateTime _fileModifiedOf(FileSystemEntity entity) {
+    final p = entity.path;
+    if (MediaProvider.isRemotePath(p)) {
+      return MediaProvider.getCachedRemoteFileModified(p) ?? DateTime.now();
+    }
+    try {
+      return entity.statSync().modified;
+    } catch (_) {
+      return DateTime.now();
+    }
   }
 
   Map<String, List<T>> _groupByMonth<T>(List<T> items, DateTime Function(T) getDate) {
@@ -2292,9 +2471,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           if (item is AssetEntity) {
             date = item.createDateTime;
           } else if (item is FileSystemEntity) {
-            try {
-              date = File(item.path).statSync().modified;
-            } catch (_) {}
+            date = _fileModifiedOf(item);
           }
           final dateStr = FileUtils.formatDate(date);
           return _SelectedFrame(
@@ -2323,9 +2500,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           if (item is AssetEntity) {
             date = item.createDateTime;
           } else if (item is FileSystemEntity) {
-            try {
-              date = File(item.path).statSync().modified;
-            } catch (_) {}
+            date = _fileModifiedOf(item);
           }
           final dateStr = FileUtils.formatDate(date);
           return _SelectedFrame(
@@ -2349,9 +2524,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         if (item is AssetEntity) {
           date = item.createDateTime;
         } else if (item is FileSystemEntity) {
-          try {
-            date = File(item.path).statSync().modified;
-          } catch (_) {}
+          date = _fileModifiedOf(item);
         }
         final dateStr = FileUtils.formatDate(date);
         return _SelectedFrame(
@@ -2669,9 +2842,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           if (item is AssetEntity) {
             date = item.createDateTime;
           } else if (item is FileSystemEntity) {
-            try {
-              date = File(item.path).statSync().modified;
-            } catch (_) {}
+            date = _fileModifiedOf(item);
           }
           final dateStr = FileUtils.formatDate(date);
           return _SelectedFrame(
@@ -2700,9 +2871,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           if (item is AssetEntity) {
             date = item.createDateTime;
           } else if (item is FileSystemEntity) {
-            try {
-              date = File(item.path).statSync().modified;
-            } catch (_) {}
+            date = _fileModifiedOf(item);
           }
           final dateStr = FileUtils.formatDate(date);
           return _SelectedFrame(
@@ -2726,9 +2895,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         if (item is AssetEntity) {
           date = item.createDateTime;
         } else if (item is FileSystemEntity) {
-          try {
-            date = File(item.path).statSync().modified;
-          } catch (_) {}
+          date = _fileModifiedOf(item);
         }
         final dateStr = FileUtils.formatDate(date);
         return _SelectedFrame(
@@ -3232,13 +3399,8 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         isDateWise: isDateWise,
         itemTileBuilder: (doc, showDate) {
           final isSelected = _selectedFilePaths.contains(doc.path);
-          int size = 0;
-          DateTime modified = DateTime.now();
-          try {
-            final st = doc.statSync();
-            size = st.size;
-            modified = st.modified;
-          } catch (_) {}
+          final size = _fileSizeOf(doc);
+          final modified = _fileModifiedOf(doc);
           return _SelectedFrame(
             selected: isSelected,
             isList: !isGridView,
@@ -3259,13 +3421,8 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         itemBuilder: (context, index) {
           final doc = documents[index];
           final isSelected = _selectedFilePaths.contains(doc.path);
-          int size = 0;
-          DateTime modified = DateTime.now();
-          try {
-            final st = doc.statSync();
-            size = st.size;
-            modified = st.modified;
-          } catch (_) {}
+          final size = _fileSizeOf(doc);
+          final modified = _fileModifiedOf(doc);
           return _SelectedFrame(
             selected: isSelected,
             isList: false,
@@ -3282,13 +3439,8 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       itemBuilder: (context, index) {
         final doc = documents[index];
         final isSelected = _selectedFilePaths.contains(doc.path);
-        int size = 0;
-        DateTime modified = DateTime.now();
-        try {
-          final st = doc.statSync();
-          size = st.size;
-          modified = st.modified;
-        } catch (_) {}
+        final size = _fileSizeOf(doc);
+        final modified = _fileModifiedOf(doc);
         return _SelectedFrame(
           selected: isSelected,
           isList: true,
@@ -3507,13 +3659,8 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         isDateWise: isDateWise,
         itemTileBuilder: (file, showDate) {
           final isSelected = _selectedFilePaths.contains(file.path);
-          int size = 0;
-          DateTime modified = DateTime.now();
-          try {
-            final st = file.statSync();
-            size = st.size;
-            modified = st.modified;
-          } catch (_) {}
+          final size = _fileSizeOf(file);
+          final modified = _fileModifiedOf(file);
           return _SelectedFrame(
             selected: isSelected,
             isList: !isGridView,
@@ -3534,13 +3681,8 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         itemBuilder: (context, index) {
           final file = files[index];
           final isSelected = _selectedFilePaths.contains(file.path);
-          int size = 0;
-          DateTime modified = DateTime.now();
-          try {
-            final st = file.statSync();
-            size = st.size;
-            modified = st.modified;
-          } catch (_) {}
+          final size = _fileSizeOf(file);
+          final modified = _fileModifiedOf(file);
           return _SelectedFrame(
             selected: isSelected,
             isList: false,
@@ -3555,21 +3697,16 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: files.length,
       itemBuilder: (context, index) {
-        final file = files[index];
-        final isSelected = _selectedFilePaths.contains(file.path);
-        int size = 0;
-        DateTime modified = DateTime.now();
-        try {
-          final st = file.statSync();
-          size = st.size;
-          modified = st.modified;
-        } catch (_) {}
-        return _SelectedFrame(
-          selected: isSelected,
-          isList: true,
-          theme: theme,
-          child: _buildGenericFileTile(file, theme, isSelected, isDateWise, size, modified),
-        );
+          final file = files[index];
+          final isSelected = _selectedFilePaths.contains(file.path);
+          final size = _fileSizeOf(file);
+          final modified = _fileModifiedOf(file);
+          return _SelectedFrame(
+            selected: isSelected,
+            isList: true,
+            theme: theme,
+            child: _buildGenericFileTile(file, theme, isSelected, isDateWise, size, modified),
+          );
       },
     );
   }
@@ -3709,6 +3846,45 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           Icon(_emptyIcon, size: 72, color: theme.colorScheme.onSurface.withOpacity(0.2)),
           const SizedBox(height: 16),
           Text(L10n.of(context).ui_not_found_title(_title.toLowerCase()), style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5), fontSize: 16)),
+        ],
+      ),
+    );
+  }
+
+  /// 媒体扫描失败/权限缺失时的占位视图：说明 + 重试按钮。
+  /// 替代此前「未加载完成 → 无限 shimmer」的静默失败表现。
+  Widget _buildLoadFailedState(ThemeData theme) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Broken.info_circle, size: 72, color: theme.colorScheme.onSurface.withOpacity(0.2)),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Text(
+              L10n.of(context).ui_media_load_failed,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5), fontSize: 16),
+            ),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton.icon(
+            onPressed: () async {
+              // 重试前先确认/补授「所有文件访问」权限（部分 ROM 会静默回收），
+              // 再强制全量重新扫描。provider 提前捕获，避免 async gap 后使用 context。
+              final mediaProvider = context.read<MediaProvider>();
+              try {
+                final granted = await Permission.manageExternalStorage.isGranted;
+                if (!granted) {
+                  await Permission.manageExternalStorage.request();
+                }
+              } catch (_) {}
+              await mediaProvider.loadMedia(forceRefresh: true);
+            },
+            icon: const Icon(Broken.refresh, size: 18),
+            label: Text(L10n.of(context).ui_retry),
+          ),
         ],
       ),
     );

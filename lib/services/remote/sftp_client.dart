@@ -398,18 +398,45 @@ class SftpRemoteClient extends RemoteClient {
           final file = await conn.sftp.open(remotePath);
           try {
             int consumed = 0;
-            await for (final chunk in file.read(
-              offset: start,
-              length: len,
-              chunkSize: 64 * 1024,
-              maxPendingRequests: 128,
-            )) {
+            int offset = start;
+            int emptyStreak = 0;
+            // 循环读取直到本区间被完整填满：部分服务端对大区间的 READ 会「短读」
+            // （返回比请求少的字节后提前结束），旧实现未校验 consumed==len，
+            // 导致文件被预置大小但中间留下全 0 空洞 → APK 等大文件「解析出错」。
+            // 这里持续从新偏移续读，仅在连续多次确实读不到数据时判定为真实截断并抛错。
+            while (consumed < len) {
+              final remaining = len - consumed;
+              bool gotAny = false;
+              await for (final chunk in file.read(
+                offset: offset,
+                length: remaining,
+                chunkSize: 64 * 1024,
+                maxPendingRequests: 128,
+              )) {
+                if (isCancelled) break;
+                if (chunk.isEmpty) continue;
+                gotAny = true;
+                // 每块带绝对偏移，乱序到达也无所谓——直接写到正确位置。
+                await writeAt(offset, chunk);
+                consumed += chunk.length;
+                offset += chunk.length;
+                totalDownloaded += chunk.length;
+                if (totalSize > 0) onProgress((totalDownloaded / totalSize).clamp(0.0, 1.0));
+              }
               if (isCancelled) break;
-              // 每块带绝对偏移，乱序到达也无所谓——直接写到正确位置。
-              await writeAt(start + consumed, chunk);
-              consumed += chunk.length;
-              totalDownloaded += chunk.length;
-              if (totalSize > 0) onProgress((totalDownloaded / totalSize).clamp(0.0, 1.0));
+              if (!gotAny) {
+                emptyStreak++;
+                if (emptyStreak > 10) {
+                  throw Exception('SFTP 下载区间提前结束：已读 $consumed/$len 字节');
+                }
+                await Future<void>.delayed(const Duration(milliseconds: 30));
+              } else {
+                emptyStreak = 0;
+              }
+            }
+            if (isCancelled) throw Exception('Cancelled');
+            if (consumed != len) {
+              throw Exception('SFTP 下载区间未读满：已读 $consumed/$len 字节');
             }
           } finally {
             await file.close();

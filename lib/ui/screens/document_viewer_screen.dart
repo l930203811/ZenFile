@@ -95,7 +95,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('加载出错：{e}')),
+          SnackBar(content: Text('加载出错：$e')),
         );
       }
     } finally {

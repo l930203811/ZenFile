@@ -2960,6 +2960,9 @@ class L10nJa extends L10n {
   String get ui_hide_player_controller => 'プレーヤーコントローラーを非表示';
 
   @override
+  String get ui_scanning_category => 'デフォルトフォルダをスキャン中…読み込み済みの項目は操作できます';
+
+  @override
   String get ui_refresh => '更新';
 
   @override
@@ -3796,6 +3799,9 @@ class L10nJa extends L10n {
 
   @override
   String get ui_retry => '再試行';
+
+  @override
+  String get ui_media_load_failed => 'メディアの読み込みに失敗しました。ストレージ権限を確認して再試行してください';
 
   @override
   String get ui_no_subfolders => 'サブフォルダがありません';
@@ -4860,4 +4866,10 @@ class L10nJa extends L10n {
 
   @override
   String get ui_test_success_desc => '连接成功，服务器配置正确';
+
+  @override
+  String get ui_show_remote_files => '显示远程文件';
+
+  @override
+  String get ui_hide_remote_files => '隐藏远程文件';
 }

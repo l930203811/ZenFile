@@ -44,8 +44,28 @@ bool _isUnderAppCacheDir(String path) {
 }
 
 /// 传给 isolate 的扫描参数（所有字段均可跨 isolate 结构化克隆）。
+/// 扫描根：路径 + 允许的最大递归深度。
+/// depth 0 = 仅扫描该目录自身（不进入子目录）；depth 4 = 进入至多 4 层子目录。
+/// 用于把「对整棵内部存储的全量递归」改为「限定深度的热点目录快速扫描」，
+/// 将非媒体类别（文档/压缩包/下载/安装包）的加载从数十秒降到毫秒级，
+/// 从根本上消除「打开应用后要等很久才显示」以及「扫描常在切换/后台时被
+/// 丢弃导致时有时无」的问题。
+class _ScanRoot {
+  final String path;
+  final int maxDepth;
+  const _ScanRoot(this.path, this.maxDepth);
+}
+
+/// 扫描队列元素：携带当前递归深度与所属根的 cap，超出 cap 不再入队子目录。
+class _ScanItem {
+  final String path;
+  final int depth;
+  final int cap;
+  const _ScanItem(this.path, this.depth, this.cap);
+}
+
 class _FSScanParams {
-  final List<String> rootDirs;
+  final List<_ScanRoot> roots;
   final List<String> imageExtensions;
   final List<String> videoExtensions;
   final List<String> audioExtensions;
@@ -53,8 +73,17 @@ class _FSScanParams {
   final List<String> archiveExtensions;
   final List<String> apkExtensions;
   final List<String> downloadDirs;
+  /// true 时跳过图片/视频/截图/音频的收集（这些类别改由系统级索引
+  /// PhotoManager/on_audio_query 提供），isolate 只扫文档/压缩包/下载/安装包。
+  /// 避免对大存储设备全盘递归扫描造成 I/O 饱和导致整机卡顿（红米K60Pro反馈）。
+  final bool skipMediaCategories;
+  /// 目录缓存：{dirPath: {'m': mtimeMillis, 'f': [文件路径], 'd': [子目录], 's': {类别: 字节}}}
+  /// 仅用于枚举失败时兜底沿用已知文件清单与子目录（不再以 mtime 跳过枚举，
+  /// 避免部分 ROM 不更新目录 mtime 导致新文件永不出现）。非媒体类别目录树
+  /// 较小，每次扫描都会重新枚举以保证完整性。
+  final Map<String, Map<String, dynamic>> dirCache;
   const _FSScanParams({
-    required this.rootDirs,
+    required this.roots,
     required this.imageExtensions,
     required this.videoExtensions,
     required this.audioExtensions,
@@ -62,6 +91,8 @@ class _FSScanParams {
     required this.archiveExtensions,
     required this.apkExtensions,
     required this.downloadDirs,
+    this.skipMediaCategories = false,
+    this.dirCache = const {},
   });
 }
 
@@ -83,6 +114,8 @@ class _FSScanResult {
   // 各分类文件字节总和（key 与分类名一致：图片/视频/截图/音频/文档/压缩包/下载/安装包）。
   // 在 isolate 内对每个文件 stat 累计，主线程直接取用，避免对几十万文件同步 lengthSync 阻塞 UI。
   final Map<String, int> categorySizes;
+  // 更新后的目录缓存（枚举失败时兜底沿用，不再以 mtime 跳过枚举）。
+  final Map<String, Map<String, dynamic>> dirCache;
   const _FSScanResult({
     this.images = const [],
     this.videos = const [],
@@ -96,6 +129,7 @@ class _FSScanResult {
     this.videoFolders = const {},
     this.audioFolders = const {},
     this.categorySizes = const {},
+    this.dirCache = const {},
   });
 }
 
@@ -113,6 +147,100 @@ Map<String, List<String>> _groupPathsByParentDir(List<String> paths) {
 
 String _normalizeMediaPathIsolate(String path) => path.replaceAll(RegExp(r'/+'), '/');
 
+/// 在 isolate 内对一组路径求字节总和（供媒体分类大小统计，
+/// 系统索引无文件大小属性，stat 放后台 isolate 避免阻塞 UI）。
+@pragma('vm:entry-point')
+int _sumFileSizesInIsolate(List<String> paths) {
+  int total = 0;
+  for (final path in paths) {
+    try {
+      total += File(path).lengthSync();
+    } catch (_) {}
+  }
+  return total;
+}
+
+/// 磁盘缓存恢复结果（isolate 内完成 decode + exists 过滤，主 isolate 零 IO）。
+class _RestoredCache {
+  final List<String> documents;
+  final List<String> archives;
+  final List<String> downloads;
+  final List<String> apks;
+  final List<Map<String, dynamic>> recentFiles;
+  final Map<String, int> categorySizes;
+  final Map<String, int> mediaCounts;
+  final Map<String, Map<String, dynamic>>? dirCache;
+  const _RestoredCache({
+    this.documents = const [],
+    this.archives = const [],
+    this.downloads = const [],
+    this.apks = const [],
+    this.recentFiles = const [],
+    this.categorySizes = const {},
+    this.mediaCounts = const {},
+    this.dirCache,
+  });
+}
+
+/// 在 isolate 内恢复磁盘缓存：jsonDecode（数 MB JSON 主线程解码可阻塞数秒）
+/// 与逐文件 existsSync（几万次 stat 会淹没主 isolate 事件循环导致整机卡顿，
+/// 红米K60Pro反馈的卡顿根因之一）全部移出主线程。
+/// 媒体类别（图/视/截/音）不再从缓存恢复——系统级索引本身毫秒级且权威。
+@pragma('vm:entry-point')
+_RestoredCache _restoreCacheInIsolate(String jsonStr) {
+  try {
+    final map = jsonDecode(jsonStr) as Map<String, dynamic>;
+    // 直接信任缓存路径，不做逐文件 existsSync：数万次 stat 是二次启动
+    // 「进入类别仍需等待」的主因。已删除文件必然改变父目录 mtime，
+    // 进入类别触发的增量扫描会自动发现并清除（dirCache 机制）。
+    List<String> filterExisting(String key) {
+      return List<String>.from(map[key] ?? []);
+    }
+
+    final recent = <Map<String, dynamic>>[];
+    for (final e in (map['recentFiles'] as List?) ?? []) {
+      try {
+        final entry = Map<String, dynamic>.from(e as Map);
+        final path = entry['path'] as String?;
+        if (path == null) continue;
+        if (!File(path).existsSync()) continue;
+        recent.add(entry);
+      } catch (_) {}
+    }
+
+    final sizes = <String, int>{};
+    (map['fsCategorySizes'] as Map?)?.forEach((k, v) {
+      try { sizes['$k'] = (v as num).toInt(); } catch (_) {}
+    });
+    final counts = <String, int>{};
+    (map['mediaCounts'] as Map?)?.forEach((k, v) {
+      try { counts['$k'] = (v as num).toInt(); } catch (_) {}
+    });
+    // 目录增量缓存（直接透传，结构见 _FSScanParams.dirCache）
+    Map<String, Map<String, dynamic>>? dirCache;
+    final rawDc = map['dirCache'];
+    if (rawDc is Map) {
+      dirCache = {};
+      rawDc.forEach((k, v) {
+        if (v is Map) dirCache!['$k'] = Map<String, dynamic>.from(v);
+      });
+    }
+
+    return _RestoredCache(
+      documents: filterExisting('documents'),
+      archives: filterExisting('archives'),
+      downloads: filterExisting('downloads'),
+      apks: filterExisting('apks'),
+      recentFiles: recent,
+      categorySizes: sizes,
+      mediaCounts: counts,
+      dirCache: dirCache,
+    );
+  } catch (_) {
+    return const _RestoredCache();
+  }
+}
+
 /// 分类页递归扫描时按尺寸过滤噪声小文件（移除系统级索引后改为全存储递归扫描，
 /// 会扫到大量 app 图标、通知图标、.ts 流媒体小片段等噪声）：
 /// - 图片小于此值视为图标/缩略图噪声，不进「图片」分类。
@@ -120,7 +248,7 @@ const int _kMinImageBytes = 30 * 1024; // 30 KB
 /// - 视频小于此值视为流媒体小片段/广告碎片（如 .ts 碎片），不进「视频」分类。
 const int _kMinVideoBytes = 1024 * 1024; // 1 MB
 
-/// 在独立 isolate 中递归遍历 [params.rootDirs]，按扩展名一次性收集所有类别。
+/// 在独立 isolate 中递归遍历 [params.roots]，按扩展名一次性收集所有类别。
 /// 与 1.1.22 系统级索引（MediaStore 独立进程）等价：扫描完全不占用 UI 主线程。
 /// 此函数不依赖任何类实例/闭包，也不调用 platform channel，可在 isolate 安全运行。
 @pragma('vm:entry-point')
@@ -135,16 +263,88 @@ Future<_FSScanResult> _scanMediaFileSystemIsolate(_FSScanParams params) async {
   final apks = <String>[];
   final seenAudios = <String>{};
   final seenDownloads = <String>{};
+  // 跨根去重：热点目录与主目录浅层根会重叠枚举同一目录/文件，
+  // 用 seenNonMedia 防止文档/压缩包/安装包列表出现重复路径。
+  final seenNonMedia = <String>{};
   // 各分类字节总和：在 isolate 内对每个文件 stat，主线程不再逐个 lengthSync。
   final sizes = <String, int>{};
   void addSize(String key, int v) {
     if (v > 0) sizes[key] = (sizes[key] ?? 0) + v;
   }
 
-  final queue = <String>[...params.rootDirs];
+  final queue = <_ScanItem>[for (final r in params.roots) _ScanItem(r.path, 0, r.maxDepth)];
+  final queued = <String>{};
+  final newDirCache = <String, Map<String, dynamic>>{};
+  int scannedDirs = 0;
+  debugPrint('[ZenFile][isolate] scan roots=${params.roots}');
+
+  // 缓存命中处理：沿用缓存的文件清单/大小/子目录（mtime 一致与 stat 失败兜底共用）
+  void applyCachedEntry(String dir, Map<String, dynamic> cached, bool isDownloadDir, int depth, int cap) {
+    newDirCache[dir] = cached;
+    final files = List<String>.from(cached['f'] ?? const []);
+    (cached['s'] as Map?)?.forEach((k, v) {
+      try { addSize('$k', (v as num).toInt()); } catch (_) {}
+    });
+    for (final fp in files) {
+      if (isDownloadDir && !seenDownloads.contains(fp)) {
+        seenDownloads.add(fp);
+        downloads.add(fp);
+      }
+      final ext = p.extension(fp.toLowerCase());
+      if (params.docExtensions.contains(ext)) {
+        if (seenNonMedia.add(fp)) documents.add(fp);
+      } else if (params.archiveExtensions.contains(ext)) {
+        if (seenNonMedia.add(fp)) archives.add(fp);
+      } else if (params.apkExtensions.contains(ext)) {
+        if (seenNonMedia.add(fp)) apks.add(fp);
+      }
+    }
+    // 子目录沿用缓存清单入队（受 cap 限制，超出深度不再深入）
+    for (final d in List<String>.from(cached['d'] ?? const [])) {
+      if (depth + 1 <= cap && !queued.contains(d)) queue.add(_ScanItem(d, depth + 1, cap));
+    }
+  }
+
   while (queue.isNotEmpty) {
-    final current = queue.removeAt(0);
+    final item = queue.removeAt(0);
+    final current = item.path;
+    final currentDepth = item.depth;
+    final currentCap = item.cap;
+    if (!queued.add(current)) continue;
     final isDownloadDir = params.downloadDirs.contains(current);
+
+    // 目录 mtime（仅用于记录缓存时间戳，不再作为跳过枚举的依据）。
+    // FUSE/存储繁忙时 statSync 会瞬时失败：仍失败则沿用缓存兜底（保留该目录
+    // 已有文件与子目录，避免「内容莫名消失/不全」），不强行枚举（通常也读不到）。
+    int? dirMtime;
+    for (var i = 0; i < 3 && dirMtime == null; i++) {
+      try {
+        dirMtime = Directory(current).statSync().modified.millisecondsSinceEpoch;
+      } catch (_) {
+        if (i < 2) await Future<void>.delayed(const Duration(milliseconds: 5));
+      }
+    }
+    final cached = params.dirCache[current];
+    if (dirMtime == null) {
+      if (cached != null) {
+        applyCachedEntry(current, cached, isDownloadDir, currentDepth, currentCap);
+      }
+      continue;
+    }
+
+    // 已移除基于目录 mtime 的「增量跳过枚举」优化：部分 ROM（FUSE/sdcardfs/
+    // MTP）在文件增删时不会更新目录 mtime，导致跳过的目录永远沿用旧清单、
+    // 新增文件永不出现（「加载不全」的根因）。现改为每个目录每次都重新枚举
+    // 以保证新文件可见；非媒体类别（文档/压缩包/下载/安装包）目录树远小于
+    // 媒体目录，全量枚举成本可控，且枚举异常时会沿用缓存清单兜底。
+
+    // ===== 全量枚举 =====
+    final dirFiles = <String>[];
+    final dirSubs = <String>[];
+    final dirSizes = <String, int>{};
+    void dirAddSize(String key, int v) {
+      if (v > 0) dirSizes[key] = (dirSizes[key] ?? 0) + v;
+    }
     try {
       await for (final entity in Directory(current).list(recursive: false)) {
         if (entity is Directory) {
@@ -154,21 +354,28 @@ Future<_FSScanResult> _scanMediaFileSystemIsolate(_FSScanParams params) async {
           if (!name.startsWith('.') &&
               name != 'Android' &&
               !_isUnderAppCacheDir(entity.path)) {
-            queue.add(entity.path);
+            dirSubs.add(entity.path);
+            if (currentDepth + 1 <= currentCap && !queued.contains(entity.path)) {
+              queue.add(_ScanItem(entity.path, currentDepth + 1, currentCap));
+            }
           }
         } else if (entity is File) {
           // 跳过本应用缓存目录内的文件（远程下载缓存、缩略图等）。
           if (_isUnderAppCacheDir(entity.path)) continue;
+          dirFiles.add(entity.path);
           final lower = entity.path.toLowerCase();
           final ext = p.extension(lower);
           if (isDownloadDir && !seenDownloads.contains(entity.path)) {
             seenDownloads.add(entity.path);
             downloads.add(entity.path);
             try {
-              addSize('下载', entity.lengthSync());
+              dirAddSize('下载', entity.lengthSync());
             } catch (_) {}
           }
-          if (params.videoExtensions.contains(ext)) {
+          if (params.skipMediaCategories) {
+            // 媒体类别（图/视/截/音）由系统级索引提供，此处跳过，
+            // 只处理下方文档/压缩包/安装包分支。
+          } else if (params.videoExtensions.contains(ext)) {
             // 过滤掉极小视频片段（如 .ts 流媒体碎片），避免污染「视频」分类
             int size;
             try {
@@ -178,7 +385,7 @@ Future<_FSScanResult> _scanMediaFileSystemIsolate(_FSScanParams params) async {
             }
             if (size < _kMinVideoBytes) continue;
             videos.add(entity.path);
-            addSize('视频', size);
+            dirAddSize('视频', size);
           } else if (params.audioExtensions.contains(ext)) {
             final norm = _normalizeMediaPathIsolate(entity.path);
             if (!seenAudios.contains(norm)) {
@@ -187,7 +394,7 @@ Future<_FSScanResult> _scanMediaFileSystemIsolate(_FSScanParams params) async {
               try {
                 size = (await entity.stat()).size;
               } catch (_) {}
-              addSize('音频', size);
+              dirAddSize('音频', size);
               final nameNoExt = p.basenameWithoutExtension(entity.path);
               audios.add({
                 '_id': 800000 + seenAudios.length,
@@ -213,31 +420,65 @@ Future<_FSScanResult> _scanMediaFileSystemIsolate(_FSScanParams params) async {
             if (size < _kMinImageBytes) continue;
             if (lower.contains('screenshot') || lower.contains('截图')) {
               screenshots.add(entity.path);
-              addSize('截图', size);
+              dirAddSize('截图', size);
             } else {
               images.add(entity.path);
-              addSize('图片', size);
+              dirAddSize('图片', size);
             }
           } else if (params.docExtensions.contains(ext)) {
-            documents.add(entity.path);
-            try {
-              addSize('文档', entity.lengthSync());
-            } catch (_) {}
+            if (seenNonMedia.add(entity.path)) {
+              documents.add(entity.path);
+              try {
+                dirAddSize('文档', entity.lengthSync());
+              } catch (_) {}
+            }
           } else if (params.archiveExtensions.contains(ext)) {
-            archives.add(entity.path);
-            try {
-              addSize('压缩包', entity.lengthSync());
-            } catch (_) {}
+            if (seenNonMedia.add(entity.path)) {
+              archives.add(entity.path);
+              try {
+                dirAddSize('压缩包', entity.lengthSync());
+              } catch (_) {}
+            }
           } else if (params.apkExtensions.contains(ext)) {
-            apks.add(entity.path);
-            try {
-              addSize('安装包', entity.lengthSync());
-            } catch (_) {}
+            if (seenNonMedia.add(entity.path)) {
+              apks.add(entity.path);
+              try {
+                dirAddSize('安装包', entity.lengthSync());
+              } catch (_) {}
+            }
           }
         }
       }
-    } catch (_) {}
+    } catch (_) {
+      // 枚举异常（权限不足/存储瞬时繁忙/符号链接环）：沿用缓存清单与子目录，
+      // 避免把该目录文件与整棵子树「写成空」导致内容消失/不全；同时继续遍历
+      // 缓存中的子目录，保证子树在本次扫描中不被整体丢弃。
+      if (cached != null) {
+        dirFiles.addAll(List<String>.from(cached['f'] ?? const []));
+        for (final d in List<String>.from(cached['d'] ?? const [])) {
+          if (currentDepth + 1 <= currentCap && !queued.contains(d)) {
+            queue.add(_ScanItem(d, currentDepth + 1, currentCap));
+          }
+        }
+      }
+    }
+    dirSizes.forEach(addSize);
+    newDirCache[current] = {
+      'm': dirMtime,
+      'f': dirFiles,
+      'd': dirSubs,
+      's': dirSizes,
+    };
+    // I/O 让步：每全量扫描 32 个目录暂停几 ms，把存储带宽让给系统与
+    // 前台渲染。后台 isolate 虽不占 CPU，但 I/O 带宽整机共享，
+    // 不让步会造成整机卡顿（红米K60Pro「仍然卡」的原因之一）。
+    if (++scannedDirs % 32 == 0) {
+      await Future<void>.delayed(const Duration(milliseconds: 3));
+    }
   }
+  debugPrint('[ZenFile][isolate] scan done: scannedDirs=$scannedDirs '
+      'docs=${documents.length} arch=${archives.length} dl=${downloads.length} '
+      'apk=${apks.length}');
   // 在 isolate 内完成按父目录分组，主线程直接赋值，不再做 O(n) 遍历。
   final imageFolders = _groupPathsByParentDir(images);
   final videoFolders = _groupPathsByParentDir(videos);
@@ -256,6 +497,7 @@ Future<_FSScanResult> _scanMediaFileSystemIsolate(_FSScanParams params) async {
     videoFolders: videoFolders,
     audioFolders: audioFolders,
     categorySizes: sizes,
+    dirCache: newDirCache,
   );
 }
 
@@ -607,6 +849,7 @@ class MediaProvider extends ChangeNotifier {
     _customCategoryPaths = PreferencesService.getCustomCategoryPaths();
     _excludedDefaultPaths = PreferencesService.getExcludedDefaultPaths();
     _customCategoryLabels = PreferencesService.getCustomCategoryLabels();
+    _instance = this;
   }
 
   List<FileSystemEntity> _images = [];
@@ -619,6 +862,11 @@ class MediaProvider extends ChangeNotifier {
   List<FileSystemEntity> _screenshots = [];
   /// 各分类文件总大小缓存（字节），扫描完成后统一计算，避免 UI 构建时重复 stat。
   final Map<String, int> _categorySizeCache = {};
+  /// 远程文件元数据缓存：remote:// 路径无法被本地 stat，扫描远程服务器时把
+  /// 服务端返回的 size/modified 暂存于此，供分类页 UI 显示真实大小与日期。
+  /// key = remote://{connectionId}|{remotePath}
+  final Map<String, int> _remoteFileSizes = {};
+  final Map<String, DateTime> _remoteFileModified = {};
   /// isolate 扫描阶段累计的各分类字节数原始值（key 与分类名一致）。
   /// 主线程 [_recalcCategorySizes] 从该值 + 自定义路径补充重建缓存，避免对
   /// 几十万文件同步 lengthSync 阻塞 UI（安卓 15/16 键盘/输入卡顿根因之一）。
@@ -697,6 +945,21 @@ class MediaProvider extends ChangeNotifier {
 
   /// 判断路径是否来自远程（自定义扫描路径中的 remote://）。
   static bool isRemotePath(String path) => path.startsWith('remote://');
+
+  /// 取远程文件在扫描时缓存的大小（字节），未缓存返回 0。
+  static int getCachedRemoteFileSize(String path) {
+    final provider = _instance;
+    if (provider == null) return 0;
+    return provider._remoteFileSizes[path] ?? 0;
+  }
+
+  /// 取远程文件在扫描时缓存的修改时间，未缓存返回 null。
+  static DateTime? getCachedRemoteFileModified(String path) {
+    final provider = _instance;
+    return provider?._remoteFileModified[path];
+  }
+
+  static MediaProvider? _instance;
 
   /// 统一的「父目录」提取 helper。
   /// 保证：分组生成（_groupByParentDir / _groupAudiosByParentDir）、
@@ -785,6 +1048,38 @@ class MediaProvider extends ChangeNotifier {
 
   bool _isLoading = false;
   bool _isLoaded = false;
+  // 最近一次媒体扫描是否失败（isolate 扫描异常且主线程回退扫描也未执行成功，
+  // 或存储权限缺失）。失败时分类浏览页显示「加载失败 + 重试」而非无限 shimmer，
+  // 避免出现「类别显示缓存数量但无法打开浏览」的静默失败（红米K60Pro反馈）。
+  bool _loadFailed = false;
+  // 系统音频库查询（MediaStore Audio 表）
+  final OnAudioQuery _audioQuery = OnAudioQuery();
+  // 上次持久化的媒体数量（图片/视频/截图）。数量未变时分类大小直接沿用
+  // 持久化值，避免每次启动对几万文件做全量 stat（I/O 饱和导致整机卡顿）。
+  Map<String, int>? _lastMediaCounts;
+  // 非媒体类别（文档/压缩包/下载/安装包）的 isolate 递归扫描已后台化：
+  // _nonMediaScanDone=false 期间分类页对空列表显示 shimmer 而非空状态。
+  bool _nonMediaScanDone = false;
+  bool _nonMediaScanRunning = false;
+  // dart:io 能否真正访问主存储（MANAGE_EXTERNAL_STORAGE 实际生效）。
+  // 部分 ROM（MIUI/澎湃）上 permission_handler 的 isGranted 会误报（true 时
+  // 实际 dart:io 仍读不到、false 时实际已全部授权），故在 loadMedia 用一次
+  // 真实目录枚举二次确认。false 时非媒体递归扫描必然为空，需走 MediaStore 兜底。
+  bool _storageAccessible = true;
+  // 目录增量缓存（供 isolate 扫描跳过 mtime 未变的目录，见 _FSScanParams.dirCache）
+  Map<String, Map<String, dynamic>> _dirCache = {};
+  // 文件 mtime/size 缓存：系统索引加载时从 AssetEntity 播种（零 stat），
+  // 其余路径首查 stat 一次后缓存。供排序比较器读取，杜绝主线程反复同步 stat。
+  final Map<String, DateTime> _mtimeCache = {};
+  final Map<String, int> _sizeCache = {};
+  // getter 记忆化：图片/视频/截图 getter 的 过滤+去重+排序 结果缓存，
+  // 源列表身份/排序方式/排除路径变化才重算（此前每次 build 都 O(N logN) 重排）。
+  List<dynamic>? _imagesOut;
+  int _imagesStamp = 0;
+  List<dynamic>? _videosOut;
+  int _videosStamp = 0;
+  List<dynamic>? _shotsOut;
+  int _shotsStamp = 0;
   // 后台刷新防抖：避免 home_screen 在每次 onResume 都触发一次全量扫描，
   // 多个扫描并发跑在主线程会把 UI 撑爆（表现为「打开 app 几秒后卡死」）。
   DateTime? _lastBackgroundRefresh;
@@ -824,28 +1119,40 @@ class MediaProvider extends ChangeNotifier {
   /// 文件级去重由 [_dedupeMediaByPath] 按完整路径保证，本地与远程各自独立。
 
   List<dynamic> get images {
-    final excluded = _excludedDefaultPaths['图片'] ?? [];
-    final list = [..._images, ..._customImages].where((item) {
+    final excluded = _excludedDefaultPaths['图片'] ?? const [];
+    final stamp = _stampFor(_images, _customImages, excluded);
+    if (_imagesOut != null && _imagesStamp == stamp) return _imagesOut!;
+    final raw = [..._images, ..._customImages].where((item) {
       final path = _getItemPath(item);
       if (path != null && _isPathExcluded(path, excluded)) {
         return false;
       }
       return true;
     }).toList();
-    _sortDynamicList(_dedupeMediaByPath(list));
+    // 修复：此前 _dedupeMediaByPath 的返回值被丢弃，同路径文件
+    // （系统索引 + 自定义分类双收录）会在列表中重复显示
+    final list = _dedupeMediaByPath(raw);
+    _sortDynamicList(list);
+    _imagesOut = list;
+    _imagesStamp = stamp;
     return list;
   }
 
   List<dynamic> get videos {
-    final excluded = _excludedDefaultPaths['视频'] ?? [];
-    final list = [..._videos, ..._customVideos].where((item) {
+    final excluded = _excludedDefaultPaths['视频'] ?? const [];
+    final stamp = _stampFor(_videos, _customVideos, excluded);
+    if (_videosOut != null && _videosStamp == stamp) return _videosOut!;
+    final raw = [..._videos, ..._customVideos].where((item) {
       final path = _getItemPath(item);
       if (path != null && _isPathExcluded(path, excluded)) {
         return false;
       }
       return true;
     }).toList();
-    _sortDynamicList(_dedupeMediaByPath(list));
+    final list = _dedupeMediaByPath(raw);
+    _sortDynamicList(list);
+    _videosOut = list;
+    _videosStamp = stamp;
     return list;
   }
 
@@ -908,15 +1215,22 @@ class MediaProvider extends ChangeNotifier {
   }
 
   List<dynamic> get screenshots {
-    final excluded = _excludedDefaultPaths['截图'] ?? [];
-    final list = [..._screenshots, ..._customScreenshots].where((item) {
+    final excluded = _excludedDefaultPaths['截图'] ?? const [];
+    final stamp = _stampFor(_screenshots, _customScreenshots, excluded);
+    if (_shotsOut != null && _shotsStamp == stamp) return _shotsOut!;
+    final raw = [..._screenshots, ..._customScreenshots].where((item) {
       final path = _getItemPath(item);
       if (path != null && _isPathExcluded(path, excluded)) {
         return false;
       }
       return true;
     }).toList();
-    _sortDynamicList(_dedupeMediaByPath(list));
+    // 修复：截图「实际 1 张显示 2 张同路径」——系统索引截图相册与
+    // 「全部媒体」循环双收录/自定义分类双收录时，去重结果此前被丢弃
+    final list = _dedupeMediaByPath(raw);
+    _sortDynamicList(list);
+    _shotsOut = list;
+    _shotsStamp = stamp;
     return list;
   }
   List<FileItemModel> get recentFiles => _recentFiles;
@@ -953,40 +1267,61 @@ class MediaProvider extends ChangeNotifier {
   }
 
   DateTime _getDateTime(dynamic item) {
+    String? path;
     if (item is SongModel) {
-      final f = File(item.data);
-      if (f.existsSync()) {
-        try {
-          return f.lastModifiedSync();
-        } catch (_) {}
-      }
+      path = item.data;
+    } else if (item is FileSystemEntity) {
+      path = item.path;
     }
-    if (item is FileSystemEntity) {
-      try {
-        return File(item.path).lastModifiedSync();
-      } catch (_) {}
+    if (path == null) return DateTime.fromMillisecondsSinceEpoch(0);
+    // 缓存优先：系统索引加载时已播种，未命中才 stat 一次并缓存。
+    // 此前每次排序比较都 lastModifiedSync，O(N logN) 次主线程同步 stat
+    // 是大存储设备「图片加载一部分后卡死」的直接根因。
+    final cached = _mtimeCache[path];
+    if (cached != null) return cached;
+    try {
+      final m = File(path).lastModifiedSync();
+      _mtimeCache[path] = m;
+      return m;
+    } catch (_) {
+      return DateTime.fromMillisecondsSinceEpoch(0);
     }
-    return DateTime.fromMillisecondsSinceEpoch(0);
   }
 
   int _getSize(dynamic item) {
-    if (item is FileSystemEntity) {
-      try {
-        return File(item.path).lengthSync();
-      } catch (_) {}
-    }
     if (item is SongModel) {
       try {
         return item.size;
       } catch (_) {}
+      return 0;
+    }
+    if (item is FileSystemEntity) {
+      final cached = _sizeCache[item.path];
+      if (cached != null) return cached;
+      try {
+        final s = File(item.path).lengthSync();
+        _sizeCache[item.path] = s;
+        return s;
+      } catch (_) {}
     }
     return 0;
   }
+
+  /// getter 缓存戳：源列表身份 + 排序方式 + 排除路径列表身份。
+  /// 列表被重新赋值（加载/删除/刷新）或排序/排除变化 → 戳变化 → 重算。
+  int _stampFor(List a, List b, List excluded) =>
+      Object.hash(identityHashCode(a), identityHashCode(b),
+          identityHashCode(excluded), _sortOrder.index);
   List<CustomShortcutModel> get customShortcuts => _customShortcuts;
   List<String> get categoryOrder => _categoryOrder;
   List<String> get activeCategories => _activeCategories;
   bool get isLoading => _isLoading;
   bool get isLoaded => _isLoaded;
+  bool get loadFailed => _loadFailed;
+  /// 非媒体类别（文档/压缩包/下载/安装包）后台递归扫描是否已完成。
+  /// 未完成期间分类页对这几个类别的空列表显示 shimmer 而非空状态。
+  bool get nonMediaScanDone => _nonMediaScanDone;
+  bool get nonMediaScanning => _nonMediaScanRunning;
   MediaSortOrder get sortOrder => _sortOrder;
 
   void toggleCategory(String label) {
@@ -1194,171 +1529,136 @@ class MediaProvider extends ChangeNotifier {
     return 0;
   }
 
+  /// 元数据缓存文件位置。改用 ApplicationSupport（持久目录）：
+  /// 临时目录会被系统在存储紧张时清理，缓存一旦丢失每次启动都要
+  /// 重新全盘扫描——「打开应用后仍需等待一段时间才能显示部分类别」
+  /// 的根因之一。读取时回退旧临时目录位置以兼容升级用户。
+  Future<File> _metaCacheFile() async {
+    final dir = await getApplicationSupportDirectory();
+    return File('${dir.path}/media_meta_cache.json');
+  }
+
   Future<void> _loadFromDiskCache() async {
     try {
-      final dir = await getTemporaryDirectory();
-      final cacheFile = File('${dir.path}/media_meta_cache.json');
+      var cacheFile = await _metaCacheFile();
+      if (!await cacheFile.exists()) {
+        // 兼容旧版：迁移前缓存位于临时目录
+        final legacy = File(
+            '${(await getTemporaryDirectory()).path}/media_meta_cache.json');
+        if (await legacy.exists()) cacheFile = legacy;
+      }
       if (await cacheFile.exists()) {
         final jsonStr = await cacheFile.readAsString();
-        final map = jsonDecode(jsonStr) as Map<String, dynamic>;
+        // decode + 逐文件 exists 全部在 isolate 内完成：大存储设备缓存条目可达
+        // 数万，主 isolate 逐个 await exists() 会让 IO 回调淹没事件循环，
+        // 表现为启动后持续卡顿（键盘/滑动掉帧）——红米K60Pro 反馈的卡顿根因之一。
+        // 媒体（图/视/截/音）不再从缓存恢复：系统级索引毫秒级且权威。
+        final r = await compute(_restoreCacheInIsolate, jsonStr);
 
-        // 注意: categoryOrder 和 activeCategories 不从磁盘缓存读取，
-        // 它们由构造函数从 SharedPreferences 读取作为唯一真相源。
-        // 否则缓存中的旧值会覆盖用户自定义的顺序和启用状态，
-        // 且强制按默认顺序排序会破坏用户的自定义排列。
-
-        if (map.containsKey('documents')) {
-          final docPaths = List<String>.from(map['documents'] ?? []);
-          final cachedDocs = <FileSystemEntity>[];
-          for (final p in docPaths) {
-            final f = File(p);
-            if (await f.exists()) cachedDocs.add(f);
-          }
-          if (cachedDocs.isNotEmpty && _documents.isEmpty) {
-            _documents = cachedDocs;
-          }
+        if (_documents.isEmpty && r.documents.isNotEmpty) {
+          _documents = r.documents.map((e) => File(e)).toList();
         }
-
-        if (map.containsKey('archives')) {
-          final archPaths = List<String>.from(map['archives'] ?? []);
-          final cachedArch = <FileSystemEntity>[];
-          for (final p in archPaths) {
-            final f = File(p);
-            if (await f.exists()) cachedArch.add(f);
-          }
-          if (cachedArch.isNotEmpty && _archives.isEmpty) {
-            _archives = cachedArch;
-          }
+        if (_archives.isEmpty && r.archives.isNotEmpty) {
+          _archives = r.archives.map((e) => File(e)).toList();
         }
-
-        if (map.containsKey('downloads')) {
-          final dlPaths = List<String>.from(map['downloads'] ?? []);
-          final cachedDl = <FileSystemEntity>[];
-          for (final p in dlPaths) {
-            final f = File(p);
-            if (await f.exists()) cachedDl.add(f);
-          }
-          if (cachedDl.isNotEmpty && _downloads.isEmpty) {
-            _downloads = cachedDl;
-          }
+        if (_downloads.isEmpty && r.downloads.isNotEmpty) {
+          _downloads = r.downloads.map((e) => File(e)).toList();
         }
-
-        if (map.containsKey('apks')) {
-          final apkPaths = List<String>.from(map['apks'] ?? []);
-          final cachedApks = <FileSystemEntity>[];
-          for (final p in apkPaths) {
-            final f = File(p);
-            if (await f.exists()) cachedApks.add(f);
-          }
-          if (cachedApks.isNotEmpty && _apks.isEmpty) {
-            _apks = cachedApks;
-          }
+        if (_apks.isEmpty && r.apks.isNotEmpty) {
+          _apks = r.apks.map((e) => File(e)).toList();
         }
-
-        if (map.containsKey('recentFiles')) {
-          final paths = List<Map<String, dynamic>>.from(
-            (map['recentFiles'] as List?)?.map((e) => Map<String, dynamic>.from(e as Map)) ?? [],
-          );
-          final cached = <FileItemModel>[];
-          for (final entry in paths) {
-            try {
-              final path = entry['path'] as String?;
-              if (path == null) continue;
-              final f = File(path);
-              if (!await f.exists()) continue;
-              cached.add(FileItemModel(
-                entity: f,
-                name: p.basename(path),
-                path: path,
-                isDirectory: false,
-                size: (entry['size'] as num?)?.toInt() ?? 0,
-                modified: DateTime.fromMillisecondsSinceEpoch(
-                  (entry['modified'] as num?)?.toInt() ?? 0,
-                ),
-              ));
-            } catch (_) {}
-          }
-          if (cached.isNotEmpty && _recentFiles.isEmpty) {
-            _recentFiles = cached;
-          }
+        if (_recentFiles.isEmpty && r.recentFiles.isNotEmpty) {
+          _recentFiles = r.recentFiles.map((entry) {
+            final path = entry['path'] as String;
+            return FileItemModel(
+              entity: File(path),
+              name: p.basename(path),
+              path: path,
+              isDirectory: false,
+              size: (entry['size'] as num?)?.toInt() ?? 0,
+              modified: DateTime.fromMillisecondsSinceEpoch(
+                (entry['modified'] as num?)?.toInt() ?? 0,
+              ),
+            );
+          }).toList();
         }
-
-        // 恢复文件系统扫描到的媒体文件缓存，避免每次启动都重新全量扫描
-        if (map.containsKey('fsImages')) {
-          final paths = List<String>.from(map['fsImages'] ?? []);
-          final cached = <FileSystemEntity>[];
-          for (final path in paths) {
-            final f = File(path);
-            if (await f.exists()) cached.add(f);
-          }
-          if (cached.isNotEmpty && _images.isEmpty) {
-            _images = cached;
-          }
+        // 恢复分类大小与媒体数量记录（供 _computeMediaCategorySizes 判断
+        // 数量未变时直接沿用，避免每次启动全量 stat）
+        _fsCategorySizes.addAll(r.categorySizes);
+        _lastMediaCounts = Map<String, int>.from(r.mediaCounts);
+        // 恢复目录增量缓存（非媒体扫描跳过 mtime 未变目录）
+        final dc = r.dirCache;
+        if (dc != null) {
+          _dirCache = Map<String, Map<String, dynamic>>.from(dc);
         }
-
-        if (map.containsKey('fsVideos')) {
-          final paths = List<String>.from(map['fsVideos'] ?? []);
-          final cached = <FileSystemEntity>[];
-          for (final path in paths) {
-            final f = File(path);
-            if (await f.exists()) cached.add(f);
-          }
-          if (cached.isNotEmpty && _videos.isEmpty) {
-            _videos = cached;
-          }
-        }
-
-        if (map.containsKey('fsScreenshots')) {
-          final paths = List<String>.from(map['fsScreenshots'] ?? []);
-          final cached = <FileSystemEntity>[];
-          for (final path in paths) {
-            final f = File(path);
-            if (await f.exists()) cached.add(f);
-          }
-          if (cached.isNotEmpty && _screenshots.isEmpty) {
-            _screenshots = cached;
-          }
-        }
-
-        if (map.containsKey('fsAudios')) {
-          final audioEntries = List<Map<String, dynamic>>.from(
-            (map['fsAudios'] as List?)?.map((e) => Map<String, dynamic>.from(e as Map)) ?? [],
-          );
-          final cached = <SongModel>[];
-          for (final entry in audioEntries) {
-            try {
-              final path = entry['data'] as String?;
-              if (path == null) continue;
-              final f = File(path);
-              if (!await f.exists()) continue;
-              cached.add(SongModel({
-                '_id': entry['id'] ?? 800000 + cached.length,
-                '_data': path,
-                'title': entry['title'] ?? p.basenameWithoutExtension(path),
-                'artist': entry['artist'] ?? '',
-                'album': entry['album'] ?? '',
-                'duration': entry['duration'] ?? 0,
-                'size': entry['size'] ?? 0,
-                'display_name': entry['display_name'] ?? p.basename(path),
-                'display_name_wo_ext': entry['display_name_wo_ext'] ?? p.basenameWithoutExtension(path),
-                'is_music': entry['is_music'] ?? true,
-              }));
-            } catch (_) {}
-          }
-          if (cached.isNotEmpty && _audios.isEmpty) {
-            _audios = cached;
-          }
-        }
-        // 缓存恢复完成后按父目录重算分组，供分类页文件夹视图使用
         _rebuildFolderGroups();
       }
     } catch (_) {}
   }
 
-  Future<void> _saveCache() async {
+  /// 后台执行非媒体类别（文档/压缩包/下载/安装包）的 isolate 递归扫描。
+  /// 不阻塞 loadMedia 快路径（媒体已由系统索引提供、_isLoaded 已置 true）；
+  /// 完成后合并自定义分类、排序并二次 notifyListeners 更新列表与首页计数。
+  /// [force]：强制重扫（右上角刷新/仪表盘下拉刷新），直接采用本次扫描
+  /// 结果替换旧列表（绕过并集兜底，清除已删除文件的幽灵条目）。
+  Future<void> _scanNonMediaInBackground({bool force = false}) async {
+    if (_nonMediaScanRunning) return;
+    if (_nonMediaScanDone && !force) return;
+    _nonMediaScanRunning = true;
+    if (force) _nonMediaScanDone = false;
+    // 无条件通知：分类页底部提示条可靠出现（无论懒加载触发还是强制刷新）
+    notifyListeners();
     try {
-      final dir = await getTemporaryDirectory();
-      final cacheFile = File('${dir.path}/media_meta_cache.json');
+      await _runFileSystemScanInIsolate(force: force).catchError((Object e) {
+        debugPrint('[ZenFile] background non-media scan failed, fallback: $e');
+        return _loadMediaFromFileSystem();
+      });
+      await _scanCustomCategories();
+      await _applySort();
+      _rebuildFolderGroups();
+
+      PreferencesService.saveCategoryCount('文档', _documents.length);
+      PreferencesService.saveCategoryCount('压缩包', _archives.length);
+      PreferencesService.saveCategoryCount('下载', _downloads.length);
+      PreferencesService.saveCategoryCount('安装包', _apks.length);
+      _recalcCategorySizes();
+
+      _nonMediaScanDone = true;
+      notifyListeners();
+      // 落盘前等待首次加载完成：进入类别页极快时扫描可能先于 loadMedia
+      // 的缓存恢复结束，_saveCache 的 !_isLoaded 守卫会拦住导致扫描结果
+      // 与 dirCache 丢失（下次启动又要全量重扫）。
+      for (var i = 0; i < 100 && !_isLoaded; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      }
+      await _saveCache();
+    } catch (e) {
+      debugPrint('[ZenFile] _scanNonMediaInBackground error: $e');
+      _nonMediaScanDone = true; // 失败也置完成，避免分类页永远 shimmer
+      notifyListeners();
+    } finally {
+      _nonMediaScanRunning = false;
+    }
+  }
+
+  Future<void> _saveCache() async {
+    // 首次加载未完成前禁止落盘：此时列表可能仍是空/半恢复状态，
+    // 保存会把上次的完整持久缓存覆盖成空（各类用户操作触发的即时
+    // 保存同样受此保护）。
+    if (!_isLoaded) return;
+    // 「非空→空」保护：非媒体扫描已完成，但文档/压缩包/下载/安装包四类
+    // 全部为空时，说明本次扫描极可能遇到存储瞬时异常（而非用户真删光）。
+    // 此时禁止用空列表覆盖磁盘上的完好缓存，避免「重启后非媒体类别
+    // 莫名全部消失、每次都要等待重扫」。
+    if (_nonMediaScanDone &&
+        _documents.isEmpty &&
+        _archives.isEmpty &&
+        _downloads.isEmpty &&
+        _apks.isEmpty) {
+      return;
+    }
+    try {
+      final cacheFile = await _metaCacheFile();
       final map = {
         'categoryOrder': _categoryOrder,
         'activeCategories': _activeCategories,
@@ -1371,42 +1671,66 @@ class MediaProvider extends ChangeNotifier {
           'size': e.size,
           'modified': e.modified.millisecondsSinceEpoch,
         }).toList(),
-        // 文件系统扫描结果缓存：分类页不再依赖系统索引，缓存完整结果以加速下次启动
-        'fsImages': _images.map((e) => e.path).toList(),
-        'fsVideos': _videos.map((e) => e.path).toList(),
-        'fsScreenshots': _screenshots.map((e) => e.path).toList(),
-        'fsAudios': _audios.map((s) => {
-          'id': s.id,
-          'data': s.data,
-          'title': s.title,
-          'artist': s.artist,
-          'album': s.album,
-          'duration': s.duration,
-          'size': s.size,
-          'display_name': s.displayName,
-          'display_name_wo_ext': s.displayNameWOExt,
-          'is_music': s.isMusic,
-        }).toList(),
+        // 分类大小与媒体数量：下次启动直接恢复，媒体数量未变时不做全量 stat
+        'fsCategorySizes': _fsCategorySizes,
+        'mediaCounts': {
+          '图片': _images.length,
+          '视频': _videos.length,
+          '截图': _screenshots.length,
+        },
+        // 目录增量缓存：非媒体扫描跳过 mtime 未变目录（二次启动毫秒级完成）
+        'dirCache': _dirCache,
+        // 注：媒体（图/视/截/音）路径不再缓存——系统级索引毫秒级提供，
+        // 且数万条路径的序列化/恢复本身就是启动卡顿源。
       };
       // 把 CPU 密集的 jsonEncode 移到独立 isolate：海量媒体（数十万文件）序列化
       // 可达数 MB，主线程直接 encode 会阻塞数秒导致键盘/输入卡顿。compute 返回
       // 字符串后仅做文件写入（IO 异步，不占主线程）。
       final json = await compute(jsonEncode, map);
       await cacheFile.writeAsString(json, flush: true);
+      // 清理旧版临时目录缓存（已被 ApplicationSupport 取代）
+      try {
+        final legacy = File(
+            '${(await getTemporaryDirectory()).path}/media_meta_cache.json');
+        if (await legacy.exists()) await legacy.delete();
+      } catch (_) {}
     } catch (_) {}
+  }
+
+  /// 非媒体类别懒加载入口：进入对应分类页（文档/压缩包/下载/安装包）时
+  /// 由 UI 调用。启动/onResume 不再自动扫描默认目录，避免后台全盘遍历
+  /// 占用系统资源（与系统媒体扫描争抢 I/O 造成整机卡顿）。
+  /// 已扫描过或正在扫描时为空操作；扫描期间已加载内容可正常操作。
+  void ensureNonMediaScanned() {
+    if (_nonMediaScanDone || _nonMediaScanRunning) return;
+    unawaited(_scanNonMediaInBackground());
+  }
+
+  /// 强制重扫非媒体类别（供刷新入口调用，清除幽灵条目）。
+  void forceRefreshNonMedia() {
+    if (_nonMediaScanRunning) return;
+    unawaited(_scanNonMediaInBackground(force: true));
   }
 
   Future<void> refreshMediaBackground() async {
     try {
-      bool isStorageGranted = false;
+      bool rawManageGranted = false;
       try {
-        isStorageGranted = await Permission.manageExternalStorage.isGranted;
+        rawManageGranted = await Permission.manageExternalStorage.isGranted;
       } catch (_) {}
-
-      if (!isStorageGranted) return;
+      // 媒体（图/视/音）走 PhotoManager 独立权限，刷新不依赖 dart:io 可访问性；
+      // 此处仅更新 _storageAccessible 标志供非媒体扫描参考，不因此整体 return。
+      _storageAccessible = await _verifyStorageAccess();
+      debugPrint('[ZenFile] refreshMediaBackground storageAccessible=$_storageAccessible '
+          '(manageExternalStorage.isGranted=$rawManageGranted)');
 
       // 防并发：若已有扫描在跑，直接跳过，避免多个全量扫描堆叠把主线程撑爆。
       if (_isLoading) return;
+      // 关键守卫：首次加载（含磁盘缓存恢复）未完成前禁止后台刷新——
+      // 冷启动 resumed 事件会先于 loadMedia 的缓存恢复到达，此时刷新会把
+      // 空列表 + 空 dirCache 写入持久缓存，覆盖掉上次的完整缓存，
+      // 表现为「重启应用后文档/压缩包/安装包等类别莫名消失，每次都要等待重扫」。
+      if (!_isLoaded) return;
       // 节流：与上一次刷新间隔不足 30s 时跳过，避免在 onResume 频繁触发时
       // 反复全量扫描导致 UI 卡死（「打开 app 几秒后卡死」的根因之一）。
       final now = DateTime.now();
@@ -1417,7 +1741,9 @@ class MediaProvider extends ChangeNotifier {
       _lastBackgroundRefresh = now;
 
       final futures = <Future<void>>[];
-      futures.add(_runFileSystemScanInIsolate());
+      // 与 loadMedia 一致：媒体走系统级索引（快路径），非媒体后台扫描
+      futures.add(_loadImagesAndVideos().then((_) => _computeMediaCategorySizes()));
+      futures.add(_loadAudios());
 
       await Future.wait(futures);
       await _scanCustomCategories();
@@ -1425,6 +1751,7 @@ class MediaProvider extends ChangeNotifier {
       await _saveCache();
       await _applySort();
       _rebuildFolderGroups();
+      // 非媒体类别不再随 onResume 自动扫描（懒加载：进入分类页时才触发）
 
       PreferencesService.saveCategoryCount('图片', images.length);
       PreferencesService.saveCategoryCount('视频', videos.length);
@@ -1442,14 +1769,25 @@ class MediaProvider extends ChangeNotifier {
     }
   }
 
-  /// 在独立 isolate 中完成主存储递归扫描，避免主线程被百万级文件枚举占满
-  /// （这是 1.1.22 用系统索引不卡、1.1.23 用主线程递归扫描导致键盘幻灯片式卡顿
-  /// 与输入约 0.5s 延迟的根因。扫描结果回到主线程后再重建 File / SongModel）。
-  Future<void> _runFileSystemScanInIsolate() async {
+  /// 在独立 isolate 中完成主存储递归扫描，避免主线程被百万级文件枚举占满。
+  /// 图片/视频/截图/音频已改回系统级索引（PhotoManager/on_audio_query，
+  /// 与 NFile 1.1.22 一致——递归扫描媒体会在大存储设备上造成 I/O 饱和、
+  /// 与系统媒体扫描争抢存储导致整机卡顿，红米K60Pro反馈），
+  /// isolate 仅扫描无系统索引的类别：文档/压缩包/下载/安装包。
+  Future<void> _runFileSystemScanInIsolate({bool force = false}) async {
     final searchDirs = await _getUserSearchDirs();
+    debugPrint('[ZenFile] non-media scan start: rootDirs=$searchDirs '
+        'storageAccessible=$_storageAccessible');
     if (searchDirs.isEmpty) return;
+    // dart:io 无法访问主存储（MANAGE_EXTERNAL_STORAGE 实际未生效，MIUI/澎湃误报
+    // 导致）——递归扫描必然返回空，直接跳过并记下日志，后续应走 MediaStore 兜底。
+    if (!_storageAccessible) {
+      debugPrint('[ZenFile] non-media scan SKIPPED: dart:io 无法访问主存储，'
+          '递归扫描必为空，需 MediaStore 兜底');
+      return;
+    }
     final params = _FSScanParams(
-      rootDirs: searchDirs,
+      roots: searchDirs,
       imageExtensions: _imageExtensions,
       videoExtensions: _videoExtensions,
       audioExtensions: _audioExtensions,
@@ -1460,24 +1798,64 @@ class MediaProvider extends ChangeNotifier {
         '/storage/emulated/0/Download',
         '/storage/emulated/0/Downloads',
       ],
+      skipMediaCategories: true,
+      dirCache: _dirCache,
     );
     final result = await compute(_scanMediaFileSystemIsolate, params);
-    _images = result.images.map((e) => File(e)).toList();
-    _videos = result.videos.map((e) => File(e)).toList();
-    _screenshots = result.screenshots.map((e) => File(e)).toList();
-    _audios = result.audios.map((m) => SongModel(m)).toList();
-    _documents = result.documents.map((e) => File(e)).toList();
-    _archives = result.archives.map((e) => File(e)).toList();
-    _downloads = result.downloads.map((e) => File(e)).toList();
-    _apks = result.apks.map((e) => File(e)).toList();
+    // isolate 跳过了媒体收集，其 categorySizes 不含媒体键；
+    // 整 map 替换前保留媒体大小（由系统索引路径 _computeMediaCategorySizes/_loadAudios 维护）。
+    final newSizes = Map<String, int>.from(result.categorySizes);
+    for (final k in const ['图片', '视频', '截图', '音频']) {
+      final v = _fsCategorySizes[k];
+      if (v != null) newSizes[k] = v;
+    }
+    _fsCategorySizes = newSizes;
+    // 更新目录缓存（枚举失败时兜底用，不再以 mtime 跳过枚举）
+    _dirCache = result.dirCache;
+    // 合并保护：isolate 扫描可能因存储瞬时异常返回偏少/空结果，直接覆盖会
+    // 让已显示的条目「莫名全部消失」。
+    // - 新结果为空：极可能是存储瞬时异常，保留旧列表（绝不因空扫描清空）；
+    //   同时 _saveCache 的非空保护会拦截空结果落盘，避免磁盘缓存被覆盖成空。
+    // - 新结果不足旧列表一半且非强制刷新：并集兜底，保留旧条目，下次扫描修正。
+    // - 强制刷新且扫描健康：直接替换，清除已删除文件的幽灵条目。
+    List<FileSystemEntity> mergeGuarded(
+        List<FileSystemEntity> oldFiles, List<String> newPaths) {
+      final newFiles = newPaths.map((e) => File(e)).toList();
+      if (newFiles.isEmpty) {
+        // 空结果：保留旧列表，防止瞬时空扫描导致内容消失。
+        return oldFiles;
+      }
+      if (!force && oldFiles.isNotEmpty && newFiles.length < oldFiles.length / 2) {
+        final seen = newPaths.toSet();
+        return [...newFiles, ...oldFiles.where((f) => !seen.contains(f.path))];
+      }
+      return newFiles;
+    }
+    _documents = mergeGuarded(_documents, result.documents);
+    _archives = mergeGuarded(_archives, result.archives);
+    _downloads = mergeGuarded(_downloads, result.downloads);
+    _apks = mergeGuarded(_apks, result.apks);
     // 分组已在 isolate 内算好，直接赋值，主线程不再做 O(n) 遍历分组。
-    _imageFolders = result.imageFolders;
-    _videoFolders = result.videoFolders;
-    _audioFolders = result.audioFolders;
-    // 分类大小也已在 isolate 内累计，主线程不再逐个 lengthSync 阻塞 UI。
-    // 存入独立字段，_recalcCategorySizes 每次从原始值重建，避免重复累加。
-    _fsCategorySizes = Map<String, int>.from(result.categorySizes);
-    debugPrint('[ZenFile] isolate scan done: images=${_images.length} videos=${_videos.length} audios=${_audios.length} docs=${_documents.length} arch=${_archives.length} dl=${_downloads.length} apk=${_apks.length}');
+    // 媒体分组随后由 _rebuildFolderGroups() 从系统索引列表重建（loadMedia 尾部统一调用）。
+    // 分类大小已在上方合并（isolate 非媒体值 + 保留的媒体值）。
+    debugPrint('[ZenFile] isolate scan (non-media only) done: docs=${_documents.length} arch=${_archives.length} dl=${_downloads.length} apk=${_apks.length}');
+  }
+
+  /// 与 main.dart 一致的真实存储访问探测：permission_handler 在 MIUI/澎湃等
+  /// ROM 上可能误报 manageExternalStorage 的授权状态（true 时 dart:io 仍读不到、
+  /// false 时实际已全部授权），故用一次真实目录枚举确认 dart:io 是否真能访问
+  /// 主存储。返回 false 时非媒体递归扫描必然为空，需走 MediaStore 兜底。
+  Future<bool> _verifyStorageAccess() async {
+    try {
+      final dir = Directory('/storage/emulated/0');
+      await dir
+          .list(followLinks: false, recursive: false)
+          .first
+          .timeout(const Duration(seconds: 3));
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<void> loadMedia({bool forceRefresh = false}) async {
@@ -1496,32 +1874,46 @@ class MediaProvider extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
+      // 用户主动刷新（右上角刷新按钮/仪表盘下拉刷新）：立即触发非媒体
+      // 强制重扫（与媒体索引查询并行），提示条即时出现而非等快路径结束。
+      if (forceRefresh) {
+        unawaited(_scanNonMediaInBackground(force: true));
+      }
+
       // Fast initial load from disk cache
       await _loadFromDiskCache();
       // 缓存加载后立即通知，让界面显示缓存数据，避免空状态等待
       notifyListeners();
 
-      bool isStorageGranted = false;
+      // 存储可访问性判断：permission_handler 的 isGranted 在部分 ROM 上会误报，
+      // 故用真实目录枚举二次确认 dart:io 能否真正访问主存储。媒体（图/视/音）
+      // 走 PhotoManager 独立权限，不依赖此判断；此标志仅决定非媒体 dart:io
+      // 递归扫描是否可用。不再因权限误判整体 return，避免媒体也跟着加载失败。
+      bool rawManageGranted = false;
       try {
-        isStorageGranted = await Permission.manageExternalStorage.isGranted;
+        rawManageGranted = await Permission.manageExternalStorage.isGranted;
       } catch (_) {}
+      _storageAccessible = await _verifyStorageAccess();
+      debugPrint('[ZenFile] loadMedia storageAccessible=$_storageAccessible '
+          '(manageExternalStorage.isGranted=$rawManageGranted)');
 
-      if (!isStorageGranted) {
-        _isLoading = false;
-        notifyListeners();
-        return;
-      }
-
+      // ===== 快路径（毫秒级）：媒体走系统级索引（MediaStore），与 NFile 一致 =====
+      // 非媒体（文档/压缩包/下载/安装包）的全盘递归遍历改到后台执行，
+      // 不再阻塞 _isLoaded——256GB 设备目录树遍历可达 30s+，期间 I/O 饱和
+      // 是「改回系统索引后启动仍卡」的主因（红米K60Pro反馈）。
       final futures = <Future<void>>[];
-      futures.add(_runFileSystemScanInIsolate());
-
+      futures.add(_loadImagesAndVideos().then((_) => _computeMediaCategorySizes()));
+      futures.add(_loadAudios());
       await Future.wait(futures);
+
+      // 启动即后台快速扫描非媒体类别（限定深度的热点目录，毫秒级完成），
+      // 让首页分类计数与文档/压缩包/下载/安装包类别在用户进入前就就绪，
+      // 消除「每次都要进类别等很久」的体感。_scanNonMediaInBackground 内部
+      // 自带并发/重复守卫，不会与懒加载或强制刷新叠加。
+      unawaited(_scanNonMediaInBackground());
+
       await _scanCustomCategories();
-
-      // Scan recent files after all media is loaded so it can merge from providers
       await _scanRecentFiles();
-
-      await _saveCache();
 
       await _applySort();
       _rebuildFolderGroups();
@@ -1529,19 +1921,18 @@ class MediaProvider extends ChangeNotifier {
       PreferencesService.saveCategoryCount('图片', images.length);
       PreferencesService.saveCategoryCount('视频', videos.length);
       PreferencesService.saveCategoryCount('音频', _audios.length);
-      PreferencesService.saveCategoryCount('文档', _documents.length);
-      PreferencesService.saveCategoryCount('压缩包', _archives.length);
-      PreferencesService.saveCategoryCount('下载', _downloads.length);
-      PreferencesService.saveCategoryCount('安装包', _apks.length);
       PreferencesService.saveCategoryCount('截图', screenshots.length);
       _recalcCategorySizes();
 
       _isLoading = false;
       _isLoaded = true;
+      _loadFailed = false;
       notifyListeners();
     } catch (e) {
       debugPrint('loadMedia error: $e');
       _isLoading = false;
+      // 扫描中途异常：标记失败，浏览页显示「加载失败 + 重试」而非无限 shimmer
+      _loadFailed = true;
       notifyListeners();
     }
   }
@@ -1570,9 +1961,9 @@ class MediaProvider extends ChangeNotifier {
       final seenAudios = <String>{};
 
       final searchDirs = await _getUserSearchDirs();
-      for (final dir in searchDirs) {
+      for (final root in searchDirs) {
         await _scanDirectoryRecursively(
-          dir,
+          root.path,
           (_) => true,
           (file) async {
             final lower = file.path.toLowerCase();
@@ -1636,13 +2027,214 @@ class MediaProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> _loadImagesAndVideos() async {
-    await _loadMediaFromFileSystem();
+  /// 把系统索引 AssetEntity 解析为本地 File（纯内存拼接，无文件 IO）。
+  /// Android 的 relativePath 形如 `DCIM/Camera/`（带尾斜杠），
+  /// title 即 DISPLAY_NAME（含扩展名，见 photo_manager entity.dart 文档）。
+  static File? _assetToFile(AssetEntity a) {
+    final rel = a.relativePath;
+    final title = a.title;
+    if (title == null || title.isEmpty) return null;
+    final cleanRel = (rel ?? '').endsWith('/')
+        ? (rel!.length > 1 ? rel.substring(0, rel.length - 1) : '')
+        : (rel ?? '');
+    String dir;
+    if (cleanRel.startsWith('/storage/')) {
+      dir = cleanRel;
+    } else if (cleanRel.startsWith('storage/')) {
+      dir = '/$cleanRel';
+    } else if (cleanRel.isEmpty) {
+      dir = '/storage/emulated/0';
+    } else {
+      dir = '/storage/emulated/0/$cleanRel';
+    }
+    return File('$dir/$title');
   }
 
+  /// 图片/视频/截图：改回系统级索引（MediaStore，经 PhotoManager 查询，
+  /// 与 NFile 原实现一致）。列表元素仍为 File（路径来自索引的
+  /// relativePath + DISPLAY_NAME 拼接），下游（分类页/缩略图/文件夹分组）零改动。
+  /// 注：photo_manager 3.9.0 的 AssetEntity 无文件字节大小属性（size 是宽高维度），
+  /// 分类大小由 [_computeMediaCategorySizes] 在 isolate 内 stat 完成。
+  Future<void> _loadImagesAndVideos() async {
+    try {
+      // NFile 权限策略：主流程已确保 MANAGE_EXTERNAL_STORAGE；
+      // Android 13+ 无 READ_MEDIA_* 运行时权限时，跳过 photo_manager
+      // 内置权限校验直接读 MediaStore（文件管理器的合法用法）。
+      try {
+        if (await Permission.manageExternalStorage.isGranted) {
+          await PhotoManager.setIgnorePermissionCheck(true);
+        }
+      } catch (_) {}
+
+      final albums = await PhotoManager.getAssetPathList(onlyAll: false);
+      if (albums.isEmpty) return;
+
+      // 截图：名字含 screenshot 的系统相册（小米/澎湃OS 为 DCIM/Screenshots）
+      // 循环分页取全：单页上限会截断超量相册（「截图显示不全」）
+      final screenshotFiles = <File>{};
+      for (final album in albums) {
+        if (album.name.toLowerCase().contains('screenshot')) {
+          try {
+            for (var page = 0; ; page++) {
+              final assets = await album.getAssetListPaged(page: page, size: 2000);
+              for (final a in assets) {
+                final f = _assetToFile(a);
+                if (f != null) screenshotFiles.add(f);
+              }
+              if (assets.length < 2000) break;
+            }
+          } catch (_) {}
+        }
+      }
+
+      final allAlbum = albums.firstWhere((a) => a.isAll, orElse: () => albums.first);
+      // 循环分页加载全部媒体：此前单页 10000 上限，大存储用户媒体数
+      // 超过 1 万时被静默截断——「图片/视频显示内容不全」的根因。
+      Future<List<AssetEntity>> fetchAll() async {
+        final out = <AssetEntity>[];
+        for (var page = 0; ; page++) {
+          final batch = await allAlbum.getAssetListPaged(page: page, size: 2000);
+          out.addAll(batch);
+          if (batch.length < 2000) break;
+        }
+        return out;
+      }
+
+      var allMedia = await fetchAll();
+      if (allMedia.isEmpty) {
+        // 冷启动 MediaStore 瞬时未就绪：延迟后重试一次（与音频一致）
+        await Future<void>.delayed(const Duration(milliseconds: 600));
+        allMedia = await fetchAll();
+      }
+      // Set 收集（保持插入序）：防御分页边界重复 / 部分 ROM「全部」相册
+      // 与截图相册返回同一 asset 导致的同路径重复收录
+      final imgs = <File>{};
+      final vids = <File>{};
+      final shots = <File>{};
+      for (final a in allMedia) {
+        final f = _assetToFile(a);
+        if (f == null) continue;
+        // 播种 mtime 缓存：MediaStore 索引自带修改时间，排序零 stat
+        // （此前转 File 时丢弃日期，导致排序时对几万文件逐个 lastModifiedSync）
+        try {
+          _mtimeCache[f.path] = a.modifiedDateTime;
+        } catch (_) {}
+        if (a.type == AssetType.image) {
+          final isShot = screenshotFiles.contains(f) ||
+              (a.relativePath ?? '').toLowerCase().contains('screenshot') ||
+              (a.title ?? '').toLowerCase().contains('screenshot');
+          if (isShot) {
+            shots.add(f);
+          } else {
+            imgs.add(f);
+          }
+        } else if (a.type == AssetType.video) {
+          vids.add(f);
+        }
+      }
+      // 系统截图相册优先；补上「全部媒体」里按路径/文件名兜底判定到的截图
+      for (final f in screenshotFiles) {
+        if (!shots.contains(f)) shots.add(f);
+      }
+      // 空结果不覆盖旧数据（与音频一致）：系统库瞬时异常时保留上次列表
+      if (imgs.isNotEmpty || _images.isEmpty) _images = imgs.toList();
+      if (vids.isNotEmpty || _videos.isEmpty) _videos = vids.toList();
+      if (shots.isNotEmpty || _screenshots.isEmpty) _screenshots = shots.toList();
+      debugPrint('[ZenFile] system index: images=${imgs.length} videos=${vids.length} screenshots=${shots.length}');
+    } catch (e) {
+      debugPrint('[ZenFile] _loadImagesAndVideos (system index) error: $e');
+    }
+  }
+
+  /// 在 isolate 内对系统索引返回的媒体路径 stat 出各分类字节总和。
+  /// 媒体数量与上次持久化值一致时直接沿用持久化大小（零 IO）——
+  /// 对几万个文件全量 stat 会造成 I/O 饱和、与系统媒体扫描争抢存储，
+  /// 是「改回系统索引后仍卡顿」的根因之一（红米K60Pro反馈）。
+  Future<void> _computeMediaCategorySizes() async {
+    try {
+      final cur = <String, int>{
+        '图片': _images.length,
+        '视频': _videos.length,
+        '截图': _screenshots.length,
+      };
+      final last = _lastMediaCounts;
+      if (last != null &&
+          last['图片'] == cur['图片'] &&
+          last['视频'] == cur['视频'] &&
+          last['截图'] == cur['截图'] &&
+          _fsCategorySizes.containsKey('图片') &&
+          _fsCategorySizes.containsKey('视频') &&
+          _fsCategorySizes.containsKey('截图')) {
+        return; // 数量未变，沿用持久化大小
+      }
+      final imgPaths = _images.map((e) => e.path).toList();
+      final vidPaths = _videos.map((e) => e.path).toList();
+      final shotPaths = _screenshots.map((e) => e.path).toList();
+      final results = await Future.wait([
+        compute(_sumFileSizesInIsolate, imgPaths),
+        compute(_sumFileSizesInIsolate, vidPaths),
+        compute(_sumFileSizesInIsolate, shotPaths),
+      ]);
+      _fsCategorySizes['图片'] = results[0];
+      _fsCategorySizes['视频'] = results[1];
+      _fsCategorySizes['截图'] = results[2];
+      _lastMediaCounts = cur;
+    } catch (e) {
+      debugPrint('[ZenFile] _computeMediaCategorySizes error: $e');
+    }
+  }
+
+  /// 音频：改回系统级索引（MediaStore Audio 表，经 on_audio_query 查询）。
+  /// SongModel._data 为完整路径，文件夹分组/播放器/缓存逻辑零改动。
   Future<void> _loadAudios() async {
-    // 音频已与图片、视频在 _loadMediaFromFileSystem 中一并扫描完成，
-    // 此处无需单独调用系统音频库，避免重复扫描。
+    try {
+      bool isStorageGranted = false;
+      try {
+        isStorageGranted = await Permission.storage.isGranted ||
+            await Permission.manageExternalStorage.isGranted;
+      } catch (_) {}
+
+      if (!isStorageGranted) {
+        final hasPerm = await _audioQuery.permissionsStatus();
+        if (!hasPerm) {
+          _audios = [];
+          return;
+        }
+      }
+      var songs = await _audioQuery.querySongs(
+        sortType: null,
+        orderType: OrderType.ASC_OR_SMALLER,
+        uriType: UriType.EXTERNAL,
+        ignoreCase: true,
+      );
+      // 冷启动 MediaStore 可能瞬时未就绪返回空列表（不抛异常）：
+      // 延迟后重试一次，仍为空且此前有数据则保留旧数据——
+      // 否则表现为「音频页面时灵时不灵，点进去有时是空白」。
+      if (songs.isEmpty) {
+        await Future<void>.delayed(const Duration(milliseconds: 600));
+        songs = await _audioQuery.querySongs(
+          sortType: null,
+          orderType: OrderType.ASC_OR_SMALLER,
+          uriType: UriType.EXTERNAL,
+          ignoreCase: true,
+        );
+      }
+      if (songs.isNotEmpty || _audios.isEmpty) {
+        _audios = songs;
+        int audioSize = 0;
+        for (final s in songs) {
+          try {
+            audioSize += s.size;
+          } catch (_) {}
+        }
+        _fsCategorySizes['音频'] = audioSize;
+      }
+      debugPrint('[ZenFile] system index: audios=${songs.length}');
+    } catch (e) {
+      // 查询失败保留旧数据：系统媒体库瞬时繁忙（onResume 后台刷新时常见）
+      // 直接清空会导致「音频加载出来后莫名消失」
+      debugPrint('[ZenFile] _loadAudios (system index) error: $e');
+    }
   }
 
   static const List<String> _docExtensions = [
@@ -1662,29 +2254,50 @@ class MediaProvider extends ChangeNotifier {
     '.epub',
   ];
 
-  Future<List<String>> _getUserSearchDirs() async {
-    final searchDirs = <String>[];
+  /// 返回非媒体扫描的「热点根 + 每根最大深度」。
+  /// 不再对整棵 /storage/emulated/0 做无深度限制的全量递归（那是「打开应用后
+  /// 要等很久才显示」的主因，且在切换/后台时扫描常被丢弃导致「时有时无」）。
+  /// 改为：主目录仅扫 1 层（兜住散落的松散文件），其余标准/常见目录按 4 层深扫。
+  /// 覆盖文档/压缩包/安装包/下载的绝大多数真实位置，扫描量从全树降到极小。
+  Future<List<_ScanRoot>> _getUserSearchDirs() async {
+    final roots = <_ScanRoot>[];
     try {
       final rootDir = Directory('/storage/emulated/0');
       if (await rootDir.exists()) {
-        // 直接以主目录 /storage/emulated/0 为扫描根。
-        // _scanDirectoryRecursively 在递归时自动跳过 Android 与隐藏目录，
-        // 同时能够扫到主目录下的直接文件（图片/视频/音频等），
-        // 解决「文件放在主目录下时所有类别都扫描不出来」的问题。
-        searchDirs.add(rootDir.path);
-        return searchDirs;
+        // 主目录浅层兜底：直接文件 + 一级子目录（depth 1）。
+        roots.add(const _ScanRoot('/storage/emulated/0', 1));
+        // 热点深扫（depth 4）：文档/压缩包/安装包/下载绝大多数位于这些标准目录。
+        const hotspots = [
+          '/storage/emulated/0/Download',
+          '/storage/emulated/0/Downloads',
+          '/storage/emulated/0/Documents',
+          '/storage/emulated/0/DCIM',
+          '/storage/emulated/0/Pictures',
+          '/storage/emulated/0/Movies',
+          '/storage/emulated/0/Telegram',
+          '/storage/emulated/0/WhatsApp',
+          '/storage/emulated/0/MIUI',
+          '/storage/emulated/0/cloud',
+          '/storage/emulated/0/BaiduNetdisk',
+          '/storage/emulated/0/QuarkDownloads',
+          '/storage/emulated/0/apk',
+          '/storage/emulated/0/APK',
+        ];
+        for (final h in hotspots) {
+          roots.add(_ScanRoot(h, 4));
+        }
+        return roots;
       }
     } catch (_) {}
 
-    // 退回：主目录不可用时，扫描常见媒体目录
-    searchDirs.addAll([
-      '/storage/emulated/0/Download',
-      '/storage/emulated/0/Downloads',
-      '/storage/emulated/0/Documents',
-      '/storage/emulated/0/Telegram',
-      '/storage/emulated/0/WhatsApp/Media',
-    ]);
-    return searchDirs;
+    // 退回：主目录不可用时，仅扫描常见媒体/文档目录。
+    return const [
+      _ScanRoot('/storage/emulated/0/Download', 4),
+      _ScanRoot('/storage/emulated/0/Downloads', 4),
+      _ScanRoot('/storage/emulated/0/Documents', 4),
+      _ScanRoot('/storage/emulated/0/Telegram', 4),
+      _ScanRoot('/storage/emulated/0/WhatsApp', 4),
+    ];
   }
 
   Future<void> _scanDirectoryRecursively(
@@ -1732,7 +2345,8 @@ class MediaProvider extends ChangeNotifier {
     final searchDirs = await _getUserSearchDirs();
     final excluded = _excludedDefaultPaths['文档'] ?? [];
 
-    for (final dirPath in searchDirs) {
+    for (final root in searchDirs) {
+      final dirPath = root.path;
       if (_isPathExcluded(dirPath, excluded)) continue;
       await _scanDirectoryRecursively(
         dirPath,
@@ -1792,7 +2406,8 @@ class MediaProvider extends ChangeNotifier {
     final excludedArch = _excludedDefaultPaths['压缩包'] ?? [];
     final excludedApk = _excludedDefaultPaths['安装包'] ?? [];
 
-    for (final dirPath in searchDirs) {
+    for (final root in searchDirs) {
+      final dirPath = root.path;
       final isArchExcl = _isPathExcluded(dirPath, excludedArch);
       final isApkExcl = _isPathExcluded(dirPath, excludedApk);
       if (isArchExcl && isApkExcl) continue;
@@ -2031,9 +2646,18 @@ class MediaProvider extends ChangeNotifier {
         var effectivePath = remoteBasePath;
         // For SMB keep "/" to scan all shared directories.
 
-        await _scanRemoteDirectoryRecursively(client, effectivePath, filter, (remoteFilePath) {
-          files.add(File('remote://$connectionId|$remoteFilePath'));
-        });
+        await _scanRemoteDirectoryRecursively(
+          client,
+          effectivePath,
+          filter,
+          connectionId,
+          (remoteFilePath, size, modified) {
+            final encodedPath = 'remote://$connectionId|$remoteFilePath';
+            files.add(File(encodedPath));
+            _remoteFileSizes[encodedPath] = size;
+            _remoteFileModified[encodedPath] = modified;
+          },
+        );
       } finally {
         await client.disconnect();
       }
@@ -2048,7 +2672,8 @@ class MediaProvider extends ChangeNotifier {
     RemoteClient client,
     String path,
     bool Function(String path) filter,
-    void Function(String remoteFilePath) onFileFound, {
+    String connectionId,
+    void Function(String remoteFilePath, int size, DateTime modified) onFileFound, {
     int depth = 0,
   }) async {
     if (depth > 5) return; // 限制递归深度防止过深扫描
@@ -2056,14 +2681,16 @@ class MediaProvider extends ChangeNotifier {
       final items = await client.listDirectory(path);
       for (final item in items) {
         if (item.isDirectory) {
-          await _scanRemoteDirectoryRecursively(client, item.path, filter, onFileFound, depth: depth + 1);
+          await _scanRemoteDirectoryRecursively(
+              client, item.path, filter, connectionId, onFileFound,
+              depth: depth + 1);
         } else {
           // 与本地 _scanDirectoryRecursively 保持一致：传「扩展名（含点，小写）」给 filter，
           // 这样文档/压缩包/安装包的 `(ext) => _xxExtensions.contains(ext)` 才能正确匹配
           // （此前误传完整文件名导致远程文档等永远扫描不到）。
           final ext = p.extension(item.name).toLowerCase();
           if (filter(ext)) {
-            onFileFound(item.path);
+            onFileFound(item.path, item.size, item.modified);
           }
         }
       }
@@ -2233,17 +2860,37 @@ class MediaProvider extends ChangeNotifier {
   }
 
   /// 批量预加载文件 stat（size + modified），避免排序比较器中 O(N·logN) 次同步 stat。
-  /// 在排序前一次性异步获取所有文件的 stat，存入临时 Map 供比较器读取。
-  static Future<Map<String, ({int size, DateTime modified})>> _preloadStats(
+  /// 分批执行（每批 200）且跳过已缓存路径——此前 Future.wait 对几万文件
+  /// 一次性并发 stat，IO 回调瞬间淹没事件循环，启动后 UI 直接卡死。
+  Future<Map<String, ({int size, DateTime modified})>> _preloadStats(
     List<FileSystemEntity> entities,
   ) async {
     final map = <String, ({int size, DateTime modified})>{};
-    await Future.wait(entities.map((e) async {
-      try {
-        final stat = await File(e.path).stat();
-        map[e.path] = (size: stat.size, modified: stat.modified);
-      } catch (_) {}
-    }));
+    final pending = <FileSystemEntity>[];
+    for (final e in entities) {
+      if (_mtimeCache.containsKey(e.path)) {
+        map[e.path] = (size: _sizeCache[e.path] ?? 0, modified: _mtimeCache[e.path]!);
+      } else {
+        pending.add(e);
+      }
+    }
+    const batch = 200;
+    for (var i = 0; i < pending.length; i += batch) {
+      final chunk = pending.skip(i).take(batch).toList();
+      await Future.wait(chunk.map((e) async {
+        try {
+          final stat = await File(e.path).stat();
+          map[e.path] = (size: stat.size, modified: stat.modified);
+        } catch (_) {}
+      }));
+      // 批间让出事件循环，保持 UI 响应
+      await Future<void>.delayed(Duration.zero);
+    }
+    // 回填缓存：getter 排序（_getDateTime/_getSize）此后零 stat
+    map.forEach((path, v) {
+      _mtimeCache[path] = v.modified;
+      _sizeCache[path] = v.size;
+    });
     return map;
   }
 

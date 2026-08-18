@@ -5822,6 +5822,57 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
+  /// 把远程文件完整下载到本地缓存目录并返回本地路径。
+  /// 与「exists 就跳过」不同：先删除可能残留的半截/损坏文件，下载后校验
+  /// 「文件存在 + 非空 + 大小与远程一致（若可获取）」，不一致则删除重试一次；
+  /// 仍失败抛出明确异常——绝不再把坏文件交给系统安装器/压缩包查看器（会导致解析出错）。
+  /// [client] 已连接的远程客户端；[remotePath] 远程路径；[fileName] 缓存文件名。
+  Future<String> _downloadRemoteFileVerified(
+    RemoteClient client,
+    String remotePath,
+    String fileName,
+  ) async {
+    final cacheDir = Directory('/storage/emulated/0/ZenFile');
+    if (!cacheDir.existsSync()) cacheDir.createSync(recursive: true);
+    final cachePath = p.join(cacheDir.path, fileName);
+
+    // 清除可能的残留损坏文件（旧版本的半截下载会让 exists 判断误以为已就绪）
+    if (File(cachePath).existsSync()) {
+      try {
+        await File(cachePath).delete();
+      } catch (_) {}
+    }
+
+    int? remoteSize;
+    try {
+      remoteSize = await client.getFileSize(remotePath).timeout(const Duration(seconds: 5));
+    } catch (_) {
+      remoteSize = null;
+    }
+
+    for (int attempt = 0; attempt < 2; attempt++) {
+      try {
+        await client.downloadFile(remotePath, cachePath, (progress) {});
+      } catch (e) {
+        debugPrint('远程文件下载失败(尝试${attempt + 1}): $e');
+      }
+      final f = File(cachePath);
+      if (await f.exists()) {
+        final sz = await f.length();
+        final ok = sz > 0 && (remoteSize == null || remoteSize <= 0 || sz == remoteSize);
+        if (ok) return cachePath;
+      }
+      // 校验失败：删除后重试
+      try {
+        await File(cachePath).delete();
+      } catch (_) {}
+    }
+
+    final finalSize = File(cachePath).existsSync() ? await File(cachePath).length() : 0;
+    throw Exception('远程文件下载不完整（本地 ${finalSize} 字节'
+        '${remoteSize != null && remoteSize! > 0 ? ' / 远程 $remoteSize 字节' : ''}），无法打开');
+  }
+
   Future<void> openWithSystemChooser(String path, {String? mimeType}) async {
     try {
       final mime = mimeType ?? lookupMimeType(path) ?? '*/*';
@@ -5965,22 +6016,36 @@ class FileManagerProvider extends ChangeNotifier {
           }
         }
 
-        // 非媒体文件（MIME 未知）
-        // 用户选择"使用外部系统选择器打开" → 完整下载后调用系统选择器
-        if (openAction == 'external') {
-          final cacheDir = Directory('/storage/emulated/0/ZenFile');
-          if (!cacheDir.existsSync()) cacheDir.createSync(recursive: true);
-          final cachePath = p.join(cacheDir.path, fileName);
-          if (!File(cachePath).existsSync()) {
-            await remoteClient.downloadFile(remotePath, cachePath, (progress) {});
+        // 非媒体文件（MIME 未知）：remote:// 路径无法被系统安装器/压缩包查看器
+        // 直接读取，必须先完整下载到本地缓存并校验，再从本地打开。
+        if (!isVideoFile && !isAudioFile) {
+          try {
+            final localPath = await _downloadRemoteFileVerified(
+              remoteClient,
+              remotePath,
+              fileName,
+            );
+            targetPath = localPath;
+            await remoteClient.disconnect();
+            if (openAction == 'external') {
+              await openWithSystemChooser(
+                targetPath,
+                mimeType: lookupMimeType(fileExt) ?? '*/*',
+              );
+            } else {
+              await openFileNatively(context, targetPath, showTypePickerForUnknown: true);
+            }
+            return;
+          } catch (e) {
+            await remoteClient.disconnect();
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('打开失败：$e')),
+              );
+            }
+            return;
           }
-          targetPath = cachePath;
-          await remoteClient.disconnect();
-          await openWithSystemChooser(targetPath, mimeType: lookupMimeType(fileExt) ?? '*/*');
-          return;
         }
-        // MIME 未知且未选择外部打开：不立即下载，保留原始路径，
-        // 让后续 openFileNatively 的类型选择器决定处理方式。
         await remoteClient.disconnect();
       } catch (e) {
         debugPrint('远程路径文件打开失败: $e');
@@ -6053,22 +6118,100 @@ class FileManagerProvider extends ChangeNotifier {
           }
         }
 
-        // 非媒体文件（MIME 未知）
-        // 用户选择"使用外部系统选择器打开" → 完整下载后调用系统选择器
-        if (openAction == 'external') {
-          final cacheDir = Directory('/storage/emulated/0/ZenFile');
-          if (!cacheDir.existsSync()) cacheDir.createSync(recursive: true);
-          final cachePath = p.join(cacheDir.path, p.basename(path));
-          if (!File(cachePath).existsSync()) {
-            await remoteClient.downloadFile(path, cachePath, (progress) {});
+        // 非媒体文件（MIME 未知）：先弹「打开方式」让用户选择本应用/外部，
+        // 选择完成后再决定流式播放、下载后打开或调用系统选择器。
+        // 这样选择「本应用的视频/音频」时可以直接走流式播放，避免先把整个
+        // 文件下载到 /storage/emulated/0/ZenFile。
+        if (!isVideoFile && !isAudioFile) {
+          try {
+            final fileName = p.basename(path);
+            final fileExt = p.extension(path).toLowerCase();
+
+            // 1) 先弹出「打开方式」（ZenFile 内置 / 外部系统选择器）
+            final result = await showModalBottomSheet<String>(
+              context: context,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              builder: (ctx) => OpenWithSheet(
+                fileName: fileName,
+                fileExtension: fileExt,
+              ),
+            );
+
+            if (result == null || !context.mounted) return;
+
+            final isAlways = result.startsWith('always_');
+            final selectedType = result.substring(isAlways ? 'always_'.length : 'just_once_'.length);
+
+            if (selectedType == 'external') {
+              // 外部应用必须先把文件拿到本地，再交给系统选择器
+              if (isAlways) {
+                await PreferencesService.saveDefaultOpenAction(fileExt, 'external');
+              }
+              final localPath = await _downloadRemoteFileVerified(
+                remoteClient,
+                path,
+                fileName,
+              );
+              if (context.mounted) {
+                await openWithSystemChooser(
+                  localPath,
+                  mimeType: fileMime.isEmpty ? '*/*' : fileMime,
+                );
+              }
+              return;
+            }
+
+            // selectedType == 'native'：本应用打开，再让用户选具体类型
+            if (isAlways) {
+              await PreferencesService.saveDefaultOpenAction(fileExt, 'native');
+            }
+
+            final builtInType = await showModalBottomSheet<String>(
+              context: context,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              builder: (ctx) => PickFileTypeSheet(
+                fileName: fileName,
+                fileExtension: fileExt,
+              ),
+            );
+
+            if (builtInType == null || !context.mounted) return;
+
+            if (isAlways) {
+              await PreferencesService.saveDefaultOpenAction(fileExt, builtInType);
+            }
+
+            // 视频/音频直接流式播放，不下载到本地缓存；其它类型下载后用内置查看器打开
+            if (builtInType == 'video' || builtInType == 'audio') {
+              await _openBuiltInByType(context, path, builtInType);
+              return;
+            }
+
+            final localPath = await _downloadRemoteFileVerified(
+              remoteClient,
+              path,
+              fileName,
+            );
+            if (context.mounted) {
+              await _openBuiltInByType(context, localPath, builtInType);
+            }
+            return;
+          } catch (e) {
+            debugPrint('远程非媒体文件下载/打开失败: $e');
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('打开失败：$e')),
+              );
+            }
+            return;
           }
-          targetPath = cachePath;
-          await openWithSystemChooser(targetPath, mimeType: fileMime.isEmpty ? '*/*' : fileMime);
-          return;
         }
-        // MIME 未知且未选择外部打开：不立即下载，保留原始路径，
-        // 让后续 openFileNatively 的类型选择器决定处理方式。
-        // 用户选择视频/音频时会在 _openBuiltInByType 中启动流式播放。
       } catch (e) {
         debugPrint('下载远程文件失败: $e');
       }

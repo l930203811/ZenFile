@@ -5632,6 +5632,12 @@ abstract class L10n {
   /// **'隐藏播放器控制器'**
   String get ui_hide_player_controller;
 
+  /// No description provided for @ui_scanning_category.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在扫描默认目录，已加载内容可正常操作'**
+  String get ui_scanning_category;
+
   /// ui widgets
   ///
   /// In zh, this message translates to:
@@ -7149,6 +7155,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'重试'**
   String get ui_retry;
+
+  /// No description provided for @ui_media_load_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'媒体加载失败，请检查存储权限后重试'**
+  String get ui_media_load_failed;
 
   /// No description provided for @ui_no_subfolders.
   ///
@@ -9027,6 +9039,18 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'连接成功，服务器配置正确'**
   String get ui_test_success_desc;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'显示远程文件'**
+  String get ui_show_remote_files;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏远程文件'**
+  String get ui_hide_remote_files;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

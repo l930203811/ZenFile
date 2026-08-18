@@ -2957,6 +2957,9 @@ class L10nKo extends L10n {
   String get ui_hide_player_controller => '플레이어 컨트롤러 숨기기';
 
   @override
+  String get ui_scanning_category => '기본 폴더를 스캔하는 중… 불러온 항목은 계속 사용할 수 있어요';
+
+  @override
   String get ui_refresh => '새로고침';
 
   @override
@@ -3795,6 +3798,9 @@ class L10nKo extends L10n {
 
   @override
   String get ui_retry => '재시도';
+
+  @override
+  String get ui_media_load_failed => '미디어 로드에 실패했습니다. 저장소 권한을 확인한 후 다시 시도하세요';
 
   @override
   String get ui_no_subfolders => '하위 폴더 없음';
@@ -4858,4 +4864,10 @@ class L10nKo extends L10n {
 
   @override
   String get ui_test_success_desc => '连接成功，服务器配置正确';
+
+  @override
+  String get ui_show_remote_files => '显示远程文件';
+
+  @override
+  String get ui_hide_remote_files => '隐藏远程文件';
 }

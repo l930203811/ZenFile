@@ -3096,6 +3096,10 @@ class L10nRu extends L10n {
   String get ui_hide_player_controller => 'Скрыть панель управления плеером';
 
   @override
+  String get ui_scanning_category =>
+      'Сканирование стандартных папок… Загруженные элементы остаются доступными';
+
+  @override
   String get ui_refresh => 'Обновить';
 
   @override
@@ -3968,6 +3972,10 @@ class L10nRu extends L10n {
 
   @override
   String get ui_retry => 'Повторить';
+
+  @override
+  String get ui_media_load_failed =>
+      'Не удалось загрузить медиафайлы. Проверьте разрешение на доступ к хранилищу и повторите';
 
   @override
   String get ui_no_subfolders => 'Нет подпапок';
@@ -5052,4 +5060,10 @@ class L10nRu extends L10n {
 
   @override
   String get ui_test_success_desc => '连接成功，服务器配置正确';
+
+  @override
+  String get ui_show_remote_files => '显示远程文件';
+
+  @override
+  String get ui_hide_remote_files => '隐藏远程文件';
 }

@@ -3384,6 +3384,7 @@
   "@ui_hide_player_controller": {
     "description": "media_category_screen.dart"
   },
+  "ui_scanning_category": "Сканирование стандартных папок… Загруженные элементы остаются доступными",
   "ui_refresh": "Обновить",
   "@ui_refresh": {
     "description": "ui widgets"
@@ -3723,6 +3724,7 @@
   "ui_select_remote_server": "Выбрать удалённый сервер",
   "ui_no_remote_connections": "Нет сохраненных удаленных подключений",
   "ui_retry": "Повторить",
+  "ui_media_load_failed": "Не удалось загрузить медиафайлы. Проверьте разрешение на доступ к хранилищу и повторите",
   "ui_no_subfolders": "Нет подпапок",
   "ui_select_this_folder": "Выбрать эту папку",
   "ui_downloading_file": "Загрузка: {file}",
@@ -4857,5 +4859,13 @@
   "ui_test_success_desc": "连接成功，服务器配置正确",
   "@ui_test_success_desc": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "ui_show_remote_files": "显示远程文件",
+  "@ui_show_remote_files": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_hide_remote_files": "隐藏远程文件",
+  "@ui_hide_remote_files": {
+    "description": "ui\\screens\\media_category_screen.dart"
   }
 }

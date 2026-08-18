@@ -3391,6 +3391,7 @@
   "@ui_hide_player_controller": {
     "description": "media_category_screen.dart"
   },
+  "ui_scanning_category": "Scanning default folders… Loaded items remain accessible",
   "ui_refresh": "Refresh",
   "@ui_refresh": {
     "description": "ui widgets"
@@ -3742,6 +3743,7 @@
   "ui_select_remote_server": "Select Remote Server",
   "ui_no_remote_connections": "No saved remote connections",
   "ui_retry": "Retry",
+  "ui_media_load_failed": "Failed to load media. Please check storage permission and retry",
   "ui_no_subfolders": "No subfolders",
   "ui_select_this_folder": "Select This Folder",
   "ui_downloading_file": "Downloading: {file}",
@@ -4914,5 +4916,13 @@
   "ui_test_success_desc": "Connection successful, server configuration is correct",
   "@ui_test_success_desc": {
     "description": "ui\\screens\\network_connection_wizard_screen.dart"
+  },
+  "ui_show_remote_files": "Show Remote Files",
+  "@ui_show_remote_files": {
+    "description": "ui\\screens\\media_category_screen.dart"
+  },
+  "ui_hide_remote_files": "Hide Remote Files",
+  "@ui_hide_remote_files": {
+    "description": "ui\\screens\\media_category_screen.dart"
   }
 }

@@ -3041,6 +3041,10 @@ class L10nAr extends L10n {
   String get ui_hide_player_controller => 'إخفاء وحدة تحكم المشغل';
 
   @override
+  String get ui_scanning_category =>
+      'جارٍ فحص المجلدات الافتراضية… تظل العناصر المحمّلة متاحة';
+
+  @override
   String get ui_refresh => 'تحديث';
 
   @override
@@ -3902,6 +3906,10 @@ class L10nAr extends L10n {
 
   @override
   String get ui_retry => 'إعادة المحاولة';
+
+  @override
+  String get ui_media_load_failed =>
+      'فشل تحميل الوسائط. يرجى التحقق من إذن التخزين وإعادة المحاولة';
 
   @override
   String get ui_no_subfolders => 'لا توجد مجلدات فرعية';
@@ -4983,4 +4991,10 @@ class L10nAr extends L10n {
 
   @override
   String get ui_test_success_desc => '连接成功，服务器配置正确';
+
+  @override
+  String get ui_show_remote_files => '显示远程文件';
+
+  @override
+  String get ui_hide_remote_files => '隐藏远程文件';
 }

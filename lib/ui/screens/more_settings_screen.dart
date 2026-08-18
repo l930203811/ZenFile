@@ -1612,30 +1612,26 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
 
   Future<void> _clearRemoteCache() async {
     try {
-      // Only clear cache/temp directories; never touch user data or
-      // backups (ZenFile/Backups/Settings and ZenFile/Backups/Apps).
-      final baseDir = Directory('/storage/emulated/0/ZenFile');
+      // 与自动清理一致：清空 /storage/emulated/0/ZenFile 下除 Backups 外的所有内容。
+      final basePath = '/storage/emulated/0/ZenFile';
+      final baseDir = Directory(basePath);
       if (baseDir.existsSync()) {
-        // 1. Clear the entire cache/ subtree (thumbnails, temp, etc.)
-        final cacheDir = Directory('${baseDir.path}/cache');
-        if (cacheDir.existsSync()) {
-          await cacheDir.delete(recursive: true);
-          cacheDir.createSync(recursive: true);
-        }
-
-        // 2. Clear loose .temp_* directories used for transient uploads
         for (final entity in baseDir.listSync()) {
           final name = p.basename(entity.path);
-          if (entity is Directory && name.startsWith('.temp_')) {
-            try {
-              await entity.delete(recursive: true);
-            } catch (_) {}
-          }
+          if (name == 'Backups') continue; // 永远保留用户备份数据
+          try {
+            await entity.delete(recursive: true);
+          } catch (_) {}
+        }
+        // 清理后重建必要的运行目录
+        for (final sub in const ['cache', '.remote_cache']) {
+          try {
+            await Directory(p.join(basePath, sub)).create(recursive: true);
+          } catch (_) {}
         }
       }
 
-      // 3. Also clear legacy cache locations (older app versions stored
-      //    remote cache under Android/data/.../cache).
+      // 同时清理旧版残留的缓存位置
       final oldCacheDirs = [
         '/storage/emulated/0/Android/data/com.sequl.zenfile/cache/remote_cache',
         '/storage/emulated/0/Android/data/com.sequl.zenfile/cache/remote_thumbnails',
