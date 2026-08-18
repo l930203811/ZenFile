@@ -1562,6 +1562,18 @@ class MediaProvider extends ChangeNotifier {
     return File('${dir.path}/audio_index_cache.json');
   }
 
+  /// 计算音频列表总字节数（含缓存恢复的音频），用于分类页总大小展示。
+  /// 独立于 _loadAudios 内部代码，便于缓存恢复、部分结果保留等多路径复用。
+  int _calcAudioSize(List<SongModel> songs) {
+    int size = 0;
+    for (final s in songs) {
+      try {
+        size += s.size;
+      } catch (_) {}
+    }
+    return size;
+  }
+
   Future<void> _saveAudioCache(List<SongModel> songs) async {
     if (songs.isEmpty || songs.length == _lastSavedAudioCount) return;
     try {
@@ -1606,7 +1618,9 @@ class MediaProvider extends ChangeNotifier {
       if (songs.isNotEmpty) {
         _audios = songs;
         _audioFolders = _groupAudiosByParentDir(_audios);
-        debugPrint('[ZenFile] audio index cache restored: ${songs.length}');
+        _fsCategorySizes['音频'] = _calcAudioSize(_audios);
+        debugPrint('[ZenFile] audio index cache restored: ${songs.length}, '
+            'size=${_fsCategorySizes['音频']}');
         return true;
       }
     } catch (e) {
@@ -2661,6 +2675,14 @@ class MediaProvider extends ChangeNotifier {
         if (!restored) {
           debugPrint('[ZenFile] system index: audios 多次重试仍为空且无缓存');
         }
+      }
+      // 兜底：无论音频来自 querySongs 还是缓存恢复，只要 _audios 非空就确保
+      // _fsCategorySizes['音频'] 已计算。大存储设备 querySongs 可能返回空/部分结果，
+      // 而缓存恢复分支只填充 _audios 未补大小——会导致分类页音频「有数量无大小」。
+      if (_audios.isNotEmpty && (_fsCategorySizes['音频'] ?? 0) == 0) {
+        _fsCategorySizes['音频'] = _calcAudioSize(_audios);
+        debugPrint('[ZenFile] _loadAudios 兜底补算音频大小: '
+            'count=${_audios.length}, size=${_fsCategorySizes['音频']}');
       }
       // 若 songs 为空但 _audios 已有数据，则保留旧数据（不覆盖）
     } catch (e) {
