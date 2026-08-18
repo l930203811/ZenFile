@@ -3386,6 +3386,10 @@
   "@ui_refresh": {
     "description": "ui widgets"
   },
+  "ui_refresh_done": "Aktualisierung abgeschlossen",
+  "@ui_refresh_done": {
+    "description": "media_category_screen.dart"
+  },
   "ui_selected_count": "{count} Ausgewählt",
   "@ui_selected_count": {
     "description": "ui widgets",
@@ -4285,6 +4289,14 @@
   "@msg_hwdec": {
     "description": "Hardware decoding badge in video player header"
   },
+  "msg_swdec": "SW",
+  "@msg_swdec": {
+    "description": "Software decoding badge in video player header"
+  },
+  "msg_toggle_decode": "Hard-/Software-Dekodierung umschalten",
+  "@msg_toggle_decode": {
+    "description": "Tooltip to toggle hardware/software decoding in video player"
+  },
   "msg_subtitle_on": "Untertitel einschalten",
   "@msg_subtitle_on": {
     "description": "Tooltip to turn on subtitles in video player"
@@ -4864,5 +4876,42 @@
   "ui_hide_remote_files": "隐藏远程文件",
   "@ui_hide_remote_files": {
     "description": "ui\\screens\\media_category_screen.dart"
+  }
+,
+  "changelog_v1130_new_8": "Der Videoplayer erhält einen Umschalter für Soft/Hard-Decoding, um Bildqualität und Leistung je nach Decodierfähigkeit des Geräts abzuwägen.",
+  "@changelog_v1130_new_8": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_new_9": "Die Kategorieseite zeigt nach dem Aktualisieren nun einen „Aktualisierung abgeschlossen“-Hinweis mit Mehrsprachigkeitsunterstützung.",
+  "@changelog_v1130_new_9": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_10": "Bilder/Videos/Screenshots nutzen nun einen Festplatten-Cache: Kategorien erscheinen beim Start sofort, ohne die Mediathek jedes Mal neu zu scannen (behebt die ~1-minütige Wartezeit auf Geräten mit großem Speicher und vielen Dateien).",
+  "@changelog_v1130_opt_10": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_11": "Kategorie-Zähler sind nun sofort korrekt: Nach dem Cache-Wiederherstellen werden Zahlen und Listen sofort aktualisiert, ohne veraltete Werte vom vorherigen Start anzuzeigen.",
+  "@changelog_v1130_opt_11": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_12": "Audio-Laden ist nun exklusiv zuerst: Audio wird vor Videos/Bildern geladen, um zu verhindern, dass die Mediathek-Konkurrenz auf großen Geräten den Audio-Bestand auf null leert.",
+  "@changelog_v1130_opt_12": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_13": "Der Audio-Index-Cache nutzt nun atomares Schreiben + Decodierung in isoliertem Thread: Ein Abbruch mitten im Schreiben hinterlässt keine beschädigte Datei, und der Haupt-Thread ruckelt oder stirbt bei riesigen Caches nicht mehr durch OOM.",
+  "@changelog_v1130_opt_13": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_14": "Audio-Lade-Wiederholungen behalten nun die größte Ergebnismenge, um zu verhindern, dass ein Teilergebnis (bei beschäftigter Mediathek) bereits angezeigte Inhalte überschreibt.",
+  "@changelog_v1130_opt_14": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_fix_4": "Behoben auf Geräten mit großem Speicher (z. B. 512 GB, Zehntausende MedienDateien), bei denen die Audio-Kategorie nach dem Start geleert wurde und nach dem Laden von Video/Bild verschwand.",
+  "@changelog_v1130_fix_4": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_fix_5": "Behoben Compile-Fehler des Release-Builds (SongModel.getMap-Aufruf, VideoController hat kein dispose()).",
+  "@changelog_v1130_fix_5": {
+    "description": "v1.1.30 changelog item"
   }
 }

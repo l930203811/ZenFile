@@ -2955,6 +2955,9 @@ class L10nZh extends L10n {
   String get ui_refresh => '刷新';
 
   @override
+  String get ui_refresh_done => '刷新完成';
+
+  @override
   String ui_selected_count(int count) {
     return '$count 已选择';
   }
@@ -4222,6 +4225,12 @@ class L10nZh extends L10n {
   String get msg_hwdec => '硬解';
 
   @override
+  String get msg_swdec => '软解';
+
+  @override
+  String get msg_toggle_decode => '切换硬解/软解';
+
+  @override
   String get msg_subtitle_on => '开启字幕';
 
   @override
@@ -4809,6 +4818,39 @@ class L10nZh extends L10n {
 
   @override
   String get ui_hide_remote_files => '隐藏远程文件';
+
+  @override
+  String get changelog_v1130_new_8 => '视频播放器新增「软解 / 硬解」切换开关，可按设备解码能力在画质与性能间择优。';
+
+  @override
+  String get changelog_v1130_new_9 => '分类页刷新完成后显示「刷新完成」提示，并适配多语言。';
+
+  @override
+  String get changelog_v1130_opt_10 =>
+      '图片 / 视频 / 截图新增磁盘缓存：启动后分类列表秒级呈现，无需每次重新扫描媒体库（解决大存储多文件设备每次启动需等待约 1 分钟的问题）。';
+
+  @override
+  String get changelog_v1130_opt_11 =>
+      '分类页计数即时正确：缓存恢复后立刻刷新数量与列表，不再显示上一次启动遗留的陈旧计数。';
+
+  @override
+  String get changelog_v1130_opt_12 =>
+      '音频加载改为「独占式优先」：先加载音频、再加载视频 / 图片，避免大存储设备媒体库争抢导致音频被挤掉归零。';
+
+  @override
+  String get changelog_v1130_opt_13 =>
+      '音频索引缓存改为原子写入 + 隔离线程解码：写入中途被杀不会留下损坏文件，主线程也不再因超大缓存卡顿或 OOM。';
+
+  @override
+  String get changelog_v1130_opt_14 => '音频加载重试保留最大结果集，防止媒体库繁忙返回的部分结果覆盖已显示内容。';
+
+  @override
+  String get changelog_v1130_fix_4 =>
+      '修复大存储多文件设备（如 512G 存储、上万媒体文件）启动后音频类别被清空、视频图片加载完成后音频消失的问题。';
+
+  @override
+  String get changelog_v1130_fix_5 =>
+      '修复发布构建编译错误（SongModel.getMap 调用方式、VideoController 无 dispose()）。';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -7753,6 +7795,9 @@ class L10nZhTw extends L10nZh {
   String get ui_refresh => '重新整理';
 
   @override
+  String get ui_refresh_done => '重新整理完成';
+
+  @override
   String ui_selected_count(int count) {
     return '$count 已選擇';
   }
@@ -8979,6 +9024,12 @@ class L10nZhTw extends L10nZh {
   String get msg_hwdec => '硬解';
 
   @override
+  String get msg_swdec => '軟解';
+
+  @override
+  String get msg_toggle_decode => '切換硬解/軟解';
+
+  @override
   String get msg_subtitle_on => '開啟字幕';
 
   @override
@@ -9574,4 +9625,37 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_hide_remote_files => '隐藏远程文件';
+
+  @override
+  String get changelog_v1130_new_8 => '影片播放器新增「軟解 / 硬解」切換開關，可依裝置解碼能力在畫質與效能間擇優。';
+
+  @override
+  String get changelog_v1130_new_9 => '分類頁重新整理完成後顯示「重新整理完成」提示，並支援多語系。';
+
+  @override
+  String get changelog_v1130_opt_10 =>
+      '圖片 / 影片 / 截圖新增磁碟快取：啟動後分類清單秒級呈現，無須每次重新掃描媒體庫（解決大容量多檔案裝置每次啟動需等待約 1 分鐘的問題）。';
+
+  @override
+  String get changelog_v1130_opt_11 =>
+      '分類頁計數即時正確：快取還原後立刻重新整理數量與清單，不再顯示上一次啟動遺留的陳舊計數。';
+
+  @override
+  String get changelog_v1130_opt_12 =>
+      '音訊載入改為「獨佔式優先」：先載入音訊、再載入影片 / 圖片，避免大容量裝置媒體庫爭搶導致音訊被擠掉歸零。';
+
+  @override
+  String get changelog_v1130_opt_13 =>
+      '音訊索引快取改為原子寫入 + 隔離執行緒解碼：寫入中途被中止不會留下損毀檔案，主執行緒也不再因超大快取卡頓或 OOM。';
+
+  @override
+  String get changelog_v1130_opt_14 => '音訊載入重試保留最大結果集，防止媒體庫忙碌時回傳的部分結果覆蓋已顯示內容。';
+
+  @override
+  String get changelog_v1130_fix_4 =>
+      '修復大容量多檔案裝置（如 512G 儲存、上萬媒體檔案）啟動後音訊類別被清空、影片圖片載入完成後音訊消失的問題。';
+
+  @override
+  String get changelog_v1130_fix_5 =>
+      '修復發佈建置編譯錯誤（SongModel.getMap 呼叫方式、VideoController 無 dispose()）。';
 }

@@ -3389,6 +3389,10 @@
   "@ui_refresh": {
     "description": "ui widgets"
   },
+  "ui_refresh_done": "Actualisation terminée",
+  "@ui_refresh_done": {
+    "description": "media_category_screen.dart"
+  },
   "ui_selected_count": "{count} sélectionné(s)",
   "@ui_selected_count": {
     "description": "ui widgets",
@@ -4288,6 +4292,14 @@
   "@msg_hwdec": {
     "description": "Hardware decoding badge in video player header"
   },
+  "msg_swdec": "SW",
+  "@msg_swdec": {
+    "description": "Software decoding badge in video player header"
+  },
+  "msg_toggle_decode": "Basculer décodage matériel/logiciel",
+  "@msg_toggle_decode": {
+    "description": "Tooltip to toggle hardware/software decoding in video player"
+  },
   "msg_subtitle_on": "Activer les sous-titres",
   "@msg_subtitle_on": {
     "description": "Tooltip to turn on subtitles in video player"
@@ -4867,5 +4879,42 @@
   "ui_hide_remote_files": "隐藏远程文件",
   "@ui_hide_remote_files": {
     "description": "ui\\screens\\media_category_screen.dart"
+  }
+,
+  "changelog_v1130_new_8": "Le lecteur vidéo ajoute un commutateur de décodage logiciel/matériel, vous permettant de privilégier la qualité ou les performances selon les capacités de décodage de l'appareil.",
+  "@changelog_v1130_new_8": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_new_9": "La page catégorie affiche désormais un message « Actualisation terminée » après rafraîchissement, avec prise en charge multilingue.",
+  "@changelog_v1130_new_9": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_10": "Images/Vidéos/Captures bénéficient désormais d'un cache disque : les catégories s'affichent instantanément au lancement sans re-scanner la bibliothèque multimédia à chaque fois (corrige l'attente d'environ 1 minute sur les appareils à gros stockage et nombreux fichiers).",
+  "@changelog_v1130_opt_10": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_11": "Les compteurs de catégorie sont désormais exacts immédiatement : les nombres et listes sont rafraîchis dès la restauration du cache, ne montrant plus les valeurs obsolètes du lancement précédent.",
+  "@changelog_v1130_opt_11": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_12": "Le chargement audio est désormais prioritaire et exclusif : l'audio se charge avant vidéos/images, évitant que la contention de la bibliothèque sur les gros appareils ne vide l'audio à zéro.",
+  "@changelog_v1130_opt_12": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_13": "Le cache d'index audio utilise désormais une écriture atomique + décodage en thread isolé : une coupure en cours d'écriture ne corrompt pas le cache et le thread principal ne bloque plus ni ne subit d'OOM sur les gros caches.",
+  "@changelog_v1130_opt_13": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_14": "Les nouvelles tentatives de chargement audio conservent le plus grand ensemble de résultats, empêchant un résultat partiel (bibliothèque occupée) d'écraser le contenu déjà affiché.",
+  "@changelog_v1130_opt_14": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_fix_4": "Corrigé sur les appareils à gros stockage (ex. 512 Go, dizaines de milliers de fichiers) où la catégorie audio était vidée après le lancement et disparaissait une fois vidéos/images chargées.",
+  "@changelog_v1130_fix_4": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_fix_5": "Corrigé les erreurs de compilation du build de publication (usage de SongModel.getMap, VideoController n'a pas de dispose()).",
+  "@changelog_v1130_fix_5": {
+    "description": "v1.1.30 changelog item"
   }
 }

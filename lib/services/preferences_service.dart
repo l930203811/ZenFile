@@ -1101,6 +1101,17 @@ class PreferencesService {
   static const String _keySubtitleFontSize = 'video_subtitle_font_size';
   static const String _keySubtitlePosition = 'video_subtitle_position';
   static const String _keySubtitleNoBackground = 'video_subtitle_no_background';
+  static const String _keyVideoHwdec = 'video_hwdec'; // true=硬解(auto-safe), false=软解(no)
+
+  /// 获取视频解码方式：true=硬解, false=软解，默认 true（硬解）
+  static bool getUseHardwareDecode({bool defaultValue = true}) {
+    return _prefs?.getBool(_keyVideoHwdec) ?? defaultValue;
+  }
+
+  /// 保存视频解码方式：true=硬解, false=软解
+  static Future<void> saveUseHardwareDecode(bool useHardware) async {
+    await _prefs?.setBool(_keyVideoHwdec, useHardware);
+  }
 
   /// 获取视频文件保存的播放进度（毫秒），返回 null 表示无记录
   static int? getVideoPlaybackPosition(String videoPath) {

@@ -38,6 +38,8 @@ class VideoControlsOverlay extends StatelessWidget {
   final VoidCallback onToggleSubtitle;
   final VoidCallback onOpenPlaylist;
   final VoidCallback onInteract;
+  final bool useHardwareDecode; // true=硬解, false=软解
+  final VoidCallback onToggleHwdec;
 
   const VideoControlsOverlay({
     super.key,
@@ -76,6 +78,8 @@ class VideoControlsOverlay extends StatelessWidget {
     required this.onToggleSubtitle,
     required this.onOpenPlaylist,
     required this.onInteract,
+    required this.useHardwareDecode,
+    required this.onToggleHwdec,
   });
 
   String _formatDuration(Duration d) {
@@ -181,16 +185,24 @@ class VideoControlsOverlay extends StatelessWidget {
                         const SizedBox(height: 3),
                         Row(
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: accentColor.withOpacity(0.3),
-                                borderRadius: BorderRadius.circular(4),
-                                border: Border.all(color: accentColor, width: 0.8),
-                              ),
-                              child: Text(
-                                L10n.of(context).msg_hwdec,
-                                style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                            GestureDetector(
+                              onTap: onToggleHwdec,
+                              child: Tooltip(
+                                message: L10n.of(context).msg_toggle_decode,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: accentColor.withOpacity(0.3),
+                                    borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(color: accentColor, width: 0.8),
+                                  ),
+                                  child: Text(
+                                    useHardwareDecode
+                                        ? L10n.of(context).msg_hwdec
+                                        : L10n.of(context).msg_swdec,
+                                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
                               ),
                             ),
                             const SizedBox(width: 8),

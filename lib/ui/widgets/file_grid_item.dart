@@ -356,30 +356,22 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
   Future<void> _loadVideoThumb() async {
     if (!mounted) return;
     try {
-      // mediaProvider.videos 返回的是 File（文件系统扫描），不是 AssetEntity，
-      // 无法用 ThumbnailCache.get(asset)。直接走 PhotoManager 路径匹配 + 原生生成。
-      final assetEntities = await PhotoManager.getAssetListRange(
-        start: 0,
-        end: 1000,
-        type: RequestType.video,
-      );
-      for (final asset in assetEntities) {
-        try {
-          final assetPath = await asset.originFile.then((f) => f?.path);
-          if (assetPath != null && assetPath.toLowerCase() == widget.file.path.toLowerCase()) {
-            final thumbData = await asset.thumbnailDataWithSize(
-              const ThumbnailSize.square(300),
-              quality: 80,
-            );
-            if (mounted && thumbData != null && thumbData.isNotEmpty) {
-              setState(() {
-                _videoThumb = thumbData;
-              });
-              return;
-            }
-            break;
-          }
-        } catch (_) {}
+      // 共享视频 AssetEntity 查询（全局只取一次、按路径命中），避免每个瓦片各自
+      // getAssetListRange(0,1000) 在大存储（上万视频）下引发上万次并发 native 媒体
+      // 查询打满设备线程、丢弃输入并卡住播放启动。
+      final matchedAsset = await MediaProvider.getVideoAssetByPath(widget.file.path);
+      if (matchedAsset != null) {
+        final thumbData = await MediaProvider.runBoundedThumb(() =>
+          matchedAsset.thumbnailDataWithSize(
+            const ThumbnailSize.square(300),
+            quality: 80,
+          ));
+        if (mounted && thumbData != null && thumbData.isNotEmpty) {
+          setState(() {
+            _videoThumb = thumbData;
+          });
+          return;
+        }
       }
 
       // 回退：文件不在系统相册中（下载目录、NAS 挂载目录等），

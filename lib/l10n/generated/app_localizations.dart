@@ -5644,6 +5644,12 @@ abstract class L10n {
   /// **'刷新'**
   String get ui_refresh;
 
+  /// media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'刷新完成'**
+  String get ui_refresh_done;
+
   /// ui widgets
   ///
   /// In zh, this message translates to:
@@ -7954,6 +7960,18 @@ abstract class L10n {
   /// **'硬解'**
   String get msg_hwdec;
 
+  /// Software decoding badge in video player header
+  ///
+  /// In zh, this message translates to:
+  /// **'软解'**
+  String get msg_swdec;
+
+  /// Tooltip to toggle hardware/software decoding in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'切换硬解/软解'**
+  String get msg_toggle_decode;
+
   /// Tooltip to turn on subtitles in video player
   ///
   /// In zh, this message translates to:
@@ -9051,6 +9069,60 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'隐藏远程文件'**
   String get ui_hide_remote_files;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'视频播放器新增「软解 / 硬解」切换开关，可按设备解码能力在画质与性能间择优。'**
+  String get changelog_v1130_new_8;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'分类页刷新完成后显示「刷新完成」提示，并适配多语言。'**
+  String get changelog_v1130_new_9;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'图片 / 视频 / 截图新增磁盘缓存：启动后分类列表秒级呈现，无需每次重新扫描媒体库（解决大存储多文件设备每次启动需等待约 1 分钟的问题）。'**
+  String get changelog_v1130_opt_10;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'分类页计数即时正确：缓存恢复后立刻刷新数量与列表，不再显示上一次启动遗留的陈旧计数。'**
+  String get changelog_v1130_opt_11;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'音频加载改为「独占式优先」：先加载音频、再加载视频 / 图片，避免大存储设备媒体库争抢导致音频被挤掉归零。'**
+  String get changelog_v1130_opt_12;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'音频索引缓存改为原子写入 + 隔离线程解码：写入中途被杀不会留下损坏文件，主线程也不再因超大缓存卡顿或 OOM。'**
+  String get changelog_v1130_opt_13;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'音频加载重试保留最大结果集，防止媒体库繁忙返回的部分结果覆盖已显示内容。'**
+  String get changelog_v1130_opt_14;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复大存储多文件设备（如 512G 存储、上万媒体文件）启动后音频类别被清空、视频图片加载完成后音频消失的问题。'**
+  String get changelog_v1130_fix_4;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复发布构建编译错误（SongModel.getMap 调用方式、VideoController 无 dispose()）。'**
+  String get changelog_v1130_fix_5;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

@@ -3052,6 +3052,9 @@ class L10nEn extends L10n {
   String get ui_refresh => 'Refresh';
 
   @override
+  String get ui_refresh_done => 'Refresh complete';
+
+  @override
   String ui_selected_count(int count) {
     return '$count Selected';
   }
@@ -4388,6 +4391,12 @@ class L10nEn extends L10n {
   String get msg_hwdec => 'HW';
 
   @override
+  String get msg_swdec => 'SW';
+
+  @override
+  String get msg_toggle_decode => 'Toggle hardware/software decoding';
+
+  @override
   String get msg_subtitle_on => 'Turn on subtitles';
 
   @override
@@ -5033,4 +5042,40 @@ class L10nEn extends L10n {
 
   @override
   String get ui_hide_remote_files => 'Hide Remote Files';
+
+  @override
+  String get changelog_v1130_new_8 =>
+      'Video player adds a Soft/Hard decode toggle, letting you balance quality and performance based on device decode capability.';
+
+  @override
+  String get changelog_v1130_new_9 =>
+      'Category page now shows a \"Refresh complete\" toast after refresh, with multilingual support.';
+
+  @override
+  String get changelog_v1130_opt_10 =>
+      'Images/Videos/Screenshots now use a disk cache: categories appear instantly on launch without re-scanning the media library every time (fixes ~1-minute wait on large-storage devices with many files).';
+
+  @override
+  String get changelog_v1130_opt_11 =>
+      'Category counts are now accurate immediately: counts and lists refresh right after cache restore, no longer showing stale numbers from the previous launch.';
+
+  @override
+  String get changelog_v1130_opt_12 =>
+      'Audio loading is now exclusive-first: audio loads before video/images, preventing the media library contention on large devices from wiping audio to zero.';
+
+  @override
+  String get changelog_v1130_opt_13 =>
+      'Audio index cache now uses atomic writes + isolated-thread decoding: a killed-mid-write won\'t corrupt the cache, and the main thread no longer stutters or OOMs on huge caches.';
+
+  @override
+  String get changelog_v1130_opt_14 =>
+      'Audio load retries now keep the largest result set, preventing a partial result (during media-library busy) from overwriting already-shown content.';
+
+  @override
+  String get changelog_v1130_fix_4 =>
+      'Fixed large-storage devices (e.g. 512 GB, tens of thousands of media files) where the audio category was emptied after launch and disappeared once video/image loading finished.';
+
+  @override
+  String get changelog_v1130_fix_5 =>
+      'Fixed release build compile errors (SongModel.getMap usage, VideoController has no dispose()).';
 }

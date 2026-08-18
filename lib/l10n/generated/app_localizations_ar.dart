@@ -3048,6 +3048,9 @@ class L10nAr extends L10n {
   String get ui_refresh => 'تحديث';
 
   @override
+  String get ui_refresh_done => 'اكتمل التحديث';
+
+  @override
   String ui_selected_count(int count) {
     return '$count محدد';
   }
@@ -4370,6 +4373,12 @@ class L10nAr extends L10n {
   String get msg_hwdec => 'HW';
 
   @override
+  String get msg_swdec => 'SW';
+
+  @override
+  String get msg_toggle_decode => 'تبديل فك التشفير بالأجهزة/البرمجيات';
+
+  @override
   String get msg_subtitle_on => 'تشغيل الترجمة';
 
   @override
@@ -4997,4 +5006,40 @@ class L10nAr extends L10n {
 
   @override
   String get ui_hide_remote_files => '隐藏远程文件';
+
+  @override
+  String get changelog_v1130_new_8 =>
+      'أضاف مشغل الفيديو مفتاح تبديل للفك البرمجي/العتادي، مما يتيح لك الموازنة بين الجودة والأداء حسب قدرات فك الجهاز.';
+
+  @override
+  String get changelog_v1130_new_9 =>
+      'تعرض صفحة الفئة الآن إشعارًا «اكتمل التحديث» بعد التحديث، مع دعم متعدد اللغات.';
+
+  @override
+  String get changelog_v1130_opt_10 =>
+      'تستخدم الصور/الفيديو/لقحات الشاشة الآن ذاكرة تخزين مؤقت على القرص: تظهر الفئات فورًا عند التشغيل دون إعادة مسح مكتبة الوسائط في كل مرة (يحل مشكلة الانتظار ~1 دقيقة على الأجهزة ذات التخزين الكبير والملفات الكثيرة).';
+
+  @override
+  String get changelog_v1130_opt_11 =>
+      'أصبحت أعداد الفئات دقيقة فورًا: يتم تحديث الأعداد والقوائم مباشرة بعد استعادة الذاكرة المؤقتة، دون عرض أرقام قديمة من التشغيل السابق.';
+
+  @override
+  String get changelog_v1130_opt_12 =>
+      'أصبح تحميل الصوت حصريًا أولًا: يُحمّل الصوت قبل الفيديو/الصور، لتجنب تنافس مكتبة الوسائط على الأجهزة الكبيرة الذي يؤدي إلى إفراغ الصوت إلى صفر.';
+
+  @override
+  String get changelog_v1130_opt_13 =>
+      'أصبحت ذاكرة فهرس الصوت تُكتب كتابة ذرية + فك في مؤشر منعزل: المقاطعة أثناء الكتابة لا تترك ملفًا تالفًا، والخيط الرئيسي لم يعد يعلق أو يواجه OOM مع الذاكرات الضخمة.';
+
+  @override
+  String get changelog_v1130_opt_14 =>
+      'تحافظ محاولات إعادة تحميل الصوت الآن على أكبر مجموعة نتائج، لمنع نتيجة جزئية (أثناء انشغال مكتبة الوسائط) من الكتابة فوق المحتوى المعروض.';
+
+  @override
+  String get changelog_v1130_fix_4 =>
+      'أصلحنا على الأجهزة ذات التخزين الكبير (مثل 512 جيجابايت وآلاف الملفات الوسائطية) حيث كانت فئة الصوت تُفرغ بعد التشغيل وتختفي بعد اكتمال تحميل الفيديو/الصور.';
+
+  @override
+  String get changelog_v1130_fix_5 =>
+      'أصلحنا أخطاء ترجمة بناء الإصدار (طريقة استدعاء SongModel.getMap، VideoController ليس له dispose()).';
 }

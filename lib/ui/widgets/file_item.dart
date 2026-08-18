@@ -528,31 +528,16 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
       final file = File(filePath);
       if (!await file.exists()) return;
 
-      // 回退1：通过 PhotoManager 按路径查找 AssetEntity（系统媒体库已收录但
-      // mediaProvider.videos 未加载或文件名不匹配的情况），用 thumbnailDataWithSize
-      // 获取缩略图（走系统媒体库 API，不直接读取文件，权限更可靠）
-      final assetEntities = await PhotoManager.getAssetListRange(
-        start: 0,
-        end: 1000,
-        type: RequestType.video,
-      );
-
-      AssetEntity? matchedAsset;
-      for (final asset in assetEntities) {
-        try {
-          final assetPath = await asset.originFile.then((f) => f?.path);
-          if (assetPath != null && assetPath.toLowerCase() == filePath.toLowerCase()) {
-            matchedAsset = asset;
-            break;
-          }
-        } catch (_) {}
-      }
-
+      // 共享视频 AssetEntity 查询（全局只取一次、按路径命中），避免每个瓦片各自
+      // getAssetListRange(0,1000) 在大存储（上万视频）下引发上万次并发 native 媒体
+      // 查询打满设备线程、丢弃输入并卡住播放启动。
+      final matchedAsset = await MediaProvider.getVideoAssetByPath(filePath);
       if (matchedAsset != null) {
-        final thumbData = await matchedAsset.thumbnailDataWithSize(
-          const ThumbnailSize.square(300),
-          quality: 80,
-        );
+        final thumbData = await MediaProvider.runBoundedThumb(() =>
+          matchedAsset.thumbnailDataWithSize(
+            const ThumbnailSize.square(300),
+            quality: 80,
+          ));
         if (mounted && thumbData != null && thumbData.isNotEmpty) {
           setState(() => _videoThumb = thumbData);
           return;

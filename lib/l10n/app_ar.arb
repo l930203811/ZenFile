@@ -3389,6 +3389,10 @@
   "@ui_refresh": {
     "description": "ui widgets"
   },
+  "ui_refresh_done": "اكتمل التحديث",
+  "@ui_refresh_done": {
+    "description": "media_category_screen.dart"
+  },
   "ui_selected_count": "{count} محدد",
   "@ui_selected_count": {
     "description": "ui widgets",
@@ -4288,6 +4292,14 @@
   "@msg_hwdec": {
     "description": "Hardware decoding badge in video player header"
   },
+  "msg_swdec": "SW",
+  "@msg_swdec": {
+    "description": "Software decoding badge in video player header"
+  },
+  "msg_toggle_decode": "تبديل فك التشفير بالأجهزة/البرمجيات",
+  "@msg_toggle_decode": {
+    "description": "Tooltip to toggle hardware/software decoding in video player"
+  },
   "msg_subtitle_on": "تشغيل الترجمة",
   "@msg_subtitle_on": {
     "description": "Tooltip to turn on subtitles in video player"
@@ -4867,5 +4879,42 @@
   "ui_hide_remote_files": "隐藏远程文件",
   "@ui_hide_remote_files": {
     "description": "ui\\screens\\media_category_screen.dart"
+  }
+,
+  "changelog_v1130_new_8": "أضاف مشغل الفيديو مفتاح تبديل للفك البرمجي/العتادي، مما يتيح لك الموازنة بين الجودة والأداء حسب قدرات فك الجهاز.",
+  "@changelog_v1130_new_8": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_new_9": "تعرض صفحة الفئة الآن إشعارًا «اكتمل التحديث» بعد التحديث، مع دعم متعدد اللغات.",
+  "@changelog_v1130_new_9": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_10": "تستخدم الصور/الفيديو/لقحات الشاشة الآن ذاكرة تخزين مؤقت على القرص: تظهر الفئات فورًا عند التشغيل دون إعادة مسح مكتبة الوسائط في كل مرة (يحل مشكلة الانتظار ~1 دقيقة على الأجهزة ذات التخزين الكبير والملفات الكثيرة).",
+  "@changelog_v1130_opt_10": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_11": "أصبحت أعداد الفئات دقيقة فورًا: يتم تحديث الأعداد والقوائم مباشرة بعد استعادة الذاكرة المؤقتة، دون عرض أرقام قديمة من التشغيل السابق.",
+  "@changelog_v1130_opt_11": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_12": "أصبح تحميل الصوت حصريًا أولًا: يُحمّل الصوت قبل الفيديو/الصور، لتجنب تنافس مكتبة الوسائط على الأجهزة الكبيرة الذي يؤدي إلى إفراغ الصوت إلى صفر.",
+  "@changelog_v1130_opt_12": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_13": "أصبحت ذاكرة فهرس الصوت تُكتب كتابة ذرية + فك في مؤشر منعزل: المقاطعة أثناء الكتابة لا تترك ملفًا تالفًا، والخيط الرئيسي لم يعد يعلق أو يواجه OOM مع الذاكرات الضخمة.",
+  "@changelog_v1130_opt_13": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_14": "تحافظ محاولات إعادة تحميل الصوت الآن على أكبر مجموعة نتائج، لمنع نتيجة جزئية (أثناء انشغال مكتبة الوسائط) من الكتابة فوق المحتوى المعروض.",
+  "@changelog_v1130_opt_14": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_fix_4": "أصلحنا على الأجهزة ذات التخزين الكبير (مثل 512 جيجابايت وآلاف الملفات الوسائطية) حيث كانت فئة الصوت تُفرغ بعد التشغيل وتختفي بعد اكتمال تحميل الفيديو/الصور.",
+  "@changelog_v1130_fix_4": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_fix_5": "أصلحنا أخطاء ترجمة بناء الإصدار (طريقة استدعاء SongModel.getMap، VideoController ليس له dispose()).",
+  "@changelog_v1130_fix_5": {
+    "description": "v1.1.30 changelog item"
   }
 }

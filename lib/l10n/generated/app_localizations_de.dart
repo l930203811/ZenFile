@@ -3099,6 +3099,9 @@ class L10nDe extends L10n {
   String get ui_refresh => 'Aktualisieren';
 
   @override
+  String get ui_refresh_done => 'Aktualisierung abgeschlossen';
+
+  @override
   String ui_selected_count(int count) {
     return '$count Ausgewählt';
   }
@@ -4430,6 +4433,12 @@ class L10nDe extends L10n {
   String get msg_hwdec => 'HW';
 
   @override
+  String get msg_swdec => 'SW';
+
+  @override
+  String get msg_toggle_decode => 'Hard-/Software-Dekodierung umschalten';
+
+  @override
   String get msg_subtitle_on => 'Untertitel einschalten';
 
   @override
@@ -5059,4 +5068,40 @@ class L10nDe extends L10n {
 
   @override
   String get ui_hide_remote_files => '隐藏远程文件';
+
+  @override
+  String get changelog_v1130_new_8 =>
+      'Der Videoplayer erhält einen Umschalter für Soft/Hard-Decoding, um Bildqualität und Leistung je nach Decodierfähigkeit des Geräts abzuwägen.';
+
+  @override
+  String get changelog_v1130_new_9 =>
+      'Die Kategorieseite zeigt nach dem Aktualisieren nun einen „Aktualisierung abgeschlossen“-Hinweis mit Mehrsprachigkeitsunterstützung.';
+
+  @override
+  String get changelog_v1130_opt_10 =>
+      'Bilder/Videos/Screenshots nutzen nun einen Festplatten-Cache: Kategorien erscheinen beim Start sofort, ohne die Mediathek jedes Mal neu zu scannen (behebt die ~1-minütige Wartezeit auf Geräten mit großem Speicher und vielen Dateien).';
+
+  @override
+  String get changelog_v1130_opt_11 =>
+      'Kategorie-Zähler sind nun sofort korrekt: Nach dem Cache-Wiederherstellen werden Zahlen und Listen sofort aktualisiert, ohne veraltete Werte vom vorherigen Start anzuzeigen.';
+
+  @override
+  String get changelog_v1130_opt_12 =>
+      'Audio-Laden ist nun exklusiv zuerst: Audio wird vor Videos/Bildern geladen, um zu verhindern, dass die Mediathek-Konkurrenz auf großen Geräten den Audio-Bestand auf null leert.';
+
+  @override
+  String get changelog_v1130_opt_13 =>
+      'Der Audio-Index-Cache nutzt nun atomares Schreiben + Decodierung in isoliertem Thread: Ein Abbruch mitten im Schreiben hinterlässt keine beschädigte Datei, und der Haupt-Thread ruckelt oder stirbt bei riesigen Caches nicht mehr durch OOM.';
+
+  @override
+  String get changelog_v1130_opt_14 =>
+      'Audio-Lade-Wiederholungen behalten nun die größte Ergebnismenge, um zu verhindern, dass ein Teilergebnis (bei beschäftigter Mediathek) bereits angezeigte Inhalte überschreibt.';
+
+  @override
+  String get changelog_v1130_fix_4 =>
+      'Behoben auf Geräten mit großem Speicher (z. B. 512 GB, Zehntausende MedienDateien), bei denen die Audio-Kategorie nach dem Start geleert wurde und nach dem Laden von Video/Bild verschwand.';
+
+  @override
+  String get changelog_v1130_fix_5 =>
+      'Behoben Compile-Fehler des Release-Builds (SongModel.getMap-Aufruf, VideoController hat kein dispose()).';
 }

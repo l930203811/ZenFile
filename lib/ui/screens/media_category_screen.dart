@@ -552,16 +552,8 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       });
     }
 
-    // 非媒体类别（文档/压缩包/下载/安装包）懒加载：进入该类别时才触发
-    // 默认目录扫描（启动/onResume 不再自动扫描，避免占用系统资源）。
-    // 已扫描过或正在扫描时为空操作；扫描期间已加载内容可正常操作。
-    if (_isNonMediaScanType && widget.folderPath == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          context.read<MediaProvider>().ensureNonMediaScanned();
-        }
-      });
-    }
+    // 已移除「进入非媒体类别即触发默认目录递归扫描」逻辑：启动预扫描
+    // （MediaStore 索引，毫秒级）已覆盖，进类别不再触发全盘递归。
   }
 
   Future<void> _loadAlbumAssets() async {
@@ -1666,9 +1658,23 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             ),
             Consumer<MediaProvider>(
               builder: (context, provider, child) {
+                final refreshing = provider.isLoading;
                 return IconButton(
                   icon: const Icon(Icons.refresh),
-                  onPressed: () => provider.loadMedia(forceRefresh: true),
+                  // 刷新进行中禁用并置灰，避免狂点刷新重复触发全量扫描/并发重建导致闪退
+                  onPressed: refreshing
+                      ? null
+                      : () async {
+                          await provider.loadMedia(forceRefresh: true);
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(L10n.of(context).ui_refresh_done),
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          }
+                        },
                   tooltip: L10n.of(context).ui_refresh,
                 );
               },
@@ -1850,7 +1856,13 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                     break;
                   case MediaType.audios:
                     final list = widget.folderPath != null
-                        ? provider.audios.where((s) => _belongsToFolder(s.data, widget.folderPath!)).toList()
+                        ? provider.audios.where((s) {
+                            if (s.data.isNotEmpty) {
+                              return _belongsToFolder(s.data, widget.folderPath!);
+                            }
+                            // data 为空（该设备 on_audio_query 特例）：归入「未分类音频」虚拟文件夹
+                            return widget.folderPath == MediaProvider.unknownAudioFolder;
+                          }).toList()
                         : provider.audios;
                     final filtered = _filterByScope(list, (s) => s.data);
                     content = filtered.isNotEmpty ? _buildAudioList(filtered, theme, isDateWise, isGrouped, _isGridView) : null;
@@ -2095,25 +2107,36 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     if (item is AssetEntity) {
       return item.createDateTime;
     } else if (item is SongModel) {
-      try {
-        final f = File(item.data);
-        if (f.existsSync()) {
-          return f.statSync().modified;
-        }
-      } catch (_) {}
-      return DateTime.fromMillisecondsSinceEpoch((item.dateAdded ?? 0) * 1000);
+      // 直接读取 MediaStore 已索引的修改时间（秒级），避免对全量音频逐个
+      // 同步 statSync 文件系统——大存储/多文件设备上分组构建会同步打满主线程
+      // 导致 ANR/闪退（「音频类别来回切换+频繁刷新即崩」的根因）。
+      final secs = item.dateModified ?? item.dateAdded ?? 0;
+      return DateTime.fromMillisecondsSinceEpoch(secs * 1000);
     } else if (item is FileSystemEntity) {
       return _fileModifiedOf(item);
     }
     return DateTime.fromMillisecondsSinceEpoch(0);
   }
 
-  /// 取文件/目录大小，对 remote:// 路径优先使用扫描时缓存的远程大小。
+  /// 音频条目显示用修改时间：优先 MediaStore 的 dateModified，其次 dateAdded，
+  /// 均为 0/空时返回 null（由调用方显示「未知」）。零文件系统 I/O。
+  DateTime? _songModified(SongModel s) {
+    final secs = s.dateModified ?? s.dateAdded ?? 0;
+    if (secs <= 0) return null;
+    return DateTime.fromMillisecondsSinceEpoch(secs * 1000);
+  }
+
+  /// 取文件/目录大小：优先使用系统 MediaStore 索引缓存的字节数（零 I/O），
+  /// 其次 remote:// 缓存，最后回退同步 statSync（仅极少触发的递归扫描兜底路径）。
   int _fileSizeOf(FileSystemEntity entity) {
     final p = entity.path;
     if (MediaProvider.isRemotePath(p)) {
       return MediaProvider.getCachedRemoteFileSize(p);
     }
+    // 命中系统索引缓存（含 0 字节文件）→ 零 I/O，避免对海量文件逐个 statSync。
+    final cached = Provider.of<MediaProvider>(context, listen: false)
+        .nonMediaSizes[p];
+    if (cached != null) return cached;
     try {
       return entity.statSync().size;
     } catch (_) {
@@ -2121,11 +2144,18 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     }
   }
 
-  /// 取文件/目录修改时间，对 remote:// 路径优先使用扫描时缓存的远程时间。
+  /// 取文件/目录修改时间：优先使用系统 MediaStore 索引缓存的修改时间(ms)（零 I/O），
+  /// 其次 remote:// 缓存，最后回退同步 statSync。避免大存储/多文件设备「按日期」
+  /// 分组时 O(n) 同步 I/O 打满主线程（与音频崩溃同源）。
   DateTime _fileModifiedOf(FileSystemEntity entity) {
     final p = entity.path;
     if (MediaProvider.isRemotePath(p)) {
       return MediaProvider.getCachedRemoteFileModified(p) ?? DateTime.now();
+    }
+    final cached = Provider.of<MediaProvider>(context, listen: false)
+        .nonMediaDates[p];
+    if (cached != null && cached > 0) {
+      return DateTime.fromMillisecondsSinceEpoch(cached);
     }
     try {
       return entity.statSync().modified;
@@ -3136,10 +3166,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         itemTileBuilder: (audio, showDate) {
           final path = audio.data;
           final isSelected = _selectedFilePaths.contains(path);
-          DateTime? modified;
-          try {
-            modified = File(path).statSync().modified;
-          } catch (_) {}
+          final modified = _songModified(audio);
           final dateStr = modified != null ? FileUtils.formatDate(modified) : L10n.of(context).msg424a0110;
           final index = audios.indexOf(audio);
           return _SelectedFrame(
@@ -3163,10 +3190,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           final audio = audios[index];
           final path = audio.data;
           final isSelected = _selectedFilePaths.contains(path);
-          DateTime? modified;
-          try {
-            modified = File(path).statSync().modified;
-          } catch (_) {}
+          final modified = _songModified(audio);
           final dateStr = modified != null ? FileUtils.formatDate(modified) : L10n.of(context).msg424a0110;
           return _SelectedFrame(
             selected: isSelected,
@@ -3184,10 +3208,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         final audio = audios[index];
         final path = audio.data;
         final isSelected = _selectedFilePaths.contains(path);
-        DateTime? modified;
-        try {
-          modified = File(path).statSync().modified;
-        } catch (_) {}
+        final modified = _songModified(audio);
         final dateStr = modified != null ? FileUtils.formatDate(modified) : L10n.of(context).msg424a0110;
         return _SelectedFrame(
           selected: isSelected,

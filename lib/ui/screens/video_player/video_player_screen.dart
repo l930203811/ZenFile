@@ -42,8 +42,8 @@ class VideoPlayerScreen extends StatefulWidget {
 
 class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     with TickerProviderStateMixin {
-  late final Player player;
-  late final VideoController controller;
+  late Player player;
+  late VideoController controller;
 
   late int _currentIndex;
   bool _isResolvingAsset = false;
@@ -102,6 +102,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   double _subtitleFontSize = 24;
   double _subtitlePosition = 100; // 0=顶部, 100=底部
   bool _subtitleNoBackground = false;
+
+  // 解码方式：true=硬解(auto-safe), false=软解(no)，持久化保存
+  bool _useHardwareDecode = true;
   // 外挂字幕改用 Flutter overlay 渲染，确保字号/位置滑块对所有格式 100% 生效
   List<SubtitleCue> _externalCues = [];
   int _activeCueIndex = -1;
@@ -122,6 +125,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _subtitleFontSize = PreferencesService.getSubtitleFontSize();
     _subtitlePosition = PreferencesService.getSubtitlePosition();
     _subtitleNoBackground = PreferencesService.getSubtitleNoBackground();
+    _useHardwareDecode = PreferencesService.getUseHardwareDecode();
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     SystemChrome.setPreferredOrientations([
@@ -149,8 +153,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     );
     controller = VideoController(
       player,
-      configuration: const VideoControllerConfiguration(
-        hwdec: 'auto-safe',
+      configuration: VideoControllerConfiguration(
+        // 硬解=auto-safe，软解=no（纯 CPU 解码，兼容部分硬解黑屏/花屏的机型）
+        hwdec: _useHardwareDecode ? 'auto-safe' : 'no',
       ),
     );
 
@@ -816,6 +821,74 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         player.play();
       }
     });
+  }
+
+  /// 切换硬解/软解：销毁当前 Player/Controller 并用新 hwdec 重建，
+  /// 重新打开同一媒体并恢复到切换前的播放位置与播放状态。
+  Future<void> _switchHwdec(bool useHardware) async {
+    if (useHardware == _useHardwareDecode) return;
+    if (!mounted) return;
+    final oldPlayer = player;
+    final pos = oldPlayer.state.position;
+    final wasPlaying = oldPlayer.state.playing;
+    // 已解析的可播放地址：远程流优先 _currentStreamUrl，本地优先 _currentFilePath，否则原始路径
+    final uri = _currentStreamUrl ?? _currentFilePath ?? widget.videoPath;
+
+    setState(() => _isBuffering = true);
+
+    player = Player(
+      configuration: const PlayerConfiguration(
+        ready: null,
+        logLevel: MPVLogLevel.warn,
+        bufferSize: 32 * 1024 * 1024,
+      ),
+    );
+    controller = VideoController(
+      player,
+      configuration: VideoControllerConfiguration(
+        hwdec: useHardware ? 'auto-safe' : 'no',
+      ),
+    );
+    // 先让 Video 控件切到新 controller，再于下一帧释放旧的 Player；
+    // 旧 VideoController 会随 oldPlayer.dispose() 内部的 release 回调自动释放
+    //（VideoController 本身无 dispose() 方法），与本项目 dispose() 约定一致。
+    setState(() {});
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      try {
+        oldPlayer.dispose();
+      } catch (_) {}
+    });
+
+    // 复用初始化的网络超时/字幕属性
+    try {
+      final platform = player.platform;
+      if (platform is NativePlayer) {
+        await platform.setProperty('network-timeout', '60');
+        await platform.setProperty('cache-secs', '10');
+        await platform.setProperty('sub-ass-override', 'force');
+        await platform.setProperty('sub-font-size', _subtitleFontSize.round().toString());
+        await platform.setProperty('sub-pos', _subtitlePosition.round().toString());
+        await _applySubtitleBackgroundProps(platform);
+      }
+    } catch (e) {
+      debugPrint('切换解码方式后设置属性失败: $e');
+    }
+    player.setVolume(_volume * 100.0);
+    _initListeners();
+    await player.open(Media(uri), play: false);
+    if (pos > Duration.zero) {
+      try {
+        await player.seek(pos);
+      } catch (_) {}
+    }
+    if (wasPlaying) player.play();
+    await PreferencesService.saveUseHardwareDecode(useHardware);
+    if (mounted) {
+      setState(() {
+        _useHardwareDecode = useHardware;
+        _isBuffering = false;
+      });
+    }
   }
 
   Future<void> _restorePlaybackPosition() async {
@@ -1740,6 +1813,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                     subtitleEnabled: _subtitleEnabled,
                     subtitlePath: _subtitlePath,
                     onInteract: _showControls,
+                    useHardwareDecode: _useHardwareDecode,
+                    onToggleHwdec: () => _switchHwdec(!_useHardwareDecode),
                   ),
                 ],
               ),

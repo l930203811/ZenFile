@@ -3120,6 +3120,9 @@ class L10nFr extends L10n {
   String get ui_refresh => 'Actualiser';
 
   @override
+  String get ui_refresh_done => 'Actualisation terminée';
+
+  @override
   String ui_selected_count(int count) {
     return '$count sélectionné(s)';
   }
@@ -4458,6 +4461,12 @@ class L10nFr extends L10n {
   String get msg_hwdec => 'HW';
 
   @override
+  String get msg_swdec => 'SW';
+
+  @override
+  String get msg_toggle_decode => 'Basculer décodage matériel/logiciel';
+
+  @override
   String get msg_subtitle_on => 'Activer les sous-titres';
 
   @override
@@ -5087,4 +5096,40 @@ class L10nFr extends L10n {
 
   @override
   String get ui_hide_remote_files => '隐藏远程文件';
+
+  @override
+  String get changelog_v1130_new_8 =>
+      'Le lecteur vidéo ajoute un commutateur de décodage logiciel/matériel, vous permettant de privilégier la qualité ou les performances selon les capacités de décodage de l\'appareil.';
+
+  @override
+  String get changelog_v1130_new_9 =>
+      'La page catégorie affiche désormais un message « Actualisation terminée » après rafraîchissement, avec prise en charge multilingue.';
+
+  @override
+  String get changelog_v1130_opt_10 =>
+      'Images/Vidéos/Captures bénéficient désormais d\'un cache disque : les catégories s\'affichent instantanément au lancement sans re-scanner la bibliothèque multimédia à chaque fois (corrige l\'attente d\'environ 1 minute sur les appareils à gros stockage et nombreux fichiers).';
+
+  @override
+  String get changelog_v1130_opt_11 =>
+      'Les compteurs de catégorie sont désormais exacts immédiatement : les nombres et listes sont rafraîchis dès la restauration du cache, ne montrant plus les valeurs obsolètes du lancement précédent.';
+
+  @override
+  String get changelog_v1130_opt_12 =>
+      'Le chargement audio est désormais prioritaire et exclusif : l\'audio se charge avant vidéos/images, évitant que la contention de la bibliothèque sur les gros appareils ne vide l\'audio à zéro.';
+
+  @override
+  String get changelog_v1130_opt_13 =>
+      'Le cache d\'index audio utilise désormais une écriture atomique + décodage en thread isolé : une coupure en cours d\'écriture ne corrompt pas le cache et le thread principal ne bloque plus ni ne subit d\'OOM sur les gros caches.';
+
+  @override
+  String get changelog_v1130_opt_14 =>
+      'Les nouvelles tentatives de chargement audio conservent le plus grand ensemble de résultats, empêchant un résultat partiel (bibliothèque occupée) d\'écraser le contenu déjà affiché.';
+
+  @override
+  String get changelog_v1130_fix_4 =>
+      'Corrigé sur les appareils à gros stockage (ex. 512 Go, dizaines de milliers de fichiers) où la catégorie audio était vidée après le lancement et disparaissait une fois vidéos/images chargées.';
+
+  @override
+  String get changelog_v1130_fix_5 =>
+      'Corrigé les erreurs de compilation du build de publication (usage de SongModel.getMap, VideoController n\'a pas de dispose()).';
 }

@@ -757,7 +757,7 @@ class AboutZenFileScreen extends StatelessWidget {
                 child: Text('v1.1.30', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
               ),
               const SizedBox(width: 10),
-              Text('2026-08-16', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+              Text('2026-08-18', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
             ],
           ),
           gap(14),
@@ -778,6 +778,10 @@ class AboutZenFileScreen extends StatelessWidget {
           bulletText(l10n.changelog_v1130_new_6),
           gap(6),
           bulletText(l10n.changelog_v1130_new_7),
+          gap(6),
+          bulletText(l10n.changelog_v1130_new_8),
+          gap(6),
+          bulletText(l10n.changelog_v1130_new_9),
           gap(14),
 
           // ── 功能优化 ──
@@ -800,6 +804,16 @@ class AboutZenFileScreen extends StatelessWidget {
           bulletText(l10n.changelog_v1130_opt_8),
           gap(6),
           bulletText(l10n.changelog_v1130_opt_9),
+          gap(6),
+          bulletText(l10n.changelog_v1130_opt_10),
+          gap(6),
+          bulletText(l10n.changelog_v1130_opt_11),
+          gap(6),
+          bulletText(l10n.changelog_v1130_opt_12),
+          gap(6),
+          bulletText(l10n.changelog_v1130_opt_13),
+          gap(6),
+          bulletText(l10n.changelog_v1130_opt_14),
           gap(14),
 
           // ── 问题修复 ──
@@ -810,6 +824,10 @@ class AboutZenFileScreen extends StatelessWidget {
           bulletText(l10n.changelog_v1130_fix_2),
           gap(6),
           bulletText(l10n.changelog_v1130_fix_3),
+          gap(6),
+          bulletText(l10n.changelog_v1130_fix_4),
+          gap(6),
+          bulletText(l10n.changelog_v1130_fix_5),
         ],
       ),
     );

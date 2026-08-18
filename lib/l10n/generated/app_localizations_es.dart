@@ -3118,6 +3118,9 @@ class L10nEs extends L10n {
   String get ui_refresh => 'Actualizar';
 
   @override
+  String get ui_refresh_done => 'Actualización completada';
+
+  @override
   String ui_selected_count(int count) {
     return '$count Seleccionados';
   }
@@ -4453,6 +4456,12 @@ class L10nEs extends L10n {
   String get msg_hwdec => 'HW';
 
   @override
+  String get msg_swdec => 'SW';
+
+  @override
+  String get msg_toggle_decode => 'Alternar decodificación hardware/software';
+
+  @override
   String get msg_subtitle_on => 'Activar subtítulos';
 
   @override
@@ -5082,4 +5091,40 @@ class L10nEs extends L10n {
 
   @override
   String get ui_hide_remote_files => '隐藏远程文件';
+
+  @override
+  String get changelog_v1130_new_8 =>
+      'El reproductor de vídeo añade un conmutador de decodificación software/hardware para equilibrar calidad y rendimiento según la capacidad del dispositivo.';
+
+  @override
+  String get changelog_v1130_new_9 =>
+      'La página de categorías ahora muestra un aviso «Actualización completada» tras refrescar, con soporte multilingüe.';
+
+  @override
+  String get changelog_v1130_opt_10 =>
+      'Imágenes/Vídeos/Capturas ahora usan caché en disco: las categorías aparecen al instante al iniciar sin volver a escanear la biblioteca multimedia cada vez (corrige la espera de ~1 minuto en dispositivos de gran almacenamiento con muchos archivos).';
+
+  @override
+  String get changelog_v1130_opt_11 =>
+      'Los contadores de categoría ahora son exactos de inmediato: tras restaurar la caché se actualizan números y listas, sin mostrar valores obsoletos del arranque anterior.';
+
+  @override
+  String get changelog_v1130_opt_12 =>
+      'La carga de audio ahora es prioritaria y exclusiva: el audio se carga antes que vídeos/imágenes, evitando que la contención de la biblioteca en dispositivos grandes vacíe el audio a cero.';
+
+  @override
+  String get changelog_v1130_opt_13 =>
+      'La caché de índice de audio ahora usa escritura atómica + decodificación en hilo aislado: una interrupción a mitad de escritura no corrompe la caché y el hilo principal ya no se bloquea ni sufre OOM con cachés enormes.';
+
+  @override
+  String get changelog_v1130_opt_14 =>
+      'Los reintentos de carga de audio ahora conservan el mayor conjunto de resultados, evitando que un resultado parcial (biblioteca ocupada) sobrescriba el contenido ya mostrado.';
+
+  @override
+  String get changelog_v1130_fix_4 =>
+      'Corregido en dispositivos de gran almacenamiento (p. ej. 512 GB, decenas de miles de archivos) donde la categoría de audio se vaciaba tras el arranque y desaparecía al terminar de cargar vídeos/imágenes.';
+
+  @override
+  String get changelog_v1130_fix_5 =>
+      'Corregidos errores de compilación del build de publicación (uso de SongModel.getMap, VideoController no tiene dispose()).';
 }

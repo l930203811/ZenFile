@@ -2966,6 +2966,9 @@ class L10nJa extends L10n {
   String get ui_refresh => '更新';
 
   @override
+  String get ui_refresh_done => '更新完了';
+
+  @override
   String ui_selected_count(int count) {
     return '$count選択済み';
   }
@@ -4258,6 +4261,12 @@ class L10nJa extends L10n {
   String get msg_hwdec => 'HW';
 
   @override
+  String get msg_swdec => 'SW';
+
+  @override
+  String get msg_toggle_decode => 'ハード/ソフ트デコード切替';
+
+  @override
   String get msg_subtitle_on => '字幕をオン';
 
   @override
@@ -4872,4 +4881,40 @@ class L10nJa extends L10n {
 
   @override
   String get ui_hide_remote_files => '隐藏远程文件';
+
+  @override
+  String get changelog_v1130_new_8 =>
+      '動画プレーヤーに「ソフト/ハードデコード」切替スイッチを追加。デバイスのデコード能力に応じて画質とパフォーマンスを選択できます。';
+
+  @override
+  String get changelog_v1130_new_9 =>
+      'カテゴリページの更新完了後に「更新が完了しました」通知を表示し、多言語に対応しました。';
+
+  @override
+  String get changelog_v1130_opt_10 =>
+      '画像/動画/スクリーンショットにディスクキャッシュを追加：起動時にカテゴリ一覧が即座に表示され、毎回メディアライブラリを再スキャンする必要がなくなりました（大容量・多数ファイル端末での約1分の待機を解決）。';
+
+  @override
+  String get changelog_v1130_opt_11 =>
+      'カテゴリの数値が即時に正確に：キャッシュ復元後に数と一覧をすぐに更新し、前回起動時の古い数値を表示しなくなりました。';
+
+  @override
+  String get changelog_v1130_opt_12 =>
+      '音声の読み込みを「排他優先」に変更：先に音声を読み込み、その後に動画/画像を読み込むことで、大容量端末でのメディアライブラリの競合による音声の消失（ゼロ化）を防止します。';
+
+  @override
+  String get changelog_v1130_opt_13 =>
+      '音声インデックスキャッシュをアトミック書き込み＋別スレッドデコードに変更：書き込み途中で中断されても破損ファイルが残らず、メインスレッドも巨大キャッシュでフリーズやOOMを起こさなくなりました。';
+
+  @override
+  String get changelog_v1130_opt_14 =>
+      '音声読み込みの再試行で最大の結果セットを保持し、メディアライブラリがビジー時に返された一部の結果が表示済みの内容を上書きするのを防ぎます。';
+
+  @override
+  String get changelog_v1130_fix_4 =>
+      '大容量・多数ファイル端末（512GBストレージ、数万のメディアファイルなど）で、起動後に音声カテゴリが空になり、動画/画像の読み込み完了後に音声が消える問題を修正。';
+
+  @override
+  String get changelog_v1130_fix_5 =>
+      'リリースビルドのコンパイルエラーを修正（SongModel.getMapの呼び出し方法、VideoControllerにdispose()がない問題）。';
 }

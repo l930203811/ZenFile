@@ -3460,6 +3460,10 @@
   "@ui_refresh": {
     "description": "ui widgets"
   },
+  "ui_refresh_done": "重新整理完成",
+  "@ui_refresh_done": {
+    "description": "media_category_screen.dart"
+  },
   "ui_selected_count": "{count} 已選擇",
   "@ui_selected_count": {
     "description": "ui widgets",
@@ -4384,6 +4388,14 @@
   "@msg_hwdec": {
     "description": "Hardware decoding badge in video player header"
   },
+  "msg_swdec": "軟解",
+  "@msg_swdec": {
+    "description": "Software decoding badge in video player header"
+  },
+  "msg_toggle_decode": "切換硬解/軟解",
+  "@msg_toggle_decode": {
+    "description": "Tooltip to toggle hardware/software decoding in video player"
+  },
   "msg_subtitle_on": "開啟字幕",
   "@msg_subtitle_on": {
     "description": "Tooltip to turn on subtitles in video player"
@@ -5015,5 +5027,42 @@
   "ui_hide_remote_files": "隐藏远程文件",
   "@ui_hide_remote_files": {
     "description": "ui\\screens\\media_category_screen.dart"
+  }
+,
+  "changelog_v1130_new_8": "影片播放器新增「軟解 / 硬解」切換開關，可依裝置解碼能力在畫質與效能間擇優。",
+  "@changelog_v1130_new_8": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_new_9": "分類頁重新整理完成後顯示「重新整理完成」提示，並支援多語系。",
+  "@changelog_v1130_new_9": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_10": "圖片 / 影片 / 截圖新增磁碟快取：啟動後分類清單秒級呈現，無須每次重新掃描媒體庫（解決大容量多檔案裝置每次啟動需等待約 1 分鐘的問題）。",
+  "@changelog_v1130_opt_10": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_11": "分類頁計數即時正確：快取還原後立刻重新整理數量與清單，不再顯示上一次啟動遺留的陳舊計數。",
+  "@changelog_v1130_opt_11": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_12": "音訊載入改為「獨佔式優先」：先載入音訊、再載入影片 / 圖片，避免大容量裝置媒體庫爭搶導致音訊被擠掉歸零。",
+  "@changelog_v1130_opt_12": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_13": "音訊索引快取改為原子寫入 + 隔離執行緒解碼：寫入中途被中止不會留下損毀檔案，主執行緒也不再因超大快取卡頓或 OOM。",
+  "@changelog_v1130_opt_13": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_14": "音訊載入重試保留最大結果集，防止媒體庫忙碌時回傳的部分結果覆蓋已顯示內容。",
+  "@changelog_v1130_opt_14": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_fix_4": "修復大容量多檔案裝置（如 512G 儲存、上萬媒體檔案）啟動後音訊類別被清空、影片圖片載入完成後音訊消失的問題。",
+  "@changelog_v1130_fix_4": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_fix_5": "修復發佈建置編譯錯誤（SongModel.getMap 呼叫方式、VideoController 無 dispose()）。",
+  "@changelog_v1130_fix_5": {
+    "description": "v1.1.30 changelog item"
   }
 }

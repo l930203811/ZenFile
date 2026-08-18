@@ -2963,6 +2963,9 @@ class L10nKo extends L10n {
   String get ui_refresh => '새로고침';
 
   @override
+  String get ui_refresh_done => '새로고침 완료';
+
+  @override
   String ui_selected_count(int count) {
     return '$count개 선택됨';
   }
@@ -4256,6 +4259,12 @@ class L10nKo extends L10n {
   String get msg_hwdec => 'HW';
 
   @override
+  String get msg_swdec => 'SW';
+
+  @override
+  String get msg_toggle_decode => '하드웨어/소프트웨어 디코딩 전환';
+
+  @override
   String get msg_subtitle_on => '자막 켜기';
 
   @override
@@ -4870,4 +4879,40 @@ class L10nKo extends L10n {
 
   @override
   String get ui_hide_remote_files => '隐藏远程文件';
+
+  @override
+  String get changelog_v1130_new_8 =>
+      '동영상 플레이어에 소프트/하드 디코딩 전환 스위치를 추가하여 디바이스 디코딩 성능에 따라 화질과 성능을 선택할 수 있습니다.';
+
+  @override
+  String get changelog_v1130_new_9 =>
+      '카테고리 페이지에서 새로고침 완료 후 \"새로고침 완료\" 알림을 표시하며 다국어를 지원합니다.';
+
+  @override
+  String get changelog_v1130_opt_10 =>
+      '이미지/동영상/스크린샷에 디스크 캐시를 추가하여, 매번 미디어 라이브러리를 다시 스캔하지 않고도 시작 시 카테고리 목록이 즉시 표시됩니다(대용량 다파일 기기의 약 1분 대기 문제 해결).';
+
+  @override
+  String get changelog_v1130_opt_11 =>
+      '카테고리 개수가 즉시 정확해집니다. 캐시 복원 후 바로 개수와 목록을 갱신하여 이전 시작 시점의 오래된 개수를 더 이상 표시하지 않습니다.';
+
+  @override
+  String get changelog_v1130_opt_12 =>
+      '오디오 로딩을 독점 우선 방식으로 변경하여, 오디오를 먼저 로드한 뒤 동영상/이미지를 로드함으로써 대용량 기기에서 미디어 라이브러리 경합으로 오디오가 0으로 사라지는 것을 방지합니다.';
+
+  @override
+  String get changelog_v1130_opt_13 =>
+      '오디오 인덱스 캐시를 원자적 쓰기 + 별도 스레드 디코딩으로 변경하여, 쓰기 도중 중단되어도 손상된 파일이 남지 않고 메인 스레드도 큰 캐시로 인한 지연이나 OOM이 발생하지 않습니다.';
+
+  @override
+  String get changelog_v1130_opt_14 =>
+      '오디오 로딩 재시도 시 최대 결과 집합을 유지하여, 미디어 라이브러리 사용 중 일부 결과가 이미 표시된 내용을 덮어쓰는 것을 방지합니다.';
+
+  @override
+  String get changelog_v1130_fix_4 =>
+      '대용량 다파일 기기(512GB 저장소, 수만 개의 미디어 파일 등)에서 시작 후 오디오 카테고리가 비워지고 동영상/이미지 로딩 완료 후 오디오가 사라지는 문제를 수정.';
+
+  @override
+  String get changelog_v1130_fix_5 =>
+      '릴리스 빌드 컴파일 오류 수정(SongModel.getMap 호출 방식, VideoController에 dispose() 없음).';
 }

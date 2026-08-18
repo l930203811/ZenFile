@@ -18,6 +18,8 @@ A beautifully crafted, open-source file manager and offline media center for And
 - Video/Audio category menu adds "Player Controller Visibility" toggle
 - Unified "Open With" dialog: Browse/Recent/Category pages all show in-app selection popup
 - Unknown format files show type picker (Text/Audio/Video/Image) when "Open with App" is selected
+- Video player adds a Soft/Hard decode toggle, balancing quality and performance by device decode capability
+- Category page shows a "Refresh complete" toast after refresh, with multilingual support
 
 ### 🔧 Optimizations
 
@@ -30,12 +32,19 @@ A beautifully crafted, open-source file manager and offline media center for And
 - Local scan excludes app cache directory, fixing duplicate images after enabling remote thumbnails
 - Remote file 3-dot menu and long-press batch delete/rename/copy/cut/location operations now work
 - Remote folder drill-down preserves directory structure (DCIM/Pictures etc.)
+- Images/Videos/Screenshots now use a disk cache: categories appear instantly on launch without re-scanning the media library every time (fixes ~1-minute wait on large-storage devices with many files)
+- Category counts are now accurate immediately after cache restore, no longer showing stale numbers from the previous launch
+- Audio loading is now exclusive-first: audio loads before video/images, preventing media-library contention on large devices from wiping audio to zero
+- Audio index cache now uses atomic writes + isolated-thread decoding: a killed-mid-write won't corrupt the cache, and the main thread no longer stutters or OOMs on huge caches
+- Audio load retries now keep the largest result set, preventing a partial result from overwriting already-shown content
 
 ### 🐛 Bug Fixes
 
 - Fixed MIUI storage permission false positive causing startup popup loop
 - Fixed category page long-press drag accidentally triggering page switch
 - Fixed screenshots disappearing after drilling into folder in Images category
+- Fixed large-storage devices (e.g. 512 GB, tens of thousands of media files) where the audio category was emptied after launch and disappeared once video/image loading finished
+- Fixed release build compile errors (SongModel.getMap usage, VideoController has no dispose())
 
 ---
 

@@ -3389,6 +3389,10 @@
   "@ui_refresh": {
     "description": "ui widgets"
   },
+  "ui_refresh_done": "Обновление завершено",
+  "@ui_refresh_done": {
+    "description": "media_category_screen.dart"
+  },
   "ui_selected_count": "{count} Выбрано",
   "@ui_selected_count": {
     "description": "ui widgets",
@@ -4288,6 +4292,14 @@
   "@msg_hwdec": {
     "description": "Hardware decoding badge in video player header"
   },
+  "msg_swdec": "SW",
+  "@msg_swdec": {
+    "description": "Software decoding badge in video player header"
+  },
+  "msg_toggle_decode": "Переключить аппаратное/программное декодирование",
+  "@msg_toggle_decode": {
+    "description": "Tooltip to toggle hardware/software decoding in video player"
+  },
   "msg_subtitle_on": "Включить субтитры",
   "@msg_subtitle_on": {
     "description": "Tooltip to turn on subtitles in video player"
@@ -4867,5 +4879,42 @@
   "ui_hide_remote_files": "隐藏远程文件",
   "@ui_hide_remote_files": {
     "description": "ui\\screens\\media_category_screen.dart"
+  }
+,
+  "changelog_v1130_new_8": "В видеоплеере появился переключатель программного/аппаратного декодирования — выбирайте баланс качества и производительности по возможностям устройства.",
+  "@changelog_v1130_new_8": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_new_9": "На странице категорий после обновления теперь показывается уведомление «Обновление завершено» с поддержкой языков.",
+  "@changelog_v1130_new_9": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_10": "Для изображений/видео/скриншотов добавлен дисковый кэш: категории появляются сразу при запуске без повторного сканирования медиатеки (устраняет ожидание ~1 минуты на устройствах с большим хранилищем и множеством файлов).",
+  "@changelog_v1130_opt_10": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_11": "Счётчики категорий теперь точны сразу: после восстановления кэша числа и списки обновляются мгновенно, без устаревших значений с прошлого запуска.",
+  "@changelog_v1130_opt_11": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_12": "Загрузка аудио теперь приоритетная и эксклюзивная: сначала грузится аудио, затем видео/изображения, что не даёт состязанию за медиатеку на больших устройствах обнулить аудио.",
+  "@changelog_v1130_opt_12": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_13": "Кэш аудио-индекса теперь записывается атомарно и декодируется в отдельном потоке: прерывание записи не оставляет повреждённого файла, а основной поток больше не тормозит и не падает по OOM на огромных кэшах.",
+  "@changelog_v1130_opt_13": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_opt_14": "Повторные попытки загрузки аудио теперь сохраняют наибольший набор результатов, не давая частичному результату (при занятой медиатеке) перезаписать уже показанное.",
+  "@changelog_v1130_opt_14": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_fix_4": "Исправлено на устройствах с большим хранилищем (например, 512 ГБ, десятки тысяч медиафайлов): после запуска категория аудио очищалась и исчезала после завершения загрузки видео/изображений.",
+  "@changelog_v1130_fix_4": {
+    "description": "v1.1.30 changelog item"
+  },
+  "changelog_v1130_fix_5": "Исправлены ошибки компиляции релизной сборки (способ вызова SongModel.getMap, у VideoController нет dispose()).",
+  "@changelog_v1130_fix_5": {
+    "description": "v1.1.30 changelog item"
   }
 }

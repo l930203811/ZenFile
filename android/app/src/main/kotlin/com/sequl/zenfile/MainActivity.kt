@@ -1373,6 +1373,69 @@ class MainActivity : AudioServiceFragmentActivity() {
                 else -> result.notImplemented()
             }
         }
+
+        // 媒体/文件索引通道：直接查询系统 MediaStore.Files（全量文件索引表），
+        // 用于文档/压缩包/安装包/下载等分类，避免全盘递归扫描导致大存储卡顿。
+        // 参考猫头鹰文件(Skyjos File Explorer)：其分类即由 ProtocolTypeMediaStore 协议经
+        // MediaStore.Files 按 media_type 查询得到，故在大存储下不卡、分类永远完整。
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/media_store").setMethodCallHandler { call, result ->
+            when (call.method) {
+                "queryFiles" -> {
+                    executor.execute {
+                        try {
+                            val extensions = call.argument<List<Any>>("extensions")
+                                ?.mapNotNull { it?.toString()?.lowercase() }
+                                ?: emptyList()
+                            val pathContains = call.argument<String>("pathContains")?.lowercase()
+                            val files = queryMediaStoreFiles(extensions, pathContains)
+                            runOnUiThread { result.success(files) }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            runOnUiThread { result.error("MEDIASTORE_ERROR", e.message, null) }
+                        }
+                    }
+                }
+                else -> result.notImplemented()
+            }
+        }
+    }
+
+    // 查询系统 MediaStore.Files 表：返回匹配扩展名或路径包含关键字的全部文件
+    // （path + size + modified）。系统已预建索引，瞬时返回、穷尽且完整，无需递归遍历磁盘。
+    private fun queryMediaStoreFiles(extensions: List<String>, pathContains: String?): List<Map<String, Any>> {
+        val cr = applicationContext.contentResolver
+        val uri = android.provider.MediaStore.Files.getContentUri("external")
+        val projection = arrayOf(
+            android.provider.MediaStore.Files.FileColumns.DATA,
+            android.provider.MediaStore.Files.FileColumns.SIZE,
+            android.provider.MediaStore.Files.FileColumns.DATE_MODIFIED
+        )
+        val selectionParts = mutableListOf<String>()
+        val selectionArgs = mutableListOf<String>()
+        for (ext in extensions) {
+            selectionParts.add("${android.provider.MediaStore.Files.FileColumns.DATA} LIKE ?")
+            selectionArgs.add("%$ext")
+        }
+        if (!pathContains.isNullOrEmpty()) {
+            selectionParts.add("${android.provider.MediaStore.Files.FileColumns.DATA} LIKE ?")
+            selectionArgs.add("%$pathContains%")
+        }
+        val selection = if (selectionParts.isEmpty()) null else selectionParts.joinToString(" OR ")
+        val args = if (selectionArgs.isEmpty()) null else selectionArgs.toTypedArray()
+        val list = mutableListOf<Map<String, Any>>()
+        val cursor = cr.query(uri, projection, selection, args, "${android.provider.MediaStore.Files.FileColumns.DATA} ASC")
+        cursor?.use {
+            val dataIdx = it.getColumnIndexOrThrow(android.provider.MediaStore.Files.FileColumns.DATA)
+            val sizeIdx = it.getColumnIndex(android.provider.MediaStore.Files.FileColumns.SIZE)
+            val modIdx = it.getColumnIndex(android.provider.MediaStore.Files.FileColumns.DATE_MODIFIED)
+            while (it.moveToNext()) {
+                val path = it.getString(dataIdx) ?: continue
+                val size = if (sizeIdx >= 0 && !it.isNull(sizeIdx)) it.getLong(sizeIdx) else 0L
+                val modified = if (modIdx >= 0 && !it.isNull(modIdx)) it.getLong(modIdx) * 1000L else 0L
+                list.add(mapOf("path" to path, "size" to size, "modified" to modified))
+            }
+        }
+        return list
     }
 
     private fun installSplitApks(apkPaths: List<String>, result: MethodChannel.Result) {
