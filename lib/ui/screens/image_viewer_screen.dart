@@ -480,7 +480,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
       }
       // 远程删除：同步删除远程目录原文件 + 裁剪 provider 列表
       if (isRemote && currentPath != null) {
-        await context.read<FileManagerProvider>().deleteRemotePath(currentPath);
+        await FileManagerProvider.deleteRemotePath(currentPath);
         MediaProvider.instance?.pruneDeletedMediaPaths([currentPath]);
       }
 

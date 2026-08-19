@@ -1965,8 +1965,6 @@ class MediaProvider extends ChangeNotifier {
 
       final docs = <FileSystemEntity>[];
       final arch = <FileSystemEntity>[];
-      final docs = <FileSystemEntity>[];
-      final arch = <FileSystemEntity>[];
       var docSize = 0;
       var archSize = 0;
       for (final m in files) {

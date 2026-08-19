@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../../core/icon_fonts/broken_icons.dart';
 import '../../../../models/app_info_model.dart';
 import '../../../../services/app_manager_service.dart';
@@ -201,13 +202,11 @@ class _BackupListTabState extends State<BackupListTab> {
                     Navigator.pop(context);
                     // 先弹回首页，再切到浏览 Tab 定位到 APK 所在目录
                     // 若应用管理页面仍压在首页之上，Tab 切换在后台发生但不可见
-                    final provider = FileManagerProvider.instance;
+                    final provider = context.read<FileManagerProvider>();
                     Navigator.of(context).popUntil((route) => route.isFirst);
-                    if (provider != null) {
-                      final dirPath = apkPath.substring(0, apkPath.lastIndexOf('/'));
-                      provider.setPendingBrowseNavigation(dirPath, [apkPath]);
-                      provider.setNavigateToBrowseTab(true);
-                    }
+                    final dirPath = apkPath.substring(0, apkPath.lastIndexOf('/'));
+                    provider.setPendingBrowseNavigation(dirPath, [apkPath]);
+                    provider.setNavigateToBrowseTab(true);
                   },
                 ),
                 _buildBottomSheetActionItem(
