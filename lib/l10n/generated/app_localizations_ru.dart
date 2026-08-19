@@ -5146,4 +5146,68 @@ class L10nRu extends L10n {
   @override
   String get changelog_v1130_fix_5 =>
       'Исправлены ошибки компиляции релизной сборки (способ вызова SongModel.getMap, у VideoController нет dispose()).';
+
+  @override
+  String get changelog_v1131_fix_1 =>
+      'Fixed residual blank icons on category page after deleting files from browse page or other apps (new pruneDeletedMediaPaths + pruneDeletedMedia instant pruning mechanism)';
+
+  @override
+  String get changelog_v1131_fix_2 =>
+      'Fixed residual blank icons for non-media categories (Documents/Archives/Downloads/APKs) after delete or move in browse page';
+
+  @override
+  String get changelog_v1131_fix_3 =>
+      'Fixed category total size \"shows ~1 second → zeros out → reload restores\" flicker on startup';
+
+  @override
+  String get changelog_v1131_fix_4 =>
+      'Fixed category \"Select All\" mixing remote/local files (local page selects local only, remote page selects remote only)';
+
+  @override
+  String get changelog_v1131_fix_5 =>
+      'Fixed remote file deletion not refreshing the list';
+
+  @override
+  String get changelog_v1131_fix_6 =>
+      'Fixed image viewer residual siblingItems preview after delete, list not refreshing after 3-dot menu delete, and local delete thumbnail cache invalidation';
+
+  @override
+  String get changelog_v1131_fix_7 =>
+      'Fixed remote image residual thumbnail after delete, \"Show in Location\" navigating to local cache path instead of remote, and delete only removing local cache not remote original';
+
+  @override
+  String get changelog_v1131_fix_8 =>
+      'Fixed image viewer 3-dot menu \"Show in Location\" not navigating';
+
+  @override
+  String get changelog_v1131_fix_9 =>
+      'Fixed long-press batch backup APK SnackBar not showing, progress dialog stuck (multiple iterations, final solution uses rootNavigator + backupDialogOpen flag), and unable to cancel via back key';
+
+  @override
+  String get changelog_v1131_fix_10 =>
+      'Added \"Open Location\" button to backed-up APK popup; fixed issue requiring manual back press to see navigation (now popUntil(isFirst) then switch Tab)';
+
+  @override
+  String get changelog_v1131_fix_11 =>
+      'Changed batch action bar \"Clear\" button to \"Cancel\"; backup/share/uninstall buttons now use multilingual translations instead of hardcoded Chinese';
+
+  @override
+  String get changelog_v1131_fix_12 =>
+      'Fixed refresh button not scanning non-media files (APK not loading), corrected category branch logic and added onlyApk parameter for supplementary scan';
+
+  @override
+  String get changelog_v1131_fix_13 =>
+      'Simplified \"Change PIN\" entry: tap on vault home goes directly to number pad, removed redundant \"Remote Guard\" toggle and \"Lock Now\" from remote guard page';
+
+  @override
+  String get changelog_v1131_fix_14 =>
+      'Fixed auto-backup toggle not taking effect (new _autoSyncTriggered guard); fixed remote delete-then-backup falsely reporting success';
+
+  @override
+  String get changelog_v1131_fix_15 =>
+      'Fixed browse page Tab bar horizontal swipe accidentally triggering page switch (new tabBarInteracting flag + Listener protection)';
+
+  @override
+  String get changelog_v1131_fix_16 =>
+      'Added ui_app_open_location, ui_batch_backup, ui_batch_share, ui_batch_uninstall, ui_batch_uninstall_confirm translation keys, all 10 languages covered';
 }

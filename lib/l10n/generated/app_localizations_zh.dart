@@ -4881,6 +4881,66 @@ class L10nZh extends L10n {
   @override
   String get changelog_v1130_fix_5 =>
       '修复发布构建编译错误（SongModel.getMap 调用方式、VideoController 无 dispose()）。';
+
+  @override
+  String get changelog_v1131_fix_1 =>
+      '修复别的应用/浏览页删除文件后分类页残留空白图标（新增 pruneDeletedMediaPaths + pruneDeletedMedia 即时裁剪机制）';
+
+  @override
+  String get changelog_v1131_fix_2 =>
+      '修复非媒体类别（文档/压缩包/下载/安装包）浏览页删除或移动后分类页残留空白图标';
+
+  @override
+  String get changelog_v1131_fix_3 => '修复分类页媒体总大小启动时「显示约1秒→归零→重载恢复」的闪烁问题';
+
+  @override
+  String get changelog_v1131_fix_4 => '修复分类页全选混入远程/本地文件（本地页面全选只选本地，远程页面全选只选远程）';
+
+  @override
+  String get changelog_v1131_fix_5 => '修复远程删除文件后不刷新的问题';
+
+  @override
+  String get changelog_v1131_fix_6 =>
+      '修复图片浏览页删除后 siblingItems 残留预览图、三点按钮删除后列表不刷新、本地删除后缩略图残留（getter 缓存失效）';
+
+  @override
+  String get changelog_v1131_fix_7 =>
+      '修复远程图片删除后缩略图残留、「在位置中显示」跳转到本地缓存路径、删除仅删本地缓存未删远程原文件';
+
+  @override
+  String get changelog_v1131_fix_8 => '修复图片浏览页三点按钮「在位置中显示」不跳转';
+
+  @override
+  String get changelog_v1131_fix_9 =>
+      '修复长按弹窗批量备份 APK 后 SnackBar 不弹窗、进度对话框卡住不消失（多次迭代修复，最终采用 rootNavigator + backupDialogOpen 标志位模式）、无法按返回键取消';
+
+  @override
+  String get changelog_v1131_fix_10 =>
+      '已备份 APK 弹窗新增「打开所在位置」按钮，点击直接跳转到 APK 所在目录；修复「打开所在位置」需手动返回才可见的问题（先 popUntil(isFirst) 再切 Tab）';
+
+  @override
+  String get changelog_v1131_fix_11 =>
+      '批量操作栏「清除」按钮标题改为「取消」，备份/分享/卸载按钮硬编码中文改为多语言';
+
+  @override
+  String get changelog_v1131_fix_12 =>
+      '修复刷新按钮扫描不到非媒体（安装包 APK 加载不出），修正分类分支逻辑并新增 onlyApk 参数补扫';
+
+  @override
+  String get changelog_v1131_fix_13 =>
+      '简化「修改 PIN 码」入口：首页点击直接进入数字键盘，移除远程守卫页冗余的「远程守卫」开关与「立即锁定」';
+
+  @override
+  String get changelog_v1131_fix_14 =>
+      '修复自动备份开关打开后不生效的问题（新增 _autoSyncTriggered 守卫）；修复远程目录删文件后再次备份提示成功但实际未备份的问题';
+
+  @override
+  String get changelog_v1131_fix_15 =>
+      '修复浏览页标签页左右滑动误触页面切换（新增 tabBarInteracting 标志位 + Listener 保护）';
+
+  @override
+  String get changelog_v1131_fix_16 =>
+      '新增 ui_app_open_location、ui_batch_backup、ui_batch_share、ui_batch_uninstall、ui_batch_uninstall_confirm 翻译键，10 种语言全部补齐';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -9718,4 +9778,68 @@ class L10nZhTw extends L10nZh {
   @override
   String get changelog_v1130_fix_5 =>
       '修復發佈建置編譯錯誤（SongModel.getMap 呼叫方式、VideoController 無 dispose()）。';
+
+  @override
+  String get changelog_v1131_fix_1 =>
+      'Fixed residual blank icons on category page after deleting files from browse page or other apps (new pruneDeletedMediaPaths + pruneDeletedMedia instant pruning mechanism)';
+
+  @override
+  String get changelog_v1131_fix_2 =>
+      'Fixed residual blank icons for non-media categories (Documents/Archives/Downloads/APKs) after delete or move in browse page';
+
+  @override
+  String get changelog_v1131_fix_3 =>
+      'Fixed category total size \"shows ~1 second → zeros out → reload restores\" flicker on startup';
+
+  @override
+  String get changelog_v1131_fix_4 =>
+      'Fixed category \"Select All\" mixing remote/local files (local page selects local only, remote page selects remote only)';
+
+  @override
+  String get changelog_v1131_fix_5 =>
+      'Fixed remote file deletion not refreshing the list';
+
+  @override
+  String get changelog_v1131_fix_6 =>
+      'Fixed image viewer residual siblingItems preview after delete, list not refreshing after 3-dot menu delete, and local delete thumbnail cache invalidation';
+
+  @override
+  String get changelog_v1131_fix_7 =>
+      'Fixed remote image residual thumbnail after delete, \"Show in Location\" navigating to local cache path instead of remote, and delete only removing local cache not remote original';
+
+  @override
+  String get changelog_v1131_fix_8 =>
+      'Fixed image viewer 3-dot menu \"Show in Location\" not navigating';
+
+  @override
+  String get changelog_v1131_fix_9 =>
+      'Fixed long-press batch backup APK SnackBar not showing, progress dialog stuck (multiple iterations, final solution uses rootNavigator + backupDialogOpen flag), and unable to cancel via back key';
+
+  @override
+  String get changelog_v1131_fix_10 =>
+      'Added \"Open Location\" button to backed-up APK popup; fixed issue requiring manual back press to see navigation (now popUntil(isFirst) then switch Tab)';
+
+  @override
+  String get changelog_v1131_fix_11 =>
+      'Changed batch action bar \"Clear\" button to \"Cancel\"; backup/share/uninstall buttons now use multilingual translations instead of hardcoded Chinese';
+
+  @override
+  String get changelog_v1131_fix_12 =>
+      'Fixed refresh button not scanning non-media files (APK not loading), corrected category branch logic and added onlyApk parameter for supplementary scan';
+
+  @override
+  String get changelog_v1131_fix_13 =>
+      'Simplified \"Change PIN\" entry: tap on vault home goes directly to number pad, removed redundant \"Remote Guard\" toggle and \"Lock Now\" from remote guard page';
+
+  @override
+  String get changelog_v1131_fix_14 =>
+      'Fixed auto-backup toggle not taking effect (new _autoSyncTriggered guard); fixed remote delete-then-backup falsely reporting success';
+
+  @override
+  String get changelog_v1131_fix_15 =>
+      'Fixed browse page Tab bar horizontal swipe accidentally triggering page switch (new tabBarInteracting flag + Listener protection)';
+
+  @override
+  String get changelog_v1131_fix_16 =>
+      'Added ui_app_open_location, ui_batch_backup, ui_batch_share, ui_batch_uninstall, ui_batch_uninstall_confirm translation keys, all 10 languages covered';
 }

@@ -7,6 +7,29 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 ---
 
+## 🚀 What's New in v1.1.31
+
+### 🐛 Bug Fixes
+
+- Fixed residual blank icons on category page after deleting files from browse page or other apps (new pruneDeletedMediaPaths + pruneDeletedMedia instant pruning mechanism)
+- Fixed residual blank icons for non-media categories (Documents/Archives/Downloads/APKs) after delete or move in browse page
+- Fixed category total size "shows ~1 second → zeros out → reload restores" flicker on startup
+- Fixed category "Select All" mixing remote/local files (local page selects local only, remote page selects remote only)
+- Fixed remote file deletion not refreshing the list
+- Fixed image viewer residual siblingItems preview after delete, list not refreshing after 3-dot menu delete, and local delete thumbnail cache invalidation
+- Fixed remote image residual thumbnail after delete, "Show in Location" navigating to local cache path instead of remote, and delete only removing local cache not remote original
+- Fixed image viewer 3-dot menu "Show in Location" not navigating
+- Fixed long-press batch backup APK SnackBar not showing, progress dialog stuck (multiple iterations, final solution uses rootNavigator + backupDialogOpen flag), and unable to cancel via back key
+- Added "Open Location" button to backed-up APK popup; fixed issue requiring manual back press to see navigation (now popUntil(isFirst) then switch Tab)
+- Changed batch action bar "Clear" button to "Cancel"; backup/share/uninstall buttons now use multilingual translations instead of hardcoded Chinese
+- Fixed refresh button not scanning non-media files (APK not loading), corrected category branch logic and added onlyApk parameter for supplementary scan
+- Simplified "Change PIN" entry: tap on vault home goes directly to number pad, removed redundant "Remote Guard" toggle and "Lock Now" from remote guard page
+- Fixed auto-backup toggle not taking effect (new _autoSyncTriggered guard); fixed remote delete-then-backup falsely reporting success
+- Fixed browse page Tab bar horizontal swipe accidentally triggering page switch (new tabBarInteracting flag + Listener protection)
+- Added ui_app_open_location, ui_batch_backup, ui_batch_share, ui_batch_uninstall, ui_batch_uninstall_confirm translation keys, all 10 languages covered
+
+---
+
 ## 🚀 What's New in v1.1.30
 
 ### ✨ New Features

@@ -9183,6 +9183,102 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'修复发布构建编译错误（SongModel.getMap 调用方式、VideoController 无 dispose()）。'**
   String get changelog_v1130_fix_5;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复别的应用/浏览页删除文件后分类页残留空白图标（新增 pruneDeletedMediaPaths + pruneDeletedMedia 即时裁剪机制）'**
+  String get changelog_v1131_fix_1;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复非媒体类别（文档/压缩包/下载/安装包）浏览页删除或移动后分类页残留空白图标'**
+  String get changelog_v1131_fix_2;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复分类页媒体总大小启动时「显示约1秒→归零→重载恢复」的闪烁问题'**
+  String get changelog_v1131_fix_3;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复分类页全选混入远程/本地文件（本地页面全选只选本地，远程页面全选只选远程）'**
+  String get changelog_v1131_fix_4;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复远程删除文件后不刷新的问题'**
+  String get changelog_v1131_fix_5;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复图片浏览页删除后 siblingItems 残留预览图、三点按钮删除后列表不刷新、本地删除后缩略图残留（getter 缓存失效）'**
+  String get changelog_v1131_fix_6;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复远程图片删除后缩略图残留、「在位置中显示」跳转到本地缓存路径、删除仅删本地缓存未删远程原文件'**
+  String get changelog_v1131_fix_7;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复图片浏览页三点按钮「在位置中显示」不跳转'**
+  String get changelog_v1131_fix_8;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复长按弹窗批量备份 APK 后 SnackBar 不弹窗、进度对话框卡住不消失（多次迭代修复，最终采用 rootNavigator + backupDialogOpen 标志位模式）、无法按返回键取消'**
+  String get changelog_v1131_fix_9;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'已备份 APK 弹窗新增「打开所在位置」按钮，点击直接跳转到 APK 所在目录；修复「打开所在位置」需手动返回才可见的问题（先 popUntil(isFirst) 再切 Tab）'**
+  String get changelog_v1131_fix_10;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'批量操作栏「清除」按钮标题改为「取消」，备份/分享/卸载按钮硬编码中文改为多语言'**
+  String get changelog_v1131_fix_11;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复刷新按钮扫描不到非媒体（安装包 APK 加载不出），修正分类分支逻辑并新增 onlyApk 参数补扫'**
+  String get changelog_v1131_fix_12;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'简化「修改 PIN 码」入口：首页点击直接进入数字键盘，移除远程守卫页冗余的「远程守卫」开关与「立即锁定」'**
+  String get changelog_v1131_fix_13;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复自动备份开关打开后不生效的问题（新增 _autoSyncTriggered 守卫）；修复远程目录删文件后再次备份提示成功但实际未备份的问题'**
+  String get changelog_v1131_fix_14;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复浏览页标签页左右滑动误触页面切换（新增 tabBarInteracting 标志位 + Listener 保护）'**
+  String get changelog_v1131_fix_15;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'新增 ui_app_open_location、ui_batch_backup、ui_batch_share、ui_batch_uninstall、ui_batch_uninstall_confirm 翻译键，10 种语言全部补齐'**
+  String get changelog_v1131_fix_16;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {
