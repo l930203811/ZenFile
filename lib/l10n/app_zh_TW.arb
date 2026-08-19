@@ -4968,6 +4968,46 @@
   "@ui_remote_guard_lock_now_desc": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
+  "ui_security_settings": "安全設定",
+  "@ui_security_settings": {
+    "description": "ui\\screens\\vault_explorer_screen.dart"
+  },
+  "ui_remote_guard_switch_desc": "保護已儲存的遠端伺服器，存取前需驗證PIN碼",
+  "@ui_remote_guard_switch_desc": {
+    "description": "ui\\screens\\vault_explorer_screen.dart"
+  },
+  "ui_app_lock": "啟動應用保護",
+  "@ui_app_lock": {
+    "description": "ui\\screens\\remote_guard_screen.dart"
+  },
+  "ui_app_lock_desc": "啟動應用時需輸入PIN碼解鎖才能進入",
+  "@ui_app_lock_desc": {
+    "description": "ui\\screens\\remote_guard_screen.dart"
+  },
+  "ui_app_lock_set_pin_first": "啟用前請先設定4位PIN碼",
+  "@ui_app_lock_set_pin_first": {
+    "description": "ui\\screens\\remote_guard_screen.dart"
+  },
+  "ui_remote_guard_enter_current_pin": "請輸入目前 PIN 碼",
+  "@ui_remote_guard_enter_current_pin": {
+    "description": "ui/screens/remote_guard_screen.dart"
+  },
+  "ui_remote_guard_reencrypting": "正在重新加密已隱藏檔案…",
+  "@ui_remote_guard_reencrypting": {
+    "description": "ui/screens/remote_guard_screen.dart"
+  },
+  "ui_remote_guard_pin_changed": "PIN 碼已修改",
+  "@ui_remote_guard_pin_changed": {
+    "description": "ui/screens/remote_guard_screen.dart"
+  },
+  "ui_remote_guard_change_pin_failed": "部分檔案重新加密失敗，PIN 碼未變更",
+  "@ui_remote_guard_change_pin_failed": {
+    "description": "ui/screens/remote_guard_screen.dart"
+  },
+  "ui_change_vault_pin_desc": "修改私人保險箱 PIN（將重新加密所有已隱藏檔案）",
+  "@ui_change_vault_pin_desc": {
+    "description": "ui/screens/vault_explorer_screen.dart"
+  },
   "ui_auto_backup": "自动备份",
   "@ui_auto_backup": {
     "description": "ui\\screens\\media_category_screen.dart"

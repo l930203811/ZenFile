@@ -13,18 +13,36 @@ enum RemoteGuardMode {
 
   /// 访问守卫：仅验证 PIN，通过后 pop(true)
   gate,
+
+  /// 仅设置 PIN（不改动远程守卫/启动保护开关），设置成功后 pop(true)
+  setupPinOnly,
+
+  /// 启动应用保护闸门：验证 PIN 后回调 [onUnlocked]，不 pop
+  appLock,
+
+  /// 修改 PIN：验证当前 PIN 后直接进入「输入新 PIN → 确认 → 重加密」流程
+  changePin,
 }
 
-/// 远程访问保护：PIN 设置 / 验证 / 管理页面。
+/// 远程访问保护：PIN 设置 / 验证 / 修改 PIN 页面。
 ///
 /// 设计参考私人保险箱（VaultLockScreen）：同款渐变背景、圆形 PIN 键盘、
-/// 抖动动画。两种模式：
-///  - [RemoteGuardMode.entry] 抽屉入口，完整管理（设置 PIN / 验证 / 开关 / 修改 PIN）
-///  - [RemoteGuardMode.gate]  访问远程内容前的 PIN 验证，通过后 pop(true)
+/// 抖动动画。主要入口：
+///  - [RemoteGuardMode.entry]      管理面板（现仅保留修改 PIN 入口）
+///  - [RemoteGuardMode.gate]       访问远程内容前的 PIN 验证，通过后 pop(true)
+///  - [RemoteGuardMode.setupPinOnly] 仅设置 PIN，成功后 pop(true)
+///  - [RemoteGuardMode.appLock]    启动应用保护闸门，验证后回调 onUnlocked
+///  - [RemoteGuardMode.changePin]  保险箱首页「修改 PIN」直接入口，验证当前 PIN 后直接进入改密流程
 class RemoteGuardScreen extends StatefulWidget {
   final RemoteGuardMode mode;
+  /// 仅 [RemoteGuardMode.appLock] 使用：PIN 验证成功后的回调（用于通知外层切换到主界面）
+  final VoidCallback? onUnlocked;
 
-  const RemoteGuardScreen({super.key, this.mode = RemoteGuardMode.entry});
+  const RemoteGuardScreen({
+    super.key,
+    this.mode = RemoteGuardMode.entry,
+    this.onUnlocked,
+  });
 
   @override
   State<RemoteGuardScreen> createState() => _RemoteGuardScreenState();
@@ -34,7 +52,6 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
     with SingleTickerProviderStateMixin {
   bool _checking = true;
   bool _isPinSet = false;
-  bool _guardEnabled = false;
 
   // 页面流程：pinEntry（键盘）→ manage（管理面板）
   bool _showManage = false;
@@ -45,6 +62,12 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
   String _inputBuffer = '';
   String _message = '';
   bool _isError = false;
+
+  // 修改 PIN 流程状态
+  bool _isChangingPin = false; // 是否处于「修改 PIN」流程
+  bool _oldPinVerified = false; // 当前 PIN 是否已验证通过
+  String _oldPin = ''; // 已验证的当前 PIN（用于重加密）
+  bool _changingProgress = false; // 重加密进行中（显示进度，禁用返回）
 
   late final AnimationController _shakeController;
 
@@ -60,11 +83,9 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
 
   Future<void> _initState() async {
     final pinSet = await RemoteGuardService.isPinSet();
-    final enabled = await RemoteGuardService.isEnabled();
     if (!mounted) return;
     setState(() {
       _isPinSet = pinSet;
-      _guardEnabled = enabled;
       _checking = false;
       // entry 模式：已设置 PIN 且已解锁 → 直接管理面板，否则键盘流程
       if (widget.mode == RemoteGuardMode.entry &&
@@ -74,6 +95,20 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
       }
       _message = _initialMessage();
     });
+    // 启动保护闸门：若 PIN 未设置（理论上不会，因启用前置条件已校验），直接放行
+    if (widget.mode == RemoteGuardMode.appLock && !pinSet) {
+      widget.onUnlocked?.call();
+      return;
+    }
+
+    // 修改 PIN 模式：已设置 PIN 直接进入改密流程；未设置则直接退出
+    if (widget.mode == RemoteGuardMode.changePin) {
+      if (pinSet) {
+        _startChangePin();
+      } else {
+        Navigator.pop(context, false);
+      }
+    }
   }
 
   String _initialMessage() {
@@ -98,6 +133,12 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
   Future<void> _onPinComplete() async {
     final l10n = L10n.of(context);
 
+    // ── 修改 PIN 流程（验证旧 PIN → 设新 PIN → 重加密） ──
+    if (_isChangingPin) {
+      await _handleChangePinInput(l10n);
+      return;
+    }
+
     // A) 首次设置（或修改 PIN）第一步：暂存并进入确认
     if (!_isPinSet && !_isConfirmMode) {
       setState(() {
@@ -114,19 +155,25 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
       if (_inputBuffer == _tempPin) {
         HapticFeedback.mediumImpact();
         await RemoteGuardService.setPin(_inputBuffer);
-        // 设置成功后默认开启保护
-        await RemoteGuardService.setEnabled(true);
         RemoteGuardService.unlock();
         if (!mounted) return;
         setState(() {
           _isPinSet = true;
-          _guardEnabled = true;
           _isConfirmMode = false;
           _inputBuffer = '';
         });
-        if (widget.mode == RemoteGuardMode.gate) {
+        if (widget.mode == RemoteGuardMode.setupPinOnly) {
+          // 仅设置 PIN，由调用方决定启用哪个开关
           Navigator.pop(context, true);
+        } else if (widget.mode == RemoteGuardMode.gate) {
+          Navigator.pop(context, true);
+        } else if (widget.mode == RemoteGuardMode.appLock) {
+          RemoteGuardService.unlockApp();
+          widget.onUnlocked?.call();
         } else {
+          // entry 模式：设置成功后默认开启远程守卫保护
+          await RemoteGuardService.setEnabled(true);
+          if (!mounted) return;
           setState(() => _showManage = true);
         }
       } else {
@@ -145,6 +192,12 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
     final success = await RemoteGuardService.verifyPin(_inputBuffer);
     if (!mounted) return;
     if (success) {
+      if (widget.mode == RemoteGuardMode.appLock) {
+        HapticFeedback.mediumImpact();
+        RemoteGuardService.unlockApp();
+        widget.onUnlocked?.call();
+        return;
+      }
       HapticFeedback.mediumImpact();
       RemoteGuardService.unlock();
       setState(() => _inputBuffer = '');
@@ -160,6 +213,90 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
         _inputBuffer = '';
         _isError = true;
         _message = l10n.ui_remote_guard_wrong_pin;
+      });
+    }
+  }
+
+  /// 修改 PIN 流程的输入处理：
+  ///  步骤1 验证当前 PIN → 步骤2 输入新 PIN → 步骤3 二次确认后执行重加密
+  Future<void> _handleChangePinInput(L10n l10n) async {
+    // 步骤1：验证当前 PIN
+    if (!_oldPinVerified) {
+      final ok = await RemoteGuardService.verifyPin(_inputBuffer);
+      if (!mounted) return;
+      if (ok) {
+        HapticFeedback.mediumImpact();
+        setState(() {
+          _oldPin = _inputBuffer;
+          _oldPinVerified = true;
+          _isConfirmMode = false;
+          _inputBuffer = '';
+          _message = l10n.ui_remote_guard_set_pin; // 复用「设置 PIN 码」作为新 PIN 提示
+        });
+      } else {
+        HapticFeedback.heavyImpact();
+        _shakeController.forward(from: 0.0);
+        setState(() {
+          _inputBuffer = '';
+          _isError = true;
+          _message = l10n.ui_remote_guard_wrong_pin;
+        });
+      }
+      return;
+    }
+
+    // 步骤2：输入新 PIN（首次）
+    if (!_isConfirmMode) {
+      setState(() {
+        _tempPin = _inputBuffer;
+        _inputBuffer = '';
+        _isConfirmMode = true;
+        _message = l10n.ui_remote_guard_confirm_pin;
+      });
+      return;
+    }
+
+    // 步骤3：二次确认
+    if (_inputBuffer == _tempPin) {
+      await _doChangePin(_oldPin, _inputBuffer, l10n);
+    } else {
+      HapticFeedback.heavyImpact();
+      _shakeController.forward(from: 0.0);
+      setState(() {
+        _inputBuffer = '';
+        _isConfirmMode = false;
+        _tempPin = '';
+        _isError = true;
+        _message = l10n.ui_remote_guard_pin_mismatch;
+      });
+    }
+  }
+
+  /// 执行改密：用旧 PIN 还原、新 PIN 重新加锁全部已隐藏文件（委托 VaultService.changePassword）
+  Future<void> _doChangePin(String oldPin, String newPin, L10n l10n) async {
+    setState(() {
+      _changingProgress = true;
+      _inputBuffer = '';
+      _isError = false;
+      _message = l10n.ui_remote_guard_reencrypting;
+    });
+    final ok = await RemoteGuardService.changePin(oldPin, newPin);
+    if (!mounted) return;
+    if (ok) {
+      setState(() {
+        _changingProgress = false;
+        _message = l10n.ui_remote_guard_pin_changed;
+      });
+      // 稍作停顿让用户看到成功提示，再把新 PIN 返回给外层（VaultExplorerScreen）
+      // 由其用新密码重建保险箱页面，避免 widget.password 过期导致预览/还原失败
+      await Future.delayed(const Duration(milliseconds: 1200));
+      if (!mounted) return;
+      Navigator.pop(context, newPin);
+    } else {
+      setState(() {
+        _changingProgress = false;
+        _isError = true;
+        _message = l10n.ui_remote_guard_change_pin_failed;
       });
     }
   }
@@ -181,22 +318,19 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
     });
   }
 
-  /// 修改 PIN：重置为「未设置」流程（旧 PIN 已在进入面板前验证过）
+  /// 修改 PIN：进入「验证当前 PIN → 输入新 PIN 两次 → 重加密」流程
   void _startChangePin() {
     setState(() {
-      _isPinSet = false; // 复用「设置 + 确认」流程
+      _isChangingPin = true;
+      _oldPinVerified = false;
+      _oldPin = '';
       _isConfirmMode = false;
+      _tempPin = '';
       _inputBuffer = '';
       _isError = false;
       _showManage = false;
-      _message = L10n.of(context).ui_remote_guard_set_pin;
+      _message = L10n.of(context).ui_remote_guard_enter_current_pin;
     });
-  }
-
-  Future<void> _toggleEnabled(bool value) async {
-    await RemoteGuardService.setEnabled(value);
-    if (!mounted) return;
-    setState(() => _guardEnabled = value);
   }
 
   @override
@@ -211,13 +345,18 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
     final isDark = theme.brightness == Brightness.dark;
 
     if (_checking) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      return PopScope(
+        canPop: widget.mode != RemoteGuardMode.appLock,
+        child: const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        ),
       );
     }
 
-    return Scaffold(
-      body: Container(
+    return PopScope(
+      canPop: widget.mode != RemoteGuardMode.appLock,
+      child: Scaffold(
+        body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: isDark
@@ -232,21 +371,36 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
             children: [
               Align(
                 alignment: Alignment.topLeft,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 12.0, top: 12.0),
-                  child: IconButton(
-                    icon: const Icon(Broken.arrow_left, size: 26),
-                    onPressed: () => Navigator.pop(context, false),
-                  ),
-                ),
+                child: (widget.mode == RemoteGuardMode.appLock || _changingProgress)
+                    ? const SizedBox.shrink()
+                    : Padding(
+                        padding: const EdgeInsets.only(left: 12.0, top: 12.0),
+                        child: IconButton(
+                          icon: const Icon(Broken.arrow_left, size: 26),
+                          onPressed: _onBackPressed,
+                        ),
+                      ),
               ),
-              if (_showManage && widget.mode == RemoteGuardMode.entry)
+              if (_changingProgress)
+                Expanded(child: _buildChangingProgress(theme))
+              else if (_showManage && widget.mode == RemoteGuardMode.entry)
                 Expanded(child: _buildManagePanel(theme))
               else
-                Expanded(child: _buildPinPad(theme, isDark)),
+                Expanded(
+                  child: _buildPinPad(
+                    theme,
+                    isDark,
+                    titleOverride: widget.mode == RemoteGuardMode.appLock
+                        ? L10n.of(context).ui_app_lock
+                        : (_isChangingPin
+                            ? L10n.of(context).ui_remote_guard_change_pin
+                            : null),
+                  ),
+                ),
             ],
           ),
         ),
+      ),
       ),
     );
   }
@@ -294,34 +448,10 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
         const SizedBox(height: 24),
         _buildSettingCard(
           theme,
-          icon: Broken.lock,
-          title: l10n.ui_remote_guard,
-          subtitle: _guardEnabled
-              ? l10n.ui_remote_guard_enabled
-              : l10n.ui_remote_guard_disabled,
-          trailing: Switch(
-            value: _guardEnabled,
-            onChanged: _toggleEnabled,
-          ),
-        ),
-        const SizedBox(height: 12),
-        _buildSettingCard(
-          theme,
           icon: Broken.unlock,
           title: l10n.ui_remote_guard_change_pin,
           subtitle: l10n.ui_remote_guard_pin_hint,
           onTap: _startChangePin,
-        ),
-        const SizedBox(height: 12),
-        _buildSettingCard(
-          theme,
-          icon: Broken.lock_slash,
-          title: l10n.ui_remote_guard_lock_now,
-          subtitle: l10n.ui_remote_guard_lock_now_desc,
-          onTap: () {
-            RemoteGuardService.lock();
-            Navigator.pop(context);
-          },
         ),
       ],
     );
@@ -357,7 +487,7 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
 
   // ── PIN 键盘（参考 VaultLockScreen） ───────────────────────────────────
 
-  Widget _buildPinPad(ThemeData theme, bool isDark) {
+  Widget _buildPinPad(ThemeData theme, bool isDark, {String? titleOverride}) {
     return Column(
       children: [
         const Spacer(),
@@ -378,7 +508,7 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
         ),
         const SizedBox(height: 20),
         Text(
-          L10n.of(context).ui_remote_guard,
+          titleOverride ?? L10n.of(context).ui_remote_guard,
           style: theme.textTheme.headlineMedium?.copyWith(
             fontWeight: FontWeight.bold,
             letterSpacing: 0.5,
@@ -434,6 +564,58 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
         const Spacer(flex: 2),
         _buildKeypad(theme),
         const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  /// 返回按钮：修改 PIN 流程中（非重加密）取消；
+  /// changePin 模式下直接退出页面，entry 模式下回到管理面板，其余情况直接关闭页面
+  void _onBackPressed() {
+    if (_isChangingPin && !_changingProgress) {
+      if (widget.mode == RemoteGuardMode.changePin) {
+        Navigator.pop(context, false);
+        return;
+      }
+      setState(() {
+        _isChangingPin = false;
+        _oldPinVerified = false;
+        _oldPin = '';
+        _isConfirmMode = false;
+        _tempPin = '';
+        _inputBuffer = '';
+        _isError = false;
+        _showManage = true;
+        _message = L10n.of(context).ui_remote_guard_enter_pin;
+      });
+      return;
+    }
+    Navigator.pop(context, false);
+  }
+
+  /// 重加密进度提示
+  Widget _buildChangingProgress(ThemeData theme) {
+    return Column(
+      children: [
+        const Spacer(),
+        SizedBox(
+          width: 56,
+          height: 56,
+          child: CircularProgressIndicator(
+            strokeWidth: 4,
+            color: theme.colorScheme.primary,
+          ),
+        ),
+        const SizedBox(height: 24),
+        Text(
+          _message,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 14.5,
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.onSurface.withOpacity(0.7),
+          ),
+        ),
+        const Spacer(flex: 2),
       ],
     );
   }

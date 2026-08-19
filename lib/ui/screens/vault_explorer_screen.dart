@@ -8,6 +8,8 @@ import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/utils.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../services/vault_service.dart';
+import '../../services/remote_guard_service.dart';
+import 'remote_guard_screen.dart';
 import 'image_viewer_screen.dart';
 import 'video_player/video_player_screen.dart';
 import 'audio_player/audio_player_screen.dart';
@@ -32,11 +34,69 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
 
+  // 安全设置开关状态（远程守卫 / 启动应用保护，二者共享同一套 PIN）
+  bool _remoteGuardEnabled = false;
+  bool _appLockEnabled = false;
+
   @override
   void initState() {
     super.initState();
     _loadVaultData();
+    _loadSecurityState();
     _searchController.addListener(_onSearchChanged);
+  }
+
+  /// 加载远程守卫 / 启动应用保护开关状态
+  Future<void> _loadSecurityState() async {
+    final rg = await RemoteGuardService.isEnabled();
+    final al = await RemoteGuardService.isAppLockEnabled();
+    if (!mounted) return;
+    setState(() {
+      _remoteGuardEnabled = rg;
+      _appLockEnabled = al;
+    });
+  }
+
+  /// 开启任一开关前若尚未设置 PIN，则跳转设置 PIN 页；设置成功后启用对应功能
+  Future<void> _ensurePinThenEnable({
+    required Future<void> Function() enable,
+  }) async {
+    if (!await RemoteGuardService.isPinSet()) {
+      final ok = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const RemoteGuardScreen(mode: RemoteGuardMode.setupPinOnly),
+        ),
+      );
+      if (ok != true) {
+        await _loadSecurityState();
+        return;
+      }
+    }
+    await enable();
+    await _loadSecurityState();
+  }
+
+  Future<void> _onRemoteGuardChanged(bool value) async {
+    if (value) {
+      await _ensurePinThenEnable(
+        enable: () => RemoteGuardService.setEnabled(true),
+      );
+    } else {
+      await RemoteGuardService.setEnabled(false);
+      await _loadSecurityState();
+    }
+  }
+
+  Future<void> _onAppLockChanged(bool value) async {
+    if (value) {
+      await _ensurePinThenEnable(
+        enable: () => RemoteGuardService.setAppLockEnabled(true),
+      );
+    } else {
+      await RemoteGuardService.setAppLockEnabled(false);
+      await _loadSecurityState();
+    }
   }
 
   @override
@@ -572,6 +632,9 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
                 ),
               ),
 
+              // 安全设置：远程守卫 + 启动应用保护
+              _buildSecuritySettings(theme, isDark),
+
               // Storage Overview Card
               _buildStatsCard(theme, isDark),
 
@@ -637,14 +700,132 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     );
   }
 
+  Widget _buildSecuritySettings(ThemeData theme, bool isDark) {
+    final l10n = L10n.of(context);
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: const EdgeInsets.only(bottom: 6),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withOpacity(0.02) : Colors.black.withOpacity(0.01),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: theme.colorScheme.outline.withOpacity(0.06),
+          width: 1.2,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 2),
+            child: Text(
+              l10n.ui_security_settings,
+              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+          ),
+          _buildSwitchTile(
+            theme,
+            icon: Broken.shield_tick,
+            title: l10n.ui_remote_guard,
+            subtitle: l10n.ui_remote_guard_switch_desc,
+            value: _remoteGuardEnabled,
+            onChanged: _onRemoteGuardChanged,
+          ),
+          _buildSwitchTile(
+            theme,
+            icon: Broken.lock,
+            title: l10n.ui_app_lock,
+            subtitle: l10n.ui_app_lock_desc,
+            value: _appLockEnabled,
+            onChanged: _onAppLockChanged,
+          ),
+          _buildSecurityNavTile(
+            theme,
+            icon: Broken.unlock,
+            title: l10n.ui_remote_guard_change_pin,
+            subtitle: l10n.ui_change_vault_pin_desc,
+            onTap: () async {
+              if (!await RemoteGuardService.isPinSet()) return;
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const RemoteGuardScreen(mode: RemoteGuardMode.changePin),
+                ),
+              );
+              // 修改 PIN 成功：result 为新的 PIN 字符串，用新密码重建保险箱页面
+              // （当前 widget.password 已过期，否则预览/还原会失败）
+              if (result is String && result.isNotEmpty) {
+                if (mounted) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => VaultExplorerScreen(password: result),
+                    ),
+                  );
+                }
+                return;
+              }
+              await _loadSecurityState();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSecurityNavTile(
+    ThemeData theme, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon, size: 24, color: theme.colorScheme.primary),
+      title: Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+      subtitle: Text(
+        subtitle,
+        style: TextStyle(fontSize: 12.5, color: theme.colorScheme.onSurface.withOpacity(0.55)),
+      ),
+      trailing: Icon(
+        Icons.chevron_right_rounded,
+        color: theme.colorScheme.onSurface.withOpacity(0.4),
+      ),
+      onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+    );
+  }
+
+  Widget _buildSwitchTile(
+    ThemeData theme, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required Future<void> Function(bool) onChanged,
+  }) {
+    return ListTile(
+      leading: Icon(icon, size: 24, color: theme.colorScheme.primary),
+      title: Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+      subtitle: Text(
+        subtitle,
+        style: TextStyle(fontSize: 12.5, color: theme.colorScheme.onSurface.withOpacity(0.55)),
+      ),
+      trailing: Switch(
+        value: value,
+        onChanged: (v) => onChanged(v),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+    );
+  }
+
   Widget _buildStatsCard(ThemeData theme, bool isDark) {
-    final totalBytes = _calculateTotalBytes();
-    final fileCount = _records.length;
+    final totalBytes = _calculateTotalBytes();    final fileCount = _records.length;
     final totalBytesFormatted = FileUtils.formatBytes(totalBytes, 2);
 
     return Container(
-      margin: const EdgeInsets.all(16.0),
-      padding: const EdgeInsets.all(20.0),
+      margin: const EdgeInsets.fromLTRB(16.0, 10.0, 16.0, 8.0),
+      padding: const EdgeInsets.all(14.0),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isDark
@@ -653,7 +834,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: theme.colorScheme.primary.withOpacity(isDark ? 0.15 : 0.2),
           width: 1.5,
@@ -677,25 +858,25 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
               Text(
                 L10n.of(context).ui_secure_storage,
                 style: TextStyle(
-                  fontSize: 10.5,
+                  fontSize: 10,
                   fontWeight: FontWeight.bold,
                   color: theme.colorScheme.primary,
-                  letterSpacing: 1.2,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                totalBytesFormatted,
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.5,
+                  letterSpacing: 1.0,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
+                totalBytesFormatted,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
                 L10n.of(context).ui_protected_total_space,
                 style: TextStyle(
-                  fontSize: 12.5,
+                  fontSize: 11,
                   fontWeight: FontWeight.w500,
                   color: theme.colorScheme.onSurface.withOpacity(0.5),
                 ),
@@ -703,26 +884,26 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
             ],
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
               color: theme.colorScheme.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
               children: [
                 Text(
                   '$fileCount',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: 20,
                     fontWeight: FontWeight.w900,
                     color: theme.colorScheme.primary,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 1),
                 Text(
                   L10n.of(context).ui_hidden_files_count,
                   style: TextStyle(
-                    fontSize: 10,
+                    fontSize: 9,
                     fontWeight: FontWeight.bold,
                     color: theme.colorScheme.onSurface.withOpacity(0.6),
                     letterSpacing: 0.5,

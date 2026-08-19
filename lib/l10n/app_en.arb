@@ -4877,6 +4877,46 @@
   "@ui_remote_guard_lock_now_desc": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
+  "ui_security_settings": "Security",
+  "@ui_security_settings": {
+    "description": "ui\\screens\\vault_explorer_screen.dart"
+  },
+  "ui_remote_guard_switch_desc": "Saved remote servers are protected; PIN is required before access",
+  "@ui_remote_guard_switch_desc": {
+    "description": "ui\\screens\\vault_explorer_screen.dart"
+  },
+  "ui_app_lock": "App Launch Protection",
+  "@ui_app_lock": {
+    "description": "ui\\screens\\remote_guard_screen.dart"
+  },
+  "ui_app_lock_desc": "Require your PIN to unlock the app each time it launches",
+  "@ui_app_lock_desc": {
+    "description": "ui\\screens\\remote_guard_screen.dart"
+  },
+  "ui_app_lock_set_pin_first": "Set a 4-digit PIN before enabling",
+  "@ui_app_lock_set_pin_first": {
+    "description": "ui\\screens\\remote_guard_screen.dart"
+  },
+  "ui_remote_guard_enter_current_pin": "Enter current PIN",
+  "@ui_remote_guard_enter_current_pin": {
+    "description": "ui/screens/remote_guard_screen.dart"
+  },
+  "ui_remote_guard_reencrypting": "Re-encrypting hidden files…",
+  "@ui_remote_guard_reencrypting": {
+    "description": "ui/screens/remote_guard_screen.dart"
+  },
+  "ui_remote_guard_pin_changed": "PIN changed",
+  "@ui_remote_guard_pin_changed": {
+    "description": "ui/screens/remote_guard_screen.dart"
+  },
+  "ui_remote_guard_change_pin_failed": "Some files failed to re-encrypt, PIN unchanged",
+  "@ui_remote_guard_change_pin_failed": {
+    "description": "ui/screens/remote_guard_screen.dart"
+  },
+  "ui_change_vault_pin_desc": "Change the private vault PIN (re-encrypts all hidden files)",
+  "@ui_change_vault_pin_desc": {
+    "description": "ui/screens/vault_explorer_screen.dart"
+  },
   "ui_auto_backup": "Auto Backup",
   "@ui_auto_backup": {
     "description": "ui\\screens\\media_category_screen.dart"

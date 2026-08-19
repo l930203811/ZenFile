@@ -161,6 +161,18 @@ int _sumFileSizesInIsolate(List<String> paths) {
   return total;
 }
 
+/// 返回 paths 中「底层文件已不存在」的路径集合（isolate 内零主线程 IO）。
+/// 用于删除他处文件后，把分类页残留的空白图标条目移除。
+Set<String> _pruneNonExistentInIsolate(List<String> paths) {
+  final gone = <String>{};
+  for (final p in paths) {
+    try {
+      if (!File(p).existsSync()) gone.add(p);
+    } catch (_) {}
+  }
+  return gone;
+}
+
 /// 磁盘缓存恢复结果（isolate 内完成 decode + exists 过滤，主 isolate 零 IO）。
 class _RestoredCache {
   final List<String> documents;
@@ -670,7 +682,12 @@ class ThumbnailCache {
 }
 
 class MediaProvider extends ChangeNotifier {
+  /// 单例引用：供 file_manager_provider 等无 context 的地方在文件被删除后
+  /// 即时通知媒体列表裁剪（避免分类页残留空白图标）。
+  static MediaProvider? instance;
+
   MediaProvider() {
+    instance = this;
     final migratedVersion = PreferencesService.getCategoriesMigratedVersion();
     final savedOrder = PreferencesService.getCategoryOrder();
     if (savedOrder != null && savedOrder.isNotEmpty) {
@@ -1524,19 +1541,43 @@ class MediaProvider extends ChangeNotifier {
     _categorySizeCache['网络'] = 0;
     _categorySizeCache['保险箱'] = 0;
     // 缓存到偏好设置，扫描未完成时可回落显示。
-    PreferencesService.saveCategorySizes(Map<String, String>.from(
-      _categorySizeCache.map((k, v) => MapEntry(k, v.toString())),
-    ));
+    // 防回写 0：媒体类别列表非空但本次计算出 0（统计尚未就绪/缓存损坏）时，
+    // 沿用上次持久化的真实大小，避免「显示后再消失」并把 0 污染到持久层。
+    final sizesToSave = <String, String>{};
+    _categorySizeCache.forEach((k, v) {
+      int value = v;
+      if (value == 0 && _mediaListLen(k) > 0) {
+        final prev = PreferencesService.getCategorySize(k);
+        if (prev != null && prev > 0) value = prev;
+      }
+      sizesToSave[k] = value.toString();
+    });
+    PreferencesService.saveCategorySizes(sizesToSave);
+  }
+
+  /// 返回指定媒体分类的当前列表长度（用于判断「列表非空但大小为 0」是否为异常）。
+  int _mediaListLen(String category) {
+    switch (category) {
+      case '图片': return images.length;
+      case '视频': return videos.length;
+      case '截图': return screenshots.length;
+      case '音频': return _audios.length;
+      default: return 0;
+    }
   }
 
   /// 获取指定分类的文件总大小（字节）。优先使用扫描后的缓存，
   /// 未就绪时回落到偏好设置，均无数据返回 0。
   int getCategoryTotalSize(String category) {
-    if (_categorySizeCache.containsKey(category) && _isLoaded) {
-      return _categorySizeCache[category] ?? 0;
+    final live = _categorySizeCache[category];
+    if (_isLoaded && live != null && live > 0) {
+      return live;
     }
+    // 回落：缓存为 0（损坏或统计尚未就绪）时，优先用上次持久化的真实大小，
+    // 杜绝「启动显示大小 → 约 1 秒后归零 → 等待重载才恢复」的闪烁。
     final pref = PreferencesService.getCategorySize(category);
-    if (pref != null) return pref;
+    if (pref != null && pref > 0) return pref;
+    if (live != null) return live;
     return 0;
   }
 
@@ -2112,6 +2153,8 @@ class MediaProvider extends ChangeNotifier {
       // 再加载视频图片。
       await _loadAudios();
       await _loadImagesAndVideos().then((_) => _computeMediaCategorySizes());
+      // 回前台时清理他应用/浏览页删除后残留的空白图标条目（基于存在性裁剪）。
+      await pruneDeletedMedia();
       await _scanCustomCategories();
       await _scanRecentFiles();
       await _saveCache();
@@ -2571,10 +2614,10 @@ class MediaProvider extends ChangeNotifier {
           last['图片'] == cur['图片'] &&
           last['视频'] == cur['视频'] &&
           last['截图'] == cur['截图'] &&
-          _fsCategorySizes.containsKey('图片') &&
-          _fsCategorySizes.containsKey('视频') &&
-          _fsCategorySizes.containsKey('截图')) {
-        return; // 数量未变，沿用持久化大小
+          (_fsCategorySizes['图片'] ?? 0) > 0 &&
+          (_fsCategorySizes['视频'] ?? 0) > 0 &&
+          (_fsCategorySizes['截图'] ?? 0) > 0) {
+        return; // 数量未变且已缓存有效大小，沿用（避免重复全量 stat）
       }
       final imgPaths = _images.map((e) => e.path).toList();
       final vidPaths = _videos.map((e) => e.path).toList();
@@ -3480,5 +3523,58 @@ class MediaProvider extends ChangeNotifier {
 
     await _saveCache();
     notifyListeners();
+  }
+
+  // ===================== 删除后残留清理 =====================
+  // 别的应用或在浏览页删除文件后，媒体列表（_images/_videos/_screenshots/_audios）
+  // 仍持有已删除路径，分类页表现为「空白图标」。以下两法分别覆盖：
+  //  - pruneDeletedMediaPaths：已知被删路径的即时移除（浏览页/本应用内删除）。
+  //  - pruneDeletedMedia：基于存在性的全量裁剪（他应用删除、MediaStore 未即时更新）。
+
+  /// 按已知删除路径从媒体列表即时移除（无需存在性检查）。
+  /// [paths] 为被删除文件的文件系统路径；音频按 SongModel.data 匹配。
+  void pruneDeletedMediaPaths(List<String> paths) {
+    if (paths.isEmpty) return;
+    final set = paths.where((p) => p.isNotEmpty).toSet();
+    if (set.isEmpty) return;
+    final before =
+        _images.length + _videos.length + _screenshots.length + _audios.length;
+    _images.removeWhere((e) => set.contains(e.path));
+    _videos.removeWhere((e) => set.contains(e.path));
+    _screenshots.removeWhere((e) => set.contains(e.path));
+    _customImages.removeWhere((e) => set.contains(e.path));
+    _customVideos.removeWhere((e) => set.contains(e.path));
+    _customScreenshots.removeWhere((e) => set.contains(e.path));
+    _audios.removeWhere((e) => set.contains(e.data));
+    _audioFolders = _groupAudiosByParentDir(_audios);
+    final after =
+        _images.length + _videos.length + _screenshots.length + _audios.length;
+    if (before != after) {
+      _recalcCategorySizes();
+      PreferencesService.saveCategoryCount('图片', images.length);
+      PreferencesService.saveCategoryCount('视频', videos.length);
+      PreferencesService.saveCategoryCount('音频', _audios.length);
+      PreferencesService.saveCategoryCount('截图', screenshots.length);
+      notifyListeners();
+    }
+  }
+
+  /// 移除底层文件已不存在的媒体条目（他应用删除后残留的空白图标）。
+  /// 存在性检查在 isolate 内完成，避免主线程对海量媒体逐个 existsSync 阻塞 UI。
+  Future<void> pruneDeletedMedia() async {
+    try {
+      final all = <String>{
+        ..._images.map((e) => e.path),
+        ..._videos.map((e) => e.path),
+        ..._screenshots.map((e) => e.path),
+        ..._audios.map((e) => e.data),
+      };
+      if (all.isEmpty) return;
+      final gone = await compute(_pruneNonExistentInIsolate, all.toList());
+      if (gone.isEmpty) return;
+      pruneDeletedMediaPaths(gone.toList());
+    } catch (e) {
+      debugPrint('[ZenFile] pruneDeletedMedia error: $e');
+    }
   }
 }

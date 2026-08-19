@@ -26,6 +26,8 @@ import 'services/pin_service.dart';
 import 'services/recycle_bin_service.dart';
 import 'services/audio_background_handler.dart';
 import 'ui/screens/home_screen.dart';
+import 'ui/screens/remote_guard_screen.dart';
+import 'services/remote_guard_service.dart';
 
 final GlobalKey<_ZenFileAppState> appStateKey = GlobalKey<_ZenFileAppState>();
 
@@ -172,6 +174,10 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
   ThemeMode _themeMode = ThemeMode.system;
   Locale _locale = const Locale('en', 'US');
   bool? _hasPermission;
+  // 启动应用保护：开关状态 + 本次运行是否已解锁 + 是否已读取过开关
+  bool _appLockEnabled = false;
+  bool _appUnlocked = true;
+  bool _appLockChecked = false;
   bool _isPermanentlyDenied = false;
   bool _isMediaOnlyPermission = false;
   bool _sharingObserverSetup = false;
@@ -197,6 +203,7 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _initAppLock();
     final hideNav = PreferencesService.getHideNavigationBar();
     if (hideNav) {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
@@ -218,6 +225,24 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
     final savedLocale = PreferencesService.getAppLocale();
     _locale = _localeFromCode(savedLocale);
     _initializeApplication();
+  }
+
+  /// 读取「启动应用保护」开关，决定是否在冷启动时显示 PIN 闸门
+  Future<void> _initAppLock() async {
+    final enabled = await RemoteGuardService.isAppLockEnabled();
+    if (!mounted) return;
+    setState(() {
+      _appLockEnabled = enabled;
+      // 未启用保护，或本次会话已解锁（冷启动默认未解锁）→ 决定是否显示闸门
+      _appUnlocked = !enabled || RemoteGuardService.isAppUnlocked;
+      _appLockChecked = true;
+    });
+  }
+
+  /// 启动应用保护闸门验证通过后的回调：切换到主界面
+  void _onAppUnlocked() {
+    RemoteGuardService.unlockApp();
+    if (mounted) setState(() => _appUnlocked = true);
   }
 
   @override
@@ -909,11 +934,16 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
               },
               home: _isResolvingIntent
                   ? const _IntentLoadingScreen()
-                  : (_hasPermission == null
+                  : (_hasPermission == null || !_appLockChecked
                       ? const Scaffold()
                       : (_hasPermission == true
-                          ? HomeScreen(toggleTheme: _toggleTheme)
-                          : _StoragePermissionShield(
+                      ? (_appLockEnabled && !_appUnlocked
+                          ? RemoteGuardScreen(
+                              mode: RemoteGuardMode.appLock,
+                              onUnlocked: _onAppUnlocked,
+                            )
+                          : HomeScreen(toggleTheme: _toggleTheme))
+                      : _StoragePermissionShield(
                               onRequestPermission: _requestStoragePermission,
                               onOpenSettings: _openManageExternalStorageSettings,
                               isPermanentlyDenied: _isPermanentlyDenied,

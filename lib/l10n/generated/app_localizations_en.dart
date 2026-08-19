@@ -4998,6 +4998,40 @@ class L10nEn extends L10n {
       'After locking, you must enter your PIN to access remote servers.';
 
   @override
+  String get ui_security_settings => 'Security';
+
+  @override
+  String get ui_remote_guard_switch_desc =>
+      'Saved remote servers are protected; PIN is required before access';
+
+  @override
+  String get ui_app_lock => 'App Launch Protection';
+
+  @override
+  String get ui_app_lock_desc =>
+      'Require your PIN to unlock the app each time it launches';
+
+  @override
+  String get ui_app_lock_set_pin_first => 'Set a 4-digit PIN before enabling';
+
+  @override
+  String get ui_remote_guard_enter_current_pin => 'Enter current PIN';
+
+  @override
+  String get ui_remote_guard_reencrypting => 'Re-encrypting hidden files…';
+
+  @override
+  String get ui_remote_guard_pin_changed => 'PIN changed';
+
+  @override
+  String get ui_remote_guard_change_pin_failed =>
+      'Some files failed to re-encrypt, PIN unchanged';
+
+  @override
+  String get ui_change_vault_pin_desc =>
+      'Change the private vault PIN (re-encrypts all hidden files)';
+
+  @override
   String get ui_auto_backup => 'Auto Backup';
 
   @override

@@ -8980,6 +8980,66 @@ abstract class L10n {
   /// **'锁定后需要重新输入PIN码才能访问远程服务器'**
   String get ui_remote_guard_lock_now_desc;
 
+  /// ui\screens\vault_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'安全设置'**
+  String get ui_security_settings;
+
+  /// ui\screens\vault_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'保护已保存的远程服务器，访问前需验证PIN码'**
+  String get ui_remote_guard_switch_desc;
+
+  /// ui\screens\remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'启动应用保护'**
+  String get ui_app_lock;
+
+  /// ui\screens\remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'启动应用时需输入PIN码解锁才能进入'**
+  String get ui_app_lock_desc;
+
+  /// ui\screens\remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'启用前请先设置4位PIN码'**
+  String get ui_app_lock_set_pin_first;
+
+  /// ui/screens/remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入当前 PIN 码'**
+  String get ui_remote_guard_enter_current_pin;
+
+  /// ui/screens/remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在重新加密已隐藏文件…'**
+  String get ui_remote_guard_reencrypting;
+
+  /// ui/screens/remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'PIN 码已修改'**
+  String get ui_remote_guard_pin_changed;
+
+  /// ui/screens/remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'部分文件重新加密失败，PIN 码未更改'**
+  String get ui_remote_guard_change_pin_failed;
+
+  /// ui/screens/vault_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'修改私人保险箱 PIN（将重新加密所有已隐藏文件）'**
+  String get ui_change_vault_pin_desc;
+
   /// ui\screens\media_category_screen.dart
   ///
   /// In zh, this message translates to:

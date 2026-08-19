@@ -4775,6 +4775,36 @@ class L10nZh extends L10n {
   String get ui_remote_guard_lock_now_desc => '锁定后需要重新输入PIN码才能访问远程服务器';
 
   @override
+  String get ui_security_settings => '安全设置';
+
+  @override
+  String get ui_remote_guard_switch_desc => '保护已保存的远程服务器，访问前需验证PIN码';
+
+  @override
+  String get ui_app_lock => '启动应用保护';
+
+  @override
+  String get ui_app_lock_desc => '启动应用时需输入PIN码解锁才能进入';
+
+  @override
+  String get ui_app_lock_set_pin_first => '启用前请先设置4位PIN码';
+
+  @override
+  String get ui_remote_guard_enter_current_pin => '请输入当前 PIN 码';
+
+  @override
+  String get ui_remote_guard_reencrypting => '正在重新加密已隐藏文件…';
+
+  @override
+  String get ui_remote_guard_pin_changed => 'PIN 码已修改';
+
+  @override
+  String get ui_remote_guard_change_pin_failed => '部分文件重新加密失败，PIN 码未更改';
+
+  @override
+  String get ui_change_vault_pin_desc => '修改私人保险箱 PIN（将重新加密所有已隐藏文件）';
+
+  @override
   String get ui_auto_backup => '自动备份';
 
   @override
@@ -9580,6 +9610,36 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_remote_guard_lock_now_desc => '锁定后需要重新输入PIN码才能访问远程服务器';
+
+  @override
+  String get ui_security_settings => '安全設定';
+
+  @override
+  String get ui_remote_guard_switch_desc => '保護已儲存的遠端伺服器，存取前需驗證PIN碼';
+
+  @override
+  String get ui_app_lock => '啟動應用保護';
+
+  @override
+  String get ui_app_lock_desc => '啟動應用時需輸入PIN碼解鎖才能進入';
+
+  @override
+  String get ui_app_lock_set_pin_first => '啟用前請先設定4位PIN碼';
+
+  @override
+  String get ui_remote_guard_enter_current_pin => '請輸入目前 PIN 碼';
+
+  @override
+  String get ui_remote_guard_reencrypting => '正在重新加密已隱藏檔案…';
+
+  @override
+  String get ui_remote_guard_pin_changed => 'PIN 碼已修改';
+
+  @override
+  String get ui_remote_guard_change_pin_failed => '部分檔案重新加密失敗，PIN 碼未變更';
+
+  @override
+  String get ui_change_vault_pin_desc => '修改私人保險箱 PIN（將重新加密所有已隱藏檔案）';
 
   @override
   String get ui_auto_backup => '自动备份';

@@ -10,7 +10,6 @@ import '../screens/ftp_server_screen.dart';
 import '../../services/network_connections_service.dart';
 import '../screens/network_connection_wizard_screen.dart';
 import '../screens/network_category_screen.dart';
-import '../screens/remote_guard_screen.dart';
 import '../../models/network_connection_model.dart';
 import '../../services/remote_guard_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
@@ -196,22 +195,6 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                                 ),
                               );
                             }
-                          },
-                        ),
-                        _buildDrawerTile(
-                          context,
-                          icon: Broken.shield_tick,
-                          title: L10n.of(context).ui_remote_guard,
-                          onTap: () {
-                            Navigator.pop(context);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const RemoteGuardScreen(
-                                  mode: RemoteGuardMode.entry,
-                                ),
-                              ),
-                            );
                           },
                         ),
                       ],

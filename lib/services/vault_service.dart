@@ -80,6 +80,70 @@ class VaultService {
     return hash == checkHash;
   }
 
+  /// 修改保险箱密码（即 PIN）：先用旧密码校验，再对每条已隐藏记录用旧密码还原、
+  /// 用新密码重新加锁；全部成功后更新密码哈希。
+  ///
+  /// 关键：保险箱密码同时是文件加密密钥（见 [_deriveKey]），因此改密必须对全部已隐藏
+  /// 文件做「还原 + 重加锁」，否则文件无法再用新 PIN 打开。
+  ///
+  /// 返回 true 表示全部成功（密码哈希已更新）；false 表示存在失败（密码哈希未更新，
+  /// 避免已加密文件因哈希变更而永久无法解密）。失败时单条跳过，绝不破坏数据。
+  static Future<bool> changePassword(String oldPassword, String newPassword) async {
+    if (!await verifyPassword(oldPassword)) return false;
+
+    final records = await loadRecords();
+    if (records.isEmpty) {
+      // 没有已隐藏文件，直接更新密码哈希即可
+      await setPassword(newPassword);
+      return true;
+    }
+
+    bool allOk = true;
+    // 遍历快照，逐条处理；每条记录的 originalPath/isFolder/isInPlace 在处理前已确定
+    for (final rec in List<VaultFileRecord>.from(records)) {
+      try {
+        if (rec.isFolder) {
+          // 旧密码还原（还原目录结构到 rec.originalPath 所在的父目录）
+          await unlockFile(record: rec, password: oldPassword);
+          final dir = Directory(rec.originalPath);
+          if (await dir.exists()) {
+            await lockDirectory(
+              directory: dir,
+              password: newPassword,
+              inPlace: rec.isInPlace,
+            );
+          } else {
+            allOk = false;
+          }
+        } else {
+          // 旧密码还原（还原文件到 rec.originalPath），返回还原后的文件
+          final restored = await unlockFile(record: rec, password: oldPassword);
+          if (await restored.exists()) {
+            await lockFile(
+              file: restored,
+              password: newPassword,
+              inPlace: rec.isInPlace,
+              customName: rec.originalName,
+              customPath: rec.originalPath,
+              isFolder: false,
+            );
+          } else {
+            allOk = false;
+          }
+        }
+      } catch (_) {
+        // 单条失败：不破坏数据，跳过该条并标记
+        allOk = false;
+      }
+    }
+
+    // 仅当全部成功时才更新密码哈希，避免「哈希已变、但个别文件仍用旧密码加密」导致永久无法解密
+    if (allOk) {
+      await setPassword(newPassword);
+    }
+    return allOk;
+  }
+
   // Get Vault Directory
   static Future<Directory> getVaultDir() async {
     final docDir = await getApplicationDocumentsDirectory();

@@ -13,6 +13,7 @@ import '../models/file_item_model.dart';
 import '../models/folder_tab_model.dart';
 import '../models/file_filter_type.dart';
 import '../models/category_filter_type.dart';
+import 'media_provider.dart';
 import 'package:mime/mime.dart';
 import '../ui/screens/image_viewer_screen.dart';
 import '../ui/screens/video_player/video_player_screen.dart';
@@ -3116,6 +3117,8 @@ class FileManagerProvider extends ChangeNotifier {
 
   Future<void> deleteSelected() async {
     if (selectedPaths.isEmpty) return;
+    // 快照待删路径：finally 中会清空 selectedPaths，需提前保留用于媒体列表裁剪。
+    final deletedPaths = List<String>.from(selectedPaths);
 
     activeTab.isLoading = true;
     notifyListeners();
@@ -3164,6 +3167,10 @@ class FileManagerProvider extends ChangeNotifier {
     }
 
     await loadDirectory(currentPath, showLoading: false, clearCache: true);
+    // 本地多选删除后即时通知媒体列表裁剪，避免分类页残留空白图标。
+    if (!activeTab.isRemote && activeTab.remoteClient == null) {
+      MediaProvider.instance?.pruneDeletedMediaPaths(deletedPaths);
+    }
   }
 
   Future<void> pasteFile(BuildContext context, {bool clearAfterPaste = true}) async {
@@ -5098,6 +5105,8 @@ class FileManagerProvider extends ChangeNotifier {
         }
       }
       await loadDirectory(currentPath, showLoading: false, clearCache: true);
+      // 本地删除后即时通知媒体列表裁剪，避免分类页残留空白图标。
+      MediaProvider.instance?.pruneDeletedMediaPaths([path]);
     } catch (e) {
       debugPrint('Error deleting file: $e');
       rethrow;
