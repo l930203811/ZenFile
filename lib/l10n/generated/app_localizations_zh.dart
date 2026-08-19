@@ -4941,6 +4941,23 @@ class L10nZh extends L10n {
   @override
   String get changelog_v1131_fix_16 =>
       '新增 ui_app_open_location、ui_batch_backup、ui_batch_share、ui_batch_uninstall、ui_batch_uninstall_confirm 翻译键，10 种语言全部补齐';
+
+  @override
+  String get ui_batch_backup => '正在备份...';
+
+  @override
+  String get ui_batch_share => '分享';
+
+  @override
+  String get ui_batch_uninstall => '卸载';
+
+  @override
+  String ui_batch_uninstall_confirm(Object count) {
+    return '确定要卸载选中的 $count 个应用吗？';
+  }
+
+  @override
+  String get ui_app_open_location => '打开所在位置';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -9842,4 +9859,21 @@ class L10nZhTw extends L10nZh {
   @override
   String get changelog_v1131_fix_16 =>
       'Added ui_app_open_location, ui_batch_backup, ui_batch_share, ui_batch_uninstall, ui_batch_uninstall_confirm translation keys, all 10 languages covered';
+
+  @override
+  String get ui_batch_backup => '正在備份...';
+
+  @override
+  String get ui_batch_share => '分享';
+
+  @override
+  String get ui_batch_uninstall => '解除安裝';
+
+  @override
+  String ui_batch_uninstall_confirm(Object count) {
+    return '確定要解除安裝選中的 $count 個應用程式嗎？';
+  }
+
+  @override
+  String get ui_app_open_location => '開啟所在位置';
 }

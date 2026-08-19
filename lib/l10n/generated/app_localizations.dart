@@ -9279,6 +9279,36 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'新增 ui_app_open_location、ui_batch_backup、ui_batch_share、ui_batch_uninstall、ui_batch_uninstall_confirm 翻译键，10 种语言全部补齐'**
   String get changelog_v1131_fix_16;
+
+  /// ui_batch_backup label
+  ///
+  /// In zh, this message translates to:
+  /// **'正在备份...'**
+  String get ui_batch_backup;
+
+  /// ui_batch_share label
+  ///
+  /// In zh, this message translates to:
+  /// **'分享'**
+  String get ui_batch_share;
+
+  /// ui_batch_uninstall label
+  ///
+  /// In zh, this message translates to:
+  /// **'卸载'**
+  String get ui_batch_uninstall;
+
+  /// ui_batch_uninstall_confirm label
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要卸载选中的 {count} 个应用吗？'**
+  String ui_batch_uninstall_confirm(Object count);
+
+  /// ui_app_open_location label
+  ///
+  /// In zh, this message translates to:
+  /// **'打开所在位置'**
+  String get ui_app_open_location;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

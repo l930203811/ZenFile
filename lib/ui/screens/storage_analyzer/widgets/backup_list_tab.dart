@@ -5,6 +5,7 @@ import '../../../../models/app_info_model.dart';
 import '../../../../services/app_manager_service.dart';
 import '../../../../services/apk_installer_service.dart';
 import '../../../../core/utils.dart';
+import '../../../../providers/file_manager_provider.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class BackupListTab extends StatefulWidget {
@@ -189,6 +190,24 @@ class _BackupListTabState extends State<BackupListTab> {
                         splitSourceDirs: const [],
                       ),
                     );
+                  },
+                ),
+                _buildBottomSheetActionItem(
+                  theme: theme,
+                  icon: Broken.location,
+                  label: L10n.of(context).ui_app_open_location,
+                  color: theme.colorScheme.secondary,
+                  onTap: () {
+                    Navigator.pop(context);
+                    // 先弹回首页，再切到浏览 Tab 定位到 APK 所在目录
+                    // 若应用管理页面仍压在首页之上，Tab 切换在后台发生但不可见
+                    final provider = FileManagerProvider.instance;
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                    if (provider != null) {
+                      final dirPath = apkPath.substring(0, apkPath.lastIndexOf('/'));
+                      provider.setPendingBrowseNavigation(dirPath, [apkPath]);
+                      provider.setNavigateToBrowseTab(true);
+                    }
                   },
                 ),
                 _buildBottomSheetActionItem(

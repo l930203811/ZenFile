@@ -671,23 +671,51 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
   void _selectAll(MediaProvider provider) {
     final filePaths = <String>{};
     final assetIds = <String>{};
+    final isLocal = _scopeFilter == _ScopeFilter.local;
 
     if (widget.mediaType == MediaType.images) {
-      filePaths.addAll(provider.images.whereType<FileSystemEntity>().map((e) => e.path));
+      for (final e in provider.images) {
+        if (e is FileSystemEntity) {
+          final isRemote = e.path.startsWith('remote://');
+          if (isLocal ? !isRemote : isRemote) filePaths.add(e.path);
+        }
+      }
     } else if (widget.mediaType == MediaType.videos) {
-      filePaths.addAll(provider.videos.whereType<FileSystemEntity>().map((e) => e.path));
+      for (final e in provider.videos) {
+        if (e is FileSystemEntity) {
+          final isRemote = e.path.startsWith('remote://');
+          if (isLocal ? !isRemote : isRemote) filePaths.add(e.path);
+        }
+      }
     } else if (widget.mediaType == MediaType.screenshots) {
-      filePaths.addAll(provider.screenshots.whereType<FileSystemEntity>().map((e) => e.path));
+      for (final e in provider.screenshots) {
+        if (e is FileSystemEntity) {
+          final isRemote = e.path.startsWith('remote://');
+          if (isLocal ? !isRemote : isRemote) filePaths.add(e.path);
+        }
+      }
     } else if (widget.mediaType == MediaType.audios) {
       filePaths.addAll(provider.audios.map((e) => e.data));
     } else if (widget.mediaType == MediaType.archives) {
-      filePaths.addAll(provider.archives.map((e) => e.path));
+      for (final e in provider.archives) {
+        final isRemote = e.path.startsWith('remote://');
+        if (isLocal ? !isRemote : isRemote) filePaths.add(e.path);
+      }
     } else if (widget.mediaType == MediaType.downloads) {
-      filePaths.addAll(provider.downloads.map((e) => e.path));
+      for (final e in provider.downloads) {
+        final isRemote = e.path.startsWith('remote://');
+        if (isLocal ? !isRemote : isRemote) filePaths.add(e.path);
+      }
     } else if (widget.mediaType == MediaType.apks) {
-      filePaths.addAll(provider.apks.map((e) => e.path));
+      for (final e in provider.apks) {
+        final isRemote = e.path.startsWith('remote://');
+        if (isLocal ? !isRemote : isRemote) filePaths.add(e.path);
+      }
     } else if (widget.mediaType == MediaType.documents) {
-      filePaths.addAll(provider.documents.map((e) => e.path));
+      for (final e in provider.documents) {
+        final isRemote = e.path.startsWith('remote://');
+        if (isLocal ? !isRemote : isRemote) filePaths.add(e.path);
+      }
     }
 
     setState(() {
@@ -803,6 +831,13 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       }
       if (filePaths.isNotEmpty || assetIds.isNotEmpty) {
         await mediaProvider.deleteMediaItems(filePaths: filePaths, assetIds: assetIds);
+      }
+      // 本地删除后即时裁剪列表（无需全量重扫），远程删除后强制重扫自定义远程路径
+      if (filePaths.isNotEmpty) {
+        mediaProvider.pruneDeletedMediaPaths(filePaths);
+      }
+      if (remotePaths.isNotEmpty) {
+        await mediaProvider.loadMedia(forceRefresh: true);
       }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).count2(count))));
@@ -1316,7 +1351,12 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                       }
                     }
                     await mediaProvider.deleteMediaItems(filePaths: files, assetIds: assetId != null ? [assetId] : []);
+                    // 即时裁剪 provider 列表，使已删文件预览图立即从网格消失
+                    if (files.isNotEmpty) {
+                      mediaProvider.pruneDeletedMediaPaths(files);
+                    }
                     if (mounted) {
+                      setState(() {});
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).name(name))));
                     }
                   }
@@ -1681,15 +1721,17 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             ),
             if (_supportsRemoteSync)
               _buildBackupButton(theme),
-            // 检测新增文件并触发自动备份
+            // 检测新增文件并触发自动备份（进入类别且媒体加载完成后执行一次）
             if (_autoSyncEnabled)
               Consumer<MediaProvider>(
                 builder: (context, provider, child) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     if (!mounted) return;
+                    // 守卫：防止每次重建重复触发自动备份
+                    if (_autoSyncTriggered) return;
                     final currentCount = _collectCategoryFiles().length;
-                    if (_previousFileCount > 0 &&
-                        currentCount > _previousFileCount) {
+                    if (provider.isLoaded && currentCount > 0) {
+                      _autoSyncTriggered = true;
                       _previousFileCount = currentCount;
                       _maybeAutoSync();
                     }

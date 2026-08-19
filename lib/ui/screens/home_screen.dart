@@ -252,7 +252,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                 // 地址栏（面包屑）或分类网格的交互不触发页面左右滑动切换：
                 // 起点落在面包屑/类别图标上时，内层 Listener 已先置位对应标志，
                 // 此处跳过本次手势追踪（仅登记指针以便 up 时正常清理）。
-                if (fileProvider.breadcrumbInteracting || fileProvider.categoryReorderInteracting) {
+                if (fileProvider.breadcrumbInteracting || fileProvider.categoryReorderInteracting || fileProvider.tabBarInteracting) {
                   _activePointers[event.pointer] = event.position;
                   return;
                 }

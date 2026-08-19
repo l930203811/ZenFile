@@ -5015,4 +5015,21 @@ class L10nJa extends L10n {
   @override
   String get changelog_v1131_fix_16 =>
       'Added ui_app_open_location, ui_batch_backup, ui_batch_share, ui_batch_uninstall, ui_batch_uninstall_confirm translation keys, all 10 languages covered';
+
+  @override
+  String get ui_batch_backup => 'バックアップ中...';
+
+  @override
+  String get ui_batch_share => '共有';
+
+  @override
+  String get ui_batch_uninstall => 'アンインストール';
+
+  @override
+  String ui_batch_uninstall_confirm(Object count) {
+    return '選択した $count 個のアプリをアンインストールしますか？';
+  }
+
+  @override
+  String get ui_app_open_location => '場所を開く';
 }

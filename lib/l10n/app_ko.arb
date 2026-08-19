@@ -5019,5 +5019,25 @@
   "changelog_v1131_fix_16": "Added ui_app_open_location, ui_batch_backup, ui_batch_share, ui_batch_uninstall, ui_batch_uninstall_confirm translation keys, all 10 languages covered",
   "@changelog_v1131_fix_16": {
     "description": "v1.1.31 changelog item"
+  },
+  "ui_batch_backup": "백업 중...",
+  "@ui_batch_backup": {
+    "description": "ui_batch_backup label"
+  },
+  "ui_batch_share": "공유",
+  "@ui_batch_share": {
+    "description": "ui_batch_share label"
+  },
+  "ui_batch_uninstall": "제거",
+  "@ui_batch_uninstall": {
+    "description": "ui_batch_uninstall label"
+  },
+  "ui_batch_uninstall_confirm": "선택한 {count}개의 앱을 제거하시겠습니까?",
+  "@ui_batch_uninstall_confirm": {
+    "description": "ui_batch_uninstall_confirm label"
+  },
+  "ui_app_open_location": "위치에서 열기",
+  "@ui_app_open_location": {
+    "description": "ui_app_open_location label"
   }
 }

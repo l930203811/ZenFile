@@ -5176,4 +5176,21 @@ class L10nEn extends L10n {
   @override
   String get changelog_v1131_fix_16 =>
       'Added ui_app_open_location, ui_batch_backup, ui_batch_share, ui_batch_uninstall, ui_batch_uninstall_confirm translation keys, all 10 languages covered';
+
+  @override
+  String get ui_batch_backup => 'Backing up...';
+
+  @override
+  String get ui_batch_share => 'Share';
+
+  @override
+  String get ui_batch_uninstall => 'Uninstall';
+
+  @override
+  String ui_batch_uninstall_confirm(Object count) {
+    return 'Are you sure you want to uninstall the selected $count apps?';
+  }
+
+  @override
+  String get ui_app_open_location => 'Open in Location';
 }

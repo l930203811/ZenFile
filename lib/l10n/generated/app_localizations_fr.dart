@@ -5230,4 +5230,21 @@ class L10nFr extends L10n {
   @override
   String get changelog_v1131_fix_16 =>
       'Added ui_app_open_location, ui_batch_backup, ui_batch_share, ui_batch_uninstall, ui_batch_uninstall_confirm translation keys, all 10 languages covered';
+
+  @override
+  String get ui_batch_backup => 'Sauvegarde...';
+
+  @override
+  String get ui_batch_share => 'Partager';
+
+  @override
+  String get ui_batch_uninstall => 'Désinstaller';
+
+  @override
+  String ui_batch_uninstall_confirm(Object count) {
+    return 'Voulez-vous vraiment désinstaller les $count applications sélectionnées ?';
+  }
+
+  @override
+  String get ui_app_open_location => 'Ouvrir l\'emplacement';
 }

@@ -5013,4 +5013,21 @@ class L10nKo extends L10n {
   @override
   String get changelog_v1131_fix_16 =>
       'Added ui_app_open_location, ui_batch_backup, ui_batch_share, ui_batch_uninstall, ui_batch_uninstall_confirm translation keys, all 10 languages covered';
+
+  @override
+  String get ui_batch_backup => '백업 중...';
+
+  @override
+  String get ui_batch_share => '공유';
+
+  @override
+  String get ui_batch_uninstall => '제거';
+
+  @override
+  String ui_batch_uninstall_confirm(Object count) {
+    return '선택한 $count개의 앱을 제거하시겠습니까?';
+  }
+
+  @override
+  String get ui_app_open_location => '위치에서 열기';
 }

@@ -26,7 +26,11 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
       child: Row(
         children: [
           Expanded(
-            child: ListView.builder(
+            child: Listener(
+              onPointerDown: (_) => provider.setTabBarInteracting(true),
+              onPointerUp: (_) => provider.setTabBarInteracting(false),
+              onPointerCancel: (_) => provider.setTabBarInteracting(false),
+              child: ListView.builder(
               scrollDirection: Axis.horizontal,
               controller: scrollController,
               physics: const BouncingScrollPhysics(),
@@ -107,6 +111,7 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
                   ),
                 );
               },
+            ),
             ),
           ),
           // 新建标签页按钮：点击直接在当前根目录新建标签页

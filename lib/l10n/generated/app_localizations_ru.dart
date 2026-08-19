@@ -5210,4 +5210,21 @@ class L10nRu extends L10n {
   @override
   String get changelog_v1131_fix_16 =>
       'Added ui_app_open_location, ui_batch_backup, ui_batch_share, ui_batch_uninstall, ui_batch_uninstall_confirm translation keys, all 10 languages covered';
+
+  @override
+  String get ui_batch_backup => 'Резервное копирование...';
+
+  @override
+  String get ui_batch_share => 'Поделиться';
+
+  @override
+  String get ui_batch_uninstall => 'Удалить';
+
+  @override
+  String ui_batch_uninstall_confirm(Object count) {
+    return 'Удалить выбранные $count приложений?';
+  }
+
+  @override
+  String get ui_app_open_location => 'Открыть в папке';
 }

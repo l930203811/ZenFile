@@ -27,6 +27,7 @@ class AppBatchActionBar extends StatelessWidget {
   Future<void> _handleBatchUninstall(BuildContext context) async {
     if (selectedPackages.isEmpty) return;
 
+    final l10n = L10n.of(context);
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) {
@@ -34,12 +35,12 @@ class AppBatchActionBar extends StatelessWidget {
         return AlertDialog(
           backgroundColor: theme.colorScheme.surface,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text(L10n.of(context).msgeb3d7d70, style: TextStyle(fontWeight: FontWeight.bold)),
-          content: Text('确定要卸载选中的 ${selectedPackages.length} 个应用吗？'),
+          title: Text(l10n.msgeb3d7d70, style: TextStyle(fontWeight: FontWeight.bold)),
+          content: Text(l10n.ui_batch_uninstall_confirm(selectedPackages.length)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('取消'),
+              child: Text(l10n.ui_cancel),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -48,7 +49,7 @@ class AppBatchActionBar extends StatelessWidget {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('卸载', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(l10n.ui_batch_uninstall, style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         );
@@ -57,6 +58,8 @@ class AppBatchActionBar extends StatelessWidget {
 
     if (confirm == true) {
       final List<String> toUninstall = selectedPackages.toList();
+      // 在清除选择前捕获 navigator（rootNavigator 保证进度框可被关闭）
+      final navigator = Navigator.of(context, rootNavigator: true);
       onClearSelection();
 
       for (final package in toUninstall) {
@@ -71,17 +74,23 @@ class AppBatchActionBar extends StatelessWidget {
     if (selectedPackages.isEmpty) return;
 
     final appsToBackup = _selectedApps;
+    // 在清除选择前捕获引用，避免后续 context 失效
+    final l10n = L10n.of(context);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final rootContext = Navigator.of(context, rootNavigator: true).context;
     onClearSelection();
 
+    // 使用 rootNavigator 保证进度对话框始终可被关闭
+    // 避免「onClearSelection 触发 setState 后 context 脱离 navigator 树，Navigator.pop 失效」
     showDialog(
-      context: context,
+      context: rootContext,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         content: Row(
           children: [
             const CircularProgressIndicator(),
             const SizedBox(width: 20),
-            Expanded(child: Text(L10n.of(context).ui_batch_backup_progress)),
+            Expanded(child: Text(l10n.ui_batch_backup_progress)),
           ],
         ),
       ),
@@ -89,18 +98,18 @@ class AppBatchActionBar extends StatelessWidget {
 
     try {
       await AppManagerService.batchBackupApps(appsToBackup, (current, total) {});
-      if (context.mounted) {
-        Navigator.pop(context); // Close loading dialog
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(L10n.of(context).ui_batch_backup_success(appsToBackup.length))),
+      if (rootContext.mounted) {
+        Navigator.of(rootContext, rootNavigator: true).pop(); // 关闭进度框
+        scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text(l10n.ui_batch_backup_success(appsToBackup.length))),
         );
         onRefreshNeeded();
       }
     } catch (e) {
-      if (context.mounted) {
-        Navigator.pop(context); // Close loading dialog
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(L10n.of(context).ui_batch_backup_failed('$e'))),
+      if (rootContext.mounted) {
+        Navigator.of(rootContext, rootNavigator: true).pop(); // 关闭进度框
+        scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text(l10n.ui_batch_backup_failed('$e'))),
         );
       }
     }
@@ -116,6 +125,7 @@ class AppBatchActionBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = L10n.of(context);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -138,7 +148,7 @@ class AppBatchActionBar extends StatelessWidget {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
               onPressed: onClearSelection,
-              child: const Text('清除', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(l10n.ui_cancel, style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
             const SizedBox(width: 8),
             Expanded(
@@ -148,7 +158,7 @@ class AppBatchActionBar extends StatelessWidget {
                   Expanded(
                     child: ElevatedButton.icon(
                       icon: const Icon(Broken.document_download, size: 18),
-                      label: const Text('备份', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                      label: Text(l10n.ui_batch_backup, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange.withOpacity(0.15),
                         foregroundColor: Colors.orange,
@@ -164,7 +174,7 @@ class AppBatchActionBar extends StatelessWidget {
                   Expanded(
                     child: ElevatedButton.icon(
                       icon: const Icon(Broken.export_1, size: 18),
-                      label: const Text('分享', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                      label: Text(l10n.ui_batch_share, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.teal.withOpacity(0.15),
                         foregroundColor: Colors.teal,
@@ -181,7 +191,7 @@ class AppBatchActionBar extends StatelessWidget {
                     Expanded(
                       child: ElevatedButton.icon(
                         icon: const Icon(Broken.trash, size: 18),
-                        label: const Text('卸载', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                        label: Text(l10n.ui_batch_uninstall, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red.withOpacity(0.15),
                           foregroundColor: Colors.red,

@@ -5300,5 +5300,25 @@
   "changelog_v1131_fix_16": "新增 ui_app_open_location、ui_batch_backup、ui_batch_share、ui_batch_uninstall、ui_batch_uninstall_confirm 翻译键，10 种语言全部补齐",
   "@changelog_v1131_fix_16": {
     "description": "v1.1.31 changelog item"
+  },
+  "ui_batch_backup": "正在备份...",
+  "@ui_batch_backup": {
+    "description": "ui_batch_backup label"
+  },
+  "ui_batch_share": "分享",
+  "@ui_batch_share": {
+    "description": "ui_batch_share label"
+  },
+  "ui_batch_uninstall": "卸载",
+  "@ui_batch_uninstall": {
+    "description": "ui_batch_uninstall label"
+  },
+  "ui_batch_uninstall_confirm": "确定要卸载选中的 {count} 个应用吗？",
+  "@ui_batch_uninstall_confirm": {
+    "description": "ui_batch_uninstall_confirm label"
+  },
+  "ui_app_open_location": "打开所在位置",
+  "@ui_app_open_location": {
+    "description": "ui_app_open_location label"
   }
 }

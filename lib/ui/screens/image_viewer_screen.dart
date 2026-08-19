@@ -357,10 +357,17 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
   }
 
   void _showInLocation() {
-    final file = _getCurrentFile();
-    if (file == null) return;
-    context.read<FileManagerProvider>().showFileInLocation(file.path);
-    Navigator.pop(context);
+    final currentPath = _pathAtIndex(_currentIndex);
+    if (currentPath == null) return;
+    final fmProvider = context.read<FileManagerProvider>();
+    // 关闭 bottom sheet 与图片浏览页 → 切到浏览 Tab → 再执行定位
+    // 使用 popUntil(isFirst) 一次性弹回首页，与全局搜索/最近文件跳转一致
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    if (currentPath.startsWith('remote://')) {
+      fmProvider.showRemoteFileInLocation(currentPath);
+    } else {
+      fmProvider.showFileInLocation(currentPath);
+    }
   }
 
   Future<void> _renameFile() async {
@@ -455,6 +462,10 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     if (confirmed != true) return;
 
     try {
+      // 判断是否为远程路径
+      final currentPath = _pathAtIndex(_currentIndex);
+      final isRemote = currentPath != null && currentPath.startsWith('remote://');
+
       if (asset != null) {
         // 相册图片通过 PhotoManager 删除
         await PhotoManager.editor.deleteWithIds([asset.id]);
@@ -463,12 +474,26 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
       }
       if (!mounted) return;
 
+      // 本地删除：即时裁剪 provider 列表（无需全量重扫）
+      if (!isRemote && currentPath != null) {
+        MediaProvider.instance?.pruneDeletedMediaPaths([currentPath]);
+      }
+      // 远程删除：同步删除远程目录原文件 + 裁剪 provider 列表
+      if (isRemote && currentPath != null) {
+        await context.read<FileManagerProvider>().deleteRemotePath(currentPath);
+        MediaProvider.instance?.pruneDeletedMediaPaths([currentPath]);
+      }
+
       // 从列表中移除并导航
       final total = widget.siblingItems?.length ??
           widget.siblingAssets?.length ??
           _imageList.length;
       if (_imageList.isNotEmpty && _currentIndex < _imageList.length) {
         _imageList.removeAt(_currentIndex);
+      }
+      // 同步更新 siblingItems，使分类页返回后列表不再残留已删文件
+      if (widget.siblingItems != null && _currentIndex < widget.siblingItems!.length) {
+        widget.siblingItems!.removeAt(_currentIndex);
       }
       if (total <= 1) {
         Navigator.pop(context);

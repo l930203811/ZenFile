@@ -5140,4 +5140,21 @@ class L10nAr extends L10n {
   @override
   String get changelog_v1131_fix_16 =>
       'Added ui_app_open_location, ui_batch_backup, ui_batch_share, ui_batch_uninstall, ui_batch_uninstall_confirm translation keys, all 10 languages covered';
+
+  @override
+  String get ui_batch_backup => 'جاري النسخ...';
+
+  @override
+  String get ui_batch_share => 'مشاركة';
+
+  @override
+  String get ui_batch_uninstall => 'إلغاء التثبيت';
+
+  @override
+  String ui_batch_uninstall_confirm(Object count) {
+    return 'هل تريد إلغاء تثبيت $count تطبيقات المحددة؟';
+  }
+
+  @override
+  String get ui_app_open_location => 'فتح في الموقع';
 }

@@ -78,6 +78,10 @@ class _FSScanParams {
   /// PhotoManager/on_audio_query 提供），isolate 只扫文档/压缩包/下载/安装包。
   /// 避免对大存储设备全盘递归扫描造成 I/O 饱和导致整机卡顿（红米K60Pro反馈）。
   final bool skipMediaCategories;
+  /// true 时仅收集 APK（安装包），不收集文档/压缩包/下载。
+  /// 用于 _scanNonMediaInBackground 在 MediaStore 成功后，对 APK 单独补扫
+  ///（MediaStore.Files 不索引 APK）。
+  final bool onlyApk;
   /// 目录缓存：{dirPath: {'m': mtimeMillis, 'f': [文件路径], 'd': [子目录], 's': {类别: 字节}}}
   /// 仅用于枚举失败时兜底沿用已知文件清单与子目录（不再以 mtime 跳过枚举，
   /// 避免部分 ROM 不更新目录 mtime 导致新文件永不出现）。非媒体类别目录树
@@ -93,6 +97,7 @@ class _FSScanParams {
     required this.apkExtensions,
     required this.downloadDirs,
     this.skipMediaCategories = false,
+    this.onlyApk = false,
     this.dirCache = const {},
   });
 }
@@ -364,9 +369,34 @@ Future<_FSScanResult> _scanMediaFileSystemIsolate(_FSScanParams params) async {
               dirAddSize('下载', entity.lengthSync());
             } catch (_) {}
           }
-          if (params.skipMediaCategories) {
+          if (params.onlyApk) {
+            // 仅收集 APK（安装包），不收集其他非媒体类别
+            if (params.apkExtensions.contains(ext)) {
+              if (seenNonMedia.add(entity.path)) {
+                apks.add(entity.path);
+                try {
+                  dirAddSize('安装包', entity.lengthSync());
+                } catch (_) {}
+              }
+            }
+          } else if (params.skipMediaCategories) {
             // 媒体类别（图/视/截/音）由系统级索引提供，此处跳过，
             // 只处理下方文档/压缩包/安装包分支。
+            if (params.docExtensions.contains(ext)) {
+              if (seenNonMedia.add(entity.path)) {
+                documents.add(entity.path);
+                try {
+                  dirAddSize('文档', entity.lengthSync());
+                } catch (_) {}
+              }
+            } else if (params.archiveExtensions.contains(ext)) {
+              if (seenNonMedia.add(entity.path)) {
+                archives.add(entity.path);
+                try {
+                  dirAddSize('压缩包', entity.lengthSync());
+                } catch (_) {}
+              }
+            }
           } else if (params.videoExtensions.contains(ext)) {
             // 过滤掉极小视频片段（如 .ts 流媒体碎片），避免污染「视频」分类
             int size;
@@ -1324,9 +1354,11 @@ class MediaProvider extends ChangeNotifier {
 
   /// getter 缓存戳：源列表身份 + 排序方式 + 排除路径列表身份。
   /// 列表被重新赋值（加载/删除/刷新）或排序/排除变化 → 戳变化 → 重算。
+  /// 包含列表长度：原地 removeWhere 修改列表时对象引用不变，
+  /// 但长度会变 → 强制 getter 重新计算，覆盖删除后残留场景。
   int _stampFor(List a, List b, List excluded) =>
       Object.hash(identityHashCode(a), identityHashCode(b),
-          identityHashCode(excluded), _sortOrder.index);
+          identityHashCode(excluded), _sortOrder.index, a.length, b.length);
   List<CustomShortcutModel> get customShortcuts => _customShortcuts;
   List<String> get categoryOrder => _categoryOrder;
   List<String> get activeCategories => _activeCategories;
@@ -1556,12 +1588,18 @@ class MediaProvider extends ChangeNotifier {
   }
 
   /// 返回指定媒体分类的当前列表长度（用于判断「列表非空但大小为 0」是否为异常）。
+  /// 扩展覆盖非媒体类别（文档/压缩包/安装包/下载），使 _recalcCategorySizes 防 0 回写
+  /// 对这些类别同样生效，避免启动时短暂显示 0。
   int _mediaListLen(String category) {
     switch (category) {
       case '图片': return images.length;
       case '视频': return videos.length;
       case '截图': return screenshots.length;
       case '音频': return _audios.length;
+      case '文档': return _documents.length;
+      case '压缩包': return _archives.length;
+      case '安装包': return _apks.length;
+      case '下载': return _downloads.length;
       default: return 0;
     }
   }
@@ -1913,11 +1951,11 @@ class MediaProvider extends ChangeNotifier {
       _nonMediaDates.clear();
       _nonMediaSizes.clear();
 
-      // 1) 文档/压缩包/安装包：按扩展名一次性查询（取并集避免多次往返）。
+      // 1) 文档/压缩包：按扩展名一次性查询（取并集避免多次往返）。
+      // 注意：APK 不通过 MediaStore 查询（系统不索引 APK），APK 由 onlyApk 补扫。
       final unionExts = <String>{
         ..._docExtensions,
         ..._archiveExtensions,
-        ..._apkExtensions,
       }.toList();
       final files = await channel.invokeListMethod<Map<dynamic, dynamic>>(
         'queryFiles',
@@ -1927,18 +1965,17 @@ class MediaProvider extends ChangeNotifier {
 
       final docs = <FileSystemEntity>[];
       final arch = <FileSystemEntity>[];
-      final apks = <FileSystemEntity>[];
+      final docs = <FileSystemEntity>[];
+      final arch = <FileSystemEntity>[];
       var docSize = 0;
       var archSize = 0;
-      var apkSize = 0;
       for (final m in files) {
-        final path = m['path'] as String?;
+        final path = m["path"] as String?;
         if (path == null) continue;
-        final size = (m['size'] as int? ?? 0);
-        final modified = (m['modified'] as int? ?? 0);
+        final size = (m["size"] as int? ?? 0);
+        final modified = (m["modified"] as int? ?? 0);
         final ext = p.extension(path).toLowerCase();
         final f = File(path);
-        // 缓存系统索引已提供的修改时间(ms)与字节数，供分类页零 I/O 读取。
         _nonMediaDates[path] = modified;
         _nonMediaSizes[path] = size;
         if (_docExtensions.contains(ext)) {
@@ -1947,21 +1984,14 @@ class MediaProvider extends ChangeNotifier {
         } else if (_archiveExtensions.contains(ext)) {
           arch.add(f);
           archSize += size;
-        } else if (_apkExtensions.contains(ext)) {
-          apks.add(f);
-          apkSize += size;
         }
       }
-      // MediaStore 未返回任何非媒体文件：可能索引/权限异常，回退递归扫描。
-      if (docs.isEmpty && arch.isEmpty && apks.isEmpty) return false;
+      if (docs.isEmpty && arch.isEmpty) return false;
 
       _documents = docs;
       _archives = arch;
-      _apks = apks;
-      // 直接写入累计字节数，避免后续 _recalcCategorySizes 对海量文件重 stat。
-      _fsCategorySizes['文档'] = docSize;
-      _fsCategorySizes['压缩包'] = archSize;
-      _fsCategorySizes['安装包'] = apkSize;
+      _fsCategorySizes["文档"] = docSize;
+      _fsCategorySizes["压缩包"] = archSize;
 
       // 2) 下载：路径含 /download/（覆盖 Download/Downloads 及 OEM 变体）。
       final dl = await channel.invokeListMethod<Map<dynamic, dynamic>>(
@@ -2015,10 +2045,14 @@ class MediaProvider extends ChangeNotifier {
       // 仅当 MediaStore 不可用/无数据时回退到递归扫描（不卡顿场景下等价兜底）。
       final viaMediaStore = await _loadNonMediaViaMediaStore();
       if (!viaMediaStore) {
-        // MediaStore 索引不可用/无数据：回退 dart:io 递归扫描。
         await _runFileSystemScanInIsolate(force: force).catchError((Object e) {
           debugPrint('[ZenFile] background non-media scan failed, fallback: $e');
           return _loadMediaFromFileSystem();
+        });
+      } else {
+        // MediaStore 不索引 APK，APK 单独走 onlyApk 补扫
+        await _runFileSystemScanInIsolate(force: force, onlyApk: true).catchError((Object e) {
+          debugPrint('[ZenFile] onlyApk supplementary scan failed: $e');
         });
       }
       await _scanCustomCategories();
@@ -2183,7 +2217,7 @@ class MediaProvider extends ChangeNotifier {
   /// 与 NFile 1.1.22 一致——递归扫描媒体会在大存储设备上造成 I/O 饱和、
   /// 与系统媒体扫描争抢存储导致整机卡顿，红米K60Pro反馈），
   /// isolate 仅扫描无系统索引的类别：文档/压缩包/下载/安装包。
-  Future<void> _runFileSystemScanInIsolate({bool force = false}) async {
+  Future<void> _runFileSystemScanInIsolate({bool force = false, bool onlyApk = false}) async {
     final searchDirs = await _getUserSearchDirs();
     debugPrint('[ZenFile] non-media scan start: rootDirs=$searchDirs '
         'storageAccessible=$_storageAccessible');
@@ -2209,7 +2243,8 @@ class MediaProvider extends ChangeNotifier {
         '/storage/emulated/0/Download',
         '/storage/emulated/0/Downloads',
       ],
-      skipMediaCategories: true,
+      skipMediaCategories: !onlyApk,
+      onlyApk: onlyApk,
       dirCache: _dirCache,
     );
     final result = await compute(_scanMediaFileSystemIsolate, params);
@@ -3533,12 +3568,19 @@ class MediaProvider extends ChangeNotifier {
 
   /// 按已知删除路径从媒体列表即时移除（无需存在性检查）。
   /// [paths] 为被删除文件的文件系统路径；音频按 SongModel.data 匹配。
+  /// 同时处理非媒体四类（文档/压缩包/下载/安装包），防止浏览页删除后分类页残留空白图标。
   void pruneDeletedMediaPaths(List<String> paths) {
     if (paths.isEmpty) return;
     final set = paths.where((p) => p.isNotEmpty).toSet();
     if (set.isEmpty) return;
-    final before =
-        _images.length + _videos.length + _screenshots.length + _audios.length;
+    final before = _images.length +
+        _videos.length +
+        _screenshots.length +
+        _audios.length +
+        _documents.length +
+        _archives.length +
+        _downloads.length +
+        _apks.length;
     _images.removeWhere((e) => set.contains(e.path));
     _videos.removeWhere((e) => set.contains(e.path));
     _screenshots.removeWhere((e) => set.contains(e.path));
@@ -3547,20 +3589,35 @@ class MediaProvider extends ChangeNotifier {
     _customScreenshots.removeWhere((e) => set.contains(e.path));
     _audios.removeWhere((e) => set.contains(e.data));
     _audioFolders = _groupAudiosByParentDir(_audios);
-    final after =
-        _images.length + _videos.length + _screenshots.length + _audios.length;
+    _documents.removeWhere((e) => set.contains(e.path));
+    _archives.removeWhere((e) => set.contains(e.path));
+    _downloads.removeWhere((e) => set.contains(e.path));
+    _apks.removeWhere((e) => set.contains(e.path));
+    final after = _images.length +
+        _videos.length +
+        _screenshots.length +
+        _audios.length +
+        _documents.length +
+        _archives.length +
+        _downloads.length +
+        _apks.length;
     if (before != after) {
       _recalcCategorySizes();
       PreferencesService.saveCategoryCount('图片', images.length);
       PreferencesService.saveCategoryCount('视频', videos.length);
       PreferencesService.saveCategoryCount('音频', _audios.length);
       PreferencesService.saveCategoryCount('截图', screenshots.length);
+      PreferencesService.saveCategoryCount('文档', _documents.length);
+      PreferencesService.saveCategoryCount('压缩包', _archives.length);
+      PreferencesService.saveCategoryCount('下载', _downloads.length);
+      PreferencesService.saveCategoryCount('安装包', _apks.length);
       notifyListeners();
     }
   }
 
   /// 移除底层文件已不存在的媒体条目（他应用删除后残留的空白图标）。
   /// 存在性检查在 isolate 内完成，避免主线程对海量媒体逐个 existsSync 阻塞 UI。
+  /// 同时覆盖非媒体四类（文档/压缩包/下载/安装包）。
   Future<void> pruneDeletedMedia() async {
     try {
       final all = <String>{
@@ -3568,6 +3625,10 @@ class MediaProvider extends ChangeNotifier {
         ..._videos.map((e) => e.path),
         ..._screenshots.map((e) => e.path),
         ..._audios.map((e) => e.data),
+        ..._documents.map((e) => e.path),
+        ..._archives.map((e) => e.path),
+        ..._downloads.map((e) => e.path),
+        ..._apks.map((e) => e.path),
       };
       if (all.isEmpty) return;
       final gone = await compute(_pruneNonExistentInIsolate, all.toList());

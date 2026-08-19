@@ -806,6 +806,16 @@ class FileManagerProvider extends ChangeNotifier {
     _breadcrumbInteracting = value;
   }
 
+  // 标签页栏交互抑制页面滑动切换手势：
+  // 标签页区域按下/拖拽期间置为 true，home 的滑动 Listener 据此跳过本次手势追踪，
+  // 避免左右滑动标签页被误判为切换分类页/快捷操作页。
+  bool _tabBarInteracting = false;
+  bool get tabBarInteracting => _tabBarInteracting;
+  void setTabBarInteracting(bool value) {
+    // 故意不 notifyListeners：仅 home 的滑动 Listener 直接读取当前值，无需重建整树。
+    _tabBarInteracting = value;
+  }
+
   // 分类页“长按拖动类别排序”抑制页面滑动切换手势：
   // 在自定义对话框的 ReorderableListView 拖拽期间置为 true（onReorderStart→true /
   // onReorderEnd→false），home 的滑动 Listener 据此取消本次手势追踪，
@@ -2000,6 +2010,8 @@ class FileManagerProvider extends ChangeNotifier {
   /// 原文件立即从来源浏览器消失（无需手动刷新）。
   Future<void> refreshLocalSourceAfterCut(List<String> sourcePaths) async {
     if (sourcePaths.isEmpty) return;
+    // 剪切完成后即时裁剪媒体列表，防止分类页残留已移走的文件
+    MediaProvider.instance?.pruneDeletedMediaPaths(sourcePaths);
     final sourceDir = p.dirname(sourcePaths.first);
     for (int i = 0; i < _tabs.length; i++) {
       if (!_tabs[i].isRemote && _tabs[i].currentPath == sourceDir) {
@@ -3584,6 +3596,7 @@ class FileManagerProvider extends ChangeNotifier {
       if (_isCut) {
         // 源目录删除采用容错策略：单个失败不应中断整个流程，
         // 否则会导致剪切变复制且剪贴板不自动消失。
+        final cutSourcePaths = List<String>.from(_clipboardPaths);
         for (final srcPath in _clipboardPaths) {
           final type = FileSystemEntity.typeSync(srcPath);
           if (type == FileSystemEntityType.directory) {
@@ -3597,6 +3610,8 @@ class FileManagerProvider extends ChangeNotifier {
             }
           }
         }
+        // 剪切完成后即时裁剪媒体列表，防止分类页残留已移走的文件
+        MediaProvider.instance?.pruneDeletedMediaPaths(cutSourcePaths);
       }
 
       if (_isCut && _sourceArchiveForCut != null && _internalSourcePathsForCut != null) {
@@ -4829,11 +4844,13 @@ class FileManagerProvider extends ChangeNotifier {
             final remoteSize =
                 await _remoteFileSize(client, remoteFilePath, dirCache);
             final rec = recordByLocal[localFile];
+            // 远程副本已被删除 -> 撤销旧记录，重新上传（不再跳过）。
+            // 原逻辑「远程副本被删就丢弃记录且不重传」导致远程目录删文件后
+            // 部分类别提示失败、部分提示成功但实际未备份。
             if (rec != null && remoteSize == null) {
-              // 远程副本已被删除 -> 撤销云徽，且不自动重新上传（尊重用户删除）。
-              onStatus?.call('远程已删除，取消云徽: $name');
+              onStatus?.call('远程副本已删除，重新备份: $name');
               dropRecord(localFile);
-              continue;
+              // fall-through to upload
             }
             if (remoteSize != null && localSize >= 0 && remoteSize == localSize) {
               // 已存在且一致 -> 保持云徽，跳过传输。
@@ -6326,6 +6343,9 @@ class FileManagerProvider extends ChangeNotifier {
         }
       }
       
+      // 移动成功后即时裁剪媒体列表，防止分类页残留已移走的文件
+      MediaProvider.instance?.pruneDeletedMediaPaths([sourcePath]);
+
       if (showToast) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('成功移动 $name')),

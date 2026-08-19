@@ -5076,5 +5076,25 @@
   "changelog_v1131_fix_16": "Added ui_app_open_location, ui_batch_backup, ui_batch_share, ui_batch_uninstall, ui_batch_uninstall_confirm translation keys, all 10 languages covered",
   "@changelog_v1131_fix_16": {
     "description": "v1.1.31 changelog item"
+  },
+  "ui_batch_backup": "Backing up...",
+  "@ui_batch_backup": {
+    "description": "ui_batch_backup label"
+  },
+  "ui_batch_share": "Share",
+  "@ui_batch_share": {
+    "description": "ui_batch_share label"
+  },
+  "ui_batch_uninstall": "Uninstall",
+  "@ui_batch_uninstall": {
+    "description": "ui_batch_uninstall label"
+  },
+  "ui_batch_uninstall_confirm": "Are you sure you want to uninstall the selected {count} apps?",
+  "@ui_batch_uninstall_confirm": {
+    "description": "ui_batch_uninstall_confirm label"
+  },
+  "ui_app_open_location": "Open in Location",
+  "@ui_app_open_location": {
+    "description": "ui_app_open_location label"
   }
 }
