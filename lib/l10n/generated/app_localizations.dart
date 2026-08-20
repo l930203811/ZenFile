@@ -9403,7 +9403,7 @@ abstract class L10n {
   /// Passport photo preset 413x531
   ///
   /// In zh, this message translates to:
-  /// **'证件照 413x531'**
+  /// **'护照'**
   String get editor_passport_413_531;
 
   /// ID photo preset 1-inch 295x413

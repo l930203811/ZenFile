@@ -5005,7 +5005,7 @@ class L10nZh extends L10n {
   String get editor_lock_ratio => '锁定宽高比';
 
   @override
-  String get editor_passport_413_531 => '证件照 413x531';
+  String get editor_passport_413_531 => '护照';
 
   @override
   String get editor_preset_1inch => '一寸';
@@ -10068,7 +10068,7 @@ class L10nZhTw extends L10nZh {
   String get editor_lock_ratio => 'Lock aspect ratio';
 
   @override
-  String get editor_passport_413_531 => 'Passport 413x531';
+  String get editor_passport_413_531 => '護照';
 
   @override
   String get editor_preset_1inch => '一寸';

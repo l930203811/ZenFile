@@ -5266,7 +5266,7 @@ class L10nDe extends L10n {
   String get editor_lock_ratio => 'Lock aspect ratio';
 
   @override
-  String get editor_passport_413_531 => 'Passport 413x531';
+  String get editor_passport_413_531 => 'Reisepass';
 
   @override
   String get editor_preset_1inch => '1 Zoll';

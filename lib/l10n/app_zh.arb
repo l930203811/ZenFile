@@ -5381,7 +5381,7 @@
   "@editor_lock_ratio": {
     "description": "Resize lock aspect ratio toggle"
   },
-  "editor_passport_413_531": "证件照 413x531",
+  "editor_passport_413_531": "护照",
   "@editor_passport_413_531": {
     "description": "Passport photo preset 413x531"
   },

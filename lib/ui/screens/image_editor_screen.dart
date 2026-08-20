@@ -647,6 +647,43 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
     }
   }
 
+  Widget _buildMenuButton<T>({
+    required String label,
+    required List<T> values,
+    required String Function(T) labelBuilder,
+    required ValueChanged<T> onSelected,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+    return PopupMenuButton<T>(
+      onSelected: onSelected,
+      itemBuilder: (context) => [
+        for (final v in values)
+          PopupMenuItem<T>(
+            value: v,
+            child: Text(labelBuilder(v)),
+          ),
+      ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          border: Border.all(color: scheme.outline.withAlpha(100)),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: TextStyle(color: scheme.onSurface),
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.arrow_drop_down, color: scheme.onSurface, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildResizePanel(L10n l10n) {
     if (_info == null) return const SizedBox.shrink();
     if (_widthCtrl.text.isEmpty || _heightCtrl.text.isEmpty) _initResizeFields();
@@ -688,32 +725,18 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          _sectionTitle(l10n.editor_id_presets),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final p in _idPresets)
-                ChoiceChip(
-                  label: Text('${_idPresetLabel(p.key, l10n)} ${p.w}×${p.h}'),
-                  selected: false,
-                  onSelected: (_) => _applySize(p.w, p.h),
-                ),
-            ],
+          _buildMenuButton<_IdPreset>(
+            label: l10n.editor_id_presets,
+            values: _idPresets,
+            labelBuilder: (p) => '${_idPresetLabel(p.key, l10n)} ${p.w}×${p.h}',
+            onSelected: (p) => _applySize(p.w, p.h),
           ),
-          const SizedBox(height: 8),
-          _sectionTitle(l10n.editor_scale),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final f in [0.5, 0.75, 1.0, 1.25, 1.5, 2.0])
-                ChoiceChip(
-                  label: Text('${((f * 100).round())}%'),
-                  selected: false,
-                  onSelected: (_) => _applyScale(f),
-                ),
-            ],
+          const SizedBox(height: 12),
+          _buildMenuButton<double>(
+            label: l10n.editor_scale,
+            values: const [0.5, 0.75, 1.0, 1.25, 1.5, 2.0],
+            labelBuilder: (f) => '${(f * 100).round()}%',
+            onSelected: _applyScale,
           ),
           const SizedBox(height: 12),
           _slider(l10n.editor_quality, _quality.toDouble(), 1, 100, (v) {

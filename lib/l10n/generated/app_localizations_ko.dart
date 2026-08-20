@@ -5077,7 +5077,7 @@ class L10nKo extends L10n {
   String get editor_lock_ratio => 'Lock aspect ratio';
 
   @override
-  String get editor_passport_413_531 => 'Passport 413x531';
+  String get editor_passport_413_531 => '여권';
 
   @override
   String get editor_preset_1inch => '1촌';
