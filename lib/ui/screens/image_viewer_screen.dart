@@ -795,30 +795,30 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
           children: [
             Dismissible(
               key: const ValueKey('image_viewer_dismissible'),
-          direction: _isZoomed ? DismissDirection.none : DismissDirection.vertical,
-          onDismissed: (_) => Navigator.pop(context),
-          dismissThresholds: const {
-            DismissDirection.down: 0.2,
-            DismissDirection.up: 0.2,
-          },
-          child: GestureDetector(
-            onTap: () {
-              setState(() {
-                _showUI = !_showUI;
-              });
-            },
-            child: PhotoViewGallery.builder(
-              scrollPhysics: _isZoomed ? const NeverScrollableScrollPhysics() : const BouncingScrollPhysics(),
-              pageController: _pageController,
-              itemCount: totalCount,
-              onPageChanged: (index) {
-                setState(() {
-                  _currentIndex = index;
-                });
-                _preloadAdjacent(index);
-                _refreshMeta();
+              direction: _isZoomed ? DismissDirection.none : DismissDirection.vertical,
+              onDismissed: (_) => Navigator.pop(context),
+              dismissThresholds: const {
+                DismissDirection.down: 0.2,
+                DismissDirection.up: 0.2,
               },
-              scaleStateChangedCallback: (state) {
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _showUI = !_showUI;
+                  });
+                },
+                child: PhotoViewGallery.builder(
+                  scrollPhysics: _isZoomed ? const NeverScrollableScrollPhysics() : const BouncingScrollPhysics(),
+                  pageController: _pageController,
+                  itemCount: totalCount,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentIndex = index;
+                    });
+                    _preloadAdjacent(index);
+                    _refreshMeta();
+                  },
+                  scaleStateChangedCallback: (state) {
                 setState(() {
                   _isZoomed = state != PhotoViewScaleState.initial;
                 });
@@ -917,6 +917,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
               },
             ),
           ),
+            ),
           if (_showUI)
             Positioned(
               left: 0,
@@ -924,6 +925,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
               bottom: 0,
               child: _buildImmersiveInfoBar(),
             ),
+          ],
         ),
       ),
     );
