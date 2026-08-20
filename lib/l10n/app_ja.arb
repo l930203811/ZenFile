@@ -5108,6 +5108,30 @@
   "@editor_passport_413_531": {
     "description": "Passport photo preset 413x531"
   },
+  "editor_preset_1inch": "1寸",
+  "@editor_preset_1inch": {
+    "description": "ID photo preset 1-inch 295x413"
+  },
+  "editor_preset_2inch": "2寸",
+  "@editor_preset_2inch": {
+    "description": "ID photo preset 2-inch 413x579"
+  },
+  "editor_preset_small_1inch": "小1寸",
+  "@editor_preset_small_1inch": {
+    "description": "ID photo preset small 1-inch 260x378"
+  },
+  "editor_preset_large_1inch": "大1寸",
+  "@editor_preset_large_1inch": {
+    "description": "ID photo preset large 1-inch 390x567"
+  },
+  "editor_preset_us_visa": "米国ビザ",
+  "@editor_preset_us_visa": {
+    "description": "ID photo preset US visa 600x600"
+  },
+  "editor_id_presets": "証明写真プリセット",
+  "@editor_id_presets": {
+    "description": "ID photo presets section title"
+  },
   "editor_quality": "Quality (file size)",
   "@editor_quality": {
     "description": "Output quality / file size slider"

@@ -285,10 +285,10 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
     _recomputePreview();
   }
 
-  void _applyPassport() {
-    _widthCtrl.text = '413';
-    _heightCtrl.text = '531';
-    _params = _params.copyWith(targetWidth: 413, targetHeight: 531);
+  void _applySize(int w, int h) {
+    _widthCtrl.text = w.toString();
+    _heightCtrl.text = h.toString();
+    _params = _params.copyWith(targetWidth: w, targetHeight: h);
     _recomputePreview();
   }
 
@@ -319,6 +319,35 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
     {'key': 'cool', 'labelKey': 'editor_filter_cool'},
     {'key': 'warm', 'labelKey': 'editor_filter_warm'},
   ];
+
+  // ---- 证件照常见尺寸预设 ----
+  static const List<_IdPreset> _idPresets = [
+    _IdPreset('editor_passport_413_531', 413, 531),
+    _IdPreset('editor_preset_1inch', 295, 413),
+    _IdPreset('editor_preset_2inch', 413, 579),
+    _IdPreset('editor_preset_small_1inch', 260, 378),
+    _IdPreset('editor_preset_large_1inch', 390, 567),
+    _IdPreset('editor_preset_us_visa', 600, 600),
+  ];
+
+  String _idPresetLabel(String key, L10n l10n) {
+    switch (key) {
+      case 'editor_passport_413_531':
+        return l10n.editor_passport_413_531;
+      case 'editor_preset_1inch':
+        return l10n.editor_preset_1inch;
+      case 'editor_preset_2inch':
+        return l10n.editor_preset_2inch;
+      case 'editor_preset_small_1inch':
+        return l10n.editor_preset_small_1inch;
+      case 'editor_preset_large_1inch':
+        return l10n.editor_preset_large_1inch;
+      case 'editor_preset_us_visa':
+        return l10n.editor_preset_us_visa;
+      default:
+        return key;
+    }
+  }
 
   // ---- 保存 ----
   Future<void> _save({required bool overwrite}) async {
@@ -656,12 +685,20 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
                 selected: _lockRatio,
                 onSelected: (v) => setState(() => _lockRatio = v),
               ),
-              const SizedBox(width: 8),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.photo_size_select_small),
-                label: Text(l10n.editor_passport_413_531),
-                onPressed: _applyPassport,
-              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          _sectionTitle(l10n.editor_id_presets),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final p in _idPresets)
+                ChoiceChip(
+                  label: Text('${_idPresetLabel(p.key, l10n)} ${p.w}×${p.h}'),
+                  selected: false,
+                  onSelected: (_) => _applySize(p.w, p.h),
+                ),
             ],
           ),
           const SizedBox(height: 8),
@@ -766,6 +803,14 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
     _heightCtrl.dispose();
     super.dispose();
   }
+}
+
+// ---- 证件照常见尺寸预设 ----
+class _IdPreset {
+  final String key;
+  final int w;
+  final int h;
+  const _IdPreset(this.key, this.w, this.h);
 }
 
 class _CropPainter extends CustomPainter {

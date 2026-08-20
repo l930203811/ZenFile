@@ -5243,6 +5243,24 @@ class L10nEn extends L10n {
   String get editor_passport_413_531 => 'Passport 413x531';
 
   @override
+  String get editor_preset_1inch => '1-inch';
+
+  @override
+  String get editor_preset_2inch => '2-inch';
+
+  @override
+  String get editor_preset_small_1inch => 'Small 1-inch';
+
+  @override
+  String get editor_preset_large_1inch => 'Large 1-inch';
+
+  @override
+  String get editor_preset_us_visa => 'US Visa';
+
+  @override
+  String get editor_id_presets => 'ID photo presets';
+
+  @override
   String get editor_quality => 'Quality (file size)';
 
   @override

@@ -9406,6 +9406,42 @@ abstract class L10n {
   /// **'证件照 413x531'**
   String get editor_passport_413_531;
 
+  /// ID photo preset 1-inch 295x413
+  ///
+  /// In zh, this message translates to:
+  /// **'一寸'**
+  String get editor_preset_1inch;
+
+  /// ID photo preset 2-inch 413x579
+  ///
+  /// In zh, this message translates to:
+  /// **'二寸'**
+  String get editor_preset_2inch;
+
+  /// ID photo preset small 1-inch 260x378
+  ///
+  /// In zh, this message translates to:
+  /// **'小一寸'**
+  String get editor_preset_small_1inch;
+
+  /// ID photo preset large 1-inch 390x567
+  ///
+  /// In zh, this message translates to:
+  /// **'大一寸'**
+  String get editor_preset_large_1inch;
+
+  /// ID photo preset US visa 600x600
+  ///
+  /// In zh, this message translates to:
+  /// **'美国签证'**
+  String get editor_preset_us_visa;
+
+  /// ID photo presets section title
+  ///
+  /// In zh, this message translates to:
+  /// **'证件照预设'**
+  String get editor_id_presets;
+
   /// Output quality / file size slider
   ///
   /// In zh, this message translates to:

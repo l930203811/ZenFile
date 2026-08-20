@@ -5008,6 +5008,24 @@ class L10nZh extends L10n {
   String get editor_passport_413_531 => '证件照 413x531';
 
   @override
+  String get editor_preset_1inch => '一寸';
+
+  @override
+  String get editor_preset_2inch => '二寸';
+
+  @override
+  String get editor_preset_small_1inch => '小一寸';
+
+  @override
+  String get editor_preset_large_1inch => '大一寸';
+
+  @override
+  String get editor_preset_us_visa => '美国签证';
+
+  @override
+  String get editor_id_presets => '证件照预设';
+
+  @override
   String get editor_quality => '质量（文件大小）';
 
   @override
@@ -10051,6 +10069,24 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get editor_passport_413_531 => 'Passport 413x531';
+
+  @override
+  String get editor_preset_1inch => '一寸';
+
+  @override
+  String get editor_preset_2inch => '二寸';
+
+  @override
+  String get editor_preset_small_1inch => '小一寸';
+
+  @override
+  String get editor_preset_large_1inch => '大一寸';
+
+  @override
+  String get editor_preset_us_visa => '美國簽證';
+
+  @override
+  String get editor_id_presets => '證件照預設';
 
   @override
   String get editor_quality => 'Quality (file size)';
