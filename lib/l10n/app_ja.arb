@@ -5043,5 +5043,169 @@
   "ui_app_open_location": "場所を開く",
   "@ui_app_open_location": {
     "description": "ui_app_open_location label"
+  },
+  "img_dimensions": "Dimensions",
+  "@img_dimensions": {
+    "description": "Immersive viewer bottom info: image dimensions"
+  },
+  "edit_image": "Edit Image",
+  "@edit_image": {
+    "description": "Image editor screen title"
+  },
+  "editor_adjust": "Adjust",
+  "@editor_adjust": {
+    "description": "Editor tab: adjust brightness/contrast/saturation"
+  },
+  "editor_filters": "Filters",
+  "@editor_filters": {
+    "description": "Editor tab: filters"
+  },
+  "editor_resize": "Resize",
+  "@editor_resize": {
+    "description": "Editor tab: resize"
+  },
+  "editor_crop": "Crop",
+  "@editor_crop": {
+    "description": "Editor tab: crop"
+  },
+  "editor_rotate_flip": "Rotate & Flip",
+  "@editor_rotate_flip": {
+    "description": "Editor tab: rotate & flip"
+  },
+  "editor_flip": "反転",
+  "@editor_flip": {
+    "description": "Flip button tooltip (horizontal/vertical)"
+  },
+  "editor_brightness": "Brightness",
+  "@editor_brightness": {
+    "description": "Adjust slider label"
+  },
+  "editor_contrast": "Contrast",
+  "@editor_contrast": {
+    "description": "Adjust slider label"
+  },
+  "editor_saturation": "Saturation",
+  "@editor_saturation": {
+    "description": "Adjust slider label"
+  },
+  "editor_exact_dimensions": "Exact Dimensions",
+  "@editor_exact_dimensions": {
+    "description": "Resize section title"
+  },
+  "editor_width": "Width",
+  "@editor_width": {
+    "description": "Resize width field"
+  },
+  "editor_height": "Height",
+  "@editor_height": {
+    "description": "Resize height field"
+  },
+  "editor_lock_ratio": "Lock aspect ratio",
+  "@editor_lock_ratio": {
+    "description": "Resize lock aspect ratio toggle"
+  },
+  "editor_passport_413_531": "Passport 413x531",
+  "@editor_passport_413_531": {
+    "description": "Passport photo preset 413x531"
+  },
+  "editor_quality": "Quality (file size)",
+  "@editor_quality": {
+    "description": "Output quality / file size slider"
+  },
+  "editor_strip_metadata": "Remove all metadata (EXIF / GPS / ICC)",
+  "@editor_strip_metadata": {
+    "description": "Toggle to remove EXIF/GPS/ICC metadata"
+  },
+  "editor_save_as_copy": "Save as copy",
+  "@editor_save_as_copy": {
+    "description": "Save menu: save as a new copy"
+  },
+  "editor_overwrite_original": "Overwrite original",
+  "@editor_overwrite_original": {
+    "description": "Save menu: overwrite original file"
+  },
+  "editor_reset": "Reset",
+  "@editor_reset": {
+    "description": "Reset all edits"
+  },
+  "editor_filter_original": "Original",
+  "@editor_filter_original": {
+    "description": "Filter: original / none"
+  },
+  "editor_filter_bw": "B&W",
+  "@editor_filter_bw": {
+    "description": "Filter: black & white"
+  },
+  "editor_filter_sepia": "Sepia",
+  "@editor_filter_sepia": {
+    "description": "Filter: sepia"
+  },
+  "editor_filter_vintage": "Vintage",
+  "@editor_filter_vintage": {
+    "description": "Filter: vintage"
+  },
+  "editor_filter_cool": "Cool",
+  "@editor_filter_cool": {
+    "description": "Filter: cool tone"
+  },
+  "editor_filter_warm": "Warm",
+  "@editor_filter_warm": {
+    "description": "Filter: warm tone"
+  },
+  "editor_strip_only": "Strip metadata only",
+  "@editor_strip_only": {
+    "description": "Action: strip metadata only"
+  },
+  "editor_saved": "Image saved",
+  "@editor_saved": {
+    "description": "Toast: image saved"
+  },
+  "editor_save_failed": "Save failed: {e}",
+  "@editor_save_failed": {
+    "description": "Toast: save failed. {e} is the error"
+  },
+  "editor_processing": "Processing...",
+  "@editor_processing": {
+    "description": "Editor processing indicator"
+  },
+  "editor_aspect_free": "Free",
+  "@editor_aspect_free": {
+    "description": "Crop aspect ratio: free"
+  },
+  "editor_aspect_square": "Square",
+  "@editor_aspect_square": {
+    "description": "Crop aspect ratio: square"
+  },
+  "editor_aspect_4_3": "4:3",
+  "@editor_aspect_4_3": {
+    "description": "Crop aspect ratio 4:3"
+  },
+  "editor_aspect_3_4": "3:4",
+  "@editor_aspect_3_4": {
+    "description": "Crop aspect ratio 3:4"
+  },
+  "editor_scale": "Scale",
+  "@editor_scale": {
+    "description": "Resize scale section"
+  },
+  "menu_edit_image": "Edit",
+  "@menu_edit_image": {
+    "description": "Viewer three-dot menu: edit image"
+  },
+  "menu_remove_metadata": "Remove Metadata",
+  "@menu_remove_metadata": {
+    "description": "Viewer three-dot menu: remove metadata"
+  },
+  "editor_downloading": "Downloading image...",
+  "@editor_downloading": {
+    "description": "Editor: downloading remote image"
+  },
+  "editor_unsupported": "This image format cannot be edited",
+  "@editor_unsupported": {
+    "description": "Editor: unsupported image format"
+  },
+  "editor_output_size": "Output: {size}",
+  "@editor_output_size": {
+    "description": "Editor: output size label. {size} is human size"
   }
 }

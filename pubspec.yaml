@@ -62,6 +62,9 @@ dependencies:
       url: https://github.com/MSOB7YY/on_audio_query
       path: packages/on_audio_query
   photo_view: ^0.15.0
+  # 纯 Dart 图片处理库：编辑器/缩放/去 EXIF 全部走 dart:ui 之外的纯 Dart 实现，
+  # 规避引入原生插件（如 image_editor/photofilters）带来的 KGP 构建风险。
+  image: ^4.0.0
   media_kit: any
   media_kit_video: any
   media_kit_libs_video: any

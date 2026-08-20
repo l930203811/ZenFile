@@ -15,6 +15,8 @@ import '../../providers/file_manager_provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/utils.dart';
 import '../../ui/widgets/file_action_dialogs.dart';
+import '../../services/image_edit_service.dart';
+import 'image_editor_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 final Uint8List _kTransparentImage = Uint8List.fromList([
@@ -57,12 +59,19 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
   bool _showUI = true;
   bool _isZoomed = false;
 
+  // 沉浸式底部信息条
+  String? _currentDims;
+  String? _currentSizeStr;
+  String? _currentFormat;
+  final ImageEditService _editService = ImageEditService.instance;
+
   @override
   void initState() {
     super.initState();
     _findSiblings();
     _pageController = PageController(initialPage: _currentIndex);
     _preloadAdjacent(_currentIndex);
+    _refreshMeta();
   }
 
   void _findSiblings() {
@@ -218,6 +227,113 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     return null;
   }
 
+  String _humanSize(int bytes) {
+    const suffixes = ['B', 'KB', 'MB', 'GB'];
+    var s = bytes.toDouble();
+    var i = 0;
+    while (s >= 1024 && i < suffixes.length - 1) {
+      s /= 1024;
+      i++;
+    }
+    return '${s.toStringAsFixed(1)} ${suffixes[i]}';
+  }
+
+  /// 刷新当前图片的尺寸/大小/格式，用于沉浸式底部信息条与属性弹窗。
+  Future<void> _refreshMeta() async {
+    final file = _getCurrentFile();
+    if (file == null || !file.existsSync()) {
+      if (mounted) setState(() => _currentDims = null);
+      return;
+    }
+    try {
+      final bytes = await file.readAsBytes();
+      final info = await _editService.readInfo(bytes);
+      final size = file.lengthSync();
+      if (!mounted) return;
+      setState(() {
+        _currentDims = '${info.width} x ${info.height}';
+        _currentFormat = info.format;
+        _currentSizeStr = _humanSize(size);
+      });
+    } catch (_) {
+      if (mounted) setState(() => _currentDims = null);
+    }
+  }
+
+  /// 打开图片编辑器（远程图片先下载到缓存）。
+  Future<void> _openEditor() async {
+    final l10n = L10n.of(context);
+    var file = _getCurrentFile();
+    if (file == null) return;
+    String localPath = file.path;
+    if (localPath.startsWith('remote://')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.editor_downloading)),
+      );
+      final cached = await FileManagerProvider.downloadRemoteFileToCache(localPath);
+      if (cached == null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.editor_unsupported), backgroundColor: Colors.redAccent),
+        );
+        return;
+      }
+      localPath = cached;
+    }
+    if (!mounted) return;
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => ImageEditorScreen(imagePath: localPath)),
+    );
+    if (result == true && mounted) setState(() {});
+  }
+
+  /// 快速清除元数据（重新编码剥离 EXIF/GPS/ICC），另存为副本。
+  Future<void> _stripMetadata() async {
+    final l10n = L10n.of(context);
+    final file = _getCurrentFile();
+    if (file == null) return;
+    final path = file.path;
+    if (path.startsWith('remote://')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.editor_unsupported), backgroundColor: Colors.redAccent),
+      );
+      return;
+    }
+    final navigator = Navigator.of(context);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const AlertDialog(
+        content: Row(children: [
+          CircularProgressIndicator(),
+          SizedBox(width: 16),
+          Text('…'),
+        ]),
+      ),
+    );
+    try {
+      final bytes = await File(path).readAsBytes();
+      final isPng = path.toLowerCase().endsWith('.png');
+      final out = await _editService.stripMetadata(bytes, isPng: isPng);
+      final dir = File(path).parent.path;
+      final base = p.basenameWithoutExtension(path);
+      final ext = isPng ? 'png' : 'jpg';
+      final outPath = p.join(dir, '${base}_metadata_removed.$ext');
+      await File(outPath).writeAsBytes(out);
+      if (!mounted) return;
+      navigator.pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${l10n.editor_saved}  (${p.basename(outPath)})')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      navigator.pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.editor_save_failed(e.toString())), backgroundColor: Colors.redAccent),
+      );
+    }
+  }
+
   void _showImageOptions() {
     final l10n = L10n.of(context);
     final file = _getCurrentFile();
@@ -297,12 +413,20 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                 ),
                 ListTile(
                   leading: Icon(Broken.edit, color: primary, size: 22),
-                  title: Text(l10n.msgc8ce4b36),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    _renameFile();
-                  },
-                ),
+                title: Text(l10n.msgc8ce4b36),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _renameFile();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_filter, color: primary, size: 22),
+                title: Text(l10n.menu_edit_image),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _openEditor();
+                },
+              ),
                 ListTile(
                   leading: Icon(Broken.eye, color: primary, size: 22),
                   title: Text(l10n.msg2a4cfb07),
@@ -318,6 +442,14 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                 onTap: () {
                   Navigator.pop(ctx);
                   _showImageInfo();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.cleaning_services_outlined, color: primary, size: 22),
+                title: Text(l10n.menu_remove_metadata),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _stripMetadata();
                 },
               ),
               ListTile(
@@ -560,6 +692,8 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
             const SizedBox(height: 8),
             _infoRow(l10n.ui_size, sizeStr),
             const SizedBox(height: 8),
+            _infoRow(l10n.img_dimensions, _currentDims ?? '-'),
+            const SizedBox(height: 8),
             _infoRow(l10n.msg1303e638, modifiedStr),
           ],
         ),
@@ -657,8 +791,10 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                 ],
               )
             : null,
-        body: Dismissible(
-          key: const ValueKey('image_viewer_dismissible'),
+        body: Stack(
+          children: [
+            Dismissible(
+              key: const ValueKey('image_viewer_dismissible'),
           direction: _isZoomed ? DismissDirection.none : DismissDirection.vertical,
           onDismissed: (_) => Navigator.pop(context),
           dismissThresholds: const {
@@ -680,6 +816,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                   _currentIndex = index;
                 });
                 _preloadAdjacent(index);
+                _refreshMeta();
               },
               scaleStateChangedCallback: (state) {
                 setState(() {
@@ -780,6 +917,56 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
               },
             ),
           ),
+          if (_showUI)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: _buildImmersiveInfoBar(),
+            ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImmersiveInfoBar() {
+    final l10n = L10n.of(context);
+    final file = _getCurrentFile();
+    final name = file?.path.split('/').last.split('\\').last ?? '';
+    final dims = _currentDims ?? '…';
+    final size = _currentSizeStr ?? '…';
+    final fmt = _currentFormat ?? '';
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
+          colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+        ),
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              name,
+              style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '$dims   ·   $size${fmt.isNotEmpty ? '   ·   $fmt' : ''}',
+              style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              l10n.img_dimensions,
+              style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11),
+            ),
+          ],
         ),
       ),
     );

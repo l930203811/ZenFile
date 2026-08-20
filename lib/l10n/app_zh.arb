@@ -5320,5 +5320,169 @@
   "ui_app_open_location": "打开所在位置",
   "@ui_app_open_location": {
     "description": "ui_app_open_location label"
+  },
+  "img_dimensions": "尺寸",
+  "@img_dimensions": {
+    "description": "Immersive viewer bottom info: image dimensions"
+  },
+  "edit_image": "编辑图片",
+  "@edit_image": {
+    "description": "Image editor screen title"
+  },
+  "editor_adjust": "调整",
+  "@editor_adjust": {
+    "description": "Editor tab: adjust brightness/contrast/saturation"
+  },
+  "editor_filters": "滤镜",
+  "@editor_filters": {
+    "description": "Editor tab: filters"
+  },
+  "editor_resize": "缩放尺寸",
+  "@editor_resize": {
+    "description": "Editor tab: resize"
+  },
+  "editor_crop": "裁剪",
+  "@editor_crop": {
+    "description": "Editor tab: crop"
+  },
+  "editor_rotate_flip": "旋转与翻转",
+  "@editor_rotate_flip": {
+    "description": "Editor tab: rotate & flip"
+  },
+  "editor_flip": "翻转",
+  "@editor_flip": {
+    "description": "Flip button tooltip (horizontal/vertical)"
+  },
+  "editor_brightness": "亮度",
+  "@editor_brightness": {
+    "description": "Adjust slider label"
+  },
+  "editor_contrast": "对比度",
+  "@editor_contrast": {
+    "description": "Adjust slider label"
+  },
+  "editor_saturation": "饱和度",
+  "@editor_saturation": {
+    "description": "Adjust slider label"
+  },
+  "editor_exact_dimensions": "精确尺寸",
+  "@editor_exact_dimensions": {
+    "description": "Resize section title"
+  },
+  "editor_width": "宽",
+  "@editor_width": {
+    "description": "Resize width field"
+  },
+  "editor_height": "高",
+  "@editor_height": {
+    "description": "Resize height field"
+  },
+  "editor_lock_ratio": "锁定宽高比",
+  "@editor_lock_ratio": {
+    "description": "Resize lock aspect ratio toggle"
+  },
+  "editor_passport_413_531": "证件照 413x531",
+  "@editor_passport_413_531": {
+    "description": "Passport photo preset 413x531"
+  },
+  "editor_quality": "质量（文件大小）",
+  "@editor_quality": {
+    "description": "Output quality / file size slider"
+  },
+  "editor_strip_metadata": "清除全部元数据（EXIF / GPS / ICC）",
+  "@editor_strip_metadata": {
+    "description": "Toggle to remove EXIF/GPS/ICC metadata"
+  },
+  "editor_save_as_copy": "另存为副本",
+  "@editor_save_as_copy": {
+    "description": "Save menu: save as a new copy"
+  },
+  "editor_overwrite_original": "覆盖原文件",
+  "@editor_overwrite_original": {
+    "description": "Save menu: overwrite original file"
+  },
+  "editor_reset": "重置",
+  "@editor_reset": {
+    "description": "Reset all edits"
+  },
+  "editor_filter_original": "原图",
+  "@editor_filter_original": {
+    "description": "Filter: original / none"
+  },
+  "editor_filter_bw": "黑白",
+  "@editor_filter_bw": {
+    "description": "Filter: black & white"
+  },
+  "editor_filter_sepia": "怀旧棕",
+  "@editor_filter_sepia": {
+    "description": "Filter: sepia"
+  },
+  "editor_filter_vintage": "复古",
+  "@editor_filter_vintage": {
+    "description": "Filter: vintage"
+  },
+  "editor_filter_cool": "冷色",
+  "@editor_filter_cool": {
+    "description": "Filter: cool tone"
+  },
+  "editor_filter_warm": "暖色",
+  "@editor_filter_warm": {
+    "description": "Filter: warm tone"
+  },
+  "editor_strip_only": "仅清除元数据",
+  "@editor_strip_only": {
+    "description": "Action: strip metadata only"
+  },
+  "editor_saved": "图片已保存",
+  "@editor_saved": {
+    "description": "Toast: image saved"
+  },
+  "editor_save_failed": "保存失败：{e}",
+  "@editor_save_failed": {
+    "description": "Toast: save failed. {e} is the error"
+  },
+  "editor_processing": "处理中…",
+  "@editor_processing": {
+    "description": "Editor processing indicator"
+  },
+  "editor_aspect_free": "自由",
+  "@editor_aspect_free": {
+    "description": "Crop aspect ratio: free"
+  },
+  "editor_aspect_square": "正方形",
+  "@editor_aspect_square": {
+    "description": "Crop aspect ratio: square"
+  },
+  "editor_aspect_4_3": "4:3",
+  "@editor_aspect_4_3": {
+    "description": "Crop aspect ratio 4:3"
+  },
+  "editor_aspect_3_4": "3:4",
+  "@editor_aspect_3_4": {
+    "description": "Crop aspect ratio 3:4"
+  },
+  "editor_scale": "缩放比例",
+  "@editor_scale": {
+    "description": "Resize scale section"
+  },
+  "menu_edit_image": "编辑",
+  "@menu_edit_image": {
+    "description": "Viewer three-dot menu: edit image"
+  },
+  "menu_remove_metadata": "清除元数据",
+  "@menu_remove_metadata": {
+    "description": "Viewer three-dot menu: remove metadata"
+  },
+  "editor_downloading": "正在下载图片…",
+  "@editor_downloading": {
+    "description": "Editor: downloading remote image"
+  },
+  "editor_unsupported": "此图片格式不支持编辑",
+  "@editor_unsupported": {
+    "description": "Editor: unsupported image format"
+  },
+  "editor_output_size": "输出：{size}",
+  "@editor_output_size": {
+    "description": "Editor: output size label. {size} is human size"
   }
 }

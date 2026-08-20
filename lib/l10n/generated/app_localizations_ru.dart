@@ -5227,4 +5227,131 @@ class L10nRu extends L10n {
 
   @override
   String get ui_app_open_location => 'Открыть в папке';
+
+  @override
+  String get img_dimensions => 'Dimensions';
+
+  @override
+  String get edit_image => 'Edit Image';
+
+  @override
+  String get editor_adjust => 'Adjust';
+
+  @override
+  String get editor_filters => 'Filters';
+
+  @override
+  String get editor_resize => 'Resize';
+
+  @override
+  String get editor_crop => 'Crop';
+
+  @override
+  String get editor_rotate_flip => 'Rotate & Flip';
+
+  @override
+  String get editor_flip => 'Отразить';
+
+  @override
+  String get editor_brightness => 'Brightness';
+
+  @override
+  String get editor_contrast => 'Contrast';
+
+  @override
+  String get editor_saturation => 'Saturation';
+
+  @override
+  String get editor_exact_dimensions => 'Exact Dimensions';
+
+  @override
+  String get editor_width => 'Width';
+
+  @override
+  String get editor_height => 'Height';
+
+  @override
+  String get editor_lock_ratio => 'Lock aspect ratio';
+
+  @override
+  String get editor_passport_413_531 => 'Passport 413x531';
+
+  @override
+  String get editor_quality => 'Quality (file size)';
+
+  @override
+  String get editor_strip_metadata => 'Remove all metadata (EXIF / GPS / ICC)';
+
+  @override
+  String get editor_save_as_copy => 'Save as copy';
+
+  @override
+  String get editor_overwrite_original => 'Overwrite original';
+
+  @override
+  String get editor_reset => 'Reset';
+
+  @override
+  String get editor_filter_original => 'Original';
+
+  @override
+  String get editor_filter_bw => 'B&W';
+
+  @override
+  String get editor_filter_sepia => 'Sepia';
+
+  @override
+  String get editor_filter_vintage => 'Vintage';
+
+  @override
+  String get editor_filter_cool => 'Cool';
+
+  @override
+  String get editor_filter_warm => 'Warm';
+
+  @override
+  String get editor_strip_only => 'Strip metadata only';
+
+  @override
+  String get editor_saved => 'Image saved';
+
+  @override
+  String editor_save_failed(Object e) {
+    return 'Save failed: $e';
+  }
+
+  @override
+  String get editor_processing => 'Processing...';
+
+  @override
+  String get editor_aspect_free => 'Free';
+
+  @override
+  String get editor_aspect_square => 'Square';
+
+  @override
+  String get editor_aspect_4_3 => '4:3';
+
+  @override
+  String get editor_aspect_3_4 => '3:4';
+
+  @override
+  String get editor_scale => 'Scale';
+
+  @override
+  String get menu_edit_image => 'Edit';
+
+  @override
+  String get menu_remove_metadata => 'Remove Metadata';
+
+  @override
+  String get editor_downloading => 'Downloading image...';
+
+  @override
+  String get editor_unsupported => 'This image format cannot be edited';
+
+  @override
+  String editor_output_size(Object size) {
+    return 'Output: $size';
+  }
 }

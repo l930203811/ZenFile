@@ -9309,6 +9309,252 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'打开所在位置'**
   String get ui_app_open_location;
+
+  /// Immersive viewer bottom info: image dimensions
+  ///
+  /// In zh, this message translates to:
+  /// **'尺寸'**
+  String get img_dimensions;
+
+  /// Image editor screen title
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑图片'**
+  String get edit_image;
+
+  /// Editor tab: adjust brightness/contrast/saturation
+  ///
+  /// In zh, this message translates to:
+  /// **'调整'**
+  String get editor_adjust;
+
+  /// Editor tab: filters
+  ///
+  /// In zh, this message translates to:
+  /// **'滤镜'**
+  String get editor_filters;
+
+  /// Editor tab: resize
+  ///
+  /// In zh, this message translates to:
+  /// **'缩放尺寸'**
+  String get editor_resize;
+
+  /// Editor tab: crop
+  ///
+  /// In zh, this message translates to:
+  /// **'裁剪'**
+  String get editor_crop;
+
+  /// Editor tab: rotate & flip
+  ///
+  /// In zh, this message translates to:
+  /// **'旋转与翻转'**
+  String get editor_rotate_flip;
+
+  /// Flip button tooltip (horizontal/vertical)
+  ///
+  /// In zh, this message translates to:
+  /// **'翻转'**
+  String get editor_flip;
+
+  /// Adjust slider label
+  ///
+  /// In zh, this message translates to:
+  /// **'亮度'**
+  String get editor_brightness;
+
+  /// Adjust slider label
+  ///
+  /// In zh, this message translates to:
+  /// **'对比度'**
+  String get editor_contrast;
+
+  /// Adjust slider label
+  ///
+  /// In zh, this message translates to:
+  /// **'饱和度'**
+  String get editor_saturation;
+
+  /// Resize section title
+  ///
+  /// In zh, this message translates to:
+  /// **'精确尺寸'**
+  String get editor_exact_dimensions;
+
+  /// Resize width field
+  ///
+  /// In zh, this message translates to:
+  /// **'宽'**
+  String get editor_width;
+
+  /// Resize height field
+  ///
+  /// In zh, this message translates to:
+  /// **'高'**
+  String get editor_height;
+
+  /// Resize lock aspect ratio toggle
+  ///
+  /// In zh, this message translates to:
+  /// **'锁定宽高比'**
+  String get editor_lock_ratio;
+
+  /// Passport photo preset 413x531
+  ///
+  /// In zh, this message translates to:
+  /// **'证件照 413x531'**
+  String get editor_passport_413_531;
+
+  /// Output quality / file size slider
+  ///
+  /// In zh, this message translates to:
+  /// **'质量（文件大小）'**
+  String get editor_quality;
+
+  /// Toggle to remove EXIF/GPS/ICC metadata
+  ///
+  /// In zh, this message translates to:
+  /// **'清除全部元数据（EXIF / GPS / ICC）'**
+  String get editor_strip_metadata;
+
+  /// Save menu: save as a new copy
+  ///
+  /// In zh, this message translates to:
+  /// **'另存为副本'**
+  String get editor_save_as_copy;
+
+  /// Save menu: overwrite original file
+  ///
+  /// In zh, this message translates to:
+  /// **'覆盖原文件'**
+  String get editor_overwrite_original;
+
+  /// Reset all edits
+  ///
+  /// In zh, this message translates to:
+  /// **'重置'**
+  String get editor_reset;
+
+  /// Filter: original / none
+  ///
+  /// In zh, this message translates to:
+  /// **'原图'**
+  String get editor_filter_original;
+
+  /// Filter: black & white
+  ///
+  /// In zh, this message translates to:
+  /// **'黑白'**
+  String get editor_filter_bw;
+
+  /// Filter: sepia
+  ///
+  /// In zh, this message translates to:
+  /// **'怀旧棕'**
+  String get editor_filter_sepia;
+
+  /// Filter: vintage
+  ///
+  /// In zh, this message translates to:
+  /// **'复古'**
+  String get editor_filter_vintage;
+
+  /// Filter: cool tone
+  ///
+  /// In zh, this message translates to:
+  /// **'冷色'**
+  String get editor_filter_cool;
+
+  /// Filter: warm tone
+  ///
+  /// In zh, this message translates to:
+  /// **'暖色'**
+  String get editor_filter_warm;
+
+  /// Action: strip metadata only
+  ///
+  /// In zh, this message translates to:
+  /// **'仅清除元数据'**
+  String get editor_strip_only;
+
+  /// Toast: image saved
+  ///
+  /// In zh, this message translates to:
+  /// **'图片已保存'**
+  String get editor_saved;
+
+  /// Toast: save failed. {e} is the error
+  ///
+  /// In zh, this message translates to:
+  /// **'保存失败：{e}'**
+  String editor_save_failed(Object e);
+
+  /// Editor processing indicator
+  ///
+  /// In zh, this message translates to:
+  /// **'处理中…'**
+  String get editor_processing;
+
+  /// Crop aspect ratio: free
+  ///
+  /// In zh, this message translates to:
+  /// **'自由'**
+  String get editor_aspect_free;
+
+  /// Crop aspect ratio: square
+  ///
+  /// In zh, this message translates to:
+  /// **'正方形'**
+  String get editor_aspect_square;
+
+  /// Crop aspect ratio 4:3
+  ///
+  /// In zh, this message translates to:
+  /// **'4:3'**
+  String get editor_aspect_4_3;
+
+  /// Crop aspect ratio 3:4
+  ///
+  /// In zh, this message translates to:
+  /// **'3:4'**
+  String get editor_aspect_3_4;
+
+  /// Resize scale section
+  ///
+  /// In zh, this message translates to:
+  /// **'缩放比例'**
+  String get editor_scale;
+
+  /// Viewer three-dot menu: edit image
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑'**
+  String get menu_edit_image;
+
+  /// Viewer three-dot menu: remove metadata
+  ///
+  /// In zh, this message translates to:
+  /// **'清除元数据'**
+  String get menu_remove_metadata;
+
+  /// Editor: downloading remote image
+  ///
+  /// In zh, this message translates to:
+  /// **'正在下载图片…'**
+  String get editor_downloading;
+
+  /// Editor: unsupported image format
+  ///
+  /// In zh, this message translates to:
+  /// **'此图片格式不支持编辑'**
+  String get editor_unsupported;
+
+  /// Editor: output size label. {size} is human size
+  ///
+  /// In zh, this message translates to:
+  /// **'输出：{size}'**
+  String editor_output_size(Object size);
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {
