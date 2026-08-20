@@ -360,8 +360,12 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     final currentPath = _pathAtIndex(_currentIndex);
     if (currentPath == null) return;
     final fmProvider = context.read<FileManagerProvider>();
-    // 关闭 bottom sheet 与图片浏览页 → 切到浏览 Tab → 再执行定位
-    // 使用 popUntil(isFirst) 一次性弹回首页，与全局搜索/最近文件跳转一致
+    // 后台 Browse 已正确加载目录并高亮（showFileInLocation / showRemoteFileInLocation 负责），
+    // 唯一缺失的是首页顶层 Tab 仍停留在「分类」页。先置位 navigateToBrowseTab，
+    // 由首页 ValueListenableBuilder 在 pop 回首页后完成「切到浏览 Tab」的顶层切换，
+    // 本地与远程路径均适用。
+    fmProvider.setNavigateToBrowseTab(true);
+    // 一次性弹回首页（关闭图片浏览页及可能的上层路由），与全局搜索/最近文件跳转一致
     Navigator.of(context).popUntil((route) => route.isFirst);
     if (currentPath.startsWith('remote://')) {
       fmProvider.showRemoteFileInLocation(currentPath);

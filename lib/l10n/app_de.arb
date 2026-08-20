@@ -5017,7 +5017,7 @@
   "@changelog_v1131_fix_16": {
     "description": "v1.1.31 changelog item"
   },
-  "ui_batch_backup": "Sichern...",
+  "ui_batch_backup": "Sichern",
   "@ui_batch_backup": {
     "description": "ui_batch_backup label"
   },

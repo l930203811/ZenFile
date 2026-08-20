@@ -90,7 +90,7 @@ class AppBatchActionBar extends StatelessWidget {
           children: [
             const CircularProgressIndicator(),
             const SizedBox(width: 20),
-            Expanded(child: Text(l10n.ui_batch_backup_progress)),
+            Expanded(child: Text(l10n.ui_batch_backup)),
           ],
         ),
       ),
@@ -156,9 +156,7 @@ class AppBatchActionBar extends StatelessWidget {
                 children: [
                   // Batch Backup
                   Expanded(
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Broken.document_download, size: 18),
-                      label: Text(l10n.ui_batch_backup, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange.withOpacity(0.15),
                         foregroundColor: Colors.orange,
@@ -167,14 +165,13 @@ class AppBatchActionBar extends StatelessWidget {
                         elevation: 0,
                       ),
                       onPressed: () => _handleBatchBackup(context),
+                      child: Text(l10n.ui_batch_backup, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                     ),
                   ),
                   const SizedBox(width: 8),
                   // Batch Share
                   Expanded(
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Broken.export_1, size: 18),
-                      label: Text(l10n.ui_batch_share, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.teal.withOpacity(0.15),
                         foregroundColor: Colors.teal,
@@ -183,15 +180,14 @@ class AppBatchActionBar extends StatelessWidget {
                         elevation: 0,
                       ),
                       onPressed: _handleBatchShare,
+                      child: Text(l10n.ui_batch_share, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                     ),
                   ),
                   if (canUninstall) ...[
                     const SizedBox(width: 8),
                     // Batch Uninstall
                     Expanded(
-                      child: ElevatedButton.icon(
-                        icon: const Icon(Broken.trash, size: 18),
-                        label: Text(l10n.ui_batch_uninstall, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                      child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red.withOpacity(0.15),
                           foregroundColor: Colors.red,
@@ -200,6 +196,7 @@ class AppBatchActionBar extends StatelessWidget {
                           elevation: 0,
                         ),
                         onPressed: () => _handleBatchUninstall(context),
+                        child: Text(l10n.ui_batch_uninstall, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                       ),
                     ),
                   ],

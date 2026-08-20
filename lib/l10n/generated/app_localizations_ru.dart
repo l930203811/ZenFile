@@ -5212,7 +5212,7 @@ class L10nRu extends L10n {
       'Added ui_app_open_location, ui_batch_backup, ui_batch_share, ui_batch_uninstall, ui_batch_uninstall_confirm translation keys, all 10 languages covered';
 
   @override
-  String get ui_batch_backup => 'Резервное копирование...';
+  String get ui_batch_backup => 'Резервная копия';
 
   @override
   String get ui_batch_share => 'Поделиться';

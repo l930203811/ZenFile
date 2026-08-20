@@ -4943,7 +4943,7 @@ class L10nZh extends L10n {
       '新增 ui_app_open_location、ui_batch_backup、ui_batch_share、ui_batch_uninstall、ui_batch_uninstall_confirm 翻译键，10 种语言全部补齐';
 
   @override
-  String get ui_batch_backup => '正在备份...';
+  String get ui_batch_backup => '备份';
 
   @override
   String get ui_batch_share => '分享';
@@ -9861,7 +9861,7 @@ class L10nZhTw extends L10nZh {
       'Added ui_app_open_location, ui_batch_backup, ui_batch_share, ui_batch_uninstall, ui_batch_uninstall_confirm translation keys, all 10 languages covered';
 
   @override
-  String get ui_batch_backup => '正在備份...';
+  String get ui_batch_backup => '備份';
 
   @override
   String get ui_batch_share => '分享';

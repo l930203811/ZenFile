@@ -9283,7 +9283,7 @@ abstract class L10n {
   /// ui_batch_backup label
   ///
   /// In zh, this message translates to:
-  /// **'正在备份...'**
+  /// **'备份'**
   String get ui_batch_backup;
 
   /// ui_batch_share label
