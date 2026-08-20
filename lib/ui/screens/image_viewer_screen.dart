@@ -420,7 +420,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.photo_filter, color: primary, size: 22),
+                leading: Icon(Icons.photo_filter, color: primary, size: 22),
                 title: Text(l10n.menu_edit_image),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -445,7 +445,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.cleaning_services_outlined, color: primary, size: 22),
+                leading: Icon(Icons.cleaning_services_outlined, color: primary, size: 22),
                 title: Text(l10n.menu_remove_metadata),
                 onTap: () {
                   Navigator.pop(ctx);

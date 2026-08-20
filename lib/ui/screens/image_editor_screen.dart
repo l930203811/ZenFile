@@ -371,7 +371,7 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
       if (!mounted) return;
       navigator.pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.editor_save_failed.replaceFirst('{e}', e.toString())), backgroundColor: Colors.redAccent),
+        SnackBar(content: Text(l10n.editor_save_failed(e.toString())), backgroundColor: Colors.redAccent),
       );
     }
   }

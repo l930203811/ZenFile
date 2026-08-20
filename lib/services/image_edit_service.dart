@@ -248,7 +248,7 @@ Uint8List _editImageIsolate(_EditTask task) {
 
   // 2) 旋转
   if (p.rotateAngle != 0) {
-    image = img.copyRotate(image, p.rotateAngle.toDouble());
+    image = img.copyRotate(image, angle: p.rotateAngle.toDouble());
   }
 
   // 3) 翻转
