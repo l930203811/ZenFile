@@ -674,7 +674,11 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     final isLocal = _scopeFilter == _ScopeFilter.local;
 
     if (widget.mediaType == MediaType.images) {
-      for (final e in provider.images) {
+      // 下钻文件夹时，截图也归入该文件夹（与 build 显示列表一致），需同时遍历 screenshots
+      final imageSources = widget.folderPath != null
+          ? <dynamic>[...provider.images, ...provider.screenshots]
+          : provider.images;
+      for (final e in imageSources) {
         if (e is FileSystemEntity) {
           final isRemote = e.path.startsWith('remote://');
           if (isLocal ? !isRemote : isRemote) filePaths.add(e.path);
