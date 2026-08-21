@@ -31,6 +31,20 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
   ImageEditParams _params = const ImageEditParams();
   Uint8List? _previewBytes;
   bool _processing = false;
+  // 已保存标志：保存成功后退出不再弹确认框
+  bool _saved = false;
+
+  /// 是否有未保存的编辑：参数有变化（含已提交的裁剪/缩放/滤镜等），或
+  /// 裁剪 tab 中已拖动尚未提交的裁剪框。未做任何修改/已保存返回 false。
+  bool get _hasUnsavedEdits =>
+      !_saved &&
+      (_params.hasChanges ||
+          (_cropTabActive &&
+              _cropRect != null &&
+              (_cropRect!.left > 0.001 ||
+                  _cropRect!.top > 0.001 ||
+                  _cropRect!.right < 0.999 ||
+                  _cropRect!.bottom < 0.999)));
 
   _EditorTab _tab = _EditorTab.adjust;
   bool get _cropTabActive => _tab == _EditorTab.crop;
@@ -389,6 +403,7 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
         }
       }
       await File(outPath).writeAsBytes(out);
+      _saved = true; // 已保存：后续退出（含返回键）不再弹确认框
       if (!mounted) return;
       navigator.pop();
       final sizeStr = _humanSize(out.length);
@@ -416,17 +431,8 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
     return '${s.toStringAsFixed(1)} ${suffixes[i]}';
   }
 
-  /// 是否存在未保存的编辑（含当前裁剪 tab 中已拖动但未提交的裁剪框）。
-  bool get _hasUnsavedEdits {
-    if (_params.hasChanges) return true;
-    final r = _cropRect;
-    if (r != null && (r.left > 0.001 || r.top > 0.001 || r.right < 0.999 || r.bottom < 0.999)) {
-      return true;
-    }
-    return false;
-  }
-
-  /// 返回键拦截：有未保存编辑时弹确认对话框。
+  /// 返回键拦截：有未保存修改（含裁剪 tab 未提交的裁剪框）时弹确认
+  /// 对话框；未做任何修改或已保存则直接退出，不弹窗。
   Future<void> _confirmExit() async {
     final l10n = L10n.of(context);
     final confirmed = await showDialog<bool>(
@@ -459,11 +465,13 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
-        if (_hasUnsavedEdits) {
-          _confirmExit();
-        } else {
+        // 未做任何修改或已保存：直接退出，不弹窗；
+        // 有未保存修改才弹确认框，防止误触丢失编辑中的调整。
+        if (!_hasUnsavedEdits) {
           Navigator.of(context).pop();
+          return;
         }
+        _confirmExit();
       },
       child: Scaffold(
       backgroundColor: Colors.black,
@@ -557,9 +565,18 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               _buildTabBar(l10n),
+                              // 面板统一最小高度：五个 tab 内容自然高度差异大
+                              // （旋转~76 / 滤镜~110 / 调整~230 / 缩放~330），
+                              // 切换时底部面板高度跳变、图片预览区跟着抖动。
+                              // 固定 minHeight 后所有 tab 面板等高，图片区域
+                              // 尺寸稳定；内容不足时下方留白，超出时自动撑高。
                               AnimatedSwitcher(
                                 duration: const Duration(milliseconds: 150),
-                                child: _buildPanel(l10n),
+                                child: ConstrainedBox(
+                                  key: ValueKey(_tab),
+                                  constraints: const BoxConstraints(minHeight: 340),
+                                  child: _buildPanel(l10n),
+                                ),
                               ),
                             ],
                           ),
@@ -844,7 +861,6 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionTitle(l10n.editor_aspect_free),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -857,24 +873,44 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              icon: const Icon(Icons.crop_free),
-              label: Text(l10n.editor_reset),
-              onPressed: _clearCrop,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Text(
-              l10n.editor_crop,
-              style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
-            ),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              TextButton.icon(
+                icon: const Icon(Icons.crop_free),
+                label: Text(l10n.editor_reset),
+                onPressed: _clearCrop,
+              ),
+              TextButton.icon(
+                icon: const Icon(Icons.check),
+                label: Text(l10n.ui_confirm),
+                onPressed: _confirmCrop,
+              ),
+              TextButton.icon(
+                icon: const Icon(Icons.close),
+                label: Text(l10n.ui_cancel),
+                onPressed: _cancelCrop,
+              ),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  void _confirmCrop() {
+    // 完成裁剪：把当前裁剪框写入参数并退出裁剪页
+    _switchTab(_EditorTab.adjust);
+  }
+
+  void _cancelCrop() {
+    // 取消裁剪：重置裁剪框并清除已写入的参数，回到编辑页
+    setState(() {
+      _cropRect = Rect.fromLTRB(0, 0, 1, 1);
+      _params = _params.copyWith(cropX: null, cropY: null, cropW: null, cropH: null);
+    });
+    _switchTab(_EditorTab.adjust);
   }
 
   @override
