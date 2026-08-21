@@ -168,8 +168,15 @@ class RootShizukuService {
   }
 
   static Future<void> deleteItem(String path, {required bool useRoot}) async {
-    final clean = _toFuseBypassPath(_normalize(path));
-    final cmd = 'rm -rf "$clean"';
+    final fuse = _normalize(path);
+    final raw = _toFuseBypassPath(fuse);
+    // FUSE 直接路径优先、底层路径回退：底层 ext4 上其它应用的
+    // Android/{data,obb} 文件/目录属主为对应 app uid（0660/0771），
+    // shell（Shizuku uid 2000）无权限，只能经 FUSE 直接子路径操作；
+    // root 两条路径均可用。
+    final cmd = raw != fuse
+        ? 'rm -rf "$fuse" 2>/dev/null || rm -rf "$raw"'
+        : 'rm -rf "$fuse"';
     await runCommand(cmd, useRoot: useRoot);
   }
 
@@ -215,17 +222,53 @@ class RootShizukuService {
     await runCommand(cmd, useRoot: useRoot);
   }
 
+  /// 复制文件/目录。受限路径采用「FUSE 直接路径优先、底层 /data/media/0
+  /// 路径回退」双跳策略：底层 ext4 上其它应用的 Android/{data,obb} 文件为
+  /// 0660（属主为对应 app uid），shell（Shizuku uid 2000）无读权限，只能经
+  /// FUSE 直接子路径读取；root 两条路径均可用。复制完成后校验目标存在，
+  /// 失败抛异常，避免静默失败导致后续链路（如上传暂存文件缺失）报
+  /// "Local file not found"。
   static Future<void> copyItem(String srcPath, String destPath, {required bool useRoot}) async {
-    final cleanSrc = _toFuseBypassPath(_normalize(srcPath));
-    final cleanDest = _toFuseBypassPath(_normalize(destPath));
-    final cmd = 'cp -r "$cleanSrc" "$cleanDest"';
+    final fuseSrc = _normalize(srcPath);
+    final rawSrc = _toFuseBypassPath(fuseSrc);
+    final fuseDest = _normalize(destPath);
+    final rawDest = _toFuseBypassPath(fuseDest);
+    final String cmd;
+    if (rawSrc != fuseSrc || rawDest != fuseDest) {
+      cmd = 'cp -r "$fuseSrc" "$fuseDest" 2>/dev/null || cp -r "$rawSrc" "$rawDest"';
+    } else {
+      cmd = 'cp -r "$fuseSrc" "$fuseDest"';
+    }
     await runCommand(cmd, useRoot: useRoot);
+    if (!await _exists(destPath, useRoot: useRoot)) {
+      throw Exception('Copy failed: $srcPath -> $destPath');
+    }
+  }
+
+  /// shell stat 检测路径是否存在（用于复制结果校验）。
+  static Future<bool> _exists(String path, {required bool useRoot}) async {
+    final clean = _toFuseBypassPath(_normalize(path));
+    final cmd = 'stat -c "%n" "$clean" 2>/dev/null';
+    try {
+      final out = await runCommand(cmd, useRoot: useRoot);
+      return out != null && out.trim().isNotEmpty;
+    } catch (_) {
+      return false;
+    }
   }
 
   static Future<void> moveItem(String srcPath, String destPath, {required bool useRoot}) async {
-    final cleanSrc = _toFuseBypassPath(_normalize(srcPath));
-    final cleanDest = _toFuseBypassPath(_normalize(destPath));
-    final cmd = 'mv "$cleanSrc" "$cleanDest"';
+    final fuseSrc = _normalize(srcPath);
+    final rawSrc = _toFuseBypassPath(fuseSrc);
+    final fuseDest = _normalize(destPath);
+    final rawDest = _toFuseBypassPath(fuseDest);
+    // 与 copyItem 一致的双跳策略（见其注释）。
+    final String cmd;
+    if (rawSrc != fuseSrc || rawDest != fuseDest) {
+      cmd = 'mv "$fuseSrc" "$fuseDest" 2>/dev/null || mv "$rawSrc" "$rawDest"';
+    } else {
+      cmd = 'mv "$fuseSrc" "$fuseDest"';
+    }
     await runCommand(cmd, useRoot: useRoot);
   }
 }

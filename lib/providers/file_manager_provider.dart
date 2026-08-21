@@ -3254,16 +3254,25 @@ class FileManagerProvider extends ChangeNotifier {
       _showTransferProgressDialog(context);
       notifyListeners();
 
-    final useRootMode = activeTab.useRootMode;
-    if (isRestrictedPath(currentPath) || _clipboardPaths.any((p) => isRestrictedPath(p))) {
+    // 仅当「目标本身受限」或「源是非 Android/data|obb 的系统受限路径（如
+    // /data）」时才走整项 shell copy/move 的简单链路。源为 Android/{data,obb}
+    // （FUSE 受限）且目标为普通目录时必须落入下方精细链路：这里若提前拦截，
+    // 会使用导航到普通目录后已被重置为 false 的 useRootMode（走 Shizuku 读
+    // 底层路径无权限，或直接异常），导致「复制到本地其它目录报错」，且下方
+    // 的受限复制精细修复（statItem 判型 + 逐文件 cp + 进度）永远执行不到。
+    final legacyRestrictedPaste = isRestrictedPath(currentPath) ||
+        _clipboardPaths.any((sp) => isRestrictedPath(sp) && !_isRestrictedAndroidPath(sp));
+    if (legacyRestrictedPaste) {
+      // root 优先解析执行模式（不依赖导航后可能被重置的 tab 模式）
+      final legacyUseRoot = await _resolveBypassMode() ?? activeTab.useRootMode;
       try {
         for (final srcPath in _clipboardPaths) {
           final name = p.basename(srcPath);
           final destPath = p.join(currentPath, name);
           if (_isCut) {
-            await RootShizukuService.moveItem(srcPath, destPath, useRoot: useRootMode);
+            await RootShizukuService.moveItem(srcPath, destPath, useRoot: legacyUseRoot);
           } else {
-            await RootShizukuService.copyItem(srcPath, destPath, useRoot: useRootMode);
+            await RootShizukuService.copyItem(srcPath, destPath, useRoot: legacyUseRoot);
           }
         }
         
@@ -5249,29 +5258,39 @@ class FileManagerProvider extends ChangeNotifier {
       _isRestrictedAndroidPath(path) &&
       FileSystemEntity.typeSync(path) == FileSystemEntityType.notFound;
 
-  /// 解析受限操作可用的执行模式：优先沿用当前 tab 的 root/shizuku 模式；
-  /// 当前模式不可用时探测另一个。返回 null 表示均不可用。
+  /// 解析受限操作可用的执行模式：root 优先（对 FUSE 与底层路径均有完全
+  /// 权限）。不依据当前 tab 的 useRootMode——用户从受限目录复制后导航到
+  /// 普通目录粘贴时，tab 模式已被重置为 false，会误选 Shizuku（底层路径
+  /// 无其它应用文件读权限）。返回 null 表示均不可用。
   Future<bool?> _resolveBypassMode() async {
     final status = await RootShizukuService.checkStatus();
     final rootOk = status.isRootAvailable;
     final shizukuOk = status.isShizukuAvailable && status.shizukuPermissionGranted;
-    if (useRootMode && rootOk) return true;
-    if (!useRootMode && shizukuOk) return false;
     if (rootOk) return true;
     if (shizukuOk) return false;
     return null;
   }
 
-  /// 将受限源文件经 shell `cp` 暂存到 app 外部缓存目录（底层 /data/media/0
-  /// 路径 shell/root 可写，FUSE 路径 app 可读），返回 app 可直接读取的
-  /// 暂存路径；供远程上传等只能读 Dart File 的链路使用。调用方负责删除。
+  /// 将受限源文件经 shell `cp` 暂存到共享存储隐藏目录 `.nfile_temp`
+  /// （app 经 FUSE 可读写，root/shell 经 FUSE 路径可写），返回 app 可直接
+  /// 读取的暂存路径；供远程上传等只能读 Dart File 的链路使用。调用方
+  /// 负责删除。
+  ///
+  /// 不再暂存到 getExternalStorageDirectories()（app 外部 files 目录）：
+  /// 该路径经底层 /data/media/0 写入后文件属主为 root/shell，app 经 FUSE
+  /// 读取自身外部目录下的他人属主文件会被拒绝，导致上传报
+  /// "Local file not found"。`.nfile_temp` 方案与「直接打开受限文件」
+  /// 的暂存实现（已验证可用）完全一致。
   Future<String> _stageRestrictedFile(String srcPath, bool useRoot) async {
-    final extDirs = await getExternalStorageDirectories();
-    final cacheDir = extDirs?.isNotEmpty == true ? extDirs!.first : await getTemporaryDirectory();
+    const stageDirPath = '/storage/emulated/0/.nfile_temp';
+    final dir = Directory(stageDirPath);
+    if (!dir.existsSync()) {
+      dir.createSync(recursive: true);
+    }
     final stageName = 'zenfile_stage_${DateTime.now().millisecondsSinceEpoch}_${p.basename(srcPath)}';
-    final stagedFuse = p.join(cacheDir.path, stageName);
-    await RootShizukuService.copyItem(srcPath, stagedFuse, useRoot: useRoot);
-    return stagedFuse;
+    final stagedPath = p.join(stageDirPath, stageName);
+    await RootShizukuService.copyItem(srcPath, stagedPath, useRoot: useRoot);
+    return stagedPath;
   }
 
   /// 递归收集受限目录的全部子项（shell listFiles 替代 Dart listSync），
