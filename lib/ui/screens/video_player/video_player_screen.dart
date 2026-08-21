@@ -76,12 +76,17 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   late AnimationController _controlsAnimController;
   late Animation<double> _controlsOpacity;
 
+  // Horizontal drag seek
+  bool _isHorizontalDragging = false;
+  double _dragStartX = 0;
+  Duration _dragStartPosition = Duration.zero;
+  int _dragSeekDelta = 0;
+
   // Double-tap seek accumulation & animation
   bool _showSeekLeft = false;
   bool _showSeekRight = false;
   Timer? _seekIndicatorTimer;
   int _seekSeconds = 0;
-  bool _lastSeekWasForward = true;
 
   // Long press 2.0x speed
   bool _isLongPressSpeed = false;
@@ -1202,56 +1207,53 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     }
   }
 
-  void _onDoubleTapLeft() {
+  void _onTogglePlayPause() {
     if (_isLocked) return;
-    if (_lastSeekWasForward || _seekSeconds == 0) {
-      _seekSeconds = 10;
-    } else {
-      _seekSeconds += 10;
-    }
-    _lastSeekWasForward = false;
-    player.seek(_position - const Duration(seconds: 10));
+    player.playOrPause();
+    _showControls();
+  }
 
+  void _onHorizontalDragStart(DragStartDetails details) {
+    if (_isLocked) return;
+    _isHorizontalDragging = true;
+    _dragStartX = details.globalPosition.dx;
+    _dragStartPosition = _position;
+    _dragSeekDelta = 0;
+    _hideTimer?.cancel();
+  }
+
+  void _onHorizontalDragUpdate(DragUpdateDetails details) {
+    if (_isLocked || !_isHorizontalDragging) return;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final totalSeconds = _duration.inSeconds;
+    if (screenWidth <= 0 || totalSeconds <= 0) return;
+    final deltaX = details.globalPosition.dx - _dragStartX;
+    final seekSec = (deltaX / screenWidth * totalSeconds / 2).round();
     setState(() {
-      _showSeekLeft = true;
-      _showSeekRight = false;
-    });
-
-    _seekIndicatorTimer?.cancel();
-    _seekIndicatorTimer = Timer(const Duration(milliseconds: 900), () {
-      if (mounted) {
-        setState(() {
-          _showSeekLeft = false;
-          _seekSeconds = 0;
-        });
-      }
+      _dragSeekDelta = seekSec;
+      _seekSeconds = seekSec.abs();
+      _showSeekRight = seekSec > 0;
+      _showSeekLeft = seekSec < 0;
     });
   }
 
-  void _onDoubleTapRight() {
-    if (_isLocked) return;
-    if (!_lastSeekWasForward || _seekSeconds == 0) {
-      _seekSeconds = 10;
-    } else {
-      _seekSeconds += 10;
-    }
-    _lastSeekWasForward = true;
-    player.seek(_position + const Duration(seconds: 10));
-
-    setState(() {
-      _showSeekRight = true;
-      _showSeekLeft = false;
-    });
-
+  void _onHorizontalDragEnd(DragEndDetails details) {
+    if (_isLocked || !_isHorizontalDragging) return;
+    _isHorizontalDragging = false;
+    final newPos = _dragStartPosition + Duration(seconds: _dragSeekDelta);
+    final clampedMs = newPos.inMilliseconds.clamp(Duration.zero.inMilliseconds, _duration.inMilliseconds);
+    player.seek(Duration(milliseconds: clampedMs));
     _seekIndicatorTimer?.cancel();
-    _seekIndicatorTimer = Timer(const Duration(milliseconds: 900), () {
+    _seekIndicatorTimer = Timer(const Duration(milliseconds: 400), () {
       if (mounted) {
         setState(() {
+          _showSeekLeft = false;
           _showSeekRight = false;
           _seekSeconds = 0;
         });
       }
     });
+    _startHideTimer();
   }
 
   void _onVerticalDragUpdate(DragUpdateDetails details, bool isLeft) {
@@ -1548,16 +1550,19 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
               ),
             ),
 
-          // Gesture Zones (Left/Right Drag, Double Tap & Long Press)
+          // Gesture Zones (Horizontal Drag Seek, Double Tap Play/Pause, Long Press Speed)
           Row(
             children: [
               Expanded(
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
-                  onDoubleTap: _onDoubleTapLeft,
+                  onDoubleTap: _onTogglePlayPause,
                   onTap: _toggleControls,
                   onLongPressStart: (_) => _startLongPress(),
                   onLongPressEnd: (_) => _endLongPress(),
+                  onHorizontalDragStart: _onHorizontalDragStart,
+                  onHorizontalDragUpdate: _onHorizontalDragUpdate,
+                  onHorizontalDragEnd: _onHorizontalDragEnd,
                   onVerticalDragUpdate: (d) => _onVerticalDragUpdate(d, true),
                   child: const SizedBox.expand(),
                 ),
@@ -1565,10 +1570,13 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
               Expanded(
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
-                  onDoubleTap: _onDoubleTapRight,
+                  onDoubleTap: _onTogglePlayPause,
                   onTap: _toggleControls,
                   onLongPressStart: (_) => _startLongPress(),
                   onLongPressEnd: (_) => _endLongPress(),
+                  onHorizontalDragStart: _onHorizontalDragStart,
+                  onHorizontalDragUpdate: _onHorizontalDragUpdate,
+                  onHorizontalDragEnd: _onHorizontalDragEnd,
                   onVerticalDragUpdate: (d) => _onVerticalDragUpdate(d, false),
                   child: const SizedBox.expand(),
                 ),
