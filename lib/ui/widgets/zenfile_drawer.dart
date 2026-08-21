@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../providers/file_manager_provider.dart';
 import '../screens/global_search_screen.dart';
+import '../screens/wake_on_lan_screen.dart';
 import '../screens/more_settings_screen.dart';
 import '../screens/vault_lock_screen.dart';
 import '../screens/ftp_server_screen.dart';
@@ -257,6 +258,15 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                           onTap: () {
                             Navigator.pop(context);
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const VaultLockScreen()));
+                          },
+                        ),
+                        _buildDrawerTile(
+                          context,
+                          icon: Broken.electricity,
+                          title: L10n.of(context).wol_title,
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const WakeOnLanScreen()));
                           },
                         ),
                       ],

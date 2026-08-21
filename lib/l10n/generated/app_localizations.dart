@@ -9472,6 +9472,24 @@ abstract class L10n {
   /// **'重置'**
   String get editor_reset;
 
+  /// Editor: exit confirmation dialog title
+  ///
+  /// In zh, this message translates to:
+  /// **'退出编辑？'**
+  String get editor_exit_confirm_title;
+
+  /// Editor: exit confirmation dialog message
+  ///
+  /// In zh, this message translates to:
+  /// **'未保存的修改将会丢失'**
+  String get editor_exit_confirm_message;
+
+  /// Editor: exit confirmation dialog confirm button (discard changes)
+  ///
+  /// In zh, this message translates to:
+  /// **'退出'**
+  String get editor_exit_discard;
+
   /// Filter: original / none
   ///
   /// In zh, this message translates to:
@@ -9591,6 +9609,90 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'输出：{size}'**
   String editor_output_size(Object size);
+
+  /// Wake on LAN: drawer tools entry title
+  ///
+  /// In zh, this message translates to:
+  /// **'局域网唤醒'**
+  String get wol_title;
+
+  /// WOL: add device sheet title
+  ///
+  /// In zh, this message translates to:
+  /// **'添加设备'**
+  String get wol_add_device;
+
+  /// WOL: edit device sheet title
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑设备'**
+  String get wol_edit_device;
+
+  /// WOL: device name field label
+  ///
+  /// In zh, this message translates to:
+  /// **'设备名称'**
+  String get wol_name;
+
+  /// WOL: device name field hint
+  ///
+  /// In zh, this message translates to:
+  /// **'例如：我的电脑'**
+  String get wol_name_hint;
+
+  /// WOL: MAC address field label
+  ///
+  /// In zh, this message translates to:
+  /// **'MAC 地址'**
+  String get wol_mac;
+
+  /// WOL: broadcast address field label
+  ///
+  /// In zh, this message translates to:
+  /// **'广播地址'**
+  String get wol_broadcast;
+
+  /// WOL: port field label
+  ///
+  /// In zh, this message translates to:
+  /// **'端口'**
+  String get wol_port;
+
+  /// WOL: wake button tooltip
+  ///
+  /// In zh, this message translates to:
+  /// **'唤醒'**
+  String get wol_wake;
+
+  /// WOL: packet sent success message
+  ///
+  /// In zh, this message translates to:
+  /// **'唤醒指令已发送'**
+  String get wol_sent;
+
+  /// WOL: send failed message
+  ///
+  /// In zh, this message translates to:
+  /// **'发送失败，请检查网络连接'**
+  String get wol_send_failed;
+
+  /// WOL: invalid MAC format message
+  ///
+  /// In zh, this message translates to:
+  /// **'MAC 地址格式无效'**
+  String get wol_invalid_mac;
+
+  /// WOL: empty list placeholder
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无设备，点击右下角按钮添加'**
+  String get wol_empty;
+
+  /// WOL: delete device confirm dialog. {name} is device name
+  ///
+  /// In zh, this message translates to:
+  /// **'确定删除设备「{name}」吗？'**
+  String wol_delete_confirm(Object name);
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

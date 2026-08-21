@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
+import '../../core/icon_fonts/broken_icons.dart';
 import '../../services/image_edit_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
@@ -416,11 +416,56 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
     return '${s.toStringAsFixed(1)} ${suffixes[i]}';
   }
 
+  /// 是否存在未保存的编辑（含当前裁剪 tab 中已拖动但未提交的裁剪框）。
+  bool get _hasUnsavedEdits {
+    if (_params.hasChanges) return true;
+    final r = _cropRect;
+    if (r != null && (r.left > 0.001 || r.top > 0.001 || r.right < 0.999 || r.bottom < 0.999)) {
+      return true;
+    }
+    return false;
+  }
+
+  /// 返回键拦截：有未保存编辑时弹确认对话框。
+  Future<void> _confirmExit() async {
+    final l10n = L10n.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.editor_exit_confirm_title),
+        content: Text(l10n.editor_exit_confirm_message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.ui_cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.editor_exit_discard),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      Navigator.of(context).pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = L10n.of(context);
     final theme = Theme.of(context);
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (_hasUnsavedEdits) {
+          _confirmExit();
+        } else {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: theme.colorScheme.surface,
@@ -428,7 +473,7 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
         title: Text(l10n.edit_image),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Broken.undo),
             tooltip: l10n.editor_reset,
             onPressed: () {
               setState(() {
@@ -499,13 +544,31 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
                         },
                       ),
                     ),
-                    _buildTabBar(l10n),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 150),
-                      child: _buildPanel(l10n),
+                    ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
+                      ),
+                      child: Container(
+                        color: Theme.of(context).colorScheme.surface,
+                        child: SafeArea(
+                          top: false,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _buildTabBar(l10n),
+                              AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 150),
+                                child: _buildPanel(l10n),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
+      ),
     );
   }
 
@@ -518,7 +581,6 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
       (_EditorTab.crop, l10n.editor_crop),
     ];
     return Container(
-      color: Theme.of(context).colorScheme.surface,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -561,7 +623,6 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
 
   Widget _buildAdjustPanel(L10n l10n) {
     return Container(
-      color: Theme.of(context).colorScheme.surface,
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -606,7 +667,6 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
 
   Widget _buildFiltersPanel(L10n l10n) {
     return Container(
-      color: Theme.of(context).colorScheme.surface,
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
       child: Wrap(
         spacing: 8,
@@ -688,7 +748,6 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
     if (_info == null) return const SizedBox.shrink();
     if (_widthCtrl.text.isEmpty || _heightCtrl.text.isEmpty) _initResizeFields();
     return Container(
-      color: Theme.of(context).colorScheme.surface,
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -750,7 +809,6 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
 
   Widget _buildRotatePanel(L10n l10n) {
     return Container(
-      color: Theme.of(context).colorScheme.surface,
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -782,7 +840,6 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
 
   Widget _buildCropPanel(L10n l10n) {
     return Container(
-      color: Theme.of(context).colorScheme.surface,
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -850,12 +907,14 @@ class _CropPainter extends CustomPainter {
       crop.width * displayRect.width,
       crop.height * displayRect.height,
     );
-    // 外部暗化遮罩
+    // 在透明层上画外部暗化遮罩，再用 clear 在遮罩上挖出透明裁剪区
+    final fullRect = Rect.fromLTWH(0, 0, size.width, size.height);
+    canvas.saveLayer(fullRect, Paint());
     final paint = Paint()..color = Colors.black.withOpacity(0.55);
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
-    // 清除裁剪区（用 DestinationOut 在遮罩上... 这里简化为在裁剪区画透明）
-    final clear = Paint()..blendMode = ui.BlendMode.dstOut;
+    canvas.drawRect(fullRect, paint);
+    final clear = Paint()..blendMode = BlendMode.clear;
     canvas.drawRect(rect, clear);
+    canvas.restore();
 
     // 边框
     final border = Paint()

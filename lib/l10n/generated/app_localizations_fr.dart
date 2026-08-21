@@ -5327,7 +5327,17 @@ class L10nFr extends L10n {
   String get editor_overwrite_original => 'Overwrite original';
 
   @override
-  String get editor_reset => 'Reset';
+  String get editor_reset => 'Réinitialiser';
+
+  @override
+  String get editor_exit_confirm_title => 'Quitter l\'édition ?';
+
+  @override
+  String get editor_exit_confirm_message =>
+      'Les modifications non enregistrées seront perdues';
+
+  @override
+  String get editor_exit_discard => 'Quitter';
 
   @override
   String get editor_filter_original => 'Original';
@@ -5391,5 +5401,51 @@ class L10nFr extends L10n {
   @override
   String editor_output_size(Object size) {
     return 'Output: $size';
+  }
+
+  @override
+  String get wol_title => 'Wake on LAN';
+
+  @override
+  String get wol_add_device => 'Ajouter un appareil';
+
+  @override
+  String get wol_edit_device => 'Modifier l\'appareil';
+
+  @override
+  String get wol_name => 'Nom de l\'appareil';
+
+  @override
+  String get wol_name_hint => 'ex. Mon PC';
+
+  @override
+  String get wol_mac => 'Adresse MAC';
+
+  @override
+  String get wol_broadcast => 'Adresse de diffusion';
+
+  @override
+  String get wol_port => 'Port';
+
+  @override
+  String get wol_wake => 'Réveiller';
+
+  @override
+  String get wol_sent => 'Paquet de réveil envoyé';
+
+  @override
+  String get wol_send_failed =>
+      'Échec de l\'envoi, vérifiez la connexion réseau';
+
+  @override
+  String get wol_invalid_mac => 'Format d\'adresse MAC invalide';
+
+  @override
+  String get wol_empty =>
+      'Aucun appareil. Appuyez sur le bouton pour en ajouter un';
+
+  @override
+  String wol_delete_confirm(Object name) {
+    return 'Supprimer l\'appareil « $name » ?';
   }
 }

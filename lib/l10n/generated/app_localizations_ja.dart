@@ -5112,7 +5112,16 @@ class L10nJa extends L10n {
   String get editor_overwrite_original => 'Overwrite original';
 
   @override
-  String get editor_reset => 'Reset';
+  String get editor_reset => 'リセット';
+
+  @override
+  String get editor_exit_confirm_title => '編集を終了しますか？';
+
+  @override
+  String get editor_exit_confirm_message => '保存していない変更は破棄されます';
+
+  @override
+  String get editor_exit_discard => '終了';
 
   @override
   String get editor_filter_original => 'Original';
@@ -5176,5 +5185,49 @@ class L10nJa extends L10n {
   @override
   String editor_output_size(Object size) {
     return 'Output: $size';
+  }
+
+  @override
+  String get wol_title => 'LAN ウェイクアップ';
+
+  @override
+  String get wol_add_device => 'デバイスを追加';
+
+  @override
+  String get wol_edit_device => 'デバイスを編集';
+
+  @override
+  String get wol_name => 'デバイス名';
+
+  @override
+  String get wol_name_hint => '例：マイPC';
+
+  @override
+  String get wol_mac => 'MACアドレス';
+
+  @override
+  String get wol_broadcast => 'ブロードキャストアドレス';
+
+  @override
+  String get wol_port => 'ポート';
+
+  @override
+  String get wol_wake => '起動';
+
+  @override
+  String get wol_sent => 'ウェイクパケットを送信しました';
+
+  @override
+  String get wol_send_failed => '送信に失敗しました。ネットワーク接続を確認してください';
+
+  @override
+  String get wol_invalid_mac => 'MACアドレスの形式が無効です';
+
+  @override
+  String get wol_empty => 'デバイスがありません。右下のボタンで追加できます';
+
+  @override
+  String wol_delete_confirm(Object name) {
+    return 'デバイス「$name」を削除しますか？';
   }
 }

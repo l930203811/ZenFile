@@ -5110,7 +5110,16 @@ class L10nKo extends L10n {
   String get editor_overwrite_original => 'Overwrite original';
 
   @override
-  String get editor_reset => 'Reset';
+  String get editor_reset => '재설정';
+
+  @override
+  String get editor_exit_confirm_title => '편집을 종료할까요?';
+
+  @override
+  String get editor_exit_confirm_message => '저장하지 않은 변경 사항이 사라집니다';
+
+  @override
+  String get editor_exit_discard => '종료';
 
   @override
   String get editor_filter_original => 'Original';
@@ -5174,5 +5183,49 @@ class L10nKo extends L10n {
   @override
   String editor_output_size(Object size) {
     return 'Output: $size';
+  }
+
+  @override
+  String get wol_title => 'LAN 웨이크 온';
+
+  @override
+  String get wol_add_device => '기기 추가';
+
+  @override
+  String get wol_edit_device => '기기 편집';
+
+  @override
+  String get wol_name => '기기 이름';
+
+  @override
+  String get wol_name_hint => '예: 내 PC';
+
+  @override
+  String get wol_mac => 'MAC 주소';
+
+  @override
+  String get wol_broadcast => '브로드캐스트 주소';
+
+  @override
+  String get wol_port => '포트';
+
+  @override
+  String get wol_wake => '깨우기';
+
+  @override
+  String get wol_sent => '웨이크 패킷을 전송했습니다';
+
+  @override
+  String get wol_send_failed => '전송 실패. 네트워크 연결을 확인하세요';
+
+  @override
+  String get wol_invalid_mac => 'MAC 주소 형식이 잘못되었습니다';
+
+  @override
+  String get wol_empty => '기기가 없습니다. 오른쪽 아래 버튼으로 추가하세요';
+
+  @override
+  String wol_delete_confirm(Object name) {
+    return '기기 \"$name\"을(를) 삭제할까요?';
   }
 }

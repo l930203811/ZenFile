@@ -783,6 +783,20 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(
+                        icon: const Icon(Broken.edit, color: Colors.white, size: 18),
+                        tooltip: L10n.of(context).menu_edit_image,
+                        onPressed: _openEditor,
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.5),
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
                         icon: const Icon(Broken.more, color: Colors.white, size: 18),
                         onPressed: _showImageOptions,
                       ),

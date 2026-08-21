@@ -5144,9 +5144,21 @@
   "@editor_overwrite_original": {
     "description": "Save menu: overwrite original file"
   },
-  "editor_reset": "Reset",
+  "editor_reset": "Réinitialiser",
   "@editor_reset": {
     "description": "Reset all edits"
+  },
+  "editor_exit_confirm_title": "Quitter l'édition ?",
+  "@editor_exit_confirm_title": {
+    "description": "Editor: exit confirmation dialog title"
+  },
+  "editor_exit_confirm_message": "Les modifications non enregistrées seront perdues",
+  "@editor_exit_confirm_message": {
+    "description": "Editor: exit confirmation dialog message"
+  },
+  "editor_exit_discard": "Quitter",
+  "@editor_exit_discard": {
+    "description": "Editor: exit confirmation dialog confirm button (discard changes)"
   },
   "editor_filter_original": "Original",
   "@editor_filter_original": {
@@ -5227,5 +5239,37 @@
   "editor_output_size": "Output: {size}",
   "@editor_output_size": {
     "description": "Editor: output size label. {size} is human size"
+  }
+  ,
+  "wol_title": "Wake on LAN",
+  "@wol_title": { "description": "Wake on LAN: drawer tools entry title" },
+  "wol_add_device": "Ajouter un appareil",
+  "@wol_add_device": { "description": "WOL: add device sheet title" },
+  "wol_edit_device": "Modifier l'appareil",
+  "@wol_edit_device": { "description": "WOL: edit device sheet title" },
+  "wol_name": "Nom de l'appareil",
+  "@wol_name": { "description": "WOL: device name field label" },
+  "wol_name_hint": "ex. Mon PC",
+  "@wol_name_hint": { "description": "WOL: device name field hint" },
+  "wol_mac": "Adresse MAC",
+  "@wol_mac": { "description": "WOL: MAC address field label" },
+  "wol_broadcast": "Adresse de diffusion",
+  "@wol_broadcast": { "description": "WOL: broadcast address field label" },
+  "wol_port": "Port",
+  "@wol_port": { "description": "WOL: port field label" },
+  "wol_wake": "Réveiller",
+  "@wol_wake": { "description": "WOL: wake button tooltip" },
+  "wol_sent": "Paquet de réveil envoyé",
+  "@wol_sent": { "description": "WOL: packet sent success message" },
+  "wol_send_failed": "Échec de l'envoi, vérifiez la connexion réseau",
+  "@wol_send_failed": { "description": "WOL: send failed message" },
+  "wol_invalid_mac": "Format d'adresse MAC invalide",
+  "@wol_invalid_mac": { "description": "WOL: invalid MAC format message" },
+  "wol_empty": "Aucun appareil. Appuyez sur le bouton pour en ajouter un",
+  "@wol_empty": { "description": "WOL: empty list placeholder" },
+  "wol_delete_confirm": "Supprimer l'appareil « {name} » ?",
+  "@wol_delete_confirm": {
+    "description": "WOL: delete device confirm dialog. {name} is device name",
+    "placeholders": { "name": {} }
   }
 }

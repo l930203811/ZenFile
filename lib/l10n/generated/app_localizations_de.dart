@@ -5299,7 +5299,17 @@ class L10nDe extends L10n {
   String get editor_overwrite_original => 'Overwrite original';
 
   @override
-  String get editor_reset => 'Reset';
+  String get editor_reset => 'Zurücksetzen';
+
+  @override
+  String get editor_exit_confirm_title => 'Bearbeitung beenden?';
+
+  @override
+  String get editor_exit_confirm_message =>
+      'Nicht gespeicherte Änderungen gehen verloren';
+
+  @override
+  String get editor_exit_discard => 'Beenden';
 
   @override
   String get editor_filter_original => 'Original';
@@ -5363,5 +5373,51 @@ class L10nDe extends L10n {
   @override
   String editor_output_size(Object size) {
     return 'Output: $size';
+  }
+
+  @override
+  String get wol_title => 'Wake on LAN';
+
+  @override
+  String get wol_add_device => 'Gerät hinzufügen';
+
+  @override
+  String get wol_edit_device => 'Gerät bearbeiten';
+
+  @override
+  String get wol_name => 'Gerätename';
+
+  @override
+  String get wol_name_hint => 'z.B. Mein PC';
+
+  @override
+  String get wol_mac => 'MAC-Adresse';
+
+  @override
+  String get wol_broadcast => 'Broadcast-Adresse';
+
+  @override
+  String get wol_port => 'Port';
+
+  @override
+  String get wol_wake => 'Aufwecken';
+
+  @override
+  String get wol_sent => 'Wake-Paket gesendet';
+
+  @override
+  String get wol_send_failed =>
+      'Senden fehlgeschlagen, Netzwerkverbindung prüfen';
+
+  @override
+  String get wol_invalid_mac => 'Ungültiges MAC-Adressformat';
+
+  @override
+  String get wol_empty =>
+      'Noch keine Geräte. Über die Schaltfläche unten rechts hinzufügen';
+
+  @override
+  String wol_delete_confirm(Object name) {
+    return 'Gerät „$name\" löschen?';
   }
 }

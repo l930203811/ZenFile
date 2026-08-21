@@ -5276,6 +5276,15 @@ class L10nEn extends L10n {
   String get editor_reset => 'Reset';
 
   @override
+  String get editor_exit_confirm_title => 'Exit editing?';
+
+  @override
+  String get editor_exit_confirm_message => 'Unsaved changes will be lost';
+
+  @override
+  String get editor_exit_discard => 'Exit';
+
+  @override
   String get editor_filter_original => 'Original';
 
   @override
@@ -5337,5 +5346,49 @@ class L10nEn extends L10n {
   @override
   String editor_output_size(Object size) {
     return 'Output: $size';
+  }
+
+  @override
+  String get wol_title => 'Wake on LAN';
+
+  @override
+  String get wol_add_device => 'Add device';
+
+  @override
+  String get wol_edit_device => 'Edit device';
+
+  @override
+  String get wol_name => 'Device name';
+
+  @override
+  String get wol_name_hint => 'e.g. My PC';
+
+  @override
+  String get wol_mac => 'MAC address';
+
+  @override
+  String get wol_broadcast => 'Broadcast address';
+
+  @override
+  String get wol_port => 'Port';
+
+  @override
+  String get wol_wake => 'Wake';
+
+  @override
+  String get wol_sent => 'Wake packet sent';
+
+  @override
+  String get wol_send_failed => 'Send failed, check network connection';
+
+  @override
+  String get wol_invalid_mac => 'Invalid MAC address format';
+
+  @override
+  String get wol_empty => 'No devices yet. Tap the button to add one';
+
+  @override
+  String wol_delete_confirm(Object name) {
+    return 'Delete device \"$name\"?';
   }
 }

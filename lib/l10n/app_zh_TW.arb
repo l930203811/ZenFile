@@ -5292,9 +5292,21 @@
   "@editor_overwrite_original": {
     "description": "Save menu: overwrite original file"
   },
-  "editor_reset": "Reset",
+  "editor_reset": "重設",
   "@editor_reset": {
     "description": "Reset all edits"
+  },
+  "editor_exit_confirm_title": "退出編輯？",
+  "@editor_exit_confirm_title": {
+    "description": "Editor: exit confirmation dialog title"
+  },
+  "editor_exit_confirm_message": "未儲存的修改將會遺失",
+  "@editor_exit_confirm_message": {
+    "description": "Editor: exit confirmation dialog message"
+  },
+  "editor_exit_discard": "退出",
+  "@editor_exit_discard": {
+    "description": "Editor: exit confirmation dialog confirm button (discard changes)"
   },
   "editor_filter_original": "Original",
   "@editor_filter_original": {
@@ -5375,5 +5387,37 @@
   "editor_output_size": "Output: {size}",
   "@editor_output_size": {
     "description": "Editor: output size label. {size} is human size"
+  }
+  ,
+  "wol_title": "區域網路喚醒",
+  "@wol_title": { "description": "Wake on LAN: drawer tools entry title" },
+  "wol_add_device": "新增裝置",
+  "@wol_add_device": { "description": "WOL: add device sheet title" },
+  "wol_edit_device": "編輯裝置",
+  "@wol_edit_device": { "description": "WOL: edit device sheet title" },
+  "wol_name": "裝置名稱",
+  "@wol_name": { "description": "WOL: device name field label" },
+  "wol_name_hint": "例如：我的電腦",
+  "@wol_name_hint": { "description": "WOL: device name field hint" },
+  "wol_mac": "MAC 位址",
+  "@wol_mac": { "description": "WOL: MAC address field label" },
+  "wol_broadcast": "廣播位址",
+  "@wol_broadcast": { "description": "WOL: broadcast address field label" },
+  "wol_port": "連接埠",
+  "@wol_port": { "description": "WOL: port field label" },
+  "wol_wake": "喚醒",
+  "@wol_wake": { "description": "WOL: wake button tooltip" },
+  "wol_sent": "喚醒指令已傳送",
+  "@wol_sent": { "description": "WOL: packet sent success message" },
+  "wol_send_failed": "傳送失敗，請檢查網路連線",
+  "@wol_send_failed": { "description": "WOL: send failed message" },
+  "wol_invalid_mac": "MAC 位址格式無效",
+  "@wol_invalid_mac": { "description": "WOL: invalid MAC format message" },
+  "wol_empty": "尚無裝置，點擊右下角按鈕新增",
+  "@wol_empty": { "description": "WOL: empty list placeholder" },
+  "wol_delete_confirm": "確定刪除裝置「{name}」嗎？",
+  "@wol_delete_confirm": {
+    "description": "WOL: delete device confirm dialog. {name} is device name",
+    "placeholders": { "name": {} }
   }
 }

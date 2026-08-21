@@ -5322,7 +5322,17 @@ class L10nEs extends L10n {
   String get editor_overwrite_original => 'Overwrite original';
 
   @override
-  String get editor_reset => 'Reset';
+  String get editor_reset => 'Restablecer';
+
+  @override
+  String get editor_exit_confirm_title => '¿Salir del editor?';
+
+  @override
+  String get editor_exit_confirm_message =>
+      'Se perderán los cambios no guardados';
+
+  @override
+  String get editor_exit_discard => 'Salir';
 
   @override
   String get editor_filter_original => 'Original';
@@ -5386,5 +5396,49 @@ class L10nEs extends L10n {
   @override
   String editor_output_size(Object size) {
     return 'Output: $size';
+  }
+
+  @override
+  String get wol_title => 'Wake on LAN';
+
+  @override
+  String get wol_add_device => 'Añadir dispositivo';
+
+  @override
+  String get wol_edit_device => 'Editar dispositivo';
+
+  @override
+  String get wol_name => 'Nombre del dispositivo';
+
+  @override
+  String get wol_name_hint => 'ej. Mi PC';
+
+  @override
+  String get wol_mac => 'Dirección MAC';
+
+  @override
+  String get wol_broadcast => 'Dirección de difusión';
+
+  @override
+  String get wol_port => 'Puerto';
+
+  @override
+  String get wol_wake => 'Despertar';
+
+  @override
+  String get wol_sent => 'Paquete de wake enviado';
+
+  @override
+  String get wol_send_failed => 'Error al enviar, comprueba la conexión de red';
+
+  @override
+  String get wol_invalid_mac => 'Formato de dirección MAC no válido';
+
+  @override
+  String get wol_empty => 'Sin dispositivos. Toca el botón para añadir uno';
+
+  @override
+  String wol_delete_confirm(Object name) {
+    return '¿Eliminar el dispositivo \"$name\"?';
   }
 }

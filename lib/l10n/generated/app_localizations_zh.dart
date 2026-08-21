@@ -5041,6 +5041,15 @@ class L10nZh extends L10n {
   String get editor_reset => '重置';
 
   @override
+  String get editor_exit_confirm_title => '退出编辑？';
+
+  @override
+  String get editor_exit_confirm_message => '未保存的修改将会丢失';
+
+  @override
+  String get editor_exit_discard => '退出';
+
+  @override
   String get editor_filter_original => '原图';
 
   @override
@@ -5102,6 +5111,50 @@ class L10nZh extends L10n {
   @override
   String editor_output_size(Object size) {
     return '输出：$size';
+  }
+
+  @override
+  String get wol_title => '局域网唤醒';
+
+  @override
+  String get wol_add_device => '添加设备';
+
+  @override
+  String get wol_edit_device => '编辑设备';
+
+  @override
+  String get wol_name => '设备名称';
+
+  @override
+  String get wol_name_hint => '例如：我的电脑';
+
+  @override
+  String get wol_mac => 'MAC 地址';
+
+  @override
+  String get wol_broadcast => '广播地址';
+
+  @override
+  String get wol_port => '端口';
+
+  @override
+  String get wol_wake => '唤醒';
+
+  @override
+  String get wol_sent => '唤醒指令已发送';
+
+  @override
+  String get wol_send_failed => '发送失败，请检查网络连接';
+
+  @override
+  String get wol_invalid_mac => 'MAC 地址格式无效';
+
+  @override
+  String get wol_empty => '暂无设备，点击右下角按钮添加';
+
+  @override
+  String wol_delete_confirm(Object name) {
+    return '确定删除设备「$name」吗？';
   }
 }
 
@@ -10101,7 +10154,16 @@ class L10nZhTw extends L10nZh {
   String get editor_overwrite_original => 'Overwrite original';
 
   @override
-  String get editor_reset => 'Reset';
+  String get editor_reset => '重設';
+
+  @override
+  String get editor_exit_confirm_title => '退出編輯？';
+
+  @override
+  String get editor_exit_confirm_message => '未儲存的修改將會遺失';
+
+  @override
+  String get editor_exit_discard => '退出';
 
   @override
   String get editor_filter_original => 'Original';
@@ -10165,5 +10227,49 @@ class L10nZhTw extends L10nZh {
   @override
   String editor_output_size(Object size) {
     return 'Output: $size';
+  }
+
+  @override
+  String get wol_title => '區域網路喚醒';
+
+  @override
+  String get wol_add_device => '新增裝置';
+
+  @override
+  String get wol_edit_device => '編輯裝置';
+
+  @override
+  String get wol_name => '裝置名稱';
+
+  @override
+  String get wol_name_hint => '例如：我的電腦';
+
+  @override
+  String get wol_mac => 'MAC 位址';
+
+  @override
+  String get wol_broadcast => '廣播位址';
+
+  @override
+  String get wol_port => '連接埠';
+
+  @override
+  String get wol_wake => '喚醒';
+
+  @override
+  String get wol_sent => '喚醒指令已傳送';
+
+  @override
+  String get wol_send_failed => '傳送失敗，請檢查網路連線';
+
+  @override
+  String get wol_invalid_mac => 'MAC 位址格式無效';
+
+  @override
+  String get wol_empty => '尚無裝置，點擊右下角按鈕新增';
+
+  @override
+  String wol_delete_confirm(Object name) {
+    return '確定刪除裝置「$name」嗎？';
   }
 }

@@ -5429,6 +5429,18 @@
   "@editor_reset": {
     "description": "Reset all edits"
   },
+  "editor_exit_confirm_title": "退出编辑？",
+  "@editor_exit_confirm_title": {
+    "description": "Editor: exit confirmation dialog title"
+  },
+  "editor_exit_confirm_message": "未保存的修改将会丢失",
+  "@editor_exit_confirm_message": {
+    "description": "Editor: exit confirmation dialog message"
+  },
+  "editor_exit_discard": "退出",
+  "@editor_exit_discard": {
+    "description": "Editor: exit confirmation dialog confirm button (discard changes)"
+  },
   "editor_filter_original": "原图",
   "@editor_filter_original": {
     "description": "Filter: original / none"
@@ -5508,5 +5520,37 @@
   "editor_output_size": "输出：{size}",
   "@editor_output_size": {
     "description": "Editor: output size label. {size} is human size"
+  }
+  ,
+  "wol_title": "局域网唤醒",
+  "@wol_title": { "description": "Wake on LAN: drawer tools entry title" },
+  "wol_add_device": "添加设备",
+  "@wol_add_device": { "description": "WOL: add device sheet title" },
+  "wol_edit_device": "编辑设备",
+  "@wol_edit_device": { "description": "WOL: edit device sheet title" },
+  "wol_name": "设备名称",
+  "@wol_name": { "description": "WOL: device name field label" },
+  "wol_name_hint": "例如：我的电脑",
+  "@wol_name_hint": { "description": "WOL: device name field hint" },
+  "wol_mac": "MAC 地址",
+  "@wol_mac": { "description": "WOL: MAC address field label" },
+  "wol_broadcast": "广播地址",
+  "@wol_broadcast": { "description": "WOL: broadcast address field label" },
+  "wol_port": "端口",
+  "@wol_port": { "description": "WOL: port field label" },
+  "wol_wake": "唤醒",
+  "@wol_wake": { "description": "WOL: wake button tooltip" },
+  "wol_sent": "唤醒指令已发送",
+  "@wol_sent": { "description": "WOL: packet sent success message" },
+  "wol_send_failed": "发送失败，请检查网络连接",
+  "@wol_send_failed": { "description": "WOL: send failed message" },
+  "wol_invalid_mac": "MAC 地址格式无效",
+  "@wol_invalid_mac": { "description": "WOL: invalid MAC format message" },
+  "wol_empty": "暂无设备，点击右下角按钮添加",
+  "@wol_empty": { "description": "WOL: empty list placeholder" },
+  "wol_delete_confirm": "确定删除设备「{name}」吗？",
+  "@wol_delete_confirm": {
+    "description": "WOL: delete device confirm dialog. {name} is device name",
+    "placeholders": { "name": {} }
   }
 }

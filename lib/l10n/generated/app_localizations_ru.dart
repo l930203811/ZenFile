@@ -5307,7 +5307,17 @@ class L10nRu extends L10n {
   String get editor_overwrite_original => 'Overwrite original';
 
   @override
-  String get editor_reset => 'Reset';
+  String get editor_reset => 'Сбросить';
+
+  @override
+  String get editor_exit_confirm_title => 'Выйти из редактора?';
+
+  @override
+  String get editor_exit_confirm_message =>
+      'Несохранённые изменения будут потеряны';
+
+  @override
+  String get editor_exit_discard => 'Выйти';
 
   @override
   String get editor_filter_original => 'Original';
@@ -5371,5 +5381,49 @@ class L10nRu extends L10n {
   @override
   String editor_output_size(Object size) {
     return 'Output: $size';
+  }
+
+  @override
+  String get wol_title => 'Wake on LAN';
+
+  @override
+  String get wol_add_device => 'Добавить устройство';
+
+  @override
+  String get wol_edit_device => 'Изменить устройство';
+
+  @override
+  String get wol_name => 'Имя устройства';
+
+  @override
+  String get wol_name_hint => 'напр. Мой ПК';
+
+  @override
+  String get wol_mac => 'MAC-адрес';
+
+  @override
+  String get wol_broadcast => 'Адрес рассылки';
+
+  @override
+  String get wol_port => 'Порт';
+
+  @override
+  String get wol_wake => 'Разбудить';
+
+  @override
+  String get wol_sent => 'Пакет пробуждения отправлен';
+
+  @override
+  String get wol_send_failed => 'Ошибка отправки, проверьте сетевое соединение';
+
+  @override
+  String get wol_invalid_mac => 'Неверный формат MAC-адреса';
+
+  @override
+  String get wol_empty => 'Нет устройств. Нажмите кнопку, чтобы добавить';
+
+  @override
+  String wol_delete_confirm(Object name) {
+    return 'Удалить устройство «$name»?';
   }
 }

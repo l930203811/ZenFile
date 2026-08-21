@@ -5205,6 +5205,18 @@
   "@editor_reset": {
     "description": "Reset all edits"
   },
+  "editor_exit_confirm_title": "Exit editing?",
+  "@editor_exit_confirm_title": {
+    "description": "Editor: exit confirmation dialog title"
+  },
+  "editor_exit_confirm_message": "Unsaved changes will be lost",
+  "@editor_exit_confirm_message": {
+    "description": "Editor: exit confirmation dialog message"
+  },
+  "editor_exit_discard": "Exit",
+  "@editor_exit_discard": {
+    "description": "Editor: exit confirmation dialog confirm button (discard changes)"
+  },
   "editor_filter_original": "Original",
   "@editor_filter_original": {
     "description": "Filter: original / none"
@@ -5284,5 +5296,37 @@
   "editor_output_size": "Output: {size}",
   "@editor_output_size": {
     "description": "Editor: output size label. {size} is human size"
+  }
+  ,
+  "wol_title": "Wake on LAN",
+  "@wol_title": { "description": "Wake on LAN: drawer tools entry title" },
+  "wol_add_device": "Add device",
+  "@wol_add_device": { "description": "WOL: add device sheet title" },
+  "wol_edit_device": "Edit device",
+  "@wol_edit_device": { "description": "WOL: edit device sheet title" },
+  "wol_name": "Device name",
+  "@wol_name": { "description": "WOL: device name field label" },
+  "wol_name_hint": "e.g. My PC",
+  "@wol_name_hint": { "description": "WOL: device name field hint" },
+  "wol_mac": "MAC address",
+  "@wol_mac": { "description": "WOL: MAC address field label" },
+  "wol_broadcast": "Broadcast address",
+  "@wol_broadcast": { "description": "WOL: broadcast address field label" },
+  "wol_port": "Port",
+  "@wol_port": { "description": "WOL: port field label" },
+  "wol_wake": "Wake",
+  "@wol_wake": { "description": "WOL: wake button tooltip" },
+  "wol_sent": "Wake packet sent",
+  "@wol_sent": { "description": "WOL: packet sent success message" },
+  "wol_send_failed": "Send failed, check network connection",
+  "@wol_send_failed": { "description": "WOL: send failed message" },
+  "wol_invalid_mac": "Invalid MAC address format",
+  "@wol_invalid_mac": { "description": "WOL: invalid MAC format message" },
+  "wol_empty": "No devices yet. Tap the button to add one",
+  "@wol_empty": { "description": "WOL: empty list placeholder" },
+  "wol_delete_confirm": "Delete device \"{name}\"?",
+  "@wol_delete_confirm": {
+    "description": "WOL: delete device confirm dialog. {name} is device name",
+    "placeholders": { "name": {} }
   }
 }
