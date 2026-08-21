@@ -5467,4 +5467,10 @@ class L10nEn extends L10n {
   String wol_delete_confirm(Object name) {
     return 'Delete device \"$name\"?';
   }
+
+  @override
+  String get editor_undo => 'Undo';
+
+  @override
+  String get wol_port_hint => 'Optional';
 }

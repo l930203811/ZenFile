@@ -5378,5 +5378,13 @@
     "placeholders": {
       "name": {}
     }
+  },
+  "editor_undo": "元に戻す",
+  "@editor_undo": {
+    "description": "editor_undo label"
+  },
+  "wol_port_hint": "任意",
+  "@wol_port_hint": {
+    "description": "wol_port_hint label"
   }
 }

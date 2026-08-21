@@ -5431,4 +5431,10 @@ class L10nAr extends L10n {
   String wol_delete_confirm(Object name) {
     return 'حذف الجهاز \"$name\"؟';
   }
+
+  @override
+  String get editor_undo => 'تراجع';
+
+  @override
+  String get wol_port_hint => 'اختياري';
 }

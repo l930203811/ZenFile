@@ -5306,4 +5306,10 @@ class L10nJa extends L10n {
   String wol_delete_confirm(Object name) {
     return 'デバイス「$name」を削除しますか？';
   }
+
+  @override
+  String get editor_undo => '元に戻す';
+
+  @override
+  String get wol_port_hint => '任意';
 }

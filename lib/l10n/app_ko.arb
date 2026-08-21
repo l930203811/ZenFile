@@ -5374,5 +5374,13 @@
     "placeholders": {
       "name": {}
     }
+  },
+  "editor_undo": "실행 취소",
+  "@editor_undo": {
+    "description": "editor_undo label"
+  },
+  "wol_port_hint": "선택 사항",
+  "@wol_port_hint": {
+    "description": "wol_port_hint label"
   }
 }

@@ -5517,4 +5517,10 @@ class L10nEs extends L10n {
   String wol_delete_confirm(Object name) {
     return '¿Eliminar el dispositivo \"$name\"?';
   }
+
+  @override
+  String get editor_undo => 'Deshacer';
+
+  @override
+  String get wol_port_hint => 'Opcional';
 }

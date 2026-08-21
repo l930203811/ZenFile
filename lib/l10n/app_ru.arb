@@ -5374,5 +5374,13 @@
     "placeholders": {
       "name": {}
     }
+  },
+  "editor_undo": "Отменить",
+  "@editor_undo": {
+    "description": "editor_undo label"
+  },
+  "wol_port_hint": "Необязательно",
+  "@wol_port_hint": {
+    "description": "wol_port_hint label"
   }
 }

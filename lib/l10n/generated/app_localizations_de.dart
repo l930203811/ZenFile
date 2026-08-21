@@ -5496,4 +5496,10 @@ class L10nDe extends L10n {
   String wol_delete_confirm(Object name) {
     return 'Gerät „$name\" löschen?';
   }
+
+  @override
+  String get editor_undo => 'Rückgängig';
+
+  @override
+  String get wol_port_hint => 'Optional';
 }

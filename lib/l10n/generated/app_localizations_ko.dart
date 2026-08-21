@@ -5304,4 +5304,10 @@ class L10nKo extends L10n {
   String wol_delete_confirm(Object name) {
     return '기기 \"$name\"을(를) 삭제할까요?';
   }
+
+  @override
+  String get editor_undo => '실행 취소';
+
+  @override
+  String get wol_port_hint => '선택 사항';
 }

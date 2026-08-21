@@ -5227,6 +5227,12 @@ class L10nZh extends L10n {
   String wol_delete_confirm(Object name) {
     return '确定删除设备「$name」吗？';
   }
+
+  @override
+  String get editor_undo => '撤销';
+
+  @override
+  String get wol_port_hint => '选填';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -10419,4 +10425,10 @@ class L10nZhTw extends L10nZh {
   String wol_delete_confirm(Object name) {
     return '確定刪除裝置「$name」嗎？';
   }
+
+  @override
+  String get editor_undo => '撤銷';
+
+  @override
+  String get wol_port_hint => '選填';
 }

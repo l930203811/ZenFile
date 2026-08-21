@@ -5522,5 +5522,13 @@
     "placeholders": {
       "name": {}
     }
+  },
+  "editor_undo": "撤銷",
+  "@editor_undo": {
+    "description": "editor_undo label"
+  },
+  "wol_port_hint": "選填",
+  "@wol_port_hint": {
+    "description": "wol_port_hint label"
   }
 }

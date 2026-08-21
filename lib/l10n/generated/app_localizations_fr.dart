@@ -5524,4 +5524,10 @@ class L10nFr extends L10n {
   String wol_delete_confirm(Object name) {
     return 'Supprimer l\'appareil « $name » ?';
   }
+
+  @override
+  String get editor_undo => 'Annuler';
+
+  @override
+  String get wol_port_hint => 'Facultatif';
 }

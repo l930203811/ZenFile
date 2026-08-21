@@ -5374,5 +5374,13 @@
     "placeholders": {
       "name": {}
     }
+  },
+  "editor_undo": "تراجع",
+  "@editor_undo": {
+    "description": "editor_undo label"
+  },
+  "wol_port_hint": "اختياري",
+  "@wol_port_hint": {
+    "description": "wol_port_hint label"
   }
 }

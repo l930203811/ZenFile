@@ -5431,5 +5431,13 @@
     "placeholders": {
       "name": {}
     }
+  },
+  "editor_undo": "Undo",
+  "@editor_undo": {
+    "description": "editor_undo label"
+  },
+  "wol_port_hint": "Optional",
+  "@wol_port_hint": {
+    "description": "wol_port_hint label"
   }
 }

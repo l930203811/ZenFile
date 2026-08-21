@@ -9807,6 +9807,18 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'确定删除设备「{name}」吗？'**
   String wol_delete_confirm(Object name);
+
+  /// editor_undo label
+  ///
+  /// In zh, this message translates to:
+  /// **'撤销'**
+  String get editor_undo;
+
+  /// wol_port_hint label
+  ///
+  /// In zh, this message translates to:
+  /// **'选填'**
+  String get wol_port_hint;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

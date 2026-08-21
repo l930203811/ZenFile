@@ -5502,4 +5502,10 @@ class L10nRu extends L10n {
   String wol_delete_confirm(Object name) {
     return 'Удалить устройство «$name»?';
   }
+
+  @override
+  String get editor_undo => 'Отменить';
+
+  @override
+  String get wol_port_hint => 'Необязательно';
 }
