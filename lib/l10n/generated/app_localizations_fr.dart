@@ -5232,6 +5232,82 @@ class L10nFr extends L10n {
       'Added ui_app_open_location, ui_batch_backup, ui_batch_share, ui_batch_uninstall, ui_batch_uninstall_confirm translation keys, all 10 languages covered';
 
   @override
+  String get changelog_v1132_new_1 =>
+      'Wake on LAN (WOL): New entry in Drawer → Tools. Add/Edit/Delete devices (name, MAC address, broadcast address, port), send magic packets to wake devices on LAN. Device list persisted locally. Full 10-language localization.';
+
+  @override
+  String get changelog_v1132_new_2 =>
+      'Image Editor: New \'Edit\' button on image viewer page (top toolbar + 3-dot menu). 5 editing tabs: Adjust (brightness/contrast/saturation), Filters (original/B&W/sepia/vintage/cool/warm), Resize (exact dimensions + lock aspect ratio + 6 ID-photo presets: Passport 413×531, 1-inch 295×413, 2-inch 413×579, Small 1-inch 260×378, Large 1-inch 390×567, US Visa 600×600), Rotate & Flip (90°/180°/270° + horizontal/vertical), Crop (handle gestures + aspect ratio constraints).';
+
+  @override
+  String get changelog_v1132_new_3 =>
+      'One-tap Metadata Removal: New \'Remove Metadata\' option in image viewer 3-dot menu. Re-encodes image stripping EXIF/GPS/ICC metadata, saves as new file.';
+
+  @override
+  String get changelog_v1132_new_4 =>
+      'Immersive Info Bar: Image viewer shows filename·dimensions·size·format on touch; Properties dialog adds Dimensions row.';
+
+  @override
+  String get changelog_v1132_fix_1 =>
+      'Fixed Select All button in category page cross-selecting files from other folders when browsing by folder: Images/Videos/Audios/Screenshots/Documents/Archives/Downloads/APKs — 8 categories now only select files within the current folder when in folder view; Select All selects all files only in \'All Items\' view.';
+
+  @override
+  String get changelog_v1132_fix_2 =>
+      'Fixed Select All button failing to select files in the Screenshots folder (DCIM/Screenshots) when browsing by folder in the Images category.';
+
+  @override
+  String get changelog_v1132_fix_3 =>
+      'Fixed \'Show in Location\' not navigating to the browse page for images/screenshots (works for both local and remote paths).';
+
+  @override
+  String get changelog_v1132_fix_4 =>
+      'Fixed batch operation backup button title showing \'Backing up...\' (changed to \'Backup\', updated across all 10 languages).';
+
+  @override
+  String get changelog_v1132_fix_5 =>
+      'Fixed image viewer Dismissible widget missing closing bracket causing compile errors.';
+
+  @override
+  String get changelog_v1132_fix_6 =>
+      'Fixed Select All in category page mixing remote/local files (now filters by current scope).';
+
+  @override
+  String get changelog_v1132_fix_7 =>
+      'Fixed residual blank icons on category page after deleting or moving files in non-media categories (Documents/Archives/Downloads/APKs).';
+
+  @override
+  String get changelog_v1132_fix_8 =>
+      'Fixed residual thumbnails and unsynchronized siblingItems after deleting remote images.';
+
+  @override
+  String get changelog_v1132_fix_9 =>
+      'Fixed category total size flickering \'shows ~1s → zeros out → reload restores\' on startup.';
+
+  @override
+  String get changelog_v1132_fix_10 =>
+      'Fixed tab bar horizontal swipe accidentally triggering page switch (new tabBarInteracting flag).';
+
+  @override
+  String get changelog_v1132_fix_11 =>
+      'Fixed auto-backup toggle not taking effect (new _autoSyncTriggered guard + isLoaded check).';
+
+  @override
+  String get changelog_v1132_fix_12 =>
+      'Fixed backup logic errors (re-uploads missing remote files instead of discarding records).';
+
+  @override
+  String get changelog_v1132_fix_13 =>
+      'Fixed \'Open Location\' requiring manual back press to see navigation (now uses popUntil(isFirst) to navigate home directly).';
+
+  @override
+  String get changelog_v1132_fix_14 =>
+      'Fixed refresh button not scanning non-media files (APKs not loading), corrected category branch logic and added onlyApk parameter.';
+
+  @override
+  String get changelog_v1132_fix_15 =>
+      'Fixed batch backup progress dialog stuck and not dismissing (switched to rootNavigator mode + backupDialogOpen flag).';
+
+  @override
   String get ui_batch_backup => 'Sauvegarder';
 
   @override
@@ -5294,7 +5370,25 @@ class L10nFr extends L10n {
   String get editor_lock_ratio => 'Lock aspect ratio';
 
   @override
-  String get editor_passport_413_531 => 'Passport 413x531';
+  String get editor_passport_413_531 => 'Passeport';
+
+  @override
+  String get editor_preset_1inch => '1 pouce';
+
+  @override
+  String get editor_preset_2inch => '2 pouces';
+
+  @override
+  String get editor_preset_small_1inch => 'Petit 1 pouce';
+
+  @override
+  String get editor_preset_large_1inch => 'Grand 1 pouce';
+
+  @override
+  String get editor_preset_us_visa => 'Visa US';
+
+  @override
+  String get editor_id_presets => 'Préréglages photo';
 
   @override
   String get editor_quality => 'Quality (file size)';
@@ -5309,7 +5403,17 @@ class L10nFr extends L10n {
   String get editor_overwrite_original => 'Overwrite original';
 
   @override
-  String get editor_reset => 'Reset';
+  String get editor_reset => 'Réinitialiser';
+
+  @override
+  String get editor_exit_confirm_title => 'Quitter l\'édition ?';
+
+  @override
+  String get editor_exit_confirm_message =>
+      'Les modifications non enregistrées seront perdues';
+
+  @override
+  String get editor_exit_discard => 'Quitter';
 
   @override
   String get editor_filter_original => 'Original';
@@ -5374,4 +5478,56 @@ class L10nFr extends L10n {
   String editor_output_size(Object size) {
     return 'Output: $size';
   }
+
+  @override
+  String get wol_title => 'Wake on LAN';
+
+  @override
+  String get wol_add_device => 'Ajouter un appareil';
+
+  @override
+  String get wol_edit_device => 'Modifier l\'appareil';
+
+  @override
+  String get wol_name => 'Nom de l\'appareil';
+
+  @override
+  String get wol_name_hint => 'ex. Mon PC';
+
+  @override
+  String get wol_mac => 'Adresse MAC';
+
+  @override
+  String get wol_broadcast => 'Adresse de diffusion';
+
+  @override
+  String get wol_port => 'Port';
+
+  @override
+  String get wol_wake => 'Réveiller';
+
+  @override
+  String get wol_sent => 'Paquet de réveil envoyé';
+
+  @override
+  String get wol_send_failed =>
+      'Échec de l\'envoi, vérifiez la connexion réseau';
+
+  @override
+  String get wol_invalid_mac => 'Format d\'adresse MAC invalide';
+
+  @override
+  String get wol_empty =>
+      'Aucun appareil. Appuyez sur le bouton pour en ajouter un';
+
+  @override
+  String wol_delete_confirm(Object name) {
+    return 'Supprimer l\'appareil « $name » ?';
+  }
+
+  @override
+  String get editor_undo => 'Annuler';
+
+  @override
+  String get wol_port_hint => 'Facultatif';
 }
