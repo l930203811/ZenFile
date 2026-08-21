@@ -7990,6 +7990,30 @@ abstract class L10n {
   /// **'暂无字幕'**
   String get msg_no_subtitle;
 
+  /// Audio track selection in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'音轨'**
+  String get msg_audio_track;
+
+  /// Embedded subtitle track selection in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'字幕轨'**
+  String get msg_subtitle_track;
+
+  /// Message when no audio tracks available in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'无音轨'**
+  String get msg_no_audio_track;
+
+  /// Message when no subtitle tracks available in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'无字幕轨'**
+  String get msg_no_subtitle_track;
+
   /// Playlist button tooltip in video player
   ///
   /// In zh, this message translates to:

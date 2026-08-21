@@ -4312,6 +4312,22 @@
   "@msg_no_subtitle": {
     "description": "Tooltip when no subtitle is loaded in video player"
   },
+  "msg_audio_track": "Pista de audio",
+  "@msg_audio_track": {
+    "description": "Audio track selection in video player"
+  },
+  "msg_subtitle_track": "Pista de subtítulos",
+  "@msg_subtitle_track": {
+    "description": "Embedded subtitle track selection in video player"
+  },
+  "msg_no_audio_track": "Sin pistas de audio",
+  "@msg_no_audio_track": {
+    "description": "Message when no audio tracks available in video player"
+  },
+  "msg_no_subtitle_track": "Sin pistas de subtítulos",
+  "@msg_no_subtitle_track": {
+    "description": "Message when no subtitle tracks available in video player"
+  },
   "msg_playlist": "Lista de reproducción",
   "@msg_playlist": {
     "description": "Playlist button tooltip in video player"

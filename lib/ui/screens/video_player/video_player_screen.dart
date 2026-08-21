@@ -108,6 +108,14 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   double _subtitlePosition = 100; // 0=顶部, 100=底部
   bool _subtitleNoBackground = false;
 
+  // Audio / Subtitle track selection
+  List<AudioTrack> _availableAudioTracks = [];
+  List<SubtitleTrack> _availableSubtitleTracks = [];
+  AudioTrack _currentAudioTrack = const AudioTrack('auto', null, null);
+  SubtitleTrack _currentSubtitleTrack = const SubtitleTrack('auto', null, null);
+  StreamSubscription<Tracks>? _tracksSub;
+  StreamSubscription<Track>? _trackSub;
+
   // 解码方式：true=硬解(auto-safe), false=软解(no)，持久化保存
   bool _useHardwareDecode = true;
   // 外挂字幕改用 Flutter overlay 渲染，确保字号/位置滑块对所有格式 100% 生效
@@ -169,6 +177,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     // 在数据到达前就放弃播放。设为 60s 给本地代理足够时间启动下载。
     // 必须在 _startPlayback 之前完成，否则播放已经开始读取超时值。
     _initListeners();
+    _initTrackListeners();
     () async {
       try {
         final platform = player.platform;
@@ -828,6 +837,167 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     });
   }
 
+  /// 监听可用音轨/字幕轨变化与当前选中轨道，用于音轨/字幕轨选择 UI。
+  void _initTrackListeners() {
+    _tracksSub = player.stream.tracks.listen((tracks) {
+      if (!mounted) return;
+      setState(() {
+        _availableAudioTracks = tracks.audio;
+        _availableSubtitleTracks = tracks.subtitle;
+      });
+    });
+    _trackSub = player.stream.track.listen((track) {
+      if (!mounted) return;
+      setState(() {
+        _currentAudioTrack = track.audio;
+        _currentSubtitleTrack = track.subtitle;
+      });
+    });
+  }
+
+  /// 选择音轨。传入 AudioTrack.no() 表示关闭音频。
+  Future<void> _selectAudioTrack(AudioTrack track) async {
+    if (!mounted) return;
+    setState(() => _currentAudioTrack = track);
+    await player.setAudioTrack(track);
+  }
+
+  /// 选择字幕轨。传入 SubtitleTrack.no() 表示关闭字幕。
+  Future<void> _selectSubtitleTrack(SubtitleTrack track) async {
+    if (!mounted) return;
+    setState(() {
+      _currentSubtitleTrack = track;
+      _subtitleEnabled = track.id != 'no';
+    });
+    await player.setSubtitleTrack(track);
+  }
+
+  /// 显示音轨选择底部弹窗。
+  void _showAudioTrackSelector() {
+    if (!mounted) return;
+    _hideTimer?.cancel();
+    _showTrackSelectionSheet(
+      title: L10n.of(context).msg_audio_track,
+      tracks: _availableAudioTracks,
+      currentTrack: _currentAudioTrack,
+      getTrackId: (t) => t.id,
+      getTrackLabel: (t) => _formatTrackLabel(t),
+      onSelected: (t) {
+        _selectAudioTrack(t);
+        Navigator.of(context).pop();
+      },
+    );
+    _startHideTimer();
+  }
+
+  /// 显示字幕轨选择底部弹窗。
+  void _showSubtitleTrackSelector() {
+    if (!mounted) return;
+    _hideTimer?.cancel();
+    _showTrackSelectionSheet(
+      title: L10n.of(context).msg_subtitle_track,
+      tracks: _availableSubtitleTracks,
+      currentTrack: _currentSubtitleTrack,
+      getTrackId: (t) => t.id,
+      getTrackLabel: (t) => _formatTrackLabel(t),
+      onSelected: (t) {
+        _selectSubtitleTrack(t);
+        Navigator.of(context).pop();
+      },
+    );
+    _startHideTimer();
+  }
+
+  /// 格式化轨道显示标签：标题 > 语言 > ID。
+  String _formatTrackLabel(dynamic track) {
+    final title = track.title;
+    final language = track.language;
+    final id = track.id;
+    if (title != null && title.isNotEmpty) {
+      if (language != null && language.isNotEmpty) return '$title ($language)';
+      return title;
+    }
+    if (language != null && language.isNotEmpty) return 'Track $id ($language)';
+    return 'Track $id';
+  }
+
+  /// 通用轨道选择底部弹窗。
+  void _showTrackSelectionSheet({
+    required String title,
+    required List<dynamic> tracks,
+    required dynamic currentTrack,
+    required String Function(dynamic) getTrackId,
+    required String Function(dynamic) getTrackLabel,
+    required void Function(dynamic) onSelected,
+  }) {
+    final l10n = L10n.of(context);
+    final noTrackLabel = title.contains('Audio')
+        ? l10n.msg_no_audio_track
+        : l10n.msg_no_subtitle_track;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.black87,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              if (tracks.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(
+                    noTrackLabel,
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                )
+              else
+                Flexible(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: tracks.length,
+                    itemBuilder: (_, i) {
+                      final t = tracks[i];
+                      final selected = getTrackId(t) == getTrackId(currentTrack);
+                      return ListTile(
+                        dense: true,
+                        leading: Icon(
+                          selected ? Icons.check_circle : Icons.circle_outlined,
+                          color: selected ? Theme.of(context).colorScheme.primary : Colors.white54,
+                          size: 20,
+                        ),
+                        title: Text(
+                          getTrackLabel(t),
+                          style: TextStyle(
+                            color: selected ? Theme.of(context).colorScheme.primary : Colors.white,
+                            fontSize: 14,
+                          ),
+                        ),
+                        onTap: () => onSelected(t),
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   /// 切换硬解/软解：销毁当前 Player/Controller 并用新 hwdec 重建，
   /// 重新打开同一媒体并恢复到切换前的播放位置与播放状态。
   Future<void> _switchHwdec(bool useHardware) async {
@@ -1322,6 +1492,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   void dispose() {
     _hideTimer?.cancel();
     _positionSub?.cancel();
+    _tracksSub?.cancel();
+    _trackSub?.cancel();
     _seekIndicatorTimer?.cancel();
     _sliderTimer?.cancel();
     _cacheCheckTimer?.cancel();
@@ -1817,9 +1989,13 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                     onAddSubtitle: _addSubtitle,
                     onSubtitleSettings: _showSubtitleSettings,
                     onToggleSubtitle: _toggleSubtitle,
+                    onSelectAudioTrack: _showAudioTrackSelector,
+                    onSelectSubtitleTrack: _showSubtitleTrackSelector,
                     onOpenPlaylist: _showPlaylist,
                     subtitleEnabled: _subtitleEnabled,
                     subtitlePath: _subtitlePath,
+                    hasAudioTracks: _availableAudioTracks.length > 2,
+                    hasSubtitleTracks: _availableSubtitleTracks.length > 2,
                     onInteract: _showControls,
                     useHardwareDecode: _useHardwareDecode,
                     onToggleHwdec: () => _switchHwdec(!_useHardwareDecode),

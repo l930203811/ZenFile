@@ -17,6 +17,8 @@ class VideoControlsOverlay extends StatelessWidget {
   final int aspectRatioMode; // 0=fit, 1=fill, 2=center, 3=16:9, 4=4:3
   final bool subtitleEnabled;
   final String? subtitlePath;
+  final bool hasAudioTracks;
+  final bool hasSubtitleTracks;
   final ValueChanged<double> onChanged;
   final ValueChanged<double> onChangeEnd;
   final ValueChanged<double> onChangeStart;
@@ -36,6 +38,8 @@ class VideoControlsOverlay extends StatelessWidget {
   final VoidCallback onAddSubtitle;
   final VoidCallback onSubtitleSettings;
   final VoidCallback onToggleSubtitle;
+  final VoidCallback onSelectAudioTrack;
+  final VoidCallback onSelectSubtitleTrack;
   final VoidCallback onOpenPlaylist;
   final VoidCallback onInteract;
   final bool useHardwareDecode; // true=硬解, false=软解
@@ -57,6 +61,8 @@ class VideoControlsOverlay extends StatelessWidget {
     required this.aspectRatioMode,
     this.subtitleEnabled = false,
     this.subtitlePath,
+    this.hasAudioTracks = false,
+    this.hasSubtitleTracks = false,
     required this.onChanged,
     required this.onChangeEnd,
     required this.onChangeStart,
@@ -76,6 +82,8 @@ class VideoControlsOverlay extends StatelessWidget {
     required this.onAddSubtitle,
     required this.onSubtitleSettings,
     required this.onToggleSubtitle,
+    required this.onSelectAudioTrack,
+    required this.onSelectSubtitleTrack,
     required this.onOpenPlaylist,
     required this.onInteract,
     required this.useHardwareDecode,
@@ -482,6 +490,28 @@ class VideoControlsOverlay extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 8),
+                      // Audio Track Button
+                      if (hasAudioTracks)
+                        IconButton(
+                          icon: Icon(Icons.audiotrack_rounded, color: itemsColor, size: 22),
+                          tooltip: L10n.of(context).msg_audio_track,
+                          onPressed: () {
+                            onInteract();
+                            onSelectAudioTrack();
+                          },
+                        ),
+                      if (hasAudioTracks) const SizedBox(width: 8),
+                      // Subtitle Track Button
+                      if (hasSubtitleTracks)
+                        IconButton(
+                          icon: Icon(Icons.subtitles_rounded, color: itemsColor, size: 22),
+                          tooltip: L10n.of(context).msg_subtitle_track,
+                          onPressed: () {
+                            onInteract();
+                            onSelectSubtitleTrack();
+                          },
+                        ),
+                      if (hasSubtitleTracks) const SizedBox(width: 8),
                       // Repeat Button
                       IconButton(
                         icon: Icon(
