@@ -675,11 +675,13 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
 
     if (widget.mediaType == MediaType.images) {
       // 下钻文件夹时，截图也归入该文件夹（与 build 显示列表一致），需同时遍历 screenshots
+      // 且仅选中当前文件夹的文件（全部项目时 folderPath 为 null，全选所有）
       final imageSources = widget.folderPath != null
           ? <dynamic>[...provider.images, ...provider.screenshots]
           : provider.images;
       for (final e in imageSources) {
         if (e is FileSystemEntity) {
+          if (widget.folderPath != null && !_belongsToFolder(e.path, widget.folderPath!)) continue;
           final isRemote = e.path.startsWith('remote://');
           if (isLocal ? !isRemote : isRemote) filePaths.add(e.path);
         }
@@ -687,6 +689,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     } else if (widget.mediaType == MediaType.videos) {
       for (final e in provider.videos) {
         if (e is FileSystemEntity) {
+          if (widget.folderPath != null && !_belongsToFolder(e.path, widget.folderPath!)) continue;
           final isRemote = e.path.startsWith('remote://');
           if (isLocal ? !isRemote : isRemote) filePaths.add(e.path);
         }
@@ -694,29 +697,39 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     } else if (widget.mediaType == MediaType.screenshots) {
       for (final e in provider.screenshots) {
         if (e is FileSystemEntity) {
+          if (widget.folderPath != null && !_belongsToFolder(e.path, widget.folderPath!)) continue;
           final isRemote = e.path.startsWith('remote://');
           if (isLocal ? !isRemote : isRemote) filePaths.add(e.path);
         }
       }
     } else if (widget.mediaType == MediaType.audios) {
-      filePaths.addAll(provider.audios.map((e) => e.data));
+      for (final e in provider.audios) {
+        final p = e.data;
+        if (p.isEmpty) continue;
+        if (widget.folderPath != null && !_belongsToFolder(p, widget.folderPath!)) continue;
+        filePaths.add(p);
+      }
     } else if (widget.mediaType == MediaType.archives) {
       for (final e in provider.archives) {
+        if (widget.folderPath != null && !_belongsToFolder(e.path, widget.folderPath!)) continue;
         final isRemote = e.path.startsWith('remote://');
         if (isLocal ? !isRemote : isRemote) filePaths.add(e.path);
       }
     } else if (widget.mediaType == MediaType.downloads) {
       for (final e in provider.downloads) {
+        if (widget.folderPath != null && !_belongsToFolder(e.path, widget.folderPath!)) continue;
         final isRemote = e.path.startsWith('remote://');
         if (isLocal ? !isRemote : isRemote) filePaths.add(e.path);
       }
     } else if (widget.mediaType == MediaType.apks) {
       for (final e in provider.apks) {
+        if (widget.folderPath != null && !_belongsToFolder(e.path, widget.folderPath!)) continue;
         final isRemote = e.path.startsWith('remote://');
         if (isLocal ? !isRemote : isRemote) filePaths.add(e.path);
       }
     } else if (widget.mediaType == MediaType.documents) {
       for (final e in provider.documents) {
+        if (widget.folderPath != null && !_belongsToFolder(e.path, widget.folderPath!)) continue;
         final isRemote = e.path.startsWith('remote://');
         if (isLocal ? !isRemote : isRemote) filePaths.add(e.path);
       }
