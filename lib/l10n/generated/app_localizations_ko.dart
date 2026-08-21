@@ -4274,6 +4274,18 @@ class L10nKo extends L10n {
   String get msg_no_subtitle => '자막 없음';
 
   @override
+  String get msg_audio_track => '오디오 트랙';
+
+  @override
+  String get msg_subtitle_track => '자막 트랙';
+
+  @override
+  String get msg_no_audio_track => '오디오 트랙 없음';
+
+  @override
+  String get msg_no_subtitle_track => '자막 트랙 없음';
+
+  @override
   String get msg_playlist => '재생 목록';
 
   @override

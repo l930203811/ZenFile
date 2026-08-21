@@ -4476,6 +4476,18 @@ class L10nFr extends L10n {
   String get msg_no_subtitle => 'Aucun sous-titre';
 
   @override
+  String get msg_audio_track => 'Piste audio';
+
+  @override
+  String get msg_subtitle_track => 'Piste de sous-titres';
+
+  @override
+  String get msg_no_audio_track => 'Aucune piste audio';
+
+  @override
+  String get msg_no_subtitle_track => 'Aucune piste de sous-titres';
+
+  @override
   String get msg_playlist => 'Liste de lecture';
 
   @override

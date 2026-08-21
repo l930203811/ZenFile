@@ -4448,6 +4448,18 @@ class L10nDe extends L10n {
   String get msg_no_subtitle => 'Kein Untertitel';
 
   @override
+  String get msg_audio_track => 'Audiospur';
+
+  @override
+  String get msg_subtitle_track => 'Untertitelspur';
+
+  @override
+  String get msg_no_audio_track => 'Keine Audiospuren';
+
+  @override
+  String get msg_no_subtitle_track => 'Keine Untertitelspur';
+
+  @override
   String get msg_playlist => 'Wiedergabeliste';
 
   @override

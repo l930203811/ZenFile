@@ -4471,6 +4471,18 @@ class L10nEs extends L10n {
   String get msg_no_subtitle => 'Sin subtítulos';
 
   @override
+  String get msg_audio_track => 'Pista de audio';
+
+  @override
+  String get msg_subtitle_track => 'Pista de subtítulos';
+
+  @override
+  String get msg_no_audio_track => 'Sin pistas de audio';
+
+  @override
+  String get msg_no_subtitle_track => 'Sin pistas de subtítulos';
+
+  @override
   String get msg_playlist => 'Lista de reproducción';
 
   @override

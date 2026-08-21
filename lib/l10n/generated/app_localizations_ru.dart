@@ -4455,6 +4455,18 @@ class L10nRu extends L10n {
   String get msg_no_subtitle => 'Нет субтитров';
 
   @override
+  String get msg_audio_track => 'Аудиодорожка';
+
+  @override
+  String get msg_subtitle_track => 'Дорожка субтитров';
+
+  @override
+  String get msg_no_audio_track => 'Нет аудиодорожек';
+
+  @override
+  String get msg_no_subtitle_track => 'Нет дорожек субтитров';
+
+  @override
   String get msg_playlist => 'Плейлист';
 
   @override

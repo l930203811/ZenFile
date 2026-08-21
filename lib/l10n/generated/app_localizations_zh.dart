@@ -4240,6 +4240,18 @@ class L10nZh extends L10n {
   String get msg_no_subtitle => '暂无字幕';
 
   @override
+  String get msg_audio_track => '音轨';
+
+  @override
+  String get msg_subtitle_track => '字幕轨';
+
+  @override
+  String get msg_no_audio_track => '无音轨';
+
+  @override
+  String get msg_no_subtitle_track => '无字幕轨';
+
+  @override
   String get msg_playlist => '播放列表';
 
   @override
@@ -9419,6 +9431,18 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get msg_no_subtitle => '暫無字幕';
+
+  @override
+  String get msg_audio_track => '音軌';
+
+  @override
+  String get msg_subtitle_track => '字幕軌';
+
+  @override
+  String get msg_no_audio_track => '無音軌';
+
+  @override
+  String get msg_no_subtitle_track => '無字幕軌';
 
   @override
   String get msg_playlist => '播放列表';

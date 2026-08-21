@@ -4276,6 +4276,18 @@ class L10nJa extends L10n {
   String get msg_no_subtitle => '字幕なし';
 
   @override
+  String get msg_audio_track => '音声トラック';
+
+  @override
+  String get msg_subtitle_track => '字幕トラック';
+
+  @override
+  String get msg_no_audio_track => '音声トラックなし';
+
+  @override
+  String get msg_no_subtitle_track => '字幕トラックなし';
+
+  @override
   String get msg_playlist => 'プレイリスト';
 
   @override

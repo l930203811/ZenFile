@@ -4388,6 +4388,18 @@ class L10nAr extends L10n {
   String get msg_no_subtitle => 'لا توجد ترجمة';
 
   @override
+  String get msg_audio_track => 'المسار الصوتي';
+
+  @override
+  String get msg_subtitle_track => 'مسار الترجمة';
+
+  @override
+  String get msg_no_audio_track => 'لا توجد مسارات صوتية';
+
+  @override
+  String get msg_no_subtitle_track => 'لا توجد مسارات ترجمة';
+
+  @override
   String get msg_playlist => 'قائمة التشغيل';
 
   @override
