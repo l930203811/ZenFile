@@ -7,67 +7,32 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 ---
 
-## 🚀 What's New in v1.1.31
-
-### 🐛 Bug Fixes
-
-- Fixed residual blank icons on category page after deleting files from browse page or other apps (new pruneDeletedMediaPaths + pruneDeletedMedia instant pruning mechanism)
-- Fixed residual blank icons for non-media categories (Documents/Archives/Downloads/APKs) after delete or move in browse page
-- Fixed category total size "shows ~1 second → zeros out → reload restores" flicker on startup
-- Fixed category "Select All" mixing remote/local files (local page selects local only, remote page selects remote only)
-- Fixed remote file deletion not refreshing the list
-- Fixed image viewer residual siblingItems preview after delete, list not refreshing after 3-dot menu delete, and local delete thumbnail cache invalidation
-- Fixed remote image residual thumbnail after delete, "Show in Location" navigating to local cache path instead of remote, and delete only removing local cache not remote original
-- Fixed image viewer 3-dot menu "Show in Location" not navigating
-- Fixed long-press batch backup APK SnackBar not showing, progress dialog stuck (multiple iterations, final solution uses rootNavigator + backupDialogOpen flag), and unable to cancel via back key
-- Added "Open Location" button to backed-up APK popup; fixed issue requiring manual back press to see navigation (now popUntil(isFirst) then switch Tab)
-- Changed batch action bar "Clear" button to "Cancel"; backup/share/uninstall buttons now use multilingual translations instead of hardcoded Chinese
-- Fixed refresh button not scanning non-media files (APK not loading), corrected category branch logic and added onlyApk parameter for supplementary scan
-- Simplified "Change PIN" entry: tap on vault home goes directly to number pad, removed redundant "Remote Guard" toggle and "Lock Now" from remote guard page
-- Fixed auto-backup toggle not taking effect (new _autoSyncTriggered guard); fixed remote delete-then-backup falsely reporting success
-- Fixed browse page Tab bar horizontal swipe accidentally triggering page switch (new tabBarInteracting flag + Listener protection)
-- Added ui_app_open_location, ui_batch_backup, ui_batch_share, ui_batch_uninstall, ui_batch_uninstall_confirm translation keys, all 10 languages covered
-
----
-
-## 🚀 What's New in v1.1.30
+## 🚀 What's New in v1.1.32
 
 ### ✨ New Features
 
-- **Remote Protection PIN**: Set a 4-digit PIN to protect access to saved remote servers, edit pages, and remote scope in category pages
-- **Category Local/Remote Toggle**: All categories with remote directory support can independently switch local/remote content
-- **Backup (Local→Remote)**: Auto-backup and manual backup with new file detection, only backs up files of the category's format
-- Remote connection wizard adds "Test" button to verify connection before saving
-- Video/Audio category menu adds "Player Controller Visibility" toggle
-- Unified "Open With" dialog: Browse/Recent/Category pages all show in-app selection popup
-- Unknown format files show type picker (Text/Audio/Video/Image) when "Open with App" is selected
-- Video player adds a Soft/Hard decode toggle, balancing quality and performance by device decode capability
-- Category page shows a "Refresh complete" toast after refresh, with multilingual support
-
-### 🔧 Optimizations
-
-- Category/Browse page buttons merged into single centered toggle
-- Rename auto-selects filename body (without extension), cursor placed before extension
-- Grid/List view toggle integrated into sort menu
-- Each category independently remembers "Folder/All Items" view mode; Video/Audio default to Folder view
-- Download category supports remote backup
-- Remote image/video thumbnails downloaded on demand
-- Local scan excludes app cache directory, fixing duplicate images after enabling remote thumbnails
-- Remote file 3-dot menu and long-press batch delete/rename/copy/cut/location operations now work
-- Remote folder drill-down preserves directory structure (DCIM/Pictures etc.)
-- Images/Videos/Screenshots now use a disk cache: categories appear instantly on launch without re-scanning the media library every time (fixes ~1-minute wait on large-storage devices with many files)
-- Category counts are now accurate immediately after cache restore, no longer showing stale numbers from the previous launch
-- Audio loading is now exclusive-first: audio loads before video/images, preventing media-library contention on large devices from wiping audio to zero
-- Audio index cache now uses atomic writes + isolated-thread decoding: a killed-mid-write won't corrupt the cache, and the main thread no longer stutters or OOMs on huge caches
-- Audio load retries now keep the largest result set, preventing a partial result from overwriting already-shown content
+- **Wake on LAN (WOL)**: New entry in Drawer → Tools. Add/Edit/Delete devices (name, MAC address, broadcast address, port), send magic packets to wake devices on LAN. Device list persisted locally. Full 10-language localization.
+- **Image Editor**: Built-in image editor with crop (free/ratio presets/ID photo sizes), rotate, flip, filters (grayscale/sepia/invert/contrast/brightness/saturation), and metadata viewer. Pure Dart implementation using `image` package — no native dependencies.
+- **One-tap Metadata Removal**: New "Remove Metadata" option in image viewer 3-dot menu. Re-encodes image stripping EXIF/GPS/ICC metadata, saves as new file.
+- **Immersive Info Bar**: Image viewer shows filename·dimensions·size·format on touch; Properties dialog adds Dimensions row.
 
 ### 🐛 Bug Fixes
 
-- Fixed MIUI storage permission false positive causing startup popup loop
-- Fixed category page long-press drag accidentally triggering page switch
-- Fixed screenshots disappearing after drilling into folder in Images category
-- Fixed large-storage devices (e.g. 512 GB, tens of thousands of media files) where the audio category was emptied after launch and disappeared once video/image loading finished
-- Fixed release build compile errors (SongModel.getMap usage, VideoController has no dispose())
+- Fixed Select All button in category page cross-selecting files from other folders when browsing by folder: Images/Videos/Audios/Screenshots/Documents/Archives/Downloads/APKs — 8 categories now only select files within the current folder when in folder view; Select All selects all files only in "All Items" view.
+- Fixed Select All button failing to select files in the Screenshots folder (DCIM/Screenshots) when browsing by folder in the Images category.
+- Fixed "Show in Location" not navigating to the browse page for images/screenshots (works for both local and remote paths).
+- Fixed batch operation backup button title showing "Backing up..." (changed to "Backup", updated across all 10 languages).
+- Fixed image viewer Dismissible widget missing closing bracket causing compile errors.
+- Fixed Select All in category page mixing remote/local files (now filters by current scope).
+- Fixed residual blank icons on category page after deleting or moving files in non-media categories (Documents/Archives/Downloads/APKs).
+- Fixed residual thumbnails and unsynchronized siblingItems after deleting remote images.
+- Fixed category total size flickering "shows ~1s → zeros out → reload restores" on startup.
+- Fixed tab bar horizontal swipe accidentally triggering page switch (new tabBarInteracting flag).
+- Fixed auto-backup toggle not taking effect (new _autoSyncTriggered guard + isLoaded check).
+- Fixed backup logic errors (re-uploads missing remote files instead of discarding records).
+- Fixed "Open Location" requiring manual back press to see navigation (now uses popUntil(isFirst) to navigate home directly).
+- Fixed refresh button not scanning non-media files (APKs not loading), corrected category branch logic and added onlyApk parameter.
+- Fixed batch backup progress dialog stuck and not dismissing (switched to rootNavigator mode + backupDialogOpen flag).
 
 ---
 
