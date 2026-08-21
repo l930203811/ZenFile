@@ -5021,6 +5021,82 @@
     "description": "v1.1.31 changelog item"
   },
   "changelog_v1131_fix_16": "Added ui_app_open_location, ui_batch_backup, ui_batch_share, ui_batch_uninstall, ui_batch_uninstall_confirm translation keys, all 10 languages covered",
+  "changelog_v1132_new_1": "Wake on LAN (WOL): New entry in Drawer → Tools. Add/Edit/Delete devices (name, MAC address, broadcast address, port), send magic packets to wake devices on LAN. Device list persisted locally. Full 10-language localization.",
+  "@changelog_v1132_new_1": {
+    "description": "v1.1.32 changelog: changelog_v1132_new_1"
+  },
+  "changelog_v1132_new_2": "Image Editor: New 'Edit' button on image viewer page (top toolbar + 3-dot menu). 5 editing tabs: Adjust (brightness/contrast/saturation), Filters (original/B&W/sepia/vintage/cool/warm), Resize (exact dimensions + lock aspect ratio + 6 ID-photo presets: Passport 413×531, 1-inch 295×413, 2-inch 413×579, Small 1-inch 260×378, Large 1-inch 390×567, US Visa 600×600), Rotate & Flip (90°/180°/270° + horizontal/vertical), Crop (handle gestures + aspect ratio constraints).",
+  "@changelog_v1132_new_2": {
+    "description": "v1.1.32 changelog: changelog_v1132_new_2"
+  },
+  "changelog_v1132_new_3": "One-tap Metadata Removal: New 'Remove Metadata' option in image viewer 3-dot menu. Re-encodes image stripping EXIF/GPS/ICC metadata, saves as new file.",
+  "@changelog_v1132_new_3": {
+    "description": "v1.1.32 changelog: changelog_v1132_new_3"
+  },
+  "changelog_v1132_new_4": "Immersive Info Bar: Image viewer shows filename·dimensions·size·format on touch; Properties dialog adds Dimensions row.",
+  "@changelog_v1132_new_4": {
+    "description": "v1.1.32 changelog: changelog_v1132_new_4"
+  },
+  "changelog_v1132_fix_1": "Fixed Select All button in category page cross-selecting files from other folders when browsing by folder: Images/Videos/Audios/Screenshots/Documents/Archives/Downloads/APKs — 8 categories now only select files within the current folder when in folder view; Select All selects all files only in 'All Items' view.",
+  "@changelog_v1132_fix_1": {
+    "description": "v1.1.32 changelog: changelog_v1132_fix_1"
+  },
+  "changelog_v1132_fix_2": "Fixed Select All button failing to select files in the Screenshots folder (DCIM/Screenshots) when browsing by folder in the Images category.",
+  "@changelog_v1132_fix_2": {
+    "description": "v1.1.32 changelog: changelog_v1132_fix_2"
+  },
+  "changelog_v1132_fix_3": "Fixed 'Show in Location' not navigating to the browse page for images/screenshots (works for both local and remote paths).",
+  "@changelog_v1132_fix_3": {
+    "description": "v1.1.32 changelog: changelog_v1132_fix_3"
+  },
+  "changelog_v1132_fix_4": "Fixed batch operation backup button title showing 'Backing up...' (changed to 'Backup', updated across all 10 languages).",
+  "@changelog_v1132_fix_4": {
+    "description": "v1.1.32 changelog: changelog_v1132_fix_4"
+  },
+  "changelog_v1132_fix_5": "Fixed image viewer Dismissible widget missing closing bracket causing compile errors.",
+  "@changelog_v1132_fix_5": {
+    "description": "v1.1.32 changelog: changelog_v1132_fix_5"
+  },
+  "changelog_v1132_fix_6": "Fixed Select All in category page mixing remote/local files (now filters by current scope).",
+  "@changelog_v1132_fix_6": {
+    "description": "v1.1.32 changelog: changelog_v1132_fix_6"
+  },
+  "changelog_v1132_fix_7": "Fixed residual blank icons on category page after deleting or moving files in non-media categories (Documents/Archives/Downloads/APKs).",
+  "@changelog_v1132_fix_7": {
+    "description": "v1.1.32 changelog: changelog_v1132_fix_7"
+  },
+  "changelog_v1132_fix_8": "Fixed residual thumbnails and unsynchronized siblingItems after deleting remote images.",
+  "@changelog_v1132_fix_8": {
+    "description": "v1.1.32 changelog: changelog_v1132_fix_8"
+  },
+  "changelog_v1132_fix_9": "Fixed category total size flickering 'shows ~1s → zeros out → reload restores' on startup.",
+  "@changelog_v1132_fix_9": {
+    "description": "v1.1.32 changelog: changelog_v1132_fix_9"
+  },
+  "changelog_v1132_fix_10": "Fixed tab bar horizontal swipe accidentally triggering page switch (new tabBarInteracting flag).",
+  "@changelog_v1132_fix_10": {
+    "description": "v1.1.32 changelog: changelog_v1132_fix_10"
+  },
+  "changelog_v1132_fix_11": "Fixed auto-backup toggle not taking effect (new _autoSyncTriggered guard + isLoaded check).",
+  "@changelog_v1132_fix_11": {
+    "description": "v1.1.32 changelog: changelog_v1132_fix_11"
+  },
+  "changelog_v1132_fix_12": "Fixed backup logic errors (re-uploads missing remote files instead of discarding records).",
+  "@changelog_v1132_fix_12": {
+    "description": "v1.1.32 changelog: changelog_v1132_fix_12"
+  },
+  "changelog_v1132_fix_13": "Fixed 'Open Location' requiring manual back press to see navigation (now uses popUntil(isFirst) to navigate home directly).",
+  "@changelog_v1132_fix_13": {
+    "description": "v1.1.32 changelog: changelog_v1132_fix_13"
+  },
+  "changelog_v1132_fix_14": "Fixed refresh button not scanning non-media files (APKs not loading), corrected category branch logic and added onlyApk parameter.",
+  "@changelog_v1132_fix_14": {
+    "description": "v1.1.32 changelog: changelog_v1132_fix_14"
+  },
+  "changelog_v1132_fix_15": "Fixed batch backup progress dialog stuck and not dismissing (switched to rootNavigator mode + backupDialogOpen flag).",
+  "@changelog_v1132_fix_15": {
+    "description": "v1.1.32 changelog: changelog_v1132_fix_15"
+  },
   "@changelog_v1131_fix_16": {
     "description": "v1.1.31 changelog item"
   },
@@ -5243,37 +5319,64 @@
   "editor_output_size": "Output: {size}",
   "@editor_output_size": {
     "description": "Editor: output size label. {size} is human size"
-  }
-  ,
+  },
   "wol_title": "LAN ウェイクアップ",
-  "@wol_title": { "description": "Wake on LAN: drawer tools entry title" },
+  "@wol_title": {
+    "description": "Wake on LAN: drawer tools entry title"
+  },
   "wol_add_device": "デバイスを追加",
-  "@wol_add_device": { "description": "WOL: add device sheet title" },
+  "@wol_add_device": {
+    "description": "WOL: add device sheet title"
+  },
   "wol_edit_device": "デバイスを編集",
-  "@wol_edit_device": { "description": "WOL: edit device sheet title" },
+  "@wol_edit_device": {
+    "description": "WOL: edit device sheet title"
+  },
   "wol_name": "デバイス名",
-  "@wol_name": { "description": "WOL: device name field label" },
+  "@wol_name": {
+    "description": "WOL: device name field label"
+  },
   "wol_name_hint": "例：マイPC",
-  "@wol_name_hint": { "description": "WOL: device name field hint" },
+  "@wol_name_hint": {
+    "description": "WOL: device name field hint"
+  },
   "wol_mac": "MACアドレス",
-  "@wol_mac": { "description": "WOL: MAC address field label" },
+  "@wol_mac": {
+    "description": "WOL: MAC address field label"
+  },
   "wol_broadcast": "ブロードキャストアドレス",
-  "@wol_broadcast": { "description": "WOL: broadcast address field label" },
+  "@wol_broadcast": {
+    "description": "WOL: broadcast address field label"
+  },
   "wol_port": "ポート",
-  "@wol_port": { "description": "WOL: port field label" },
+  "@wol_port": {
+    "description": "WOL: port field label"
+  },
   "wol_wake": "起動",
-  "@wol_wake": { "description": "WOL: wake button tooltip" },
+  "@wol_wake": {
+    "description": "WOL: wake button tooltip"
+  },
   "wol_sent": "ウェイクパケットを送信しました",
-  "@wol_sent": { "description": "WOL: packet sent success message" },
+  "@wol_sent": {
+    "description": "WOL: packet sent success message"
+  },
   "wol_send_failed": "送信に失敗しました。ネットワーク接続を確認してください",
-  "@wol_send_failed": { "description": "WOL: send failed message" },
+  "@wol_send_failed": {
+    "description": "WOL: send failed message"
+  },
   "wol_invalid_mac": "MACアドレスの形式が無効です",
-  "@wol_invalid_mac": { "description": "WOL: invalid MAC format message" },
+  "@wol_invalid_mac": {
+    "description": "WOL: invalid MAC format message"
+  },
   "wol_empty": "デバイスがありません。右下のボタンで追加できます",
-  "@wol_empty": { "description": "WOL: empty list placeholder" },
+  "@wol_empty": {
+    "description": "WOL: empty list placeholder"
+  },
   "wol_delete_confirm": "デバイス「{name}」を削除しますか？",
   "@wol_delete_confirm": {
     "description": "WOL: delete device confirm dialog. {name} is device name",
-    "placeholders": { "name": {} }
+    "placeholders": {
+      "name": {}
+    }
   }
 }

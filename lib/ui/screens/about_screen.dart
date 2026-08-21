@@ -160,7 +160,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   const SizedBox(height: 6),
                   // 版本号文本（硬编码，无需 l10n；以后升级版本只改这里）
                   Text(
-                    'v1.1.31',
+                    'v1.1.32',
                     style: TextStyle(
                       color: theme.colorScheme.onSurface.withOpacity(0.7),
                       fontSize: 13,
@@ -716,9 +716,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   Text(L10n.of(context).msg305734ce, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
 
-                  _buildV1130Changelog(ctx, theme),
-                  const SizedBox(height: 20),
-                  _buildV1131Changelog(ctx, theme),
+                  _buildV1132Changelog(ctx, theme),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -729,7 +727,7 @@ class AboutZenFileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildV1130Changelog(BuildContext ctx, ThemeData theme) {
+  Widget _buildV1132Changelog(BuildContext ctx, ThemeData theme) {
     final l10n = L10n.of(ctx);
     final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
     final sectionStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.primary, fontWeight: FontWeight.w600);
@@ -756,10 +754,10 @@ class AboutZenFileScreen extends StatelessWidget {
                   color: theme.colorScheme.primary.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text('v1.1.30', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+                child: Text('v1.1.32', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
               ),
               const SizedBox(width: 10),
-              Text('2026-08-18', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+              Text('2026-08-21', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
             ],
           ),
           gap(14),
@@ -767,141 +765,47 @@ class AboutZenFileScreen extends StatelessWidget {
           // ── 新功能 ──
           Text(l10n.changelog_section_new, style: sectionStyle),
           gap(4),
-          bulletText(l10n.changelog_v1130_new_1),
+          bulletText(l10n.changelog_v1132_new_1),
           gap(6),
-          bulletText(l10n.changelog_v1130_new_2),
+          bulletText(l10n.changelog_v1132_new_2),
           gap(6),
-          bulletText(l10n.changelog_v1130_new_3),
+          bulletText(l10n.changelog_v1132_new_3),
           gap(6),
-          bulletText(l10n.changelog_v1130_new_4),
-          gap(6),
-          bulletText(l10n.changelog_v1130_new_5),
-          gap(6),
-          bulletText(l10n.changelog_v1130_new_6),
-          gap(6),
-          bulletText(l10n.changelog_v1130_new_7),
-          gap(6),
-          bulletText(l10n.changelog_v1130_new_8),
-          gap(6),
-          bulletText(l10n.changelog_v1130_new_9),
-          gap(14),
-
-          // ── 功能优化 ──
-          Text(l10n.changelog_section_optimizations, style: sectionStyle),
-          gap(4),
-          bulletText(l10n.changelog_v1130_opt_1),
-          gap(6),
-          bulletText(l10n.changelog_v1130_opt_2),
-          gap(6),
-          bulletText(l10n.changelog_v1130_opt_3),
-          gap(6),
-          bulletText(l10n.changelog_v1130_opt_4),
-          gap(6),
-          bulletText(l10n.changelog_v1130_opt_5),
-          gap(6),
-          bulletText(l10n.changelog_v1130_opt_6),
-          gap(6),
-          bulletText(l10n.changelog_v1130_opt_7),
-          gap(6),
-          bulletText(l10n.changelog_v1130_opt_8),
-          gap(6),
-          bulletText(l10n.changelog_v1130_opt_9),
-          gap(6),
-          bulletText(l10n.changelog_v1130_opt_10),
-          gap(6),
-          bulletText(l10n.changelog_v1130_opt_11),
-          gap(6),
-          bulletText(l10n.changelog_v1130_opt_12),
-          gap(6),
-          bulletText(l10n.changelog_v1130_opt_13),
-          gap(6),
-          bulletText(l10n.changelog_v1130_opt_14),
+          bulletText(l10n.changelog_v1132_new_4),
           gap(14),
 
           // ── 问题修复 ──
           Text(l10n.changelog_section_fixes, style: sectionStyle),
           gap(4),
-          bulletText(l10n.changelog_v1130_fix_1),
+          bulletText(l10n.changelog_v1132_fix_1),
           gap(6),
-          bulletText(l10n.changelog_v1130_fix_2),
+          bulletText(l10n.changelog_v1132_fix_2),
           gap(6),
-          bulletText(l10n.changelog_v1130_fix_3),
+          bulletText(l10n.changelog_v1132_fix_3),
           gap(6),
-          bulletText(l10n.changelog_v1130_fix_4),
+          bulletText(l10n.changelog_v1132_fix_4),
           gap(6),
-          bulletText(l10n.changelog_v1130_fix_5),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildV1131Changelog(BuildContext ctx, ThemeData theme) {
-    final l10n = L10n.of(ctx);
-    final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
-    final sectionStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.primary, fontWeight: FontWeight.w600);
-
-    Widget gap([double h = 6]) => SizedBox(height: h);
-    Widget bulletText(String text) => Text('· $text', style: textStyle);
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.06)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text('v1.1.31', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
-              ),
-              const SizedBox(width: 10),
-              Text('2026-08-19', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
-            ],
-          ),
-          gap(14),
-          Text(l10n.changelog_section_fixes, style: sectionStyle),
-          gap(4),
-          bulletText(l10n.changelog_v1131_fix_1),
+          bulletText(l10n.changelog_v1132_fix_5),
           gap(6),
-          bulletText(l10n.changelog_v1131_fix_2),
+          bulletText(l10n.changelog_v1132_fix_6),
           gap(6),
-          bulletText(l10n.changelog_v1131_fix_3),
+          bulletText(l10n.changelog_v1132_fix_7),
           gap(6),
-          bulletText(l10n.changelog_v1131_fix_4),
+          bulletText(l10n.changelog_v1132_fix_8),
           gap(6),
-          bulletText(l10n.changelog_v1131_fix_5),
+          bulletText(l10n.changelog_v1132_fix_9),
           gap(6),
-          bulletText(l10n.changelog_v1131_fix_6),
+          bulletText(l10n.changelog_v1132_fix_10),
           gap(6),
-          bulletText(l10n.changelog_v1131_fix_7),
+          bulletText(l10n.changelog_v1132_fix_11),
           gap(6),
-          bulletText(l10n.changelog_v1131_fix_8),
+          bulletText(l10n.changelog_v1132_fix_12),
           gap(6),
-          bulletText(l10n.changelog_v1131_fix_9),
+          bulletText(l10n.changelog_v1132_fix_13),
           gap(6),
-          bulletText(l10n.changelog_v1131_fix_10),
+          bulletText(l10n.changelog_v1132_fix_14),
           gap(6),
-          bulletText(l10n.changelog_v1131_fix_11),
-          gap(6),
-          bulletText(l10n.changelog_v1131_fix_12),
-          gap(6),
-          bulletText(l10n.changelog_v1131_fix_13),
-          gap(6),
-          bulletText(l10n.changelog_v1131_fix_14),
-          gap(6),
-          bulletText(l10n.changelog_v1131_fix_15),
-          gap(6),
-          bulletText(l10n.changelog_v1131_fix_16),
+          bulletText(l10n.changelog_v1132_fix_15),
         ],
       ),
     );

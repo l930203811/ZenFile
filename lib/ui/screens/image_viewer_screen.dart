@@ -783,7 +783,9 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(
-                        icon: const Icon(Broken.edit, color: Colors.white, size: 18),
+                        // edit_2 为 Broken 线性铅笔，与右侧 Broken.more 三点
+                        // 同风格同视觉重量，避免实底 edit 图标显得突兀
+                        icon: const Icon(Broken.edit_2, color: Colors.white, size: 18),
                         tooltip: L10n.of(context).menu_edit_image,
                         onPressed: _openEditor,
                       ),

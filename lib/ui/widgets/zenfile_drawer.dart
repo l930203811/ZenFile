@@ -121,6 +121,15 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                         ),
                         _buildDrawerTile(
                           context,
+                          icon: Broken.search_normal,
+                          title: L10n.of(context).msg681c0f39,
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const GlobalSearchScreen()));
+                          },
+                        ),
+                        _buildDrawerTile(
+                          context,
                           icon: Broken.trash,
                           title: L10n.of(context).ui_recycle_bin,
                           onTap: () {
@@ -244,15 +253,6 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                       children: [
                         _buildDrawerTile(
                           context,
-                          icon: Broken.search_normal,
-                          title: L10n.of(context).msg681c0f39,
-                          onTap: () {
-                            Navigator.pop(context);
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const GlobalSearchScreen()));
-                          },
-                        ),
-                        _buildDrawerTile(
-                          context,
                           icon: Broken.lock,
                           title: L10n.of(context).msgbb590f19,
                           onTap: () {
@@ -311,7 +311,7 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12.0),
               child: Text(
-                'ZenFile v1.1.31',
+                'ZenFile v1.1.32',
                 style: TextStyle(fontSize: 11.5, color: theme.colorScheme.onSurface.withOpacity(0.4), fontWeight: FontWeight.w600),
               ),
             ),

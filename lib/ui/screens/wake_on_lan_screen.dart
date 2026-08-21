@@ -61,8 +61,8 @@ class _WakeOnLanScreenState extends State<WakeOnLanScreen> {
     final macCtl = TextEditingController(text: existing?.mac ?? '');
     final bcastCtl =
         TextEditingController(text: existing?.broadcast ?? '');
-    final portCtl =
-        TextEditingController(text: (existing?.port ?? 9).toString());
+    final portCtl = TextEditingController(
+        text: existing == null ? '' : existing.port.toString());
 
     final saved = await showModalBottomSheet<bool>(
       context: context,
@@ -72,6 +72,9 @@ class _WakeOnLanScreenState extends State<WakeOnLanScreen> {
           borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) {
         final theme = Theme.of(ctx);
+        // 提示文字更灰，避免被误认为已输入的文字
+        final hintStyle = TextStyle(
+            color: theme.colorScheme.onSurface.withOpacity(0.38));
         return Padding(
           padding: EdgeInsets.only(
               bottom: MediaQuery.of(ctx).viewInsets.bottom),
@@ -110,6 +113,7 @@ class _WakeOnLanScreenState extends State<WakeOnLanScreen> {
                   decoration: InputDecoration(
                     labelText: l10n.wol_name,
                     hintText: l10n.wol_name_hint,
+                    hintStyle: hintStyle,
                     border: const OutlineInputBorder(),
                     isDense: true,
                   ),
@@ -120,6 +124,7 @@ class _WakeOnLanScreenState extends State<WakeOnLanScreen> {
                   decoration: InputDecoration(
                     labelText: l10n.wol_mac,
                     hintText: 'AA:BB:CC:DD:EE:FF',
+                    hintStyle: hintStyle,
                     border: const OutlineInputBorder(),
                     isDense: true,
                   ),
@@ -134,6 +139,7 @@ class _WakeOnLanScreenState extends State<WakeOnLanScreen> {
                   decoration: InputDecoration(
                     labelText: l10n.wol_broadcast,
                     hintText: '192.168.1.255',
+                    hintStyle: hintStyle,
                     border: const OutlineInputBorder(),
                     isDense: true,
                   ),
@@ -144,6 +150,8 @@ class _WakeOnLanScreenState extends State<WakeOnLanScreen> {
                   controller: portCtl,
                   decoration: InputDecoration(
                     labelText: l10n.wol_port,
+                    hintText: l10n.wol_port_hint,
+                    hintStyle: hintStyle,
                     border: const OutlineInputBorder(),
                     isDense: true,
                   ),

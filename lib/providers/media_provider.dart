@@ -188,6 +188,10 @@ class _RestoredCache {
   final Map<String, int> categorySizes;
   final Map<String, int> mediaCounts;
   final Map<String, Map<String, dynamic>>? dirCache;
+
+  /// 上次主动刷新持久化的「索引未收录」补充媒体（浅透传，
+  /// 值为 List<dynamic>：路径字符串 / 音频条目 Map）。
+  final Map<String, dynamic>? supplementaryMedia;
   const _RestoredCache({
     this.documents = const [],
     this.archives = const [],
@@ -197,6 +201,7 @@ class _RestoredCache {
     this.categorySizes = const {},
     this.mediaCounts = const {},
     this.dirCache,
+    this.supplementaryMedia,
   });
 }
 
@@ -243,6 +248,12 @@ _RestoredCache _restoreCacheInIsolate(String jsonStr) {
         if (v is Map) dirCache!['$k'] = Map<String, dynamic>.from(v);
       });
     }
+    // 上次主动刷新的补充媒体（浅透传，主线程合并时逐项校验类型）
+    Map<String, dynamic>? supplementary;
+    final rawSup = map['supplementaryMedia'];
+    if (rawSup is Map) {
+      supplementary = Map<String, dynamic>.from(rawSup);
+    }
 
     return _RestoredCache(
       documents: filterExisting('documents'),
@@ -253,6 +264,7 @@ _RestoredCache _restoreCacheInIsolate(String jsonStr) {
       categorySizes: sizes,
       mediaCounts: counts,
       dirCache: dirCache,
+      supplementaryMedia: supplementary,
     );
   } catch (_) {
     return const _RestoredCache();
@@ -935,6 +947,16 @@ class MediaProvider extends ChangeNotifier {
   // 仅在 MediaStore 主路径命中时填充；回退递归扫描（极少触发）则不填充→沿用原 statSync。
   Map<String, int> _nonMediaDates = {};
   Map<String, int> _nonMediaSizes = {};
+
+  /// 上次用户主动刷新（loadMedia(forceRefresh:true)）的默认路径递归扫描中，
+  /// 「系统索引未收录」的补充媒体（图/视/截路径 + 音频合成条目 map）。
+  /// 持久化到 meta 缓存（_saveCache），下次启动/回前台在系统索引加载后
+  /// 由 _mergeSupplementaryMedia 并集合并回列表——修复「刷新后出现的默认
+  /// 路径文件重启后又消失」：这些文件不在 PhotoManager/on_audio_query
+  /// 索引内，重启后索引查询替换列表时会被丢弃。只保存索引缺失的差集，
+  /// 缓存体积远小于全量路径。幽灵条目由主动刷新的替换语义与
+  /// pruneDeletedMedia 存在性裁剪清除。
+  Map<String, dynamic>? _supplementaryMedia;
 
   Map<String, int> get nonMediaDates => _nonMediaDates;
   Map<String, int> get nonMediaSizes => _nonMediaSizes;
@@ -1925,6 +1947,10 @@ class MediaProvider extends ChangeNotifier {
         if (dc != null) {
           _dirCache = Map<String, Map<String, dynamic>>.from(dc);
         }
+        // 恢复上次主动刷新的补充媒体（待系统索引加载后合并，见 loadMedia）
+        if (r.supplementaryMedia != null) {
+          _supplementaryMedia = r.supplementaryMedia;
+        }
         _rebuildFolderGroups();
       }
     } catch (_) {}
@@ -1944,10 +1970,23 @@ class MediaProvider extends ChangeNotifier {
   ///
   /// 返回 true 表示成功取到数据；返回 false（通道不可用/无数据/异常）时调用方
   /// 应回退到递归扫描（_runFileSystemScanInIsolate）。
-  Future<bool> _loadNonMediaViaMediaStore() async {
+  ///
+  /// [unionWithExisting]：非强制（启动/懒加载）场景与内存现有列表（磁盘缓存
+  /// 恢复的旧条目）按路径取并集——用户上次主动刷新发现的默认路径文件
+  /// （MediaStore 未收录）重启后不丢失；主动刷新传 false 保持替换语义，
+  /// 由全量递归扫描清除已删除文件的幽灵条目。
+  Future<bool> _loadNonMediaViaMediaStore({bool unionWithExisting = false}) async {
     try {
       const channel = MethodChannel('com.sequl.zenfile/media_store');
       // 清空上一次（或刷新前）的索引元数据缓存，避免陈旧路径残留导致误读。
+      // union 模式保留旧缓存副本：并集保留的旧条目（磁盘缓存恢复、非本次
+      // 查询覆盖）的大小/日期从中回填，分类总大小亦计入。
+      final oldDates = unionWithExisting
+          ? Map<String, int>.from(_nonMediaDates)
+          : null;
+      final oldSizes = unionWithExisting
+          ? Map<String, int>.from(_nonMediaSizes)
+          : null;
       _nonMediaDates.clear();
       _nonMediaSizes.clear();
 
@@ -1986,10 +2025,39 @@ class MediaProvider extends ChangeNotifier {
       }
       if (docs.isEmpty && arch.isEmpty) return false;
 
-      _documents = docs;
-      _archives = arch;
-      _fsCategorySizes["文档"] = docSize;
-      _fsCategorySizes["压缩包"] = archSize;
+      // 非强制场景与内存现有列表按路径取并集：保留用户上次主动刷新发现的
+      // 默认路径文件（MediaStore 未收录），重启后不丢失；主动刷新直接替换，
+      // 由全量递归扫描清除已删除文件的幽灵条目。
+      List<FileSystemEntity> mergeWithExisting(
+        List<FileSystemEntity> existing,
+        List<FileSystemEntity> queried,
+        int queriedSize,
+        String sizeKey,
+      ) {
+        if (!unionWithExisting) {
+          _fsCategorySizes[sizeKey] = queriedSize;
+          return queried;
+        }
+        final seen = {for (final f in queried) f.path};
+        var size = queriedSize;
+        final kept = <FileSystemEntity>[];
+        for (final f in existing) {
+          if (seen.contains(f.path)) continue;
+          kept.add(f);
+          final s = oldSizes?[f.path];
+          if (s != null) {
+            _nonMediaSizes[f.path] = s;
+            size += s;
+          }
+          final d = oldDates?[f.path];
+          if (d != null) _nonMediaDates[f.path] = d;
+        }
+        _fsCategorySizes[sizeKey] = size;
+        return [...queried, ...kept];
+      }
+
+      _documents = mergeWithExisting(_documents, docs, docSize, "文档");
+      _archives = mergeWithExisting(_archives, arch, archSize, "压缩包");
 
       // 2) 下载：路径含 /download/（覆盖 Download/Downloads 及 OEM 变体）。
       final dl = await channel.invokeListMethod<Map<dynamic, dynamic>>(
@@ -2008,11 +2076,10 @@ class MediaProvider extends ChangeNotifier {
         _nonMediaSizes[path] = size;
         dlSize += size;
       }
-      _downloads = downloads;
-      _fsCategorySizes['下载'] = dlSize;
+      _downloads = mergeWithExisting(_downloads, downloads, dlSize, '下载');
 
       debugPrint('[ZenFile] MediaStore non-media query done: '
-          'docs=${docs.length} arch=${arch.length} dl=${downloads.length} apk=${apks.length} '
+          'docs=${_documents.length} arch=${_archives.length} dl=${_downloads.length} apk=${_apks.length} '
           'dateCache=${_nonMediaDates.length} sizeCache=${_nonMediaSizes.length}');
       return true;
     } on PlatformException catch (e) {
@@ -2041,8 +2108,27 @@ class MediaProvider extends ChangeNotifier {
       // 的 ProtocolTypeMediaStore 协议）。系统已预建索引→瞬时、穷尽、完整，
       // 彻底消除 dart:io 全盘递归在数十万文件下的 I/O 饱和与类别加载不全。
       // 仅当 MediaStore 不可用/无数据时回退到递归扫描（不卡顿场景下等价兜底）。
-      final viaMediaStore = await _loadNonMediaViaMediaStore();
-      if (!viaMediaStore) {
+      final viaMediaStore =
+          await _loadNonMediaViaMediaStore(unionWithExisting: !force);
+      if (force) {
+        // 用户主动刷新（右上角刷新按钮/仪表盘下拉）：对默认路径做一次全量
+        // 递归扫描（媒体+非媒体），与 MediaStore/系统索引结果按路径去重合并——
+        // 系统索引未收录或收录不全的默认路径文件也能被刷出（此前刷新仅依赖
+        // 索引，索引异常时只有自定义路径文件的根因）；自定义路径随后由
+        // _scanCustomCategories 统一合并。
+        await _runFileSystemScanInIsolate(
+          force: force,
+          includeMedia: true,
+          unionNonMedia: viaMediaStore,
+        ).catchError((Object e) {
+          debugPrint('[ZenFile] force full recursive scan failed, fallback: $e');
+          return _loadMediaFromFileSystem();
+        });
+        // 刷新发现的媒体同步进视觉/音频索引缓存：下次启动的毫秒级恢复
+        // 窗口直接呈现完整列表（含系统索引未收录的默认路径文件）。
+        await _saveVisualCache(_images, _videos, _screenshots);
+        await _saveAudioCache(_audios);
+      } else if (!viaMediaStore) {
         await _runFileSystemScanInIsolate(force: force).catchError((Object e) {
           debugPrint('[ZenFile] background non-media scan failed, fallback: $e');
           return _loadMediaFromFileSystem();
@@ -2120,6 +2206,10 @@ class MediaProvider extends ChangeNotifier {
         },
         // 目录增量缓存：非媒体扫描跳过 mtime 未变目录（二次启动毫秒级完成）
         'dirCache': _dirCache,
+        // 上次主动刷新发现的「索引未收录」补充媒体（仅差集，见字段注释）：
+        // 系统索引不收录这些默认路径文件，重启后由此恢复，防止刷新成果丢失。
+        if (_supplementaryMedia != null)
+          'supplementaryMedia': _supplementaryMedia,
         // 注：媒体（图/视/截/音）路径不再缓存——系统级索引毫秒级提供，
         // 且数万条路径的序列化/恢复本身就是启动卡顿源。
       };
@@ -2184,7 +2274,11 @@ class MediaProvider extends ChangeNotifier {
       // fetchAll 并发抢 MediaStore 导致 querySongs 返回空、叠加缓存缺失时音频清零），
       // 再加载视频图片。
       await _loadAudios();
-      await _loadImagesAndVideos().then((_) => _computeMediaCategorySizes());
+      await _loadImagesAndVideos();
+      // 回前台索引整表替换后，合并上次主动刷新持久化的补充媒体
+      // （随后 pruneDeletedMedia 按存在性裁剪，顺带清掉补充集中已删除的幽灵）。
+      await _mergeSupplementaryMedia();
+      await _computeMediaCategorySizes();
       // 回前台时清理他应用/浏览页删除后残留的空白图标条目（基于存在性裁剪）。
       await pruneDeletedMedia();
       await _scanCustomCategories();
@@ -2215,7 +2309,17 @@ class MediaProvider extends ChangeNotifier {
   /// 与 NFile 1.1.22 一致——递归扫描媒体会在大存储设备上造成 I/O 饱和、
   /// 与系统媒体扫描争抢存储导致整机卡顿，红米K60Pro反馈），
   /// isolate 仅扫描无系统索引的类别：文档/压缩包/下载/安装包。
-  Future<void> _runFileSystemScanInIsolate({bool force = false, bool onlyApk = false}) async {
+  /// [includeMedia]：同时收集媒体类别（图/视/截/音），供用户主动刷新的
+  /// 全量递归扫描使用——扫描结果与系统索引/已有列表按路径去重合并，
+  /// 系统索引未收录或收录不全的默认路径文件也能被刷出。
+  /// [unionNonMedia]：非媒体结果与已有列表（MediaStore 刚填充的新结果）
+  /// 取并集而非替换，保留递归深度之外仅索引可见的深层文件。
+  Future<void> _runFileSystemScanInIsolate({
+    bool force = false,
+    bool onlyApk = false,
+    bool includeMedia = false,
+    bool unionNonMedia = false,
+  }) async {
     final searchDirs = await _getUserSearchDirs();
     debugPrint('[ZenFile] non-media scan start: rootDirs=$searchDirs '
         'storageAccessible=$_storageAccessible');
@@ -2241,13 +2345,14 @@ class MediaProvider extends ChangeNotifier {
         '/storage/emulated/0/Download',
         '/storage/emulated/0/Downloads',
       ],
-      skipMediaCategories: !onlyApk,
+      skipMediaCategories: !onlyApk && !includeMedia,
       onlyApk: onlyApk,
       dirCache: _dirCache,
     );
     final result = await compute(_scanMediaFileSystemIsolate, params);
-    // isolate 跳过了媒体收集，其 categorySizes 不含媒体键；
-    // 整 map 替换前保留媒体大小（由系统索引路径 _computeMediaCategorySizes/_loadAudios 维护）。
+    // 整 map 替换前保留媒体大小（由系统索引路径 _computeMediaCategorySizes/_loadAudios
+    // 维护，覆盖全量列表更完整；includeMedia 时 isolate 虽也含媒体键，但其仅统计
+    // 递归扫描覆盖且通过噪声过滤的子集）。
     final newSizes = Map<String, int>.from(result.categorySizes);
     for (final k in const ['图片', '视频', '截图', '音频']) {
       final v = _fsCategorySizes[k];
@@ -2260,14 +2365,21 @@ class MediaProvider extends ChangeNotifier {
     // 让已显示的条目「莫名全部消失」。
     // - 新结果为空：极可能是存储瞬时异常，保留旧列表（绝不因空扫描清空）；
     //   同时 _saveCache 的非空保护会拦截空结果落盘，避免磁盘缓存被覆盖成空。
+    // - union 模式（MediaStore 刚填充过新结果）：与其取并集（按路径去重），
+    //   保留递归深度之外仅索引可见的深层文件。
     // - 新结果不足旧列表一半且非强制刷新：并集兜底，保留旧条目，下次扫描修正。
     // - 强制刷新且扫描健康：直接替换，清除已删除文件的幽灵条目。
     List<FileSystemEntity> mergeGuarded(
-        List<FileSystemEntity> oldFiles, List<String> newPaths) {
+        List<FileSystemEntity> oldFiles, List<String> newPaths,
+        {bool union = false}) {
       final newFiles = newPaths.map((e) => File(e)).toList();
       if (newFiles.isEmpty) {
         // 空结果：保留旧列表，防止瞬时空扫描导致内容消失。
         return oldFiles;
+      }
+      if (union) {
+        final seen = newPaths.toSet();
+        return [...newFiles, ...oldFiles.where((f) => !seen.contains(f.path))];
       }
       if (!force && oldFiles.isNotEmpty && newFiles.length < oldFiles.length / 2) {
         final seen = newPaths.toSet();
@@ -2275,10 +2387,74 @@ class MediaProvider extends ChangeNotifier {
       }
       return newFiles;
     }
-    _documents = mergeGuarded(_documents, result.documents);
-    _archives = mergeGuarded(_archives, result.archives);
-    _downloads = mergeGuarded(_downloads, result.downloads);
+    // 文档/压缩包/下载：unionNonMedia 时与 MediaStore 刚填充的新结果取并集；
+    // APK（MediaStore 不索引，旧列表为陈旧缓存）保持替换语义以清除幽灵条目。
+    _documents = mergeGuarded(_documents, result.documents, union: unionNonMedia);
+    _archives = mergeGuarded(_archives, result.archives, union: unionNonMedia);
+    _downloads = mergeGuarded(_downloads, result.downloads, union: unionNonMedia);
     _apks = mergeGuarded(_apks, result.apks);
+    if (includeMedia) {
+      // 媒体并集合并：递归扫描结果并入系统索引/已有列表（按归一化路径去重），
+      // 默认路径下未被系统索引收录的媒体文件由此补齐（用户主动刷新场景）。
+      // added 收集「索引/已有列表中不存在」的新增路径（差集），供持久化为
+      // 补充媒体（_supplementaryMedia），下次启动合并回列表。
+      List<FileSystemEntity> unionMedia(List<FileSystemEntity> oldFiles,
+          List<String> newPaths, List<String>? added) {
+        final seen = <String>{
+          for (final f in oldFiles) _normalizeMediaPath(f.path),
+        };
+        final out = List<FileSystemEntity>.from(oldFiles);
+        for (final np in newPaths) {
+          if (seen.add(_normalizeMediaPath(np))) {
+            out.add(File(np));
+            added?.add(np);
+          }
+        }
+        return out;
+      }
+
+      final supImages = <String>[];
+      final supVideos = <String>[];
+      final supScreenshots = <String>[];
+      _images = unionMedia(_images, result.images, supImages);
+      _videos = unionMedia(_videos, result.videos, supVideos);
+      _screenshots = unionMedia(_screenshots, result.screenshots, supScreenshots);
+      // 音频：先移除上次递归扫描并入的合成条目（_id 800000+，与自定义路径
+      // 合成的 900000+ 区分），再按 _data 路径去重并入本次结果，避免跨次
+      // 刷新 _id 撞号（与 _scanCustomCategories 对 900000+ 的处理对称）。
+      _audios.removeWhere((song) => song.id >= 800000 && song.id < 900000);
+      final audioSeen = <String>{
+        for (final s in _audios) _normalizeMediaPath(s.data),
+      };
+      final supAudios = <Map<String, dynamic>>[];
+      for (final m in result.audios) {
+        final data = (m['_data'] as String?) ?? '';
+        if (data.isEmpty) continue;
+        if (audioSeen.add(_normalizeMediaPath(data))) {
+          _audios.add(SongModel(Map<String, dynamic>.from(m)));
+          supAudios.add(m);
+        }
+      }
+      // 持久化本次刷新发现的「索引未收录」补充媒体（全部为空则清空补充集）
+      if (supImages.isEmpty &&
+          supVideos.isEmpty &&
+          supScreenshots.isEmpty &&
+          supAudios.isEmpty) {
+        _supplementaryMedia = null;
+      } else {
+        _supplementaryMedia = {
+          'images': supImages,
+          'videos': supVideos,
+          'screenshots': supScreenshots,
+          'audios': supAudios,
+        };
+      }
+      debugPrint('[ZenFile] isolate scan media merged: '
+          'images=${_images.length} videos=${_videos.length} '
+          'shots=${_screenshots.length} audios=${_audios.length} '
+          'supplementary(img=${supImages.length} vid=${supVideos.length} '
+          'shot=${supScreenshots.length} audio=${supAudios.length})');
+    }
     // 分组已在 isolate 内算好，直接赋值，主线程不再做 O(n) 遍历分组。
     // 媒体分组随后由 _rebuildFolderGroups() 从系统索引列表重建（loadMedia 尾部统一调用）。
     // 分类大小已在上方合并（isolate 非媒体值 + 保留的媒体值）。
@@ -2302,6 +2478,64 @@ class MediaProvider extends ChangeNotifier {
     }
   }
 
+  /// 启动/回前台时合并上次主动刷新持久化的补充媒体（默认路径下系统索引
+  /// 未收录的文件，见 _supplementaryMedia）：系统索引加载会整表替换
+  /// _images/_videos/_screenshots/_audios，补充媒体由此合并回列表，
+  /// 修复「刷新后文件出现、重启后又消失」。按归一化路径去重；
+  /// 音频合成条目复用 _id 800000+ 号段（先移除防止撞号）。
+  Future<void> _mergeSupplementaryMedia() async {
+    final sup = _supplementaryMedia;
+    if (sup == null) return;
+    try {
+      List<String> pathsOf(String key) {
+        final raw = sup[key];
+        if (raw is! List) return const [];
+        return [for (final e in raw) if (e is String && e.isNotEmpty) e];
+      }
+
+      List<FileSystemEntity> unionPaths(
+          List<FileSystemEntity> current, List<String> newPaths) {
+        final seen = <String>{
+          for (final f in current) _normalizeMediaPath(f.path),
+        };
+        final out = List<FileSystemEntity>.from(current);
+        for (final np in newPaths) {
+          if (seen.add(_normalizeMediaPath(np))) out.add(File(np));
+        }
+        return out;
+      }
+
+      _images = unionPaths(_images, pathsOf('images'));
+      _videos = unionPaths(_videos, pathsOf('videos'));
+      _screenshots = unionPaths(_screenshots, pathsOf('screenshots'));
+
+      _audios.removeWhere((song) => song.id >= 800000 && song.id < 900000);
+      final audioSeen = <String>{
+        for (final s in _audios) _normalizeMediaPath(s.data),
+      };
+      final rawAudios = sup['audios'];
+      if (rawAudios is List) {
+        var idx = 0;
+        for (final m in rawAudios) {
+          if (m is! Map) continue;
+          final data = m['_data'] as String?;
+          if (data == null || data.isEmpty) continue;
+          if (audioSeen.add(_normalizeMediaPath(data))) {
+            final map = Map<String, dynamic>.from(m);
+            map['_id'] = 800000 + idx;
+            idx++;
+            _audios.add(SongModel(map));
+          }
+        }
+      }
+      debugPrint('[ZenFile] supplementary media merged: '
+          'images=${_images.length} videos=${_videos.length} '
+          'shots=${_screenshots.length} audios=${_audios.length}');
+    } catch (e) {
+      debugPrint('[ZenFile] _mergeSupplementaryMedia error: $e');
+    }
+  }
+
   Future<void> loadMedia({bool forceRefresh = false}) async {
     try {
       // 防并发：已有扫描在跑时直接返回，避免重复全量扫描叠加导致主线程卡死。
@@ -2317,15 +2551,6 @@ class MediaProvider extends ChangeNotifier {
 
       _isLoading = true;
       notifyListeners();
-
-      // 用户主动刷新（右上角刷新按钮/仪表盘下拉刷新/onResume）：强制重扫非媒体。
-      // 暂存该 Future，待媒体快路径加载完成后再 await，确保整个刷新（含非媒体
-      // 后台扫描）期间 _isLoading 始终为真——刷新按钮据此保持禁用/置灰，既防止
-      // 用户狂点刷新重复触发全量扫描，也避免重扫过程并发重建导致闪退。
-      Future<void>? pendingForceScan;
-      if (forceRefresh) {
-        pendingForceScan = _scanNonMediaInBackground(force: true);
-      }
 
       // Fast initial load from disk cache
       await _loadFromDiskCache();
@@ -2373,7 +2598,26 @@ class MediaProvider extends ChangeNotifier {
       // 图片加载完成后音频被清空」（仅大存储设备复现）。改为先独占式加载音频
       // （querySongs 拿到全量），再加载视频图片，彻底消除争抢。
       await _loadAudios();
-      await _loadImagesAndVideos().then((_) => _computeMediaCategorySizes());
+      await _loadImagesAndVideos();
+      // 非强制（启动）加载：系统索引整表替换列表后，合并上次主动刷新持久化
+      // 的补充媒体（索引未收录的默认路径文件），修复「刷新后文件出现、重启
+      // 后又消失」。强制刷新走全量递归重扫 + 替换语义（清除幽灵条目），
+      // 不合并旧补充集（扫描结束后由差集重建 _supplementaryMedia）。
+      if (!forceRefresh) {
+        await _mergeSupplementaryMedia();
+      }
+      await _computeMediaCategorySizes();
+
+      // 用户主动刷新（右上角刷新按钮/仪表盘下拉刷新）：媒体系统索引就绪后，
+      // 再对默认路径做全量递归扫描（媒体+非媒体，见 _scanNonMediaInBackground
+      // 的 force 分支），结果与索引/自定义路径按路径去重合并。放在索引加载
+      // 之后串行启动，避免递归扫描的媒体合并与索引列表赋值交错导致结果丢失；
+      // 暂存 Future 待尾部 await，确保整个刷新期间 _isLoading 始终为真——
+      // 刷新按钮据此保持禁用/置灰，防止狂点刷新重复触发全量扫描。
+      Future<void>? pendingForceScan;
+      if (forceRefresh) {
+        pendingForceScan = _scanNonMediaInBackground(force: true);
+      }
 
       // 启动即后台快速扫描非媒体类别（限定深度的热点目录，毫秒级完成），
       // 让首页分类计数与文档/压缩包/下载/安装包类别在用户进入前就就绪，

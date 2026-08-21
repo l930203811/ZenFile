@@ -4943,6 +4943,77 @@ class L10nZh extends L10n {
       '新增 ui_app_open_location、ui_batch_backup、ui_batch_share、ui_batch_uninstall、ui_batch_uninstall_confirm 翻译键，10 种语言全部补齐';
 
   @override
+  String get changelog_v1132_new_1 =>
+      '局域网唤醒（WOL）：抽屉页「工具」栏新增入口，支持添加/编辑/删除设备（名称、MAC 地址、广播地址、端口），一键发送魔术包唤醒局域网内的电脑/设备，设备列表本地持久化存储，10 语言完整本地化';
+
+  @override
+  String get changelog_v1132_new_2 =>
+      '图片编辑器：图片查看页新增「编辑」按钮（顶部工具栏 + 3 点菜单），5 个编辑 Tab：调整（亮度/对比度/饱和度）、滤镜（原图/黑白/复古/胶片/冷/暖）、缩放（精确尺寸输入 + 锁定宽高比 + 6 种证件照预设：护照 413×531、一寸 295×413、二寸 413×579、小一寸 260×378、大一寸 390×567、美国签证 600×600）、旋转翻转（90°/180°/270° + 水平/垂直）、裁剪（手柄手势 + 比例约束）';
+
+  @override
+  String get changelog_v1132_new_3 =>
+      '一键去元数据：图片查看页 3 点菜单新增「清除元数据」，重新编码剥离 EXIF/GPS/ICC 等全部元数据，另存为新文件';
+
+  @override
+  String get changelog_v1132_new_4 =>
+      '沉浸式信息条：图片查看页触摸后底部显示文件名·尺寸·大小·格式；属性弹窗新增 Dimensions 行';
+
+  @override
+  String get changelog_v1132_fix_1 =>
+      '修复分类页按文件夹查看时全选按钮跨文件夹全选：图片/视频/音频/截图/文档/压缩包/下载/安装包共 8 个类别，进入文件夹多选后点全选不再选中其他文件夹的文件；仅在「全部项目」查看时全选所有文件';
+
+  @override
+  String get changelog_v1132_fix_2 =>
+      '修复图片类别按文件夹查看时截图文件夹（DCIM/Screenshots）全选按钮失效';
+
+  @override
+  String get changelog_v1132_fix_3 => '修复图片/截图查看页「在位置中显示」无法跳转到浏览页（本地与远程路径均适用）';
+
+  @override
+  String get changelog_v1132_fix_4 =>
+      '修复应用管理批量操作备份按钮标题显示「正在备份...」（已改为「备份」，10 语言同步更新）';
+
+  @override
+  String get changelog_v1132_fix_5 => '修复图片查看器 Dismissible 滑动块缺失闭合括号导致的编译错误';
+
+  @override
+  String get changelog_v1132_fix_6 => '修复分类页全选按钮混入远程/本地文件（按当前范围过滤）';
+
+  @override
+  String get changelog_v1132_fix_7 =>
+      '修复非媒体类别（文档/压缩包/下载/安装包）浏览页删除或移动后分类页残留空白图标';
+
+  @override
+  String get changelog_v1132_fix_8 => '修复远程图片删除后缩略图残留、siblingItems 列表未同步更新';
+
+  @override
+  String get changelog_v1132_fix_9 =>
+      '修复分类页媒体总大小启动后「显示约 1 秒 → 归零 → 重新加载恢复」的闪烁问题';
+
+  @override
+  String get changelog_v1132_fix_10 =>
+      '修复标签页左右滑动误触切换页面（新增 tabBarInteracting 标志位保护）';
+
+  @override
+  String get changelog_v1132_fix_11 =>
+      '修复自动备份开关不生效（新增 _autoSyncTriggered 守卫 + isLoaded 状态检查）';
+
+  @override
+  String get changelog_v1132_fix_12 => '修复备份逻辑错乱（远程缺失文件时重新上传而非丢弃记录）';
+
+  @override
+  String get changelog_v1132_fix_13 =>
+      '修复「打开所在位置」需手动按返回键才能看到跳转（改为 popUntil(isFirst) 一次性弹回首页）';
+
+  @override
+  String get changelog_v1132_fix_14 =>
+      '修复刷新按钮扫描不到非媒体文件（如 APK 加载不出），补充 onlyApk 参数并修正分类分支逻辑';
+
+  @override
+  String get changelog_v1132_fix_15 =>
+      '修复批量备份进度对话框卡住不消失（改用 rootNavigator 模式 + backupDialogOpen 标志位）';
+
+  @override
   String get ui_batch_backup => '备份';
 
   @override
@@ -10057,6 +10128,82 @@ class L10nZhTw extends L10nZh {
   @override
   String get changelog_v1131_fix_16 =>
       'Added ui_app_open_location, ui_batch_backup, ui_batch_share, ui_batch_uninstall, ui_batch_uninstall_confirm translation keys, all 10 languages covered';
+
+  @override
+  String get changelog_v1132_new_1 =>
+      'Wake on LAN (WOL): New entry in Drawer → Tools. Add/Edit/Delete devices (name, MAC address, broadcast address, port), send magic packets to wake devices on LAN. Device list persisted locally. Full 10-language localization.';
+
+  @override
+  String get changelog_v1132_new_2 =>
+      'Image Editor: New \'Edit\' button on image viewer page (top toolbar + 3-dot menu). 5 editing tabs: Adjust (brightness/contrast/saturation), Filters (original/B&W/sepia/vintage/cool/warm), Resize (exact dimensions + lock aspect ratio + 6 ID-photo presets: Passport 413×531, 1-inch 295×413, 2-inch 413×579, Small 1-inch 260×378, Large 1-inch 390×567, US Visa 600×600), Rotate & Flip (90°/180°/270° + horizontal/vertical), Crop (handle gestures + aspect ratio constraints).';
+
+  @override
+  String get changelog_v1132_new_3 =>
+      'One-tap Metadata Removal: New \'Remove Metadata\' option in image viewer 3-dot menu. Re-encodes image stripping EXIF/GPS/ICC metadata, saves as new file.';
+
+  @override
+  String get changelog_v1132_new_4 =>
+      'Immersive Info Bar: Image viewer shows filename·dimensions·size·format on touch; Properties dialog adds Dimensions row.';
+
+  @override
+  String get changelog_v1132_fix_1 =>
+      'Fixed Select All button in category page cross-selecting files from other folders when browsing by folder: Images/Videos/Audios/Screenshots/Documents/Archives/Downloads/APKs — 8 categories now only select files within the current folder when in folder view; Select All selects all files only in \'All Items\' view.';
+
+  @override
+  String get changelog_v1132_fix_2 =>
+      'Fixed Select All button failing to select files in the Screenshots folder (DCIM/Screenshots) when browsing by folder in the Images category.';
+
+  @override
+  String get changelog_v1132_fix_3 =>
+      'Fixed \'Show in Location\' not navigating to the browse page for images/screenshots (works for both local and remote paths).';
+
+  @override
+  String get changelog_v1132_fix_4 =>
+      'Fixed batch operation backup button title showing \'Backing up...\' (changed to \'Backup\', updated across all 10 languages).';
+
+  @override
+  String get changelog_v1132_fix_5 =>
+      'Fixed image viewer Dismissible widget missing closing bracket causing compile errors.';
+
+  @override
+  String get changelog_v1132_fix_6 =>
+      'Fixed Select All in category page mixing remote/local files (now filters by current scope).';
+
+  @override
+  String get changelog_v1132_fix_7 =>
+      'Fixed residual blank icons on category page after deleting or moving files in non-media categories (Documents/Archives/Downloads/APKs).';
+
+  @override
+  String get changelog_v1132_fix_8 =>
+      'Fixed residual thumbnails and unsynchronized siblingItems after deleting remote images.';
+
+  @override
+  String get changelog_v1132_fix_9 =>
+      'Fixed category total size flickering \'shows ~1s → zeros out → reload restores\' on startup.';
+
+  @override
+  String get changelog_v1132_fix_10 =>
+      'Fixed tab bar horizontal swipe accidentally triggering page switch (new tabBarInteracting flag).';
+
+  @override
+  String get changelog_v1132_fix_11 =>
+      'Fixed auto-backup toggle not taking effect (new _autoSyncTriggered guard + isLoaded check).';
+
+  @override
+  String get changelog_v1132_fix_12 =>
+      'Fixed backup logic errors (re-uploads missing remote files instead of discarding records).';
+
+  @override
+  String get changelog_v1132_fix_13 =>
+      'Fixed \'Open Location\' requiring manual back press to see navigation (now uses popUntil(isFirst) to navigate home directly).';
+
+  @override
+  String get changelog_v1132_fix_14 =>
+      'Fixed refresh button not scanning non-media files (APKs not loading), corrected category branch logic and added onlyApk parameter.';
+
+  @override
+  String get changelog_v1132_fix_15 =>
+      'Fixed batch backup progress dialog stuck and not dismissing (switched to rootNavigator mode + backupDialogOpen flag).';
 
   @override
   String get ui_batch_backup => '備份';

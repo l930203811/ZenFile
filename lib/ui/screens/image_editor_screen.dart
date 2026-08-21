@@ -49,6 +49,14 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
   _EditorTab _tab = _EditorTab.adjust;
   bool get _cropTabActive => _tab == _EditorTab.crop;
 
+  // 顶栏「撤回」：参数快照栈（ImageEditParams 不可变，直接存引用）
+  final List<_EditSnapshot> _undoStack = [];
+  static const int _maxUndo = 100;
+  // 进入当前 tab 时的编辑状态：顶栏「取消」恢复到该状态（仅撤销本 tab 的改动）
+  _EditSnapshot _tabEntry = const _EditSnapshot(ImageEditParams(), 90);
+  // 裁剪比例当前选中项（null = 自由）
+  double? _selectedAspect;
+
   // 裁剪交互（归一化 0..1，相对原图）
   Rect? _cropRect;
   _CropDragMode _dragMode = _CropDragMode.none;
@@ -119,16 +127,101 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
     _recomputePreview();
   }
 
+  // ---- 顶栏操作：撤回 / 重置 / 取消 / 确定（对所有 tab 生效） ----
+
+  /// 撤回压栈：在每次修改参数前调用，保存修改前的完整状态。
+  /// 同时复位已保存标志——保存后又产生新修改时，退出需重新确认。
+  void _pushUndo() {
+    _saved = false;
+    _undoStack.add(_EditSnapshot(_params, _quality));
+    if (_undoStack.length > _maxUndo) _undoStack.removeAt(0);
+  }
+
+  /// 恢复到某个状态（撤回/取消共用）：同步参数、质量、裁剪框与尺寸输入框。
+  void _restore(_EditSnapshot s) {
+    setState(() {
+      _params = s.params;
+      _quality = s.quality;
+      if (s.params.cropX != null) {
+        _cropRect = Rect.fromLTWH(
+          s.params.cropX!,
+          s.params.cropY!,
+          s.params.cropW!,
+          s.params.cropH!,
+        );
+      } else {
+        _cropRect = Rect.fromLTRB(0, 0, 1, 1);
+      }
+      _selectedAspect = null; // 恢复后比例选中态交还「自由」
+      _widthCtrl.text = (s.params.targetWidth ?? _info?.width ?? 0).toString();
+      _heightCtrl.text = (s.params.targetHeight ?? _info?.height ?? 0).toString();
+    });
+    _recomputePreview();
+  }
+
+  /// 撤回：回到上一次修改前的状态。
+  void _undoEdit() {
+    if (_undoStack.isEmpty) return;
+    _restore(_undoStack.removeLast());
+  }
+
+  /// 重置：将当前 tab 的参数恢复默认（其它 tab 的修改保留）。
+  void _resetTab() {
+    _pushUndo();
+    switch (_tab) {
+      case _EditorTab.adjust:
+        _params = _params.copyWith(brightness: 1.0, contrast: 1.0, saturation: 1.0);
+      case _EditorTab.filters:
+        _params = _params.copyWith(filter: 'none');
+      case _EditorTab.resize:
+        _params = _params.copyWith(targetWidth: null, targetHeight: null);
+        _quality = 90;
+        _widthCtrl.text = (_info?.width ?? 0).toString();
+        _heightCtrl.text = (_info?.height ?? 0).toString();
+      case _EditorTab.rotate:
+        _params = _params.copyWith(rotateAngle: 0, flipHorizontal: false, flipVertical: false);
+      case _EditorTab.crop:
+        _cropRect = Rect.fromLTRB(0, 0, 1, 1);
+        _selectedAspect = null;
+        _params = _params.copyWith(cropX: null, cropY: null, cropW: null, cropH: null);
+    }
+    setState(() {});
+    _recomputePreview();
+  }
+
+  /// 取消：撤销进入当前 tab 以来的所有改动（恢复到进入时快照）。
+  void _cancelTab() {
+    _restore(_tabEntry);
+  }
+
+  /// 确定：完成当前 tab——裁剪页提交裁剪框，其余页接受当前参数，
+  /// 均回到「调整」主页。
+  void _confirmTab() {
+    if (_tab == _EditorTab.crop) {
+      _confirmCrop();
+    } else if (_tab != _EditorTab.adjust) {
+      _switchTab(_EditorTab.adjust);
+    }
+  }
+
   void _commitCropIfNeeded() {
     if (_cropTabActive) {
-      // 退出裁剪页时把裁剪框写入参数
+      // 退出裁剪页时把裁剪框写入参数（仅在裁剪参数实际变化时压入撤回栈）
       final r = _cropRect;
-      if (r != null && (r.left > 0.001 || r.top > 0.001 || r.right < 0.999 || r.bottom < 0.999)) {
+      final Rect? next = (r != null &&
+              (r.left > 0.001 || r.top > 0.001 || r.right < 0.999 || r.bottom < 0.999))
+          ? r
+          : null;
+      final Rect? committed = (_params.cropX != null)
+          ? Rect.fromLTWH(_params.cropX!, _params.cropY!, _params.cropW!, _params.cropH!)
+          : null;
+      if (next != committed) _pushUndo();
+      if (next != null) {
         _params = _params.copyWith(
-          cropX: r.left,
-          cropY: r.top,
-          cropW: r.right - r.left,
-          cropH: r.bottom - r.top,
+          cropX: next.left,
+          cropY: next.top,
+          cropW: next.right - next.left,
+          cropH: next.bottom - next.top,
         );
       } else {
         _params = _params.copyWith(cropX: null, cropY: null, cropW: null, cropH: null);
@@ -139,6 +232,8 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
   void _switchTab(_EditorTab tab) {
     if (tab == _tab) return;
     _commitCropIfNeeded();
+    // 记录进入新 tab 时的状态：顶栏「取消」据此撤销本 tab 的改动
+    _tabEntry = _EditSnapshot(_params, _quality);
     if (tab == _EditorTab.crop && _cropRect == null) {
       _cropRect = Rect.fromLTRB(0, 0, 1, 1);
     }
@@ -240,21 +335,16 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
       }
       r = Rect.fromLTWH((1 - w) / 2, (1 - h) / 2, w, h);
     }
-    setState(() => _cropRect = r);
-  }
-
-  void _clearCrop() {
     setState(() {
-      _cropRect = Rect.fromLTRB(0, 0, 1, 1);
-      _params = _params.copyWith(cropX: null, cropY: null, cropW: null, cropH: null);
+      _cropRect = r;
+      _selectedAspect = ratio;
     });
-    _recomputePreview();
   }
 
   // ---- 缩放 ----
   final TextEditingController _widthCtrl = TextEditingController();
   final TextEditingController _heightCtrl = TextEditingController();
-  bool _lockRatio = false;
+  bool _lockRatio = true;
 
   void _initResizeFields() {
     _widthCtrl.text = (_params.targetWidth ?? _info?.width ?? 0).toString();
@@ -264,6 +354,7 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
   void _onWidthChanged(String v) {
     final w = int.tryParse(v);
     if (w == null || w <= 0 || _info == null) return;
+    _pushUndo();
     if (_lockRatio) {
       final ratio = _info!.height / _info!.width;
       final h = (w * ratio).round();
@@ -278,6 +369,7 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
   void _onHeightChanged(String v) {
     final h = int.tryParse(v);
     if (h == null || h <= 0 || _info == null) return;
+    _pushUndo();
     if (_lockRatio) {
       final ratio = _info!.width / _info!.height;
       final w = (h * ratio).round();
@@ -291,6 +383,7 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
 
   void _applyScale(double factor) {
     if (_info == null) return;
+    _pushUndo();
     final w = (_info!.width * factor).round();
     final h = (_info!.height * factor).round();
     _widthCtrl.text = w.toString();
@@ -300,6 +393,7 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
   }
 
   void _applySize(int w, int h) {
+    _pushUndo();
     _widthCtrl.text = w.toString();
     _heightCtrl.text = h.toString();
     _params = _params.copyWith(targetWidth: w, targetHeight: h);
@@ -308,21 +402,30 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
 
   // ---- 旋转/翻转 ----
   void _rotate(int delta) {
-    var a = (_params.rotateAngle + delta) % 360;
-    if (a < 0) a += 360;
-    _params = _params.copyWith(rotateAngle: a);
+    _pushUndo();
+    setState(() {
+      var a = (_params.rotateAngle + delta) % 360;
+      if (a < 0) a += 360;
+      _params = _params.copyWith(rotateAngle: a);
+    });
     _recomputePreview();
   }
 
-  void _toggleFlipH() => setState(() {
-        _params = _params.copyWith(flipHorizontal: !_params.flipHorizontal);
-        _schedulePreview();
-      });
+  void _toggleFlipH() {
+    _pushUndo();
+    setState(() {
+      _params = _params.copyWith(flipHorizontal: !_params.flipHorizontal);
+      _schedulePreview();
+    });
+  }
 
-  void _toggleFlipV() => setState(() {
-        _params = _params.copyWith(flipVertical: !_params.flipVertical);
-        _schedulePreview();
-      });
+  void _toggleFlipV() {
+    _pushUndo();
+    setState(() {
+      _params = _params.copyWith(flipVertical: !_params.flipVertical);
+      _schedulePreview();
+    });
+  }
 
   // ---- 滤镜 ----
   final List<Map<String, String>> _filters = const [
@@ -478,32 +581,53 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
       appBar: AppBar(
         backgroundColor: theme.colorScheme.surface,
         foregroundColor: theme.colorScheme.onSurface,
-        title: Text(l10n.edit_image),
-        actions: [
-          IconButton(
-            icon: const Icon(Broken.undo),
-            tooltip: l10n.editor_reset,
-            onPressed: () {
-              setState(() {
-                _params = const ImageEditParams();
-                _cropRect = Rect.fromLTRB(0, 0, 1, 1);
-                _quality = 90;
-                _widthCtrl.clear();
-                _heightCtrl.clear();
-              });
-              _recomputePreview();
-            },
-          ),
-          PopupMenuButton<bool>(
-            icon: const Icon(Icons.save_outlined),
-            tooltip: l10n.editor_save_as_copy,
-            onSelected: (overwrite) => _save(overwrite: overwrite),
-            itemBuilder: (_) => [
-              PopupMenuItem(value: false, child: Text(l10n.editor_save_as_copy)),
-              PopupMenuItem(value: true, child: Text(l10n.editor_overwrite_original)),
-            ],
-          ),
-        ],
+        // 六个按钮均匀铺满顶栏：退出 / 重置 / 取消 / 确定 / 撤回 / 三点菜单
+        automaticallyImplyLeading: false,
+        titleSpacing: 0,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            // 退出：maybePop 经 PopScope 拦截，有未保存修改仍弹确认框
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => Navigator.of(context).maybePop(),
+            ),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              icon: const Icon(Icons.restart_alt),
+              tooltip: l10n.editor_reset,
+              onPressed: _resetTab,
+            ),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              icon: const Icon(Icons.close),
+              tooltip: l10n.ui_cancel,
+              onPressed: _cancelTab,
+            ),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              icon: const Icon(Icons.check),
+              tooltip: l10n.ui_confirm,
+              onPressed: _confirmTab,
+            ),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              icon: const Icon(Broken.undo),
+              tooltip: l10n.editor_undo,
+              onPressed: _undoStack.isEmpty ? null : _undoEdit,
+            ),
+            PopupMenuButton<bool>(
+              icon: const Icon(Icons.save_outlined),
+              tooltip: l10n.editor_save_as_copy,
+              onSelected: (overwrite) => _save(overwrite: overwrite),
+              itemBuilder: (_) => [
+                PopupMenuItem(value: false, child: Text(l10n.editor_save_as_copy)),
+                PopupMenuItem(value: true, child: Text(l10n.editor_overwrite_original)),
+              ],
+            ),
+          ],
+        ),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
@@ -538,7 +662,11 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
                                   child: GestureDetector(
                                     onPanStart: (d) => _onCropPanStart(d.localPosition),
                                     onPanUpdate: (d) => _onCropPanUpdate(d.localPosition),
-                                    onPanEnd: (_) => setState(() => _dragMode = _CropDragMode.none),
+                                    onPanEnd: (_) => setState(() {
+                                      _dragMode = _CropDragMode.none;
+                                      // 手动拖动裁剪框后脱离预设比例，回到「自由」
+                                      _selectedAspect = null;
+                                    }),
                                     child: CustomPaint(
                                       painter: _CropPainter(
                                         displayRect: _displayRect,
@@ -565,17 +693,29 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               _buildTabBar(l10n),
-                              // 面板统一最小高度：五个 tab 内容自然高度差异大
-                              // （旋转~76 / 滤镜~110 / 调整~230 / 缩放~330），
-                              // 切换时底部面板高度跳变、图片预览区跟着抖动。
-                              // 固定 minHeight 后所有 tab 面板等高，图片区域
-                              // 尺寸稳定；内容不足时下方留白，超出时自动撑高。
-                              AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 150),
-                                child: ConstrainedBox(
-                                  key: ValueKey(_tab),
-                                  constraints: const BoxConstraints(minHeight: 340),
-                                  child: _buildPanel(l10n),
+                              // 面板固定高度（偏低，为图片预览区腾空间）+
+                              // 垂直居中 + 可滚动：各 tab 内容自然高度差异大，
+                              // 固定高度保证切换时图片预览区尺寸稳定；内容少时
+                              // 垂直居中不显空旷，内容超出（缩放页/小屏）可滚动。
+                              SizedBox(
+                                height: 220,
+                                child: AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 150),
+                                  child: KeyedSubtree(
+                                    key: ValueKey(_tab),
+                                    child: LayoutBuilder(
+                                      builder: (ctx, constraints) => SingleChildScrollView(
+                                        child: ConstrainedBox(
+                                          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                                          child: Container(
+                                            alignment: Alignment.center,
+                                            width: double.infinity,
+                                            child: _buildPanel(l10n),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
@@ -589,6 +729,52 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
     );
   }
 
+  /// 通用药丸按钮：tab 栏 / 滤镜 / 裁剪比例 / 缩放比例共用同一视觉。
+  Widget _pill(
+    String label, {
+    required bool selected,
+    required VoidCallback onTap,
+    IconData? icon,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(24),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: ShapeDecoration(
+            color: selected ? scheme.primary : Colors.transparent,
+            shape: StadiumBorder(
+              side: BorderSide(
+                color: selected ? scheme.primary : scheme.outline.withAlpha(80),
+              ),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 16, color: selected ? scheme.onPrimary : scheme.onSurfaceVariant),
+                const SizedBox(width: 6),
+              ],
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                  color: selected ? scheme.onPrimary : scheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildTabBar(L10n l10n) {
     final tabs = [
       (_EditorTab.adjust, l10n.editor_adjust),
@@ -597,22 +783,15 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
       (_EditorTab.rotate, l10n.editor_rotate_flip),
       (_EditorTab.crop, l10n.editor_crop),
     ];
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+    return SizedBox(
+      height: 46,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         child: Row(
-          children: tabs.map((t) {
-            final selected = _tab == t.$1;
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: ChoiceChip(
-                label: Text(t.$2),
-                selected: selected,
-                onSelected: (_) => _switchTab(t.$1),
-              ),
-            );
-          }).toList(),
+          children: tabs
+              .map((t) => _pill(t.$2, selected: _tab == t.$1, onTap: () => _switchTab(t.$1)))
+              .toList(),
         ),
       ),
     );
@@ -640,19 +819,23 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
 
   Widget _buildAdjustPanel(L10n l10n) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      width: double.infinity,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _slider(l10n.editor_brightness, _params.brightness, 0.2, 2.0, (v) {
+          _slider(l10n.editor_brightness, _params.brightness, 0.2, 2.0,
+            Icons.wb_sunny_outlined, (v) {
             _params = _params.copyWith(brightness: v);
             _schedulePreview();
           }),
-          _slider(l10n.editor_contrast, _params.contrast, 0.2, 2.0, (v) {
+          _slider(l10n.editor_contrast, _params.contrast, 0.2, 2.0,
+            Icons.contrast, (v) {
             _params = _params.copyWith(contrast: v);
             _schedulePreview();
           }),
-          _slider(l10n.editor_saturation, _params.saturation, 0.0, 2.0, (v) {
+          _slider(l10n.editor_saturation, _params.saturation, 0.0, 2.0,
+            Icons.opacity, (v) {
             _params = _params.copyWith(saturation: v);
             _schedulePreview();
           }),
@@ -661,46 +844,68 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
     );
   }
 
-  Widget _slider(String label, double value, double min, double max, ValueChanged<double> onChanged) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(label),
-            Text(value.toStringAsFixed(2)),
-          ],
-        ),
-        Slider(
-          value: value,
-          min: min,
-          max: max,
-          onChanged: onChanged,
-        ),
-      ],
+  Widget _slider(String label, double value, double min, double max, IconData icon,
+      ValueChanged<double> onChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+              const SizedBox(width: 8),
+              Text(label, style: const TextStyle(fontSize: 13)),
+              const Spacer(),
+              Text(value.toStringAsFixed(2),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  )),
+            ],
+          ),
+          SizedBox(
+            height: 36,
+            child: SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                trackHeight: 3,
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+                overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
+              ),
+              child: Slider(
+                value: value,
+                min: min,
+                max: max,
+                // 拖动起始时压入撤回栈：一次拖动 = 一步撤回（而非逐帧）
+                onChangeStart: (_) => _pushUndo(),
+                onChanged: onChanged,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildFiltersPanel(L10n l10n) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: _filters.map((f) {
-          final key = f['key']!;
-          final label = _filterLabel(f['labelKey']!, l10n);
-          final selected = _params.filter == key;
-          return ChoiceChip(
-            label: Text(label),
-            selected: selected,
-            onSelected: (_) {
-              _params = _params.copyWith(filter: key);
+    return SizedBox(
+      height: 46,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        child: Row(
+          children: _filters.map((f) {
+            final key = f['key']!;
+            final label = _filterLabel(f['labelKey']!, l10n);
+            final selected = _params.filter == key;
+            return _pill(label, selected: selected, onTap: () {
+              _pushUndo();
+              setState(() => _params = _params.copyWith(filter: key));
               _schedulePreview();
-            },
-          );
-        }).toList(),
+            });
+          }).toList(),
+        ),
       ),
     );
   }
@@ -764,8 +969,14 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
   Widget _buildResizePanel(L10n l10n) {
     if (_info == null) return const SizedBox.shrink();
     if (_widthCtrl.text.isEmpty || _heightCtrl.text.isEmpty) _initResizeFields();
+    const scales = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+    // 当前缩放比例（宽比）高亮对应药丸；未缩放（null）时高亮 100%
+    final curScale = (_params.targetWidth != null && _info!.width > 0)
+        ? _params.targetWidth! / _info!.width
+        : 1.0;
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      width: double.infinity,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -776,46 +987,61 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
                 child: TextField(
                   controller: _widthCtrl,
                   keyboardType: TextInputType.number,
-                  decoration: InputDecoration(labelText: l10n.editor_width),
+                  decoration: InputDecoration(
+                    labelText: l10n.editor_width,
+                    isDense: true,
+                    border: const OutlineInputBorder(),
+                  ),
                   onChanged: _onWidthChanged,
                 ),
               ),
-              const SizedBox(width: 12),
+              // 锁定宽高比：锁链图标直观点击切换，替代原 ChoiceChip
+              IconButton(
+                icon: Icon(_lockRatio ? Icons.link : Icons.link_off),
+                tooltip: l10n.editor_lock_ratio,
+                color: _lockRatio
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
+                onPressed: () => setState(() => _lockRatio = !_lockRatio),
+              ),
               Expanded(
                 child: TextField(
                   controller: _heightCtrl,
                   keyboardType: TextInputType.number,
-                  decoration: InputDecoration(labelText: l10n.editor_height),
+                  decoration: InputDecoration(
+                    labelText: l10n.editor_height,
+                    isDense: true,
+                    border: const OutlineInputBorder(),
+                  ),
                   onChanged: _onHeightChanged,
                 ),
               ),
             ],
           ),
-          Row(
-            children: [
-              ChoiceChip(
-                label: Text(l10n.editor_lock_ratio),
-                selected: _lockRatio,
-                onSelected: (v) => setState(() => _lockRatio = v),
+          const SizedBox(height: 4),
+          SizedBox(
+            height: 44,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Row(
+                children: scales
+                    .map((f) => _pill('${(f * 100).round()}%',
+                        selected: (curScale - f).abs() < 0.01,
+                        onTap: () => _applyScale(f)))
+                    .toList(),
               ),
-            ],
+            ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           _buildMenuButton<_IdPreset>(
             label: l10n.editor_id_presets,
             values: _idPresets,
             labelBuilder: (p) => '${_idPresetLabel(p.key, l10n)} ${p.w}×${p.h}',
             onSelected: (p) => _applySize(p.w, p.h),
           ),
-          const SizedBox(height: 12),
-          _buildMenuButton<double>(
-            label: l10n.editor_scale,
-            values: const [0.5, 0.75, 1.0, 1.25, 1.5, 2.0],
-            labelBuilder: (f) => '${(f * 100).round()}%',
-            onSelected: _applyScale,
-          ),
-          const SizedBox(height: 12),
-          _slider(l10n.editor_quality, _quality.toDouble(), 1, 100, (v) {
+          _slider(l10n.editor_quality, _quality.toDouble(), 1, 100,
+              Icons.high_quality_outlined, (v) {
             setState(() => _quality = v.round());
             _schedulePreview();
           }),
@@ -825,91 +1051,67 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
   }
 
   Widget _buildRotatePanel(L10n l10n) {
+    final scheme = Theme.of(context).colorScheme;
+    Widget rotateBtn(IconData icon, String tooltip, VoidCallback onTap, {bool active = false}) =>
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton.filledTonal(
+              style: IconButton.styleFrom(
+                backgroundColor: active ? scheme.primary : null,
+                foregroundColor: active ? scheme.onPrimary : null,
+              ),
+              icon: Icon(icon),
+              tooltip: tooltip,
+              onPressed: onTap,
+            ),
+          ],
+        );
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          IconButton.filled(
-            icon: const Icon(Icons.rotate_left),
-            tooltip: '90°',
-            onPressed: () => _rotate(-90),
-          ),
-          IconButton.filled(
-            icon: const Icon(Icons.rotate_right),
-            tooltip: '90°',
-            onPressed: () => _rotate(90),
-          ),
-          IconButton.filled(
-            icon: const Icon(Icons.flip),
-            tooltip: l10n.editor_flip,
-            onPressed: _toggleFlipH,
-          ),
-          IconButton.filled(
-            icon: const Icon(Icons.flip_camera_android),
-            tooltip: l10n.editor_flip,
-            onPressed: _toggleFlipV,
-          ),
+          rotateBtn(Icons.rotate_left, '90°', () => _rotate(-90)),
+          rotateBtn(Icons.rotate_right, '90°', () => _rotate(90)),
+          rotateBtn(Icons.flip, l10n.editor_flip, _toggleFlipH,
+              active: _params.flipHorizontal),
+          rotateBtn(Icons.flip_camera_android, l10n.editor_flip, _toggleFlipV,
+              active: _params.flipVertical),
         ],
       ),
     );
   }
 
   Widget _buildCropPanel(L10n l10n) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              ChoiceChip(label: Text(l10n.editor_aspect_free), selected: false, onSelected: (_) => _setAspect(null)),
-              ChoiceChip(label: Text(l10n.editor_aspect_square), selected: false, onSelected: (_) => _setAspect(1)),
-              ChoiceChip(label: Text(l10n.editor_aspect_4_3), selected: false, onSelected: (_) => _setAspect(4 / 3)),
-              ChoiceChip(label: Text(l10n.editor_aspect_3_4), selected: false, onSelected: (_) => _setAspect(3 / 4)),
-              ChoiceChip(label: Text(l10n.editor_passport_413_531), selected: false, onSelected: (_) => _setAspect(413 / 531)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              TextButton.icon(
-                icon: const Icon(Icons.crop_free),
-                label: Text(l10n.editor_reset),
-                onPressed: _clearCrop,
-              ),
-              TextButton.icon(
-                icon: const Icon(Icons.check),
-                label: Text(l10n.ui_confirm),
-                onPressed: _confirmCrop,
-              ),
-              TextButton.icon(
-                icon: const Icon(Icons.close),
-                label: Text(l10n.ui_cancel),
-                onPressed: _cancelCrop,
-              ),
-            ],
-          ),
-        ],
+    // 比例药丸（重置/取消/确定已移至顶栏，对所有 tab 生效）
+    final aspects = <(String, double?)>[
+      (l10n.editor_aspect_free, null),
+      (l10n.editor_aspect_square, 1.0),
+      (l10n.editor_aspect_4_3, 4 / 3),
+      (l10n.editor_aspect_3_4, 3 / 4),
+      (l10n.editor_passport_413_531, 413 / 531),
+    ];
+    return SizedBox(
+      height: 46,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+        child: Row(
+          children: aspects
+              .map((a) => _pill(
+                    a.$1,
+                    selected: _selectedAspect == a.$2,
+                    onTap: () => _setAspect(a.$2),
+                  ))
+              .toList(),
+        ),
       ),
     );
   }
 
   void _confirmCrop() {
     // 完成裁剪：把当前裁剪框写入参数并退出裁剪页
-    _switchTab(_EditorTab.adjust);
-  }
-
-  void _cancelCrop() {
-    // 取消裁剪：重置裁剪框并清除已写入的参数，回到编辑页
-    setState(() {
-      _cropRect = Rect.fromLTRB(0, 0, 1, 1);
-      _params = _params.copyWith(cropX: null, cropY: null, cropW: null, cropH: null);
-    });
     _switchTab(_EditorTab.adjust);
   }
 
@@ -927,6 +1129,13 @@ class _IdPreset {
   final int w;
   final int h;
   const _IdPreset(this.key, this.w, this.h);
+}
+
+/// 编辑状态快照（撤回栈/取消恢复共用）：参数 + 质量。
+class _EditSnapshot {
+  final ImageEditParams params;
+  final int quality;
+  const _EditSnapshot(this.params, this.quality);
 }
 
 class _CropPainter extends CustomPainter {

@@ -53,6 +53,11 @@ class ImageEditParams {
     this.stripMetadata = true,
   });
 
+  /// copyWith 哨兵：区分「未传参（保留旧值）」与「显式传 null（清除）」。
+  /// cropX/cropY/cropW/cropH/targetWidth/targetHeight 需要支持置回 null
+  /// （清除裁剪 / 恢复原始尺寸），普通 `?? this.x` 做不到。
+  static const _kUnset = Object();
+
   ImageEditParams copyWith({
     int? rotateAngle,
     bool? flipHorizontal,
@@ -61,12 +66,12 @@ class ImageEditParams {
     double? contrast,
     double? saturation,
     String? filter,
-    int? targetWidth,
-    int? targetHeight,
-    double? cropX,
-    double? cropY,
-    double? cropW,
-    double? cropH,
+    Object? targetWidth = _kUnset,
+    Object? targetHeight = _kUnset,
+    Object? cropX = _kUnset,
+    Object? cropY = _kUnset,
+    Object? cropW = _kUnset,
+    Object? cropH = _kUnset,
     bool? stripMetadata,
   }) {
     return ImageEditParams(
@@ -77,12 +82,14 @@ class ImageEditParams {
       contrast: contrast ?? this.contrast,
       saturation: saturation ?? this.saturation,
       filter: filter ?? this.filter,
-      targetWidth: targetWidth ?? this.targetWidth,
-      targetHeight: targetHeight ?? this.targetHeight,
-      cropX: cropX ?? this.cropX,
-      cropY: cropY ?? this.cropY,
-      cropW: cropW ?? this.cropW,
-      cropH: cropH ?? this.cropH,
+      targetWidth:
+          targetWidth == _kUnset ? this.targetWidth : targetWidth as int?,
+      targetHeight:
+          targetHeight == _kUnset ? this.targetHeight : targetHeight as int?,
+      cropX: cropX == _kUnset ? this.cropX : cropX as double?,
+      cropY: cropY == _kUnset ? this.cropY : cropY as double?,
+      cropW: cropW == _kUnset ? this.cropW : cropW as double?,
+      cropH: cropH == _kUnset ? this.cropH : cropH as double?,
       stripMetadata: stripMetadata ?? this.stripMetadata,
     );
   }

@@ -9280,6 +9280,120 @@ abstract class L10n {
   /// **'新增 ui_app_open_location、ui_batch_backup、ui_batch_share、ui_batch_uninstall、ui_batch_uninstall_confirm 翻译键，10 种语言全部补齐'**
   String get changelog_v1131_fix_16;
 
+  /// v1.1.32 changelog: changelog_v1132_new_1
+  ///
+  /// In zh, this message translates to:
+  /// **'局域网唤醒（WOL）：抽屉页「工具」栏新增入口，支持添加/编辑/删除设备（名称、MAC 地址、广播地址、端口），一键发送魔术包唤醒局域网内的电脑/设备，设备列表本地持久化存储，10 语言完整本地化'**
+  String get changelog_v1132_new_1;
+
+  /// v1.1.32 changelog: changelog_v1132_new_2
+  ///
+  /// In zh, this message translates to:
+  /// **'图片编辑器：图片查看页新增「编辑」按钮（顶部工具栏 + 3 点菜单），5 个编辑 Tab：调整（亮度/对比度/饱和度）、滤镜（原图/黑白/复古/胶片/冷/暖）、缩放（精确尺寸输入 + 锁定宽高比 + 6 种证件照预设：护照 413×531、一寸 295×413、二寸 413×579、小一寸 260×378、大一寸 390×567、美国签证 600×600）、旋转翻转（90°/180°/270° + 水平/垂直）、裁剪（手柄手势 + 比例约束）'**
+  String get changelog_v1132_new_2;
+
+  /// v1.1.32 changelog: changelog_v1132_new_3
+  ///
+  /// In zh, this message translates to:
+  /// **'一键去元数据：图片查看页 3 点菜单新增「清除元数据」，重新编码剥离 EXIF/GPS/ICC 等全部元数据，另存为新文件'**
+  String get changelog_v1132_new_3;
+
+  /// v1.1.32 changelog: changelog_v1132_new_4
+  ///
+  /// In zh, this message translates to:
+  /// **'沉浸式信息条：图片查看页触摸后底部显示文件名·尺寸·大小·格式；属性弹窗新增 Dimensions 行'**
+  String get changelog_v1132_new_4;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_1
+  ///
+  /// In zh, this message translates to:
+  /// **'修复分类页按文件夹查看时全选按钮跨文件夹全选：图片/视频/音频/截图/文档/压缩包/下载/安装包共 8 个类别，进入文件夹多选后点全选不再选中其他文件夹的文件；仅在「全部项目」查看时全选所有文件'**
+  String get changelog_v1132_fix_1;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_2
+  ///
+  /// In zh, this message translates to:
+  /// **'修复图片类别按文件夹查看时截图文件夹（DCIM/Screenshots）全选按钮失效'**
+  String get changelog_v1132_fix_2;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_3
+  ///
+  /// In zh, this message translates to:
+  /// **'修复图片/截图查看页「在位置中显示」无法跳转到浏览页（本地与远程路径均适用）'**
+  String get changelog_v1132_fix_3;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_4
+  ///
+  /// In zh, this message translates to:
+  /// **'修复应用管理批量操作备份按钮标题显示「正在备份...」（已改为「备份」，10 语言同步更新）'**
+  String get changelog_v1132_fix_4;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_5
+  ///
+  /// In zh, this message translates to:
+  /// **'修复图片查看器 Dismissible 滑动块缺失闭合括号导致的编译错误'**
+  String get changelog_v1132_fix_5;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_6
+  ///
+  /// In zh, this message translates to:
+  /// **'修复分类页全选按钮混入远程/本地文件（按当前范围过滤）'**
+  String get changelog_v1132_fix_6;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_7
+  ///
+  /// In zh, this message translates to:
+  /// **'修复非媒体类别（文档/压缩包/下载/安装包）浏览页删除或移动后分类页残留空白图标'**
+  String get changelog_v1132_fix_7;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_8
+  ///
+  /// In zh, this message translates to:
+  /// **'修复远程图片删除后缩略图残留、siblingItems 列表未同步更新'**
+  String get changelog_v1132_fix_8;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_9
+  ///
+  /// In zh, this message translates to:
+  /// **'修复分类页媒体总大小启动后「显示约 1 秒 → 归零 → 重新加载恢复」的闪烁问题'**
+  String get changelog_v1132_fix_9;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_10
+  ///
+  /// In zh, this message translates to:
+  /// **'修复标签页左右滑动误触切换页面（新增 tabBarInteracting 标志位保护）'**
+  String get changelog_v1132_fix_10;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_11
+  ///
+  /// In zh, this message translates to:
+  /// **'修复自动备份开关不生效（新增 _autoSyncTriggered 守卫 + isLoaded 状态检查）'**
+  String get changelog_v1132_fix_11;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_12
+  ///
+  /// In zh, this message translates to:
+  /// **'修复备份逻辑错乱（远程缺失文件时重新上传而非丢弃记录）'**
+  String get changelog_v1132_fix_12;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_13
+  ///
+  /// In zh, this message translates to:
+  /// **'修复「打开所在位置」需手动按返回键才能看到跳转（改为 popUntil(isFirst) 一次性弹回首页）'**
+  String get changelog_v1132_fix_13;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_14
+  ///
+  /// In zh, this message translates to:
+  /// **'修复刷新按钮扫描不到非媒体文件（如 APK 加载不出），补充 onlyApk 参数并修正分类分支逻辑'**
+  String get changelog_v1132_fix_14;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_15
+  ///
+  /// In zh, this message translates to:
+  /// **'修复批量备份进度对话框卡住不消失（改用 rootNavigator 模式 + backupDialogOpen 标志位）'**
+  String get changelog_v1132_fix_15;
+
   /// ui_batch_backup label
   ///
   /// In zh, this message translates to:

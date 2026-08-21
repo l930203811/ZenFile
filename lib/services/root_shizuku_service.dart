@@ -173,6 +173,27 @@ class RootShizukuService {
     await runCommand(cmd, useRoot: useRoot);
   }
 
+  /// stat 单个路径（受限路径走底层绕过）。返回 null 表示不存在。
+  /// 复制/上传链路用于替代 Dart IO 的 typeSync/lengthSync——Android 11+
+  /// FUSE 层使 app 进程对其它应用的 Android/{data,obb} 文件不可见，
+  /// 只能经 shell/root 在 /data/media/0 底层路径访问。
+  static Future<FileItemModel?> statItem(String path, {required bool useRoot}) async {
+    final clean = _toFuseBypassPath(_normalize(path));
+    final cmd = 'stat -L -c "%F|%s|%Y|%n" "$clean" 2>/dev/null || stat -c "%F|%s|%Y|%n" "$clean" 2>/dev/null';
+    final output = await runCommand(cmd, useRoot: useRoot);
+    final line = output?.trim();
+    if (line == null || line.isEmpty) return null;
+    final parts = line.split('|');
+    if (parts.length < 4) return null;
+    final isDir = parts[0].toLowerCase().contains('directory');
+    return FileItemModel.fromCustom(
+      path: _fromFuseBypassPath(parts.sublist(3).join('|')),
+      isDirectory: isDir,
+      size: int.tryParse(parts[1]) ?? 0,
+      modified: DateTime.fromMillisecondsSinceEpoch((int.tryParse(parts[2]) ?? 0) * 1000),
+    );
+  }
+
   static Future<void> renameItem(String oldPath, String newName, {required bool useRoot}) async {
     final cleanOld = _toFuseBypassPath(_normalize(oldPath));
     final cleanNew = _toFuseBypassPath(_normalize(p.join(p.dirname(oldPath), newName)));
