@@ -339,20 +339,41 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     try {
       final videoFile = File(widget.videoPath);
       if (!await videoFile.exists()) return;
-      
+
+      // 优先恢复用户手动指定的外挂字幕（持久化映射），避免退出重播后需重新添加。
+      final savedSubtitle = PreferencesService.getSubtitleMapping(widget.videoPath);
+      if (savedSubtitle != null && await File(savedSubtitle).exists()) {
+        if (mounted) {
+          setState(() {
+            _subtitlePath = savedSubtitle;
+            _subtitleEnabled = true;
+          });
+          // 延迟应用字幕，等待播放器初始化完成
+          await Future.delayed(const Duration(milliseconds: 500));
+          if (mounted) _applySubtitle(savedSubtitle);
+        }
+        return;
+      }
+
       final dir = videoFile.parent;
       final videoNameWithoutExt = p.basenameWithoutExtension(widget.videoPath);
       final subtitleExtensions = ['.srt', '.ass', '.ssa', '.vtt', '.sub'];
-      
+
       String? matchedSubtitle;
       for (final ext in subtitleExtensions) {
         final candidatePath = p.join(dir.path, '$videoNameWithoutExt$ext');
         if (await File(candidatePath).exists()) {
-          matchedSubtitle = candidatePath;
+          // VOBSub 成对存在：优先用 .idx（mpv 加载位图字幕必须传 .idx）。
+          if (ext == '.sub') {
+            final idxPath = '${p.withoutExtension(candidatePath)}.idx';
+            matchedSubtitle = await File(idxPath).exists() ? idxPath : candidatePath;
+          } else {
+            matchedSubtitle = candidatePath;
+          }
           break;
         }
       }
-      
+
       if (matchedSubtitle != null && mounted) {
         setState(() {
           _subtitlePath = matchedSubtitle;
@@ -380,10 +401,25 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
           platform.setProperty('sub-ass-override', 'force');
         }
       } else if (isVobSub) {
-        // VOBSub 位图字幕：必须设为 no 才能正确渲染
+        // VOBSub 位图字幕：必须设为 no 才能正确渲染。
+        // VOBSub 由 .idx（文本索引）+ .sub（位图二进制）成对组成，mpv 加载时
+        // 必须传入 .idx 路径（自动配对同名 .sub），且不能走 Flutter overlay
+        // 文本解析（位图无法解析为 cue）。这里直接交给 mpv 渲染，跳过解析分支。
         if (platform is NativePlayer) {
           platform.setProperty('sub-ass-override', 'no');
         }
+        _externalCues = const [];
+        _activeCueIndex = -1;
+        player.setSubtitleTrack(
+          SubtitleTrack.uri(subtitlePath, title: 'External'),
+        );
+        if (!_subtitleEnabled) {
+          player.setSubtitleTrack(SubtitleTrack.no());
+        }
+        // 位图字幕字号/位置由 mpv 自身控制，这里仍应用背景样式（不影响位图内容）。
+        _applySubtitleBackground();
+        if (mounted) setState(() {});
+        return;
       }
       List<SubtitleCue>? cues;
       try {
@@ -600,11 +636,27 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         rootPath: provider.rootPath,
       );
       if (pickedPaths != null && pickedPaths.isNotEmpty && mounted) {
-        final subtitlePath = pickedPaths.first;
+        var subtitlePath = pickedPaths.first;
+        // VOBSub 位图字幕由 .idx（文本索引）+ .sub（位图数据）成对组成，
+        // mpv 加载 VOBSub 必须传入 .idx 路径（自动配对同名 .sub）。
+        // 若用户选了 .sub，自动映射到同名的 .idx，否则 mpv 无法渲染。
+        final pickedExt = p.extension(subtitlePath).toLowerCase();
+        if (pickedExt == '.sub') {
+          final idxPath = '${p.withoutExtension(subtitlePath)}.idx';
+          if (await File(idxPath).exists()) {
+            subtitlePath = idxPath;
+          }
+        }
         setState(() {
           _subtitlePath = subtitlePath;
           _subtitleEnabled = true;
         });
+        // 持久化该视频手动指定的字幕路径，退出重播后自动恢复。
+        if (!widget.videoPath.startsWith('http://') &&
+            !widget.videoPath.startsWith('https://') &&
+            !widget.videoPath.startsWith('remote://')) {
+          await PreferencesService.saveSubtitleMapping(widget.videoPath, subtitlePath);
+        }
         _applySubtitle(subtitlePath);
       }
     } catch (e) {

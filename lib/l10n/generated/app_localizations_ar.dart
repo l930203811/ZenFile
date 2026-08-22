@@ -5478,6 +5478,57 @@ class L10nAr extends L10n {
   String get menu_edit_image => 'Edit';
 
   @override
+  String get img_rotate => 'تدوير';
+
+  @override
+  String get img_info_format => 'تنسيق';
+
+  @override
+  String get img_info_file_time => 'وقت';
+
+  @override
+  String get img_info_file_info => 'معلومات الملف';
+
+  @override
+  String get img_info_save_path => 'مسار الحفظ';
+
+  @override
+  String get img_info_shoot_location => 'موقع التصوير';
+
+  @override
+  String get img_info_camera_params => 'معلمات الكاميرا';
+
+  @override
+  String get img_info_device => 'الجهاز';
+
+  @override
+  String get img_info_shutter => 'الغالق';
+
+  @override
+  String get img_info_iso => 'ISO';
+
+  @override
+  String get img_info_ev => 'EV';
+
+  @override
+  String get img_info_aperture => 'فتحة العدسة';
+
+  @override
+  String get img_info_focal_length => 'البعد البؤري';
+
+  @override
+  String get img_info_flash => 'الفلاش';
+
+  @override
+  String get img_info_histogram => 'الرسم البياني';
+
+  @override
+  String get img_info_no_exif => 'لا توجد معلومات EXIF';
+
+  @override
+  String get img_info_no_location => 'لا توجد معلومات موقع';
+
+  @override
   String get menu_remove_metadata => 'Remove Metadata';
 
   @override

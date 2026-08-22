@@ -5550,6 +5550,57 @@ class L10nRu extends L10n {
   String get menu_edit_image => 'Edit';
 
   @override
+  String get img_rotate => 'Повернуть';
+
+  @override
+  String get img_info_format => 'Формат';
+
+  @override
+  String get img_info_file_time => 'Время';
+
+  @override
+  String get img_info_file_info => 'Инфо о файле';
+
+  @override
+  String get img_info_save_path => 'Путь сохранения';
+
+  @override
+  String get img_info_shoot_location => 'Место съёмки';
+
+  @override
+  String get img_info_camera_params => 'Параметры камеры';
+
+  @override
+  String get img_info_device => 'Устройство';
+
+  @override
+  String get img_info_shutter => 'Выдержка';
+
+  @override
+  String get img_info_iso => 'ISO';
+
+  @override
+  String get img_info_ev => 'EV';
+
+  @override
+  String get img_info_aperture => 'Диафрагма';
+
+  @override
+  String get img_info_focal_length => 'Фокусное расстояние';
+
+  @override
+  String get img_info_flash => 'Вспышка';
+
+  @override
+  String get img_info_histogram => 'Гистограмма';
+
+  @override
+  String get img_info_no_exif => 'Нет данных EXIF';
+
+  @override
+  String get img_info_no_location => 'Нет данных о местоположении';
+
+  @override
   String get menu_remove_metadata => 'Remove Metadata';
 
   @override

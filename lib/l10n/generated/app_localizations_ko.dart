@@ -5349,6 +5349,57 @@ class L10nKo extends L10n {
   String get menu_edit_image => 'Edit';
 
   @override
+  String get img_rotate => '회전';
+
+  @override
+  String get img_info_format => '형식';
+
+  @override
+  String get img_info_file_time => '시간';
+
+  @override
+  String get img_info_file_info => '파일 정보';
+
+  @override
+  String get img_info_save_path => '저장 경로';
+
+  @override
+  String get img_info_shoot_location => '촬영 위치';
+
+  @override
+  String get img_info_camera_params => '촬영 매개변수';
+
+  @override
+  String get img_info_device => '기기';
+
+  @override
+  String get img_info_shutter => '셔터';
+
+  @override
+  String get img_info_iso => 'ISO';
+
+  @override
+  String get img_info_ev => 'EV';
+
+  @override
+  String get img_info_aperture => '조리개';
+
+  @override
+  String get img_info_focal_length => '초점 거리';
+
+  @override
+  String get img_info_flash => '플래시';
+
+  @override
+  String get img_info_histogram => '히스토그램';
+
+  @override
+  String get img_info_no_exif => 'EXIF 정보 없음';
+
+  @override
+  String get img_info_no_location => '위치 정보 없음';
+
+  @override
   String get menu_remove_metadata => 'Remove Metadata';
 
   @override

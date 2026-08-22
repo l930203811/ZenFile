@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:photo_view/photo_view.dart';
@@ -16,6 +17,7 @@ import '../../core/icon_fonts/broken_icons.dart';
 import '../../core/utils.dart';
 import '../../ui/widgets/file_action_dialogs.dart';
 import '../../services/image_edit_service.dart';
+import '../../services/image_metadata_service.dart';
 import 'image_editor_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
@@ -58,11 +60,16 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
   int _currentIndex = 0;
   bool _showUI = true;
   bool _isZoomed = false;
+  // 查看态旋转角度（弧度），仅用于预览，不写回文件，瞬时完成。切换图片时重置。
+  double _rotation = 0.0;
 
-  // 沉浸式底部信息条
+  // 顶部信息条
   String? _currentDims;
   String? _currentSizeStr;
   String? _currentFormat;
+  String? _currentModified;
+  // 右上角拍摄参数（EXIF）：无 EXIF 时为 null，副行不显示。
+  ImageMetadata? _currentExif;
   final ImageEditService _editService = ImageEditService.instance;
 
   @override
@@ -238,7 +245,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     return '${s.toStringAsFixed(1)} ${suffixes[i]}';
   }
 
-  /// 刷新当前图片的尺寸/大小/格式，用于沉浸式底部信息条与属性弹窗。
+  /// 刷新当前图片的尺寸/大小/格式，以及右上角 EXIF 拍摄参数副行。
   Future<void> _refreshMeta() async {
     final file = _getCurrentFile();
     if (file == null || !file.existsSync()) {
@@ -249,11 +256,30 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
       final bytes = await file.readAsBytes();
       final info = await _editService.readInfo(bytes);
       final size = file.lengthSync();
+      // 文件修改时间（顶部条显示）
+      String? modified;
+      try {
+        final stat = await file.stat();
+        modified = stat.modified.toString().replaceFirst('.000', '').split('.').first;
+      } catch (_) {
+        modified = null;
+      }
+      // 轻量 EXIF 读取：仅取设备/快门/ISO/光圈文本字段，不做 GPS/直方图。
+      ImageMetadata? exif;
+      try {
+        final meta = await ImageMetadataService.instance.readExifOnly(file);
+        // readExifOnly 永远非 null；无 EXIF 时 hasExif=false，副行不显示。
+        exif = meta.hasExif ? meta : null;
+      } catch (_) {
+        exif = null;
+      }
       if (!mounted) return;
       setState(() {
         _currentDims = '${info.width} x ${info.height}';
         _currentFormat = info.format;
         _currentSizeStr = _humanSize(size);
+        _currentModified = modified;
+        _currentExif = exif;
       });
     } catch (_) {
       if (mounted) setState(() => _currentDims = null);
@@ -334,6 +360,14 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     }
   }
 
+  /// 顺时针旋转当前图片 90 度并就地保存（覆盖原文件，保留 PNG/JPEG 格式）。
+  /// 查看态旋转：仅改变预览角度，不写回文件，瞬时完成、无提示。
+  void _rotateImage90() {
+    setState(() {
+      _rotation += math.pi / 2;
+    });
+  }
+
   void _showImageOptions() {
     final l10n = L10n.of(context);
     final file = _getCurrentFile();
@@ -394,14 +428,6 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                   _cutToClipboard();
                 },
               ),
-              ListTile(
-                leading: Icon(Broken.trash, color: Colors.red, size: 22),
-                title: Text(l10n.ui_delete, style: const TextStyle(color: Colors.red)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _deleteCurrentImage();
-                },
-              ),
               if (filePath != null) ...[
                 ListTile(
                   leading: Icon(Broken.folder_open, color: primary, size: 22),
@@ -417,14 +443,6 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                 onTap: () {
                   Navigator.pop(ctx);
                   _renameFile();
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.photo_filter, color: primary, size: 22),
-                title: Text(l10n.menu_edit_image),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _openEditor();
                 },
               ),
                 ListTile(
@@ -774,37 +792,8 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                     ),
                   ],
                 ),
-                actions: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.5),
-                        shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        // edit_2 为 Broken 线性铅笔，与右侧 Broken.more 三点
-                        // 同风格同视觉重量，避免实底 edit 图标显得突兀
-                        icon: const Icon(Broken.edit_2, color: Colors.white, size: 18),
-                        tooltip: L10n.of(context).menu_edit_image,
-                        onPressed: _openEditor,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.5),
-                        shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        icon: const Icon(Broken.more, color: Colors.white, size: 18),
-                        onPressed: _showImageOptions,
-                      ),
-                    ),
-                  ),
-                ],
+                centerTitle: false,
+                titleSpacing: 0,
               )
             : null,
         body: Stack(
@@ -830,6 +819,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                   onPageChanged: (index) {
                     setState(() {
                       _currentIndex = index;
+                      _rotation = 0.0; // 切换图片重置查看态旋转
                     });
                     _preloadAdjacent(index);
                     _refreshMeta();
@@ -903,27 +893,15 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                     ? (isAvif ? FileAvifImage(imgFile) : FileImage(imgFile)) as ImageProvider
                     : (thumbData != null ? MemoryImage(thumbData) : MemoryImage(_kTransparentImage));
 
-                return PhotoViewGalleryPageOptions(
-                  imageProvider: provider,
+                return PhotoViewGalleryPageOptions.customChild(
+                  child: Transform.rotate(
+                    angle: _rotation,
+                    child: Image(image: provider, fit: BoxFit.contain),
+                  ),
                   initialScale: PhotoViewComputedScale.contained,
                   minScale: PhotoViewComputedScale.contained,
                   maxScale: PhotoViewComputedScale.covered * 4,
                   heroAttributes: PhotoViewHeroAttributes(tag: tagKey),
-                  errorBuilder: (context, error, stackTrace) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Broken.image, size: 64, color: Colors.white.withOpacity(0.5)),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Failed to load image',
-                            style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16, fontWeight: FontWeight.w600),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
                   onTapUp: (context, details, controllerValue) {
                     setState(() {
                       _showUI = !_showUI;
@@ -934,55 +912,204 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
             ),
           ),
             ),
-          if (_showUI)
+          if (_showUI) ...[
+            // 顶部元信息条（EXIF + 尺寸 / 大小 / 格式）
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              child: _buildTopMetaBar(),
+            ),
+            // 底部操作按钮栏：分享 · 旋转 · 编辑 · 删除 · 更多（三点）
             Positioned(
               left: 0,
               right: 0,
               bottom: 0,
-              child: _buildImmersiveInfoBar(),
+              child: _buildBottomActionBar(),
             ),
+          ],
           ],
         ),
       ),
     );
   }
 
-  Widget _buildImmersiveInfoBar() {
+  /// 右上角 EXIF 副行：光圈 · 快门 · ISO · 设备，无相关字段时自动跳过。
+  String _buildExifSubtitle(ImageMetadata exif) {
+    final parts = <String>[];
+    if (exif.aperture != null && exif.aperture!.isNotEmpty) {
+      // service 返回形如 "F:2.8"，统一为 "f/2.8"。
+      final v = exif.aperture!.startsWith('F:') ? exif.aperture!.substring(2) : exif.aperture!;
+      parts.add('f/$v');
+    }
+    if (exif.shutter != null && exif.shutter!.isNotEmpty) {
+      // service 返回形如 "S:1/100" 或 "S:2.0s"，去掉前缀并补 s。
+      final v = exif.shutter!.startsWith('S:') ? exif.shutter!.substring(2) : exif.shutter!;
+      parts.add(v.endsWith('s') ? v : '$v');
+    }
+    if (exif.iso != null && exif.iso!.isNotEmpty) {
+      parts.add('ISO${exif.iso}');
+    }
+    if (exif.device != null && exif.device!.isNotEmpty) {
+      parts.add(exif.device!);
+    }
+    return parts.join('  ·  ');
+  }
+
+  /// 顶部元信息条：显示 EXIF 拍摄参数（如有）+ 尺寸 / 大小 / 格式。
+  Widget _buildTopMetaBar() {
     final l10n = L10n.of(context);
-    final file = _getCurrentFile();
-    final name = file?.path.split('/').last.split('\\').last ?? '';
     final dims = _currentDims ?? '…';
     final size = _currentSizeStr ?? '…';
-    final fmt = _currentFormat ?? '';
+    final fmt = _currentFormat ?? '…';
+    final modified = _currentModified ?? '…';
+    final hasExif = _currentExif != null;
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+        ),
+      ),
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 20),
+      child: SafeArea(
+        bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 第一行：尺寸（左） + 格式（右）
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(flex: 2, child: _infoLine(l10n.img_dimensions, dims)),
+                const SizedBox(width: 8),
+                Expanded(flex: 3, child: _infoLine(l10n.img_info_format, fmt)),
+              ],
+            ),
+            const SizedBox(height: 4),
+            // 第二行：大小（左） + 时间（右）。右侧列 flex 与第一行保持一致，
+            // 使"格式"和"时间"左对齐，同时时间列更宽、位置往右回调。
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(flex: 2, child: _infoLine(l10n.ui_size, size)),
+                const SizedBox(width: 8),
+                Expanded(flex: 3, child: _infoLine(l10n.img_info_file_time, modified)),
+              ],
+            ),
+            // 拍摄参数最下方：有则显示，无则不显示（切换图片时不突兀）。
+            if (hasExif) ...[
+              const SizedBox(height: 6),
+              _infoLine(l10n.img_info_camera_params, _buildExifSubtitle(_currentExif!)),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 顶部信息条的单行：标签在左、值在右。
+  Widget _infoLine(String label, String value) {
+    return RichText(
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text: '$label: ',
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12, fontWeight: FontWeight.w500),
+          ),
+          TextSpan(
+            text: value,
+            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 底部操作按钮栏：分享 · 旋转 · 编辑 · 删除 · 更多（三点），从左到右。
+  Widget _buildBottomActionBar() {
+    final l10n = L10n.of(context);
+    final items = <Widget>[
+      _ActionBarButton(
+        icon: Icons.share_outlined,
+        label: l10n.ui_share,
+        onTap: _shareCurrentImage,
+      ),
+      _ActionBarButton(
+        icon: Icons.rotate_right_rounded,
+        label: l10n.img_rotate,
+        onTap: _rotateImage90,
+      ),
+      _ActionBarButton(
+        icon: Broken.edit_2,
+        label: l10n.menu_edit_image,
+        onTap: _openEditor,
+      ),
+      _ActionBarButton(
+        icon: Broken.trash,
+        label: l10n.ui_delete,
+        color: Colors.redAccent,
+        onTap: _deleteCurrentImage,
+      ),
+      _ActionBarButton(
+        icon: Broken.more,
+        label: l10n.ui_more,
+        onTap: _showImageOptions,
+      ),
+    ];
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.bottomCenter,
           end: Alignment.topCenter,
-          colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+          colors: [Colors.black.withOpacity(0.75), Colors.transparent],
         ),
       ),
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+      padding: const EdgeInsets.fromLTRB(12, 18, 12, 12),
       child: SafeArea(
         top: false,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: items,
+        ),
+      ),
+    );
+  }
+}
+
+/// 底部操作栏单个按钮（图标在上、文字在下）。
+class _ActionBarButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final Color? color;
+
+  const _ActionBarButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tint = color ?? Colors.white;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              name,
-              style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+            Icon(icon, color: tint, size: 24),
             const SizedBox(height: 4),
             Text(
-              '$dims   ·   $size${fmt.isNotEmpty ? '   ·   $fmt' : ''}',
-              style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              l10n.img_dimensions,
-              style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11),
+              label,
+              style: TextStyle(color: tint, fontSize: 11, fontWeight: FontWeight.w500),
             ),
           ],
         ),

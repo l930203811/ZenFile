@@ -5272,6 +5272,57 @@ class L10nZh extends L10n {
   String get menu_edit_image => '编辑';
 
   @override
+  String get img_rotate => '旋转';
+
+  @override
+  String get img_info_format => '格式';
+
+  @override
+  String get img_info_file_time => '时间';
+
+  @override
+  String get img_info_file_info => '文件信息';
+
+  @override
+  String get img_info_save_path => '保存路径';
+
+  @override
+  String get img_info_shoot_location => '拍摄地点';
+
+  @override
+  String get img_info_camera_params => '拍摄参数';
+
+  @override
+  String get img_info_device => '设备';
+
+  @override
+  String get img_info_shutter => '快门';
+
+  @override
+  String get img_info_iso => 'ISO';
+
+  @override
+  String get img_info_ev => 'EV';
+
+  @override
+  String get img_info_aperture => '光圈';
+
+  @override
+  String get img_info_focal_length => '焦距';
+
+  @override
+  String get img_info_flash => '闪光灯';
+
+  @override
+  String get img_info_histogram => '直方图';
+
+  @override
+  String get img_info_no_exif => '无 EXIF 信息';
+
+  @override
+  String get img_info_no_location => '无位置信息';
+
+  @override
   String get menu_remove_metadata => '清除元数据';
 
   @override
@@ -10569,6 +10620,57 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get menu_edit_image => 'Edit';
+
+  @override
+  String get img_rotate => '旋轉';
+
+  @override
+  String get img_info_format => '格式';
+
+  @override
+  String get img_info_file_time => '時間';
+
+  @override
+  String get img_info_file_info => '文件信息';
+
+  @override
+  String get img_info_save_path => '儲存路徑';
+
+  @override
+  String get img_info_shoot_location => '拍攝地點';
+
+  @override
+  String get img_info_camera_params => '拍攝參數';
+
+  @override
+  String get img_info_device => '設備';
+
+  @override
+  String get img_info_shutter => '快門';
+
+  @override
+  String get img_info_iso => 'ISO';
+
+  @override
+  String get img_info_ev => 'EV';
+
+  @override
+  String get img_info_aperture => '光圈';
+
+  @override
+  String get img_info_focal_length => '焦距';
+
+  @override
+  String get img_info_flash => '閃光燈';
+
+  @override
+  String get img_info_histogram => '直方圖';
+
+  @override
+  String get img_info_no_exif => '無 EXIF 資訊';
+
+  @override
+  String get img_info_no_location => '無位置資訊';
 
   @override
   String get menu_remove_metadata => 'Remove Metadata';

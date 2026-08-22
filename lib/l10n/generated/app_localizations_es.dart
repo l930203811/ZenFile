@@ -5565,6 +5565,57 @@ class L10nEs extends L10n {
   String get menu_edit_image => 'Edit';
 
   @override
+  String get img_rotate => 'Rotar';
+
+  @override
+  String get img_info_format => 'Formato';
+
+  @override
+  String get img_info_file_time => 'Hora';
+
+  @override
+  String get img_info_file_info => 'Info del archivo';
+
+  @override
+  String get img_info_save_path => 'Ruta de guardado';
+
+  @override
+  String get img_info_shoot_location => 'Ubicación de captura';
+
+  @override
+  String get img_info_camera_params => 'Parámetros de cámara';
+
+  @override
+  String get img_info_device => 'Dispositivo';
+
+  @override
+  String get img_info_shutter => 'Obturador';
+
+  @override
+  String get img_info_iso => 'ISO';
+
+  @override
+  String get img_info_ev => 'EV';
+
+  @override
+  String get img_info_aperture => 'Apertura';
+
+  @override
+  String get img_info_focal_length => 'Longitud focal';
+
+  @override
+  String get img_info_flash => 'Flash';
+
+  @override
+  String get img_info_histogram => 'Histograma';
+
+  @override
+  String get img_info_no_exif => 'Sin info EXIF';
+
+  @override
+  String get img_info_no_location => 'Sin ubicación';
+
+  @override
   String get menu_remove_metadata => 'Remove Metadata';
 
   @override

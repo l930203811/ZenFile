@@ -9892,6 +9892,108 @@ abstract class L10n {
   /// **'编辑'**
   String get menu_edit_image;
 
+  /// Image viewer: rotate image 90 degrees clockwise
+  ///
+  /// In zh, this message translates to:
+  /// **'旋转'**
+  String get img_rotate;
+
+  /// Image viewer info: file format
+  ///
+  /// In zh, this message translates to:
+  /// **'格式'**
+  String get img_info_format;
+
+  /// Image viewer info: file time
+  ///
+  /// In zh, this message translates to:
+  /// **'时间'**
+  String get img_info_file_time;
+
+  /// Image viewer info: file info
+  ///
+  /// In zh, this message translates to:
+  /// **'文件信息'**
+  String get img_info_file_info;
+
+  /// Image viewer info: save path
+  ///
+  /// In zh, this message translates to:
+  /// **'保存路径'**
+  String get img_info_save_path;
+
+  /// Image viewer info: shoot location
+  ///
+  /// In zh, this message translates to:
+  /// **'拍摄地点'**
+  String get img_info_shoot_location;
+
+  /// Image viewer info: camera parameters
+  ///
+  /// In zh, this message translates to:
+  /// **'拍摄参数'**
+  String get img_info_camera_params;
+
+  /// Image viewer info: device
+  ///
+  /// In zh, this message translates to:
+  /// **'设备'**
+  String get img_info_device;
+
+  /// Image viewer info: shutter speed
+  ///
+  /// In zh, this message translates to:
+  /// **'快门'**
+  String get img_info_shutter;
+
+  /// Image viewer info: ISO
+  ///
+  /// In zh, this message translates to:
+  /// **'ISO'**
+  String get img_info_iso;
+
+  /// Image viewer info: exposure value
+  ///
+  /// In zh, this message translates to:
+  /// **'EV'**
+  String get img_info_ev;
+
+  /// Image viewer info: aperture
+  ///
+  /// In zh, this message translates to:
+  /// **'光圈'**
+  String get img_info_aperture;
+
+  /// Image viewer info: focal length
+  ///
+  /// In zh, this message translates to:
+  /// **'焦距'**
+  String get img_info_focal_length;
+
+  /// Image viewer info: flash
+  ///
+  /// In zh, this message translates to:
+  /// **'闪光灯'**
+  String get img_info_flash;
+
+  /// Image viewer info: histogram
+  ///
+  /// In zh, this message translates to:
+  /// **'直方图'**
+  String get img_info_histogram;
+
+  /// Image viewer info: no EXIF data
+  ///
+  /// In zh, this message translates to:
+  /// **'无 EXIF 信息'**
+  String get img_info_no_exif;
+
+  /// Image viewer info: no location data
+  ///
+  /// In zh, this message translates to:
+  /// **'无位置信息'**
+  String get img_info_no_location;
+
   /// Viewer three-dot menu: remove metadata
   ///
   /// In zh, this message translates to:

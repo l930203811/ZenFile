@@ -1343,6 +1343,47 @@ class PreferencesService {
     await _prefs?.setBool(_keySubtitleNoBackground, value);
   }
 
+  // --- 视频文件与手动添加字幕的映射（持久化，避免退出重播后需重新添加）---
+  static const String _keySubtitleMappings = 'video_subtitle_mappings';
+
+  /// 获取某视频手动指定的外挂字幕路径（无则返回 null）。
+  static String? getSubtitleMapping(String videoPath) {
+    final json = _prefs?.getString(_keySubtitleMappings);
+    if (json == null) return null;
+    try {
+      final map = jsonDecode(json) as Map<String, dynamic>;
+      return map[videoPath] as String?;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 保存某视频手动指定的外挂字幕路径。
+  static Future<void> saveSubtitleMapping(String videoPath, String subtitlePath) async {
+    final json = _prefs?.getString(_keySubtitleMappings);
+    Map<String, dynamic> map = {};
+    if (json != null) {
+      try {
+        map = jsonDecode(json) as Map<String, dynamic>;
+      } catch (_) {
+        map = {};
+      }
+    }
+    map[videoPath] = subtitlePath;
+    await _prefs?.setString(_keySubtitleMappings, jsonEncode(map));
+  }
+
+  /// 移除某视频的手手动字幕映射。
+  static Future<void> removeSubtitleMapping(String videoPath) async {
+    final json = _prefs?.getString(_keySubtitleMappings);
+    if (json == null) return;
+    try {
+      final map = jsonDecode(json) as Map<String, dynamic>;
+      map.remove(videoPath);
+      await _prefs?.setString(_keySubtitleMappings, jsonEncode(map));
+    } catch (_) {}
+  }
+
   // --- Drawer Section Expanded State ---
   static const String _keyDrawerSectionExpanded = 'drawer_section_expanded_';
 

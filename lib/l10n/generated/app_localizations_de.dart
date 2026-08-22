@@ -5542,6 +5542,57 @@ class L10nDe extends L10n {
   String get menu_edit_image => 'Edit';
 
   @override
+  String get img_rotate => 'Drehen';
+
+  @override
+  String get img_info_format => 'Format';
+
+  @override
+  String get img_info_file_time => 'Zeit';
+
+  @override
+  String get img_info_file_info => 'Dateiinfo';
+
+  @override
+  String get img_info_save_path => 'Speicherpfad';
+
+  @override
+  String get img_info_shoot_location => 'Aufnahmeort';
+
+  @override
+  String get img_info_camera_params => 'Kameraparameter';
+
+  @override
+  String get img_info_device => 'Gerät';
+
+  @override
+  String get img_info_shutter => 'Verschluss';
+
+  @override
+  String get img_info_iso => 'ISO';
+
+  @override
+  String get img_info_ev => 'EV';
+
+  @override
+  String get img_info_aperture => 'Blende';
+
+  @override
+  String get img_info_focal_length => 'Brennweite';
+
+  @override
+  String get img_info_flash => 'Blitz';
+
+  @override
+  String get img_info_histogram => 'Histogramm';
+
+  @override
+  String get img_info_no_exif => 'Keine EXIF-Info';
+
+  @override
+  String get img_info_no_location => 'Kein Standort';
+
+  @override
   String get menu_remove_metadata => 'Remove Metadata';
 
   @override

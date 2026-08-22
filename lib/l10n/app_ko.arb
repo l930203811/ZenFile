@@ -5429,6 +5429,74 @@
   "@menu_edit_image": {
     "description": "Viewer three-dot menu: edit image"
   },
+  "img_rotate": "회전",
+  "@img_rotate": {
+    "description": "Image viewer: rotate image 90 degrees clockwise"
+  },
+  "img_info_format": "형식",
+  "img_info_file_time": "시간",
+  "@img_info_file_time": {
+    "description": "Image viewer info: file time"
+  },
+  "@img_info_format": {
+    "description": "Image viewer info: file format"
+  },
+  "img_info_file_info": "파일 정보",
+  "@img_info_file_info": {
+    "description": "Image viewer info: file info"
+  },
+  "img_info_save_path": "저장 경로",
+  "@img_info_save_path": {
+    "description": "Image viewer info: save path"
+  },
+  "img_info_shoot_location": "촬영 위치",
+  "@img_info_shoot_location": {
+    "description": "Image viewer info: shoot location"
+  },
+  "img_info_camera_params": "촬영 매개변수",
+  "@img_info_camera_params": {
+    "description": "Image viewer info: camera parameters"
+  },
+  "img_info_device": "기기",
+  "@img_info_device": {
+    "description": "Image viewer info: device"
+  },
+  "img_info_shutter": "셔터",
+  "@img_info_shutter": {
+    "description": "Image viewer info: shutter speed"
+  },
+  "img_info_iso": "ISO",
+  "@img_info_iso": {
+    "description": "Image viewer info: ISO"
+  },
+  "img_info_ev": "EV",
+  "@img_info_ev": {
+    "description": "Image viewer info: exposure value"
+  },
+  "img_info_aperture": "조리개",
+  "@img_info_aperture": {
+    "description": "Image viewer info: aperture"
+  },
+  "img_info_focal_length": "초점 거리",
+  "@img_info_focal_length": {
+    "description": "Image viewer info: focal length"
+  },
+  "img_info_flash": "플래시",
+  "@img_info_flash": {
+    "description": "Image viewer info: flash"
+  },
+  "img_info_histogram": "히스토그램",
+  "@img_info_histogram": {
+    "description": "Image viewer info: histogram"
+  },
+  "img_info_no_exif": "EXIF 정보 없음",
+  "@img_info_no_exif": {
+    "description": "Image viewer info: no EXIF data"
+  },
+  "img_info_no_location": "위치 정보 없음",
+  "@img_info_no_location": {
+    "description": "Image viewer info: no location data"
+  },
   "menu_remove_metadata": "Remove Metadata",
   "@menu_remove_metadata": {
     "description": "Viewer three-dot menu: remove metadata"

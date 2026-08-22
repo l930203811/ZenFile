@@ -465,54 +465,30 @@ class VideoControlsOverlay extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  // Action Icons Row（使用 Wrap 防止按钮溢出）
+                  // Action Icons Row
+                  // 竖屏（非全屏）顺序（左→右）：旋转 → 循环 → 静音 → 比例 → 全屏 → 更多
+                  //   更多（最右）菜单含：字幕开关、字幕轨、音轨（不含旋转）。
+                  // 全屏（横屏进入）时：释放更多菜单的所有按钮，直接显示并堆在最右侧，
+                  //   顺序（左→右）：旋转 → 循环 → 静音 → 比例 → 全屏 → 字幕开关 → 字幕轨 → 音轨。
+                  //   全屏时不显示“更多”按钮（功能已全部外露）。
                   Wrap(
                     alignment: WrapAlignment.end,
-                    spacing: 4,
+                    spacing: 0,
                     runSpacing: 4,
                     children: [
-                      // Subtitle Toggle Button
-                      Opacity(
-                        opacity: subtitlePath != null ? 1.0 : 0.4,
-                        child: IconButton(
-                          icon: Icon(
-                            subtitleEnabled ? Icons.subtitles_rounded : Icons.subtitles_off_rounded,
-                            color: subtitleEnabled ? accentColor : itemsColor,
-                            size: 22,
-                          ),
-                          tooltip: subtitlePath != null
-                              ? (subtitleEnabled ? L10n.of(context).msg_subtitle_off : L10n.of(context).msg_subtitle_on)
-                              : L10n.of(context).msg_no_subtitle,
-                          onPressed: subtitlePath != null
-                              ? () {
-                                  onInteract();
-                                  onToggleSubtitle();
-                                }
-                              : null,
-                        ),
+                      // Rotate Video Clockwise（竖屏+全屏都直接显示在行内最左；仅竖屏时在行内，全屏时也在行内）
+                      IconButton(
+                        padding: const EdgeInsets.all(6),
+                        icon: Icon(Icons.rotate_right_rounded, color: itemsColor, size: 22),
+                        tooltip: L10n.of(context).msg_rotate_video,
+                        onPressed: () {
+                          onInteract();
+                          onRotate();
+                        },
                       ),
-                      // Audio Track Button
-                      if (hasAudioTracks)
-                        IconButton(
-                          icon: Icon(Icons.audiotrack_rounded, color: itemsColor, size: 22),
-                          tooltip: L10n.of(context).msg_audio_track,
-                          onPressed: () {
-                            onInteract();
-                            onSelectAudioTrack();
-                          },
-                        ),
-                      // Subtitle Track Button
-                      if (hasSubtitleTracks)
-                        IconButton(
-                          icon: Icon(Icons.subtitles_rounded, color: itemsColor, size: 22),
-                          tooltip: L10n.of(context).msg_subtitle_track,
-                          onPressed: () {
-                            onInteract();
-                            onSelectSubtitleTrack();
-                          },
-                        ),
                       // Repeat Button
                       IconButton(
+                        padding: const EdgeInsets.all(6),
                         icon: Icon(
                           repeatMode == 0
                               ? Icons.repeat_rounded
@@ -530,6 +506,7 @@ class VideoControlsOverlay extends StatelessWidget {
                       ),
                       // Mute Button
                       IconButton(
+                        padding: const EdgeInsets.all(6),
                         icon: Icon(isMuted ? Broken.volume_slash : Broken.volume_high, color: itemsColor, size: 22),
                         tooltip: isMuted ? '取消静音' : '静音',
                         onPressed: () {
@@ -539,6 +516,7 @@ class VideoControlsOverlay extends StatelessWidget {
                       ),
                       // Aspect Ratio Toggle Button
                       IconButton(
+                        padding: const EdgeInsets.all(6),
                         icon: Icon(Icons.aspect_ratio_rounded, color: aspectRatioMode != 0 ? accentColor : itemsColor, size: 22),
                         tooltip: L10n.of(context).msg_aspect_fit,
                         onPressed: () {
@@ -546,17 +524,9 @@ class VideoControlsOverlay extends StatelessWidget {
                           onToggleAspectRatio();
                         },
                       ),
-                      // Rotate Video Clockwise
-                      IconButton(
-                        icon: Icon(Icons.rotate_right_rounded, color: itemsColor, size: 22),
-                        tooltip: L10n.of(context).msg_rotate_video,
-                        onPressed: () {
-                          onInteract();
-                          onRotate();
-                        },
-                      ),
                       // Full Screen
                       IconButton(
+                        padding: const EdgeInsets.all(6),
                         icon: Icon(isFullScreen ? Icons.fullscreen_exit_rounded : Icons.fullscreen_rounded, color: itemsColor, size: 28),
                         tooltip: isFullScreen ? '退出全屏' : '全屏',
                         onPressed: () {
@@ -564,6 +534,126 @@ class VideoControlsOverlay extends StatelessWidget {
                           onToggleFullScreen();
                         },
                       ),
+                      // 竖屏（非全屏）：更多按钮（最右），收纳 字幕开关/字幕轨/音轨（不含旋转）
+                      if (!isFullScreen)
+                        PopupMenuButton<String>(
+                          padding: const EdgeInsets.all(6),
+                          icon: Icon(Icons.more_vert_rounded, color: itemsColor, size: 22),
+                          tooltip: L10n.of(context).ui_more,
+                          color: const Color(0xFF1E1E2E),
+                          onSelected: (value) {
+                            onInteract();
+                            if (value == 'subtitle_toggle') {
+                              onToggleSubtitle();
+                            } else if (value == 'audio_track') {
+                              onSelectAudioTrack();
+                            } else if (value == 'subtitle_track') {
+                              onSelectSubtitleTrack();
+                            }
+                          },
+                          itemBuilder: (_) => [
+                            PopupMenuItem<String>(
+                              value: 'subtitle_toggle',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    subtitleEnabled ? Icons.subtitles_rounded : Icons.subtitles_off_rounded,
+                                    size: 20,
+                                    color: Colors.white,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    subtitlePath != null
+                                        ? (subtitleEnabled ? L10n.of(context).msg_subtitle_off : L10n.of(context).msg_subtitle_on)
+                                        : L10n.of(context).msg_no_subtitle,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (hasAudioTracks)
+                              PopupMenuItem<String>(
+                                value: 'audio_track',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.audiotrack_rounded, size: 20, color: Colors.white),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      L10n.of(context).msg_audio_track,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            if (hasSubtitleTracks)
+                              PopupMenuItem<String>(
+                                value: 'subtitle_track',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.subtitles_rounded, size: 20, color: Colors.white),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      L10n.of(context).msg_subtitle_track,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                      // 全屏（横屏进入）：释放更多菜单的所有按钮，直接显示在最右
+                      if (isFullScreen) ...[
+                        // Subtitle Toggle Button
+                        Opacity(
+                          opacity: subtitlePath != null ? 1.0 : 0.4,
+                          child: IconButton(
+                            padding: const EdgeInsets.all(6),
+                            icon: Icon(
+                              subtitleEnabled ? Icons.subtitles_rounded : Icons.subtitles_off_rounded,
+                              color: subtitleEnabled ? accentColor : itemsColor,
+                              size: 22,
+                            ),
+                            tooltip: subtitlePath != null
+                                ? (subtitleEnabled ? L10n.of(context).msg_subtitle_off : L10n.of(context).msg_subtitle_on)
+                                : L10n.of(context).msg_no_subtitle,
+                            onPressed: subtitlePath != null
+                                ? () {
+                                    onInteract();
+                                    onToggleSubtitle();
+                                  }
+                                : null,
+                          ),
+                        ),
+                        if (hasAudioTracks)
+                          IconButton(
+                            padding: const EdgeInsets.all(6),
+                            icon: Icon(Icons.audiotrack_rounded, color: itemsColor, size: 22),
+                            tooltip: L10n.of(context).msg_audio_track,
+                            onPressed: () {
+                              onInteract();
+                              onSelectAudioTrack();
+                            },
+                          ),
+                        if (hasSubtitleTracks)
+                          IconButton(
+                            padding: const EdgeInsets.all(6),
+                            icon: Icon(Icons.subtitles_rounded, color: itemsColor, size: 22),
+                            tooltip: L10n.of(context).msg_subtitle_track,
+                            onPressed: () {
+                              onInteract();
+                              onSelectSubtitleTrack();
+                            },
+                          ),
+                      ],
                     ],
                   ),
                 ],

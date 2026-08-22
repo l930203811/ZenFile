@@ -92,6 +92,8 @@ dependencies:
   device_info_plus: ^12.4.0
   charset: ^2.0.0
   auto_size_text: ^3.0.0
+  # EXIF 读取：图片属性页/查看器提取拍摄参数/GPS/焦距等。
+  exif: ^3.3.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

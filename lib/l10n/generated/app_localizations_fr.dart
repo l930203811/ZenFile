@@ -5570,6 +5570,57 @@ class L10nFr extends L10n {
   String get menu_edit_image => 'Edit';
 
   @override
+  String get img_rotate => 'Pivoter';
+
+  @override
+  String get img_info_format => 'Format';
+
+  @override
+  String get img_info_file_time => 'Heure';
+
+  @override
+  String get img_info_file_info => 'Infos fichier';
+
+  @override
+  String get img_info_save_path => 'Chemin de sauvegarde';
+
+  @override
+  String get img_info_shoot_location => 'Lieu de prise de vue';
+
+  @override
+  String get img_info_camera_params => 'Paramètres caméra';
+
+  @override
+  String get img_info_device => 'Appareil';
+
+  @override
+  String get img_info_shutter => 'Obturateur';
+
+  @override
+  String get img_info_iso => 'ISO';
+
+  @override
+  String get img_info_ev => 'EV';
+
+  @override
+  String get img_info_aperture => 'Ouverture';
+
+  @override
+  String get img_info_focal_length => 'Distance focale';
+
+  @override
+  String get img_info_flash => 'Flash';
+
+  @override
+  String get img_info_histogram => 'Histogramme';
+
+  @override
+  String get img_info_no_exif => 'Aucune info EXIF';
+
+  @override
+  String get img_info_no_location => 'Aucune localisation';
+
+  @override
   String get menu_remove_metadata => 'Remove Metadata';
 
   @override

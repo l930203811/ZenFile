@@ -5351,6 +5351,57 @@ class L10nJa extends L10n {
   String get menu_edit_image => 'Edit';
 
   @override
+  String get img_rotate => '回転';
+
+  @override
+  String get img_info_format => 'フォーマット';
+
+  @override
+  String get img_info_file_time => '時間';
+
+  @override
+  String get img_info_file_info => 'ファイル情報';
+
+  @override
+  String get img_info_save_path => '保存パス';
+
+  @override
+  String get img_info_shoot_location => '撮影場所';
+
+  @override
+  String get img_info_camera_params => '撮影パラメータ';
+
+  @override
+  String get img_info_device => 'デバイス';
+
+  @override
+  String get img_info_shutter => 'シャッター';
+
+  @override
+  String get img_info_iso => 'ISO';
+
+  @override
+  String get img_info_ev => 'EV';
+
+  @override
+  String get img_info_aperture => '絞り';
+
+  @override
+  String get img_info_focal_length => '焦点距離';
+
+  @override
+  String get img_info_flash => 'フラッシュ';
+
+  @override
+  String get img_info_histogram => 'ヒストグラム';
+
+  @override
+  String get img_info_no_exif => 'EXIF 情報なし';
+
+  @override
+  String get img_info_no_location => '位置情報なし';
+
+  @override
   String get menu_remove_metadata => 'Remove Metadata';
 
   @override
