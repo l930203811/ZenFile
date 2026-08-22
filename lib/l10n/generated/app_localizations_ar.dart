@@ -3572,6 +3572,11 @@ class L10nAr extends L10n {
   }
 
   @override
+  String ui_pin_selected(Object count) {
+    return 'تثبيت المحدد ($count)';
+  }
+
+  @override
   String get msg_file_exists => 'الملف موجود بالفعل';
 
   @override
@@ -3827,6 +3832,44 @@ class L10nAr extends L10n {
 
   @override
   String get ui_sound_effects => 'المؤثرات الصوتية';
+
+  @override
+  String get eq_presets => 'إعدادات المعادل المسبقة';
+
+  @override
+  String get eq_custom => 'مخصص';
+
+  @override
+  String get eq_system => 'معادل النظام';
+
+  @override
+  String get eq_unavailable => 'المعادل غير متوفر على هذا الجهاز';
+
+  @override
+  String get eq_open_system => 'فتح معادل النظام';
+
+  @override
+  String get eq_system_hint =>
+      'المشغل المدمج يستخدم libmpv لإخراج الصوت. لتطبيق تأثيرات المعادل، يرجى استخدام معادل النظام.';
+
+  @override
+  String get eq_apply_hint =>
+      'اختر إعدادًا مسبقًا أدناه، ثم اضغط على فتح معادل النظام لتطبيقه.';
+
+  @override
+  String get eq_preset_flat => 'مسطح';
+
+  @override
+  String get eq_preset_vocal => 'صوت عالي الدقة';
+
+  @override
+  String get eq_preset_bass => 'جهير';
+
+  @override
+  String get eq_preset_live => 'مباشر';
+
+  @override
+  String get eq_preset_jazz => 'جاز';
 
   @override
   String get ui_playback_queue => 'قائمة الانتظار';
@@ -5313,7 +5356,55 @@ class L10nAr extends L10n {
   String get editor_id_presets => 'إعدادات الصور';
 
   @override
-  String get editor_quality => 'Quality (file size)';
+  String get editor_quality => 'الجودة (حجم الملف)';
+
+  @override
+  String get editor_mode_pixel => 'بكسل';
+
+  @override
+  String get editor_mode_physical => 'الحجم الفعلي';
+
+  @override
+  String get editor_physical_title => 'الحجم الفعلي → بكسل (تحويل DPI)';
+
+  @override
+  String get editor_width_mm => 'العرض (مم)';
+
+  @override
+  String get editor_height_mm => 'الارتفاع (مم)';
+
+  @override
+  String get editor_dpi => 'DPI';
+
+  @override
+  String get editor_preset_id_photo => 'صورة شخصية 35×25mm';
+
+  @override
+  String get editor_preset_passport => 'جواز سفر 35×45mm';
+
+  @override
+  String get editor_preset_us_visa_mm => 'تأشيرة أمريكية 51×51mm';
+
+  @override
+  String editor_pixel_auto(int w, int h) {
+    return '→ $w × $h px';
+  }
+
+  @override
+  String get editor_pixel_result => 'بكسل (تلقائي)';
+
+  @override
+  String get editor_width_px => 'العرض (px)';
+
+  @override
+  String get editor_height_px => 'الارتفاع (px)';
+
+  @override
+  String get editor_file_size_limit_title => 'حد حجم الملف (JPEG)';
+
+  @override
+  String get editor_file_size_limit_label =>
+      'الحجم المستهدف (KB)، فارغ = غير محدود';
 
   @override
   String get editor_strip_metadata => 'Remove all metadata (EXIF / GPS / ICC)';

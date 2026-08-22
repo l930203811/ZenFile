@@ -3608,6 +3608,7 @@
   "ui_undo": "تراجع",
   "ui_redo": "إعادة",
   "ui_add_selected": "إضافة المحدد ({count})",
+  "ui_pin_selected": "تثبيت المحدد ({count})",
   "msg_vault_choose_mode": "اختر وضع الحماية",
   "msg_vault_mode_desc": "اختر كيفية حماية ملفاتك المحددة. يتم تشفير الملفات الآمنة فورًا باستخدام XOR.",
   "ui_secure_import": "استيراد آمن (صندوق عزل)",
@@ -3702,6 +3703,54 @@
   "ui_pitch_adjustment": "ضبط النغمة",
   "ui_restore_default": "استعادة الافتراضي",
   "ui_sound_effects": "المؤثرات الصوتية",
+  "eq_presets": "إعدادات المعادل المسبقة",
+  "@eq_presets": {
+    "description": "Equalizer presets section title"
+  },
+  "eq_custom": "مخصص",
+  "@eq_custom": {
+    "description": "Custom equalizer label"
+  },
+  "eq_system": "معادل النظام",
+  "@eq_system": {
+    "description": "Open system equalizer button"
+  },
+  "eq_unavailable": "المعادل غير متوفر على هذا الجهاز",
+  "@eq_unavailable": {
+    "description": "Message when equalizer cannot be initialized"
+  },
+  "eq_open_system": "فتح معادل النظام",
+  "@eq_open_system": {
+    "description": "Button to open system equalizer as fallback"
+  },
+  "eq_system_hint": "المشغل المدمج يستخدم libmpv لإخراج الصوت. لتطبيق تأثيرات المعادل، يرجى استخدام معادل النظام.",
+  "@eq_system_hint": {
+    "description": "Explanation why system EQ is needed"
+  },
+  "eq_apply_hint": "اختر إعدادًا مسبقًا أدناه، ثم اضغط على فتح معادل النظام لتطبيقه.",
+  "@eq_apply_hint": {
+    "description": "Instructions for using system EQ with presets"
+  },
+  "eq_preset_flat": "مسطح",
+  "@eq_preset_flat": {
+    "description": "EQ preset: flat / original sound"
+  },
+  "eq_preset_vocal": "صوت عالي الدقة",
+  "@eq_preset_vocal": {
+    "description": "EQ preset: HD vocal (boosts 1-4kHz)"
+  },
+  "eq_preset_bass": "جهير",
+  "@eq_preset_bass": {
+    "description": "EQ preset: bass boost"
+  },
+  "eq_preset_live": "مباشر",
+  "@eq_preset_live": {
+    "description": "EQ preset: live (slight high freq boost)"
+  },
+  "eq_preset_jazz": "جاز",
+  "@eq_preset_jazz": {
+    "description": "EQ preset: jazz (V-shaped curve)"
+  },
   "ui_playback_queue": "قائمة الانتظار",
   "ui_repeat_off": "التكرار: إيقاف",
   "ui_repeat_one": "التكرار: واحد",
@@ -5220,9 +5269,73 @@
   "@editor_id_presets": {
     "description": "ID photo presets section title"
   },
-  "editor_quality": "Quality (file size)",
+  "editor_quality": "الجودة (حجم الملف)",
   "@editor_quality": {
     "description": "Output quality / file size slider"
+  },
+  "editor_mode_pixel": "بكسل",
+  "@editor_mode_pixel": {
+    "description": "Resize mode: pixel-based input"
+  },
+  "editor_mode_physical": "الحجم الفعلي",
+  "@editor_mode_physical": {
+    "description": "Resize mode: physical dimension input with DPI"
+  },
+  "editor_physical_title": "الحجم الفعلي → بكسل (تحويل DPI)",
+  "@editor_physical_title": {
+    "description": "Section title for physical size to pixel conversion"
+  },
+  "editor_width_mm": "العرض (مم)",
+  "@editor_width_mm": {
+    "description": "Width input label in millimeters"
+  },
+  "editor_height_mm": "الارتفاع (مم)",
+  "@editor_height_mm": {
+    "description": "Height input label in millimeters"
+  },
+  "editor_dpi": "DPI",
+  "@editor_dpi": {
+    "description": "DPI input label"
+  },
+  "editor_preset_id_photo": "صورة شخصية 35×25mm",
+  "@editor_preset_id_photo": {
+    "description": "ID photo preset chip 35x25mm at 200DPI"
+  },
+  "editor_preset_passport": "جواز سفر 35×45mm",
+  "@editor_preset_passport": {
+    "description": "Passport preset chip 35x45mm at 200DPI"
+  },
+  "editor_preset_us_visa_mm": "تأشيرة أمريكية 51×51mm",
+  "@editor_preset_us_visa_mm": {
+    "description": "US visa preset chip 51x51mm at 300DPI"
+  },
+  "editor_pixel_auto": "→ {w} × {h} px",
+  "@editor_pixel_auto": {
+    "description": "Auto-calculated pixel dimensions preview",
+    "placeholders": {
+      "w": { "type": "int" },
+      "h": { "type": "int" }
+    }
+  },
+  "editor_pixel_result": "بكسل (تلقائي)",
+  "@editor_pixel_result": {
+    "description": "Label for auto-calculated pixel result"
+  },
+  "editor_width_px": "العرض (px)",
+  "@editor_width_px": {
+    "description": "Width input label in pixels"
+  },
+  "editor_height_px": "الارتفاع (px)",
+  "@editor_height_px": {
+    "description": "Height input label in pixels"
+  },
+  "editor_file_size_limit_title": "حد حجم الملف (JPEG)",
+  "@editor_file_size_limit_title": {
+    "description": "Section title for file size limit"
+  },
+  "editor_file_size_limit_label": "الحجم المستهدف (KB)، فارغ = غير محدود",
+  "@editor_file_size_limit_label": {
+    "description": "Label for target file size input"
   },
   "editor_strip_metadata": "Remove all metadata (EXIF / GPS / ICC)",
   "@editor_strip_metadata": {

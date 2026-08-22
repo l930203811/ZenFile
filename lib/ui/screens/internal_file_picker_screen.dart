@@ -533,7 +533,7 @@ class _InternalFilePickerScreenState extends State<InternalFilePickerScreen> {
                     backgroundColor: theme.colorScheme.primary,
                     foregroundColor: theme.colorScheme.onPrimary,
                     icon: const Icon(Broken.folder_add),
-                    label: Text('固定所选 (${_selectedPaths.length})'),
+                    label: Text(L10n.of(context).ui_pin_selected(_selectedPaths.length)),
                   )
                 : FloatingActionButton.extended(
                     onPressed: () => Navigator.pop(context, [_currentPath]),

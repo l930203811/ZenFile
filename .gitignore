@@ -28,3 +28,9 @@ test_*.lrc
 
 # 本地协作记录（TRAE + WorkBuddy 共用），仅保留在本地，不进远程仓库
 WORKLOG.md
+
+# 本地历史版本快照（约 2.4GB，用于对比参考），不进仓库
+test/ZenFile-v1.1.32/
+
+# Windows 保留设备名误创建的文件
+/nul

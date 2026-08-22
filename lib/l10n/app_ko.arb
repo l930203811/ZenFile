@@ -3608,6 +3608,7 @@
   "ui_undo": "실행 취소",
   "ui_redo": "다시 실행",
   "ui_add_selected": "선택 항목 추가 ({count})",
+  "ui_pin_selected": "선택 항목 고정 ({count})",
   "msg_vault_choose_mode": "보호 모드 선택",
   "msg_vault_mode_desc": "선택한 파일을 보호할 방법을 선택하세요. 보안 파일은 즉시 XOR 스크램블됩니다.",
   "ui_secure_import": "보안 가져오기(샌드박스)",
@@ -3702,6 +3703,54 @@
   "ui_pitch_adjustment": "음정 조절",
   "ui_restore_default": "기본값 복원",
   "ui_sound_effects": "음향 효과",
+  "eq_presets": "EQ 프리셋",
+  "@eq_presets": {
+    "description": "Equalizer presets section title"
+  },
+  "eq_custom": "사용자 정의",
+  "@eq_custom": {
+    "description": "Custom equalizer label"
+  },
+  "eq_system": "시스템 이퀄라이저",
+  "@eq_system": {
+    "description": "Open system equalizer button"
+  },
+  "eq_unavailable": "이 기기에서 이퀄라이저를 사용할 수 없습니다",
+  "@eq_unavailable": {
+    "description": "Message when equalizer cannot be initialized"
+  },
+  "eq_open_system": "시스템 EQ 열기",
+  "@eq_open_system": {
+    "description": "Button to open system equalizer as fallback"
+  },
+  "eq_system_hint": "내장 플레이어는 libmpv를 사용하여 오디오를 출력합니다. EQ 효과를 적용하려면 시스템 이퀄라이저를 사용하세요.",
+  "@eq_system_hint": {
+    "description": "Explanation why system EQ is needed"
+  },
+  "eq_apply_hint": "아래에서 프리셋을 선택한 다음 시스템 EQ 열기를 눌러 적용하세요.",
+  "@eq_apply_hint": {
+    "description": "Instructions for using system EQ with presets"
+  },
+  "eq_preset_flat": "플랫",
+  "@eq_preset_flat": {
+    "description": "EQ preset: flat / original sound"
+  },
+  "eq_preset_vocal": "HD 보컬",
+  "@eq_preset_vocal": {
+    "description": "EQ preset: HD vocal (boosts 1-4kHz)"
+  },
+  "eq_preset_bass": "베이스",
+  "@eq_preset_bass": {
+    "description": "EQ preset: bass boost"
+  },
+  "eq_preset_live": "라이브",
+  "@eq_preset_live": {
+    "description": "EQ preset: live (slight high freq boost)"
+  },
+  "eq_preset_jazz": "재즈",
+  "@eq_preset_jazz": {
+    "description": "EQ preset: jazz (V-shaped curve)"
+  },
   "ui_playback_queue": "재생 대기열",
   "ui_repeat_off": "반복: 끔",
   "ui_repeat_one": "반복: 한 곡",
@@ -5220,9 +5269,73 @@
   "@editor_id_presets": {
     "description": "ID photo presets section title"
   },
-  "editor_quality": "Quality (file size)",
+  "editor_quality": "품질 (파일 크기)",
   "@editor_quality": {
     "description": "Output quality / file size slider"
+  },
+  "editor_mode_pixel": "픽셀",
+  "@editor_mode_pixel": {
+    "description": "Resize mode: pixel-based input"
+  },
+  "editor_mode_physical": "실제 크기",
+  "@editor_mode_physical": {
+    "description": "Resize mode: physical dimension input with DPI"
+  },
+  "editor_physical_title": "실제 크기 → 픽셀 (DPI 변환)",
+  "@editor_physical_title": {
+    "description": "Section title for physical size to pixel conversion"
+  },
+  "editor_width_mm": "너비 (mm)",
+  "@editor_width_mm": {
+    "description": "Width input label in millimeters"
+  },
+  "editor_height_mm": "높이 (mm)",
+  "@editor_height_mm": {
+    "description": "Height input label in millimeters"
+  },
+  "editor_dpi": "DPI",
+  "@editor_dpi": {
+    "description": "DPI input label"
+  },
+  "editor_preset_id_photo": "증명사진 35×25mm",
+  "@editor_preset_id_photo": {
+    "description": "ID photo preset chip 35x25mm at 200DPI"
+  },
+  "editor_preset_passport": "여권 35×45mm",
+  "@editor_preset_passport": {
+    "description": "Passport preset chip 35x45mm at 200DPI"
+  },
+  "editor_preset_us_visa_mm": "미국 비자 51×51mm",
+  "@editor_preset_us_visa_mm": {
+    "description": "US visa preset chip 51x51mm at 300DPI"
+  },
+  "editor_pixel_auto": "→ {w} × {h} px",
+  "@editor_pixel_auto": {
+    "description": "Auto-calculated pixel dimensions preview",
+    "placeholders": {
+      "w": { "type": "int" },
+      "h": { "type": "int" }
+    }
+  },
+  "editor_pixel_result": "픽셀 (자동)",
+  "@editor_pixel_result": {
+    "description": "Label for auto-calculated pixel result"
+  },
+  "editor_width_px": "너비 (px)",
+  "@editor_width_px": {
+    "description": "Width input label in pixels"
+  },
+  "editor_height_px": "높이 (px)",
+  "@editor_height_px": {
+    "description": "Height input label in pixels"
+  },
+  "editor_file_size_limit_title": "파일 크기 제한 (JPEG)",
+  "@editor_file_size_limit_title": {
+    "description": "Section title for file size limit"
+  },
+  "editor_file_size_limit_label": "목표 크기 (KB), 비어있음=무제한",
+  "@editor_file_size_limit_label": {
+    "description": "Label for target file size input"
   },
   "editor_strip_metadata": "Remove all metadata (EXIF / GPS / ICC)",
   "@editor_strip_metadata": {

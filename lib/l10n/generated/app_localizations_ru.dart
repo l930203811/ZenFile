@@ -3633,6 +3633,11 @@ class L10nRu extends L10n {
   }
 
   @override
+  String ui_pin_selected(Object count) {
+    return 'Закрепить выбранное ($count)';
+  }
+
+  @override
   String get msg_file_exists => 'Файл уже существует';
 
   @override
@@ -3891,6 +3896,44 @@ class L10nRu extends L10n {
 
   @override
   String get ui_sound_effects => 'Звуковые эффекты';
+
+  @override
+  String get eq_presets => 'Пресеты эквалайзера';
+
+  @override
+  String get eq_custom => 'Пользовательский';
+
+  @override
+  String get eq_system => 'Системный эквалайзер';
+
+  @override
+  String get eq_unavailable => 'Эквалайзер недоступен на этом устройстве';
+
+  @override
+  String get eq_open_system => 'Открыть системный EQ';
+
+  @override
+  String get eq_system_hint =>
+      'Встроенный плеер использует libmpv для вывода звука. Чтобы применить эффекты EQ, используйте системный эквалайзер.';
+
+  @override
+  String get eq_apply_hint =>
+      'Выберите пресет ниже, затем нажмите \"Открыть системный EQ\" для применения.';
+
+  @override
+  String get eq_preset_flat => 'Плоский';
+
+  @override
+  String get eq_preset_vocal => 'HD вокал';
+
+  @override
+  String get eq_preset_bass => 'Бас';
+
+  @override
+  String get eq_preset_live => 'Живой';
+
+  @override
+  String get eq_preset_jazz => 'Джаз';
 
   @override
   String get ui_playback_queue => 'Очередь воспроизведения';
@@ -5383,7 +5426,56 @@ class L10nRu extends L10n {
   String get editor_id_presets => 'Шаблоны фото';
 
   @override
-  String get editor_quality => 'Quality (file size)';
+  String get editor_quality => 'Качество (размер файла)';
+
+  @override
+  String get editor_mode_pixel => 'Пиксели';
+
+  @override
+  String get editor_mode_physical => 'Физический размер';
+
+  @override
+  String get editor_physical_title =>
+      'Физический размер → Пиксели (конвертация DPI)';
+
+  @override
+  String get editor_width_mm => 'Ширина (мм)';
+
+  @override
+  String get editor_height_mm => 'Высота (мм)';
+
+  @override
+  String get editor_dpi => 'DPI';
+
+  @override
+  String get editor_preset_id_photo => 'Фото на документы 35×25mm';
+
+  @override
+  String get editor_preset_passport => 'Паспорт 35×45mm';
+
+  @override
+  String get editor_preset_us_visa_mm => 'Виза США 51×51mm';
+
+  @override
+  String editor_pixel_auto(int w, int h) {
+    return '→ $w × $h px';
+  }
+
+  @override
+  String get editor_pixel_result => 'пиксели (авто)';
+
+  @override
+  String get editor_width_px => 'Ширина (px)';
+
+  @override
+  String get editor_height_px => 'Высота (px)';
+
+  @override
+  String get editor_file_size_limit_title => 'Ограничение размера (JPEG)';
+
+  @override
+  String get editor_file_size_limit_label =>
+      'Целевой размер (KB), пусто = без ограничений';
 
   @override
   String get editor_strip_metadata => 'Remove all metadata (EXIF / GPS / ICC)';

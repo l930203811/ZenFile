@@ -3605,6 +3605,7 @@
   "ui_undo": "Rückgängig",
   "ui_redo": "Wiederholen",
   "ui_add_selected": "Auswahl hinzufügen ({count})",
+  "ui_pin_selected": "Auswahl anheften ({count})",
   "msg_vault_choose_mode": "Schutzmodus wählen",
   "msg_vault_mode_desc": "Wählen Sie, wie Sie Ihre ausgewählten Dateien schützen möchten. Sichere Dateien werden sofort XOR-verschlüsselt.",
   "ui_secure_import": "Sicherer Import (Sandbox)",
@@ -3699,6 +3700,54 @@
   "ui_pitch_adjustment": "Tonhöhenanpassung",
   "ui_restore_default": "Standard wiederherstellen",
   "ui_sound_effects": "Soundeffekte",
+  "eq_presets": "EQ-Voreinstellungen",
+  "@eq_presets": {
+    "description": "Equalizer presets section title"
+  },
+  "eq_custom": "Benutzerdefiniert",
+  "@eq_custom": {
+    "description": "Custom equalizer label"
+  },
+  "eq_system": "System-Equalizer",
+  "@eq_system": {
+    "description": "Open system equalizer button"
+  },
+  "eq_unavailable": "Equalizer auf diesem Gerät nicht verfügbar",
+  "@eq_unavailable": {
+    "description": "Message when equalizer cannot be initialized"
+  },
+  "eq_open_system": "System-EQ öffnen",
+  "@eq_open_system": {
+    "description": "Button to open system equalizer as fallback"
+  },
+  "eq_system_hint": "Der integrierte Player verwendet libmpv für die Audioausgabe. Um EQ-Effekte anzuwenden, bitte den System-Equalizer verwenden.",
+  "@eq_system_hint": {
+    "description": "Explanation why system EQ is needed"
+  },
+  "eq_apply_hint": "Wählen Sie unten ein Preset und tippen Sie auf \"System-EQ öffnen\", um es anzuwenden.",
+  "@eq_apply_hint": {
+    "description": "Instructions for using system EQ with presets"
+  },
+  "eq_preset_flat": "Flach",
+  "@eq_preset_flat": {
+    "description": "EQ preset: flat / original sound"
+  },
+  "eq_preset_vocal": "HD Stimme",
+  "@eq_preset_vocal": {
+    "description": "EQ preset: HD vocal (boosts 1-4kHz)"
+  },
+  "eq_preset_bass": "Bass",
+  "@eq_preset_bass": {
+    "description": "EQ preset: bass boost"
+  },
+  "eq_preset_live": "Live",
+  "@eq_preset_live": {
+    "description": "EQ preset: live (slight high freq boost)"
+  },
+  "eq_preset_jazz": "Jazz",
+  "@eq_preset_jazz": {
+    "description": "EQ preset: jazz (V-shaped curve)"
+  },
   "ui_playback_queue": "Wiedergabeliste",
   "ui_repeat_off": "Wiederholen: Aus",
   "ui_repeat_one": "Wiederholen: Einzeln",
@@ -5217,9 +5266,73 @@
   "@editor_id_presets": {
     "description": "ID photo presets section title"
   },
-  "editor_quality": "Quality (file size)",
+  "editor_quality": "Qualität (Dateigröße)",
   "@editor_quality": {
     "description": "Output quality / file size slider"
+  },
+  "editor_mode_pixel": "Pixel",
+  "@editor_mode_pixel": {
+    "description": "Resize mode: pixel-based input"
+  },
+  "editor_mode_physical": "Physische Größe",
+  "@editor_mode_physical": {
+    "description": "Resize mode: physical dimension input with DPI"
+  },
+  "editor_physical_title": "Physische Größe → Pixel (DPI-Umrechnung)",
+  "@editor_physical_title": {
+    "description": "Section title for physical size to pixel conversion"
+  },
+  "editor_width_mm": "Breite (mm)",
+  "@editor_width_mm": {
+    "description": "Width input label in millimeters"
+  },
+  "editor_height_mm": "Höhe (mm)",
+  "@editor_height_mm": {
+    "description": "Height input label in millimeters"
+  },
+  "editor_dpi": "DPI",
+  "@editor_dpi": {
+    "description": "DPI input label"
+  },
+  "editor_preset_id_photo": "Ausweisfoto 35×25mm",
+  "@editor_preset_id_photo": {
+    "description": "ID photo preset chip 35x25mm at 200DPI"
+  },
+  "editor_preset_passport": "Reisepass 35×45mm",
+  "@editor_preset_passport": {
+    "description": "Passport preset chip 35x45mm at 200DPI"
+  },
+  "editor_preset_us_visa_mm": "US-Visum 51×51mm",
+  "@editor_preset_us_visa_mm": {
+    "description": "US visa preset chip 51x51mm at 300DPI"
+  },
+  "editor_pixel_auto": "→ {w} × {h} px",
+  "@editor_pixel_auto": {
+    "description": "Auto-calculated pixel dimensions preview",
+    "placeholders": {
+      "w": { "type": "int" },
+      "h": { "type": "int" }
+    }
+  },
+  "editor_pixel_result": "Pixel (automatisch)",
+  "@editor_pixel_result": {
+    "description": "Label for auto-calculated pixel result"
+  },
+  "editor_width_px": "Breite (px)",
+  "@editor_width_px": {
+    "description": "Width input label in pixels"
+  },
+  "editor_height_px": "Höhe (px)",
+  "@editor_height_px": {
+    "description": "Height input label in pixels"
+  },
+  "editor_file_size_limit_title": "Dateigrößen-Limit (JPEG)",
+  "@editor_file_size_limit_title": {
+    "description": "Section title for file size limit"
+  },
+  "editor_file_size_limit_label": "Zielgröße (KB), leer = unbegrenzt",
+  "@editor_file_size_limit_label": {
+    "description": "Label for target file size input"
   },
   "editor_strip_metadata": "Remove all metadata (EXIF / GPS / ICC)",
   "@editor_strip_metadata": {

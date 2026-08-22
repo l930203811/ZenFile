@@ -161,4 +161,22 @@ class AppTheme {
 
   static ThemeData get lightTheme => getAppTheme(light: true);
   static ThemeData get darkTheme => getAppTheme(light: false);
+
+  /// AMOLED 纯黑模式：返回纯黑背景色。
+  /// 在深色主题 + AMOLED 开启时，文件管理页面使用此颜色作为 Scaffold 背景，
+  /// 使背景完全黑化而非深灰，配合红色主题实现纯黑 AMOLED 效果。
+  static Color getAmoledScaffoldBackground(ThemeData theme) {
+    if (theme.brightness == Brightness.dark) {
+      return Colors.black;
+    }
+    return theme.scaffoldBackgroundColor;
+  }
+
+  /// AMOLED 纯黑模式下的卡片/容器背景（纯黑背景上的微层次）。
+  static Color getAmoledSurface(ThemeData theme) {
+    if (theme.brightness == Brightness.dark) {
+      return const Color(0xFF0A0A0A);
+    }
+    return theme.colorScheme.surface;
+  }
 }

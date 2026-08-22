@@ -465,9 +465,11 @@ class VideoControlsOverlay extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  // Action Icons Row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                  // Action Icons Row（使用 Wrap 防止按钮溢出）
+                  Wrap(
+                    alignment: WrapAlignment.end,
+                    spacing: 4,
+                    runSpacing: 4,
                     children: [
                       // Subtitle Toggle Button
                       Opacity(
@@ -489,7 +491,6 @@ class VideoControlsOverlay extends StatelessWidget {
                               : null,
                         ),
                       ),
-                      const SizedBox(width: 8),
                       // Audio Track Button
                       if (hasAudioTracks)
                         IconButton(
@@ -500,7 +501,6 @@ class VideoControlsOverlay extends StatelessWidget {
                             onSelectAudioTrack();
                           },
                         ),
-                      if (hasAudioTracks) const SizedBox(width: 8),
                       // Subtitle Track Button
                       if (hasSubtitleTracks)
                         IconButton(
@@ -511,7 +511,6 @@ class VideoControlsOverlay extends StatelessWidget {
                             onSelectSubtitleTrack();
                           },
                         ),
-                      if (hasSubtitleTracks) const SizedBox(width: 8),
                       // Repeat Button
                       IconButton(
                         icon: Icon(
@@ -520,7 +519,7 @@ class VideoControlsOverlay extends StatelessWidget {
                               : repeatMode == 1
                                   ? Icons.repeat_one_rounded
                                   : Icons.repeat_rounded,
-                          color: repeatMode != 0 ? accentColor : itemsColor.withOpacity(0.7),
+                          color: repeatMode != 0 ? accentColor : itemsColor.withValues(alpha: 0.7),
                           size: 22,
                         ),
                         tooltip: L10n.of(context).msg1f41f25d,
@@ -529,7 +528,6 @@ class VideoControlsOverlay extends StatelessWidget {
                           onToggleRepeat();
                         },
                       ),
-                      const SizedBox(width: 8),
                       // Mute Button
                       IconButton(
                         icon: Icon(isMuted ? Broken.volume_slash : Broken.volume_high, color: itemsColor, size: 22),
@@ -539,7 +537,6 @@ class VideoControlsOverlay extends StatelessWidget {
                           onToggleMute();
                         },
                       ),
-                      const SizedBox(width: 8),
                       // Aspect Ratio Toggle Button
                       IconButton(
                         icon: Icon(Icons.aspect_ratio_rounded, color: aspectRatioMode != 0 ? accentColor : itemsColor, size: 22),
@@ -549,7 +546,6 @@ class VideoControlsOverlay extends StatelessWidget {
                           onToggleAspectRatio();
                         },
                       ),
-                      const SizedBox(width: 8),
                       // Rotate Video Clockwise
                       IconButton(
                         icon: Icon(Icons.rotate_right_rounded, color: itemsColor, size: 22),
@@ -559,7 +555,6 @@ class VideoControlsOverlay extends StatelessWidget {
                           onRotate();
                         },
                       ),
-                      const SizedBox(width: 8),
                       // Full Screen
                       IconButton(
                         icon: Icon(isFullScreen ? Icons.fullscreen_exit_rounded : Icons.fullscreen_rounded, color: itemsColor, size: 28),

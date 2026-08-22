@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../ui/screens/audio_player/audio_artwork_widget.dart';
 import 'preferences_service.dart';
+import 'power_management_service.dart';
 
 /// Global singleton handler instance
 ZenFileAudioHandler? _audioHandlerInstance;
@@ -152,6 +153,25 @@ class ZenFileAudioHandler extends BaseAudioHandler
       }
     } catch (e) {
       debugPrint('[ZenFile] request notification permission failed: $e');
+    }
+    // 申请忽略电池优化 + 唤醒锁，防止后台播放被系统中断
+    _ensurePowerManagement();
+  }
+
+  /// 确保电源管理优化：请求忽略电池优化 + 申请唤醒锁。
+  /// 首次播放时调用，不阻塞音频启动。
+  Future<void> _ensurePowerManagement() async {
+    if (!Platform.isAndroid) return;
+    try {
+      // 检查并请求电池优化白名单
+      final ignoring = await PowerManagementService.isIgnoringBatteryOptimizations();
+      if (!ignoring && !PreferencesService.getBatteryOptDismissed()) {
+        await PowerManagementService.requestIgnoreBatteryOptimizations();
+      }
+      // 申请唤醒锁保持 CPU 运行
+      await PowerManagementService.acquireWakeLock();
+    } catch (e) {
+      debugPrint('[ZenFile] power management setup failed: $e');
     }
   }
 

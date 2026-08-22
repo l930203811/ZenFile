@@ -6544,6 +6544,12 @@ abstract class L10n {
   /// **'添加所选 ({count})'**
   String ui_add_selected(Object count);
 
+  /// No description provided for @ui_pin_selected.
+  ///
+  /// In zh, this message translates to:
+  /// **'固定所选 ({count})'**
+  String ui_pin_selected(Object count);
+
   /// Title shown when a file conflict is detected
   ///
   /// In zh, this message translates to:
@@ -7005,6 +7011,78 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'音效'**
   String get ui_sound_effects;
+
+  /// Equalizer presets section title
+  ///
+  /// In zh, this message translates to:
+  /// **'均衡器预设'**
+  String get eq_presets;
+
+  /// Custom equalizer label
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义'**
+  String get eq_custom;
+
+  /// Open system equalizer button
+  ///
+  /// In zh, this message translates to:
+  /// **'系统均衡器'**
+  String get eq_system;
+
+  /// Message when equalizer cannot be initialized
+  ///
+  /// In zh, this message translates to:
+  /// **'此设备不支持均衡器'**
+  String get eq_unavailable;
+
+  /// Button to open system equalizer as fallback
+  ///
+  /// In zh, this message translates to:
+  /// **'打开系统均衡器'**
+  String get eq_open_system;
+
+  /// Explanation why system EQ is needed
+  ///
+  /// In zh, this message translates to:
+  /// **'内置播放器使用 libmpv 音频输出。如需应用均衡器效果，请使用系统均衡器（影响所有音频输出）。'**
+  String get eq_system_hint;
+
+  /// Instructions for using system EQ with presets
+  ///
+  /// In zh, this message translates to:
+  /// **'请在下方选择预设，然后点击打开系统均衡器在系统均衡器中应用。'**
+  String get eq_apply_hint;
+
+  /// EQ preset: flat / original sound
+  ///
+  /// In zh, this message translates to:
+  /// **'原声'**
+  String get eq_preset_flat;
+
+  /// EQ preset: HD vocal (boosts 1-4kHz)
+  ///
+  /// In zh, this message translates to:
+  /// **'HD 人声'**
+  String get eq_preset_vocal;
+
+  /// EQ preset: bass boost
+  ///
+  /// In zh, this message translates to:
+  /// **'低音'**
+  String get eq_preset_bass;
+
+  /// EQ preset: live (slight high freq boost)
+  ///
+  /// In zh, this message translates to:
+  /// **'现场'**
+  String get eq_preset_live;
+
+  /// EQ preset: jazz (V-shaped curve)
+  ///
+  /// In zh, this message translates to:
+  /// **'爵士'**
+  String get eq_preset_jazz;
 
   /// No description provided for @ui_playback_queue.
   ///
@@ -9585,6 +9663,96 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'质量（文件大小）'**
   String get editor_quality;
+
+  /// Resize mode: pixel-based input
+  ///
+  /// In zh, this message translates to:
+  /// **'像素'**
+  String get editor_mode_pixel;
+
+  /// Resize mode: physical dimension input with DPI
+  ///
+  /// In zh, this message translates to:
+  /// **'物理尺寸'**
+  String get editor_mode_physical;
+
+  /// Section title for physical size to pixel conversion
+  ///
+  /// In zh, this message translates to:
+  /// **'物理尺寸 → 像素（DPI 转换）'**
+  String get editor_physical_title;
+
+  /// Width input label in millimeters
+  ///
+  /// In zh, this message translates to:
+  /// **'宽 (mm)'**
+  String get editor_width_mm;
+
+  /// Height input label in millimeters
+  ///
+  /// In zh, this message translates to:
+  /// **'高 (mm)'**
+  String get editor_height_mm;
+
+  /// DPI input label
+  ///
+  /// In zh, this message translates to:
+  /// **'DPI'**
+  String get editor_dpi;
+
+  /// ID photo preset chip 35x25mm at 200DPI
+  ///
+  /// In zh, this message translates to:
+  /// **'证件照 35×25mm'**
+  String get editor_preset_id_photo;
+
+  /// Passport preset chip 35x45mm at 200DPI
+  ///
+  /// In zh, this message translates to:
+  /// **'护照 35×45mm'**
+  String get editor_preset_passport;
+
+  /// US visa preset chip 51x51mm at 300DPI
+  ///
+  /// In zh, this message translates to:
+  /// **'美签 51×51mm'**
+  String get editor_preset_us_visa_mm;
+
+  /// Auto-calculated pixel dimensions preview
+  ///
+  /// In zh, this message translates to:
+  /// **'→ {w} × {h} px'**
+  String editor_pixel_auto(int w, int h);
+
+  /// Label for auto-calculated pixel result
+  ///
+  /// In zh, this message translates to:
+  /// **'像素（自动计算）'**
+  String get editor_pixel_result;
+
+  /// Width input label in pixels
+  ///
+  /// In zh, this message translates to:
+  /// **'宽度 (px)'**
+  String get editor_width_px;
+
+  /// Height input label in pixels
+  ///
+  /// In zh, this message translates to:
+  /// **'高度 (px)'**
+  String get editor_height_px;
+
+  /// Section title for file size limit
+  ///
+  /// In zh, this message translates to:
+  /// **'文件大小限制（JPEG）'**
+  String get editor_file_size_limit_title;
+
+  /// Label for target file size input
+  ///
+  /// In zh, this message translates to:
+  /// **'目标大小 (KB)，留空=不限'**
+  String get editor_file_size_limit_label;
 
   /// Toggle to remove EXIF/GPS/ICC metadata
   ///

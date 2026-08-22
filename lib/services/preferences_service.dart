@@ -631,6 +631,132 @@ class PreferencesService {
     await _prefs?.setBool(_keyShowFolderSizes, val);
   }
 
+  // --- 底部操作栏位置 (#2) ---
+  static const String _keyBottomBarPosition = 'bottom_bar_position'; // 'spread' | 'left' | 'center' | 'right' | 'full'
+
+  static String getBottomBarPosition() {
+    return _prefs?.getString(_keyBottomBarPosition) ?? 'spread';
+  }
+
+  static Future<void> saveBottomBarPosition(String val) async {
+    await _prefs?.setString(_keyBottomBarPosition, val);
+  }
+
+  // --- 首页分类图标显示标签 (#8) ---
+  static const String _keyShowCategoryLabels = 'show_category_labels';
+
+  static bool getShowCategoryLabels() {
+    return _prefs?.getBool(_keyShowCategoryLabels) ?? true;
+  }
+
+  static Future<void> saveShowCategoryLabels(bool val) async {
+    await _prefs?.setBool(_keyShowCategoryLabels, val);
+  }
+
+  // --- 图片编辑器 DPI 模式 (#1) ---
+  static const String _keyImageEditorDpiMode = 'image_editor_dpi_mode'; // 'pixel' | 'physical'
+  static const String _keyImageEditorTargetDpi = 'image_editor_target_dpi';
+  static const String _keyImageEditorFileSizeLimit = 'image_editor_file_size_limit'; // KB, 0=无限制
+
+  static String getImageEditorDpiMode() {
+    return _prefs?.getString(_keyImageEditorDpiMode) ?? 'pixel';
+  }
+
+  static Future<void> saveImageEditorDpiMode(String val) async {
+    await _prefs?.setString(_keyImageEditorDpiMode, val);
+  }
+
+  static int getImageEditorTargetDpi() {
+    return _prefs?.getInt(_keyImageEditorTargetDpi) ?? 200;
+  }
+
+  static Future<void> saveImageEditorTargetDpi(int val) async {
+    await _prefs?.setInt(_keyImageEditorTargetDpi, val);
+  }
+
+  static int getImageEditorFileSizeLimit() {
+    return _prefs?.getInt(_keyImageEditorFileSizeLimit) ?? 0;
+  }
+
+  static Future<void> saveImageEditorFileSizeLimit(int val) async {
+    await _prefs?.setInt(_keyImageEditorFileSizeLimit, val);
+  }
+
+  // --- 视频硬解码模式 (#11) ---
+  static const String _keyVideoHwDec = 'video_hw_dec'; // 'auto' | 'auto-safe' | 'no'
+
+  static String getVideoHwDec() {
+    return _prefs?.getString(_keyVideoHwDec) ?? 'auto-safe';
+  }
+
+  static Future<void> saveVideoHwDec(String val) async {
+    await _prefs?.setString(_keyVideoHwDec, val);
+  }
+
+  // --- 音频均衡器预设 (#12) ---
+  static const String _keyAudioEqPreset = 'audio_eq_preset'; // 'flat' | 'vocal' | 'bass' | 'live' | 'jazz'
+
+  static String getAudioEqPreset() {
+    return _prefs?.getString(_keyAudioEqPreset) ?? 'flat';
+  }
+
+  static Future<void> saveAudioEqPreset(String val) async {
+    await _prefs?.setString(_keyAudioEqPreset, val);
+  }
+
+  // --- AMOLED 纯黑主题扩展：应用到所有页面 (#9) ---
+  static const String _keyAmoledPureBlackAllPages = 'amoled_pure_black_all_pages';
+
+  static bool getAmoledPureBlackAllPages() {
+    return _prefs?.getBool(_keyAmoledPureBlackAllPages) ?? true;
+  }
+
+  static Future<void> saveAmoledPureBlackAllPages(bool val) async {
+    await _prefs?.setBool(_keyAmoledPureBlackAllPages, val);
+  }
+
+  // --- VirusTotal API Key (#5a) ---
+  static const String _keyVirusTotalApiKey = 'virustotal_api_key';
+
+  static String? getVirusTotalApiKey() {
+    return _prefs?.getString(_keyVirusTotalApiKey);
+  }
+
+  static Future<void> saveVirusTotalApiKey(String key) async {
+    await _prefs?.setString(_keyVirusTotalApiKey, key);
+  }
+
+  // --- Google Drive 集成 (#7) ---
+  static const String _keyGdriveAccessToken = 'gdrive_access_token';
+  static const String _keyGdriveRefreshToken = 'gdrive_refresh_token';
+
+  static String? getGoogleDriveAccessToken() {
+    return _prefs?.getString(_keyGdriveAccessToken);
+  }
+
+  static Future<void> saveGoogleDriveAccessToken(String token) async {
+    await _prefs?.setString(_keyGdriveAccessToken, token);
+  }
+
+  static String? getGoogleDriveRefreshToken() {
+    return _prefs?.getString(_keyGdriveRefreshToken);
+  }
+
+  static Future<void> saveGoogleDriveRefreshToken(String token) async {
+    await _prefs?.setString(_keyGdriveRefreshToken, token);
+  }
+
+  // --- 后台播放电池优化白名单提示 (#13) ---
+  static const String _keyBatteryOptDismissed = 'battery_opt_dismissed';
+
+  static bool getBatteryOptDismissed() {
+    return _prefs?.getBool(_keyBatteryOptDismissed) ?? false;
+  }
+
+  static Future<void> saveBatteryOptDismissed(bool val) async {
+    await _prefs?.setBool(_keyBatteryOptDismissed, val);
+  }
+
   static const String _keyCachedTotalStorage = 'cached_total_storage';
   static const String _keyCachedUsedStorage = 'cached_used_storage';
 

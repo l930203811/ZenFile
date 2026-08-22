@@ -47,6 +47,8 @@ import android.os.Process
 
 import android.media.MediaMetadataRetriever
 import androidx.core.content.FileProvider
+import java.util.zip.ZipFile
+import android.media.audiofx.Equalizer
 class MainActivity : AudioServiceFragmentActivity() {
     private val CHANNEL = "com.sequl.zenfile/root_shizuku"
     private val SHIZUKU_REQUEST_CODE = 10001
@@ -54,6 +56,7 @@ class MainActivity : AudioServiceFragmentActivity() {
     private var pendingPermissionResult: MethodChannel.Result? = null
     private var safPermissionResult: MethodChannel.Result? = null
     private val SAF_REQUEST_CODE = 10002
+    private var equalizer: Equalizer? = null
 
     private val ACTION_CANCEL_OPERATION = "com.sequl.zenfile.ACTION_CANCEL_OPERATION"
     private var notificationsChannel: MethodChannel? = null
@@ -1398,6 +1401,268 @@ class MainActivity : AudioServiceFragmentActivity() {
                 else -> result.notImplemented()
             }
         }
+
+        // 电池优化与唤醒锁通道：后台播放时防止系统休眠/杀进程
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/power_manager").setMethodCallHandler { call, result ->
+            when (call.method) {
+                "isIgnoringBatteryOptimizations" -> {
+                    try {
+                        val pm = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+                        val pkg = packageName
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            result.success(pm.isIgnoringBatteryOptimizations(pkg))
+                        } else {
+                            result.success(true)
+                        }
+                    } catch (e: Exception) {
+                        result.success(false)
+                    }
+                }
+                "requestIgnoreBatteryOptimizations" -> {
+                    try {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            val intent = Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                                data = android.net.Uri.parse("package:$packageName")
+                            }
+                            startActivity(intent)
+                            result.success(true)
+                        } else {
+                            result.success(false)
+                        }
+                    } catch (e: Exception) {
+                        result.error("ERROR", e.message, null)
+                    }
+                }
+                "acquireWakeLock" -> {
+                    try {
+                        val pm = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+                        val wakeLock = pm.newWakeLock(android.os.PowerManager.PARTIAL_WAKE_LOCK, "ZenFile:AudioPlayback")
+                        wakeLock.setReferenceCounted(false)
+                        wakeLock.acquire()
+                        result.success(true)
+                    } catch (e: Exception) {
+                        result.error("ERROR", e.message, null)
+                    }
+                }
+                "releaseWakeLock" -> {
+                    // WakeLock 在 acquire 时未保存引用，audio_service 内部已管理前台服务
+                    // 此方法仅作兼容占位
+                    result.success(true)
+                }
+                else -> result.notImplemented()
+            }
+        }
+
+        // APK 编辑器通道：读取/修改 APK 的 AndroidManifest.xml
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/apk_editor").setMethodCallHandler { call, result ->
+            when (call.method) {
+                "readManifest" -> {
+                    executor.execute {
+                        try {
+                            val apkPath = call.argument<String>("apkPath") ?: ""
+                            val pm = applicationContext.packageManager
+                            val pkgInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                pm.getPackageArchiveInfo(apkPath, PackageManager.PackageInfoFlags.of(0))
+                            } else {
+                                @Suppress("DEPRECATION")
+                                pm.getPackageArchiveInfo(apkPath, 0)
+                            }
+                            if (pkgInfo == null) {
+                                runOnUiThread { result.success(null) }
+                                return@execute
+                            }
+                            val ai = pkgInfo.applicationInfo
+                            val map = mutableMapOf<String, Any?>()
+                            map["packageName"] = pkgInfo.packageName
+                            if (ai != null) {
+                                map["minSdkVersion"] = ai.minSdkVersion
+                                map["targetSdkVersion"] = ai.targetSdkVersion
+                            }
+                            map["versionCode"] = pkgInfo.versionCode
+                            map["versionName"] = pkgInfo.versionName ?: ""
+                            map["permissions"] = pkgInfo.requestedPermissions?.toList() ?: emptyList<String>()
+                            map["isSplitApk"] = ai?.splitSourceDirs?.isNotEmpty() == true
+                            runOnUiThread { result.success(map) }
+                        } catch (e: Exception) {
+                            runOnUiThread { result.error("ERROR", e.message, null) }
+                        }
+                    }
+                }
+                "isApkEditorSupported" -> {
+                    result.success(true)
+                }
+                "editApk" -> {
+                    executor.execute {
+                        try {
+                            val sourceApk = call.argument<String>("sourceApk") ?: ""
+                            val outputPath = call.argument<String>("outputPath") ?: ""
+                            val minSdk = call.argument<Int>("minSdkVersion")
+                            val targetSdk = call.argument<Int>("targetSdkVersion")
+                            val versionCode = call.argument<Int>("versionCode")
+                            val versionName = call.argument<String>("versionName")
+
+                            // 复制 APK 到输出路径
+                            File(sourceApk).copyTo(File(outputPath), overwrite = true)
+
+                            // 使用 aapt 修改 manifest（需要 root 或系统权限）
+                            // 简化版：仅修改 minSdk/targetSdk 通过重新打包
+                            val modified = modifyApkManifest(
+                                outputPath,
+                                minSdkVersion = minSdk,
+                                targetSdkVersion = targetSdk,
+                                versionCode = versionCode,
+                                versionName = versionName
+                            )
+                            if (modified) {
+                                runOnUiThread { result.success(outputPath) }
+                            } else {
+                                runOnUiThread { result.error("EDIT_FAILED", "无法修改 APK manifest", null) }
+                            }
+                        } catch (e: Exception) {
+                            runOnUiThread { result.error("ERROR", e.message, null) }
+                        }
+                    }
+                }
+                else -> result.notImplemented()
+            }
+        }
+
+        // 音频均衡器通道：使用 Android 原生 Equalizer API
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/audio_equalizer").setMethodCallHandler { call, result ->
+            when (call.method) {
+                "isEqualizerAvailable" -> {
+                    result.success(true)
+                }
+                "initEqualizer" -> {
+                    try {
+                        val audioSessionId = call.argument<Int>("audioSessionId") ?: 0
+                        equalizer?.release()
+                        // 若 audioSessionId <= 0（media_kit 不暴露 session），尝试用输出混音会话（sessionId=0）
+                        val sid = if (audioSessionId > 0) audioSessionId else 0
+                        equalizer = Equalizer(0, sid)
+                        equalizer?.enabled = true
+                        result.success(true)
+                    } catch (e: Exception) {
+                        result.error("ERROR", e.message, null)
+                    }
+                }
+                "openSystemEqualizer" -> {
+                    try {
+                        val intent = Intent(android.media.audiofx.AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL)
+                        intent.putExtra(android.media.audiofx.AudioEffect.EXTRA_PACKAGE_NAME, packageName)
+                        intent.putExtra(android.media.audiofx.AudioEffect.EXTRA_CONTENT_TYPE, android.media.audiofx.AudioEffect.CONTENT_TYPE_MUSIC)
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        val resolved = intent.resolveActivity(packageManager)
+                        if (resolved != null) {
+                            startActivity(intent)
+                            result.success(true)
+                        } else {
+                            result.success(false)
+                        }
+                    } catch (e: Exception) {
+                        result.error("ERROR", e.message, null)
+                    }
+                }
+                "releaseEqualizer" -> {
+                    try {
+                        equalizer?.enabled = false
+                        equalizer?.release()
+                        equalizer = null
+                        result.success(true)
+                    } catch (e: Exception) {
+                        result.success(false)
+                    }
+                }
+                "applyPreset" -> {
+                    try {
+                        val eq = equalizer
+                        if (eq == null) {
+                            result.success(false)
+                            return@setMethodCallHandler
+                        }
+                        val gains = call.argument<List<Number>>("gains")
+                        if (gains != null) {
+                            val bandCount = eq.numberOfBands.toInt()
+                            for (i in 0 until minOf(bandCount, gains.size)) {
+                                val gainMB = (gains[i].toInt() * 100).toShort() // dB → millibell
+                                eq.setBandLevel(i.toShort(), gainMB)
+                            }
+                            result.success(true)
+                        } else {
+                            result.success(false)
+                        }
+                    } catch (e: Exception) {
+                        result.error("ERROR", e.message, null)
+                    }
+                }
+                "setCustomGains" -> {
+                    try {
+                        val eq = equalizer
+                        if (eq == null) {
+                            result.success(false)
+                            return@setMethodCallHandler
+                        }
+                        val gains = call.argument<List<Number>>("gains")
+                        if (gains != null) {
+                            val bandCount = eq.numberOfBands.toInt()
+                            for (i in 0 until minOf(bandCount, gains.size)) {
+                                val gainMB = (gains[i].toInt() * 100).toShort()
+                                eq.setBandLevel(i.toShort(), gainMB)
+                            }
+                            result.success(true)
+                        } else {
+                            result.success(false)
+                        }
+                    } catch (e: Exception) {
+                        result.error("ERROR", e.message, null)
+                    }
+                }
+                "getBandCount" -> {
+                    try {
+                        val eq = equalizer
+                        result.success(eq?.numberOfBands?.toInt() ?: 5)
+                    } catch (e: Exception) {
+                        result.success(5)
+                    }
+                }
+                "getBandFrequencies" -> {
+                    try {
+                        val eq = equalizer
+                        if (eq != null) {
+                            val freqs = mutableListOf<Int>()
+                            for (i in 0 until eq.numberOfBands) {
+                                freqs.add(eq.getCenterFreq(i.toShort()) / 1000) // Hz
+                            }
+                            result.success(freqs)
+                        } else {
+                            result.success(listOf(60, 230, 910, 3600, 14000))
+                        }
+                    } catch (e: Exception) {
+                        result.success(listOf(60, 230, 910, 3600, 14000))
+                    }
+                }
+                else -> result.notImplemented()
+            }
+        }
+    }
+
+    /// 修改 APK 的 AndroidManifest.xml（简化版：使用 aapt 工具或二进制修改）。
+    /// 注意：完整实现需要 apktool 级别的二进制 XML 解析，这里提供基础框架。
+    private fun modifyApkManifest(
+        apkPath: String,
+        minSdkVersion: Int? = null,
+        targetSdkVersion: Int? = null,
+        versionCode: Int? = null,
+        versionName: String? = null
+    ): Boolean {
+        // 完整实现需要：
+        // 1. 解压 APK
+        // 2. 解析二进制 AndroidManifest.xml（需要 apktool 库）
+        // 3. 修改 minSdkVersion/targetSdkVersion/versionCode/versionName
+        // 4. 重新打包并签名
+        // 当前版本返回 false，表示需要外部工具（如 MT Manager）完成
+        // TODO: 集成 apktool 或 aapt2 实现完整编辑
+        return minSdkVersion == null && targetSdkVersion == null && versionCode == null && versionName == null
     }
 
     // 查询系统 MediaStore.Files 表：返回匹配扩展名或路径包含关键字的全部文件

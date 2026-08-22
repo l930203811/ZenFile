@@ -344,4 +344,55 @@ class ImageEditService {
         quality: quality,
         isPng: isPng,
       );
+
+  /// 智能编码：自动调整 JPEG 质量以满足目标文件大小限制（KB）。
+  /// 使用二分查找在 quality [10..95] 范围内找到不超过 targetSizeKB 的最佳质量。
+  /// 返回编码后的字节和实际使用的 quality。
+  Future<Uint8List> encodeWithSizeLimit(
+    Uint8List bytes,
+    ImageEditParams params, {
+    int targetSizeKB = 50,
+    bool isPng = false,
+  }) async {
+    if (targetSizeKB <= 0 || isPng) {
+      // 无大小限制或 PNG（PNG 不支持质量调节），直接按默认质量编码
+      return edit(bytes, params, quality: 90, isPng: isPng);
+    }
+
+    final targetBytes = targetSizeKB * 1024;
+    int lo = 10, hi = 95;
+    Uint8List? bestResult;
+
+    // 二分查找最佳质量
+    while (lo <= hi) {
+      final mid = (lo + hi) ~/ 2;
+      final encoded = await edit(bytes, params, quality: mid, isPng: false);
+      if (encoded.length <= targetBytes) {
+        bestResult = encoded;
+        lo = mid + 1; // 尝试更高质量
+      } else {
+        hi = mid - 1; // 需要更低质量
+      }
+    }
+
+    // 如果最低质量仍超限，返回最低质量的结果（已是最小）
+    bestResult ??= await edit(bytes, params, quality: 10, isPng: false);
+    return bestResult;
+  }
+
+  /// DPI + 物理尺寸 → 像素尺寸转换。
+  /// [cm] 厘米, [inch] 英寸, [dpi] 分辨率。
+  /// 印度政府常用：3.5 x 2.5cm @ 200DPI → 276 x 197px
+  static int pixelsFromPhysical(double physicalMM, int dpi) {
+    return ((physicalMM / 25.4) * dpi).round();
+  }
+
+  /// 常用政府/机构预设尺寸模板。
+  static const List<Map<String, dynamic>> presetSizes = [
+    {'label': '印度政府证件照 (276×197)', 'widthMM': 35, 'heightMM': 25, 'dpi': 200},
+    {'label': '印度护照 (35×45)', 'widthMM': 35, 'heightMM': 45, 'dpi': 200},
+    {'label': '美国护照 (51×51)', 'widthMM': 51, 'heightMM': 51, 'dpi': 300},
+    {'label': 'A4 @ 200DPI', 'widthMM': 210, 'heightMM': 297, 'dpi': 200},
+    {'label': 'A4 @ 300DPI', 'widthMM': 210, 'heightMM': 297, 'dpi': 300},
+  ];
 }

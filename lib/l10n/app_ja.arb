@@ -3612,6 +3612,7 @@
   "ui_undo": "元に戻す",
   "ui_redo": "やり直す",
   "ui_add_selected": "選択を追加 ({count})",
+  "ui_pin_selected": "選択をピン留め ({count})",
   "msg_vault_choose_mode": "保護モードを選択",
   "msg_vault_mode_desc": "選択したファイルの保護方法を選択してください。セキュアファイルは即座にXORスクランブルされます。",
   "ui_secure_import": "セキュアインポート（サンドボックス）",
@@ -3706,6 +3707,54 @@
   "ui_pitch_adjustment": "音調調整",
   "ui_restore_default": "デフォルトに戻す",
   "ui_sound_effects": "サウンドエフェクト",
+  "eq_presets": "EQプリセット",
+  "@eq_presets": {
+    "description": "Equalizer presets section title"
+  },
+  "eq_custom": "カスタム",
+  "@eq_custom": {
+    "description": "Custom equalizer label"
+  },
+  "eq_system": "システムイコライザー",
+  "@eq_system": {
+    "description": "Open system equalizer button"
+  },
+  "eq_unavailable": "このデバイスではイコライザーは利用できません",
+  "@eq_unavailable": {
+    "description": "Message when equalizer cannot be initialized"
+  },
+  "eq_open_system": "システムEQを開く",
+  "@eq_open_system": {
+    "description": "Button to open system equalizer as fallback"
+  },
+  "eq_system_hint": "内蔵プレーヤーはlibmpvを使用してオーディオを出力します。EQ効果を適用するには、システムイコライザーを使用してください。",
+  "@eq_system_hint": {
+    "description": "Explanation why system EQ is needed"
+  },
+  "eq_apply_hint": "下からプリセットを選択し、システムEQを開くをタップして適用してください。",
+  "@eq_apply_hint": {
+    "description": "Instructions for using system EQ with presets"
+  },
+  "eq_preset_flat": "フラット",
+  "@eq_preset_flat": {
+    "description": "EQ preset: flat / original sound"
+  },
+  "eq_preset_vocal": "HDボーカル",
+  "@eq_preset_vocal": {
+    "description": "EQ preset: HD vocal (boosts 1-4kHz)"
+  },
+  "eq_preset_bass": "ベース",
+  "@eq_preset_bass": {
+    "description": "EQ preset: bass boost"
+  },
+  "eq_preset_live": "ライブ",
+  "@eq_preset_live": {
+    "description": "EQ preset: live (slight high freq boost)"
+  },
+  "eq_preset_jazz": "ジャズ",
+  "@eq_preset_jazz": {
+    "description": "EQ preset: jazz (V-shaped curve)"
+  },
   "ui_playback_queue": "再生キュー",
   "ui_repeat_off": "リピート：オフ",
   "ui_repeat_one": "リピート：1曲",
@@ -5224,9 +5273,73 @@
   "@editor_id_presets": {
     "description": "ID photo presets section title"
   },
-  "editor_quality": "Quality (file size)",
+  "editor_quality": "画質（ファイルサイズ）",
   "@editor_quality": {
     "description": "Output quality / file size slider"
+  },
+  "editor_mode_pixel": "ピクセル",
+  "@editor_mode_pixel": {
+    "description": "Resize mode: pixel-based input"
+  },
+  "editor_mode_physical": "物理サイズ",
+  "@editor_mode_physical": {
+    "description": "Resize mode: physical dimension input with DPI"
+  },
+  "editor_physical_title": "物理サイズ → ピクセル（DPI変換）",
+  "@editor_physical_title": {
+    "description": "Section title for physical size to pixel conversion"
+  },
+  "editor_width_mm": "幅 (mm)",
+  "@editor_width_mm": {
+    "description": "Width input label in millimeters"
+  },
+  "editor_height_mm": "高さ (mm)",
+  "@editor_height_mm": {
+    "description": "Height input label in millimeters"
+  },
+  "editor_dpi": "DPI",
+  "@editor_dpi": {
+    "description": "DPI input label"
+  },
+  "editor_preset_id_photo": "証明写真 35×25mm",
+  "@editor_preset_id_photo": {
+    "description": "ID photo preset chip 35x25mm at 200DPI"
+  },
+  "editor_preset_passport": "パスポート 35×45mm",
+  "@editor_preset_passport": {
+    "description": "Passport preset chip 35x45mm at 200DPI"
+  },
+  "editor_preset_us_visa_mm": "米国ビザ 51×51mm",
+  "@editor_preset_us_visa_mm": {
+    "description": "US visa preset chip 51x51mm at 300DPI"
+  },
+  "editor_pixel_auto": "→ {w} × {h} px",
+  "@editor_pixel_auto": {
+    "description": "Auto-calculated pixel dimensions preview",
+    "placeholders": {
+      "w": { "type": "int" },
+      "h": { "type": "int" }
+    }
+  },
+  "editor_pixel_result": "ピクセル（自動計算）",
+  "@editor_pixel_result": {
+    "description": "Label for auto-calculated pixel result"
+  },
+  "editor_width_px": "幅 (px)",
+  "@editor_width_px": {
+    "description": "Width input label in pixels"
+  },
+  "editor_height_px": "高さ (px)",
+  "@editor_height_px": {
+    "description": "Height input label in pixels"
+  },
+  "editor_file_size_limit_title": "ファイルサイズ制限（JPEG）",
+  "@editor_file_size_limit_title": {
+    "description": "Section title for file size limit"
+  },
+  "editor_file_size_limit_label": "目標サイズ (KB)、空白=無制限",
+  "@editor_file_size_limit_label": {
+    "description": "Label for target file size input"
   },
   "editor_strip_metadata": "Remove all metadata (EXIF / GPS / ICC)",
   "@editor_strip_metadata": {

@@ -3469,6 +3469,11 @@ class L10nJa extends L10n {
   }
 
   @override
+  String ui_pin_selected(Object count) {
+    return '選択をピン留め ($count)';
+  }
+
+  @override
   String get msg_file_exists => 'ファイルが存在します';
 
   @override
@@ -3720,6 +3725,43 @@ class L10nJa extends L10n {
 
   @override
   String get ui_sound_effects => 'サウンドエフェクト';
+
+  @override
+  String get eq_presets => 'EQプリセット';
+
+  @override
+  String get eq_custom => 'カスタム';
+
+  @override
+  String get eq_system => 'システムイコライザー';
+
+  @override
+  String get eq_unavailable => 'このデバイスではイコライザーは利用できません';
+
+  @override
+  String get eq_open_system => 'システムEQを開く';
+
+  @override
+  String get eq_system_hint =>
+      '内蔵プレーヤーはlibmpvを使用してオーディオを出力します。EQ効果を適用するには、システムイコライザーを使用してください。';
+
+  @override
+  String get eq_apply_hint => '下からプリセットを選択し、システムEQを開くをタップして適用してください。';
+
+  @override
+  String get eq_preset_flat => 'フラット';
+
+  @override
+  String get eq_preset_vocal => 'HDボーカル';
+
+  @override
+  String get eq_preset_bass => 'ベース';
+
+  @override
+  String get eq_preset_live => 'ライブ';
+
+  @override
+  String get eq_preset_jazz => 'ジャズ';
 
   @override
   String get ui_playback_queue => '再生キュー';
@@ -5188,7 +5230,54 @@ class L10nJa extends L10n {
   String get editor_id_presets => '証明写真プリセット';
 
   @override
-  String get editor_quality => 'Quality (file size)';
+  String get editor_quality => '画質（ファイルサイズ）';
+
+  @override
+  String get editor_mode_pixel => 'ピクセル';
+
+  @override
+  String get editor_mode_physical => '物理サイズ';
+
+  @override
+  String get editor_physical_title => '物理サイズ → ピクセル（DPI変換）';
+
+  @override
+  String get editor_width_mm => '幅 (mm)';
+
+  @override
+  String get editor_height_mm => '高さ (mm)';
+
+  @override
+  String get editor_dpi => 'DPI';
+
+  @override
+  String get editor_preset_id_photo => '証明写真 35×25mm';
+
+  @override
+  String get editor_preset_passport => 'パスポート 35×45mm';
+
+  @override
+  String get editor_preset_us_visa_mm => '米国ビザ 51×51mm';
+
+  @override
+  String editor_pixel_auto(int w, int h) {
+    return '→ $w × $h px';
+  }
+
+  @override
+  String get editor_pixel_result => 'ピクセル（自動計算）';
+
+  @override
+  String get editor_width_px => '幅 (px)';
+
+  @override
+  String get editor_height_px => '高さ (px)';
+
+  @override
+  String get editor_file_size_limit_title => 'ファイルサイズ制限（JPEG）';
+
+  @override
+  String get editor_file_size_limit_label => '目標サイズ (KB)、空白=無制限';
 
   @override
   String get editor_strip_metadata => 'Remove all metadata (EXIF / GPS / ICC)';

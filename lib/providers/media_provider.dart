@@ -3862,11 +3862,16 @@ class MediaProvider extends ChangeNotifier {
   /// 同时覆盖非媒体四类（文档/压缩包/下载/安装包）。
   Future<void> pruneDeletedMedia() async {
     try {
+      // 注意：音频文件来自 MediaStore（on_audio_query），其路径在 Android 11+ 作用域存储
+      // 下可能无法通过 File.existsSync() 直接访问。MediaStore 自身会过滤已删除的音频条目，
+      // 故音频走 _loadAudios 的 querySongs 结果整表替换即可，不参与 existsSync 裁剪，
+      // 否则会误把「路径不可直接访问但 MediaStore 仍收录」的音频判死→「过一段时间音频消失」。
       final all = <String>{
         ..._images.map((e) => e.path),
         ..._videos.map((e) => e.path),
         ..._screenshots.map((e) => e.path),
-        ..._audios.map((e) => e.data),
+        // 音频路径不参与 existsSync 裁剪（MediaStore 路径在作用域存储下不可直接 stat）
+        // ..._audios.map((e) => e.data),
         ..._documents.map((e) => e.path),
         ..._archives.map((e) => e.path),
         ..._downloads.map((e) => e.path),

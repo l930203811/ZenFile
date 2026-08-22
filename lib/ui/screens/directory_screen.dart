@@ -25,6 +25,8 @@ import '../../services/folder_share_service.dart';
 import '../widgets/pane_browser.dart';
 import '../../services/network_connections_service.dart';
 import 'network_connection_wizard_screen.dart';
+import '../../services/preferences_service.dart';
+import '../../core/theme.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 
@@ -364,7 +366,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     return Container(
       height: 44,
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
+        color: AppTheme.getAmoledSurface(theme),
         border: Border(
           top: BorderSide(color: theme.dividerColor.withOpacity(0.08), width: 0.5),
           bottom: BorderSide(color: theme.dividerColor.withOpacity(0.08), width: 0.5),
@@ -1132,6 +1134,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             }
           },
           child: Scaffold(
+            backgroundColor: AppTheme.getAmoledScaffoldBackground(theme),
             appBar: (isSelectionMode || !showBottomActionBar)
                 ? AppBar(
                     automaticallyImplyLeading: isSelectionMode,
@@ -1534,31 +1537,13 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                     ? PreferredSize(
                         preferredSize: Size.fromHeight(kToolbarHeight + MediaQuery.of(context).padding.bottom),
                         child: Material(
-                          color: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
+                          color: AppTheme.getAmoledSurface(theme),
                           elevation: 8,
                           child: SafeArea(
                             top: false,
                             child: SizedBox(
                               height: kToolbarHeight,
-                              child: Row(
-                                children: [
-                                  // 抽屉按钮（靠左）
-                                  IconButton(
-                                    icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
-                                    onPressed: () => widget.onOpenDrawer?.call(),
-                                  ),
-                                  const Spacer(),
-                                  // 分类页/浏览页 合一切换按钮（居中）
-                                  _buildCategoryBrowseToggle(context),
-                                  const Spacer(),
-                                  // 快捷操作按钮（靠右）
-                                  IconButton(
-                                    icon: Icon(Broken.more_circle, color: theme.colorScheme.primary),
-                                    tooltip: L10n.of(context).msge8b8e9b3,
-                                    onPressed: () => widget.onOpenEndDrawer?.call(),
-                                  ),
-                                ],
-                              ),
+                              child: _buildBottomNavRow(context),
                             ),
                           ),
                         ),
@@ -1592,6 +1577,74 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         context.read<MediaProvider>().refreshMediaBackground();
       },
     );
+  }
+
+  /// 底部导航栏按钮行：根据用户偏好设置按钮位置（展开/居中/靠左/靠右/全宽）
+  Widget _buildBottomNavRow(BuildContext context) {
+    final theme = Theme.of(context);
+    final position = PreferencesService.getBottomBarPosition();
+
+    final drawerBtn = IconButton(
+      icon: Icon(Broken.sidebar_left, color: theme.colorScheme.primary),
+      onPressed: () => widget.onOpenDrawer?.call(),
+    );
+    final toggleBtn = _buildCategoryBrowseToggle(context);
+    final moreBtn = IconButton(
+      icon: Icon(Broken.more_circle, color: theme.colorScheme.primary),
+      tooltip: L10n.of(context).msge8b8e9b3,
+      onPressed: () => widget.onOpenEndDrawer?.call(),
+    );
+
+    switch (position) {
+      case 'left':
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            drawerBtn,
+            toggleBtn,
+            moreBtn,
+            const SizedBox(width: 8),
+          ],
+        );
+      case 'right':
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            const SizedBox(width: 8),
+            drawerBtn,
+            toggleBtn,
+            moreBtn,
+          ],
+        );
+      case 'full':
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [drawerBtn, toggleBtn, moreBtn],
+        );
+      case 'spread':
+        // 与分类页布局一致：抽屉按钮靠左、切换按钮居中、快捷操作按钮靠右
+        return Row(
+          children: [
+            drawerBtn,
+            const Spacer(),
+            toggleBtn,
+            const Spacer(),
+            moreBtn,
+          ],
+        );
+      case 'center':
+      default:
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            drawerBtn,
+            const SizedBox(width: 16),
+            toggleBtn,
+            const SizedBox(width: 16),
+            moreBtn,
+          ],
+        );
+    }
   }
 
   Widget _buildActiveFilterBanner(BuildContext context, FileManagerProvider provider) {

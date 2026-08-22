@@ -3651,6 +3651,11 @@ class L10nFr extends L10n {
   }
 
   @override
+  String ui_pin_selected(Object count) {
+    return 'Épingler la sélection ($count)';
+  }
+
+  @override
   String get msg_file_exists => 'Le fichier existe déjà';
 
   @override
@@ -3911,6 +3916,44 @@ class L10nFr extends L10n {
 
   @override
   String get ui_sound_effects => 'Effets sonores';
+
+  @override
+  String get eq_presets => 'Préréglages de l\'égaliseur';
+
+  @override
+  String get eq_custom => 'Personnalisé';
+
+  @override
+  String get eq_system => 'Égaliseur système';
+
+  @override
+  String get eq_unavailable => 'Égaliseur non disponible sur cet appareil';
+
+  @override
+  String get eq_open_system => 'Ouvrir l\'EQ système';
+
+  @override
+  String get eq_system_hint =>
+      'Le lecteur intégré utilise libmpv pour la sortie audio. Pour appliquer les effets EQ, veuillez utiliser l\'égaliseur système.';
+
+  @override
+  String get eq_apply_hint =>
+      'Sélectionnez un preset ci-dessous, puis appuyez sur \"Ouvrir l\'EQ système\" pour l\'appliquer.';
+
+  @override
+  String get eq_preset_flat => 'Plat';
+
+  @override
+  String get eq_preset_vocal => 'Voix HD';
+
+  @override
+  String get eq_preset_bass => 'Basse';
+
+  @override
+  String get eq_preset_live => 'En direct';
+
+  @override
+  String get eq_preset_jazz => 'Jazz';
 
   @override
   String get ui_playback_queue => 'File de lecture';
@@ -5403,7 +5446,56 @@ class L10nFr extends L10n {
   String get editor_id_presets => 'Préréglages photo';
 
   @override
-  String get editor_quality => 'Quality (file size)';
+  String get editor_quality => 'Qualité (taille du fichier)';
+
+  @override
+  String get editor_mode_pixel => 'Pixel';
+
+  @override
+  String get editor_mode_physical => 'Taille physique';
+
+  @override
+  String get editor_physical_title =>
+      'Taille physique → Pixels (conversion DPI)';
+
+  @override
+  String get editor_width_mm => 'Largeur (mm)';
+
+  @override
+  String get editor_height_mm => 'Hauteur (mm)';
+
+  @override
+  String get editor_dpi => 'DPI';
+
+  @override
+  String get editor_preset_id_photo => 'Photo d\'identité 35×25mm';
+
+  @override
+  String get editor_preset_passport => 'Passeport 35×45mm';
+
+  @override
+  String get editor_preset_us_visa_mm => 'Visa US 51×51mm';
+
+  @override
+  String editor_pixel_auto(int w, int h) {
+    return '→ $w × $h px';
+  }
+
+  @override
+  String get editor_pixel_result => 'pixels (auto)';
+
+  @override
+  String get editor_width_px => 'Largeur (px)';
+
+  @override
+  String get editor_height_px => 'Hauteur (px)';
+
+  @override
+  String get editor_file_size_limit_title => 'Limite de taille (JPEG)';
+
+  @override
+  String get editor_file_size_limit_label =>
+      'Taille cible (KB), vide = illimité';
 
   @override
   String get editor_strip_metadata => 'Remove all metadata (EXIF / GPS / ICC)';

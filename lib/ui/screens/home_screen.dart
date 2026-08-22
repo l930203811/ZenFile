@@ -11,6 +11,7 @@ import '../widgets/zenfile_drawer.dart';
 import '../widgets/zenfile_end_drawer.dart';
 import '../widgets/sort_modal.dart';
 import 'directory_screen.dart';
+import '../../services/preferences_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -445,6 +446,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   Widget _buildCategoryBrowseToggle() {
     final theme = Theme.of(context);
     final isCategory = _currentIndex == 0;
+    final showToggle = PreferencesService.getShowHomeBrowseNav();
+    if (!showToggle) {
+      return const SizedBox.shrink();
+    }
     return IconButton(
       tooltip: isCategory ? L10n.of(context).ui_browse : L10n.of(context).msg6e0f9cef,
       icon: Icon(

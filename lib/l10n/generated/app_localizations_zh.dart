@@ -3439,6 +3439,11 @@ class L10nZh extends L10n {
   }
 
   @override
+  String ui_pin_selected(Object count) {
+    return '固定所选 ($count)';
+  }
+
+  @override
   String get msg_file_exists => '文件已存在';
 
   @override
@@ -3689,6 +3694,43 @@ class L10nZh extends L10n {
 
   @override
   String get ui_sound_effects => '音效';
+
+  @override
+  String get eq_presets => '均衡器预设';
+
+  @override
+  String get eq_custom => '自定义';
+
+  @override
+  String get eq_system => '系统均衡器';
+
+  @override
+  String get eq_unavailable => '此设备不支持均衡器';
+
+  @override
+  String get eq_open_system => '打开系统均衡器';
+
+  @override
+  String get eq_system_hint =>
+      '内置播放器使用 libmpv 音频输出。如需应用均衡器效果，请使用系统均衡器（影响所有音频输出）。';
+
+  @override
+  String get eq_apply_hint => '请在下方选择预设，然后点击打开系统均衡器在系统均衡器中应用。';
+
+  @override
+  String get eq_preset_flat => '原声';
+
+  @override
+  String get eq_preset_vocal => 'HD 人声';
+
+  @override
+  String get eq_preset_bass => '低音';
+
+  @override
+  String get eq_preset_live => '现场';
+
+  @override
+  String get eq_preset_jazz => '爵士';
 
   @override
   String get ui_playback_queue => '播放队列';
@@ -5110,6 +5152,53 @@ class L10nZh extends L10n {
 
   @override
   String get editor_quality => '质量（文件大小）';
+
+  @override
+  String get editor_mode_pixel => '像素';
+
+  @override
+  String get editor_mode_physical => '物理尺寸';
+
+  @override
+  String get editor_physical_title => '物理尺寸 → 像素（DPI 转换）';
+
+  @override
+  String get editor_width_mm => '宽 (mm)';
+
+  @override
+  String get editor_height_mm => '高 (mm)';
+
+  @override
+  String get editor_dpi => 'DPI';
+
+  @override
+  String get editor_preset_id_photo => '证件照 35×25mm';
+
+  @override
+  String get editor_preset_passport => '护照 35×45mm';
+
+  @override
+  String get editor_preset_us_visa_mm => '美签 51×51mm';
+
+  @override
+  String editor_pixel_auto(int w, int h) {
+    return '→ $w × $h px';
+  }
+
+  @override
+  String get editor_pixel_result => '像素（自动计算）';
+
+  @override
+  String get editor_width_px => '宽度 (px)';
+
+  @override
+  String get editor_height_px => '高度 (px)';
+
+  @override
+  String get editor_file_size_limit_title => '文件大小限制（JPEG）';
+
+  @override
+  String get editor_file_size_limit_label => '目标大小 (KB)，留空=不限';
 
   @override
   String get editor_strip_metadata => '清除全部元数据（EXIF / GPS / ICC）';
@@ -8637,6 +8726,11 @@ class L10nZhTw extends L10nZh {
   }
 
   @override
+  String ui_pin_selected(Object count) {
+    return '固定所選 ($count)';
+  }
+
+  @override
   String get msg_file_exists => '檔案已存在';
 
   @override
@@ -8886,6 +8980,43 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_sound_effects => '音效';
+
+  @override
+  String get eq_presets => '等化器預設';
+
+  @override
+  String get eq_custom => '自訂';
+
+  @override
+  String get eq_system => '系統等化器';
+
+  @override
+  String get eq_unavailable => '此裝置不支援等化器';
+
+  @override
+  String get eq_open_system => '開啟系統等化器';
+
+  @override
+  String get eq_system_hint =>
+      '內建播放器使用 libmpv 音訊輸出。如需應用等化器效果，請使用系統等化器（影響所有音訊輸出）。';
+
+  @override
+  String get eq_apply_hint => '請在下方選擇預設，然後點擊開啟系統等化器在系統等化器中套用。';
+
+  @override
+  String get eq_preset_flat => '原聲';
+
+  @override
+  String get eq_preset_vocal => 'HD 人聲';
+
+  @override
+  String get eq_preset_bass => '低音';
+
+  @override
+  String get eq_preset_live => '現場';
+
+  @override
+  String get eq_preset_jazz => '爵士';
 
   @override
   String get ui_playback_queue => '播放佇列';
@@ -10319,7 +10450,54 @@ class L10nZhTw extends L10nZh {
   String get editor_id_presets => '證件照預設';
 
   @override
-  String get editor_quality => 'Quality (file size)';
+  String get editor_quality => '品質（檔案大小）';
+
+  @override
+  String get editor_mode_pixel => '像素';
+
+  @override
+  String get editor_mode_physical => '物理尺寸';
+
+  @override
+  String get editor_physical_title => '物理尺寸 → 像素（DPI 轉換）';
+
+  @override
+  String get editor_width_mm => '寬 (mm)';
+
+  @override
+  String get editor_height_mm => '高 (mm)';
+
+  @override
+  String get editor_dpi => 'DPI';
+
+  @override
+  String get editor_preset_id_photo => '證件照 35×25mm';
+
+  @override
+  String get editor_preset_passport => '護照 35×45mm';
+
+  @override
+  String get editor_preset_us_visa_mm => '美簽 51×51mm';
+
+  @override
+  String editor_pixel_auto(int w, int h) {
+    return '→ $w × $h px';
+  }
+
+  @override
+  String get editor_pixel_result => '像素（自動計算）';
+
+  @override
+  String get editor_width_px => '寬度 (px)';
+
+  @override
+  String get editor_height_px => '高度 (px)';
+
+  @override
+  String get editor_file_size_limit_title => '檔案大小限制（JPEG）';
+
+  @override
+  String get editor_file_size_limit_label => '目標大小 (KB)，留空=不限';
 
   @override
   String get editor_strip_metadata => 'Remove all metadata (EXIF / GPS / ICC)';

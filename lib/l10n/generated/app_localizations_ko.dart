@@ -3468,6 +3468,11 @@ class L10nKo extends L10n {
   }
 
   @override
+  String ui_pin_selected(Object count) {
+    return '선택 항목 고정 ($count)';
+  }
+
+  @override
   String get msg_file_exists => '파일이 이미 존재합니다';
 
   @override
@@ -3719,6 +3724,43 @@ class L10nKo extends L10n {
 
   @override
   String get ui_sound_effects => '음향 효과';
+
+  @override
+  String get eq_presets => 'EQ 프리셋';
+
+  @override
+  String get eq_custom => '사용자 정의';
+
+  @override
+  String get eq_system => '시스템 이퀄라이저';
+
+  @override
+  String get eq_unavailable => '이 기기에서 이퀄라이저를 사용할 수 없습니다';
+
+  @override
+  String get eq_open_system => '시스템 EQ 열기';
+
+  @override
+  String get eq_system_hint =>
+      '내장 플레이어는 libmpv를 사용하여 오디오를 출력합니다. EQ 효과를 적용하려면 시스템 이퀄라이저를 사용하세요.';
+
+  @override
+  String get eq_apply_hint => '아래에서 프리셋을 선택한 다음 시스템 EQ 열기를 눌러 적용하세요.';
+
+  @override
+  String get eq_preset_flat => '플랫';
+
+  @override
+  String get eq_preset_vocal => 'HD 보컬';
+
+  @override
+  String get eq_preset_bass => '베이스';
+
+  @override
+  String get eq_preset_live => '라이브';
+
+  @override
+  String get eq_preset_jazz => '재즈';
 
   @override
   String get ui_playback_queue => '재생 대기열';
@@ -5186,7 +5228,54 @@ class L10nKo extends L10n {
   String get editor_id_presets => '증명사진 프리셋';
 
   @override
-  String get editor_quality => 'Quality (file size)';
+  String get editor_quality => '품질 (파일 크기)';
+
+  @override
+  String get editor_mode_pixel => '픽셀';
+
+  @override
+  String get editor_mode_physical => '실제 크기';
+
+  @override
+  String get editor_physical_title => '실제 크기 → 픽셀 (DPI 변환)';
+
+  @override
+  String get editor_width_mm => '너비 (mm)';
+
+  @override
+  String get editor_height_mm => '높이 (mm)';
+
+  @override
+  String get editor_dpi => 'DPI';
+
+  @override
+  String get editor_preset_id_photo => '증명사진 35×25mm';
+
+  @override
+  String get editor_preset_passport => '여권 35×45mm';
+
+  @override
+  String get editor_preset_us_visa_mm => '미국 비자 51×51mm';
+
+  @override
+  String editor_pixel_auto(int w, int h) {
+    return '→ $w × $h px';
+  }
+
+  @override
+  String get editor_pixel_result => '픽셀 (자동)';
+
+  @override
+  String get editor_width_px => '너비 (px)';
+
+  @override
+  String get editor_height_px => '높이 (px)';
+
+  @override
+  String get editor_file_size_limit_title => '파일 크기 제한 (JPEG)';
+
+  @override
+  String get editor_file_size_limit_label => '목표 크기 (KB), 비어있음=무제한';
 
   @override
   String get editor_strip_metadata => 'Remove all metadata (EXIF / GPS / ICC)';

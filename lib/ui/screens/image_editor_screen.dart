@@ -484,13 +484,25 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
       ),
     );
     try {
-      final out = await _service.edit(
-        _bytes!,
-        _params,
-        quality: _quality,
-        preview: false,
-        isPng: _isPng,
-      );
+      // 检查是否有文件大小限制
+      final sizeLimitKB = int.tryParse(_fileSizeLimitCtrl.text) ?? 0;
+      Uint8List out;
+      if (sizeLimitKB > 0 && !_isPng) {
+        // 使用智能编码：自动调整质量以满足大小限制
+        out = await _service.encodeWithSizeLimit(
+          _bytes!,
+          _params,
+          targetSizeKB: sizeLimitKB,
+        );
+      } else {
+        out = await _service.edit(
+          _bytes!,
+          _params,
+          quality: _quality,
+          preview: false,
+          isPng: _isPng,
+        );
+      }
       final dir = File(widget.imagePath).parent.path;
       final base = p.basenameWithoutExtension(widget.imagePath);
       final ext = _isPng ? 'png' : 'jpg';
@@ -966,80 +978,206 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
     );
   }
 
+  // --- DPI 模式相关状态 ---
+  final TextEditingController _widthMMCtrl = TextEditingController();
+  final TextEditingController _heightMMCtrl = TextEditingController();
+  final TextEditingController _dpiCtrl = TextEditingController(text: '200');
+  final TextEditingController _fileSizeLimitCtrl = TextEditingController();
+  bool _isPhysicalMode = false;
+
   Widget _buildResizePanel(L10n l10n) {
     if (_info == null) return const SizedBox.shrink();
     if (_widthCtrl.text.isEmpty || _heightCtrl.text.isEmpty) _initResizeFields();
     const scales = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
-    // 当前缩放比例（宽比）高亮对应药丸；未缩放（null）时高亮 100%
     final curScale = (_params.targetWidth != null && _info!.width > 0)
         ? _params.targetWidth! / _info!.width
         : 1.0;
-    return Container(
+
+    // 同步物理尺寸输入框
+    if (_isPhysicalMode) {
+      final dpi = int.tryParse(_dpiCtrl.text) ?? 200;
+      if (_widthCtrl.text.isNotEmpty) {
+        final px = int.tryParse(_widthCtrl.text) ?? 0;
+        final mm = (px / dpi * 25.4).round();
+        if (_widthMMCtrl.text.isEmpty || (_widthMMCtrl.text != mm.toString() && !_widthMMCtrl.selection.isValid)) {
+          // 仅在用户未编辑物理宽度框时同步
+        }
+      }
+    }
+
+    return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-      width: double.infinity,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionTitle(l10n.editor_exact_dimensions),
+          // 模式切换：像素 / 物理尺寸
+          Row(
+            children: [
+              Expanded(
+                child: SegmentedButton<bool>(
+                  segments: [
+                    ButtonSegment(value: false, label: Text(l10n.editor_mode_pixel)),
+                    ButtonSegment(value: true, label: Text(l10n.editor_mode_physical)),
+                  ],
+                  selected: {_isPhysicalMode},
+                  onSelectionChanged: (v) => setState(() => _isPhysicalMode = v.first),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (_isPhysicalMode) ...[
+            // 物理尺寸输入模式（DPI + cm/mm → 自动算像素）
+            _sectionTitle(l10n.editor_physical_title),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _widthMMCtrl,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(
+                      labelText: l10n.editor_width_mm,
+                      isDense: true,
+                      border: const OutlineInputBorder(),
+                    ),
+                    onChanged: _onPhysicalWidthChanged,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextField(
+                    controller: _heightMMCtrl,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(
+                      labelText: l10n.editor_height_mm,
+                      isDense: true,
+                      border: const OutlineInputBorder(),
+                    ),
+                    onChanged: _onPhysicalHeightChanged,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 80,
+                  child: TextField(
+                    controller: _dpiCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: l10n.editor_dpi,
+                      isDense: true,
+                      border: const OutlineInputBorder(),
+                    ),
+                    onChanged: (_) => _syncPhysicalToPixels(),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            // 预设模板
+            Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              children: [
+                _presetChip(l10n.editor_preset_id_photo, 35, 25, 200),
+                _presetChip(l10n.editor_preset_passport, 35, 45, 200),
+                _presetChip(l10n.editor_preset_us_visa_mm, 51, 51, 300),
+              ],
+            ),
+            const SizedBox(height: 8),
+            // 转换后的像素预览
+            if (_widthCtrl.text.isNotEmpty && _heightCtrl.text.isNotEmpty)
+              Text(
+                l10n.editor_pixel_auto(
+                  int.tryParse(_widthCtrl.text) ?? 0,
+                  int.tryParse(_heightCtrl.text) ?? 0,
+                ),
+                style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w600),
+              ),
+            const SizedBox(height: 12),
+          ],
+          // 像素尺寸输入（两种模式都显示）
+          _sectionTitle(_isPhysicalMode ? l10n.editor_pixel_result : l10n.editor_exact_dimensions),
           Row(
             children: [
               Expanded(
                 child: TextField(
                   controller: _widthCtrl,
                   keyboardType: TextInputType.number,
+                  readOnly: _isPhysicalMode,
                   decoration: InputDecoration(
-                    labelText: l10n.editor_width,
+                    labelText: l10n.editor_width_px,
                     isDense: true,
                     border: const OutlineInputBorder(),
+                    filled: _isPhysicalMode,
+                    fillColor: _isPhysicalMode
+                        ? Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3)
+                        : null,
                   ),
-                  onChanged: _onWidthChanged,
+                  onChanged: _isPhysicalMode ? null : _onWidthChanged,
                 ),
               ),
-              // 锁定宽高比：锁链图标直观点击切换，替代原 ChoiceChip
-              IconButton(
-                icon: Icon(_lockRatio ? Icons.link : Icons.link_off),
-                tooltip: l10n.editor_lock_ratio,
-                color: _lockRatio
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.onSurfaceVariant,
-                onPressed: () => setState(() => _lockRatio = !_lockRatio),
-              ),
+              if (!_isPhysicalMode)
+                IconButton(
+                  icon: Icon(_lockRatio ? Icons.link : Icons.link_off),
+                  tooltip: l10n.editor_lock_ratio,
+                  color: _lockRatio
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
+                  onPressed: () => setState(() => _lockRatio = !_lockRatio),
+                )
+              else
+                const SizedBox(width: 48),
               Expanded(
                 child: TextField(
                   controller: _heightCtrl,
                   keyboardType: TextInputType.number,
+                  readOnly: _isPhysicalMode,
                   decoration: InputDecoration(
-                    labelText: l10n.editor_height,
+                    labelText: l10n.editor_height_px,
                     isDense: true,
                     border: const OutlineInputBorder(),
+                    filled: _isPhysicalMode,
+                    fillColor: _isPhysicalMode
+                        ? Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3)
+                        : null,
                   ),
-                  onChanged: _onHeightChanged,
+                  onChanged: _isPhysicalMode ? null : _onHeightChanged,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          SizedBox(
-            height: 44,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Row(
-                children: scales
-                    .map((f) => _pill('${(f * 100).round()}%',
-                        selected: (curScale - f).abs() < 0.01,
-                        onTap: () => _applyScale(f)))
-                    .toList(),
+          if (!_isPhysicalMode) ...[
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 44,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Row(
+                  children: scales
+                      .map((f) => _pill('${(f * 100).round()}%',
+                          selected: (curScale - f).abs() < 0.01,
+                          onTap: () => _applyScale(f)))
+                      .toList(),
+                ),
               ),
             ),
+          ],
+          const SizedBox(height: 8),
+          // 文件大小限制
+          _sectionTitle(l10n.editor_file_size_limit_title),
+          TextField(
+            controller: _fileSizeLimitCtrl,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: l10n.editor_file_size_limit_label,
+              isDense: true,
+              border: const OutlineInputBorder(),
+              suffixText: 'KB',
+            ),
+            onChanged: (_) => _schedulePreview(),
           ),
-          const SizedBox(height: 4),
-          _buildMenuButton<_IdPreset>(
-            label: l10n.editor_id_presets,
-            values: _idPresets,
-            labelBuilder: (p) => '${_idPresetLabel(p.key, l10n)} ${p.w}×${p.h}',
-            onSelected: (p) => _applySize(p.w, p.h),
-          ),
+          const SizedBox(height: 8),
           _slider(l10n.editor_quality, _quality.toDouble(), 1, 100,
               Icons.high_quality_outlined, (v) {
             setState(() => _quality = v.round());
@@ -1048,6 +1186,36 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
         ],
       ),
     );
+  }
+
+  Widget _presetChip(String label, int mmW, int mmH, int dpi) {
+    return ActionChip(
+      label: Text(label, style: const TextStyle(fontSize: 11)),
+      onPressed: () {
+        _dpiCtrl.text = dpi.toString();
+        _widthMMCtrl.text = mmW.toString();
+        _heightMMCtrl.text = mmH.toString();
+        _syncPhysicalToPixels();
+      },
+    );
+  }
+
+  void _onPhysicalWidthChanged(String v) => _syncPhysicalToPixels();
+  void _onPhysicalHeightChanged(String v) => _syncPhysicalToPixels();
+
+  void _syncPhysicalToPixels() {
+    if (!_isPhysicalMode || _info == null) return;
+    final dpi = int.tryParse(_dpiCtrl.text) ?? 200;
+    final mmW = double.tryParse(_widthMMCtrl.text) ?? 0;
+    final mmH = double.tryParse(_heightMMCtrl.text) ?? 0;
+    if (mmW <= 0 || mmH <= 0) return;
+    final pxW = ((mmW / 25.4) * dpi).round();
+    final pxH = ((mmH / 25.4) * dpi).round();
+    _widthCtrl.text = pxW.toString();
+    _heightCtrl.text = pxH.toString();
+    _pushUndo();
+    _params = _params.copyWith(targetWidth: pxW, targetHeight: pxH);
+    _schedulePreview();
   }
 
   Widget _buildRotatePanel(L10n l10n) {

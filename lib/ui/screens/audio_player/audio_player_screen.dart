@@ -18,6 +18,7 @@ import '../../../services/lyric_parser.dart';
 import '../../../services/lyric_search_service.dart';
 import '../../../services/remote_streaming_service.dart';
 import '../../../services/network_connections_service.dart';
+import '../../../services/audio_equalizer_service.dart';
 import '../../../providers/file_manager_provider.dart';
 import '../internal_file_picker_screen.dart';
 import 'audio_artwork_widget.dart';
@@ -171,6 +172,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     _fadeController.forward();
 
     // MUST enable pitch in PlayerConfiguration for runtime pitch control
+    // 优先复用已有播放器：widget.existingPlayer > handler 后台播放中的 player
     if (widget.existingPlayer != null) {
       // 复用后台播放中已有的播放器，保持当前播放状态不断开
       player = widget.existingPlayer!;
@@ -187,6 +189,21 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         getAudioHandler().setSkipCallback(_onBackgroundSkip);
         _updateBackgroundItem();
       }
+    } else if (_isBackgroundMode && getAudioHandler().hasActivePlayer) {
+      // 后台播放中从通知栏返回：复用 handler 的 player，避免新建导致 UI 与播放状态脱节
+      player = getAudioHandler().currentPlayer!;
+      _shuffleQueue = List.generate(_allSongs.length, (i) => i);
+      _initListeners();
+      setState(() {
+        isPlaying = player.state.playing;
+        position = player.state.position;
+        duration = player.state.duration;
+      });
+      _hasSeekedToSavedPosition = true;
+      _loadLyrics();
+      // 重新建立 skip 回调（dispose 时清除了），确保通知栏切歌仍能同步 UI
+      getAudioHandler().setSkipCallback(_onBackgroundSkip);
+      _updateBackgroundItem();
     } else {
       player = Player(
         configuration: const PlayerConfiguration(
@@ -350,6 +367,8 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     player.setRate(_playbackSpeed);
     player.setPitch(_pitch);
     _resetFade();
+    // 音频打开成功后初始化均衡器
+    _initEqualizer();
   }
 
   /// 停止当前远程流式播放会话
@@ -544,12 +563,16 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       // 桌面歌词也应保持显示，不随页面关闭而消失
       // DesktopLyricController 继续运行，独立于 widget 生命周期更新歌词
       getAudioHandler().setSkipCallback(null);
+      // 释放均衡器资源
+      _disposeEqualizer();
     } else {
       // 非后台模式：停止控制器并隐藏悬浮窗
       DesktopLyricController.instance.stop();
       DesktopLyricService.instance.hide();
       player.dispose();
       getAudioHandler().detach();
+      // 释放均衡器资源
+      _disposeEqualizer();
     }
     super.dispose();
   }
@@ -1163,6 +1186,17 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state != AppLifecycleState.resumed) return;
 
+    // 从通知栏点击返回前台：同步 UI 与后台播放器的状态
+    // （通知栏切歌/暂停后，handler 的 player 状态可能与 UI 显示不一致）
+    if (_isBackgroundMode && player != null) {
+      setState(() {
+        isPlaying = player.state.playing;
+        position = player.state.position;
+        duration = player.state.duration;
+      });
+      _updateBackgroundItem();
+    }
+
     // 后台播放：用户从系统设置返回，复检通知权限；若已授予则自动开启
     if (_backgroundPlayPendingPermission) {
       _backgroundPlayPendingPermission = false;
@@ -1718,92 +1752,173 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
     );
   }
 
+  // ─── 均衡器状态（mpv 内置 equalizer 滤波器）──────────────────────────
+  final AudioEqualizerService _eqService = AudioEqualizerService();
+  bool _eqReady = false;
+  EqPreset _eqPreset = EqPreset.flat;
+
+  /// 初始化均衡器（在播放器打开音频后调用）。
+  /// 使用 mpv 内置 equalizer 音频滤波器，直接在 libmpv 管线内处理，全设备通用。
+  Future<void> _initEqualizer() async {
+    if (_eqReady) return;
+    try {
+      final platform = player.platform;
+      if (platform is NativePlayer) {
+        await _eqService.attach(platform);
+        _eqReady = true;
+        // 恢复上次使用的预设
+        final savedKey = PreferencesService.getAudioEqPreset();
+        if (savedKey.isNotEmpty) {
+          _eqPreset = EqPresetExtension.fromKey(savedKey);
+          await _eqService.applyPreset(_eqPreset);
+        }
+      }
+    } catch (e) {
+      debugPrint('[EQ] 初始化失败: $e');
+    }
+  }
+
+  /// 释放均衡器资源。
+  void _disposeEqualizer() {
+    _eqService.detach();
+    _eqReady = false;
+  }
+
   void _showEqualizerDialog() {
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) {
-          return AlertDialog(
-            backgroundColor: const Color(0xFF1E1E2E),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-            title: Row(
-              children: [
-                const Icon(Icons.tune_rounded, color: Colors.deepPurpleAccent),
-                const SizedBox(width: 10),
-                Text(L10n.of(context).ui_sound_effects_speed, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(L10n.of(context).msgc16eed0e, style: TextStyle(color: Colors.white70, fontSize: 15)),
-                    Text('${_playbackSpeed.toStringAsFixed(2)}x', style: const TextStyle(color: Colors.deepPurpleAccent, fontWeight: FontWeight.bold, fontSize: 15)),
-                  ],
-                ),
-                Slider(
-                  value: _playbackSpeed,
-                  min: 0.5,
-                  max: 2.0,
-                  divisions: 15,
-                  activeColor: Colors.deepPurpleAccent,
-                  onChanged: (v) {
-                    setModalState(() => _playbackSpeed = v);
-                    setState(() {});
-                    player.setRate(v);
-                  },
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(L10n.of(context).ui_pitch_adjustment, style: TextStyle(color: Colors.white70, fontSize: 15)),
-                    Text('${_pitch.toStringAsFixed(2)}x', style: const TextStyle(color: Colors.deepPurpleAccent, fontWeight: FontWeight.bold, fontSize: 15)),
-                  ],
-                ),
-                Slider(
-                  value: _pitch,
-                  min: 0.5,
-                  max: 1.5,
-                  divisions: 10,
-                  activeColor: Colors.deepPurpleAccent,
-                  onChanged: (v) {
-                    setModalState(() => _pitch = v);
-                    setState(() {});
-                    player.setPitch(v);
-                  },
-                ),
-                const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  icon: const Icon(Icons.restart_alt_rounded, color: Colors.white70, size: 18),
-                  label: Text(L10n.of(context).ui_restore_default, style: const TextStyle(color: Colors.white70)),
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: Colors.white.withOpacity(0.2)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  ),
-                  onPressed: () {
-                    setModalState(() {
-                      _playbackSpeed = 1.0;
-                      _pitch = 1.0;
-                    });
-                    setState(() {});
-                    player.setRate(1.0);
-                    player.setPitch(1.0);
-                  },
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(L10n.of(context).ui_done, style: const TextStyle(color: Colors.deepPurpleAccent, fontWeight: FontWeight.bold, fontSize: 16)),
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setModalState) {
+          return DefaultTextStyle(
+            style: const TextStyle(color: Colors.white),
+            child: AlertDialog(
+              backgroundColor: const Color(0xFF1E1E2E),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              title: Row(
+                children: [
+                  const Icon(Icons.equalizer_rounded, color: Colors.deepPurpleAccent),
+                  const SizedBox(width: 10),
+                  Text(L10n.of(context).msgb7c87215, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                ],
               ),
-            ],
+              content: SizedBox(
+                width: double.maxFinite,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ── 均衡器预设（实时生效） ──
+                      Text(L10n.of(dialogContext).eq_presets, style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
+                        children: [
+                          for (final preset in EqPreset.values)
+                            _eqPresetChip(preset, setModalState),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      // ── 播放速度 ──
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(L10n.of(dialogContext).msgc16eed0e, style: const TextStyle(color: Colors.white70, fontSize: 15)),
+                          Text('${_playbackSpeed.toStringAsFixed(2)}x', style: const TextStyle(color: Colors.deepPurpleAccent, fontWeight: FontWeight.bold, fontSize: 15)),
+                        ],
+                      ),
+                      Slider(
+                        value: _playbackSpeed,
+                        min: 0.5,
+                        max: 2.0,
+                        divisions: 15,
+                        activeColor: Colors.deepPurpleAccent,
+                        onChanged: (v) {
+                          setModalState(() => _playbackSpeed = v);
+                          setState(() {});
+                          player.setRate(v);
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                      // ── 音调 ──
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(L10n.of(dialogContext).ui_pitch_adjustment, style: const TextStyle(color: Colors.white70, fontSize: 15)),
+                          Text('${_pitch.toStringAsFixed(2)}x', style: const TextStyle(color: Colors.deepPurpleAccent, fontWeight: FontWeight.bold, fontSize: 15)),
+                        ],
+                      ),
+                      Slider(
+                        value: _pitch,
+                        min: 0.5,
+                        max: 1.5,
+                        divisions: 10,
+                        activeColor: Colors.deepPurpleAccent,
+                        onChanged: (v) {
+                          setModalState(() => _pitch = v);
+                          setState(() {});
+                          player.setPitch(v);
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      // ── 重置 ──
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          icon: const Icon(Icons.restart_alt_rounded, color: Colors.white70, size: 18),
+                          label: Text(L10n.of(dialogContext).ui_restore_default, style: const TextStyle(color: Colors.white70)),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
+                          onPressed: () {
+                            setModalState(() {
+                              _playbackSpeed = 1.0;
+                              _pitch = 1.0;
+                              _eqPreset = EqPreset.flat;
+                            });
+                            setState(() {});
+                            player.setRate(1.0);
+                            player.setPitch(1.0);
+                            _eqService.reset();
+                            PreferencesService.saveAudioEqPreset('flat');
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: Text(L10n.of(dialogContext).ui_done, style: const TextStyle(color: Colors.deepPurpleAccent, fontWeight: FontWeight.bold, fontSize: 16)),
+                ),
+              ],
+            ),
           );
         },
       ),
+    );
+  }
+
+  /// 均衡器预设芯片组件。
+  Widget _eqPresetChip(EqPreset preset, StateSetter setModalState) {
+    final isSelected = _eqPreset == preset;
+    return ChoiceChip(
+      label: Text(preset.labelL10n(L10n.of(context)), style: TextStyle(fontSize: 12, color: isSelected ? Colors.white : Colors.white70)),
+      selected: isSelected,
+      selectedColor: Colors.deepPurpleAccent,
+      backgroundColor: const Color(0xFF2A2A3E),
+                            onSelected: (selected) {
+                              if (!selected) return;
+                              setModalState(() => _eqPreset = preset);
+                              setState(() {});
+                              // mpv 内置均衡器实时应用
+                              _eqService.applyPreset(preset);
+                              PreferencesService.saveAudioEqPreset(preset.key);
+                            },
     );
   }
 

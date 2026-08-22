@@ -56,6 +56,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   Duration _duration = Duration.zero;
   double _sliderValue = 0;
   bool _isFullScreen = false;
+  // 用户是否通过全屏按钮手动锁定全屏。手动锁定后会强制横屏（不被系统旋转退出）；
+  // 系统自动横屏进入的全屏不锁定，手机转回竖屏即退出全屏 UI。
+  bool _userLockedFullScreen = false;
+  // 最近一次系统方向，供手动全屏/退出全屏决策使用。
+  Orientation _currentOrientation = Orientation.portrait;
   bool _isLocked = false;
   double _playbackSpeed = 1.0;
   bool _isBuffering = false;
@@ -81,6 +86,12 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   double _dragStartX = 0;
   Duration _dragStartPosition = Duration.zero;
   int _dragSeekDelta = 0;
+
+  // Frame preview during drag
+  bool _isPreviewDragging = false;
+  Uint8List? _previewImage;
+  Timer? _previewDebounceTimer;
+  Duration _previewTarget = Duration.zero;
 
   // Double-tap seek accumulation & animation
   bool _showSeekLeft = false;
@@ -157,11 +168,13 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     );
     _controlsAnimController.value = 1.0;
 
+    // 软解模式使用更大的缓冲区，减少高码率视频卡顿
+    const bufferSize = 32 * 1024 * 1024;
     player = Player(
       configuration: const PlayerConfiguration(
         ready: null,
         logLevel: MPVLogLevel.warn,
-        bufferSize: 32 * 1024 * 1024,
+        bufferSize: bufferSize,
       ),
     );
     controller = VideoController(
@@ -184,11 +197,15 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         if (platform is NativePlayer) {
           await platform.setProperty('network-timeout', '60');
           await platform.setProperty('cache-secs', '10');
-          // 强制覆盖 ASS 字幕样式，确保 sub-font-size/sub-pos 等属性生效
-          await platform.setProperty('sub-ass-override', 'force');
+          // 注意：不在初始化时设置 sub-ass-override，否则会破坏 VOBSub 位图字幕渲染
+          // sub-ass-override 仅在加载 ASS/SSA 字幕时应用（见 _applySubtitle）
           await platform.setProperty('sub-font-size', _subtitleFontSize.round().toString());
           await platform.setProperty('sub-pos', _subtitlePosition.round().toString());
           await _applySubtitleBackgroundProps(platform);
+          // 软解模式启用性能优化
+          if (!_useHardwareDecode) {
+            await _applySoftwareDecodeOptimizations(platform);
+          }
         }
       } catch (e) {
         debugPrint('设置 network-timeout 失败: $e');
@@ -198,6 +215,49 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     }();
     player.setVolume(_volume * 100.0);
     _startHideTimer();
+
+    // 同步初始系统方向 -> 全屏状态。
+    // 若用户从横屏状态打开视频（或系统已处于自动横屏），应立即进入全屏播放器 UI，
+    // 避免出现"竖屏 UI 被旋转到横屏"的错位观感。
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final orientation = MediaQuery.of(context).orientation;
+      _syncFullScreenWithOrientation(orientation);
+    });
+  }
+
+  /// 系统方向变化时自动同步全屏状态。
+  /// 规则：
+  /// - 系统进入横屏 -> 自动进入全屏（沉浸 + 控件按横屏布局），让"自动旋转"等价于"全屏播放"。
+  /// - 系统回到竖屏 -> 退出全屏 UI（除非用户是手动全屏锁定，此时保持）。
+  /// 注意：系统驱动的全屏不锁定方向（保持允许横竖屏），因此手机转回竖屏即可退出全屏；
+  /// 只有用户手动点全屏才会锁定横屏。
+  void _syncFullScreenWithOrientation(Orientation orientation) {
+    // 用户手动锁定全屏时，忽略系统方向变化（保持锁定）。
+    if (_userLockedFullScreen) return;
+
+    final target = orientation == Orientation.landscape;
+    if (target == _isFullScreen) return;
+
+    _isFullScreen = target;
+    // 仅切换系统 UI 沉浸状态，不锁定方向（方向仍由系统自动旋转控制）。
+    if (target) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    } else {
+      final hideNav = PreferencesService.getHideNavigationBar();
+      if (hideNav) {
+        SystemChrome.setEnabledSystemUIMode(
+          SystemUiMode.manual,
+          overlays: [SystemUiOverlay.top],
+        );
+      } else {
+        SystemChrome.setEnabledSystemUIMode(
+          SystemUiMode.manual,
+          overlays: SystemUiOverlay.values,
+        );
+      }
+    }
+    if (mounted) setState(() {});
   }
 
   void _startPlayback() async {
@@ -309,14 +369,22 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
 
   void _applySubtitle(String subtitlePath) {
     try {
-      final platform = player.platform;
-      if (platform is NativePlayer) {
-        // 重新声明覆盖（仅对仍走 mpv 渲染的兜底路径有意义）
-        platform.setProperty('sub-ass-override', 'force');
-      }
       // 解析外挂字幕，改用 Flutter overlay 渲染，确保字号/位置滑块 100% 生效
       final ext = p.extension(subtitlePath).toLowerCase();
       final isAss = ext == '.ass' || ext == '.ssa';
+      final isVobSub = ext == '.sub' || ext == '.idx';
+      // 仅对 ASS/SSA 字幕设置样式覆盖；VOBSub 等位图字幕必须保持 sub-ass-override=no
+      final platform = player.platform;
+      if (isAss) {
+        if (platform is NativePlayer) {
+          platform.setProperty('sub-ass-override', 'force');
+        }
+      } else if (isVobSub) {
+        // VOBSub 位图字幕：必须设为 no 才能正确渲染
+        if (platform is NativePlayer) {
+          platform.setProperty('sub-ass-override', 'no');
+        }
+      }
       List<SubtitleCue>? cues;
       try {
         final content = File(subtitlePath).readAsStringSync();
@@ -869,7 +937,40 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       _currentSubtitleTrack = track;
       _subtitleEnabled = track.id != 'no';
     });
+    // 关键修复：在切换字幕轨之前先设置 sub-ass-override，避免 mpv 用错误的覆盖模式渲染
+    // ASS/SSA 字幕需要 force 覆盖以应用样式；VOBSub 等位图字幕必须保持 no，否则不渲染
+    final platform = player.platform;
+    if (platform is NativePlayer) {
+      try {
+        if (track.id != 'no' && !_isLikelyAssSubtitle(track)) {
+          // VOBSub 等位图字幕：必须先设为 no，再切换字幕轨
+          await platform.setProperty('sub-ass-override', 'no');
+        }
+      } catch (_) {}
+    }
     await player.setSubtitleTrack(track);
+    // 切换字幕轨后，再次确认 sub-ass-override 设置（确保 ASS/SSA 字幕启用 force）
+    if (track.id != 'no' && _isLikelyAssSubtitle(track)) {
+      if (platform is NativePlayer) {
+        try {
+          await platform.setProperty('sub-ass-override', 'force');
+        } catch (_) {}
+      }
+    }
+  }
+
+  /// 判断字幕轨是否为 ASS/SSA 格式（基于标题/语言/文件扩展名启发式判断）。
+  bool _isLikelyAssSubtitle(SubtitleTrack track) {
+    final title = (track.title ?? '').toLowerCase();
+    final language = (track.language ?? '').toLowerCase();
+    // VOBSub 常见标识：vobsub, dvd, bitmap, idx, sub
+    for (final keyword in ['vobsub', 'dvd', 'bitmap']) {
+      if (title.contains(keyword) || language.contains(keyword)) return false;
+    }
+    for (final keyword in ['ass', 'ssa', 'advanced', 'substation']) {
+      if (title.contains(keyword) || language.contains(keyword)) return true;
+    }
+    return false;
   }
 
   /// 显示音轨选择底部弹窗。
@@ -1034,16 +1135,19 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       } catch (_) {}
     });
 
-    // 复用初始化的网络超时/字幕属性
+    // 复用初始化的网络超时/字幕属性（不设置 sub-ass-override，避免破坏 VOBSub 渲染）
     try {
       final platform = player.platform;
       if (platform is NativePlayer) {
         await platform.setProperty('network-timeout', '60');
         await platform.setProperty('cache-secs', '10');
-        await platform.setProperty('sub-ass-override', 'force');
         await platform.setProperty('sub-font-size', _subtitleFontSize.round().toString());
         await platform.setProperty('sub-pos', _subtitlePosition.round().toString());
         await _applySubtitleBackgroundProps(platform);
+        // 切换到软解时启用性能优化
+        if (!useHardware) {
+          await _applySoftwareDecodeOptimizations(platform);
+        }
       }
     } catch (e) {
       debugPrint('切换解码方式后设置属性失败: $e');
@@ -1088,6 +1192,28 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       if (!mounted) return;
       _saveCurrentPlaybackPosition();
     });
+  }
+
+  /// 软解模式性能优化：调整 mpv 属性减少 CPU 解码压力，降低卡顿。
+  /// 仅在 hwdec=no 时调用，硬解模式下不需要（GPU 已高效处理）。
+  Future<void> _applySoftwareDecodeOptimizations(NativePlayer platform) async {
+    try {
+      // 多线程解码：0=自动根据 CPU 核心数分配线程
+      await platform.setProperty('vd-lavc-threads', '0');
+      // 跳过环路滤波：牺牲少量画质换取显著性能提升（软解卡顿的主要优化手段）
+      await platform.setProperty('vd-lavc-skiploopfilter', 'all');
+      // 允许丢帧保持音画同步：解码跟不上时优先保音频连续
+      await platform.setProperty('frame-drop', 'decoder');
+      // 增大解复用缓冲区，减少高码率视频卡顿
+      await platform.setProperty('demuxer-max-bytes', '150M');
+      await platform.setProperty('demuxer-readahead-secs', '20');
+      // 增大播放缓存时长，减少网络视频卡顿
+      await platform.setProperty('cache-secs', '30');
+      // 快速解码模式：启用 libavcodec 内部优化
+      await platform.setProperty('vd-lavc-fast', '1');
+    } catch (e) {
+      debugPrint('软解性能优化设置失败: $e');
+    }
   }
 
   void _saveCurrentPlaybackPosition() {
@@ -1390,6 +1516,14 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _dragStartPosition = _position;
     _dragSeekDelta = 0;
     _hideTimer?.cancel();
+    // Pause & show frame preview container
+    player.pause();
+    setState(() {
+      _isPreviewDragging = true;
+      _previewImage = null;
+      _previewTarget = _position;
+    });
+    _schedulePreviewCapture();
   }
 
   void _onHorizontalDragUpdate(DragUpdateDetails details) {
@@ -1399,12 +1533,17 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     if (screenWidth <= 0 || totalSeconds <= 0) return;
     final deltaX = details.globalPosition.dx - _dragStartX;
     final seekSec = (deltaX / screenWidth * totalSeconds / 2).round();
+    final targetPos = _dragStartPosition + Duration(seconds: seekSec);
+    final clampedMs = targetPos.inMilliseconds.clamp(Duration.zero.inMilliseconds, _duration.inMilliseconds);
+    final clampedTarget = Duration(milliseconds: clampedMs);
     setState(() {
       _dragSeekDelta = seekSec;
       _seekSeconds = seekSec.abs();
       _showSeekRight = seekSec > 0;
       _showSeekLeft = seekSec < 0;
+      _previewTarget = clampedTarget;
     });
+    _schedulePreviewCapture();
   }
 
   void _onHorizontalDragEnd(DragEndDetails details) {
@@ -1412,7 +1551,13 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _isHorizontalDragging = false;
     final newPos = _dragStartPosition + Duration(seconds: _dragSeekDelta);
     final clampedMs = newPos.inMilliseconds.clamp(Duration.zero.inMilliseconds, _duration.inMilliseconds);
-    player.seek(Duration(milliseconds: clampedMs));
+    final target = Duration(milliseconds: clampedMs);
+    player.seek(target);
+    _previewDebounceTimer?.cancel();
+    setState(() {
+      _isPreviewDragging = false;
+      _previewImage = null;
+    });
     _seekIndicatorTimer?.cancel();
     _seekIndicatorTimer = Timer(const Duration(milliseconds: 400), () {
       if (mounted) {
@@ -1424,6 +1569,23 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       }
     });
     _startHideTimer();
+  }
+
+  /// Debounced frame capture: seeks to [_previewTarget] and takes a screenshot,
+  /// throttled so frequent drag updates don't hammer the player.
+  void _schedulePreviewCapture() {
+    if (!mounted || !_isPreviewDragging) return;
+    _previewDebounceTimer?.cancel();
+    _previewDebounceTimer = Timer(const Duration(milliseconds: 400), () async {
+      if (!mounted || !_isPreviewDragging) return;
+      try {
+        await player.seek(_previewTarget);
+        final bytes = await player.screenshot();
+        if (mounted && _isPreviewDragging) {
+          setState(() => _previewImage = bytes);
+        }
+      } catch (_) {}
+    });
   }
 
   void _onVerticalDragUpdate(DragUpdateDetails details, bool isLeft) {
@@ -1467,23 +1629,45 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   }
 
   void _toggleFullScreen() {
-    setState(() => _isFullScreen = !_isFullScreen);
-    if (_isFullScreen) {
+    // 手动全屏按钮：切换目标全屏状态，并强制/恢复相应方向。
+    // 与系统自动旋转解耦——用户明确意图优先（手动锁定/解锁横屏）。
+    final newFullScreen = !_isFullScreen;
+    _userLockedFullScreen = newFullScreen;
+    setState(() => _isFullScreen = newFullScreen);
+    if (newFullScreen) {
+      // 进入全屏：锁定横屏 + 沉浸（无论当前是竖屏还是横屏，都确保横屏全屏）。
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.landscapeRight,
         DeviceOrientation.landscapeLeft,
       ]);
     } else {
+      // 退出全屏：
+      // - 若当前处于横屏（多为系统自动进入全屏后再手动退出），强制转回竖屏，
+      //   避免出现"横屏但非全屏"的旋转画面观感；
+      // - 恢复允许横竖屏（交还系统自动旋转），按偏好显示系统栏。
+      final forcePortrait = _currentOrientation == Orientation.landscape;
       final hideNav = PreferencesService.getHideNavigationBar();
       if (hideNav) {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
+        SystemChrome.setEnabledSystemUIMode(
+          SystemUiMode.manual,
+          overlays: [SystemUiOverlay.top],
+        );
       } else {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
+        SystemChrome.setEnabledSystemUIMode(
+          SystemUiMode.manual,
+          overlays: SystemUiOverlay.values,
+        );
       }
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-      ]);
+      SystemChrome.setPreferredOrientations(
+        forcePortrait
+            ? [DeviceOrientation.portraitUp]
+            : [
+                DeviceOrientation.landscapeRight,
+                DeviceOrientation.landscapeLeft,
+                DeviceOrientation.portraitUp,
+              ],
+      );
     }
     _showControls();
   }
@@ -1495,6 +1679,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _tracksSub?.cancel();
     _trackSub?.cancel();
     _seekIndicatorTimer?.cancel();
+    _previewDebounceTimer?.cancel();
     _sliderTimer?.cancel();
     _cacheCheckTimer?.cancel();
     _aspectToastTimer?.cancel();
@@ -1532,6 +1717,74 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     }
     final name = currentPath.split('/').last.split('\\').last;
     return name.length > 40 ? '${name.substring(0, 37)}...' : name;
+  }
+
+  /// 格式化时长为 HH:MM:SS / MM:SS
+  String _formatDuration(Duration d) {
+    if (d < Duration.zero) d = Duration.zero;
+    final h = d.inHours;
+    final m = d.inMinutes.remainder(60);
+    final s = d.inSeconds.remainder(60);
+    if (h > 0) {
+      return '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+    }
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+  }
+
+  /// 水平拖拽时的帧预览画面：显示截取帧缩略图 + 时间戳
+  Widget _buildFramePreview() {
+    final timeStr = _formatDuration(_previewTarget);
+    return Container(
+      width: 200,
+      height: 120,
+      decoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: const [
+          BoxShadow(color: Colors.black54, blurRadius: 12, spreadRadius: 2),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          Expanded(
+            child: _previewImage != null
+                ? Image.memory(
+                    _previewImage!,
+                    fit: BoxFit.contain,
+                    gaplessPlayback: true,
+                  )
+                : Container(
+                    color: Colors.black87,
+                    child: const Center(
+                      child: SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ),
+                  ),
+          ),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            color: Colors.black87,
+            child: Text(
+              timeStr,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   /// 根据当前伸缩比例模式构建视频画面
@@ -1659,6 +1912,15 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
 
   @override
   Widget build(BuildContext context) {
+    // 系统方向变化 -> 自动同步全屏状态（系统驱动，不强制方向，由系统自动旋转决定）。
+    // 用 addPostFrameCallback 避免在 build 期间直接 setState 触发断言。
+    final orientation = MediaQuery.of(context).orientation;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _currentOrientation = orientation;
+        _syncFullScreenWithOrientation(orientation);
+      }
+    });
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -1816,6 +2078,16 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                 child: VideoSeekIndicator(
                   forward: true,
                   seconds: _seekSeconds,
+                ),
+              ),
+            ),
+
+          // Frame Preview overlay during horizontal drag
+          if (_isPreviewDragging)
+            Positioned.fill(
+              child: Center(
+                child: IgnorePointer(
+                  child: _buildFramePreview(),
                 ),
               ),
             ),

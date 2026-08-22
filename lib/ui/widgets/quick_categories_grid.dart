@@ -28,11 +28,22 @@ class QuickCategoriesGrid extends StatefulWidget {
   final Function(int) onNavigateTab;
   final bool showTitle;
 
-  const QuickCategoriesGrid({super.key, required this.onNavigateTab, this.showTitle = true});
+  const QuickCategoriesGrid({
+    super.key,
+    required this.onNavigateTab,
+    this.showTitle = true,
+  });
 
-  static Map<String, Map<String, dynamic>> getAllCategoriesMap(BuildContext context, bool isDark, Function(int) onNavigateTab) {
+  static Map<String, Map<String, dynamic>> getAllCategoriesMap(
+    BuildContext context,
+    bool isDark,
+    Function(int) onNavigateTab,
+  ) {
     final mediaProvider = Provider.of<MediaProvider>(context, listen: false);
-    final fileManager = Provider.of<FileManagerProvider>(context, listen: false);
+    final fileManager = Provider.of<FileManagerProvider>(
+      context,
+      listen: false,
+    );
     final l10n = L10n.of(context);
 
     // 辅助：对有扫描数据的分类组合「大小 (数量)」文本，两者均为 0 时返回 0。
@@ -49,13 +60,14 @@ class QuickCategoriesGrid extends StatefulWidget {
     try {
       if (fileManager.storageVolumes.isNotEmpty) {
         final v = fileManager.storageVolumes.firstWhere(
-              (vol) => vol.isInternal,
+          (vol) => vol.isInternal,
           orElse: () => fileManager.storageVolumes.first,
         );
         final total = v.totalBytes;
         final used = v.usedBytes;
         if (total > 0) {
-          storageCountText = '${FileUtils.formatBytes(used, 1)} / ${FileUtils.formatBytes(total, 1)}';
+          storageCountText =
+              '${FileUtils.formatBytes(used, 1)} / ${FileUtils.formatBytes(total, 1)}';
         }
       }
     } catch (_) {}
@@ -65,7 +77,12 @@ class QuickCategoriesGrid extends StatefulWidget {
     final isDark = theme.brightness == Brightness.dark;
     final categoryColor = theme.colorScheme.primary; // 背景色（统一）
     // 图标颜色：统一饱和度和亮度，色相各异，保证视觉和谐
-    Color iconColor(double hue) => HSLColor.fromAHSL(1.0, hue, isDark ? 0.6 : 0.5, isDark ? 0.6 : 0.55).toColor();
+    Color iconColor(double hue) => HSLColor.fromAHSL(
+      1.0,
+      hue,
+      isDark ? 0.6 : 0.5,
+      isDark ? 0.6 : 0.55,
+    ).toColor();
 
     final map = <String, Map<String, dynamic>>{
       '系统': {
@@ -94,7 +111,11 @@ class QuickCategoriesGrid extends StatefulWidget {
                   (v) => v.isInternal,
                   orElse: () => fileManager.storageVolumes.first,
                 )
-              : StorageVolume(name: 'Internal Storage', path: '/storage/emulated/0', isInternal: true);
+              : StorageVolume(
+                  name: 'Internal Storage',
+                  path: '/storage/emulated/0',
+                  isInternal: true,
+                );
           fileManager.loadDirectory(internalVolume.path);
           onNavigateTab(1);
         },
@@ -106,7 +127,10 @@ class QuickCategoriesGrid extends StatefulWidget {
         'iconColor': iconColor(270), // 紫
         'count': formatSizeCount('图片'),
         'isCustom': false,
-        'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.images, onNavigateTab: onNavigateTab),
+        'pageBuilder': () => MediaCategoryScreen(
+          mediaType: MediaType.images,
+          onNavigateTab: onNavigateTab,
+        ),
       },
       '视频': {
         'label': l10n.cat_videos,
@@ -115,7 +139,10 @@ class QuickCategoriesGrid extends StatefulWidget {
         'iconColor': iconColor(330), // 玫红
         'count': formatSizeCount('视频'),
         'isCustom': false,
-        'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.videos, onNavigateTab: onNavigateTab),
+        'pageBuilder': () => MediaCategoryScreen(
+          mediaType: MediaType.videos,
+          onNavigateTab: onNavigateTab,
+        ),
       },
       '音频': {
         'label': l10n.cat_audios,
@@ -124,7 +151,10 @@ class QuickCategoriesGrid extends StatefulWidget {
         'iconColor': iconColor(30), // 橙
         'count': formatSizeCount('音频'),
         'isCustom': false,
-        'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.audios, onNavigateTab: onNavigateTab),
+        'pageBuilder': () => MediaCategoryScreen(
+          mediaType: MediaType.audios,
+          onNavigateTab: onNavigateTab,
+        ),
       },
       '文档': {
         'label': l10n.cat_documents,
@@ -133,7 +163,10 @@ class QuickCategoriesGrid extends StatefulWidget {
         'iconColor': iconColor(200), // 青蓝
         'count': formatSizeCount('文档'),
         'isCustom': false,
-        'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.documents, onNavigateTab: onNavigateTab),
+        'pageBuilder': () => MediaCategoryScreen(
+          mediaType: MediaType.documents,
+          onNavigateTab: onNavigateTab,
+        ),
       },
       '压缩包': {
         'label': l10n.msgc806d0fa,
@@ -142,7 +175,10 @@ class QuickCategoriesGrid extends StatefulWidget {
         'iconColor': iconColor(170), // 青绿
         'count': formatSizeCount('压缩包'),
         'isCustom': false,
-        'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.archives, onNavigateTab: onNavigateTab),
+        'pageBuilder': () => MediaCategoryScreen(
+          mediaType: MediaType.archives,
+          onNavigateTab: onNavigateTab,
+        ),
       },
       '下载': {
         'label': l10n.cat_downloads,
@@ -151,7 +187,10 @@ class QuickCategoriesGrid extends StatefulWidget {
         'iconColor': iconColor(120), // 绿
         'count': formatSizeCount('下载'),
         'isCustom': false,
-        'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.downloads, onNavigateTab: onNavigateTab),
+        'pageBuilder': () => MediaCategoryScreen(
+          mediaType: MediaType.downloads,
+          onNavigateTab: onNavigateTab,
+        ),
       },
       '安装包': {
         'label': l10n.msg03070d08,
@@ -160,7 +199,10 @@ class QuickCategoriesGrid extends StatefulWidget {
         'iconColor': iconColor(45), // 琥珀
         'count': formatSizeCount('安装包'),
         'isCustom': false,
-        'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.apks, onNavigateTab: onNavigateTab),
+        'pageBuilder': () => MediaCategoryScreen(
+          mediaType: MediaType.apks,
+          onNavigateTab: onNavigateTab,
+        ),
       },
       '截图': {
         'label': l10n.cat_screenshots,
@@ -169,7 +211,10 @@ class QuickCategoriesGrid extends StatefulWidget {
         'iconColor': iconColor(300), // 品红
         'count': formatSizeCount('截图'),
         'isCustom': false,
-        'pageBuilder': () => MediaCategoryScreen(mediaType: MediaType.screenshots, onNavigateTab: onNavigateTab),
+        'pageBuilder': () => MediaCategoryScreen(
+          mediaType: MediaType.screenshots,
+          onNavigateTab: onNavigateTab,
+        ),
       },
       '最近': {
         'label': l10n.cat_recent,
@@ -187,7 +232,8 @@ class QuickCategoriesGrid extends StatefulWidget {
         'iconColor': iconColor(190), // 青
         'count': '${mediaProvider.getCategoryItemCount("网络")}',
         'isCustom': false,
-        'pageBuilder': () => NetworkCategoryScreen(onNavigateTab: onNavigateTab),
+        'pageBuilder': () =>
+            NetworkCategoryScreen(onNavigateTab: onNavigateTab),
       },
       'FTP共享': {
         'label': l10n.ftp,
@@ -220,7 +266,9 @@ class QuickCategoriesGrid extends StatefulWidget {
         'label': l10n.cat_settings,
         'icon': Broken.setting_2,
         'color': categoryColor,
-        'iconColor': isDark ? Colors.blueGrey.shade300 : Colors.blueGrey, // 蓝灰（中性）
+        'iconColor': isDark
+            ? Colors.blueGrey.shade300
+            : Colors.blueGrey, // 蓝灰（中性）
         'count': l10n.cat_config,
         'isCustom': false,
         'pageBuilder': () => const MoreSettingsScreen(),
@@ -256,7 +304,9 @@ class QuickCategoriesGrid extends StatefulWidget {
         'label': l10n.ui_recycle_bin,
         'icon': Broken.trash,
         'color': categoryColor,
-        'iconColor': isDark ? Colors.blueGrey.shade300 : Colors.blueGrey, // 蓝灰（中性）
+        'iconColor': isDark
+            ? Colors.blueGrey.shade300
+            : Colors.blueGrey, // 蓝灰（中性）
         'count': '${RecycleBinService.getTrashItems().length}',
         'isCustom': false,
         'pageBuilder': () => const RecycleBinScreen(),
@@ -269,7 +319,9 @@ class QuickCategoriesGrid extends StatefulWidget {
         'icon': cs.isDirectory ? Broken.folder : Broken.document,
         'color': categoryColor,
         'iconColor': iconColor(150), // 薄荷绿
-        'count': cs.isDirectory ? L10n.of(context).msg1f4c1042 : L10n.of(context).ui_file,
+        'count': cs.isDirectory
+            ? L10n.of(context).msg1f4c1042
+            : L10n.of(context).ui_file,
         'isCustom': true,
         'path': cs.path,
         'action': () {
@@ -290,7 +342,10 @@ class QuickCategoriesGrid extends StatefulWidget {
       final cat = entry.value;
       if (cat['action'] == null && cat['pageBuilder'] != null) {
         final pageBuilder = cat['pageBuilder'] as Widget Function();
-        cat['action'] = () => Navigator.push(context, MaterialPageRoute(builder: (_) => pageBuilder()));
+        cat['action'] = () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => pageBuilder()),
+        );
       }
     }
 
@@ -305,18 +360,26 @@ class QuickCategoriesGrid extends StatefulWidget {
     return map;
   }
 
-  static void showCustomizeDialog(BuildContext context, [Function(int)? onNavigateTab, String? expandLabelKey]) {
+  static void showCustomizeDialog(
+    BuildContext context, [
+    Function(int)? onNavigateTab,
+    String? expandLabelKey,
+  ]) {
     final theme = Theme.of(context);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: theme.scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (context) {
         return _CustomizeCategoriesSheet(
-          onNavigateTab: onNavigateTab ?? (index) {
-            Navigator.popUntil(context, (route) => route.isFirst);
-          },
+          onNavigateTab:
+              onNavigateTab ??
+              (index) {
+                Navigator.popUntil(context, (route) => route.isFirst);
+              },
           initialExpandLabelKey: expandLabelKey,
         );
       },
@@ -352,9 +415,16 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
   ];
 
   // 获取活跃分类的标签列表（用于拖拽排序更新）
-  List<String> _getActiveCategoryLabels(MediaProvider mediaProvider, Map<String, Map<String, dynamic>> allCategoriesMap) {
+  List<String> _getActiveCategoryLabels(
+    MediaProvider mediaProvider,
+    Map<String, Map<String, dynamic>> allCategoriesMap,
+  ) {
     return mediaProvider.categoryOrder
-        .where((label) => mediaProvider.activeCategories.contains(label) && allCategoriesMap.containsKey(label))
+        .where(
+          (label) =>
+              mediaProvider.activeCategories.contains(label) &&
+              allCategoriesMap.containsKey(label),
+        )
         .toList();
   }
 
@@ -394,7 +464,12 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
   }
 
   /// 开始拖拽排序
-  void _startDrag(int index, Offset localPosition, Widget dragWidget, Color color) {
+  void _startDrag(
+    int index,
+    Offset localPosition,
+    Widget dragWidget,
+    Color color,
+  ) {
     _isDragging = true;
     _draggingIndex = index;
     _targetIndex = index;
@@ -426,7 +501,8 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     _dragOffset = globalPosition;
     _overlayEntry?.markNeedsBuild();
 
-    final gridRenderBox = _gridKey.currentContext?.findRenderObject() as RenderBox?;
+    final gridRenderBox =
+        _gridKey.currentContext?.findRenderObject() as RenderBox?;
     if (gridRenderBox == null) return;
 
     final localPosition = gridRenderBox.globalToLocal(globalPosition);
@@ -446,7 +522,11 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
 
     final activeLabels = _getActiveCategoryLabels(
       context.read<MediaProvider>(),
-      QuickCategoriesGrid.getAllCategoriesMap(context, Theme.of(context).brightness == Brightness.dark, widget.onNavigateTab),
+      QuickCategoriesGrid.getAllCategoriesMap(
+        context,
+        Theme.of(context).brightness == Brightness.dark,
+        widget.onNavigateTab,
+      ),
     );
 
     if (newIndex >= 0 && newIndex != _targetIndex) {
@@ -456,18 +536,29 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
   }
 
   /// 结束拖拽排序
-  void _endDrag(MediaProvider mediaProvider, Map<String, Map<String, dynamic>> allCategoriesMap) {
+  void _endDrag(
+    MediaProvider mediaProvider,
+    Map<String, Map<String, dynamic>> allCategoriesMap,
+  ) {
     _overlayEntry?.remove();
     _overlayEntry = null;
 
-    if (_isDragging && _draggingIndex != _targetIndex && _draggingIndex >= 0 && _targetIndex >= 0) {
-      final activeLabels = _getActiveCategoryLabels(mediaProvider, allCategoriesMap);
+    if (_isDragging &&
+        _draggingIndex != _targetIndex &&
+        _draggingIndex >= 0 &&
+        _targetIndex >= 0) {
+      final activeLabels = _getActiveCategoryLabels(
+        mediaProvider,
+        allCategoriesMap,
+      );
 
       // 计算在完整 categoryOrder 中的位置
       final draggingLabel = activeLabels[_draggingIndex];
       final targetLabel = activeLabels[_targetIndex];
 
-      final fullDraggingIndex = mediaProvider.categoryOrder.indexOf(draggingLabel);
+      final fullDraggingIndex = mediaProvider.categoryOrder.indexOf(
+        draggingLabel,
+      );
       final fullTargetIndex = mediaProvider.categoryOrder.indexOf(targetLabel);
 
       if (fullDraggingIndex >= 0 && fullTargetIndex >= 0) {
@@ -484,6 +575,9 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
 
   /// 长按类别图标弹出上下文菜单（类似 Android 桌面图标长按效果）
   /// 使用 Listener 而非 GestureDetector，避免拖拽手势被截断
+  // 注意：此方法 100% 复刻 v1.1.32 历史版本（用户确认长按可显示菜单）。
+  // 后续的"靠左对齐"优化（iconKey 定位/menuTop 翻转等）曾引发菜单消失/背景透明
+  // 等一系列回归问题，已全部回退，勿再改动此结构。
   void _showCategoryContextMenu({
     required Offset position,
     required String labelKey,
@@ -501,7 +595,8 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     const menuMinWidth = 180.0;
     const edgeMargin = 16.0;
     // 菜单左边缘与图标左边缘对齐（图标宽64，中心 ~32）
-    final double menuLeft = (position.dx - 32).clamp(edgeMargin, screenWidth - menuMinWidth - edgeMargin);
+    final double menuLeft =
+        (position.dx - 32).clamp(edgeMargin, screenWidth - menuMinWidth - edgeMargin);
 
     _menuOverlayEntry = OverlayEntry(
       builder: (overlayCtx) {
@@ -598,7 +693,11 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
   void _handleMenuAction(String action, String labelKey) {
     switch (action) {
       case 'scan_paths':
-        QuickCategoriesGrid.showCustomizeDialog(context, widget.onNavigateTab, labelKey);
+        QuickCategoriesGrid.showCustomizeDialog(
+          context,
+          widget.onNavigateTab,
+          labelKey,
+        );
       case 'rename':
         _showRenameDialogForGrid(labelKey);
       case 'toggle':
@@ -616,14 +715,21 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     if (cat == null) return;
     final currentLabel = cat['label'] as String;
     final theme = Theme.of(context);
-    final TextEditingController controller = TextEditingController(text: currentLabel);
+    final TextEditingController controller = TextEditingController(
+      text: currentLabel,
+    );
 
     await showDialog<void>(
       context: context,
       builder: (ctx) {
         return AlertDialog(
           backgroundColor: theme.scaffoldBackgroundColor,
-          title: Text(L10n.of(context).msgc8ce4b36, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+          title: Text(
+            L10n.of(context).msgc8ce4b36,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           content: TextField(
             controller: controller,
             autofocus: true,
@@ -631,7 +737,9 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
               hintText: L10n.of(context).msgf139c5cf,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: theme.colorScheme.onSurface.withOpacity(0.1)),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.onSurface.withOpacity(0.1),
+                ),
               ),
             ),
           ),
@@ -644,11 +752,20 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
               onPressed: () {
                 final newLabel = controller.text.trim();
                 if (newLabel.isNotEmpty) {
-                  context.read<MediaProvider>().renameCategory(labelKey, newLabel);
+                  context.read<MediaProvider>().renameCategory(
+                    labelKey,
+                    newLabel,
+                  );
                 }
                 Navigator.of(ctx).pop();
               },
-              child: Text(L10n.of(context).ui_done, style: TextStyle(fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
+              child: Text(
+                L10n.of(context).ui_done,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
             ),
           ],
         );
@@ -663,8 +780,15 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     final mediaProvider = context.watch<MediaProvider>();
     final fileManagerProvider = context.watch<FileManagerProvider>();
 
-    final allCategoriesMap = QuickCategoriesGrid.getAllCategoriesMap(context, isDark, widget.onNavigateTab);
-    final activeLabels = _getActiveCategoryLabels(mediaProvider, allCategoriesMap);
+    final allCategoriesMap = QuickCategoriesGrid.getAllCategoriesMap(
+      context,
+      isDark,
+      widget.onNavigateTab,
+    );
+    final activeLabels = _getActiveCategoryLabels(
+      mediaProvider,
+      allCategoriesMap,
+    );
 
     final activeList = activeLabels
         .map((label) => allCategoriesMap[label]!)
@@ -683,21 +807,37 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
               children: [
                 Text(
                   L10n.of(context).cat_quick_categories,
-                  style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
                 ),
                 InkWell(
-                  onTap: () => QuickCategoriesGrid.showCustomizeDialog(context, widget.onNavigateTab),
+                  onTap: () => QuickCategoriesGrid.showCustomizeDialog(
+                    context,
+                    widget.onNavigateTab,
+                  ),
                   borderRadius: BorderRadius.circular(16),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0,
+                      vertical: 4.0,
+                    ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Broken.edit_2, size: 16, color: theme.colorScheme.primary),
+                        Icon(
+                          Broken.edit_2,
+                          size: 16,
+                          color: theme.colorScheme.primary,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           L10n.of(context).msgf1d4ff50,
-                          style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.primary, fontWeight: FontWeight.w600),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ],
                     ),
@@ -714,14 +854,20 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                 padding: const EdgeInsets.symmetric(vertical: 24.0),
                 child: Text(
                   L10n.of(context).msg490ac572,
-                  style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  ),
                 ),
               ),
             )
           else
             Listener(
-              onPointerMove: _isDragging ? (event) => _updateDrag(event.position) : null,
-              onPointerUp: _isDragging ? (event) => _endDrag(mediaProvider, allCategoriesMap) : null,
+              onPointerMove: _isDragging
+                  ? (event) => _updateDrag(event.position)
+                  : null,
+              onPointerUp: _isDragging
+                  ? (event) => _endDrag(mediaProvider, allCategoriesMap)
+                  : null,
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
                 child: GridView.builder(
@@ -743,14 +889,21 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                     final color = cat['color'] as Color;
                     final iconColor = (cat['iconColor'] ?? color) as Color;
                     final count = cat['count'] as String;
-                    final pageBuilder = cat['pageBuilder'] as Widget Function()?;
+                    final pageBuilder =
+                        cat['pageBuilder'] as Widget Function()?;
                     final action = cat['action'] as VoidCallback?;
                     final shape = fileManagerProvider.categoryIconShape;
                     final isSquare = shape == 'square';
+                    final showLabels =
+                        PreferencesService.getShowCategoryLabels();
                     final iconKey = GlobalKey();
 
-                    final isBeingDragged = _isDragging && _draggingIndex == index;
-                    final isTarget = _isDragging && _targetIndex == index && _draggingIndex != index;
+                    final isBeingDragged =
+                        _isDragging && _draggingIndex == index;
+                    final isTarget =
+                        _isDragging &&
+                        _targetIndex == index &&
+                        _draggingIndex != index;
 
                     // 与面包屑一致的可靠方案：长按类别图标开始交互（长按菜单或拖动排序）时，
                     // 置位 categoryReorderInteracting，使 home 的左右滑动切页检测在本次手势期间被抑制，
@@ -775,22 +928,30 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                         if (_menuOverlayEntry == null) return;
                         final origin = _longPressOrigin;
                         if (origin == null) return;
-                        final distance = (details.globalPosition - origin).distance;
+                        final distance =
+                            (details.globalPosition - origin).distance;
                         if (distance > 10.0) {
                           _closeMenuOverlay();
                           _startDrag(
                             _getCategoryIndex(labelKey),
                             details.globalPosition,
-                            Icon(_getCategoryIcon(labelKey), color: color, size: 28),
+                            Icon(
+                              _getCategoryIcon(labelKey),
+                              color: color,
+                              size: 28,
+                            ),
                             color,
                           );
                         }
                       },
                       onLongPressEnd: (_) {
                         if (_isDragging) {
-                          final allCatMap = QuickCategoriesGrid.getAllCategoriesMap(
-                            context, Theme.of(context).brightness == Brightness.dark, widget.onNavigateTab,
-                          );
+                          final allCatMap =
+                              QuickCategoriesGrid.getAllCategoriesMap(
+                                context,
+                                Theme.of(context).brightness == Brightness.dark,
+                                widget.onNavigateTab,
+                              );
                           _endDrag(context.read<MediaProvider>(), allCatMap);
                         }
                         fm.setCategoryReorderInteracting(false);
@@ -804,8 +965,14 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                           children: [
                             Material(
                               key: iconKey,
-                              color: isTarget ? color.withOpacity(0.3) : color.withOpacity(0.15),
-                              shape: isSquare ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)) : const CircleBorder(),
+                              color: isTarget
+                                  ? color.withOpacity(0.3)
+                                  : color.withOpacity(0.15),
+                              shape: isSquare
+                                  ? RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    )
+                                  : const CircleBorder(),
                               child: InkWell(
                                 onTap: () {
                                   if (!_isDragging) {
@@ -820,7 +987,11 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                                     }
                                   }
                                 },
-                                customBorder: isSquare ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)) : const CircleBorder(),
+                                customBorder: isSquare
+                                    ? RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      )
+                                    : const CircleBorder(),
                                 splashColor: color.withOpacity(0.25),
                                 highlightColor: color.withOpacity(0.15),
                                 child: Container(
@@ -831,17 +1002,19 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              label,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 14,
+                            if (showLabels) ...[
+                              const SizedBox(height: 8),
+                              Text(
+                                label,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 14,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 2),
+                              const SizedBox(height: 2),
+                            ],
                             SizedBox(
                               width: double.infinity,
                               child: FittedBox(
@@ -850,7 +1023,8 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
                                 child: Text(
                                   count,
                                   style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+                                    color: theme.textTheme.bodySmall?.color
+                                        ?.withOpacity(0.7),
                                     fontSize: 11,
                                     fontWeight: FontWeight.w500,
                                     letterSpacing: -0.2,
@@ -878,6 +1052,9 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
 /// 类别长按弹出菜单的 Overlay 组件，支持菜单点击和拖拽排序的连续手势。
 /// 使用 Listener（原始指针事件）而非 GestureDetector，确保拖拽时指针事件不会
 /// 因 overlay 移除而中断。
+// 注意：此组件 100% 复刻 v1.1.32 历史版本（用户确认长按可显示菜单、有背景）。
+// 后续优化（_pointerDownReceived 防护/stretch 对齐/显式背景色等）曾引发菜单消失/
+// 背景透明等回归，已全部回退，勿再改动此结构。
 class _CategoryMenuOverlayWidget extends StatefulWidget {
   final double menuLeft;
   final double menuTop;
@@ -1033,19 +1210,19 @@ class _RadialExpandRoute extends PageRouteBuilder<void> {
     required this.color,
     required this.child,
   }) : super(
-    transitionDuration: const Duration(milliseconds: 400),
-    reverseTransitionDuration: const Duration(milliseconds: 350),
-    pageBuilder: (context, animation, secondaryAnimation) => child,
-    transitionsBuilder: (context, animation, secondaryAnimation, page) {
-      return _RadialTransition(
-        center: center,
-        maxRadius: maxRadius,
-        color: color,
-        animation: animation,
-        child: page,
-      );
-    },
-  );
+         transitionDuration: const Duration(milliseconds: 400),
+         reverseTransitionDuration: const Duration(milliseconds: 350),
+         pageBuilder: (context, animation, secondaryAnimation) => child,
+         transitionsBuilder: (context, animation, secondaryAnimation, page) {
+           return _RadialTransition(
+             center: center,
+             maxRadius: maxRadius,
+             color: color,
+             animation: animation,
+             child: page,
+           );
+         },
+       );
 }
 
 class _RadialTransition extends StatelessWidget {
@@ -1099,8 +1276,7 @@ class _CircleClipper extends CustomClipper<Path> {
 
   @override
   Path getClip(Size size) {
-    return Path()
-      ..addOval(Rect.fromCircle(center: center, radius: radius));
+    return Path()..addOval(Rect.fromCircle(center: center, radius: radius));
   }
 
   @override
@@ -1119,7 +1295,8 @@ class _CustomizeCategoriesSheet extends StatefulWidget {
   });
 
   @override
-  State<_CustomizeCategoriesSheet> createState() => _CustomizeCategoriesSheetState();
+  State<_CustomizeCategoriesSheet> createState() =>
+      _CustomizeCategoriesSheetState();
 }
 
 class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
@@ -1130,7 +1307,10 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
     return _itemKeys.putIfAbsent(label, () => GlobalKey());
   }
 
-  void _scrollToTargetItem(ScrollController scrollController, List<String> order) {
+  void _scrollToTargetItem(
+    ScrollController scrollController,
+    List<String> order,
+  ) {
     if (_hasScrolledToTarget) return;
     final targetLabel = widget.initialExpandLabelKey;
     if (targetLabel == null) return;
@@ -1189,9 +1369,13 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
               expand: false,
               builder: (context, scrollController) {
                 // 在首次渲染完成后触发滚动
-                if (!_hasScrolledToTarget && widget.initialExpandLabelKey != null) {
+                if (!_hasScrolledToTarget &&
+                    widget.initialExpandLabelKey != null) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _scrollToTargetItem(scrollController, provider.categoryOrder);
+                    _scrollToTargetItem(
+                      scrollController,
+                      provider.categoryOrder,
+                    );
                   });
                 }
 
@@ -1201,34 +1385,74 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                     final gridColumns = fileManager.categoriesGridColumns;
                     final activeCats = provider.activeCategories;
                     final order = provider.categoryOrder;
-                    final categoriesMap = QuickCategoriesGrid.getAllCategoriesMap(context, isDark, widget.onNavigateTab);
+                    final categoriesMap =
+                        QuickCategoriesGrid.getAllCategoriesMap(
+                          context,
+                          isDark,
+                          widget.onNavigateTab,
+                        );
 
                     return Column(
                       children: [
                         const SizedBox(height: 12),
-                        Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.withOpacity(0.3), borderRadius: BorderRadius.circular(2))),
+                        Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
                         const SizedBox(height: 16),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20.0),
                           child: Center(
-                            child: Text(L10n.of(context).msge7d18d73, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                            child: Text(
+                              L10n.of(context).msge7d18d73,
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20.0,
+                            vertical: 8.0,
+                          ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(L10n.of(context).msg2c3c5a35, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, fontSize: 16)),
+                                  Text(
+                                    L10n.of(context).msg2c3c5a35,
+                                    style: theme.textTheme.titleLarge?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
                                   const SizedBox(height: 10),
                                   Row(
                                     children: [
-                                      _buildShapeOption(context, theme, iconShape, 'circle', L10n.of(context).ui_circle, setModalState),
+                                      _buildShapeOption(
+                                        context,
+                                        theme,
+                                        iconShape,
+                                        'circle',
+                                        L10n.of(context).ui_circle,
+                                        setModalState,
+                                      ),
                                       const SizedBox(width: 8),
-                                      _buildShapeOption(context, theme, iconShape, 'square', L10n.of(context).ui_square, setModalState),
+                                      _buildShapeOption(
+                                        context,
+                                        theme,
+                                        iconShape,
+                                        'square',
+                                        L10n.of(context).ui_square,
+                                        setModalState,
+                                      ),
                                     ],
                                   ),
                                 ],
@@ -1236,13 +1460,33 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(L10n.of(context).ui_columns_per_row, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, fontSize: 16)),
+                                  Text(
+                                    L10n.of(context).ui_columns_per_row,
+                                    style: theme.textTheme.titleLarge?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
                                   const SizedBox(height: 10),
                                   Row(
                                     children: [
-                                      _buildColumnsOption(context, theme, gridColumns, 3, L10n.of(context).ui_3columns, setModalState),
+                                      _buildColumnsOption(
+                                        context,
+                                        theme,
+                                        gridColumns,
+                                        3,
+                                        L10n.of(context).ui_3columns,
+                                        setModalState,
+                                      ),
                                       const SizedBox(width: 8),
-                                      _buildColumnsOption(context, theme, gridColumns, 4, L10n.of(context).ui_4columns, setModalState),
+                                      _buildColumnsOption(
+                                        context,
+                                        theme,
+                                        gridColumns,
+                                        4,
+                                        L10n.of(context).ui_4columns,
+                                        setModalState,
+                                      ),
                                     ],
                                   ),
                                 ],
@@ -1251,12 +1495,20 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20.0,
+                            vertical: 4.0,
+                          ),
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
                               L10n.of(context).msg445a43cb,
-                              style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6), fontSize: 13),
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurface.withOpacity(
+                                  0.6,
+                                ),
+                                fontSize: 13,
+                              ),
                             ),
                           ),
                         ),
@@ -1265,15 +1517,27 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                           padding: const EdgeInsets.symmetric(horizontal: 20.0),
                           child: OutlinedButton.icon(
                             icon: const Icon(Broken.add, size: 20),
-                            label: Text(L10n.of(context).msg944d5ecd, style: TextStyle(fontWeight: FontWeight.bold)),
+                            label: Text(
+                              L10n.of(context).msg944d5ecd,
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                             style: OutlinedButton.styleFrom(
                               minimumSize: const Size.fromHeight(46),
                               foregroundColor: theme.colorScheme.primary,
-                              side: BorderSide(color: theme.colorScheme.primary.withOpacity(0.5)),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              side: BorderSide(
+                                color: theme.colorScheme.primary.withOpacity(
+                                  0.5,
+                                ),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
                             ),
                             onPressed: () async {
-                              final paths = await InternalFilePickerScreen.show(context, rootPath: fileManager.rootPath);
+                              final paths = await InternalFilePickerScreen.show(
+                                context,
+                                rootPath: fileManager.rootPath,
+                              );
                               if (paths != null && paths.isNotEmpty) {
                                 for (final p in paths) {
                                   provider.addCustomShortcut(p);
@@ -1288,13 +1552,20 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                           child: ReorderableListView.builder(
                             scrollController: scrollController,
                             physics: const BouncingScrollPhysics(),
-                            padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 16),
-                            onReorder: (oldIndex, newIndex) => provider.reorderCategory(oldIndex, newIndex),
+                            padding: EdgeInsets.only(
+                              bottom:
+                                  MediaQuery.of(context).padding.bottom + 16,
+                            ),
+                            onReorder: (oldIndex, newIndex) =>
+                                provider.reorderCategory(oldIndex, newIndex),
                             itemCount: order.length,
                             itemBuilder: (context, index) {
                               final label = order[index];
                               final cat = categoriesMap[label];
-                              if (cat == null) return const SizedBox.shrink(key: ValueKey('empty'));
+                              if (cat == null)
+                                return const SizedBox.shrink(
+                                  key: ValueKey('empty'),
+                                );
 
                               final isEnabled = activeCats.contains(label);
 
@@ -1307,7 +1578,8 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                                   isEnabled: isEnabled,
                                   provider: provider,
                                   index: index,
-                                  initiallyExpanded: label == widget.initialExpandLabelKey,
+                                  initiallyExpanded:
+                                      label == widget.initialExpandLabelKey,
                                 ),
                               );
                             },
@@ -1325,7 +1597,14 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
     );
   }
 
-  Widget _buildShapeOption(BuildContext context, ThemeData theme, String currentShape, String shapeKey, String label, void Function(void Function()) setModalState) {
+  Widget _buildShapeOption(
+    BuildContext context,
+    ThemeData theme,
+    String currentShape,
+    String shapeKey,
+    String label,
+    void Function(void Function()) setModalState,
+  ) {
     final isSelected = currentShape == shapeKey;
     return InkWell(
       onTap: () {
@@ -1336,16 +1615,38 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
         decoration: BoxDecoration(
-          color: isSelected ? theme.colorScheme.primary : theme.colorScheme.surfaceVariant.withOpacity(0.3),
+          color: isSelected
+              ? theme.colorScheme.primary
+              : theme.colorScheme.surfaceVariant.withOpacity(0.3),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.1)),
+          border: Border.all(
+            color: isSelected
+                ? theme.colorScheme.primary
+                : theme.colorScheme.onSurface.withOpacity(0.1),
+          ),
         ),
-        child: Text(label, style: TextStyle(fontSize: 12, fontWeight: isSelected ? FontWeight.bold : FontWeight.w500, color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface.withOpacity(0.7))),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            color: isSelected
+                ? theme.colorScheme.onPrimary
+                : theme.colorScheme.onSurface.withOpacity(0.7),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildColumnsOption(BuildContext context, ThemeData theme, int currentColumns, int columns, String label, void Function(void Function()) setModalState) {
+  Widget _buildColumnsOption(
+    BuildContext context,
+    ThemeData theme,
+    int currentColumns,
+    int columns,
+    String label,
+    void Function(void Function()) setModalState,
+  ) {
     final isSelected = currentColumns == columns;
     return InkWell(
       onTap: () {
@@ -1356,11 +1657,26 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
         decoration: BoxDecoration(
-          color: isSelected ? theme.colorScheme.primary : theme.colorScheme.surfaceVariant.withOpacity(0.3),
+          color: isSelected
+              ? theme.colorScheme.primary
+              : theme.colorScheme.surfaceVariant.withOpacity(0.3),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.1)),
+          border: Border.all(
+            color: isSelected
+                ? theme.colorScheme.primary
+                : theme.colorScheme.onSurface.withOpacity(0.1),
+          ),
         ),
-        child: Text(label, style: TextStyle(fontSize: 12, fontWeight: isSelected ? FontWeight.bold : FontWeight.w500, color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface.withOpacity(0.7))),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            color: isSelected
+                ? theme.colorScheme.onPrimary
+                : theme.colorScheme.onSurface.withOpacity(0.7),
+          ),
+        ),
       ),
     );
   }
@@ -1406,14 +1722,21 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
   Future<void> _showRenameDialog(BuildContext context) async {
     final theme = Theme.of(context);
     final currentLabel = widget.cat['label'] as String;
-    final TextEditingController controller = TextEditingController(text: currentLabel);
+    final TextEditingController controller = TextEditingController(
+      text: currentLabel,
+    );
 
     await showDialog<void>(
       context: context,
       builder: (context) {
         return AlertDialog(
           backgroundColor: theme.scaffoldBackgroundColor,
-          title: Text(L10n.of(context).msgc8ce4b36, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+          title: Text(
+            L10n.of(context).msgc8ce4b36,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           content: TextField(
             controller: controller,
             autofocus: true,
@@ -1421,7 +1744,9 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
               hintText: L10n.of(context).msgf139c5cf,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: theme.colorScheme.onSurface.withOpacity(0.1)),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.onSurface.withOpacity(0.1),
+                ),
               ),
             ),
             onSubmitted: (_) {
@@ -1441,7 +1766,13 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
                 }
                 Navigator.of(context).pop();
               },
-              child: Text(L10n.of(context).ui_done, style: TextStyle(fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
+              child: Text(
+                L10n.of(context).ui_done,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
             ),
           ],
         );
@@ -1449,13 +1780,20 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
     );
   }
 
-
   List<String> _getDefaultPaths(String category) {
     switch (category) {
       case '图片':
-        return [L10n.of(context).msge86bd662, '/storage/emulated/0/DCIM', '/storage/emulated/0/Pictures'];
+        return [
+          L10n.of(context).msge86bd662,
+          '/storage/emulated/0/DCIM',
+          '/storage/emulated/0/Pictures',
+        ];
       case '视频':
-        return [L10n.of(context).msge86bd662, '/storage/emulated/0/DCIM', '/storage/emulated/0/Movies'];
+        return [
+          L10n.of(context).msge86bd662,
+          '/storage/emulated/0/DCIM',
+          '/storage/emulated/0/Movies',
+        ];
       case '音频':
         return [L10n.of(context).msg16166a01, '/storage/emulated/0/Music'];
       case '文档':
@@ -1463,11 +1801,18 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
       case '压缩包':
         return ['/storage/emulated/0/Download', L10n.of(context).msgbb34b7ec];
       case '下载':
-        return ['/storage/emulated/0/Download', '/storage/emulated/0/Downloads'];
+        return [
+          '/storage/emulated/0/Download',
+          '/storage/emulated/0/Downloads',
+        ];
       case '安装包':
         return ['/storage/emulated/0/Download', L10n.of(context).msgbb34b7ec];
       case '截图':
-        return [L10n.of(context).msg26a1f2d9, '/storage/emulated/0/DCIM/Screenshots', '/storage/emulated/0/Pictures/Screenshots'];
+        return [
+          L10n.of(context).msg26a1f2d9,
+          '/storage/emulated/0/DCIM/Screenshots',
+          '/storage/emulated/0/Pictures/Screenshots',
+        ];
       default:
         return [];
     }
@@ -1518,12 +1863,20 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
           title: Row(
             children: [
               Expanded(
-                child: Text(widget.cat['label'] as String, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                child: Text(
+                  widget.cat['label'] as String,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
+                ),
               ),
               if (isStandardCategory) ...[
                 IconButton(
                   icon: Icon(
-                    _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                    _isExpanded
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
                     size: 20,
                     color: theme.colorScheme.primary,
                   ),
@@ -1539,16 +1892,37 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
             ],
           ),
           subtitle: isCustom
-              ? Text(widget.cat['path'] as String, style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.5)), maxLines: 1, overflow: TextOverflow.ellipsis)
+              ? Text(
+                  widget.cat['path'] as String,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                )
               : (isStandardCategory && customPaths.isNotEmpty
-                  ? Text(L10n.of(context).ui_added_custom_paths(customPaths.length), style: TextStyle(fontSize: 11, color: theme.colorScheme.primary, fontWeight: FontWeight.w500))
-                  : null),
+                    ? Text(
+                        L10n.of(
+                          context,
+                        ).ui_added_custom_paths(customPaths.length),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      )
+                    : null),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (isCustom) ...[
                 IconButton(
-                  icon: const Icon(Broken.trash, color: Colors.redAccent, size: 20),
+                  icon: const Icon(
+                    Broken.trash,
+                    color: Colors.redAccent,
+                    size: 20,
+                  ),
                   tooltip: L10n.of(context).msg94733bec,
                   onPressed: () => widget.provider.removeCustomShortcut(label),
                 ),
@@ -1571,7 +1945,11 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
         ),
         if (isStandardCategory && _isExpanded) ...[
           Padding(
-            padding: const EdgeInsets.only(left: 72.0, right: 16.0, bottom: 8.0),
+            padding: const EdgeInsets.only(
+              left: 72.0,
+              right: 16.0,
+              bottom: 8.0,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1586,10 +1964,17 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
                 ),
                 const SizedBox(height: 4),
                 ..._getDefaultPaths(label).map((path) {
-                  final isExcluded = widget.provider.excludedDefaultPaths[label]?.contains(path) == true;
+                  final isExcluded =
+                      widget.provider.excludedDefaultPaths[label]?.contains(
+                        path,
+                      ) ==
+                      true;
                   return Container(
                     margin: const EdgeInsets.symmetric(vertical: 4),
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: isExcluded
                           ? theme.colorScheme.error.withOpacity(0.03)
@@ -1618,8 +2003,12 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
                               fontSize: 12,
                               color: isExcluded
                                   ? theme.colorScheme.onSurface.withOpacity(0.4)
-                                  : theme.colorScheme.onSurface.withOpacity(0.85),
-                              decoration: isExcluded ? TextDecoration.lineThrough : null,
+                                  : theme.colorScheme.onSurface.withOpacity(
+                                      0.85,
+                                    ),
+                              decoration: isExcluded
+                                  ? TextDecoration.lineThrough
+                                  : null,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -1627,10 +2016,17 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
                         ),
                         if (isExcluded)
                           IconButton(
-                            icon: const Icon(Icons.add_circle_outline, color: Colors.green, size: 18),
+                            icon: const Icon(
+                              Icons.add_circle_outline,
+                              color: Colors.green,
+                              size: 18,
+                            ),
                             tooltip: L10n.of(context).msg5c29ad2f,
                             onPressed: () {
-                              widget.provider.includeDefaultCategoryPath(label, path);
+                              widget.provider.includeDefaultCategoryPath(
+                                label,
+                                path,
+                              );
                             },
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
@@ -1638,10 +2034,17 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
                           )
                         else
                           IconButton(
-                            icon: const Icon(Broken.trash, color: Colors.redAccent, size: 18),
+                            icon: const Icon(
+                              Broken.trash,
+                              color: Colors.redAccent,
+                              size: 18,
+                            ),
                             tooltip: L10n.of(context).ui_exclude_location,
                             onPressed: () {
-                              widget.provider.excludeDefaultCategoryPath(label, path);
+                              widget.provider.excludeDefaultCategoryPath(
+                                label,
+                                path,
+                              );
                             },
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
@@ -1667,60 +2070,86 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
                     padding: const EdgeInsets.symmetric(vertical: 4.0),
                     child: Text(
                       L10n.of(context).msg4bb81f99,
-                      style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.4), fontSize: 12, fontStyle: FontStyle.italic),
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface.withOpacity(0.4),
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                      ),
                     ),
                   )
                 else
                   ...customPaths.map((path) {
-                        final isRemote = path.startsWith('remote://');
-                        String displayPath;
-                        IconData pathIcon;
-                        if (isRemote) {
-                          final uriPart = path.substring('remote://'.length);
-                          final separatorIndex = uriPart.indexOf('|');
-                          final connId = separatorIndex > 0 ? uriPart.substring(0, separatorIndex) : '';
-                          final remotePath = separatorIndex > 0 ? uriPart.substring(separatorIndex + 1) : '/';
-                          final conn = NetworkConnectionsService.getConnections()
-                              .where((c) => c.id == connId)
-                              .firstOrNull;
-                          displayPath = '${conn?.name ?? connId}:$remotePath';
-                          pathIcon = Broken.wifi;
-                        } else {
-                          displayPath = path;
-                          pathIcon = Broken.folder;
-                        }
-                        return Container(
-                        margin: const EdgeInsets.symmetric(vertical: 4),
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
-                          borderRadius: BorderRadius.circular(10),
+                    final isRemote = path.startsWith('remote://');
+                    String displayPath;
+                    IconData pathIcon;
+                    if (isRemote) {
+                      final uriPart = path.substring('remote://'.length);
+                      final separatorIndex = uriPart.indexOf('|');
+                      final connId = separatorIndex > 0
+                          ? uriPart.substring(0, separatorIndex)
+                          : '';
+                      final remotePath = separatorIndex > 0
+                          ? uriPart.substring(separatorIndex + 1)
+                          : '/';
+                      final conn = NetworkConnectionsService.getConnections()
+                          .where((c) => c.id == connId)
+                          .firstOrNull;
+                      displayPath = '${conn?.name ?? connId}:$remotePath';
+                      pathIcon = Broken.wifi;
+                    } else {
+                      displayPath = path;
+                      pathIcon = Broken.folder;
+                    }
+                    return Container(
+                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surfaceVariant.withOpacity(
+                          0.3,
                         ),
-                        child: Row(
-                          children: [
-                            Icon(pathIcon, size: 16, color: isRemote ? theme.colorScheme.primary : Colors.grey),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                displayPath,
-                                style: const TextStyle(fontSize: 12),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            pathIcon,
+                            size: 16,
+                            color: isRemote
+                                ? theme.colorScheme.primary
+                                : Colors.grey,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              displayPath,
+                              style: const TextStyle(fontSize: 12),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            IconButton(
-                              icon: const Icon(Broken.trash, color: Colors.redAccent, size: 18),
-                              onPressed: () {
-                                widget.provider.removeCustomCategoryPath(label, path);
-                              },
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              visualDensity: VisualDensity.compact,
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Broken.trash,
+                              color: Colors.redAccent,
+                              size: 18,
                             ),
-                          ],
-                        ),
-                      );
-                      }),
+                            onPressed: () {
+                              widget.provider.removeCustomCategoryPath(
+                                label,
+                                path,
+                              );
+                            },
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
                 const SizedBox(height: 8),
                 Row(
                   children: [
@@ -1739,30 +2168,60 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
                         }
                       },
                       icon: const Icon(Broken.folder_add, size: 16),
-                      label: Text(L10n.of(context).ui_add_custom_path, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      label: Text(
+                        L10n.of(context).ui_add_custom_path,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       style: TextButton.styleFrom(
                         foregroundColor: theme.colorScheme.primary,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        backgroundColor: theme.colorScheme.primary.withOpacity(0.08),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        backgroundColor: theme.colorScheme.primary.withOpacity(
+                          0.08,
+                        ),
                       ),
                     ),
                     if (_remotePathCategories.contains(label)) ...[
                       const SizedBox(width: 8),
                       TextButton.icon(
-                      onPressed: () async {
-                        final remotePath = await showRemotePathPicker(context);
-                        if (remotePath != null) {
-                          widget.provider.addCustomCategoryPath(label, remotePath);
-                        }
-                      },
+                        onPressed: () async {
+                          final remotePath = await showRemotePathPicker(
+                            context,
+                          );
+                          if (remotePath != null) {
+                            widget.provider.addCustomCategoryPath(
+                              label,
+                              remotePath,
+                            );
+                          }
+                        },
                         icon: const Icon(Broken.wifi, size: 16),
-                        label: Text(L10n.of(context).ui_add_remote_path, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        label: Text(
+                          L10n.of(context).ui_add_remote_path,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         style: TextButton.styleFrom(
                           foregroundColor: theme.colorScheme.primary,
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          backgroundColor: theme.colorScheme.primary.withOpacity(0.08),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          backgroundColor: theme.colorScheme.primary
+                              .withOpacity(0.08),
                         ),
                       ),
                     ],
