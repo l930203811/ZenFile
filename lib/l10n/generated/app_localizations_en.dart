@@ -2884,6 +2884,9 @@ class L10nEn extends L10n {
   String get ui_language => 'Language';
 
   @override
+  String get ui_follow_system => 'Auto (Follow System)';
+
+  @override
   String get ui_hide_nav_labels => 'Hide Bottom Nav Labels';
 
   @override
@@ -4280,6 +4283,9 @@ class L10nEn extends L10n {
   String get msg_aspect_custom => 'Custom';
 
   @override
+  String get msg_aspect_fill_screen => 'Fill Screen';
+
+  @override
   String get msg_custom_aspect_ratio => 'Custom Aspect Ratio';
 
   @override
@@ -5579,6 +5585,80 @@ class L10nEn extends L10n {
   }
 
   @override
+  String get quick_transfer => 'Quick Transfer';
+
+  @override
+  String get quick_transfer_send => 'Send';
+
+  @override
+  String get quick_transfer_receive => 'Receive';
+
+  @override
+  String get quick_transfer_send_hint =>
+      'Pick a folder to share; nearby devices on the same Wi-Fi can open the address in a browser to download.';
+
+  @override
+  String get quick_transfer_receive_hint =>
+      'Pick a save folder; nearby devices on the same Wi-Fi can open the address in a browser to upload files to this device.';
+
+  @override
+  String get quick_transfer_share_dir => 'Share folder';
+
+  @override
+  String get quick_transfer_save_dir => 'Save to';
+
+  @override
+  String get quick_transfer_default_share => 'Default: internal storage root';
+
+  @override
+  String get quick_transfer_default_save => 'Default: internal storage root';
+
+  @override
+  String get quick_transfer_online => 'Active';
+
+  @override
+  String get quick_transfer_address => 'This device address';
+
+  @override
+  String get quick_transfer_copy => 'Copy';
+
+  @override
+  String get quick_transfer_copied => 'Address copied';
+
+  @override
+  String get quick_transfer_send_tip =>
+      'Send the address above to the other party; they open it in a browser to download files from the selected folder.';
+
+  @override
+  String get quick_transfer_receive_tip =>
+      'Send the address above to the other party; they open it in a browser and upload files to the selected folder on this device.';
+
+  @override
+  String get quick_transfer_connected => 'Connected devices';
+
+  @override
+  String quick_transfer_started(Object url) {
+    return 'Quick Transfer started: $url';
+  }
+
+  @override
+  String get quick_transfer_stopped => 'Quick Transfer stopped';
+
+  @override
+  String get quick_transfer_running =>
+      'Quick Transfer is running, please stop it first';
+
+  @override
+  String quick_transfer_running_at(Object url) {
+    return 'Running: $url';
+  }
+
+  @override
+  String quick_transfer_failed(Object error) {
+    return 'Failed to start Quick Transfer: $error';
+  }
+
+  @override
   String get wol_title => 'Wake on LAN';
 
   @override
@@ -5627,4 +5707,237 @@ class L10nEn extends L10n {
 
   @override
   String get wol_port_hint => 'Optional';
+
+  @override
+  String get quick_transfer_nearby_devices => 'Nearby devices';
+
+  @override
+  String get quick_transfer_scanning => 'Scanning for nearby devices…';
+
+  @override
+  String get quick_transfer_scan_hint =>
+      'Both devices must open Quick Transfer and keep this page in foreground';
+
+  @override
+  String get quick_transfer_tap_to_connect => 'Tap a device name to connect';
+
+  @override
+  String quick_transfer_connecting(Object name) {
+    return 'Connecting to $name…';
+  }
+
+  @override
+  String quick_transfer_connected_as(Object role) {
+    return 'Connected (this device is $role)';
+  }
+
+  @override
+  String get quick_transfer_role_owner => 'sender';
+
+  @override
+  String get quick_transfer_role_client => 'receiver';
+
+  @override
+  String get quick_transfer_select_files => 'Select files / folders to send';
+
+  @override
+  String quick_transfer_selected_summary(Object count, Object size) {
+    return '$count items, $size total';
+  }
+
+  @override
+  String get quick_transfer_begin_send => 'Start sending';
+
+  @override
+  String quick_transfer_incoming(Object name) {
+    return 'Incoming send request from $name';
+  }
+
+  @override
+  String quick_transfer_incoming_files(Object count, Object size) {
+    return '$count files, $size';
+  }
+
+  @override
+  String get quick_transfer_accept => 'Accept';
+
+  @override
+  String get quick_transfer_reject => 'Reject';
+
+  @override
+  String get quick_transfer_sending => 'Sending…';
+
+  @override
+  String get quick_transfer_receiving => 'Receiving…';
+
+  @override
+  String get quick_transfer_complete => 'Transfer complete';
+
+  @override
+  String get quick_transfer_waiting_peer => 'Waiting for peer to connect…';
+
+  @override
+  String get quick_transfer_connected_waiting_files =>
+      'Connected. Waiting for the sender to send files…';
+
+  @override
+  String get quick_transfer_permission_why =>
+      'WiFi Direct scan requires location / nearby devices permission. Your location is not collected.';
+
+  @override
+  String get quick_transfer_permission_required =>
+      'Quick Transfer needs location / nearby devices permission to discover peers';
+
+  @override
+  String get quick_transfer_not_supported =>
+      'This device does not support WiFi Direct quick transfer';
+
+  @override
+  String get quick_transfer_disconnect => 'Disconnect';
+
+  @override
+  String get quick_transfer_cancel => 'Cancel';
+
+  @override
+  String get quick_transfer_save_to => 'Save to';
+
+  @override
+  String get quick_transfer_send_mode => 'Send';
+
+  @override
+  String get quick_transfer_receive_mode => 'Receive';
+
+  @override
+  String get quick_transfer_device_name => 'This device';
+
+  @override
+  String get quick_transfer_retry => 'Retry';
+
+  @override
+  String get quick_transfer_permission_grant => 'Grant & Continue';
+
+  @override
+  String get quick_transfer_open_settings => 'Open Settings';
+
+  @override
+  String get quick_transfer_wifi_required =>
+      'Please turn on WLAN (WiFi) first. Quick Transfer needs WiFi Direct to create a group.';
+
+  @override
+  String get quick_transfer_create_group_failed =>
+      'Failed to establish Quick Transfer connection. Please make sure WLAN is on and location/nearby device permission is granted.';
+
+  @override
+  String get quick_transfer_receive_path => 'Receive path';
+
+  @override
+  String get quick_transfer_change_path => 'Change';
+
+  @override
+  String get quick_transfer_back => 'Back';
+
+  @override
+  String get quick_transfer_send_button => 'Send';
+
+  @override
+  String get quick_transfer_receive_button => 'Receive';
+
+  @override
+  String get quick_transfer_open_location => 'Open file location';
+
+  @override
+  String get quick_transfer_receive_complete => 'Receive complete';
+
+  @override
+  String quick_transfer_files_saved_to(Object path) {
+    return 'Files saved to $path';
+  }
+
+  @override
+  String get quick_transfer_connect_btn => 'Connect';
+
+  @override
+  String get quick_transfer_connected_btn => 'Connected';
+
+  @override
+  String get quick_transfer_available_peers => 'Available devices';
+
+  @override
+  String quick_transfer_selected_count(Object count) {
+    return 'Selected $count item(s)';
+  }
+
+  @override
+  String get changelog_v1133_new_1 =>
+      'Quick Transfer (LAN): independent send/receive modes, nearby-device radar discovery, connection states, pre-transfer confirmation, one-tap open in app browser after receiving, with permission hints. Fully localized in 10 languages.';
+
+  @override
+  String get changelog_v1133_new_2 => 'Category icon label visibility toggle.';
+
+  @override
+  String get changelog_v1133_new_3 => 'AMOLED full-page pure-black theme.';
+
+  @override
+  String get changelog_v1133_new_4 =>
+      'Background playback anti-sleep (battery-optimization whitelist + wake lock).';
+
+  @override
+  String get changelog_v1133_new_5 =>
+      'Image editor: physical dimensions (mm + DPI), preset templates (ID photo / passport / US visa), file size limit.';
+
+  @override
+  String get changelog_v1133_new_6 =>
+      'Audio equalizer with 5 presets (Original / HD Vocals / Bass / Live / Jazz).';
+
+  @override
+  String get changelog_v1133_new_7 =>
+      'Video player: built-in multi audio/subtitle track selection; gesture optimization (double-tap to pause/play, long-press for speed, swipe left/right to seek).';
+
+  @override
+  String get changelog_v1133_new_8 =>
+      'Drawer / Custom shortcuts: added Quick Transfer entry.';
+
+  @override
+  String get changelog_v1133_opt_1 =>
+      'Image viewer: top info bar rebuilt (dimensions/time/format/size/EXIF), rotate changed to preview-only (no save), live EXIF display, filename title restored.';
+
+  @override
+  String get changelog_v1133_opt_2 =>
+      'Video player: bottom button layout/ordering, portrait overflow fix, auto landscape on system rotation, scale (fill screen / cover), landscape camera black-bar fix.';
+
+  @override
+  String get changelog_v1133_opt_3 =>
+      'Audio player: equalizer preset switching takes effect, bass/vocal distortion fixed.';
+
+  @override
+  String get changelog_v1133_opt_4 =>
+      'Video volume: player slider now syncs in real time with system media volume.';
+
+  @override
+  String get changelog_v1133_opt_5 =>
+      'Audio playback mode: now persisted across app restarts.';
+
+  @override
+  String get changelog_v1133_opt_6 =>
+      'Image editing: crop ratio fix (square / 4:3 / 3:4 / ID photo).';
+
+  @override
+  String get changelog_v1133_fix_1 =>
+      'Text editor: hardcoded error toast when opening unknown files via \'Open as text\' is now localized.';
+
+  @override
+  String get changelog_v1133_fix_2 =>
+      'Desktop lyrics: hardcoded Chinese permission Toast is now localized.';
+
+  @override
+  String get changelog_v1133_fix_3 =>
+      'Directory picker: hardcoded Chinese \'Pin selection\' button is now localized.';
+
+  @override
+  String get changelog_v1133_fix_4 =>
+      'Restricted directories (Android/data | obb): fixed copy-to-local/remote errors (second fix).';
+
+  @override
+  String get changelog_v1133_fix_5 =>
+      'Long-press menu: restored v1.1.32 layout with high-contrast background and stroke.';
 }

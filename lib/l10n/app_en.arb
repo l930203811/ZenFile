@@ -3172,6 +3172,7 @@
   },
   "ui_invalid_file_type": "Invalid File Type",
   "ui_language": "Language",
+  "ui_follow_system": "Auto (Follow System)",
   "ui_hide_nav_labels": "Hide Bottom Nav Labels",
   "ui_reset_default_viewers": "Reset Default File Viewers",
   "ui_trailing_info_when_hidden": "Trailing Info When Menu Hidden",
@@ -4256,6 +4257,10 @@
   "msg_aspect_custom": "Custom",
   "@msg_aspect_custom": {
     "description": "Video aspect ratio mode: custom"
+  },
+  "msg_aspect_fill_screen": "Fill Screen",
+  "@msg_aspect_fill_screen": {
+    "description": "Video aspect ratio mode: fill screen (crop, no black bars)"
   },
   "msg_custom_aspect_ratio": "Custom Aspect Ratio",
   "@msg_custom_aspect_ratio": {
@@ -5373,8 +5378,12 @@
   "@editor_pixel_auto": {
     "description": "Auto-calculated pixel dimensions preview",
     "placeholders": {
-      "w": { "type": "int" },
-      "h": { "type": "int" }
+      "w": {
+        "type": "int"
+      },
+      "h": {
+        "type": "int"
+      }
     }
   },
   "editor_pixel_result": "pixels (auto-calculated)",
@@ -5573,6 +5582,90 @@
   "@editor_output_size": {
     "description": "Editor: output size label. {size} is human size"
   },
+  "quick_transfer": "Quick Transfer",
+  "@quick_transfer": {
+    "description": "Quick Transfer: quick_transfer"
+  },
+  "quick_transfer_send": "Send",
+  "@quick_transfer_send": {
+    "description": "Quick Transfer: quick_transfer_send"
+  },
+  "quick_transfer_receive": "Receive",
+  "@quick_transfer_receive": {
+    "description": "Quick Transfer: quick_transfer_receive"
+  },
+  "quick_transfer_send_hint": "Pick a folder to share; nearby devices on the same Wi-Fi can open the address in a browser to download.",
+  "@quick_transfer_send_hint": {
+    "description": "Quick Transfer: quick_transfer_send_hint"
+  },
+  "quick_transfer_receive_hint": "Pick a save folder; nearby devices on the same Wi-Fi can open the address in a browser to upload files to this device.",
+  "@quick_transfer_receive_hint": {
+    "description": "Quick Transfer: quick_transfer_receive_hint"
+  },
+  "quick_transfer_share_dir": "Share folder",
+  "@quick_transfer_share_dir": {
+    "description": "Quick Transfer: quick_transfer_share_dir"
+  },
+  "quick_transfer_save_dir": "Save to",
+  "@quick_transfer_save_dir": {
+    "description": "Quick Transfer: quick_transfer_save_dir"
+  },
+  "quick_transfer_default_share": "Default: internal storage root",
+  "@quick_transfer_default_share": {
+    "description": "Quick Transfer: quick_transfer_default_share"
+  },
+  "quick_transfer_default_save": "Default: internal storage root",
+  "@quick_transfer_default_save": {
+    "description": "Quick Transfer: quick_transfer_default_save"
+  },
+  "quick_transfer_online": "Active",
+  "@quick_transfer_online": {
+    "description": "Quick Transfer: quick_transfer_online"
+  },
+  "quick_transfer_address": "This device address",
+  "@quick_transfer_address": {
+    "description": "Quick Transfer: quick_transfer_address"
+  },
+  "quick_transfer_copy": "Copy",
+  "@quick_transfer_copy": {
+    "description": "Quick Transfer: quick_transfer_copy"
+  },
+  "quick_transfer_copied": "Address copied",
+  "@quick_transfer_copied": {
+    "description": "Quick Transfer: quick_transfer_copied"
+  },
+  "quick_transfer_send_tip": "Send the address above to the other party; they open it in a browser to download files from the selected folder.",
+  "@quick_transfer_send_tip": {
+    "description": "Quick Transfer: quick_transfer_send_tip"
+  },
+  "quick_transfer_receive_tip": "Send the address above to the other party; they open it in a browser and upload files to the selected folder on this device.",
+  "@quick_transfer_receive_tip": {
+    "description": "Quick Transfer: quick_transfer_receive_tip"
+  },
+  "quick_transfer_connected": "Connected devices",
+  "@quick_transfer_connected": {
+    "description": "Quick Transfer: quick_transfer_connected"
+  },
+  "quick_transfer_started": "Quick Transfer started: {url}",
+  "@quick_transfer_started": {
+    "description": "Quick Transfer: quick_transfer_started"
+  },
+  "quick_transfer_stopped": "Quick Transfer stopped",
+  "@quick_transfer_stopped": {
+    "description": "Quick Transfer: quick_transfer_stopped"
+  },
+  "quick_transfer_running": "Quick Transfer is running, please stop it first",
+  "@quick_transfer_running": {
+    "description": "Quick Transfer: quick_transfer_running"
+  },
+  "quick_transfer_running_at": "Running: {url}",
+  "@quick_transfer_running_at": {
+    "description": "Quick Transfer: quick_transfer_running_at"
+  },
+  "quick_transfer_failed": "Failed to start Quick Transfer: {error}",
+  "@quick_transfer_failed": {
+    "description": "Quick Transfer: quick_transfer_failed"
+  },
   "wol_title": "Wake on LAN",
   "@wol_title": {
     "description": "Wake on LAN: drawer tools entry title"
@@ -5639,5 +5732,265 @@
   "wol_port_hint": "Optional",
   "@wol_port_hint": {
     "description": "wol_port_hint label"
+  },
+  "quick_transfer_nearby_devices": "Nearby devices",
+  "@quick_transfer_nearby_devices": {
+    "description": "Quick Transfer P2P: quick_transfer_nearby_devices"
+  },
+  "quick_transfer_scanning": "Scanning for nearby devices…",
+  "@quick_transfer_scanning": {
+    "description": "Quick Transfer P2P: quick_transfer_scanning"
+  },
+  "quick_transfer_scan_hint": "Both devices must open Quick Transfer and keep this page in foreground",
+  "@quick_transfer_scan_hint": {
+    "description": "Quick Transfer P2P: quick_transfer_scan_hint"
+  },
+  "quick_transfer_tap_to_connect": "Tap a device name to connect",
+  "@quick_transfer_tap_to_connect": {
+    "description": "Quick Transfer P2P: quick_transfer_tap_to_connect"
+  },
+  "quick_transfer_connecting": "Connecting to {name}…",
+  "@quick_transfer_connecting": {
+    "description": "Quick Transfer P2P: quick_transfer_connecting"
+  },
+  "quick_transfer_connected_as": "Connected (this device is {role})",
+  "@quick_transfer_connected_as": {
+    "description": "Quick Transfer P2P: quick_transfer_connected_as"
+  },
+  "quick_transfer_role_owner": "sender",
+  "@quick_transfer_role_owner": {
+    "description": "Quick Transfer P2P: quick_transfer_role_owner"
+  },
+  "quick_transfer_role_client": "receiver",
+  "@quick_transfer_role_client": {
+    "description": "Quick Transfer P2P: quick_transfer_role_client"
+  },
+  "quick_transfer_select_files": "Select files / folders to send",
+  "@quick_transfer_select_files": {
+    "description": "Quick Transfer P2P: quick_transfer_select_files"
+  },
+  "quick_transfer_selected_summary": "{count} items, {size} total",
+  "@quick_transfer_selected_summary": {
+    "description": "Quick Transfer P2P: quick_transfer_selected_summary"
+  },
+  "quick_transfer_begin_send": "Start sending",
+  "@quick_transfer_begin_send": {
+    "description": "Quick Transfer P2P: quick_transfer_begin_send"
+  },
+  "quick_transfer_incoming": "Incoming send request from {name}",
+  "@quick_transfer_incoming": {
+    "description": "Quick Transfer P2P: quick_transfer_incoming"
+  },
+  "quick_transfer_incoming_files": "{count} files, {size}",
+  "@quick_transfer_incoming_files": {
+    "description": "Quick Transfer P2P: quick_transfer_incoming_files"
+  },
+  "quick_transfer_accept": "Accept",
+  "@quick_transfer_accept": {
+    "description": "Quick Transfer P2P: quick_transfer_accept"
+  },
+  "quick_transfer_reject": "Reject",
+  "@quick_transfer_reject": {
+    "description": "Quick Transfer P2P: quick_transfer_reject"
+  },
+  "quick_transfer_sending": "Sending…",
+  "@quick_transfer_sending": {
+    "description": "Quick Transfer P2P: quick_transfer_sending"
+  },
+  "quick_transfer_receiving": "Receiving…",
+  "@quick_transfer_receiving": {
+    "description": "Quick Transfer P2P: quick_transfer_receiving"
+  },
+  "quick_transfer_complete": "Transfer complete",
+  "@quick_transfer_complete": {
+    "description": "Quick Transfer P2P: quick_transfer_complete"
+  },
+  "quick_transfer_waiting_peer": "Waiting for peer to connect…",
+  "@quick_transfer_waiting_peer": {
+    "description": "Quick Transfer P2P: quick_transfer_waiting_peer"
+  },
+  "quick_transfer_connected_waiting_files": "Connected. Waiting for the sender to send files…",
+  "@quick_transfer_connected_waiting_files": {
+    "description": "Quick Transfer P2P: quick_transfer_connected_waiting_files"
+  },
+  "quick_transfer_permission_why": "WiFi Direct scan requires location / nearby devices permission. Your location is not collected.",
+  "@quick_transfer_permission_why": {
+    "description": "Quick Transfer P2P: quick_transfer_permission_why"
+  },
+  "quick_transfer_permission_required": "Quick Transfer needs location / nearby devices permission to discover peers",
+  "@quick_transfer_permission_required": {
+    "description": "Quick Transfer P2P: quick_transfer_permission_required"
+  },
+  "quick_transfer_not_supported": "This device does not support WiFi Direct quick transfer",
+  "@quick_transfer_not_supported": {
+    "description": "Quick Transfer P2P: quick_transfer_not_supported"
+  },
+  "quick_transfer_disconnect": "Disconnect",
+  "@quick_transfer_disconnect": {
+    "description": "Quick Transfer P2P: quick_transfer_disconnect"
+  },
+  "quick_transfer_cancel": "Cancel",
+  "@quick_transfer_cancel": {
+    "description": "Quick Transfer P2P: quick_transfer_cancel"
+  },
+  "quick_transfer_save_to": "Save to",
+  "@quick_transfer_save_to": {
+    "description": "Quick Transfer P2P: quick_transfer_save_to"
+  },
+  "quick_transfer_send_mode": "Send",
+  "@quick_transfer_send_mode": {
+    "description": "Quick Transfer P2P: quick_transfer_send_mode"
+  },
+  "quick_transfer_receive_mode": "Receive",
+  "@quick_transfer_receive_mode": {
+    "description": "Quick Transfer P2P: quick_transfer_receive_mode"
+  },
+  "quick_transfer_device_name": "This device",
+  "@quick_transfer_device_name": {
+    "description": "Quick Transfer P2P: quick_transfer_device_name"
+  },
+  "quick_transfer_retry": "Retry",
+  "@quick_transfer_retry": {
+    "description": "Quick Transfer P2P: quick_transfer_retry"
+  },
+  "quick_transfer_permission_grant": "Grant & Continue",
+  "@quick_transfer_permission_grant": {
+    "description": "Quick Transfer P2P: quick_transfer_permission_grant"
+  },
+  "quick_transfer_open_settings": "Open Settings",
+  "@quick_transfer_open_settings": {
+    "description": "Quick Transfer P2P: quick_transfer_open_settings"
+  },
+  "quick_transfer_wifi_required": "Please turn on WLAN (WiFi) first. Quick Transfer needs WiFi Direct to create a group.",
+  "@quick_transfer_wifi_required": {
+    "description": "Quick Transfer P2P: quick_transfer_wifi_required"
+  },
+  "quick_transfer_create_group_failed": "Failed to establish Quick Transfer connection. Please make sure WLAN is on and location/nearby device permission is granted.",
+  "@quick_transfer_create_group_failed": {
+    "description": "Quick Transfer P2P: quick_transfer_create_group_failed"
+  },
+  "quick_transfer_receive_path": "Receive path",
+  "@quick_transfer_receive_path": {
+    "description": "Quick Transfer P2P: quick_transfer_receive_path"
+  },
+  "quick_transfer_change_path": "Change",
+  "@quick_transfer_change_path": {
+    "description": "Quick Transfer P2P: quick_transfer_change_path"
+  },
+  "quick_transfer_back": "Back",
+  "@quick_transfer_back": {
+    "description": "Quick Transfer P2P: quick_transfer_back"
+  },
+  "quick_transfer_send_button": "Send",
+  "@quick_transfer_send_button": {
+    "description": "Quick Transfer P2P: quick_transfer_send_button"
+  },
+  "quick_transfer_receive_button": "Receive",
+  "@quick_transfer_receive_button": {
+    "description": "Quick Transfer P2P: quick_transfer_receive_button"
+  },
+  "quick_transfer_open_location": "Open file location",
+  "@quick_transfer_open_location": {
+    "description": "Quick Transfer P2P: quick_transfer_open_location"
+  },
+  "quick_transfer_receive_complete": "Receive complete",
+  "@quick_transfer_receive_complete": {
+    "description": "Quick Transfer P2P: quick_transfer_receive_complete"
+  },
+  "quick_transfer_files_saved_to": "Files saved to {path}",
+  "@quick_transfer_files_saved_to": {
+    "description": "Quick Transfer P2P: quick_transfer_files_saved_to"
+  },
+  "quick_transfer_connect_btn": "Connect",
+  "@quick_transfer_connect_btn": {
+    "description": "Quick Transfer P2P: quick_transfer_connect_btn"
+  },
+  "quick_transfer_connected_btn": "Connected",
+  "@quick_transfer_connected_btn": {
+    "description": "Quick Transfer P2P: quick_transfer_connected_btn"
+  },
+  "quick_transfer_available_peers": "Available devices",
+  "@quick_transfer_available_peers": {
+    "description": "Quick Transfer P2P: quick_transfer_available_peers"
+  },
+  "quick_transfer_selected_count": "Selected {count} item(s)",
+  "@quick_transfer_selected_count": {
+    "description": "Quick Transfer P2P: quick_transfer_selected_count"
+  },
+  "changelog_v1133_new_1": "Quick Transfer (LAN): independent send/receive modes, nearby-device radar discovery, connection states, pre-transfer confirmation, one-tap open in app browser after receiving, with permission hints. Fully localized in 10 languages.",
+  "@changelog_v1133_new_1": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_1"
+  },
+  "changelog_v1133_new_2": "Category icon label visibility toggle.",
+  "@changelog_v1133_new_2": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_2"
+  },
+  "changelog_v1133_new_3": "AMOLED full-page pure-black theme.",
+  "@changelog_v1133_new_3": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_3"
+  },
+  "changelog_v1133_new_4": "Background playback anti-sleep (battery-optimization whitelist + wake lock).",
+  "@changelog_v1133_new_4": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_4"
+  },
+  "changelog_v1133_new_5": "Image editor: physical dimensions (mm + DPI), preset templates (ID photo / passport / US visa), file size limit.",
+  "@changelog_v1133_new_5": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_5"
+  },
+  "changelog_v1133_new_6": "Audio equalizer with 5 presets (Original / HD Vocals / Bass / Live / Jazz).",
+  "@changelog_v1133_new_6": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_6"
+  },
+  "changelog_v1133_new_7": "Video player: built-in multi audio/subtitle track selection; gesture optimization (double-tap to pause/play, long-press for speed, swipe left/right to seek).",
+  "@changelog_v1133_new_7": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_7"
+  },
+  "changelog_v1133_new_8": "Drawer / Custom shortcuts: added Quick Transfer entry.",
+  "@changelog_v1133_new_8": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_8"
+  },
+  "changelog_v1133_opt_1": "Image viewer: top info bar rebuilt (dimensions/time/format/size/EXIF), rotate changed to preview-only (no save), live EXIF display, filename title restored.",
+  "@changelog_v1133_opt_1": {
+    "description": "v1.1.33 changelog: changelog_v1133_opt_1"
+  },
+  "changelog_v1133_opt_2": "Video player: bottom button layout/ordering, portrait overflow fix, auto landscape on system rotation, scale (fill screen / cover), landscape camera black-bar fix.",
+  "@changelog_v1133_opt_2": {
+    "description": "v1.1.33 changelog: changelog_v1133_opt_2"
+  },
+  "changelog_v1133_opt_3": "Audio player: equalizer preset switching takes effect, bass/vocal distortion fixed.",
+  "@changelog_v1133_opt_3": {
+    "description": "v1.1.33 changelog: changelog_v1133_opt_3"
+  },
+  "changelog_v1133_opt_4": "Video volume: player slider now syncs in real time with system media volume.",
+  "@changelog_v1133_opt_4": {
+    "description": "v1.1.33 changelog: changelog_v1133_opt_4"
+  },
+  "changelog_v1133_opt_5": "Audio playback mode: now persisted across app restarts.",
+  "@changelog_v1133_opt_5": {
+    "description": "v1.1.33 changelog: changelog_v1133_opt_5"
+  },
+  "changelog_v1133_opt_6": "Image editing: crop ratio fix (square / 4:3 / 3:4 / ID photo).",
+  "@changelog_v1133_opt_6": {
+    "description": "v1.1.33 changelog: changelog_v1133_opt_6"
+  },
+  "changelog_v1133_fix_1": "Text editor: hardcoded error toast when opening unknown files via 'Open as text' is now localized.",
+  "@changelog_v1133_fix_1": {
+    "description": "v1.1.33 changelog: changelog_v1133_fix_1"
+  },
+  "changelog_v1133_fix_2": "Desktop lyrics: hardcoded Chinese permission Toast is now localized.",
+  "@changelog_v1133_fix_2": {
+    "description": "v1.1.33 changelog: changelog_v1133_fix_2"
+  },
+  "changelog_v1133_fix_3": "Directory picker: hardcoded Chinese 'Pin selection' button is now localized.",
+  "@changelog_v1133_fix_3": {
+    "description": "v1.1.33 changelog: changelog_v1133_fix_3"
+  },
+  "changelog_v1133_fix_4": "Restricted directories (Android/data | obb): fixed copy-to-local/remote errors (second fix).",
+  "@changelog_v1133_fix_4": {
+    "description": "v1.1.33 changelog: changelog_v1133_fix_4"
+  },
+  "changelog_v1133_fix_5": "Long-press menu: restored v1.1.32 layout with high-contrast background and stroke.",
+  "@changelog_v1133_fix_5": {
+    "description": "v1.1.33 changelog: changelog_v1133_fix_5"
   }
 }

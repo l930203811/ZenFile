@@ -777,6 +777,12 @@ class MediaProvider extends ChangeNotifier {
         _categoryOrder.add('Web共享');
         orderUpdated = true;
       }
+      if (!_categoryOrder.contains('快传')) {
+        final webIndex = _categoryOrder.indexOf('Web共享');
+        final insertIndex = webIndex >= 0 ? webIndex + 1 : _categoryOrder.length;
+        _categoryOrder.insert(insertIndex, '快传');
+        orderUpdated = true;
+      }
       if (!_categoryOrder.contains('保险箱')) {
         _categoryOrder.add('保险箱');
         orderUpdated = true;
@@ -871,6 +877,12 @@ class MediaProvider extends ChangeNotifier {
           _activeCategories.insert(insertIndex, '备份/恢复');
           activeUpdated = true;
         }
+      }
+      // 老用户升级时，将「快传」默认加入开启列表（不依赖版本守卫，避免连带恢复
+      // 用户已手动关闭的其它分类）。新装用户由下方默认 _activeCategories 处理。
+      if (!_activeCategories.contains('快传')) {
+        _activeCategories.add('快传');
+        activeUpdated = true;
       }
       if (activeUpdated) {
         PreferencesService.saveActiveCategories(_activeCategories);
@@ -1079,6 +1091,7 @@ class MediaProvider extends ChangeNotifier {
     '网络',
     'FTP共享',
     'Web共享',
+    '快传',
     '应用',
     '压缩包',
     '安装包',
@@ -1102,11 +1115,11 @@ class MediaProvider extends ChangeNotifier {
     '网络',
     'FTP共享',
     'Web共享',
+    '快传',
     '应用',
     '压缩包',
     '安装包',
     '设置',
-    '备份/恢复',
     '最近',
     '保险箱',
     '回收站',
@@ -2435,18 +2448,73 @@ class MediaProvider extends ChangeNotifier {
           supAudios.add(m);
         }
       }
-      // 持久化本次刷新发现的「索引未收录」补充媒体（全部为空则清空补充集）
-      if (supImages.isEmpty &&
-          supVideos.isEmpty &&
-          supScreenshots.isEmpty &&
-          supAudios.isEmpty) {
-        _supplementaryMedia = null;
-      } else {
+      // 持久化本次刷新发现的「索引未收录」补充媒体。
+      // 关键修复：旧逻辑用「差集替换 + 全空则清零」，一旦系统后续索引到这些
+      // 文件（或 MediaStore 瞬时就绪），差集为空就把整个补充集清零——这正是
+      // 「刷新后图片出现、重启/过一会又消失、只剩系统索引」的根因。
+      // 改为并集累计：旧补充集保留（清理已被删除/移走的幽灵路径），并入本次
+      // 新发现的差集。即使系统本次就索引到了，旧补充集仍作为兜底保留，不丢失。
+      // 扫描未产出任何媒体（很可能存储不可访问/扫描未执行）时，保留旧补充集
+      // 不动，避免误清空。
+      final scanProduced = result.images.isNotEmpty ||
+          result.videos.isNotEmpty ||
+          result.screenshots.isNotEmpty ||
+          result.audios.isNotEmpty;
+      if (scanProduced) {
+        List<String> renewSup(List<dynamic>? old, List<String> added) {
+          final set = <String>{};
+          if (old != null) {
+            for (final p in old) {
+              if (p is! String) continue;
+              // 幽灵清理：以磁盘真实存在性为准，而非「本次扫描是否扫到」。
+              // 扫描根仅主目录(深度1)+热点目录(深度4)，且会跳过 Android/、
+              // 隐藏目录；任何一次扫描瞬态不全/根范围变化都会把仍在磁盘上的
+              // 补充路径误判为幽灵而永久清掉（并随 _saveCache 落盘）——
+              // 「刷新后文件出现、重启后过一会又消失」的根因之一。
+              // 补充路径均来自 isolate 递归扫描（dart:io list 产出），
+              // existsSync 判存在语义正确可靠。
+              try {
+                if (File(p).existsSync()) {
+                  set.add(_normalizeMediaPath(p));
+                }
+              } catch (_) {}
+            }
+          }
+          for (final p in added) {
+            set.add(_normalizeMediaPath(p));
+          }
+          return set.toList();
+        }
+
+        List<Map<String, dynamic>> renewSupAudios(
+            List<dynamic>? old, List<Map<String, dynamic>> added) {
+          final out = <Map<String, dynamic>>[];
+          if (old != null) {
+            for (final m in old) {
+              if (m is! Map) continue;
+              final data = m['_data'] as String?;
+              if (data == null || data.isEmpty) continue;
+              // 与 renewSup 同理：存在性判断，不依赖扫描覆盖范围。
+              // 补充音频路径来自 isolate 扫描（dart:io 可访问），
+              // existsSync 可靠；MediaStore 作用域存储路径不进补充集。
+              try {
+                if (File(data).existsSync()) {
+                  out.add(Map<String, dynamic>.from(m));
+                }
+              } catch (_) {}
+            }
+          }
+          out.addAll(added);
+          return out;
+        }
+
+        final oldSup = _supplementaryMedia;
         _supplementaryMedia = {
-          'images': supImages,
-          'videos': supVideos,
-          'screenshots': supScreenshots,
-          'audios': supAudios,
+          'images': renewSup(oldSup?['images'] as List?, supImages),
+          'videos': renewSup(oldSup?['videos'] as List?, supVideos),
+          'screenshots':
+              renewSup(oldSup?['screenshots'] as List?, supScreenshots),
+          'audios': renewSupAudios(oldSup?['audios'] as List?, supAudios),
         };
       }
       debugPrint('[ZenFile] isolate scan media merged: '
@@ -2485,7 +2553,10 @@ class MediaProvider extends ChangeNotifier {
   /// 音频合成条目复用 _id 800000+ 号段（先移除防止撞号）。
   Future<void> _mergeSupplementaryMedia() async {
     final sup = _supplementaryMedia;
-    if (sup == null) return;
+    if (sup == null) {
+      debugPrint('[ZenFile] supplementary media merge skipped: no cache');
+      return;
+    }
     try {
       List<String> pathsOf(String key) {
         final raw = sup[key];
@@ -2493,6 +2564,7 @@ class MediaProvider extends ChangeNotifier {
         return [for (final e in raw) if (e is String && e.isNotEmpty) e];
       }
 
+      var merged = 0;
       List<FileSystemEntity> unionPaths(
           List<FileSystemEntity> current, List<String> newPaths) {
         final seen = <String>{
@@ -2500,20 +2572,30 @@ class MediaProvider extends ChangeNotifier {
         };
         final out = List<FileSystemEntity>.from(current);
         for (final np in newPaths) {
-          if (seen.add(_normalizeMediaPath(np))) out.add(File(np));
+          if (seen.add(_normalizeMediaPath(np))) {
+            out.add(File(np));
+            merged++;
+          }
         }
         return out;
       }
 
+      final imgBefore = _images.length;
+      final vidBefore = _videos.length;
+      final shotBefore = _screenshots.length;
       _images = unionPaths(_images, pathsOf('images'));
+      final imgAdded = _images.length - imgBefore;
       _videos = unionPaths(_videos, pathsOf('videos'));
+      final vidAdded = _videos.length - vidBefore;
       _screenshots = unionPaths(_screenshots, pathsOf('screenshots'));
+      final shotAdded = _screenshots.length - shotBefore;
 
       _audios.removeWhere((song) => song.id >= 800000 && song.id < 900000);
       final audioSeen = <String>{
         for (final s in _audios) _normalizeMediaPath(s.data),
       };
       final rawAudios = sup['audios'];
+      var audioAdded = 0;
       if (rawAudios is List) {
         var idx = 0;
         for (final m in rawAudios) {
@@ -2525,10 +2607,13 @@ class MediaProvider extends ChangeNotifier {
             map['_id'] = 800000 + idx;
             idx++;
             _audios.add(SongModel(map));
+            audioAdded++;
           }
         }
       }
       debugPrint('[ZenFile] supplementary media merged: '
+          'added(img=$imgAdded vid=$vidAdded shot=$shotAdded '
+          'audio=$audioAdded mergedTotal=$merged) → '
           'images=${_images.length} videos=${_videos.length} '
           'shots=${_screenshots.length} audios=${_audios.length}');
     } catch (e) {
@@ -2649,6 +2734,17 @@ class MediaProvider extends ChangeNotifier {
       _isLoaded = true;
       _loadFailed = false;
       notifyListeners();
+
+      // 强制刷新（刷新按钮/下拉刷新）落盘：loadMedia(forceRefresh) 路径下
+      // _isLoaded 直至此处才置 true，而 _scanNonMediaInBackground(force) 内部
+      // 的 _saveCache 因 !_isLoaded 守卫被拦截（见 2174 行），导致本次刷新
+      // 发现的「系统未索引」补充媒体（图/视/截图/音频）与非媒体类别
+      // （文档/压缩包/下载/安装包）改动从未写入磁盘缓存——重启后只剩系统
+      // 索引到的内容，复现「刷新后文件出现、重启后又消失」。此处 _isLoaded
+      // 已为真，显式落盘即可，且不破坏「首次未加载禁落盘」保护。
+      if (forceRefresh) {
+        await _saveCache();
+      }
     } catch (e) {
       debugPrint('loadMedia error: $e');
       _isLoading = false;
@@ -2745,6 +2841,9 @@ class MediaProvider extends ChangeNotifier {
         _audios = audios;
       }
       _screenshots = screenshots;
+      // fallback 整表替换同样会清掉补充媒体（上次主动刷新持久化的
+      // 索引未收录文件），替换后立即合并回来（幂等，按路径去重）。
+      await _mergeSupplementaryMedia();
       _rebuildFolderGroups();
       debugPrint('[ZenFile] _loadMediaFromFileSystem: images=${images.length}, videos=${videos.length}, audios=${audios.length}, screenshots=${screenshots.length}');
     } catch (e) {
@@ -2866,6 +2965,15 @@ class MediaProvider extends ChangeNotifier {
       if (vids.isNotEmpty || _videos.isEmpty) _videos = vids.toList();
       if (shots.isNotEmpty || _screenshots.isEmpty) _screenshots = shots.toList();
       debugPrint('[ZenFile] system index: images=${imgs.length} videos=${vids.length} screenshots=${shots.length}');
+      // 关键防线：系统索引整表替换后立即合并补充媒体（幂等，按路径去重）。
+      // 此前合并只在外层调用方（loadMedia/refreshMediaBackground）做，且晚于
+      // 下方 _saveVisualCache——视觉缓存被落盘成「纯索引」列表（不含补充媒体），
+      // 重启后 _restoreVisualCache 恢复的即缺失；若外层合并链路任一环节失效
+      // （异常被吞/fallback 路径无合并），补充媒体在替换瞬间彻底丢失——正是
+      // 「重启后过一会（冷启动索引拉取完成时）文件全部消失」的根因。
+      // 移到此处后所有调用点（启动/onResume/刷新）替换即恢复，且视觉缓存
+      // 恒含补充媒体。
+      await _mergeSupplementaryMedia();
       // 落盘：作为下次启动的毫秒级恢复源，避免「每次启动都要重新分页拉取
       // PhotoManager、大存储设备等待 ~1 分钟才显示图视」的体感。空结果不覆盖
       // （上方已用「非空或原为空才赋值」守卫，系统库瞬时异常时 _images 等保留旧值）。

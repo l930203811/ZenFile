@@ -20,6 +20,7 @@ import '../screens/web_sharing_screen.dart';
 import '../../providers/media_provider.dart';
 import 'quick_categories_grid.dart';
 import '../screens/recycle_bin_screen.dart';
+import '../screens/quick_transfer_screen.dart';
 import '../../services/preferences_service.dart';
 
 class ZenFileDrawer extends StatefulWidget {
@@ -267,6 +268,15 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                           onTap: () {
                             Navigator.pop(context);
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const WakeOnLanScreen()));
+                          },
+                        ),
+                        _buildDrawerTile(
+                          context,
+                          icon: Broken.send_2,
+                          title: L10n.of(context).quick_transfer,
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const QuickTransferScreen()));
                           },
                         ),
                       ],

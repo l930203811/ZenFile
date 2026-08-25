@@ -77,6 +77,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   bool _showBrightnessSlider = false;
   Timer? _sliderTimer;
 
+  // 与系统音量同步：应用内音量滑块反映并控制系统媒体音量
+  static const MethodChannel _volumeChannel = MethodChannel('com.sequl.zenfile/volume');
+  Timer? _volumePollTimer;
+  double _volumeBeforeMute = 0.5;
+
   Timer? _hideTimer;
   late AnimationController _controlsAnimController;
   late Animation<double> _controlsOpacity;
@@ -107,8 +112,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   bool _isMuted = false;
   int _repeatMode = 0; // 0=none, 1=one, 2=all
   int _rotationTurns = 0; // 0=0°, 1=90°顺时针, 2=180°, 3=270°
-  int _aspectRatioMode = 0; // 0=适应屏幕, 1=拉伸填充, 2=居中, 3=16:9, 4=4:3, 5=自定义
+  int _aspectRatioMode = 0; // 0=适应屏幕, 1=拉伸填充, 2=居中, 3=填充屏幕, 4=16:9, 5=4:3, 6=自定义
   double _customAspectRatio = 16 / 9;
+  // 用户是否手动切换过缩放模式。未触碰时，全屏自动用 cover 填满（贴近 MX 无黑边）；
+  // 一旦手动切换，则尊重用户选择，不再自动覆盖。
+  bool _userTouchedAspect = false;
   String? _aspectToast;
   Timer? _aspectToastTimer;
 
@@ -213,7 +221,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       _startPlayback();
       _resolvePlaylist();
     }();
-    player.setVolume(_volume * 100.0);
+    // 以系统音量为单一来源，播放器内部音量固定最大，避免双重缩放
+    _syncVolumeFromSystem(setPlayerVolume: true);
+    _startVolumePolling();
     _startHideTimer();
 
     // 同步初始系统方向 -> 全屏状态。
@@ -393,7 +403,12 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       // 解析外挂字幕，改用 Flutter overlay 渲染，确保字号/位置滑块 100% 生效
       final ext = p.extension(subtitlePath).toLowerCase();
       final isAss = ext == '.ass' || ext == '.ssa';
-      final isVobSub = ext == '.sub' || ext == '.idx';
+      // 外挂位图字幕：.idx（自动配对同名 .sub）、带同名 .idx 的 .sub、蓝光 .sup。
+      // 无 .idx 配对的 .sub 视为文本字幕（MicroDVD），走文本解析分支。
+      final isVobSub = ext == '.idx' ||
+          ext == '.sup' ||
+          (ext == '.sub' &&
+              File('${p.withoutExtension(subtitlePath)}.idx').existsSync());
       // 仅对 ASS/SSA 字幕设置样式覆盖；VOBSub 等位图字幕必须保持 sub-ass-override=no
       final platform = player.platform;
       if (isAss) {
@@ -413,8 +428,13 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         player.setSubtitleTrack(
           SubtitleTrack.uri(subtitlePath, title: 'External'),
         );
+        // 关键修复：开启 mpv 原生渲染，否则位图字幕解码后不显示
+        _syncSubVisibilityForTrack(
+          SubtitleTrack.uri(subtitlePath, title: 'External'),
+        );
         if (!_subtitleEnabled) {
           player.setSubtitleTrack(SubtitleTrack.no());
+          _syncSubVisibilityForTrack(const SubtitleTrack('no', null, null));
         }
         // 位图字幕字号/位置由 mpv 自身控制，这里仍应用背景样式（不影响位图内容）。
         _applySubtitleBackground();
@@ -434,6 +454,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         try {
           player.setSubtitleTrack(SubtitleTrack.no());
         } catch (_) {}
+        // 文本字幕走 Flutter overlay，同步关闭 mpv 原生渲染
+        _syncSubVisibilityForTrack(const SubtitleTrack('no', null, null));
         _startSubtitlePositionSync();
         _updateActiveCue(_position);
         if (mounted) setState(() {});
@@ -441,6 +463,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       }
       // 解析失败兜底：仍用 mpv 渲染
       player.setSubtitleTrack(
+        SubtitleTrack.uri(subtitlePath, title: 'External'),
+      );
+      // 文本兜底字幕走 SubtitleView，同步关闭 mpv 原生渲染
+      _syncSubVisibilityForTrack(
         SubtitleTrack.uri(subtitlePath, title: 'External'),
       );
       if (!_subtitleEnabled) {
@@ -500,6 +526,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         player.setSubtitleTrack(
           SubtitleTrack.uri(_subtitlePath!, title: 'External'),
         );
+        // 按字幕类型同步 mpv 原生渲染开关（位图开、文本关）
+        _syncSubVisibilityForTrack(
+          SubtitleTrack.uri(_subtitlePath!, title: 'External'),
+        );
         _applySubtitleFontSize(_subtitleFontSize);
         _applySubtitlePosition(_subtitlePosition);
         _applySubtitleBackground();
@@ -510,6 +540,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         });
       } else {
         player.setSubtitleTrack(SubtitleTrack.no());
+        _syncSubVisibilityForTrack(const SubtitleTrack('no', null, null));
       }
     } catch (e) {
       debugPrint('切换字幕失败: $e');
@@ -965,6 +996,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         _availableAudioTracks = tracks.audio;
         _availableSubtitleTracks = tracks.subtitle;
       });
+      // mpv 自动选择的默认字幕轨若为位图字幕（如默认标记 VOBSub 的 MKV），
+      // 需开启原生渲染才能显示
+      _syncSubVisibilityFromMpv();
     });
     _trackSub = player.stream.track.listen((track) {
       if (!mounted) return;
@@ -1001,6 +1035,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       } catch (_) {}
     }
     await player.setSubtitleTrack(track);
+    // 关键修复：media_kit 默认 libass=false 会把 mpv 设为 sub-visibility=no
+    // （解码但不渲染）。位图字幕（VOBSub/PGS）无文本，Flutter 侧无法显示，
+    // 必须开启 mpv 原生渲染；文本字幕保持 no，由 Flutter 渲染。
+    await _syncSubVisibilityForTrack(track);
     // 切换字幕轨后，再次确认 sub-ass-override 设置（确保 ASS/SSA 字幕启用 force）
     if (track.id != 'no' && _isLikelyAssSubtitle(track)) {
       if (platform is NativePlayer) {
@@ -1023,6 +1061,81 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       if (title.contains(keyword) || language.contains(keyword)) return true;
     }
     return false;
+  }
+
+  /// 判断字幕轨是否为位图字幕（VOBSub/PGS/DVB/XSub）。
+  /// 位图字幕没有文本（mpv 的 sub-text 恒为空），Flutter 侧的 SubtitleView
+  /// 与外挂字幕 overlay 均无法显示，只能由 mpv 原生渲染进视频画面。
+  bool _isBitmapSubtitleTrack(SubtitleTrack track) {
+    if (track.id == 'no' || track.id == 'auto') return false;
+    final codec = (track.codec ?? '').toLowerCase();
+    const bitmapCodecs = [
+      'dvd_subtitle', // VOBSub（MKV 内嵌 / 外挂 .idx+.sub）
+      'vobsub',
+      'vob_subtitle',
+      'hdmv_pgs_subtitle', // 蓝光 PGS
+      'dvb_subtitle',
+      'xsub',
+    ];
+    if (bitmapCodecs.any((c) => codec.contains(c))) return true;
+    // 外挂字幕轨（id 为文件路径）：按扩展名判断
+    final id = track.id.toLowerCase();
+    if (id.endsWith('.idx') || id.endsWith('.sup')) return true;
+    if (id.endsWith('.sub')) {
+      // .sub 有二义性（VOBSub 位图 / MicroDVD 文本）：有同名 .idx 才是 VOBSub
+      return File('${p.withoutExtension(track.id)}.idx').existsSync();
+    }
+    // 兜底：标题/语言含位图关键字
+    final title = (track.title ?? '').toLowerCase();
+    final language = (track.language ?? '').toLowerCase();
+    for (final keyword in ['vobsub', 'pgs', 'bitmap']) {
+      if (title.contains(keyword) || language.contains(keyword)) return true;
+    }
+    return false;
+  }
+
+  /// 按字幕轨类型同步 mpv 原生字幕渲染开关（sub-visibility）：
+  /// - 位图字幕（VOBSub/PGS 等）：yes，由 mpv 渲染进视频画面
+  /// - 文本字幕/关闭：no，保持 Flutter（SubtitleView/overlay）渲染
+  ///
+  /// 背景：media_kit 默认 libass=false 会把 mpv 设为 sub-visibility=no
+  /// （解码但不渲染），导致内嵌 VOBSub 轨道"检测到却不显示"。
+  /// Android 端 media_kit 同时设置了 sub-font-provider=none，mpv 渲染不出
+  /// 文本字幕，因此文本轨道即使误开 yes 也不会与 Flutter 双重渲染。
+  Future<void> _syncSubVisibilityForTrack(SubtitleTrack track) async {
+    final platform = player.platform;
+    if (platform is! NativePlayer) return;
+    try {
+      final visible = track.id != 'no' && _isBitmapSubtitleTrack(track);
+      await platform.setProperty('sub-visibility', visible ? 'yes' : 'no');
+    } catch (_) {}
+  }
+
+  /// 按 mpv 实际选中的字幕轨（sid）同步原生渲染开关。
+  /// 覆盖"自动选择的默认字幕轨"场景（如默认标记为 VOBSub 的 MKV）；
+  /// 用户显式选择轨道时以 _selectSubtitleTrack 的同步为准。
+  Future<void> _syncSubVisibilityFromMpv() async {
+    final platform = player.platform;
+    if (platform is! NativePlayer) return;
+    if (_currentSubtitleTrack.id != 'auto') return;
+    try {
+      final sid = await platform.getProperty('sid');
+      if (sid == 'no' || sid == 'auto' || sid.isEmpty) {
+        await platform.setProperty('sub-visibility', 'no');
+        return;
+      }
+      SubtitleTrack? selected;
+      for (final t in _availableSubtitleTracks) {
+        if (t.id == sid) {
+          selected = t;
+          break;
+        }
+      }
+      await platform.setProperty(
+        'sub-visibility',
+        selected != null && _isBitmapSubtitleTrack(selected) ? 'yes' : 'no',
+      );
+    } catch (_) {}
   }
 
   /// 显示音轨选择底部弹窗。
@@ -1204,8 +1317,16 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     } catch (e) {
       debugPrint('切换解码方式后设置属性失败: $e');
     }
-    player.setVolume(_volume * 100.0);
+    // 重建播放器后保持内部音量为最大，由系统音量统一控制
+    player.setVolume(100.0);
     _initListeners();
+    // 重建 Player 后重新注册轨道监听（旧订阅随旧 Player 失效）；
+    // 重置字幕轨选择与外挂字幕 overlay（overlay 的进度订阅已随旧 Player 失效），
+    // 位图字幕渲染开关由新会话的轨道事件按 mpv 实际选择重新同步。
+    _currentSubtitleTrack = const SubtitleTrack('auto', null, null);
+    _externalCues = const [];
+    _activeCueIndex = -1;
+    _initTrackListeners();
     await player.open(Media(uri), play: false);
     if (pos > Duration.zero) {
       try {
@@ -1321,6 +1442,21 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _saveCurrentPlaybackPosition();
     _progressSaveTimer?.cancel();
     _hasRestoredPosition = false;
+
+    // 重置上一视频的字幕状态：清空外挂字幕 overlay 避免跨视频残留显示，
+    // 字幕轨恢复 auto 让 mpv 按新视频的默认轨道重新选择。
+    _externalCues = const [];
+    _activeCueIndex = -1;
+    _subtitlePath = null;
+    _subtitleEnabled = false;
+    _currentSubtitleTrack = const SubtitleTrack('auto', null, null);
+    try {
+      final platform = player.platform;
+      if (platform is NativePlayer) {
+        // 关闭上一视频可能遗留的 mpv 原生字幕渲染（位图字幕开启过）
+        await platform.setProperty('sub-visibility', 'no');
+      }
+    } catch (_) {}
 
     setState(() {
       _currentIndex = index;
@@ -1643,18 +1779,22 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   void _onVerticalDragUpdate(DragUpdateDetails details, bool isLeft) {
     if (_isLocked) return;
     final delta = -details.primaryDelta! / 250.0;
-    setState(() {
-      if (isLeft) {
-        _volume = (_volume + delta).clamp(0.0, 1.0);
-        if (!_isMuted) player.setVolume(_volume * 100.0);
+    if (isLeft) {
+      final newVolume = (_volume + delta).clamp(0.0, 1.0);
+      _setSystemVolume(newVolume);
+      setState(() {
+        _volume = newVolume;
+        _isMuted = newVolume == 0;
         _showVolumeSlider = true;
         _showBrightnessSlider = false;
-      } else {
+      });
+    } else {
+      setState(() {
         _brightness = (_brightness + delta).clamp(0.1, 1.0);
         _showBrightnessSlider = true;
         _showVolumeSlider = false;
-      }
-    });
+      });
+    }
 
     _sliderTimer?.cancel();
     _sliderTimer = Timer(const Duration(milliseconds: 1200), () {
@@ -1665,6 +1805,54 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         });
       }
     });
+  }
+
+  /// 从系统读取当前媒体音量并同步到 UI。
+  /// 将播放器内部音量固定为 100，让系统音量成为唯一控制层。
+  Future<void> _syncVolumeFromSystem({bool setPlayerVolume = false}) async {
+    try {
+      final systemVolume = await _volumeChannel.invokeMethod<double>('getStreamVolume');
+      if (systemVolume == null || !mounted) return;
+      final changed = (_volume - systemVolume).abs() > 0.001;
+      if (changed) {
+        setState(() {
+          _volume = systemVolume;
+          _isMuted = systemVolume == 0;
+          _showVolumeSlider = true;
+        });
+        _sliderTimer?.cancel();
+        _sliderTimer = Timer(const Duration(milliseconds: 1200), () {
+          if (mounted) setState(() => _showVolumeSlider = false);
+        });
+      }
+      if (setPlayerVolume) {
+        player.setVolume(100.0);
+      }
+    } catch (e) {
+      debugPrint('同步系统音量失败: $e');
+    }
+  }
+
+  /// 设置系统媒体音量（0.0 ~ 1.0）。
+  Future<void> _setSystemVolume(double volume) async {
+    try {
+      await _volumeChannel.invokeMethod('setStreamVolume', {'volume': volume});
+    } catch (e) {
+      debugPrint('设置系统音量失败: $e');
+    }
+  }
+
+  /// 启动轮询，确保通知面板等外部音量调节能实时同步到应用内滑块。
+  void _startVolumePolling() {
+    _volumePollTimer?.cancel();
+    _volumePollTimer = Timer.periodic(const Duration(milliseconds: 300), (_) {
+      _syncVolumeFromSystem();
+    });
+  }
+
+  void _stopVolumePolling() {
+    _volumePollTimer?.cancel();
+    _volumePollTimer = null;
   }
 
   void _startLongPress() {
@@ -1689,6 +1877,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     if (newFullScreen) {
       // 进入全屏：锁定横屏 + 沉浸（无论当前是竖屏还是横屏，都确保横屏全屏）。
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+      // edge-to-edge：让视频画面铺满系统手势区，消除左侧固定黑边。
+      _setEdgeToEdge(true);
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.landscapeRight,
         DeviceOrientation.landscapeLeft,
@@ -1698,6 +1888,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       // - 若当前处于横屏（多为系统自动进入全屏后再手动退出），强制转回竖屏，
       //   避免出现"横屏但非全屏"的旋转画面观感；
       // - 恢复允许横竖屏（交还系统自动旋转），按偏好显示系统栏。
+      // 复位 edge-to-edge，交还系统手势区避让（由 SafeArea 处理）。
+      _setEdgeToEdge(false);
       final forcePortrait = _currentOrientation == Orientation.landscape;
       final hideNav = PreferencesService.getHideNavigationBar();
       if (hideNav) {
@@ -1733,6 +1925,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _seekIndicatorTimer?.cancel();
     _previewDebounceTimer?.cancel();
     _sliderTimer?.cancel();
+    _volumePollTimer?.cancel();
     _cacheCheckTimer?.cancel();
     _aspectToastTimer?.cancel();
     _progressSaveTimer?.cancel();
@@ -1743,6 +1936,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     // 但 stopStreaming 内部会调用 client.disconnect() 取消下载。
     _stopCurrentStream();
     player.dispose();
+    // 离开播放页复位 edge-to-edge，避免影响其它页面布局。
+    _setEdgeToEdge(false);
     final hideNav = PreferencesService.getHideNavigationBar();
     if (hideNav) {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
@@ -1751,6 +1946,19 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     }
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     super.dispose();
+  }
+
+  /// 全屏时启用 edge-to-edge（视频画面延伸到系统手势导航区，消除左侧固定黑边）；
+  /// 退出全屏复位，由 Flutter SafeArea 恢复正常避让。
+  static const MethodChannel _edgeToEdgeChannel =
+      MethodChannel('com.sequl.zenfile/edge_to_edge');
+
+  Future<void> _setEdgeToEdge(bool enable) async {
+    try {
+      await _edgeToEdgeChannel.invokeMethod(enable ? 'enable' : 'disable');
+    } on PlatformException catch (e) {
+      debugPrint('[ZenFile] edge-to-edge failed: $e');
+    }
   }
 
   String get _fileName {
@@ -1839,7 +2047,18 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     );
   }
 
-  /// 根据当前伸缩比例模式构建视频画面
+  /// 根据当前伸缩比例模式构建视频画面。
+  /// 参照 VLC (libVLC MediaPlayer.ScaleType) 的语义实现：
+  /// - 0 适应屏幕  = BEST_FIT   等比例适配，可能留黑边 (BoxFit.contain)
+  /// - 1 拉伸填充  = FILL       拉伸填满，画面会变形   (BoxFit.fill)
+  /// - 2 居中      = ORIGINAL   原始尺寸居中           (BoxFit.none)
+  /// - 3 填充屏幕  = FIT_SCREEN 等比例裁剪填满，无黑边 (BoxFit.cover)
+  /// - 4 16:9      = 锁定容器比例 + 视频等比例裁剪填满 (AspectRatio + cover)
+  /// - 5 4:3       = 同上
+  /// - 6 自定义    = 同上
+  /// 关键点：固定比例旧实现用了 BoxFit.fill 导致画面被拉伸变形（与 VLC 不符）；
+  /// VLC 的 SURFACE_xx 是将 Surface 容器锁定为指定比例、视频以 cover 方式填充，
+  /// 因此这里固定比例统一改用 BoxFit.cover（等比例裁切，不变形、无黑边）。
   Widget _buildVideoSurface() {
     BoxFit fit;
     double? forcedRatio;
@@ -1850,20 +2069,29 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       case 2: // 居中（原始尺寸）
         fit = BoxFit.none;
         break;
-      case 3: // 16:9
-        fit = BoxFit.fill;
+      case 3: // 填充屏幕（裁剪填满，无黑边，贴合 MX/VLC 默认观感）
+        fit = BoxFit.cover;
+        break;
+      case 4: // 16:9（锁定容器比例 + 等比例裁剪填满，不变形）
+        fit = BoxFit.cover;
         forcedRatio = 16 / 9;
         break;
-      case 4: // 4:3
-        fit = BoxFit.fill;
+      case 5: // 4:3
+        fit = BoxFit.cover;
         forcedRatio = 4 / 3;
         break;
-      case 5: // 自定义
-        fit = BoxFit.fill;
+      case 6: // 自定义
+        fit = BoxFit.cover;
         forcedRatio = _customAspectRatio;
         break;
       default: // 0 适应屏幕
         fit = BoxFit.contain;
+    }
+
+    // 全屏且用户未手动切换缩放时，自动以 cover 填满屏幕，消除左右/上下黑边
+    // （贴近 MX / VLC FIT_SCREEN 观感）；用户一旦手动切过缩放档，则尊重其选择。
+    if (_isFullScreen && !_userTouchedAspect && _aspectRatioMode == 0) {
+      fit = BoxFit.cover;
     }
 
     Widget video = Video(
@@ -1894,10 +2122,12 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       case 2:
         return l10n.msg_aspect_center;
       case 3:
-        return l10n.msg_aspect_16_9;
+        return l10n.msg_aspect_fill_screen;
       case 4:
-        return l10n.msg_aspect_4_3;
+        return l10n.msg_aspect_16_9;
       case 5:
+        return l10n.msg_aspect_4_3;
+      case 6:
         return '${l10n.msg_aspect_custom} ${_customAspectRatio.toStringAsFixed(2)}';
       default:
         return l10n.msg_aspect_fit;
@@ -1907,7 +2137,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   /// 切换伸缩比例并显示提示词
   void _toggleAspectRatio() {
     setState(() {
-      _aspectRatioMode = (_aspectRatioMode + 1) % 6;
+      _userTouchedAspect = true;
+      _aspectRatioMode = (_aspectRatioMode + 1) % 7;
       _aspectToast = _aspectRatioLabel();
     });
     _aspectToastTimer?.cancel();
@@ -1943,8 +2174,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
               final value = double.tryParse(controller.text.replaceAll(',', '.'));
               if (value != null && value > 0.1 && value < 10.0) {
                 setState(() {
+                  _userTouchedAspect = true;
                   _customAspectRatio = value;
-                  _aspectRatioMode = 5;
+                  _aspectRatioMode = 6;
                   _aspectToast = _aspectRatioLabel();
                 });
                 PreferencesService.saveVideoCustomAspectRatio(value);
@@ -1973,13 +2205,26 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         _syncFullScreenWithOrientation(orientation);
       }
     });
+    // 全屏时移除系统手势/导航区的 padding，确保视频画面铺满（消除左侧固定黑边）。
+    // 配合原生 edge-to-edge 使用；即便 ROM 仍上报 inset，此处也把画面推到屏幕边缘。
+    final videoBody = _isFullScreen
+        ? MediaQuery.removePadding(
+            context: context,
+            removeLeft: true,
+            removeRight: true,
+            removeTop: true,
+            removeBottom: true,
+            child: _buildVideoSurface(),
+          )
+        : _buildVideoSurface();
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         fit: StackFit.expand,
         children: [
           // Main Video Surface (支持顺时针旋转 + 伸缩比例切换)
-          _buildVideoSurface(),
+          videoBody,
 
           // 外挂字幕 Flutter overlay（字号/位置由滑块控制，对所有格式 100% 生效）
           if (_subtitleEnabled && _externalCues.isNotEmpty && _activeCueIndex >= 0)
@@ -2294,10 +2539,21 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                       _showControls();
                     },
                     onToggleMute: () {
-                      setState(() {
-                        _isMuted = !_isMuted;
-                        player.setVolume(_isMuted ? 0.0 : _volume * 100.0);
-                      });
+                      if (_isMuted) {
+                        final target = _volumeBeforeMute > 0 ? _volumeBeforeMute : 0.5;
+                        _setSystemVolume(target);
+                        setState(() {
+                          _volume = target;
+                          _isMuted = false;
+                        });
+                      } else {
+                        _volumeBeforeMute = _volume > 0 ? _volume : 0.5;
+                        _setSystemVolume(0);
+                        setState(() {
+                          _volume = 0;
+                          _isMuted = true;
+                        });
+                      }
                       _showControls();
                     },
                     onToggleRepeat: () {

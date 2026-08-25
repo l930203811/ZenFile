@@ -7,32 +7,35 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 ---
 
-## 🚀 What's New in v1.1.32
+## 🚀 What's New in v1.1.33
 
 ### ✨ New Features
 
-- **Wake on LAN (WOL)**: New entry in Drawer → Tools. Add/Edit/Delete devices (name, MAC address, broadcast address, port), send magic packets to wake devices on LAN. Device list persisted locally. Full 10-language localization.
-- **Image Editor**: Built-in image editor with crop (free/ratio presets/ID photo sizes), rotate, flip, filters (grayscale/sepia/invert/contrast/brightness/saturation), and metadata viewer. Pure Dart implementation using `image` package — no native dependencies.
-- **One-tap Metadata Removal**: New "Remove Metadata" option in image viewer 3-dot menu. Re-encodes image stripping EXIF/GPS/ICC metadata, saves as new file.
-- **Immersive Info Bar**: Image viewer shows filename·dimensions·size·format on touch; Properties dialog adds Dimensions row.
+- **Quick Transfer (LAN)**: Independent send/receive modes, nearby-device radar discovery, connection states, pre-transfer confirmation, one-tap open in app browser after receiving, with permission hints. Fully localized in 10 languages.
+- **Category icon label visibility toggle**.
+- **AMOLED full-page pure-black theme**.
+- **Background playback anti-sleep** (battery-optimization whitelist + wake lock).
+- **Image editor**: physical dimensions (mm + DPI), preset templates (ID photo / passport / US visa), file size limit.
+- **Audio equalizer with 5 presets** (Original / HD Vocals / Bass / Live / Jazz).
+- **Video player**: built-in multi audio/subtitle track selection; gesture optimization (double-tap to pause/play, long-press for speed, swipe left/right to seek).
+- **Drawer / Custom shortcuts**: added Quick Transfer entry.
+
+### ⚙️ Optimizations
+
+- **Image viewer**: top info bar rebuilt (dimensions/time/format/size/EXIF), rotate changed to preview-only (no save), live EXIF display, filename title restored.
+- **Video player**: bottom button layout/ordering, portrait overflow fix, auto landscape on system rotation, scale (fill screen / cover), landscape camera black-bar fix.
+- **Audio player**: equalizer preset switching takes effect, bass/vocal distortion fixed.
+- **Video volume**: player slider now syncs in real time with system media volume.
+- **Audio playback mode**: now persisted across app restarts.
+- **Image editing**: crop ratio fix (square / 4:3 / 3:4 / ID photo).
 
 ### 🐛 Bug Fixes
 
-- Fixed Select All button in category page cross-selecting files from other folders when browsing by folder: Images/Videos/Audios/Screenshots/Documents/Archives/Downloads/APKs — 8 categories now only select files within the current folder when in folder view; Select All selects all files only in "All Items" view.
-- Fixed Select All button failing to select files in the Screenshots folder (DCIM/Screenshots) when browsing by folder in the Images category.
-- Fixed "Show in Location" not navigating to the browse page for images/screenshots (works for both local and remote paths).
-- Fixed batch operation backup button title showing "Backing up..." (changed to "Backup", updated across all 10 languages).
-- Fixed image viewer Dismissible widget missing closing bracket causing compile errors.
-- Fixed Select All in category page mixing remote/local files (now filters by current scope).
-- Fixed residual blank icons on category page after deleting or moving files in non-media categories (Documents/Archives/Downloads/APKs).
-- Fixed residual thumbnails and unsynchronized siblingItems after deleting remote images.
-- Fixed category total size flickering "shows ~1s → zeros out → reload restores" on startup.
-- Fixed tab bar horizontal swipe accidentally triggering page switch (new tabBarInteracting flag).
-- Fixed auto-backup toggle not taking effect (new _autoSyncTriggered guard + isLoaded check).
-- Fixed backup logic errors (re-uploads missing remote files instead of discarding records).
-- Fixed "Open Location" requiring manual back press to see navigation (now uses popUntil(isFirst) to navigate home directly).
-- Fixed refresh button not scanning non-media files (APKs not loading), corrected category branch logic and added onlyApk parameter.
-- Fixed batch backup progress dialog stuck and not dismissing (switched to rootNavigator mode + backupDialogOpen flag).
+- **Text editor**: hardcoded error toast when opening unknown files via "Open as text" is now localized.
+- **Desktop lyrics**: hardcoded Chinese permission Toast is now localized.
+- **Directory picker**: hardcoded Chinese "Pin selection" button is now localized.
+- **Restricted directories** (Android/data | obb): fixed copy-to-local/remote errors (second fix).
+- **Long-press menu**: restored v1.1.32 layout with high-contrast background and stroke.
 
 ---
 

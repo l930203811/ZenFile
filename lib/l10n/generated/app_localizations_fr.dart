@@ -2948,6 +2948,9 @@ class L10nFr extends L10n {
   String get ui_language => 'Langue';
 
   @override
+  String get ui_follow_system => 'Automatique (suivre le système)';
+
+  @override
   String get ui_hide_nav_labels =>
       'Masquer les étiquettes de navigation inférieure';
 
@@ -4348,6 +4351,9 @@ class L10nFr extends L10n {
   String get msg_aspect_custom => 'Personnalisé';
 
   @override
+  String get msg_aspect_fill_screen => 'Remplir l\'écran';
+
+  @override
   String get msg_custom_aspect_ratio => 'Rapport d\'aspect personnalisé';
 
   @override
@@ -5635,6 +5641,82 @@ class L10nFr extends L10n {
   }
 
   @override
+  String get quick_transfer => 'Transfert rapide';
+
+  @override
+  String get quick_transfer_send => 'Envoyer';
+
+  @override
+  String get quick_transfer_receive => 'Recevoir';
+
+  @override
+  String get quick_transfer_send_hint =>
+      'Choisissez un dossier à partager; les appareils sur le même Wi-Fi ouvrent l\'adresse dans le navigateur pour télécharger.';
+
+  @override
+  String get quick_transfer_receive_hint =>
+      'Choisissez un dossier de sauvegarde; les appareils sur le même Wi-Fi ouvrent l\'adresse dans le navigateur pour envoyer des fichiers vers cet appareil.';
+
+  @override
+  String get quick_transfer_share_dir => 'Dossier à partager';
+
+  @override
+  String get quick_transfer_save_dir => 'Enregistrer dans';
+
+  @override
+  String get quick_transfer_default_share =>
+      'Par défaut : racine du stockage interne';
+
+  @override
+  String get quick_transfer_default_save =>
+      'Par défaut : racine du stockage interne';
+
+  @override
+  String get quick_transfer_online => 'Actif';
+
+  @override
+  String get quick_transfer_address => 'Adresse de cet appareil';
+
+  @override
+  String get quick_transfer_copy => 'Copier';
+
+  @override
+  String get quick_transfer_copied => 'Adresse copiée';
+
+  @override
+  String get quick_transfer_send_tip =>
+      'Envoyez l\'adresse ci-dessus à l\'autre personne ; elle l\'ouvre dans le navigateur et télécharge les fichiers du dossier sélectionné.';
+
+  @override
+  String get quick_transfer_receive_tip =>
+      'Envoyez l\'adresse ci-dessus à l\'autre personne ; elle l\'ouvre dans le navigateur et envoie des fichiers vers le dossier sélectionné sur cet appareil.';
+
+  @override
+  String get quick_transfer_connected => 'Appareils connectés';
+
+  @override
+  String quick_transfer_started(Object url) {
+    return 'Transfert rapide démarré : $url';
+  }
+
+  @override
+  String get quick_transfer_stopped => 'Transfert rapide arrêté';
+
+  @override
+  String get quick_transfer_running =>
+      'Transfert rapide en cours, arrêtez d\'abord';
+
+  @override
+  String quick_transfer_running_at(Object url) {
+    return 'En cours : $url';
+  }
+
+  @override
+  String quick_transfer_failed(Object error) {
+    return 'Échec du démarrage du Transfert rapide : $error';
+  }
+
+  @override
   String get wol_title => 'Wake on LAN';
 
   @override
@@ -5685,4 +5767,235 @@ class L10nFr extends L10n {
 
   @override
   String get wol_port_hint => 'Facultatif';
+
+  @override
+  String get quick_transfer_nearby_devices => '附近设备';
+
+  @override
+  String get quick_transfer_scanning => '正在扫描附近设备…';
+
+  @override
+  String get quick_transfer_scan_hint => '双方都需打开快传并保持本页面在前台';
+
+  @override
+  String get quick_transfer_tap_to_connect => '点击设备名发起连接';
+
+  @override
+  String quick_transfer_connecting(Object name) {
+    return '正在连接 $name…';
+  }
+
+  @override
+  String quick_transfer_connected_as(Object role) {
+    return '已连接（本机为 $role）';
+  }
+
+  @override
+  String get quick_transfer_role_owner => '发送端';
+
+  @override
+  String get quick_transfer_role_client => '接收端';
+
+  @override
+  String get quick_transfer_select_files => '选择要发送的文件 / 文件夹';
+
+  @override
+  String quick_transfer_selected_summary(Object count, Object size) {
+    return '已选 $count 项，共 $size';
+  }
+
+  @override
+  String get quick_transfer_begin_send => '开始发送';
+
+  @override
+  String quick_transfer_incoming(Object name) {
+    return '收到来自 $name 的发送请求';
+  }
+
+  @override
+  String quick_transfer_incoming_files(Object count, Object size) {
+    return '$count 个文件，共 $size';
+  }
+
+  @override
+  String get quick_transfer_accept => '接受';
+
+  @override
+  String get quick_transfer_reject => '拒绝';
+
+  @override
+  String get quick_transfer_sending => '正在发送…';
+
+  @override
+  String get quick_transfer_receiving => '正在接收…';
+
+  @override
+  String get quick_transfer_complete => '传输完成';
+
+  @override
+  String get quick_transfer_waiting_peer => '等待对方连接…';
+
+  @override
+  String get quick_transfer_connected_waiting_files =>
+      'Connecté. En attente de l\'envoi des fichiers par l\'expéditeur…';
+
+  @override
+  String get quick_transfer_permission_why =>
+      'Le scan WiFi Direct nécessite l\'autorisation de localisation/appareils à proximité. Votre position n\'est pas collectée.';
+
+  @override
+  String get quick_transfer_permission_required => '快传需要位置/附近设备权限以发现附近设备';
+
+  @override
+  String get quick_transfer_not_supported => '当前设备不支持 WiFi Direct 快传';
+
+  @override
+  String get quick_transfer_disconnect => '断开';
+
+  @override
+  String get quick_transfer_cancel => '取消';
+
+  @override
+  String get quick_transfer_save_to => '保存到';
+
+  @override
+  String get quick_transfer_send_mode => '发送';
+
+  @override
+  String get quick_transfer_receive_mode => '接收';
+
+  @override
+  String get quick_transfer_device_name => '本机名称';
+
+  @override
+  String get quick_transfer_retry => 'Réessayer';
+
+  @override
+  String get quick_transfer_permission_grant => 'Autoriser et continuer';
+
+  @override
+  String get quick_transfer_open_settings => 'Ouvrir les paramètres';
+
+  @override
+  String get quick_transfer_wifi_required =>
+      'Veuillez activer le WLAN (WiFi). Le transfert rapide nécessite WiFi Direct.';
+
+  @override
+  String get quick_transfer_create_group_failed =>
+      'Échec de l\'établissement de la connexion. Veuillez activer le WLAN et accorder les autorisations.';
+
+  @override
+  String get quick_transfer_receive_path => 'Chemin de réception';
+
+  @override
+  String get quick_transfer_change_path => 'Modifier';
+
+  @override
+  String get quick_transfer_back => 'Retour';
+
+  @override
+  String get quick_transfer_send_button => 'Envoyer';
+
+  @override
+  String get quick_transfer_receive_button => 'Recevoir';
+
+  @override
+  String get quick_transfer_open_location => 'Ouvrir l\'emplacement du fichier';
+
+  @override
+  String get quick_transfer_receive_complete => 'Réception terminée';
+
+  @override
+  String quick_transfer_files_saved_to(Object path) {
+    return 'Fichiers enregistrés dans $path';
+  }
+
+  @override
+  String get quick_transfer_connect_btn => 'Se connecter';
+
+  @override
+  String get quick_transfer_connected_btn => 'Connecté';
+
+  @override
+  String get quick_transfer_available_peers => 'Appareils disponibles';
+
+  @override
+  String quick_transfer_selected_count(Object count) {
+    return '$count sélectionné(s)';
+  }
+
+  @override
+  String get changelog_v1133_new_1 =>
+      'Transfert rapide (LAN) : modes d\'envoi/réception indépendants, détection radar des appareils à proximité, états de connexion, confirmation avant transfert, ouverture en un toucher dans le navigateur de l\'application après réception, avec indications de permissions. Entièrement localisé en 10 langues.';
+
+  @override
+  String get changelog_v1133_new_2 =>
+      'Bascule de visibilité des libellés d\'icônes de catégorie.';
+
+  @override
+  String get changelog_v1133_new_3 => 'Thème AMOLED pleine page en noir pur.';
+
+  @override
+  String get changelog_v1133_new_4 =>
+      'Lecture en arrière-plan sans mise en veille (liste blanche d\'optimisation batterie + verrou de réveil).';
+
+  @override
+  String get changelog_v1133_new_5 =>
+      'Éditeur d\'images : dimensions physiques (mm + DPI), modèles prédéfinis (photo d\'identité / passeport / visa US), limite de taille de fichier.';
+
+  @override
+  String get changelog_v1133_new_6 =>
+      'Égaliseur audio avec 5 préréglages (Origine / Voix HD / Graves / Live / Jazz).';
+
+  @override
+  String get changelog_v1133_new_7 =>
+      'Lecteur vidéo : sélection intégrée de plusieurs pistes audio/sous-titres ; optimisation des gestes (double-tap pour pause/lecture, appui long pour la vitesse, glisser gauche/droite pour avancer/reculer).';
+
+  @override
+  String get changelog_v1133_new_8 =>
+      'Tiroir / Raccourcis personnalisés : ajout de l\'entrée Transfert rapide.';
+
+  @override
+  String get changelog_v1133_opt_1 =>
+      'Visionneuse d\'images : barre d\'information supérieure reconstruite (dimensions/temps/format/taille/EXIF), rotation modifiée en simple aperçu (sans enregistrement), affichage EXIF en direct, titre du nom de fichier restauré.';
+
+  @override
+  String get changelog_v1133_opt_2 =>
+      'Lecteur vidéo : disposition/ordre des boutons inférieurs, correction du débordement en portrait, rotation automatique en paysage du système, échelle (remplissage écran / cover), correction des bandes noires caméra en paysage plein écran.';
+
+  @override
+  String get changelog_v1133_opt_3 =>
+      'Lecteur audio : le changement de préréglage de l\'égaliseur prend effet, distorsion graves/voix corrigée.';
+
+  @override
+  String get changelog_v1133_opt_4 =>
+      'Volume vidéo : le curseur du lecteur se synchronise désormais en temps réel avec le volume multimédia du système.';
+
+  @override
+  String get changelog_v1133_opt_5 =>
+      'Mode de lecture audio : désormais conservé après redémarrage de l\'application.';
+
+  @override
+  String get changelog_v1133_opt_6 =>
+      'Édition d\'images : correction du ratio de recadrage (carré / 4:3 / 3:4 / photo d\'identité).';
+
+  @override
+  String get changelog_v1133_fix_1 =>
+      'Éditeur de texte : le message d\'erreur codé en dur lors de l\'ouverture de fichiers inconnus via « Ouvrir comme texte » est désormais localisé.';
+
+  @override
+  String get changelog_v1133_fix_2 =>
+      'Paroles sur le bureau : le Toast chinois codé en dur pour les permissions est désormais localisé.';
+
+  @override
+  String get changelog_v1133_fix_3 =>
+      'Sélecteur de répertoire : le bouton chinois codé en dur « Épingler la sélection » est désormais localisé.';
+
+  @override
+  String get changelog_v1133_fix_4 =>
+      'Répertoires restreints (Android/data | obb) : correction des erreurs de copie vers le local/distant (seconde correction).';
+
+  @override
+  String get changelog_v1133_fix_5 =>
+      'Menu contextuel (appui long) : structure d\'affichage de la v1.1.32 restaurée avec fond à contraste élevé et contour.';
 }

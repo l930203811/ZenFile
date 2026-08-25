@@ -17,7 +17,7 @@ if (hasReleaseKeystore) {
 
 android {
     namespace = "com.sequl.zenfile"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

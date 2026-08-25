@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:path/path.dart' as path_helper;
 import 'package:flutter/material.dart';
@@ -29,6 +30,7 @@ import '../widgets/batch_rename_dialog.dart';
 import '../widgets/archive_type_icon.dart';
 import '../widgets/file_type_icon.dart';
 import '../widgets/remote_path_picker.dart';
+import '../widgets/circular_progress_dialog.dart';
 import 'internal_file_picker_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
@@ -438,25 +440,23 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       return;
     }
     final statusNotifier = ValueNotifier<String>(L10n.of(context).ui_syncing);
+    var wentBackground = false;
     if (mounted) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (ctx) => AlertDialog(
-          title: Text(L10n.of(ctx).ui_backup),
-          content: ValueListenableBuilder<String>(
-            valueListenable: statusNotifier,
-            builder: (c, status, _) => Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 8),
-                const CircularProgressIndicator(),
-                const SizedBox(height: 12),
-                Text(status),
-              ],
-            ),
-          ),
+      unawaited(
+        CircularProgressDialog.show(
+          context: context,
+          title: L10n.of(context).ui_backup,
+          statusNotifier: statusNotifier,
+          percentage: null,
+          onCancel: () {
+            // 取消：通过 pop 关闭对话框，syncCategoryPairs 内部会捕获中断
+            if (Navigator.canPop(context)) Navigator.of(context).pop();
+          },
+          onBackground: () {
+            // 后台：关闭对话框，备份任务继续在后台运行（下方 await 不中断）。
+            wentBackground = true;
+            if (Navigator.canPop(context)) Navigator.of(context).pop();
+          },
         ),
       );
     }
@@ -467,7 +467,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         onStatus: (s) => statusNotifier.value = s,
       );
       if (mounted) {
-        Navigator.of(context).pop();
+        if (Navigator.canPop(context)) Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(L10n.of(context).ui_sync_done)),
         );
@@ -477,7 +477,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       }
     } catch (e) {
       if (mounted) {
-        Navigator.of(context).pop();
+        if (Navigator.canPop(context)) Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(L10n.of(context).ui_backup_failed(e.toString()))),
         );

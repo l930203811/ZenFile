@@ -165,7 +165,7 @@ object DesktopLyricService {
                 )
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 activity.startActivity(intent)
-                Toast.makeText(activity, "请授予悬浮窗权限后重试", Toast.LENGTH_LONG).show()
+                // 提示已由 Flutter 侧通过 L10n 展示，原生层不再弹出硬编码 Toast
             }
         }
     }
@@ -192,7 +192,7 @@ object DesktopLyricService {
             layoutParams = null
         }
         if (!checkOverlayPermission(context)) {
-            Toast.makeText(context, "未授予悬浮窗权限", Toast.LENGTH_SHORT).show()
+            // 权限提示统一由 Flutter 侧通过 L10n 处理
             return
         }
 

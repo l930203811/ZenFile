@@ -1276,6 +1276,71 @@ class MainActivity : AudioServiceFragmentActivity() {
         // 桌面歌词悬浮窗服务
         DesktopLyricService.register(this, flutterEngine.dartExecutor.binaryMessenger)
 
+        // 快传 WiFi Direct (P2P) 原生封装：设备发现/连接/GO IP
+        QuickTransferP2pPlugin.register(this, flutterEngine.dartExecutor.binaryMessenger)
+
+        // 全屏视频 edge-to-edge：让视频画面延伸到系统手势导航区，消除左侧固定黑边。
+        // 普通页面仍由 Flutter SafeArea 处理避让；仅视频全屏时启用。
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/edge_to_edge").setMethodCallHandler { call, result ->
+            try {
+                val window = window
+                if (call.method == "enable") {
+                    // 关键：允许窗口延伸进刘海/挖孔区域。默认 default 模式在横屏下
+                    // 会强制 letterbox（摄像头整条侧边留黑），且黑边画在窗口外，
+                    // FLAG_LAYOUT_NO_LIMITS / setDecorFitsSystemWindows 均无法覆盖，
+                    // 必须显式设置 cutout mode 才能铺满全屏。
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        val attrs = window.attributes
+                        attrs.layoutInDisplayCutoutMode =
+                            android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+                        window.attributes = attrs
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        // Android 11+：WindowInsetsController 控制 behavior
+                        window.setDecorFitsSystemWindows(false)
+                        val controller = window.insetsController
+                        if (controller != null) {
+                            controller.systemBarsBehavior =
+                                android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                        }
+                    } else {
+                        @Suppress("DEPRECATION")
+                        val flags = (
+                            android.view.WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+                                or android.view.WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                                or android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
+                            )
+                        @Suppress("DEPRECATION")
+                        window.addFlags(flags)
+                    }
+                    result.success(true)
+                } else if (call.method == "disable") {
+                    // 退出全屏：恢复默认 cutout 避让（交还系统处理）。
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        val attrs = window.attributes
+                        attrs.layoutInDisplayCutoutMode =
+                            android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
+                        window.attributes = attrs
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        window.setDecorFitsSystemWindows(true)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        window.clearFlags(
+                            android.view.WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+                                or android.view.WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                                or android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION,
+                        )
+                    }
+                    result.success(true)
+                } else {
+                    result.notImplemented()
+                }
+            } catch (e: Exception) {
+                result.error("EDGE_TO_EDGE_ERROR", e.message, null)
+            }
+        }
+
         notificationsChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/notifications")
         notificationsChannel?.setMethodCallHandler { call, result ->
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -1642,6 +1707,31 @@ class MainActivity : AudioServiceFragmentActivity() {
                     }
                 }
                 else -> result.notImplemented()
+            }
+        }
+
+        // 系统音量同步：供视频播放器滑块与系统音量保持一致。
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/volume").setMethodCallHandler { call, result ->
+            try {
+                val audioManager = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
+                when (call.method) {
+                    "getStreamVolume" -> {
+                        val current = audioManager.getStreamVolume(android.media.AudioManager.STREAM_MUSIC).toFloat()
+                        val max = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC).toFloat()
+                        val volume = if (max > 0) current / max else 0f
+                        result.success(volume.toDouble())
+                    }
+                    "setStreamVolume" -> {
+                        val volume = (call.argument<Number>("volume")?.toFloat() ?: 0f).coerceIn(0f, 1f)
+                        val max = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC)
+                        val target = (volume * max).toInt()
+                        audioManager.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, target, 0)
+                        result.success(true)
+                    }
+                    else -> result.notImplemented()
+                }
+            } catch (e: Exception) {
+                result.error("VOLUME_ERROR", e.message, null)
             }
         }
     }

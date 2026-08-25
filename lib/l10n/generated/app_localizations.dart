@@ -5332,6 +5332,12 @@ abstract class L10n {
   /// **'语言'**
   String get ui_language;
 
+  /// No description provided for @ui_follow_system.
+  ///
+  /// In zh, this message translates to:
+  /// **'自动（跟随系统）'**
+  String get ui_follow_system;
+
   /// No description provided for @ui_hide_nav_labels.
   ///
   /// In zh, this message translates to:
@@ -7744,6 +7750,12 @@ abstract class L10n {
   /// **'自定义'**
   String get msg_aspect_custom;
 
+  /// Video aspect ratio mode: fill screen (crop, no black bars)
+  ///
+  /// In zh, this message translates to:
+  /// **'填充屏幕'**
+  String get msg_aspect_fill_screen;
+
   /// Video player menu item for custom aspect ratio
   ///
   /// In zh, this message translates to:
@@ -10018,6 +10030,132 @@ abstract class L10n {
   /// **'输出：{size}'**
   String editor_output_size(Object size);
 
+  /// Quick Transfer: quick_transfer
+  ///
+  /// In zh, this message translates to:
+  /// **'快传'**
+  String get quick_transfer;
+
+  /// Quick Transfer: quick_transfer_send
+  ///
+  /// In zh, this message translates to:
+  /// **'我要发送'**
+  String get quick_transfer_send;
+
+  /// Quick Transfer: quick_transfer_receive
+  ///
+  /// In zh, this message translates to:
+  /// **'我要接收'**
+  String get quick_transfer_receive;
+
+  /// Quick Transfer: quick_transfer_send_hint
+  ///
+  /// In zh, this message translates to:
+  /// **'选择要分享的文件夹，对侧设备在同一 Wi-Fi 下用浏览器打开地址即可下载文件。'**
+  String get quick_transfer_send_hint;
+
+  /// Quick Transfer: quick_transfer_receive_hint
+  ///
+  /// In zh, this message translates to:
+  /// **'选择接收文件的保存目录，对侧设备在同一 Wi-Fi 下用浏览器打开地址即可上传文件到本机。'**
+  String get quick_transfer_receive_hint;
+
+  /// Quick Transfer: quick_transfer_share_dir
+  ///
+  /// In zh, this message translates to:
+  /// **'分享目录'**
+  String get quick_transfer_share_dir;
+
+  /// Quick Transfer: quick_transfer_save_dir
+  ///
+  /// In zh, this message translates to:
+  /// **'保存到'**
+  String get quick_transfer_save_dir;
+
+  /// Quick Transfer: quick_transfer_default_share
+  ///
+  /// In zh, this message translates to:
+  /// **'默认：内部存储根目录'**
+  String get quick_transfer_default_share;
+
+  /// Quick Transfer: quick_transfer_default_save
+  ///
+  /// In zh, this message translates to:
+  /// **'默认：内部存储根目录'**
+  String get quick_transfer_default_save;
+
+  /// Quick Transfer: quick_transfer_online
+  ///
+  /// In zh, this message translates to:
+  /// **'已开启'**
+  String get quick_transfer_online;
+
+  /// Quick Transfer: quick_transfer_address
+  ///
+  /// In zh, this message translates to:
+  /// **'本机地址'**
+  String get quick_transfer_address;
+
+  /// Quick Transfer: quick_transfer_copy
+  ///
+  /// In zh, this message translates to:
+  /// **'复制'**
+  String get quick_transfer_copy;
+
+  /// Quick Transfer: quick_transfer_copied
+  ///
+  /// In zh, this message translates to:
+  /// **'已复制地址'**
+  String get quick_transfer_copied;
+
+  /// Quick Transfer: quick_transfer_send_tip
+  ///
+  /// In zh, this message translates to:
+  /// **'将上方地址发给对方，对方在浏览器中打开即可下载所选目录内的文件。'**
+  String get quick_transfer_send_tip;
+
+  /// Quick Transfer: quick_transfer_receive_tip
+  ///
+  /// In zh, this message translates to:
+  /// **'将上方地址发给对方，对方在浏览器中打开后可将文件上传到本机所选目录。'**
+  String get quick_transfer_receive_tip;
+
+  /// Quick Transfer: quick_transfer_connected
+  ///
+  /// In zh, this message translates to:
+  /// **'已连接设备'**
+  String get quick_transfer_connected;
+
+  /// Quick Transfer: quick_transfer_started
+  ///
+  /// In zh, this message translates to:
+  /// **'快传已开启：{url}'**
+  String quick_transfer_started(Object url);
+
+  /// Quick Transfer: quick_transfer_stopped
+  ///
+  /// In zh, this message translates to:
+  /// **'快传已停止'**
+  String get quick_transfer_stopped;
+
+  /// Quick Transfer: quick_transfer_running
+  ///
+  /// In zh, this message translates to:
+  /// **'快传服务运行中，请先停止'**
+  String get quick_transfer_running;
+
+  /// Quick Transfer: quick_transfer_running_at
+  ///
+  /// In zh, this message translates to:
+  /// **'运行中：{url}'**
+  String quick_transfer_running_at(Object url);
+
+  /// Quick Transfer: quick_transfer_failed
+  ///
+  /// In zh, this message translates to:
+  /// **'快传开启失败：{error}'**
+  String quick_transfer_failed(Object error);
+
   /// Wake on LAN: drawer tools entry title
   ///
   /// In zh, this message translates to:
@@ -10113,6 +10251,396 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'选填'**
   String get wol_port_hint;
+
+  /// Quick Transfer P2P: quick_transfer_nearby_devices
+  ///
+  /// In zh, this message translates to:
+  /// **'附近设备'**
+  String get quick_transfer_nearby_devices;
+
+  /// Quick Transfer P2P: quick_transfer_scanning
+  ///
+  /// In zh, this message translates to:
+  /// **'正在扫描附近设备…'**
+  String get quick_transfer_scanning;
+
+  /// Quick Transfer P2P: quick_transfer_scan_hint
+  ///
+  /// In zh, this message translates to:
+  /// **'双方都需打开快传并保持本页面在前台'**
+  String get quick_transfer_scan_hint;
+
+  /// Quick Transfer P2P: quick_transfer_tap_to_connect
+  ///
+  /// In zh, this message translates to:
+  /// **'点击设备名发起连接'**
+  String get quick_transfer_tap_to_connect;
+
+  /// Quick Transfer P2P: quick_transfer_connecting
+  ///
+  /// In zh, this message translates to:
+  /// **'正在连接 {name}…'**
+  String quick_transfer_connecting(Object name);
+
+  /// Quick Transfer P2P: quick_transfer_connected_as
+  ///
+  /// In zh, this message translates to:
+  /// **'已连接（本机为 {role}）'**
+  String quick_transfer_connected_as(Object role);
+
+  /// Quick Transfer P2P: quick_transfer_role_owner
+  ///
+  /// In zh, this message translates to:
+  /// **'发送端'**
+  String get quick_transfer_role_owner;
+
+  /// Quick Transfer P2P: quick_transfer_role_client
+  ///
+  /// In zh, this message translates to:
+  /// **'接收端'**
+  String get quick_transfer_role_client;
+
+  /// Quick Transfer P2P: quick_transfer_select_files
+  ///
+  /// In zh, this message translates to:
+  /// **'选择要发送的文件 / 文件夹'**
+  String get quick_transfer_select_files;
+
+  /// Quick Transfer P2P: quick_transfer_selected_summary
+  ///
+  /// In zh, this message translates to:
+  /// **'已选 {count} 项，共 {size}'**
+  String quick_transfer_selected_summary(Object count, Object size);
+
+  /// Quick Transfer P2P: quick_transfer_begin_send
+  ///
+  /// In zh, this message translates to:
+  /// **'开始发送'**
+  String get quick_transfer_begin_send;
+
+  /// Quick Transfer P2P: quick_transfer_incoming
+  ///
+  /// In zh, this message translates to:
+  /// **'收到来自 {name} 的发送请求'**
+  String quick_transfer_incoming(Object name);
+
+  /// Quick Transfer P2P: quick_transfer_incoming_files
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 个文件，共 {size}'**
+  String quick_transfer_incoming_files(Object count, Object size);
+
+  /// Quick Transfer P2P: quick_transfer_accept
+  ///
+  /// In zh, this message translates to:
+  /// **'接受'**
+  String get quick_transfer_accept;
+
+  /// Quick Transfer P2P: quick_transfer_reject
+  ///
+  /// In zh, this message translates to:
+  /// **'拒绝'**
+  String get quick_transfer_reject;
+
+  /// Quick Transfer P2P: quick_transfer_sending
+  ///
+  /// In zh, this message translates to:
+  /// **'正在发送…'**
+  String get quick_transfer_sending;
+
+  /// Quick Transfer P2P: quick_transfer_receiving
+  ///
+  /// In zh, this message translates to:
+  /// **'正在接收…'**
+  String get quick_transfer_receiving;
+
+  /// Quick Transfer P2P: quick_transfer_complete
+  ///
+  /// In zh, this message translates to:
+  /// **'传输完成'**
+  String get quick_transfer_complete;
+
+  /// Quick Transfer P2P: quick_transfer_waiting_peer
+  ///
+  /// In zh, this message translates to:
+  /// **'等待对方连接…'**
+  String get quick_transfer_waiting_peer;
+
+  /// Quick Transfer P2P: quick_transfer_connected_waiting_files
+  ///
+  /// In zh, this message translates to:
+  /// **'已连接，等待对方发送文件…'**
+  String get quick_transfer_connected_waiting_files;
+
+  /// Quick Transfer P2P: quick_transfer_permission_why
+  ///
+  /// In zh, this message translates to:
+  /// **'WiFi Direct 扫描需要位置/附近设备权限，不会收集您的地理位置'**
+  String get quick_transfer_permission_why;
+
+  /// Quick Transfer P2P: quick_transfer_permission_required
+  ///
+  /// In zh, this message translates to:
+  /// **'快传需要位置/附近设备权限以发现附近设备'**
+  String get quick_transfer_permission_required;
+
+  /// Quick Transfer P2P: quick_transfer_not_supported
+  ///
+  /// In zh, this message translates to:
+  /// **'当前设备不支持 WiFi Direct 快传'**
+  String get quick_transfer_not_supported;
+
+  /// Quick Transfer P2P: quick_transfer_disconnect
+  ///
+  /// In zh, this message translates to:
+  /// **'断开'**
+  String get quick_transfer_disconnect;
+
+  /// Quick Transfer P2P: quick_transfer_cancel
+  ///
+  /// In zh, this message translates to:
+  /// **'取消'**
+  String get quick_transfer_cancel;
+
+  /// Quick Transfer P2P: quick_transfer_save_to
+  ///
+  /// In zh, this message translates to:
+  /// **'保存到'**
+  String get quick_transfer_save_to;
+
+  /// Quick Transfer P2P: quick_transfer_send_mode
+  ///
+  /// In zh, this message translates to:
+  /// **'发送'**
+  String get quick_transfer_send_mode;
+
+  /// Quick Transfer P2P: quick_transfer_receive_mode
+  ///
+  /// In zh, this message translates to:
+  /// **'接收'**
+  String get quick_transfer_receive_mode;
+
+  /// Quick Transfer P2P: quick_transfer_device_name
+  ///
+  /// In zh, this message translates to:
+  /// **'本机名称'**
+  String get quick_transfer_device_name;
+
+  /// Quick Transfer P2P: quick_transfer_retry
+  ///
+  /// In zh, this message translates to:
+  /// **'重试'**
+  String get quick_transfer_retry;
+
+  /// Quick Transfer P2P: quick_transfer_permission_grant
+  ///
+  /// In zh, this message translates to:
+  /// **'授权并继续'**
+  String get quick_transfer_permission_grant;
+
+  /// Quick Transfer P2P: quick_transfer_open_settings
+  ///
+  /// In zh, this message translates to:
+  /// **'去设置页开启'**
+  String get quick_transfer_open_settings;
+
+  /// Quick Transfer P2P: quick_transfer_wifi_required
+  ///
+  /// In zh, this message translates to:
+  /// **'请先打开 WLAN（WiFi），快传需要 WiFi Direct 建组'**
+  String get quick_transfer_wifi_required;
+
+  /// Quick Transfer P2P: quick_transfer_create_group_failed
+  ///
+  /// In zh, this message translates to:
+  /// **'建立快传连接失败，请确保已开启 WLAN 并授予位置/附近设备权限后重试'**
+  String get quick_transfer_create_group_failed;
+
+  /// Quick Transfer P2P: quick_transfer_receive_path
+  ///
+  /// In zh, this message translates to:
+  /// **'接收路径'**
+  String get quick_transfer_receive_path;
+
+  /// Quick Transfer P2P: quick_transfer_change_path
+  ///
+  /// In zh, this message translates to:
+  /// **'更改'**
+  String get quick_transfer_change_path;
+
+  /// Quick Transfer P2P: quick_transfer_back
+  ///
+  /// In zh, this message translates to:
+  /// **'返回'**
+  String get quick_transfer_back;
+
+  /// Quick Transfer P2P: quick_transfer_send_button
+  ///
+  /// In zh, this message translates to:
+  /// **'发送'**
+  String get quick_transfer_send_button;
+
+  /// Quick Transfer P2P: quick_transfer_receive_button
+  ///
+  /// In zh, this message translates to:
+  /// **'接收'**
+  String get quick_transfer_receive_button;
+
+  /// Quick Transfer P2P: quick_transfer_open_location
+  ///
+  /// In zh, this message translates to:
+  /// **'打开文件所在位置'**
+  String get quick_transfer_open_location;
+
+  /// Quick Transfer P2P: quick_transfer_receive_complete
+  ///
+  /// In zh, this message translates to:
+  /// **'接收完成'**
+  String get quick_transfer_receive_complete;
+
+  /// Quick Transfer P2P: quick_transfer_files_saved_to
+  ///
+  /// In zh, this message translates to:
+  /// **'文件已保存到 {path}'**
+  String quick_transfer_files_saved_to(Object path);
+
+  /// Quick Transfer P2P: quick_transfer_connect_btn
+  ///
+  /// In zh, this message translates to:
+  /// **'连接'**
+  String get quick_transfer_connect_btn;
+
+  /// Quick Transfer P2P: quick_transfer_connected_btn
+  ///
+  /// In zh, this message translates to:
+  /// **'已连接'**
+  String get quick_transfer_connected_btn;
+
+  /// Quick Transfer P2P: quick_transfer_available_peers
+  ///
+  /// In zh, this message translates to:
+  /// **'可连接设备'**
+  String get quick_transfer_available_peers;
+
+  /// Quick Transfer P2P: quick_transfer_selected_count
+  ///
+  /// In zh, this message translates to:
+  /// **'已选 {count} 项'**
+  String quick_transfer_selected_count(Object count);
+
+  /// v1.1.33 changelog: changelog_v1133_new_1
+  ///
+  /// In zh, this message translates to:
+  /// **'快传功能（局域网传输）：独立快传页面（发送/接收双模式）、附近设备雷达扫描发现、设备连接/已连接状态、传输前确认机制、接收完成后一键在本应用浏览页打开、权限说明，全 10 语言。'**
+  String get changelog_v1133_new_1;
+
+  /// v1.1.33 changelog: changelog_v1133_new_2
+  ///
+  /// In zh, this message translates to:
+  /// **'分类图标标签显隐开关'**
+  String get changelog_v1133_new_2;
+
+  /// v1.1.33 changelog: changelog_v1133_new_3
+  ///
+  /// In zh, this message translates to:
+  /// **'AMOLED 全页纯黑主题'**
+  String get changelog_v1133_new_3;
+
+  /// v1.1.33 changelog: changelog_v1133_new_4
+  ///
+  /// In zh, this message translates to:
+  /// **'后台播放防休眠（电池优化白名单 + 唤醒锁）'**
+  String get changelog_v1133_new_4;
+
+  /// v1.1.33 changelog: changelog_v1133_new_5
+  ///
+  /// In zh, this message translates to:
+  /// **'图片编辑器：物理尺寸(mm+DPI)、预设模板(证件照/护照/美签)、文件大小限制'**
+  String get changelog_v1133_new_5;
+
+  /// v1.1.33 changelog: changelog_v1133_new_6
+  ///
+  /// In zh, this message translates to:
+  /// **'音频均衡器 5 预设（原声/HD人声/低音/现场/爵士）'**
+  String get changelog_v1133_new_6;
+
+  /// v1.1.33 changelog: changelog_v1133_new_7
+  ///
+  /// In zh, this message translates to:
+  /// **'视频播放器：内嵌多音轨/多字幕轨选择；手势优化（双击暂停/播放、长按倍速、左右滑快进/快退）'**
+  String get changelog_v1133_new_7;
+
+  /// v1.1.33 changelog: changelog_v1133_new_8
+  ///
+  /// In zh, this message translates to:
+  /// **'抽屉 / 自定义快捷方式：入口新增「快传」'**
+  String get changelog_v1133_new_8;
+
+  /// v1.1.33 changelog: changelog_v1133_opt_1
+  ///
+  /// In zh, this message translates to:
+  /// **'图片查看器：顶部信息条重构（尺寸/时间/格式/大小/EXIF）、旋转改为纯预览不保存、EXIF 实时显示、文件名标题恢复'**
+  String get changelog_v1133_opt_1;
+
+  /// v1.1.33 changelog: changelog_v1133_opt_2
+  ///
+  /// In zh, this message translates to:
+  /// **'视频播放器：底部按钮布局/排序、竖屏溢出修复、系统自动横屏进全屏、缩放比例(填充屏幕 cover)、全屏横屏摄像头黑边修复'**
+  String get changelog_v1133_opt_2;
+
+  /// v1.1.33 changelog: changelog_v1133_opt_3
+  ///
+  /// In zh, this message translates to:
+  /// **'音频播放器：均衡器预设切换生效、低音/人声失真修复'**
+  String get changelog_v1133_opt_3;
+
+  /// v1.1.33 changelog: changelog_v1133_opt_4
+  ///
+  /// In zh, this message translates to:
+  /// **'视频音量：播放器滑块与系统媒体音量实时同步'**
+  String get changelog_v1133_opt_4;
+
+  /// v1.1.33 changelog: changelog_v1133_opt_5
+  ///
+  /// In zh, this message translates to:
+  /// **'音频播放模式：重启后持久化记忆'**
+  String get changelog_v1133_opt_5;
+
+  /// v1.1.33 changelog: changelog_v1133_opt_6
+  ///
+  /// In zh, this message translates to:
+  /// **'图片编辑：裁剪比例（正方形/4:3/3:4/证件照）修复'**
+  String get changelog_v1133_opt_6;
+
+  /// v1.1.33 changelog: changelog_v1133_fix_1
+  ///
+  /// In zh, this message translates to:
+  /// **'文本编辑器打开未知文件「文本打开」错误提示硬编码 → 多语言'**
+  String get changelog_v1133_fix_1;
+
+  /// v1.1.33 changelog: changelog_v1133_fix_2
+  ///
+  /// In zh, this message translates to:
+  /// **'桌面歌词权限提示中文硬编码 Toast → 多语言'**
+  String get changelog_v1133_fix_2;
+
+  /// v1.1.33 changelog: changelog_v1133_fix_3
+  ///
+  /// In zh, this message translates to:
+  /// **'目录选择器「固定所选」按钮硬编码中文 → 多语言'**
+  String get changelog_v1133_fix_3;
+
+  /// v1.1.33 changelog: changelog_v1133_fix_4
+  ///
+  /// In zh, this message translates to:
+  /// **'受限目录（Android/data｜obb）复制到本地/远程报错二次修复'**
+  String get changelog_v1133_fix_4;
+
+  /// v1.1.33 changelog: changelog_v1133_fix_5
+  ///
+  /// In zh, this message translates to:
+  /// **'长按菜单：复刻 v1.1.32 显示结构 + 高对比背景 + 描边'**
+  String get changelog_v1133_fix_5;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

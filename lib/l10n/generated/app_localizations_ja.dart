@@ -2800,6 +2800,9 @@ class L10nJa extends L10n {
   String get ui_language => '言語';
 
   @override
+  String get ui_follow_system => '自動（システムに従う）';
+
+  @override
   String get ui_hide_nav_labels => '下部ナビゲーションラベルを隠す';
 
   @override
@@ -4150,6 +4153,9 @@ class L10nJa extends L10n {
   String get msg_aspect_custom => 'カスタム';
 
   @override
+  String get msg_aspect_fill_screen => '画面いっぱい';
+
+  @override
   String get msg_custom_aspect_ratio => 'カスタムアスペクト比';
 
   @override
@@ -5164,7 +5170,7 @@ class L10nJa extends L10n {
   String get ui_app_open_location => '場所を開く';
 
   @override
-  String get img_dimensions => 'Dimensions';
+  String get img_dimensions => 'サイズ';
 
   @override
   String get edit_image => 'Edit Image';
@@ -5416,6 +5422,79 @@ class L10nJa extends L10n {
   }
 
   @override
+  String get quick_transfer => 'クイック転送';
+
+  @override
+  String get quick_transfer_send => '送信';
+
+  @override
+  String get quick_transfer_receive => '受信';
+
+  @override
+  String get quick_transfer_send_hint =>
+      '共有するフォルダを選択。同じ Wi-Fi の端末がアドレスをブラウザで開くとダウンロードできます。';
+
+  @override
+  String get quick_transfer_receive_hint =>
+      '保存先フォルダを選択。同じ Wi-Fi の端末がアドレスをブラウザで開くと、この端末にアップロードできます。';
+
+  @override
+  String get quick_transfer_share_dir => '共有フォルダ';
+
+  @override
+  String get quick_transfer_save_dir => '保存先';
+
+  @override
+  String get quick_transfer_default_share => '既定：内部ストレージのルート';
+
+  @override
+  String get quick_transfer_default_save => '既定：内部ストレージのルート';
+
+  @override
+  String get quick_transfer_online => '有効';
+
+  @override
+  String get quick_transfer_address => '本機アドレス';
+
+  @override
+  String get quick_transfer_copy => 'コピー';
+
+  @override
+  String get quick_transfer_copied => 'アドレスをコピーしました';
+
+  @override
+  String get quick_transfer_send_tip =>
+      '上のアドレスを相手に送り、ブラウザで開くと選択フォルダのファイルをダウンロードできます。';
+
+  @override
+  String get quick_transfer_receive_tip =>
+      '上のアドレスを相手に送り、ブラウザで開くと選択フォルダにファイルをアップロードできます。';
+
+  @override
+  String get quick_transfer_connected => '接続デバイス';
+
+  @override
+  String quick_transfer_started(Object url) {
+    return 'クイック転送を開始しました：$url';
+  }
+
+  @override
+  String get quick_transfer_stopped => 'クイック転送を停止しました';
+
+  @override
+  String get quick_transfer_running => 'クイック転送は実行中です。まず停止してください';
+
+  @override
+  String quick_transfer_running_at(Object url) {
+    return '実行中：$url';
+  }
+
+  @override
+  String quick_transfer_failed(Object error) {
+    return 'クイック転送の開始に失敗しました：$error';
+  }
+
+  @override
   String get wol_title => 'LAN ウェイクアップ';
 
   @override
@@ -5464,4 +5543,229 @@ class L10nJa extends L10n {
 
   @override
   String get wol_port_hint => '任意';
+
+  @override
+  String get quick_transfer_nearby_devices => '附近设备';
+
+  @override
+  String get quick_transfer_scanning => '正在扫描附近设备…';
+
+  @override
+  String get quick_transfer_scan_hint => '双方都需打开快传并保持本页面在前台';
+
+  @override
+  String get quick_transfer_tap_to_connect => '点击设备名发起连接';
+
+  @override
+  String quick_transfer_connecting(Object name) {
+    return '正在连接 $name…';
+  }
+
+  @override
+  String quick_transfer_connected_as(Object role) {
+    return '已连接（本机为 $role）';
+  }
+
+  @override
+  String get quick_transfer_role_owner => '发送端';
+
+  @override
+  String get quick_transfer_role_client => '接收端';
+
+  @override
+  String get quick_transfer_select_files => '选择要发送的文件 / 文件夹';
+
+  @override
+  String quick_transfer_selected_summary(Object count, Object size) {
+    return '已选 $count 项，共 $size';
+  }
+
+  @override
+  String get quick_transfer_begin_send => '开始发送';
+
+  @override
+  String quick_transfer_incoming(Object name) {
+    return '收到来自 $name 的发送请求';
+  }
+
+  @override
+  String quick_transfer_incoming_files(Object count, Object size) {
+    return '$count 个文件，共 $size';
+  }
+
+  @override
+  String get quick_transfer_accept => '接受';
+
+  @override
+  String get quick_transfer_reject => '拒绝';
+
+  @override
+  String get quick_transfer_sending => '正在发送…';
+
+  @override
+  String get quick_transfer_receiving => '正在接收…';
+
+  @override
+  String get quick_transfer_complete => '传输完成';
+
+  @override
+  String get quick_transfer_waiting_peer => '等待对方连接…';
+
+  @override
+  String get quick_transfer_connected_waiting_files => '接続済み。相手のファイル送信を待っています…';
+
+  @override
+  String get quick_transfer_permission_why =>
+      'WiFi Direct スキャンには位置情報/周辺デバイス権限が必要です。位置情報は収集されません。';
+
+  @override
+  String get quick_transfer_permission_required => '快传需要位置/附近设备权限以发现附近设备';
+
+  @override
+  String get quick_transfer_not_supported => '当前设备不支持 WiFi Direct 快传';
+
+  @override
+  String get quick_transfer_disconnect => '断开';
+
+  @override
+  String get quick_transfer_cancel => '取消';
+
+  @override
+  String get quick_transfer_save_to => '保存到';
+
+  @override
+  String get quick_transfer_send_mode => '发送';
+
+  @override
+  String get quick_transfer_receive_mode => '接收';
+
+  @override
+  String get quick_transfer_device_name => '本机名称';
+
+  @override
+  String get quick_transfer_retry => '再試行';
+
+  @override
+  String get quick_transfer_permission_grant => '許可して続行';
+
+  @override
+  String get quick_transfer_open_settings => '設定を開く';
+
+  @override
+  String get quick_transfer_wifi_required =>
+      'WLAN（WiFi）をオンにしてください。WiFi Directが必要です。';
+
+  @override
+  String get quick_transfer_create_group_failed =>
+      '接続の確立に失敗しました。WLANをオンにし、位置情報/周辺デバイス権限を許可してください。';
+
+  @override
+  String get quick_transfer_receive_path => '保存先';
+
+  @override
+  String get quick_transfer_change_path => '変更';
+
+  @override
+  String get quick_transfer_back => '戻る';
+
+  @override
+  String get quick_transfer_send_button => '送信';
+
+  @override
+  String get quick_transfer_receive_button => '受信';
+
+  @override
+  String get quick_transfer_open_location => 'ファイルの場所を開く';
+
+  @override
+  String get quick_transfer_receive_complete => '受信完了';
+
+  @override
+  String quick_transfer_files_saved_to(Object path) {
+    return 'ファイルは $path に保存されました';
+  }
+
+  @override
+  String get quick_transfer_connect_btn => '接続';
+
+  @override
+  String get quick_transfer_connected_btn => '接続済み';
+
+  @override
+  String get quick_transfer_available_peers => '接続可能なデバイス';
+
+  @override
+  String quick_transfer_selected_count(Object count) {
+    return '$count 件選択済み';
+  }
+
+  @override
+  String get changelog_v1133_new_1 =>
+      'クイック転送（LAN）：独立した送信/受信モード、近くのデバイスのレーダー検出、接続状態、転送前の確認、受信後にアプリ内ブラウザでワンタップで開く、権限の説明付き。10言語に完全対応。';
+
+  @override
+  String get changelog_v1133_new_2 => 'カテゴリアイコンのラベル表示の切り替え。';
+
+  @override
+  String get changelog_v1133_new_3 => 'AMOLED 全面純黒テーマ。';
+
+  @override
+  String get changelog_v1133_new_4 =>
+      'バックグラウンド再生のスリープ防止（バッテリー最適化ホワイトリスト + ウェイクロック）。';
+
+  @override
+  String get changelog_v1133_new_5 =>
+      '画像エディタ：物理サイズ（mm + DPI）、プリセットテンプレート（証明写真 / パスポート / 米国ビザ）、ファイルサイズ制限。';
+
+  @override
+  String get changelog_v1133_new_6 =>
+      'オーディオイコライザー 5 プリセット（原音 / HDボーカル / 重低音 / ライブ / ジャズ）。';
+
+  @override
+  String get changelog_v1133_new_7 =>
+      '動画プレーヤー：複数の音声/字幕トラックの内蔵選択、ジェスチャー最適化（ダブルタップで一時停止/再生、長押しで速度、左右スワイプでシーク）。';
+
+  @override
+  String get changelog_v1133_new_8 => 'ドロワー / カスタムショートカット：クイック転送の項目を追加。';
+
+  @override
+  String get changelog_v1133_opt_1 =>
+      '画像ビューア：上部情報バーを再構築（サイズ/時間/形式/容量/EXIF）、回転を保存しないプレビューのみに変更、EXIF をリアルタイム表示、ファイル名タイトルを復元。';
+
+  @override
+  String get changelog_v1133_opt_2 =>
+      '動画プレーヤー：下部ボタンのレイアウト/順序、縦向きのはみ出し修正、システム回転時の自動横向き全画面、スケール（画面フィット / cover）、横向き全画面のカメラ黒帯修正。';
+
+  @override
+  String get changelog_v1133_opt_3 =>
+      'オーディオプレーヤー：イコライザープリセットの切り替えが有効に、低音/ボーカルの歪みを修正。';
+
+  @override
+  String get changelog_v1133_opt_4 =>
+      '動画の音量：プレーヤーのスライダーがシステムメディア音量とリアルタイムで同期するようになりました。';
+
+  @override
+  String get changelog_v1133_opt_5 => 'オーディオ再生モード：アプリ再起動後も保持されるようになりました。';
+
+  @override
+  String get changelog_v1133_opt_6 =>
+      '画像編集：トリミング比率の修正（正方形 / 4:3 / 3:4 / 証明写真）。';
+
+  @override
+  String get changelog_v1133_fix_1 =>
+      'テキストエディタ：不明なファイルを「テキストで開く」で開いた際のハードコードされたエラーメッセージを多言語化。';
+
+  @override
+  String get changelog_v1133_fix_2 => 'デスクトップ歌詞：権限の中国語ハードコード Toast を多言語化。';
+
+  @override
+  String get changelog_v1133_fix_3 => 'ディレクトリ選択：中国語ハードコードの「選択を固定」ボタンを多言語化。';
+
+  @override
+  String get changelog_v1133_fix_4 =>
+      '制限付きディレクトリ（Android/data | obb）：ローカル/リモートへのコピーエラーを再修正（2回目）。';
+
+  @override
+  String get changelog_v1133_fix_5 =>
+      '長押しメニュー：v1.1.32 の表示構造を復元（高コントラスト背景 + 枠線）。';
 }

@@ -3236,6 +3236,7 @@
   },
   "ui_invalid_file_type": "無效的檔案型別",
   "ui_language": "語言",
+  "ui_follow_system": "自動（跟隨系統）",
   "ui_hide_nav_labels": "隱藏底部導航標籤",
   "ui_reset_default_viewers": "重置預設檔案檢視器",
   "ui_trailing_info_when_hidden": "三點禁用尾部資訊",
@@ -4301,6 +4302,10 @@
   "@msg_aspect_custom": {
     "description": "Video aspect ratio mode: custom"
   },
+  "msg_aspect_fill_screen": "填充屏幕",
+  "@msg_aspect_fill_screen": {
+    "description": "Video aspect ratio mode: fill screen (crop, no black bars)"
+  },
   "msg_custom_aspect_ratio": "自訂縮放比例",
   "@msg_custom_aspect_ratio": {
     "description": "Video player menu item for custom aspect ratio"
@@ -5329,7 +5334,7 @@
   "@ui_app_open_location": {
     "description": "ui_app_open_location label"
   },
-  "img_dimensions": "Dimensions",
+  "img_dimensions": "尺寸",
   "@img_dimensions": {
     "description": "Immersive viewer bottom info: image dimensions"
   },
@@ -5461,8 +5466,12 @@
   "@editor_pixel_auto": {
     "description": "Auto-calculated pixel dimensions preview",
     "placeholders": {
-      "w": { "type": "int" },
-      "h": { "type": "int" }
+      "w": {
+        "type": "int"
+      },
+      "h": {
+        "type": "int"
+      }
     }
   },
   "editor_pixel_result": "像素（自動計算）",
@@ -5661,6 +5670,90 @@
   "@editor_output_size": {
     "description": "Editor: output size label. {size} is human size"
   },
+  "quick_transfer": "快傳",
+  "@quick_transfer": {
+    "description": "Quick Transfer: quick_transfer"
+  },
+  "quick_transfer_send": "我要發送",
+  "@quick_transfer_send": {
+    "description": "Quick Transfer: quick_transfer_send"
+  },
+  "quick_transfer_receive": "我要接收",
+  "@quick_transfer_receive": {
+    "description": "Quick Transfer: quick_transfer_receive"
+  },
+  "quick_transfer_send_hint": "選擇要分享的資料夾，對側裝置在同一 Wi-Fi 下用瀏覽器開啟地址即可下載檔案。",
+  "@quick_transfer_send_hint": {
+    "description": "Quick Transfer: quick_transfer_send_hint"
+  },
+  "quick_transfer_receive_hint": "選擇接收檔案的儲存目錄，對側裝置在同一 Wi-Fi 下用瀏覽器開啟地址即可上傳檔案到本機。",
+  "@quick_transfer_receive_hint": {
+    "description": "Quick Transfer: quick_transfer_receive_hint"
+  },
+  "quick_transfer_share_dir": "分享目錄",
+  "@quick_transfer_share_dir": {
+    "description": "Quick Transfer: quick_transfer_share_dir"
+  },
+  "quick_transfer_save_dir": "儲存到",
+  "@quick_transfer_save_dir": {
+    "description": "Quick Transfer: quick_transfer_save_dir"
+  },
+  "quick_transfer_default_share": "預設：內部儲存根目錄",
+  "@quick_transfer_default_share": {
+    "description": "Quick Transfer: quick_transfer_default_share"
+  },
+  "quick_transfer_default_save": "預設：內部儲存根目錄",
+  "@quick_transfer_default_save": {
+    "description": "Quick Transfer: quick_transfer_default_save"
+  },
+  "quick_transfer_online": "已開啟",
+  "@quick_transfer_online": {
+    "description": "Quick Transfer: quick_transfer_online"
+  },
+  "quick_transfer_address": "本機地址",
+  "@quick_transfer_address": {
+    "description": "Quick Transfer: quick_transfer_address"
+  },
+  "quick_transfer_copy": "複製",
+  "@quick_transfer_copy": {
+    "description": "Quick Transfer: quick_transfer_copy"
+  },
+  "quick_transfer_copied": "已複製地址",
+  "@quick_transfer_copied": {
+    "description": "Quick Transfer: quick_transfer_copied"
+  },
+  "quick_transfer_send_tip": "將上方地址發給對方，對方在瀏覽器中開啟即可下載所選目錄內的檔案。",
+  "@quick_transfer_send_tip": {
+    "description": "Quick Transfer: quick_transfer_send_tip"
+  },
+  "quick_transfer_receive_tip": "將上方地址發給對方，對方在瀏覽器中開啟後可將檔案上傳到本機所選目錄。",
+  "@quick_transfer_receive_tip": {
+    "description": "Quick Transfer: quick_transfer_receive_tip"
+  },
+  "quick_transfer_connected": "已連線裝置",
+  "@quick_transfer_connected": {
+    "description": "Quick Transfer: quick_transfer_connected"
+  },
+  "quick_transfer_started": "快傳已開啟：{url}",
+  "@quick_transfer_started": {
+    "description": "Quick Transfer: quick_transfer_started"
+  },
+  "quick_transfer_stopped": "快傳已停止",
+  "@quick_transfer_stopped": {
+    "description": "Quick Transfer: quick_transfer_stopped"
+  },
+  "quick_transfer_running": "快傳服務執行中，請先停止",
+  "@quick_transfer_running": {
+    "description": "Quick Transfer: quick_transfer_running"
+  },
+  "quick_transfer_running_at": "執行中：{url}",
+  "@quick_transfer_running_at": {
+    "description": "Quick Transfer: quick_transfer_running_at"
+  },
+  "quick_transfer_failed": "快傳開啟失敗：{error}",
+  "@quick_transfer_failed": {
+    "description": "Quick Transfer: quick_transfer_failed"
+  },
   "wol_title": "區域網路喚醒",
   "@wol_title": {
     "description": "Wake on LAN: drawer tools entry title"
@@ -5727,5 +5820,265 @@
   "wol_port_hint": "選填",
   "@wol_port_hint": {
     "description": "wol_port_hint label"
+  },
+  "quick_transfer_nearby_devices": "附近设备",
+  "@quick_transfer_nearby_devices": {
+    "description": "Quick Transfer P2P: quick_transfer_nearby_devices"
+  },
+  "quick_transfer_scanning": "正在扫描附近设备…",
+  "@quick_transfer_scanning": {
+    "description": "Quick Transfer P2P: quick_transfer_scanning"
+  },
+  "quick_transfer_scan_hint": "双方都需打开快传并保持本页面在前台",
+  "@quick_transfer_scan_hint": {
+    "description": "Quick Transfer P2P: quick_transfer_scan_hint"
+  },
+  "quick_transfer_tap_to_connect": "点击设备名发起连接",
+  "@quick_transfer_tap_to_connect": {
+    "description": "Quick Transfer P2P: quick_transfer_tap_to_connect"
+  },
+  "quick_transfer_connecting": "正在连接 {name}…",
+  "@quick_transfer_connecting": {
+    "description": "Quick Transfer P2P: quick_transfer_connecting"
+  },
+  "quick_transfer_connected_as": "已连接（本机为 {role}）",
+  "@quick_transfer_connected_as": {
+    "description": "Quick Transfer P2P: quick_transfer_connected_as"
+  },
+  "quick_transfer_role_owner": "发送端",
+  "@quick_transfer_role_owner": {
+    "description": "Quick Transfer P2P: quick_transfer_role_owner"
+  },
+  "quick_transfer_role_client": "接收端",
+  "@quick_transfer_role_client": {
+    "description": "Quick Transfer P2P: quick_transfer_role_client"
+  },
+  "quick_transfer_select_files": "选择要发送的文件 / 文件夹",
+  "@quick_transfer_select_files": {
+    "description": "Quick Transfer P2P: quick_transfer_select_files"
+  },
+  "quick_transfer_selected_summary": "已选 {count} 项，共 {size}",
+  "@quick_transfer_selected_summary": {
+    "description": "Quick Transfer P2P: quick_transfer_selected_summary"
+  },
+  "quick_transfer_begin_send": "开始发送",
+  "@quick_transfer_begin_send": {
+    "description": "Quick Transfer P2P: quick_transfer_begin_send"
+  },
+  "quick_transfer_incoming": "收到来自 {name} 的发送请求",
+  "@quick_transfer_incoming": {
+    "description": "Quick Transfer P2P: quick_transfer_incoming"
+  },
+  "quick_transfer_incoming_files": "{count} 个文件，共 {size}",
+  "@quick_transfer_incoming_files": {
+    "description": "Quick Transfer P2P: quick_transfer_incoming_files"
+  },
+  "quick_transfer_accept": "接受",
+  "@quick_transfer_accept": {
+    "description": "Quick Transfer P2P: quick_transfer_accept"
+  },
+  "quick_transfer_reject": "拒绝",
+  "@quick_transfer_reject": {
+    "description": "Quick Transfer P2P: quick_transfer_reject"
+  },
+  "quick_transfer_sending": "正在发送…",
+  "@quick_transfer_sending": {
+    "description": "Quick Transfer P2P: quick_transfer_sending"
+  },
+  "quick_transfer_receiving": "正在接收…",
+  "@quick_transfer_receiving": {
+    "description": "Quick Transfer P2P: quick_transfer_receiving"
+  },
+  "quick_transfer_complete": "传输完成",
+  "@quick_transfer_complete": {
+    "description": "Quick Transfer P2P: quick_transfer_complete"
+  },
+  "quick_transfer_waiting_peer": "等待对方连接…",
+  "@quick_transfer_waiting_peer": {
+    "description": "Quick Transfer P2P: quick_transfer_waiting_peer"
+  },
+  "quick_transfer_connected_waiting_files": "已連接，等待對方發送檔案…",
+  "@quick_transfer_connected_waiting_files": {
+    "description": "Quick Transfer P2P: quick_transfer_connected_waiting_files"
+  },
+  "quick_transfer_permission_why": "WiFi Direct 掃描需要位置/附近設備權限，不會收集您的地理位置",
+  "@quick_transfer_permission_why": {
+    "description": "Quick Transfer P2P: quick_transfer_permission_why"
+  },
+  "quick_transfer_permission_required": "快传需要位置/附近设备权限以发现附近设备",
+  "@quick_transfer_permission_required": {
+    "description": "Quick Transfer P2P: quick_transfer_permission_required"
+  },
+  "quick_transfer_not_supported": "当前设备不支持 WiFi Direct 快传",
+  "@quick_transfer_not_supported": {
+    "description": "Quick Transfer P2P: quick_transfer_not_supported"
+  },
+  "quick_transfer_disconnect": "断开",
+  "@quick_transfer_disconnect": {
+    "description": "Quick Transfer P2P: quick_transfer_disconnect"
+  },
+  "quick_transfer_cancel": "取消",
+  "@quick_transfer_cancel": {
+    "description": "Quick Transfer P2P: quick_transfer_cancel"
+  },
+  "quick_transfer_save_to": "保存到",
+  "@quick_transfer_save_to": {
+    "description": "Quick Transfer P2P: quick_transfer_save_to"
+  },
+  "quick_transfer_send_mode": "发送",
+  "@quick_transfer_send_mode": {
+    "description": "Quick Transfer P2P: quick_transfer_send_mode"
+  },
+  "quick_transfer_receive_mode": "接收",
+  "@quick_transfer_receive_mode": {
+    "description": "Quick Transfer P2P: quick_transfer_receive_mode"
+  },
+  "quick_transfer_device_name": "本机名称",
+  "@quick_transfer_device_name": {
+    "description": "Quick Transfer P2P: quick_transfer_device_name"
+  },
+  "quick_transfer_retry": "重試",
+  "@quick_transfer_retry": {
+    "description": "Quick Transfer P2P: quick_transfer_retry"
+  },
+  "quick_transfer_permission_grant": "授權並繼續",
+  "@quick_transfer_permission_grant": {
+    "description": "Quick Transfer P2P: quick_transfer_permission_grant"
+  },
+  "quick_transfer_open_settings": "前往設定頁開啟",
+  "@quick_transfer_open_settings": {
+    "description": "Quick Transfer P2P: quick_transfer_open_settings"
+  },
+  "quick_transfer_wifi_required": "請先開啟 WLAN（WiFi），快傳需要 WiFi Direct 建組",
+  "@quick_transfer_wifi_required": {
+    "description": "Quick Transfer P2P: quick_transfer_wifi_required"
+  },
+  "quick_transfer_create_group_failed": "建立快傳連線失敗，請確保已開啟 WLAN 並授予位置/附近設備權限後重試",
+  "@quick_transfer_create_group_failed": {
+    "description": "Quick Transfer P2P: quick_transfer_create_group_failed"
+  },
+  "quick_transfer_receive_path": "接收路徑",
+  "@quick_transfer_receive_path": {
+    "description": "Quick Transfer P2P: quick_transfer_receive_path"
+  },
+  "quick_transfer_change_path": "更改",
+  "@quick_transfer_change_path": {
+    "description": "Quick Transfer P2P: quick_transfer_change_path"
+  },
+  "quick_transfer_back": "返回",
+  "@quick_transfer_back": {
+    "description": "Quick Transfer P2P: quick_transfer_back"
+  },
+  "quick_transfer_send_button": "傳送",
+  "@quick_transfer_send_button": {
+    "description": "Quick Transfer P2P: quick_transfer_send_button"
+  },
+  "quick_transfer_receive_button": "接收",
+  "@quick_transfer_receive_button": {
+    "description": "Quick Transfer P2P: quick_transfer_receive_button"
+  },
+  "quick_transfer_open_location": "開啟檔案所在位置",
+  "@quick_transfer_open_location": {
+    "description": "Quick Transfer P2P: quick_transfer_open_location"
+  },
+  "quick_transfer_receive_complete": "接收完成",
+  "@quick_transfer_receive_complete": {
+    "description": "Quick Transfer P2P: quick_transfer_receive_complete"
+  },
+  "quick_transfer_files_saved_to": "檔案已儲存至 {path}",
+  "@quick_transfer_files_saved_to": {
+    "description": "Quick Transfer P2P: quick_transfer_files_saved_to"
+  },
+  "quick_transfer_connect_btn": "連接",
+  "@quick_transfer_connect_btn": {
+    "description": "Quick Transfer P2P: quick_transfer_connect_btn"
+  },
+  "quick_transfer_connected_btn": "已連接",
+  "@quick_transfer_connected_btn": {
+    "description": "Quick Transfer P2P: quick_transfer_connected_btn"
+  },
+  "quick_transfer_available_peers": "可連接設備",
+  "@quick_transfer_available_peers": {
+    "description": "Quick Transfer P2P: quick_transfer_available_peers"
+  },
+  "quick_transfer_selected_count": "已選 {count} 項",
+  "@quick_transfer_selected_count": {
+    "description": "Quick Transfer P2P: quick_transfer_selected_count"
+  },
+  "changelog_v1133_new_1": "快傳功能（區網傳輸）：獨立快傳頁面（傳送/接收雙模式）、附近裝置雷達掃描發現、裝置連線/已連線狀態、傳輸前確認機制、接收完成後一鍵在本應用瀏覽頁開啟、權限說明，全 10 語言。",
+  "@changelog_v1133_new_1": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_1"
+  },
+  "changelog_v1133_new_2": "分類圖示標籤顯隱開關",
+  "@changelog_v1133_new_2": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_2"
+  },
+  "changelog_v1133_new_3": "AMOLED 全頁純黑主題",
+  "@changelog_v1133_new_3": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_3"
+  },
+  "changelog_v1133_new_4": "背景播放防休眠（電池最佳化白名單 + 喚醒鎖）",
+  "@changelog_v1133_new_4": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_4"
+  },
+  "changelog_v1133_new_5": "圖片編輯器：實體尺寸(mm+DPI)、預設範本(證件照/護照/美簽)、檔案大小限制",
+  "@changelog_v1133_new_5": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_5"
+  },
+  "changelog_v1133_new_6": "音訊等化器 5 組預設（原聲/HD人聲/低音/現場/爵士）",
+  "@changelog_v1133_new_6": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_6"
+  },
+  "changelog_v1133_new_7": "影片播放器：內嵌多音軌/多字幕軌選擇；手勢最佳化（雙擊暫停/播放、長按倍速、左右滑快進/快退）",
+  "@changelog_v1133_new_7": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_7"
+  },
+  "changelog_v1133_new_8": "側邊欄 / 自訂快捷方式：新增「快傳」入口",
+  "@changelog_v1133_new_8": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_8"
+  },
+  "changelog_v1133_opt_1": "圖片檢視器：頂部資訊條重構（尺寸/時間/格式/大小/EXIF）、旋轉改為純預覽不儲存、EXIF 即時顯示、檔名標題還原",
+  "@changelog_v1133_opt_1": {
+    "description": "v1.1.33 changelog: changelog_v1133_opt_1"
+  },
+  "changelog_v1133_opt_2": "影片播放器：底部按鈕佈局/排序、直向溢位修復、系統自動橫向進全螢幕、縮放比例(填滿螢幕 cover)、全螢幕橫向相機黑邊修復",
+  "@changelog_v1133_opt_2": {
+    "description": "v1.1.33 changelog: changelog_v1133_opt_2"
+  },
+  "changelog_v1133_opt_3": "音訊播放器：等化器預設切換生效、低音/人聲失真修復",
+  "@changelog_v1133_opt_3": {
+    "description": "v1.1.33 changelog: changelog_v1133_opt_3"
+  },
+  "changelog_v1133_opt_4": "影片音量：播放器滑桿與系統媒體音量即時同步",
+  "@changelog_v1133_opt_4": {
+    "description": "v1.1.33 changelog: changelog_v1133_opt_4"
+  },
+  "changelog_v1133_opt_5": "音訊播放模式：重啟後持久化記憶",
+  "@changelog_v1133_opt_5": {
+    "description": "v1.1.33 changelog: changelog_v1133_opt_5"
+  },
+  "changelog_v1133_opt_6": "圖片編輯：裁切比例（正方形/4:3/3:4/證件照）修復",
+  "@changelog_v1133_opt_6": {
+    "description": "v1.1.33 changelog: changelog_v1133_opt_6"
+  },
+  "changelog_v1133_fix_1": "文字編輯器開啟未知檔案「文字開啟」錯誤提示硬編碼 → 多語言",
+  "@changelog_v1133_fix_1": {
+    "description": "v1.1.33 changelog: changelog_v1133_fix_1"
+  },
+  "changelog_v1133_fix_2": "桌面歌詞權限提示中文硬編碼 Toast → 多語言",
+  "@changelog_v1133_fix_2": {
+    "description": "v1.1.33 changelog: changelog_v1133_fix_2"
+  },
+  "changelog_v1133_fix_3": "目錄選擇器「固定所選」按鈕硬編碼中文 → 多語言",
+  "@changelog_v1133_fix_3": {
+    "description": "v1.1.33 changelog: changelog_v1133_fix_3"
+  },
+  "changelog_v1133_fix_4": "受限目錄（Android/data｜obb）複製到本機/遠端報錯二次修復",
+  "@changelog_v1133_fix_4": {
+    "description": "v1.1.33 changelog: changelog_v1133_fix_4"
+  },
+  "changelog_v1133_fix_5": "長按選單：復刻 v1.1.32 顯示結構 + 高對比背景 + 描邊",
+  "@changelog_v1133_fix_5": {
+    "description": "v1.1.33 changelog: changelog_v1133_fix_5"
   }
 }

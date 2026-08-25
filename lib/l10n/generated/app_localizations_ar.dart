@@ -2879,6 +2879,9 @@ class L10nAr extends L10n {
   String get ui_language => 'اللغة';
 
   @override
+  String get ui_follow_system => 'تلقائي (اتباع النظام)';
+
+  @override
   String get ui_hide_nav_labels => 'إخفاء تسميات التنقل السفلية';
 
   @override
@@ -4262,6 +4265,9 @@ class L10nAr extends L10n {
   String get msg_aspect_custom => 'مخصص';
 
   @override
+  String get msg_aspect_fill_screen => 'ملء الشاشة';
+
+  @override
   String get msg_custom_aspect_ratio => 'نسبة العرض المخصصة';
 
   @override
@@ -5290,7 +5296,7 @@ class L10nAr extends L10n {
   String get ui_app_open_location => 'فتح في الموقع';
 
   @override
-  String get img_dimensions => 'Dimensions';
+  String get img_dimensions => 'الأبعاد';
 
   @override
   String get edit_image => 'Edit Image';
@@ -5543,6 +5549,80 @@ class L10nAr extends L10n {
   }
 
   @override
+  String get quick_transfer => 'نقل سريع';
+
+  @override
+  String get quick_transfer_send => 'إرسال';
+
+  @override
+  String get quick_transfer_receive => 'استلام';
+
+  @override
+  String get quick_transfer_send_hint =>
+      'اختر مجلدًا للمشاركة؛ يمكن للأجهزة على نفس الواي فاي فتح العنوان في المتصفح للتنزيل.';
+
+  @override
+  String get quick_transfer_receive_hint =>
+      'اختر مجلدًا للحفظ؛ يمكن للأجهزة على نفس الواي فاي فتح العنوان في المتصفح لرفع الملفات إلى هذا الجهاز.';
+
+  @override
+  String get quick_transfer_share_dir => 'مجلد المشاركة';
+
+  @override
+  String get quick_transfer_save_dir => 'حفظ في';
+
+  @override
+  String get quick_transfer_default_share => 'الافتراضي: جذر التخزين الداخلي';
+
+  @override
+  String get quick_transfer_default_save => 'الافتراضي: جذر التخزين الداخلي';
+
+  @override
+  String get quick_transfer_online => 'نشط';
+
+  @override
+  String get quick_transfer_address => 'عنوان هذا الجهاز';
+
+  @override
+  String get quick_transfer_copy => 'نسخ';
+
+  @override
+  String get quick_transfer_copied => 'تم نسخ العنوان';
+
+  @override
+  String get quick_transfer_send_tip =>
+      'أرسل العنوان أعلاه للطرف الآخر؛ يفتحه في المتصفح لتنزيل الملفات من المجلد المحدد.';
+
+  @override
+  String get quick_transfer_receive_tip =>
+      'أرسل العنوان أعلاه للطرف الآخر؛ يفتحه في المتصفح لرفع الملفات إلى المجلد المحدد على هذا الجهاز.';
+
+  @override
+  String get quick_transfer_connected => 'الأجهزة المتصلة';
+
+  @override
+  String quick_transfer_started(Object url) {
+    return 'بدأ النقل السريع: $url';
+  }
+
+  @override
+  String get quick_transfer_stopped => 'تم إيقاف النقل السريع';
+
+  @override
+  String get quick_transfer_running =>
+      'النقل السريع قيد التشغيل، يرجى إيقافه أولاً';
+
+  @override
+  String quick_transfer_running_at(Object url) {
+    return 'قيد التشغيل: $url';
+  }
+
+  @override
+  String quick_transfer_failed(Object error) {
+    return 'تعذر بدء النقل السريع: $error';
+  }
+
+  @override
   String get wol_title => 'التشغيل عبر الشبكة المحلية';
 
   @override
@@ -5591,4 +5671,234 @@ class L10nAr extends L10n {
 
   @override
   String get wol_port_hint => 'اختياري';
+
+  @override
+  String get quick_transfer_nearby_devices => '附近设备';
+
+  @override
+  String get quick_transfer_scanning => '正在扫描附近设备…';
+
+  @override
+  String get quick_transfer_scan_hint => '双方都需打开快传并保持本页面在前台';
+
+  @override
+  String get quick_transfer_tap_to_connect => '点击设备名发起连接';
+
+  @override
+  String quick_transfer_connecting(Object name) {
+    return '正在连接 $name…';
+  }
+
+  @override
+  String quick_transfer_connected_as(Object role) {
+    return '已连接（本机为 $role）';
+  }
+
+  @override
+  String get quick_transfer_role_owner => '发送端';
+
+  @override
+  String get quick_transfer_role_client => '接收端';
+
+  @override
+  String get quick_transfer_select_files => '选择要发送的文件 / 文件夹';
+
+  @override
+  String quick_transfer_selected_summary(Object count, Object size) {
+    return '已选 $count 项，共 $size';
+  }
+
+  @override
+  String get quick_transfer_begin_send => '开始发送';
+
+  @override
+  String quick_transfer_incoming(Object name) {
+    return '收到来自 $name 的发送请求';
+  }
+
+  @override
+  String quick_transfer_incoming_files(Object count, Object size) {
+    return '$count 个文件，共 $size';
+  }
+
+  @override
+  String get quick_transfer_accept => '接受';
+
+  @override
+  String get quick_transfer_reject => '拒绝';
+
+  @override
+  String get quick_transfer_sending => '正在发送…';
+
+  @override
+  String get quick_transfer_receiving => '正在接收…';
+
+  @override
+  String get quick_transfer_complete => '传输完成';
+
+  @override
+  String get quick_transfer_waiting_peer => '等待对方连接…';
+
+  @override
+  String get quick_transfer_connected_waiting_files =>
+      'متصل. في انتظار إرسال الملفات من الطرف الآخر…';
+
+  @override
+  String get quick_transfer_permission_why =>
+      'يتطلب فحص WiFi Direct إذن الموقع/الأجهزة القريبة. لا يتم جمع موقعك.';
+
+  @override
+  String get quick_transfer_permission_required => '快传需要位置/附近设备权限以发现附近设备';
+
+  @override
+  String get quick_transfer_not_supported => '当前设备不支持 WiFi Direct 快传';
+
+  @override
+  String get quick_transfer_disconnect => '断开';
+
+  @override
+  String get quick_transfer_cancel => '取消';
+
+  @override
+  String get quick_transfer_save_to => '保存到';
+
+  @override
+  String get quick_transfer_send_mode => '发送';
+
+  @override
+  String get quick_transfer_receive_mode => '接收';
+
+  @override
+  String get quick_transfer_device_name => '本机名称';
+
+  @override
+  String get quick_transfer_retry => 'إعادة المحاولة';
+
+  @override
+  String get quick_transfer_permission_grant => 'منح والمتابعة';
+
+  @override
+  String get quick_transfer_open_settings => 'فتح الإعدادات';
+
+  @override
+  String get quick_transfer_wifi_required =>
+      'يرجى تشغيل WLAN (WiFi). النقل السريع يحتاج إلى WiFi Direct.';
+
+  @override
+  String get quick_transfer_create_group_failed =>
+      'فشل إنشاء اتصال النقل السريع. يرجى التأكد من تشغيل WLAN ومنح الإذن.';
+
+  @override
+  String get quick_transfer_receive_path => 'مسار الاستلام';
+
+  @override
+  String get quick_transfer_change_path => 'تغيير';
+
+  @override
+  String get quick_transfer_back => 'رجوع';
+
+  @override
+  String get quick_transfer_send_button => 'إرسال';
+
+  @override
+  String get quick_transfer_receive_button => 'استلام';
+
+  @override
+  String get quick_transfer_open_location => 'فتح موقع الملف';
+
+  @override
+  String get quick_transfer_receive_complete => 'اكتمل الاستلام';
+
+  @override
+  String quick_transfer_files_saved_to(Object path) {
+    return 'تم حفظ الملفات في $path';
+  }
+
+  @override
+  String get quick_transfer_connect_btn => 'اتصل';
+
+  @override
+  String get quick_transfer_connected_btn => 'متصل';
+
+  @override
+  String get quick_transfer_available_peers => 'الأجهزة المتاحة';
+
+  @override
+  String quick_transfer_selected_count(Object count) {
+    return 'تم تحديد $count';
+  }
+
+  @override
+  String get changelog_v1133_new_1 =>
+      'النقل السريع (شبكة LAN): وضعان مستقلان للإرسال/الاستقبال، اكتشاف راداري للأجهزة القريبة، حالات الاتصال، تأكيد قبل النقل، فتح بنقرة واحدة في متصفح التطبيق بعد الاستلام، مع إشعارات الأذونات. مدعوم بالكامل بـ 10 لغات.';
+
+  @override
+  String get changelog_v1133_new_2 => 'تبديل ظهور تسميات أيقونات الفئات.';
+
+  @override
+  String get changelog_v1133_new_3 => 'سمة AMOLED سوداء بالكامل لكامل الصفحة.';
+
+  @override
+  String get changelog_v1133_new_4 =>
+      'تشغيل في الخلفية دون نوم (قائمة استثناءات تحسين البطارية + قفل الاستيقاظ).';
+
+  @override
+  String get changelog_v1133_new_5 =>
+      'محرر الصور: الأبعاد الفيزيائية (مم + DPI)، قوالب جاهزة (صورة شخصية / جواز سفر / تأشيرة أمريكية)، حد لحجم الملف.';
+
+  @override
+  String get changelog_v1133_new_6 =>
+      'معادل صوت بـ 5 إعدادات مسبقة (الأصل / صوت HD / باس / حي / جاز).';
+
+  @override
+  String get changelog_v1133_new_7 =>
+      'مشغل الفيديو: اختيار مدمج لعدة مسارات صوت/ترجمة؛ تحسين الإيماءات (نقرة مزدوجة للإيقاف/التشغيل، ضغط مطول للسرعة، تمرير يسار/يمين للتقديم/التأخير).';
+
+  @override
+  String get changelog_v1133_new_8 =>
+      'الدرج / الاختصارات المخصصة: إضافة مدخل النقل السريع.';
+
+  @override
+  String get changelog_v1133_opt_1 =>
+      'عارض الصور: إعادة بناء شريط المعلومات العلوي (الأبعاد/الوقت/الصيغة/الحجم/EXIF)، تدوير أصبح معاينة فقط (دون حفظ)، عرض EXIF مباشر، استعادة عنوان اسم الملف.';
+
+  @override
+  String get changelog_v1133_opt_2 =>
+      'مشغل الفيديو: تخطيط/ترتيب الأزرار السفلية، إصلاح تجاوز الشاشة العمودية، دوران تلقائي أفقي عند دوران النظام، المقياس (ملء الشاشة / cover)، إصلاح الحواف السوداء للكاميرا في الوضع الأفقي ملء الشاشة.';
+
+  @override
+  String get changelog_v1133_opt_3 =>
+      'مشغل الصوت: تفعيل تبديل إعدادات المعادل، إصلاح تشويه الباس/الأصوات.';
+
+  @override
+  String get changelog_v1133_opt_4 =>
+      'مستوى صوت الفيديو: يتزامن شريط التمرير الآن لحظياً مع مستوى صوت النظام.';
+
+  @override
+  String get changelog_v1133_opt_5 =>
+      'وضع تشغيل الصوت: أصبح يُحفظ الآن بعد إعادة تشغيل التطبيق.';
+
+  @override
+  String get changelog_v1133_opt_6 =>
+      'تحرير الصور: إصلاح نسبة الاقتصاص (مربع / 4:3 / 3:4 / صورة شخصية).';
+
+  @override
+  String get changelog_v1133_fix_1 =>
+      'محرر النصوص: رسالة الخطأ الثابتة عند فتح ملفات غير معروفة عبر «فتح كنص» أصبحت مترجمة الآن.';
+
+  @override
+  String get changelog_v1133_fix_2 =>
+      'كلمات الأغاني على سطح المكتب: إشعار (Toast) الأذونات الصيني الثابت أصبح مترجماً الآن.';
+
+  @override
+  String get changelog_v1133_fix_3 =>
+      'منتقي المجلد: زر «تثبيت التحديد» الصيني الثابت أصبح مترجماً الآن.';
+
+  @override
+  String get changelog_v1133_fix_4 =>
+      'المجلدات المقيّدة (Android/data | obb): إصلاح أخطاء النسخ إلى المحلي/البعيد (إصلاح ثانٍ).';
+
+  @override
+  String get changelog_v1133_fix_5 =>
+      'قائمة الضغط المطول: استعادة بنية العرض من v1.1.32 مع خلفية عالية التباين وإطار.';
 }

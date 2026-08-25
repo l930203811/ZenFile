@@ -2797,6 +2797,9 @@ class L10nKo extends L10n {
   String get ui_language => '언어';
 
   @override
+  String get ui_follow_system => '자동 (시스템 따르기)';
+
+  @override
   String get ui_hide_nav_labels => '하단 내비게이션 레이블 숨기기';
 
   @override
@@ -4148,6 +4151,9 @@ class L10nKo extends L10n {
   String get msg_aspect_custom => '사용자 지정';
 
   @override
+  String get msg_aspect_fill_screen => '화면 채우기';
+
+  @override
   String get msg_custom_aspect_ratio => '사용자 지정 화멸비';
 
   @override
@@ -5162,7 +5168,7 @@ class L10nKo extends L10n {
   String get ui_app_open_location => '위치에서 열기';
 
   @override
-  String get img_dimensions => 'Dimensions';
+  String get img_dimensions => '크기';
 
   @override
   String get edit_image => 'Edit Image';
@@ -5414,6 +5420,79 @@ class L10nKo extends L10n {
   }
 
   @override
+  String get quick_transfer => '빠른 전송';
+
+  @override
+  String get quick_transfer_send => '보내기';
+
+  @override
+  String get quick_transfer_receive => '받기';
+
+  @override
+  String get quick_transfer_send_hint =>
+      '공유할 폴더를 선택하세요. 같은 Wi-Fi의 기기가 주소를 브라우저에서 열면 다운로드합니다.';
+
+  @override
+  String get quick_transfer_receive_hint =>
+      '저장 폴더를 선택하세요. 같은 Wi-Fi의 기기가 주소를 브라우저에서 열면 이 기기에 업로드합니다.';
+
+  @override
+  String get quick_transfer_share_dir => '공유 폴더';
+
+  @override
+  String get quick_transfer_save_dir => '저장 위치';
+
+  @override
+  String get quick_transfer_default_share => '기본: 내부 저장소 루트';
+
+  @override
+  String get quick_transfer_default_save => '기본: 내부 저장소 루트';
+
+  @override
+  String get quick_transfer_online => '활성';
+
+  @override
+  String get quick_transfer_address => '이 기기 주소';
+
+  @override
+  String get quick_transfer_copy => '복사';
+
+  @override
+  String get quick_transfer_copied => '주소 복사됨';
+
+  @override
+  String get quick_transfer_send_tip =>
+      '위 주소를 상대방에게 보내면 브라우저에서 열어 선택한 폴더의 파일을 다운로드합니다.';
+
+  @override
+  String get quick_transfer_receive_tip =>
+      '위 주소를 상대방에게 보내면 브라우저에서 열어 이 기기의 선택한 폴더로 파일을 업로드합니다.';
+
+  @override
+  String get quick_transfer_connected => '연결된 기기';
+
+  @override
+  String quick_transfer_started(Object url) {
+    return '빠른 전송 시작됨: $url';
+  }
+
+  @override
+  String get quick_transfer_stopped => '빠른 전송 중지됨';
+
+  @override
+  String get quick_transfer_running => '빠른 전송이 실행 중입니다. 먼저 중지하세요';
+
+  @override
+  String quick_transfer_running_at(Object url) {
+    return '실행 중: $url';
+  }
+
+  @override
+  String quick_transfer_failed(Object error) {
+    return '빠른 전송 시작 실패: $error';
+  }
+
+  @override
   String get wol_title => 'LAN 웨이크 온';
 
   @override
@@ -5462,4 +5541,228 @@ class L10nKo extends L10n {
 
   @override
   String get wol_port_hint => '선택 사항';
+
+  @override
+  String get quick_transfer_nearby_devices => '附近设备';
+
+  @override
+  String get quick_transfer_scanning => '正在扫描附近设备…';
+
+  @override
+  String get quick_transfer_scan_hint => '双方都需打开快传并保持本页面在前台';
+
+  @override
+  String get quick_transfer_tap_to_connect => '点击设备名发起连接';
+
+  @override
+  String quick_transfer_connecting(Object name) {
+    return '正在连接 $name…';
+  }
+
+  @override
+  String quick_transfer_connected_as(Object role) {
+    return '已连接（本机为 $role）';
+  }
+
+  @override
+  String get quick_transfer_role_owner => '发送端';
+
+  @override
+  String get quick_transfer_role_client => '接收端';
+
+  @override
+  String get quick_transfer_select_files => '选择要发送的文件 / 文件夹';
+
+  @override
+  String quick_transfer_selected_summary(Object count, Object size) {
+    return '已选 $count 项，共 $size';
+  }
+
+  @override
+  String get quick_transfer_begin_send => '开始发送';
+
+  @override
+  String quick_transfer_incoming(Object name) {
+    return '收到来自 $name 的发送请求';
+  }
+
+  @override
+  String quick_transfer_incoming_files(Object count, Object size) {
+    return '$count 个文件，共 $size';
+  }
+
+  @override
+  String get quick_transfer_accept => '接受';
+
+  @override
+  String get quick_transfer_reject => '拒绝';
+
+  @override
+  String get quick_transfer_sending => '正在发送…';
+
+  @override
+  String get quick_transfer_receiving => '正在接收…';
+
+  @override
+  String get quick_transfer_complete => '传输完成';
+
+  @override
+  String get quick_transfer_waiting_peer => '等待对方连接…';
+
+  @override
+  String get quick_transfer_connected_waiting_files =>
+      '연결됨. 상대방이 파일을 보내기를 기다리는 중…';
+
+  @override
+  String get quick_transfer_permission_why =>
+      'WiFi Direct 검색에 위치/주변 기기 권한이 필요합니다. 위치 정보는 수집되지 않습니다.';
+
+  @override
+  String get quick_transfer_permission_required => '快传需要位置/附近设备权限以发现附近设备';
+
+  @override
+  String get quick_transfer_not_supported => '当前设备不支持 WiFi Direct 快传';
+
+  @override
+  String get quick_transfer_disconnect => '断开';
+
+  @override
+  String get quick_transfer_cancel => '取消';
+
+  @override
+  String get quick_transfer_save_to => '保存到';
+
+  @override
+  String get quick_transfer_send_mode => '发送';
+
+  @override
+  String get quick_transfer_receive_mode => '接收';
+
+  @override
+  String get quick_transfer_device_name => '本机名称';
+
+  @override
+  String get quick_transfer_retry => '다시 시도';
+
+  @override
+  String get quick_transfer_permission_grant => '권한 부여 및 계속';
+
+  @override
+  String get quick_transfer_open_settings => '설정 열기';
+
+  @override
+  String get quick_transfer_wifi_required =>
+      'WLAN(WiFi)를 켜주세요. 빠른 전송에 WiFi Direct가 필요합니다.';
+
+  @override
+  String get quick_transfer_create_group_failed =>
+      '빠른 전송 연결을 설정하지 못했습니다. WLAN을 켜고 위치/주변 기기 권한을 허용해 주세요.';
+
+  @override
+  String get quick_transfer_receive_path => '저장 경로';
+
+  @override
+  String get quick_transfer_change_path => '변경';
+
+  @override
+  String get quick_transfer_back => '뒤로';
+
+  @override
+  String get quick_transfer_send_button => '볾내기';
+
+  @override
+  String get quick_transfer_receive_button => '받기';
+
+  @override
+  String get quick_transfer_open_location => '파일 위치 열기';
+
+  @override
+  String get quick_transfer_receive_complete => '수신 완료';
+
+  @override
+  String quick_transfer_files_saved_to(Object path) {
+    return '파일이 $path에 저장되었습니다';
+  }
+
+  @override
+  String get quick_transfer_connect_btn => '연결';
+
+  @override
+  String get quick_transfer_connected_btn => '연결됨';
+
+  @override
+  String get quick_transfer_available_peers => '연결 가능한 기기';
+
+  @override
+  String quick_transfer_selected_count(Object count) {
+    return '$count개 선택됨';
+  }
+
+  @override
+  String get changelog_v1133_new_1 =>
+      '빠른 전송(LAN): 독립된 보내기/받기 모드, 주변 기기 레이더 탐지, 연결 상태, 전송 전 확인, 받은 후 앱 브라우저에서 한 번에 열기, 권한 안내 포함. 10개 언어 완전 지원.';
+
+  @override
+  String get changelog_v1133_new_2 => '카테고리 아이콘 라벨 표시 전환.';
+
+  @override
+  String get changelog_v1133_new_3 => 'AMOLED 전체 페이지 순수 검은색 테마.';
+
+  @override
+  String get changelog_v1133_new_4 => '백그라운드 재생 절전 방지(배터리 최적화 화이트리스트 + 웨이크락).';
+
+  @override
+  String get changelog_v1133_new_5 =>
+      '이미지 편집기: 물리적 크기(mm + DPI), 프리셋 템플릿(증명사진 / 여권 / 미국 비자), 파일 크기 제한.';
+
+  @override
+  String get changelog_v1133_new_6 =>
+      '오디오 이퀄라이저 5 프리셋(원음 / HD보컬 / 베이스 / 라이브 / 재즈).';
+
+  @override
+  String get changelog_v1133_new_7 =>
+      '동영상 플레이어: 내장 다중 오디오/자막 트랙 선택, 제스처 최적화(두 번 탭하여 일시정지/재생, 길게 누르기로 배속, 좌우 스와이프로 탐색).';
+
+  @override
+  String get changelog_v1133_new_8 => '드로어 / 사용자 지정 바로가기: 빠른 전송 항목 추가.';
+
+  @override
+  String get changelog_v1133_opt_1 =>
+      '이미지 뷰어: 상단 정보 바 재구성(크기/시간/형식/용량/EXIF), 회전을 저장하지 않는 미리보기만으로 변경, EXIF 실시간 표시, 파일 이름 제목 복원.';
+
+  @override
+  String get changelog_v1133_opt_2 =>
+      '동영상 플레이어: 하단 버튼 레이아웃/순서, 세로 넘침 수정, 시스템 회전 시 자동 가로 전체화면, 크기 조절(화면 채우기 / cover), 가로 전체화면 카메라 검은색 여백 수정.';
+
+  @override
+  String get changelog_v1133_opt_3 => '오디오 플레이어: 이퀄라이저 프리셋 전환 적용, 저음/보컬 왜곡 수정.';
+
+  @override
+  String get changelog_v1133_opt_4 =>
+      '동영상 볼륨: 플레이어 슬라이더가 이제 시스템 미디어 볼륨과 실시간 동기화됩니다.';
+
+  @override
+  String get changelog_v1133_opt_5 => '오디오 재생 모드: 앱 재시작 후에도 유지됩니다.';
+
+  @override
+  String get changelog_v1133_opt_6 =>
+      '이미지 편집: 자르기 비율 수정(정사각형 / 4:3 / 3:4 / 증명사진).';
+
+  @override
+  String get changelog_v1133_fix_1 =>
+      '텍스트 편집기: 알 수 없는 파일을 \'텍스트로 열기\'로 열 때 하드코딩된 오류 메시지를 다국어화.';
+
+  @override
+  String get changelog_v1133_fix_2 => '데스크톱 가사: 권한 중국어 하드코딩 Toast를 다국어화.';
+
+  @override
+  String get changelog_v1133_fix_3 => '디렉터리 선택기: 중국어 하드코딩 \'선택 고정\' 버튼을 다국어화.';
+
+  @override
+  String get changelog_v1133_fix_4 =>
+      '제한된 디렉터리(Android/data | obb): 로컬/원격 복사 오류 재수정(2차).';
+
+  @override
+  String get changelog_v1133_fix_5 =>
+      '길게 누르기 메뉴: v1.1.32 표시 구조 복원(고대비 배경 + 테두리).';
 }

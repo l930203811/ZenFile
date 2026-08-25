@@ -2199,6 +2199,7 @@ void _showDefaultHomeDialog(BuildContext context, FileManagerProvider fileManage
 
 String _getCurrentLocaleName(String locale) {
   switch (locale) {
+    case 'system': return '自动（跟随系统）';
     case 'en': return 'English';
     case 'zh_TW': return '繁體中文';
     case 'ja': return '日本語';
@@ -2251,6 +2252,7 @@ void _showLanguagePickerDialog(BuildContext context) {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      _buildLanguageOption(ctx, theme, currentLocale, 'system', L10n.of(context).ui_follow_system, 'Auto / System'),
                       _buildLanguageOption(ctx, theme, currentLocale, 'zh', '简体中文', 'Simplified Chinese'),
                       _buildLanguageOption(ctx, theme, currentLocale, 'en', 'English', 'English'),
                       _buildLanguageOption(ctx, theme, currentLocale, 'zh_TW', '繁體中文', 'Traditional Chinese'),

@@ -334,7 +334,7 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
       _controller.addListener(_onTextChanged);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('加载文件出错：{e}')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).e20(e))));
       }
     } finally {
       if (mounted) {

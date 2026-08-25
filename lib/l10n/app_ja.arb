@@ -3169,6 +3169,7 @@
   },
   "ui_invalid_file_type": "無効なファイルタイプ",
   "ui_language": "言語",
+  "ui_follow_system": "自動（システムに従う）",
   "ui_hide_nav_labels": "下部ナビゲーションラベルを隠す",
   "ui_reset_default_viewers": "デフォルトファイルビューアをリセット",
   "ui_trailing_info_when_hidden": "三点メニュー無効時の末尾情報",
@@ -4209,6 +4210,10 @@
   "@msg_aspect_custom": {
     "description": "Video aspect ratio mode: custom"
   },
+  "msg_aspect_fill_screen": "画面いっぱい",
+  "@msg_aspect_fill_screen": {
+    "description": "Video aspect ratio mode: fill screen (crop, no black bars)"
+  },
   "msg_custom_aspect_ratio": "カスタムアスペクト比",
   "@msg_custom_aspect_ratio": {
     "description": "Video player menu item for custom aspect ratio"
@@ -5185,7 +5190,7 @@
   "@ui_app_open_location": {
     "description": "ui_app_open_location label"
   },
-  "img_dimensions": "Dimensions",
+  "img_dimensions": "サイズ",
   "@img_dimensions": {
     "description": "Immersive viewer bottom info: image dimensions"
   },
@@ -5317,8 +5322,12 @@
   "@editor_pixel_auto": {
     "description": "Auto-calculated pixel dimensions preview",
     "placeholders": {
-      "w": { "type": "int" },
-      "h": { "type": "int" }
+      "w": {
+        "type": "int"
+      },
+      "h": {
+        "type": "int"
+      }
     }
   },
   "editor_pixel_result": "ピクセル（自動計算）",
@@ -5517,6 +5526,90 @@
   "@editor_output_size": {
     "description": "Editor: output size label. {size} is human size"
   },
+  "quick_transfer": "クイック転送",
+  "@quick_transfer": {
+    "description": "Quick Transfer: quick_transfer"
+  },
+  "quick_transfer_send": "送信",
+  "@quick_transfer_send": {
+    "description": "Quick Transfer: quick_transfer_send"
+  },
+  "quick_transfer_receive": "受信",
+  "@quick_transfer_receive": {
+    "description": "Quick Transfer: quick_transfer_receive"
+  },
+  "quick_transfer_send_hint": "共有するフォルダを選択。同じ Wi-Fi の端末がアドレスをブラウザで開くとダウンロードできます。",
+  "@quick_transfer_send_hint": {
+    "description": "Quick Transfer: quick_transfer_send_hint"
+  },
+  "quick_transfer_receive_hint": "保存先フォルダを選択。同じ Wi-Fi の端末がアドレスをブラウザで開くと、この端末にアップロードできます。",
+  "@quick_transfer_receive_hint": {
+    "description": "Quick Transfer: quick_transfer_receive_hint"
+  },
+  "quick_transfer_share_dir": "共有フォルダ",
+  "@quick_transfer_share_dir": {
+    "description": "Quick Transfer: quick_transfer_share_dir"
+  },
+  "quick_transfer_save_dir": "保存先",
+  "@quick_transfer_save_dir": {
+    "description": "Quick Transfer: quick_transfer_save_dir"
+  },
+  "quick_transfer_default_share": "既定：内部ストレージのルート",
+  "@quick_transfer_default_share": {
+    "description": "Quick Transfer: quick_transfer_default_share"
+  },
+  "quick_transfer_default_save": "既定：内部ストレージのルート",
+  "@quick_transfer_default_save": {
+    "description": "Quick Transfer: quick_transfer_default_save"
+  },
+  "quick_transfer_online": "有効",
+  "@quick_transfer_online": {
+    "description": "Quick Transfer: quick_transfer_online"
+  },
+  "quick_transfer_address": "本機アドレス",
+  "@quick_transfer_address": {
+    "description": "Quick Transfer: quick_transfer_address"
+  },
+  "quick_transfer_copy": "コピー",
+  "@quick_transfer_copy": {
+    "description": "Quick Transfer: quick_transfer_copy"
+  },
+  "quick_transfer_copied": "アドレスをコピーしました",
+  "@quick_transfer_copied": {
+    "description": "Quick Transfer: quick_transfer_copied"
+  },
+  "quick_transfer_send_tip": "上のアドレスを相手に送り、ブラウザで開くと選択フォルダのファイルをダウンロードできます。",
+  "@quick_transfer_send_tip": {
+    "description": "Quick Transfer: quick_transfer_send_tip"
+  },
+  "quick_transfer_receive_tip": "上のアドレスを相手に送り、ブラウザで開くと選択フォルダにファイルをアップロードできます。",
+  "@quick_transfer_receive_tip": {
+    "description": "Quick Transfer: quick_transfer_receive_tip"
+  },
+  "quick_transfer_connected": "接続デバイス",
+  "@quick_transfer_connected": {
+    "description": "Quick Transfer: quick_transfer_connected"
+  },
+  "quick_transfer_started": "クイック転送を開始しました：{url}",
+  "@quick_transfer_started": {
+    "description": "Quick Transfer: quick_transfer_started"
+  },
+  "quick_transfer_stopped": "クイック転送を停止しました",
+  "@quick_transfer_stopped": {
+    "description": "Quick Transfer: quick_transfer_stopped"
+  },
+  "quick_transfer_running": "クイック転送は実行中です。まず停止してください",
+  "@quick_transfer_running": {
+    "description": "Quick Transfer: quick_transfer_running"
+  },
+  "quick_transfer_running_at": "実行中：{url}",
+  "@quick_transfer_running_at": {
+    "description": "Quick Transfer: quick_transfer_running_at"
+  },
+  "quick_transfer_failed": "クイック転送の開始に失敗しました：{error}",
+  "@quick_transfer_failed": {
+    "description": "Quick Transfer: quick_transfer_failed"
+  },
   "wol_title": "LAN ウェイクアップ",
   "@wol_title": {
     "description": "Wake on LAN: drawer tools entry title"
@@ -5583,5 +5676,265 @@
   "wol_port_hint": "任意",
   "@wol_port_hint": {
     "description": "wol_port_hint label"
+  },
+  "quick_transfer_nearby_devices": "附近设备",
+  "@quick_transfer_nearby_devices": {
+    "description": "Quick Transfer P2P: quick_transfer_nearby_devices"
+  },
+  "quick_transfer_scanning": "正在扫描附近设备…",
+  "@quick_transfer_scanning": {
+    "description": "Quick Transfer P2P: quick_transfer_scanning"
+  },
+  "quick_transfer_scan_hint": "双方都需打开快传并保持本页面在前台",
+  "@quick_transfer_scan_hint": {
+    "description": "Quick Transfer P2P: quick_transfer_scan_hint"
+  },
+  "quick_transfer_tap_to_connect": "点击设备名发起连接",
+  "@quick_transfer_tap_to_connect": {
+    "description": "Quick Transfer P2P: quick_transfer_tap_to_connect"
+  },
+  "quick_transfer_connecting": "正在连接 {name}…",
+  "@quick_transfer_connecting": {
+    "description": "Quick Transfer P2P: quick_transfer_connecting"
+  },
+  "quick_transfer_connected_as": "已连接（本机为 {role}）",
+  "@quick_transfer_connected_as": {
+    "description": "Quick Transfer P2P: quick_transfer_connected_as"
+  },
+  "quick_transfer_role_owner": "发送端",
+  "@quick_transfer_role_owner": {
+    "description": "Quick Transfer P2P: quick_transfer_role_owner"
+  },
+  "quick_transfer_role_client": "接收端",
+  "@quick_transfer_role_client": {
+    "description": "Quick Transfer P2P: quick_transfer_role_client"
+  },
+  "quick_transfer_select_files": "选择要发送的文件 / 文件夹",
+  "@quick_transfer_select_files": {
+    "description": "Quick Transfer P2P: quick_transfer_select_files"
+  },
+  "quick_transfer_selected_summary": "已选 {count} 项，共 {size}",
+  "@quick_transfer_selected_summary": {
+    "description": "Quick Transfer P2P: quick_transfer_selected_summary"
+  },
+  "quick_transfer_begin_send": "开始发送",
+  "@quick_transfer_begin_send": {
+    "description": "Quick Transfer P2P: quick_transfer_begin_send"
+  },
+  "quick_transfer_incoming": "收到来自 {name} 的发送请求",
+  "@quick_transfer_incoming": {
+    "description": "Quick Transfer P2P: quick_transfer_incoming"
+  },
+  "quick_transfer_incoming_files": "{count} 个文件，共 {size}",
+  "@quick_transfer_incoming_files": {
+    "description": "Quick Transfer P2P: quick_transfer_incoming_files"
+  },
+  "quick_transfer_accept": "接受",
+  "@quick_transfer_accept": {
+    "description": "Quick Transfer P2P: quick_transfer_accept"
+  },
+  "quick_transfer_reject": "拒绝",
+  "@quick_transfer_reject": {
+    "description": "Quick Transfer P2P: quick_transfer_reject"
+  },
+  "quick_transfer_sending": "正在发送…",
+  "@quick_transfer_sending": {
+    "description": "Quick Transfer P2P: quick_transfer_sending"
+  },
+  "quick_transfer_receiving": "正在接收…",
+  "@quick_transfer_receiving": {
+    "description": "Quick Transfer P2P: quick_transfer_receiving"
+  },
+  "quick_transfer_complete": "传输完成",
+  "@quick_transfer_complete": {
+    "description": "Quick Transfer P2P: quick_transfer_complete"
+  },
+  "quick_transfer_waiting_peer": "等待对方连接…",
+  "@quick_transfer_waiting_peer": {
+    "description": "Quick Transfer P2P: quick_transfer_waiting_peer"
+  },
+  "quick_transfer_connected_waiting_files": "接続済み。相手のファイル送信を待っています…",
+  "@quick_transfer_connected_waiting_files": {
+    "description": "Quick Transfer P2P: quick_transfer_connected_waiting_files"
+  },
+  "quick_transfer_permission_why": "WiFi Direct スキャンには位置情報/周辺デバイス権限が必要です。位置情報は収集されません。",
+  "@quick_transfer_permission_why": {
+    "description": "Quick Transfer P2P: quick_transfer_permission_why"
+  },
+  "quick_transfer_permission_required": "快传需要位置/附近设备权限以发现附近设备",
+  "@quick_transfer_permission_required": {
+    "description": "Quick Transfer P2P: quick_transfer_permission_required"
+  },
+  "quick_transfer_not_supported": "当前设备不支持 WiFi Direct 快传",
+  "@quick_transfer_not_supported": {
+    "description": "Quick Transfer P2P: quick_transfer_not_supported"
+  },
+  "quick_transfer_disconnect": "断开",
+  "@quick_transfer_disconnect": {
+    "description": "Quick Transfer P2P: quick_transfer_disconnect"
+  },
+  "quick_transfer_cancel": "取消",
+  "@quick_transfer_cancel": {
+    "description": "Quick Transfer P2P: quick_transfer_cancel"
+  },
+  "quick_transfer_save_to": "保存到",
+  "@quick_transfer_save_to": {
+    "description": "Quick Transfer P2P: quick_transfer_save_to"
+  },
+  "quick_transfer_send_mode": "发送",
+  "@quick_transfer_send_mode": {
+    "description": "Quick Transfer P2P: quick_transfer_send_mode"
+  },
+  "quick_transfer_receive_mode": "接收",
+  "@quick_transfer_receive_mode": {
+    "description": "Quick Transfer P2P: quick_transfer_receive_mode"
+  },
+  "quick_transfer_device_name": "本机名称",
+  "@quick_transfer_device_name": {
+    "description": "Quick Transfer P2P: quick_transfer_device_name"
+  },
+  "quick_transfer_retry": "再試行",
+  "@quick_transfer_retry": {
+    "description": "Quick Transfer P2P: quick_transfer_retry"
+  },
+  "quick_transfer_permission_grant": "許可して続行",
+  "@quick_transfer_permission_grant": {
+    "description": "Quick Transfer P2P: quick_transfer_permission_grant"
+  },
+  "quick_transfer_open_settings": "設定を開く",
+  "@quick_transfer_open_settings": {
+    "description": "Quick Transfer P2P: quick_transfer_open_settings"
+  },
+  "quick_transfer_wifi_required": "WLAN（WiFi）をオンにしてください。WiFi Directが必要です。",
+  "@quick_transfer_wifi_required": {
+    "description": "Quick Transfer P2P: quick_transfer_wifi_required"
+  },
+  "quick_transfer_create_group_failed": "接続の確立に失敗しました。WLANをオンにし、位置情報/周辺デバイス権限を許可してください。",
+  "@quick_transfer_create_group_failed": {
+    "description": "Quick Transfer P2P: quick_transfer_create_group_failed"
+  },
+  "quick_transfer_receive_path": "保存先",
+  "@quick_transfer_receive_path": {
+    "description": "Quick Transfer P2P: quick_transfer_receive_path"
+  },
+  "quick_transfer_change_path": "変更",
+  "@quick_transfer_change_path": {
+    "description": "Quick Transfer P2P: quick_transfer_change_path"
+  },
+  "quick_transfer_back": "戻る",
+  "@quick_transfer_back": {
+    "description": "Quick Transfer P2P: quick_transfer_back"
+  },
+  "quick_transfer_send_button": "送信",
+  "@quick_transfer_send_button": {
+    "description": "Quick Transfer P2P: quick_transfer_send_button"
+  },
+  "quick_transfer_receive_button": "受信",
+  "@quick_transfer_receive_button": {
+    "description": "Quick Transfer P2P: quick_transfer_receive_button"
+  },
+  "quick_transfer_open_location": "ファイルの場所を開く",
+  "@quick_transfer_open_location": {
+    "description": "Quick Transfer P2P: quick_transfer_open_location"
+  },
+  "quick_transfer_receive_complete": "受信完了",
+  "@quick_transfer_receive_complete": {
+    "description": "Quick Transfer P2P: quick_transfer_receive_complete"
+  },
+  "quick_transfer_files_saved_to": "ファイルは {path} に保存されました",
+  "@quick_transfer_files_saved_to": {
+    "description": "Quick Transfer P2P: quick_transfer_files_saved_to"
+  },
+  "quick_transfer_connect_btn": "接続",
+  "@quick_transfer_connect_btn": {
+    "description": "Quick Transfer P2P: quick_transfer_connect_btn"
+  },
+  "quick_transfer_connected_btn": "接続済み",
+  "@quick_transfer_connected_btn": {
+    "description": "Quick Transfer P2P: quick_transfer_connected_btn"
+  },
+  "quick_transfer_available_peers": "接続可能なデバイス",
+  "@quick_transfer_available_peers": {
+    "description": "Quick Transfer P2P: quick_transfer_available_peers"
+  },
+  "quick_transfer_selected_count": "{count} 件選択済み",
+  "@quick_transfer_selected_count": {
+    "description": "Quick Transfer P2P: quick_transfer_selected_count"
+  },
+  "changelog_v1133_new_1": "クイック転送（LAN）：独立した送信/受信モード、近くのデバイスのレーダー検出、接続状態、転送前の確認、受信後にアプリ内ブラウザでワンタップで開く、権限の説明付き。10言語に完全対応。",
+  "@changelog_v1133_new_1": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_1"
+  },
+  "changelog_v1133_new_2": "カテゴリアイコンのラベル表示の切り替え。",
+  "@changelog_v1133_new_2": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_2"
+  },
+  "changelog_v1133_new_3": "AMOLED 全面純黒テーマ。",
+  "@changelog_v1133_new_3": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_3"
+  },
+  "changelog_v1133_new_4": "バックグラウンド再生のスリープ防止（バッテリー最適化ホワイトリスト + ウェイクロック）。",
+  "@changelog_v1133_new_4": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_4"
+  },
+  "changelog_v1133_new_5": "画像エディタ：物理サイズ（mm + DPI）、プリセットテンプレート（証明写真 / パスポート / 米国ビザ）、ファイルサイズ制限。",
+  "@changelog_v1133_new_5": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_5"
+  },
+  "changelog_v1133_new_6": "オーディオイコライザー 5 プリセット（原音 / HDボーカル / 重低音 / ライブ / ジャズ）。",
+  "@changelog_v1133_new_6": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_6"
+  },
+  "changelog_v1133_new_7": "動画プレーヤー：複数の音声/字幕トラックの内蔵選択、ジェスチャー最適化（ダブルタップで一時停止/再生、長押しで速度、左右スワイプでシーク）。",
+  "@changelog_v1133_new_7": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_7"
+  },
+  "changelog_v1133_new_8": "ドロワー / カスタムショートカット：クイック転送の項目を追加。",
+  "@changelog_v1133_new_8": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_8"
+  },
+  "changelog_v1133_opt_1": "画像ビューア：上部情報バーを再構築（サイズ/時間/形式/容量/EXIF）、回転を保存しないプレビューのみに変更、EXIF をリアルタイム表示、ファイル名タイトルを復元。",
+  "@changelog_v1133_opt_1": {
+    "description": "v1.1.33 changelog: changelog_v1133_opt_1"
+  },
+  "changelog_v1133_opt_2": "動画プレーヤー：下部ボタンのレイアウト/順序、縦向きのはみ出し修正、システム回転時の自動横向き全画面、スケール（画面フィット / cover）、横向き全画面のカメラ黒帯修正。",
+  "@changelog_v1133_opt_2": {
+    "description": "v1.1.33 changelog: changelog_v1133_opt_2"
+  },
+  "changelog_v1133_opt_3": "オーディオプレーヤー：イコライザープリセットの切り替えが有効に、低音/ボーカルの歪みを修正。",
+  "@changelog_v1133_opt_3": {
+    "description": "v1.1.33 changelog: changelog_v1133_opt_3"
+  },
+  "changelog_v1133_opt_4": "動画の音量：プレーヤーのスライダーがシステムメディア音量とリアルタイムで同期するようになりました。",
+  "@changelog_v1133_opt_4": {
+    "description": "v1.1.33 changelog: changelog_v1133_opt_4"
+  },
+  "changelog_v1133_opt_5": "オーディオ再生モード：アプリ再起動後も保持されるようになりました。",
+  "@changelog_v1133_opt_5": {
+    "description": "v1.1.33 changelog: changelog_v1133_opt_5"
+  },
+  "changelog_v1133_opt_6": "画像編集：トリミング比率の修正（正方形 / 4:3 / 3:4 / 証明写真）。",
+  "@changelog_v1133_opt_6": {
+    "description": "v1.1.33 changelog: changelog_v1133_opt_6"
+  },
+  "changelog_v1133_fix_1": "テキストエディタ：不明なファイルを「テキストで開く」で開いた際のハードコードされたエラーメッセージを多言語化。",
+  "@changelog_v1133_fix_1": {
+    "description": "v1.1.33 changelog: changelog_v1133_fix_1"
+  },
+  "changelog_v1133_fix_2": "デスクトップ歌詞：権限の中国語ハードコード Toast を多言語化。",
+  "@changelog_v1133_fix_2": {
+    "description": "v1.1.33 changelog: changelog_v1133_fix_2"
+  },
+  "changelog_v1133_fix_3": "ディレクトリ選択：中国語ハードコードの「選択を固定」ボタンを多言語化。",
+  "@changelog_v1133_fix_3": {
+    "description": "v1.1.33 changelog: changelog_v1133_fix_3"
+  },
+  "changelog_v1133_fix_4": "制限付きディレクトリ（Android/data | obb）：ローカル/リモートへのコピーエラーを再修正（2回目）。",
+  "@changelog_v1133_fix_4": {
+    "description": "v1.1.33 changelog: changelog_v1133_fix_4"
+  },
+  "changelog_v1133_fix_5": "長押しメニュー：v1.1.32 の表示構造を復元（高コントラスト背景 + 枠線）。",
+  "@changelog_v1133_fix_5": {
+    "description": "v1.1.33 changelog: changelog_v1133_fix_5"
   }
 }

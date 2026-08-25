@@ -3165,6 +3165,7 @@
   },
   "ui_invalid_file_type": "نوع ملف غير صالح",
   "ui_language": "اللغة",
+  "ui_follow_system": "تلقائي (اتباع النظام)",
   "ui_hide_nav_labels": "إخفاء تسميات التنقل السفلية",
   "ui_reset_default_viewers": "إعادة تعيين العارضات الافتراضية",
   "ui_trailing_info_when_hidden": "المعلومات النهائية عند إخفاء القائمة",
@@ -4205,6 +4206,10 @@
   "@msg_aspect_custom": {
     "description": "Video aspect ratio mode: custom"
   },
+  "msg_aspect_fill_screen": "ملء الشاشة",
+  "@msg_aspect_fill_screen": {
+    "description": "Video aspect ratio mode: fill screen (crop, no black bars)"
+  },
   "msg_custom_aspect_ratio": "نسبة العرض المخصصة",
   "@msg_custom_aspect_ratio": {
     "description": "Video player menu item for custom aspect ratio"
@@ -5181,7 +5186,7 @@
   "@ui_app_open_location": {
     "description": "ui_app_open_location label"
   },
-  "img_dimensions": "Dimensions",
+  "img_dimensions": "الأبعاد",
   "@img_dimensions": {
     "description": "Immersive viewer bottom info: image dimensions"
   },
@@ -5313,8 +5318,12 @@
   "@editor_pixel_auto": {
     "description": "Auto-calculated pixel dimensions preview",
     "placeholders": {
-      "w": { "type": "int" },
-      "h": { "type": "int" }
+      "w": {
+        "type": "int"
+      },
+      "h": {
+        "type": "int"
+      }
     }
   },
   "editor_pixel_result": "بكسل (تلقائي)",
@@ -5513,6 +5522,90 @@
   "@editor_output_size": {
     "description": "Editor: output size label. {size} is human size"
   },
+  "quick_transfer": "نقل سريع",
+  "@quick_transfer": {
+    "description": "Quick Transfer: quick_transfer"
+  },
+  "quick_transfer_send": "إرسال",
+  "@quick_transfer_send": {
+    "description": "Quick Transfer: quick_transfer_send"
+  },
+  "quick_transfer_receive": "استلام",
+  "@quick_transfer_receive": {
+    "description": "Quick Transfer: quick_transfer_receive"
+  },
+  "quick_transfer_send_hint": "اختر مجلدًا للمشاركة؛ يمكن للأجهزة على نفس الواي فاي فتح العنوان في المتصفح للتنزيل.",
+  "@quick_transfer_send_hint": {
+    "description": "Quick Transfer: quick_transfer_send_hint"
+  },
+  "quick_transfer_receive_hint": "اختر مجلدًا للحفظ؛ يمكن للأجهزة على نفس الواي فاي فتح العنوان في المتصفح لرفع الملفات إلى هذا الجهاز.",
+  "@quick_transfer_receive_hint": {
+    "description": "Quick Transfer: quick_transfer_receive_hint"
+  },
+  "quick_transfer_share_dir": "مجلد المشاركة",
+  "@quick_transfer_share_dir": {
+    "description": "Quick Transfer: quick_transfer_share_dir"
+  },
+  "quick_transfer_save_dir": "حفظ في",
+  "@quick_transfer_save_dir": {
+    "description": "Quick Transfer: quick_transfer_save_dir"
+  },
+  "quick_transfer_default_share": "الافتراضي: جذر التخزين الداخلي",
+  "@quick_transfer_default_share": {
+    "description": "Quick Transfer: quick_transfer_default_share"
+  },
+  "quick_transfer_default_save": "الافتراضي: جذر التخزين الداخلي",
+  "@quick_transfer_default_save": {
+    "description": "Quick Transfer: quick_transfer_default_save"
+  },
+  "quick_transfer_online": "نشط",
+  "@quick_transfer_online": {
+    "description": "Quick Transfer: quick_transfer_online"
+  },
+  "quick_transfer_address": "عنوان هذا الجهاز",
+  "@quick_transfer_address": {
+    "description": "Quick Transfer: quick_transfer_address"
+  },
+  "quick_transfer_copy": "نسخ",
+  "@quick_transfer_copy": {
+    "description": "Quick Transfer: quick_transfer_copy"
+  },
+  "quick_transfer_copied": "تم نسخ العنوان",
+  "@quick_transfer_copied": {
+    "description": "Quick Transfer: quick_transfer_copied"
+  },
+  "quick_transfer_send_tip": "أرسل العنوان أعلاه للطرف الآخر؛ يفتحه في المتصفح لتنزيل الملفات من المجلد المحدد.",
+  "@quick_transfer_send_tip": {
+    "description": "Quick Transfer: quick_transfer_send_tip"
+  },
+  "quick_transfer_receive_tip": "أرسل العنوان أعلاه للطرف الآخر؛ يفتحه في المتصفح لرفع الملفات إلى المجلد المحدد على هذا الجهاز.",
+  "@quick_transfer_receive_tip": {
+    "description": "Quick Transfer: quick_transfer_receive_tip"
+  },
+  "quick_transfer_connected": "الأجهزة المتصلة",
+  "@quick_transfer_connected": {
+    "description": "Quick Transfer: quick_transfer_connected"
+  },
+  "quick_transfer_started": "بدأ النقل السريع: {url}",
+  "@quick_transfer_started": {
+    "description": "Quick Transfer: quick_transfer_started"
+  },
+  "quick_transfer_stopped": "تم إيقاف النقل السريع",
+  "@quick_transfer_stopped": {
+    "description": "Quick Transfer: quick_transfer_stopped"
+  },
+  "quick_transfer_running": "النقل السريع قيد التشغيل، يرجى إيقافه أولاً",
+  "@quick_transfer_running": {
+    "description": "Quick Transfer: quick_transfer_running"
+  },
+  "quick_transfer_running_at": "قيد التشغيل: {url}",
+  "@quick_transfer_running_at": {
+    "description": "Quick Transfer: quick_transfer_running_at"
+  },
+  "quick_transfer_failed": "تعذر بدء النقل السريع: {error}",
+  "@quick_transfer_failed": {
+    "description": "Quick Transfer: quick_transfer_failed"
+  },
   "wol_title": "التشغيل عبر الشبكة المحلية",
   "@wol_title": {
     "description": "Wake on LAN: drawer tools entry title"
@@ -5579,5 +5672,265 @@
   "wol_port_hint": "اختياري",
   "@wol_port_hint": {
     "description": "wol_port_hint label"
+  },
+  "quick_transfer_nearby_devices": "附近设备",
+  "@quick_transfer_nearby_devices": {
+    "description": "Quick Transfer P2P: quick_transfer_nearby_devices"
+  },
+  "quick_transfer_scanning": "正在扫描附近设备…",
+  "@quick_transfer_scanning": {
+    "description": "Quick Transfer P2P: quick_transfer_scanning"
+  },
+  "quick_transfer_scan_hint": "双方都需打开快传并保持本页面在前台",
+  "@quick_transfer_scan_hint": {
+    "description": "Quick Transfer P2P: quick_transfer_scan_hint"
+  },
+  "quick_transfer_tap_to_connect": "点击设备名发起连接",
+  "@quick_transfer_tap_to_connect": {
+    "description": "Quick Transfer P2P: quick_transfer_tap_to_connect"
+  },
+  "quick_transfer_connecting": "正在连接 {name}…",
+  "@quick_transfer_connecting": {
+    "description": "Quick Transfer P2P: quick_transfer_connecting"
+  },
+  "quick_transfer_connected_as": "已连接（本机为 {role}）",
+  "@quick_transfer_connected_as": {
+    "description": "Quick Transfer P2P: quick_transfer_connected_as"
+  },
+  "quick_transfer_role_owner": "发送端",
+  "@quick_transfer_role_owner": {
+    "description": "Quick Transfer P2P: quick_transfer_role_owner"
+  },
+  "quick_transfer_role_client": "接收端",
+  "@quick_transfer_role_client": {
+    "description": "Quick Transfer P2P: quick_transfer_role_client"
+  },
+  "quick_transfer_select_files": "选择要发送的文件 / 文件夹",
+  "@quick_transfer_select_files": {
+    "description": "Quick Transfer P2P: quick_transfer_select_files"
+  },
+  "quick_transfer_selected_summary": "已选 {count} 项，共 {size}",
+  "@quick_transfer_selected_summary": {
+    "description": "Quick Transfer P2P: quick_transfer_selected_summary"
+  },
+  "quick_transfer_begin_send": "开始发送",
+  "@quick_transfer_begin_send": {
+    "description": "Quick Transfer P2P: quick_transfer_begin_send"
+  },
+  "quick_transfer_incoming": "收到来自 {name} 的发送请求",
+  "@quick_transfer_incoming": {
+    "description": "Quick Transfer P2P: quick_transfer_incoming"
+  },
+  "quick_transfer_incoming_files": "{count} 个文件，共 {size}",
+  "@quick_transfer_incoming_files": {
+    "description": "Quick Transfer P2P: quick_transfer_incoming_files"
+  },
+  "quick_transfer_accept": "接受",
+  "@quick_transfer_accept": {
+    "description": "Quick Transfer P2P: quick_transfer_accept"
+  },
+  "quick_transfer_reject": "拒绝",
+  "@quick_transfer_reject": {
+    "description": "Quick Transfer P2P: quick_transfer_reject"
+  },
+  "quick_transfer_sending": "正在发送…",
+  "@quick_transfer_sending": {
+    "description": "Quick Transfer P2P: quick_transfer_sending"
+  },
+  "quick_transfer_receiving": "正在接收…",
+  "@quick_transfer_receiving": {
+    "description": "Quick Transfer P2P: quick_transfer_receiving"
+  },
+  "quick_transfer_complete": "传输完成",
+  "@quick_transfer_complete": {
+    "description": "Quick Transfer P2P: quick_transfer_complete"
+  },
+  "quick_transfer_waiting_peer": "等待对方连接…",
+  "@quick_transfer_waiting_peer": {
+    "description": "Quick Transfer P2P: quick_transfer_waiting_peer"
+  },
+  "quick_transfer_connected_waiting_files": "متصل. في انتظار إرسال الملفات من الطرف الآخر…",
+  "@quick_transfer_connected_waiting_files": {
+    "description": "Quick Transfer P2P: quick_transfer_connected_waiting_files"
+  },
+  "quick_transfer_permission_why": "يتطلب فحص WiFi Direct إذن الموقع/الأجهزة القريبة. لا يتم جمع موقعك.",
+  "@quick_transfer_permission_why": {
+    "description": "Quick Transfer P2P: quick_transfer_permission_why"
+  },
+  "quick_transfer_permission_required": "快传需要位置/附近设备权限以发现附近设备",
+  "@quick_transfer_permission_required": {
+    "description": "Quick Transfer P2P: quick_transfer_permission_required"
+  },
+  "quick_transfer_not_supported": "当前设备不支持 WiFi Direct 快传",
+  "@quick_transfer_not_supported": {
+    "description": "Quick Transfer P2P: quick_transfer_not_supported"
+  },
+  "quick_transfer_disconnect": "断开",
+  "@quick_transfer_disconnect": {
+    "description": "Quick Transfer P2P: quick_transfer_disconnect"
+  },
+  "quick_transfer_cancel": "取消",
+  "@quick_transfer_cancel": {
+    "description": "Quick Transfer P2P: quick_transfer_cancel"
+  },
+  "quick_transfer_save_to": "保存到",
+  "@quick_transfer_save_to": {
+    "description": "Quick Transfer P2P: quick_transfer_save_to"
+  },
+  "quick_transfer_send_mode": "发送",
+  "@quick_transfer_send_mode": {
+    "description": "Quick Transfer P2P: quick_transfer_send_mode"
+  },
+  "quick_transfer_receive_mode": "接收",
+  "@quick_transfer_receive_mode": {
+    "description": "Quick Transfer P2P: quick_transfer_receive_mode"
+  },
+  "quick_transfer_device_name": "本机名称",
+  "@quick_transfer_device_name": {
+    "description": "Quick Transfer P2P: quick_transfer_device_name"
+  },
+  "quick_transfer_retry": "إعادة المحاولة",
+  "@quick_transfer_retry": {
+    "description": "Quick Transfer P2P: quick_transfer_retry"
+  },
+  "quick_transfer_permission_grant": "منح والمتابعة",
+  "@quick_transfer_permission_grant": {
+    "description": "Quick Transfer P2P: quick_transfer_permission_grant"
+  },
+  "quick_transfer_open_settings": "فتح الإعدادات",
+  "@quick_transfer_open_settings": {
+    "description": "Quick Transfer P2P: quick_transfer_open_settings"
+  },
+  "quick_transfer_wifi_required": "يرجى تشغيل WLAN (WiFi). النقل السريع يحتاج إلى WiFi Direct.",
+  "@quick_transfer_wifi_required": {
+    "description": "Quick Transfer P2P: quick_transfer_wifi_required"
+  },
+  "quick_transfer_create_group_failed": "فشل إنشاء اتصال النقل السريع. يرجى التأكد من تشغيل WLAN ومنح الإذن.",
+  "@quick_transfer_create_group_failed": {
+    "description": "Quick Transfer P2P: quick_transfer_create_group_failed"
+  },
+  "quick_transfer_receive_path": "مسار الاستلام",
+  "@quick_transfer_receive_path": {
+    "description": "Quick Transfer P2P: quick_transfer_receive_path"
+  },
+  "quick_transfer_change_path": "تغيير",
+  "@quick_transfer_change_path": {
+    "description": "Quick Transfer P2P: quick_transfer_change_path"
+  },
+  "quick_transfer_back": "رجوع",
+  "@quick_transfer_back": {
+    "description": "Quick Transfer P2P: quick_transfer_back"
+  },
+  "quick_transfer_send_button": "إرسال",
+  "@quick_transfer_send_button": {
+    "description": "Quick Transfer P2P: quick_transfer_send_button"
+  },
+  "quick_transfer_receive_button": "استلام",
+  "@quick_transfer_receive_button": {
+    "description": "Quick Transfer P2P: quick_transfer_receive_button"
+  },
+  "quick_transfer_open_location": "فتح موقع الملف",
+  "@quick_transfer_open_location": {
+    "description": "Quick Transfer P2P: quick_transfer_open_location"
+  },
+  "quick_transfer_receive_complete": "اكتمل الاستلام",
+  "@quick_transfer_receive_complete": {
+    "description": "Quick Transfer P2P: quick_transfer_receive_complete"
+  },
+  "quick_transfer_files_saved_to": "تم حفظ الملفات في {path}",
+  "@quick_transfer_files_saved_to": {
+    "description": "Quick Transfer P2P: quick_transfer_files_saved_to"
+  },
+  "quick_transfer_connect_btn": "اتصل",
+  "@quick_transfer_connect_btn": {
+    "description": "Quick Transfer P2P: quick_transfer_connect_btn"
+  },
+  "quick_transfer_connected_btn": "متصل",
+  "@quick_transfer_connected_btn": {
+    "description": "Quick Transfer P2P: quick_transfer_connected_btn"
+  },
+  "quick_transfer_available_peers": "الأجهزة المتاحة",
+  "@quick_transfer_available_peers": {
+    "description": "Quick Transfer P2P: quick_transfer_available_peers"
+  },
+  "quick_transfer_selected_count": "تم تحديد {count}",
+  "@quick_transfer_selected_count": {
+    "description": "Quick Transfer P2P: quick_transfer_selected_count"
+  },
+  "changelog_v1133_new_1": "النقل السريع (شبكة LAN): وضعان مستقلان للإرسال/الاستقبال، اكتشاف راداري للأجهزة القريبة، حالات الاتصال، تأكيد قبل النقل، فتح بنقرة واحدة في متصفح التطبيق بعد الاستلام، مع إشعارات الأذونات. مدعوم بالكامل بـ 10 لغات.",
+  "@changelog_v1133_new_1": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_1"
+  },
+  "changelog_v1133_new_2": "تبديل ظهور تسميات أيقونات الفئات.",
+  "@changelog_v1133_new_2": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_2"
+  },
+  "changelog_v1133_new_3": "سمة AMOLED سوداء بالكامل لكامل الصفحة.",
+  "@changelog_v1133_new_3": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_3"
+  },
+  "changelog_v1133_new_4": "تشغيل في الخلفية دون نوم (قائمة استثناءات تحسين البطارية + قفل الاستيقاظ).",
+  "@changelog_v1133_new_4": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_4"
+  },
+  "changelog_v1133_new_5": "محرر الصور: الأبعاد الفيزيائية (مم + DPI)، قوالب جاهزة (صورة شخصية / جواز سفر / تأشيرة أمريكية)، حد لحجم الملف.",
+  "@changelog_v1133_new_5": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_5"
+  },
+  "changelog_v1133_new_6": "معادل صوت بـ 5 إعدادات مسبقة (الأصل / صوت HD / باس / حي / جاز).",
+  "@changelog_v1133_new_6": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_6"
+  },
+  "changelog_v1133_new_7": "مشغل الفيديو: اختيار مدمج لعدة مسارات صوت/ترجمة؛ تحسين الإيماءات (نقرة مزدوجة للإيقاف/التشغيل، ضغط مطول للسرعة، تمرير يسار/يمين للتقديم/التأخير).",
+  "@changelog_v1133_new_7": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_7"
+  },
+  "changelog_v1133_new_8": "الدرج / الاختصارات المخصصة: إضافة مدخل النقل السريع.",
+  "@changelog_v1133_new_8": {
+    "description": "v1.1.33 changelog: changelog_v1133_new_8"
+  },
+  "changelog_v1133_opt_1": "عارض الصور: إعادة بناء شريط المعلومات العلوي (الأبعاد/الوقت/الصيغة/الحجم/EXIF)، تدوير أصبح معاينة فقط (دون حفظ)، عرض EXIF مباشر، استعادة عنوان اسم الملف.",
+  "@changelog_v1133_opt_1": {
+    "description": "v1.1.33 changelog: changelog_v1133_opt_1"
+  },
+  "changelog_v1133_opt_2": "مشغل الفيديو: تخطيط/ترتيب الأزرار السفلية، إصلاح تجاوز الشاشة العمودية، دوران تلقائي أفقي عند دوران النظام، المقياس (ملء الشاشة / cover)، إصلاح الحواف السوداء للكاميرا في الوضع الأفقي ملء الشاشة.",
+  "@changelog_v1133_opt_2": {
+    "description": "v1.1.33 changelog: changelog_v1133_opt_2"
+  },
+  "changelog_v1133_opt_3": "مشغل الصوت: تفعيل تبديل إعدادات المعادل، إصلاح تشويه الباس/الأصوات.",
+  "@changelog_v1133_opt_3": {
+    "description": "v1.1.33 changelog: changelog_v1133_opt_3"
+  },
+  "changelog_v1133_opt_4": "مستوى صوت الفيديو: يتزامن شريط التمرير الآن لحظياً مع مستوى صوت النظام.",
+  "@changelog_v1133_opt_4": {
+    "description": "v1.1.33 changelog: changelog_v1133_opt_4"
+  },
+  "changelog_v1133_opt_5": "وضع تشغيل الصوت: أصبح يُحفظ الآن بعد إعادة تشغيل التطبيق.",
+  "@changelog_v1133_opt_5": {
+    "description": "v1.1.33 changelog: changelog_v1133_opt_5"
+  },
+  "changelog_v1133_opt_6": "تحرير الصور: إصلاح نسبة الاقتصاص (مربع / 4:3 / 3:4 / صورة شخصية).",
+  "@changelog_v1133_opt_6": {
+    "description": "v1.1.33 changelog: changelog_v1133_opt_6"
+  },
+  "changelog_v1133_fix_1": "محرر النصوص: رسالة الخطأ الثابتة عند فتح ملفات غير معروفة عبر «فتح كنص» أصبحت مترجمة الآن.",
+  "@changelog_v1133_fix_1": {
+    "description": "v1.1.33 changelog: changelog_v1133_fix_1"
+  },
+  "changelog_v1133_fix_2": "كلمات الأغاني على سطح المكتب: إشعار (Toast) الأذونات الصيني الثابت أصبح مترجماً الآن.",
+  "@changelog_v1133_fix_2": {
+    "description": "v1.1.33 changelog: changelog_v1133_fix_2"
+  },
+  "changelog_v1133_fix_3": "منتقي المجلد: زر «تثبيت التحديد» الصيني الثابت أصبح مترجماً الآن.",
+  "@changelog_v1133_fix_3": {
+    "description": "v1.1.33 changelog: changelog_v1133_fix_3"
+  },
+  "changelog_v1133_fix_4": "المجلدات المقيّدة (Android/data | obb): إصلاح أخطاء النسخ إلى المحلي/البعيد (إصلاح ثانٍ).",
+  "@changelog_v1133_fix_4": {
+    "description": "v1.1.33 changelog: changelog_v1133_fix_4"
+  },
+  "changelog_v1133_fix_5": "قائمة الضغط المطول: استعادة بنية العرض من v1.1.32 مع خلفية عالية التباين وإطار.",
+  "@changelog_v1133_fix_5": {
+    "description": "v1.1.33 changelog: changelog_v1133_fix_5"
   }
 }

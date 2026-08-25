@@ -11,6 +11,8 @@ enum _EditorTab { adjust, filters, resize, rotate, crop }
 
 enum _CropDragMode { none, move, tl, tr, bl, br }
 
+enum _Corner { tl, tr, bl, br }
+
 class ImageEditorScreen extends StatefulWidget {
   final String imagePath; // 本地文件路径
 
@@ -289,52 +291,119 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
       ((local.dx - disp.left) / disp.width).clamp(0.0, 1.0),
       ((local.dy - disp.top) / disp.height).clamp(0.0, 1.0),
     );
-    final d = norm - _dragStartNorm;
     const minS = 0.05;
-    Rect r = _dragStartRect;
+    final r = _dragStartRect;
+    // 已选比例时锁定宽高比（与 _setAspect 同一套换算规则）
+    final ar = (_info?.width ?? 1) / (_info?.height ?? 1);
+    final locked = _selectedAspect != null;
+    final wh = locked ? (_selectedAspect! / ar) : 1.0; // 归一化宽/高
+
+    Rect result;
     switch (_dragMode) {
       case _CropDragMode.move:
-        double left = (r.left + d.dx).clamp(0.0, 1.0 - r.width);
-        double top = (r.top + d.dy).clamp(0.0, 1.0 - r.height);
-        r = Rect.fromLTWH(left, top, r.width, r.height);
+        final left = (r.left + (norm.dx - _dragStartNorm.dx)).clamp(0.0, 1.0 - r.width);
+        final top = (r.top + (norm.dy - _dragStartNorm.dy)).clamp(0.0, 1.0 - r.height);
+        result = Rect.fromLTWH(left, top, r.width, r.height);
       case _CropDragMode.tl:
-        final left = (r.left + d.dx).clamp(0.0, r.right - minS);
-        final top = (r.top + d.dy).clamp(0.0, r.bottom - minS);
-        r = Rect.fromLTRB(left, top, r.right, r.bottom);
+        result = _resizeCorner(r, norm, ar, wh, locked, minS, _Corner.tl);
       case _CropDragMode.tr:
-        final right = (r.right + d.dx).clamp(r.left + minS, 1.0);
-        final top = (r.top + d.dy).clamp(0.0, r.bottom - minS);
-        r = Rect.fromLTRB(r.left, top, right, r.bottom);
+        result = _resizeCorner(r, norm, ar, wh, locked, minS, _Corner.tr);
       case _CropDragMode.bl:
-        final left = (r.left + d.dx).clamp(0.0, r.right - minS);
-        final bottom = (r.bottom + d.dy).clamp(r.top + minS, 1.0);
-        r = Rect.fromLTRB(left, r.top, r.right, bottom);
+        result = _resizeCorner(r, norm, ar, wh, locked, minS, _Corner.bl);
       case _CropDragMode.br:
-        final right = (r.right + d.dx).clamp(r.left + minS, 1.0);
-        final bottom = (r.bottom + d.dy).clamp(r.top + minS, 1.0);
-        r = Rect.fromLTRB(r.left, r.top, right, bottom);
+        result = _resizeCorner(r, norm, ar, wh, locked, minS, _Corner.br);
       case _CropDragMode.none:
-        break;
+        return;
     }
-    setState(() => _cropRect = r);
+    setState(() => _cropRect = result);
+  }
+
+  /// 以对角为锚点调整裁剪框（拖角时保持比例）。
+  /// [corners] 指定被拖动的手柄，对侧顶点作为不动的锚点。
+  Rect _resizeCorner(Rect r, Offset norm, double ar, double wh, bool locked, double minS, _Corner corner) {
+    // 锚点（对侧顶点，固定不动）
+    double ax, ay;
+    switch (corner) {
+      case _Corner.tl: // 拖左上，锚在右下
+        ax = r.right;
+        ay = r.bottom;
+      case _Corner.tr: // 拖右上，锚在左下
+        ax = r.left;
+        ay = r.bottom;
+      case _Corner.bl: // 拖左下，锚在右上
+        ax = r.right;
+        ay = r.top;
+      case _Corner.br: // 拖右下，锚在左上
+        ax = r.left;
+        ay = r.top;
+    }
+    // 拖点相对锚点的尺寸（取绝对值）
+    double nw = (norm.dx - ax).abs();
+    double nh = (norm.dy - ay).abs();
+    if (locked) {
+      // 期望 nw/nh = wh；以能贴合拖拽方向为主导维度，避免两个维度互相打架。
+      if (wh <= 1) {
+        nh = nw / wh; // 宽<=高：以宽主导
+      } else {
+        nw = nh * wh; // 宽>高：以高主导
+      }
+    }
+    // 钳制：锚在左/上侧时上限=1，锚在右/下侧时上限=锚点值
+    final maxW = (ax == 0.0) ? 1.0 : ax;
+    final maxH = (ay == 0.0) ? 1.0 : ay;
+    nw = nw.clamp(minS, maxW);
+    if (locked) {
+      // 若主导维度被钳制，另一个维度按比例重新修正，保证比例不破
+      if (wh <= 1) {
+        if (nh > maxH) {
+          nh = maxH;
+          nw = nh * wh;
+        }
+      } else {
+        if (nw > maxW) {
+          nw = maxW;
+          nh = nw / wh;
+        }
+      }
+    }
+    nh = nh.clamp(minS, maxH);
+
+    switch (corner) {
+      case _Corner.tl:
+        return Rect.fromLTRB(ax - nw, ay - nh, ax, ay);
+      case _Corner.tr:
+        return Rect.fromLTRB(ax, ay - nh, ax + nw, ay);
+      case _Corner.bl:
+        return Rect.fromLTRB(ax - nw, ay, ax, ay + nh);
+      case _Corner.br:
+        return Rect.fromLTRB(ax, ay, ax + nw, ay + nh);
+    }
   }
 
   void _setAspect(double? ratio) {
-    if (_cropRect == null) return;
-    Rect r;
+    if (_cropRect == null || _info == null) return;
     if (ratio == null) {
-      r = Rect.fromLTRB(0, 0, 1, 1);
-    } else {
-      double w, h;
-      if (ratio >= 1) {
-        w = 1;
-        h = 1 / ratio;
-      } else {
-        h = 1;
-        w = ratio;
-      }
-      r = Rect.fromLTWH((1 - w) / 2, (1 - h) / 2, w, h);
+      setState(() {
+        _cropRect = Rect.fromLTRB(0, 0, 1, 1);
+        _selectedAspect = null;
+      });
+      return;
     }
+    // 归一化裁剪框的「宽/高」并不等于输出像素的「宽/高」：
+    // 归一化坐标 x 对应原图宽度、y 对应原图高度，因此输出像素比例 =
+    // (crop.w * 原图宽) / (crop.h * 原图高)。要让输出比例等于 ratio，需令
+    // crop.w / crop.h = ratio / 原图宽高比。
+    final ar = _info!.width / _info!.height; // 原图宽高比
+    final wh = ratio / ar; // 归一化坐标下的「宽/高」
+    double w, h;
+    if (wh <= 1) {
+      w = wh;
+      h = 1;
+    } else {
+      h = 1 / wh;
+      w = 1;
+    }
+    final r = Rect.fromLTWH((1 - w) / 2, (1 - h) / 2, w, h);
     setState(() {
       _cropRect = r;
       _selectedAspect = ratio;

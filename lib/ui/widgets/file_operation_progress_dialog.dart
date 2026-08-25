@@ -94,20 +94,27 @@ class FileOperationProgressDialog extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // 顶部关闭/后台按钮
-                        Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: theme.colorScheme.primary.withOpacity(0.1),
-                          ),
-                          child: IconButton(
-                            icon: const Icon(Icons.close, size: 18),
-                            color: theme.colorScheme.primary,
+                        // 顶部后台按钮（文字）
+                        SizedBox(
+                          height: 32,
+                          child: OutlinedButton(
                             onPressed: () {
                               provider.runInBackground();
                             },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: theme.colorScheme.primary,
+                              side: BorderSide(
+                                color: theme.colorScheme.primary.withOpacity(0.3),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 14),
+                            ),
+                            child: Text(
+                              L10n.of(context).ui_background,
+                              style: const TextStyle(fontSize: 13),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 12),

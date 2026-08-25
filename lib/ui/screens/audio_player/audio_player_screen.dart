@@ -231,6 +231,10 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       }
     }
 
+    // 恢复上次选择的播放模式
+    _playbackMode = PreferencesService.getAudioPlaybackMode();
+    _applyPlaybackMode(_playbackMode);
+
     // 定期保存播放进度
     _positionSaveTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       if (mounted && position.inMilliseconds > 0) {
@@ -617,6 +621,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       _playbackMode = (_playbackMode + 1) % 4;
       _applyPlaybackMode(_playbackMode);
     });
+    PreferencesService.saveAudioPlaybackMode(_playbackMode);
     final String message;
     switch (_playbackMode) {
       case 0:

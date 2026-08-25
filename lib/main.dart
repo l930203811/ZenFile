@@ -172,7 +172,7 @@ class ZenFileApp extends StatefulWidget {
 
 class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
   ThemeMode _themeMode = ThemeMode.system;
-  Locale _locale = const Locale('en', 'US');
+  Locale? _locale = const Locale('en', 'US');
   bool? _hasPermission;
   // 启动应用保护：开关状态 + 本次运行是否已解锁 + 是否已读取过开关
   bool _appLockEnabled = false;
@@ -314,7 +314,7 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
     final context = navigatorKey.currentContext;
     if (context == null || !context.mounted) return;
 
-    String selectedLocale = 'zh';
+    String selectedLocale = 'system';
 
     showDialog(
       context: context,
@@ -352,6 +352,10 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
                         style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6)),
                       ),
                       const SizedBox(height: 20),
+                      _buildLanguageOption(ctx, 'system', L10n.of(ctx).ui_follow_system, 'Auto / System', selectedLocale == 'system', (val) {
+                        setDialogState(() => selectedLocale = val);
+                      }),
+                      const SizedBox(height: 12),
                       _buildLanguageOption(ctx, 'zh', '简体中文', 'Simplified Chinese', selectedLocale == 'zh', (val) {
                         setDialogState(() => selectedLocale = val);
                       }),
@@ -773,11 +777,12 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
     PreferencesService.saveThemeMode(_themeMode);
   }
 
-  Locale _getLocale() => _locale;
+  Locale? _getLocale() => _locale;
 
 
-  Locale _localeFromCode(String code) {
+  Locale? _localeFromCode(String code) {
     switch (code) {
+      case 'system': return null; // 跟随系统语言
       case 'en': return const Locale('en', 'US');
       case 'zh_TW': return const Locale('zh', 'TW');
       case 'ja': return const Locale('ja', 'JP');

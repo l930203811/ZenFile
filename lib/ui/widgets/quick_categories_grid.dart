@@ -17,6 +17,7 @@ import '../screens/network_category_screen.dart';
 import '../screens/all_recent_files_screen.dart';
 import '../screens/ftp_server_screen.dart';
 import '../screens/web_sharing_screen.dart';
+import '../screens/quick_transfer_screen.dart';
 import '../screens/storage_analyzer/storage_analyzer_screen.dart';
 import '../screens/vault_lock_screen.dart';
 import '../screens/recycle_bin_screen.dart';
@@ -252,6 +253,15 @@ class QuickCategoriesGrid extends StatefulWidget {
         'count': l10n.cat_service,
         'isCustom': false,
         'pageBuilder': () => const WebSharingScreen(),
+      },
+      '快传': {
+        'label': l10n.quick_transfer,
+        'icon': Broken.send_2,
+        'color': categoryColor,
+        'iconColor': iconColor(100), // 黄绿
+        'count': l10n.cat_service,
+        'isCustom': false,
+        'pageBuilder': () => const QuickTransferScreen(),
       },
       '应用': {
         'label': l10n.cat_apps,

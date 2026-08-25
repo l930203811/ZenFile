@@ -2789,6 +2789,9 @@ class L10nZh extends L10n {
   String get ui_language => '语言';
 
   @override
+  String get ui_follow_system => '自动（跟随系统）';
+
+  @override
   String get ui_hide_nav_labels => '隐藏底部导航标签';
 
   @override
@@ -4114,6 +4117,9 @@ class L10nZh extends L10n {
   String get msg_aspect_custom => '自定义';
 
   @override
+  String get msg_aspect_fill_screen => '填充屏幕';
+
+  @override
   String get msg_custom_aspect_ratio => '自定义缩放比例';
 
   @override
@@ -5337,6 +5343,77 @@ class L10nZh extends L10n {
   }
 
   @override
+  String get quick_transfer => '快传';
+
+  @override
+  String get quick_transfer_send => '我要发送';
+
+  @override
+  String get quick_transfer_receive => '我要接收';
+
+  @override
+  String get quick_transfer_send_hint =>
+      '选择要分享的文件夹，对侧设备在同一 Wi-Fi 下用浏览器打开地址即可下载文件。';
+
+  @override
+  String get quick_transfer_receive_hint =>
+      '选择接收文件的保存目录，对侧设备在同一 Wi-Fi 下用浏览器打开地址即可上传文件到本机。';
+
+  @override
+  String get quick_transfer_share_dir => '分享目录';
+
+  @override
+  String get quick_transfer_save_dir => '保存到';
+
+  @override
+  String get quick_transfer_default_share => '默认：内部存储根目录';
+
+  @override
+  String get quick_transfer_default_save => '默认：内部存储根目录';
+
+  @override
+  String get quick_transfer_online => '已开启';
+
+  @override
+  String get quick_transfer_address => '本机地址';
+
+  @override
+  String get quick_transfer_copy => '复制';
+
+  @override
+  String get quick_transfer_copied => '已复制地址';
+
+  @override
+  String get quick_transfer_send_tip => '将上方地址发给对方，对方在浏览器中打开即可下载所选目录内的文件。';
+
+  @override
+  String get quick_transfer_receive_tip => '将上方地址发给对方，对方在浏览器中打开后可将文件上传到本机所选目录。';
+
+  @override
+  String get quick_transfer_connected => '已连接设备';
+
+  @override
+  String quick_transfer_started(Object url) {
+    return '快传已开启：$url';
+  }
+
+  @override
+  String get quick_transfer_stopped => '快传已停止';
+
+  @override
+  String get quick_transfer_running => '快传服务运行中，请先停止';
+
+  @override
+  String quick_transfer_running_at(Object url) {
+    return '运行中：$url';
+  }
+
+  @override
+  String quick_transfer_failed(Object error) {
+    return '快传开启失败：$error';
+  }
+
+  @override
   String get wol_title => '局域网唤醒';
 
   @override
@@ -5385,6 +5462,223 @@ class L10nZh extends L10n {
 
   @override
   String get wol_port_hint => '选填';
+
+  @override
+  String get quick_transfer_nearby_devices => '附近设备';
+
+  @override
+  String get quick_transfer_scanning => '正在扫描附近设备…';
+
+  @override
+  String get quick_transfer_scan_hint => '双方都需打开快传并保持本页面在前台';
+
+  @override
+  String get quick_transfer_tap_to_connect => '点击设备名发起连接';
+
+  @override
+  String quick_transfer_connecting(Object name) {
+    return '正在连接 $name…';
+  }
+
+  @override
+  String quick_transfer_connected_as(Object role) {
+    return '已连接（本机为 $role）';
+  }
+
+  @override
+  String get quick_transfer_role_owner => '发送端';
+
+  @override
+  String get quick_transfer_role_client => '接收端';
+
+  @override
+  String get quick_transfer_select_files => '选择要发送的文件 / 文件夹';
+
+  @override
+  String quick_transfer_selected_summary(Object count, Object size) {
+    return '已选 $count 项，共 $size';
+  }
+
+  @override
+  String get quick_transfer_begin_send => '开始发送';
+
+  @override
+  String quick_transfer_incoming(Object name) {
+    return '收到来自 $name 的发送请求';
+  }
+
+  @override
+  String quick_transfer_incoming_files(Object count, Object size) {
+    return '$count 个文件，共 $size';
+  }
+
+  @override
+  String get quick_transfer_accept => '接受';
+
+  @override
+  String get quick_transfer_reject => '拒绝';
+
+  @override
+  String get quick_transfer_sending => '正在发送…';
+
+  @override
+  String get quick_transfer_receiving => '正在接收…';
+
+  @override
+  String get quick_transfer_complete => '传输完成';
+
+  @override
+  String get quick_transfer_waiting_peer => '等待对方连接…';
+
+  @override
+  String get quick_transfer_connected_waiting_files => '已连接，等待对方发送文件…';
+
+  @override
+  String get quick_transfer_permission_why =>
+      'WiFi Direct 扫描需要位置/附近设备权限，不会收集您的地理位置';
+
+  @override
+  String get quick_transfer_permission_required => '快传需要位置/附近设备权限以发现附近设备';
+
+  @override
+  String get quick_transfer_not_supported => '当前设备不支持 WiFi Direct 快传';
+
+  @override
+  String get quick_transfer_disconnect => '断开';
+
+  @override
+  String get quick_transfer_cancel => '取消';
+
+  @override
+  String get quick_transfer_save_to => '保存到';
+
+  @override
+  String get quick_transfer_send_mode => '发送';
+
+  @override
+  String get quick_transfer_receive_mode => '接收';
+
+  @override
+  String get quick_transfer_device_name => '本机名称';
+
+  @override
+  String get quick_transfer_retry => '重试';
+
+  @override
+  String get quick_transfer_permission_grant => '授权并继续';
+
+  @override
+  String get quick_transfer_open_settings => '去设置页开启';
+
+  @override
+  String get quick_transfer_wifi_required =>
+      '请先打开 WLAN（WiFi），快传需要 WiFi Direct 建组';
+
+  @override
+  String get quick_transfer_create_group_failed =>
+      '建立快传连接失败，请确保已开启 WLAN 并授予位置/附近设备权限后重试';
+
+  @override
+  String get quick_transfer_receive_path => '接收路径';
+
+  @override
+  String get quick_transfer_change_path => '更改';
+
+  @override
+  String get quick_transfer_back => '返回';
+
+  @override
+  String get quick_transfer_send_button => '发送';
+
+  @override
+  String get quick_transfer_receive_button => '接收';
+
+  @override
+  String get quick_transfer_open_location => '打开文件所在位置';
+
+  @override
+  String get quick_transfer_receive_complete => '接收完成';
+
+  @override
+  String quick_transfer_files_saved_to(Object path) {
+    return '文件已保存到 $path';
+  }
+
+  @override
+  String get quick_transfer_connect_btn => '连接';
+
+  @override
+  String get quick_transfer_connected_btn => '已连接';
+
+  @override
+  String get quick_transfer_available_peers => '可连接设备';
+
+  @override
+  String quick_transfer_selected_count(Object count) {
+    return '已选 $count 项';
+  }
+
+  @override
+  String get changelog_v1133_new_1 =>
+      '快传功能（局域网传输）：独立快传页面（发送/接收双模式）、附近设备雷达扫描发现、设备连接/已连接状态、传输前确认机制、接收完成后一键在本应用浏览页打开、权限说明，全 10 语言。';
+
+  @override
+  String get changelog_v1133_new_2 => '分类图标标签显隐开关';
+
+  @override
+  String get changelog_v1133_new_3 => 'AMOLED 全页纯黑主题';
+
+  @override
+  String get changelog_v1133_new_4 => '后台播放防休眠（电池优化白名单 + 唤醒锁）';
+
+  @override
+  String get changelog_v1133_new_5 =>
+      '图片编辑器：物理尺寸(mm+DPI)、预设模板(证件照/护照/美签)、文件大小限制';
+
+  @override
+  String get changelog_v1133_new_6 => '音频均衡器 5 预设（原声/HD人声/低音/现场/爵士）';
+
+  @override
+  String get changelog_v1133_new_7 =>
+      '视频播放器：内嵌多音轨/多字幕轨选择；手势优化（双击暂停/播放、长按倍速、左右滑快进/快退）';
+
+  @override
+  String get changelog_v1133_new_8 => '抽屉 / 自定义快捷方式：入口新增「快传」';
+
+  @override
+  String get changelog_v1133_opt_1 =>
+      '图片查看器：顶部信息条重构（尺寸/时间/格式/大小/EXIF）、旋转改为纯预览不保存、EXIF 实时显示、文件名标题恢复';
+
+  @override
+  String get changelog_v1133_opt_2 =>
+      '视频播放器：底部按钮布局/排序、竖屏溢出修复、系统自动横屏进全屏、缩放比例(填充屏幕 cover)、全屏横屏摄像头黑边修复';
+
+  @override
+  String get changelog_v1133_opt_3 => '音频播放器：均衡器预设切换生效、低音/人声失真修复';
+
+  @override
+  String get changelog_v1133_opt_4 => '视频音量：播放器滑块与系统媒体音量实时同步';
+
+  @override
+  String get changelog_v1133_opt_5 => '音频播放模式：重启后持久化记忆';
+
+  @override
+  String get changelog_v1133_opt_6 => '图片编辑：裁剪比例（正方形/4:3/3:4/证件照）修复';
+
+  @override
+  String get changelog_v1133_fix_1 => '文本编辑器打开未知文件「文本打开」错误提示硬编码 → 多语言';
+
+  @override
+  String get changelog_v1133_fix_2 => '桌面歌词权限提示中文硬编码 Toast → 多语言';
+
+  @override
+  String get changelog_v1133_fix_3 => '目录选择器「固定所选」按钮硬编码中文 → 多语言';
+
+  @override
+  String get changelog_v1133_fix_4 => '受限目录（Android/data｜obb）复制到本地/远程报错二次修复';
+
+  @override
+  String get changelog_v1133_fix_5 => '长按菜单：复刻 v1.1.32 显示结构 + 高对比背景 + 描边';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -8163,6 +8457,9 @@ class L10nZhTw extends L10nZh {
   String get ui_language => '語言';
 
   @override
+  String get ui_follow_system => '自動（跟隨系統）';
+
+  @override
   String get ui_hide_nav_labels => '隱藏底部導航標籤';
 
   @override
@@ -9447,6 +9744,9 @@ class L10nZhTw extends L10nZh {
   String get msg_aspect_custom => '自訂';
 
   @override
+  String get msg_aspect_fill_screen => '填充屏幕';
+
+  @override
   String get msg_custom_aspect_ratio => '自訂縮放比例';
 
   @override
@@ -10435,7 +10735,7 @@ class L10nZhTw extends L10nZh {
   String get ui_app_open_location => '開啟所在位置';
 
   @override
-  String get img_dimensions => 'Dimensions';
+  String get img_dimensions => '尺寸';
 
   @override
   String get edit_image => 'Edit Image';
@@ -10687,6 +10987,77 @@ class L10nZhTw extends L10nZh {
   }
 
   @override
+  String get quick_transfer => '快傳';
+
+  @override
+  String get quick_transfer_send => '我要發送';
+
+  @override
+  String get quick_transfer_receive => '我要接收';
+
+  @override
+  String get quick_transfer_send_hint =>
+      '選擇要分享的資料夾，對側裝置在同一 Wi-Fi 下用瀏覽器開啟地址即可下載檔案。';
+
+  @override
+  String get quick_transfer_receive_hint =>
+      '選擇接收檔案的儲存目錄，對側裝置在同一 Wi-Fi 下用瀏覽器開啟地址即可上傳檔案到本機。';
+
+  @override
+  String get quick_transfer_share_dir => '分享目錄';
+
+  @override
+  String get quick_transfer_save_dir => '儲存到';
+
+  @override
+  String get quick_transfer_default_share => '預設：內部儲存根目錄';
+
+  @override
+  String get quick_transfer_default_save => '預設：內部儲存根目錄';
+
+  @override
+  String get quick_transfer_online => '已開啟';
+
+  @override
+  String get quick_transfer_address => '本機地址';
+
+  @override
+  String get quick_transfer_copy => '複製';
+
+  @override
+  String get quick_transfer_copied => '已複製地址';
+
+  @override
+  String get quick_transfer_send_tip => '將上方地址發給對方，對方在瀏覽器中開啟即可下載所選目錄內的檔案。';
+
+  @override
+  String get quick_transfer_receive_tip => '將上方地址發給對方，對方在瀏覽器中開啟後可將檔案上傳到本機所選目錄。';
+
+  @override
+  String get quick_transfer_connected => '已連線裝置';
+
+  @override
+  String quick_transfer_started(Object url) {
+    return '快傳已開啟：$url';
+  }
+
+  @override
+  String get quick_transfer_stopped => '快傳已停止';
+
+  @override
+  String get quick_transfer_running => '快傳服務執行中，請先停止';
+
+  @override
+  String quick_transfer_running_at(Object url) {
+    return '執行中：$url';
+  }
+
+  @override
+  String quick_transfer_failed(Object error) {
+    return '快傳開啟失敗：$error';
+  }
+
+  @override
   String get wol_title => '區域網路喚醒';
 
   @override
@@ -10735,4 +11106,221 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get wol_port_hint => '選填';
+
+  @override
+  String get quick_transfer_nearby_devices => '附近设备';
+
+  @override
+  String get quick_transfer_scanning => '正在扫描附近设备…';
+
+  @override
+  String get quick_transfer_scan_hint => '双方都需打开快传并保持本页面在前台';
+
+  @override
+  String get quick_transfer_tap_to_connect => '点击设备名发起连接';
+
+  @override
+  String quick_transfer_connecting(Object name) {
+    return '正在连接 $name…';
+  }
+
+  @override
+  String quick_transfer_connected_as(Object role) {
+    return '已连接（本机为 $role）';
+  }
+
+  @override
+  String get quick_transfer_role_owner => '发送端';
+
+  @override
+  String get quick_transfer_role_client => '接收端';
+
+  @override
+  String get quick_transfer_select_files => '选择要发送的文件 / 文件夹';
+
+  @override
+  String quick_transfer_selected_summary(Object count, Object size) {
+    return '已选 $count 项，共 $size';
+  }
+
+  @override
+  String get quick_transfer_begin_send => '开始发送';
+
+  @override
+  String quick_transfer_incoming(Object name) {
+    return '收到来自 $name 的发送请求';
+  }
+
+  @override
+  String quick_transfer_incoming_files(Object count, Object size) {
+    return '$count 个文件，共 $size';
+  }
+
+  @override
+  String get quick_transfer_accept => '接受';
+
+  @override
+  String get quick_transfer_reject => '拒绝';
+
+  @override
+  String get quick_transfer_sending => '正在发送…';
+
+  @override
+  String get quick_transfer_receiving => '正在接收…';
+
+  @override
+  String get quick_transfer_complete => '传输完成';
+
+  @override
+  String get quick_transfer_waiting_peer => '等待对方连接…';
+
+  @override
+  String get quick_transfer_connected_waiting_files => '已連接，等待對方發送檔案…';
+
+  @override
+  String get quick_transfer_permission_why =>
+      'WiFi Direct 掃描需要位置/附近設備權限，不會收集您的地理位置';
+
+  @override
+  String get quick_transfer_permission_required => '快传需要位置/附近设备权限以发现附近设备';
+
+  @override
+  String get quick_transfer_not_supported => '当前设备不支持 WiFi Direct 快传';
+
+  @override
+  String get quick_transfer_disconnect => '断开';
+
+  @override
+  String get quick_transfer_cancel => '取消';
+
+  @override
+  String get quick_transfer_save_to => '保存到';
+
+  @override
+  String get quick_transfer_send_mode => '发送';
+
+  @override
+  String get quick_transfer_receive_mode => '接收';
+
+  @override
+  String get quick_transfer_device_name => '本机名称';
+
+  @override
+  String get quick_transfer_retry => '重試';
+
+  @override
+  String get quick_transfer_permission_grant => '授權並繼續';
+
+  @override
+  String get quick_transfer_open_settings => '前往設定頁開啟';
+
+  @override
+  String get quick_transfer_wifi_required =>
+      '請先開啟 WLAN（WiFi），快傳需要 WiFi Direct 建組';
+
+  @override
+  String get quick_transfer_create_group_failed =>
+      '建立快傳連線失敗，請確保已開啟 WLAN 並授予位置/附近設備權限後重試';
+
+  @override
+  String get quick_transfer_receive_path => '接收路徑';
+
+  @override
+  String get quick_transfer_change_path => '更改';
+
+  @override
+  String get quick_transfer_back => '返回';
+
+  @override
+  String get quick_transfer_send_button => '傳送';
+
+  @override
+  String get quick_transfer_receive_button => '接收';
+
+  @override
+  String get quick_transfer_open_location => '開啟檔案所在位置';
+
+  @override
+  String get quick_transfer_receive_complete => '接收完成';
+
+  @override
+  String quick_transfer_files_saved_to(Object path) {
+    return '檔案已儲存至 $path';
+  }
+
+  @override
+  String get quick_transfer_connect_btn => '連接';
+
+  @override
+  String get quick_transfer_connected_btn => '已連接';
+
+  @override
+  String get quick_transfer_available_peers => '可連接設備';
+
+  @override
+  String quick_transfer_selected_count(Object count) {
+    return '已選 $count 項';
+  }
+
+  @override
+  String get changelog_v1133_new_1 =>
+      '快傳功能（區網傳輸）：獨立快傳頁面（傳送/接收雙模式）、附近裝置雷達掃描發現、裝置連線/已連線狀態、傳輸前確認機制、接收完成後一鍵在本應用瀏覽頁開啟、權限說明，全 10 語言。';
+
+  @override
+  String get changelog_v1133_new_2 => '分類圖示標籤顯隱開關';
+
+  @override
+  String get changelog_v1133_new_3 => 'AMOLED 全頁純黑主題';
+
+  @override
+  String get changelog_v1133_new_4 => '背景播放防休眠（電池最佳化白名單 + 喚醒鎖）';
+
+  @override
+  String get changelog_v1133_new_5 =>
+      '圖片編輯器：實體尺寸(mm+DPI)、預設範本(證件照/護照/美簽)、檔案大小限制';
+
+  @override
+  String get changelog_v1133_new_6 => '音訊等化器 5 組預設（原聲/HD人聲/低音/現場/爵士）';
+
+  @override
+  String get changelog_v1133_new_7 =>
+      '影片播放器：內嵌多音軌/多字幕軌選擇；手勢最佳化（雙擊暫停/播放、長按倍速、左右滑快進/快退）';
+
+  @override
+  String get changelog_v1133_new_8 => '側邊欄 / 自訂快捷方式：新增「快傳」入口';
+
+  @override
+  String get changelog_v1133_opt_1 =>
+      '圖片檢視器：頂部資訊條重構（尺寸/時間/格式/大小/EXIF）、旋轉改為純預覽不儲存、EXIF 即時顯示、檔名標題還原';
+
+  @override
+  String get changelog_v1133_opt_2 =>
+      '影片播放器：底部按鈕佈局/排序、直向溢位修復、系統自動橫向進全螢幕、縮放比例(填滿螢幕 cover)、全螢幕橫向相機黑邊修復';
+
+  @override
+  String get changelog_v1133_opt_3 => '音訊播放器：等化器預設切換生效、低音/人聲失真修復';
+
+  @override
+  String get changelog_v1133_opt_4 => '影片音量：播放器滑桿與系統媒體音量即時同步';
+
+  @override
+  String get changelog_v1133_opt_5 => '音訊播放模式：重啟後持久化記憶';
+
+  @override
+  String get changelog_v1133_opt_6 => '圖片編輯：裁切比例（正方形/4:3/3:4/證件照）修復';
+
+  @override
+  String get changelog_v1133_fix_1 => '文字編輯器開啟未知檔案「文字開啟」錯誤提示硬編碼 → 多語言';
+
+  @override
+  String get changelog_v1133_fix_2 => '桌面歌詞權限提示中文硬編碼 Toast → 多語言';
+
+  @override
+  String get changelog_v1133_fix_3 => '目錄選擇器「固定所選」按鈕硬編碼中文 → 多語言';
+
+  @override
+  String get changelog_v1133_fix_4 => '受限目錄（Android/data｜obb）複製到本機/遠端報錯二次修復';
+
+  @override
+  String get changelog_v1133_fix_5 => '長按選單：復刻 v1.1.32 顯示結構 + 高對比背景 + 描邊';
 }
