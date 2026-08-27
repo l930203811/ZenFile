@@ -10654,52 +10654,76 @@ abstract class L10n {
   /// **'长按菜单：复刻 v1.1.32 显示结构 + 高对比背景 + 描边'**
   String get changelog_v1133_fix_5;
 
-  /// v1.1.34 changelog: changelog_v1134_fix_1
+  /// v1.1.34 changelog: 网页共享卡死修复
   ///
   /// In zh, this message translates to:
   /// **'修复网页共享被其他设备访问时应用界面卡死的问题——全量扫描已改为异步执行，不再阻塞 UI 线程。'**
   String get changelog_v1134_fix_1;
 
-  /// v1.1.34 changelog: changelog_v1134_fix_2
+  /// v1.1.34 changelog: FTP IP 选择重写
   ///
   /// In zh, this message translates to:
-  /// **'修复 FTP 连不上/选错网卡：重写本地 IP 选择逻辑，优先 wlan/eth 接口，跳过 Docker/VPN/虚拟网卡。'**
+  /// **'修复 FTP 连不上/选错网卡：重写本地 IP 选择逻辑，优先 wlan/eth 接口，跳过 Docker/VPN/虚拟网卡，避免回退到不可达地址。'**
   String get changelog_v1134_fix_2;
 
-  /// v1.1.34 changelog: changelog_v1134_fix_3 — FTP custom port support.
+  /// v1.1.34 changelog: FTP 自定义端口
+  ///
+  /// In zh, this message translates to:
+  /// **'FTP 共享支持自定义端口：可在设置中配置并持久化，运行中修改即时生效并自动重启监听。'**
   String get changelog_v1134_fix_3;
 
-  /// v1.1.34 changelog: changelog_v1134_fix_4 — FTP control port & PASV binding.
+  /// v1.1.34 changelog: FTP 控制端口与 PASV
+  ///
+  /// In zh, this message translates to:
+  /// **'修复 FTP 控制端口绑定与 PASV：改用具体局域网 IP 绑定控制端口、简化 PASV 地址解析，修复 VPN/代理场景下的连接失败。'**
   String get changelog_v1134_fix_4;
 
-  /// v1.1.34 changelog: changelog_v1134_fix_5 — FTP stopped notification.
+  /// v1.1.34 changelog: FTP 停止提示
+  ///
+  /// In zh, this message translates to:
+  /// **'新增「FTP 服务器已停止」提示，替换原先服务器停止时错误的「更改端口 未激活」提示。'**
   String get changelog_v1134_fix_5;
 
-  /// v1.1.34 changelog: changelog_v1134_fix_6 — text editor save/save-as menu.
+  /// v1.1.34 changelog: 文本编辑器保存菜单
+  ///
+  /// In zh, this message translates to:
+  /// **'文本编辑器保存/另存为合并为单一保存按钮，点击弹出菜单选择「保存」或「另存为」。'**
   String get changelog_v1134_fix_6;
 
-  /// v1.1.34 changelog: changelog_v1134_new_1
+  /// v1.1.34 changelog: 分类页工具箱入口
   ///
   /// In zh, this message translates to:
   /// **'新增分类页工具箱入口。'**
   String get changelog_v1134_new_1;
 
-  /// v1.1.34 changelog: changelog_v1134_new_2 — toolbox consolidation.
+  /// v1.1.34 changelog: 工具箱整合
+  ///
+  /// In zh, this message translates to:
+  /// **'将私人保险箱、局域网唤醒、快传整合进工具箱，集中管理。'**
   String get changelog_v1134_new_2;
 
-  /// v1.1.34 changelog: changelog_v1134_new_3 — remembered devices.
+  /// v1.1.34 changelog: 记住设备
+  ///
+  /// In zh, this message translates to:
+  /// **'快传已记住设备：自动记住已连接设备，下次一键点击连接重连；已记住列表支持单独删除设备。'**
   String get changelog_v1134_new_3;
 
-  /// v1.1.34 changelog: changelog_v1134_opt_1
+  /// v1.1.34 changelog: 对称化传输
   ///
   /// In zh, this message translates to:
   /// **'快传对称化传输：连接成功后双方均可主动发送，移除收发模式切换与顶部切换按钮。'**
   String get changelog_v1134_opt_1;
 
-  /// v1.1.34 changelog: changelog_v1134_opt_2 — Quick Transfer UI beautify.
+  /// v1.1.34 changelog: UI 美化
+  ///
+  /// In zh, this message translates to:
+  /// **'快传 UI 整体美化：分区卡片化、设备行卡片化、图标徽章、填充式选择框、进度页圆形徽章，视觉更统一。'**
   String get changelog_v1134_opt_2;
 
-  /// v1.1.34 changelog: changelog_v1134_opt_3 — Quick Transfer compact layout.
+  /// v1.1.34 changelog: 紧凑布局
+  ///
+  /// In zh, this message translates to:
+  /// **'快传主界面紧凑化：收紧卡片内边距与各项间距，减少首屏滚动，进入即可看到雷达/设备列表。'**
   String get changelog_v1134_opt_3;
 
   /// Message shown when the FTP server is stopped.

@@ -5687,7 +5687,6 @@ class L10nZh extends L10n {
   String get changelog_v1133_fix_5 => '长按菜单：复刻 v1.1.32 显示结构 + 高对比背景 + 描边';
 
   @override
-  @override
   String get changelog_v1134_fix_1 =>
       '修复网页共享被其他设备访问时应用界面卡死的问题——全量扫描已改为异步执行，不再阻塞 UI 线程。';
 
@@ -5715,16 +5714,14 @@ class L10nZh extends L10n {
   String get changelog_v1134_new_1 => '新增分类页工具箱入口。';
 
   @override
-  String get changelog_v1134_new_2 =>
-      '将私人保险箱、局域网唤醒、快传整合进工具箱，集中管理。';
+  String get changelog_v1134_new_2 => '将私人保险箱、局域网唤醒、快传整合进工具箱，集中管理。';
 
   @override
   String get changelog_v1134_new_3 =>
       '快传已记住设备：自动记住已连接设备，下次一键点击连接重连；已记住列表支持单独删除设备。';
 
   @override
-  String get changelog_v1134_opt_1 =>
-      '快传对称化传输：连接成功后双方均可主动发送，移除收发模式切换与顶部切换按钮。';
+  String get changelog_v1134_opt_1 => '快传对称化传输：连接成功后双方均可主动发送，移除收发模式切换与顶部切换按钮。';
 
   @override
   String get changelog_v1134_opt_2 =>
@@ -11402,7 +11399,6 @@ class L10nZhTw extends L10nZh {
   String get changelog_v1133_fix_5 => '長按選單：復刻 v1.1.32 顯示結構 + 高對比背景 + 描邊';
 
   @override
-  @override
   String get changelog_v1134_fix_1 =>
       '修復網頁共享被其他裝置存取時應用程式介面卡死的問題——全量掃描已改為非同步執行，不再阻塞 UI 執行緒。';
 
@@ -11430,16 +11426,14 @@ class L10nZhTw extends L10nZh {
   String get changelog_v1134_new_1 => '新增分類頁工具箱入口。';
 
   @override
-  String get changelog_v1134_new_2 =>
-      '將私人保險箱、區域網路喚醒、快傳整合進工具箱，集中管理。';
+  String get changelog_v1134_new_2 => '將私人保險箱、區域網路喚醒、快傳整合進工具箱，集中管理。';
 
   @override
   String get changelog_v1134_new_3 =>
       '快傳已記住裝置：自動記住已連線裝置，下次一鍵點擊連線重連；已記住清單支援單獨刪除裝置。';
 
   @override
-  String get changelog_v1134_opt_1 =>
-      '快傳對稱化傳輸：連線成功後雙方均可主動傳送，移除收發模式切換與頂部切換按鈕。';
+  String get changelog_v1134_opt_1 => '快傳對稱化傳輸：連線成功後雙方均可主動傳送，移除收發模式切換與頂部切換按鈕。';
 
   @override
   String get changelog_v1134_opt_2 =>

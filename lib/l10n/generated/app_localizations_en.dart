@@ -5949,7 +5949,6 @@ class L10nEn extends L10n {
       'Long-press menu: restored v1.1.32 layout with high-contrast background and stroke.';
 
   @override
-  @override
   String get changelog_v1134_fix_1 =>
       'Fixed the app UI freezing when Web Sharing was accessed by another device — the whole-storage scan is now asynchronous and no longer blocks the UI thread.';
 
@@ -5967,7 +5966,7 @@ class L10nEn extends L10n {
 
   @override
   String get changelog_v1134_fix_5 =>
-      "Added an 'FTP server stopped' notification that replaces the previous incorrect 'port changed / not active' message when the server stops.";
+      'Added an \'FTP server stopped\' notification that replaces the previous incorrect \'port changed / not active\' message when the server stops.';
 
   @override
   String get changelog_v1134_fix_6 =>
@@ -5996,6 +5995,7 @@ class L10nEn extends L10n {
   @override
   String get changelog_v1134_opt_3 =>
       'Quick Transfer main screen tightened — reduced card padding and spacing to minimize first-screen scrolling so the radar/device list is visible immediately.';
+
   @override
   String get ftp_server_stopped => 'FTP server stopped';
 
