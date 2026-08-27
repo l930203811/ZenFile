@@ -197,22 +197,22 @@ class QuickTransferService {
   // ======================= 双向握手 =======================
 
   /// 双方都点击「连接」的 UI 握手。
-  /// socket 建立好后，两端先发 `{type:'peer_ready', mode: 0|1}`，
-  /// 再阻塞等对方回 peer_ready。只有双方 ready 才算连接握手成功，
-  /// 返回对方的 mode（0 发送 / 1 接收）+ 对应的 SocketReader（后续传输
-  /// 继续复用此 reader，避免对同一 single-sub socket stream 二次 listen
-  /// 抛「Bad state: Stream has already been listened to.」）。
+  /// socket 建立好后，两端先发 `{type:'peer_ready'}`，再阻塞等对方回
+  /// peer_ready。只有双方 ready 才算连接握手成功，返回对应的 SocketReader
+  /// （后续传输继续复用此 reader，避免对同一 single-sub socket stream 二次
+  /// listen 抛「Bad state: Stream has already been listened to.」）。
   /// 取消回调返回 true 或 socket EOF（对方取消/断开）都立即中止并抛异常。
-  Future<({int peerMode, SocketReader reader})> doPeerReadyHandshake({
+  ///
+  /// 新版协议不再区分发送/接收角色（mode 已移除）：连接成功后双方皆可主动
+  /// 发送、也随时可接收，由 [TransferSession] 统一调度。
+  Future<SocketReader> doPeerReadyHandshake({
     required Socket socket,
-    required int localMode,
     required Future<bool> Function() shouldCancel,
   }) async {
     final reader = SocketReader(socket);
     // 先发自己 ready
     await _writeJson(socket, {
       'type': 'peer_ready',
-      'mode': localMode,
     });
     // 等对方 ready（最长 60s、1s 轮询；socket EOF 立即失败；循环 yield 防 ANR）
     final timeoutAt =
@@ -228,9 +228,8 @@ class QuickTransferService {
       );
       if (resp != null) {
         if (resp['type'] == 'peer_ready') {
-          final peerMode = resp['mode'] as int? ?? 0;
-          // 握手成功：reader 不 close，交给调用方传入 sendFiles/receiveFiles 继续复用
-          return (peerMode: peerMode, reader: reader);
+          // 握手成功：reader 不 close，交给 TransferSession 继续复用
+          return reader;
         }
       } else {
         // resp == null：readExact 在 socket EOF / broken pipe 时返回 null。
@@ -247,259 +246,10 @@ class QuickTransferService {
   }
 
   // ======================= 发送方 =======================
-
-  /// 在已连 Socket 上推送清单 + 文件原始字节流。
-  /// [existingReader]：若上游已创建 SocketReader（如握手）必须传入，
-  /// 否则对同一个 socket 二次 new SocketReader 会在 single-sub stream 上
-  /// 抛「Stream has already been listened to.」。
-  Future<void> sendFiles({
-    required Socket socket,
-    required List<FileEntry> files,
-    required void Function(int sent, int total, String currentFile) onProgress,
-    required Future<bool> Function() shouldCancel,
-    SocketReader? existingReader,
-  }) async {
-    final totalBytes = files.fold<int>(0, (s, f) => s + f.size);
-    int sent = 0;
-
-    await _writeJson(socket, {
-      'type': 'manifest',
-      'totalBytes': totalBytes,
-      'totalCount': files.length,
-      'files': files
-          .map((f) => {
-                'relativePath': f.relativePath,
-                'size': f.size,
-                'mtime': f.mtime,
-              })
-          .toList(),
-    });
-
-    // 必须等待接收方"接受/拒绝"后再开始传输，否则数据会提前进入缓冲，
-    // 造成"还没点接收文件就已经收到了"的错觉。
-    final reader = existingReader ?? SocketReader(socket);
-    final resp = await reader.readJson();
-    if (resp == null) {
-      reader.close();
-      throw Exception('连接已断开，未能收到接收方的回应');
-    }
-    if (resp['type'] == 'reject') {
-      reader.close();
-      // 接收方拒绝，终止发送并提示
-      throw Exception('对方已拒绝接收');
-    }
-
-    // 进度节流：≥100ms 或文件切换或文件读完才回调，避免高频 setState 打爆 UI
-    int lastEmitAt = 0;
-    String lastEmitFile = '';
-
-    for (final f in files) {
-      if (await shouldCancel()) {
-        await _writeJson(socket, {'type': 'done', 'cancelled': true});
-        return;
-      }
-      await _writeJson(socket, {
-        'type': 'file_start',
-        'relativePath': f.relativePath,
-        'size': f.size,
-      });
-      final file = File(f.absolutePath);
-      int offset = 0;
-      await for (final chunk in file.openRead()) {
-        if (await shouldCancel()) {
-          await _writeJson(socket, {'type': 'done', 'cancelled': true});
-          return;
-        }
-        socket.add(chunk);
-        await socket.flush();
-        offset += chunk.length;
-        sent += chunk.length;
-        final now = DateTime.now().millisecondsSinceEpoch;
-        // 进度显示上限 = totalBytes - 1，所有数据 flush 完后 UI 停留在
-        // 「等待对方接收完成…」的近 100% 态；只有在下方收到接收方
-        // `receive_ack` 后才回调 100%，确保发送方「完成」与接收方落盘
-        // 完成对齐，不会出现「发送方已完成，接收方还没收完」的体感差异。
-        // （TCP flush 只保证写入内核缓冲区，不代表对端应用层已消费完毕。）
-        final displaySent = (sent < totalBytes) ? sent : totalBytes - 1;
-        if (offset >= f.size ||
-            f.relativePath != lastEmitFile ||
-            now - lastEmitAt >= 100) {
-          lastEmitAt = now;
-          lastEmitFile = f.relativePath;
-          onProgress(displaySent, totalBytes, f.relativePath);
-        }
-        if (offset % (chunkSize * 16) == 0) await Future.delayed(Duration.zero);
-      }
-      if (offset != f.size) {
-        throw Exception('文件大小不一致: ${f.relativePath} ($offset/${f.size})');
-      }
-      await _writeJson(socket, {'type': 'file_end', 'relativePath': f.relativePath});
-    }
-    await _writeJson(socket, {'type': 'done', 'cancelled': false});
-
-    // 阻塞等待接收方的落盘完成 ack。接收方收到 done → flush+close 所有 sink
-    // 成功后回 `{type:'receive_ack', received:int}`。只有收到 ack 才把
-    // 进度推到 100% 并返回 done 态。
-    try {
-      final ack = await reader.readJson();
-      if (ack != null && ack['type'] == 'receive_ack') {
-        onProgress(totalBytes, totalBytes, '');
-      } else {
-        // 没收到 ack（连接中断等），静默返回；UI 将以显示近 100% 结束
-        // 不抛异常，避免误判为失败。
-      }
-    } finally {
-      reader.close();
-    }
-  }
+  // 发送/接收逻辑已迁移至文件末尾的 [TransferSession]（对称、双方皆可收发）。
 
   // ======================= 接收方 =======================
-
-  /// 监听 Socket，先收 manifest 交 [onManifest] 决定接受/拒绝；
-  /// 接受后按 relativePath 落盘到 [saveDir]，拒绝则关闭。
-  /// 返回 true 表示已正常接收完成；false 表示被拒绝或连接中断。
-  /// [existingReader]：若上游已创建 SocketReader（如握手）必须传入，
-  /// 否则对同一个 socket 二次 new SocketReader 会在 single-sub stream 上
-  /// 抛「Stream has already been listened to.」。
-  Future<bool> receiveFiles({
-    required Socket socket,
-    required String saveDir,
-    required Future<bool> Function(Manifest) onManifest,
-    required void Function(int received, int total, String currentFile) onProgress,
-    required void Function(String relativePath) onFileSaved,
-    SocketReader? existingReader,
-  }) async {
-    int received = 0;
-    int totalBytes = 0;
-    String? currentFile;
-    int currentRemaining = 0;
-    IOSink? sink;
-    // 进度节流：≥100ms 或文件切换或文件读完才回调，避免高频 setState 打爆 UI
-    int lastEmitAt = 0;
-    String lastEmitFile = '';
-
-    final reader = existingReader ?? SocketReader(socket);
-
-    try {
-      while (true) {
-        final lenBytes = await reader.readExact(4);
-        if (lenBytes == null) break;
-        final len = ByteData.sublistView(lenBytes).getUint32(0, Endian.big);
-        final jsonBytes = await reader.readExact(len);
-        if (jsonBytes == null) break;
-        final map = jsonDecode(utf8.decode(jsonBytes)) as Map<String, dynamic>;
-        final type = map['type'] as String;
-
-        switch (type) {
-          case 'manifest':
-            totalBytes = map['totalBytes'] as int;
-            final files = (map['files'] as List)
-                .map((e) => Map<String, dynamic>.from(e))
-                .toList();
-            final manifest = Manifest(
-              totalBytes: totalBytes,
-              totalCount: map['totalCount'] as int,
-              files: files
-                  .map((m) => FileEntry(
-                        absolutePath: '',
-                        relativePath: m['relativePath'] as String,
-                        size: m['size'] as int,
-                        mtime: m['mtime'] as int,
-                      ))
-                  .toList(),
-            );
-            final accepted = await onManifest(manifest);
-            if (!accepted) {
-              await _writeJson(socket, {'type': 'reject'});
-              await socket.flush();
-              await socket.close();
-              reader.close();
-              return false;
-            }
-            await _writeJson(socket, {'type': 'accept'});
-            await socket.flush();
-            break;
-
-          case 'file_start':
-            currentFile = map['relativePath'] as String;
-            currentRemaining = map['size'] as int;
-            // 打开输出文件（覆盖写；append 在重传/残留半成品场景会叠加旧数据导致损坏）
-            await sink?.flush();
-            await sink?.close();
-            sink = null;
-            final outPath = _join(saveDir, currentFile);
-            final dir = Directory(_dirname(outPath));
-            if (!await dir.exists()) await dir.create(recursive: true);
-            sink = File(outPath).openWrite();
-            break;
-
-          case 'file_end':
-            await sink?.flush();
-            await sink?.close();
-            sink = null;
-            onFileSaved(map['relativePath'] as String);
-            currentFile = null;
-            currentRemaining = 0;
-            break;
-
-          case 'done':
-            await sink?.flush();
-            await sink?.close();
-            sink = null;
-            // 关键：先回 ack 再关闭 socket，保证发送方能读到 ack
-            // （TCP 半关闭下如果先 close，对端可能因 EOF 提前中止读取）
-            await _writeJson(socket, {
-              'type': 'receive_ack',
-              'received': received,
-              'totalBytes': totalBytes,
-            });
-            await socket.close();
-            reader.close();
-            return true;
-
-          case 'reject':
-            await socket.close();
-            reader.close();
-            return false;
-
-          case 'accept':
-            break;
-        }
-
-        // 文件数据模式：按 chunkSize 分块读取，每块立即落盘并回报进度。
-        // 此前一次性 readExact(整个文件大小) 导致：传输期间 UI 进度条始终 0%
-        // （回调只在整文件读完后触发一次），且整文件驻留内存有 OOM 风险。
-        while (currentFile != null && currentRemaining > 0) {
-          final toRead =
-              currentRemaining > chunkSize ? chunkSize : currentRemaining;
-          final data = await reader.readExact(toRead);
-          if (data == null) break; // 连接中断
-          sink?.add(data);
-          received += data.length;
-          currentRemaining -= data.length;
-          final now = DateTime.now().millisecondsSinceEpoch;
-          if (currentRemaining == 0 ||
-              currentFile != lastEmitFile ||
-              now - lastEmitAt >= 100) {
-            lastEmitAt = now;
-            lastEmitFile = currentFile;
-            onProgress(received, totalBytes, currentFile);
-          }
-        }
-      }
-    } finally {
-      // 任何退出路径（中断/异常）都确保文件句柄关闭，避免半成品文件占用
-      try {
-        await sink?.flush();
-      } catch (_) {}
-      try {
-        await sink?.close();
-      } catch (_) {}
-    }
-    await socket.close();
-    reader.close();
-    return false;
-  }
+  // 发送/接收逻辑已迁移至文件末尾的 [TransferSession]（对称、双方皆可收发）。
 
   // ======================= 协议底层 =======================
 
@@ -696,4 +446,285 @@ class Manifest {
     required this.totalCount,
     required this.files,
   });
+}
+
+/// 连接建立后的对称传输会话：双方都能随时发送，也随时接收对方发来的文件。
+///
+/// 单一 [SocketReader] 由本会话的接收循环独占；[sendFiles] 只负责写数据 +
+/// 通过 `_pending` 等待接收循环转交的 accept/reject/receive_ack 响应，避免
+/// 对 single-sub socket stream 二次 listen 抛「Stream has already been
+/// listened to.」。同一时刻只允许一个传输（任一方向），[sendFiles] 与接收
+/// 循环通过 `_transferring` 互斥，避免双向并发导致响应错乱。
+class TransferSession {
+  final Socket socket;
+  final SocketReader reader;
+  final QuickTransferService service;
+  final String saveDir;
+  final Future<bool> Function(Manifest) onIncomingManifest;
+  final void Function(int received, int total, String currentFile) onReceiveProgress;
+  final void Function(String relativePath) onFileSaved;
+  final Future<bool> Function() shouldCancel;
+  final void Function(dynamic error) onError;
+  final Future<void> Function(bool success) onReceiveFinished;
+
+  TransferSession({
+    required this.socket,
+    required this.reader,
+    required this.service,
+    required this.saveDir,
+    required this.onIncomingManifest,
+    required this.onReceiveProgress,
+    required this.onFileSaved,
+    required this.shouldCancel,
+    required this.onError,
+    required this.onReceiveFinished,
+  });
+
+  bool _active = true;
+  bool _transferring = false;
+  Completer<Map<String, dynamic>?>? _pending;
+
+  /// 持久接收循环：读帧 → 分发。manifest 交接收子流程；accept/reject/
+  /// receive_ack 是“本端发起的发送”的响应，转交 [sendFiles] 等待的 [_pending]。
+  Future<void> run() async {
+    try {
+      while (_active) {
+        final frame = await reader.readJson();
+        if (frame == null) break; // 连接断开
+        final type = frame['type'] as String?;
+        if (type == 'manifest') {
+          await _receiveOneTransfer(frame);
+        } else if (type == 'accept' || type == 'reject' || type == 'receive_ack') {
+          final p = _pending;
+          _pending = null;
+          p?.complete(frame);
+        }
+      }
+    } catch (e) {
+      onError(e);
+    } finally {
+      _active = false;
+      _pending?.complete(null);
+      _pending = null;
+    }
+  }
+
+  /// 接收一个对端发来的传输（manifest → 文件流 → 落盘 → receive_ack）。
+  /// 与 [run] 同一执行链，独占 reader 直到本传输结束，不会与接收循环抢读。
+  Future<void> _receiveOneTransfer(Map<String, dynamic> frame) async {
+    _transferring = true;
+    IOSink? sink;
+    try {
+      final totalBytes = frame['totalBytes'] as int;
+      final files = (frame['files'] as List)
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+      final manifest = Manifest(
+        totalBytes: totalBytes,
+        totalCount: frame['totalCount'] as int,
+        files: files
+            .map((m) => FileEntry(
+                  absolutePath: '',
+                  relativePath: m['relativePath'] as String,
+                  size: m['size'] as int,
+                  mtime: m['mtime'] as int,
+                ))
+            .toList(),
+      );
+      final accepted = await onIncomingManifest(manifest);
+      if (!accepted) {
+        await service._writeJson(socket, {'type': 'reject'});
+        await socket.flush();
+        await onReceiveFinished(false);
+        return;
+      }
+      await service._writeJson(socket, {'type': 'accept'});
+      await socket.flush();
+
+      int received = 0;
+      String? currentFile;
+      int currentRemaining = 0;
+      int lastEmitAt = 0;
+      String lastEmitFile = '';
+
+      // 继续从 reader 读取文件帧，直到收到 done
+      while (true) {
+        final lenBytes = await reader.readExact(4);
+        if (lenBytes == null) break;
+        final len = ByteData.sublistView(lenBytes).getUint32(0, Endian.big);
+        final jsonBytes = await reader.readExact(len);
+        if (jsonBytes == null) break;
+        final map = jsonDecode(utf8.decode(jsonBytes)) as Map<String, dynamic>;
+        final t = map['type'] as String;
+        switch (t) {
+          case 'file_start':
+            currentFile = map['relativePath'] as String;
+            currentRemaining = map['size'] as int;
+            // 打开输出文件（覆盖写；append 在重传/残留半成品场景会叠加旧数据）
+            await sink?.flush();
+            await sink?.close();
+            sink = null;
+            final outPath = service._join(saveDir, currentFile);
+            final dir = Directory(service._dirname(outPath));
+            if (!await dir.exists()) await dir.create(recursive: true);
+            sink = File(outPath).openWrite();
+            break;
+          case 'file_end':
+            await sink?.flush();
+            await sink?.close();
+            sink = null;
+            onFileSaved(map['relativePath'] as String);
+            currentFile = null;
+            currentRemaining = 0;
+            break;
+          case 'done':
+            await sink?.flush();
+            await sink?.close();
+            sink = null;
+            // 关键：先回 ack 再关闭 socket，保证发送方能读到 ack
+            // （TCP 半关闭下如果先 close，对端可能因 EOF 提前中止读取）
+            await service._writeJson(socket, {
+              'type': 'receive_ack',
+              'received': received,
+              'totalBytes': totalBytes,
+            });
+            await socket.flush();
+            await onReceiveFinished(true);
+            return;
+          case 'reject':
+            await sink?.close();
+            await onReceiveFinished(false);
+            return;
+          case 'accept':
+            break;
+        }
+        // 文件数据模式：按 chunkSize 分块读取，每块立即落盘并回报进度
+        while (currentFile != null && currentRemaining > 0) {
+          final toRead = currentRemaining > QuickTransferService.chunkSize
+              ? QuickTransferService.chunkSize
+              : currentRemaining;
+          final data = await reader.readExact(toRead);
+          if (data == null) break; // 连接中断
+          sink?.add(data);
+          received += data.length;
+          currentRemaining -= data.length;
+          final now = DateTime.now().millisecondsSinceEpoch;
+          if (currentRemaining == 0 ||
+              currentFile != lastEmitFile ||
+              now - lastEmitAt >= 100) {
+            lastEmitAt = now;
+            lastEmitFile = currentFile;
+            onReceiveProgress(received, totalBytes, currentFile);
+          }
+        }
+      }
+      await onReceiveFinished(false);
+    } finally {
+      try {
+        await sink?.flush();
+      } catch (_) {}
+      try {
+        await sink?.close();
+      } catch (_) {}
+      _transferring = false;
+    }
+  }
+
+  /// 本端主动发送文件：写 manifest → 等 accept/reject → 流式写文件 →
+  /// 写 done → 等 receive_ack。响应通过 [_pending] 由接收循环转交。
+  Future<void> sendFiles({
+    required List<FileEntry> files,
+    required void Function(int sent, int total, String currentFile) onProgress,
+  }) async {
+    if (_transferring) throw Exception('传输进行中，请稍后再发');
+    _transferring = true;
+    try {
+      final totalBytes = files.fold<int>(0, (s, f) => s + f.size);
+      int sent = 0;
+      await service._writeJson(socket, {
+        'type': 'manifest',
+        'totalBytes': totalBytes,
+        'totalCount': files.length,
+        'files': files
+            .map((f) => {
+                  'relativePath': f.relativePath,
+                  'size': f.size,
+                  'mtime': f.mtime,
+                })
+            .toList(),
+      });
+
+      // 必须等待接收方"接受/拒绝"后再开始传输，否则数据会提前进入缓冲
+      _pending = Completer<Map<String, dynamic>?>();
+      final resp = await _pending!.future;
+      if (resp == null) throw Exception('连接已断开，未能收到接收方的回应');
+      if (resp['type'] == 'reject') throw Exception('对方已拒绝接收');
+
+      // 进度节流：≥100ms 或文件切换或文件读完才回调，避免高频 setState 打爆 UI
+      int lastEmitAt = 0;
+      String lastEmitFile = '';
+      for (final f in files) {
+        if (await shouldCancel()) {
+          await service._writeJson(socket, {'type': 'done', 'cancelled': true});
+          return;
+        }
+        await service._writeJson(socket, {
+          'type': 'file_start',
+          'relativePath': f.relativePath,
+          'size': f.size,
+        });
+        final file = File(f.absolutePath);
+        int offset = 0;
+        await for (final chunk in file.openRead()) {
+          if (await shouldCancel()) {
+            await service._writeJson(socket, {'type': 'done', 'cancelled': true});
+            return;
+          }
+          socket.add(chunk);
+          await socket.flush();
+          offset += chunk.length;
+          sent += chunk.length;
+          final now = DateTime.now().millisecondsSinceEpoch;
+          // 进度显示上限 = totalBytes - 1，所有数据 flush 完后 UI 停留在
+          // 「等待对方接收完成…」的近 100% 态；收到 receive_ack 后才回调 100%。
+          final displaySent = (sent < totalBytes) ? sent : totalBytes - 1;
+          if (offset >= f.size ||
+              f.relativePath != lastEmitFile ||
+              now - lastEmitAt >= 100) {
+            lastEmitAt = now;
+            lastEmitFile = f.relativePath;
+            onProgress(displaySent, totalBytes, f.relativePath);
+          }
+          if (offset % (QuickTransferService.chunkSize * 16) == 0) {
+            await Future.delayed(Duration.zero);
+          }
+        }
+        if (offset != f.size) {
+          throw Exception('文件大小不一致: ${f.relativePath} ($offset/${f.size})');
+        }
+        await service._writeJson(socket, {
+          'type': 'file_end',
+          'relativePath': f.relativePath,
+        });
+      }
+      await service._writeJson(socket, {'type': 'done', 'cancelled': false});
+
+      // 阻塞等待接收方的落盘完成 ack
+      _pending = Completer<Map<String, dynamic>?>();
+      final ack = await _pending!.future;
+      if (ack != null && ack['type'] == 'receive_ack') {
+        onProgress(totalBytes, totalBytes, '');
+      }
+    } finally {
+      _transferring = false;
+    }
+  }
+
+  void dispose() {
+    _active = false;
+    try {
+      socket.close();
+    } catch (_) {}
+    reader.close();
+  }
 }

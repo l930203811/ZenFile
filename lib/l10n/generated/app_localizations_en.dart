@@ -5860,6 +5860,13 @@ class L10nEn extends L10n {
   String get quick_transfer_connected_btn => 'Connected';
 
   @override
+  String get quick_transfer_forget_device => 'Forget device';
+
+  @override
+  String get quick_transfer_peer_unreachable =>
+      'Unable to connect to this device. Please make sure the other party has opened Quick Transfer and is nearby.';
+
+  @override
   String get quick_transfer_available_peers => 'Available devices';
 
   @override
@@ -5940,4 +5947,70 @@ class L10nEn extends L10n {
   @override
   String get changelog_v1133_fix_5 =>
       'Long-press menu: restored v1.1.32 layout with high-contrast background and stroke.';
+
+  @override
+  @override
+  String get changelog_v1134_fix_1 =>
+      'Fixed the app UI freezing when Web Sharing was accessed by another device — the whole-storage scan is now asynchronous and no longer blocks the UI thread.';
+
+  @override
+  String get changelog_v1134_fix_2 =>
+      'Fixed FTP failing to connect or picking the wrong network interface — local IP selection now prefers wlan/eth and skips Docker/VPN/virtual adapters.';
+
+  @override
+  String get changelog_v1134_fix_3 =>
+      'FTP sharing now supports a custom port — configurable and persisted in settings, with live apply and auto-restart of the listener while running.';
+
+  @override
+  String get changelog_v1134_fix_4 =>
+      'Fixed FTP control-port binding & PASV: the control port is now bound to the concrete LAN IP and PASV resolution is simplified, fixing connection failures behind VPN/proxy.';
+
+  @override
+  String get changelog_v1134_fix_5 =>
+      "Added an 'FTP server stopped' notification that replaces the previous incorrect 'port changed / not active' message when the server stops.";
+
+  @override
+  String get changelog_v1134_fix_6 =>
+      'Text editor save/save-as merged into a single Save button that opens a menu to choose Save or Save As.';
+
+  @override
+  String get changelog_v1134_new_1 =>
+      'Added a Toolbox entry on the Categories page.';
+
+  @override
+  String get changelog_v1134_new_2 =>
+      'Consolidated the Encrypted Vault, Wake-on-LAN, and Quick Transfer into the Toolbox for centralized access.';
+
+  @override
+  String get changelog_v1134_new_3 =>
+      'Quick Transfer now remembers connected devices — reconnect with one tap next time, and remove a remembered device individually from the list.';
+
+  @override
+  String get changelog_v1134_opt_1 =>
+      'Quick Transfer is now symmetric — after connecting, either side can initiate sending; the send/receive mode toggle and top switch button were removed.';
+
+  @override
+  String get changelog_v1134_opt_2 =>
+      'Quick Transfer UI fully refreshed — section cards, device-row cards, icon badges, filled selection boxes, and a circular progress badge for a more unified look.';
+
+  @override
+  String get changelog_v1134_opt_3 =>
+      'Quick Transfer main screen tightened — reduced card padding and spacing to minimize first-screen scrolling so the radar/device list is visible immediately.';
+  @override
+  String get ftp_server_stopped => 'FTP server stopped';
+
+  @override
+  String get cat_toolbox => 'Toolbox';
+
+  @override
+  String get cat_toolbox_desc => 'Tools';
+
+  @override
+  String quick_transfer_waiting_for_x(Object name) {
+    return 'Waiting for $name to tap connect…';
+  }
+
+  @override
+  String get quick_transfer_ask_peer_connect =>
+      'Ask the other device to also tap the Connect button for this device in Quick Transfer';
 }

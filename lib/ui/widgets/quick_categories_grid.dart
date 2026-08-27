@@ -20,6 +20,7 @@ import '../screens/web_sharing_screen.dart';
 import '../screens/quick_transfer_screen.dart';
 import '../screens/storage_analyzer/storage_analyzer_screen.dart';
 import '../screens/vault_lock_screen.dart';
+import '../screens/toolbox_screen.dart';
 import '../screens/recycle_bin_screen.dart';
 import '../screens/backup_settings_screen.dart';
 import '../../services/recycle_bin_service.dart';
@@ -254,14 +255,14 @@ class QuickCategoriesGrid extends StatefulWidget {
         'isCustom': false,
         'pageBuilder': () => const WebSharingScreen(),
       },
-      '快传': {
-        'label': l10n.quick_transfer,
-        'icon': Broken.send_2,
+      '工具箱': {
+        'label': l10n.cat_toolbox,
+        'icon': Icons.home_repair_service,
         'color': categoryColor,
-        'iconColor': iconColor(100), // 黄绿
-        'count': l10n.cat_service,
+        'iconColor': iconColor(70), // 橙黄
+        'count': l10n.cat_toolbox_desc,
         'isCustom': false,
-        'pageBuilder': () => const QuickTransferScreen(),
+        'pageBuilder': () => const ToolboxScreen(),
       },
       '应用': {
         'label': l10n.cat_apps,
@@ -300,15 +301,6 @@ class QuickCategoriesGrid extends StatefulWidget {
         'count': l10n.cat_analyze,
         'isCustom': false,
         'pageBuilder': () => const StorageAnalyzerScreen(),
-      },
-      '保险箱': {
-        'label': l10n.cat_vault,
-        'icon': Broken.security_safe,
-        'color': categoryColor,
-        'iconColor': iconColor(345), // 深玫红
-        'count': l10n.cat_vault_desc,
-        'isCustom': false,
-        'pageBuilder': () => const VaultLockScreen(),
       },
       '回收站': {
         'label': l10n.ui_recycle_bin,
@@ -689,11 +681,24 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
       child: Container(
         height: 44,
         padding: const EdgeInsets.symmetric(horizontal: 16),
+        alignment: Alignment.centerLeft,
         child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(icon, size: 20, color: color),
+            SizedBox(
+              width: 24,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Icon(icon, size: 20, color: color),
+              ),
+            ),
             const SizedBox(width: 12),
-            Text(label, style: const TextStyle(fontSize: 14)),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 14),
+              textAlign: TextAlign.start,
+            ),
           ],
         ),
       ),
@@ -1171,9 +1176,11 @@ class _CategoryMenuOverlayWidgetState extends State<_CategoryMenuOverlayWidget> 
                       ),
                     ],
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
+                  child: IntrinsicWidth(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
                       if (widget.isStandard) ...[
                         widget.buildMenuItem(
                           Icons.folder_special,
@@ -1201,6 +1208,7 @@ class _CategoryMenuOverlayWidgetState extends State<_CategoryMenuOverlayWidget> 
                 ),
               ),
             ),
+          ),
         ],
       ),
     );

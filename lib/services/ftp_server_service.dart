@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
+import 'preferences_service.dart';
 
 class FtpServerService {
   static final FtpServerService instance = FtpServerService._internal();
@@ -60,11 +61,39 @@ class FtpServerService {
     onStatusChanged?.call();
   }
 
+  /// 设置并持久化 FTP 端口；若服务正在运行则自动重启以应用新端口
+  Future<void> setPort(int port) async {
+    await PreferencesService.saveFtpPort(port);
+    if (_isActive) {
+      stop();
+      await start();
+    } else {
+      _port = port;
+      onStatusChanged?.call();
+    }
+  }
+
   Future<void> start() async {
     if (_isActive) return;
     try {
+      _port = PreferencesService.getFtpPort();
       _ipAddress = await _getLocalIp();
-      _controlSocket = await ServerSocket.bind(InternetAddress.anyIPv4, _port, shared: true);
+      // Bind to the concrete LAN IP when possible so the control socket lives on
+      // the same interface we advertise. This avoids situations where binding to
+      // anyIPv4 is shadowed by a VPN/proxy interface and remote LAN clients cannot
+      // reach the server. Fall back to anyIPv4 if the concrete IP is unavailable.
+      try {
+        _controlSocket = await ServerSocket.bind(
+          InternetAddress(_ipAddress, type: InternetAddressType.IPv4),
+          _port,
+          shared: true,
+        );
+      } catch (_) {
+        _controlSocket = await ServerSocket.bind(InternetAddress.anyIPv4, _port, shared: true);
+      }
+      if (kDebugMode) {
+        print('[ZenFile] FTP control socket bound to ${_controlSocket?.address.address}:${_controlSocket?.port}');
+      }
       _isActive = true;
       _controlSocket!.listen(_handleConnection, onError: (e) {
         if (kDebugMode) print('FTP Control Server error: $e');
@@ -119,13 +148,51 @@ class FtpServerService {
 
   Future<String> _getLocalIp() async {
     try {
-      for (var interface in await NetworkInterface.list()) {
-        for (var addr in interface.addresses) {
-          if (addr.type == InternetAddressType.IPv4 && !addr.isLoopback) {
-            return addr.address;
+      final interfaces = await NetworkInterface.list(
+        includeLoopback: false,
+        type: InternetAddressType.IPv4,
+      );
+      String? namePreferred; // 优先使用 WLAN/以太网接口的地址
+      String? fallback;      // 192.168. / 10. / 其他私有段
+      String? dockerLike;     // Docker/VPN 私有段(172.16-31) 仅作最后兜底
+      for (final interface in interfaces) {
+        final name = interface.name.toLowerCase();
+        // 跳过明显的虚拟/隧道接口（Docker、VPN、模拟器、虚拟机网桥等）
+        if (name.contains('docker') ||
+            name.contains('vethernet') ||
+            name.contains('vbox') ||
+            name.contains('vmnet') ||
+            name.contains('tun') ||
+            name.contains('tap') ||
+            name.startsWith('ppp')) {
+          continue;
+        }
+        final isWlan = name.contains('wlan') ||
+            name.contains('eth') ||
+            name.contains('wi-fi') ||
+            name.contains('wireless');
+        for (final addr in interface.addresses) {
+          final ip = addr.address;
+          if (isWlan && namePreferred == null) namePreferred = ip;
+          if (ip.startsWith('192.168.')) {
+            fallback ??= ip;
+          } else if (ip.startsWith('10.')) {
+            fallback ??= ip;
+          } else if (ip.startsWith('172.')) {
+            final second = int.tryParse(ip.split('.').length > 1 ? ip.split('.')[1] : '0') ?? 0;
+            if (second >= 16 && second <= 31) {
+              dockerLike ??= ip; // Docker 默认网桥多落在 172.17+，避免优先选用
+            } else {
+              fallback ??= ip;
+            }
+          } else {
+            fallback ??= ip;
           }
         }
       }
+      if (namePreferred != null) return namePreferred;
+      if (fallback != null) return fallback;
+      if (dockerLike != null) return dockerLike;
     } catch (_) {}
     return '127.0.0.1';
   }
@@ -369,6 +436,9 @@ class FtpSession {
       final p1 = port >> 8;
       final p2 = port & 0xFF;
       sendResponse('227 Entering Passive Mode (${ipParts.join(",")},$p1,$p2)');
+      if (kDebugMode) {
+        print('[ZenFile] FTP PASV listening on $pasvIp:$port');
+      }
 
       passiveServer!.listen((socket) {
         passiveDataSocket = socket;
@@ -384,51 +454,17 @@ class FtpSession {
   }
 
   /// Resolve the IP that the client should use to connect back to the
-  /// PASV data port. Prefer the IP of the interface the control connection
-  /// came in on; otherwise fall back to the server's primary IP.
-  ///
-  /// NOTE: On Android a socket bound to [InternetAddress.anyIPv4] reports its
-  /// local address as `0.0.0.0`. Returning that to a remote client makes the
-  /// data connection impossible to establish, so the LIST silently fails and
-  /// the client sees an empty directory. We therefore never return `0.0.0.0`
-  /// (or loopback for a remote client) and fall back to a concrete LAN IP.
+  /// PASV data port. Use the server's primary LAN IP for remote clients and
+  /// loopback for local clients. This keeps the data channel reachable even
+  /// when the control socket was bound to anyIPv4 and reports `0.0.0.0` as its
+  /// local address, or when VPN/proxy interfaces are present.
   String _resolvePasvAddress(Socket control) {
     try {
-      final remote = control.remoteAddress;
-
       // A client connecting from loopback (another app on the same device)
       // must also use loopback for the data connection.
-      if (remote.isLoopback) return '127.0.0.1';
-
-      // Prefer the local address of the control socket, but only when it is a
-      // concrete, routable LAN address. `0.0.0.0` (anyIPv4) is NOT reachable
-      // for a remote client, and loopback must not be used for remote clients.
-      final local = controlSocketToLocalIp(control);
-      if (local != null &&
-          local.isNotEmpty &&
-          !local.startsWith('0.') &&
-          !local.startsWith('127.')) {
-        return local;
-      }
-
-      // Fall back to the server's primary reachable IP (detected at start()).
-      return server.ipAddress;
-    } catch (_) {
-      return server.ipAddress;
-    }
-  }
-
-  /// Best-effort sync lookup of the local IPv4 address bound to the same
-  /// interface as the control socket, matching the remote peer's subnet.
-  /// Falls back to [server.ipAddress] when a match is not found.
-  String? controlSocketToLocalIp(Socket control) {
-    try {
-      final local = control.address;
-      if (local.type == InternetAddressType.IPv4) {
-        return local.address;
-      }
+      if (control.remoteAddress.isLoopback) return '127.0.0.1';
     } catch (_) {}
-    return null;
+    return server.ipAddress;
   }
 
   void _enterActiveMode(String arg) {

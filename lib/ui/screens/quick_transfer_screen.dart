@@ -16,10 +16,12 @@ import '../screens/internal_file_picker_screen.dart';
 /// 快传页面：基于 WiFi Direct (P2P) 的点对点直传，参考 ES 快传 / QQ 面对面快传。
 ///
 /// 对称连接模型：
-/// - 发送页与接收页都展示"附近设备"，任意一方点击对方设备名即可发起 P2P 连接；
-/// - P2P 连接建立后，Group Owner (GO) 始终托管 TCP ServerSocket，另一方作为 client 连接；
-/// - 传输方向（谁发送文件）只由当前模式（发送/接收）决定，与哪一方发起了连接无关。
-/// 这样无论是发送方还是接收方先点击，都能建立连接并自动开始传输。
+/// - 任意一方点击对方设备名即可发起 P2P 连接；P2P 连接建立后，Group Owner (GO)
+///   始终托管 TCP ServerSocket，另一方作为 client 连接；
+/// - 连接成功后**不再区分发送方 / 接收方**：双方都可在同一连接上随时主动发送
+///   文件，也随时接收对方发来的文件（由 [TransferSession] 统一调度，单一
+///   SocketReader 被持久接收循环独占，发送响应经内部 [_pending] 转交）；
+/// - 因此页面不再有「发送/接收」切换，统一展示：设备名 → 发送区 → 接收区 → 附近设备。
 class QuickTransferScreen extends StatefulWidget {
   const QuickTransferScreen({super.key});
 
@@ -31,11 +33,12 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
     with TickerProviderStateMixin {
   final _svc = QuickTransferService();
 
-  int _mode = 0; // 0: 发送, 1: 接收
-  bool _busy = false;
+  bool _busy = false; // 连接进行中（防重入）
+  bool _scanning = false; // 仅表示「正在扫描附近设备」，与 _busy 解耦，扫描期间仍可点连接
   String? _deviceName;
   String? _goIp;
   List<PeerDevice> _peers = [];
+  List<PeerDevice> _knownPeers = [];
   PeerDevice? _connectingPeer;
   P2pConnectionState _conn = P2pConnectionState.disconnected;
 
@@ -46,15 +49,13 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
   bool _iClickedConnect = false;
   bool _waitingPeerClick = false;
 
-  // 握手成功后保留的 SocketReader：Socket 是 single-sub stream，
-  // 传输层必须继续复用此 reader，否则 new 第二个会抛
-  // 「Bad state: Stream has already been listened to.」
-  SocketReader? _activeReader;
+  // 握手成功后建立的对称传输会话：拥有 Socket + SocketReader，
+  // 由持久接收循环统一调度收发（详见 quick_transfer_service.dart）。
+  TransferSession? _session;
 
   // 发送方
   List<String> _selectedPaths = [];
   ServerSocket? _server;
-  Socket? _activeSocket;
 
   // 接收方路径（可自定义，持久化）
   String _receiveDir = '/storage/emulated/0/ZenFile/Receive';
@@ -93,6 +94,7 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
     }
     _deviceName = await _svc.getDeviceName();
     _receiveDir = PreferencesService.getQuickTransferReceivePath();
+    _knownPeers = PreferencesService.getQuickTransferKnownPeers();
     await _checkPermission();
     _peersSub = _svc.peersStream.listen((p) {
       if (mounted) setState(() => _peers = p);
@@ -112,8 +114,7 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
           await _onP2pConnected();
         }
       } else {
-        _transferStarted = false;
-        _socketReady = false;
+        _teardownConnection();
         _waitingPeerClick = false;
       }
     });
@@ -125,7 +126,7 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
     _peersSub?.cancel();
     _connSub?.cancel();
     _server?.close();
-    _activeSocket?.destroy();
+    _session?.dispose();
     _svc.disconnect();
     _radarController?.dispose();
     _sweepController?.dispose();
@@ -172,11 +173,11 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
       await _checkPermission();
       if (!_permissionGranted) return;
     }
-    setState(() => _busy = true);
+    setState(() => _scanning = true);
     _setScanningAnimation(true);
     final ok = await _svc.startDiscovery();
     if (!ok && mounted) {
-      setState(() => _busy = false);
+      setState(() => _scanning = false);
       _setScanningAnimation(false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(L10n.of(context).quick_transfer_permission_required)),
@@ -187,7 +188,7 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
     // 期间发现的设备会实时显示在列表中。
     await Future.delayed(const Duration(seconds: 12));
     if (mounted) {
-      setState(() => _busy = false);
+      setState(() => _scanning = false);
       _setScanningAnimation(false);
     }
   }
@@ -241,6 +242,26 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
     }
 
     // 情况 B：P2P 未连，我作为先点的一方发起原生 connect。
+    // 如果点击的是已记住设备且当前 peers 列表里没有它，说明还没扫描到对方，
+    // 需要先触发一次 discovery，等原生发现到该设备后再 connect。
+    if (!_peers.any((p) => p.address == peer.address)) {
+      final found = await _ensurePeerDiscovered(
+        peer.address,
+        timeout: const Duration(seconds: 8),
+      );
+      if (!found) {
+        if (mounted) {
+          setState(() {
+            _error = L10n.of(context).quick_transfer_peer_unreachable;
+            _busy = false;
+            _connectingPeer = null;
+            _iClickedConnect = false;
+          });
+        }
+        return;
+      }
+    }
+
     _setScanningAnimation(true);
     try {
       // 先清理可能存在的旧组，确保全新建组，避免"已连接"导致 connect 失败
@@ -253,13 +274,83 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
     } catch (e) {
       _setScanningAnimation(false);
       if (mounted) {
+        final message = _formatConnectError(e, context);
         setState(() {
-          _error = e.toString();
+          _error = message;
           _busy = false;
           _connectingPeer = null;
           _iClickedConnect = false;
         });
       }
+    }
+  }
+
+  /// 确保指定 address 的设备已被原生 WiFi Direct discovery 发现。
+  /// 若当前 peers 列表中已有该设备则立即返回 true；否则启动一次 discovery
+  /// 并在 [timeout] 内轮询等待，发现后返回 true，超时返回 false。
+  Future<bool> _ensurePeerDiscovered(String address, {required Duration timeout}) async {
+    if (_peers.any((p) => p.address == address)) return true;
+
+    if (!_permissionGranted) {
+      await _checkPermission();
+      if (!_permissionGranted) return false;
+    }
+
+    setState(() => _scanning = true);
+    _setScanningAnimation(true);
+    final ok = await _svc.startDiscovery();
+    if (!ok) {
+      if (mounted) {
+        setState(() => _scanning = false);
+        _setScanningAnimation(false);
+      }
+      return false;
+    }
+
+    final deadline = DateTime.now().add(timeout);
+    while (DateTime.now().isBefore(deadline)) {
+      if (_peers.any((p) => p.address == address)) {
+        if (mounted) {
+          setState(() => _scanning = false);
+          _setScanningAnimation(false);
+        }
+        return true;
+      }
+      await Future.delayed(const Duration(milliseconds: 400));
+    }
+
+    if (mounted) {
+      setState(() => _scanning = false);
+      _setScanningAnimation(false);
+    }
+    return false;
+  }
+
+  /// 把原生 P2P 连接异常转换为用户友好的本地化提示，避免直接展示
+  /// PlatformException(CONNECT_FAILED, reason=0, null, null) 等底层信息。
+  String _formatConnectError(Object e, BuildContext context) {
+    if (e is PlatformException) {
+      final code = e.code;
+      if (code == 'CONNECT_FAILED' || code == 'P2P_CONNECT_FAILED' || code == 'connect_failed') {
+        return L10n.of(context).quick_transfer_peer_unreachable;
+      }
+    }
+    return e.toString();
+  }
+
+  /// 把对端写入「已记住设备」持久化列表（按 address 去重、最近置顶）。
+  Future<void> _rememberPeer(PeerDevice peer) async {
+    await PreferencesService.addQuickTransferKnownPeer(peer);
+    if (mounted) {
+      setState(() => _knownPeers = PreferencesService.getQuickTransferKnownPeers());
+    }
+  }
+
+  /// 从「已记住设备」列表中移除一个对端（按 address 匹配）。
+  Future<void> _removeKnownPeer(PeerDevice peer) async {
+    await PreferencesService.removeQuickTransferKnownPeer(peer.address);
+    if (mounted) {
+      setState(() => _knownPeers = PreferencesService.getQuickTransferKnownPeers());
     }
   }
 
@@ -291,39 +382,89 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
       } else {
         socket = await _connectWithRetry(goIp);
       }
-      _activeSocket = socket;
 
-      // 双向 peer_ready 握手：先发自己 ready，阻塞等对方 ready（最长 60s）
-      // 期间 shouldCancel=!mounted（用户退出即取消）。只有双方 ready
-      // 才继续；抛异常则直接进错误面板。返回的 SocketReader 要保留并
-      // 传入后续传输（socket 是 single-sub stream，不能再 new 第二个）。
-      final handshake = await _svc.doPeerReadyHandshake(
+      // 双向 peer_ready 握手：仅确认双方都在线，不再交换收发角色
+      final reader = await _svc.doPeerReadyHandshake(
         socket: socket,
-        localMode: _mode,
         shouldCancel: () async => !mounted,
       );
       if (!mounted) {
-        handshake.reader.close();
+        reader.close();
+        socket.destroy();
         return;
       }
-      _activeReader = handshake.reader;
+
+      // 握手成功：把对端写入「已记住设备」，下次可直接点连接按钮重连。
+      // _connectingPeer 在此处仍指向本次连接的对端（错误/teardown 才清空）。
+      final peer = _connectingPeer;
+      if (peer != null) {
+        await _rememberPeer(peer);
+      }
+
+      // 建立对称传输会话：双方都能随时发送、随时接收
+      _session = TransferSession(
+        socket: socket,
+        reader: reader,
+        service: _svc,
+        saveDir: _receiveDir,
+        shouldCancel: () async => !mounted,
+        onIncomingManifest: (manifest) async {
+          if (mounted) {
+            setState(() {
+              _isSender = false;
+              _transferring = true;
+              _waitingManifest = false;
+              _error = null;
+            });
+          }
+          return _askAccept(manifest);
+        },
+        onReceiveProgress: (r, t, cur) {
+          if (mounted) {
+            setState(() {
+              _isSender = false;
+              _sent = r;
+              _total = t;
+              _currentFile = cur;
+            });
+          }
+        },
+        onFileSaved: (_) {},
+        onReceiveFinished: (success) async {
+          if (!mounted) return;
+          setState(() {
+            _transferring = false;
+            _done = success;
+            _sent = 0;
+            _total = 0;
+            _currentFile = '';
+          });
+          if (success) {
+            final open = await _askOpenLocation();
+            if (open == true && mounted) {
+              // 复用 HomeScreen 的 pendingBrowseNavigation 机制，跳转浏览页打开接收目录。
+              // 用 popUntil(isFirst) 一次性弹回首页（HomeScreen），确保无论快传从抽屉
+              // 还是从「分类页→工具箱」进入，弹回后首页即为可见顶层并消费 pending 导航；
+              // 若仅 pop() 一层，从工具箱进入时会残留 ToolboxScreen 遮挡已加载的目录。
+              final fileManager = context.read<FileManagerProvider>();
+              fileManager.setPendingBrowseNavigation(_receiveDir, []);
+              Navigator.of(context).popUntil((route) => route.isFirst);
+            }
+          }
+        },
+        onError: (e) {
+          if (mounted) setState(() => _error = e.toString());
+        },
+      );
 
       setState(() {
         _socketReady = true;
         _waitingPeerClick = false;
       });
 
-      if (_mode == 1) {
-        // 接收方：立即进入接收等待状态（等 manifest）
-        setState(() {
-          _isSender = false;
-          _transferring = true;
-          _waitingManifest = true;
-          _busy = false;
-        });
-        await _doReceive(socket);
-      }
-      // 发送方：保持主界面，等用户选好文件后点「发送」（_startSend）
+      // 启动持久接收循环（不阻塞 UI）；连接断开由循环自然结束，会话保持
+      // 直到本端断开/重置，从而支持一次连接内多次互发。
+      unawaited(_session!.run());
     } on SocketException catch (e) {
       if (mounted) {
         setState(() {
@@ -341,109 +482,62 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
     }
   }
 
-  /// 发送方手动触发：在已建立的 socket 上推送清单 + 文件流
+  /// 发送方手动触发：通过对称会话在同一连接上推送清单 + 文件流。
+  /// 连接保持不断开，支持一次连接内多次互发。
   Future<void> _startSend() async {
-    final socket = _activeSocket;
-    if (socket == null || _selectedPaths.isEmpty || _transferring) return;
+    final session = _session;
+    if (session == null || _selectedPaths.isEmpty || _transferring) return;
     if (mounted) {
       setState(() {
         _isSender = true;
         _transferring = true;
         _busy = false;
         _error = null;
+        _done = false;
       });
     }
     try {
       final files = await _svc.collectFiles(_selectedPaths);
+      if (files.isEmpty) {
+        if (mounted) setState(() => _transferring = false);
+        return;
+      }
       if (mounted) {
         setState(() {
           _total = files.fold(0, (s, f) => s + f.size);
           _sent = 0;
         });
       }
-      final reader = _activeReader;
-      try {
-        await _svc.sendFiles(
-          socket: socket,
-          files: files,
-          onProgress: (s, t, cur) {
-            if (mounted) setState(() { _sent = s; _total = t; _currentFile = cur; });
-          },
-          shouldCancel: () async => !mounted,
-          existingReader: reader,
-        );
-        if (mounted) setState(() => _done = true);
-      } finally {
-        // sendFiles 内部会 close reader；无论正常/异常路径都清引用
-        _activeReader = null;
-      }
-    } on SocketException catch (e) {
-      if (mounted) setState(() => _error = '${L10n.of(context).quick_transfer_create_group_failed} ($e)');
-    } catch (e) {
-      if (mounted) setState(() => _error = e.toString());
-    } finally {
-      if (mounted) setState(() => _busy = false);
-      _server?.close();
-      _server = null;
-      _activeSocket?.destroy();
-      _activeSocket = null;
-    }
-  }
-
-  /// 接收方：在已建立的 socket 上等待 manifest 并落盘
-  Future<void> _doReceive(Socket socket) async {
-    try {
-      final reader = _activeReader;
-      bool received;
-      try {
-        received = await _svc.receiveFiles(
-          socket: socket,
-          saveDir: _receiveDir,
-          onManifest: (manifest) async {
-            // 收到清单：退出等待状态，弹窗询问是否接受
-            if (mounted) setState(() => _waitingManifest = false);
-            return _askAccept(manifest);
-          },
-          onProgress: (r, t, cur) {
-            if (mounted) setState(() { _sent = r; _total = t; _currentFile = cur; });
-          },
-          onFileSaved: (_) {},
-          existingReader: reader,
-        );
-      } finally {
-        // receiveFiles 内部会 close reader；无论正常/异常/拒绝路径都清引用
-        _activeReader = null;
-      }
-      // 被拒绝或连接中断：不显示"完成"，直接复位等待下次传输
-      if (!received) {
-        if (mounted) _reset();
-        return;
-      }
-      if (mounted) setState(() => _done = true);
-
-      // 接收完成后提示用户是否打开文件所在位置
-      if (mounted) {
-        final open = await _askOpenLocation();
-        if (open == true && mounted) {
-          // 使用本应用文件管理器打开，跳转到浏览页并定位到接收目录
-          // （复用 HomeScreen 的 pendingBrowseNavigation 机制，而非调系统文件管理器）
-          final fileManager = context.read<FileManagerProvider>();
-          fileManager.setPendingBrowseNavigation(_receiveDir, []);
-          if (Navigator.of(context).canPop()) {
-            Navigator.of(context).pop();
+      await session.sendFiles(
+        files: files,
+        onProgress: (s, t, cur) {
+          if (mounted) {
+            setState(() {
+              _sent = s;
+              _total = t;
+              _currentFile = cur;
+              _isSender = true;
+            });
           }
-        }
+        },
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(L10n.of(context).quick_transfer_complete)),
+        );
+        setState(() {
+          _transferring = false;
+          _done = true;
+        });
       }
     } on SocketException catch (e) {
-      if (mounted) setState(() => _error = '${L10n.of(context).quick_transfer_create_group_failed} ($e)');
+      if (mounted) {
+        setState(() => _error = '${L10n.of(context).quick_transfer_create_group_failed} ($e)');
+      }
     } catch (e) {
       if (mounted) setState(() => _error = e.toString());
     } finally {
-      if (mounted) setState(() => _busy = false);
-      _server?.close();
-      _server = null;
-      _activeSocket?.destroy();
-      _activeSocket = null;
+      if (mounted) setState(() => _transferring = false);
     }
   }
 
@@ -467,18 +561,17 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
     return socket;
   }
 
-  /// 清理 TCP 连接资源（不动 P2P 组，由调用方决定是否 disconnect）
+  /// 清理 TCP 连接与会话资源（不动 P2P 组，由调用方决定是否 disconnect）
   void _teardownConnection() {
-    _server?.close();
-    _server = null;
+    _session?.dispose();
+    _session = null;
     try {
-      _activeReader?.close();
+      _server?.close();
     } catch (_) {}
-    _activeReader = null;
-    _activeSocket?.destroy();
-    _activeSocket = null;
+    _server = null;
     _socketReady = false;
     _transferStarted = false;
+    _waitingPeerClick = false;
   }
 
   void _reset() {
@@ -510,17 +603,27 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
         title: Text(L10n.of(ctx).quick_transfer_incoming(_connectingPeer?.name ?? '')),
         content: Text(L10n.of(ctx).quick_transfer_incoming_files(
             manifest.totalCount.toString(), sizeStr)),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(L10n.of(ctx).quick_transfer_reject),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(L10n.of(ctx).quick_transfer_accept),
+          // 拒绝靠左、接收靠右，两端分布拉开间距，降低误触概率。
+          SizedBox(
+            width: double.infinity,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  child: Text(L10n.of(ctx).quick_transfer_reject),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.of(ctx).pop(true),
+                  child: Text(L10n.of(ctx).quick_transfer_accept),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -533,16 +636,24 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
         title: Text(L10n.of(ctx).quick_transfer_receive_complete),
         content: Text(L10n.of(ctx).quick_transfer_files_saved_to(_receiveDir)),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(L10n.of(ctx).quick_transfer_back),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(L10n.of(ctx).quick_transfer_open_location),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: Text(L10n.of(ctx).quick_transfer_back),
+              ),
+              const SizedBox(width: 8),
+              FilledButton(
+                onPressed: () => Navigator.of(ctx).pop(true),
+                child: Text(L10n.of(ctx).quick_transfer_open_location),
+              ),
+            ],
           ),
         ],
       ),
@@ -634,22 +745,32 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(
-              width: 48,
-              height: 48,
-              child: CircularProgressIndicator(strokeWidth: 3),
+            Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: theme.colorScheme.primaryContainer.withAlpha(100),
+              ),
+              child: const Center(
+                child: SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: CircularProgressIndicator(strokeWidth: 3),
+                ),
+              ),
             ),
             const SizedBox(height: 24),
             Text(
               peerName.isEmpty
                   ? L10n.of(context).quick_transfer_waiting_peer
-                  : '等待 $peerName 点击连接…',
+                  : L10n.of(context).quick_transfer_waiting_for_x(peerName),
               textAlign: TextAlign.center,
               style: theme.textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
             Text(
-              '请让对端设备也在快传中点击本机的「连接」按钮',
+              L10n.of(context).quick_transfer_ask_peer_connect,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
@@ -688,7 +809,9 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
                 }
               },
               icon: const Icon(Broken.refresh),
-              label: Text(L10n.of(context).quick_transfer_retry),
+              label: Text(_error == L10n.of(context).quick_transfer_peer_unreachable
+                  ? L10n.of(context).ui_close
+                  : L10n.of(context).quick_transfer_retry),
             ),
           ],
         ),
@@ -697,51 +820,157 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
   }
 
   Widget _buildMain(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 20),
       children: [
-        // 设备名称置顶
-        ListTile(
-          leading: const Icon(Broken.profile_2user),
-          title: Text(L10n.of(context).quick_transfer_device_name),
-          subtitle: Text(_deviceName ?? '-'),
+        // 1. 本机设备卡片
+        _sectionCard(
+          colorScheme,
+          Row(
+            children: [
+              _iconBadge(context, Broken.profile_2user),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _deviceNameColumn(context),
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: 16),
-        // 发送/接收切换（已建立连接后禁用：切换会导致双方协议方向错乱）
-        SegmentedButton<int>(
-          segments: [
-            ButtonSegment(value: 0, label: Text(L10n.of(context).quick_transfer_send_mode), icon: const Icon(Broken.export)),
-            ButtonSegment(value: 1, label: Text(L10n.of(context).quick_transfer_receive_mode), icon: const Icon(Broken.import)),
-          ],
-          selected: {_mode},
-          onSelectionChanged: (_conn.connected && !_transferring)
-              ? null
-              : (s) => setState(() => _mode = s.first),
+        const SizedBox(height: 8),
+        // 2. 发送区卡片
+        _sectionCard(
+          colorScheme,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _sectionTitle(context, Broken.export,
+                  L10n.of(context).quick_transfer_send_mode),
+              const SizedBox(height: 8),
+              _buildSendBox(context),
+            ],
+          ),
         ),
-        const SizedBox(height: 16),
-        if (_mode == 0) _buildSendPanel(context) else _buildReceivePanel(context),
+        const SizedBox(height: 8),
+        // 3. 接收区卡片
+        _sectionCard(
+          colorScheme,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _sectionTitle(context, Broken.import,
+                  L10n.of(context).quick_transfer_receive_mode),
+              const SizedBox(height: 8),
+              _buildReceiveBox(context),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        // 4. 附近设备发现区卡片
+        _sectionCard(
+          colorScheme,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _sectionTitle(context, Broken.discover,
+                  L10n.of(context).quick_transfer_available_peers),
+              const SizedBox(height: 8),
+              _buildDiscoveryArea(context),
+            ],
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildSendPanel(BuildContext context) {
+  /// 分区卡片容器：统一圆角与浅色底，是快传主页面的基本视觉单元。
+  Widget _sectionCard(ColorScheme colorScheme, Widget child) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(14, 11, 14, 11),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: child,
+    );
+  }
+
+  /// 分区标题：小图标 + 加权标题。
+  Widget _sectionTitle(BuildContext context, IconData icon, String text) {
+    final theme = Theme.of(context);
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: theme.colorScheme.primary),
+        const SizedBox(width: 8),
+        Text(
+          text,
+          style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+        ),
+      ],
+    );
+  }
+
+  /// 圆形图标徽章：浅主色底 + 主色图标，用于设备/分区行首。
+  Widget _iconBadge(BuildContext context, IconData icon) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: colorScheme.primaryContainer.withAlpha(140),
+      ),
+      child: Icon(icon, size: 20, color: colorScheme.primary),
+    );
+  }
+
+  /// 本机设备名（卡片内两行：标签 + 设备名）。
+  Widget _deviceNameColumn(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          L10n.of(context).quick_transfer_device_name,
+          style: theme.textTheme.labelMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          _deviceName ?? '-',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: theme.textTheme.bodyLarge
+              ?.copyWith(fontWeight: FontWeight.w600),
+        ),
+      ],
+    );
+  }
+
+  /// 发送区：文件浏览框（点按选文件/夹）+ 已连接后显示连接状态卡与「发送」按钮。
+  /// 与接收区始终同屏，连接成功后双方均可主动发送，不再区分角色。
+  Widget _buildSendBox(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final hasSelection = _selectedPaths.isNotEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 与接收页一致的椭圆框：标题/已选项占满左侧，文件夹图标靠右
+        // 胶囊框：标题/已选项占满左侧，文件夹图标靠右（填充式底色）
         InkWell(
           onTap: _busy ? null : _pickFiles,
           borderRadius: BorderRadius.circular(999),
           child: Container(
-            height: 52,
+            height: 48,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(999),
+              color: colorScheme.surfaceContainerHighest.withAlpha(110),
               border: Border.all(
-                color: colorScheme.outlineVariant,
+                color: colorScheme.outlineVariant.withAlpha(80),
                 width: 1,
               ),
             ),
@@ -786,13 +1015,13 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         // 已连接：显示连接状态卡 + 「发送」按钮（由发送方手动开始传输，
-        // 未选文件时禁用；先连接后选文件完全支持），不再显示设备发现区域
+        // 未选文件时禁用；先连接后选文件完全支持）
         if (_conn.connected && _socketReady && !_transferring) ...[
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               color: colorScheme.primaryContainer.withAlpha(90),
@@ -815,75 +1044,67 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton.icon(
+            child: FilledButton.icon(
               onPressed: _selectedPaths.isEmpty ? null : _startSend,
               icon: const Icon(Broken.export),
               label: Text(L10n.of(context).quick_transfer_send_button),
             ),
           ),
-        ] else ...[
-          _buildDiscoveryArea(context),
         ],
       ],
     );
   }
 
-  Widget _buildReceivePanel(BuildContext context) {
+  /// 接收区：默认接收路径浏览框（点按可改路径，持久化）。
+  Widget _buildReceiveBox(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // 接收路径卡片：椭圆形边框，标题/路径占满左侧，文件夹按钮靠最右侧
-        InkWell(
-          onTap: _busy ? null : _pickReceiveDir,
+    return InkWell(
+      onTap: _busy ? null : _pickReceiveDir,
+      borderRadius: BorderRadius.circular(999),
+      child: Container(
+        height: 56,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(999),
-          child: Container(
-            height: 52,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(
-                color: colorScheme.outlineVariant,
-                width: 1,
-              ),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        L10n.of(context).quick_transfer_receive_path,
-                        style: theme.textTheme.labelSmall?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        _receiveDir,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w500,
-                            ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(Broken.folder, size: 20, color: colorScheme.primary),
-              ],
-            ),
+          color: colorScheme.surfaceContainerHighest.withAlpha(110),
+          border: Border.all(
+            color: colorScheme.outlineVariant.withAlpha(80),
+            width: 1,
           ),
         ),
-        const SizedBox(height: 16),
-        _buildDiscoveryArea(context),
-      ],
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    L10n.of(context).quick_transfer_receive_path,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    _receiveDir,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Broken.folder, size: 20, color: colorScheme.primary),
+          ],
+        ),
+      ),
     );
   }
 
@@ -892,8 +1113,8 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildDiscoveryRow(context),
-        const SizedBox(height: 12),
-        if (_busy) ...[
+        const SizedBox(height: 8),
+        if (_scanning) ...[
           _RadarScanner(
             radarController: _radarController,
             sweepController: _sweepController,
@@ -907,14 +1128,15 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
                   ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
         ],
-        if (!_busy)
+        if (!_scanning)
           Text(
             L10n.of(context).quick_transfer_tap_to_connect,
             style: Theme.of(context).textTheme.bodySmall,
           ),
-        if (!_busy) const SizedBox(height: 12),
+        if (!_scanning) const SizedBox(height: 8),
+        _buildKnownPeers(context),
         _buildPeerList(context),
       ],
     );
@@ -923,9 +1145,9 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
   Widget _buildDiscoveryRow(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: _busy ? null : _startDiscovery,
-        icon: _busy
+      child: FilledButton.tonalIcon(
+        onPressed: _scanning ? null : _startDiscovery,
+        icon: _scanning
             ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
             : const Icon(Broken.discover),
         label: Text(L10n.of(context).quick_transfer_nearby_devices),
@@ -934,31 +1156,126 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
   }
 
   Widget _buildPeerList(BuildContext context) {
-    if (_peers.isEmpty) {
+    // 已记住的设备已在上方单独列出，这里仅显示未在已记住列表中的实时发现设备，
+    // 避免同一设备重复出现。分区标题已由发现区卡片统一提供。
+    final knownAddrs = _knownPeers.map((p) => p.address).toSet();
+    final livePeers = _peers.where((p) => !knownAddrs.contains(p.address)).toList();
+    if (livePeers.isEmpty) {
       return const SizedBox.shrink();
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 4),
-          child: Text(
-            L10n.of(context).quick_transfer_available_peers,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+        for (int i = 0; i < livePeers.length; i++) ...[
+          if (i > 0 || _knownPeers.isNotEmpty) const SizedBox(height: 8),
+          _deviceRowCard(
+            context,
+            peer: livePeers[i],
+            onTap: (_scanning || _conn.connected)
+                ? null
+                : () => _connectPeer(livePeers[i]),
           ),
-        ),
-        ..._peers.map((p) {
-          return ListTile(
-            leading: const Icon(Broken.profile_circle),
-            title: Text(p.name),
-            subtitle: Text(p.address),
-            trailing: _buildConnectButton(context, p),
-            onTap: (_busy || _conn.connected) ? null : () => _connectPeer(p),
-          );
-        }).toList(),
+        ],
       ],
+    );
+  }
+
+  /// 已记住设备列表：无标题，每行右侧固定贴附连接按钮（复用 _buildConnectButton）
+  /// 与删除按钮（靠右边缘）。点击左侧设备名称/图标区域亦可发起连接。
+  Widget _buildKnownPeers(BuildContext context) {
+    if (_knownPeers.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (int i = 0; i < _knownPeers.length; i++) ...[
+          if (i > 0) const SizedBox(height: 8),
+          _deviceRowCard(
+            context,
+            peer: _knownPeers[i],
+            showDelete: true,
+            onTap: (_busy || _conn.connected)
+                ? null
+                : () => _connectPeer(_knownPeers[i]),
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// 设备行卡片：圆角浅底行，左端图标徽章 + 名称/地址，右端连接按钮
+  /// （及可选的删除按钮），按钮组固定贴右边缘。左侧整片可点发起连接。
+  Widget _deviceRowCard(
+    BuildContext context, {
+    required PeerDevice peer,
+    required VoidCallback? onTap,
+    bool showDelete = false,
+  }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final canDelete = !(_busy || _conn.connected);
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withAlpha(90),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // 左侧：图标徽章 + 名称 + 地址，整片可点发起连接
+          Expanded(
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                child: Row(
+                  children: [
+                    _iconBadge(context, Broken.profile_circle),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            peer.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodyLarge
+                                ?.copyWith(fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            peer.address,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // 右侧：连接按钮 + 删除按钮，固定贴右边缘
+          Padding(
+            padding: const EdgeInsets.only(right: 4),
+            child: _buildConnectButton(context, peer),
+          ),
+          if (showDelete)
+            IconButton(
+              icon: const Icon(Broken.trash, size: 20),
+              tooltip: L10n.of(context).quick_transfer_forget_device,
+              onPressed: canDelete ? () => _removeKnownPeer(peer) : null,
+            ),
+        ],
+      ),
     );
   }
 
@@ -999,17 +1316,29 @@ class _QuickTransferScreenState extends State<QuickTransferScreen>
     // 提示（不定进度条）。文案必须与「等待对方点击连接」的等待页明确
     // 区分开，否则用户会误以为握手还没完成。
     final waiting = !_isSender && _waitingManifest && !_done;
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (waiting) ...[
-            // 绿色对勾：明确告知连接已建立，等的是文件而非连接
-            const Icon(Broken.tick_circle, color: Colors.green, size: 48),
-          ] else ...[
-            Icon(_isSender ? Broken.export : Broken.import, size: 48),
-          ],
+          // 图标徽章：等待清单时绿色对勾（连接已建立，等的是文件），
+          // 否则按发送/接收方向显示箭头图标。
+          Container(
+            width: 88,
+            height: 88,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: colorScheme.primaryContainer.withAlpha(100),
+            ),
+            child: Icon(
+              waiting
+                  ? Broken.tick_circle
+                  : (_isSender ? Broken.export : Broken.import),
+              size: 40,
+              color: waiting ? Colors.green : colorScheme.primary,
+            ),
+          ),
           const SizedBox(height: 16),
           Text(
             waiting
@@ -1101,7 +1430,7 @@ class _RadarScanner extends StatelessWidget {
           // 中心设备图标
           Container(
             width: 56,
-            height: 56,
+            height: 48,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Theme.of(context).colorScheme.primaryContainer,

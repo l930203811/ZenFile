@@ -4856,78 +4856,76 @@ class L10nKo extends L10n {
   String get changelog_v1130_fix_3 => '修复截图在图片类别「按文件夹」下钻后消失';
 
   @override
-  String get ui_remote_guard => '远程守卫';
+  String get ui_remote_guard => '원격 가드';
 
   @override
   String get ui_remote_guard_desc =>
-      '设置4位PIN码保护远程服务器访问，每次启动应用或手动锁定后需输入PIN码才能进入远程服务器';
+      '4자리 PIN을 설정하여 원격 서버 접근을 보호합니다. 앱 실행 시 또는 수동 잠금 후 PIN을 입력하세요.';
 
   @override
-  String get ui_remote_guard_enabled => '已启用';
+  String get ui_remote_guard_enabled => '사용 중';
 
   @override
-  String get ui_remote_guard_disabled => '已禁用';
+  String get ui_remote_guard_disabled => '사용 안 함';
 
   @override
-  String get ui_remote_guard_set_pin => '设置PIN码';
+  String get ui_remote_guard_set_pin => 'PIN 설정';
 
   @override
-  String get ui_remote_guard_enter_pin => '输入PIN码';
+  String get ui_remote_guard_enter_pin => 'PIN 입력';
 
   @override
-  String get ui_remote_guard_confirm_pin => '确认PIN码';
+  String get ui_remote_guard_confirm_pin => 'PIN 확인';
 
   @override
-  String get ui_remote_guard_pin_mismatch => '两次输入的PIN码不一致，请重新输入';
+  String get ui_remote_guard_pin_mismatch => 'PIN이 일치하지 않습니다. 다시 시도하세요.';
 
   @override
-  String get ui_remote_guard_wrong_pin => 'PIN码错误，请重试';
+  String get ui_remote_guard_wrong_pin => 'PIN이 올바르지 않습니다. 다시 시도하세요.';
 
   @override
-  String get ui_remote_guard_change_pin => '修改PIN码';
+  String get ui_remote_guard_change_pin => 'PIN 변경';
 
   @override
-  String get ui_remote_guard_pin_hint => '4位数字PIN码';
+  String get ui_remote_guard_pin_hint => '4자리 숫자 PIN';
 
   @override
-  String get ui_remote_guard_lock_now => '立即锁定';
+  String get ui_remote_guard_lock_now => '지금 잠금';
 
   @override
-  String get ui_remote_guard_lock_now_desc => '锁定后需要重新输入PIN码才能访问远程服务器';
+  String get ui_remote_guard_lock_now_desc =>
+      '잠금 후 원격 서버에 접근하려면 PIN을 입력해야 합니다.';
 
   @override
-  String get ui_security_settings => 'Security';
+  String get ui_security_settings => '보안 설정';
 
   @override
-  String get ui_remote_guard_switch_desc =>
-      'Saved remote servers are protected; PIN is required before access';
+  String get ui_remote_guard_switch_desc => '저장된 원격 서버가 보호됩니다; 접근 전 PIN 필요';
 
   @override
-  String get ui_app_lock => 'App Launch Protection';
+  String get ui_app_lock => '앱 실행 보호';
 
   @override
-  String get ui_app_lock_desc =>
-      'Require your PIN to unlock the app each time it launches';
+  String get ui_app_lock_desc => '앱을 실행할 때마다 PIN으로 잠금 해제';
 
   @override
   String get ui_app_lock_set_pin_first => 'Set a 4-digit PIN before enabling';
 
   @override
-  String get ui_remote_guard_enter_current_pin => 'Enter current PIN';
+  String get ui_remote_guard_enter_current_pin => '현재 PIN 입력';
 
   @override
-  String get ui_remote_guard_reencrypting => 'Re-encrypting hidden files…';
+  String get ui_remote_guard_reencrypting => '숨긴 파일 재암호화 중…';
 
   @override
-  String get ui_remote_guard_pin_changed => 'PIN changed';
+  String get ui_remote_guard_pin_changed => 'PIN이 변경됨';
 
   @override
   String get ui_remote_guard_change_pin_failed =>
-      'Some files failed to re-encrypt, PIN unchanged';
+      '일부 파일 재암호화에 실패했습니다. PIN은 변경되지 않았습니다.';
 
   @override
-  String get ui_change_vault_pin_desc =>
-      'Change the private vault PIN (re-encrypts all hidden files)';
+  String get ui_change_vault_pin_desc => '개인 금고 PIN 변경(숨긴 모든 파일을 재암호화)';
 
   @override
   String get ui_auto_backup => '自动备份';
@@ -5543,71 +5541,71 @@ class L10nKo extends L10n {
   String get wol_port_hint => '선택 사항';
 
   @override
-  String get quick_transfer_nearby_devices => '附近设备';
+  String get quick_transfer_nearby_devices => '주변 기기';
 
   @override
-  String get quick_transfer_scanning => '正在扫描附近设备…';
+  String get quick_transfer_scanning => '주변 기기 검색 중…';
 
   @override
-  String get quick_transfer_scan_hint => '双方都需打开快传并保持本页面在前台';
+  String get quick_transfer_scan_hint => '두 기기 모두 빠른 전송을 열고 이 화면을 전경에 유지해야 합니다';
 
   @override
-  String get quick_transfer_tap_to_connect => '点击设备名发起连接';
+  String get quick_transfer_tap_to_connect => '기기 이름을 탭하여 연결';
 
   @override
   String quick_transfer_connecting(Object name) {
-    return '正在连接 $name…';
+    return '$name에 연결 중…';
   }
 
   @override
   String quick_transfer_connected_as(Object role) {
-    return '已连接（本机为 $role）';
+    return '연결됨(이 기기는 $role)';
   }
 
   @override
-  String get quick_transfer_role_owner => '发送端';
+  String get quick_transfer_role_owner => '보낸 사람';
 
   @override
-  String get quick_transfer_role_client => '接收端';
+  String get quick_transfer_role_client => '받는 사람';
 
   @override
-  String get quick_transfer_select_files => '选择要发送的文件 / 文件夹';
+  String get quick_transfer_select_files => '보낼 파일 / 폴더 선택';
 
   @override
   String quick_transfer_selected_summary(Object count, Object size) {
-    return '已选 $count 项，共 $size';
+    return '$count개 항목, 총 $size';
   }
 
   @override
-  String get quick_transfer_begin_send => '开始发送';
+  String get quick_transfer_begin_send => '전송 시작';
 
   @override
   String quick_transfer_incoming(Object name) {
-    return '收到来自 $name 的发送请求';
+    return '$name의 전송 요청 수신';
   }
 
   @override
   String quick_transfer_incoming_files(Object count, Object size) {
-    return '$count 个文件，共 $size';
+    return '$count개 파일, $size';
   }
 
   @override
-  String get quick_transfer_accept => '接受';
+  String get quick_transfer_accept => '수락';
 
   @override
-  String get quick_transfer_reject => '拒绝';
+  String get quick_transfer_reject => '거절';
 
   @override
-  String get quick_transfer_sending => '正在发送…';
+  String get quick_transfer_sending => '보내는 중…';
 
   @override
-  String get quick_transfer_receiving => '正在接收…';
+  String get quick_transfer_receiving => '받는 중…';
 
   @override
-  String get quick_transfer_complete => '传输完成';
+  String get quick_transfer_complete => '전송 완료';
 
   @override
-  String get quick_transfer_waiting_peer => '等待对方连接…';
+  String get quick_transfer_waiting_peer => '상대방의 연결 대기 중…';
 
   @override
   String get quick_transfer_connected_waiting_files =>
@@ -5618,28 +5616,30 @@ class L10nKo extends L10n {
       'WiFi Direct 검색에 위치/주변 기기 권한이 필요합니다. 위치 정보는 수집되지 않습니다.';
 
   @override
-  String get quick_transfer_permission_required => '快传需要位置/附近设备权限以发现附近设备';
+  String get quick_transfer_permission_required =>
+      '빠른 전송은 기기를 찾으려면 위치 / 주변 기기 권한이 필요합니다';
 
   @override
-  String get quick_transfer_not_supported => '当前设备不支持 WiFi Direct 快传';
+  String get quick_transfer_not_supported =>
+      '이 기기는 WiFi Direct 빠른 전송을 지원하지 않습니다';
 
   @override
-  String get quick_transfer_disconnect => '断开';
+  String get quick_transfer_disconnect => '연결 해제';
 
   @override
-  String get quick_transfer_cancel => '取消';
+  String get quick_transfer_cancel => '취소';
 
   @override
-  String get quick_transfer_save_to => '保存到';
+  String get quick_transfer_save_to => '저장 위치';
 
   @override
-  String get quick_transfer_send_mode => '发送';
+  String get quick_transfer_send_mode => '보내기';
 
   @override
-  String get quick_transfer_receive_mode => '接收';
+  String get quick_transfer_receive_mode => '받기';
 
   @override
-  String get quick_transfer_device_name => '本机名称';
+  String get quick_transfer_device_name => '이 기기';
 
   @override
   String get quick_transfer_retry => '다시 시도';
@@ -5689,6 +5689,13 @@ class L10nKo extends L10n {
 
   @override
   String get quick_transfer_connected_btn => '연결됨';
+
+  @override
+  String get quick_transfer_forget_device => '기기 삭제';
+
+  @override
+  String get quick_transfer_peer_unreachable =>
+      '이 기기에 연결할 수 없습니다. 상대방이 빠른 전송을 열고 근처에 있는지 확인하세요.';
 
   @override
   String get quick_transfer_available_peers => '연결 가능한 기기';
@@ -5765,4 +5772,70 @@ class L10nKo extends L10n {
   @override
   String get changelog_v1133_fix_5 =>
       '길게 누르기 메뉴: v1.1.32 표시 구조 복원(고대비 배경 + 테두리).';
+
+  @override
+  @override
+  String get changelog_v1134_fix_1 =>
+      'Fixed the app UI freezing when Web Sharing was accessed by another device — the whole-storage scan is now asynchronous and no longer blocks the UI thread.';
+
+  @override
+  String get changelog_v1134_fix_2 =>
+      'Fixed FTP failing to connect or picking the wrong network interface — local IP selection now prefers wlan/eth and skips Docker/VPN/virtual adapters.';
+
+  @override
+  String get changelog_v1134_fix_3 =>
+      'FTP sharing now supports a custom port — configurable and persisted in settings, with live apply and auto-restart of the listener while running.';
+
+  @override
+  String get changelog_v1134_fix_4 =>
+      'Fixed FTP control-port binding & PASV: the control port is now bound to the concrete LAN IP and PASV resolution is simplified, fixing connection failures behind VPN/proxy.';
+
+  @override
+  String get changelog_v1134_fix_5 =>
+      "Added an 'FTP server stopped' notification that replaces the previous incorrect 'port changed / not active' message when the server stops.";
+
+  @override
+  String get changelog_v1134_fix_6 =>
+      'Text editor save/save-as merged into a single Save button that opens a menu to choose Save or Save As.';
+
+  @override
+  String get changelog_v1134_new_1 =>
+      'Added a Toolbox entry on the Categories page.';
+
+  @override
+  String get changelog_v1134_new_2 =>
+      'Consolidated the Encrypted Vault, Wake-on-LAN, and Quick Transfer into the Toolbox for centralized access.';
+
+  @override
+  String get changelog_v1134_new_3 =>
+      'Quick Transfer now remembers connected devices — reconnect with one tap next time, and remove a remembered device individually from the list.';
+
+  @override
+  String get changelog_v1134_opt_1 =>
+      'Quick Transfer is now symmetric — after connecting, either side can initiate sending; the send/receive mode toggle and top switch button were removed.';
+
+  @override
+  String get changelog_v1134_opt_2 =>
+      'Quick Transfer UI fully refreshed — section cards, device-row cards, icon badges, filled selection boxes, and a circular progress badge for a more unified look.';
+
+  @override
+  String get changelog_v1134_opt_3 =>
+      'Quick Transfer main screen tightened — reduced card padding and spacing to minimize first-screen scrolling so the radar/device list is visible immediately.';
+  @override
+  String get ftp_server_stopped => 'FTP 서버가 중지되었습니다';
+
+  @override
+  String get cat_toolbox => '도구상자';
+
+  @override
+  String get cat_toolbox_desc => '도구';
+
+  @override
+  String quick_transfer_waiting_for_x(Object name) {
+    return '$name이(가) 연결을 탭할 때까지 대기 중…';
+  }
+
+  @override
+  String get quick_transfer_ask_peer_connect =>
+      '상대 기기에서도 빠른 전송에서 이 기기의 \'연결\' 버튼을 탭하도록 하세요';
 }

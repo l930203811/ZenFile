@@ -10516,6 +10516,18 @@ abstract class L10n {
   /// **'已连接'**
   String get quick_transfer_connected_btn;
 
+  /// Quick Transfer P2P: quick_transfer_forget_device
+  ///
+  /// In zh, this message translates to:
+  /// **'移除设备'**
+  String get quick_transfer_forget_device;
+
+  /// Quick Transfer P2P: quick_transfer_peer_unreachable
+  ///
+  /// In zh, this message translates to:
+  /// **'无法连接到该设备，请确保对方已打开快传并在附近。'**
+  String get quick_transfer_peer_unreachable;
+
   /// Quick Transfer P2P: quick_transfer_available_peers
   ///
   /// In zh, this message translates to:
@@ -10641,6 +10653,84 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'长按菜单：复刻 v1.1.32 显示结构 + 高对比背景 + 描边'**
   String get changelog_v1133_fix_5;
+
+  /// v1.1.34 changelog: changelog_v1134_fix_1
+  ///
+  /// In zh, this message translates to:
+  /// **'修复网页共享被其他设备访问时应用界面卡死的问题——全量扫描已改为异步执行，不再阻塞 UI 线程。'**
+  String get changelog_v1134_fix_1;
+
+  /// v1.1.34 changelog: changelog_v1134_fix_2
+  ///
+  /// In zh, this message translates to:
+  /// **'修复 FTP 连不上/选错网卡：重写本地 IP 选择逻辑，优先 wlan/eth 接口，跳过 Docker/VPN/虚拟网卡。'**
+  String get changelog_v1134_fix_2;
+
+  /// v1.1.34 changelog: changelog_v1134_fix_3 — FTP custom port support.
+  String get changelog_v1134_fix_3;
+
+  /// v1.1.34 changelog: changelog_v1134_fix_4 — FTP control port & PASV binding.
+  String get changelog_v1134_fix_4;
+
+  /// v1.1.34 changelog: changelog_v1134_fix_5 — FTP stopped notification.
+  String get changelog_v1134_fix_5;
+
+  /// v1.1.34 changelog: changelog_v1134_fix_6 — text editor save/save-as menu.
+  String get changelog_v1134_fix_6;
+
+  /// v1.1.34 changelog: changelog_v1134_new_1
+  ///
+  /// In zh, this message translates to:
+  /// **'新增分类页工具箱入口。'**
+  String get changelog_v1134_new_1;
+
+  /// v1.1.34 changelog: changelog_v1134_new_2 — toolbox consolidation.
+  String get changelog_v1134_new_2;
+
+  /// v1.1.34 changelog: changelog_v1134_new_3 — remembered devices.
+  String get changelog_v1134_new_3;
+
+  /// v1.1.34 changelog: changelog_v1134_opt_1
+  ///
+  /// In zh, this message translates to:
+  /// **'快传对称化传输：连接成功后双方均可主动发送，移除收发模式切换与顶部切换按钮。'**
+  String get changelog_v1134_opt_1;
+
+  /// v1.1.34 changelog: changelog_v1134_opt_2 — Quick Transfer UI beautify.
+  String get changelog_v1134_opt_2;
+
+  /// v1.1.34 changelog: changelog_v1134_opt_3 — Quick Transfer compact layout.
+  String get changelog_v1134_opt_3;
+
+  /// Message shown when the FTP server is stopped.
+  ///
+  /// In zh, this message translates to:
+  /// **'FTP 服务器已停止'**
+  String get ftp_server_stopped;
+
+  /// No description provided for @cat_toolbox.
+  ///
+  /// In zh, this message translates to:
+  /// **'工具箱'**
+  String get cat_toolbox;
+
+  /// No description provided for @cat_toolbox_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'工具'**
+  String get cat_toolbox_desc;
+
+  /// Quick Transfer P2P: waiting for peer to tap connect
+  ///
+  /// In zh, this message translates to:
+  /// **'等待 {name} 点击连接…'**
+  String quick_transfer_waiting_for_x(Object name);
+
+  /// Quick Transfer P2P: ask peer to tap connect
+  ///
+  /// In zh, this message translates to:
+  /// **'请让对端设备也在快传中点击本机的「连接」按钮'**
+  String get quick_transfer_ask_peer_connect;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

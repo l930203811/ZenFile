@@ -5821,31 +5821,31 @@
   "@wol_port_hint": {
     "description": "wol_port_hint label"
   },
-  "quick_transfer_nearby_devices": "附近设备",
+  "quick_transfer_nearby_devices": "附近設備",
   "@quick_transfer_nearby_devices": {
     "description": "Quick Transfer P2P: quick_transfer_nearby_devices"
   },
-  "quick_transfer_scanning": "正在扫描附近设备…",
+  "quick_transfer_scanning": "正在掃描附近設備…",
   "@quick_transfer_scanning": {
     "description": "Quick Transfer P2P: quick_transfer_scanning"
   },
-  "quick_transfer_scan_hint": "双方都需打开快传并保持本页面在前台",
+  "quick_transfer_scan_hint": "雙方都需打開快傳並保持本頁面在前台",
   "@quick_transfer_scan_hint": {
     "description": "Quick Transfer P2P: quick_transfer_scan_hint"
   },
-  "quick_transfer_tap_to_connect": "点击设备名发起连接",
+  "quick_transfer_tap_to_connect": "點擊設備名發起連接",
   "@quick_transfer_tap_to_connect": {
     "description": "Quick Transfer P2P: quick_transfer_tap_to_connect"
   },
-  "quick_transfer_connecting": "正在连接 {name}…",
+  "quick_transfer_connecting": "正在連接 {name}…",
   "@quick_transfer_connecting": {
     "description": "Quick Transfer P2P: quick_transfer_connecting"
   },
-  "quick_transfer_connected_as": "已连接（本机为 {role}）",
+  "quick_transfer_connected_as": "已連接（本機為 {role}）",
   "@quick_transfer_connected_as": {
     "description": "Quick Transfer P2P: quick_transfer_connected_as"
   },
-  "quick_transfer_role_owner": "发送端",
+  "quick_transfer_role_owner": "發送端",
   "@quick_transfer_role_owner": {
     "description": "Quick Transfer P2P: quick_transfer_role_owner"
   },
@@ -5853,23 +5853,23 @@
   "@quick_transfer_role_client": {
     "description": "Quick Transfer P2P: quick_transfer_role_client"
   },
-  "quick_transfer_select_files": "选择要发送的文件 / 文件夹",
+  "quick_transfer_select_files": "選擇要發送的檔案 / 資料夾",
   "@quick_transfer_select_files": {
     "description": "Quick Transfer P2P: quick_transfer_select_files"
   },
-  "quick_transfer_selected_summary": "已选 {count} 项，共 {size}",
+  "quick_transfer_selected_summary": "已選 {count} 項，共 {size}",
   "@quick_transfer_selected_summary": {
     "description": "Quick Transfer P2P: quick_transfer_selected_summary"
   },
-  "quick_transfer_begin_send": "开始发送",
+  "quick_transfer_begin_send": "開始發送",
   "@quick_transfer_begin_send": {
     "description": "Quick Transfer P2P: quick_transfer_begin_send"
   },
-  "quick_transfer_incoming": "收到来自 {name} 的发送请求",
+  "quick_transfer_incoming": "收到來自 {name} 的發送請求",
   "@quick_transfer_incoming": {
     "description": "Quick Transfer P2P: quick_transfer_incoming"
   },
-  "quick_transfer_incoming_files": "{count} 个文件，共 {size}",
+  "quick_transfer_incoming_files": "{count} 個檔案，共 {size}",
   "@quick_transfer_incoming_files": {
     "description": "Quick Transfer P2P: quick_transfer_incoming_files"
   },
@@ -5877,11 +5877,11 @@
   "@quick_transfer_accept": {
     "description": "Quick Transfer P2P: quick_transfer_accept"
   },
-  "quick_transfer_reject": "拒绝",
+  "quick_transfer_reject": "拒絕",
   "@quick_transfer_reject": {
     "description": "Quick Transfer P2P: quick_transfer_reject"
   },
-  "quick_transfer_sending": "正在发送…",
+  "quick_transfer_sending": "正在發送…",
   "@quick_transfer_sending": {
     "description": "Quick Transfer P2P: quick_transfer_sending"
   },
@@ -5889,11 +5889,11 @@
   "@quick_transfer_receiving": {
     "description": "Quick Transfer P2P: quick_transfer_receiving"
   },
-  "quick_transfer_complete": "传输完成",
+  "quick_transfer_complete": "傳輸完成",
   "@quick_transfer_complete": {
     "description": "Quick Transfer P2P: quick_transfer_complete"
   },
-  "quick_transfer_waiting_peer": "等待对方连接…",
+  "quick_transfer_waiting_peer": "等待對方連接…",
   "@quick_transfer_waiting_peer": {
     "description": "Quick Transfer P2P: quick_transfer_waiting_peer"
   },
@@ -5905,15 +5905,15 @@
   "@quick_transfer_permission_why": {
     "description": "Quick Transfer P2P: quick_transfer_permission_why"
   },
-  "quick_transfer_permission_required": "快传需要位置/附近设备权限以发现附近设备",
+  "quick_transfer_permission_required": "快傳需要位置 / 附近設備權限以發現附近設備",
   "@quick_transfer_permission_required": {
     "description": "Quick Transfer P2P: quick_transfer_permission_required"
   },
-  "quick_transfer_not_supported": "当前设备不支持 WiFi Direct 快传",
+  "quick_transfer_not_supported": "目前設備不支援 WiFi Direct 快傳",
   "@quick_transfer_not_supported": {
     "description": "Quick Transfer P2P: quick_transfer_not_supported"
   },
-  "quick_transfer_disconnect": "断开",
+  "quick_transfer_disconnect": "斷開",
   "@quick_transfer_disconnect": {
     "description": "Quick Transfer P2P: quick_transfer_disconnect"
   },
@@ -5921,11 +5921,11 @@
   "@quick_transfer_cancel": {
     "description": "Quick Transfer P2P: quick_transfer_cancel"
   },
-  "quick_transfer_save_to": "保存到",
+  "quick_transfer_save_to": "儲存到",
   "@quick_transfer_save_to": {
     "description": "Quick Transfer P2P: quick_transfer_save_to"
   },
-  "quick_transfer_send_mode": "发送",
+  "quick_transfer_send_mode": "發送",
   "@quick_transfer_send_mode": {
     "description": "Quick Transfer P2P: quick_transfer_send_mode"
   },
@@ -5933,7 +5933,7 @@
   "@quick_transfer_receive_mode": {
     "description": "Quick Transfer P2P: quick_transfer_receive_mode"
   },
-  "quick_transfer_device_name": "本机名称",
+  "quick_transfer_device_name": "本機名稱",
   "@quick_transfer_device_name": {
     "description": "Quick Transfer P2P: quick_transfer_device_name"
   },
@@ -5996,6 +5996,14 @@
   "quick_transfer_connected_btn": "已連接",
   "@quick_transfer_connected_btn": {
     "description": "Quick Transfer P2P: quick_transfer_connected_btn"
+  },
+  "quick_transfer_forget_device": "移除裝置",
+  "@quick_transfer_forget_device": {
+    "description": "Quick Transfer P2P: quick_transfer_forget_device"
+  },
+  "quick_transfer_peer_unreachable": "無法連接到該裝置，請確保對方已打開快傳並在附近。",
+  "@quick_transfer_peer_unreachable": {
+    "description": "Quick Transfer P2P: quick_transfer_peer_unreachable"
   },
   "quick_transfer_available_peers": "可連接設備",
   "@quick_transfer_available_peers": {
@@ -6080,5 +6088,61 @@
   "changelog_v1133_fix_5": "長按選單：復刻 v1.1.32 顯示結構 + 高對比背景 + 描邊",
   "@changelog_v1133_fix_5": {
     "description": "v1.1.33 changelog: changelog_v1133_fix_5"
-  }
+  },
+  "changelog_v1134_fix_1": "修復網頁共享被其他裝置存取時應用程式介面卡死的問題——全量掃描已改為非同步執行，不再阻塞 UI 執行緒。",
+  "@changelog_v1134_fix_1": {
+    "description": "v1.1.34 changelog: 網頁共享卡死修復"
+  },
+  "changelog_v1134_fix_2": "修復 FTP 連不上/選錯網卡：重寫本地 IP 選擇邏輯，優先 wlan/eth 介面，跳過 Docker/VPN/虛擬網卡，避免回退到不可達位址。",
+  "@changelog_v1134_fix_2": {
+    "description": "v1.1.34 changelog: FTP IP 選擇重寫"
+  },
+  "changelog_v1134_fix_3": "FTP 共享支援自訂連接埠：可在設定中配置並持久化，執行中修改即時生效並自動重啟監聽。",
+  "@changelog_v1134_fix_3": {
+    "description": "v1.1.34 changelog: FTP 自訂連接埠"
+  },
+  "changelog_v1134_fix_4": "修復 FTP 控制連接埠綁定與 PASV：改用具體區域網路 IP 綁定控制連接埠、簡化 PASV 位址解析，修復 VPN/代理場景下的連線失敗。",
+  "@changelog_v1134_fix_4": {
+    "description": "v1.1.34 changelog: FTP 控制連接埠與 PASV"
+  },
+  "changelog_v1134_fix_5": "新增「FTP 伺服器已停止」提示，替換原先伺服器停止時錯誤的「更改連接埠 未啟用」提示。",
+  "@changelog_v1134_fix_5": {
+    "description": "v1.1.34 changelog: FTP 停止提示"
+  },
+  "changelog_v1134_fix_6": "文字編輯器儲存/另存為合併為單一儲存按鈕，點擊彈出選單選擇「儲存」或「另存為」。",
+  "@changelog_v1134_fix_6": {
+    "description": "v1.1.34 changelog: 文字編輯器儲存選單"
+  },
+  "changelog_v1134_new_1": "新增分類頁工具箱入口。",
+  "@changelog_v1134_new_1": {
+    "description": "v1.1.34 changelog: 分類頁工具箱入口"
+  },
+  "changelog_v1134_new_2": "將私人保險箱、區域網路喚醒、快傳整合進工具箱，集中管理。",
+  "@changelog_v1134_new_2": {
+    "description": "v1.1.34 changelog: 工具箱整合"
+  },
+  "changelog_v1134_new_3": "快傳已記住裝置：自動記住已連線裝置，下次一鍵點擊連線重連；已記住清單支援單獨刪除裝置。",
+  "@changelog_v1134_new_3": {
+    "description": "v1.1.34 changelog: 記住裝置"
+  },
+  "changelog_v1134_opt_1": "快傳對稱化傳輸：連線成功後雙方均可主動傳送，移除收發模式切換與頂部切換按鈕。",
+  "@changelog_v1134_opt_1": {
+    "description": "v1.1.34 changelog: 對稱化傳輸"
+  },
+  "changelog_v1134_opt_2": "快傳 UI 整體美化：分區卡片化、裝置列卡片化、圖示徽章、填滿式選取框、進度頁圓形徽章，視覺更統一。",
+  "@changelog_v1134_opt_2": {
+    "description": "v1.1.34 changelog: UI 美化"
+  },
+  "changelog_v1134_opt_3": "快傳主介面緊湊化：收緊卡片內邊距與各項間距，減少首屏捲動，進入即可看到雷達/裝置清單。",
+  "@changelog_v1134_opt_3": {
+    "description": "v1.1.34 changelog: 緊湊佈局"
+  },
+  "ftp_server_stopped": "FTP 伺服器已停止",
+  "@ftp_server_stopped": {
+    "description": "Message shown when the FTP server is stopped."
+  },
+  "cat_toolbox": "工具箱",
+  "cat_toolbox_desc": "工具",
+  "quick_transfer_waiting_for_x": "等待 {name} 點擊連線…",
+  "quick_transfer_ask_peer_connect": "請讓對端裝置也在快傳中點擊本機的「連線」按鈕"
 }

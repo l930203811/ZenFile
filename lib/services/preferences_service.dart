@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/file_manager_provider.dart';
 import '../models/custom_shortcut_model.dart';
 import '../models/category_filter_type.dart';
+import '../services/quick_transfer_service.dart';
 
 class PreferencesService {
   static const String _keyThemeMode = 'theme_mode';
@@ -24,7 +25,7 @@ class PreferencesService {
   // 当前迁移版本：每次新增分类需要补全到 active 列表时递增。
   // 旧版本(< 当前版本)的用户启动时才补全新分类到 active，
   // 之后不再干预用户主动关闭的分类，避免重启后被重新启用。
-  static const int kCurrentCategoriesMigratedVersion = 6;
+  static const int kCurrentCategoriesMigratedVersion = 8;
   static const String _keyShowFolderFileCount = 'show_folder_file_count';
   static const String _keyShowBottomActionBar = 'show_bottom_action_bar';
   static const String _keyEnableMultipleTabs = 'enable_multiple_tabs';
@@ -873,6 +874,7 @@ class PreferencesService {
   static const String _keyRemoteCacheLastCleanTime = 'remote_cache_last_clean_time';
   static const String _keyRemoteMediaThumbnailPreview = 'remote_media_thumbnail_preview';
   static const String _keyWebSharePort = 'web_share_port';
+  static const String _keyFtpPort = 'ftp_port';
 
   /// 获取自动清理天数，0表示不自动清理
   /// @deprecated 保留兼容旧版本，新代码使用 getRemoteCacheAutoCleanMinutes
@@ -930,6 +932,15 @@ class PreferencesService {
 
   static Future<void> saveWebSharePort(int port) async {
     await _prefs?.setInt(_keyWebSharePort, port);
+  }
+
+  /// 获取 FTP 共享端口，默认 9999
+  static int getFtpPort() {
+    return _prefs?.getInt(_keyFtpPort) ?? 9999;
+  }
+
+  static Future<void> saveFtpPort(int port) async {
+    await _prefs?.setInt(_keyFtpPort, port);
   }
 
   static Map<String, List<String>> getCustomCategoryPaths() {
@@ -1086,6 +1097,46 @@ class PreferencesService {
 
   static Future<void> saveQuickTransferReceivePath(String val) async {
     await _prefs?.setString(_keyQuickTransferReceivePath, val);
+  }
+
+  // --- 快传已记住设备 ---
+  static const String _keyQuickTransferKnownPeers = 'quick_transfer_known_peers';
+
+  /// 已记住的快传对端设备（按 address 去重，最近连接置顶，最多保留 10 个）。
+  /// 元素结构与 PeerDevice 一致：{address, name, status}。
+  static List<PeerDevice> getQuickTransferKnownPeers() {
+    final raw = _prefs?.getString(_keyQuickTransferKnownPeers);
+    if (raw == null || raw.isEmpty) return <PeerDevice>[];
+    try {
+      final list = (jsonDecode(raw) as List).cast<Map<String, dynamic>>();
+      return list.map((m) => PeerDevice.fromMap(m)).toList();
+    } catch (_) {
+      return <PeerDevice>[];
+    }
+  }
+
+  /// 记住一个对端：同 address 去重，最近连接的排在最前，最多保留 10 个。
+  static Future<void> addQuickTransferKnownPeer(PeerDevice peer) async {
+    final peers = getQuickTransferKnownPeers()
+        .where((p) => p.address != peer.address)
+        .toList();
+    peers.insert(0, peer);
+    final trimmed = peers.take(10).toList();
+    final encoded = jsonEncode(
+      trimmed.map((p) => {'address': p.address, 'name': p.name, 'status': p.status}).toList(),
+    );
+    await _prefs?.setString(_keyQuickTransferKnownPeers, encoded);
+  }
+
+  /// 删除一个已记住的对端（按 address 匹配）。
+  static Future<void> removeQuickTransferKnownPeer(String address) async {
+    final peers = getQuickTransferKnownPeers()
+        .where((p) => p.address != address)
+        .toList();
+    final encoded = jsonEncode(
+      peers.map((p) => {'address': p.address, 'name': p.name, 'status': p.status}).toList(),
+    );
+    await _prefs?.setString(_keyQuickTransferKnownPeers, encoded);
   }
 
   static const String _keyHasSelectedLanguage = 'has_selected_language';

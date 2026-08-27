@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../services/ftp_server_service.dart';
+import '../../services/preferences_service.dart';
 import 'internal_file_picker_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
@@ -24,6 +25,8 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
         setState(() {});
       }
     };
+    // 载入已持久化的端口，使界面初始显示与已保存设置一致
+    _ftpService.configure(port: PreferencesService.getFtpPort());
   }
 
   @override
@@ -38,7 +41,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
       _ftpService.stop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(L10n.of(context).msgfca29cb3 + ' ' + L10n.of(context).msgd70e9bdf),
+          content: Text(L10n.of(context).ftp_server_stopped),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -97,18 +100,9 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
     }
   }
 
-  void _showPortDialog() {
-    if (_ftpService.isActive) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please stop the server before changing configuration'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
-
+  Future<void> _showPortDialog() async {
     final controller = TextEditingController(text: _ftpService.port.toString());
+    final l10n = L10n.of(context);
     showDialog(
       context: context,
       builder: (context) {
@@ -116,12 +110,12 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
         return AlertDialog(
           backgroundColor: theme.scaffoldBackgroundColor,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text(L10n.of(context).msgfca29cb3, style: TextStyle(fontWeight: FontWeight.bold)),
+          title: Text(l10n.msgfca29cb3, style: const TextStyle(fontWeight: FontWeight.bold)),
           content: TextField(
             controller: controller,
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
-              labelText: L10n.of(context).msg5d57821d,
+              labelText: l10n.msg5d57821d,
               hintText: 'e.g., 9999',
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             ),
@@ -129,18 +123,39 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text(L10n.of(context).msg96d2b75f),
+              child: Text(l10n.msg96d2b75f),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 final port = int.tryParse(controller.text);
                 if (port != null && port > 0 && port < 65536) {
-                  _ftpService.configure(port: port);
                   Navigator.pop(context);
-                  setState(() {});
+                  // 在 await 之前捕获 messenger，避免跨异步间隙使用 BuildContext
+                  final messenger = ScaffoldMessenger.of(context);
+                  final savedMsg = l10n.msg360d0b37;
+                  final errMsg = '${l10n.ftp2} ${l10n.msg8a0b5bf5}';
+                  try {
+                    // 持久化并（若正在运行）自动重启以应用新端口
+                    await _ftpService.setPort(port);
+                    if (mounted) {
+                      messenger.showSnackBar(
+                        SnackBar(content: Text(savedMsg), behavior: SnackBarBehavior.floating),
+                      );
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Text(errMsg),
+                          behavior: SnackBarBehavior.floating,
+                          backgroundColor: Colors.redAccent,
+                        ),
+                      );
+                    }
+                  }
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(L10n.of(context).msg8a0b5bf5)),
+                    SnackBar(content: Text(l10n.msg8a0b5bf5)),
                   );
                 }
               },
@@ -149,7 +164,7 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
-              child: Text(L10n.of(context).msgc8ce4b36),
+              child: Text(l10n.msgc8ce4b36),
             ),
           ],
         );
@@ -439,6 +454,16 @@ class _FtpServerScreenState extends State<FtpServerScreen> {
                                   ),
                                 ),
                               ),
+                            ),
+
+                            // Port Row
+                            ListTile(
+                              title: Text(L10n.of(context).msg5d57821d, style: const TextStyle(fontWeight: FontWeight.w500)),
+                              trailing: Text(
+                                '${_ftpService.port}',
+                                style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6), fontWeight: FontWeight.bold),
+                              ),
+                              onTap: _showPortDialog,
                             ),
 
                             // User Name Row

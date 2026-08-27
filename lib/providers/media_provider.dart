@@ -777,15 +777,32 @@ class MediaProvider extends ChangeNotifier {
         _categoryOrder.add('Web共享');
         orderUpdated = true;
       }
-      if (!_categoryOrder.contains('快传')) {
+      if (!_categoryOrder.contains('工具箱')) {
         final webIndex = _categoryOrder.indexOf('Web共享');
         final insertIndex = webIndex >= 0 ? webIndex + 1 : _categoryOrder.length;
-        _categoryOrder.insert(insertIndex, '快传');
+        _categoryOrder.insert(insertIndex, '工具箱');
         orderUpdated = true;
       }
-      if (!_categoryOrder.contains('保险箱')) {
-        _categoryOrder.add('保险箱');
+      if (_categoryOrder.contains('快传')) {
+        _categoryOrder.remove('快传');
         orderUpdated = true;
+      }
+      if (_categoryOrder.contains('保险箱')) {
+        _categoryOrder.remove('保险箱');
+        orderUpdated = true;
+      }
+      // 确保「下载」紧跟在「空间」之后，与截图默认顺序一致。
+      final spaceIndex = _categoryOrder.indexOf('空间');
+      if (spaceIndex >= 0) {
+        final downloadIndex = _categoryOrder.indexOf('下载');
+        if (downloadIndex < 0) {
+          _categoryOrder.insert(spaceIndex + 1, '下载');
+          orderUpdated = true;
+        } else if (downloadIndex != spaceIndex + 1) {
+          _categoryOrder.removeAt(downloadIndex);
+          _categoryOrder.insert(spaceIndex + 1, '下载');
+          orderUpdated = true;
+        }
       }
       if (!_categoryOrder.contains('回收站')) {
         _categoryOrder.add('回收站');
@@ -853,8 +870,16 @@ class MediaProvider extends ChangeNotifier {
           _activeCategories.add('Web共享');
           activeUpdated = true;
         }
-        if (!_activeCategories.contains('保险箱')) {
-          _activeCategories.add('保险箱');
+        if (!_activeCategories.contains('工具箱')) {
+          _activeCategories.add('工具箱');
+          activeUpdated = true;
+        }
+        if (_activeCategories.contains('快传')) {
+          _activeCategories.remove('快传');
+          activeUpdated = true;
+        }
+        if (_activeCategories.contains('保险箱')) {
+          _activeCategories.remove('保险箱');
           activeUpdated = true;
         }
         if (!_activeCategories.contains('回收站')) {
@@ -878,10 +903,13 @@ class MediaProvider extends ChangeNotifier {
           activeUpdated = true;
         }
       }
-      // 老用户升级时，将「快传」默认加入开启列表（不依赖版本守卫，避免连带恢复
-      // 用户已手动关闭的其它分类）。新装用户由下方默认 _activeCategories 处理。
-      if (!_activeCategories.contains('快传')) {
-        _activeCategories.add('快传');
+      // 老用户升级时，「快传」与「保险箱」已并入「工具箱」，不再单独保留。
+      if (_activeCategories.contains('快传')) {
+        _activeCategories.remove('快传');
+        activeUpdated = true;
+      }
+      if (_activeCategories.contains('保险箱')) {
+        _activeCategories.remove('保险箱');
         activeUpdated = true;
       }
       if (activeUpdated) {
@@ -1082,23 +1110,22 @@ class MediaProvider extends ChangeNotifier {
     '系统',
     '存储',
     '空间',
+    '下载',
     '图片',
     '视频',
     '音频',
     '文档',
-    '下载',
     '截图',
     '网络',
     'FTP共享',
     'Web共享',
-    '快传',
+    '工具箱',
     '应用',
     '压缩包',
     '安装包',
     '设置',
     '备份/恢复',
     '最近',
-    '保险箱',
     '回收站',
   ];
 
@@ -1106,22 +1133,22 @@ class MediaProvider extends ChangeNotifier {
     '系统',
     '存储',
     '空间',
+    '下载',
     '图片',
     '视频',
     '音频',
     '文档',
-    '下载',
     '截图',
     '网络',
     'FTP共享',
     'Web共享',
-    '快传',
+    '工具箱',
     '应用',
     '压缩包',
     '安装包',
     '设置',
+    '备份/恢复',
     '最近',
-    '保险箱',
     '回收站',
   ];
 

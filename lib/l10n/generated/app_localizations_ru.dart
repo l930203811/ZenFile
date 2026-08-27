@@ -5054,78 +5054,81 @@ class L10nRu extends L10n {
   String get changelog_v1130_fix_3 => '修复截图在图片类别「按文件夹」下钻后消失';
 
   @override
-  String get ui_remote_guard => '远程守卫';
+  String get ui_remote_guard => 'Удалённая защита';
 
   @override
   String get ui_remote_guard_desc =>
-      '设置4位PIN码保护远程服务器访问，每次启动应用或手动锁定后需输入PIN码才能进入远程服务器';
+      'Установите 4-значный PIN для защиты доступа к удалённым серверам. Введите PIN после запуска приложения или ручной блокировки.';
 
   @override
-  String get ui_remote_guard_enabled => '已启用';
+  String get ui_remote_guard_enabled => 'Включено';
 
   @override
-  String get ui_remote_guard_disabled => '已禁用';
+  String get ui_remote_guard_disabled => 'Отключено';
 
   @override
-  String get ui_remote_guard_set_pin => '设置PIN码';
+  String get ui_remote_guard_set_pin => 'Установить PIN';
 
   @override
-  String get ui_remote_guard_enter_pin => '输入PIN码';
+  String get ui_remote_guard_enter_pin => 'Введите PIN';
 
   @override
-  String get ui_remote_guard_confirm_pin => '确认PIN码';
+  String get ui_remote_guard_confirm_pin => 'Подтвердите PIN';
 
   @override
-  String get ui_remote_guard_pin_mismatch => '两次输入的PIN码不一致，请重新输入';
+  String get ui_remote_guard_pin_mismatch =>
+      'PIN-коды не совпадают. Попробуйте снова.';
 
   @override
-  String get ui_remote_guard_wrong_pin => 'PIN码错误，请重试';
+  String get ui_remote_guard_wrong_pin => 'Неверный PIN. Попробуйте снова.';
 
   @override
-  String get ui_remote_guard_change_pin => '修改PIN码';
+  String get ui_remote_guard_change_pin => 'Изменить PIN';
 
   @override
-  String get ui_remote_guard_pin_hint => '4位数字PIN码';
+  String get ui_remote_guard_pin_hint => '4-значный цифровой PIN';
 
   @override
-  String get ui_remote_guard_lock_now => '立即锁定';
+  String get ui_remote_guard_lock_now => 'Заблокировать сейчас';
 
   @override
-  String get ui_remote_guard_lock_now_desc => '锁定后需要重新输入PIN码才能访问远程服务器';
+  String get ui_remote_guard_lock_now_desc =>
+      'После блокировки для доступа к удалённым серверам нужно ввести PIN.';
 
   @override
-  String get ui_security_settings => 'Security';
+  String get ui_security_settings => 'Настройки безопасности';
 
   @override
   String get ui_remote_guard_switch_desc =>
-      'Saved remote servers are protected; PIN is required before access';
+      'Сохранённые удалённые серверы защищены; для доступа требуется PIN';
 
   @override
-  String get ui_app_lock => 'App Launch Protection';
+  String get ui_app_lock => 'Защита запуска приложения';
 
   @override
   String get ui_app_lock_desc =>
-      'Require your PIN to unlock the app each time it launches';
+      'Требовать PIN для разблокировки приложения при каждом запуске';
 
   @override
   String get ui_app_lock_set_pin_first => 'Set a 4-digit PIN before enabling';
 
   @override
-  String get ui_remote_guard_enter_current_pin => 'Enter current PIN';
+  String get ui_remote_guard_enter_current_pin => 'Введите текущий PIN';
 
   @override
-  String get ui_remote_guard_reencrypting => 'Re-encrypting hidden files…';
+  String get ui_remote_guard_reencrypting =>
+      'Повторное шифрование скрытых файлов…';
 
   @override
-  String get ui_remote_guard_pin_changed => 'PIN changed';
+  String get ui_remote_guard_pin_changed => 'PIN изменён';
 
   @override
   String get ui_remote_guard_change_pin_failed =>
-      'Some files failed to re-encrypt, PIN unchanged';
+      'Некоторые файлы не удалось перешифровать, PIN не изменён';
 
   @override
   String get ui_change_vault_pin_desc =>
-      'Change the private vault PIN (re-encrypts all hidden files)';
+      'Изменить PIN личного сейфа (повторно шифрует все скрытые файлы)';
 
   @override
   String get ui_auto_backup => '自动备份';
@@ -5747,71 +5750,75 @@ class L10nRu extends L10n {
   String get wol_port_hint => 'Необязательно';
 
   @override
-  String get quick_transfer_nearby_devices => '附近设备';
+  String get quick_transfer_nearby_devices => 'Ближайшие устройства';
 
   @override
-  String get quick_transfer_scanning => '正在扫描附近设备…';
+  String get quick_transfer_scanning => 'Поиск ближайших устройств…';
 
   @override
-  String get quick_transfer_scan_hint => '双方都需打开快传并保持本页面在前台';
+  String get quick_transfer_scan_hint =>
+      'Оба устройства должны открыть Быструю передачу и держать эту страницу на переднем плане';
 
   @override
-  String get quick_transfer_tap_to_connect => '点击设备名发起连接';
+  String get quick_transfer_tap_to_connect =>
+      'Нажмите имя устройства, чтобы подключиться';
 
   @override
   String quick_transfer_connecting(Object name) {
-    return '正在连接 $name…';
+    return 'Подключение к $name…';
   }
 
   @override
   String quick_transfer_connected_as(Object role) {
-    return '已连接（本机为 $role）';
+    return 'Подключено (это устройство — $role)';
   }
 
   @override
-  String get quick_transfer_role_owner => '发送端';
+  String get quick_transfer_role_owner => 'отправитель';
 
   @override
-  String get quick_transfer_role_client => '接收端';
+  String get quick_transfer_role_client => 'получатель';
 
   @override
-  String get quick_transfer_select_files => '选择要发送的文件 / 文件夹';
+  String get quick_transfer_select_files =>
+      'Выберите файлы / папки для отправки';
 
   @override
   String quick_transfer_selected_summary(Object count, Object size) {
-    return '已选 $count 项，共 $size';
+    return '$count элементов, всего $size';
   }
 
   @override
-  String get quick_transfer_begin_send => '开始发送';
+  String get quick_transfer_begin_send => 'Начать отправку';
 
   @override
   String quick_transfer_incoming(Object name) {
-    return '收到来自 $name 的发送请求';
+    return 'Входящий запрос на отправку от $name';
   }
 
   @override
   String quick_transfer_incoming_files(Object count, Object size) {
-    return '$count 个文件，共 $size';
+    return '$count файлов, $size';
   }
 
   @override
-  String get quick_transfer_accept => '接受';
+  String get quick_transfer_accept => 'Принять';
 
   @override
-  String get quick_transfer_reject => '拒绝';
+  String get quick_transfer_reject => 'Отклонить';
 
   @override
-  String get quick_transfer_sending => '正在发送…';
+  String get quick_transfer_sending => 'Отправка…';
 
   @override
-  String get quick_transfer_receiving => '正在接收…';
+  String get quick_transfer_receiving => 'Получение…';
 
   @override
-  String get quick_transfer_complete => '传输完成';
+  String get quick_transfer_complete => 'Передача завершена';
 
   @override
-  String get quick_transfer_waiting_peer => '等待对方连接…';
+  String get quick_transfer_waiting_peer =>
+      'Ожидание подключения другого устройства…';
 
   @override
   String get quick_transfer_connected_waiting_files =>
@@ -5822,28 +5829,30 @@ class L10nRu extends L10n {
       'Сканирование WiFi Direct требует разрешения на местоположение / устройства поблизости. Ваше местоположение не собирается.';
 
   @override
-  String get quick_transfer_permission_required => '快传需要位置/附近设备权限以发现附近设备';
+  String get quick_transfer_permission_required =>
+      'Быстрой передаче нужно разрешение на доступ к местоположению / ближайшим устройствам для обнаружения устройств';
 
   @override
-  String get quick_transfer_not_supported => '当前设备不支持 WiFi Direct 快传';
+  String get quick_transfer_not_supported =>
+      'Это устройство не поддерживает быструю передачу через WiFi Direct';
 
   @override
-  String get quick_transfer_disconnect => '断开';
+  String get quick_transfer_disconnect => 'Отключить';
 
   @override
-  String get quick_transfer_cancel => '取消';
+  String get quick_transfer_cancel => 'Отмена';
 
   @override
-  String get quick_transfer_save_to => '保存到';
+  String get quick_transfer_save_to => 'Сохранить в';
 
   @override
-  String get quick_transfer_send_mode => '发送';
+  String get quick_transfer_send_mode => 'Отправить';
 
   @override
-  String get quick_transfer_receive_mode => '接收';
+  String get quick_transfer_receive_mode => 'Получить';
 
   @override
-  String get quick_transfer_device_name => '本机名称';
+  String get quick_transfer_device_name => 'Это устройство';
 
   @override
   String get quick_transfer_retry => 'Повторить';
@@ -5893,6 +5902,13 @@ class L10nRu extends L10n {
 
   @override
   String get quick_transfer_connected_btn => 'Подключено';
+
+  @override
+  String get quick_transfer_forget_device => 'Удалить устройство';
+
+  @override
+  String get quick_transfer_peer_unreachable =>
+      'Не удаётся подключиться к этому устройству. Убедитесь, что другая сторона открыла быструю передачу и находится поблизости.';
 
   @override
   String get quick_transfer_available_peers => 'Доступные устройства';
@@ -5976,4 +5992,70 @@ class L10nRu extends L10n {
   @override
   String get changelog_v1133_fix_5 =>
       'Меню по долгому нажатию: восстановлена структура отображения v1.1.32 с фоном высокой контрастности и обводкой.';
+
+  @override
+  @override
+  String get changelog_v1134_fix_1 =>
+      'Fixed the app UI freezing when Web Sharing was accessed by another device — the whole-storage scan is now asynchronous and no longer blocks the UI thread.';
+
+  @override
+  String get changelog_v1134_fix_2 =>
+      'Fixed FTP failing to connect or picking the wrong network interface — local IP selection now prefers wlan/eth and skips Docker/VPN/virtual adapters.';
+
+  @override
+  String get changelog_v1134_fix_3 =>
+      'FTP sharing now supports a custom port — configurable and persisted in settings, with live apply and auto-restart of the listener while running.';
+
+  @override
+  String get changelog_v1134_fix_4 =>
+      'Fixed FTP control-port binding & PASV: the control port is now bound to the concrete LAN IP and PASV resolution is simplified, fixing connection failures behind VPN/proxy.';
+
+  @override
+  String get changelog_v1134_fix_5 =>
+      "Added an 'FTP server stopped' notification that replaces the previous incorrect 'port changed / not active' message when the server stops.";
+
+  @override
+  String get changelog_v1134_fix_6 =>
+      'Text editor save/save-as merged into a single Save button that opens a menu to choose Save or Save As.';
+
+  @override
+  String get changelog_v1134_new_1 =>
+      'Added a Toolbox entry on the Categories page.';
+
+  @override
+  String get changelog_v1134_new_2 =>
+      'Consolidated the Encrypted Vault, Wake-on-LAN, and Quick Transfer into the Toolbox for centralized access.';
+
+  @override
+  String get changelog_v1134_new_3 =>
+      'Quick Transfer now remembers connected devices — reconnect with one tap next time, and remove a remembered device individually from the list.';
+
+  @override
+  String get changelog_v1134_opt_1 =>
+      'Quick Transfer is now symmetric — after connecting, either side can initiate sending; the send/receive mode toggle and top switch button were removed.';
+
+  @override
+  String get changelog_v1134_opt_2 =>
+      'Quick Transfer UI fully refreshed — section cards, device-row cards, icon badges, filled selection boxes, and a circular progress badge for a more unified look.';
+
+  @override
+  String get changelog_v1134_opt_3 =>
+      'Quick Transfer main screen tightened — reduced card padding and spacing to minimize first-screen scrolling so the radar/device list is visible immediately.';
+  @override
+  String get ftp_server_stopped => 'FTP-сервер остановлен';
+
+  @override
+  String get cat_toolbox => 'Ящик инструментов';
+
+  @override
+  String get cat_toolbox_desc => 'Инструменты';
+
+  @override
+  String quick_transfer_waiting_for_x(Object name) {
+    return 'Ожидание нажатия «Подключить» устройством $name…';
+  }
+
+  @override
+  String get quick_transfer_ask_peer_connect =>
+      'Попросите другое устройство также нажать кнопку «Подключить» для этого устройства в Быстрой передаче';
 }

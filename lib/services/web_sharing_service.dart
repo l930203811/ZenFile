@@ -276,7 +276,7 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
       final host = request.headers.value(HttpHeaders.hostHeader) ?? '';
       final isInternet = host.contains('lhr.life') || host.contains('localhost.run');
 
-      final html = _generateExplorerHtml(uriPath, items, rootDir, isInternet);
+      final html = await _generateExplorerHtml(uriPath, items, rootDir, isInternet);
       response.headers.contentType = ContentType.html;
       response.write(html);
       await response.close();
@@ -378,7 +378,7 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
   }
 
   // --- Beautiful served Dark HTML Page Builder ---
-  String _generateExplorerHtml(String currentPath, List<FileSystemEntity> items, String rootDir, bool isInternet) {
+  Future<String> _generateExplorerHtml(String currentPath, List<FileSystemEntity> items, String rootDir, bool isInternet) async {
     // 优先使用 App 设置的语言（通过 setWebLocale 设置），确保跟随 App 语言切换
     // _webLocale 默认为 'en'，在 startLocalServer 时会被设为 App 当前语言
     final lang = _webLocale;
@@ -594,14 +594,15 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
     }
 
     // 无论当前在哪个目录，始终从 rootDir 递归扫描整个手机存储的媒体/文档文件
-    void scanAllStorage(Directory dir, int depth) {
+    // 异步递归扫描，避免 listSync 阻塞 UI isolate（每次远程访问都会触发）
+    Future<void> scanAllStorage(Directory dir, int depth) async {
       if (depth > 5) return; // 限制递归深度防止性能问题
       try {
-        for (final sub in dir.listSync()) {
+        await for (final sub in dir.list()) {
           final subName = p.basename(sub.path);
           if (subName.startsWith('.')) continue;
           if (sub is Directory) {
-            scanAllStorage(sub, depth + 1);
+            await scanAllStorage(sub, depth + 1);
           } else if (sub is File) {
             _categorizeFile(sub, videos, audios, images, documents, others);
           }
@@ -610,13 +611,13 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         // 跳过无权限读取的目录
       }
     }
-    scanAllStorage(Directory(rootDir), 0);
+    await scanAllStorage(Directory(rootDir), 0);
 
     debugPrint('WebSharing HTML: mainStorage=${mainStorageItems.length}, videos=${videos.length}, audios=${audios.length}, images=${images.length}, documents=${documents.length}, others=${others.length}');
     debugPrint('WebSharing HTML: currentPath=$currentPath, rootDir=$rootDir, totalItems=${items.length}');
 
     // Helper to generate a single item HTML
-    String generateItemHtml(FileSystemEntity item) {
+    Future<String> generateItemHtml(FileSystemEntity item) async {
       final name = p.basename(item.path);
       final isDir = item is Directory;
       // Calculate correct URL relative to rootDir (important for recursively scanned files)
@@ -633,7 +634,7 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         svgIcon = folderSvg;
       } else {
         try {
-        final stat = item.statSync();
+        final stat = await item.stat();
         final sizeBytes = stat.size;
         dateStr = stat.modified.toString().substring(0, 16);
 
@@ -730,7 +731,7 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
     }
 
     // Helper to generate a category section
-    String generateCategorySection(String catKey, String catName, String iconClass, String svgIcon, List<FileSystemEntity> catItems, {bool defaultCollapsed = false}) {
+    Future<String> generateCategorySection(String catKey, String catName, String iconClass, String svgIcon, List<FileSystemEntity> catItems, {bool defaultCollapsed = false}) async {
       final collapsedClass = (catItems.isEmpty || defaultCollapsed) ? 'collapsed' : '';
       if (catItems.isEmpty) {
         return '''
@@ -748,14 +749,15 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         ''';
       }
 
-      var itemsHtml = '';
+      final itemFutures = <Future<String>>[];
       for (final item in catItems) {
-        try {
-          itemsHtml += generateItemHtml(item);
-        } catch (e) {
+        itemFutures.add(generateItemHtml(item).catchError((e) {
           debugPrint('Error generating HTML for item ${item.path}: $e');
-        }
+          return '';
+        }));
       }
+      final htmls = await Future.wait(itemFutures);
+      final itemsHtml = htmls.join();
 
       return '''
         <section class="category-section $collapsedClass" id="cat-section-$catKey">
@@ -776,12 +778,12 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
     // "共享目录"区域显示当前目录的文件夹和文件，供浏览导航
     // 媒体/文档分类始终扫描整个手机存储，无论当前在哪个目录
     // 所有类别默认折叠
-    listHtml += generateCategorySection('folders', tr['folders']!, 'cat-folders', folderSvg, mainStorageItems, defaultCollapsed: true);
-    listHtml += generateCategorySection('videos', tr['videos']!, 'cat-videos', videoSvg, videos, defaultCollapsed: true);
-    listHtml += generateCategorySection('audio', tr['audio']!, 'cat-audio', audioSvg, audios, defaultCollapsed: true);
-    listHtml += generateCategorySection('images', tr['images']!, 'cat-images', imageSvg, images, defaultCollapsed: true);
-    listHtml += generateCategorySection('documents', tr['documents']!, 'cat-documents', pdfSvg, documents, defaultCollapsed: true);
-    listHtml += generateCategorySection('others', tr['others']!, 'cat-others', fileSvg, others, defaultCollapsed: true);
+    listHtml += await generateCategorySection('folders', tr['folders']!, 'cat-folders', folderSvg, mainStorageItems, defaultCollapsed: true);
+    listHtml += await generateCategorySection('videos', tr['videos']!, 'cat-videos', videoSvg, videos, defaultCollapsed: true);
+    listHtml += await generateCategorySection('audio', tr['audio']!, 'cat-audio', audioSvg, audios, defaultCollapsed: true);
+    listHtml += await generateCategorySection('images', tr['images']!, 'cat-images', imageSvg, images, defaultCollapsed: true);
+    listHtml += await generateCategorySection('documents', tr['documents']!, 'cat-documents', pdfSvg, documents, defaultCollapsed: true);
+    listHtml += await generateCategorySection('others', tr['others']!, 'cat-others', fileSvg, others, defaultCollapsed: true);
 
     final badgeHtml = '''
       <div class="header-actions">
@@ -2809,16 +2811,47 @@ AAAEBbg6hQHydFb0ZGHuYq+gCui5fFtXW1X2e3Ok3UKTfXMhY3eZl04qtec/5UVUNLrK49
         includeLoopback: false,
         type: InternetAddressType.IPv4,
       );
+      String? namePreferred; // 优先使用 WLAN/以太网接口的地址
+      String? fallback;      // 192.168. / 10. / 其他私有段
+      String? dockerLike;     // Docker/VPN 私有段(172.16-31) 仅作最后兜底
       for (final interface in interfaces) {
+        final name = interface.name.toLowerCase();
+        // 跳过明显的虚拟/隧道接口（Docker、VPN、模拟器、虚拟机网桥等）
+        if (name.contains('docker') ||
+            name.contains('vethernet') ||
+            name.contains('vbox') ||
+            name.contains('vmnet') ||
+            name.contains('tun') ||
+            name.contains('tap') ||
+            name.startsWith('ppp')) {
+          continue;
+        }
+        final isWlan = name.contains('wlan') ||
+            name.contains('eth') ||
+            name.contains('wi-fi') ||
+            name.contains('wireless');
         for (final addr in interface.addresses) {
-          if (!addr.isLoopback && (addr.address.startsWith('192.') || addr.address.startsWith('10.') || addr.address.startsWith('172.'))) {
-            return addr.address;
+          final ip = addr.address;
+          if (isWlan && namePreferred == null) namePreferred = ip;
+          if (ip.startsWith('192.168.')) {
+            fallback ??= ip;
+          } else if (ip.startsWith('10.')) {
+            fallback ??= ip;
+          } else if (ip.startsWith('172.')) {
+            final second = int.tryParse(ip.split('.').length > 1 ? ip.split('.')[1] : '0') ?? 0;
+            if (second >= 16 && second <= 31) {
+              dockerLike ??= ip; // Docker 默认网桥多落在 172.17+，避免优先选用
+            } else {
+              fallback ??= ip;
+            }
+          } else {
+            fallback ??= ip;
           }
         }
       }
-      if (interfaces.isNotEmpty && interfaces.first.addresses.isNotEmpty) {
-        return interfaces.first.addresses.first.address;
-      }
+      if (namePreferred != null) return namePreferred;
+      if (fallback != null) return fallback;
+      if (dockerLike != null) return dockerLike;
     } catch (_) {}
     return '127.0.0.1';
   }

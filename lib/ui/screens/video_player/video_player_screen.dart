@@ -202,19 +202,25 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     () async {
       try {
         final platform = player.platform;
-        if (platform is NativePlayer) {
-          await platform.setProperty('network-timeout', '60');
-          await platform.setProperty('cache-secs', '10');
-          // 注意：不在初始化时设置 sub-ass-override，否则会破坏 VOBSub 位图字幕渲染
-          // sub-ass-override 仅在加载 ASS/SSA 字幕时应用（见 _applySubtitle）
-          await platform.setProperty('sub-font-size', _subtitleFontSize.round().toString());
-          await platform.setProperty('sub-pos', _subtitlePosition.round().toString());
-          await _applySubtitleBackgroundProps(platform);
-          // 软解模式启用性能优化
-          if (!_useHardwareDecode) {
-            await _applySoftwareDecodeOptimizations(platform);
-          }
+      if (platform is NativePlayer) {
+        await platform.setProperty('network-timeout', '60');
+        // 远程（含本地代理 127.0.0.1）播放：放大缓存与解复用缓冲，吸收代理喂流的
+        // 脉冲式抖动，使 SFTP/FTP/SMB 与 WebDAV 直连一样流畅。此前这些仅在软解模式
+        // 才设置，硬解（默认）下 demuxer 缓冲极小，代理轻微抖动即导致 libmpv 缓冲
+        // 耗尽而周期性卡顿。WebDAV 直连不经过 Dart 代理故不受影响。
+        await platform.setProperty('cache-secs', '30');
+        await platform.setProperty('demuxer-max-bytes', '150M');
+        await platform.setProperty('demuxer-readahead-secs', '20');
+        // 注意：不在初始化时设置 sub-ass-override，否则会破坏 VOBSub 位图字幕渲染
+        // sub-ass-override 仅在加载 ASS/SSA 字幕时应用（见 _applySubtitle）
+        await platform.setProperty('sub-font-size', _subtitleFontSize.round().toString());
+        await platform.setProperty('sub-pos', _subtitlePosition.round().toString());
+        await _applySubtitleBackgroundProps(platform);
+        // 软解模式额外启用解码性能优化
+        if (!_useHardwareDecode) {
+          await _applySoftwareDecodeOptimizations(platform);
         }
+      }
       } catch (e) {
         debugPrint('设置 network-timeout 失败: $e');
       }
@@ -1305,7 +1311,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       final platform = player.platform;
       if (platform is NativePlayer) {
         await platform.setProperty('network-timeout', '60');
-        await platform.setProperty('cache-secs', '10');
+        // 与初始播放一致：所有解码模式都放大缓存/解复用缓冲，掩盖代理喂流抖动
+        // （硬解默认路径此前只有 cache-secs=10，demuxer 缓冲极小 → 远程视频卡顿）。
+        await platform.setProperty('cache-secs', '30');
+        await platform.setProperty('demuxer-max-bytes', '150M');
+        await platform.setProperty('demuxer-readahead-secs', '20');
         await platform.setProperty('sub-font-size', _subtitleFontSize.round().toString());
         await platform.setProperty('sub-pos', _subtitlePosition.round().toString());
         await _applySubtitleBackgroundProps(platform);

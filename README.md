@@ -2,47 +2,40 @@
 
 # ZenFile
 
-A beautifully crafted, open-source file manager and offline media center for Android. Built with Flutter to deliver ultimate performance and stunning glassmorphism aesthetics.
+A beautifully crafted, open-source file manager and offline media center for Android, built with Flutter. It pairs stunning glassmorphism aesthetics with system-level media indexing (Android MediaStore) for instant, battery-friendly browsing, plus an all-in-one Toolbox, fast FTP / WebDAV / SMB / SFTP access, and peer-to-peer Quick Transfer.
 > **Note**: This project is a fork of [Senzme/NFile](https://github.com/Senzme/NFile). Thanks to the original author!
 
 ---
 
-## 🚀 What's New in v1.1.33
-
-### ✨ New Features
-
-- **Quick Transfer (LAN)**: Independent send/receive modes, nearby-device radar discovery, connection states, pre-transfer confirmation, one-tap open in app browser after receiving, with permission hints. Fully localized in 10 languages.
-- **Category icon label visibility toggle**.
-- **AMOLED full-page pure-black theme**.
-- **Background playback anti-sleep** (battery-optimization whitelist + wake lock).
-- **Image editor**: physical dimensions (mm + DPI), preset templates (ID photo / passport / US visa), file size limit.
-- **Audio equalizer with 5 presets** (Original / HD Vocals / Bass / Live / Jazz).
-- **Video player**: built-in multi audio/subtitle track selection; gesture optimization (double-tap to pause/play, long-press for speed, swipe left/right to seek).
-- **Drawer / Custom shortcuts**: added Quick Transfer entry.
-
-### ⚙️ Optimizations
-
-- **Image viewer**: top info bar rebuilt (dimensions/time/format/size/EXIF), rotate changed to preview-only (no save), live EXIF display, filename title restored.
-- **Video player**: bottom button layout/ordering, portrait overflow fix, auto landscape on system rotation, scale (fill screen / cover), landscape camera black-bar fix.
-- **Audio player**: equalizer preset switching takes effect, bass/vocal distortion fixed.
-- **Video volume**: player slider now syncs in real time with system media volume.
-- **Audio playback mode**: now persisted across app restarts.
-- **Image editing**: crop ratio fix (square / 4:3 / 3:4 / ID photo).
+## 🚀 What's New in v1.1.34
 
 ### 🐛 Bug Fixes
 
-- **Text editor**: hardcoded error toast when opening unknown files via "Open as text" is now localized.
-- **Desktop lyrics**: hardcoded Chinese permission Toast is now localized.
-- **Directory picker**: hardcoded Chinese "Pin selection" button is now localized.
-- **Restricted directories** (Android/data | obb): fixed copy-to-local/remote errors (second fix).
-- **Long-press menu**: restored v1.1.32 layout with high-contrast background and stroke.
+- **Web sharing freeze**: fixed the app UI freezing when Web Sharing was accessed by another device — the whole-storage scan is now asynchronous and no longer blocks the UI thread.
+- **FTP can't connect / wrong NIC**: rewritten local IP selection that prefers wlan/eth interfaces and skips Docker/VPN/virtual adapters, avoiding unreachable fallback addresses.
+- **FTP custom port**: set and persist a custom port; changing it while running now auto-restarts the listener.
+- **FTP control port & PASV**: the control port is now bound to the concrete LAN IP and PASV resolution is simplified, fixing connection failures behind VPN/proxy.
+- **FTP stop message**: added an "FTP server stopped" notification that replaces the previous incorrect "port changed / not active" message.
+- **Text editor save/save-as**: merged into a single Save button that opens a menu to choose Save or Save As.
+
+### ✨ New Features
+
+- **Toolbox entry on Categories page**: added a Toolbox shortcut for quick access.
+- **Toolbox consolidation**: the Encrypted Vault, Wake-on-LAN, and Quick Transfer are now unified into the Toolbox.
+- **Quick Transfer remembers devices**: auto-remembers connected devices so you can reconnect with one tap; each remembered device can be removed individually.
+
+### 🎨 Improvements
+
+- **Quick Transfer symmetric transfer**: after connecting, either side can initiate sending — the send/receive mode toggle and top switch button were removed.
+- **Quick Transfer UI refresh**: section cards, device-row cards, icon badges, filled selection boxes, and a circular progress badge for a more unified look.
+- **Quick Transfer compact layout**: reduced card padding and spacing to minimize first-screen scrolling so the radar/device list is visible immediately.
 
 ---
 
 ## ✨ Features
 
 - **Beautiful UI/UX** — Modern glassmorphism design with textures and transparency
-- **Full Media Index** — Accurate, stable photo, video, and audio browsing via recursive filesystem scanning (unified with Web Sharing), so moved or renamed files always stay visible.
+- **Full Media Index** — Accurate, stable photo, video, and audio browsing powered by system-level indexing (Android MediaStore), so moved or renamed files always stay visible without full storage scans.
 - **Built-in Media Player**
   - High-performance video player powered by `media_kit`
   - Elegant audio player with album art and precise progress control
@@ -98,7 +91,7 @@ Required for full functionality:
 - **Flutter & Dart**
 - **State Management:** `provider`
 - **Media Engine:** `media_kit`
-- **Indexing:** Recursive filesystem scanning for media categories; `photo_manager` & `on_audio_query` retained for audio-model compatibility
+- **Indexing:** System-level MediaStore indexing for media categories (instant, zero I/O); `photo_manager` & `on_audio_query` retained for audio-model compatibility
 - **Permissions:** `permission_handler`
 - **Viewers:** `photo_view` & `open_filex`
 

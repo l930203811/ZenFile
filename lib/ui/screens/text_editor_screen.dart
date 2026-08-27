@@ -705,9 +705,19 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
             onPressed: _createNewFile,
           ),
           IconButton(
-            icon: const Icon(Broken.document_copy),
-            tooltip: L10n.of(context).ui_save_as,
-            onPressed: _saveAsFile,
+            icon: Icon(_readOnly ? Broken.edit : Broken.lock_1),
+            tooltip: _readOnly ? L10n.of(context).msg349ab61d : L10n.of(context).msg96f0ad7d,
+            onPressed: () {
+              setState(() {
+                _readOnly = !_readOnly;
+                // 阅读模式：开启自动换行、隐藏行号；编辑模式：关闭自动换行、显示行号
+                _wordWrap = _readOnly;
+                _showLineNumbers = !_readOnly;
+              });
+              PreferencesService.saveEditorReadOnly(_readOnly);
+              PreferencesService.saveEditorWordWrap(_wordWrap);
+              PreferencesService.saveEditorShowLineNumbers(_showLineNumbers);
+            },
           ),
           IconButton(
             icon: Icon(_showFindReplace ? Broken.search_zoom_out : Broken.search_normal),
@@ -724,10 +734,38 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
               ),
             )
           else
-            IconButton(
+            PopupMenuButton<String>(
               icon: const Icon(Broken.save_2),
               tooltip: L10n.of(context).msg7f2c95cd,
-              onPressed: _saveFile,
+              onSelected: (value) {
+                if (value == 'save') {
+                  _saveFile();
+                } else if (value == 'save_as') {
+                  _saveAsFile();
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'save',
+                  child: Row(
+                    children: [
+                      const Icon(Broken.save_2, size: 18),
+                      const SizedBox(width: 12),
+                      Text(L10n.of(context).ui_save),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'save_as',
+                  child: Row(
+                    children: [
+                      const Icon(Broken.document_copy, size: 18),
+                      const SizedBox(width: 12),
+                      Text(L10n.of(context).ui_save_as),
+                    ],
+                  ),
+                ),
+              ],
             ),
           PopupMenuButton<String>(
             icon: const Icon(Broken.more),
@@ -767,16 +805,6 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
               } else if (value == 'word_wrap') {
                 setState(() => _wordWrap = !_wordWrap);
                 PreferencesService.saveEditorWordWrap(_wordWrap);
-              } else if (value == 'read_only') {
-                setState(() {
-                  _readOnly = !_readOnly;
-                  // 阅读模式：开启自动换行、隐藏行号；编辑模式：关闭自动换行、显示行号
-                  _wordWrap = _readOnly;
-                  _showLineNumbers = !_readOnly;
-                });
-                PreferencesService.saveEditorReadOnly(_readOnly);
-                PreferencesService.saveEditorWordWrap(_wordWrap);
-                PreferencesService.saveEditorShowLineNumbers(_showLineNumbers);
               } else if (value == 'toggle_line_numbers') {
                 setState(() => _showLineNumbers = !_showLineNumbers);
                 PreferencesService.saveEditorShowLineNumbers(_showLineNumbers);
@@ -806,10 +834,6 @@ class _TextEditorScreenState extends State<TextEditorScreen> {
               PopupMenuItem(
                 value: 'word_wrap',
                 child: Row(children: [Icon(_wordWrap ? Broken.textalign_justifycenter : Broken.textalign_left, size: 18), SizedBox(width: 12), Text(_wordWrap ? L10n.of(context).msgf387265a : L10n.of(context).msg1045ba75)]),
-              ),
-              PopupMenuItem(
-                value: 'read_only',
-                child: Row(children: [Icon(_readOnly ? Broken.lock_1 : Broken.edit, size: 18), SizedBox(width: 12), Text(_readOnly ? L10n.of(context).msg96f0ad7d : L10n.of(context).msg349ab61d)]),
               ),
               PopupMenuItem(
                 value: 'toggle_line_numbers',

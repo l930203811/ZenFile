@@ -5611,6 +5611,12 @@ class L10nZh extends L10n {
   String get quick_transfer_connected_btn => '已连接';
 
   @override
+  String get quick_transfer_forget_device => '移除设备';
+
+  @override
+  String get quick_transfer_peer_unreachable => '无法连接到该设备，请确保对方已打开快传并在附近。';
+
+  @override
   String get quick_transfer_available_peers => '可连接设备';
 
   @override
@@ -5679,6 +5685,71 @@ class L10nZh extends L10n {
 
   @override
   String get changelog_v1133_fix_5 => '长按菜单：复刻 v1.1.32 显示结构 + 高对比背景 + 描边';
+
+  @override
+  @override
+  String get changelog_v1134_fix_1 =>
+      '修复网页共享被其他设备访问时应用界面卡死的问题——全量扫描已改为异步执行，不再阻塞 UI 线程。';
+
+  @override
+  String get changelog_v1134_fix_2 =>
+      '修复 FTP 连不上/选错网卡：重写本地 IP 选择逻辑，优先 wlan/eth 接口，跳过 Docker/VPN/虚拟网卡，避免回退到不可达地址。';
+
+  @override
+  String get changelog_v1134_fix_3 =>
+      'FTP 共享支持自定义端口：可在设置中配置并持久化，运行中修改即时生效并自动重启监听。';
+
+  @override
+  String get changelog_v1134_fix_4 =>
+      '修复 FTP 控制端口绑定与 PASV：改用具体局域网 IP 绑定控制端口、简化 PASV 地址解析，修复 VPN/代理场景下的连接失败。';
+
+  @override
+  String get changelog_v1134_fix_5 =>
+      '新增「FTP 服务器已停止」提示，替换原先服务器停止时错误的「更改端口 未激活」提示。';
+
+  @override
+  String get changelog_v1134_fix_6 =>
+      '文本编辑器保存/另存为合并为单一保存按钮，点击弹出菜单选择「保存」或「另存为」。';
+
+  @override
+  String get changelog_v1134_new_1 => '新增分类页工具箱入口。';
+
+  @override
+  String get changelog_v1134_new_2 =>
+      '将私人保险箱、局域网唤醒、快传整合进工具箱，集中管理。';
+
+  @override
+  String get changelog_v1134_new_3 =>
+      '快传已记住设备：自动记住已连接设备，下次一键点击连接重连；已记住列表支持单独删除设备。';
+
+  @override
+  String get changelog_v1134_opt_1 =>
+      '快传对称化传输：连接成功后双方均可主动发送，移除收发模式切换与顶部切换按钮。';
+
+  @override
+  String get changelog_v1134_opt_2 =>
+      '快传 UI 整体美化：分区卡片化、设备行卡片化、图标徽章、填充式选择框、进度页圆形徽章，视觉更统一。';
+
+  @override
+  String get changelog_v1134_opt_3 =>
+      '快传主界面紧凑化：收紧卡片内边距与各项间距，减少首屏滚动，进入即可看到雷达/设备列表。';
+
+  @override
+  String get ftp_server_stopped => 'FTP 服务器已停止';
+
+  @override
+  String get cat_toolbox => '工具箱';
+
+  @override
+  String get cat_toolbox_desc => '工具';
+
+  @override
+  String quick_transfer_waiting_for_x(Object name) {
+    return '等待 $name 点击连接…';
+  }
+
+  @override
+  String get quick_transfer_ask_peer_connect => '请让对端设备也在快传中点击本机的「连接」按钮';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -11108,71 +11179,71 @@ class L10nZhTw extends L10nZh {
   String get wol_port_hint => '選填';
 
   @override
-  String get quick_transfer_nearby_devices => '附近设备';
+  String get quick_transfer_nearby_devices => '附近設備';
 
   @override
-  String get quick_transfer_scanning => '正在扫描附近设备…';
+  String get quick_transfer_scanning => '正在掃描附近設備…';
 
   @override
-  String get quick_transfer_scan_hint => '双方都需打开快传并保持本页面在前台';
+  String get quick_transfer_scan_hint => '雙方都需打開快傳並保持本頁面在前台';
 
   @override
-  String get quick_transfer_tap_to_connect => '点击设备名发起连接';
+  String get quick_transfer_tap_to_connect => '點擊設備名發起連接';
 
   @override
   String quick_transfer_connecting(Object name) {
-    return '正在连接 $name…';
+    return '正在連接 $name…';
   }
 
   @override
   String quick_transfer_connected_as(Object role) {
-    return '已连接（本机为 $role）';
+    return '已連接（本機為 $role）';
   }
 
   @override
-  String get quick_transfer_role_owner => '发送端';
+  String get quick_transfer_role_owner => '發送端';
 
   @override
   String get quick_transfer_role_client => '接收端';
 
   @override
-  String get quick_transfer_select_files => '选择要发送的文件 / 文件夹';
+  String get quick_transfer_select_files => '選擇要發送的檔案 / 資料夾';
 
   @override
   String quick_transfer_selected_summary(Object count, Object size) {
-    return '已选 $count 项，共 $size';
+    return '已選 $count 項，共 $size';
   }
 
   @override
-  String get quick_transfer_begin_send => '开始发送';
+  String get quick_transfer_begin_send => '開始發送';
 
   @override
   String quick_transfer_incoming(Object name) {
-    return '收到来自 $name 的发送请求';
+    return '收到來自 $name 的發送請求';
   }
 
   @override
   String quick_transfer_incoming_files(Object count, Object size) {
-    return '$count 个文件，共 $size';
+    return '$count 個檔案，共 $size';
   }
 
   @override
   String get quick_transfer_accept => '接受';
 
   @override
-  String get quick_transfer_reject => '拒绝';
+  String get quick_transfer_reject => '拒絕';
 
   @override
-  String get quick_transfer_sending => '正在发送…';
+  String get quick_transfer_sending => '正在發送…';
 
   @override
   String get quick_transfer_receiving => '正在接收…';
 
   @override
-  String get quick_transfer_complete => '传输完成';
+  String get quick_transfer_complete => '傳輸完成';
 
   @override
-  String get quick_transfer_waiting_peer => '等待对方连接…';
+  String get quick_transfer_waiting_peer => '等待對方連接…';
 
   @override
   String get quick_transfer_connected_waiting_files => '已連接，等待對方發送檔案…';
@@ -11182,28 +11253,28 @@ class L10nZhTw extends L10nZh {
       'WiFi Direct 掃描需要位置/附近設備權限，不會收集您的地理位置';
 
   @override
-  String get quick_transfer_permission_required => '快传需要位置/附近设备权限以发现附近设备';
+  String get quick_transfer_permission_required => '快傳需要位置 / 附近設備權限以發現附近設備';
 
   @override
-  String get quick_transfer_not_supported => '当前设备不支持 WiFi Direct 快传';
+  String get quick_transfer_not_supported => '目前設備不支援 WiFi Direct 快傳';
 
   @override
-  String get quick_transfer_disconnect => '断开';
+  String get quick_transfer_disconnect => '斷開';
 
   @override
   String get quick_transfer_cancel => '取消';
 
   @override
-  String get quick_transfer_save_to => '保存到';
+  String get quick_transfer_save_to => '儲存到';
 
   @override
-  String get quick_transfer_send_mode => '发送';
+  String get quick_transfer_send_mode => '發送';
 
   @override
   String get quick_transfer_receive_mode => '接收';
 
   @override
-  String get quick_transfer_device_name => '本机名称';
+  String get quick_transfer_device_name => '本機名稱';
 
   @override
   String get quick_transfer_retry => '重試';
@@ -11253,6 +11324,12 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get quick_transfer_connected_btn => '已連接';
+
+  @override
+  String get quick_transfer_forget_device => '移除裝置';
+
+  @override
+  String get quick_transfer_peer_unreachable => '無法連接到該裝置，請確保對方已打開快傳並在附近。';
 
   @override
   String get quick_transfer_available_peers => '可連接設備';
@@ -11323,4 +11400,69 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get changelog_v1133_fix_5 => '長按選單：復刻 v1.1.32 顯示結構 + 高對比背景 + 描邊';
+
+  @override
+  @override
+  String get changelog_v1134_fix_1 =>
+      '修復網頁共享被其他裝置存取時應用程式介面卡死的問題——全量掃描已改為非同步執行，不再阻塞 UI 執行緒。';
+
+  @override
+  String get changelog_v1134_fix_2 =>
+      '修復 FTP 連不上/選錯網卡：重寫本地 IP 選擇邏輯，優先 wlan/eth 介面，跳過 Docker/VPN/虛擬網卡，避免回退到不可達位址。';
+
+  @override
+  String get changelog_v1134_fix_3 =>
+      'FTP 共享支援自訂連接埠：可在設定中配置並持久化，執行中修改即時生效並自動重啟監聽。';
+
+  @override
+  String get changelog_v1134_fix_4 =>
+      '修復 FTP 控制連接埠綁定與 PASV：改用具體區域網路 IP 綁定控制連接埠、簡化 PASV 位址解析，修復 VPN/代理場景下的連線失敗。';
+
+  @override
+  String get changelog_v1134_fix_5 =>
+      '新增「FTP 伺服器已停止」提示，替換原先伺服器停止時錯誤的「更改連接埠 未啟用」提示。';
+
+  @override
+  String get changelog_v1134_fix_6 =>
+      '文字編輯器儲存/另存為合併為單一儲存按鈕，點擊彈出選單選擇「儲存」或「另存為」。';
+
+  @override
+  String get changelog_v1134_new_1 => '新增分類頁工具箱入口。';
+
+  @override
+  String get changelog_v1134_new_2 =>
+      '將私人保險箱、區域網路喚醒、快傳整合進工具箱，集中管理。';
+
+  @override
+  String get changelog_v1134_new_3 =>
+      '快傳已記住裝置：自動記住已連線裝置，下次一鍵點擊連線重連；已記住清單支援單獨刪除裝置。';
+
+  @override
+  String get changelog_v1134_opt_1 =>
+      '快傳對稱化傳輸：連線成功後雙方均可主動傳送，移除收發模式切換與頂部切換按鈕。';
+
+  @override
+  String get changelog_v1134_opt_2 =>
+      '快傳 UI 整體美化：分區卡片化、裝置列卡片化、圖示徽章、填滿式選取框、進度頁圓形徽章，視覺更統一。';
+
+  @override
+  String get changelog_v1134_opt_3 =>
+      '快傳主介面緊湊化：收緊卡片內邊距與各項間距，減少首屏捲動，進入即可看到雷達/裝置清單。';
+
+  @override
+  String get ftp_server_stopped => 'FTP 伺服器已停止';
+
+  @override
+  String get cat_toolbox => '工具箱';
+
+  @override
+  String get cat_toolbox_desc => '工具';
+
+  @override
+  String quick_transfer_waiting_for_x(Object name) {
+    return '等待 $name 點擊連線…';
+  }
+
+  @override
+  String get quick_transfer_ask_peer_connect => '請讓對端裝置也在快傳中點擊本機的「連線」按鈕';
 }

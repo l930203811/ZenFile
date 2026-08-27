@@ -374,16 +374,19 @@ class RemoteStreamingService {
     int rangeEnd;
     bool isPartial;
 
-    // 播放头位于「后台下载头」附近（含略微落后）→ 直接读 partial 并跟随后台下载
-    // 推进，绝不在此发起按需远程 seek。旧实现用严格 `<`，当 start 恰好等于
-    // partialAvail（正好在下载头）时落入 on-demand seek，而 on-demand seek 依赖
-    // 脆弱的 downloadRange(pos>0)（见 _doDownload 说明），会失败并导致画面几秒后
-    // 冻结。改用「<= + 8MB 前瞻」：正常播放（跟随下载头）一律读 partial 并等待下载
-    // 推进，只有用户大幅拖动（领先 > 8MB）才走按需 seek（极少触发、可容忍失败回退）。
-    final lookahead = 16 * 1024 * 1024; // 16MB 前瞻：正常播放更长时间内跟随后台下载，
-    // 减少落入按需 seek 路径的概率（按需 seek 依赖 downloadRange，失败会导致卡顿）。
-    if (start <= partialAvail + lookahead) {
-      // 后台下载已覆盖该位置（或即将覆盖），直接读 partial（按下载进度门控）
+    // 数据源选择（修复「顺序播放也被迫走按需远程读」的卡顿回归）：
+    //  · start 落在后台顺序下载已落盘区间内（含播放头） → 读 partial，跟随后台下载
+    //    推进。这是最流畅的主路径，与 WebDAV 直连的「连续流式读取」等价：partial
+    //    就是本地预读缓冲，libmpv 从本地不断增长的 partial 顺序读取，零远程往返、
+    //    零连接开销。背景顺序下载即「预读缓冲」，libmpv 的大缓存（demuxer-max-bytes
+    //    等）叠加本地 partial 缓冲，可完全吸收代理喂流的脉冲式抖动。
+    //  · 拖动到尚未下载到的位置（start 领先 partialAvail） → 经独立 seekClient 做
+    //    真实服务端偏移随机读（SFTP JSch get(offset)/FTP REST/SMB smbj skip 均已
+    //    支持），结果并入本地 .seekcache，后续重叠请求从本地读，避免重复远程读。
+    //  仅当 start 领先已下载区间时才走按需远程读；顺序播放/已下载区间一律跟随
+    //  partial，杜绝每 16MB 发起一次按需抓取而与后台下载争抢带宽的卡顿。
+    if (start <= partialAvail) {
+      // 顺序播放/已下载区间：读 partial，跟随后台下载推进（最流畅路径）
       readFilePath = session.partialPath;
       readFileStart = start;
       rangeStart = start;
@@ -658,13 +661,48 @@ class RemoteStreamingService {
           continue;
         }
 
-        // F) 已追平下载头（readOffset == downloaded）且仍在下载 → 等待后台下载推进更多字节，
-        //    【绝不】在此发起新的按需拉取。旧实现正是此处误触发 16MB 按需抓取 + 等待，
-        //    造成「播放几帧 → 停顿 → 播放几帧」的周期性卡顿（前 5 秒靠初始缓冲流畅，
-        //    缓冲耗尽后即反复卡顿）。WebDAV 直连由 libmpv 原生跟随播放头因而流畅，
-        //    代理必须同样连续地跟随后台下载，而非周期性另起抓取。
+        // F) 追平下载头（readOffset == downloaded）：OWL 模型的关键一步——代理按
+        //    播放需求即时拉取，而非死等整文件顺序下载推进。
+        //  ① 先给后台顺序下载 60ms 推进机会：快网/局域网下顺序下载速度通常远快于
+        //     播放消费，几乎总能即时推进，此时走 A 分支读 partial（零额外开销、与
+        //     旧行为一致），不引入无谓的随机读 JNI 往返。
+        //  ② 若 60ms 内磁盘 partial 无新字节（慢速远程 / 顺序下载跟不上播放消费），
+        //     立即经独立 seekClient 做真实服务端偏移随机读，拉「当前播放位置之后」一段
+        //     直供播放器，而非干等——速度 = 原生随机读带宽(≈链路带宽)，彻底消除
+        //     「缓冲耗尽 → 卡顿 → 缓冲 → 播放几帧」的循环。顺序下载仍后台跑作兜底。
+        await Future.delayed(const Duration(milliseconds: 60));
+        int lenNow = 0;
+        try {
+          final partialFile = File(session.partialPath);
+          lenNow = partialFile.existsSync() ? partialFile.lengthSync() : 0;
+        } catch (_) {
+          lenNow = 0;
+        }
+        if (lenNow > readOffset) {
+          // 顺序下载已推进，回到循环顶部走 A 分支从 partial 读
+          session._syncFileLength();
+          continue;
+        }
+        // 顺序下载短期无进展 → 主动按需随机读补「当前播放所需数据」
+        final fetchLen = (endExclusive - readOffset).clamp(1, 16 * 1024 * 1024).toInt();
+        final tempSeek = '${session.localPath}.seek.tmp';
+        await _fetchRangeToFile(session, readOffset, fetchLen, tempSeek);
+        final cachedLen = await _spliceIntoSeekCache(session, tempSeek, readOffset);
+        try {
+          await File(tempSeek).delete();
+        } catch (_) {}
+        if (cachedLen > 0) {
+          session._mergedStart = readOffset;
+          session._mergedEnd = readOffset + cachedLen;
+          // 立即 continue 走 B 分支从 seekcache 向播放器供数据（OWL：按需即供）
+          continue;
+        }
+        // 按需拉取也失败（极端弱网）：短暂退避后重试，或退化为等待顺序下载推进。
+        await Future.delayed(const Duration(milliseconds: 200));
+        if (readOffset < session.downloadedBytes) continue;
         final grew = await _waitForLocalGrowth(session, readOffset, File(session.partialPath));
         if (!grew) break;
+        continue;
       }
     } finally {
       try {

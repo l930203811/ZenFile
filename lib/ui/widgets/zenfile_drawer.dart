@@ -63,10 +63,10 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
     final mediaProvider = context.watch<MediaProvider>();
     final connections = NetworkConnectionsService.getConnections();
     final allCategoriesMap = QuickCategoriesGrid.getAllCategoriesMap(context, isDark, widget.onNavigateTab ?? (index) {});
-    final activeList = mediaProvider.categoryOrder
+    final activeLabels = mediaProvider.categoryOrder
         .where((label) => mediaProvider.activeCategories.contains(label) && allCategoriesMap.containsKey(label))
-        .map((label) => allCategoriesMap[label]!)
         .toList();
+    final activeList = activeLabels.map((label) => allCategoriesMap[label]!).toList();
 
     return Drawer(
       width: widget.width,
@@ -218,18 +218,23 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                       icon: Icons.category_rounded,
                       title: L10n.of(context).cat_quick_categories,
                       children: [
-                        ...activeList.map((cat) {
+                        ...activeList.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final cat = entry.value;
+                          final labelKey = activeLabels[index];
                           final label = cat['label'] as String;
                           final icon = cat['icon'] as IconData;
-                          final action = cat['action'] as VoidCallback;
+                          final action = cat['action'] as VoidCallback?;
+                          final iconKey = null;
 
                           return _buildDrawerTile(
                             context,
+                            iconKey: iconKey,
                             icon: icon,
                             title: label,
                             onTap: () {
                               Navigator.pop(context);
-                              action();
+                              action?.call();
                             },
                           );
                         }),
@@ -249,7 +254,7 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
                     _buildExpandableSection(
                       context,
                       sectionKey: 'tools',
-                      icon: Broken.search_normal,
+                      icon: Icons.home_repair_service,
                       title: L10n.of(context).drawer_tools,
                       children: [
                         _buildDrawerTile(
@@ -321,7 +326,7 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12.0),
               child: Text(
-                'ZenFile v1.1.33',
+                'ZenFile v1.1.34',
                 style: TextStyle(fontSize: 11.5, color: theme.colorScheme.onSurface.withOpacity(0.4), fontWeight: FontWeight.w600),
               ),
             ),
@@ -616,6 +621,8 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
 
   Widget _buildDrawerTile(
     BuildContext context, {
+    Key? key,
+    Key? iconKey,
     required IconData icon,
     required String title,
     required VoidCallback onTap,
@@ -633,6 +640,7 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
         ? theme.colorScheme.primary
         : theme.colorScheme.onSurface.withOpacity(isPrimary ? 0.95 : 0.9);
     return Padding(
+      key: key,
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 2.0),
       child: Material(
         color: isSelected ? theme.colorScheme.primary.withOpacity(0.15) : Colors.transparent,
@@ -646,7 +654,7 @@ class _ZenFileDrawerState extends State<ZenFileDrawer> {
             padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: trailing != null ? 4.0 : 12.0),
             child: Row(
               children: [
-                Icon(icon, size: 22, color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.8)),
+                Icon(key: iconKey, icon, size: 22, color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.8)),
                 const SizedBox(width: 16),
                 Expanded(
                   child: AutoSizeText(

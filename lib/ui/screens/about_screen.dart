@@ -160,7 +160,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   const SizedBox(height: 6),
                   // 版本号文本（硬编码，无需 l10n；以后升级版本只改这里）
                   Text(
-                    'v1.1.33',
+                    'v1.1.34',
                     style: TextStyle(
                       color: theme.colorScheme.onSurface.withOpacity(0.7),
                       fontSize: 13,
@@ -716,7 +716,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   Text(L10n.of(context).msg305734ce, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
 
-                  _buildV1133Changelog(ctx, theme),
+                  _buildV1134Changelog(ctx, theme),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -810,6 +810,80 @@ class AboutZenFileScreen extends StatelessWidget {
           bulletText(l10n.changelog_v1133_fix_4),
           gap(6),
           bulletText(l10n.changelog_v1133_fix_5),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildV1134Changelog(BuildContext ctx, ThemeData theme) {
+    final l10n = L10n.of(ctx);
+    final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
+    final sectionStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.primary, fontWeight: FontWeight.w600);
+
+    Widget gap([double h = 6]) => SizedBox(height: h);
+    Widget bulletText(String text) => Text('· $text', style: textStyle);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.06)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text('v1.1.34', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+              ),
+              const SizedBox(width: 10),
+              Text('2026-08-27', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+            ],
+          ),
+          gap(14),
+
+          // ── 问题修复 ──
+          Text(l10n.changelog_section_fixes, style: sectionStyle),
+          gap(4),
+          bulletText(l10n.changelog_v1134_fix_1),
+          gap(6),
+          bulletText(l10n.changelog_v1134_fix_2),
+          gap(6),
+          bulletText(l10n.changelog_v1134_fix_3),
+          gap(6),
+          bulletText(l10n.changelog_v1134_fix_4),
+          gap(6),
+          bulletText(l10n.changelog_v1134_fix_5),
+          gap(6),
+          bulletText(l10n.changelog_v1134_fix_6),
+          gap(14),
+
+          // ── 新增 ──
+          Text(l10n.changelog_section_new, style: sectionStyle),
+          gap(4),
+          bulletText(l10n.changelog_v1134_new_1),
+          gap(6),
+          bulletText(l10n.changelog_v1134_new_2),
+          gap(6),
+          bulletText(l10n.changelog_v1134_new_3),
+          gap(14),
+
+          // ── 优化 ──
+          Text(l10n.changelog_section_optimizations, style: sectionStyle),
+          gap(4),
+          bulletText(l10n.changelog_v1134_opt_1),
+          gap(6),
+          bulletText(l10n.changelog_v1134_opt_2),
+          gap(6),
+          bulletText(l10n.changelog_v1134_opt_3),
         ],
       ),
     );

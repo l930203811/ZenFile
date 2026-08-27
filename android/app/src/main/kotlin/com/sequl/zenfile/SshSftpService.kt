@@ -238,27 +238,31 @@ class SshSftpService {
         cancelFlags[id] = false
         val monitor = makeMonitor(id)
         try {
-            ch.get(remotePath).use { remote ->
-                // skip 可能一次跳不足，循环直到跳够 startByte
-                var toSkip = startByte
-                while (toSkip > 0) {
-                    val skipped = remote.skip(toSkip)
-                    if (skipped <= 0) break
-                    toSkip -= skipped
+            // 服务端偏移随机读（JSch 0.1.55 原生支持）：get(src,dst,monitor,mode,offset)
+            // 内部 SFTP READ 请求直接从 startByte 起读（服务端 seek），不再从文件头传输
+            // 再本地 skip。旧实现 ch.get(remotePath) 打开整文件流 + 循环 skip(startByte) 等于
+            // 先把 [0,startByte) 全部下载后丢弃——大文件拖到中部/尾部要等数分钟，正是
+            // 「SFTP 拖动卡死」根因。与猫头鹰(OWL)一致：播放器只发 Range，代理对每段做
+            // 远程协议真实偏移随机读，再由本地 .seekcache 兜住重复请求。
+            // 用 monitor 在累计下载达到 length 时返回 false 中止传输，从而只取
+            // [startByte, startByte+length) 而非下载到文件尾（缩略图只取头部、拖动只取一段）。
+            val fos = FileOutputStream(localPath)
+            val bounded = object : SftpProgressMonitor {
+                var counted = 0L
+                override fun count(c: Long): Boolean {
+                    if (cancelFlags[id] ?: false) return false
+                    counted += c
+                    return counted < length
                 }
-                FileOutputStream(localPath).use { fos ->
-                    val buf = ByteArray(128 * 1024)
-                    var remaining = length
-                    while (remaining > 0) {
-                        if (cancelFlags[id] ?: false) break
-                        val toRead = if (remaining > buf.size) buf.size else remaining.toInt()
-                        val n = remote.read(buf, 0, toRead)
-                        if (n < 0) break
-                        fos.write(buf, 0, n)
-                        remaining -= n
-                        // 进度由 monitor.count 统一累计（避免重复累加）
-                        if (!(monitor.count(n.toLong()))) break
-                    }
+                override fun init(op: Int, src: String?, dst: String?, max: Long) {}
+                override fun end() {}
+            }
+            ch.get(remotePath, fos, bounded, ChannelSftp.OVERWRITE, startByte)
+            fos.close()
+            // monitor 可能在最后一笔略微超出 length，截断到精确区间
+            if (length > 0) {
+                java.io.RandomAccessFile(localPath, "rw").use { raf ->
+                    if (raf.length() > length) raf.setLength(length)
                 }
             }
         } finally {

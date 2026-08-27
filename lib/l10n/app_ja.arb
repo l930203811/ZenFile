@@ -4842,71 +4842,71 @@
   "@changelog_v1130_fix_3": {
     "description": "v1.1.30 changelog item"
   },
-  "ui_remote_guard": "远程守卫",
+  "ui_remote_guard": "リモートガード",
   "@ui_remote_guard": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_desc": "设置4位PIN码保护远程服务器访问，每次启动应用或手动锁定后需输入PIN码才能进入远程服务器",
+  "ui_remote_guard_desc": "4桁のPINを設定してリモートサーバーへのアクセスを保護します。アプリ起動時や手動ロック後にPINを入力してください。",
   "@ui_remote_guard_desc": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_enabled": "已启用",
+  "ui_remote_guard_enabled": "有効",
   "@ui_remote_guard_enabled": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_disabled": "已禁用",
+  "ui_remote_guard_disabled": "無効",
   "@ui_remote_guard_disabled": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_set_pin": "设置PIN码",
+  "ui_remote_guard_set_pin": "PINを設定",
   "@ui_remote_guard_set_pin": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_enter_pin": "输入PIN码",
+  "ui_remote_guard_enter_pin": "PINを入力",
   "@ui_remote_guard_enter_pin": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_confirm_pin": "确认PIN码",
+  "ui_remote_guard_confirm_pin": "PINを確認",
   "@ui_remote_guard_confirm_pin": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_pin_mismatch": "两次输入的PIN码不一致，请重新输入",
+  "ui_remote_guard_pin_mismatch": "PINが一致しません。もう一度お試しください。",
   "@ui_remote_guard_pin_mismatch": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_wrong_pin": "PIN码错误，请重试",
+  "ui_remote_guard_wrong_pin": "PINが正しくありません。もう一度お試しください。",
   "@ui_remote_guard_wrong_pin": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_change_pin": "修改PIN码",
+  "ui_remote_guard_change_pin": "PINを変更",
   "@ui_remote_guard_change_pin": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_pin_hint": "4位数字PIN码",
+  "ui_remote_guard_pin_hint": "4桁の数字PIN",
   "@ui_remote_guard_pin_hint": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_lock_now": "立即锁定",
+  "ui_remote_guard_lock_now": "今すぐロック",
   "@ui_remote_guard_lock_now": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_lock_now_desc": "锁定后需要重新输入PIN码才能访问远程服务器",
+  "ui_remote_guard_lock_now_desc": "ロック後はリモートサーバーにアクセスするためにPINの入力が必要です。",
   "@ui_remote_guard_lock_now_desc": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_security_settings": "Security",
+  "ui_security_settings": "セキュリティ設定",
   "@ui_security_settings": {
     "description": "ui\\screens\\vault_explorer_screen.dart"
   },
-  "ui_remote_guard_switch_desc": "Saved remote servers are protected; PIN is required before access",
+  "ui_remote_guard_switch_desc": "保存済みリモートサーバーは保護されています; アクセス前にPINが必要です",
   "@ui_remote_guard_switch_desc": {
     "description": "ui\\screens\\vault_explorer_screen.dart"
   },
-  "ui_app_lock": "App Launch Protection",
+  "ui_app_lock": "アプリ起動保護",
   "@ui_app_lock": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_app_lock_desc": "Require your PIN to unlock the app each time it launches",
+  "ui_app_lock_desc": "アプリ起動時にPINを入力して解除します",
   "@ui_app_lock_desc": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -4914,23 +4914,23 @@
   "@ui_app_lock_set_pin_first": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_enter_current_pin": "Enter current PIN",
+  "ui_remote_guard_enter_current_pin": "現在のPINを入力",
   "@ui_remote_guard_enter_current_pin": {
     "description": "ui/screens/remote_guard_screen.dart"
   },
-  "ui_remote_guard_reencrypting": "Re-encrypting hidden files…",
+  "ui_remote_guard_reencrypting": "隠しファイルを再暗号化中…",
   "@ui_remote_guard_reencrypting": {
     "description": "ui/screens/remote_guard_screen.dart"
   },
-  "ui_remote_guard_pin_changed": "PIN changed",
+  "ui_remote_guard_pin_changed": "PINを変更しました",
   "@ui_remote_guard_pin_changed": {
     "description": "ui/screens/remote_guard_screen.dart"
   },
-  "ui_remote_guard_change_pin_failed": "Some files failed to re-encrypt, PIN unchanged",
+  "ui_remote_guard_change_pin_failed": "再暗号化に失敗したファイルがあります。PINは変更されていません。",
   "@ui_remote_guard_change_pin_failed": {
     "description": "ui/screens/remote_guard_screen.dart"
   },
-  "ui_change_vault_pin_desc": "Change the private vault PIN (re-encrypts all hidden files)",
+  "ui_change_vault_pin_desc": "プライベート金庫のPINを変更（全隠しファイルを再暗号化）",
   "@ui_change_vault_pin_desc": {
     "description": "ui/screens/vault_explorer_screen.dart"
   },
@@ -5677,79 +5677,79 @@
   "@wol_port_hint": {
     "description": "wol_port_hint label"
   },
-  "quick_transfer_nearby_devices": "附近设备",
+  "quick_transfer_nearby_devices": "近くのデバイス",
   "@quick_transfer_nearby_devices": {
     "description": "Quick Transfer P2P: quick_transfer_nearby_devices"
   },
-  "quick_transfer_scanning": "正在扫描附近设备…",
+  "quick_transfer_scanning": "近くのデバイスをスキャン中…",
   "@quick_transfer_scanning": {
     "description": "Quick Transfer P2P: quick_transfer_scanning"
   },
-  "quick_transfer_scan_hint": "双方都需打开快传并保持本页面在前台",
+  "quick_transfer_scan_hint": "両方のデバイスでクイック転送を開き、この画面を前面に保つ必要があります",
   "@quick_transfer_scan_hint": {
     "description": "Quick Transfer P2P: quick_transfer_scan_hint"
   },
-  "quick_transfer_tap_to_connect": "点击设备名发起连接",
+  "quick_transfer_tap_to_connect": "デバイス名をタップして接続",
   "@quick_transfer_tap_to_connect": {
     "description": "Quick Transfer P2P: quick_transfer_tap_to_connect"
   },
-  "quick_transfer_connecting": "正在连接 {name}…",
+  "quick_transfer_connecting": "{name} に接続中…",
   "@quick_transfer_connecting": {
     "description": "Quick Transfer P2P: quick_transfer_connecting"
   },
-  "quick_transfer_connected_as": "已连接（本机为 {role}）",
+  "quick_transfer_connected_as": "接続しました（このデバイスは {role}）",
   "@quick_transfer_connected_as": {
     "description": "Quick Transfer P2P: quick_transfer_connected_as"
   },
-  "quick_transfer_role_owner": "发送端",
+  "quick_transfer_role_owner": "送信側",
   "@quick_transfer_role_owner": {
     "description": "Quick Transfer P2P: quick_transfer_role_owner"
   },
-  "quick_transfer_role_client": "接收端",
+  "quick_transfer_role_client": "受信側",
   "@quick_transfer_role_client": {
     "description": "Quick Transfer P2P: quick_transfer_role_client"
   },
-  "quick_transfer_select_files": "选择要发送的文件 / 文件夹",
+  "quick_transfer_select_files": "送信するファイル / フォルダを選択",
   "@quick_transfer_select_files": {
     "description": "Quick Transfer P2P: quick_transfer_select_files"
   },
-  "quick_transfer_selected_summary": "已选 {count} 项，共 {size}",
+  "quick_transfer_selected_summary": "{count} 件、合計 {size}",
   "@quick_transfer_selected_summary": {
     "description": "Quick Transfer P2P: quick_transfer_selected_summary"
   },
-  "quick_transfer_begin_send": "开始发送",
+  "quick_transfer_begin_send": "送信を開始",
   "@quick_transfer_begin_send": {
     "description": "Quick Transfer P2P: quick_transfer_begin_send"
   },
-  "quick_transfer_incoming": "收到来自 {name} 的发送请求",
+  "quick_transfer_incoming": "{name} からの送信リクエストを受信",
   "@quick_transfer_incoming": {
     "description": "Quick Transfer P2P: quick_transfer_incoming"
   },
-  "quick_transfer_incoming_files": "{count} 个文件，共 {size}",
+  "quick_transfer_incoming_files": "{count} ファイル、{size}",
   "@quick_transfer_incoming_files": {
     "description": "Quick Transfer P2P: quick_transfer_incoming_files"
   },
-  "quick_transfer_accept": "接受",
+  "quick_transfer_accept": "承認",
   "@quick_transfer_accept": {
     "description": "Quick Transfer P2P: quick_transfer_accept"
   },
-  "quick_transfer_reject": "拒绝",
+  "quick_transfer_reject": "拒否",
   "@quick_transfer_reject": {
     "description": "Quick Transfer P2P: quick_transfer_reject"
   },
-  "quick_transfer_sending": "正在发送…",
+  "quick_transfer_sending": "送信中…",
   "@quick_transfer_sending": {
     "description": "Quick Transfer P2P: quick_transfer_sending"
   },
-  "quick_transfer_receiving": "正在接收…",
+  "quick_transfer_receiving": "受信中…",
   "@quick_transfer_receiving": {
     "description": "Quick Transfer P2P: quick_transfer_receiving"
   },
-  "quick_transfer_complete": "传输完成",
+  "quick_transfer_complete": "転送完了",
   "@quick_transfer_complete": {
     "description": "Quick Transfer P2P: quick_transfer_complete"
   },
-  "quick_transfer_waiting_peer": "等待对方连接…",
+  "quick_transfer_waiting_peer": "相手の接続を待機中…",
   "@quick_transfer_waiting_peer": {
     "description": "Quick Transfer P2P: quick_transfer_waiting_peer"
   },
@@ -5761,35 +5761,35 @@
   "@quick_transfer_permission_why": {
     "description": "Quick Transfer P2P: quick_transfer_permission_why"
   },
-  "quick_transfer_permission_required": "快传需要位置/附近设备权限以发现附近设备",
+  "quick_transfer_permission_required": "クイック転送はデバイスを発見するために位置情報 / 近くのデバイスの権限が必要です",
   "@quick_transfer_permission_required": {
     "description": "Quick Transfer P2P: quick_transfer_permission_required"
   },
-  "quick_transfer_not_supported": "当前设备不支持 WiFi Direct 快传",
+  "quick_transfer_not_supported": "このデバイスは WiFi Direct のクイック転送に対応していません",
   "@quick_transfer_not_supported": {
     "description": "Quick Transfer P2P: quick_transfer_not_supported"
   },
-  "quick_transfer_disconnect": "断开",
+  "quick_transfer_disconnect": "切断",
   "@quick_transfer_disconnect": {
     "description": "Quick Transfer P2P: quick_transfer_disconnect"
   },
-  "quick_transfer_cancel": "取消",
+  "quick_transfer_cancel": "キャンセル",
   "@quick_transfer_cancel": {
     "description": "Quick Transfer P2P: quick_transfer_cancel"
   },
-  "quick_transfer_save_to": "保存到",
+  "quick_transfer_save_to": "保存先",
   "@quick_transfer_save_to": {
     "description": "Quick Transfer P2P: quick_transfer_save_to"
   },
-  "quick_transfer_send_mode": "发送",
+  "quick_transfer_send_mode": "送信",
   "@quick_transfer_send_mode": {
     "description": "Quick Transfer P2P: quick_transfer_send_mode"
   },
-  "quick_transfer_receive_mode": "接收",
+  "quick_transfer_receive_mode": "受信",
   "@quick_transfer_receive_mode": {
     "description": "Quick Transfer P2P: quick_transfer_receive_mode"
   },
-  "quick_transfer_device_name": "本机名称",
+  "quick_transfer_device_name": "このデバイス",
   "@quick_transfer_device_name": {
     "description": "Quick Transfer P2P: quick_transfer_device_name"
   },
@@ -5852,6 +5852,14 @@
   "quick_transfer_connected_btn": "接続済み",
   "@quick_transfer_connected_btn": {
     "description": "Quick Transfer P2P: quick_transfer_connected_btn"
+  },
+  "quick_transfer_forget_device": "デバイスを削除",
+  "@quick_transfer_forget_device": {
+    "description": "Quick Transfer P2P: quick_transfer_forget_device"
+  },
+  "quick_transfer_peer_unreachable": "このデバイスに接続できません。相手がクイック転送を開いていて、近くにいることを確認してください。",
+  "@quick_transfer_peer_unreachable": {
+    "description": "Quick Transfer P2P: quick_transfer_peer_unreachable"
   },
   "quick_transfer_available_peers": "接続可能なデバイス",
   "@quick_transfer_available_peers": {
@@ -5936,5 +5944,61 @@
   "changelog_v1133_fix_5": "長押しメニュー：v1.1.32 の表示構造を復元（高コントラスト背景 + 枠線）。",
   "@changelog_v1133_fix_5": {
     "description": "v1.1.33 changelog: changelog_v1133_fix_5"
-  }
+  },
+  "changelog_v1134_fix_1": "Fixed the app UI freezing when Web Sharing was accessed by another device — the whole-storage scan is now asynchronous and no longer blocks the UI thread.",
+  "@changelog_v1134_fix_1": {
+    "description": "v1.1.34 changelog: Web sharing freeze fixed"
+  },
+  "changelog_v1134_fix_2": "Fixed FTP failing to connect or picking the wrong network interface — local IP selection now prefers wlan/eth and skips Docker/VPN/virtual adapters.",
+  "@changelog_v1134_fix_2": {
+    "description": "v1.1.34 changelog: FTP IP selection rewrite"
+  },
+  "changelog_v1134_fix_3": "FTP sharing now supports a custom port — configurable and persisted in settings, with live apply and auto-restart of the listener while running.",
+  "@changelog_v1134_fix_3": {
+    "description": "v1.1.34 changelog: FTP custom port"
+  },
+  "changelog_v1134_fix_4": "Fixed FTP control-port binding & PASV: the control port is now bound to the concrete LAN IP and PASV resolution is simplified, fixing connection failures behind VPN/proxy.",
+  "@changelog_v1134_fix_4": {
+    "description": "v1.1.34 changelog: FTP control port & PASV"
+  },
+  "changelog_v1134_fix_5": "Added an 'FTP server stopped' notification that replaces the previous incorrect 'port changed / not active' message when the server stops.",
+  "@changelog_v1134_fix_5": {
+    "description": "v1.1.34 changelog: FTP stopped prompt"
+  },
+  "changelog_v1134_fix_6": "Text editor save/save-as merged into a single Save button that opens a menu to choose Save or Save As.",
+  "@changelog_v1134_fix_6": {
+    "description": "v1.1.34 changelog: text editor save menu"
+  },
+  "changelog_v1134_new_1": "Added a Toolbox entry on the Categories page.",
+  "@changelog_v1134_new_1": {
+    "description": "v1.1.34 changelog: category toolbox entry"
+  },
+  "changelog_v1134_new_2": "Consolidated the Encrypted Vault, Wake-on-LAN, and Quick Transfer into the Toolbox for centralized access.",
+  "@changelog_v1134_new_2": {
+    "description": "v1.1.34 changelog: toolbox consolidation"
+  },
+  "changelog_v1134_new_3": "Quick Transfer now remembers connected devices — reconnect with one tap next time, and remove a remembered device individually from the list.",
+  "@changelog_v1134_new_3": {
+    "description": "v1.1.34 changelog: remembered devices"
+  },
+  "changelog_v1134_opt_1": "Quick Transfer is now symmetric — after connecting, either side can initiate sending; the send/receive mode toggle and top switch button were removed.",
+  "@changelog_v1134_opt_1": {
+    "description": "v1.1.34 changelog: symmetric transfer"
+  },
+  "changelog_v1134_opt_2": "Quick Transfer UI fully refreshed — section cards, device-row cards, icon badges, filled selection boxes, and a circular progress badge for a more unified look.",
+  "@changelog_v1134_opt_2": {
+    "description": "v1.1.34 changelog: UI beautify"
+  },
+  "changelog_v1134_opt_3": "Quick Transfer main screen tightened — reduced card padding and spacing to minimize first-screen scrolling so the radar/device list is visible immediately.",
+  "@changelog_v1134_opt_3": {
+    "description": "v1.1.34 changelog: compact layout"
+  },
+  "ftp_server_stopped": "FTPサーバーを停止しました",
+  "@ftp_server_stopped": {
+    "description": "Message shown when the FTP server is stopped."
+  },
+  "cat_toolbox": "ツールボックス",
+  "cat_toolbox_desc": "ツール",
+  "quick_transfer_waiting_for_x": "{name} が接続をタップするのを待っています…",
+  "quick_transfer_ask_peer_connect": "相手のデバイスにも、クイック転送でこのデバイスの「接続」ボタンをタップしてもらってください"
 }
