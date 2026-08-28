@@ -1,0 +1,1524 @@
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../providers/file_manager_provider.dart';
+import '../models/custom_shortcut_model.dart';
+import '../models/category_filter_type.dart';
+import '../services/quick_transfer_service.dart';
+
+class PreferencesService {
+  static const String _keyThemeMode = 'theme_mode';
+  static const String _keyAppLocale = 'app_locale';
+  static const String _keyShowHiddenFiles = 'show_hidden_files';
+  static const String _keyShowFloatingAddButton = 'show_floating_add_button';
+  static const String _keyShowRemoteCloudBadge = 'show_remote_cloud_badge';
+  static const String _keyCategoryFilter = 'category_filter';
+  static const String _keyRememberCategoryFilter = 'remember_category_filter';
+  static const String _keyDefaultToBrowseScreen = 'default_to_browse_screen';
+  static const String _keyIsGridView = 'is_grid_view';
+  static const String _keyIconScale = 'icon_scale';
+  static const String _keyItemPaddingMultiplier = 'item_padding_multiplier';
+  static const String _keySortType = 'sort_type';
+  static const String _keyCategoryOrder = 'category_order';
+  static const String _keyActiveCategories = 'active_categories';
+  static const String _keyCategoriesMigratedVersion = 'categories_migrated_version';
+  // 当前迁移版本：每次新增分类需要补全到 active 列表时递增。
+  // 旧版本(< 当前版本)的用户启动时才补全新分类到 active，
+  // 之后不再干预用户主动关闭的分类，避免重启后被重新启用。
+  static const int kCurrentCategoriesMigratedVersion = 8;
+  static const String _keyShowFolderFileCount = 'show_folder_file_count';
+  static const String _keyShowBottomActionBar = 'show_bottom_action_bar';
+  static const String _keyEnableMultipleTabs = 'enable_multiple_tabs';
+  static const String _keyEnableSplitScreen = 'enable_split_screen';
+  static const String _keyShowAddressBar = 'show_address_bar';
+  static const String _keyAmoledMode = 'amoled_mode';
+  static const String _keyFolderSortTypes = 'folder_sort_types';
+  static const String _keyHideActionText = 'hide_action_text';
+  static const String _keyMenuIconStyle = 'menu_icon_style';
+  static const String _keyRememberLastFolder = 'remember_last_folder';
+  static const String _keyEditorWordWrap = 'editor_word_wrap';
+  static const String _keyEditorShowLineNumbers = 'editor_show_line_numbers';
+  static const String _keyEditorReadOnly = 'editor_read_only';
+
+  static SharedPreferences? _prefs;
+
+  static Future<void> init() async {
+    _prefs = await SharedPreferences.getInstance();
+  }
+
+  // --- Theme Mode ---
+  static ThemeMode getThemeMode() {
+    final str = _prefs?.getString(_keyThemeMode) ?? 'system';
+    if (str == 'light') return ThemeMode.light;
+    if (str == 'dark') return ThemeMode.dark;
+    return ThemeMode.system;
+  }
+
+  static Future<void> saveThemeMode(ThemeMode mode) async {
+    String str = 'system';
+    if (mode == ThemeMode.light) str = 'light';
+    if (mode == ThemeMode.dark) str = 'dark';
+    await _prefs?.setString(_keyThemeMode, str);
+  }
+
+  // --- Amoled Mode ---
+  static bool getAmoledMode() {
+    return _prefs?.getBool(_keyAmoledMode) ?? false;
+  }
+
+  static Future<void> saveAmoledMode(bool val) async {
+    await _prefs?.setBool(_keyAmoledMode, val);
+  }
+
+  // --- File Manager Settings ---
+  static bool getDefaultToBrowseScreen() {
+    return _prefs?.getBool(_keyDefaultToBrowseScreen) ?? false;
+  }
+
+  static Future<void> saveDefaultToBrowseScreen(bool val) async {
+    await _prefs?.setBool(_keyDefaultToBrowseScreen, val);
+  }
+
+  static bool getRememberLastFolder() {
+    return _prefs?.getBool(_keyRememberLastFolder) ?? false;
+  }
+
+  static Future<void> saveRememberLastFolder(bool val) async {
+    await _prefs?.setBool(_keyRememberLastFolder, val);
+  }
+
+  static bool getShowHiddenFiles() {
+    return _prefs?.getBool(_keyShowHiddenFiles) ?? false;
+  }
+
+  static Future<void> saveShowHiddenFiles(bool val) async {
+    await _prefs?.setBool(_keyShowHiddenFiles, val);
+  }
+
+  static bool getShowFloatingAddButton() {
+    return _prefs?.getBool(_keyShowFloatingAddButton) ?? true;
+  }
+
+  static Future<void> saveShowFloatingAddButton(bool val) async {
+    await _prefs?.setBool(_keyShowFloatingAddButton, val);
+  }
+
+  static bool getShowRemoteCloudBadge() {
+    return _prefs?.getBool(_keyShowRemoteCloudBadge) ?? true;
+  }
+
+  static Future<void> saveShowRemoteCloudBadge(bool val) async {
+    await _prefs?.setBool(_keyShowRemoteCloudBadge, val);
+  }
+
+  static Set<CategoryFilterType> getCategoryFilters() {
+    final str = _prefs?.getString(_keyCategoryFilter);
+    return categoryFilterTypeSetFromString(str);
+  }
+
+  static Future<void> saveCategoryFilters(Set<CategoryFilterType> values) async {
+    await _prefs?.setString(_keyCategoryFilter, categoryFilterTypesToString(values));
+  }
+
+  static bool getRememberCategoryFilter() {
+    return _prefs?.getBool(_keyRememberCategoryFilter) ?? false;
+  }
+
+  static Future<void> saveRememberCategoryFilter(bool val) async {
+    await _prefs?.setBool(_keyRememberCategoryFilter, val);
+  }
+
+  static bool getShowFolderFileCount() {
+    return _prefs?.getBool(_keyShowFolderFileCount) ?? false;
+  }
+
+  static Future<void> saveShowFolderFileCount(bool val) async {
+    await _prefs?.setBool(_keyShowFolderFileCount, val);
+  }
+
+  static bool getShowBottomActionBar() {
+    return _prefs?.getBool(_keyShowBottomActionBar) ?? false;
+  }
+
+  static Future<void> saveShowBottomActionBar(bool val) async {
+    await _prefs?.setBool(_keyShowBottomActionBar, val);
+  }
+
+  static const String _keyShowHomeBrowseNav = 'show_home_browse_nav';
+
+  static bool getShowHomeBrowseNav() {
+    return _prefs?.getBool(_keyShowHomeBrowseNav) ?? true;
+  }
+
+  static Future<void> saveShowHomeBrowseNav(bool val) async {
+    await _prefs?.setBool(_keyShowHomeBrowseNav, val);
+  }
+
+  /// 是否已成功完成「所有文件管理」权限配置。
+  /// 该标志持久化在 SharedPreferences；清除应用数据会被清空，从而让
+  /// 清除数据后的下一次启动重新引导用户授予／重新开启「所有文件管理」权限
+  /// （部分 ROM 在清除数据后系统仍报告已授权，但实际访问被拒——幽灵授权）。
+  static bool getPermissionSetupDone() {
+    return _prefs?.getBool(_keyPermissionSetupDone) ?? false;
+  }
+
+  static Future<void> setPermissionSetupDone(bool val) async {
+    await _prefs?.setBool(_keyPermissionSetupDone, val);
+  }
+
+  static const String _keyPermissionSetupDone = 'permission_setup_done';
+
+  static const String _keyHomeDirectoryLeft = 'home_directory_left';
+  static const String _keyHomeDirectoryRight = 'home_directory_right';
+
+  static String? getHomeDirectoryLeft() {
+    return _prefs?.getString(_keyHomeDirectoryLeft);
+  }
+
+  static Future<void> saveHomeDirectoryLeft(String? path) async {
+    if (path == null) {
+      await _prefs?.remove(_keyHomeDirectoryLeft);
+    } else {
+      await _prefs?.setString(_keyHomeDirectoryLeft, path);
+    }
+  }
+
+  static String? getHomeDirectoryRight() {
+    return _prefs?.getString(_keyHomeDirectoryRight);
+  }
+
+  static Future<void> saveHomeDirectoryRight(String? path) async {
+    if (path == null) {
+      await _prefs?.remove(_keyHomeDirectoryRight);
+    } else {
+      await _prefs?.setString(_keyHomeDirectoryRight, path);
+    }
+  }
+
+  static const String _keyShowMediaPreviews = 'show_media_previews';
+
+  static bool getShowMediaPreviews() {
+    return _prefs?.getBool(_keyShowMediaPreviews) ?? true;
+  }
+
+  static Future<void> saveShowMediaPreviews(bool val) async {
+    await _prefs?.setBool(_keyShowMediaPreviews, val);
+  }
+
+  static bool getEnableMultipleTabs() {
+    return _prefs?.getBool(_keyEnableMultipleTabs) ?? true;
+  }
+
+  static Future<void> saveEnableMultipleTabs(bool val) async {
+    await _prefs?.setBool(_keyEnableMultipleTabs, val);
+  }
+
+  static bool getEnableSplitScreen() {
+    return _prefs?.getBool(_keyEnableSplitScreen) ?? false;
+  }
+
+  static Future<void> saveEnableSplitScreen(bool val) async {
+    await _prefs?.setBool(_keyEnableSplitScreen, val);
+  }
+
+  static bool getIsGridView() {
+    return _prefs?.getBool(_keyIsGridView) ?? false;
+  }
+
+  static Future<void> saveIsGridView(bool val) async {
+    await _prefs?.setBool(_keyIsGridView, val);
+  }
+
+  // 媒体分类页面按类别独立存储列表/网格视图偏好
+  static const String _keyMediaCategoryGridView = 'media_category_grid_view_';
+
+  // 媒体分类页面按类别独立存储「是否显示远程文件」偏好（true=显示远程，false=仅本地）
+  static const String _keyShowRemoteFilesInCategory = 'show_remote_files_in_category_';
+
+  static bool getShowRemoteFilesInCategory(String mediaType, {bool defaultValue = true}) {
+    return _prefs?.getBool('$_keyShowRemoteFilesInCategory$mediaType') ?? defaultValue;
+  }
+
+  static Future<void> saveShowRemoteFilesInCategory(String mediaType, bool val) async {
+    await _prefs?.setBool('$_keyShowRemoteFilesInCategory$mediaType', val);
+  }
+
+  static bool getMediaCategoryGridView(String mediaType, {bool defaultValue = false}) {
+    return _prefs?.getBool('$_keyMediaCategoryGridView$mediaType') ?? defaultValue;
+  }
+
+  static Future<void> saveMediaCategoryGridView(String mediaType, bool val) async {
+    await _prefs?.setBool('$_keyMediaCategoryGridView$mediaType', val);
+  }
+
+  // 媒体分类页面是否显示「继续播放」音频/视频控制器
+  static const String _keyShowResumeAudio = 'show_resume_audio_controller';
+  static const String _keyShowResumeVideo = 'show_resume_video_controller';
+
+  static bool getShowResumeAudio({bool defaultValue = true}) {
+    return _prefs?.getBool(_keyShowResumeAudio) ?? defaultValue;
+  }
+
+  static Future<void> saveShowResumeAudio(bool val) async {
+    await _prefs?.setBool(_keyShowResumeAudio, val);
+  }
+
+  static bool getShowResumeVideo({bool defaultValue = true}) {
+    return _prefs?.getBool(_keyShowResumeVideo) ?? defaultValue;
+  }
+
+  static Future<void> saveShowResumeVideo(bool val) async {
+    await _prefs?.setBool(_keyShowResumeVideo, val);
+  }
+
+  static double getIconScale() {
+    return _prefs?.getDouble(_keyIconScale) ?? 1.0;
+  }
+
+  static Future<void> saveIconScale(double val) async {
+    await _prefs?.setDouble(_keyIconScale, val);
+  }
+
+  static double getItemPaddingMultiplier() {
+    return _prefs?.getDouble(_keyItemPaddingMultiplier) ?? 1.0;
+  }
+
+  static Future<void> saveItemPaddingMultiplier(double val) async {
+    await _prefs?.setDouble(_keyItemPaddingMultiplier, val);
+  }
+
+  static FileSortType getSortType() {
+    final index = _prefs?.getInt(_keySortType) ?? 0;
+    if (index >= 0 && index < FileSortType.values.length) {
+      return FileSortType.values[index];
+    }
+    return FileSortType.nameAsc;
+  }
+
+  static Future<void> saveSortType(FileSortType type) async {
+    await _prefs?.setInt(_keySortType, type.index);
+  }
+
+  static Map<String, FileSortType> getFolderSortTypes() {
+    final str = _prefs?.getString(_keyFolderSortTypes);
+    if (str == null) return {};
+    try {
+      final map = jsonDecode(str) as Map<String, dynamic>;
+      return map.map((key, value) {
+        final idx = value as int;
+        if (idx >= 0 && idx < FileSortType.values.length) {
+          return MapEntry(key, FileSortType.values[idx]);
+        }
+        return MapEntry(key, FileSortType.nameAsc);
+      });
+    } catch (e) {
+      debugPrint('Error loading folder sort types: $e');
+      return {};
+    }
+  }
+
+  static Future<void> saveFolderSortTypes(Map<String, FileSortType> map) async {
+    final jsonMap = map.map((key, value) => MapEntry(key, value.index));
+    await _prefs?.setString(_keyFolderSortTypes, jsonEncode(jsonMap));
+  }
+
+  // --- Home Screen Shortcuts ---
+  static List<String>? getCategoryOrder() {
+    return _prefs?.getStringList(_keyCategoryOrder);
+  }
+
+  static Future<void> saveCategoryOrder(List<String> list) async {
+    await _prefs?.setStringList(_keyCategoryOrder, list);
+  }
+
+  static List<String>? getActiveCategories() {
+    return _prefs?.getStringList(_keyActiveCategories);
+  }
+
+  static Future<void> saveActiveCategories(List<String> list) async {
+    await _prefs?.setStringList(_keyActiveCategories, list);
+  }
+
+  static int getCategoriesMigratedVersion() {
+    return _prefs?.getInt(_keyCategoriesMigratedVersion) ?? 0;
+  }
+
+  static Future<void> saveCategoriesMigratedVersion(int version) async {
+    await _prefs?.setInt(_keyCategoriesMigratedVersion, version);
+  }
+
+  static int getCategoryCount(String category) {
+    return _prefs?.getInt('cat_count_$category') ?? 0;
+  }
+
+  static Future<void> saveCategoryCount(String category, int count) async {
+    await _prefs?.setInt('cat_count_$category', count);
+  }
+
+  static const String _keyCategorySizes = 'cat_sizes';
+
+  /// 批量保存各分类的文件总大小（字节，序列化为 JSON Map 字符串）。
+  static Future<void> saveCategorySizes(Map<String, String> sizes) async {
+    final str = jsonEncode(sizes);
+    await _prefs?.setString(_keyCategorySizes, str);
+  }
+
+  /// 获取单个分类的文件总大小缓存（字节），无数据返回 null。
+  static int? getCategorySize(String category) {
+    final str = _prefs?.getString(_keyCategorySizes);
+    if (str == null || str.isEmpty) return null;
+    try {
+      final map = jsonDecode(str) as Map<String, dynamic>;
+      final v = map[category];
+      if (v == null) return null;
+      return int.tryParse(v.toString());
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static const String _keyCustomShortcuts = 'custom_shortcuts';
+
+  static List<CustomShortcutModel>? getCustomShortcuts() {
+    final str = _prefs?.getString(_keyCustomShortcuts);
+    if (str == null) return null;
+    try {
+      final list = jsonDecode(str) as List;
+      return list.map((e) => CustomShortcutModel.fromJson(e as Map<String, dynamic>)).toList();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static Future<void> saveCustomShortcuts(List<CustomShortcutModel> list) async {
+    final str = jsonEncode(list.map((e) => e.toJson()).toList());
+    await _prefs?.setString(_keyCustomShortcuts, str);
+  }
+
+  static const String _keyPinnedFolderShortcuts = 'pinned_folder_shortcuts';
+
+  static List<CustomShortcutModel> getPinnedFolderShortcuts() {
+    final str = _prefs?.getString(_keyPinnedFolderShortcuts);
+    if (str == null) return [];
+    try {
+      final list = jsonDecode(str) as List;
+      return list.map((e) => CustomShortcutModel.fromJson(e as Map<String, dynamic>)).toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  static Future<void> savePinnedFolderShortcuts(List<CustomShortcutModel> list) async {
+    final str = jsonEncode(list.map((e) => e.toJson()).toList());
+    await _prefs?.setString(_keyPinnedFolderShortcuts, str);
+  }
+
+  static const String _keyAccentColor = 'accent_color';
+  static const String _keyFontFamily = 'font_family';
+
+  static String getAccentColor() {
+    return _prefs?.getString(_keyAccentColor) ?? 'blue';
+  }
+
+  static Future<void> saveAccentColor(String val) async {
+    await _prefs?.setString(_keyAccentColor, val);
+  }
+
+  static String getFontFamily() {
+    return _prefs?.getString(_keyFontFamily) ?? 'default';
+  }
+
+  static Future<void> saveFontFamily(String val) async {
+    await _prefs?.setString(_keyFontFamily, val);
+  }
+
+  static Color getSeedColor(String name) {
+    switch (name) {
+      case 'orange': return const Color(0xFFFF6D00);
+      case 'purple': return const Color(0xFF8E24AA);
+      case 'green': return const Color(0xFF00C853);
+      case 'red': return const Color(0xFFD50000);
+      case 'gold': return const Color(0xFFFFD600);
+      case 'pink': return const Color(0xFFFF2E93);
+      case 'sapphire': return const Color(0xFF0F52BA);
+      case 'forest': return const Color(0xFF228B22);
+      case 'peach': return const Color(0xFFFF7F50);
+      case 'blue': return const Color(0xFF369FE7);
+      case 'dynamic':
+      default:
+        return const Color(0xFF369FE7);
+    }
+  }
+
+  static const String _keyFolderIconStyle = 'folder_icon_style';
+
+  static String getFolderIconStyle() {
+    return _prefs?.getString(_keyFolderIconStyle) ?? 'solid';
+  }
+
+  static Future<void> saveFolderIconStyle(String val) async {
+    await _prefs?.setString(_keyFolderIconStyle, val);
+  }
+
+  static String getMenuIconStyle() {
+    return _prefs?.getString(_keyMenuIconStyle) ?? 'hamburger';
+  }
+
+  static Future<void> saveMenuIconStyle(String val) async {
+    await _prefs?.setString(_keyMenuIconStyle, val);
+  }
+
+  // --- Preferred Media Category default view & Open With preferences ---
+  // 媒体分类页面按类别独立存储「文件夹查看」偏好（true=按文件夹查看，false=按全部项目查看）
+  static const String _keyPreferFoldersInMedia = 'prefer_folders_in_media_';
+  static const String _keyHideNavigationBar = 'hide_navigation_bar';
+  static const String _keyDefaultOpenActionPrefix = 'default_open_action_';
+  static const String _keySkipOpenWithDialog = 'skip_open_with_dialog';
+
+  static bool getPreferFoldersInMedia(String mediaType, {bool defaultValue = true}) {
+    return _prefs?.getBool('$_keyPreferFoldersInMedia$mediaType') ?? defaultValue;
+  }
+
+  static Future<void> savePreferFoldersInMedia(String mediaType, bool val) async {
+    await _prefs?.setBool('$_keyPreferFoldersInMedia$mediaType', val);
+  }
+
+  static bool getHideNavigationBar() {
+    return _prefs?.getBool(_keyHideNavigationBar) ?? false;
+  }
+
+  static Future<void> saveHideNavigationBar(bool val) async {
+    await _prefs?.setBool(_keyHideNavigationBar, val);
+  }
+
+  static bool getSkipOpenWithDialog() {
+    return _prefs?.getBool(_keySkipOpenWithDialog) ?? false;
+  }
+
+  static Future<void> saveSkipOpenWithDialog(bool val) async {
+    await _prefs?.setBool(_keySkipOpenWithDialog, val);
+  }
+
+  static String? getDefaultOpenAction(String ext) {
+    final sanitizedExt = ext.toLowerCase().replaceAll('.', '');
+    return _prefs?.getString('$_keyDefaultOpenActionPrefix$sanitizedExt');
+  }
+
+  static Future<void> saveDefaultOpenAction(String ext, String action) async {
+    final sanitizedExt = ext.toLowerCase().replaceAll('.', '');
+    await _prefs?.setString('$_keyDefaultOpenActionPrefix$sanitizedExt', action);
+  }
+
+  static bool getPdfResetDone() {
+    return _prefs?.getBool('pdf_reset_done_v1') ?? false;
+  }
+
+  static Future<void> savePdfResetDone() async {
+    await _prefs?.setBool('pdf_reset_done_v1', true);
+  }
+
+  static Future<void> clearAllDefaultOpenActions() async {
+    final keys = _prefs?.getKeys() ?? {};
+    final keysToRemove = keys.where((k) => k.startsWith(_keyDefaultOpenActionPrefix)).toList();
+    for (final key in keysToRemove) {
+      await _prefs?.remove(key);
+    }
+  }
+
+  // --- Address Bar Settings ---
+  static bool getShowAddressBar() {
+    return _prefs?.getBool(_keyShowAddressBar) ?? true;
+  }
+
+  static Future<void> saveShowAddressBar(bool val) async {
+    await _prefs?.setBool(_keyShowAddressBar, val);
+  }
+
+  // --- Dual Finger Swipe Settings ---
+  static const String _keyEnableDualFingerSwipe = 'enable_dual_finger_swipe';
+
+  static bool getEnableDualFingerSwipe() {
+    return _prefs?.getBool(_keyEnableDualFingerSwipe) ?? false;
+  }
+
+  static Future<void> saveEnableDualFingerSwipe(bool val) async {
+    await _prefs?.setBool(_keyEnableDualFingerSwipe, val);
+  }
+
+  // --- Swipe Mode Settings ---
+  static const String _keySwipeMode = 'swipe_mode'; // 'single' or 'dual'
+
+  static String getSwipeMode() {
+    return _prefs?.getString(_keySwipeMode) ?? 'single';
+  }
+
+  static Future<void> saveSwipeMode(String val) async {
+    await _prefs?.setString(_keySwipeMode, val);
+  }
+
+  static const String _keyShowRecentFiles = 'show_recent_files';
+  static const String _keyEnableFolderHighlight = 'enable_folder_highlight';
+
+  static bool getShowRecentFiles() {
+    return _prefs?.getBool(_keyShowRecentFiles) ?? true;
+  }
+
+  static Future<void> saveShowRecentFiles(bool val) async {
+    await _prefs?.setBool(_keyShowRecentFiles, val);
+  }
+
+  static bool getEnableFolderHighlight() {
+    return _prefs?.getBool(_keyEnableFolderHighlight) ?? true;
+  }
+
+  static Future<void> saveEnableFolderHighlight(bool val) async {
+    await _prefs?.setBool(_keyEnableFolderHighlight, val);
+  }
+
+  static const String _keyEnableDragDrop = 'enable_drag_drop';
+  static const String _keyShowDragDropDialog = 'show_drag_drop_dialog';
+
+  static bool getEnableDragDrop() {
+    return _prefs?.getBool(_keyEnableDragDrop) ?? false;
+  }
+
+  static Future<void> saveEnableDragDrop(bool val) async {
+    await _prefs?.setBool(_keyEnableDragDrop, val);
+  }
+
+  static bool getShowDragDropDialog() {
+    return _prefs?.getBool(_keyShowDragDropDialog) ?? true;
+  }
+
+  static Future<void> saveShowDragDropDialog(bool val) async {
+    await _prefs?.setBool(_keyShowDragDropDialog, val);
+  }
+
+  static const String _keyUse24HourFormat = 'use_24_hour_format';
+  static const String _keyHideTimeAndDate = 'hide_time_and_date';
+  static const String _keyShowFolderContentsCount = 'show_folder_contents_count';
+
+  static bool getUse24HourFormat() {
+    return _prefs?.getBool(_keyUse24HourFormat) ?? true;
+  }
+
+  static Future<void> saveUse24HourFormat(bool val) async {
+    await _prefs?.setBool(_keyUse24HourFormat, val);
+  }
+
+  static bool getHideTimeAndDate() {
+    return _prefs?.getBool(_keyHideTimeAndDate) ?? false;
+  }
+
+  static Future<void> saveHideTimeAndDate(bool val) async {
+    await _prefs?.setBool(_keyHideTimeAndDate, val);
+  }
+
+  static bool getShowFolderContentsCount() {
+    return _prefs?.getBool(_keyShowFolderContentsCount) ?? false;
+  }
+
+  static Future<void> saveShowFolderContentsCount(bool val) async {
+    await _prefs?.setBool(_keyShowFolderContentsCount, val);
+  }
+
+  static const String _keyShowFolderSizes = 'show_folder_sizes';
+
+  static bool getShowFolderSizes() {
+    return _prefs?.getBool(_keyShowFolderSizes) ?? false;
+  }
+
+  static Future<void> saveShowFolderSizes(bool val) async {
+    await _prefs?.setBool(_keyShowFolderSizes, val);
+  }
+
+  // --- 底部操作栏位置 (#2) ---
+  static const String _keyBottomBarPosition = 'bottom_bar_position'; // 'spread' | 'left' | 'center' | 'right' | 'full'
+
+  static String getBottomBarPosition() {
+    return _prefs?.getString(_keyBottomBarPosition) ?? 'spread';
+  }
+
+  static Future<void> saveBottomBarPosition(String val) async {
+    await _prefs?.setString(_keyBottomBarPosition, val);
+  }
+
+  // --- 首页分类图标显示标签 (#8) ---
+  static const String _keyShowCategoryLabels = 'show_category_labels';
+
+  static bool getShowCategoryLabels() {
+    return _prefs?.getBool(_keyShowCategoryLabels) ?? true;
+  }
+
+  static Future<void> saveShowCategoryLabels(bool val) async {
+    await _prefs?.setBool(_keyShowCategoryLabels, val);
+  }
+
+  // --- 图片编辑器 DPI 模式 (#1) ---
+  static const String _keyImageEditorDpiMode = 'image_editor_dpi_mode'; // 'pixel' | 'physical'
+  static const String _keyImageEditorTargetDpi = 'image_editor_target_dpi';
+  static const String _keyImageEditorFileSizeLimit = 'image_editor_file_size_limit'; // KB, 0=无限制
+
+  static String getImageEditorDpiMode() {
+    return _prefs?.getString(_keyImageEditorDpiMode) ?? 'pixel';
+  }
+
+  static Future<void> saveImageEditorDpiMode(String val) async {
+    await _prefs?.setString(_keyImageEditorDpiMode, val);
+  }
+
+  static int getImageEditorTargetDpi() {
+    return _prefs?.getInt(_keyImageEditorTargetDpi) ?? 200;
+  }
+
+  static Future<void> saveImageEditorTargetDpi(int val) async {
+    await _prefs?.setInt(_keyImageEditorTargetDpi, val);
+  }
+
+  static int getImageEditorFileSizeLimit() {
+    return _prefs?.getInt(_keyImageEditorFileSizeLimit) ?? 0;
+  }
+
+  static Future<void> saveImageEditorFileSizeLimit(int val) async {
+    await _prefs?.setInt(_keyImageEditorFileSizeLimit, val);
+  }
+
+  // --- 视频硬解码模式 (#11) ---
+  static const String _keyVideoHwDec = 'video_hw_dec'; // 'auto' | 'auto-safe' | 'no'
+
+  static String getVideoHwDec() {
+    return _prefs?.getString(_keyVideoHwDec) ?? 'auto-safe';
+  }
+
+  static Future<void> saveVideoHwDec(String val) async {
+    await _prefs?.setString(_keyVideoHwDec, val);
+  }
+
+  // --- 音频均衡器预设 (#12) ---
+  static const String _keyAudioEqPreset = 'audio_eq_preset'; // 'flat' | 'vocal' | 'bass' | 'live' | 'jazz'
+
+  static String getAudioEqPreset() {
+    return _prefs?.getString(_keyAudioEqPreset) ?? 'flat';
+  }
+
+  static Future<void> saveAudioEqPreset(String val) async {
+    await _prefs?.setString(_keyAudioEqPreset, val);
+  }
+
+  // --- AMOLED 纯黑主题扩展：应用到所有页面 (#9) ---
+  static const String _keyAmoledPureBlackAllPages = 'amoled_pure_black_all_pages';
+
+  static bool getAmoledPureBlackAllPages() {
+    return _prefs?.getBool(_keyAmoledPureBlackAllPages) ?? true;
+  }
+
+  static Future<void> saveAmoledPureBlackAllPages(bool val) async {
+    await _prefs?.setBool(_keyAmoledPureBlackAllPages, val);
+  }
+
+  // --- VirusTotal API Key (#5a) ---
+  static const String _keyVirusTotalApiKey = 'virustotal_api_key';
+
+  static String? getVirusTotalApiKey() {
+    return _prefs?.getString(_keyVirusTotalApiKey);
+  }
+
+  static Future<void> saveVirusTotalApiKey(String key) async {
+    await _prefs?.setString(_keyVirusTotalApiKey, key);
+  }
+
+  // --- Google Drive 集成 (#7) ---
+  static const String _keyGdriveAccessToken = 'gdrive_access_token';
+  static const String _keyGdriveRefreshToken = 'gdrive_refresh_token';
+
+  static String? getGoogleDriveAccessToken() {
+    return _prefs?.getString(_keyGdriveAccessToken);
+  }
+
+  static Future<void> saveGoogleDriveAccessToken(String token) async {
+    await _prefs?.setString(_keyGdriveAccessToken, token);
+  }
+
+  static String? getGoogleDriveRefreshToken() {
+    return _prefs?.getString(_keyGdriveRefreshToken);
+  }
+
+  static Future<void> saveGoogleDriveRefreshToken(String token) async {
+    await _prefs?.setString(_keyGdriveRefreshToken, token);
+  }
+
+  // --- 后台播放电池优化白名单提示 (#13) ---
+  static const String _keyBatteryOptDismissed = 'battery_opt_dismissed';
+
+  static bool getBatteryOptDismissed() {
+    return _prefs?.getBool(_keyBatteryOptDismissed) ?? false;
+  }
+
+  static Future<void> saveBatteryOptDismissed(bool val) async {
+    await _prefs?.setBool(_keyBatteryOptDismissed, val);
+  }
+
+  static const String _keyCachedTotalStorage = 'cached_total_storage';
+  static const String _keyCachedUsedStorage = 'cached_used_storage';
+
+  static int getCachedTotalStorage() {
+    return _prefs?.getInt(_keyCachedTotalStorage) ?? 0;
+  }
+
+  static Future<void> saveCachedTotalStorage(int val) async {
+    await _prefs?.setInt(_keyCachedTotalStorage, val);
+  }
+
+  static int getCachedUsedStorage() {
+    return _prefs?.getInt(_keyCachedUsedStorage) ?? 0;
+  }
+
+  static Future<void> saveCachedUsedStorage(int val) async {
+    await _prefs?.setInt(_keyCachedUsedStorage, val);
+  }
+
+  static const String _keyAdaptiveMultiLineNames = 'adaptive_multiline_names';
+
+  static bool getAdaptiveMultiLineNames() {
+    return _prefs?.getBool(_keyAdaptiveMultiLineNames) ?? true;
+  }
+
+  static Future<void> saveAdaptiveMultiLineNames(bool val) async {
+    await _prefs?.setBool(_keyAdaptiveMultiLineNames, val);
+  }
+
+  static const String _keyHideActionMenuButtons = 'hide_action_menu_buttons';
+
+  static bool getHideActionMenuButtons() {
+    return _prefs?.getBool(_keyHideActionMenuButtons) ?? true;
+  }
+
+  static Future<void> saveHideActionMenuButtons(bool val) async {
+    await _prefs?.setBool(_keyHideActionMenuButtons, val);
+  }
+
+  // 显示三点操作按钮（与 hide_action_menu_buttons 语义相反，默认开启显示）
+  static const String _keyShowActionMenuButtons = 'show_action_menu_buttons';
+
+  static bool getShowActionMenuButtons() {
+    return _prefs?.getBool(_keyShowActionMenuButtons) ?? true;
+  }
+
+  static Future<void> saveShowActionMenuButtons(bool val) async {
+    await _prefs?.setBool(_keyShowActionMenuButtons, val);
+  }
+
+  // 三点按钮显示模式：'all' | 'single' | 'dual'
+  static const String _keyActionMenuDisplayMode = 'action_menu_display_mode';
+
+  static String getActionMenuDisplayMode() {
+    return _prefs?.getString(_keyActionMenuDisplayMode) ?? 'all';
+  }
+
+  static Future<void> saveActionMenuDisplayMode(String val) async {
+    await _prefs?.setString(_keyActionMenuDisplayMode, val);
+  }
+
+  static const String _keyAudioBackgroundPlay = 'audio_background_play';
+  static const String _keyActiveAppIcon = 'active_app_icon';
+  static const String _keyDesktopLyricEnabled = 'desktop_lyric_enabled';
+
+  static bool getAudioBackgroundPlay() {
+    return _prefs?.getBool(_keyAudioBackgroundPlay) ?? false;
+  }
+
+  static Future<void> saveAudioBackgroundPlay(bool val) async {
+    await _prefs?.setBool(_keyAudioBackgroundPlay, val);
+  }
+
+  static bool getDesktopLyricEnabled() {
+    return _prefs?.getBool(_keyDesktopLyricEnabled) ?? false;
+  }
+
+  static Future<void> saveDesktopLyricEnabled(bool val) async {
+    await _prefs?.setBool(_keyDesktopLyricEnabled, val);
+  }
+
+  // --- Audio Playback Mode (0=sequential, 1=list loop, 2=single loop, 3=shuffle) ---
+  static const String _keyAudioPlaybackMode = 'audio_playback_mode';
+
+  static int getAudioPlaybackMode() {
+    return _prefs?.getInt(_keyAudioPlaybackMode) ?? 0;
+  }
+
+  static Future<void> saveAudioPlaybackMode(int mode) async {
+    await _prefs?.setInt(_keyAudioPlaybackMode, mode.clamp(0, 3));
+  }
+
+  static String getActiveAppIcon() {
+    return _prefs?.getString(_keyActiveAppIcon) ?? 'default';
+  }
+
+  static Future<void> saveActiveAppIcon(String val) async {
+    await _prefs?.setString(_keyActiveAppIcon, val);
+  }
+
+  static bool getHideActionText() {
+    return _prefs?.getBool(_keyHideActionText) ?? false;
+  }
+
+  static Future<void> saveHideActionText(bool val) async {
+    await _prefs?.setBool(_keyHideActionText, val);
+  }
+
+  static const String _keyCustomCategoryPaths = 'custom_category_paths';
+
+  // --- Remote Server Cache Settings ---
+  static const String _keyRemoteCacheAutoCleanDays = 'remote_cache_auto_clean_days';
+  static const String _keyRemoteCacheAutoCleanMinutes = 'remote_cache_auto_clean_minutes';
+  static const String _keyRemoteCacheLastCleanTime = 'remote_cache_last_clean_time';
+  static const String _keyRemoteMediaThumbnailPreview = 'remote_media_thumbnail_preview';
+  static const String _keyWebSharePort = 'web_share_port';
+  static const String _keyFtpPort = 'ftp_port';
+
+  /// 获取自动清理天数，0表示不自动清理
+  /// @deprecated 保留兼容旧版本，新代码使用 getRemoteCacheAutoCleanMinutes
+  static int getRemoteCacheAutoCleanDays() {
+    return _prefs?.getInt(_keyRemoteCacheAutoCleanDays) ?? 0;
+  }
+
+  /// @deprecated 保留兼容旧版本
+  static Future<void> saveRemoteCacheAutoCleanDays(int days) async {
+    await _prefs?.setInt(_keyRemoteCacheAutoCleanDays, days);
+  }
+
+  /// 获取自动清理间隔（分钟）。
+  /// 默认 5 分钟（即 0天0小时5分钟）。
+  /// 0 表示不自动清理。
+  static int getRemoteCacheAutoCleanMinutes() {
+    // 兼容旧版本：如果新键不存在但旧键有值，转换为新单位
+    if (_prefs?.containsKey(_keyRemoteCacheAutoCleanMinutes) ?? false) {
+      return _prefs?.getInt(_keyRemoteCacheAutoCleanMinutes) ?? 5;
+    }
+    // 旧版本值转换为分钟
+    final oldDays = _prefs?.getInt(_keyRemoteCacheAutoCleanDays) ?? 0;
+    if (oldDays > 0) {
+      return oldDays * 24 * 60;
+    }
+    // 首次安装默认 5 分钟
+    return 5;
+  }
+
+  static Future<void> saveRemoteCacheAutoCleanMinutes(int minutes) async {
+    await _prefs?.setInt(_keyRemoteCacheAutoCleanMinutes, minutes);
+  }
+
+  static int getRemoteCacheLastCleanTime() {
+    return _prefs?.getInt(_keyRemoteCacheLastCleanTime) ?? 0;
+  }
+
+  static Future<void> saveRemoteCacheLastCleanTime(int timestamp) async {
+    await _prefs?.setInt(_keyRemoteCacheLastCleanTime, timestamp);
+  }
+
+  /// 获取远程媒体文件缩略图预览开关
+  static bool getRemoteMediaThumbnailPreview() {
+    return _prefs?.getBool(_keyRemoteMediaThumbnailPreview) ?? false;
+  }
+
+  static Future<void> saveRemoteMediaThumbnailPreview(bool val) async {
+    await _prefs?.setBool(_keyRemoteMediaThumbnailPreview, val);
+  }
+
+  /// 获取 Web 共享端口，默认 8080
+  static int getWebSharePort() {
+    return _prefs?.getInt(_keyWebSharePort) ?? 8080;
+  }
+
+  static Future<void> saveWebSharePort(int port) async {
+    await _prefs?.setInt(_keyWebSharePort, port);
+  }
+
+  /// 获取 FTP 共享端口，默认 9999
+  static int getFtpPort() {
+    return _prefs?.getInt(_keyFtpPort) ?? 9999;
+  }
+
+  static Future<void> saveFtpPort(int port) async {
+    await _prefs?.setInt(_keyFtpPort, port);
+  }
+
+  static Map<String, List<String>> getCustomCategoryPaths() {
+    final str = _prefs?.getString(_keyCustomCategoryPaths);
+    if (str == null) return {};
+    try {
+      final map = jsonDecode(str) as Map<String, dynamic>;
+      return map.map((key, value) => MapEntry(key, List<String>.from(value)));
+    } catch (_) {
+      return {};
+    }
+  }
+
+  static Future<void> saveCustomCategoryPaths(Map<String, List<String>> map) async {
+    await _prefs?.setString(_keyCustomCategoryPaths, jsonEncode(map));
+  }
+
+  static const String _keyExcludedDefaultPaths = 'excluded_default_paths';
+
+  static Map<String, List<String>> getExcludedDefaultPaths() {
+    final str = _prefs?.getString(_keyExcludedDefaultPaths);
+    if (str == null) return {};
+    try {
+      final map = jsonDecode(str) as Map<String, dynamic>;
+      return map.map((key, value) => MapEntry(key, List<String>.from(value)));
+    } catch (_) {
+      return {};
+    }
+  }
+
+  static Future<void> saveExcludedDefaultPaths(Map<String, List<String>> map) async {
+    await _prefs?.setString(_keyExcludedDefaultPaths, jsonEncode(map));
+  }
+
+  static const String _keyCustomCategoryLabels = 'custom_category_labels';
+
+  static Map<String, String> getCustomCategoryLabels() {
+    final str = _prefs?.getString(_keyCustomCategoryLabels);
+    if (str == null) return {};
+    try {
+      return Map<String, String>.from(jsonDecode(str) as Map<String, dynamic>);
+    } catch (_) {
+      return {};
+    }
+  }
+
+  static Future<void> saveCustomCategoryLabels(Map<String, String> map) async {
+    await _prefs?.setString(_keyCustomCategoryLabels, jsonEncode(map));
+  }
+
+  static const String _keyCustomFontPath = 'custom_font_path';
+
+  static String? getCustomFontPath() {
+    return _prefs?.getString(_keyCustomFontPath);
+  }
+
+  static Future<void> saveCustomFontPath(String? val) async {
+    if (val == null) {
+      await _prefs?.remove(_keyCustomFontPath);
+    } else {
+      await _prefs?.setString(_keyCustomFontPath, val);
+    }
+  }
+
+  static const String _keyCustomAppIconPath = 'custom_app_icon_path';
+
+  static String? getCustomAppIconPath() {
+    return _prefs?.getString(_keyCustomAppIconPath);
+  }
+
+  static Future<void> saveCustomAppIconPath(String? val) async {
+    if (val == null) {
+      await _prefs?.remove(_keyCustomAppIconPath);
+    } else {
+      await _prefs?.setString(_keyCustomAppIconPath, val);
+    }
+  }
+
+  static const String _keyDisableLeftBackGesture = 'disable_left_back_gesture';
+
+  static bool getDisableLeftBackGesture() {
+    return _prefs?.getBool(_keyDisableLeftBackGesture) ?? false;
+  }
+
+  static Future<void> saveDisableLeftBackGesture(bool val) async {
+    await _prefs?.setBool(_keyDisableLeftBackGesture, val);
+  }
+
+  static const String _keyTabsList = 'tabs_list';
+
+  static List<Map<String, dynamic>> getSavedTabs() {
+    final str = _prefs?.getString(_keyTabsList);
+    if (str == null) return [];
+    try {
+      final decoded = jsonDecode(str) as List<dynamic>;
+      return decoded.map((e) => Map<String, dynamic>.from(e)).toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  static Future<void> saveSavedTabs(List<Map<String, dynamic>> list) async {
+    await _prefs?.setString(_keyTabsList, jsonEncode(list));
+  }
+
+  // --- Hide Navigation Labels ---
+  static const String _keyHideNavLabels = 'hide_nav_labels';
+
+  static bool getHideNavLabels() {
+    return _prefs?.getBool(_keyHideNavLabels) ?? false;
+  }
+
+  static Future<void> saveHideNavLabels(bool val) async {
+    await _prefs?.setBool(_keyHideNavLabels, val);
+  }
+
+  // --- Trailing Info Type ---
+  static const String _keyTrailingInfoType = 'trailing_info_type';
+
+  static String getTrailingInfoType() {
+    return _prefs?.getString(_keyTrailingInfoType) ?? 'none';
+  }
+
+  static Future<void> saveTrailingInfoType(String val) async {
+    await _prefs?.setString(_keyTrailingInfoType, val);
+  }
+
+  // --- Category Icon Shape ---
+  static const String _keyCategoryIconShape = 'category_icon_shape';
+
+  static String getCategoryIconShape() {
+    return _prefs?.getString(_keyCategoryIconShape) ?? 'square';
+  }
+
+  static Future<void> saveCategoryIconShape(String val) async {
+    await _prefs?.setString(_keyCategoryIconShape, val);
+  }
+
+  static String getAppLocale() {
+    return _prefs?.getString(_keyAppLocale) ?? 'system';
+  }
+
+  static Future<void> saveAppLocale(String val) async {
+    await _prefs?.setString(_keyAppLocale, val);
+  }
+
+  // --- 快传接收路径 ---
+  static const String _keyQuickTransferReceivePath = 'quick_transfer_receive_path';
+
+  /// 快传接收页默认保存路径，默认 /storage/emulated/0/ZenFile/Receive
+  static String getQuickTransferReceivePath() {
+    return _prefs?.getString(_keyQuickTransferReceivePath) ?? '/storage/emulated/0/ZenFile/Receive';
+  }
+
+  static Future<void> saveQuickTransferReceivePath(String val) async {
+    await _prefs?.setString(_keyQuickTransferReceivePath, val);
+  }
+
+  // --- 快传已记住设备 ---
+  static const String _keyQuickTransferKnownPeers = 'quick_transfer_known_peers';
+
+  /// 已记住的快传对端设备（按 address 去重，最近连接置顶，最多保留 10 个）。
+  /// 元素结构与 PeerDevice 一致：{address, name, status}。
+  static List<PeerDevice> getQuickTransferKnownPeers() {
+    final raw = _prefs?.getString(_keyQuickTransferKnownPeers);
+    if (raw == null || raw.isEmpty) return <PeerDevice>[];
+    try {
+      final list = (jsonDecode(raw) as List).cast<Map<String, dynamic>>();
+      return list.map((m) => PeerDevice.fromMap(m)).toList();
+    } catch (_) {
+      return <PeerDevice>[];
+    }
+  }
+
+  /// 记住一个对端：同 address 去重，最近连接的排在最前，最多保留 10 个。
+  static Future<void> addQuickTransferKnownPeer(PeerDevice peer) async {
+    final peers = getQuickTransferKnownPeers()
+        .where((p) => p.address != peer.address)
+        .toList();
+    peers.insert(0, peer);
+    final trimmed = peers.take(10).toList();
+    final encoded = jsonEncode(
+      trimmed.map((p) => {'address': p.address, 'name': p.name, 'status': p.status}).toList(),
+    );
+    await _prefs?.setString(_keyQuickTransferKnownPeers, encoded);
+  }
+
+  /// 删除一个已记住的对端（按 address 匹配）。
+  static Future<void> removeQuickTransferKnownPeer(String address) async {
+    final peers = getQuickTransferKnownPeers()
+        .where((p) => p.address != address)
+        .toList();
+    final encoded = jsonEncode(
+      peers.map((p) => {'address': p.address, 'name': p.name, 'status': p.status}).toList(),
+    );
+    await _prefs?.setString(_keyQuickTransferKnownPeers, encoded);
+  }
+
+  static const String _keyHasSelectedLanguage = 'has_selected_language';
+
+  static bool hasSelectedLanguage() {
+    return _prefs?.getBool(_keyHasSelectedLanguage) ?? false;
+  }
+
+  static Future<void> setHasSelectedLanguage(bool val) async {
+    await _prefs?.setBool(_keyHasSelectedLanguage, val);
+  }
+
+  // --- Text Editor Settings ---
+  static bool getEditorWordWrap() {
+    return _prefs?.getBool(_keyEditorWordWrap) ?? true;
+  }
+
+  static Future<void> saveEditorWordWrap(bool val) async {
+    await _prefs?.setBool(_keyEditorWordWrap, val);
+  }
+
+  static bool getEditorShowLineNumbers() {
+    return _prefs?.getBool(_keyEditorShowLineNumbers) ?? false;
+  }
+
+  static Future<void> saveEditorShowLineNumbers(bool val) async {
+    await _prefs?.setBool(_keyEditorShowLineNumbers, val);
+  }
+
+  static bool getEditorReadOnly() {
+    return _prefs?.getBool(_keyEditorReadOnly) ?? true;
+  }
+
+  static Future<void> saveEditorReadOnly(bool val) async {
+    await _prefs?.setBool(_keyEditorReadOnly, val);
+  }
+
+  static String? getDefaultConflictResolution() {
+    return _prefs?.getString('default_conflict_resolution');
+  }
+
+  static void saveDefaultConflictResolution(String? value) {
+    if (value == null) {
+      _prefs?.remove('default_conflict_resolution');
+    } else {
+      _prefs?.setString('default_conflict_resolution', value);
+    }
+  }
+
+  // --- Lyric File Mappings ---
+  static const String _keyLyricMappings = 'lyric_file_mappings';
+
+  /// 获取音频文件对应的歌词文件路径
+  static String? getLyricMapping(String audioPath) {
+    final json = _prefs?.getString(_keyLyricMappings);
+    if (json == null) return null;
+    try {
+      final map = jsonDecode(json) as Map<String, dynamic>;
+      return map[audioPath] as String?;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 保存音频文件与歌词文件的映射关系
+  static Future<void> saveLyricMapping(String audioPath, String lrcPath) async {
+    final json = _prefs?.getString(_keyLyricMappings);
+    Map<String, dynamic> map = {};
+    if (json != null) {
+      try {
+        map = jsonDecode(json) as Map<String, dynamic>;
+      } catch (_) {
+        map = {};
+      }
+    }
+    map[audioPath] = lrcPath;
+    await _prefs?.setString(_keyLyricMappings, jsonEncode(map));
+  }
+
+  /// 移除音频文件的歌词映射
+  static Future<void> removeLyricMapping(String audioPath) async {
+    final json = _prefs?.getString(_keyLyricMappings);
+    if (json == null) return;
+    try {
+      final map = jsonDecode(json) as Map<String, dynamic>;
+      map.remove(audioPath);
+      await _prefs?.setString(_keyLyricMappings, jsonEncode(map));
+    } catch (_) {}
+  }
+
+  // --- Audio Playback Position Memory ---
+  static const String _keyLastPlaybackPosition = 'last_playback_position';
+  static const String _keyLastPlayedAudio = 'last_played_audio';
+
+  /// 获取音频文件保存的播放进度（毫秒），返回 null 表示无记录
+  /// 仅返回最后一次播放的音频文件的进度
+  static int? getPlaybackPosition(String audioPath) {
+    final json = _prefs?.getString(_keyLastPlaybackPosition);
+    if (json == null) return null;
+    try {
+      final map = jsonDecode(json) as Map<String, dynamic>;
+      final savedPath = map['path'] as String?;
+      final position = map['position'];
+      if (savedPath == audioPath && position != null) {
+        if (position is int) return position;
+        if (position is num) return position.toInt();
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 保存音频文件的播放进度（毫秒）
+  /// 仅保存最后一次播放的音频文件的进度
+  static Future<void> savePlaybackPosition(String audioPath, int positionMs) async {
+    final map = {'path': audioPath, 'position': positionMs};
+    await _prefs?.setString(_keyLastPlaybackPosition, jsonEncode(map));
+  }
+
+  /// 清除指定音频的播放进度记录
+  static Future<void> clearPlaybackPosition(String audioPath) async {
+    final json = _prefs?.getString(_keyLastPlaybackPosition);
+    if (json == null) return;
+    try {
+      final map = jsonDecode(json) as Map<String, dynamic>;
+      final savedPath = map['path'] as String?;
+      if (savedPath == audioPath) {
+        await _prefs?.remove(_keyLastPlaybackPosition);
+      }
+    } catch (_) {}
+  }
+
+  /// 获取上次播放的音频信息 {path, title, artist}
+  static Map<String, String>? getLastPlayedAudio() {
+    final json = _prefs?.getString(_keyLastPlayedAudio);
+    if (json == null) return null;
+    try {
+      final map = jsonDecode(json) as Map<String, dynamic>;
+      final path = map['path'] as String?;
+      if (path == null || path.isEmpty) return null;
+      return {
+        'path': path,
+        'title': map['title'] as String? ?? '',
+        'artist': map['artist'] as String? ?? '',
+      };
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 保存上次播放的音频信息
+  static Future<void> saveLastPlayedAudio(String path, String title, String artist) async {
+    final map = {'path': path, 'title': title, 'artist': artist};
+    await _prefs?.setString(_keyLastPlayedAudio, jsonEncode(map));
+  }
+
+  // --- Video Playback Position Memory ---
+  static const String _keyVideoPlaybackPositions = 'video_playback_positions';
+  static const String _keyLastPlayedVideo = 'last_played_video';
+  static const String _keyVideoCustomAspectRatio = 'video_custom_aspect_ratio';
+  static const String _keySubtitleFontSize = 'video_subtitle_font_size';
+  static const String _keySubtitlePosition = 'video_subtitle_position';
+  static const String _keySubtitleNoBackground = 'video_subtitle_no_background';
+  static const String _keyVideoHwdec = 'video_hwdec'; // true=硬解(auto-safe), false=软解(no)
+
+  /// 获取视频解码方式：true=硬解, false=软解，默认 true（硬解）
+  static bool getUseHardwareDecode({bool defaultValue = true}) {
+    return _prefs?.getBool(_keyVideoHwdec) ?? defaultValue;
+  }
+
+  /// 保存视频解码方式：true=硬解, false=软解
+  static Future<void> saveUseHardwareDecode(bool useHardware) async {
+    await _prefs?.setBool(_keyVideoHwdec, useHardware);
+  }
+
+  /// 获取视频文件保存的播放进度（毫秒），返回 null 表示无记录
+  static int? getVideoPlaybackPosition(String videoPath) {
+    final json = _prefs?.getString(_keyVideoPlaybackPositions);
+    if (json == null) return null;
+    try {
+      final map = jsonDecode(json) as Map<String, dynamic>;
+      final pos = map[videoPath];
+      if (pos is int) return pos;
+      if (pos is num) return pos.toInt();
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 保存视频文件的播放进度（毫秒）
+  static Future<void> saveVideoPlaybackPosition(String videoPath, int positionMs) async {
+    final json = _prefs?.getString(_keyVideoPlaybackPositions);
+    Map<String, dynamic> map = {};
+    if (json != null) {
+      try {
+        map = jsonDecode(json) as Map<String, dynamic>;
+      } catch (_) {
+        map = {};
+      }
+    }
+    map[videoPath] = positionMs;
+    await _prefs?.setString(_keyVideoPlaybackPositions, jsonEncode(map));
+  }
+
+  /// 清除指定视频的播放进度记录
+  static Future<void> clearVideoPlaybackPosition(String videoPath) async {
+    final json = _prefs?.getString(_keyVideoPlaybackPositions);
+    if (json == null) return;
+    try {
+      final map = jsonDecode(json) as Map<String, dynamic>;
+      map.remove(videoPath);
+      await _prefs?.setString(_keyVideoPlaybackPositions, jsonEncode(map));
+    } catch (_) {}
+  }
+
+  /// 获取上次播放的视频信息 {path, title}
+  static Map<String, String>? getLastPlayedVideo() {
+    final json = _prefs?.getString(_keyLastPlayedVideo);
+    if (json == null) return null;
+    try {
+      final map = jsonDecode(json) as Map<String, dynamic>;
+      final path = map['path'] as String?;
+      if (path == null || path.isEmpty) return null;
+      return {
+        'path': path,
+        'title': map['title'] as String? ?? '',
+      };
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 保存上次播放的视频信息
+  static Future<void> saveLastPlayedVideo(String path, String title) async {
+    final map = {'path': path, 'title': title};
+    await _prefs?.setString(_keyLastPlayedVideo, jsonEncode(map));
+  }
+
+  /// 获取视频自定义缩放比例，默认 16:9
+  static double getVideoCustomAspectRatio() {
+    return _prefs?.getDouble(_keyVideoCustomAspectRatio) ?? 16 / 9;
+  }
+
+  /// 保存视频自定义缩放比例
+  static Future<void> saveVideoCustomAspectRatio(double value) async {
+    await _prefs?.setDouble(_keyVideoCustomAspectRatio, value);
+  }
+
+  /// 获取字幕字体大小，默认 24
+  static double getSubtitleFontSize() {
+    return _prefs?.getDouble(_keySubtitleFontSize) ?? 24;
+  }
+
+  /// 保存字幕字体大小
+  static Future<void> saveSubtitleFontSize(double value) async {
+    await _prefs?.setDouble(_keySubtitleFontSize, value);
+  }
+
+  /// 获取字幕垂直位置（0-100，100=底部，0=顶部），默认 100
+  static double getSubtitlePosition() {
+    return _prefs?.getDouble(_keySubtitlePosition) ?? 100;
+  }
+
+  /// 保存字幕垂直位置
+  static Future<void> saveSubtitlePosition(double value) async {
+    await _prefs?.setDouble(_keySubtitlePosition, value);
+  }
+
+  /// 获取是否移除字幕背景（true=透明无背景），默认 false
+  static bool getSubtitleNoBackground() {
+    return _prefs?.getBool(_keySubtitleNoBackground) ?? false;
+  }
+
+  /// 保存字幕背景移除开关
+  static Future<void> saveSubtitleNoBackground(bool value) async {
+    await _prefs?.setBool(_keySubtitleNoBackground, value);
+  }
+
+  // --- 视频文件与手动添加字幕的映射（持久化，避免退出重播后需重新添加）---
+  static const String _keySubtitleMappings = 'video_subtitle_mappings';
+
+  /// 获取某视频手动指定的外挂字幕路径（无则返回 null）。
+  static String? getSubtitleMapping(String videoPath) {
+    final json = _prefs?.getString(_keySubtitleMappings);
+    if (json == null) return null;
+    try {
+      final map = jsonDecode(json) as Map<String, dynamic>;
+      return map[videoPath] as String?;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 保存某视频手动指定的外挂字幕路径。
+  static Future<void> saveSubtitleMapping(String videoPath, String subtitlePath) async {
+    final json = _prefs?.getString(_keySubtitleMappings);
+    Map<String, dynamic> map = {};
+    if (json != null) {
+      try {
+        map = jsonDecode(json) as Map<String, dynamic>;
+      } catch (_) {
+        map = {};
+      }
+    }
+    map[videoPath] = subtitlePath;
+    await _prefs?.setString(_keySubtitleMappings, jsonEncode(map));
+  }
+
+  /// 移除某视频的手手动字幕映射。
+  static Future<void> removeSubtitleMapping(String videoPath) async {
+    final json = _prefs?.getString(_keySubtitleMappings);
+    if (json == null) return;
+    try {
+      final map = jsonDecode(json) as Map<String, dynamic>;
+      map.remove(videoPath);
+      await _prefs?.setString(_keySubtitleMappings, jsonEncode(map));
+    } catch (_) {}
+  }
+
+  // --- Drawer Section Expanded State ---
+  static const String _keyDrawerSectionExpanded = 'drawer_section_expanded_';
+
+  /// 获取抽屉栏目是否展开，默认折叠（false）
+  static bool getDrawerSectionExpanded(String sectionKey, {bool defaultValue = false}) {
+    return _prefs?.getBool('$_keyDrawerSectionExpanded$sectionKey') ?? defaultValue;
+  }
+
+  /// 保存抽屉栏目展开/折叠状态
+  static Future<void> saveDrawerSectionExpanded(String sectionKey, bool expanded) async {
+    await _prefs?.setBool('$_keyDrawerSectionExpanded$sectionKey', expanded);
+  }
+
+  // --- Favorites Group Collapsed State ---
+  static const String _keyFavoritesGroupCollapsed = 'favorites_group_collapsed';
+
+  /// 获取被折叠的收藏分组 key 集合（默认空集合 = 全部展开）
+  static Set<String> getFavoritesGroupCollapsed() {
+    final str = _prefs?.getString(_keyFavoritesGroupCollapsed);
+    if (str == null) return {};
+    try {
+      final decoded = jsonDecode(str) as List<dynamic>;
+      return decoded.map((e) => e as String).toSet();
+    } catch (_) {
+      return {};
+    }
+  }
+
+  /// 保存被折叠的收藏分组 key 集合
+  static Future<void> saveFavoritesGroupCollapsed(Set<String> collapsed) async {
+    await _prefs?.setString(_keyFavoritesGroupCollapsed, jsonEncode(collapsed.toList()));
+  }
+
+  // --- Categories Grid Columns ---
+  static const String _keyCategoriesGridColumns = 'categories_grid_columns';
+
+  /// 获取分类页网格列数，默认 4 列
+  static int getCategoriesGridColumns({int defaultValue = 4}) {
+    return _prefs?.getInt(_keyCategoriesGridColumns) ?? defaultValue;
+  }
+
+  /// 保存分类页网格列数
+  static Future<void> saveCategoriesGridColumns(int columns) async {
+    await _prefs?.setInt(_keyCategoriesGridColumns, columns);
+  }
+
+  // --- Favorites ---
+  static const String _keyFavorites = 'favorites';
+
+  static List<Map<String, dynamic>> getFavorites() {
+    final str = _prefs?.getString(_keyFavorites);
+    if (str == null) return [];
+    try {
+      final decoded = jsonDecode(str) as List<dynamic>;
+      return decoded.map((e) => Map<String, dynamic>.from(e)).toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  static Future<void> saveFavorites(List<Map<String, dynamic>> list) async {
+    await _prefs?.setString(_keyFavorites, jsonEncode(list));
+  }
+}

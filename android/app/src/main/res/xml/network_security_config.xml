@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Allow cleartext HTTP to the local streaming proxy (127.0.0.1/localhost).
+         Required because Android 9+ blocks cleartext HTTP by default, and
+         media_kit/libmpv accesses the RemoteStreamingService proxy via
+         http://127.0.0.1:PORT/stream -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <domain includeSubdomains="false">localhost</domain>
+    </domain-config>
+</network-security-config>

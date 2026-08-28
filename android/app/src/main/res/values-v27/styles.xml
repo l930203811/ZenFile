@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- API 27+ 覆盖版：允许窗口延伸进刘海/挖孔（cutout）区域。
+         不设置时默认为 default 模式，横屏（全屏视频）下系统会强制把窗口
+         从摄像头侧缩回，导致摄像头对应的整个条状区域出现系统级黑边
+         （黑边画在窗口外，Flutter 无法处理）。
+         shortEdges：竖屏/横屏均允许延伸到短边 cutout，主流视频类 App 标准做法。
+         竖屏避让由 Flutter SafeArea/MediaQuery padding 自动处理。 -->
+    <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+    <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <item name="android:windowBackground">?android:colorBackground</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+</resources>

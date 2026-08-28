@@ -1,0 +1,36 @@
+*.iml
+*.class
+*.jar
+*.aar
+*.apk
+*.symbols
+*.map
+*.dsym
+*.zip
+*.tar.gz
+*.so
+.vscode/
+.idea/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+build/
+ios/Flutter/.last_build_id
+ios/Runner/Assets.xcassets/AppIcon.appiconset/
+ios/Runner/GeneratedPluginRegistrant.*
+android/app/src/main/jniLibs/x86/
+android/app/src/main/jniLibs/x86_64/
+android/app/src/main/jniLibs/armeabi-v7a/
+android/libs/
+test_*.lrc
+
+# 本地协作记录（TRAE + WorkBuddy 共用），仅保留在本地，不进远程仓库
+WORKLOG.md
+
+# 本地历史版本快照（约 2.4GB，用于对比参考），不进仓库
+test/ZenFile-v1.1.32/
+
+# Windows 保留设备名误创建的文件
+/nul

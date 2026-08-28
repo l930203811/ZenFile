@@ -1,0 +1,137 @@
+name: Build APK
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - 'LICENSE'
+      - 'docs/**'
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - 'LICENSE'
+      - 'docs/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Release APK
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Get App Version
+        id: get_version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}' | cut -d '+' -f 1)
+          echo "APP_VERSION=v$VERSION" >> $GITHUB_ENV
+
+      - name: Check if Version Already Released
+        id: check_release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view ${{ env.APP_VERSION }} --repo ${{ github.repository }} >/dev/null 2>&1; then
+            echo "Version ${{ env.APP_VERSION }} is already released. Skipping build!"
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "Version ${{ env.APP_VERSION }} is new. Proceeding with build!"
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up Java
+        if: steps.check_release.outputs.exists == 'false'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Flutter
+        if: steps.check_release.outputs.exists == 'false'
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: 'stable'
+
+      - name: Install Dependencies
+        if: steps.check_release.outputs.exists == 'false'
+        run: flutter pub get
+
+      - name: Patch flutter_avif_android duplicate class
+        if: steps.check_release.outputs.exists == 'false'
+        run: |
+          FILE=$(find $HOME/.pub-cache -path "*/flutter_avif_android-*/android/src/main/java/com/teknorota/flutter_avif/FlutterAvifPlugin.java" 2>/dev/null | head -1)
+          if [ -n "$FILE" ]; then
+            echo "// Cleared to resolve redeclaration conflict with Kotlin file in same package" > "$FILE"
+            echo "Patched: $FILE"
+          else
+            echo "flutter_avif_android Java file not found, skipping patch."
+          fi
+
+      - name: Configure Keystore and Signing
+        if: steps.check_release.outputs.exists == 'false'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+            cat <<EOF > android/key.properties
+          storePassword=$STORE_PASSWORD
+          keyPassword=$KEY_PASSWORD
+          keyAlias=$KEY_ALIAS
+          storeFile=upload-keystore.jks
+          EOF
+          else
+            echo "Keystore secrets not found, skipping cryptographic signing setup."
+          fi
+
+      - name: Build Split APKs
+        if: steps.check_release.outputs.exists == 'false'
+        run: flutter build apk --release --split-per-abi --obfuscate --split-debug-info=build/app/outputs/symbols --no-tree-shake-icons
+
+      - name: Rename APKs
+        if: steps.check_release.outputs.exists == 'false'
+        run: |
+          mv build/app/outputs/flutter-apk/app-arm64-v8a-release.apk build/app/outputs/flutter-apk/ZenFile-${{ env.APP_VERSION }}-arm64-v8a.apk
+          mv build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk build/app/outputs/flutter-apk/ZenFile-${{ env.APP_VERSION }}-armeabi-v7a.apk
+          mv build/app/outputs/flutter-apk/app-x86_64-release.apk build/app/outputs/flutter-apk/ZenFile-${{ env.APP_VERSION }}-x86_64.apk
+
+      - name: Upload APKs to Artifacts
+        if: steps.check_release.outputs.exists == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: zenfile-${{ env.APP_VERSION }}-apks
+          path: build/app/outputs/flutter-apk/ZenFile-${{ env.APP_VERSION }}-*.apk
+
+      - name: Release APKs
+        if: steps.check_release.outputs.exists == 'false' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.APP_VERSION }}
+          name: "ZenFile Release ${{ env.APP_VERSION }}"
+          body: |
+            ### ZenFile 正式发布 ${{ env.APP_VERSION }}
+            * **架构优化分包**: 64位设备请下载 `arm64-v8a` 版本。
+            * 专业签名，R8代码压缩，Dart混淆，原生库未压缩。
+          draft: false
+          prerelease: false
+          make_latest: true
+          files: build/app/outputs/flutter-apk/ZenFile-${{ env.APP_VERSION }}-*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

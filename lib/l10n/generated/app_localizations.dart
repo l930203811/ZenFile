@@ -1,0 +1,10826 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart' as intl;
+
+import 'app_localizations_ar.dart';
+import 'app_localizations_de.dart';
+import 'app_localizations_en.dart';
+import 'app_localizations_es.dart';
+import 'app_localizations_fr.dart';
+import 'app_localizations_ja.dart';
+import 'app_localizations_ko.dart';
+import 'app_localizations_ru.dart';
+import 'app_localizations_zh.dart';
+
+// ignore_for_file: type=lint
+
+/// Callers can lookup localized strings with an instance of L10n
+/// returned by `L10n.of(context)`.
+///
+/// Applications need to include `L10n.delegate()` in their app's
+/// `localizationDelegates` list, and the locales they support in the app's
+/// `supportedLocales` list. For example:
+///
+/// ```dart
+/// import 'generated/app_localizations.dart';
+///
+/// return MaterialApp(
+///   localizationsDelegates: L10n.localizationsDelegates,
+///   supportedLocales: L10n.supportedLocales,
+///   home: MyApplicationHome(),
+/// );
+/// ```
+///
+/// ## Update pubspec.yaml
+///
+/// Please make sure to update your pubspec.yaml to include the following
+/// packages:
+///
+/// ```yaml
+/// dependencies:
+///   # Internationalization support.
+///   flutter_localizations:
+///     sdk: flutter
+///   intl: any # Use the pinned version from flutter_localizations
+///
+///   # Rest of dependencies
+/// ```
+///
+/// ## iOS Applications
+///
+/// iOS applications define key application metadata, including supported
+/// locales, in an Info.plist file that is built into the application bundle.
+/// To configure the locales supported by your app, you’ll need to edit this
+/// file.
+///
+/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
+/// Then, in the Project Navigator, open the Info.plist file under the Runner
+/// project’s Runner folder.
+///
+/// Next, select the Information Property List item, select Add Item from the
+/// Editor menu, then select Localizations from the pop-up menu.
+///
+/// Select and expand the newly-created Localizations item then, for each
+/// locale your application supports, add a new item and select the locale
+/// you wish to add from the pop-up menu in the Value field. This list should
+/// be consistent with the languages listed in the L10n.supportedLocales
+/// property.
+abstract class L10n {
+  L10n(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+
+  final String localeName;
+
+  static L10n of(BuildContext context) {
+    return Localizations.of<L10n>(context, L10n)!;
+  }
+
+  static const LocalizationsDelegate<L10n> delegate = _L10nDelegate();
+
+  /// A list of this localizations delegate along with the default localizations
+  /// delegates.
+  ///
+  /// Returns a list of localizations delegates containing this delegate along with
+  /// GlobalMaterialLocalizations.delegate, GlobalCupertinoLocalizations.delegate,
+  /// and GlobalWidgetsLocalizations.delegate.
+  ///
+  /// Additional delegates can be added by appending to this list in
+  /// MaterialApp. This list does not have to be used at all if a custom list
+  /// of delegates is preferred or required.
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
+
+  /// A list of this localizations delegate's supported locales.
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('ar'),
+    Locale('de'),
+    Locale('en'),
+    Locale('es'),
+    Locale('fr'),
+    Locale('ja'),
+    Locale('ko'),
+    Locale('ru'),
+    Locale('zh'),
+    Locale('zh', 'TW'),
+  ];
+
+  /// main.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在打开共享文档...'**
+  String get msg6f3e533a;
+
+  /// main.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在解析安全内容流'**
+  String get msgbca59325;
+
+  /// main.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'ZenFile 需要存储权限才能无缝管理、组织和显示您的媒体文件。'**
+  String get zenfile;
+
+  /// main.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'清理缓存目录失败: {e}'**
+  String e(Object e);
+
+  /// providers\file_manager_provider.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'内部存储'**
+  String get msg21cefa9b;
+
+  /// providers\file_manager_provider.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'局域网/SMB'**
+  String get smb;
+
+  /// providers\file_manager_provider.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'成功移动项目'**
+  String get msg05d3c93c;
+
+  /// providers\file_manager_provider.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'成功复制项目'**
+  String get msgb7e3a1c2;
+
+  /// providers\file_manager_provider.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'传输失败：{e}'**
+  String e1(Object e);
+
+  /// providers\file_manager_provider.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'操作已取消'**
+  String get msga45bac47;
+
+  /// providers\file_manager_provider.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'连接远程服务器失败：{e}'**
+  String e2(Object e);
+
+  /// providers\file_manager_provider.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'创建文件夹出错：{e}'**
+  String e3(Object e);
+
+  /// providers\file_manager_provider.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'压缩超出限制'**
+  String get msg3df5ef6c;
+
+  /// providers\file_manager_provider.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'未知艺术家'**
+  String get msg5e32276d;
+
+  /// providers\file_manager_provider.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'本地文件夹'**
+  String get msg497ec49d;
+
+  /// providers\file_manager_provider.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'下载远程文件失败: {e}'**
+  String e4(Object e);
+
+  /// providers\file_manager_provider.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'无法将文件夹移动到自身或相同位置'**
+  String get msg6b9ca1dd;
+
+  /// providers\file_manager_provider.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'移动项目失败：{e}'**
+  String e5(Object e);
+
+  /// providers\file_manager_provider.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'无法将文件夹复制到自身或相同位置'**
+  String get msg5238524c;
+
+  /// providers\file_manager_provider.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'复制项目失败：{e}'**
+  String e6(Object e);
+
+  /// providers\media_provider.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'压缩包'**
+  String get msgc806d0fa;
+
+  /// providers\media_provider.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'安装包'**
+  String get msg03070d08;
+
+  /// providers\media_provider.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'FTP共享'**
+  String get ftp;
+
+  /// providers\media_provider.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'Web共享'**
+  String get web;
+
+  /// providers\media_provider.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'设备相册（自动）'**
+  String get msge86bd662;
+
+  /// providers\media_provider.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'设备音频库（自动）'**
+  String get msg16166a01;
+
+  /// providers\media_provider.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'内部存储（扫描所有文件夹）'**
+  String get msgbb34b7ec;
+
+  /// providers\media_provider.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'设备相册（截图）'**
+  String get msg26a1f2d9;
+
+  /// services\apk_installer_service.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在解压安装包...'**
+  String get msg39e11368;
+
+  /// services\apk_installer_service.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'安装包中未找到可安装的APK'**
+  String get apk;
+
+  /// services\apk_installer_service.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'无法启动分包APK安装器'**
+  String get apk1;
+
+  /// services\background_archive_service.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在压缩文件'**
+  String get msg2f0138ad;
+
+  /// services\background_archive_service.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'压缩包创建成功'**
+  String get msga2292820;
+
+  /// services\background_archive_service.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在解压压缩包'**
+  String get msg0683ca6b;
+
+  /// services\background_archive_service.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'压缩包解压成功'**
+  String get msg1f216eda;
+
+  /// services\background_archive_service.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'操作失败'**
+  String get msg5fa802be;
+
+  /// services\background_archive_service.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'是/否'**
+  String get msg8fccf382;
+
+  /// services\background_archive_service.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'解压成功，是否打开所在位置？'**
+  String get msgc18fb099;
+
+  /// services\background_archive_service.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'压缩成功，是否打开所在位置？'**
+  String get msg_compress_open_location;
+
+  /// services\background_archive_service.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到可压缩的文件'**
+  String get msg4367e85a;
+
+  /// services\background_archive_service.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'不支持的格式'**
+  String get msg60a4545d;
+
+  /// services\background_archive_service.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到压缩包文件'**
+  String get msg226519e7;
+
+  /// services\folder_share_service.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到可分享的项目。'**
+  String get msg88d150c7;
+
+  /// services\intent_handler_service.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'读取共享文件出错：{e}'**
+  String e7(Object e);
+
+  /// services\remote\lan_client.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'ZenFile 局域网/SMB Virtual Storage Bridge\\n'**
+  String get zenfilesmbvirtualstoragebridgen;
+
+  /// services\remote\saf_client.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'新建文件夹'**
+  String get msgf3a485df;
+
+  /// services\remote\saf_client.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'新建文件'**
+  String get msge48a7157;
+
+  /// services\settings_backup_service.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'设置已备份到 ZenFile/Backups/Settings/'**
+  String get zenfilebackupssettings;
+
+  /// services\settings_backup_service.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'请选择有效的 .json 设置备份文件'**
+  String get json;
+
+  /// services\settings_backup_service.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'设置恢复失败: {e}'**
+  String e8(Object e);
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'无法打开链接 {url}'**
+  String url(Object url);
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'关于 ZenFile'**
+  String get zenfile1;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'v1.0.43 (查看)'**
+  String get v1041;
+
+  /// Button label to view changelog on the about screen
+  ///
+  /// In zh, this message translates to:
+  /// **'查看更新'**
+  String get ui_view_update;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'ZenFile 是一款基于 Flutter 构建的精美、流畅、开源的文件管理器和离线媒体中心。专为极致性能、干净的毛玻璃美学和无缝用户体验而设计。'**
+  String get zenfileflutter;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'极速体验'**
+  String get msga12ebf50;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'无状态缓存与异步扫描'**
+  String get msgfccb5a01;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'加密安全工作区'**
+  String get msg6d8fbdac;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'支持 FTP、局域网、SFTP 和 WebDAV'**
+  String get ftpsftpwebdav;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'精美界面'**
+  String get msge8f352b9;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'AMOLED 纯黑 & 绚丽主题'**
+  String get amoled;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'在仓库中加星'**
+  String get msge8069659;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'加入 Telegram 频道'**
+  String get telegram;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'与好友分享应用'**
+  String get msg5f84adea;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'推荐 ZenFile，一款精美的离线文件管理器和媒体中心：https://github.com/l930203811/ZenFile/releases'**
+  String get zenfilehttpsgithubcoml930203811zenfilereleases;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'查看 GitHub 源代码'**
+  String get github;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'联系邮箱：1@sequel.dpdns.org'**
+  String get sequeldpdnsorg;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'邮箱已复制到剪贴板'**
+  String get msged8518d7;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'QQ 群号已复制到剪贴板'**
+  String get qq;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'用心打造 ❤️ by Sequel'**
+  String get bysequel;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'修改版本 © 2026 ZenFile。保留所有权利。'**
+  String get zenfile2;
+
+  /// About screen derived-from-NFile attribution
+  ///
+  /// In zh, this message translates to:
+  /// **'基于 Senzme 的 NFile 开发。原始版权 © 2026 NFile。'**
+  String get based_on_nfile;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'您的支持是我持续更新的动力 ❤️'**
+  String get msg138d3725;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'支付宝'**
+  String get msgccd097a7;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'微信支付'**
+  String get msgbffe28c8;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'长按图片可保存到相册，感谢您的支持！'**
+  String get msg0537b04e;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'下载 ZenFile'**
+  String get zenfilev1041;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'123云盘'**
+  String get msg9d287020;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'115网盘'**
+  String get msgb2b41b6a;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'百度网盘'**
+  String get msg77ee718b;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'夸克网盘'**
+  String get msgbff1432a;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'PikPak网盘'**
+  String get msge03395d0;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'新增 SVG 文件完整支持（缩略图预览与查看）'**
+  String get svg;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'新增压缩包格式颜色区分（zip/rar/7z/tar/gz 各有专属颜色）'**
+  String get ziprar7ztargz;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'新增远程文件先下载再播放功能'**
+  String get msg09a6e11b;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'修复分类页解压后无法跳转到浏览页的问题'**
+  String get msg1c3206b8;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'修复「查看缓存目录」和「解压后打开所在位置」导致页面卡死的问题'**
+  String get msgb1e4da91;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'优化文件日期格式为 yyyy-MM-dd'**
+  String get yyyymmdd;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'优化默认启用 24 小时制时间显示'**
+  String get msg4c425252;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'路径栏全面优化（更紧凑的面包屑按钮和箭头样式）'**
+  String get msg1eaf4abb;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'标签栏和路径栏整体上移，为文件列表留出更多空间'**
+  String get msgd3381817;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'双窗口头部区域精简（高度缩减30%）'**
+  String get msg342688b2;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'双窗口模式下远程服务器替换未激活标签页'**
+  String get msg8954452f;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'返回手势优化：选中状态下返回清除选中而非退出页面'**
+  String get msgac5a0315;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'双指右滑打开抽屉页，双指左滑切换分类/浏览页'**
+  String get msg1904388e;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'新增双指滑动开关（常规与行为设置中可关闭）'**
+  String get msg2762c070;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'进度条改为圆环线条样式，中心显示百分比数字'**
+  String get msg48dca69a;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'远程路径兼容性修复（Windows平台路径分隔符问题）'**
+  String get windows;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'地址栏开关改为控制美化后的路径面包屑'**
+  String get msg65eefc98;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'默认主页设置（可选择分类页或浏览页作为启动页）'**
+  String get msg96a6856a;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'全新安装包图标（自然禅意风格）'**
+  String get msg250213fd;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'圆形百分比进度条（复制/移动文件时显示）'**
+  String get msg7f53e8b1;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'操作成功后自动关闭进度条，无需手动确认'**
+  String get msg051469b5;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'文件操作菜单改为底部弹出（不再遮挡标签栏）'**
+  String get msge4c4d5e2;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'选择模式操作栏移至屏幕底部（含已选数量指示器）'**
+  String get msga33dbb51;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'修复：切换图标后点击进入应用详情'**
+  String get msge6c84f11;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'修复：远程复制后切换本地页面异常'**
+  String get msg46b8ca8f;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'文本查看器长按菜单支持复制和全选（已汉化）'**
+  String get msgb3dea5f5;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'拖放弹窗布局优化（更紧凑）'**
+  String get msga4c92214;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'分类页图标支持圆形/方形背景切换'**
+  String get msg32854144;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'分类图标形状设置（外观与主题中切换）'**
+  String get msg3a93e257;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'ZenFile 首次发布'**
+  String get zenfile3;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'多标签页支持'**
+  String get msg47b760ed;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'远程服务器连接（FTP/SFTP/WebDAV/SMB）'**
+  String get ftpsftpwebdavsmb;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'文件加密保险柜'**
+  String get msg4b736dfb;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'FTP/WebDAV 服务器功能'**
+  String get ftpwebdav;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义主题与外观设置'**
+  String get msg03257c2d;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'远程服务器文件拖放操作优化'**
+  String get msg5cce42e6;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义应用桌面图标功能完善'**
+  String get msg074f1ce7;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'远程服务器文件列表中长按可能触发拖放操作弹窗（下版本修复）'**
+  String get msg5c66ffab;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'如果您有任何优化建议或发现Bug，欢迎通过邮箱 1@sequel.dpdns.org 或QQ群 792408214 反馈给我们。'**
+  String get bug1sequeldpdnsorgqq792408214;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'长按保存图片'**
+  String get msgd054a84c;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'图片加载失败'**
+  String get msgb3b83e12;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'需要存储权限才能保存图片'**
+  String get msgc2790d54;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'图片已保存到相册'**
+  String get msg1292d351;
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'保存失败: {e}'**
+  String e9(Object e);
+
+  /// ui\screens\all_recent_files_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'没有可分享的文件'**
+  String get msg7a4ee0c7;
+
+  /// ui\screens\all_recent_files_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'成功删除项目'**
+  String get msg45326802;
+
+  /// ui\screens\all_recent_files_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'分享出错：{e}'**
+  String e10(Object e);
+
+  /// ui\screens\all_recent_files_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已复制到剪贴板'**
+  String get msg4fb42e6e;
+
+  /// ui\screens\all_recent_files_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已剪切到剪贴板'**
+  String get msge5212c58;
+
+  /// ui\screens\all_recent_files_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'重命名'**
+  String get msgc8ce4b36;
+
+  /// ui\screens\all_recent_files_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'输入新名称'**
+  String get msgf139c5cf;
+
+  /// Title of warning dialog when file extension is changed during rename
+  ///
+  /// In zh, this message translates to:
+  /// **'后缀名变更'**
+  String get msg_rename_extension_warning_title;
+
+  /// Content of warning dialog when file extension is changed during rename
+  ///
+  /// In zh, this message translates to:
+  /// **'您正在修改文件后缀名，这可能导致文件无法正常打开。确定要继续吗？'**
+  String get msg_rename_extension_warning_content;
+
+  /// Confirm button text in extension change warning dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'确认修改'**
+  String get msg_rename_extension_confirm;
+
+  /// ui\screens\all_recent_files_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'删除文件'**
+  String get msg53518c22;
+
+  /// ui\screens\all_recent_files_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'无最近文件'**
+  String get msg47809e5d;
+
+  /// ui\screens\all_recent_files_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'新创建或下载的文件将显示在这里。'**
+  String get msg7a7e6c25;
+
+  /// ui\screens\archive_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'删除所选项目'**
+  String get msg765d1698;
+
+  /// ui\screens\archive_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'项目删除成功 ✓'**
+  String get msg365f2f0a;
+
+  /// ui\screens\archive_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已成功添加 {successCount} 个项目到压缩包 ✓'**
+  String successcount(Object successCount);
+
+  /// ui\screens\archive_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已粘贴 {count} 个项目到压缩包 ✓'**
+  String count(Object count);
+
+  /// ui\screens\archive_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'无法读取压缩包'**
+  String get msg39cb3352;
+
+  /// ui\screens\archive_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'解压到当前文件夹'**
+  String get msg99abedc6;
+
+  /// ui\screens\archive_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'添加文件'**
+  String get msg8d0cfb58;
+
+  /// ui\screens\audio_player\audio_artwork_widget.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'无损音频'**
+  String get msg5bf1fb72;
+
+  /// ui\screens\audio_player\audio_controls_widget.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'定时关闭'**
+  String get msg47cab5ae;
+
+  /// ui\screens\audio_player\audio_player_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'后台播放已停止'**
+  String get msg50c1b248;
+
+  /// ui\screens\audio_player\audio_player_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'后台播放已启用'**
+  String get msg6d16d396;
+
+  /// ui\screens\audio_player\audio_player_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'随机播放: 关'**
+  String get msg3038d9b8;
+
+  /// ui\screens\audio_player\audio_player_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'后台播放'**
+  String get msg29eed1da;
+
+  /// ui\screens\audio_player\audio_player_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'点击停止后台播放'**
+  String get msg4aa059f7;
+
+  /// ui\screens\audio_player\audio_player_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'显示带控制按钮的通知'**
+  String get msg8f7f4490;
+
+  /// ui\screens\audio_player\audio_player_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'音效与均衡器'**
+  String get msgb7c87215;
+
+  /// ui\screens\audio_player\audio_player_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'音频文件信息'**
+  String get msgfc449780;
+
+  /// ui\screens\backup_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'备份与恢复'**
+  String get msgb4fbc92c;
+
+  /// ui\screens\backup_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'将当前设置备份到已选择的路径'**
+  String get zenfilebackupssettings1;
+
+  /// ui\screens\backup_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'从下方列表中选择备份文件进行恢复'**
+  String get json1;
+
+  /// ui\screens\backup_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'备份目录'**
+  String get msg534c621a;
+
+  /// ui\screens\backup_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'文件大小'**
+  String get msg396b7d3f;
+
+  /// ui\screens\backup_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'最后备份时间'**
+  String get msgc047ee32;
+
+  /// ui\screens\database_reader_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'没有可导出的数据。'**
+  String get msg917fd6ef;
+
+  /// ui\screens\database_reader_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'SQLite数据库阅读器'**
+  String get sqlite;
+
+  /// ui\screens\database_reader_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'表结构'**
+  String get msg03a0d224;
+
+  /// ui\screens\database_reader_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'SQL控制台'**
+  String get sql;
+
+  /// ui\screens\database_reader_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'打开数据库失败'**
+  String get msge2f0fe67;
+
+  /// ui\screens\database_reader_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'此数据库中未找到表。'**
+  String get msg8bb11da4;
+
+  /// ui\screens\database_reader_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索行...'**
+  String get msg7796aa3e;
+
+  /// ui\screens\database_reader_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到行'**
+  String get msg15f26697;
+
+  /// ui\screens\database_reader_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'未加载结构详情。'**
+  String get msg0eaa935b;
+
+  /// ui\screens\database_reader_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'SQL 编辑器'**
+  String get sql1;
+
+  /// ui\screens\database_reader_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'SELECT模板'**
+  String get select;
+
+  /// ui\screens\database_reader_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'导出结果为CSV'**
+  String get csv;
+
+  /// ui\screens\database_reader_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'执行SELECT查询以查看结果。'**
+  String get select1;
+
+  /// ui\screens\database_reader_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'执行查询出错。'**
+  String get msgd1ad9002;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已复制路径: {targetPath}'**
+  String targetpath(Object targetPath);
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'下一级'**
+  String get msg6ed14da7;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'删除选中'**
+  String get msgcd0b9aca;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要删除此项目吗？此操作无法撤销。'**
+  String get msgee14ee27;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'\"{fileName}\" 已存在，已创建 \"{createdName}\"。'**
+  String filenamecreatedname(Object createdName, Object fileName);
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'\"{folderName}\" 已存在，已创建 \"{createdName}\"。'**
+  String foldernamecreatedname(Object createdName, Object folderName);
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'创建新的空白文本文档'**
+  String get msgbd165c40;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'新建压缩包'**
+  String get msg68ac91eb;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'压缩当前文件夹内容'**
+  String get msg881f6a80;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'查看和排序选项'**
+  String get msg97301f64;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'列表视图'**
+  String get msg829cb1dd;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'大小和间距选项'**
+  String get msg0a4ebb8d;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'图标和文件夹大小'**
+  String get msg88062f93;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'大小和间距'**
+  String get msga7c781f5;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'排序方式'**
+  String get msga2946a1a;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'名称 (Z-A)'**
+  String get za;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'大小（大）'**
+  String get msg2e2a26bb;
+
+  /// zenfile_end_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'仅此文件夹'**
+  String get msgf437ace4;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'此目录不包含任何文件或子文件夹。'**
+  String get msg551f98ba;
+
+  /// zenfile_end_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'收藏夹'**
+  String get ui_favorites;
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'新建收藏'**
+  String get ui_new_favorite;
+
+  /// file_action_dialogs.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'收藏'**
+  String get ui_favorite;
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已收藏 {name}'**
+  String msg_favorited(Object name);
+
+  /// zenfile_end_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'添加为收藏'**
+  String get ui_add_to_favorites;
+
+  /// zenfile_end_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'分组'**
+  String get ui_group;
+
+  /// zenfile_end_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'新建分组'**
+  String get ui_new_group;
+
+  /// zenfile_end_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'分组名称'**
+  String get ui_group_name;
+
+  /// zenfile_end_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'默认分组'**
+  String get ui_default_group;
+
+  /// zenfile_end_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'添加'**
+  String get ui_add;
+
+  /// favorites edit
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑收藏'**
+  String get ui_edit_favorite;
+
+  /// favorites select group
+  ///
+  /// In zh, this message translates to:
+  /// **'选择分组'**
+  String get ui_select_group;
+
+  /// favorites save
+  ///
+  /// In zh, this message translates to:
+  /// **'保存'**
+  String get ui_save;
+
+  /// favorites rename group
+  ///
+  /// In zh, this message translates to:
+  /// **'重命名分组'**
+  String get ui_rename_group;
+
+  /// favorites delete group
+  ///
+  /// In zh, this message translates to:
+  /// **'删除分组'**
+  String get ui_delete_group;
+
+  /// favorites delete group confirm
+  ///
+  /// In zh, this message translates to:
+  /// **'删除分组「{name}」将同时删除其中的所有收藏，此操作不可撤销。'**
+  String msg_delete_group_confirm(Object name);
+
+  /// zenfile_end_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入路径'**
+  String get msg_please_enter_path;
+
+  /// zenfile_end_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入名称'**
+  String get msg_please_enter_name;
+
+  /// zenfile_end_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入分组名称'**
+  String get msg_please_enter_group_name;
+
+  /// zenfile_end_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'该路径已收藏'**
+  String get msg_favorite_exists;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'启用此文件夹的自定义排序'**
+  String get msg4dfc167a;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'添加快捷方式'**
+  String get msge4c84f81;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'系统根目录'**
+  String get msgd730e478;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'网络连接'**
+  String get msg35546526;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'添加网络连接'**
+  String get msg67a6ea5e;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'移除连接'**
+  String get msgcc51d6c2;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'首页分类'**
+  String get msg6e0f9cef;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'空文件夹'**
+  String get msge9691076;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'取消操作'**
+  String get msg17093362;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'全局搜索'**
+  String get msg681c0f39;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'仅文档'**
+  String get msg0c36f64f;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'仅音频'**
+  String get msg26b041dd;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'仅压缩包'**
+  String get msge632ba85;
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'{label} 筛选已激活'**
+  String label(Object label);
+
+  /// ui\screens\directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏文件夹'**
+  String get msg0e77af8a;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'加载出错：{e}'**
+  String e11(Object e);
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'（空白幻灯片）'**
+  String get msg5937f822;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'保存成功 ✓'**
+  String get msg360d0b37;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'PDF显示设置'**
+  String get pdf;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'优化大型、设计复杂或扫描文档的渲染性能。'**
+  String get msg09c933bf;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'标准模式'**
+  String get msg701a85d4;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'最适合文本文档'**
+  String get msg2722d1a7;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'适合宣传册和照片'**
+  String get msgb2b08d54;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'页面布局'**
+  String get msg8b519c02;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'连续（垂直滚动列表）'**
+  String get msg7f2cd152;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'滚动方向'**
+  String get msg151ea324;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'垂直（从上到下滚动）'**
+  String get msg7d45ded6;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'启用文本选择'**
+  String get msg176ef589;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭可显著提升页面渲染速度并消除滚动卡顿。'**
+  String get msg864f8706;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'新建文档'**
+  String get msgd28847a2;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'更多选项'**
+  String get msg3007c452;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'自动换行'**
+  String get msg452dba7c;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'显示行号'**
+  String get msgc31f9440;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'用其他应用打开'**
+  String get msg1d93c30b;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'（空文件）'**
+  String get msgace80573;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'用应用打开'**
+  String get msg030f48bd;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'分享功能即将推出'**
+  String get msgfd96af00;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'分享'**
+  String get ui_share;
+
+  /// ui\screens\ftp_server_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'FTP服务器已成功停止'**
+  String get ftp1;
+
+  /// ui\screens\ftp_server_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'启动FTP服务器出错：{e}'**
+  String ftpe(Object e);
+
+  /// ui\screens\ftp_server_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'请在更改配置前停止服务器'**
+  String get msg5c202e56;
+
+  /// ui\screens\ftp_server_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'更改端口'**
+  String get msgfca29cb3;
+
+  /// ui\screens\ftp_server_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'无效的端口号'**
+  String get msg8a0b5bf5;
+
+  /// ui\screens\ftp_server_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'设置用户名'**
+  String get msg3bce2199;
+
+  /// ui\screens\ftp_server_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'用户名不能为空'**
+  String get msg0b62b5ce;
+
+  /// ui\screens\ftp_server_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'FTP 服务器'**
+  String get ftp2;
+
+  /// ui\screens\ftp_server_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑设置前请先停止服务器'**
+  String get msg5ab96a6d;
+
+  /// ui\screens\ftp_server_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'更改目录'**
+  String get msgc400f106;
+
+  /// ui\screens\ftp_server_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'设置用户'**
+  String get msgb5eb59fc;
+
+  /// ui\screens\ftp_server_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'匿名访问'**
+  String get msg70c53afb;
+
+  /// ui\screens\ftp_server_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'创建快捷方式'**
+  String get msg8e2021aa;
+
+  /// ui\screens\ftp_server_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'未激活'**
+  String get msgd70e9bdf;
+
+  /// ui\screens\ftp_server_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'网络状态'**
+  String get msg7ae644e4;
+
+  /// ui\screens\ftp_server_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器地址'**
+  String get msg5d57821d;
+
+  /// ui\screens\ftp_server_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'主目录'**
+  String get msgfefea1b3;
+
+  /// ui\screens\ftp_server_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'显示隐藏文件'**
+  String get msg124d9054;
+
+  /// ui\screens\ftp_server_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'基于显式 TLS 的安全 FTP 连接'**
+  String get tlsftp;
+
+  /// ui\screens\global_search_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'文件夹'**
+  String get msg1f4c1042;
+
+  /// ui\screens\global_search_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'在此文件夹中搜索...'**
+  String get msgf2ef53c0;
+
+  /// ui\screens\global_search_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'更多操作'**
+  String get msgfff96ede;
+
+  /// ui\screens\global_search_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索您的存储'**
+  String get msg88e45bb8;
+
+  /// ui\screens\global_search_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到匹配 \"{_query}\" 的内容'**
+  String query(Object _query);
+
+  /// ui\screens\home_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'仪表盘刷新成功'**
+  String get msge109d1ea;
+
+  /// ui\screens\home_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'再按一次退出应用'**
+  String get msg05cea075;
+
+  /// ui\screens\home_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'退出应用'**
+  String get msg7498c202;
+
+  /// ui\screens\home_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要退出吗？再次按返回键或点击退出以关闭应用。'**
+  String get msg03247b17;
+
+  /// ui\screens\home_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'刷新仪表盘'**
+  String get msg354c1c9a;
+
+  /// ui\screens\home_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义快捷分类'**
+  String get msg19021d08;
+
+  /// ui\screens\html_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'HTML 预览'**
+  String get html;
+
+  /// ui\screens\internal_file_picker_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'输入文件夹名称'**
+  String get msgfba1f416;
+
+  /// ui\screens\internal_file_picker_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'选择并固定文件夹'**
+  String get msg33b0b21c;
+
+  /// ui\screens\internal_file_picker_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'清除选择'**
+  String get msgff3200cc;
+
+  /// ui\screens\internal_file_picker_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'文件夹为空'**
+  String get msg4614630a;
+
+  /// ui\screens\internal_file_picker_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'固定此文件夹'**
+  String get msg5dc1fa7b;
+
+  /// ui\screens\internal_file_picker_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'选择存储驱动器'**
+  String get selectStorageDrive;
+
+  /// ui\screens\markdown_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'Markdown 预览'**
+  String get markdown;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'个项目'**
+  String get items;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要永久删除选中的 {count} 个项目吗？'**
+  String count1(Object count);
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已成功删除 {count} 个项目'**
+  String count2(Object count);
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已粘贴 {pastedCount} 个项目到 {destDir}'**
+  String pastedcountdestdir(Object destDir, Object pastedCount);
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'没有可分享的文件。'**
+  String get msgfadbb0bc;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到可重命名的物理文件'**
+  String get msg3ad97542;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'修改时间'**
+  String get msg1303e638;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'媒体信息'**
+  String get msg5bab3781;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已选择项目'**
+  String get msg880a18f3;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'总大小'**
+  String get msgea9ecb93;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'长按打开方式...'**
+  String get msg5556baa3;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'确认删除'**
+  String get msg631cd220;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已删除 {name}'**
+  String name(Object name);
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'在位置中显示'**
+  String get msgcd8264f1;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'打开方式...'**
+  String get msg2a4cfb07;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'文件未找到或不可分享。'**
+  String get msg8bf52387;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'粘贴到此处'**
+  String get msg419be096;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'最新优先'**
+  String get msg5093bc80;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'按日期'**
+  String get msgbc74b5a8;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'最新优先（按月分组）'**
+  String get msgef7ae768;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'最旧优先（按月分组）'**
+  String get msgb8140039;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'未知日期'**
+  String get msg424a0110;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'全部项目'**
+  String get msgb19671d6;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'日期和时间'**
+  String get msg11fea612;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'文件大小 / 项目数'**
+  String get msg12e86877;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'无 / 隐藏信息'**
+  String get msg7908038f;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'不在右侧显示额外信息'**
+  String get msg9136d4dc;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'显示最后修改日期和时间'**
+  String get msg84986f91;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'文件显示大小，文件夹显示项目数'**
+  String get msgfc000737;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'选择尾部信息样式'**
+  String get msg83de16cc;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'选择当三点操作按钮隐藏时，文件和文件夹右侧显示的内容。'**
+  String get msgaa2a18a1;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'显示地址栏'**
+  String get msg26e4c5d6;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'在文件列表顶部显示可编辑的Windows资源管理器风格地址栏'**
+  String get windows1;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'直接以文件夹（相册）首选视图打开图片/视频快捷分类'**
+  String get msg74e86197;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏安卓导航栏'**
+  String get msga1fbf3c6;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏底部导航栏以最大化屏幕空间（上滑可显示）'**
+  String get msg02dddc02;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'清除所有已记住的\"打开方式\"关联'**
+  String get msg50923c95;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'跳过\"打开方式\"对话框'**
+  String get msg6fdc09ac;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'绕过应用选择对话框，直接使用默认查看器打开文件'**
+  String get msg0a4b0442;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'选择启动时进入分类页或浏览页'**
+  String get msge1157984;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'选择单指或双指左右滑动切换页面'**
+  String get msgae1854a2;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'在浏览页显示操作按钮栏，含后退、前进、新建、复制标签页、向上'**
+  String get msg11b1ec65;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'显示以点(.)开头的系统文件和文件夹'**
+  String get msg7e7765b6;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'显示文件夹和文件计数标题'**
+  String get msg86f3d70f;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'在存储标题栏下显示文件夹和文件总数'**
+  String get msg40e9c325;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'在列表中切换12小时（AM/PM）和24小时时间格式'**
+  String get ampm24;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'在列表中隐藏时间和日期'**
+  String get msg25ee6612;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'完全隐藏文件和文件夹的修改日期和时间'**
+  String get msg337359a6;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'计算并显示目录中的文件和文件夹总数'**
+  String get msga517863e;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'计算并显示目录中所有文件的总大小（可能影响列表性能）'**
+  String get msg59a24fcb;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'在顶部或底部显示导航栏位置'**
+  String get msg309e2a28;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'顶部'**
+  String get msge34c23ff;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'操作按钮显示在页面顶部'**
+  String get msg3341e3ed;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'底部'**
+  String get msg8c414b06;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'操作按钮显示在页面底部'**
+  String get msg5d2c8e7f;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'在浏览和媒体页面的选择操作栏中仅显示图标'**
+  String get msg9b7639ac;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'返回时短暂闪烁并滚动到刚退出的文件夹'**
+  String get msgdd69671b;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'显示实际的图片和视频缩略图而非通用文件图标'**
+  String get msg57736228;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'允许文件名换行显示3行而非截断'**
+  String get msg1eda8a50;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏文件夹和文件旁边的三点菜单按钮'**
+  String get msgc7196afd;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'长按并拖动文件夹或文件将其移动到其他文件夹'**
+  String get msgad54815d;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'拖放文件时显示选项弹窗（复制、移动、压缩）'**
+  String get msg5dff8f2d;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'允许在单独的标签页中打开多个文件夹以便快速导航'**
+  String get msg4b0a7063;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'并排浏览两个目录并轻松传输文件'**
+  String get msgf04ac00d;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'启动应用时打开上次浏览的文件夹'**
+  String get msgd1591ba4;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'将删除的文件和文件夹移至隐藏的回收站而非永久删除'**
+  String get msg25792550;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'主题色 / 动态主题'**
+  String get msg1b9633fe;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'文件夹图标样式'**
+  String get msg64db4c2d;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'应用抽屉按钮样式'**
+  String get msgece44aa5;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'AMOLED 纯黑模式'**
+  String get amoled1;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'在深色模式下为AMOLED屏幕使用纯黑背景'**
+  String get amoled2;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'应用排版 / 字体'**
+  String get msg5228b59f;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义快捷方式'**
+  String get msge7d18d73;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'重新排列和切换快捷分类项目的可见性'**
+  String get msg036fe6a4;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索设置...'**
+  String get msgead3e5c5;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'设置分类'**
+  String get msg2590095f;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'常规与行为'**
+  String get msgfdae44c3;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'默认屏幕、导航控制和快捷方式'**
+  String get msgeae34685;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'主题、应用图标、文件夹样式和排版'**
+  String get msg91b228b8;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'文件浏览器选项'**
+  String get msgad6e8bb8;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'地址栏、隐藏文件、标签页和拖放'**
+  String get msg8ddc4963;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'文件夹大小、计数和时间/日期格式'**
+  String get msg45db4e2a;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'默认相册视图和缩略图预览'**
+  String get msg09ca4d86;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'打开操作和默认查看器配置'**
+  String get msgeb3693fb;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'回收站开关和自动删除时长'**
+  String get msg3a6a39ae;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'备份或恢复所有应用设置'**
+  String get msg9edfaff3;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'尝试搜索其他关键词'**
+  String get msg99c9cc56;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'默认主页'**
+  String get msga432d127;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'分类页'**
+  String get msg226fc6ae;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'滑动切换页面'**
+  String get msgd48a082d;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'单指滑动'**
+  String get msgaac01f32;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'记住上次打开的文件夹'**
+  String get msg59c7debc;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏底部栏（首页/浏览）的文字标签，更简洁紧凑'**
+  String get msgce732d8a;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'文件浏览器与导航'**
+  String get msg1cfeaace;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'高亮退出文件夹'**
+  String get msgd33e3082;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'媒体与默认操作'**
+  String get msga4333788;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'默认相册首选视图'**
+  String get msg20c87c8e;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'所有默认查看器选择已重置'**
+  String get msg72b1f919;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'启用回收站'**
+  String get msge99f4762;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'浏览页'**
+  String get msg2c8a394a;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'图标形状'**
+  String get msg2c3c5a35;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'每3天'**
+  String get msg267fcd86;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'每两周'**
+  String get msg9104c0c5;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'每{days}天'**
+  String days(Object days);
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'远程服务器缓存已清除'**
+  String get msg673ad9d4;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'自动清理缓存'**
+  String get msgd9f142c4;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'立即清除网络服务器下载的缓存文件'**
+  String get msg5472ef41;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'浏览远程服务器缓存文件所在目录'**
+  String get msgac7687d9;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'为网络服务器上的图片和视频显示缩略图预览'**
+  String get msg225f6249;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'Material You（动态壁纸取色）'**
+  String get materialyou;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'活力橙'**
+  String get msg05cff3ad;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'皇家紫'**
+  String get msg5ed35657;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'琥珀金'**
+  String get msge74a7283;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'赛博粉'**
+  String get msg3904ba87;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'蓝宝石'**
+  String get msgd58d230a;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'森林绿'**
+  String get msg508b005e;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'日落桃'**
+  String get msgefdde083;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'默认蓝（标志性蓝色）'**
+  String get msg628e73a9;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'经典实心'**
+  String get msg8244d240;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'现代圆角'**
+  String get msgf08d9b15;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'星标特别'**
+  String get msge5fba3dd;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'文档片段'**
+  String get msgfe4254dc;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'极简描边'**
+  String get msg84719fd5;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'断线描边'**
+  String get zenfile4;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'分类网格 / Vuesax 网格'**
+  String get vuesax;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'汉堡菜单 / 经典菜单'**
+  String get msg5dc988f4;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'M3 表现派 1'**
+  String get msgd06ba04f;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'M3 表现派 2'**
+  String get msg5090469e;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'M3 表现派 3'**
+  String get d;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'极简风'**
+  String get msg67836b24;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'玻璃拟态'**
+  String get msgf08c8dc4;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'赛博朋克'**
+  String get msgdesign6;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'新拟态'**
+  String get msgdesign7;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'经典 2'**
+  String get msgdesign8;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'经典 3'**
+  String get msgdesign9;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'用户设计 1'**
+  String get msgdesign10;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'用户设计 2'**
+  String get msgdesign11;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义图标'**
+  String get msg7372dc9f;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'默认标志（自然禅意）'**
+  String get msg3004e40a;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'点阵与无衬线'**
+  String get msgc540e940;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'欧菲特现代无衬线'**
+  String get msg00ea5776;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'捷脑科技等宽'**
+  String get msg7bdbfaa5;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'蒙特都市无衬线'**
+  String get msgdcb4082d;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义导入字体'**
+  String get msg9d7001d9;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'标志性默认'**
+  String get msgc2f5e9e4;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'从不（禁用自动删除）'**
+  String get msg6a7c758f;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'{days} 天后'**
+  String days1(Object days);
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'选择启动应用时默认显示的页面'**
+  String get msgfe76ae54;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'启动时显示快捷分类页面'**
+  String get msg8af2412a;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'启动时显示文件浏览页面'**
+  String get msg245c3258;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'选择用单指或双指左右滑动切换页面'**
+  String get msg4439669d;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'单指左右滑动切换分类页、浏览页或打开抽屉'**
+  String get msg46978666;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'双指滑动'**
+  String get msgbc9bf336;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'双指左右滑动切换分类页、浏览页或打开抽屉'**
+  String get msg563871d3;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'选择主题色'**
+  String get msgca71ac0c;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'选择文件夹图标样式'**
+  String get msg732630c1;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'选择抽屉按钮样式'**
+  String get msgf9224d98;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'选择分类图标形状'**
+  String get msgc337ecfa;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'应用启动器图标'**
+  String get msgf18bc3d9;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'为应用启动器图标选择一个自定义Logo。注意某些启动器可能需要几秒钟才能更新。'**
+  String get logo;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'默认标志'**
+  String get msg64a6476a;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'应用图标已切换为 {title}'**
+  String title(Object title);
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'选择自定义图标'**
+  String get msgad76161f;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'请选择图片文件（PNG/JPG/WEBP）'**
+  String get pngjpgwebp;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义图标已应用'**
+  String get msgb06c5c34;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'应用自定义图标失败: {e}'**
+  String e12(Object e);
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'原始简洁几何风格'**
+  String get msg375c9eb8;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'高科技复古点阵标题 + 简洁正文'**
+  String get msg817e321b;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'超流畅、极简且高级的几何美学'**
+  String get msg3c2a24cc;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'干净且未来感的开发者等宽风格'**
+  String get msg978f8d11;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'大胆、现代且醒目的字体排版'**
+  String get msg93b657aa;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'您加载的自定义字体文件'**
+  String get msg9db40ad6;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'选择一种精美的字体来自定义ZenFile的整体视觉主题'**
+  String get zenfile5;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'替换自定义字体文件'**
+  String get msg7372efa5;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'加载所选字体文件失败。'**
+  String get msg3186839b;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'请选择有效的 OpenType (.otf) 或 TrueType (.ttf) 字体文件.'**
+  String get opentypeotftruetypettf;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'移除自定义字体'**
+  String get msgcf42dedc;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义字体已移除。'**
+  String get msg2b9abfaa;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'7 天'**
+  String get msgfdef8c23;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'15 天'**
+  String get msg25436ba3;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'30 天（推荐）'**
+  String get msg85e7f60c;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'从不（手动清理）'**
+  String get msgd61e706f;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'自动删除回收站时长'**
+  String get msgf0ef894a;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'回收站中的项目将在此时长后被永久删除。'**
+  String get msg1200d6b7;
+
+  /// ui\screens\network_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'删除连接'**
+  String get msg432fbb31;
+
+  /// No description provided for @msgdeleteconn.
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要删除 \"{name}\" 吗？'**
+  String msgdeleteconn(Object name);
+
+  /// ui\screens\network_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'添加连接'**
+  String get msg3358aa10;
+
+  /// ui\screens\network_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无远程连接'**
+  String get msgc9c900d0;
+
+  /// ui\screens\network_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'添加 FTP、SFTP、WebDav 或 SMB 连接'**
+  String get ftpsftpwebdavsmb1;
+
+  /// ui\screens\network_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'连接失败：{e}'**
+  String e13(Object e);
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在解析主机地址...'**
+  String get msgb5bc0bf1;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在检查端口状态...'**
+  String get msgc3d4e5f6;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在验证凭据...'**
+  String get msg3005ba4d;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在挂载存储卷...'**
+  String get msgab36a8c6;
+
+  /// No description provided for @name1.
+  ///
+  /// In zh, this message translates to:
+  /// **'\"{name}\" 添加成功！'**
+  String name1(Object name);
+
+  /// No description provided for @connectedtype.
+  ///
+  /// In zh, this message translates to:
+  /// **'\"{name}\" 连接成功！'**
+  String connectedtype(Object name);
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'系统应用已禁用'**
+  String get msgdf434415;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'您的设备没有启用默认的系统文件/文档应用（DocumentsUI），'**
+  String get documentsui;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'这是 Android 选择和挂载目录所必需的。\\n\\n'**
+  String get androidnn;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'请检查\"文件\"或\"文档\"系统应用是否在设备设置中被禁用，'**
+  String get msgb2af4e30;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'请求 SAF 文件夹失败：{e}'**
+  String safe(Object e);
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入连接名称'**
+  String get msg65c7ecb6;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入服务器地址/主机名'**
+  String get msg69e3963c;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'远程连接'**
+  String get msgce1ec2ce;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'标准文件传输协议'**
+  String get msg25557d1f;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'SSH安全文件传输服务器'**
+  String get ssh;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'HTTP网页分布式创作'**
+  String get http;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'Android 存储访问框架 (SD 卡 / 外部存储)'**
+  String get androidsd;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'选择网络服务'**
+  String get msg8486035b;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'将远程服务器或 NAS 共享挂载为 ZenFile 存储列表中的动态驱动器。'**
+  String get naszenfile;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'{_selectedType} 设置'**
+  String selectedtype(Object _selectedType);
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'输入连接详情以链接此网络存储卷。'**
+  String get msg5c808d9a;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'例如：办公室 NAS、家庭共享'**
+  String get nas;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'例如：192.168.1.100 或 192.168.1.100/dav'**
+  String get dav;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'例如：192.168.1.100 或 nas.local'**
+  String get naslocal;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'例如：/dav 或 /'**
+  String get dav1;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'例如：anonymous 或 admin'**
+  String get anonymousadmin;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'密码（可选）'**
+  String get msgeec70cd2;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在创建挂载点...'**
+  String get msgf1fa9d44;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'请稍候，我们正在建立与 {_selectedType} 服务器的可靠连接。'**
+  String selectedtype1(Object _selectedType);
+
+  /// ui\screens\recycle_bin_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复项目出错：{e}'**
+  String e14(Object e);
+
+  /// ui\screens\recycle_bin_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'删除项目出错：{e}'**
+  String e15(Object e);
+
+  /// ui\screens\recycle_bin_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要永久删除回收站中的所有项目吗？此操作不可逆。'**
+  String get msg62187f1b;
+
+  /// ui\screens\recycle_bin_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'清空回收站'**
+  String get msg8cd6bc18;
+
+  /// ui\screens\recycle_bin_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'回收站已成功清空'**
+  String get msga4dfc0c6;
+
+  /// ui\screens\recycle_bin_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索已删除文件...'**
+  String get msg07d80ac5;
+
+  /// ui\screens\recycle_bin_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'永久删除'**
+  String get msg96d2b75f;
+
+  /// ui\screens\recycle_bin_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'回收站为空'**
+  String get msg0d824a24;
+
+  /// ui\screens\recycle_bin_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'原始位置'**
+  String get msg4c478216;
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在下载文本...'**
+  String get msgc44a57b6;
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在缓冲媒体...'**
+  String get msgd6d8292d;
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'下载失败：{e}'**
+  String e16(Object e);
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'缓冲超时，请检查网络连接'**
+  String get msg66d723c5;
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'无法粘贴到相同位置'**
+  String get msg53082c55;
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在复制...'**
+  String get msg108feeed;
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'成功粘贴项目'**
+  String get msg2d4b44ec;
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'上传\"{fileName}\"失败：{e}'**
+  String filenamee(Object e, Object fileName);
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已重命名为 \"{newName}\"'**
+  String newname(Object newName);
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'删除项目'**
+  String get msg4b342999;
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'删除失败：{e}'**
+  String e17(Object e);
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'新建远程文件夹'**
+  String get msg79d7fef7;
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'文件夹名称'**
+  String get msga98473f2;
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'创建文件夹失败：{e}'**
+  String e18(Object e);
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'远程目录'**
+  String get msg5ca05a9b;
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'复制到本地设备'**
+  String get msga636c09d;
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'下载文件到本地剪贴板'**
+  String get msga4c461a4;
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'下载并从服务器删除'**
+  String get msg425502fa;
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'根目录'**
+  String get msgc2b9f4b9;
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'上传本地剪贴板到服务器'**
+  String get msg2f7cd487;
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'粘贴远程剪贴板'**
+  String get msg905c34fa;
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'连接已断开'**
+  String get msg8439c155;
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'重试连接'**
+  String get msgda43df27;
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'空目录'**
+  String get msga21f6ab1;
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'在此上传剪贴板内容'**
+  String get msge1c538b8;
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'下载失败: {e}'**
+  String e19(Object e);
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'删除确认'**
+  String get msg50eaf94d;
+
+  /// ui\screens\remote_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在删除...'**
+  String get msgcb0da17b;
+
+  /// ui\screens\storage_analyzer\app_manager_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'应用管理'**
+  String get msg4805c385;
+
+  /// ui\screens\storage_analyzer\app_manager_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'刷新列表'**
+  String get msg93bc1f09;
+
+  /// ui\screens\storage_analyzer\app_manager_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已安装的用户应用'**
+  String get msg32e490fe;
+
+  /// ui\screens\storage_analyzer\app_manager_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已备份的APK'**
+  String get apk2;
+
+  /// ui\screens\storage_analyzer\app_manager_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索包名或名称...'**
+  String get msg8936ded6;
+
+  /// ui\screens\storage_analyzer\app_manager_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'按大小排序'**
+  String get msgd8b3fc58;
+
+  /// ui\screens\storage_analyzer\app_manager_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'按字母排序'**
+  String get msgbe1399f0;
+
+  /// ui\screens\storage_analyzer\app_manager_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'按备份日期排序'**
+  String get msg9ad67f11;
+
+  /// ui\screens\storage_analyzer\app_manager_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'精确存储计算'**
+  String get msgb0681bd4;
+
+  /// ui\screens\storage_analyzer\app_manager_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'授予使用情况访问权限'**
+  String get msg34cd846c;
+
+  /// ui\screens\storage_analyzer\storage_analyzer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'存储分析'**
+  String get msga22ddaae;
+
+  /// ui\screens\storage_analyzer\storage_analyzer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'重新扫描存储'**
+  String get msgaae779d4;
+
+  /// ui\screens\storage_analyzer\storage_analyzer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在扫描设备存储'**
+  String get msg7ae97495;
+
+  /// ui\screens\storage_analyzer\storage_analyzer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'总存储'**
+  String get msga5e5bf71;
+
+  /// ui\screens\storage_analyzer\storage_analyzer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'分类明细'**
+  String get msg652be256;
+
+  /// ui\screens\storage_analyzer\storage_analyzer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'初始化中...'**
+  String get msgb1a2c3d4;
+
+  /// ui\screens\storage_analyzer\storage_analyzer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在读取系统存储...'**
+  String get msgc2d3e4f5;
+
+  /// ui\screens\storage_analyzer\storage_analyzer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在计算应用占用空间...'**
+  String get msgd3e4f5a6;
+
+  /// ui\screens\storage_analyzer\storage_analyzer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在分析文件、分类资源并读取已安装应用占用空间...'**
+  String get msge4f5a6b7;
+
+  /// ui\screens\storage_analyzer\storage_analyzer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'{size} 可用'**
+  String msgf5a6b7c8(Object size);
+
+  /// ui\screens\storage_analyzer\storage_analyzer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'{size} 已用（{percent}%）'**
+  String msga6b7c8d9(Object size, Object percent);
+
+  /// ui\screens\storage_analyzer\storage_analyzer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'占总存储的 {percent}%'**
+  String msgb7c8d9e0(Object percent);
+
+  /// ui\screens\storage_analyzer\storage_analyzer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'系统/其他'**
+  String get msgc8d9e0f1;
+
+  /// Drag drop action dialog snackbar
+  ///
+  /// In zh, this message translates to:
+  /// **'压缩包\"{name}\"创建成功'**
+  String ui_drag_archive_created(Object name);
+
+  /// Drag drop action dialog snackbar
+  ///
+  /// In zh, this message translates to:
+  /// **'创建压缩包失败：{error}'**
+  String ui_drag_archive_failed(Object error);
+
+  /// Settings backup service snackbar
+  ///
+  /// In zh, this message translates to:
+  /// **'设置已备份到 ZenFile/Backups/Settings/'**
+  String get ui_backup_success;
+
+  /// Settings backup service snackbar
+  ///
+  /// In zh, this message translates to:
+  /// **'备份失败：{error}'**
+  String ui_backup_failed(Object error);
+
+  /// Settings restore snackbar
+  ///
+  /// In zh, this message translates to:
+  /// **'请选择有效的 .json 设置备份文件'**
+  String get ui_restore_invalid_file;
+
+  /// Settings restore snackbar
+  ///
+  /// In zh, this message translates to:
+  /// **'设置恢复成功！'**
+  String get ui_restore_success;
+
+  /// Settings restore snackbar
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复失败：{error}'**
+  String ui_restore_failed(Object error);
+
+  /// ui\screens\storage_analyzer\widgets\app_batch_action_bar.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'卸载应用'**
+  String get msgeb3d7d70;
+
+  /// ui\screens\storage_analyzer\widgets\app_batch_action_bar.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在备份所选应用...'**
+  String get msg6eb319a1;
+
+  /// ui\screens\storage_analyzer\widgets\app_list_tab.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到应用'**
+  String get msg7fbfdce6;
+
+  /// ui\screens\storage_analyzer\widgets\app_options_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'启动应用'**
+  String get msg753cdb55;
+
+  /// ui\screens\storage_analyzer\widgets\app_options_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'备份APK'**
+  String get apk3;
+
+  /// ui\screens\storage_analyzer\widgets\app_options_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在备份APK...'**
+  String get apk4;
+
+  /// ui\screens\storage_analyzer\widgets\app_options_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'备份APK失败'**
+  String get apk5;
+
+  /// ui\screens\storage_analyzer\widgets\app_options_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'分享APK文件'**
+  String get apk6;
+
+  /// No description provided for @copy_package_name.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制包名'**
+  String get copy_package_name;
+
+  /// ui\screens\storage_analyzer\widgets\backup_list_tab.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'分享备份文件'**
+  String get msga0b18169;
+
+  /// ui\screens\storage_analyzer\widgets\backup_list_tab.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'删除备份文件'**
+  String get msgb443cd06;
+
+  /// ui\screens\text_editor_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'加载文件出错：{e}'**
+  String e20(Object e);
+
+  /// ui\screens\text_editor_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'文件保存成功'**
+  String get msg24c6ab0f;
+
+  /// ui\screens\text_editor_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已替换 {count} 处'**
+  String count3(Object count);
+
+  /// ui\screens\text_editor_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'纯文本'**
+  String get msgffb01e5b;
+
+  /// ui\screens\text_editor_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'选择语法'**
+  String get msg7902d9c0;
+
+  /// ui\screens\text_editor_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'查找 / 替换'**
+  String get msgc856a077;
+
+  /// ui\screens\text_editor_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'保存文件'**
+  String get msg7f2c95cd;
+
+  /// ui\screens\text_editor_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'解锁缩放'**
+  String get msg084e9388;
+
+  /// ui\screens\text_editor_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'自动换行: 开'**
+  String get msgf387265a;
+
+  /// ui\screens\text_editor_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'自动换行: 关'**
+  String get msg1045ba75;
+
+  /// ui\screens\text_editor_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑锁定: 开'**
+  String get msg96f0ad7d;
+
+  /// ui\screens\text_editor_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑锁定: 关'**
+  String get msg349ab61d;
+
+  /// ui\screens\text_editor_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏行号'**
+  String get msg0cee3cd1;
+
+  /// ui\screens\text_editor_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'语法 ({_selectedLanguage})'**
+  String selectedlanguage(Object _selectedLanguage);
+
+  /// ui\screens\text_editor_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'替换为...'**
+  String get msg0dac421f;
+
+  /// ui\screens\text_editor_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'全部替换'**
+  String get msg52709ae1;
+
+  /// ui\screens\text_editor_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'制表符'**
+  String get msg4ecba8f6;
+
+  /// ui\screens\vault_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'加载保险箱出错：{e}'**
+  String e21(Object e);
+
+  /// ui\screens\vault_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏文件'**
+  String get msg4828116a;
+
+  /// ui\screens\vault_lock_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'输入密码解锁'**
+  String get msg3bf31dfe;
+
+  /// ui\screens\vault_lock_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'输入PIN码解锁钱包'**
+  String get pin;
+
+  /// ui\screens\vault_lock_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'设置您的4位钱包PIN码'**
+  String get pin1;
+
+  /// ui\screens\vault_lock_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'确认您的4位PIN码'**
+  String get pin2;
+
+  /// ui\screens\vault_lock_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'私人保险箱'**
+  String get msgbb590f19;
+
+  /// ui\screens\vault_lock_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'全部清除'**
+  String get msgaa43fa46;
+
+  /// ui\screens\video_player\video_controls_overlay.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'播放速度'**
+  String get msgc16eed0e;
+
+  /// ui\screens\video_player\video_controls_overlay.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'锁定控制'**
+  String get msg8f106217;
+
+  /// ui\screens\video_player\video_controls_overlay.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'重复模式'**
+  String get msg1f41f25d;
+
+  /// ui\screens\video_player\video_controls_overlay.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'媒体路径已复制到剪贴板。'**
+  String get msg4d2abc8c;
+
+  /// ui\screens\web_sharing_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'本地 HTTP 共享服务器已停止。'**
+  String get http1;
+
+  /// ui\screens\web_sharing_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在建立安全代理中继...'**
+  String get msg2904d894;
+
+  /// ui\widgets\restricted_folder_banner.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'返回上一级'**
+  String get msga1b2c3d4;
+
+  /// ui\widgets\restricted_folder_banner.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'如何设置Shizuku？'**
+  String get msga1b2c3d5;
+
+  /// ui\main.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'需要存储权限'**
+  String get msga1b2c3d6;
+
+  /// ui\main.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'授予权限'**
+  String get msga1b2c3d7;
+
+  /// Title for media-only permission warning
+  ///
+  /// In zh, this message translates to:
+  /// **'仅媒体文件权限'**
+  String get msg_media_only_permission_title;
+
+  /// Description for media-only permission warning
+  ///
+  /// In zh, this message translates to:
+  /// **'当前仅授予媒体文件访问权限，文件管理器将无法正常使用重命名、剪切、删除等功能。请授予「所有文件管理权限」以获得完整功能。'**
+  String get msg_media_only_permission_desc;
+
+  /// Button text to grant full storage permission
+  ///
+  /// In zh, this message translates to:
+  /// **'确定'**
+  String get msg_grant_full_storage_permission;
+
+  /// Title of the permission request dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'授权请求'**
+  String get msg_permission_request_title;
+
+  /// Description text for the permission request dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'为了访问您设备上的文件，您需要手动为 ZenFile 授予[所有文件访问]权限，点击确定后进入设置界面，选择[ZenFile]并开启授权。'**
+  String get msg_permission_request_desc;
+
+  /// ui\main.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'打开设置'**
+  String get ui_open_settings;
+
+  /// ui\main.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'存储权限已被永久拒绝，请前往系统设置手动授予文件管理权限。'**
+  String get ui_open_settings_desc;
+
+  /// ui\screens\web_sharing_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'互联网云隧道已上线！临时链接已激活。'**
+  String get msg2c146598;
+
+  /// ui\screens\web_sharing_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'链接已复制到剪贴板！'**
+  String get msg4a5d26f4;
+
+  /// ui\screens\web_sharing_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'使用其他设备扫描以立即打开 {type}。'**
+  String type(Object type);
+
+  /// ui\screens\web_sharing_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'网页共享中心'**
+  String get msgc8390d74;
+
+  /// ui\screens\web_sharing_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'互联网分享链接'**
+  String get msg5345cdce;
+
+  /// ui\screens\web_sharing_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'HTTP本地共享服务器'**
+  String get http2;
+
+  /// ui\screens\web_sharing_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'允许同一 Wi-Fi 下的其他设备通过网页浏览器访问、查看和流式传输您的文件。'**
+  String get wifi;
+
+  /// ui\screens\web_sharing_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器在线并流式传输中'**
+  String get msg73c512df;
+
+  /// ui\screens\web_sharing_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'复制 URL'**
+  String get url1;
+
+  /// ui\screens\web_sharing_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'二维码'**
+  String get msg22b03c02;
+
+  /// ui\screens\web_sharing_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'共享目录：{shareDir}'**
+  String sharedir(Object shareDir);
+
+  /// ui\screens\web_sharing_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器空闲'**
+  String get msge6a29aa4;
+
+  /// ui\screens\web_sharing_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'请确保其他设备与此设备处于同一 Wi-Fi 网络，然后启动服务器。'**
+  String get wifi1;
+
+  /// ui\screens\web_sharing_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'启动网页服务器'**
+  String get msg974465c1;
+
+  /// ui\screens\web_sharing_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'生成一个安全的临时公共隧道链接。与互联网上任何地方的任何人分享此链接，让他们高速下载文件，无论文件大小。'**
+  String get msg27d5bd3c;
+
+  /// ui\screens\web_sharing_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'临时分享链接（有效期 24 小时）：'**
+  String get msg66a09a42;
+
+  /// ui\screens\web_sharing_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'复制链接'**
+  String get msg879058ce;
+
+  /// ui\screens\web_sharing_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已连接的浏览器客户端'**
+  String get msg7ed199f8;
+
+  /// ui\screens\web_sharing_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'等待传入的互联网下载...'**
+  String get msgb77e4adf;
+
+  /// ui\screens\web_sharing_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'互联网共享未激活'**
+  String get msga61778bc;
+
+  /// ui\screens\web_sharing_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'停用云共享'**
+  String get msga3c80551;
+
+  /// ui\screens\web_sharing_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'激活互联网分享链接'**
+  String get msg6466e61e;
+
+  /// ui\widgets\background_operation_progress_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在处理...'**
+  String get msg67bd9375;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在重命名文件...'**
+  String get msg3fa72416;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'请稍候，正在更新文件夹内容'**
+  String get msg7dbbef0e;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'原始名称 (%)'**
+  String get msg1a2d9a44;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'顺序编号 (#)'**
+  String get msgcb029197;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'三位顺序编号 (###)'**
+  String get msgb6d8a14f;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'不带扩展名的文件名 ({n})'**
+  String n(Object n);
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'带点的扩展名 ({de})'**
+  String de(Object de);
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'不带点的扩展名 ({e})'**
+  String e22(Object e);
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'带扩展名的完整文件名 ({N})'**
+  String n1(Object N);
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'名称模式'**
+  String get msg0e9dc63a;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'扩展名'**
+  String get msg4a63edba;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'起始编号'**
+  String get msga420ad79;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'查找文本'**
+  String get msg9857973d;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'替换为'**
+  String get msg1605701e;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'替换内容'**
+  String get msgd35f80c8;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'重命名预览'**
+  String get msg32c61dab;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'返回编辑'**
+  String get msg92642e0e;
+
+  /// ui\widgets\conflict_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'文件已存在'**
+  String get msgde88d67a;
+
+  /// ui\widgets\conflict_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'应用于所有剩余冲突'**
+  String get msge59e35b5;
+
+  /// ui\widgets\conflict_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'保留两者'**
+  String get msg27dfaae5;
+
+  /// ui\widgets\conflict_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'重命名文件'**
+  String get msg6cfbf05d;
+
+  /// ui\widgets\create_archive_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'创建压缩包'**
+  String get msg25f747ce;
+
+  /// ui\widgets\create_archive_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'压缩格式'**
+  String get msged5f808e;
+
+  /// ui\widgets\create_archive_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'分卷大小（MB，可选）'**
+  String get mb;
+
+  /// ui\widgets\create_archive_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'留空则创建单个压缩包'**
+  String get msgac52af6a;
+
+  /// ui\widgets\create_archive_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'为每个文件创建单独的压缩包'**
+  String get msgdf2ef7f5;
+
+  /// ui\widgets\directory_tab_bar.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'新建标签页'**
+  String get msgb52d4a73;
+
+  /// ui\widgets\directory_tab_bar.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'复制标签页'**
+  String get msg4e9c344a;
+
+  /// ui\widgets\directory_tab_bar.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭其他标签页'**
+  String get msg7716532d;
+
+  /// ui\widgets\directory_tab_bar.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'双击关闭标签页'**
+  String get msgd78603eb;
+
+  /// ui\widgets\drag_drop_action_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'{selectedCount} 个项目'**
+  String selectedcount(Object selectedCount);
+
+  /// ui\widgets\drag_drop_action_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'创建压缩包失败：{e}'**
+  String e23(Object e);
+
+  /// ui\widgets\extract_archive_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'解压压缩包'**
+  String get msgc4d7eece;
+
+  /// ui\widgets\extract_archive_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'解压到文件夹'**
+  String get msgf15821d0;
+
+  /// Extract archive dialog title
+  ///
+  /// In zh, this message translates to:
+  /// **'解压到…'**
+  String get msg_extract_to;
+
+  /// Extract to current directory checkbox
+  ///
+  /// In zh, this message translates to:
+  /// **'当前目录'**
+  String get ui_current_directory;
+
+  /// Extract to custom directory checkbox
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义目录'**
+  String get ui_custom_directory;
+
+  /// ui\widgets\extract_archive_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'密码（如果已加密）'**
+  String get msgff69affd;
+
+  /// ui\widgets\file_filter_bottom_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'全部文件'**
+  String get msg67eda5e6;
+
+  /// ui\widgets\file_filter_bottom_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'显示此目录中的所有文件和文件夹'**
+  String get msg8b2fcb31;
+
+  /// ui\widgets\file_filter_bottom_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'PDF、Word 文档、电子表格、文本和电子书'**
+  String get pdfword;
+
+  /// ui\widgets\file_filter_bottom_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'JPEG、PNG、WebP 和原始照片格式'**
+  String get jpegpngwebp;
+
+  /// ui\widgets\file_filter_bottom_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'MP3、WAV、AAC 和高保真音频'**
+  String get mp3wavaac;
+
+  /// ui\widgets\file_filter_bottom_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'MP4、MKV、WebM 和高分辨率视频片段'**
+  String get mp4mkvwebm;
+
+  /// ui\widgets\file_filter_bottom_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'ZIP、7Z、RAR 和其他压缩文件'**
+  String get zip7zrar;
+
+  /// ui\widgets\file_filter_bottom_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'选择一个类别以仅显示匹配的文件'**
+  String get msg6d3e48cc;
+
+  /// ui\widgets\file_item.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'远程缩略图加载失败: {e}'**
+  String e24(Object e);
+
+  /// ui\widgets\file_item.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'1 项'**
+  String get msg32a1bd25;
+
+  /// ui\widgets\file_item.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 项'**
+  String count4(Object count);
+
+  /// ui\widgets\file_operation_progress_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在移动文件...'**
+  String get msg9d69d7a0;
+
+  /// ui\widgets\file_operation_progress_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'传输文件'**
+  String get ui_transferring_files;
+
+  /// ui\widgets\file_operation_progress_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'剩下'**
+  String get ui_time_remaining;
+
+  /// ui\widgets\open_with_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'ZenFile 自定义原生体验'**
+  String get zenfile6;
+
+  /// ui\widgets\open_with_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'ZenFile 内置查看器'**
+  String get built_in_zenfile_viewer;
+
+  /// ui\widgets\open_with_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'系统外部应用'**
+  String get msg42be43e6;
+
+  /// ui\widgets\open_with_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'使用设备上的第三方应用打开'**
+  String get msgd1fca831;
+
+  /// ui\widgets\open_with_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'仅一次'**
+  String get msgdb75b769;
+
+  /// ui\widgets\premium_storage_overview.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'浏览设备文件'**
+  String get msg959429a5;
+
+  /// ui\widgets\quick_categories_grid.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'添加新连接'**
+  String get msgc31116e3;
+
+  /// ui\widgets\quick_categories_grid.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义'**
+  String get msgf1d4ff50;
+
+  /// ui\widgets\quick_categories_grid.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'未固定快捷方式。点击自定义添加。'**
+  String get msg490ac572;
+
+  /// ui\widgets\quick_categories_grid.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'长按图标拖动排列分类图标'**
+  String get msg445a43cb;
+
+  /// ui\widgets\quick_categories_grid.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'添加文件夹/文件快捷方式'**
+  String get msg944d5ecd;
+
+  /// ui\widgets\quick_categories_grid.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义路径'**
+  String get msg4f356348;
+
+  /// ui\widgets\quick_categories_grid.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'删除快捷方式'**
+  String get msg94733bec;
+
+  /// ui\widgets\quick_categories_grid.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复位置'**
+  String get msg5c29ad2f;
+
+  /// ui\widgets\quick_categories_grid.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义扫描位置：'**
+  String get msg21de5dd7;
+
+  /// ui\widgets\quick_categories_grid.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'未添加自定义路径。'**
+  String get msg4bb81f99;
+
+  /// ui\widgets\recent_files_section.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'10月'**
+  String get msgf544c399;
+
+  /// ui\widgets\recent_files_section.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'12月'**
+  String get msgc0615eb3;
+
+  /// ui\widgets\recent_files_section.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'最近文件'**
+  String get msg54355dd8;
+
+  /// ui\widgets\restricted_folder_banner.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'受限系统文件夹'**
+  String get msgd5eac3a3;
+
+  /// ui\widgets\restricted_folder_banner.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'Android 11+ 限制了对 Android/data 和 Android/obb 文件夹的标准访问，以保护应用数据。要查看和修改这些文件，ZenFile 需要高级权限。'**
+  String get android11androiddataandroidobbzenfile;
+
+  /// ui\widgets\restricted_folder_banner.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'使用 Root 访问（超级用户）'**
+  String get root;
+
+  /// ui\widgets\restricted_folder_banner.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'授予Shizuku访问权限（无需Root）'**
+  String get shizukuroot;
+
+  /// ui\widgets\restricted_folder_banner.dart - 绕过FUSE限制
+  ///
+  /// In zh, this message translates to:
+  /// **'一键兼容访问'**
+  String get fusebypass;
+
+  /// ui\widgets\selection_action_bar.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已选择 {selectedCount} 项'**
+  String selectedcount1(Object selectedCount);
+
+  /// ui\widgets\selection_action_bar.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要删除 {selectedCount} 个项目吗？此操作无法撤销。'**
+  String selectedcount2(Object selectedCount);
+
+  /// ui\widgets\selection_action_bar.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已取消置顶所选项目'**
+  String get msga9b87614;
+
+  /// ui\widgets\selection_action_bar.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'取消置顶'**
+  String get msg84e4fac9;
+
+  /// ui\widgets\selection_action_bar.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在计算大小...'**
+  String get msg3be9abab;
+
+  /// ui\widgets\selection_action_bar.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已选择路径：'**
+  String get msg7704aa2c;
+
+  /// ui\widgets\selection_action_bar.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已复制 {label} 到剪贴板'**
+  String label1(Object label);
+
+  /// ui\widgets\selection_context_bottom_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已选择 {selectedCount} 个项目'**
+  String selectedcount3(Object selectedCount);
+
+  /// ui\widgets\selection_context_bottom_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'文件（长按选择打开方式）'**
+  String get msg8b73264b;
+
+  /// ui\widgets\selection_context_bottom_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'复制所选'**
+  String get msgc5c0646c;
+
+  /// ui\widgets\selection_context_bottom_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'剪切所选'**
+  String get msg8e6d4604;
+
+  /// ui\widgets\selection_context_bottom_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'属性与信息'**
+  String get msg1058354c;
+
+  /// ui\widgets\storage_overview.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已使用 {usedStorageStr}'**
+  String usedstoragestr(Object usedStorageStr);
+
+  /// ui\widgets\swipable_storage_overview.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'{freeStorageStr} 可用'**
+  String freestoragestr(Object freeStorageStr);
+
+  /// ui\widgets\tab_options_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'取消固定标签页'**
+  String get msgc823e21b;
+
+  /// ui\widgets\zenfile_address_bar.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到匹配的目录或文件'**
+  String get msg7d6c1284;
+
+  /// ui\widgets\zenfile_address_bar.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'路径不存在: {path}'**
+  String path(Object path);
+
+  /// ui\widgets\zenfile_address_bar.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'输入绝对路径...'**
+  String get msg6cbbf7d9;
+
+  /// ui\widgets\zenfile_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'网络'**
+  String get msgf13fc21c;
+
+  /// ui\widgets\zenfile_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'添加远程连接'**
+  String get msg41e625d1;
+
+  /// ui\widgets\zenfile_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'浅色模式'**
+  String get msg8755e992;
+
+  /// ui\widgets\zenfile_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'更多设置'**
+  String get msg1cf6fcd3;
+
+  /// ui\widgets\zenfile_drawer.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'精品媒体套件'**
+  String get msgeef7e30c;
+
+  /// No description provided for @msg2ad64aa7.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法打开链接：{urlString}'**
+  String msg2ad64aa7(Object urlString);
+
+  /// No description provided for @msg30d17f96.
+  ///
+  /// In zh, this message translates to:
+  /// **'核心亮点'**
+  String get msg30d17f96;
+
+  /// No description provided for @msgaba638c4.
+  ///
+  /// In zh, this message translates to:
+  /// **'保险箱安全'**
+  String get msgaba638c4;
+
+  /// No description provided for @msgd309e9ea.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器中心'**
+  String get msgd309e9ea;
+
+  /// No description provided for @msg4a5f936c.
+  ///
+  /// In zh, this message translates to:
+  /// **'联系与分享'**
+  String get msg4a5f936c;
+
+  /// No description provided for @msg4d48a010.
+  ///
+  /// In zh, this message translates to:
+  /// **'ZenFile - 精美文件管理器'**
+  String get msg4d48a010;
+
+  /// No description provided for @msg1f4c0192.
+  ///
+  /// In zh, this message translates to:
+  /// **'请作者喝杯咖啡 ☕'**
+  String get msg1f4c0192;
+
+  /// No description provided for @msg2eceaa85.
+  ///
+  /// In zh, this message translates to:
+  /// **'打赏作者'**
+  String get msg2eceaa85;
+
+  /// No description provided for @msg305734ce.
+  ///
+  /// In zh, this message translates to:
+  /// **'更新日志'**
+  String get msg305734ce;
+
+  /// No description provided for @msg1c80891a.
+  ///
+  /// In zh, this message translates to:
+  /// **'新增浏览页远程文件缩略图预览'**
+  String get msg1c80891a;
+
+  /// No description provided for @msg212f8f9e.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复远程文件无法打开播放的问题'**
+  String get msg212f8f9e;
+
+  /// No description provided for @msgd0cf310e.
+  ///
+  /// In zh, this message translates to:
+  /// **'优化远程文件缓存目录统一管理'**
+  String get msgd0cf310e;
+
+  /// No description provided for @msg072f2022.
+  ///
+  /// In zh, this message translates to:
+  /// **'单指滑动切换页面改为双指滑动（避免误触返回手势）'**
+  String get msg072f2022;
+
+  /// No description provided for @msg66517dc4.
+  ///
+  /// In zh, this message translates to:
+  /// **'字体选项标题全面汉化'**
+  String get msg66517dc4;
+
+  /// No description provided for @msgacad92c8.
+  ///
+  /// In zh, this message translates to:
+  /// **'移除\"阻止左侧返回手势打开抽屉\"功能'**
+  String get msgacad92c8;
+
+  /// No description provided for @msg09d0e1b6.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复：备用图标切换不生效'**
+  String get msg09d0e1b6;
+
+  /// No description provided for @msg2d1872c8.
+  ///
+  /// In zh, this message translates to:
+  /// **'文本编辑器菜单全面汉化'**
+  String get msg2d1872c8;
+
+  /// No description provided for @msg2e35eef7.
+  ///
+  /// In zh, this message translates to:
+  /// **'双面板文件浏览器'**
+  String get msg2e35eef7;
+
+  /// No description provided for @msge96aa2cd.
+  ///
+  /// In zh, this message translates to:
+  /// **'内置媒体播放器'**
+  String get msge96aa2cd;
+
+  /// No description provided for @msg49a6c41e.
+  ///
+  /// In zh, this message translates to:
+  /// **'应用图标切换（多种风格可选）'**
+  String get msg49a6c41e;
+
+  /// No description provided for @msg4d82be7c.
+  ///
+  /// In zh, this message translates to:
+  /// **'下版本更新计划'**
+  String get msg4d82be7c;
+
+  /// No description provided for @msg2c8957dd.
+  ///
+  /// In zh, this message translates to:
+  /// **'已知问题'**
+  String get msg2c8957dd;
+
+  /// No description provided for @msg11cb01fc.
+  ///
+  /// In zh, this message translates to:
+  /// **'远程服务器边缓存边播放视频'**
+  String get msg11cb01fc;
+
+  /// No description provided for @msg60a4d643.
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义图标上传后桌面图标不会更改（下版本完善）'**
+  String get msg60a4d643;
+
+  /// No description provided for @msg9e68ea42.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存失败，请重试'**
+  String get msg9e68ea42;
+
+  /// No description provided for @cat_images.
+  ///
+  /// In zh, this message translates to:
+  /// **'图片'**
+  String get cat_images;
+
+  /// No description provided for @cat_videos.
+  ///
+  /// In zh, this message translates to:
+  /// **'视频'**
+  String get cat_videos;
+
+  /// No description provided for @cat_audios.
+  ///
+  /// In zh, this message translates to:
+  /// **'音频'**
+  String get cat_audios;
+
+  /// No description provided for @cat_documents.
+  ///
+  /// In zh, this message translates to:
+  /// **'文档'**
+  String get cat_documents;
+
+  /// No description provided for @cat_downloads.
+  ///
+  /// In zh, this message translates to:
+  /// **'下载'**
+  String get cat_downloads;
+
+  /// No description provided for @cat_screenshots.
+  ///
+  /// In zh, this message translates to:
+  /// **'截图'**
+  String get cat_screenshots;
+
+  /// No description provided for @cat_recent.
+  ///
+  /// In zh, this message translates to:
+  /// **'最近'**
+  String get cat_recent;
+
+  /// No description provided for @cat_network.
+  ///
+  /// In zh, this message translates to:
+  /// **'网络'**
+  String get cat_network;
+
+  /// No description provided for @cat_apps.
+  ///
+  /// In zh, this message translates to:
+  /// **'应用'**
+  String get cat_apps;
+
+  /// No description provided for @cat_settings.
+  ///
+  /// In zh, this message translates to:
+  /// **'设置'**
+  String get cat_settings;
+
+  /// No description provided for @cat_storage.
+  ///
+  /// In zh, this message translates to:
+  /// **'空间'**
+  String get cat_storage;
+
+  /// No description provided for @cat_service.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务'**
+  String get cat_service;
+
+  /// No description provided for @cat_manage.
+  ///
+  /// In zh, this message translates to:
+  /// **'管理'**
+  String get cat_manage;
+
+  /// No description provided for @cat_config.
+  ///
+  /// In zh, this message translates to:
+  /// **'配置'**
+  String get cat_config;
+
+  /// No description provided for @cat_analyze.
+  ///
+  /// In zh, this message translates to:
+  /// **'分析'**
+  String get cat_analyze;
+
+  /// Vault shortcut category label
+  ///
+  /// In zh, this message translates to:
+  /// **'保险箱'**
+  String get cat_vault;
+
+  /// Vault shortcut category description
+  ///
+  /// In zh, this message translates to:
+  /// **'安全存储'**
+  String get cat_vault_desc;
+
+  /// No description provided for @cat_quick_categories.
+  ///
+  /// In zh, this message translates to:
+  /// **'分类'**
+  String get cat_quick_categories;
+
+  /// No description provided for @ui_nav.
+  ///
+  /// In zh, this message translates to:
+  /// **'本地'**
+  String get ui_nav;
+
+  /// No description provided for @ui_home.
+  ///
+  /// In zh, this message translates to:
+  /// **'主页'**
+  String get ui_home;
+
+  /// No description provided for @ui_recycle_bin.
+  ///
+  /// In zh, this message translates to:
+  /// **'回收站'**
+  String get ui_recycle_bin;
+
+  /// No description provided for @ui_dark_mode.
+  ///
+  /// In zh, this message translates to:
+  /// **'深色模式'**
+  String get ui_dark_mode;
+
+  /// No description provided for @ui_personalize_settings.
+  ///
+  /// In zh, this message translates to:
+  /// **'设置'**
+  String get ui_personalize_settings;
+
+  /// No description provided for @ui_compress.
+  ///
+  /// In zh, this message translates to:
+  /// **'压缩'**
+  String get ui_compress;
+
+  /// No description provided for @ui_copy.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制'**
+  String get ui_copy;
+
+  /// No description provided for @ui_cut.
+  ///
+  /// In zh, this message translates to:
+  /// **'剪切'**
+  String get ui_cut;
+
+  /// Drag drop action dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'移动'**
+  String get ui_move;
+
+  /// Drag drop action dialog confirm button
+  ///
+  /// In zh, this message translates to:
+  /// **'应用'**
+  String get ui_apply;
+
+  /// No description provided for @ui_delete.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除'**
+  String get ui_delete;
+
+  /// Select all items
+  ///
+  /// In zh, this message translates to:
+  /// **'全选'**
+  String get ui_select_all;
+
+  /// No description provided for @ui_cancel.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消'**
+  String get ui_cancel;
+
+  /// No description provided for @ui_confirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'确定'**
+  String get ui_confirm;
+
+  /// No description provided for @ui_move_here.
+  ///
+  /// In zh, this message translates to:
+  /// **'移动到此处'**
+  String get ui_move_here;
+
+  /// No description provided for @ui_properties.
+  ///
+  /// In zh, this message translates to:
+  /// **'属性'**
+  String get ui_properties;
+
+  /// No description provided for @ui_info.
+  ///
+  /// In zh, this message translates to:
+  /// **'信息'**
+  String get ui_info;
+
+  /// No description provided for @ui_open.
+  ///
+  /// In zh, this message translates to:
+  /// **'打开'**
+  String get ui_open;
+
+  /// No description provided for @ui_close.
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭'**
+  String get ui_close;
+
+  /// No description provided for @ui_more.
+  ///
+  /// In zh, this message translates to:
+  /// **'更多'**
+  String get ui_more;
+
+  /// No description provided for @ui_appearance_theme.
+  ///
+  /// In zh, this message translates to:
+  /// **'外观与主题'**
+  String get ui_appearance_theme;
+
+  /// No description provided for @ui_list_layout_style.
+  ///
+  /// In zh, this message translates to:
+  /// **'列表与布局样式'**
+  String get ui_list_layout_style;
+
+  /// No description provided for @ui_media_preferences.
+  ///
+  /// In zh, this message translates to:
+  /// **'媒体偏好'**
+  String get ui_media_preferences;
+
+  /// No description provided for @ui_file_actions_viewers.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件操作与查看器'**
+  String get ui_file_actions_viewers;
+
+  /// No description provided for @ui_no_settings_found.
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到设置'**
+  String get ui_no_settings_found;
+
+  /// No description provided for @ui_show_action_bar.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示操作按钮'**
+  String get ui_show_action_bar;
+
+  /// No description provided for @ui_show_remote_cloud_badge.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示远程文件云徽'**
+  String get ui_show_remote_cloud_badge;
+
+  /// No description provided for @msg_remote_cloud_badge.
+  ///
+  /// In zh, this message translates to:
+  /// **'在浏览页远程文件与文件夹图标左上角显示云图标，便于区分本地与远程文件'**
+  String get msg_remote_cloud_badge;
+
+  /// No description provided for @ui_use_24h_format.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用24小时制'**
+  String get ui_use_24h_format;
+
+  /// No description provided for @ui_show_folder_contents_count.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示文件夹内容计数'**
+  String get ui_show_folder_contents_count;
+
+  /// Set current folder as home directory
+  ///
+  /// In zh, this message translates to:
+  /// **'设为首页'**
+  String get ui_set_as_home;
+
+  /// No description provided for @ui_show_folder_size.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示文件夹大小'**
+  String get ui_show_folder_size;
+
+  /// No description provided for @ui_show_bottom_action_bar.
+  ///
+  /// In zh, this message translates to:
+  /// **'导航栏位置'**
+  String get ui_show_bottom_action_bar;
+
+  /// No description provided for @ui_hide_action_text.
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏操作栏文字标签'**
+  String get ui_hide_action_text;
+
+  /// No description provided for @ui_show_media_previews.
+  ///
+  /// In zh, this message translates to:
+  /// **'本地媒体缩略图'**
+  String get ui_show_media_previews;
+
+  /// No description provided for @ui_adaptive_multiline_names.
+  ///
+  /// In zh, this message translates to:
+  /// **'自适应多行文件名'**
+  String get ui_adaptive_multiline_names;
+
+  /// No description provided for @ui_hide_action_menu_buttons.
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏三点操作按钮'**
+  String get ui_hide_action_menu_buttons;
+
+  /// No description provided for @ui_show_action_menu_buttons.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示三点操作按钮'**
+  String get ui_show_action_menu_buttons;
+
+  /// No description provided for @ui_action_menu_subtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择三点菜单按钮的显示模式，关闭后文件和文件夹右侧将不显示三点按钮'**
+  String get ui_action_menu_subtitle;
+
+  /// No description provided for @ui_action_menu_mode_all.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部显示'**
+  String get ui_action_menu_mode_all;
+
+  /// No description provided for @ui_action_menu_mode_single.
+  ///
+  /// In zh, this message translates to:
+  /// **'仅在单窗口模式显示'**
+  String get ui_action_menu_mode_single;
+
+  /// No description provided for @ui_action_menu_mode_dual.
+  ///
+  /// In zh, this message translates to:
+  /// **'仅在双窗口模式显示'**
+  String get ui_action_menu_mode_dual;
+
+  /// No description provided for @ui_enable_drag_drop.
+  ///
+  /// In zh, this message translates to:
+  /// **'启用拖放'**
+  String get ui_enable_drag_drop;
+
+  /// No description provided for @ui_confirm_drag_drop.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认拖放操作'**
+  String get ui_confirm_drag_drop;
+
+  /// No description provided for @ui_enable_multi_tabs.
+  ///
+  /// In zh, this message translates to:
+  /// **'启用多标签页'**
+  String get ui_enable_multi_tabs;
+
+  /// No description provided for @ui_enable_split_screen.
+  ///
+  /// In zh, this message translates to:
+  /// **'启用分屏'**
+  String get ui_enable_split_screen;
+
+  /// No description provided for @ui_single_window.
+  ///
+  /// In zh, this message translates to:
+  /// **'单窗口'**
+  String get ui_single_window;
+
+  /// No description provided for @ui_dual_window.
+  ///
+  /// In zh, this message translates to:
+  /// **'双窗口'**
+  String get ui_dual_window;
+
+  /// No description provided for @ui_filter_by_category.
+  ///
+  /// In zh, this message translates to:
+  /// **'按类别过滤'**
+  String get ui_filter_by_category;
+
+  /// No description provided for @ui_all_files.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部'**
+  String get ui_all_files;
+
+  /// No description provided for @ui_filter_others.
+  ///
+  /// In zh, this message translates to:
+  /// **'其它'**
+  String get ui_filter_others;
+
+  /// No description provided for @ui_remember_filter.
+  ///
+  /// In zh, this message translates to:
+  /// **'记住过滤'**
+  String get ui_remember_filter;
+
+  /// No description provided for @msg_remember_filter_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭后仅本次生效'**
+  String get msg_remember_filter_desc;
+
+  /// No description provided for @ui_app_icon.
+  ///
+  /// In zh, this message translates to:
+  /// **'应用图标'**
+  String get ui_app_icon;
+
+  /// No description provided for @ui_emerald_green.
+  ///
+  /// In zh, this message translates to:
+  /// **'翠绿'**
+  String get ui_emerald_green;
+
+  /// No description provided for @ui_deep_red.
+  ///
+  /// In zh, this message translates to:
+  /// **'深红'**
+  String get ui_deep_red;
+
+  /// No description provided for @ui_square.
+  ///
+  /// In zh, this message translates to:
+  /// **'方形'**
+  String get ui_square;
+
+  /// No description provided for @ui_circle.
+  ///
+  /// In zh, this message translates to:
+  /// **'圆形'**
+  String get ui_circle;
+
+  /// No description provided for @ui_1_day_after.
+  ///
+  /// In zh, this message translates to:
+  /// **'1 天后'**
+  String get ui_1_day_after;
+
+  /// No description provided for @ui_no_auto_clean.
+  ///
+  /// In zh, this message translates to:
+  /// **'不自动清理'**
+  String get ui_no_auto_clean;
+
+  /// No description provided for @ui_daily.
+  ///
+  /// In zh, this message translates to:
+  /// **'每天'**
+  String get ui_daily;
+
+  /// No description provided for @ui_weekly.
+  ///
+  /// In zh, this message translates to:
+  /// **'每周'**
+  String get ui_weekly;
+
+  /// No description provided for @ui_monthly.
+  ///
+  /// In zh, this message translates to:
+  /// **'每月'**
+  String get ui_monthly;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'每{days}天'**
+  String ui_every_n_days(Object days);
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'清除缓存失败: {e}'**
+  String ui_clear_cache_failed(Object e);
+
+  /// No description provided for @ui_clear_remote_cache.
+  ///
+  /// In zh, this message translates to:
+  /// **'清除远程缓存'**
+  String get ui_clear_remote_cache;
+
+  /// No description provided for @ui_view_cache_dir.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看缓存目录'**
+  String get ui_view_cache_dir;
+
+  /// No description provided for @ui_remote_media_thumbnail.
+  ///
+  /// In zh, this message translates to:
+  /// **'远程媒体缩略图'**
+  String get ui_remote_media_thumbnail;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'定期自动清理远程服务器缓存文件: {label}'**
+  String ui_auto_clean_remote_cache(Object label);
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义字体（{name}）'**
+  String ui_custom_font_with_name(Object name);
+
+  /// No description provided for @ui_import_custom_font.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入自定义字体文件 (.ttf/.otf)'**
+  String get ui_import_custom_font;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义字体\"{name}\"已成功应用！'**
+  String ui_custom_font_applied(Object name);
+
+  /// No description provided for @ui_invalid_file_type.
+  ///
+  /// In zh, this message translates to:
+  /// **'无效的文件类型'**
+  String get ui_invalid_file_type;
+
+  /// No description provided for @ui_language.
+  ///
+  /// In zh, this message translates to:
+  /// **'语言'**
+  String get ui_language;
+
+  /// No description provided for @ui_follow_system.
+  ///
+  /// In zh, this message translates to:
+  /// **'自动（跟随系统）'**
+  String get ui_follow_system;
+
+  /// No description provided for @ui_hide_nav_labels.
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏底部导航标签'**
+  String get ui_hide_nav_labels;
+
+  /// No description provided for @ui_reset_default_viewers.
+  ///
+  /// In zh, this message translates to:
+  /// **'重置默认文件查看器'**
+  String get ui_reset_default_viewers;
+
+  /// No description provided for @ui_trailing_info_when_hidden.
+  ///
+  /// In zh, this message translates to:
+  /// **'三点禁用尾部信息'**
+  String get ui_trailing_info_when_hidden;
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'上一级'**
+  String get ui_go_up;
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'{prefix} · {count} 项'**
+  String ui_cut_copy_items(String prefix, int count);
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'清除'**
+  String get ui_clear;
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'粘贴'**
+  String get ui_paste;
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'文件名'**
+  String get ui_file_name;
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'创建'**
+  String get ui_create;
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'创建新目录'**
+  String get ui_create_new_directory;
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'布局模式'**
+  String get ui_layout_mode;
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'网格视图'**
+  String get ui_grid_view;
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'名称 (A-Z)'**
+  String get ui_name_asc;
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'最新'**
+  String get ui_newest;
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'最旧'**
+  String get ui_oldest;
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'大小（小）'**
+  String get ui_size_small;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'类型'**
+  String get ui_type;
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'存储卷'**
+  String get ui_storage_volume;
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'浏览'**
+  String get ui_browse;
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'新建'**
+  String get ui_new;
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'文件夹：{count}'**
+  String ui_folders_count(int count);
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'文件：{count}'**
+  String ui_files_count(int count);
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'选择模式'**
+  String get ui_selection_mode;
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'存储卷和SD卡'**
+  String get ui_storage_and_sd;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'仅图片'**
+  String get ui_images_only;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'仅视频'**
+  String get ui_videos_only;
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'显示文件夹'**
+  String get ui_show_folders;
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'文件'**
+  String get ui_files;
+
+  /// directory_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要删除此文件吗？此操作无法撤销。'**
+  String get ui_delete_file_confirm;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'完成'**
+  String get ui_done;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'名称'**
+  String get ui_name;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'路径'**
+  String get ui_path;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'大小'**
+  String get ui_size;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'权限'**
+  String get ui_permissions;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'包含'**
+  String get ui_contains;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'解压'**
+  String get ui_extract;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'置顶'**
+  String get ui_pin_to_top;
+
+  /// selection_context_bottom_sheet.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'全选'**
+  String get msg_select_all;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'已将所选项目置顶'**
+  String get ui_pinned_selected;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'按类型筛选文件'**
+  String get ui_filter_by_type;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'默认扫描位置：'**
+  String get ui_default_scan_locations;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'排除位置'**
+  String get ui_exclude_location;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'添加自定义路径'**
+  String get ui_add_custom_path;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'已添加 {count} 个自定义路径'**
+  String ui_added_custom_paths(int count);
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭标签页'**
+  String get ui_close_tab;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到 {title}'**
+  String ui_not_found_title(String title);
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'最旧优先'**
+  String get ui_oldest_first;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'排序选项'**
+  String get ui_sort_options;
+
+  /// media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'显示播放器控制器'**
+  String get ui_show_player_controller;
+
+  /// media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏播放器控制器'**
+  String get ui_hide_player_controller;
+
+  /// No description provided for @ui_scanning_category.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在扫描默认目录，已加载内容可正常操作'**
+  String get ui_scanning_category;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'刷新'**
+  String get ui_refresh;
+
+  /// media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'刷新完成'**
+  String get ui_refresh_done;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 已选择'**
+  String ui_selected_count(int count);
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'永久删除\"{name}\"？'**
+  String ui_permanently_delete_name(String name);
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'已复制 {count} 个项目到剪贴板'**
+  String ui_copied_count(int count);
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'已剪切 {count} 个项目到剪贴板'**
+  String ui_cut_count(int count);
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'读取'**
+  String get ui_read;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'写入'**
+  String get ui_write;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'文件'**
+  String get ui_file;
+
+  /// No description provided for @ui_backup_settings.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份'**
+  String get ui_backup_settings;
+
+  /// No description provided for @ui_restore_settings.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复'**
+  String get ui_restore_settings;
+
+  /// No description provided for @ui_backup_info.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份信息'**
+  String get ui_backup_info;
+
+  /// No description provided for @ui_backup_file.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份文件'**
+  String get ui_backup_file;
+
+  /// No description provided for @ui_no_backup_file.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无备份文件'**
+  String get ui_no_backup_file;
+
+  /// No description provided for @ui_remote_connection.
+  ///
+  /// In zh, this message translates to:
+  /// **'远程连接'**
+  String get ui_remote_connection;
+
+  /// No description provided for @ui_step_n_of_3.
+  ///
+  /// In zh, this message translates to:
+  /// **'第 {step} / 3 步'**
+  String ui_step_n_of_3(Object step);
+
+  /// No description provided for @ui_choose_network_service.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择网络服务'**
+  String get ui_choose_network_service;
+
+  /// No description provided for @ui_connection_name.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接名称'**
+  String get ui_connection_name;
+
+  /// No description provided for @ui_protocol.
+  ///
+  /// In zh, this message translates to:
+  /// **'协议'**
+  String get ui_protocol;
+
+  /// No description provided for @ui_port.
+  ///
+  /// In zh, this message translates to:
+  /// **'端口'**
+  String get ui_port;
+
+  /// No description provided for @ui_path_label.
+  ///
+  /// In zh, this message translates to:
+  /// **'路径'**
+  String get ui_path_label;
+
+  /// No description provided for @ui_username_optional.
+  ///
+  /// In zh, this message translates to:
+  /// **'用户名（可选）'**
+  String get ui_username_optional;
+
+  /// No description provided for @ui_share_name_optional.
+  ///
+  /// In zh, this message translates to:
+  /// **'共享名（可选）'**
+  String get ui_share_name_optional;
+
+  /// No description provided for @ui_share_name_hint.
+  ///
+  /// In zh, this message translates to:
+  /// **'如 /Public，留空则自动探测'**
+  String get ui_share_name_hint;
+
+  /// No description provided for @ui_smb_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'局域网与 SMB NAS 共享'**
+  String get ui_smb_desc;
+
+  /// No description provided for @ui_connection_suffix.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接'**
+  String get ui_connection_suffix;
+
+  /// No description provided for @ui_back.
+  ///
+  /// In zh, this message translates to:
+  /// **'返回'**
+  String get ui_back;
+
+  /// No description provided for @ui_connect.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接'**
+  String get ui_connect;
+
+  /// No description provided for @ui_web_share.
+  ///
+  /// In zh, this message translates to:
+  /// **'网页共享'**
+  String get ui_web_share;
+
+  /// No description provided for @ui_network.
+  ///
+  /// In zh, this message translates to:
+  /// **'网络'**
+  String get ui_network;
+
+  /// No description provided for @log_i18n_full.
+  ///
+  /// In zh, this message translates to:
+  /// **'全面国际化中英文界面'**
+  String get log_i18n_full;
+
+  /// No description provided for @log_fix_selection_count.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复文件选择数量不显示的问题'**
+  String get log_fix_selection_count;
+
+  /// No description provided for @log_fix_remote_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复远程连接页面标题显示异常'**
+  String get log_fix_remote_title;
+
+  /// No description provided for @log_svg_thumbnail_category.
+  ///
+  /// In zh, this message translates to:
+  /// **'SVG 缩略图在分类页面中正常显示'**
+  String get log_svg_thumbnail_category;
+
+  /// No description provided for @log_language_btn_top.
+  ///
+  /// In zh, this message translates to:
+  /// **'语言切换按钮移至设置页顶部'**
+  String get log_language_btn_top;
+
+  /// No description provided for @log_fix_category_missing.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复英文模式下部分分类不显示'**
+  String get log_fix_category_missing;
+
+  /// No description provided for @log_text_editor.
+  ///
+  /// In zh, this message translates to:
+  /// **'新增文本编辑器功能：新建文件、另存为、撤销/重做'**
+  String get log_text_editor;
+
+  /// No description provided for @log_text_editor_settings.
+  ///
+  /// In zh, this message translates to:
+  /// **'文本编辑器设置持久化（自动换行、行号、阅读模式）'**
+  String get log_text_editor_settings;
+
+  /// No description provided for @log_10_languages.
+  ///
+  /// In zh, this message translates to:
+  /// **'支持10种多国语言（中文、英语、日语、韩语、德语、法语、西班牙语、俄语、阿拉伯语）'**
+  String get log_10_languages;
+
+  /// No description provided for @log_fix_l10n_hardcode.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复多处 l10n 硬编码问题'**
+  String get log_fix_l10n_hardcode;
+
+  /// No description provided for @log_language_scroll.
+  ///
+  /// In zh, this message translates to:
+  /// **'优化语言选择界面支持滚动'**
+  String get log_language_scroll;
+
+  /// No description provided for @log_remote_media_cache.
+  ///
+  /// In zh, this message translates to:
+  /// **'远程媒体文件点击后立即打开播放器，后台缓存并显示进度'**
+  String get log_remote_media_cache;
+
+  /// No description provided for @log_remote_to_remote.
+  ///
+  /// In zh, this message translates to:
+  /// **'新增远程服务器到远程服务器的复制/剪切功能'**
+  String get log_remote_to_remote;
+
+  /// No description provided for @log_remote_cut_progress.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复远程剪切操作进度条显示异常'**
+  String get log_remote_cut_progress;
+
+  /// No description provided for @log_audio_scan_stable.
+  ///
+  /// In zh, this message translates to:
+  /// **'优化音频分类扫描稳定性'**
+  String get log_audio_scan_stable;
+
+  /// No description provided for @log_extract_dialog_redesign.
+  ///
+  /// In zh, this message translates to:
+  /// **'重新设计解压对话框，支持当前目录/自定义目录选择'**
+  String get log_extract_dialog_redesign;
+
+  /// No description provided for @log_vault_quick_category.
+  ///
+  /// In zh, this message translates to:
+  /// **'将保险箱快捷方式添加到快捷分类（默认关闭）'**
+  String get log_vault_quick_category;
+
+  /// No description provided for @log_vault_l10n_fix.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复保险箱页面英文硬编码和添加多文件时卡死的问题'**
+  String get log_vault_l10n_fix;
+
+  /// No description provided for @log_compression_path_fix.
+  ///
+  /// In zh, this message translates to:
+  /// **'统一三点按钮和长按菜单的压缩路径，修复压缩包名称错误'**
+  String get log_compression_path_fix;
+
+  /// No description provided for @log_compression_progress.
+  ///
+  /// In zh, this message translates to:
+  /// **'优化压缩进度对话框，支持多阶段进度显示和可靠自动关闭'**
+  String get log_compression_progress;
+
+  /// No description provided for @log_web_share_category.
+  ///
+  /// In zh, this message translates to:
+  /// **'网页共享门户支持分类显示文件（文件夹、视频、音频、图片、文档、其他）'**
+  String get log_web_share_category;
+
+  /// No description provided for @log_web_share_l10n.
+  ///
+  /// In zh, this message translates to:
+  /// **'网页共享门户支持根据 App 语言自动切换多语言显示'**
+  String get log_web_share_l10n;
+
+  /// No description provided for @log_music_lyrics_fullscreen_removed.
+  ///
+  /// In zh, this message translates to:
+  /// **'音乐播放器移除歌词全屏面板功能'**
+  String get log_music_lyrics_fullscreen_removed;
+
+  /// No description provided for @log_music_lyrics_centered.
+  ///
+  /// In zh, this message translates to:
+  /// **'音乐播放器当前歌词改为居中对齐显示'**
+  String get log_music_lyrics_centered;
+
+  /// No description provided for @log_music_player_button.
+  ///
+  /// In zh, this message translates to:
+  /// **'音乐分类页顶部添加音乐播放器快捷按钮，方便继续收听'**
+  String get log_music_player_button;
+
+  /// No description provided for @log_music_remember_progress.
+  ///
+  /// In zh, this message translates to:
+  /// **'音乐播放器记住播放进度，下次自动续播'**
+  String get log_music_remember_progress;
+
+  /// No description provided for @log_image_icon_redesign.
+  ///
+  /// In zh, this message translates to:
+  /// **'重新设计图片文件图标，显示格式标签（jpg、png 等）'**
+  String get log_image_icon_redesign;
+
+  /// No description provided for @log_doc_icon_redesign.
+  ///
+  /// In zh, this message translates to:
+  /// **'重新设计文档文件图标，显示格式标签'**
+  String get log_doc_icon_redesign;
+
+  /// No description provided for @log_archive_icon_redesign.
+  ///
+  /// In zh, this message translates to:
+  /// **'重新设计压缩包图标，显示格式标签（zip、7z、rar 等）'**
+  String get log_archive_icon_redesign;
+
+  /// No description provided for @log_music_lrc_lyrics.
+  ///
+  /// In zh, this message translates to:
+  /// **'音乐播放器支持自动加载 LRC 歌词及手动选择歌词文件'**
+  String get log_music_lrc_lyrics;
+
+  /// No description provided for @log_remote_copy_paste_fix.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复远程服务器复制文件到本地粘贴时进度条无响应且文件未出现的问题'**
+  String get log_remote_copy_paste_fix;
+
+  /// No description provided for @log_navbar_position_setting.
+  ///
+  /// In zh, this message translates to:
+  /// **'新增导航栏位置设置，支持顶部或底部显示导航栏'**
+  String get log_navbar_position_setting;
+
+  /// No description provided for @log_browse_top_area_optimize.
+  ///
+  /// In zh, this message translates to:
+  /// **'启用底部导航栏时，优化浏览页顶部区域布局，增加文件列表显示空间'**
+  String get log_browse_top_area_optimize;
+
+  /// No description provided for @log_thanks_feedback.
+  ///
+  /// In zh, this message translates to:
+  /// **'感谢以下用户反馈与建议：越界、猕猴桃、Sir Jagadeesh Chandra Bose、Silence'**
+  String get log_thanks_feedback;
+
+  /// No description provided for @log_smb_native_rewrite.
+  ///
+  /// In zh, this message translates to:
+  /// **'SMB 客户端完全重写，通过 Android 原生 smbj 库实现真实 SMB 协议，支持自动探测共享名'**
+  String get log_smb_native_rewrite;
+
+  /// No description provided for @log_ftp_sftp_streaming.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复 FTP/SFTP 流式播放，使用原生 Socket 独立数据连接，支持边缓存边播放'**
+  String get log_ftp_sftp_streaming;
+
+  /// No description provided for @log_remote_l10n_fix.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复远程连接页硬编码字符串，新增 SMB 协议描述与连接名称后缀的 l10n 翻译'**
+  String get log_remote_l10n_fix;
+
+  /// No description provided for @log_image_viewer_menu.
+  ///
+  /// In zh, this message translates to:
+  /// **'图片浏览器右上角菜单改为底部弹窗，9 个操作项，黑色半透明背景提升可见性'**
+  String get log_image_viewer_menu;
+
+  /// No description provided for @log_breadcrumb_border.
+  ///
+  /// In zh, this message translates to:
+  /// **'面包屑按钮新增 V 形完整边框，使用 CustomPaint 绘制，相邻按钮无缝衔接且有清晰边界'**
+  String get log_breadcrumb_border;
+
+  /// No description provided for @log_three_dot_button_position.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件/文件夹三点操作按钮调整到卡片右上角，避免拖动时误触'**
+  String get log_three_dot_button_position;
+
+  /// No description provided for @log_three_dot_button_setting.
+  ///
+  /// In zh, this message translates to:
+  /// **'三点操作按钮设置项改为「显示三点操作按钮」，支持全部显示/仅单窗口/仅双窗口三种模式'**
+  String get log_three_dot_button_setting;
+
+  /// No description provided for @log_category_back_select.
+  ///
+  /// In zh, this message translates to:
+  /// **'分类页多选模式下按返回键取消选择，而不是退出类别'**
+  String get log_category_back_select;
+
+  /// No description provided for @log_desktop_lyric.
+  ///
+  /// In zh, this message translates to:
+  /// **'新增桌面歌词悬浮窗，支持权限检查、拖动位置、单击切换播放/暂停'**
+  String get log_desktop_lyric;
+
+  /// No description provided for @log_notification_panel.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复下拉通知栏不显示播放控制面板，暂停时保留通知，权限拒绝时提示用户'**
+  String get log_notification_panel;
+
+  /// No description provided for @log_lyric_word_highlight.
+  ///
+  /// In zh, this message translates to:
+  /// **'悬浮歌词支持逐字高亮，使用 SpannableStringBuilder 实现卡拉OK效果'**
+  String get log_lyric_word_highlight;
+
+  /// No description provided for @log_floating_window_resize.
+  ///
+  /// In zh, this message translates to:
+  /// **'悬浮歌词窗口支持长按显示缩放手柄，拖拽调整窗口大小与文字大小'**
+  String get log_floating_window_resize;
+
+  /// No description provided for @log_background_play_fix.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复开启后台播放时暂停音乐的问题，attach 复用 player 实例不中断播放'**
+  String get log_background_play_fix;
+
+  /// No description provided for @log_category_button_sync.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复未开启后台播放时音频类别页播放按钮显示旧音频信息，返回时刷新按钮状态'**
+  String get log_category_button_sync;
+
+  /// No description provided for @log_build_stability.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复 R8 编译 OOM、x86_64/armv7 启动白屏，调整 Gradle JVM 内存与 ABI 下载'**
+  String get log_build_stability;
+
+  /// No description provided for @log_lyric_scale_animation.
+  ///
+  /// In zh, this message translates to:
+  /// **'逐字歌词过渡动画新增放大效果，修复同步问题，固定 300ms 过渡时长'**
+  String get log_lyric_scale_animation;
+
+  /// No description provided for @log_quick_action_panel.
+  ///
+  /// In zh, this message translates to:
+  /// **'重新调整了顶部导航栏按钮，新增快捷操作页面，在浏览页可左滑弹出快捷操作面板'**
+  String get log_quick_action_panel;
+
+  /// No description provided for @log_favorites.
+  ///
+  /// In zh, this message translates to:
+  /// **'新增了收藏夹，用户可以收藏本地或远程文件/文件夹收藏到快捷操作面板的收藏夹中'**
+  String get log_favorites;
+
+  /// No description provided for @log_drawer_redesign.
+  ///
+  /// In zh, this message translates to:
+  /// **'重构了抽屉页，抽屉页更加简洁美观，持久化记住抽屉页所有展开/折叠状态，操作更加便捷'**
+  String get log_drawer_redesign;
+
+  /// No description provided for @log_video_player_rotation.
+  ///
+  /// In zh, this message translates to:
+  /// **'视频播放器新增了顺时针旋转画面，新增缩放比例'**
+  String get log_video_player_rotation;
+
+  /// No description provided for @log_category_reorder.
+  ///
+  /// In zh, this message translates to:
+  /// **'优化了分类页可长按类别图标拖动调整位置顺序，新增每行 3 列/4 列可选，现在支持重命名类别名称'**
+  String get log_category_reorder;
+
+  /// No description provided for @log_compression_fix.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复了压缩一些问题'**
+  String get log_compression_fix;
+
+  /// No description provided for @log_progress_bar_redesign.
+  ///
+  /// In zh, this message translates to:
+  /// **'重新设计了进度条窗口样式'**
+  String get log_progress_bar_redesign;
+
+  /// No description provided for @log_dual_pane_status_bar.
+  ///
+  /// In zh, this message translates to:
+  /// **'双窗口模式顶部新增状态栏，显示激活窗口指示器和剪贴板内容摘要'**
+  String get log_dual_pane_status_bar;
+
+  /// No description provided for @log_transfer_fixes.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复传输进度条不更新、无法取消、远程列表空白、传输速度不显示等问题'**
+  String get log_transfer_fixes;
+
+  /// No description provided for @log_drawer_font_consistency.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复了抽屉页「设置」按钮字体与其他栏目不一致的问题'**
+  String get log_drawer_font_consistency;
+
+  /// No description provided for @log_landscape_layout.
+  ///
+  /// In zh, this message translates to:
+  /// **'优化平板/车机横屏模式下的文件网格布局'**
+  String get log_landscape_layout;
+
+  /// No description provided for @log_progress_i18n.
+  ///
+  /// In zh, this message translates to:
+  /// **'进度条窗口新增完整的多语言翻译支持'**
+  String get log_progress_i18n;
+
+  /// No description provided for @msg_remember_choice.
+  ///
+  /// In zh, this message translates to:
+  /// **'记住此选择，后续操作默认使用'**
+  String get msg_remember_choice;
+
+  /// No description provided for @ui_caching.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在缓存中，请稍后...'**
+  String get ui_caching;
+
+  /// No description provided for @ui_username.
+  ///
+  /// In zh, this message translates to:
+  /// **'用户名'**
+  String get ui_username;
+
+  /// No description provided for @ui_anonymous.
+  ///
+  /// In zh, this message translates to:
+  /// **'匿名'**
+  String get ui_anonymous;
+
+  /// No description provided for @ui_start.
+  ///
+  /// In zh, this message translates to:
+  /// **'启动'**
+  String get ui_start;
+
+  /// No description provided for @ui_stop.
+  ///
+  /// In zh, this message translates to:
+  /// **'停止'**
+  String get ui_stop;
+
+  /// No description provided for @ui_connected.
+  ///
+  /// In zh, this message translates to:
+  /// **'已连接'**
+  String get ui_connected;
+
+  /// No description provided for @ui_activated.
+  ///
+  /// In zh, this message translates to:
+  /// **'已激活'**
+  String get ui_activated;
+
+  /// No description provided for @ui_web_sharing_center.
+  ///
+  /// In zh, this message translates to:
+  /// **'网页共享中心'**
+  String get ui_web_sharing_center;
+
+  /// No description provided for @ui_local_web_share.
+  ///
+  /// In zh, this message translates to:
+  /// **'本地网页共享'**
+  String get ui_local_web_share;
+
+  /// No description provided for @ui_http_local_share_server.
+  ///
+  /// In zh, this message translates to:
+  /// **'HTTP本地共享服务器'**
+  String get ui_http_local_share_server;
+
+  /// No description provided for @ui_server_idle.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器空闲'**
+  String get ui_server_idle;
+
+  /// No description provided for @ui_pick_files_folders.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择文件和文件夹'**
+  String get ui_pick_files_folders;
+
+  /// No description provided for @ui_secure_storage.
+  ///
+  /// In zh, this message translates to:
+  /// **'安全存储'**
+  String get ui_secure_storage;
+
+  /// No description provided for @ui_protected_total_space.
+  ///
+  /// In zh, this message translates to:
+  /// **'已保护总空间'**
+  String get ui_protected_total_space;
+
+  /// No description provided for @ui_hidden_files_count.
+  ///
+  /// In zh, this message translates to:
+  /// **'已隐藏文件'**
+  String get ui_hidden_files_count;
+
+  /// No description provided for @ui_search_obfuscated.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索混淆文件...'**
+  String get ui_search_obfuscated;
+
+  /// No description provided for @ui_vault_empty.
+  ///
+  /// In zh, this message translates to:
+  /// **'您的安全保险箱为空'**
+  String get ui_vault_empty;
+
+  /// No description provided for @ui_hide_files.
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏文件'**
+  String get ui_hide_files;
+
+  /// No description provided for @ui_global_search.
+  ///
+  /// In zh, this message translates to:
+  /// **'全局搜索'**
+  String get ui_global_search;
+
+  /// No description provided for @ui_all.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部'**
+  String get ui_all;
+
+  /// No description provided for @ui_folders.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件夹'**
+  String get ui_folders;
+
+  /// No description provided for @ui_images.
+  ///
+  /// In zh, this message translates to:
+  /// **'图片'**
+  String get ui_images;
+
+  /// No description provided for @ui_videos.
+  ///
+  /// In zh, this message translates to:
+  /// **'视频'**
+  String get ui_videos;
+
+  /// No description provided for @ui_audio.
+  ///
+  /// In zh, this message translates to:
+  /// **'音频'**
+  String get ui_audio;
+
+  /// No description provided for @ui_documents.
+  ///
+  /// In zh, this message translates to:
+  /// **'文档'**
+  String get ui_documents;
+
+  /// No description provided for @ui_no_matching_files.
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到匹配文件'**
+  String get ui_no_matching_files;
+
+  /// No description provided for @ui_try_modify_search.
+  ///
+  /// In zh, this message translates to:
+  /// **'请尝试修改搜索文本以查找隐藏项目。'**
+  String get ui_try_modify_search;
+
+  /// No description provided for @ui_vault_empty_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'XOR混淆签名混淆使文件完全无法打开，并从系统扫描器数据库中隐藏。点击下方的按钮来保护它们。'**
+  String get ui_vault_empty_desc;
+
+  /// No description provided for @ui_copied_n_items.
+  ///
+  /// In zh, this message translates to:
+  /// **'已复制 {count} 个项目到剪贴板'**
+  String ui_copied_n_items(Object count);
+
+  /// No description provided for @ui_cut_n_items.
+  ///
+  /// In zh, this message translates to:
+  /// **'已剪切 {count} 个项目到剪贴板'**
+  String ui_cut_n_items(Object count);
+
+  /// No description provided for @ui_copy_tooltip.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制'**
+  String get ui_copy_tooltip;
+
+  /// No description provided for @ui_cut_tooltip.
+  ///
+  /// In zh, this message translates to:
+  /// **'剪切'**
+  String get ui_cut_tooltip;
+
+  /// No description provided for @ui_delete_tooltip.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除'**
+  String get ui_delete_tooltip;
+
+  /// No description provided for @ui_search_this_folder.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索此文件夹'**
+  String get ui_search_this_folder;
+
+  /// No description provided for @ui_search_files_subfolders_in.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索文件和子文件夹于：{path}'**
+  String ui_search_files_subfolders_in(Object path);
+
+  /// No description provided for @ui_no_results.
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到结果'**
+  String get ui_no_results;
+
+  /// No description provided for @ui_no_match_for.
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到匹配 \"{query}\" 的内容'**
+  String ui_no_match_for(Object query);
+
+  /// No description provided for @ui_n_selected.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 已选择 ({size})'**
+  String ui_n_selected(Object count, Object size);
+
+  /// No description provided for @ui_select_language_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择语言'**
+  String get ui_select_language_title;
+
+  /// No description provided for @ui_select_language_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'请选择您偏好的语言'**
+  String get ui_select_language_desc;
+
+  /// No description provided for @ui_language_chinese.
+  ///
+  /// In zh, this message translates to:
+  /// **'中文'**
+  String get ui_language_chinese;
+
+  /// No description provided for @ui_language_english.
+  ///
+  /// In zh, this message translates to:
+  /// **'English'**
+  String get ui_language_english;
+
+  /// No description provided for @msgDefaultZoom.
+  ///
+  /// In zh, this message translates to:
+  /// **'默认缩放 ({fontSize}pt)'**
+  String msgDefaultZoom(Object fontSize);
+
+  /// No description provided for @msgLockZoom.
+  ///
+  /// In zh, this message translates to:
+  /// **'锁定缩放'**
+  String get msgLockZoom;
+
+  /// No description provided for @ui_background.
+  ///
+  /// In zh, this message translates to:
+  /// **'后台'**
+  String get ui_background;
+
+  /// No description provided for @ui_overall_progress.
+  ///
+  /// In zh, this message translates to:
+  /// **'总体进度'**
+  String get ui_overall_progress;
+
+  /// No description provided for @ui_archive_name.
+  ///
+  /// In zh, this message translates to:
+  /// **'压缩包名称'**
+  String get ui_archive_name;
+
+  /// No description provided for @ui_compression_level.
+  ///
+  /// In zh, this message translates to:
+  /// **'压缩级别'**
+  String get ui_compression_level;
+
+  /// No description provided for @ui_delete_source_after.
+  ///
+  /// In zh, this message translates to:
+  /// **'完成后删除源文件'**
+  String get ui_delete_source_after;
+
+  /// No description provided for @ui_no_compression.
+  ///
+  /// In zh, this message translates to:
+  /// **'无（仅存储）'**
+  String get ui_no_compression;
+
+  /// No description provided for @ui_fast.
+  ///
+  /// In zh, this message translates to:
+  /// **'快速'**
+  String get ui_fast;
+
+  /// No description provided for @ui_standard.
+  ///
+  /// In zh, this message translates to:
+  /// **'标准'**
+  String get ui_standard;
+
+  /// No description provided for @ui_maximum.
+  ///
+  /// In zh, this message translates to:
+  /// **'最大'**
+  String get ui_maximum;
+
+  /// No description provided for @ui_new_txt.
+  ///
+  /// In zh, this message translates to:
+  /// **'新建文本'**
+  String get ui_new_txt;
+
+  /// No description provided for @ui_save_as.
+  ///
+  /// In zh, this message translates to:
+  /// **'另存为'**
+  String get ui_save_as;
+
+  /// No description provided for @ui_undo.
+  ///
+  /// In zh, this message translates to:
+  /// **'撤销'**
+  String get ui_undo;
+
+  /// No description provided for @ui_redo.
+  ///
+  /// In zh, this message translates to:
+  /// **'重做'**
+  String get ui_redo;
+
+  /// No description provided for @ui_add_selected.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加所选 ({count})'**
+  String ui_add_selected(Object count);
+
+  /// No description provided for @ui_pin_selected.
+  ///
+  /// In zh, this message translates to:
+  /// **'固定所选 ({count})'**
+  String ui_pin_selected(Object count);
+
+  /// Title shown when a file conflict is detected
+  ///
+  /// In zh, this message translates to:
+  /// **'文件已存在'**
+  String get msg_file_exists;
+
+  /// Description shown when a file conflict is detected
+  ///
+  /// In zh, this message translates to:
+  /// **'目标文件夹中已存在同名文件\"{fileName}\"。您想怎么处理？'**
+  String msg_file_exists_desc(String fileName);
+
+  /// Label for the existing file in conflict dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'现有文件'**
+  String get msg_existing_file;
+
+  /// Button to cancel paste operation in conflict dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'取消粘贴'**
+  String get msg_cancel_paste;
+
+  /// Button to skip file in conflict dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'跳过'**
+  String get msg_skip_file;
+
+  /// Button to overwrite file in conflict dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'替换'**
+  String get msg_overwrite_file;
+
+  /// Badge indicating a file is newer in conflict dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'较新'**
+  String get msg_newer;
+
+  /// Label for new file name input in rename dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'新文件名'**
+  String get msg_new_file_name;
+
+  /// Vault protection mode dialog title
+  ///
+  /// In zh, this message translates to:
+  /// **'选择保护模式'**
+  String get msg_vault_choose_mode;
+
+  /// Vault protection mode dialog description
+  ///
+  /// In zh, this message translates to:
+  /// **'选择如何保护选中的文件。安全文件将立即进行 XOR 混淆加密。'**
+  String get msg_vault_mode_desc;
+
+  /// Vault sandbox import button
+  ///
+  /// In zh, this message translates to:
+  /// **'安全导入（沙盒）'**
+  String get ui_secure_import;
+
+  /// Vault in-place scramble button
+  ///
+  /// In zh, this message translates to:
+  /// **'原地混淆（快速）'**
+  String get ui_in_place_scramble;
+
+  /// Vault scrambling progress text
+  ///
+  /// In zh, this message translates to:
+  /// **'正在混淆加密...'**
+  String get msg_scrambling;
+
+  /// Vault protected success message
+  ///
+  /// In zh, this message translates to:
+  /// **'成功保护 {successCount} 个项目。'**
+  String msg_protected_count(Object successCount);
+
+  /// Vault protect failed message
+  ///
+  /// In zh, this message translates to:
+  /// **'失败锁定 {failCount} 个项目。'**
+  String msg_protect_failed_count(Object failCount);
+
+  /// Vault restore success message
+  ///
+  /// In zh, this message translates to:
+  /// **'已将「{name}」恢复到原始位置。'**
+  String msg_restored(Object name);
+
+  /// Vault restore failed message
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复文件失败：{error}'**
+  String msg_restore_failed(Object error);
+
+  /// Vault decrypting progress text
+  ///
+  /// In zh, this message translates to:
+  /// **'正在安全解密...'**
+  String get msg_decrypting;
+
+  /// Vault security details dialog title
+  ///
+  /// In zh, this message translates to:
+  /// **'安全详情'**
+  String get msg_security_details;
+
+  /// Vault restore menu item
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复（取消隐藏）'**
+  String get ui_restore_unhide;
+
+  /// Vault permanent delete confirm title
+  ///
+  /// In zh, this message translates to:
+  /// **'永久删除？'**
+  String get msg_permanent_delete;
+
+  /// Vault permanent delete confirm content
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要永久删除「{name}」吗？此操作无法撤销。'**
+  String msg_permanent_delete_content(Object name);
+
+  /// Vault file deleted message
+  ///
+  /// In zh, this message translates to:
+  /// **'文件已永久删除。'**
+  String get msg_file_deleted;
+
+  /// Vault delete failed message
+  ///
+  /// In zh, this message translates to:
+  /// **'删除文件失败：{error}'**
+  String msg_delete_failed(Object error);
+
+  /// Vault original name label
+  ///
+  /// In zh, this message translates to:
+  /// **'原始名称'**
+  String get msg_original_name;
+
+  /// Vault original path label
+  ///
+  /// In zh, this message translates to:
+  /// **'原始路径'**
+  String get msg_original_path;
+
+  /// Vault scrambled path label
+  ///
+  /// In zh, this message translates to:
+  /// **'混淆路径'**
+  String get msg_scrambled_path;
+
+  /// Vault size label
+  ///
+  /// In zh, this message translates to:
+  /// **'大小'**
+  String get msg_size_label;
+
+  /// Vault locked at label
+  ///
+  /// In zh, this message translates to:
+  /// **'锁定时间'**
+  String get msg_locked_at;
+
+  /// Vault protection mode label
+  ///
+  /// In zh, this message translates to:
+  /// **'保护模式'**
+  String get msg_protection_mode;
+
+  /// Vault in-place scrambling mode
+  ///
+  /// In zh, this message translates to:
+  /// **'原地混淆'**
+  String get msg_in_place_scrambling;
+
+  /// Vault isolated move mode
+  ///
+  /// In zh, this message translates to:
+  /// **'隔离移动（沙盒）'**
+  String get msg_isolated_move;
+
+  /// No description provided for @web_share_search.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索文件和文件夹...'**
+  String get web_share_search;
+
+  /// No description provided for @web_share_upload.
+  ///
+  /// In zh, this message translates to:
+  /// **'上传'**
+  String get web_share_upload;
+
+  /// No description provided for @web_share_drop_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'拖拽文件到此处上传'**
+  String get web_share_drop_title;
+
+  /// No description provided for @web_share_drop_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件将立即上传到此共享文件夹'**
+  String get web_share_drop_desc;
+
+  /// No description provided for @web_share_empty_search.
+  ///
+  /// In zh, this message translates to:
+  /// **'没有匹配的项目'**
+  String get web_share_empty_search;
+
+  /// No description provided for @web_share_empty_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'检查拼写或尝试不同的搜索词'**
+  String get web_share_empty_desc;
+
+  /// No description provided for @web_share_copy_link.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制链接'**
+  String get web_share_copy_link;
+
+  /// No description provided for @web_share_download.
+  ///
+  /// In zh, this message translates to:
+  /// **'下载'**
+  String get web_share_download;
+
+  /// Upload progress title
+  ///
+  /// In zh, this message translates to:
+  /// **'正在上传 {name}...'**
+  String web_share_uploading(String name);
+
+  /// No description provided for @web_share_upload_success.
+  ///
+  /// In zh, this message translates to:
+  /// **'上传成功'**
+  String get web_share_upload_success;
+
+  /// Upload failed message
+  ///
+  /// In zh, this message translates to:
+  /// **'上传 {name} 失败'**
+  String web_share_upload_failed(String name);
+
+  /// No description provided for @web_share_preview_unsupported.
+  ///
+  /// In zh, this message translates to:
+  /// **'不支持预览此文件类型'**
+  String get web_share_preview_unsupported;
+
+  /// No description provided for @web_share_preview_download.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击下方下载按钮保存到您的设备'**
+  String get web_share_preview_download;
+
+  /// No description provided for @web_share_footer.
+  ///
+  /// In zh, this message translates to:
+  /// **'通过 ZenFile 安全共享和流式传输文件'**
+  String get web_share_footer;
+
+  /// No description provided for @web_share_parent_dir.
+  ///
+  /// In zh, this message translates to:
+  /// **'上级目录'**
+  String get web_share_parent_dir;
+
+  /// No description provided for @web_share_go_up.
+  ///
+  /// In zh, this message translates to:
+  /// **'返回上一级'**
+  String get web_share_go_up;
+
+  /// Item count display
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 个项目'**
+  String web_share_items_count(int count);
+
+  /// No description provided for @web_share_link_copied.
+  ///
+  /// In zh, this message translates to:
+  /// **'链接已复制到剪贴板'**
+  String get web_share_link_copied;
+
+  /// No description provided for @web_share_copy_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制链接失败'**
+  String get web_share_copy_failed;
+
+  /// No description provided for @web_share_local.
+  ///
+  /// In zh, this message translates to:
+  /// **'本地 Wi-Fi 共享'**
+  String get web_share_local;
+
+  /// No description provided for @web_share_internet.
+  ///
+  /// In zh, this message translates to:
+  /// **'互联网共享'**
+  String get web_share_internet;
+
+  /// No description provided for @web_share_category_folders.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件夹'**
+  String get web_share_category_folders;
+
+  /// No description provided for @web_share_category_videos.
+  ///
+  /// In zh, this message translates to:
+  /// **'视频'**
+  String get web_share_category_videos;
+
+  /// No description provided for @web_share_category_audio.
+  ///
+  /// In zh, this message translates to:
+  /// **'音频'**
+  String get web_share_category_audio;
+
+  /// No description provided for @web_share_category_images.
+  ///
+  /// In zh, this message translates to:
+  /// **'图片'**
+  String get web_share_category_images;
+
+  /// No description provided for @web_share_category_documents.
+  ///
+  /// In zh, this message translates to:
+  /// **'文档'**
+  String get web_share_category_documents;
+
+  /// No description provided for @web_share_category_others.
+  ///
+  /// In zh, this message translates to:
+  /// **'其他'**
+  String get web_share_category_others;
+
+  /// No description provided for @web_share_loading_preview.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在加载预览...'**
+  String get web_share_loading_preview;
+
+  /// No description provided for @web_share_preview_error.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法流式传输文档。您仍然可以直接下载。'**
+  String get web_share_preview_error;
+
+  /// No description provided for @msg_custom_shortcut.
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义图标'**
+  String get msg_custom_shortcut;
+
+  /// No description provided for @msg_add_custom_shortcut.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加到主屏幕'**
+  String get msg_add_custom_shortcut;
+
+  /// No description provided for @msg_shortcut_added.
+  ///
+  /// In zh, this message translates to:
+  /// **'已添加到主屏幕'**
+  String get msg_shortcut_added;
+
+  /// No description provided for @msg_shortcut_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加失败，请重试'**
+  String get msg_shortcut_failed;
+
+  /// No description provided for @ui_lyrics_loaded.
+  ///
+  /// In zh, this message translates to:
+  /// **'歌词已加载'**
+  String get ui_lyrics_loaded;
+
+  /// No description provided for @ui_lyrics_load_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法解析该歌词文件'**
+  String get ui_lyrics_load_failed;
+
+  /// No description provided for @ui_select_lyrics_file.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入本地歌词'**
+  String get ui_select_lyrics_file;
+
+  /// No description provided for @ui_no_lyrics_found.
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到歌词'**
+  String get ui_no_lyrics_found;
+
+  /// No description provided for @ui_lyrics_auto_load_hint.
+  ///
+  /// In zh, this message translates to:
+  /// **'将 .lrc 歌词文件放在音频同目录下\n（文件名与音频相同）即可自动加载'**
+  String get ui_lyrics_auto_load_hint;
+
+  /// No description provided for @ui_lyrics_panel.
+  ///
+  /// In zh, this message translates to:
+  /// **'歌词全屏面板'**
+  String get ui_lyrics_panel;
+
+  /// No description provided for @ui_show_lyrics.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示歌词'**
+  String get ui_show_lyrics;
+
+  /// No description provided for @ui_hide_lyrics.
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏歌词'**
+  String get ui_hide_lyrics;
+
+  /// No description provided for @ui_sound_effects_speed.
+  ///
+  /// In zh, this message translates to:
+  /// **'音效与播放速度'**
+  String get ui_sound_effects_speed;
+
+  /// No description provided for @ui_pitch_adjustment.
+  ///
+  /// In zh, this message translates to:
+  /// **'音调调节'**
+  String get ui_pitch_adjustment;
+
+  /// No description provided for @ui_restore_default.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复默认'**
+  String get ui_restore_default;
+
+  /// No description provided for @ui_sound_effects.
+  ///
+  /// In zh, this message translates to:
+  /// **'音效'**
+  String get ui_sound_effects;
+
+  /// Equalizer presets section title
+  ///
+  /// In zh, this message translates to:
+  /// **'均衡器预设'**
+  String get eq_presets;
+
+  /// Custom equalizer label
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义'**
+  String get eq_custom;
+
+  /// Open system equalizer button
+  ///
+  /// In zh, this message translates to:
+  /// **'系统均衡器'**
+  String get eq_system;
+
+  /// Message when equalizer cannot be initialized
+  ///
+  /// In zh, this message translates to:
+  /// **'此设备不支持均衡器'**
+  String get eq_unavailable;
+
+  /// Button to open system equalizer as fallback
+  ///
+  /// In zh, this message translates to:
+  /// **'打开系统均衡器'**
+  String get eq_open_system;
+
+  /// Explanation why system EQ is needed
+  ///
+  /// In zh, this message translates to:
+  /// **'内置播放器使用 libmpv 音频输出。如需应用均衡器效果，请使用系统均衡器（影响所有音频输出）。'**
+  String get eq_system_hint;
+
+  /// Instructions for using system EQ with presets
+  ///
+  /// In zh, this message translates to:
+  /// **'请在下方选择预设，然后点击打开系统均衡器在系统均衡器中应用。'**
+  String get eq_apply_hint;
+
+  /// EQ preset: flat / original sound
+  ///
+  /// In zh, this message translates to:
+  /// **'原声'**
+  String get eq_preset_flat;
+
+  /// EQ preset: HD vocal (boosts 1-4kHz)
+  ///
+  /// In zh, this message translates to:
+  /// **'HD 人声'**
+  String get eq_preset_vocal;
+
+  /// EQ preset: bass boost
+  ///
+  /// In zh, this message translates to:
+  /// **'低音'**
+  String get eq_preset_bass;
+
+  /// EQ preset: live (slight high freq boost)
+  ///
+  /// In zh, this message translates to:
+  /// **'现场'**
+  String get eq_preset_live;
+
+  /// EQ preset: jazz (V-shaped curve)
+  ///
+  /// In zh, this message translates to:
+  /// **'爵士'**
+  String get eq_preset_jazz;
+
+  /// No description provided for @ui_playback_queue.
+  ///
+  /// In zh, this message translates to:
+  /// **'播放队列'**
+  String get ui_playback_queue;
+
+  /// No description provided for @ui_repeat_off.
+  ///
+  /// In zh, this message translates to:
+  /// **'循环：关闭'**
+  String get ui_repeat_off;
+
+  /// No description provided for @ui_repeat_one.
+  ///
+  /// In zh, this message translates to:
+  /// **'循环：单曲'**
+  String get ui_repeat_one;
+
+  /// No description provided for @ui_repeat_all.
+  ///
+  /// In zh, this message translates to:
+  /// **'循环：全部'**
+  String get ui_repeat_all;
+
+  /// No description provided for @ui_shuffle_on.
+  ///
+  /// In zh, this message translates to:
+  /// **'随机播放：开'**
+  String get ui_shuffle_on;
+
+  /// No description provided for @ui_play_mode_sequential.
+  ///
+  /// In zh, this message translates to:
+  /// **'列表播放'**
+  String get ui_play_mode_sequential;
+
+  /// No description provided for @ui_play_mode_list_loop.
+  ///
+  /// In zh, this message translates to:
+  /// **'列表循环'**
+  String get ui_play_mode_list_loop;
+
+  /// No description provided for @ui_play_mode_single_loop.
+  ///
+  /// In zh, this message translates to:
+  /// **'单曲循环'**
+  String get ui_play_mode_single_loop;
+
+  /// No description provided for @ui_play_mode_shuffle.
+  ///
+  /// In zh, this message translates to:
+  /// **'随机播放'**
+  String get ui_play_mode_shuffle;
+
+  /// No description provided for @ui_lyrics_mode_off.
+  ///
+  /// In zh, this message translates to:
+  /// **'歌词关闭'**
+  String get ui_lyrics_mode_off;
+
+  /// No description provided for @ui_lyrics_mode_single_line.
+  ///
+  /// In zh, this message translates to:
+  /// **'单行歌词'**
+  String get ui_lyrics_mode_single_line;
+
+  /// No description provided for @ui_lyrics_mode_multi_line.
+  ///
+  /// In zh, this message translates to:
+  /// **'多行歌词'**
+  String get ui_lyrics_mode_multi_line;
+
+  /// No description provided for @ui_lyrics_mode_full_panel.
+  ///
+  /// In zh, this message translates to:
+  /// **'全屏歌词'**
+  String get ui_lyrics_mode_full_panel;
+
+  /// Minutes format for sleep timer options
+  ///
+  /// In zh, this message translates to:
+  /// **'{minutes} 分钟'**
+  String ui_minutes_format(int minutes);
+
+  /// Sleep timer set confirmation
+  ///
+  /// In zh, this message translates to:
+  /// **'睡眠定时器已设置为 {minutes} 分钟。'**
+  String ui_sleep_timer_set(int minutes);
+
+  /// No description provided for @ui_enter_minutes.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入分钟数'**
+  String get ui_enter_minutes;
+
+  /// No description provided for @ui_sleep_timer_end.
+  ///
+  /// In zh, this message translates to:
+  /// **'定时时间到，已暂停播放'**
+  String get ui_sleep_timer_end;
+
+  /// No description provided for @ui_close_player.
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭播放器'**
+  String get ui_close_player;
+
+  /// No description provided for @ui_open_player.
+  ///
+  /// In zh, this message translates to:
+  /// **'打开播放器'**
+  String get ui_open_player;
+
+  /// No description provided for @ui_now_playing.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在播放'**
+  String get ui_now_playing;
+
+  /// No description provided for @ui_resume_playback.
+  ///
+  /// In zh, this message translates to:
+  /// **'继续播放'**
+  String get ui_resume_playback;
+
+  /// No description provided for @ui_single.
+  ///
+  /// In zh, this message translates to:
+  /// **'单曲'**
+  String get ui_single;
+
+  /// No description provided for @ui_add_remote_path.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加远程路径'**
+  String get ui_add_remote_path;
+
+  /// No description provided for @ui_select_remote_server.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择远程服务器'**
+  String get ui_select_remote_server;
+
+  /// Backup & restore settings screen
+  ///
+  /// In zh, this message translates to:
+  /// **'没有已保存的远程连接'**
+  String get ui_no_remote_connections;
+
+  /// No description provided for @ui_retry.
+  ///
+  /// In zh, this message translates to:
+  /// **'重试'**
+  String get ui_retry;
+
+  /// No description provided for @ui_media_load_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'媒体加载失败，请检查存储权限后重试'**
+  String get ui_media_load_failed;
+
+  /// No description provided for @ui_no_subfolders.
+  ///
+  /// In zh, this message translates to:
+  /// **'无子文件夹'**
+  String get ui_no_subfolders;
+
+  /// Backup & restore settings screen
+  ///
+  /// In zh, this message translates to:
+  /// **'选择当前文件夹'**
+  String get ui_select_this_folder;
+
+  /// No description provided for @ui_downloading_file.
+  ///
+  /// In zh, this message translates to:
+  /// **'下载中: {file}'**
+  String ui_downloading_file(String file);
+
+  /// No description provided for @ui_sent.
+  ///
+  /// In zh, this message translates to:
+  /// **'已发送: {amount}'**
+  String ui_sent(String amount);
+
+  /// Recycle bin restore success message
+  ///
+  /// In zh, this message translates to:
+  /// **'已成功恢复 {count} 个项目'**
+  String ui_recycle_restore_success(int count);
+
+  /// Recycle bin restore failed message
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复项目出错：{error}'**
+  String ui_recycle_restore_failed(String error);
+
+  /// Recycle bin permanent delete confirm dialog title
+  ///
+  /// In zh, this message translates to:
+  /// **'永久删除？'**
+  String get ui_recycle_perm_delete_title;
+
+  /// Recycle bin permanent delete confirm dialog message
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要永久删除这些 {count} 个项目吗？此操作无法撤销。'**
+  String ui_recycle_perm_delete_message(int count);
+
+  /// Recycle bin permanent delete success message
+  ///
+  /// In zh, this message translates to:
+  /// **'已永久删除 {count} 个项目'**
+  String ui_recycle_perm_delete_success(int count);
+
+  /// Recycle bin permanent delete failed message
+  ///
+  /// In zh, this message translates to:
+  /// **'删除项目出错：{error}'**
+  String ui_recycle_perm_delete_failed(String error);
+
+  /// Recycle bin empty confirm dialog title
+  ///
+  /// In zh, this message translates to:
+  /// **'清空回收站？'**
+  String get ui_recycle_empty_title;
+
+  /// Recycle bin empty failed message
+  ///
+  /// In zh, this message translates to:
+  /// **'清空回收站出错：{error}'**
+  String ui_recycle_empty_failed(String error);
+
+  /// Recycle bin selected items count
+  ///
+  /// In zh, this message translates to:
+  /// **'已选择 {count} 项'**
+  String ui_recycle_selected_count(int count);
+
+  /// Recycle bin item deleted date and size
+  ///
+  /// In zh, this message translates to:
+  /// **'已删除：{date} • {size}'**
+  String ui_recycle_deleted_at(String date, String size);
+
+  /// Recycle bin restore action
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复'**
+  String get ui_recycle_restore;
+
+  /// Recycle bin empty state hint
+  ///
+  /// In zh, this message translates to:
+  /// **'启用回收站后删除的项目将显示在这里。您可以恢复它们或永久删除。'**
+  String get ui_recycle_empty_hint;
+
+  /// Recycle bin disabled hint
+  ///
+  /// In zh, this message translates to:
+  /// **'回收站已关闭。开启后，删除的文件和文件夹将暂存到这里，可随时恢复或永久删除。'**
+  String get ui_recycle_disabled_hint;
+
+  /// Recycle bin deleted date label
+  ///
+  /// In zh, this message translates to:
+  /// **'回收日期'**
+  String get ui_recycle_deleted_date;
+
+  /// Recycle bin item type label
+  ///
+  /// In zh, this message translates to:
+  /// **'类型'**
+  String get ui_recycle_type;
+
+  /// Recycle bin file type
+  ///
+  /// In zh, this message translates to:
+  /// **'文件'**
+  String get ui_recycle_file;
+
+  /// Database reader browse data tab
+  ///
+  /// In zh, this message translates to:
+  /// **'浏览数据'**
+  String get ui_db_browse_data;
+
+  /// Database reader table schema tab
+  ///
+  /// In zh, this message translates to:
+  /// **'表结构'**
+  String get ui_db_table_schema;
+
+  /// Database reader SQL console tab
+  ///
+  /// In zh, this message translates to:
+  /// **'SQL控制台'**
+  String get ui_db_sql_console;
+
+  /// Database reader CSV export success message
+  ///
+  /// In zh, this message translates to:
+  /// **'成功导出到 {fileName}'**
+  String ui_db_export_success(String fileName);
+
+  /// Database reader CSV export failed message
+  ///
+  /// In zh, this message translates to:
+  /// **'导出失败：{error}'**
+  String ui_db_export_failed(String error);
+
+  /// Database reader export CSV tooltip
+  ///
+  /// In zh, this message translates to:
+  /// **'导出表为CSV'**
+  String get ui_db_export_csv;
+
+  /// Database reader primary key label
+  ///
+  /// In zh, this message translates to:
+  /// **'主键'**
+  String get ui_db_primary_key;
+
+  /// Database reader not null label
+  ///
+  /// In zh, this message translates to:
+  /// **'非空'**
+  String get ui_db_not_null;
+
+  /// Database reader column type label
+  ///
+  /// In zh, this message translates to:
+  /// **'类型：{type}'**
+  String ui_db_type(String type);
+
+  /// Database reader column default value label
+  ///
+  /// In zh, this message translates to:
+  /// **'默认值：{value}'**
+  String ui_db_default(String value);
+
+  /// Database reader execute query button
+  ///
+  /// In zh, this message translates to:
+  /// **'执行查询'**
+  String get ui_db_execute_query;
+
+  /// Database reader SQL query hint text
+  ///
+  /// In zh, this message translates to:
+  /// **'在此输入SELECT查询...'**
+  String get ui_db_enter_query;
+
+  /// Database reader pagination range text
+  ///
+  /// In zh, this message translates to:
+  /// **'显示 {start} - {end}'**
+  String ui_db_showing_range(int start, int end);
+
+  /// Database reader query result row count
+  ///
+  /// In zh, this message translates to:
+  /// **'查询返回 {count} 行'**
+  String ui_db_query_returned(int count);
+
+  /// App Manager installed user apps tab
+  ///
+  /// In zh, this message translates to:
+  /// **'已安装的用户应用'**
+  String get ui_app_installed_user_apps;
+
+  /// App Manager system packages tab
+  ///
+  /// In zh, this message translates to:
+  /// **'系统包'**
+  String get ui_app_system_packages;
+
+  /// App Manager backup APKs tab
+  ///
+  /// In zh, this message translates to:
+  /// **'已备份的APK'**
+  String get ui_app_backup_apk;
+
+  /// App Manager precise storage calculation title
+  ///
+  /// In zh, this message translates to:
+  /// **'精确存储计算'**
+  String get ui_app_precise_storage;
+
+  /// App Manager grant usage access button
+  ///
+  /// In zh, this message translates to:
+  /// **'授予使用情况访问权限'**
+  String get ui_app_grant_usage_access;
+
+  /// App Manager usage access permission description
+  ///
+  /// In zh, this message translates to:
+  /// **'如需查看精确的应用存储大小（APK + 数据 + 缓存），而不仅是安装包大小，请在系统设置中为 ZenFile 启用使用情况访问权限。'**
+  String get ui_app_usage_access_description;
+
+  /// Open APK backup folder after backup success
+  ///
+  /// In zh, this message translates to:
+  /// **'打开备份目录'**
+  String get ui_backup_apk_open_folder;
+
+  /// Backup success message showing the file path, asking if user wants to open the folder
+  ///
+  /// In zh, this message translates to:
+  /// **'已成功备份到 {path}，是否打开所在目录？'**
+  String ui_backup_apk_success_with_path(String path);
+
+  /// Open button label
+  ///
+  /// In zh, this message translates to:
+  /// **'打开'**
+  String get ui_backup_apk_open;
+
+  /// Successfully cleared remote cache
+  ///
+  /// In zh, this message translates to:
+  /// **'远程缓存已清理。'**
+  String get ui_clear_remote_cache_success;
+
+  /// Failed to clear remote cache
+  ///
+  /// In zh, this message translates to:
+  /// **'清理远程缓存失败。'**
+  String get ui_clear_remote_cache_failed;
+
+  /// Open app system settings / details page
+  ///
+  /// In zh, this message translates to:
+  /// **'系统设置 / 详情'**
+  String get ui_app_system_settings;
+
+  /// Restore / install APK from backup
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复 / 安装应用'**
+  String get ui_app_restore_install;
+
+  /// Size label in app info header
+  ///
+  /// In zh, this message translates to:
+  /// **'大小：'**
+  String get ui_app_size_label;
+
+  /// Install date label in app info header
+  ///
+  /// In zh, this message translates to:
+  /// **'安装时间：'**
+  String get ui_app_installed_label;
+
+  /// Backup date label in backup info header
+  ///
+  /// In zh, this message translates to:
+  /// **'备份时间：'**
+  String get ui_app_backup_date_label;
+
+  /// Progress message during batch APK backup
+  ///
+  /// In zh, this message translates to:
+  /// **'正在备份所选应用...'**
+  String get ui_batch_backup_progress;
+
+  /// Success message after batch APK backup
+  ///
+  /// In zh, this message translates to:
+  /// **'已成功备份 {count} 个应用到 ZenFile/Backups/Apps/'**
+  String ui_batch_backup_success(int count);
+
+  /// Error message after batch APK backup
+  ///
+  /// In zh, this message translates to:
+  /// **'备份部分应用失败：{error}'**
+  String ui_batch_backup_failed(String error);
+
+  /// App Manager search backup hint
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索备份...'**
+  String get ui_app_search_backup;
+
+  /// App Manager sort by install date option
+  ///
+  /// In zh, this message translates to:
+  /// **'按安装日期排序'**
+  String get ui_app_sort_by_install_date;
+
+  /// App Manager no backup found empty state title
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到备份'**
+  String get ui_app_no_backup_found;
+
+  /// Backup list empty state subtitle
+  ///
+  /// In zh, this message translates to:
+  /// **'已备份的 APK 和 APKS 文件列表将显示在此处。'**
+  String get ui_app_backup_empty_subtitle;
+
+  /// Backup list search empty state subtitle
+  ///
+  /// In zh, this message translates to:
+  /// **'找不到与\"{query}\"匹配的备份'**
+  String ui_app_backup_search_not_found(String query);
+
+  /// Backup item size and date label
+  ///
+  /// In zh, this message translates to:
+  /// **'大小：{size} • 备份日期：{date}'**
+  String ui_app_backup_size_date(String size, String date);
+
+  /// App Manager split APK (APKS) label
+  ///
+  /// In zh, this message translates to:
+  /// **'分包 (APKS)'**
+  String get ui_app_split_apk;
+
+  /// App Manager single APK label
+  ///
+  /// In zh, this message translates to:
+  /// **'单个APK'**
+  String get ui_app_single_apk;
+
+  /// Desktop lyric floating window toggle in audio player more menu
+  ///
+  /// In zh, this message translates to:
+  /// **'桌面歌词'**
+  String get ui_desktop_lyric;
+
+  /// Shown when overlay permission is denied while enabling desktop lyric
+  ///
+  /// In zh, this message translates to:
+  /// **'需要悬浮窗权限才能显示桌面歌词，请前往设置授权后重试'**
+  String get msg_overlay_permission_required;
+
+  /// Shown when notification permission is denied while enabling background playback
+  ///
+  /// In zh, this message translates to:
+  /// **'需要通知权限才能显示播放控制面板，是否前往设置开启？'**
+  String get msg_notification_permission_denied;
+
+  /// Action button on the SnackBar to open app settings when notification permission is denied
+  ///
+  /// In zh, this message translates to:
+  /// **'去设置'**
+  String get msg_open_settings;
+
+  /// Shown when notification permission is detected as not granted after enabling background playback
+  ///
+  /// In zh, this message translates to:
+  /// **'通知权限未授予，无法显示播放控制通知。请前往设置开启通知权限。'**
+  String get msg_notification_not_granted;
+
+  /// Shown when notification fails to appear despite permission being granted, typically due to ROM restrictions
+  ///
+  /// In zh, this message translates to:
+  /// **'通知栏未生效，可能是系统通知渠道被禁用或电池优化限制了后台运行。请在系统设置中检查通知权限和电池优化设置。'**
+  String get msg_notification_blocked_hint;
+
+  /// Shown when AudioService.init fails - the background playback service cannot be registered with the OS
+  ///
+  /// In zh, this message translates to:
+  /// **'后台播放服务初始化失败，通知栏控制按钮无法显示。请尝试重启应用；若问题持续，请在系统设置中清除应用数据后重新打开。'**
+  String get msg_audio_service_init_failed;
+
+  /// Shown when the notification channel is disabled by the user or system
+  ///
+  /// In zh, this message translates to:
+  /// **'通知渠道已被禁用。请前往系统设置 → 应用管理 → ZenFile → 通知，找到\"ZenFile Audio Player\"渠道并将其启用。'**
+  String get msg_notification_channel_disabled;
+
+  /// Button label to search lyrics online for the current song
+  ///
+  /// In zh, this message translates to:
+  /// **'在线搜索歌词'**
+  String get ui_search_lyrics_online;
+
+  /// Dialog message shown while searching lyrics online
+  ///
+  /// In zh, this message translates to:
+  /// **'正在搜索歌词...'**
+  String get ui_lyrics_searching;
+
+  /// SnackBar message when enhanced lyrics with word timestamps are downloaded
+  ///
+  /// In zh, this message translates to:
+  /// **'增强歌词下载成功！逐字显示已就绪'**
+  String get ui_lyrics_download_success_enhanced;
+
+  /// SnackBar message when plain lyrics are downloaded
+  ///
+  /// In zh, this message translates to:
+  /// **'歌词下载成功'**
+  String get ui_lyrics_download_success;
+
+  /// SnackBar message when online lyric search returns no results
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到匹配的歌词，试试调整歌曲信息后重试'**
+  String get ui_lyrics_not_found_online;
+
+  /// Label for song title input field in lyric search dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'歌曲名'**
+  String get ui_lyric_search_song_title;
+
+  /// Label for artist input field in lyric search dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'歌手'**
+  String get ui_lyric_search_artist;
+
+  /// Rotate video clockwise in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'旋转画面'**
+  String get msg_rotate_video;
+
+  /// Video aspect ratio mode: fit to screen
+  ///
+  /// In zh, this message translates to:
+  /// **'适应屏幕'**
+  String get msg_aspect_fit;
+
+  /// Video aspect ratio mode: stretch to fill
+  ///
+  /// In zh, this message translates to:
+  /// **'拉伸填充'**
+  String get msg_aspect_fill;
+
+  /// Video aspect ratio mode: centered original size
+  ///
+  /// In zh, this message translates to:
+  /// **'居中'**
+  String get msg_aspect_center;
+
+  /// Video aspect ratio mode: 16:9
+  ///
+  /// In zh, this message translates to:
+  /// **'16:9'**
+  String get msg_aspect_16_9;
+
+  /// Video aspect ratio mode: 4:3
+  ///
+  /// In zh, this message translates to:
+  /// **'4:3'**
+  String get msg_aspect_4_3;
+
+  /// Video aspect ratio mode: custom
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义'**
+  String get msg_aspect_custom;
+
+  /// Video aspect ratio mode: fill screen (crop, no black bars)
+  ///
+  /// In zh, this message translates to:
+  /// **'填充屏幕'**
+  String get msg_aspect_fill_screen;
+
+  /// Video player menu item for custom aspect ratio
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义缩放比例'**
+  String get msg_custom_aspect_ratio;
+
+  /// No description provided for @drawer_tools.
+  ///
+  /// In zh, this message translates to:
+  /// **'工具'**
+  String get drawer_tools;
+
+  /// No description provided for @open_with_native.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用本应用打开'**
+  String get open_with_native;
+
+  /// No description provided for @open_with_external.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用外部系统选择器打开'**
+  String get open_with_external;
+
+  /// No description provided for @open_once.
+  ///
+  /// In zh, this message translates to:
+  /// **'仅一次'**
+  String get open_once;
+
+  /// No description provided for @open_always.
+  ///
+  /// In zh, this message translates to:
+  /// **'始终'**
+  String get open_always;
+
+  /// No description provided for @pick_file_type.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择文件类型'**
+  String get pick_file_type;
+
+  /// No description provided for @file_type_text.
+  ///
+  /// In zh, this message translates to:
+  /// **'文本'**
+  String get file_type_text;
+
+  /// No description provided for @file_type_audio.
+  ///
+  /// In zh, this message translates to:
+  /// **'音频'**
+  String get file_type_audio;
+
+  /// No description provided for @file_type_video.
+  ///
+  /// In zh, this message translates to:
+  /// **'视频'**
+  String get file_type_video;
+
+  /// No description provided for @file_type_image.
+  ///
+  /// In zh, this message translates to:
+  /// **'图像'**
+  String get file_type_image;
+
+  /// No description provided for @file_type_text_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'以文本方式打开'**
+  String get file_type_text_desc;
+
+  /// No description provided for @file_type_audio_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'以音频方式播放'**
+  String get file_type_audio_desc;
+
+  /// No description provided for @file_type_video_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'以视频方式播放'**
+  String get file_type_video_desc;
+
+  /// No description provided for @file_type_image_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'以图像方式查看'**
+  String get file_type_image_desc;
+
+  /// No description provided for @drawer_edit_connection.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑'**
+  String get drawer_edit_connection;
+
+  /// No description provided for @cat_system.
+  ///
+  /// In zh, this message translates to:
+  /// **'系统'**
+  String get cat_system;
+
+  /// No description provided for @cat_backup_restore.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份/恢复'**
+  String get cat_backup_restore;
+
+  /// No description provided for @cat_backup_restore_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份'**
+  String get cat_backup_restore_desc;
+
+  /// No description provided for @cat_storage_volume.
+  ///
+  /// In zh, this message translates to:
+  /// **'存储'**
+  String get cat_storage_volume;
+
+  /// No description provided for @ui_columns_per_row.
+  ///
+  /// In zh, this message translates to:
+  /// **'每行显示'**
+  String get ui_columns_per_row;
+
+  /// No description provided for @ui_3columns.
+  ///
+  /// In zh, this message translates to:
+  /// **'3列'**
+  String get ui_3columns;
+
+  /// No description provided for @ui_4columns.
+  ///
+  /// In zh, this message translates to:
+  /// **'4列'**
+  String get ui_4columns;
+
+  /// Right side menu header title
+  ///
+  /// In zh, this message translates to:
+  /// **'常用功能'**
+  String get msge8b8e9b3;
+
+  /// Right side menu header subtitle
+  ///
+  /// In zh, this message translates to:
+  /// **'常用功能快捷入口'**
+  String get msg04b7de53;
+
+  /// No description provided for @prop_read.
+  ///
+  /// In zh, this message translates to:
+  /// **'读取'**
+  String get prop_read;
+
+  /// No description provided for @prop_write.
+  ///
+  /// In zh, this message translates to:
+  /// **'写入'**
+  String get prop_write;
+
+  /// No description provided for @prop_folder_directory.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件夹 / 目录'**
+  String get prop_folder_directory;
+
+  /// No description provided for @prop_file.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件'**
+  String get prop_file;
+
+  /// No description provided for @prop_contains_format.
+  ///
+  /// In zh, this message translates to:
+  /// **'{folderCount} 个子文件夹, {fileCount} 个文件'**
+  String prop_contains_format(int folderCount, int fileCount);
+
+  /// No description provided for @prop_bytes.
+  ///
+  /// In zh, this message translates to:
+  /// **'字节'**
+  String get prop_bytes;
+
+  /// No description provided for @prop_items_selected.
+  ///
+  /// In zh, this message translates to:
+  /// **'已选择 {count} 项'**
+  String prop_items_selected(int count);
+
+  /// No description provided for @prop_items_summary.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 项（{folderCount} 个文件夹, {fileCount} 个文件）'**
+  String prop_items_summary(int count, int folderCount, int fileCount);
+
+  /// Add subtitle option in video player more menu
+  ///
+  /// In zh, this message translates to:
+  /// **'添加字幕'**
+  String get msg_add_subtitle;
+
+  /// Subtitles menu item in video player more menu
+  ///
+  /// In zh, this message translates to:
+  /// **'字幕'**
+  String get msg_subtitle_menu;
+
+  /// Subtitle font size label in subtitle settings
+  ///
+  /// In zh, this message translates to:
+  /// **'字幕大小'**
+  String get msg_subtitle_size;
+
+  /// Subtitle vertical position label in subtitle settings
+  ///
+  /// In zh, this message translates to:
+  /// **'字幕位置'**
+  String get msg_subtitle_position;
+
+  /// Top label for subtitle position slider
+  ///
+  /// In zh, this message translates to:
+  /// **'顶部'**
+  String get msg_subtitle_pos_top;
+
+  /// Bottom label for subtitle position slider
+  ///
+  /// In zh, this message translates to:
+  /// **'底部'**
+  String get msg_subtitle_pos_bottom;
+
+  /// Toggle to remove subtitle background transparent layer
+  ///
+  /// In zh, this message translates to:
+  /// **'移除字幕背景'**
+  String get msg_subtitle_no_background;
+
+  /// Auto clean cache setting title
+  ///
+  /// In zh, this message translates to:
+  /// **'自动清理缓存'**
+  String get msg_auto_clean_cache;
+
+  /// Hint text for auto clean cache setting
+  ///
+  /// In zh, this message translates to:
+  /// **'点击设置自动清理时间间隔'**
+  String get msg_auto_clean_cache_hint;
+
+  /// Hint text in the duration picker bottom sheet
+  ///
+  /// In zh, this message translates to:
+  /// **'滑动选择自动清理时间间隔'**
+  String get msg_auto_clean_cache_picker_hint;
+
+  /// Day unit label in cache clean duration picker
+  ///
+  /// In zh, this message translates to:
+  /// **'天'**
+  String get msg_cache_clean_unit_day;
+
+  /// Hour unit label in cache clean duration picker
+  ///
+  /// In zh, this message translates to:
+  /// **'小时'**
+  String get msg_cache_clean_unit_hour;
+
+  /// Minute unit label in cache clean duration picker
+  ///
+  /// In zh, this message translates to:
+  /// **'分钟'**
+  String get msg_cache_clean_unit_minute;
+
+  /// Confirm button in cache clean duration picker
+  ///
+  /// In zh, this message translates to:
+  /// **'确认'**
+  String get msg_cache_clean_confirm;
+
+  /// Top title of quick actions page
+  ///
+  /// In zh, this message translates to:
+  /// **'快捷操作'**
+  String get msg_quick_actions;
+
+  /// Hardware decoding badge in video player header
+  ///
+  /// In zh, this message translates to:
+  /// **'硬解'**
+  String get msg_hwdec;
+
+  /// Software decoding badge in video player header
+  ///
+  /// In zh, this message translates to:
+  /// **'软解'**
+  String get msg_swdec;
+
+  /// Tooltip to toggle hardware/software decoding in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'切换硬解/软解'**
+  String get msg_toggle_decode;
+
+  /// Tooltip to turn on subtitles in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'开启字幕'**
+  String get msg_subtitle_on;
+
+  /// Tooltip to turn off subtitles in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭字幕'**
+  String get msg_subtitle_off;
+
+  /// Tooltip when no subtitle is loaded in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无字幕'**
+  String get msg_no_subtitle;
+
+  /// Audio track selection in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'音轨'**
+  String get msg_audio_track;
+
+  /// Embedded subtitle track selection in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'字幕轨'**
+  String get msg_subtitle_track;
+
+  /// Message when no audio tracks available in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'无音轨'**
+  String get msg_no_audio_track;
+
+  /// Message when no subtitle tracks available in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'无字幕轨'**
+  String get msg_no_subtitle_track;
+
+  /// Playlist button tooltip in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'播放列表'**
+  String get msg_playlist;
+
+  /// Message when no playlist available in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无播放列表'**
+  String get msg_no_playlist;
+
+  /// Text on lock button in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'滑动/点击解锁'**
+  String get msg_slide_to_unlock;
+
+  /// Short unit for seconds in seek indicator (e.g. 10s)
+  ///
+  /// In zh, this message translates to:
+  /// **'秒'**
+  String get msg_seconds_short;
+
+  /// Long press speed badge text in video player
+  ///
+  /// In zh, this message translates to:
+  /// **'倍速 2.0x'**
+  String get msg_speed_2x;
+
+  /// Changelog v1.1.1 line 1
+  ///
+  /// In zh, this message translates to:
+  /// **'📹 视频播放器'**
+  String get log_v1_1_1_line1;
+
+  /// Changelog v1.1.1 line 2
+  ///
+  /// In zh, this message translates to:
+  /// **'支持外挂字幕：自动识别与视频同目录、同文件名的字幕文件（如 .srt、.ass），同时保留手动加载字幕文件的入口。'**
+  String get log_v1_1_1_line2;
+
+  /// Changelog v1.1.1 line 3
+  ///
+  /// In zh, this message translates to:
+  /// **'新增自定义画面缩放比例，可灵活适配各类异形屏及非标准比例屏幕。'**
+  String get log_v1_1_1_line3;
+
+  /// Changelog v1.1.1 line 4
+  ///
+  /// In zh, this message translates to:
+  /// **'🎵 音频播放器'**
+  String get log_v1_1_1_line4;
+
+  /// Changelog v1.1.1 line 5
+  ///
+  /// In zh, this message translates to:
+  /// **'修复了在平板、车机等横屏设备上的界面显示异常问题，提升大屏体验。'**
+  String get log_v1_1_1_line5;
+
+  /// Changelog v1.1.1 line 6
+  ///
+  /// In zh, this message translates to:
+  /// **'📂 文件浏览与操作'**
+  String get log_v1_1_1_line6;
+
+  /// Changelog v1.1.1 line 7
+  ///
+  /// In zh, this message translates to:
+  /// **'优化侧滑菜单与快捷操作弹窗的宽度一致性，视觉更统一。'**
+  String get log_v1_1_1_line7;
+
+  /// Changelog v1.1.1 line 8
+  ///
+  /// In zh, this message translates to:
+  /// **'快捷操作面板中的常用功能现支持折叠/展开，且状态会持久记忆，下次打开保留您的偏好。'**
+  String get log_v1_1_1_line8;
+
+  /// Changelog v1.1.1 line 9
+  ///
+  /// In zh, this message translates to:
+  /// **'调整文件打开逻辑：点击文件默认使用本应用直接打开；如需切换其他应用，可在选中文件后，通过顶部三点菜单或底部操作栏的\"更多\"选项选择\"打开方式\"。'**
+  String get log_v1_1_1_line9;
+
+  /// Changelog v1.1.1 line 10
+  ///
+  /// In zh, this message translates to:
+  /// **'🗂️ 分类页界面'**
+  String get log_v1_1_1_line10;
+
+  /// Changelog v1.1.1 line 11
+  ///
+  /// In zh, this message translates to:
+  /// **'默认布局改为每行4列，显示更紧凑高效。'**
+  String get log_v1_1_1_line11;
+
+  /// Changelog v1.1.1 line 12
+  ///
+  /// In zh, this message translates to:
+  /// **'您可在\"自定义快捷方式\"设置中自由切换每行3列或4列。'**
+  String get log_v1_1_1_line12;
+
+  /// Changelog v1.1.1 line 13
+  ///
+  /// In zh, this message translates to:
+  /// **'支持长按分类图标并拖拽，随意调整类别排列顺序。'**
+  String get log_v1_1_1_line13;
+
+  /// Button to close/disable a category in quick categories grid context menu
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭类别'**
+  String get ui_close_category;
+
+  /// Button to open/enable a category in quick categories grid context menu
+  ///
+  /// In zh, this message translates to:
+  /// **'开启类别'**
+  String get ui_open_category;
+
+  /// Menu item to configure custom scan paths for media categories
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义扫描位置'**
+  String get msg_custom_scan_paths;
+
+  /// No description provided for @notification_web_share_local_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'ZenFile 本地网页共享'**
+  String get notification_web_share_local_title;
+
+  /// No description provided for @notification_web_share_internet_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'ZenFile 互联网网页共享'**
+  String get notification_web_share_internet_title;
+
+  /// No description provided for @notification_web_share_running.
+  ///
+  /// In zh, this message translates to:
+  /// **'运行于 {url}'**
+  String notification_web_share_running(Object url);
+
+  /// No description provided for @notification_ftp_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'ZenFile FTP 服务器'**
+  String get notification_ftp_title;
+
+  /// No description provided for @notification_ftp_running.
+  ///
+  /// In zh, this message translates to:
+  /// **'运行于 ftp://{ip}:{port}'**
+  String notification_ftp_running(Object ip, Object port);
+
+  /// ui\screens\about_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'下载链接'**
+  String get ui_download_links;
+
+  /// No description provided for @msg_editor_lines.
+  ///
+  /// In zh, this message translates to:
+  /// **'行'**
+  String get msg_editor_lines;
+
+  /// No description provided for @msg_editor_modified.
+  ///
+  /// In zh, this message translates to:
+  /// **'已修改'**
+  String get msg_editor_modified;
+
+  /// No description provided for @go_to_path.
+  ///
+  /// In zh, this message translates to:
+  /// **'跳转路径'**
+  String get go_to_path;
+
+  /// No description provided for @copy_path.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制路径'**
+  String get copy_path;
+
+  /// No description provided for @enter_path_hint.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入绝对路径...'**
+  String get enter_path_hint;
+
+  /// No description provided for @breadcrumb_context_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'面包屑选项'**
+  String get breadcrumb_context_title;
+
+  /// Hint shown when a track has no lyrics (instrumental).
+  ///
+  /// In zh, this message translates to:
+  /// **'此歌曲为没有填词的纯音乐，请您欣赏'**
+  String get ui_instrumental_track_hint;
+
+  /// ui\screensbout_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'✨ 新增功能'**
+  String get changelog_section_new;
+
+  /// ui\screensbout_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'🔧 优化'**
+  String get changelog_section_optimizations;
+
+  /// ui\screensbout_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'🐛 问题修复'**
+  String get changelog_section_fixes;
+
+  /// ui\screensbout_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'⚠️ 已知问题'**
+  String get changelog_section_known_issues;
+
+  /// Changelog entry for v1.1.27
+  ///
+  /// In zh, this message translates to:
+  /// **'收藏夹：新增「+」按钮，可手动添加自定义路径/名称的收藏项，并按分组聚合显示。'**
+  String get changelog_v1127_new_1;
+
+  /// Changelog entry for v1.1.27
+  ///
+  /// In zh, this message translates to:
+  /// **'收藏夹：收藏项现支持编辑（名称/路径/分组）；分组支持折叠/展开并持久化保存。'**
+  String get changelog_v1127_new_2;
+
+  /// Changelog entry for v1.1.27
+  ///
+  /// In zh, this message translates to:
+  /// **'收藏夹：所有收藏入口（三点菜单/长按弹窗/顶部「+」按钮）均可选择分组；长按分组可重命名/删除，长按收藏项可编辑/删除。'**
+  String get changelog_v1127_new_3;
+
+  /// Changelog entry for v1.1.27
+  ///
+  /// In zh, this message translates to:
+  /// **'系统性修复安卓 15/16 UI 卡顿（渲染层规避 Impeller 回退 + IO 层 + 解码层三维优化）。'**
+  String get changelog_v1127_opt_1;
+
+  /// Changelog entry for v1.1.27
+  ///
+  /// In zh, this message translates to:
+  /// **'修复选择模式下「收藏」未弹出分组选择的问题。'**
+  String get changelog_v1127_fix_1;
+
+  /// Changelog entry for v1.1.27
+  ///
+  /// In zh, this message translates to:
+  /// **'SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。'**
+  String get changelog_v1127_known_1;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'批量重命名'**
+  String get batch_rename_title;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在配置 {count} 个项目'**
+  String batch_rename_subtitle(Object count);
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'（空）'**
+  String get batch_rename_empty_preview;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'不带扩展名的文件名 ({n})'**
+  String batch_rename_tooltip_basename(Object n);
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'带点的扩展名 ({de})'**
+  String batch_rename_tooltip_ext_with_dot(Object de);
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'不带点的扩展名 ({e})'**
+  String batch_rename_tooltip_ext_no_dot(Object e);
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'带扩展名的完整文件名 ({N})'**
+  String batch_rename_tooltip_full_name(Object N);
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'例如：Image_#'**
+  String get batch_rename_hint_pattern;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'txt'**
+  String get batch_rename_hint_extension;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'填充'**
+  String get batch_rename_label_padding;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'例如：3'**
+  String get batch_rename_hint_padding;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'例如：1'**
+  String get batch_rename_hint_start;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索词'**
+  String get batch_rename_hint_find;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'更少选项'**
+  String get batch_rename_label_fewer_options;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'预览'**
+  String get batch_rename_btn_preview;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'取消'**
+  String get batch_rename_btn_cancel;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'确定'**
+  String get batch_rename_btn_confirm;
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在查看 {count} 个项目'**
+  String batch_rename_preview_subtitle(Object count);
+
+  /// ui\widgets\batch_rename_dialog.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'应用更改'**
+  String get batch_rename_btn_apply;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'快速性能预设'**
+  String get msg_pdf_quick_presets;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'流畅模式'**
+  String get msg_pdf_smooth_mode;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'详细调节选项'**
+  String get msg_pdf_detail_tuning;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'单页（逐页滑动）'**
+  String get msg_pdf_single_page_scroll;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'水平（从左到右滑动）'**
+  String get msg_pdf_horizontal_scroll;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'连续'**
+  String get msg_pdf_continuous;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'单页'**
+  String get msg_pdf_single_page;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'垂直'**
+  String get msg_pdf_vertical;
+
+  /// ui\screens\document_viewer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'水平'**
+  String get msg_pdf_horizontal;
+
+  /// v1.1.25 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'音频播放器歌词按钮支持四种状态循环切换，播放模式按钮整合随机播放。'**
+  String get changelog_v1125_new_1;
+
+  /// v1.1.25 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'优化应用启动时的媒体扫描调度（并发与节流），缓解部分机型打开应用几秒后卡死的问题。'**
+  String get changelog_v1125_opt_1;
+
+  /// v1.1.25 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'分类页「网络」分类现在实时显示已保存的服务器数量。'**
+  String get changelog_v1125_opt_2;
+
+  /// v1.1.25 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'分类页数量文本与「选择存储驱动器」标题加入多语言翻译。'**
+  String get changelog_v1125_opt_3;
+
+  /// v1.1.25 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'修复清除应用数据后重新打开应用不再弹出「所有文件访问」授权弹窗、随后打开音频文件闪退的问题。'**
+  String get changelog_v1125_fix_1;
+
+  /// v1.1.25 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'修复安卓 13+ 与安卓 11 通知栏媒体控制卡片不显示的问题（提前创建通知渠道并按系统版本分流播放态逻辑）。'**
+  String get changelog_v1125_fix_2;
+
+  /// v1.1.25 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'修复分类页网格视图中已选中的项目无法再次点击取消选中的问题。'**
+  String get changelog_v1125_fix_3;
+
+  /// v1.1.25 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'改进 SMB / FTP / SFTP 远程视频流式播放稳定性，修复播放几秒后画面卡死、最终导致应用无响应闪退的问题。'**
+  String get changelog_v1125_fix_4;
+
+  /// v1.1.25 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。'**
+  String get changelog_v1125_known_1;
+
+  /// v1.1.26 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'SMB 下载提速：移除双缓冲预取，改为单线程顺序读写，大幅提升大文件传输速度。'**
+  String get changelog_v1126_opt_1;
+
+  /// v1.1.26 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'移除备用图标集，显著减小安装包（APK）体积。'**
+  String get changelog_v1126_opt_2;
+
+  /// v1.1.26 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'细节优化：抽屉「网络」列表三点按钮改为右对齐，快捷操作页标题支持自动换行。'**
+  String get changelog_v1126_opt_3;
+
+  /// v1.1.26 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'修复 FTP 下载速度被错误限制在 30-40MB/s 的问题（写入刷新间隔过小导致）。'**
+  String get changelog_v1126_fix_1;
+
+  /// v1.1.26 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'修复远程客户端（SMB/FTP/SFTP）取消传输、列表卡顿与刷新三类问题。'**
+  String get changelog_v1126_fix_2;
+
+  /// v1.1.26 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'修复 openlist 残留导致的相关异常。'**
+  String get changelog_v1126_fix_3;
+
+  /// v1.1.26 changelog entry
+  ///
+  /// In zh, this message translates to:
+  /// **'SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。'**
+  String get changelog_v1126_known_1;
+
+  /// Backup & restore settings screen
+  ///
+  /// In zh, this message translates to:
+  /// **'选择备份路径'**
+  String get ui_select_backup_path;
+
+  /// Backup & restore settings screen
+  ///
+  /// In zh, this message translates to:
+  /// **'本地'**
+  String get ui_backup_path_local;
+
+  /// Backup & restore settings screen
+  ///
+  /// In zh, this message translates to:
+  /// **'远程'**
+  String get ui_backup_path_remote;
+
+  /// Backup & restore settings screen
+  ///
+  /// In zh, this message translates to:
+  /// **'选择远程连接'**
+  String get ui_select_remote_connection;
+
+  /// Backup & restore settings screen
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无备份文件'**
+  String get ui_no_backup_files;
+
+  /// Backup & restore settings screen
+  ///
+  /// In zh, this message translates to:
+  /// **'请选择要恢复的备份文件'**
+  String get ui_please_select_backup_file;
+
+  /// Backup & restore settings screen
+  ///
+  /// In zh, this message translates to:
+  /// **'需要重启'**
+  String get ui_restore_restart_title;
+
+  /// Backup & restore settings screen
+  ///
+  /// In zh, this message translates to:
+  /// **'部分设置需要重启应用才能生效，是否立即重启？'**
+  String get ui_restore_restart_message;
+
+  /// Backup & restore settings screen
+  ///
+  /// In zh, this message translates to:
+  /// **'重启'**
+  String get ui_restart;
+
+  /// Backup & restore settings screen
+  ///
+  /// In zh, this message translates to:
+  /// **'稍后'**
+  String get ui_later;
+
+  /// Backup & restore settings screen
+  ///
+  /// In zh, this message translates to:
+  /// **'上级目录'**
+  String get ui_parent_directory;
+
+  /// 压缩进度对话框标题
+  ///
+  /// In zh, this message translates to:
+  /// **'正在压缩'**
+  String get ui_compress_progress;
+
+  /// 解压进度对话框标题
+  ///
+  /// In zh, this message translates to:
+  /// **'正在解压'**
+  String get ui_extract_progress;
+
+  /// 进度对话框速度标签
+  ///
+  /// In zh, this message translates to:
+  /// **'速度'**
+  String get ui_speed;
+
+  /// 进度对话框文件大小标签
+  ///
+  /// In zh, this message translates to:
+  /// **'文件大小'**
+  String get ui_file_size;
+
+  /// No description provided for @changelog_v1128_new_1.
+  ///
+  /// In zh, this message translates to:
+  /// **'快捷操作页新增单/双窗口切换按钮，与设置—文件浏览器选项中的「启用分屏」同步'**
+  String get changelog_v1128_new_1;
+
+  /// No description provided for @changelog_v1128_new_2.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看与排序选项支持按类别多选过滤（图片/视频/音频/文档/压缩包/安装包/其它可叠加），并可记住过滤条件'**
+  String get changelog_v1128_new_2;
+
+  /// No description provided for @changelog_v1128_new_3.
+  ///
+  /// In zh, this message translates to:
+  /// **'分类页新增「备份/恢复」快捷入口，并默认启用'**
+  String get changelog_v1128_new_3;
+
+  /// No description provided for @changelog_v1128_new_4.
+  ///
+  /// In zh, this message translates to:
+  /// **'远程文件与文件夹显示云徽标，新增「显示远程文件云徽」开关'**
+  String get changelog_v1128_new_4;
+
+  /// No description provided for @changelog_v1128_opt_1.
+  ///
+  /// In zh, this message translates to:
+  /// **'压缩大文件或多个文件时不再崩溃卡死：改为流式压缩/解压，常驻内存约 1MB，并加入内存阈值保护与分卷切割合并'**
+  String get changelog_v1128_opt_1;
+
+  /// No description provided for @changelog_v1128_opt_2.
+  ///
+  /// In zh, this message translates to:
+  /// **'优化远程视频（SMB/FTP/SFTP）播放卡顿，消除脉冲式卡顿'**
+  String get changelog_v1128_opt_2;
+
+  /// No description provided for @changelog_v1128_opt_3.
+  ///
+  /// In zh, this message translates to:
+  /// **'双窗口模式下，排序、大小/间距、按类别过滤均同步生效'**
+  String get changelog_v1128_opt_3;
+
+  /// No description provided for @changelog_v1128_opt_4.
+  ///
+  /// In zh, this message translates to:
+  /// **'分类页图标统一为应用主题主色；各分类显示存储占用大小'**
+  String get changelog_v1128_opt_4;
+
+  /// No description provided for @changelog_v1128_opt_5.
+  ///
+  /// In zh, this message translates to:
+  /// **'全局搜索默认从当前文件夹开始（存储根目录退化为全局搜索）'**
+  String get changelog_v1128_opt_5;
+
+  /// No description provided for @changelog_v1128_fix_1.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复关闭「记住过滤」后仍持久化上次过滤条件的问题'**
+  String get changelog_v1128_fix_1;
+
+  /// No description provided for @changelog_v1128_known_1.
+  ///
+  /// In zh, this message translates to:
+  /// **'双窗口模式下「大小/间距」调整暂未生效，将于后续版本优化'**
+  String get changelog_v1128_known_1;
+
+  /// No description provided for @changelog_v1129_opt_1.
+  ///
+  /// In zh, this message translates to:
+  /// **'分类页与浏览页顶部/底部导航的「分类」「浏览」按钮合二为一，改为居中翻转切换按钮（分类页显示「浏览」、浏览页显示「分类」）。'**
+  String get changelog_v1129_opt_1;
+
+  /// No description provided for @changelog_v1129_opt_2.
+  ///
+  /// In zh, this message translates to:
+  /// **'重命名文件时自动选中文件名主体（不含扩展名）、光标落在扩展名前，避免误改后缀名；覆盖所有入口：三点菜单、长按菜单、图片预览、全局搜索、选择态、远程、冲突对话框。'**
+  String get changelog_v1129_opt_2;
+
+  /// No description provided for @changelog_v1129_opt_3.
+  ///
+  /// In zh, this message translates to:
+  /// **'压缩包大图（>4MB）预览修复并支持滑动切换；单张预览失败不再拖垮整组。'**
+  String get changelog_v1129_opt_3;
+
+  /// No description provided for @changelog_v1129_opt_4.
+  ///
+  /// In zh, this message translates to:
+  /// **'远程媒体缩略图加载改为并发限流与唯一临时文件名，加载更稳定、不再串图。'**
+  String get changelog_v1129_opt_4;
+
+  /// No description provided for @changelog_v1129_opt_5.
+  ///
+  /// In zh, this message translates to:
+  /// **'双窗口模式下隐藏远程云徽，界面更简洁。'**
+  String get changelog_v1129_opt_5;
+
+  /// No description provided for @changelog_v1129_opt_6.
+  ///
+  /// In zh, this message translates to:
+  /// **'分类页「图片」与「截图」图标互换（图片显示相机图标、截图显示图片图标）。'**
+  String get changelog_v1129_opt_6;
+
+  /// No description provided for @changelog_v1129_fix_1.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复同名文件缩略图缓存不更新、远程与本地同名文件缩略图串图的问题。'**
+  String get changelog_v1129_fix_1;
+
+  /// No description provided for @changelog_v1129_fix_2.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复压缩包解压完成后点击「确定」无法跳转目录的问题。'**
+  String get changelog_v1129_fix_2;
+
+  /// No description provided for @changelog_v1129_fix_3.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复远程目录「显示文件夹内容计数」始终为 0 的问题。'**
+  String get changelog_v1129_fix_3;
+
+  /// No description provided for @changelog_v1129_fix_4.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复单窗口模式打开远程客户端时覆盖已打开连接、远程标签页标题未固定为连接名的问题。'**
+  String get changelog_v1129_fix_4;
+
+  /// No description provided for @changelog_v1129_fix_5.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复浏览页面包屑水平滑动误触页面切换的问题。'**
+  String get changelog_v1129_fix_5;
+
+  /// No description provided for @changelog_v1129_fix_6.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复分类页长按拖动类别排序时横向拖动误触左右切页的问题。'**
+  String get changelog_v1129_fix_6;
+
+  /// No description provided for @changelog_v1129_fix_7.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复截图文件在图片类别「按文件夹」下钻后消失的问题。'**
+  String get changelog_v1129_fix_7;
+
+  /// No description provided for @changelog_v1129_fix_8.
+  ///
+  /// In zh, this message translates to:
+  /// **'修复压缩包图片预览因名称归一化不匹配导致全部无法预览、解压失败无反馈等问题。'**
+  String get changelog_v1129_fix_8;
+
+  /// No description provided for @changelog_v1129_fix_9.
+  ///
+  /// In zh, this message translates to:
+  /// **'全局搜索空状态与删除确认文案支持多语言（去除硬编码英文）。'**
+  String get changelog_v1129_fix_9;
+
+  /// No description provided for @changelog_v1129_known_1.
+  ///
+  /// In zh, this message translates to:
+  /// **'SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。'**
+  String get changelog_v1129_known_1;
+
+  /// Global search empty state subtitle
+  ///
+  /// In zh, this message translates to:
+  /// **'在您的设备上即时查找任何文件、文件夹、文档或媒体'**
+  String get ui_global_search_hint;
+
+  /// Global search single item delete confirmation content
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要删除此项目吗？此操作无法撤销。'**
+  String get ui_delete_item_confirm;
+
+  /// Global search multiple items delete confirmation content
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要删除选中的 {count} 个项目吗？此操作无法撤销。'**
+  String ui_delete_items_confirm(int count);
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'远程保护 PIN 码：设置 4 位 PIN 后，访问已保存远程服务器、进入编辑页、分类页切换到远程范围时需先解锁，保护远程数据隐私'**
+  String get changelog_v1130_new_1;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'分类页「本地/远程」切换：所有支持远程目录的类别可独立切换本地/远程内容'**
+  String get changelog_v1130_new_2;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'备份功能（本地→远程）：支持「自动备份」与「立即备份」，新增文件检测自动触发，只备份该类别格式文件'**
+  String get changelog_v1130_new_3;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'远程连接向导新增「测试」按钮，可先验证连接再保存配置'**
+  String get changelog_v1130_new_4;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'视频/音频类别菜单新增「播放器控制器显隐」开关'**
+  String get changelog_v1130_new_5;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'统一「打开方式」弹窗：浏览页/最近页/分类页 三点与长按菜单均弹应用内选择弹窗'**
+  String get changelog_v1130_new_6;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'未知格式文件选「本应用打开」后弹出类型选择器（文本/音频/视频/图像）并以内置查看器打开'**
+  String get changelog_v1130_new_7;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'分类页/浏览页「分类」「浏览」按钮合二为一，居中翻转切换'**
+  String get changelog_v1130_opt_1;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'重命名自动选中文件名主体（不含扩展名），光标落扩展名前'**
+  String get changelog_v1130_opt_2;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'网格/列表视图切换整合进排序菜单'**
+  String get changelog_v1130_opt_3;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'每个类别独立记忆「文件夹/全部项目」查看模式，视频/音频默认文件夹查看'**
+  String get changelog_v1130_opt_4;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'下载类别支持远程备份'**
+  String get changelog_v1130_opt_5;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'远程图片/视频缩略图按需下载显示'**
+  String get changelog_v1130_opt_6;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'本地扫描排除应用缓存目录，修复打开远程缩略图后本地图片重复'**
+  String get changelog_v1130_opt_7;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'远程文件三点菜单与长按批量删除/重命名/复制/剪切/定位操作生效'**
+  String get changelog_v1130_opt_8;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'远程文件夹下钻保留目录结构（DCIM/Pictures 等顶层目录）'**
+  String get changelog_v1130_opt_9;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复 MIUI 存储权限误判导致启动弹窗循环卡死'**
+  String get changelog_v1130_fix_1;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复分类页长按拖动类别图标误触左右切页'**
+  String get changelog_v1130_fix_2;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复截图在图片类别「按文件夹」下钻后消失'**
+  String get changelog_v1130_fix_3;
+
+  /// ui\screens\remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'远程守卫'**
+  String get ui_remote_guard;
+
+  /// ui\screens\remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'设置4位PIN码保护远程服务器访问，每次启动应用或手动锁定后需输入PIN码才能进入远程服务器'**
+  String get ui_remote_guard_desc;
+
+  /// ui\screens\remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已启用'**
+  String get ui_remote_guard_enabled;
+
+  /// ui\screens\remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'已禁用'**
+  String get ui_remote_guard_disabled;
+
+  /// ui\screens\remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'设置PIN码'**
+  String get ui_remote_guard_set_pin;
+
+  /// ui\screens\remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'输入PIN码'**
+  String get ui_remote_guard_enter_pin;
+
+  /// ui\screens\remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'确认PIN码'**
+  String get ui_remote_guard_confirm_pin;
+
+  /// ui\screens\remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'两次输入的PIN码不一致，请重新输入'**
+  String get ui_remote_guard_pin_mismatch;
+
+  /// ui\screens\remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'PIN码错误，请重试'**
+  String get ui_remote_guard_wrong_pin;
+
+  /// ui\screens\remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'修改PIN码'**
+  String get ui_remote_guard_change_pin;
+
+  /// ui\screens\remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'4位数字PIN码'**
+  String get ui_remote_guard_pin_hint;
+
+  /// ui\screens\remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'立即锁定'**
+  String get ui_remote_guard_lock_now;
+
+  /// ui\screens\remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'锁定后需要重新输入PIN码才能访问远程服务器'**
+  String get ui_remote_guard_lock_now_desc;
+
+  /// ui\screens\vault_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'安全设置'**
+  String get ui_security_settings;
+
+  /// ui\screens\vault_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'保护已保存的远程服务器，访问前需验证PIN码'**
+  String get ui_remote_guard_switch_desc;
+
+  /// ui\screens\remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'启动应用保护'**
+  String get ui_app_lock;
+
+  /// ui\screens\remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'启动应用时需输入PIN码解锁才能进入'**
+  String get ui_app_lock_desc;
+
+  /// ui\screens\remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'启用前请先设置4位PIN码'**
+  String get ui_app_lock_set_pin_first;
+
+  /// ui/screens/remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入当前 PIN 码'**
+  String get ui_remote_guard_enter_current_pin;
+
+  /// ui/screens/remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在重新加密已隐藏文件…'**
+  String get ui_remote_guard_reencrypting;
+
+  /// ui/screens/remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'PIN 码已修改'**
+  String get ui_remote_guard_pin_changed;
+
+  /// ui/screens/remote_guard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'部分文件重新加密失败，PIN 码未更改'**
+  String get ui_remote_guard_change_pin_failed;
+
+  /// ui/screens/vault_explorer_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'修改私人保险箱 PIN（将重新加密所有已隐藏文件）'**
+  String get ui_change_vault_pin_desc;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'自动备份'**
+  String get ui_auto_backup;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'备份'**
+  String get ui_backup;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'立即备份'**
+  String get ui_backup_now;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'本地'**
+  String get ui_local;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'未添加自定义远程路径'**
+  String get ui_no_remote_path;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'远程'**
+  String get ui_remote;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'备份完成'**
+  String get ui_sync_done;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'正在备份...'**
+  String get ui_syncing;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'测试'**
+  String get ui_test;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'测试失败'**
+  String get ui_test_failed;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'失败原因'**
+  String get ui_test_failed_reason;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'测试成功'**
+  String get ui_test_success;
+
+  /// ui\screens\network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'连接成功，服务器配置正确'**
+  String get ui_test_success_desc;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'显示远程文件'**
+  String get ui_show_remote_files;
+
+  /// ui\screens\media_category_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏远程文件'**
+  String get ui_hide_remote_files;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'视频播放器新增「软解 / 硬解」切换开关，可按设备解码能力在画质与性能间择优。'**
+  String get changelog_v1130_new_8;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'分类页刷新完成后显示「刷新完成」提示，并适配多语言。'**
+  String get changelog_v1130_new_9;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'图片 / 视频 / 截图新增磁盘缓存：启动后分类列表秒级呈现，无需每次重新扫描媒体库（解决大存储多文件设备每次启动需等待约 1 分钟的问题）。'**
+  String get changelog_v1130_opt_10;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'分类页计数即时正确：缓存恢复后立刻刷新数量与列表，不再显示上一次启动遗留的陈旧计数。'**
+  String get changelog_v1130_opt_11;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'音频加载改为「独占式优先」：先加载音频、再加载视频 / 图片，避免大存储设备媒体库争抢导致音频被挤掉归零。'**
+  String get changelog_v1130_opt_12;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'音频索引缓存改为原子写入 + 隔离线程解码：写入中途被杀不会留下损坏文件，主线程也不再因超大缓存卡顿或 OOM。'**
+  String get changelog_v1130_opt_13;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'音频加载重试保留最大结果集，防止媒体库繁忙返回的部分结果覆盖已显示内容。'**
+  String get changelog_v1130_opt_14;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复大存储多文件设备（如 512G 存储、上万媒体文件）启动后音频类别被清空、视频图片加载完成后音频消失的问题。'**
+  String get changelog_v1130_fix_4;
+
+  /// v1.1.30 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复发布构建编译错误（SongModel.getMap 调用方式、VideoController 无 dispose()）。'**
+  String get changelog_v1130_fix_5;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复别的应用/浏览页删除文件后分类页残留空白图标（新增 pruneDeletedMediaPaths + pruneDeletedMedia 即时裁剪机制）'**
+  String get changelog_v1131_fix_1;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复非媒体类别（文档/压缩包/下载/安装包）浏览页删除或移动后分类页残留空白图标'**
+  String get changelog_v1131_fix_2;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复分类页媒体总大小启动时「显示约1秒→归零→重载恢复」的闪烁问题'**
+  String get changelog_v1131_fix_3;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复分类页全选混入远程/本地文件（本地页面全选只选本地，远程页面全选只选远程）'**
+  String get changelog_v1131_fix_4;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复远程删除文件后不刷新的问题'**
+  String get changelog_v1131_fix_5;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复图片浏览页删除后 siblingItems 残留预览图、三点按钮删除后列表不刷新、本地删除后缩略图残留（getter 缓存失效）'**
+  String get changelog_v1131_fix_6;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复远程图片删除后缩略图残留、「在位置中显示」跳转到本地缓存路径、删除仅删本地缓存未删远程原文件'**
+  String get changelog_v1131_fix_7;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复图片浏览页三点按钮「在位置中显示」不跳转'**
+  String get changelog_v1131_fix_8;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复长按弹窗批量备份 APK 后 SnackBar 不弹窗、进度对话框卡住不消失（多次迭代修复，最终采用 rootNavigator + backupDialogOpen 标志位模式）、无法按返回键取消'**
+  String get changelog_v1131_fix_9;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'已备份 APK 弹窗新增「打开所在位置」按钮，点击直接跳转到 APK 所在目录；修复「打开所在位置」需手动返回才可见的问题（先 popUntil(isFirst) 再切 Tab）'**
+  String get changelog_v1131_fix_10;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'批量操作栏「清除」按钮标题改为「取消」，备份/分享/卸载按钮硬编码中文改为多语言'**
+  String get changelog_v1131_fix_11;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复刷新按钮扫描不到非媒体（安装包 APK 加载不出），修正分类分支逻辑并新增 onlyApk 参数补扫'**
+  String get changelog_v1131_fix_12;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'简化「修改 PIN 码」入口：首页点击直接进入数字键盘，移除远程守卫页冗余的「远程守卫」开关与「立即锁定」'**
+  String get changelog_v1131_fix_13;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复自动备份开关打开后不生效的问题（新增 _autoSyncTriggered 守卫）；修复远程目录删文件后再次备份提示成功但实际未备份的问题'**
+  String get changelog_v1131_fix_14;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'修复浏览页标签页左右滑动误触页面切换（新增 tabBarInteracting 标志位 + Listener 保护）'**
+  String get changelog_v1131_fix_15;
+
+  /// v1.1.31 changelog item
+  ///
+  /// In zh, this message translates to:
+  /// **'新增 ui_app_open_location、ui_batch_backup、ui_batch_share、ui_batch_uninstall、ui_batch_uninstall_confirm 翻译键，10 种语言全部补齐'**
+  String get changelog_v1131_fix_16;
+
+  /// v1.1.32 changelog: changelog_v1132_new_1
+  ///
+  /// In zh, this message translates to:
+  /// **'局域网唤醒（WOL）：抽屉页「工具」栏新增入口，支持添加/编辑/删除设备（名称、MAC 地址、广播地址、端口），一键发送魔术包唤醒局域网内的电脑/设备，设备列表本地持久化存储，10 语言完整本地化'**
+  String get changelog_v1132_new_1;
+
+  /// v1.1.32 changelog: changelog_v1132_new_2
+  ///
+  /// In zh, this message translates to:
+  /// **'图片编辑器：图片查看页新增「编辑」按钮（顶部工具栏 + 3 点菜单），5 个编辑 Tab：调整（亮度/对比度/饱和度）、滤镜（原图/黑白/复古/胶片/冷/暖）、缩放（精确尺寸输入 + 锁定宽高比 + 6 种证件照预设：护照 413×531、一寸 295×413、二寸 413×579、小一寸 260×378、大一寸 390×567、美国签证 600×600）、旋转翻转（90°/180°/270° + 水平/垂直）、裁剪（手柄手势 + 比例约束）'**
+  String get changelog_v1132_new_2;
+
+  /// v1.1.32 changelog: changelog_v1132_new_3
+  ///
+  /// In zh, this message translates to:
+  /// **'一键去元数据：图片查看页 3 点菜单新增「清除元数据」，重新编码剥离 EXIF/GPS/ICC 等全部元数据，另存为新文件'**
+  String get changelog_v1132_new_3;
+
+  /// v1.1.32 changelog: changelog_v1132_new_4
+  ///
+  /// In zh, this message translates to:
+  /// **'沉浸式信息条：图片查看页触摸后底部显示文件名·尺寸·大小·格式；属性弹窗新增 Dimensions 行'**
+  String get changelog_v1132_new_4;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_1
+  ///
+  /// In zh, this message translates to:
+  /// **'修复分类页按文件夹查看时全选按钮跨文件夹全选：图片/视频/音频/截图/文档/压缩包/下载/安装包共 8 个类别，进入文件夹多选后点全选不再选中其他文件夹的文件；仅在「全部项目」查看时全选所有文件'**
+  String get changelog_v1132_fix_1;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_2
+  ///
+  /// In zh, this message translates to:
+  /// **'修复图片类别按文件夹查看时截图文件夹（DCIM/Screenshots）全选按钮失效'**
+  String get changelog_v1132_fix_2;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_3
+  ///
+  /// In zh, this message translates to:
+  /// **'修复图片/截图查看页「在位置中显示」无法跳转到浏览页（本地与远程路径均适用）'**
+  String get changelog_v1132_fix_3;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_4
+  ///
+  /// In zh, this message translates to:
+  /// **'修复应用管理批量操作备份按钮标题显示「正在备份...」（已改为「备份」，10 语言同步更新）'**
+  String get changelog_v1132_fix_4;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_5
+  ///
+  /// In zh, this message translates to:
+  /// **'修复图片查看器 Dismissible 滑动块缺失闭合括号导致的编译错误'**
+  String get changelog_v1132_fix_5;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_6
+  ///
+  /// In zh, this message translates to:
+  /// **'修复分类页全选按钮混入远程/本地文件（按当前范围过滤）'**
+  String get changelog_v1132_fix_6;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_7
+  ///
+  /// In zh, this message translates to:
+  /// **'修复非媒体类别（文档/压缩包/下载/安装包）浏览页删除或移动后分类页残留空白图标'**
+  String get changelog_v1132_fix_7;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_8
+  ///
+  /// In zh, this message translates to:
+  /// **'修复远程图片删除后缩略图残留、siblingItems 列表未同步更新'**
+  String get changelog_v1132_fix_8;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_9
+  ///
+  /// In zh, this message translates to:
+  /// **'修复分类页媒体总大小启动后「显示约 1 秒 → 归零 → 重新加载恢复」的闪烁问题'**
+  String get changelog_v1132_fix_9;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_10
+  ///
+  /// In zh, this message translates to:
+  /// **'修复标签页左右滑动误触切换页面（新增 tabBarInteracting 标志位保护）'**
+  String get changelog_v1132_fix_10;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_11
+  ///
+  /// In zh, this message translates to:
+  /// **'修复自动备份开关不生效（新增 _autoSyncTriggered 守卫 + isLoaded 状态检查）'**
+  String get changelog_v1132_fix_11;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_12
+  ///
+  /// In zh, this message translates to:
+  /// **'修复备份逻辑错乱（远程缺失文件时重新上传而非丢弃记录）'**
+  String get changelog_v1132_fix_12;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_13
+  ///
+  /// In zh, this message translates to:
+  /// **'修复「打开所在位置」需手动按返回键才能看到跳转（改为 popUntil(isFirst) 一次性弹回首页）'**
+  String get changelog_v1132_fix_13;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_14
+  ///
+  /// In zh, this message translates to:
+  /// **'修复刷新按钮扫描不到非媒体文件（如 APK 加载不出），补充 onlyApk 参数并修正分类分支逻辑'**
+  String get changelog_v1132_fix_14;
+
+  /// v1.1.32 changelog: changelog_v1132_fix_15
+  ///
+  /// In zh, this message translates to:
+  /// **'修复批量备份进度对话框卡住不消失（改用 rootNavigator 模式 + backupDialogOpen 标志位）'**
+  String get changelog_v1132_fix_15;
+
+  /// ui_batch_backup label
+  ///
+  /// In zh, this message translates to:
+  /// **'备份'**
+  String get ui_batch_backup;
+
+  /// ui_batch_share label
+  ///
+  /// In zh, this message translates to:
+  /// **'分享'**
+  String get ui_batch_share;
+
+  /// ui_batch_uninstall label
+  ///
+  /// In zh, this message translates to:
+  /// **'卸载'**
+  String get ui_batch_uninstall;
+
+  /// ui_batch_uninstall_confirm label
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要卸载选中的 {count} 个应用吗？'**
+  String ui_batch_uninstall_confirm(Object count);
+
+  /// ui_app_open_location label
+  ///
+  /// In zh, this message translates to:
+  /// **'打开所在位置'**
+  String get ui_app_open_location;
+
+  /// Immersive viewer bottom info: image dimensions
+  ///
+  /// In zh, this message translates to:
+  /// **'尺寸'**
+  String get img_dimensions;
+
+  /// Image editor screen title
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑图片'**
+  String get edit_image;
+
+  /// Editor tab: adjust brightness/contrast/saturation
+  ///
+  /// In zh, this message translates to:
+  /// **'调整'**
+  String get editor_adjust;
+
+  /// Editor tab: filters
+  ///
+  /// In zh, this message translates to:
+  /// **'滤镜'**
+  String get editor_filters;
+
+  /// Editor tab: resize
+  ///
+  /// In zh, this message translates to:
+  /// **'缩放尺寸'**
+  String get editor_resize;
+
+  /// Editor tab: crop
+  ///
+  /// In zh, this message translates to:
+  /// **'裁剪'**
+  String get editor_crop;
+
+  /// Editor tab: rotate & flip
+  ///
+  /// In zh, this message translates to:
+  /// **'旋转与翻转'**
+  String get editor_rotate_flip;
+
+  /// Flip button tooltip (horizontal/vertical)
+  ///
+  /// In zh, this message translates to:
+  /// **'翻转'**
+  String get editor_flip;
+
+  /// Adjust slider label
+  ///
+  /// In zh, this message translates to:
+  /// **'亮度'**
+  String get editor_brightness;
+
+  /// Adjust slider label
+  ///
+  /// In zh, this message translates to:
+  /// **'对比度'**
+  String get editor_contrast;
+
+  /// Adjust slider label
+  ///
+  /// In zh, this message translates to:
+  /// **'饱和度'**
+  String get editor_saturation;
+
+  /// Resize section title
+  ///
+  /// In zh, this message translates to:
+  /// **'精确尺寸'**
+  String get editor_exact_dimensions;
+
+  /// Resize width field
+  ///
+  /// In zh, this message translates to:
+  /// **'宽'**
+  String get editor_width;
+
+  /// Resize height field
+  ///
+  /// In zh, this message translates to:
+  /// **'高'**
+  String get editor_height;
+
+  /// Resize lock aspect ratio toggle
+  ///
+  /// In zh, this message translates to:
+  /// **'锁定宽高比'**
+  String get editor_lock_ratio;
+
+  /// Passport photo preset 413x531
+  ///
+  /// In zh, this message translates to:
+  /// **'护照'**
+  String get editor_passport_413_531;
+
+  /// ID photo preset 1-inch 295x413
+  ///
+  /// In zh, this message translates to:
+  /// **'一寸'**
+  String get editor_preset_1inch;
+
+  /// ID photo preset 2-inch 413x579
+  ///
+  /// In zh, this message translates to:
+  /// **'二寸'**
+  String get editor_preset_2inch;
+
+  /// ID photo preset small 1-inch 260x378
+  ///
+  /// In zh, this message translates to:
+  /// **'小一寸'**
+  String get editor_preset_small_1inch;
+
+  /// ID photo preset large 1-inch 390x567
+  ///
+  /// In zh, this message translates to:
+  /// **'大一寸'**
+  String get editor_preset_large_1inch;
+
+  /// ID photo preset US visa 600x600
+  ///
+  /// In zh, this message translates to:
+  /// **'美国签证'**
+  String get editor_preset_us_visa;
+
+  /// ID photo presets section title
+  ///
+  /// In zh, this message translates to:
+  /// **'证件照预设'**
+  String get editor_id_presets;
+
+  /// Output quality / file size slider
+  ///
+  /// In zh, this message translates to:
+  /// **'质量（文件大小）'**
+  String get editor_quality;
+
+  /// Resize mode: pixel-based input
+  ///
+  /// In zh, this message translates to:
+  /// **'像素'**
+  String get editor_mode_pixel;
+
+  /// Resize mode: physical dimension input with DPI
+  ///
+  /// In zh, this message translates to:
+  /// **'物理尺寸'**
+  String get editor_mode_physical;
+
+  /// Section title for physical size to pixel conversion
+  ///
+  /// In zh, this message translates to:
+  /// **'物理尺寸 → 像素（DPI 转换）'**
+  String get editor_physical_title;
+
+  /// Width input label in millimeters
+  ///
+  /// In zh, this message translates to:
+  /// **'宽 (mm)'**
+  String get editor_width_mm;
+
+  /// Height input label in millimeters
+  ///
+  /// In zh, this message translates to:
+  /// **'高 (mm)'**
+  String get editor_height_mm;
+
+  /// DPI input label
+  ///
+  /// In zh, this message translates to:
+  /// **'DPI'**
+  String get editor_dpi;
+
+  /// ID photo preset chip 35x25mm at 200DPI
+  ///
+  /// In zh, this message translates to:
+  /// **'证件照 35×25mm'**
+  String get editor_preset_id_photo;
+
+  /// Passport preset chip 35x45mm at 200DPI
+  ///
+  /// In zh, this message translates to:
+  /// **'护照 35×45mm'**
+  String get editor_preset_passport;
+
+  /// US visa preset chip 51x51mm at 300DPI
+  ///
+  /// In zh, this message translates to:
+  /// **'美签 51×51mm'**
+  String get editor_preset_us_visa_mm;
+
+  /// Auto-calculated pixel dimensions preview
+  ///
+  /// In zh, this message translates to:
+  /// **'→ {w} × {h} px'**
+  String editor_pixel_auto(int w, int h);
+
+  /// Label for auto-calculated pixel result
+  ///
+  /// In zh, this message translates to:
+  /// **'像素（自动计算）'**
+  String get editor_pixel_result;
+
+  /// Width input label in pixels
+  ///
+  /// In zh, this message translates to:
+  /// **'宽度 (px)'**
+  String get editor_width_px;
+
+  /// Height input label in pixels
+  ///
+  /// In zh, this message translates to:
+  /// **'高度 (px)'**
+  String get editor_height_px;
+
+  /// Section title for file size limit
+  ///
+  /// In zh, this message translates to:
+  /// **'文件大小限制（JPEG）'**
+  String get editor_file_size_limit_title;
+
+  /// Label for target file size input
+  ///
+  /// In zh, this message translates to:
+  /// **'目标大小 (KB)，留空=不限'**
+  String get editor_file_size_limit_label;
+
+  /// Toggle to remove EXIF/GPS/ICC metadata
+  ///
+  /// In zh, this message translates to:
+  /// **'清除全部元数据（EXIF / GPS / ICC）'**
+  String get editor_strip_metadata;
+
+  /// Save menu: save as a new copy
+  ///
+  /// In zh, this message translates to:
+  /// **'另存为副本'**
+  String get editor_save_as_copy;
+
+  /// Save menu: overwrite original file
+  ///
+  /// In zh, this message translates to:
+  /// **'覆盖原文件'**
+  String get editor_overwrite_original;
+
+  /// Reset all edits
+  ///
+  /// In zh, this message translates to:
+  /// **'重置'**
+  String get editor_reset;
+
+  /// Editor: exit confirmation dialog title
+  ///
+  /// In zh, this message translates to:
+  /// **'退出编辑？'**
+  String get editor_exit_confirm_title;
+
+  /// Editor: exit confirmation dialog message
+  ///
+  /// In zh, this message translates to:
+  /// **'未保存的修改将会丢失'**
+  String get editor_exit_confirm_message;
+
+  /// Editor: exit confirmation dialog confirm button (discard changes)
+  ///
+  /// In zh, this message translates to:
+  /// **'退出'**
+  String get editor_exit_discard;
+
+  /// Filter: original / none
+  ///
+  /// In zh, this message translates to:
+  /// **'原图'**
+  String get editor_filter_original;
+
+  /// Filter: black & white
+  ///
+  /// In zh, this message translates to:
+  /// **'黑白'**
+  String get editor_filter_bw;
+
+  /// Filter: sepia
+  ///
+  /// In zh, this message translates to:
+  /// **'怀旧棕'**
+  String get editor_filter_sepia;
+
+  /// Filter: vintage
+  ///
+  /// In zh, this message translates to:
+  /// **'复古'**
+  String get editor_filter_vintage;
+
+  /// Filter: cool tone
+  ///
+  /// In zh, this message translates to:
+  /// **'冷色'**
+  String get editor_filter_cool;
+
+  /// Filter: warm tone
+  ///
+  /// In zh, this message translates to:
+  /// **'暖色'**
+  String get editor_filter_warm;
+
+  /// Action: strip metadata only
+  ///
+  /// In zh, this message translates to:
+  /// **'仅清除元数据'**
+  String get editor_strip_only;
+
+  /// Toast: image saved
+  ///
+  /// In zh, this message translates to:
+  /// **'图片已保存'**
+  String get editor_saved;
+
+  /// Toast: save failed. {e} is the error
+  ///
+  /// In zh, this message translates to:
+  /// **'保存失败：{e}'**
+  String editor_save_failed(Object e);
+
+  /// Editor processing indicator
+  ///
+  /// In zh, this message translates to:
+  /// **'处理中…'**
+  String get editor_processing;
+
+  /// Crop aspect ratio: free
+  ///
+  /// In zh, this message translates to:
+  /// **'自由'**
+  String get editor_aspect_free;
+
+  /// Crop aspect ratio: square
+  ///
+  /// In zh, this message translates to:
+  /// **'正方形'**
+  String get editor_aspect_square;
+
+  /// Crop aspect ratio 4:3
+  ///
+  /// In zh, this message translates to:
+  /// **'4:3'**
+  String get editor_aspect_4_3;
+
+  /// Crop aspect ratio 3:4
+  ///
+  /// In zh, this message translates to:
+  /// **'3:4'**
+  String get editor_aspect_3_4;
+
+  /// Resize scale section
+  ///
+  /// In zh, this message translates to:
+  /// **'缩放比例'**
+  String get editor_scale;
+
+  /// Viewer three-dot menu: edit image
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑'**
+  String get menu_edit_image;
+
+  /// Image viewer: rotate image 90 degrees clockwise
+  ///
+  /// In zh, this message translates to:
+  /// **'旋转'**
+  String get img_rotate;
+
+  /// Image viewer info: file format
+  ///
+  /// In zh, this message translates to:
+  /// **'格式'**
+  String get img_info_format;
+
+  /// Image viewer info: file time
+  ///
+  /// In zh, this message translates to:
+  /// **'时间'**
+  String get img_info_file_time;
+
+  /// Image viewer info: file info
+  ///
+  /// In zh, this message translates to:
+  /// **'文件信息'**
+  String get img_info_file_info;
+
+  /// Image viewer info: save path
+  ///
+  /// In zh, this message translates to:
+  /// **'保存路径'**
+  String get img_info_save_path;
+
+  /// Image viewer info: shoot location
+  ///
+  /// In zh, this message translates to:
+  /// **'拍摄地点'**
+  String get img_info_shoot_location;
+
+  /// Image viewer info: camera parameters
+  ///
+  /// In zh, this message translates to:
+  /// **'拍摄参数'**
+  String get img_info_camera_params;
+
+  /// Image viewer info: device
+  ///
+  /// In zh, this message translates to:
+  /// **'设备'**
+  String get img_info_device;
+
+  /// Image viewer info: shutter speed
+  ///
+  /// In zh, this message translates to:
+  /// **'快门'**
+  String get img_info_shutter;
+
+  /// Image viewer info: ISO
+  ///
+  /// In zh, this message translates to:
+  /// **'ISO'**
+  String get img_info_iso;
+
+  /// Image viewer info: exposure value
+  ///
+  /// In zh, this message translates to:
+  /// **'EV'**
+  String get img_info_ev;
+
+  /// Image viewer info: aperture
+  ///
+  /// In zh, this message translates to:
+  /// **'光圈'**
+  String get img_info_aperture;
+
+  /// Image viewer info: focal length
+  ///
+  /// In zh, this message translates to:
+  /// **'焦距'**
+  String get img_info_focal_length;
+
+  /// Image viewer info: flash
+  ///
+  /// In zh, this message translates to:
+  /// **'闪光灯'**
+  String get img_info_flash;
+
+  /// Image viewer info: histogram
+  ///
+  /// In zh, this message translates to:
+  /// **'直方图'**
+  String get img_info_histogram;
+
+  /// Image viewer info: no EXIF data
+  ///
+  /// In zh, this message translates to:
+  /// **'无 EXIF 信息'**
+  String get img_info_no_exif;
+
+  /// Image viewer info: no location data
+  ///
+  /// In zh, this message translates to:
+  /// **'无位置信息'**
+  String get img_info_no_location;
+
+  /// Viewer three-dot menu: remove metadata
+  ///
+  /// In zh, this message translates to:
+  /// **'清除元数据'**
+  String get menu_remove_metadata;
+
+  /// Editor: downloading remote image
+  ///
+  /// In zh, this message translates to:
+  /// **'正在下载图片…'**
+  String get editor_downloading;
+
+  /// Editor: unsupported image format
+  ///
+  /// In zh, this message translates to:
+  /// **'此图片格式不支持编辑'**
+  String get editor_unsupported;
+
+  /// Editor: output size label. {size} is human size
+  ///
+  /// In zh, this message translates to:
+  /// **'输出：{size}'**
+  String editor_output_size(Object size);
+
+  /// Quick Transfer: quick_transfer
+  ///
+  /// In zh, this message translates to:
+  /// **'快传'**
+  String get quick_transfer;
+
+  /// Quick Transfer: quick_transfer_send
+  ///
+  /// In zh, this message translates to:
+  /// **'我要发送'**
+  String get quick_transfer_send;
+
+  /// Quick Transfer: quick_transfer_receive
+  ///
+  /// In zh, this message translates to:
+  /// **'我要接收'**
+  String get quick_transfer_receive;
+
+  /// Quick Transfer: quick_transfer_send_hint
+  ///
+  /// In zh, this message translates to:
+  /// **'选择要分享的文件夹，对侧设备在同一 Wi-Fi 下用浏览器打开地址即可下载文件。'**
+  String get quick_transfer_send_hint;
+
+  /// Quick Transfer: quick_transfer_receive_hint
+  ///
+  /// In zh, this message translates to:
+  /// **'选择接收文件的保存目录，对侧设备在同一 Wi-Fi 下用浏览器打开地址即可上传文件到本机。'**
+  String get quick_transfer_receive_hint;
+
+  /// Quick Transfer: quick_transfer_share_dir
+  ///
+  /// In zh, this message translates to:
+  /// **'分享目录'**
+  String get quick_transfer_share_dir;
+
+  /// Quick Transfer: quick_transfer_save_dir
+  ///
+  /// In zh, this message translates to:
+  /// **'保存到'**
+  String get quick_transfer_save_dir;
+
+  /// Quick Transfer: quick_transfer_default_share
+  ///
+  /// In zh, this message translates to:
+  /// **'默认：内部存储根目录'**
+  String get quick_transfer_default_share;
+
+  /// Quick Transfer: quick_transfer_default_save
+  ///
+  /// In zh, this message translates to:
+  /// **'默认：内部存储根目录'**
+  String get quick_transfer_default_save;
+
+  /// Quick Transfer: quick_transfer_online
+  ///
+  /// In zh, this message translates to:
+  /// **'已开启'**
+  String get quick_transfer_online;
+
+  /// Quick Transfer: quick_transfer_address
+  ///
+  /// In zh, this message translates to:
+  /// **'本机地址'**
+  String get quick_transfer_address;
+
+  /// Quick Transfer: quick_transfer_copy
+  ///
+  /// In zh, this message translates to:
+  /// **'复制'**
+  String get quick_transfer_copy;
+
+  /// Quick Transfer: quick_transfer_copied
+  ///
+  /// In zh, this message translates to:
+  /// **'已复制地址'**
+  String get quick_transfer_copied;
+
+  /// Quick Transfer: quick_transfer_send_tip
+  ///
+  /// In zh, this message translates to:
+  /// **'将上方地址发给对方，对方在浏览器中打开即可下载所选目录内的文件。'**
+  String get quick_transfer_send_tip;
+
+  /// Quick Transfer: quick_transfer_receive_tip
+  ///
+  /// In zh, this message translates to:
+  /// **'将上方地址发给对方，对方在浏览器中打开后可将文件上传到本机所选目录。'**
+  String get quick_transfer_receive_tip;
+
+  /// Quick Transfer: quick_transfer_connected
+  ///
+  /// In zh, this message translates to:
+  /// **'已连接设备'**
+  String get quick_transfer_connected;
+
+  /// Quick Transfer: quick_transfer_started
+  ///
+  /// In zh, this message translates to:
+  /// **'快传已开启：{url}'**
+  String quick_transfer_started(Object url);
+
+  /// Quick Transfer: quick_transfer_stopped
+  ///
+  /// In zh, this message translates to:
+  /// **'快传已停止'**
+  String get quick_transfer_stopped;
+
+  /// Quick Transfer: quick_transfer_running
+  ///
+  /// In zh, this message translates to:
+  /// **'快传服务运行中，请先停止'**
+  String get quick_transfer_running;
+
+  /// Quick Transfer: quick_transfer_running_at
+  ///
+  /// In zh, this message translates to:
+  /// **'运行中：{url}'**
+  String quick_transfer_running_at(Object url);
+
+  /// Quick Transfer: quick_transfer_failed
+  ///
+  /// In zh, this message translates to:
+  /// **'快传开启失败：{error}'**
+  String quick_transfer_failed(Object error);
+
+  /// Wake on LAN: drawer tools entry title
+  ///
+  /// In zh, this message translates to:
+  /// **'局域网唤醒'**
+  String get wol_title;
+
+  /// WOL: add device sheet title
+  ///
+  /// In zh, this message translates to:
+  /// **'添加设备'**
+  String get wol_add_device;
+
+  /// WOL: edit device sheet title
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑设备'**
+  String get wol_edit_device;
+
+  /// WOL: device name field label
+  ///
+  /// In zh, this message translates to:
+  /// **'设备名称'**
+  String get wol_name;
+
+  /// WOL: device name field hint
+  ///
+  /// In zh, this message translates to:
+  /// **'例如：我的电脑'**
+  String get wol_name_hint;
+
+  /// WOL: MAC address field label
+  ///
+  /// In zh, this message translates to:
+  /// **'MAC 地址'**
+  String get wol_mac;
+
+  /// WOL: broadcast address field label
+  ///
+  /// In zh, this message translates to:
+  /// **'广播地址'**
+  String get wol_broadcast;
+
+  /// WOL: port field label
+  ///
+  /// In zh, this message translates to:
+  /// **'端口'**
+  String get wol_port;
+
+  /// WOL: wake button tooltip
+  ///
+  /// In zh, this message translates to:
+  /// **'唤醒'**
+  String get wol_wake;
+
+  /// WOL: packet sent success message
+  ///
+  /// In zh, this message translates to:
+  /// **'唤醒指令已发送'**
+  String get wol_sent;
+
+  /// WOL: send failed message
+  ///
+  /// In zh, this message translates to:
+  /// **'发送失败，请检查网络连接'**
+  String get wol_send_failed;
+
+  /// WOL: invalid MAC format message
+  ///
+  /// In zh, this message translates to:
+  /// **'MAC 地址格式无效'**
+  String get wol_invalid_mac;
+
+  /// WOL: empty list placeholder
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无设备，点击右下角按钮添加'**
+  String get wol_empty;
+
+  /// WOL: delete device confirm dialog. {name} is device name
+  ///
+  /// In zh, this message translates to:
+  /// **'确定删除设备「{name}」吗？'**
+  String wol_delete_confirm(Object name);
+
+  /// editor_undo label
+  ///
+  /// In zh, this message translates to:
+  /// **'撤销'**
+  String get editor_undo;
+
+  /// wol_port_hint label
+  ///
+  /// In zh, this message translates to:
+  /// **'选填'**
+  String get wol_port_hint;
+
+  /// Quick Transfer P2P: quick_transfer_nearby_devices
+  ///
+  /// In zh, this message translates to:
+  /// **'附近设备'**
+  String get quick_transfer_nearby_devices;
+
+  /// Quick Transfer P2P: quick_transfer_scanning
+  ///
+  /// In zh, this message translates to:
+  /// **'正在扫描附近设备…'**
+  String get quick_transfer_scanning;
+
+  /// Quick Transfer P2P: quick_transfer_scan_hint
+  ///
+  /// In zh, this message translates to:
+  /// **'双方都需打开快传并保持本页面在前台'**
+  String get quick_transfer_scan_hint;
+
+  /// Quick Transfer P2P: quick_transfer_tap_to_connect
+  ///
+  /// In zh, this message translates to:
+  /// **'点击设备名发起连接'**
+  String get quick_transfer_tap_to_connect;
+
+  /// Quick Transfer P2P: quick_transfer_connecting
+  ///
+  /// In zh, this message translates to:
+  /// **'正在连接 {name}…'**
+  String quick_transfer_connecting(Object name);
+
+  /// Quick Transfer P2P: quick_transfer_connected_as
+  ///
+  /// In zh, this message translates to:
+  /// **'已连接（本机为 {role}）'**
+  String quick_transfer_connected_as(Object role);
+
+  /// Quick Transfer P2P: quick_transfer_role_owner
+  ///
+  /// In zh, this message translates to:
+  /// **'发送端'**
+  String get quick_transfer_role_owner;
+
+  /// Quick Transfer P2P: quick_transfer_role_client
+  ///
+  /// In zh, this message translates to:
+  /// **'接收端'**
+  String get quick_transfer_role_client;
+
+  /// Quick Transfer P2P: quick_transfer_select_files
+  ///
+  /// In zh, this message translates to:
+  /// **'选择要发送的文件 / 文件夹'**
+  String get quick_transfer_select_files;
+
+  /// Quick Transfer P2P: quick_transfer_selected_summary
+  ///
+  /// In zh, this message translates to:
+  /// **'已选 {count} 项，共 {size}'**
+  String quick_transfer_selected_summary(Object count, Object size);
+
+  /// Quick Transfer P2P: quick_transfer_begin_send
+  ///
+  /// In zh, this message translates to:
+  /// **'开始发送'**
+  String get quick_transfer_begin_send;
+
+  /// Quick Transfer P2P: quick_transfer_incoming
+  ///
+  /// In zh, this message translates to:
+  /// **'收到来自 {name} 的发送请求'**
+  String quick_transfer_incoming(Object name);
+
+  /// Quick Transfer P2P: quick_transfer_incoming_files
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 个文件，共 {size}'**
+  String quick_transfer_incoming_files(Object count, Object size);
+
+  /// Quick Transfer P2P: quick_transfer_accept
+  ///
+  /// In zh, this message translates to:
+  /// **'接受'**
+  String get quick_transfer_accept;
+
+  /// Quick Transfer P2P: quick_transfer_reject
+  ///
+  /// In zh, this message translates to:
+  /// **'拒绝'**
+  String get quick_transfer_reject;
+
+  /// Quick Transfer P2P: quick_transfer_sending
+  ///
+  /// In zh, this message translates to:
+  /// **'正在发送…'**
+  String get quick_transfer_sending;
+
+  /// Quick Transfer P2P: quick_transfer_receiving
+  ///
+  /// In zh, this message translates to:
+  /// **'正在接收…'**
+  String get quick_transfer_receiving;
+
+  /// Quick Transfer P2P: quick_transfer_complete
+  ///
+  /// In zh, this message translates to:
+  /// **'传输完成'**
+  String get quick_transfer_complete;
+
+  /// Quick Transfer P2P: quick_transfer_waiting_peer
+  ///
+  /// In zh, this message translates to:
+  /// **'等待对方连接…'**
+  String get quick_transfer_waiting_peer;
+
+  /// Quick Transfer P2P: quick_transfer_connected_waiting_files
+  ///
+  /// In zh, this message translates to:
+  /// **'已连接，等待对方发送文件…'**
+  String get quick_transfer_connected_waiting_files;
+
+  /// Quick Transfer P2P: quick_transfer_permission_why
+  ///
+  /// In zh, this message translates to:
+  /// **'WiFi Direct 扫描需要位置/附近设备权限，不会收集您的地理位置'**
+  String get quick_transfer_permission_why;
+
+  /// Quick Transfer P2P: quick_transfer_permission_required
+  ///
+  /// In zh, this message translates to:
+  /// **'快传需要位置/附近设备权限以发现附近设备'**
+  String get quick_transfer_permission_required;
+
+  /// Quick Transfer P2P: quick_transfer_not_supported
+  ///
+  /// In zh, this message translates to:
+  /// **'当前设备不支持 WiFi Direct 快传'**
+  String get quick_transfer_not_supported;
+
+  /// Quick Transfer P2P: quick_transfer_disconnect
+  ///
+  /// In zh, this message translates to:
+  /// **'断开'**
+  String get quick_transfer_disconnect;
+
+  /// Quick Transfer P2P: quick_transfer_cancel
+  ///
+  /// In zh, this message translates to:
+  /// **'取消'**
+  String get quick_transfer_cancel;
+
+  /// Quick Transfer P2P: quick_transfer_save_to
+  ///
+  /// In zh, this message translates to:
+  /// **'保存到'**
+  String get quick_transfer_save_to;
+
+  /// Quick Transfer P2P: quick_transfer_send_mode
+  ///
+  /// In zh, this message translates to:
+  /// **'发送'**
+  String get quick_transfer_send_mode;
+
+  /// Quick Transfer P2P: quick_transfer_receive_mode
+  ///
+  /// In zh, this message translates to:
+  /// **'接收'**
+  String get quick_transfer_receive_mode;
+
+  /// Quick Transfer P2P: quick_transfer_device_name
+  ///
+  /// In zh, this message translates to:
+  /// **'本机名称'**
+  String get quick_transfer_device_name;
+
+  /// Quick Transfer P2P: quick_transfer_retry
+  ///
+  /// In zh, this message translates to:
+  /// **'重试'**
+  String get quick_transfer_retry;
+
+  /// Quick Transfer P2P: quick_transfer_permission_grant
+  ///
+  /// In zh, this message translates to:
+  /// **'授权并继续'**
+  String get quick_transfer_permission_grant;
+
+  /// Quick Transfer P2P: quick_transfer_open_settings
+  ///
+  /// In zh, this message translates to:
+  /// **'去设置页开启'**
+  String get quick_transfer_open_settings;
+
+  /// Quick Transfer P2P: quick_transfer_wifi_required
+  ///
+  /// In zh, this message translates to:
+  /// **'请先打开 WLAN（WiFi），快传需要 WiFi Direct 建组'**
+  String get quick_transfer_wifi_required;
+
+  /// Quick Transfer P2P: quick_transfer_create_group_failed
+  ///
+  /// In zh, this message translates to:
+  /// **'建立快传连接失败，请确保已开启 WLAN 并授予位置/附近设备权限后重试'**
+  String get quick_transfer_create_group_failed;
+
+  /// Quick Transfer P2P: quick_transfer_receive_path
+  ///
+  /// In zh, this message translates to:
+  /// **'接收路径'**
+  String get quick_transfer_receive_path;
+
+  /// Quick Transfer P2P: quick_transfer_change_path
+  ///
+  /// In zh, this message translates to:
+  /// **'更改'**
+  String get quick_transfer_change_path;
+
+  /// Quick Transfer P2P: quick_transfer_back
+  ///
+  /// In zh, this message translates to:
+  /// **'返回'**
+  String get quick_transfer_back;
+
+  /// Quick Transfer P2P: quick_transfer_send_button
+  ///
+  /// In zh, this message translates to:
+  /// **'发送'**
+  String get quick_transfer_send_button;
+
+  /// Quick Transfer P2P: quick_transfer_receive_button
+  ///
+  /// In zh, this message translates to:
+  /// **'接收'**
+  String get quick_transfer_receive_button;
+
+  /// Quick Transfer P2P: quick_transfer_open_location
+  ///
+  /// In zh, this message translates to:
+  /// **'打开文件所在位置'**
+  String get quick_transfer_open_location;
+
+  /// Quick Transfer P2P: quick_transfer_receive_complete
+  ///
+  /// In zh, this message translates to:
+  /// **'接收完成'**
+  String get quick_transfer_receive_complete;
+
+  /// Quick Transfer P2P: quick_transfer_files_saved_to
+  ///
+  /// In zh, this message translates to:
+  /// **'文件已保存到 {path}'**
+  String quick_transfer_files_saved_to(Object path);
+
+  /// Quick Transfer P2P: quick_transfer_connect_btn
+  ///
+  /// In zh, this message translates to:
+  /// **'连接'**
+  String get quick_transfer_connect_btn;
+
+  /// Quick Transfer P2P: quick_transfer_connected_btn
+  ///
+  /// In zh, this message translates to:
+  /// **'已连接'**
+  String get quick_transfer_connected_btn;
+
+  /// Quick Transfer P2P: quick_transfer_forget_device
+  ///
+  /// In zh, this message translates to:
+  /// **'移除设备'**
+  String get quick_transfer_forget_device;
+
+  /// Quick Transfer P2P: quick_transfer_peer_unreachable
+  ///
+  /// In zh, this message translates to:
+  /// **'无法连接到该设备，请确保对方已打开快传并在附近。'**
+  String get quick_transfer_peer_unreachable;
+
+  /// Quick Transfer P2P: quick_transfer_available_peers
+  ///
+  /// In zh, this message translates to:
+  /// **'可连接设备'**
+  String get quick_transfer_available_peers;
+
+  /// Quick Transfer P2P: quick_transfer_selected_count
+  ///
+  /// In zh, this message translates to:
+  /// **'已选 {count} 项'**
+  String quick_transfer_selected_count(Object count);
+
+  /// v1.1.33 changelog: changelog_v1133_new_1
+  ///
+  /// In zh, this message translates to:
+  /// **'快传功能（局域网传输）：独立快传页面（发送/接收双模式）、附近设备雷达扫描发现、设备连接/已连接状态、传输前确认机制、接收完成后一键在本应用浏览页打开、权限说明，全 10 语言。'**
+  String get changelog_v1133_new_1;
+
+  /// v1.1.33 changelog: changelog_v1133_new_2
+  ///
+  /// In zh, this message translates to:
+  /// **'分类图标标签显隐开关'**
+  String get changelog_v1133_new_2;
+
+  /// v1.1.33 changelog: changelog_v1133_new_3
+  ///
+  /// In zh, this message translates to:
+  /// **'AMOLED 全页纯黑主题'**
+  String get changelog_v1133_new_3;
+
+  /// v1.1.33 changelog: changelog_v1133_new_4
+  ///
+  /// In zh, this message translates to:
+  /// **'后台播放防休眠（电池优化白名单 + 唤醒锁）'**
+  String get changelog_v1133_new_4;
+
+  /// v1.1.33 changelog: changelog_v1133_new_5
+  ///
+  /// In zh, this message translates to:
+  /// **'图片编辑器：物理尺寸(mm+DPI)、预设模板(证件照/护照/美签)、文件大小限制'**
+  String get changelog_v1133_new_5;
+
+  /// v1.1.33 changelog: changelog_v1133_new_6
+  ///
+  /// In zh, this message translates to:
+  /// **'音频均衡器 5 预设（原声/HD人声/低音/现场/爵士）'**
+  String get changelog_v1133_new_6;
+
+  /// v1.1.33 changelog: changelog_v1133_new_7
+  ///
+  /// In zh, this message translates to:
+  /// **'视频播放器：内嵌多音轨/多字幕轨选择；手势优化（双击暂停/播放、长按倍速、左右滑快进/快退）'**
+  String get changelog_v1133_new_7;
+
+  /// v1.1.33 changelog: changelog_v1133_new_8
+  ///
+  /// In zh, this message translates to:
+  /// **'抽屉 / 自定义快捷方式：入口新增「快传」'**
+  String get changelog_v1133_new_8;
+
+  /// v1.1.33 changelog: changelog_v1133_opt_1
+  ///
+  /// In zh, this message translates to:
+  /// **'图片查看器：顶部信息条重构（尺寸/时间/格式/大小/EXIF）、旋转改为纯预览不保存、EXIF 实时显示、文件名标题恢复'**
+  String get changelog_v1133_opt_1;
+
+  /// v1.1.33 changelog: changelog_v1133_opt_2
+  ///
+  /// In zh, this message translates to:
+  /// **'视频播放器：底部按钮布局/排序、竖屏溢出修复、系统自动横屏进全屏、缩放比例(填充屏幕 cover)、全屏横屏摄像头黑边修复'**
+  String get changelog_v1133_opt_2;
+
+  /// v1.1.33 changelog: changelog_v1133_opt_3
+  ///
+  /// In zh, this message translates to:
+  /// **'音频播放器：均衡器预设切换生效、低音/人声失真修复'**
+  String get changelog_v1133_opt_3;
+
+  /// v1.1.33 changelog: changelog_v1133_opt_4
+  ///
+  /// In zh, this message translates to:
+  /// **'视频音量：播放器滑块与系统媒体音量实时同步'**
+  String get changelog_v1133_opt_4;
+
+  /// v1.1.33 changelog: changelog_v1133_opt_5
+  ///
+  /// In zh, this message translates to:
+  /// **'音频播放模式：重启后持久化记忆'**
+  String get changelog_v1133_opt_5;
+
+  /// v1.1.33 changelog: changelog_v1133_opt_6
+  ///
+  /// In zh, this message translates to:
+  /// **'图片编辑：裁剪比例（正方形/4:3/3:4/证件照）修复'**
+  String get changelog_v1133_opt_6;
+
+  /// v1.1.33 changelog: changelog_v1133_fix_1
+  ///
+  /// In zh, this message translates to:
+  /// **'文本编辑器打开未知文件「文本打开」错误提示硬编码 → 多语言'**
+  String get changelog_v1133_fix_1;
+
+  /// v1.1.33 changelog: changelog_v1133_fix_2
+  ///
+  /// In zh, this message translates to:
+  /// **'桌面歌词权限提示中文硬编码 Toast → 多语言'**
+  String get changelog_v1133_fix_2;
+
+  /// v1.1.33 changelog: changelog_v1133_fix_3
+  ///
+  /// In zh, this message translates to:
+  /// **'目录选择器「固定所选」按钮硬编码中文 → 多语言'**
+  String get changelog_v1133_fix_3;
+
+  /// v1.1.33 changelog: changelog_v1133_fix_4
+  ///
+  /// In zh, this message translates to:
+  /// **'受限目录（Android/data｜obb）复制到本地/远程报错二次修复'**
+  String get changelog_v1133_fix_4;
+
+  /// v1.1.33 changelog: changelog_v1133_fix_5
+  ///
+  /// In zh, this message translates to:
+  /// **'长按菜单：复刻 v1.1.32 显示结构 + 高对比背景 + 描边'**
+  String get changelog_v1133_fix_5;
+
+  /// v1.1.34 changelog: 网页共享卡死修复
+  ///
+  /// In zh, this message translates to:
+  /// **'修复网页共享被其他设备访问时应用界面卡死的问题——全量扫描已改为异步执行，不再阻塞 UI 线程。'**
+  String get changelog_v1134_fix_1;
+
+  /// v1.1.34 changelog: FTP IP 选择重写
+  ///
+  /// In zh, this message translates to:
+  /// **'修复 FTP 连不上/选错网卡：重写本地 IP 选择逻辑，优先 wlan/eth 接口，跳过 Docker/VPN/虚拟网卡，避免回退到不可达地址。'**
+  String get changelog_v1134_fix_2;
+
+  /// v1.1.34 changelog: FTP 自定义端口
+  ///
+  /// In zh, this message translates to:
+  /// **'FTP 共享支持自定义端口：可在设置中配置并持久化，运行中修改即时生效并自动重启监听。'**
+  String get changelog_v1134_fix_3;
+
+  /// v1.1.34 changelog: FTP 控制端口与 PASV
+  ///
+  /// In zh, this message translates to:
+  /// **'修复 FTP 控制端口绑定与 PASV：改用具体局域网 IP 绑定控制端口、简化 PASV 地址解析，修复 VPN/代理场景下的连接失败。'**
+  String get changelog_v1134_fix_4;
+
+  /// v1.1.34 changelog: FTP 停止提示
+  ///
+  /// In zh, this message translates to:
+  /// **'新增「FTP 服务器已停止」提示，替换原先服务器停止时错误的「更改端口 未激活」提示。'**
+  String get changelog_v1134_fix_5;
+
+  /// v1.1.34 changelog: 文本编辑器保存菜单
+  ///
+  /// In zh, this message translates to:
+  /// **'文本编辑器保存/另存为合并为单一保存按钮，点击弹出菜单选择「保存」或「另存为」。'**
+  String get changelog_v1134_fix_6;
+
+  /// v1.1.34 changelog: 分类页工具箱入口
+  ///
+  /// In zh, this message translates to:
+  /// **'新增分类页工具箱入口。'**
+  String get changelog_v1134_new_1;
+
+  /// v1.1.34 changelog: 工具箱整合
+  ///
+  /// In zh, this message translates to:
+  /// **'将私人保险箱、局域网唤醒、快传整合进工具箱，集中管理。'**
+  String get changelog_v1134_new_2;
+
+  /// v1.1.34 changelog: 记住设备
+  ///
+  /// In zh, this message translates to:
+  /// **'快传已记住设备：自动记住已连接设备，下次一键点击连接重连；已记住列表支持单独删除设备。'**
+  String get changelog_v1134_new_3;
+
+  /// v1.1.34 changelog: 对称化传输
+  ///
+  /// In zh, this message translates to:
+  /// **'快传对称化传输：连接成功后双方均可主动发送，移除收发模式切换与顶部切换按钮。'**
+  String get changelog_v1134_opt_1;
+
+  /// v1.1.34 changelog: UI 美化
+  ///
+  /// In zh, this message translates to:
+  /// **'快传 UI 整体美化：分区卡片化、设备行卡片化、图标徽章、填充式选择框、进度页圆形徽章，视觉更统一。'**
+  String get changelog_v1134_opt_2;
+
+  /// v1.1.34 changelog: 紧凑布局
+  ///
+  /// In zh, this message translates to:
+  /// **'快传主界面紧凑化：收紧卡片内边距与各项间距，减少首屏滚动，进入即可看到雷达/设备列表。'**
+  String get changelog_v1134_opt_3;
+
+  /// Message shown when the FTP server is stopped.
+  ///
+  /// In zh, this message translates to:
+  /// **'FTP 服务器已停止'**
+  String get ftp_server_stopped;
+
+  /// No description provided for @cat_toolbox.
+  ///
+  /// In zh, this message translates to:
+  /// **'工具箱'**
+  String get cat_toolbox;
+
+  /// No description provided for @cat_toolbox_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'工具'**
+  String get cat_toolbox_desc;
+
+  /// Quick Transfer P2P: waiting for peer to tap connect
+  ///
+  /// In zh, this message translates to:
+  /// **'等待 {name} 点击连接…'**
+  String quick_transfer_waiting_for_x(Object name);
+
+  /// Quick Transfer P2P: ask peer to tap connect
+  ///
+  /// In zh, this message translates to:
+  /// **'请让对端设备也在快传中点击本机的「连接」按钮'**
+  String get quick_transfer_ask_peer_connect;
+}
+
+class _L10nDelegate extends LocalizationsDelegate<L10n> {
+  const _L10nDelegate();
+
+  @override
+  Future<L10n> load(Locale locale) {
+    return SynchronousFuture<L10n>(lookupL10n(locale));
+  }
+
+  @override
+  bool isSupported(Locale locale) => <String>[
+    'ar',
+    'de',
+    'en',
+    'es',
+    'fr',
+    'ja',
+    'ko',
+    'ru',
+    'zh',
+  ].contains(locale.languageCode);
+
+  @override
+  bool shouldReload(_L10nDelegate old) => false;
+}
+
+L10n lookupL10n(Locale locale) {
+  // Lookup logic when language+country codes are specified.
+  switch (locale.languageCode) {
+    case 'zh':
+      {
+        switch (locale.countryCode) {
+          case 'TW':
+            return L10nZhTw();
+        }
+        break;
+      }
+  }
+
+  // Lookup logic when only language code is specified.
+  switch (locale.languageCode) {
+    case 'ar':
+      return L10nAr();
+    case 'de':
+      return L10nDe();
+    case 'en':
+      return L10nEn();
+    case 'es':
+      return L10nEs();
+    case 'fr':
+      return L10nFr();
+    case 'ja':
+      return L10nJa();
+    case 'ko':
+      return L10nKo();
+    case 'ru':
+      return L10nRu();
+    case 'zh':
+      return L10nZh();
+  }
+
+  throw FlutterError(
+    'L10n.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
+}

@@ -1,0 +1,328 @@
+import 'dart:typed_data';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import '../../../../core/icon_fonts/broken_icons.dart';
+import '../../../../models/app_info_model.dart';
+import '../../../../services/app_manager_service.dart';
+import '../../../../providers/file_manager_provider.dart';
+import '../../../../core/utils.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
+
+class AppOptionsSheet extends StatelessWidget {
+  final AppInfoModel app;
+  final Map<String, Uint8List> iconCache;
+  final VoidCallback onRefreshNeeded;
+
+  const AppOptionsSheet({
+    super.key,
+    required this.app,
+    required this.iconCache,
+    required this.onRefreshNeeded,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(28),
+          topRight: Radius.circular(28),
+        ),
+        border: Border.all(color: theme.dividerColor.withOpacity(0.08)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+            Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: _AppIconWidget(
+                      packageName: app.packageName,
+                      iconCache: iconCache,
+                      size: 32,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        app.name,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${app.packageName} • v${app.version}',
+                        style: TextStyle(
+                          color: theme.textTheme.bodySmall?.color?.withOpacity(0.5),
+                          fontSize: 12,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Size: ${FileUtils.formatBytes(app.apkSize, 2)} • Installed: ${FileUtils.formatDate(app.installTime, use24Hour: true).split('  ').first}',
+                        style: TextStyle(
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            Divider(color: theme.dividerColor.withOpacity(0.1)),
+            const SizedBox(height: 12),
+            
+            // Actions List
+            _buildBottomSheetActionItem(
+              theme: theme,
+              icon: Broken.play,
+              label: L10n.of(context).msg753cdb55,
+              color: theme.colorScheme.primary,
+              onTap: () {
+                Navigator.pop(context);
+                AppManagerService.launchApp(app.packageName);
+              },
+            ),
+            _buildBottomSheetActionItem(
+              theme: theme,
+              icon: Icons.copy_rounded,
+              label: L10n.of(context).copy_package_name,
+              color: Colors.cyan,
+              onTap: () {
+                Navigator.pop(context);
+                Clipboard.setData(ClipboardData(text: app.packageName));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('${L10n.of(context).copy_package_name}: ${app.packageName}'),
+                    behavior: SnackBarBehavior.floating,
+                    duration: const Duration(seconds: 1),
+                  ),
+                );
+              },
+            ),
+            _buildBottomSheetActionItem(
+              theme: theme,
+              icon: Broken.setting_4,
+              label: L10n.of(context).ui_app_system_settings,
+              color: Colors.blueAccent,
+              onTap: () {
+                Navigator.pop(context);
+                AppManagerService.openAppDetails(app.packageName);
+              },
+            ),
+            _buildBottomSheetActionItem(
+              theme: theme,
+              icon: Broken.document_download,
+              label: L10n.of(context).apk3,
+              color: Colors.orangeAccent,
+              onTap: () async {
+                // 在关闭 bottom sheet 前捕获所有依赖，避免 context 失效
+                final navigator = Navigator.of(context);
+                final rootNavigator = Navigator.of(context, rootNavigator: true);
+                final scaffoldMessenger = ScaffoldMessenger.of(context);
+                final l10n = L10n.of(context);
+                final provider = context.read<FileManagerProvider>();
+                // 使用根 Navigator 的 Overlay context，即使 bottom sheet 已销毁也能安全弹窗
+                final rootContext = rootNavigator.overlay?.context ?? context;
+
+                // 关闭 bottom sheet
+                navigator.pop();
+
+                // 显示加载对话框（使用 rootNavigator，不受 bottom sheet 销毁影响）
+                bool backupDialogOpen = true;
+                showDialog(
+                  context: rootContext,
+                  barrierDismissible: false,
+                  useRootNavigator: true,
+                  builder: (ctx) => PopScope(
+                    canPop: false,
+                    child: AlertDialog(
+                      content: Row(
+                        children: [
+                          const CircularProgressIndicator(),
+                          const SizedBox(width: 20),
+                          Expanded(child: Text(l10n.apk4)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ).then((_) => backupDialogOpen = false);
+
+                // 执行备份（后台进行，10 分钟兜底超时，避免永久卡死）
+                String? backupPath;
+                try {
+                  backupPath = await AppManagerService.backupApp(app)
+                      .timeout(const Duration(minutes: 10));
+                } catch (e) {
+                  debugPrint('备份等待超时或异常（备份可能仍在后台进行）: $e');
+                  backupPath = null;
+                }
+
+                if (backupPath != null) {
+                  final String path = backupPath;
+                  if (backupDialogOpen && rootNavigator.canPop()) {
+                    rootNavigator.pop(); // 关闭进度框后询问打开目录
+                  }
+                  // 备份成功，始终显示“打开目录”结果弹窗（使用安全的 rootContext）
+                  final openFolder = await showDialog<bool>(
+                    context: rootContext,
+                    useRootNavigator: true,
+                    builder: (ctx) => AlertDialog(
+                      title: Text(l10n.ui_backup_apk_open_folder),
+                      content: Text(l10n.ui_backup_apk_success_with_path(path)),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: Text(MaterialLocalizations.of(ctx).cancelButtonLabel),
+                        ),
+                        FilledButton(
+                          onPressed: () => Navigator.pop(ctx, true),
+                          child: Text(l10n.ui_backup_apk_open),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (openFolder == true) {
+                    final dirPath = path.substring(0, path.lastIndexOf('/'));
+                    navigator.popUntil((route) => route.isFirst);
+                    Future.delayed(const Duration(milliseconds: 200), () {
+                      provider.setPendingBrowseNavigation(dirPath, [path]);
+                      provider.setNavigateToBrowseTab(true);
+                    });
+                  }
+                  onRefreshNeeded();
+                } else {
+                  if (backupDialogOpen && rootNavigator.canPop()) rootNavigator.pop();
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(
+                      content: Text(l10n.apk5),
+                    ),
+                  );
+                }
+              },
+            ),
+            _buildBottomSheetActionItem(
+              theme: theme,
+              icon: Broken.export_1,
+              label: L10n.of(context).apk6,
+              color: Colors.teal,
+              onTap: () {
+                Navigator.pop(context);
+                AppManagerService.shareAppApk(app);
+              },
+            ),
+            if (!app.isSystem)
+              _buildBottomSheetActionItem(
+                theme: theme,
+                icon: Broken.trash,
+                label: L10n.of(context).msgeb3d7d70,
+                color: Colors.redAccent,
+                onTap: () {
+                  Navigator.pop(context);
+                  AppManagerService.uninstallApp(app.packageName).then((_) {
+                    Future.delayed(const Duration(seconds: 2), onRefreshNeeded);
+                  });
+                },
+              ),
+          ],
+        ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomSheetActionItem({
+    required ThemeData theme,
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      onTap: onTap,
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: color, size: 20),
+      ),
+      title: Text(
+        label,
+        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14.5),
+      ),
+      trailing: const Icon(Broken.arrow_right_3, size: 16),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+    );
+  }
+}
+
+class _AppIconWidget extends StatelessWidget {
+  final String packageName;
+  final Map<String, Uint8List> iconCache;
+  final double size;
+
+  const _AppIconWidget({
+    required this.packageName,
+    required this.iconCache,
+    this.size = 24,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (iconCache.containsKey(packageName)) {
+      return Image.memory(
+        iconCache[packageName]!,
+        width: size,
+        height: size,
+        fit: BoxFit.contain,
+      );
+    }
+
+    return FutureBuilder<Uint8List?>(
+      future: AppManagerService.getAppIcon(packageName),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done && snapshot.data != null) {
+          iconCache[packageName] = snapshot.data!;
+          return Image.memory(
+            snapshot.data!,
+            width: size,
+            height: size,
+            fit: BoxFit.contain,
+          );
+        }
+        return Icon(Broken.mobile, size: size * 0.8, color: Theme.of(context).colorScheme.primary.withOpacity(0.5));
+      },
+    );
+  }
+}

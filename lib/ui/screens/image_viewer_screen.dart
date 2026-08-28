@@ -1,0 +1,1131 @@
+import 'dart:io';
+import 'dart:math' as math;
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
+import 'package:mime/mime.dart';
+import 'package:photo_manager/photo_manager.dart';
+import 'package:flutter_avif/flutter_avif.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:path/path.dart' as p;
+import 'package:provider/provider.dart';
+import '../../providers/media_provider.dart';
+import '../../providers/file_manager_provider.dart';
+import '../../core/icon_fonts/broken_icons.dart';
+import '../../core/utils.dart';
+import '../../ui/widgets/file_action_dialogs.dart';
+import '../../services/image_edit_service.dart';
+import '../../services/image_metadata_service.dart';
+import 'image_editor_screen.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+final Uint8List _kTransparentImage = Uint8List.fromList([
+  0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
+  0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+  0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00,
+  0x0A, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
+  0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x49,
+  0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+]);
+
+class ImageViewerScreen extends StatefulWidget {
+  final String imagePath;
+  final List<String>? siblingPaths;
+  final List<AssetEntity>? siblingAssets;
+  final List<dynamic>? siblingItems;
+  final String? initialAssetId;
+
+  const ImageViewerScreen({
+    super.key,
+    required this.imagePath,
+    this.siblingPaths,
+    this.siblingAssets,
+    this.siblingItems,
+    this.initialAssetId,
+  });
+
+  @override
+  State<ImageViewerScreen> createState() => _ImageViewerScreenState();
+}
+
+class _ImageViewerScreenState extends State<ImageViewerScreen> {
+  late PageController _pageController;
+  List<String> _imageList = [];
+  final Map<int, File?> _fileCache = {};
+  // 远程图片（remote://）按需下载到本地缓存后的 File，key 为页索引。
+  final Map<int, File> _remoteCache = {};
+  final Set<int> _remoteLoading = {};
+  int _currentIndex = 0;
+  bool _showUI = true;
+  bool _isZoomed = false;
+  // 查看态旋转角度（弧度），仅用于预览，不写回文件，瞬时完成。切换图片时重置。
+  double _rotation = 0.0;
+
+  // 顶部信息条
+  String? _currentDims;
+  String? _currentSizeStr;
+  String? _currentFormat;
+  String? _currentModified;
+  // 右上角拍摄参数（EXIF）：无 EXIF 时为 null，副行不显示。
+  ImageMetadata? _currentExif;
+  // 拍摄位置（GPS 经纬度坐标文本）：相册 AssetEntity 或 EXIF GPS，无则 null。
+  String? _currentLocationText;
+  double? _currentLat;
+  double? _currentLng;
+  final ImageEditService _editService = ImageEditService.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _findSiblings();
+    _pageController = PageController(initialPage: _currentIndex);
+    _preloadAdjacent(_currentIndex);
+    _refreshMeta();
+  }
+
+  void _findSiblings() {
+    if (widget.siblingItems != null && widget.siblingItems!.isNotEmpty) {
+      _currentIndex = widget.siblingItems!.indexWhere((e) {
+        if (e is AssetEntity) return e.id == widget.initialAssetId;
+        if (e is FileSystemEntity) return e.path == widget.imagePath;
+        return false;
+      });
+      if (_currentIndex == -1) _currentIndex = 0;
+      return;
+    }
+
+    if (widget.siblingAssets != null && widget.siblingAssets!.isNotEmpty) {
+      _currentIndex = widget.siblingAssets!.indexWhere((e) => e.id == widget.initialAssetId);
+      if (_currentIndex == -1) _currentIndex = 0;
+      return;
+    }
+
+    if (widget.siblingPaths != null && widget.siblingPaths!.isNotEmpty) {
+      _imageList = widget.siblingPaths!;
+      _currentIndex = _imageList.indexOf(widget.imagePath);
+      if (_currentIndex == -1) _currentIndex = 0;
+      return;
+    }
+
+    try {
+      final file = File(widget.imagePath);
+      final parent = file.parent;
+      final files = parent.listSync();
+      final images = <String>[];
+      for (final f in files) {
+        if (f is File) {
+          final mime = lookupMimeType(f.path);
+          if ((mime != null && mime.startsWith('image/')) || f.path.toLowerCase().endsWith('.avif')) {
+            images.add(f.path);
+          }
+        }
+      }
+      images.sort((a, b) => a.compareTo(b));
+      _imageList = images;
+      _currentIndex = _imageList.indexOf(widget.imagePath);
+      if (_currentIndex == -1) {
+        _imageList.insert(0, widget.imagePath);
+        _currentIndex = 0;
+      }
+    } catch (_) {
+      _imageList = [widget.imagePath];
+      _currentIndex = 0;
+    }
+  }
+
+  void _preloadAdjacent(int index) {
+    if (widget.siblingItems != null || widget.siblingAssets != null) {
+      _loadAssetFile(index);
+      _loadAssetFile(index - 1);
+      _loadAssetFile(index + 1);
+    }
+    // 远程图片按需下载（本地路径会被 _loadRemoteFile 自动跳过）。
+    _loadRemoteFile(index);
+    _loadRemoteFile(index - 1);
+    _loadRemoteFile(index + 1);
+  }
+
+  /// 取指定页索引对应的文件路径（远程或本地）。
+  String? _pathAtIndex(int index) {
+    if (widget.siblingItems != null && index >= 0 && index < widget.siblingItems!.length) {
+      final item = widget.siblingItems![index];
+      if (item is FileSystemEntity) return item.path;
+    }
+    if (_imageList.isNotEmpty && index >= 0 && index < _imageList.length) {
+      return _imageList[index];
+    }
+    return null;
+  }
+
+  /// 远程图片按需下载到本地缓存，完成后刷新显示。
+  Future<void> _loadRemoteFile(int index) async {
+    final path = _pathAtIndex(index);
+    if (path == null || !path.startsWith('remote://')) return;
+    if (_remoteCache.containsKey(index) || _remoteLoading.contains(index)) return;
+    _remoteLoading.add(index);
+    try {
+      final local = await FileManagerProvider.downloadRemoteFileToCache(path);
+      if (mounted && local != null) {
+        setState(() {
+          _remoteCache[index] = File(local);
+        });
+      }
+    } catch (_) {} finally {
+      _remoteLoading.remove(index);
+    }
+  }
+
+  Future<void> _loadAssetFile(int index) async {
+    final length = widget.siblingItems != null
+        ? widget.siblingItems!.length
+        : (widget.siblingAssets != null ? widget.siblingAssets!.length : 0);
+    if (index < 0 || index >= length) return;
+    if (_fileCache.containsKey(index) && _fileCache[index] != null) return;
+
+    if (widget.siblingItems != null) {
+      final item = widget.siblingItems![index];
+      if (item is AssetEntity) {
+        final file = await item.file;
+        if (mounted && file != null) {
+          setState(() {
+            _fileCache[index] = file;
+          });
+        }
+      } else if (item is FileSystemEntity) {
+        // 远程路径交由 _loadRemoteFile 处理，这里只缓存本地文件。
+        if (!item.path.startsWith('remote://')) {
+          setState(() {
+            _fileCache[index] = File(item.path);
+          });
+        }
+      }
+    } else if (widget.siblingAssets != null) {
+      final asset = widget.siblingAssets![index];
+      final file = await asset.file;
+      if (mounted && file != null) {
+        setState(() {
+          _fileCache[index] = file;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  /// 获取当前图片的 File 对象
+  File? _getCurrentFile() {
+    if (widget.siblingItems != null && _currentIndex < widget.siblingItems!.length) {
+      final item = widget.siblingItems![_currentIndex];
+      if (item is AssetEntity) {
+        return _fileCache[_currentIndex];
+      } else if (item is FileSystemEntity) {
+        if (item.path.startsWith('remote://')) return _remoteCache[_currentIndex];
+        return File(item.path);
+      }
+    } else if (widget.siblingAssets != null && _currentIndex < widget.siblingAssets!.length) {
+      return _fileCache[_currentIndex];
+    } else if (_imageList.isNotEmpty && _currentIndex < _imageList.length) {
+      final fp = _imageList[_currentIndex];
+      if (fp.startsWith('remote://')) return _remoteCache[_currentIndex];
+      return File(fp);
+    }
+    return null;
+  }
+
+  /// 获取当前图片对应的相册 [AssetEntity]（仅相册入口有，文件系统/远程为 null）。
+  AssetEntity? _getCurrentAsset() {
+    if (widget.siblingItems != null && _currentIndex < widget.siblingItems!.length) {
+      final item = widget.siblingItems![_currentIndex];
+      if (item is AssetEntity) return item;
+    } else if (widget.siblingAssets != null && _currentIndex < widget.siblingAssets!.length) {
+      return widget.siblingAssets![_currentIndex];
+    }
+    return null;
+  }
+
+  String _humanSize(int bytes) {
+    const suffixes = ['B', 'KB', 'MB', 'GB'];
+    var s = bytes.toDouble();
+    var i = 0;
+    while (s >= 1024 && i < suffixes.length - 1) {
+      s /= 1024;
+      i++;
+    }
+    return '${s.toStringAsFixed(1)} ${suffixes[i]}';
+  }
+
+  /// 刷新当前图片的尺寸/大小/格式，以及右上角 EXIF 拍摄参数副行。
+  Future<void> _refreshMeta() async {
+    final file = _getCurrentFile();
+    if (file == null || !file.existsSync()) {
+      if (mounted) setState(() => _currentDims = null);
+      return;
+    }
+    try {
+      final bytes = await file.readAsBytes();
+      final info = await _editService.readInfo(bytes);
+      final size = file.lengthSync();
+      // 文件修改时间（顶部条显示）
+      String? modified;
+      try {
+        final stat = await file.stat();
+        modified = stat.modified.toString().replaceFirst('.000', '').split('.').first;
+      } catch (_) {
+        modified = null;
+      }
+      // 轻量 EXIF 读取：取设备/快门/ISO/光圈文本字段 + GPS 坐标，不做直方图/网络反编码。
+      ImageMetadata? exif;
+      try {
+        final meta = await ImageMetadataService.instance.readExifOnly(file);
+        // readExifOnly 永远非 null；无 EXIF 时 hasExif=false，副行不显示。
+        exif = meta.hasExif ? meta : null;
+      } catch (_) {
+        exif = null;
+      }
+      // 位置：相册 AssetEntity 优先（零解析），否则回退 EXIF GPS 坐标。
+      double? lat, lng;
+      final asset = _getCurrentAsset();
+      if (asset != null && asset.latitude != null && asset.longitude != null) {
+        lat = asset.latitude;
+        lng = asset.longitude;
+      }
+      if (lat == null && exif != null) {
+        lat = exif.latitudeNum;
+        lng = exif.longitudeNum;
+      }
+      String? locText;
+      if (lat != null && lng != null) {
+        locText =
+            '${lat.abs().toStringAsFixed(6)}°${lat >= 0 ? 'N' : 'S'}, ${lng.abs().toStringAsFixed(6)}°${lng >= 0 ? 'E' : 'W'}';
+      }
+      if (!mounted) return;
+      setState(() {
+        _currentDims = '${info.width} x ${info.height}';
+        _currentFormat = info.format;
+        _currentSizeStr = _humanSize(size);
+        _currentModified = modified;
+        _currentExif = exif;
+        _currentLocationText = locText;
+        _currentLat = lat;
+        _currentLng = lng;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _currentDims = null);
+    }
+  }
+
+  /// 打开图片编辑器（远程图片先下载到缓存）。
+  Future<void> _openEditor() async {
+    final l10n = L10n.of(context);
+    var file = _getCurrentFile();
+    if (file == null) return;
+    String localPath = file.path;
+    if (localPath.startsWith('remote://')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.editor_downloading)),
+      );
+      final cached = await FileManagerProvider.downloadRemoteFileToCache(localPath);
+      if (cached == null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.editor_unsupported), backgroundColor: Colors.redAccent),
+        );
+        return;
+      }
+      localPath = cached;
+    }
+    if (!mounted) return;
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => ImageEditorScreen(imagePath: localPath)),
+    );
+    if (result == true && mounted) setState(() {});
+  }
+
+  /// 顺时针旋转当前图片 90 度并就地保存（覆盖原文件，保留 PNG/JPEG 格式）。
+  /// 查看态旋转：仅改变预览角度，不写回文件，瞬时完成、无提示。
+  void _rotateImage90() {
+    setState(() {
+      _rotation += math.pi / 2;
+    });
+  }
+
+  void _showImageOptions() {
+    final l10n = L10n.of(context);
+    final file = _getCurrentFile();
+    final filePath = file?.path;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        final theme = Theme.of(ctx);
+        final primary = theme.colorScheme.primary;
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        file?.path.split('/').last.split('\\').last ?? 'Image',
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              if (filePath != null && FileUtils.isArchive(filePath)) ...[
+                ListTile(
+                  leading: Icon(Broken.archive, color: primary, size: 22),
+                  title: Text(l10n.ui_extract),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _extractArchive();
+                  },
+                ),
+              ],
+              ListTile(
+                leading: Icon(Broken.document_copy, color: primary, size: 22),
+                title: Text(l10n.ui_copy),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _copyToClipboard();
+                },
+              ),
+              ListTile(
+                leading: Icon(Broken.scissor, color: primary, size: 22),
+                title: Text(l10n.ui_cut),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _cutToClipboard();
+                },
+              ),
+              if (filePath != null) ...[
+                ListTile(
+                  leading: Icon(Broken.folder_open, color: primary, size: 22),
+                  title: Text(l10n.msgcd8264f1),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _showInLocation();
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Broken.edit, color: primary, size: 22),
+                title: Text(l10n.msgc8ce4b36),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _renameFile();
+                },
+              ),
+                ListTile(
+                  leading: Icon(Broken.eye, color: primary, size: 22),
+                  title: Text(l10n.msg2a4cfb07),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _openWith();
+                  },
+                ),
+              ],
+              ListTile(
+                leading: Icon(Broken.info_circle, color: primary, size: 22),
+                title: Text(l10n.ui_properties),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showImageInfo();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.share_outlined, size: 22),
+                title: Text(l10n.ui_share),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _shareCurrentImage();
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _copyToClipboard() {
+    final file = _getCurrentFile();
+    if (file == null) return;
+    final provider = context.read<FileManagerProvider>();
+    provider.setClipboard([file.path], isCut: false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Copied ${p.basename(file.path)} to clipboard')),
+    );
+  }
+
+  void _cutToClipboard() {
+    final file = _getCurrentFile();
+    if (file == null) return;
+    final provider = context.read<FileManagerProvider>();
+    provider.setClipboard([file.path], isCut: true);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Cut ${p.basename(file.path)} to clipboard')),
+    );
+  }
+
+  void _showInLocation() {
+    final currentPath = _pathAtIndex(_currentIndex);
+    if (currentPath == null) return;
+    final fmProvider = context.read<FileManagerProvider>();
+    // 后台 Browse 已正确加载目录并高亮（showFileInLocation / showRemoteFileInLocation 负责），
+    // 唯一缺失的是首页顶层 Tab 仍停留在「分类」页。先置位 navigateToBrowseTab，
+    // 由首页 ValueListenableBuilder 在 pop 回首页后完成「切到浏览 Tab」的顶层切换，
+    // 本地与远程路径均适用。
+    fmProvider.setNavigateToBrowseTab(true);
+    // 一次性弹回首页（关闭图片浏览页及可能的上层路由），与全局搜索/最近文件跳转一致
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    if (currentPath.startsWith('remote://')) {
+      fmProvider.showRemoteFileInLocation(currentPath);
+    } else {
+      fmProvider.showFileInLocation(currentPath);
+    }
+  }
+
+  Future<void> _renameFile() async {
+    final file = _getCurrentFile();
+    if (file == null) return;
+    final l10n = L10n.of(context);
+
+    final newName = await FileActionDialogs.showRenameDialog(
+      context,
+      currentName: p.basename(file.path),
+      title: l10n.msgc8ce4b36,
+      hint: l10n.msgf139c5cf,
+      actionText: l10n.msgc8ce4b36,
+    );
+    if (newName == null) return;
+    final trimmed = newName.trim();
+    if (trimmed.isEmpty) return;
+
+    try {
+      await context.read<FileManagerProvider>().renameFile(file.path, trimmed, context);
+      final newPath = p.join(file.parent.path, trimmed);
+
+      if (widget.siblingItems != null && _currentIndex < widget.siblingItems!.length) {
+        final item = widget.siblingItems![_currentIndex];
+        if (item is FileSystemEntity) {
+          widget.siblingItems![_currentIndex] = File(newPath);
+        }
+      }
+      if (_imageList.isNotEmpty && _currentIndex < _imageList.length) {
+        _imageList[_currentIndex] = newPath;
+      }
+
+      setState(() {});
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString()), backgroundColor: Colors.redAccent),
+      );
+    }
+  }
+
+  void _openWith() {
+    final file = _getCurrentFile();
+    if (file == null) return;
+    context.read<FileManagerProvider>().showOpenWithSheet(context, file.path);
+  }
+
+  void _extractArchive() {
+    final file = _getCurrentFile();
+    if (file == null) return;
+    context.read<FileManagerProvider>().extractArchiveDirectly(context, file.path);
+  }
+
+  Future<void> _shareCurrentImage() async {
+    final file = _getCurrentFile();
+    if (file != null && file.existsSync()) {
+      await Share.shareXFiles([XFile(file.path)]);
+    }
+  }
+
+  Future<void> _deleteCurrentImage() async {
+    final l10n = L10n.of(context);
+    final file = _getCurrentFile();
+
+    // 检查是否为 AssetEntity（相册图片）
+    AssetEntity? asset;
+    if (widget.siblingItems != null && _currentIndex < widget.siblingItems!.length) {
+      final item = widget.siblingItems![_currentIndex];
+      if (item is AssetEntity) asset = item;
+    } else if (widget.siblingAssets != null && _currentIndex < widget.siblingAssets!.length) {
+      asset = widget.siblingAssets![_currentIndex];
+    }
+
+    if (file == null && asset == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.ui_delete),
+        content: Text(l10n.ui_delete_file_confirm),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.ui_cancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
+            child: Text(l10n.ui_delete),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      // 判断是否为远程路径
+      final currentPath = _pathAtIndex(_currentIndex);
+      final isRemote = currentPath != null && currentPath.startsWith('remote://');
+
+      if (asset != null) {
+        // 相册图片通过 PhotoManager 删除
+        await PhotoManager.editor.deleteWithIds([asset.id]);
+      } else if (file != null && file.existsSync()) {
+        await file.delete();
+      }
+      if (!mounted) return;
+
+      // 本地删除：即时裁剪 provider 列表（无需全量重扫）
+      if (!isRemote && currentPath != null) {
+        MediaProvider.instance?.pruneDeletedMediaPaths([currentPath]);
+      }
+      // 远程删除：同步删除远程目录原文件 + 裁剪 provider 列表
+      if (isRemote && currentPath != null) {
+        await FileManagerProvider.deleteRemotePath(currentPath);
+        MediaProvider.instance?.pruneDeletedMediaPaths([currentPath]);
+      }
+
+      // 从列表中移除并导航
+      final total = widget.siblingItems?.length ??
+          widget.siblingAssets?.length ??
+          _imageList.length;
+      if (_imageList.isNotEmpty && _currentIndex < _imageList.length) {
+        _imageList.removeAt(_currentIndex);
+      }
+      // 同步更新 siblingItems，使分类页返回后列表不再残留已删文件
+      if (widget.siblingItems != null && _currentIndex < widget.siblingItems!.length) {
+        widget.siblingItems!.removeAt(_currentIndex);
+      }
+      if (total <= 1) {
+        Navigator.pop(context);
+        return;
+      }
+      // 调整索引
+      final newTotal = total - 1;
+      _currentIndex = _currentIndex.clamp(0, newTotal - 1);
+      setState(() {});
+      // 跳转到新的当前页
+      if (_pageController.hasClients) {
+        _pageController.jumpToPage(_currentIndex);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString()), backgroundColor: Colors.redAccent),
+      );
+    }
+  }
+
+  void _showImageInfo() async {
+    final l10n = L10n.of(context);
+    final file = _getCurrentFile();
+    if (file == null) return;
+
+    String fileName = file.path.split('/').last.split('\\').last;
+    String filePath = file.path;
+    String sizeStr = '-';
+    String modifiedStr = '-';
+
+    try {
+      if (file.existsSync()) {
+        final stat = await file.stat();
+        const suffixes = ['B', 'KB', 'MB', 'GB'];
+        var s = stat.size.toDouble();
+        var i = 0;
+        while (s >= 1024 && i < suffixes.length - 1) {
+          s /= 1024;
+          i++;
+        }
+        sizeStr = '${s.toStringAsFixed(1)} ${suffixes[i]}';
+        modifiedStr = stat.modified.toString().split('.').first;
+      }
+    } catch (_) {}
+
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.ui_properties),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(fileName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+            const SizedBox(height: 12),
+            _infoRow(l10n.ui_path, filePath),
+            const SizedBox(height: 8),
+            _infoRow(l10n.ui_size, sizeStr),
+            const SizedBox(height: 8),
+            _infoRow(l10n.img_dimensions, _currentDims ?? '-'),
+            const SizedBox(height: 8),
+            _infoRow(l10n.msg1303e638, modifiedStr),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.ui_close)),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoRow(String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('$label: ', style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
+        Expanded(child: Text(value, style: const TextStyle(fontSize: 13))),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final int totalCount = widget.siblingItems != null
+        ? widget.siblingItems!.length
+        : (widget.siblingAssets != null ? widget.siblingAssets!.length : _imageList.length);
+    String currentTitle = 'Image';
+    if (widget.siblingItems != null && _currentIndex < widget.siblingItems!.length) {
+      final item = widget.siblingItems![_currentIndex];
+      if (item is AssetEntity) {
+        currentTitle = item.title ?? 'Image';
+      } else if (item is FileSystemEntity) {
+        currentTitle = item.path.split('/').last.split('\\').last;
+      }
+    } else if (widget.siblingAssets != null && _currentIndex < widget.siblingAssets!.length) {
+      currentTitle = widget.siblingAssets![_currentIndex].title ?? 'Image';
+    } else if (_imageList.isNotEmpty && _currentIndex < _imageList.length) {
+      currentTitle = _imageList[_currentIndex].split('/').last.split('\\').last;
+    }
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        extendBodyBehindAppBar: true,
+        appBar: _showUI 
+            ? AppBar(
+                backgroundColor: Colors.black.withValues(alpha: 0.55),
+                elevation: 0,
+                leading: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                ),
+                title: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      currentTitle,
+                      style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold, letterSpacing: 0.3),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${_currentIndex + 1} of $totalCount',
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 12, fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
+                centerTitle: false,
+                titleSpacing: 0,
+              )
+            : null,
+        body: Stack(
+          children: [
+            Dismissible(
+              key: const ValueKey('image_viewer_dismissible'),
+              direction: _isZoomed ? DismissDirection.none : DismissDirection.vertical,
+              onDismissed: (_) => Navigator.pop(context),
+              dismissThresholds: const {
+                DismissDirection.down: 0.2,
+                DismissDirection.up: 0.2,
+              },
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _showUI = !_showUI;
+                  });
+                },
+                child: PhotoViewGallery.builder(
+                  scrollPhysics: _isZoomed ? const NeverScrollableScrollPhysics() : const BouncingScrollPhysics(),
+                  pageController: _pageController,
+                  itemCount: totalCount,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentIndex = index;
+                      _rotation = 0.0; // 切换图片重置查看态旋转
+                    });
+                    _preloadAdjacent(index);
+                    _refreshMeta();
+                  },
+                  scaleStateChangedCallback: (state) {
+                setState(() {
+                  _isZoomed = state != PhotoViewScaleState.initial;
+                });
+              },
+              builder: (context, index) {
+                File? imgFile;
+                Uint8List? thumbData;
+                String tagKey = 'img_$index';
+
+                if (widget.siblingItems != null) {
+                  final item = widget.siblingItems![index];
+                  if (item is AssetEntity) {
+                    tagKey = item.id;
+                    imgFile = _fileCache[index];
+                    thumbData = ThumbnailCache.getCached(item.id);
+                  } else if (item is FileSystemEntity) {
+                    tagKey = item.path;
+                    if (item.path.startsWith('remote://')) {
+                      imgFile = _remoteCache[index];
+                      if (imgFile == null) _loadRemoteFile(index);
+                    } else {
+                      imgFile = File(item.path);
+                    }
+                  }
+                } else if (widget.siblingAssets != null) {
+                  final asset = widget.siblingAssets![index];
+                  tagKey = asset.id;
+                  imgFile = _fileCache[index];
+                  thumbData = ThumbnailCache.getCached(asset.id);
+                } else {
+                  final path = _imageList[index];
+                  tagKey = path;
+                  if (path.startsWith('remote://')) {
+                    imgFile = _remoteCache[index];
+                    if (imgFile == null) _loadRemoteFile(index);
+                  } else {
+                    imgFile = File(path);
+                  }
+                }
+
+                // 远程图片下载中：显示加载指示，避免空白。
+                if (imgFile == null && _pathAtIndex(index)?.startsWith('remote://') == true) {
+                  return PhotoViewGalleryPageOptions.customChild(
+                    child: const Center(
+                      child: CircularProgressIndicator(color: Colors.white70),
+                    ),
+                    heroAttributes: PhotoViewHeroAttributes(tag: tagKey),
+                  );
+                }
+
+                final bool isValidFile = imgFile != null && imgFile.existsSync() && imgFile.lengthSync() > 16;
+                final bool isAvif = imgFile != null && imgFile.path.toLowerCase().endsWith('.avif');
+                final bool isSvg = imgFile != null && imgFile.path.toLowerCase().endsWith('.svg');
+
+                if (isSvg) {
+                  return PhotoViewGalleryPageOptions.customChild(
+                    child: SvgPicture.file(imgFile, fit: BoxFit.contain),
+                    initialScale: PhotoViewComputedScale.contained,
+                    minScale: PhotoViewComputedScale.contained,
+                    maxScale: PhotoViewComputedScale.covered * 4,
+                    heroAttributes: PhotoViewHeroAttributes(tag: tagKey),
+                  );
+                }
+
+                final ImageProvider provider = isValidFile
+                    ? (isAvif ? FileAvifImage(imgFile) : FileImage(imgFile)) as ImageProvider
+                    : (thumbData != null ? MemoryImage(thumbData) : MemoryImage(_kTransparentImage));
+
+                return PhotoViewGalleryPageOptions.customChild(
+                  child: Transform.rotate(
+                    angle: _rotation,
+                    child: Image(image: provider, fit: BoxFit.contain),
+                  ),
+                  initialScale: PhotoViewComputedScale.contained,
+                  minScale: PhotoViewComputedScale.contained,
+                  maxScale: PhotoViewComputedScale.covered * 4,
+                  heroAttributes: PhotoViewHeroAttributes(tag: tagKey),
+                  onTapUp: (context, details, controllerValue) {
+                    setState(() {
+                      _showUI = !_showUI;
+                    });
+                  },
+                );
+              },
+            ),
+          ),
+            ),
+          if (_showUI) ...[
+            // 顶部元信息条（EXIF + 尺寸 / 大小 / 格式）
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              child: _buildTopMetaBar(),
+            ),
+            // 底部操作按钮栏：分享 · 旋转 · 编辑 · 删除 · 更多（三点）
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: _buildBottomActionBar(),
+            ),
+          ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 右上角 EXIF 副行：光圈 · 快门 · ISO · 设备，无相关字段时自动跳过。
+  String _buildExifSubtitle(ImageMetadata exif) {
+    final parts = <String>[];
+    if (exif.aperture != null && exif.aperture!.isNotEmpty) {
+      // service 返回形如 "F:2.8"，统一为 "f/2.8"。
+      final v = exif.aperture!.startsWith('F:') ? exif.aperture!.substring(2) : exif.aperture!;
+      parts.add('f/$v');
+    }
+    if (exif.shutter != null && exif.shutter!.isNotEmpty) {
+      // service 返回形如 "S:1/100" 或 "S:2.0s"，去掉前缀并补 s。
+      final v = exif.shutter!.startsWith('S:') ? exif.shutter!.substring(2) : exif.shutter!;
+      parts.add(v.endsWith('s') ? v : '$v');
+    }
+    if (exif.iso != null && exif.iso!.isNotEmpty) {
+      parts.add('ISO${exif.iso}');
+    }
+    if (exif.device != null && exif.device!.isNotEmpty) {
+      parts.add(exif.device!);
+    }
+    return parts.join('  ·  ');
+  }
+
+  /// 点击位置信息，用 geo: URI 唤起系统地图查看拍摄坐标（离线可用，无需 API key）。
+  Future<void> _openLocationInMap() async {
+    final lat = _currentLat;
+    final lng = _currentLng;
+    if (lat == null || lng == null) return;
+    final q = '${lat.toStringAsFixed(6)},${lng.toStringAsFixed(6)}';
+    final uri = Uri.parse('geo:$q?q=$q');
+    try {
+      if (await canLaunchUrl(uri)) await launchUrl(uri);
+    } catch (_) {
+      // 无地图 App 时静默忽略。
+    }
+  }
+
+  /// 顶部元信息条：显示 EXIF 拍摄参数（如有）+ 尺寸 / 大小 / 格式。
+  Widget _buildTopMetaBar() {
+    final l10n = L10n.of(context);
+    final dims = _currentDims ?? '…';
+    final size = _currentSizeStr ?? '…';
+    final fmt = _currentFormat ?? '…';
+    final modified = _currentModified ?? '…';
+    final exifSubtitle = _currentExif != null ? _buildExifSubtitle(_currentExif!) : '';
+    // 仅当存在实际拍摄参数字段（光圈/快门/ISO/设备…）才显示标题，
+    // 避免「有 EXIF 块但无参数字段」的图片误显示拍摄参数标题。
+    final hasExif = exifSubtitle.isNotEmpty;
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+        ),
+      ),
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 20),
+      child: SafeArea(
+        bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 第一行：尺寸（左） + 格式（右）
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(flex: 2, child: _infoLine(l10n.img_dimensions, dims)),
+                const SizedBox(width: 8),
+                Expanded(flex: 3, child: _infoLine(l10n.img_info_format, fmt)),
+              ],
+            ),
+            const SizedBox(height: 4),
+            // 第二行：大小（左） + 时间（右）。右侧列 flex 与第一行保持一致，
+            // 使"格式"和"时间"左对齐，同时时间列更宽、位置往右回调。
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(flex: 2, child: _infoLine(l10n.ui_size, size)),
+                const SizedBox(width: 8),
+                Expanded(flex: 3, child: _infoLine(l10n.img_info_file_time, modified)),
+              ],
+            ),
+            // 拍摄参数最下方：有则显示，无则不显示（切换图片时不突兀）。
+            if (hasExif) ...[
+              const SizedBox(height: 6),
+              _infoLine(l10n.img_info_camera_params, exifSubtitle),
+            ],
+            // 拍摄位置（GPS）：有则显示，点击用 geo: 唤起地图查看，无则不显示。
+            if (_currentLocationText != null) ...[
+              const SizedBox(height: 6),
+              GestureDetector(
+                onTap: _openLocationInMap,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: _infoLine(l10n.img_info_shoot_location, _currentLocationText!),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 顶部信息条的单行：标签在左、值在右。
+  Widget _infoLine(String label, String value) {
+    return RichText(
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text: '$label: ',
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12, fontWeight: FontWeight.w500),
+          ),
+          TextSpan(
+            text: value,
+            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 底部操作按钮栏：分享 · 旋转 · 编辑 · 删除 · 更多（三点），从左到右。
+  Widget _buildBottomActionBar() {
+    final l10n = L10n.of(context);
+    final items = <Widget>[
+      _ActionBarButton(
+        icon: Icons.share_outlined,
+        label: l10n.ui_share,
+        onTap: _shareCurrentImage,
+      ),
+      _ActionBarButton(
+        icon: Icons.rotate_right_rounded,
+        label: l10n.img_rotate,
+        onTap: _rotateImage90,
+      ),
+      _ActionBarButton(
+        icon: Broken.edit_2,
+        label: l10n.menu_edit_image,
+        onTap: _openEditor,
+      ),
+      _ActionBarButton(
+        icon: Broken.trash,
+        label: l10n.ui_delete,
+        color: Colors.redAccent,
+        onTap: _deleteCurrentImage,
+      ),
+      _ActionBarButton(
+        icon: Broken.more,
+        label: l10n.ui_more,
+        onTap: _showImageOptions,
+      ),
+    ];
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
+          colors: [Colors.black.withOpacity(0.75), Colors.transparent],
+        ),
+      ),
+      padding: const EdgeInsets.fromLTRB(12, 18, 12, 12),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: items,
+        ),
+      ),
+    );
+  }
+}
+
+/// 底部操作栏单个按钮（图标在上、文字在下）。
+class _ActionBarButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final Color? color;
+
+  const _ActionBarButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tint = color ?? Colors.white;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: tint, size: 24),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(color: tint, fontSize: 11, fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -1,0 +1,1266 @@
+import 'dart:io';
+import 'dart:async';
+import 'dart:isolate';
+import 'package:path/path.dart' as p;
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:zenfile/l10n/generated/app_localizations.dart';
+import 'package:provider/provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:dynamic_color/dynamic_color.dart';
+// dynamic_color 2.x 的 DynamicColorBuilder 回调返回 material_ui 的 ColorScheme（M3 Expressive 生态），
+// 本应用仍使用经典 Flutter Material，需转换为 Flutter ColorScheme 后再交给 AppTheme。
+// 映射角色与 dynamic_color 1.x 的 CorePalette→ColorScheme 官方转换逐项一致，视觉效果不变。
+import 'package:material_ui/material_ui.dart' as mui;
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:audio_service/audio_service.dart';
+
+import 'core/theme.dart';
+import 'core/icon_fonts/broken_icons.dart';
+import 'core/navigator_key.dart';
+import 'providers/file_manager_provider.dart';
+import 'providers/media_provider.dart';
+import 'services/preferences_service.dart';
+import 'services/network_connections_service.dart';
+import 'services/intent_handler_service.dart';
+import 'services/pin_service.dart';
+import 'services/recycle_bin_service.dart';
+import 'services/audio_background_handler.dart';
+import 'ui/screens/home_screen.dart';
+import 'ui/screens/remote_guard_screen.dart';
+import 'services/remote_guard_service.dart';
+
+final GlobalKey<_ZenFileAppState> appStateKey = GlobalKey<_ZenFileAppState>();
+
+/// material_ui.ColorScheme → Flutter ColorScheme。
+/// 先 fromSeed 填充新增角色（surfaceContainer* 等），再用 OS 动态取色值覆盖传统角色，
+/// 与 dynamic_color 1.x 官方转换逻辑一致。
+ColorScheme? _muiSchemeToFlutter(mui.ColorScheme? scheme, Brightness brightness) {
+  if (scheme == null) return null;
+  return ColorScheme.fromSeed(seedColor: scheme.primary, brightness: brightness).copyWith(
+    primary: scheme.primary,
+    onPrimary: scheme.onPrimary,
+    primaryContainer: scheme.primaryContainer,
+    onPrimaryContainer: scheme.onPrimaryContainer,
+    secondary: scheme.secondary,
+    onSecondary: scheme.onSecondary,
+    secondaryContainer: scheme.secondaryContainer,
+    onSecondaryContainer: scheme.onSecondaryContainer,
+    tertiary: scheme.tertiary,
+    onTertiary: scheme.onTertiary,
+    tertiaryContainer: scheme.tertiaryContainer,
+    onTertiaryContainer: scheme.onTertiaryContainer,
+    error: scheme.error,
+    onError: scheme.onError,
+    errorContainer: scheme.errorContainer,
+    onErrorContainer: scheme.onErrorContainer,
+    outline: scheme.outline,
+    outlineVariant: scheme.outlineVariant,
+    surface: scheme.surface,
+    onSurface: scheme.onSurface,
+    surfaceVariant: scheme.surfaceVariant,
+    onSurfaceVariant: scheme.onSurfaceVariant,
+    inverseSurface: scheme.inverseSurface,
+    onInverseSurface: scheme.onInverseSurface,
+    inversePrimary: scheme.inversePrimary,
+    shadow: scheme.shadow,
+    surfaceTint: scheme.primary,
+    scrim: scheme.scrim,
+  );
+}
+
+void main() {
+  runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+
+    // 捕获 Flutter 框架错误，防止 release 模式闪退
+    FlutterError.onError = (FlutterErrorDetails details) {
+      FlutterError.presentError(details);
+      debugPrint('[ZenFile] Flutter error: ${details.exception}');
+    };
+
+    // MediaKit.ensureInitialized() loads libmpv.so. On armv7 devices where the
+    // native library may be missing (e.g. when media_kit jars for armeabi-v7a
+    // are not packaged), an uncaught error here would prevent runApp() from
+    // executing, resulting in a white screen. Wrap in try-catch so the app
+    // always launches; media playback will simply be unavailable if it fails.
+    try {
+      MediaKit.ensureInitialized();
+    } catch (e) {
+      debugPrint('[ZenFile] MediaKit.ensureInitialized failed: $e');
+    }
+
+    try {
+      await PreferencesService.init();
+    } catch (e) {
+      debugPrint('[ZenFile] PreferencesService.init failed: $e');
+    }
+
+    try {
+      await PinService.init();
+    } catch (e) {
+      debugPrint('[ZenFile] PinService.init failed: $e');
+    }
+
+    try {
+      await NetworkConnectionsService.init();
+    } catch (e) {
+      debugPrint('[ZenFile] NetworkConnectionsService.init failed: $e');
+    }
+
+    try {
+      await RecycleBinService.init();
+    } catch (e) {
+      debugPrint('[ZenFile] RecycleBinService.init failed: $e');
+    }
+
+    // Load custom font dynamically if configured
+    try {
+      final customFontPath = PreferencesService.getCustomFontPath();
+      if (customFontPath != null && customFontPath.isNotEmpty) {
+        final file = File(customFontPath);
+        if (file.existsSync()) {
+          final loader = FontLoader('CustomFont');
+          final bytes = await file.readAsBytes();
+          loader.addFont(Future.value(ByteData.sublistView(bytes)));
+          await loader.load();
+          debugPrint('Successfully loaded custom font at startup');
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading custom font at startup: $e');
+    }
+
+    // 初始化媒体通知链路：统一使用 audio_service（原生 MediaSessionCompat + MediaStyle 通知）。
+    // audio_service 0.18.18 全安卓版本通用；安卓 13+ 的通知权限由
+    // audio_background_handler 在首次播放时经 permission_handler 动态申请。
+    try {
+      await AudioService.init(
+        builder: () => getAudioHandler(),
+        config: const AudioServiceConfig(
+          androidNotificationChannelId: 'com.sequl.zenfile.audio.v2',
+          androidNotificationChannelName: 'ZenFile Audio Player',
+          androidNotificationIcon: 'mipmap/ic_launcher',
+          androidShowNotificationBadge: true,
+          androidStopForegroundOnPause: false,
+          // 避免 AudioService 在未获取 activityClassName 时设置 contentIntent=null，
+          // 部分 ROM 对 setContentIntent(null) 处理不一致。
+          androidNotificationClickStartsActivity: false,
+          notificationColor: Color(0xFF6200EE),
+        ),
+      );
+      isAudioServiceInitialized = true;
+    } catch (e) {
+      isAudioServiceInitialized = false;
+      debugPrint('[ZenFile] Media notification init failed: $e');
+    }
+
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => FileManagerProvider()),
+          ChangeNotifierProvider(create: (_) => MediaProvider()),
+        ],
+        child: ZenFileApp(key: appStateKey),
+      ),
+    );
+  }, (error, stackTrace) {
+    // 捕获所有未处理的异步错误，防止 release 模式闪退
+    debugPrint('[ZenFile] Unhandled async error: $error\n$stackTrace');
+  });
+}
+
+const _gestureExclusionChannel = MethodChannel('com.sequl.zenfile/gesture_exclusion');
+
+Future<void> _updateSystemGestureExclusion(bool disableLeftBack, double width, double screenHeight, double devicePixelRatio) async {
+  if (!Platform.isAndroid) return;
+  try {
+    final List<Map<String, int>> rects = [];
+    if (disableLeftBack) {
+      // Android enforces a strict vertical limit of 200dp per edge for gesture exclusions.
+      // We center a 200dp zone along the left edge of the screen.
+      const double exclusionHeight = 200.0;
+      final double topDp = (screenHeight - exclusionHeight) / 2.0;
+
+      final left = 0;
+      final top = (topDp * devicePixelRatio).toInt();
+      final right = (width * devicePixelRatio).toInt();
+      final bottom = ((topDp + exclusionHeight) * devicePixelRatio).toInt();
+      rects.add({
+        'left': left,
+        'top': top,
+        'right': right,
+        'bottom': bottom,
+      });
+    }
+    await _gestureExclusionChannel.invokeMethod('setSystemGestureExclusionRects', {
+      'rects': rects,
+    });
+  } catch (e) {
+    debugPrint('Failed to set system gesture exclusion: $e');
+  }
+}
+
+class ZenFileApp extends StatefulWidget {
+  const ZenFileApp({super.key});
+
+  @override
+  State<ZenFileApp> createState() => _ZenFileAppState();
+}
+
+class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
+  ThemeMode _themeMode = ThemeMode.system;
+  Locale? _locale = const Locale('en', 'US');
+  bool? _hasPermission;
+  // 启动应用保护：开关状态 + 本次运行是否已解锁 + 是否已读取过开关
+  bool _appLockEnabled = false;
+  bool _appUnlocked = true;
+  bool _appLockChecked = false;
+  bool _isPermanentlyDenied = false;
+  bool _isMediaOnlyPermission = false;
+  bool _sharingObserverSetup = false;
+  bool _isResolvingIntent = false;
+  // 首次启动标志：未选择语言时为 true，用于延迟权限申请直到语言选择完成
+  bool _isFirstLaunch = false;
+  StreamSubscription<List<SharedMediaFile>>? _sharingIntentSubscription;
+  // 缓存上次的导航栏隐藏开关，避免 MaterialApp.builder 在每次重建（如键盘 Insets
+  // 逐帧变化）时重复调用平台通道 setEnabledSystemUIMode。
+  bool? _lastHideNavigationBar;
+  // 缓存主题对象，避免键盘 Insets 逐帧变化时每帧重建整套 ThemeData（builder 内仅为取导航栏颜色）。
+  ThemeData? _cachedThemeLight;
+  ThemeData? _cachedThemeDark;
+  String? _cachedThemeLightKey;
+  String? _cachedThemeDarkKey;
+  // 缓存上次的 SystemUiOverlayStyle，避免每帧调用平台通道 setSystemUIOverlayStyle。
+  SystemUiOverlayStyle? _cachedOverlayStyle;
+  String? _lastOverlayKey;
+  // 缓存上次手势排他区域参数，避免每帧调用平台通道（setSystemGestureExclusionRects）。
+  String? _lastGestureKey;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _initAppLock();
+    final hideNav = PreferencesService.getHideNavigationBar();
+    if (hideNav) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
+    } else {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
+    }
+    _lastHideNavigationBar = hideNav;
+    SystemChrome.setSystemUIChangeCallback((bool visible) async {
+      if (visible) {
+        if (PreferencesService.getHideNavigationBar()) {
+          await Future.delayed(const Duration(milliseconds: 1500));
+          if (PreferencesService.getHideNavigationBar()) {
+            SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
+          }
+        }
+      }
+    });
+    _themeMode = PreferencesService.getThemeMode();
+    final savedLocale = PreferencesService.getAppLocale();
+    _locale = _localeFromCode(savedLocale);
+    _initializeApplication();
+  }
+
+  /// 读取「启动应用保护」开关，决定是否在冷启动时显示 PIN 闸门
+  Future<void> _initAppLock() async {
+    final enabled = await RemoteGuardService.isAppLockEnabled();
+    if (!mounted) return;
+    setState(() {
+      _appLockEnabled = enabled;
+      // 未启用保护，或本次会话已解锁（冷启动默认未解锁）→ 决定是否显示闸门
+      _appUnlocked = !enabled || RemoteGuardService.isAppUnlocked;
+      _appLockChecked = true;
+    });
+  }
+
+  /// 启动应用保护闸门验证通过后的回调：切换到主界面
+  void _onAppUnlocked() {
+    RemoteGuardService.unlockApp();
+    if (mounted) setState(() => _appUnlocked = true);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // 系统可能在应用切到后台/恢复时重置系统 UI 样式，恢复时重新应用缓存的样式
+      // （仅在确有缓存时调用，不引入每帧平台通道开销）。
+      if (_cachedOverlayStyle != null) {
+        SystemChrome.setSystemUIOverlayStyle(_cachedOverlayStyle!);
+      }
+    }
+    // 首次启动（语言选择流程中）不触发权限检查，避免与语言选择器冲突
+    if (state == AppLifecycleState.resumed && _hasPermission != true && !_isFirstLaunch) {
+      _checkStoragePermission();
+    }
+  }
+
+  @override
+  void dispose() {
+    _cancelAutoCleanTimer();
+    WidgetsBinding.instance.removeObserver(this);
+    _sharingIntentSubscription?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _initializeApplication() async {
+    // 检查是否为首次启动（未选择语言）
+    _isFirstLaunch = !PreferencesService.hasSelectedLanguage();
+
+    if (_isFirstLaunch) {
+      // 首次启动：保持 _hasPermission = null，让 build 显示空白 Scaffold。
+      // 不设置 _hasPermission = true，避免 HomeScreen 被创建并触发
+      // refreshMediaBackground() 在无权限时访问文件系统导致闪退。
+      // 与 NFile 原项目逻辑一致：权限检查是异步的，在此之前不显示任何功能页面。
+      if (mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _showFirstTimeLanguagePicker();
+        });
+      }
+      return;
+    }
+
+    // 非首次启动：检查权限（_checkStoragePermission 内部已用真实目录枚举探测，
+    // 避免「清除数据/缓存」后系统误报已授权导致误判）。权限确认后由 _checkStoragePermission
+    // 内部完成缓存迁移、监听与媒体加载，无需在此重复。
+    await _checkStoragePermission();
+  }
+
+  /// 迁移旧的 Download/ZenFile_Remote 缓存目录到新的 /ZenFile 目录。
+  /// 旧目录已废弃，缓存文件不需要保留，直接删除旧目录。
+  /// 在 isolate 中执行，避免同步递归删除阻塞主线程。
+  void _migrateOldCacheDir() {
+    try {
+      final oldDir = Directory('/storage/emulated/0/Download/ZenFile_Remote');
+      if (oldDir.existsSync()) {
+        Isolate.run(() {
+          try {
+            oldDir.deleteSync(recursive: true);
+          } catch (_) {}
+        });
+        debugPrint('[ZenFile] 已移除旧的 Download/ZenFile_Remote 缓存目录');
+      }
+    } catch (e) {
+      debugPrint('[ZenFile] 移除旧缓存目录失败: $e');
+    }
+  }
+
+  void _showFirstTimeLanguagePicker() {
+    final context = navigatorKey.currentContext;
+    if (context == null || !context.mounted) return;
+
+    String selectedLocale = 'system';
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        final theme = Theme.of(ctx);
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: Column(
+                children: [
+                  Text(
+                    L10n.of(ctx).ui_select_language_title,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Select Language / 选择语言',
+                    style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        L10n.of(ctx).ui_select_language_desc,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                      ),
+                      const SizedBox(height: 20),
+                      _buildLanguageOption(ctx, 'system', L10n.of(ctx).ui_follow_system, 'Auto / System', selectedLocale == 'system', (val) {
+                        setDialogState(() => selectedLocale = val);
+                      }),
+                      const SizedBox(height: 12),
+                      _buildLanguageOption(ctx, 'zh', '简体中文', 'Simplified Chinese', selectedLocale == 'zh', (val) {
+                        setDialogState(() => selectedLocale = val);
+                      }),
+                      const SizedBox(height: 12),
+                      _buildLanguageOption(ctx, 'en', 'English', 'English', selectedLocale == 'en', (val) {
+                        setDialogState(() => selectedLocale = val);
+                      }),
+                      const SizedBox(height: 12),
+                      _buildLanguageOption(ctx, 'zh_TW', '繁體中文', 'Traditional Chinese', selectedLocale == 'zh_TW', (val) {
+                        setDialogState(() => selectedLocale = val);
+                      }),
+                      const SizedBox(height: 12),
+                      _buildLanguageOption(ctx, 'ja', '日本語', 'Japanese', selectedLocale == 'ja', (val) {
+                        setDialogState(() => selectedLocale = val);
+                      }),
+                      const SizedBox(height: 12),
+                      _buildLanguageOption(ctx, 'ko', '한국어', 'Korean', selectedLocale == 'ko', (val) {
+                        setDialogState(() => selectedLocale = val);
+                      }),
+                      const SizedBox(height: 12),
+                      _buildLanguageOption(ctx, 'de', 'Deutsch', 'German', selectedLocale == 'de', (val) {
+                        setDialogState(() => selectedLocale = val);
+                      }),
+                      const SizedBox(height: 12),
+                      _buildLanguageOption(ctx, 'fr', 'Français', 'French', selectedLocale == 'fr', (val) {
+                        setDialogState(() => selectedLocale = val);
+                      }),
+                      const SizedBox(height: 12),
+                      _buildLanguageOption(ctx, 'es', 'Español', 'Spanish', selectedLocale == 'es', (val) {
+                        setDialogState(() => selectedLocale = val);
+                      }),
+                      const SizedBox(height: 12),
+                      _buildLanguageOption(ctx, 'ru', 'Русский', 'Russian', selectedLocale == 'ru', (val) {
+                        setDialogState(() => selectedLocale = val);
+                      }),
+                      const SizedBox(height: 12),
+                      _buildLanguageOption(ctx, 'ar', 'العربية', 'Arabic', selectedLocale == 'ar', (val) {
+                        setDialogState(() => selectedLocale = val);
+                      }),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                FilledButton(
+                  onPressed: () {
+                    PreferencesService.saveAppLocale(selectedLocale);
+                    PreferencesService.setHasSelectedLanguage(true);
+                    Navigator.of(ctx).pop();
+                    if (mounted) {
+                      setState(() {
+                        _locale = _localeFromCode(selectedLocale);
+                        _isFirstLaunch = false;
+                      });
+                      // 语言选择完成后，检查并申请存储权限
+                      // 应用已完全启动到首页，此时询问权限不会导致闪退
+                      _checkPermissionAfterLanguageSelection();
+                    }
+                  },
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 48),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('确定 / Confirm', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  /// 语言选择完成后，检查并申请存储权限。
+  /// 此方法在应用完全启动到首页后被调用，避免启动过程中权限弹窗导致闪退。
+  Future<void> _checkPermissionAfterLanguageSelection() async {
+    // 先标记 _isFirstLaunch = false，让 didChangeAppLifecycleState 能正常工作
+    _isFirstLaunch = false;
+
+    // 检查权限（_checkStoragePermission 已用真实目录枚举探测确认，
+    // 不会因「清除数据/缓存」后的权限状态不一致而误判为已授权）。
+    // 权限确认后由 _checkStoragePermission 内部完成缓存迁移、监听与媒体加载；
+    // 无权限时 _hasPermission = false，build 会显示 _StoragePermissionShield，
+    // 由用户主动点击按钮请求权限（与原项目 NFile 交互一致）。
+    await _checkStoragePermission();
+  }
+
+  /// 在获得完整权限后加载媒体数据。
+  void _loadMediaAfterPermission() {
+    try {
+      final context = navigatorKey.currentContext;
+      if (context != null && context.mounted) {
+        context.read<MediaProvider>().loadMedia();
+      }
+    } catch (_) {}
+  }
+
+  Widget _buildLanguageOption(BuildContext ctx, String locale, String label, String subtitle, bool isSelected, ValueChanged<String> onTap) {
+    final theme = Theme.of(ctx);
+    return InkWell(
+      onTap: () => onTap(locale),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: isSelected ? theme.colorScheme.primary.withOpacity(0.1) : theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? theme.colorScheme.primary : theme.dividerColor.withOpacity(0.3),
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+              color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.4),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: theme.colorScheme.onSurface.withOpacity(0.5),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 真实探测 MANAGE_EXTERNAL_STORAGE 是否真正可用。
+  /// 系统权限状态在「清除数据 / 清除缓存」后可能与实际访问能力不一致
+  /// （isGranted 返回 true，但枚举存储会抛异常），因此用一次真实的目录枚举来验证，
+  /// 避免误判为已授权而导致 loadDirectory / 媒体扫描在无权限时闪退。
+  Future<bool> _verifyManageStorageAccess() async {
+    try {
+      final dir = Directory('/storage/emulated/0');
+      await dir
+          .list(followLinks: false, recursive: false)
+          .first
+          .timeout(const Duration(seconds: 3));
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> _checkStoragePermission() async {
+    if (Platform.isAndroid) {
+      bool manageStorageGranted = false;
+      bool mediaOnlyPermission = false;
+      try {
+        // 与 NFile 原项目一致：使用 permission_handler 检查权限
+        // 仅信任 isGranted 会在「清除数据/缓存」后出现误判（报已授权但实际被拒），
+        // 故用一次真实目录枚举再次确认，确保后续扫描不会在无权限时闪退。
+        final rawManageGranted = await Permission.manageExternalStorage.isGranted;
+        if (rawManageGranted) {
+          manageStorageGranted = await _verifyManageStorageAccess();
+        }
+
+        // 检查媒体权限
+        final standardStorageGranted = await Permission.storage.isGranted;
+        bool audioGranted = true;
+        try {
+          final info = await DeviceInfoPlugin().androidInfo;
+          final sdk = info.version.sdkInt;
+          if (sdk >= 33) {
+            audioGranted = await Permission.audio.isGranted;
+          }
+        } catch (_) {}
+
+        // Fallback：部分 ROM（如 MIUI）把「所有文件管理」与传统存储权限合并管理，
+        // Permission.manageExternalStorage.isGranted 返回 false，
+        // 但实际已能访问全部文件。用真实目录枚举再次确认，避免误判为
+        // 仅媒体权限而卡在授权循环。
+        if (!manageStorageGranted && standardStorageGranted) {
+          manageStorageGranted = await _verifyManageStorageAccess();
+          debugPrint('[ZenFile] MIUI-like storage fallback probe: granted=$manageStorageGranted');
+        }
+
+        mediaOnlyPermission = !manageStorageGranted && (standardStorageGranted && audioGranted);
+      } catch (e) {
+        debugPrint('[ZenFile] Permission check failed: $e');
+        manageStorageGranted = false;
+        mediaOnlyPermission = false;
+      }
+
+      // 必须授予「所有文件管理」(MANAGE_EXTERNAL_STORAGE) 权限才能进入首页。
+      // 仅媒体权限不足以放行：此前错误地允许仅媒体权限直接进入，导致后续音频播放
+      // 等需要完整文件访问的功能在无权限时崩溃（「清除应用数据后仅音频闪退」的根因）。
+      // 缺少全部文件权限时返回 false，由 _StoragePermissionShield(isMediaOnly) 重新引导
+      // 用户前往设置授予「所有文件管理权限」——与首次启动行为一致。
+      //
+      // 额外防护：部分 ROM（如澎湃OS）在「清除应用数据」后，系统仍报告
+      // MANAGE_EXTERNAL_STORAGE 已授权（permission_handler 的 isGranted 返回 true），
+      // 但实际访问被拒（幽灵授权），仅音频等需完整文件访问的功能会崩溃。此时
+      // SharedPreferences 中的 permissionSetupDone 标志已被清空，故用
+      // `manageStorageGranted && setupDone` 强制重新弹窗，引导用户前往设置
+      // 「关闭并重新开启所有文件管理权限」，与首次安装行为完全一致。
+      final setupDone = PreferencesService.getPermissionSetupDone();
+      final hasPermission = manageStorageGranted && setupDone;
+
+      final wasPermissionDenied = _hasPermission == false || _hasPermission == null;
+
+      if (mounted) {
+        setState(() {
+          _hasPermission = hasPermission;
+          _isMediaOnlyPermission = mediaOnlyPermission && !manageStorageGranted;
+        });
+      }
+
+      if (wasPermissionDenied && hasPermission) {
+        if (manageStorageGranted) {
+          _migrateOldCacheDir();
+          _startAutoCleanTimer();
+        }
+        _setupSharingIntentObserver();
+        _loadMediaAfterPermission();
+      } else if (manageStorageGranted && _isMediaOnlyPermission) {
+        // 此前处于「仅媒体权限」状态（缺全部文件权限），现已升级为「所有文件管理」权限，
+        // 需重新加载媒体——之前因缺权限媒体扫描为空。
+        _migrateOldCacheDir();
+        _startAutoCleanTimer();
+        _setupSharingIntentObserver();
+        _loadMediaAfterPermission();
+      }
+    } else {
+      if (mounted) {
+        setState(() => _hasPermission = true);
+      }
+    }
+  }
+
+  Future<void> _requestStoragePermission() async {
+    if (Platform.isAndroid) {
+      try {
+        // 与 NFile 原项目一致：使用 permission_handler 的 request() 方法
+        // 真实探测：防止系统误报已授权而实际仍被拒，导致后续扫描闪退。
+        final manageStorageGrantedRaw = await Permission.manageExternalStorage.request().isGranted;
+        bool manageStorageGranted = manageStorageGrantedRaw && await _verifyManageStorageAccess();
+        bool standardStorageGranted = false;
+        bool audioGranted = true;
+        try {
+          final info = await DeviceInfoPlugin().androidInfo;
+          final sdk = info.version.sdkInt;
+          if (sdk >= 33) {
+            audioGranted = await Permission.audio.request().isGranted;
+          } else {
+            standardStorageGranted = await Permission.storage.request().isGranted;
+          }
+        } catch (_) {}
+
+        // Fallback：部分 ROM（如 MIUI）把完整存储访问与传统 storage/audio 权限合并管理，
+        // request() 后 manageExternalStorage 仍返回 false，但实际已能访问全部文件。
+        // 用真实目录枚举再次确认，避免误判为仅媒体权限而卡在授权循环。
+        if (!manageStorageGranted && (standardStorageGranted || audioGranted)) {
+          manageStorageGranted = await _verifyManageStorageAccess();
+          debugPrint('[ZenFile] MIUI-like storage fallback probe after request: granted=$manageStorageGranted');
+        }
+
+        final mediaOnlyPermission = !manageStorageGranted && (standardStorageGranted && audioGranted);
+        // 必须授予「所有文件管理」权限才放行（见 _checkStoragePermission 说明）。
+        // 授权成功后持久化「已完成权限配置」标志：清除应用数据会清空该标志，
+        // 从而让下一次启动重新弹窗引导（与首次安装一致）。
+        if (manageStorageGranted) {
+          await PreferencesService.setPermissionSetupDone(true);
+        }
+        final setupDone = PreferencesService.getPermissionSetupDone();
+        final hasPermission = manageStorageGranted && setupDone;
+
+        if (mounted) {
+          setState(() {
+            _hasPermission = hasPermission;
+            _isMediaOnlyPermission = mediaOnlyPermission && !manageStorageGranted;
+            if (!hasPermission) {
+              _isPermanentlyDenied = true;
+            }
+          });
+        }
+
+        if (hasPermission) {
+          if (manageStorageGranted) {
+            _migrateOldCacheDir();
+            _startAutoCleanTimer();
+          }
+          _setupSharingIntentObserver();
+          _loadMediaAfterPermission();
+        }
+      } catch (e) {
+        debugPrint('[ZenFile] Permission request failed: $e');
+        if (mounted) {
+          setState(() {
+            _hasPermission = false;
+            _isPermanentlyDenied = true;
+            _isMediaOnlyPermission = false;
+          });
+        }
+      }
+    } else {
+      if (mounted) {
+        setState(() => _hasPermission = true);
+      }
+    }
+  }
+
+  /// 打开系统的「所有文件访问权限」设置页面。
+  /// 使用 ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION intent 直接跳转到特定页面，
+  /// 而不是通用的应用设置页面。
+  Future<void> _openManageExternalStorageSettings() async {
+    try {
+      const channel = MethodChannel('com.sequl.zenfile/permissions');
+      await channel.invokeMethod('openManageExternalStorageSettings');
+    } catch (_) {
+      await openAppSettings();
+    }
+  }
+
+  void _setupSharingIntentObserver() {
+    if (_sharingObserverSetup) return;
+    _sharingObserverSetup = true;
+    _sharingIntentSubscription = ReceiveSharingIntent.instance.getMediaStream().listen(
+      (List<SharedMediaFile> incomingFiles) {
+        if (incomingFiles.isNotEmpty) {
+          _dispatchExternalMediaOpen(incomingFiles.first.path);
+        }
+      },
+      onError: (_) {},
+    );
+
+    ReceiveSharingIntent.instance.getInitialMedia().then(
+      (List<SharedMediaFile> initialFiles) {
+        if (initialFiles.isNotEmpty) {
+          setState(() {
+            _isResolvingIntent = true;
+          });
+          _dispatchExternalMediaOpen(initialFiles.first.path);
+          ReceiveSharingIntent.instance.reset();
+        }
+      },
+      onError: (_) {},
+    );
+  }
+
+  void _dispatchExternalMediaOpen(String absoluteFilePath) {
+    if (absoluteFilePath.isEmpty) {
+      if (mounted && _isResolvingIntent) {
+        setState(() => _isResolvingIntent = false);
+      }
+      return;
+    }
+
+    // Guard: don't attempt to open files before storage permission is confirmed
+    if (_hasPermission != true) {
+      debugPrint('[ZenFile] Skipping external media open: no storage permission');
+      if (mounted) {
+        setState(() => _isResolvingIntent = false);
+      }
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final primaryContext = navigatorKey.currentContext;
+      if (primaryContext != null && primaryContext.mounted) {
+        try {
+          await IntentHandlerService.handleIncomingIntent(primaryContext, absoluteFilePath);
+        } finally {
+          if (mounted) {
+            setState(() {
+              _isResolvingIntent = false;
+            });
+          }
+        }
+      } else {
+        Future.delayed(const Duration(milliseconds: 300), () async {
+          final fallbackContext = navigatorKey.currentContext;
+          if (fallbackContext != null && fallbackContext.mounted) {
+            try {
+              await IntentHandlerService.handleIncomingIntent(fallbackContext, absoluteFilePath);
+            } finally {
+              if (mounted) {
+                setState(() {
+                  _isResolvingIntent = false;
+                });
+              }
+            }
+          } else {
+            if (mounted) {
+              setState(() {
+                _isResolvingIntent = false;
+              });
+            }
+          }
+        });
+      }
+    });
+  }
+
+  void _toggleTheme() {
+    setState(() {
+      _themeMode = _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    });
+    PreferencesService.saveThemeMode(_themeMode);
+  }
+
+  Locale? _getLocale() => _locale;
+
+
+  Locale? _localeFromCode(String code) {
+    switch (code) {
+      case 'system': return null; // 跟随系统语言
+      case 'en': return const Locale('en', 'US');
+      case 'zh_TW': return const Locale('zh', 'TW');
+      case 'ja': return const Locale('ja', 'JP');
+      case 'ko': return const Locale('ko', 'KR');
+      case 'de': return const Locale('de', 'DE');
+      case 'fr': return const Locale('fr', 'FR');
+      case 'es': return const Locale('es', 'ES');
+      case 'ru': return const Locale('ru', 'RU');
+      case 'ar': return const Locale('ar', 'SA');
+      default: return const Locale('zh', 'CN');
+    }
+  }
+
+  void setLocale(String localeCode) {
+    setState(() {
+      _locale = _localeFromCode(localeCode);
+    });
+    PreferencesService.saveAppLocale(localeCode);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<FileManagerProvider>(
+      builder: (context, fileManager, _) {
+        final currentAccentOption = fileManager.accentColorOption;
+        final baseSeedColor = PreferencesService.getSeedColor(currentAccentOption);
+
+        return DynamicColorBuilder(
+          builder: (mui.ColorScheme? dynamicLight, mui.ColorScheme? dynamicDark) {
+            final activeLightScheme = currentAccentOption == 'dynamic'
+                ? _muiSchemeToFlutter(dynamicLight, Brightness.light)
+                : null;
+            final activeDarkScheme = currentAccentOption == 'dynamic'
+                ? _muiSchemeToFlutter(dynamicDark, Brightness.dark)
+                : null;
+
+            return MaterialApp(
+              navigatorKey: navigatorKey,
+              title: 'ZenFile',
+              debugShowCheckedModeBanner: false,
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+                L10n.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: L10n.supportedLocales,
+              locale: _getLocale(),
+              localeResolutionCallback: (locale, supportedLocales) {
+                if (locale == null) return const Locale('en', 'US');
+                // 优先精确匹配 languageCode + countryCode（如 zh_TW）
+                for (final supported in supportedLocales) {
+                  if (supported.languageCode == locale.languageCode &&
+                      supported.countryCode == locale.countryCode) {
+                    return supported;
+                  }
+                }
+                // 回退：仅匹配 languageCode
+                for (final supported in supportedLocales) {
+                  if (supported.languageCode == locale.languageCode) {
+                    return supported;
+                  }
+                }
+                return const Locale('en', 'US');
+              },
+              theme: AppTheme.getAppTheme(light: true, seed: baseSeedColor, customScheme: activeLightScheme, fontFamily: fileManager.fontFamilyOption),
+              darkTheme: AppTheme.getAppTheme(light: false, pitchBlack: fileManager.amoledMode, seed: baseSeedColor, customScheme: activeDarkScheme, fontFamily: fileManager.fontFamilyOption),
+              themeMode: _themeMode,
+              builder: (context, child) {
+                final isDark = _themeMode == ThemeMode.system
+                    ? (MediaQuery.platformBrightnessOf(context) == Brightness.dark)
+                    : (_themeMode == ThemeMode.dark);
+
+                // 主题仅依赖以下输入，键盘 Insets 动画期间这些输入都不变；
+                // 因此缓存 ThemeData，避免每帧重建整套主题（主线程重活，会导致低端机键盘像幻灯片般弹出）。
+                final font = fileManager.fontFamilyOption;
+                final amoled = fileManager.amoledMode;
+                final seedKey = baseSeedColor.toString();
+                final lightSchemeKey = activeLightScheme?.hashCode ?? -1;
+                final darkSchemeKey = activeDarkScheme?.hashCode ?? -1;
+                final themeKey = '$font|$amoled|$seedKey|$lightSchemeKey|$darkSchemeKey';
+
+                ThemeData theme;
+                if (isDark) {
+                  if (_cachedThemeDark == null || _cachedThemeDarkKey != themeKey) {
+                    _cachedThemeDark = AppTheme.getAppTheme(
+                      light: false,
+                      pitchBlack: amoled,
+                      seed: baseSeedColor,
+                      customScheme: activeDarkScheme,
+                      fontFamily: font,
+                    );
+                    _cachedThemeDarkKey = themeKey;
+                  }
+                  theme = _cachedThemeDark!;
+                } else {
+                  if (_cachedThemeLight == null || _cachedThemeLightKey != themeKey) {
+                    _cachedThemeLight = AppTheme.getAppTheme(
+                      light: true,
+                      seed: baseSeedColor,
+                      customScheme: activeLightScheme,
+                      fontFamily: font,
+                    );
+                    _cachedThemeLightKey = themeKey;
+                  }
+                  theme = _cachedThemeLight!;
+                }
+
+                final navBarColor = theme.scaffoldBackgroundColor;
+
+                // 导航栏颜色与 SystemUiOverlayStyle 仅在 isDark / 主题变化时改变；
+                // 键盘 Insets 逐帧变化时这些输入都不变，因此仅在变化时调用平台通道，
+                // 避免每帧 setSystemUIOverlayStyle 的平台通道往返导致的掉帧。
+                final overlayKey = '${isDark ? "d" : "l"}|${navBarColor.toString()}';
+                if (_lastOverlayKey != overlayKey) {
+                  _lastOverlayKey = overlayKey;
+                  _cachedOverlayStyle = SystemUiOverlayStyle(
+                    statusBarColor: Colors.transparent,
+                    statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+                    statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+                    systemNavigationBarColor: navBarColor,
+                    systemNavigationBarDividerColor: Colors.transparent,
+                    systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+                    systemNavigationBarContrastEnforced: false,
+                    systemStatusBarContrastEnforced: false,
+                  );
+                  SystemChrome.setSystemUIOverlayStyle(_cachedOverlayStyle!);
+                }
+
+                // 仅在开关变化时调用平台通道，避免键盘 Insets 逐帧变化时每帧调用。
+                if (_lastHideNavigationBar != fileManager.hideNavigationBar) {
+                  _lastHideNavigationBar = fileManager.hideNavigationBar;
+                  if (fileManager.hideNavigationBar) {
+                    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
+                  } else {
+                    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
+                  }
+                }
+
+                final disableLeftBack = fileManager.disableLeftBackGesture;
+                final size = MediaQuery.of(context).size;
+                final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+                // 手势排他区域仅在开关或屏幕尺寸变化时改变，键盘 Insets 动画期间完全不变；
+                // 仅在其变化时调度平台通道调用，避免每帧 setSystemGestureExclusionRects。
+                final gestureKey = '$disableLeftBack|${size.height}|$devicePixelRatio';
+                if (_lastGestureKey != gestureKey) {
+                  _lastGestureKey = gestureKey;
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _updateSystemGestureExclusion(disableLeftBack, 40.0, size.height, devicePixelRatio);
+                  });
+                }
+
+                return AnnotatedRegion<SystemUiOverlayStyle>(
+                  value: _cachedOverlayStyle!,
+                  child: child!,
+                );
+              },
+              home: _isResolvingIntent
+                  ? const _IntentLoadingScreen()
+                  : (_hasPermission == null || !_appLockChecked
+                      ? const Scaffold()
+                      : (_hasPermission == true
+                      ? (_appLockEnabled && !_appUnlocked
+                          ? RemoteGuardScreen(
+                              mode: RemoteGuardMode.appLock,
+                              onUnlocked: _onAppUnlocked,
+                            )
+                          : HomeScreen(toggleTheme: _toggleTheme))
+                      : _StoragePermissionShield(
+                              onRequestPermission: _requestStoragePermission,
+                              onOpenSettings: _openManageExternalStorageSettings,
+                              isPermanentlyDenied: _isPermanentlyDenied,
+                              isMediaOnly: _isMediaOnlyPermission,
+                            ))),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _IntentLoadingScreen extends StatelessWidget {
+  const _IntentLoadingScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF0D0D1A) : const Color(0xFFF9F9FF),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withOpacity(0.08),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Broken.document,
+                size: 48,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: 48,
+              child: LinearProgressIndicator(
+                minHeight: 3,
+                backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                color: theme.colorScheme.primary,
+                borderRadius: const BorderRadius.all(Radius.circular(2)),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              L10n.of(context).msg6f3e533a,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurface.withOpacity(0.8),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              L10n.of(context).msgbca59325,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withOpacity(0.5),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StoragePermissionShield extends StatelessWidget {
+  final VoidCallback onRequestPermission;
+  final VoidCallback onOpenSettings;
+  final bool isPermanentlyDenied;
+  final bool isMediaOnly;
+
+  const _StoragePermissionShield({
+    required this.onRequestPermission,
+    required this.onOpenSettings,
+    required this.isPermanentlyDenied,
+    this.isMediaOnly = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    isMediaOnly ? Broken.document_sketch : Broken.folder_cross,
+                    size: 72,
+                    color: isMediaOnly
+                        ? Theme.of(context).colorScheme.primary.withOpacity(0.8)
+                        : Theme.of(context).colorScheme.error.withOpacity(0.8),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    isMediaOnly
+                        ? L10n.of(context).msg_media_only_permission_title
+                        : L10n.of(context).msga1b2c3d6,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    isMediaOnly
+                        ? L10n.of(context).msg_media_only_permission_desc
+                        : (isPermanentlyDenied
+                            ? L10n.of(context).ui_open_settings_desc
+                            : L10n.of(context).zenfile),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                  ),
+                  const SizedBox(height: 32),
+                  if (isPermanentlyDenied || isMediaOnly) ...[
+                    FilledButton.icon(
+                      // media-only 时点击「确定」先尝试重新 request + 真实目录探测放行，
+                      // 避免 MIUI 等 ROM 把传统存储权限与所有文件权限合并管理时
+                      // 跳转设置页出现循环授权、无法进入应用的问题。
+                      onPressed: isMediaOnly ? onRequestPermission : onOpenSettings,
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      icon: const Icon(Broken.shield_tick),
+                      label: Text(L10n.of(context).msg_grant_full_storage_permission,
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                    const SizedBox(height: 12),
+                  ] else ...[
+                    FilledButton.icon(
+                      onPressed: onRequestPermission,
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      icon: const Icon(Broken.shield_tick),
+                      label: Text(L10n.of(context).msga1b2c3d7,
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton.icon(
+                      onPressed: onOpenSettings,
+                      icon: const Icon(Broken.setting, size: 18),
+                      label: Text(L10n.of(context).ui_open_settings),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 自动清理缓存的定时器（顶层变量）
+Timer? _autoCleanTimer;
+
+/// 启动自动清理缓存的定时器
+void startAutoCleanTimer() {
+  _autoCleanTimer?.cancel();
+  final autoCleanMinutes = PreferencesService.getRemoteCacheAutoCleanMinutes();
+  if (autoCleanMinutes <= 0) return; // 未启用自动清理
+
+  // 立即执行一次清理
+  _autoCleanRemoteCache();
+
+  // 启动定时器，按设定间隔周期性清理
+  _autoCleanTimer = Timer.periodic(
+    Duration(minutes: autoCleanMinutes),
+    (_) => _autoCleanRemoteCache(),
+  );
+}
+
+/// 内部启动函数（权限通过后调用）
+void _startAutoCleanTimer() => startAutoCleanTimer();
+
+/// 取消自动清理定时器
+void _cancelAutoCleanTimer() {
+  _autoCleanTimer?.cancel();
+  _autoCleanTimer = null;
+}
+
+/// ZenFile 根目录：应用所有缓存 / 临时数据的统一存放点。
+const String _zenFileBasePath = '/storage/emulated/0/ZenFile';
+
+/// 自动清理缓存（在 isolate 中执行，避免阻塞主线程）
+///
+/// 行为：清空 [_zenFileBasePath] 下除 `Backups` 外的所有文件/文件夹。
+/// 时间间隔（默认 5 分钟或用户自定义）仅控制「多久触发一次全量清理」，
+/// 触发后一律整目录清空（而非按文件 mtime 筛选），因此与默认/自定义时间无关、必然生效。
+///
+/// 关键修复：此前用 `Isolate.run(() { ... })` 且在闭包中捕获了 `Directory` 对象，
+/// 而 `Directory` 无法跨 isolate 序列化，导致 `Isolate.run` 抛异常被外层 try/catch
+/// 静默吞掉（`debugPrint('自动清理缓存失败')`），清理从来没真正执行过，
+/// 表现为「无论默认还是自定义时间都不生效」。现改为调用顶层函数引用（不捕获任何
+/// 不可序列化的对象），路径用模块级常量，在 isolate 内部再构造 `Directory`。
+void _autoCleanRemoteCache() {
+  try {
+    final autoCleanMinutes = PreferencesService.getRemoteCacheAutoCleanMinutes();
+    if (autoCleanMinutes <= 0) return; // 未启用自动清理（「不自动清理」选项）
+
+    final baseDir = Directory(_zenFileBasePath);
+    if (!baseDir.existsSync()) return;
+
+    // 调用顶层函数引用，避免跨 isolate 序列化失败。
+    Isolate.run(_wipeZenFileExceptBackups);
+
+    // 记录本次清理时间
+    PreferencesService.saveRemoteCacheLastCleanTime(DateTime.now().millisecondsSinceEpoch);
+  } catch (e) {
+    debugPrint('自动清理缓存失败: $e');
+  }
+}
+
+/// 在独立 isolate 中执行：清空 [_zenFileBasePath] 下除 `Backups` 外的所有内容。
+/// 返回删除的文件数（便于隔离内诊断），调用方忽略返回值。
+int _wipeZenFileExceptBackups() {
+  final baseDir = Directory(_zenFileBasePath);
+  if (!baseDir.existsSync()) return 0;
+
+  int deletedCount = 0;
+  int deletedSize = 0;
+
+  void wipeDirectory(Directory dir) {
+    try {
+      for (final entity in dir.listSync()) {
+        final name = p.basename(entity.path);
+        if (name == 'Backups') continue; // 永远保留用户备份数据
+        if (entity is File) {
+          try {
+            deletedSize += entity.lengthSync();
+            entity.deleteSync();
+            deletedCount++;
+          } catch (_) {}
+        } else if (entity is Directory) {
+          // 递归清空子目录后删除空目录本身
+          wipeDirectory(entity);
+          try {
+            entity.deleteSync();
+          } catch (_) {}
+        }
+      }
+    } catch (_) {}
+  }
+
+  wipeDirectory(baseDir);
+
+  // 清理后重建必要的运行目录，避免调用方因目录缺失而异常
+  for (final sub in const ['cache', '.remote_cache']) {
+    try {
+      Directory(p.join(_zenFileBasePath, sub)).createSync(recursive: true);
+    } catch (_) {}
+  }
+
+  if (deletedCount > 0) {
+    // ignore: avoid_print
+    print('自动清理缓存: 删除 $deletedCount 个文件，释放 ${(deletedSize / 1024 / 1024).toStringAsFixed(1)} MB');
+  }
+  return deletedCount;
+}
