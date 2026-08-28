@@ -2730,6 +2730,46 @@ class FileManagerProvider extends ChangeNotifier {
 
     activeTab.isRestrictedMode = isRestrictedPath(path);
 
+    // ── Android/data 路径的特殊处理（问题：部分 ROM 的 FUSE 层拦截 Shizuku shell
+    // 但允许标准 Java File API 访问）─────────────────────────────────────────────
+    // 策略：先尝试标准 Directory.list()（不走受限模式），成功则直接返回；
+    // 失败或返回空时再走 Shizuku/root 受限模式。
+    // 这样即便 Shizuku 被 FUSE 拦截，标准 API 仍可正常工作（部分 ROM 行为）。
+    if (activeTab.isRestrictedMode && _isRestrictedAndroidPath(path)) {
+      try {
+        activeTab.currentPath = path;
+        final dir = Directory(path);
+        if (await dir.exists()) {
+          final entities = await dir.list().toList();
+          final folders = <FileItemModel>[];
+          final files = <FileItemModel>[];
+          final items = await Future.wait(entities.map((e) => FileItemModel.fromEntityAsync(e)));
+          for (var item in items) {
+            if (!_showHiddenFiles && item.isHidden) continue;
+            if (item.isDirectory) folders.add(item);
+            else files.add(item);
+          }
+          final filteredFiles = _filterType == FileFilterType.all
+              ? files
+              : files.where((e) => _matchesFilter(e.path)).toList();
+          final filteredFolders = (_filterType != FileFilterType.all && _hideFoldersInFilter) ? <FileItemModel>[] : folders;
+          _sortList(filteredFolders, path);
+          _sortList(filteredFiles, path);
+          activeTab.currentFiles = [...filteredFolders, ...filteredFiles];
+          activeTab.isLoading = false;
+          activeTab.needsPermission = false;
+          activeTab.useRootMode = false;
+          activeTab.useShizukuMode = false;
+          _persistTabs();
+          notifyListeners();
+          return;
+        }
+      } catch (e) {
+        debugPrint('[ZenFile] Standard API failed for restricted path $path: $e, falling back to Shizuku/root');
+      }
+      // 标准 API 失败，继续走下方 Shizuku/root 分支
+    }
+
     if (activeTab.isRestrictedMode) {
       final status = await RootShizukuService.checkStatus();
       activeTab.isRootAvailable = status.isRootAvailable;
@@ -2759,20 +2799,6 @@ class FileManagerProvider extends ChangeNotifier {
       try {
         activeTab.currentPath = path;
         final items = await RootShizukuService.listFiles(path, useRoot: activeTab.useRootMode, showHiddenFiles: _showHiddenFiles);
-
-        // 部分 ROM（如某些 Xiaomi/Huawei 定制系统）即便 Shizuku 已授权，FUSE 层仍会拦截
-        // /storage/emulated/0/Android/data 的 shell list 命令（返回空），但标准 Java/Kotlin
-        // File API（Directory.list）可以正常访问。此时自动回退到标准 API。
-        final fallbackToStdApi = items.isEmpty && _isRestrictedAndroidPath(path);
-        if (fallbackToStdApi) {
-          debugPrint('[ZenFile] Shizuku returned empty for restricted path $path, falling back to standard Directory.list()');
-          await _loadDirectoryWithStdFallback(path, showLoading: false);
-          activeTab.isLoading = false;
-          _persistTabs();
-          notifyListeners();
-          return;
-        }
-
         final folders = items.where((e) => e.isDirectory).toList();
         final files = items.where((e) => !e.isDirectory).toList();
 
@@ -2797,9 +2823,6 @@ class FileManagerProvider extends ChangeNotifier {
     activeTab.useRootMode = false;
     activeTab.useShizukuMode = false;
 
-    // 优先尝试标准 Directory.list()：对于部分 ROM，即便路径包含 Android/data，
-    // 标准 API 也能正常访问（比 Shizuku shell 更可靠）。
-    // 失败时自动回退到受限模式（Shizuku/root）。
     try {
       final dir = Directory(path);
       if (await dir.exists()) {
