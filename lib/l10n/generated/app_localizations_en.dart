@@ -2427,6 +2427,9 @@ class L10nEn extends L10n {
   String get shizukuroot => 'Grant Shizuku Access (No Root Required)';
 
   @override
+  String get safSystemAccess => 'System Authorized Access';
+
+  @override
   String get fusebypass => '一键兼容访问';
 
   @override
@@ -2784,6 +2787,18 @@ class L10nEn extends L10n {
 
   @override
   String get ui_enable_multi_tabs => 'Enable Multiple Tabs';
+
+  @override
+  String get ui_multi_tab_scope_title => 'Multiple Tabs Scope';
+
+  @override
+  String get ui_multi_tab_scope_single_only => 'Single Window Only';
+
+  @override
+  String get ui_multi_tab_scope_split_only => 'Dual Window Only';
+
+  @override
+  String get ui_multi_tab_scope_all => 'All Windows';
 
   @override
   String get ui_enable_split_screen => 'Enable Split Screen';

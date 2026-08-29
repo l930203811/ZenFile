@@ -2479,6 +2479,9 @@ class L10nFr extends L10n {
   String get shizukuroot => 'Accorder l\'accès Shizuku (Pas de root requis)';
 
   @override
+  String get safSystemAccess => 'Accès système autorisé';
+
+  @override
   String get fusebypass => '一键兼容访问';
 
   @override
@@ -2847,6 +2850,18 @@ class L10nFr extends L10n {
 
   @override
   String get ui_enable_multi_tabs => 'Activer les onglets multiples';
+
+  @override
+  String get ui_multi_tab_scope_title => 'Portée des onglets multiples';
+
+  @override
+  String get ui_multi_tab_scope_single_only => 'Fenêtre unique uniquement';
+
+  @override
+  String get ui_multi_tab_scope_split_only => 'Écran partagé uniquement';
+
+  @override
+  String get ui_multi_tab_scope_all => 'Toutes les fenêtres';
 
   @override
   String get ui_enable_split_screen => 'Activer l\'écran partagé';

@@ -2340,6 +2340,9 @@ class L10nZh extends L10n {
   String get shizukuroot => '授予Shizuku访问权限（无需Root）';
 
   @override
+  String get safSystemAccess => '系统授权访问';
+
+  @override
   String get fusebypass => '一键兼容访问';
 
   @override
@@ -2690,6 +2693,18 @@ class L10nZh extends L10n {
 
   @override
   String get ui_enable_multi_tabs => '启用多标签页';
+
+  @override
+  String get ui_multi_tab_scope_title => '多标签页适用范围';
+
+  @override
+  String get ui_multi_tab_scope_single_only => '仅在单窗口';
+
+  @override
+  String get ui_multi_tab_scope_split_only => '仅在双窗口';
+
+  @override
+  String get ui_multi_tab_scope_all => '全部';
 
   @override
   String get ui_enable_split_screen => '启用分屏';
@@ -8079,6 +8094,9 @@ class L10nZhTw extends L10nZh {
   String get shizukuroot => '授予Shizuku訪問許可權（無需Root）';
 
   @override
+  String get safSystemAccess => '系統授權訪問';
+
+  @override
   String selectedcount1(Object selectedCount) {
     return '已選擇 $selectedCount 項';
   }
@@ -8426,6 +8444,18 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_enable_multi_tabs => '啟用多標籤頁';
+
+  @override
+  String get ui_multi_tab_scope_title => '多標籤頁適用範圍';
+
+  @override
+  String get ui_multi_tab_scope_single_only => '僅在單視窗';
+
+  @override
+  String get ui_multi_tab_scope_split_only => '僅在雙視窗';
+
+  @override
+  String get ui_multi_tab_scope_all => '全部';
 
   @override
   String get ui_enable_split_screen => '啟用分屏';

@@ -2477,6 +2477,9 @@ class L10nEs extends L10n {
   String get shizukuroot => 'Conceder Acceso a Shizuku (No Requiere Root)';
 
   @override
+  String get safSystemAccess => 'Acceso autorizado del sistema';
+
+  @override
   String get fusebypass => '一键兼容访问';
 
   @override
@@ -2846,6 +2849,18 @@ class L10nEs extends L10n {
 
   @override
   String get ui_enable_multi_tabs => 'Habilitar Múltiples Pestañas';
+
+  @override
+  String get ui_multi_tab_scope_title => 'Ámbito de pestañas múltiples';
+
+  @override
+  String get ui_multi_tab_scope_single_only => 'Solo ventana única';
+
+  @override
+  String get ui_multi_tab_scope_split_only => 'Solo pantalla dividida';
+
+  @override
+  String get ui_multi_tab_scope_all => 'Todas las ventanas';
 
   @override
   String get ui_enable_split_screen => 'Habilitar Pantalla Dividida';

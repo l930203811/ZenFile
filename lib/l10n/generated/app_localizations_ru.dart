@@ -2469,6 +2469,9 @@ class L10nRu extends L10n {
   String get shizukuroot => 'Предоставить Доступ к Shizuku (Root Не Требуется)';
 
   @override
+  String get safSystemAccess => 'Системный доступ с разрешением';
+
+  @override
   String get fusebypass => '一键兼容访问';
 
   @override
@@ -2832,6 +2835,18 @@ class L10nRu extends L10n {
 
   @override
   String get ui_enable_multi_tabs => 'Включить Несколько Вкладок';
+
+  @override
+  String get ui_multi_tab_scope_title => 'Область действия вкладок';
+
+  @override
+  String get ui_multi_tab_scope_single_only => 'Только в одном окне';
+
+  @override
+  String get ui_multi_tab_scope_split_only => 'Только в разделённом окне';
+
+  @override
+  String get ui_multi_tab_scope_all => 'Во всех окнах';
 
   @override
   String get ui_enable_split_screen => 'Включить Разделённый Экран';

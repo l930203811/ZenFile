@@ -2345,6 +2345,9 @@ class L10nKo extends L10n {
   String get shizukuroot => 'Shizuku 접근 권한 부여 (루트 불필요)';
 
   @override
+  String get safSystemAccess => '시스템 승인 접근';
+
+  @override
   String get fusebypass => '一键兼容访问';
 
   @override
@@ -2698,6 +2701,18 @@ class L10nKo extends L10n {
 
   @override
   String get ui_enable_multi_tabs => '여러 탭 활성화';
+
+  @override
+  String get ui_multi_tab_scope_title => '여러 탭 적용 범위';
+
+  @override
+  String get ui_multi_tab_scope_single_only => '단일 창에서만';
+
+  @override
+  String get ui_multi_tab_scope_split_only => '분할 창에서만';
+
+  @override
+  String get ui_multi_tab_scope_all => '모든 창';
 
   @override
   String get ui_enable_split_screen => '분할 화면 활성화';

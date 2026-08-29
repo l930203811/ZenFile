@@ -4486,6 +4486,12 @@ abstract class L10n {
   /// **'授予Shizuku访问权限（无需Root）'**
   String get shizukuroot;
 
+  /// ui\widgets\restricted_folder_banner.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'系统授权访问'**
+  String get safSystemAccess;
+
   /// ui\widgets\restricted_folder_banner.dart - 绕过FUSE限制
   ///
   /// In zh, this message translates to:
@@ -5157,6 +5163,24 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'启用多标签页'**
   String get ui_enable_multi_tabs;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'多标签页适用范围'**
+  String get ui_multi_tab_scope_title;
+
+  /// In zh, this message translates to:
+  /// **'仅在单窗口'**
+  String get ui_multi_tab_scope_single_only;
+
+  /// In zh, this message translates to:
+  /// **'仅在双窗口'**
+  String get ui_multi_tab_scope_split_only;
+
+  /// In zh, this message translates to:
+  /// **'全部'**
+  String get ui_multi_tab_scope_all;
 
   /// No description provided for @ui_enable_split_screen.
   ///

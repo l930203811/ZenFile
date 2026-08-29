@@ -684,10 +684,10 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                           child: Switch(
                             value: fileManager.enableMultipleTabs,
                             activeColor: theme.colorScheme.primary,
-                            onChanged: (_) => fileManager.toggleMultipleTabs(),
+                            onChanged: (_) => _toggleMultiTabsWithScope(context, fileManager, theme),
                           ),
                         ),
-                        onTap: () => fileManager.toggleMultipleTabs(),
+                        onTap: () => _toggleMultiTabsWithScope(context, fileManager, theme),
                       ),
                     if (splitScreenVis)
                       SettingsTile(
@@ -2330,6 +2330,111 @@ Widget _buildLanguageOption(BuildContext context, ThemeData theme, String curren
         ),
       ),
     ),
+  );
+}
+
+/// 切换多标签页开关时弹出选择适用范围的下拉框。
+void _toggleMultiTabsWithScope(BuildContext context, FileManagerProvider fileManager, ThemeData theme) {
+  // 如果当前已启用，先切换开关状态
+  final wasEnabled = fileManager.enableMultipleTabs;
+  fileManager.toggleMultipleTabs();
+
+  // 无论开关是开还是关，都弹出范围选择器（允许用户切换范围）
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: theme.scaffoldBackgroundColor,
+    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+    builder: (ctx) {
+      final currentMode = fileManager.multiTabPaneMode;
+      final options = [
+        {
+          'key': MultiTabPaneMode.singleOnly.name,
+          'name': L10n.of(context).ui_multi_tab_scope_single_only,
+          'desc': L10n.of(context).msg4b0a7063,
+          'icon': Broken.grid_1,
+        },
+        {
+          'key': MultiTabPaneMode.splitOnly.name,
+          'name': L10n.of(context).ui_multi_tab_scope_split_only,
+          'desc': '仅在双窗口分屏模式下启用多标签页',
+          'icon': Broken.grid_2,
+        },
+        {
+          'key': MultiTabPaneMode.all.name,
+          'name': L10n.of(context).ui_multi_tab_scope_all,
+          'desc': '单窗口与双窗口模式均启用多标签页',
+          'icon': Broken.category,
+        },
+      ];
+
+      return SafeArea(
+        child: Padding(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(width: 40, height: 4, decoration: BoxDecoration(
+                      color: theme.colorScheme.onSurface.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(2),
+                    )),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    L10n.of(context).ui_multi_tab_scope_title,
+                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, fontFamily: 'LexendDeca'),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '选择多标签页生效的窗口范围',
+                    style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6), fontSize: 13, fontFamily: 'LexendDeca'),
+                  ),
+                  const SizedBox(height: 16),
+                  ...options.map((opt) {
+                    final key = opt['key'] as String;
+                    final name = opt['name'] as String;
+                    final desc = opt['desc'] as String;
+                    final icon = opt['icon'] as IconData;
+                    final isSelected = currentMode.name == key;
+                    return ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      leading: Icon(icon, size: 24, color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.6)),
+                      title: Text(
+                        name,
+                        style: TextStyle(
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                          color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface,
+                          fontFamily: 'LexendDeca',
+                        ),
+                      ),
+                      subtitle: Text(
+                        desc,
+                        style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.5), fontFamily: 'LexendDeca'),
+                      ),
+                      trailing: isSelected
+                          ? Icon(Icons.check_circle_rounded, color: theme.colorScheme.primary)
+                          : null,
+                      onTap: () {
+                        final mode = MultiTabPaneMode.values.firstWhere((m) => m.name == key);
+                        fileManager.setMultiTabPaneMode(mode);
+                        Navigator.pop(ctx);
+                      },
+                    );
+                  }),
+                  const SizedBox(height: 12),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    },
   );
 }
 

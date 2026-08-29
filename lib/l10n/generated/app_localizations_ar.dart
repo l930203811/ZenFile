@@ -2422,6 +2422,9 @@ class L10nAr extends L10n {
   String get shizukuroot => 'منح وصول Shizuku (لا يتطلب جذر)';
 
   @override
+  String get safSystemAccess => 'منح وصول النظام';
+
+  @override
   String get fusebypass => '一键兼容访问';
 
   @override
@@ -2780,6 +2783,18 @@ class L10nAr extends L10n {
 
   @override
   String get ui_enable_multi_tabs => 'تمكين علامات تبويب متعددة';
+
+  @override
+  String get ui_multi_tab_scope_title => 'نطاق علامات التبويب المتعددة';
+
+  @override
+  String get ui_multi_tab_scope_single_only => 'نافذة واحدة فقط';
+
+  @override
+  String get ui_multi_tab_scope_split_only => 'شاشة مقسمة فقط';
+
+  @override
+  String get ui_multi_tab_scope_all => 'جميع النوافذ';
 
   @override
   String get ui_enable_split_screen => 'تمكين تقسيم الشاشة';
