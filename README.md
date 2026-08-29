@@ -7,6 +7,18 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 ---
 
+## 🚀 What's New in v1.1.36 (Bug Fixes)
+
+### 🐛 Bug Fixes
+
+- **Single-pane active tab background highlight**: the active (current) tab button now shows a highlighted background instead of only the title text.
+- **Split-pane multi-tab display/switch reworked**: tab A stays in the left pane, B in the right; when creating or switching to another tab, the active tab keeps its pane position while only the inactive pane gets replaced.
+- **Split-pane can close the last two tabs**: either of the last two tabs can now be closed; closing auto-creates a replacement tab in the closed position so both panes always show content.
+- **Split-pane remote tab title**: now always shows the saved remote client name (no longer changes with the opened directory).
+- **Remote tab cloud badge**: the icon on the left of a remote tab title is now a cloud badge to distinguish remote vs. local tabs.
+
+---
+
 ## 🚀 What's New in v1.1.35
 
 ### ✨ New Features
