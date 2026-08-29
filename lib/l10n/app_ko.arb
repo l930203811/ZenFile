@@ -3136,6 +3136,18 @@
     "description": "more_settings_screen.dart"
   },
   "ui_multi_tab_scope_all": "모든 창",
+  "@ui_multi_tab_scope_split_only_desc": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_split_only_desc": "이중 창 분할 모드에서만 다중 탭 활성화",
+  "@ui_multi_tab_scope_all_desc": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_all_desc": "단일 창과 이중 창 모두에서 다중 탭 활성화",
+  "@ui_multi_tab_scope_subtitle": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_subtitle": "다중 탭이 적용되는 창 범위 선택",
   "ui_enable_split_screen": "분할 화면 활성화",
   "ui_password_auth": "비밀번호 인증",
   "@ui_password_auth": {
@@ -6040,5 +6052,48 @@
   "cat_toolbox": "도구상자",
   "cat_toolbox_desc": "도구",
   "quick_transfer_waiting_for_x": "{name}이(가) 연결을 탭할 때까지 대기 중…",
-  "quick_transfer_ask_peer_connect": "상대 기기에서도 빠른 전송에서 이 기기의 '연결' 버튼을 탭하도록 하세요"
+  "quick_transfer_ask_peer_connect": "상대 기기에서도 빠른 전송에서 이 기기의 '연결' 버튼을 탭하도록 하세요",
+  "ui_scan_shares": "공유 스캔",
+  "@ui_scan_shares": {
+    "description": "SMB wizard button: scan share names on the entered server"
+  },
+  "ui_scanning_shares": "공유 스캔 중…",
+  "@ui_scanning_shares": {
+    "description": "SMB wizard: scanning share names in progress"
+  },
+  "ui_select_share_to_fill": "공유 이름을 탭하여 입력",
+  "@ui_select_share_to_fill": {
+    "description": "SMB wizard: hint to tap a scanned share name to fill it"
+  },
+  "ui_no_shares_found": "공유를 찾을 수 없음",
+  "@ui_no_shares_found": {
+    "description": "SMB wizard: no share names found on the server"
+  },
+  "ui_share_scan_failed": "공유 스캔 실패: $error",
+  "@ui_share_scan_failed": {
+    "description": "SMB wizard: share scan failed with error",
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "ui_scan_lan_devices": "LAN 장치 스캔",
+  "@ui_scan_lan_devices": {
+    "description": "SMB wizard: button to scan LAN for SMB devices without entering an IP"
+  },
+  "ui_scanning_lan": "LAN 장치 스캔 중…",
+  "@ui_scanning_lan": {
+    "description": "SMB wizard: scanning LAN devices in progress"
+  },
+  "ui_lan_no_devices": "LAN에서 SMB 장치를 찾을 수 없음",
+  "@ui_lan_no_devices": {
+    "description": "SMB wizard: no SMB devices found on the LAN"
+  },
+  "ui_lan_scan_hint": "장치를 탭하여 주소와 공유 이름 입력",
+  "@ui_lan_scan_hint": {
+    "description": "SMB wizard: hint to tap a discovered device to fill address and share name"
+  },
+  "ui_enter_host_first": "먼저 호스트 주소와 포트를 입력하세요",
+  "@ui_enter_host_first": {
+    "description": "SMB wizard: prompt to enter host and port before scanning"
+  }
 }

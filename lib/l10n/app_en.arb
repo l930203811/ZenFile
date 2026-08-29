@@ -3143,6 +3143,18 @@
     "description": "more_settings_screen.dart"
   },
   "ui_multi_tab_scope_all": "All Windows",
+  "@ui_multi_tab_scope_split_only_desc": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_split_only_desc": "Enable multiple tabs only in dual-window split mode",
+  "@ui_multi_tab_scope_all_desc": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_all_desc": "Enable multiple tabs in both single and dual-window modes",
+  "@ui_multi_tab_scope_subtitle": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_subtitle": "Choose where multiple tabs take effect",
   "ui_enable_split_screen": "Enable Split Screen",
   "ui_password_auth": "Password Authentication",
   "@ui_password_auth": {
@@ -6106,5 +6118,48 @@
   },
   "@quick_transfer_ask_peer_connect": {
     "description": "Quick Transfer P2P: ask peer to tap connect"
+  },
+  "ui_scan_shares": "Scan Shares",
+  "@ui_scan_shares": {
+    "description": "SMB wizard button: scan share names on the entered server"
+  },
+  "ui_scanning_shares": "Scanning shares…",
+  "@ui_scanning_shares": {
+    "description": "SMB wizard: scanning share names in progress"
+  },
+  "ui_select_share_to_fill": "Tap a share name to fill it in",
+  "@ui_select_share_to_fill": {
+    "description": "SMB wizard: hint to tap a scanned share name to fill it"
+  },
+  "ui_no_shares_found": "No shares found",
+  "@ui_no_shares_found": {
+    "description": "SMB wizard: no share names found on the server"
+  },
+  "ui_share_scan_failed": "Failed to scan shares: $error",
+  "@ui_share_scan_failed": {
+    "description": "SMB wizard: share scan failed with error",
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "ui_scan_lan_devices": "Scan LAN devices",
+  "@ui_scan_lan_devices": {
+    "description": "SMB wizard: button to scan LAN for SMB devices without entering an IP"
+  },
+  "ui_scanning_lan": "Scanning LAN devices…",
+  "@ui_scanning_lan": {
+    "description": "SMB wizard: scanning LAN devices in progress"
+  },
+  "ui_lan_no_devices": "No SMB devices found on the LAN",
+  "@ui_lan_no_devices": {
+    "description": "SMB wizard: no SMB devices found on the LAN"
+  },
+  "ui_lan_scan_hint": "Tap a device to fill its address and share name",
+  "@ui_lan_scan_hint": {
+    "description": "SMB wizard: hint to tap a discovered device to fill address and share name"
+  },
+  "ui_enter_host_first": "Enter the host address and port first",
+  "@ui_enter_host_first": {
+    "description": "SMB wizard: prompt to enter host and port before scanning"
   }
 }

@@ -2844,6 +2844,18 @@ class L10nDe extends L10n {
   String get ui_multi_tab_scope_all => 'Alle Fenster';
 
   @override
+  String get ui_multi_tab_scope_split_only_desc =>
+      'Mehrere Tabs nur im Dual-Fenster-Modus aktivieren';
+
+  @override
+  String get ui_multi_tab_scope_all_desc =>
+      'Mehrere Tabs im Einzel- und Dual-Fenster-Modus aktivieren';
+
+  @override
+  String get ui_multi_tab_scope_subtitle =>
+      'Wählen Sie, wo mehrere Tabs gelten';
+
+  @override
   String get ui_enable_split_screen => 'Geteilten Bildschirm aktivieren';
 
   @override
@@ -6088,4 +6100,39 @@ class L10nDe extends L10n {
   @override
   String get quick_transfer_ask_peer_connect =>
       'Bitten Sie das andere Gerät, in Quick Transfer ebenfalls die Schaltfläche „Verbinden“ für dieses Gerät zu tippen';
+
+  @override
+  String get ui_scan_shares => 'Freigaben scannen';
+
+  @override
+  String get ui_scanning_shares => 'Freigaben werden gescannt…';
+
+  @override
+  String get ui_select_share_to_fill =>
+      'Auf einen Freigabenamen tippen, um ihn einzufügen';
+
+  @override
+  String get ui_no_shares_found => 'Keine Freigaben gefunden';
+
+  @override
+  String ui_share_scan_failed(Object error) {
+    return 'Fehler beim Scannen der Freigaben: \$error';
+  }
+
+  @override
+  String get ui_scan_lan_devices => 'LAN-Geräte scannen';
+
+  @override
+  String get ui_scanning_lan => 'LAN-Geräte werden gescannt…';
+
+  @override
+  String get ui_lan_no_devices => 'Keine SMB-Geräte im LAN gefunden';
+
+  @override
+  String get ui_lan_scan_hint =>
+      'Gerät antippen, um Adresse und Freigabenamen einzutragen';
+
+  @override
+  String get ui_enter_host_first =>
+      'Geben Sie zuerst Host-Adresse und Port ein';
 }

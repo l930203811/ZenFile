@@ -50,6 +50,11 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
   // UI states
   bool _obscurePassword = true;
 
+  // SMB 共享名扫描状态
+  bool _isScanningLan = false;
+  Map<String, List<String>> _lanDevices = const {};
+  String? _lanScanError;
+
   @override
   void initState() {
     super.initState();
@@ -732,6 +737,10 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
             const SizedBox(height: 18),
           ],
 
+          if (_selectedType == l10n.smb) ...[
+            _buildLanScanSection(theme),
+            const SizedBox(height: 18),
+          ],
           _buildInputLabel(l10n.msg5d57821d),
           _buildTextField(
             controller: _hostController,
@@ -758,13 +767,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
             ),
             const SizedBox(height: 18),
           ] else if (_selectedType == l10n.smb) ...[
-            _buildInputLabel(l10n.ui_share_name_optional),
-            _buildTextField(
-              controller: _pathController,
-              hint: l10n.ui_share_name_hint,
-              icon: Broken.folder_open,
-            ),
-            const SizedBox(height: 18),
+            _buildSmbShareField(theme),
           ],
 
           _buildInputLabel(l10n.ui_username_optional),
@@ -843,6 +846,192 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
           ),
         ],
       ),
+    );
+  }
+
+  // --- SMB 局域网设备扫描（无需输入 IP） ---
+  Widget _buildLanScanSection(ThemeData theme) {
+    final l10n = L10n.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        FilledButton.icon(
+          onPressed: _isScanningLan ? null : _scanLanDevices,
+          icon: _isScanningLan
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                )
+              : const Icon(Icons.wifi_find_rounded, size: 20),
+          label: Text(
+            _isScanningLan ? l10n.ui_scanning_lan : l10n.ui_scan_lan_devices,
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+          style: FilledButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          ),
+        ),
+        const SizedBox(height: 12),
+        _buildLanDeviceResults(theme),
+      ],
+    );
+  }
+
+  Widget _buildLanDeviceResults(ThemeData theme) {
+    final l10n = L10n.of(context);
+    if (_lanScanError != null) {
+      return Text(
+        l10n.ui_share_scan_failed(_lanScanError!),
+        style: const TextStyle(fontSize: 12.5, color: Colors.redAccent),
+      );
+    }
+    if (_lanDevices.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.ui_lan_scan_hint,
+          style: TextStyle(
+            fontSize: 12,
+            color: theme.colorScheme.onSurface.withOpacity(0.55),
+          ),
+        ),
+        const SizedBox(height: 8),
+        ..._lanDevices.entries.map((entry) {
+          final host = entry.key;
+          final shares = entry.value;
+          return Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceVariant.withOpacity(0.35),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                InkWell(
+                  onTap: () {
+                    setState(() {
+                      _hostController.text = host;
+                      _portController.text = '445';
+                      _lanScanError = null;
+                    });
+                  },
+                  child: Row(
+                    children: [
+                      Icon(Broken.global, size: 18, color: theme.colorScheme.primary),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          host,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                      Icon(Icons.arrow_forward_ios_rounded,
+                          size: 14, color: theme.colorScheme.onSurface.withOpacity(0.4)),
+                    ],
+                  ),
+                ),
+                if (shares.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(
+                      l10n.ui_no_shares_found,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: theme.colorScheme.onSurface.withOpacity(0.5),
+                      ),
+                    ),
+                  )
+                else
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: shares.map((share) {
+                        return ActionChip(
+                          label: Text(share),
+                          labelStyle: TextStyle(
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                          onPressed: () {
+                            setState(() {
+                              _hostController.text = host;
+                              _portController.text = '445';
+                              _pathController.text = share;
+                              _lanScanError = null;
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  ),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  Future<void> _scanLanDevices() async {
+    final l10n = L10n.of(context);
+    final username = _usernameController.text.trim();
+    final password = _passwordController.text.trim();
+    if (mounted) {
+      setState(() {
+        _isScanningLan = true;
+        _lanScanError = null;
+        _lanDevices = const {};
+      });
+    }
+    try {
+      final devices = await FileManagerProvider.discoverSmbDevices(
+        username: username,
+        password: password,
+        onProgress: (double _) {},
+      );
+      if (!mounted) return;
+      setState(() {
+        _lanDevices = devices;
+        if (devices.isEmpty) _lanScanError = l10n.ui_lan_no_devices;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _lanScanError = e.toString());
+    } finally {
+      if (mounted) setState(() => _isScanningLan = false);
+    }
+  }
+
+  Widget _buildSmbShareField(ThemeData theme) {
+    final l10n = L10n.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildInputLabel(l10n.ui_share_name_optional),
+        _buildTextField(
+          controller: _pathController,
+          hint: l10n.ui_share_name_hint,
+          icon: Broken.folder_open,
+        ),
+        const SizedBox(height: 10),
+        Text(
+          l10n.ui_lan_scan_hint,
+          style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+        ),
+      ],
     );
   }
 

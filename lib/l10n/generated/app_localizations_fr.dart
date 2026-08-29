@@ -2864,6 +2864,18 @@ class L10nFr extends L10n {
   String get ui_multi_tab_scope_all => 'Toutes les fenêtres';
 
   @override
+  String get ui_multi_tab_scope_split_only_desc =>
+      'Activer les onglets multiples uniquement en mode double fenêtre';
+
+  @override
+  String get ui_multi_tab_scope_all_desc =>
+      'Activer les onglets multiples en mode fenêtre unique et double';
+
+  @override
+  String get ui_multi_tab_scope_subtitle =>
+      'Choisissez la portée des onglets multiples';
+
+  @override
   String get ui_enable_split_screen => 'Activer l\'écran partagé';
 
   @override
@@ -6116,4 +6128,39 @@ class L10nFr extends L10n {
   @override
   String get quick_transfer_ask_peer_connect =>
       'Demandez à l\'autre appareil d\'appuyer également sur le bouton Connecter de cet appareil dans Quick Transfer';
+
+  @override
+  String get ui_scan_shares => 'Analyser les partages';
+
+  @override
+  String get ui_scanning_shares => 'Analyse des partages…';
+
+  @override
+  String get ui_select_share_to_fill =>
+      'Appuyez sur un nom de partage pour le saisir';
+
+  @override
+  String get ui_no_shares_found => 'Aucun partage trouvé';
+
+  @override
+  String ui_share_scan_failed(Object error) {
+    return 'Échec de l\'analyse des partages : \$error';
+  }
+
+  @override
+  String get ui_scan_lan_devices => 'Scanner les appareils du réseau';
+
+  @override
+  String get ui_scanning_lan => 'Scan des appareils du réseau…';
+
+  @override
+  String get ui_lan_no_devices => 'Aucun appareil SMB trouvé sur le réseau';
+
+  @override
+  String get ui_lan_scan_hint =>
+      'Appuyez sur un appareil pour remplir son adresse et son nom de partage';
+
+  @override
+  String get ui_enter_host_first =>
+      'Saisissez d\'abord l\'adresse et le port de l\'hôte';
 }

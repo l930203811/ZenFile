@@ -2718,6 +2718,15 @@ class L10nJa extends L10n {
   String get ui_multi_tab_scope_all => '全ウィンドウ';
 
   @override
+  String get ui_multi_tab_scope_split_only_desc => '二画面分割モードでのみ複数タブを有効化';
+
+  @override
+  String get ui_multi_tab_scope_all_desc => '単一画面と二画面の両方で複数タブを有効化';
+
+  @override
+  String get ui_multi_tab_scope_subtitle => '複数タブが有効になる範囲を選択';
+
+  @override
   String get ui_enable_split_screen => '分割画面を有効にする';
 
   @override
@@ -5875,4 +5884,36 @@ class L10nJa extends L10n {
   @override
   String get quick_transfer_ask_peer_connect =>
       '相手のデバイスにも、クイック転送でこのデバイスの「接続」ボタンをタップしてもらってください';
+
+  @override
+  String get ui_scan_shares => '共有をスキャン';
+
+  @override
+  String get ui_scanning_shares => '共有をスキャン中…';
+
+  @override
+  String get ui_select_share_to_fill => '共有名をタップして入力';
+
+  @override
+  String get ui_no_shares_found => '共有が見つかりません';
+
+  @override
+  String ui_share_scan_failed(Object error) {
+    return '共有のスキャンに失敗しました: \$error';
+  }
+
+  @override
+  String get ui_scan_lan_devices => 'LANデバイスをスキャン';
+
+  @override
+  String get ui_scanning_lan => 'LANデバイスをスキャン中…';
+
+  @override
+  String get ui_lan_no_devices => 'LAN 上に SMB デバイスが見つかりません';
+
+  @override
+  String get ui_lan_scan_hint => 'デバイスをタップしてアドレスと共有名を入力';
+
+  @override
+  String get ui_enter_host_first => 'まずホストアドレスとポートを入力';
 }

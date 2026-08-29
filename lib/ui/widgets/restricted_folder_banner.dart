@@ -123,7 +123,7 @@ class RestrictedFolderBanner extends StatelessWidget {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
                     ),
                     icon: const Icon(Broken.folder_open, size: 24),
-                    label: Text('系统授权访问', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    label: Text(L10n.of(context).safSystemAccess, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     onPressed: onEnableSaf,
                   ),
                 ],

@@ -3136,6 +3136,18 @@
     "description": "more_settings_screen.dart"
   },
   "ui_multi_tab_scope_all": "Toutes les fenêtres",
+  "@ui_multi_tab_scope_split_only_desc": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_split_only_desc": "Activer les onglets multiples uniquement en mode double fenêtre",
+  "@ui_multi_tab_scope_all_desc": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_all_desc": "Activer les onglets multiples en mode fenêtre unique et double",
+  "@ui_multi_tab_scope_subtitle": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_subtitle": "Choisissez la portée des onglets multiples",
   "ui_enable_split_screen": "Activer l'écran partagé",
   "ui_password_auth": "Authentification par mot de passe",
   "@ui_password_auth": {
@@ -6040,5 +6052,48 @@
   "cat_toolbox": "Boîte à outils",
   "cat_toolbox_desc": "Outils",
   "quick_transfer_waiting_for_x": "En attente que {name} appuie sur Connecter…",
-  "quick_transfer_ask_peer_connect": "Demandez à l'autre appareil d'appuyer également sur le bouton Connecter de cet appareil dans Quick Transfer"
+  "quick_transfer_ask_peer_connect": "Demandez à l'autre appareil d'appuyer également sur le bouton Connecter de cet appareil dans Quick Transfer",
+  "ui_scan_shares": "Analyser les partages",
+  "@ui_scan_shares": {
+    "description": "SMB wizard button: scan share names on the entered server"
+  },
+  "ui_scanning_shares": "Analyse des partages…",
+  "@ui_scanning_shares": {
+    "description": "SMB wizard: scanning share names in progress"
+  },
+  "ui_select_share_to_fill": "Appuyez sur un nom de partage pour le saisir",
+  "@ui_select_share_to_fill": {
+    "description": "SMB wizard: hint to tap a scanned share name to fill it"
+  },
+  "ui_no_shares_found": "Aucun partage trouvé",
+  "@ui_no_shares_found": {
+    "description": "SMB wizard: no share names found on the server"
+  },
+  "ui_share_scan_failed": "Échec de l'analyse des partages : $error",
+  "@ui_share_scan_failed": {
+    "description": "SMB wizard: share scan failed with error",
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "ui_scan_lan_devices": "Scanner les appareils du réseau",
+  "@ui_scan_lan_devices": {
+    "description": "SMB wizard: button to scan LAN for SMB devices without entering an IP"
+  },
+  "ui_scanning_lan": "Scan des appareils du réseau…",
+  "@ui_scanning_lan": {
+    "description": "SMB wizard: scanning LAN devices in progress"
+  },
+  "ui_lan_no_devices": "Aucun appareil SMB trouvé sur le réseau",
+  "@ui_lan_no_devices": {
+    "description": "SMB wizard: no SMB devices found on the LAN"
+  },
+  "ui_lan_scan_hint": "Appuyez sur un appareil pour remplir son adresse et son nom de partage",
+  "@ui_lan_scan_hint": {
+    "description": "SMB wizard: hint to tap a discovered device to fill address and share name"
+  },
+  "ui_enter_host_first": "Saisissez d'abord l'adresse et le port de l'hôte",
+  "@ui_enter_host_first": {
+    "description": "SMB wizard: prompt to enter host and port before scanning"
+  }
 }

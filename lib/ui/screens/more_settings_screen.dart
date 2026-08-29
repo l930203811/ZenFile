@@ -1358,10 +1358,10 @@ class ExplorerSettingsScreen extends StatelessWidget {
                 child: Switch(
                   value: fileManager.enableMultipleTabs,
                   activeColor: theme.colorScheme.primary,
-                  onChanged: (_) => fileManager.toggleMultipleTabs(),
+                  onChanged: (_) => _toggleMultiTabsWithScope(context, fileManager, theme),
                 ),
               ),
-              onTap: () => fileManager.toggleMultipleTabs(),
+              onTap: () => _toggleMultiTabsWithScope(context, fileManager, theme),
             ),
             SettingsTile(
               icon: Icons.splitscreen,
@@ -2335,11 +2335,10 @@ Widget _buildLanguageOption(BuildContext context, ThemeData theme, String curren
 
 /// 切换多标签页开关时弹出选择适用范围的下拉框。
 void _toggleMultiTabsWithScope(BuildContext context, FileManagerProvider fileManager, ThemeData theme) {
-  // 如果当前已启用，先切换开关状态
-  final wasEnabled = fileManager.enableMultipleTabs;
+  // 切换开关；仅在切换后为「开启」时弹出范围选择器（关闭时直接生效，不打扰）。
   fileManager.toggleMultipleTabs();
+  if (!fileManager.enableMultipleTabs) return;
 
-  // 无论开关是开还是关，都弹出范围选择器（允许用户切换范围）
   showModalBottomSheet(
     context: context,
     backgroundColor: theme.scaffoldBackgroundColor,
@@ -2356,13 +2355,13 @@ void _toggleMultiTabsWithScope(BuildContext context, FileManagerProvider fileMan
         {
           'key': MultiTabPaneMode.splitOnly.name,
           'name': L10n.of(context).ui_multi_tab_scope_split_only,
-          'desc': '仅在双窗口分屏模式下启用多标签页',
+          'desc': L10n.of(context).ui_multi_tab_scope_split_only_desc,
           'icon': Broken.grid_2,
         },
         {
           'key': MultiTabPaneMode.all.name,
           'name': L10n.of(context).ui_multi_tab_scope_all,
-          'desc': '单窗口与双窗口模式均启用多标签页',
+          'desc': L10n.of(context).ui_multi_tab_scope_all_desc,
           'icon': Broken.category,
         },
       ];
@@ -2391,7 +2390,7 @@ void _toggleMultiTabsWithScope(BuildContext context, FileManagerProvider fileMan
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '选择多标签页生效的窗口范围',
+                    L10n.of(context).ui_multi_tab_scope_subtitle,
                     style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6), fontSize: 13, fontFamily: 'LexendDeca'),
                   ),
                   const SizedBox(height: 16),

@@ -7,28 +7,29 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 ---
 
-## 🚀 What's New in v1.1.34
-
-### 🐛 Bug Fixes
-
-- **Web sharing freeze**: fixed the app UI freezing when Web Sharing was accessed by another device — the whole-storage scan is now asynchronous and no longer blocks the UI thread.
-- **FTP can't connect / wrong NIC**: rewritten local IP selection that prefers wlan/eth interfaces and skips Docker/VPN/virtual adapters, avoiding unreachable fallback addresses.
-- **FTP custom port**: set and persist a custom port; changing it while running now auto-restarts the listener.
-- **FTP control port & PASV**: the control port is now bound to the concrete LAN IP and PASV resolution is simplified, fixing connection failures behind VPN/proxy.
-- **FTP stop message**: added an "FTP server stopped" notification that replaces the previous incorrect "port changed / not active" message.
-- **Text editor save/save-as**: merged into a single Save button that opens a menu to choose Save or Save As.
+## 🚀 What's New in v1.1.35
 
 ### ✨ New Features
 
-- **Toolbox entry on Categories page**: added a Toolbox shortcut for quick access.
-- **Toolbox consolidation**: the Encrypted Vault, Wake-on-LAN, and Quick Transfer are now unified into the Toolbox.
-- **Quick Transfer remembers devices**: auto-remembers connected devices so you can reconnect with one tap; each remembered device can be removed individually.
+- **Multi-tab pane scope selector**: enabling "Multi-tab" pops a 3-option dialog (Single window only / Split window only / All); split mode now has its own tabs; selection persists.
+- **SFTP SSH key auth**: switch between password and SSH key; pick a local private key (.pem / .key / .pub) with optional passphrase; compatible with OpenSSH / RSA / ED25519 / ECDSA.
+- **SAF system authorization for Android/data**: four-tier fallback; a "System authorized access" button appears on failure; the tree URI is persisted after grant.
+- **SMB wizard "Scan LAN devices"**: a titled top button auto-discovers LAN SMB devices without IP entry and auto-fills host and share name.
+- **Image viewer shooting location**: the top bar shows capture GPS coordinates and auto-hides when none; tap to open the system map.
+- **Image editor "Clear metadata"**: byte-level lossless strip of EXIF / GPS / ICC without re-encoding or quality loss.
+
+### 🐛 Bug Fixes
+
+- **Quick Transfer large-file crash**: the receiver now uses a chunked Uint8List queue + TCP backpressure (8MB / 1MB watermark); files ≥1GB are received stably.
+- **Image viewer wrong EXIF title**: the title now shows only when real capture-parameter fields exist.
+- **Multi-tab settings fixes**: wired the scope picker, pops only when enabling, and localized 3 hardcoded Chinese strings.
+- **Build failed (Java heap space)**: raised gradle -Xmx from 1536M to 6144M.
 
 ### 🎨 Improvements
 
-- **Quick Transfer symmetric transfer**: after connecting, either side can initiate sending — the send/receive mode toggle and top switch button were removed.
-- **Quick Transfer UI refresh**: section cards, device-row cards, icon badges, filled selection boxes, and a circular progress badge for a more unified look.
-- **Quick Transfer compact layout**: reduced card padding and spacing to minimize first-screen scrolling so the radar/device list is visible immediately.
+- **Quick Transfer chunked buffer + TCP backpressure**: stable memory, no freeze on ≥1GB files.
+- **Clear metadata byte-level strip**: deterministic and lossless.
+- **SMB scan reuses the same filter logic as the wizard**: consistent behavior.
 
 ---
 

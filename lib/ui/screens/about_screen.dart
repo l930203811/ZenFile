@@ -160,7 +160,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   const SizedBox(height: 6),
                   // 版本号文本（硬编码，无需 l10n；以后升级版本只改这里）
                   Text(
-                    'v1.1.34',
+                    'v1.1.35',
                     style: TextStyle(
                       color: theme.colorScheme.onSurface.withOpacity(0.7),
                       fontSize: 13,
@@ -716,7 +716,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   Text(L10n.of(context).msg305734ce, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
 
-                  _buildV1134Changelog(ctx, theme),
+                  _buildV1135Changelog(ctx, theme),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -815,13 +815,24 @@ class AboutZenFileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildV1134Changelog(BuildContext ctx, ThemeData theme) {
-    final l10n = L10n.of(ctx);
+  Widget _buildV1135Changelog(BuildContext ctx, ThemeData theme) {
     final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
-    final sectionStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.primary, fontWeight: FontWeight.w600);
+    final enStyle = TextStyle(fontSize: 12, height: 1.5, color: theme.colorScheme.onSurface.withOpacity(0.5));
+    final sectionStyle = TextStyle(fontSize: 14, height: 1.6, color: theme.colorScheme.primary, fontWeight: FontWeight.w700);
 
     Widget gap([double h = 6]) => SizedBox(height: h);
-    Widget bulletText(String text) => Text('· $text', style: textStyle);
+    // 双语条目：中文在上，英文在下
+    Widget zhEn(String zh, String en) => Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('· $zh', style: textStyle),
+          const SizedBox(height: 2),
+          Text('  $en', style: enStyle),
+        ],
+      ),
+    );
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -842,48 +853,71 @@ class AboutZenFileScreen extends StatelessWidget {
                   color: theme.colorScheme.primary.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text('v1.1.34', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+                child: Text('v1.1.35', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
               ),
               const SizedBox(width: 10),
-              Text('2026-08-27', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+              Text('2026-08-29', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
             ],
           ),
           gap(14),
 
-          // ── 问题修复 ──
-          Text(l10n.changelog_section_fixes, style: sectionStyle),
-          gap(4),
-          bulletText(l10n.changelog_v1134_fix_1),
+          // ── 新增功能 / New Features ──
+          Text('✨ 新增功能 · New Features', style: sectionStyle),
           gap(6),
-          bulletText(l10n.changelog_v1134_fix_2),
-          gap(6),
-          bulletText(l10n.changelog_v1134_fix_3),
-          gap(6),
-          bulletText(l10n.changelog_v1134_fix_4),
-          gap(6),
-          bulletText(l10n.changelog_v1134_fix_5),
-          gap(6),
-          bulletText(l10n.changelog_v1134_fix_6),
-          gap(14),
+          zhEn(
+            '多标签页适用范围选择器：开启「启用多标签页」后弹出三选项（仅在单窗口 / 仅在双窗口 / 全部），双窗口模式现支持独立多标签页，选择持久化。',
+            'Multi-tab pane scope selector: enabling "Multi-tab" pops a 3-option dialog (Single only / Split only / All); split mode now has its own tabs; selection persists.',
+          ),
+          zhEn(
+            'SFTP SSH 密钥认证：支持密码与 SSH 密钥认证切换，可选本地私钥（.pem / .key / .pub）与密码短语，兼容 OpenSSH / RSA / ED25519 / ECDSA。',
+            'SFTP SSH key auth: switch between password and SSH key; pick a local private key (.pem / .key / .pub) with optional passphrase; compatible with OpenSSH / RSA / ED25519 / ECDSA.',
+          ),
+          zhEn(
+            'SAF 系统授权访问 Android/data（vivo 等 ROM）：四级兜底策略，进入失败时显示「系统授权访问」按钮，授权后树形 URI 持久保存。',
+            'SAF system authorization for Android/data (vivo etc.): four-tier fallback; a "System authorized access" button appears on failure; the tree URI is persisted after grant.',
+          ),
+          zhEn(
+            'SMB 向导「扫描局域网共享设备」：顶部带文字标题的按钮，无需输入 IP 即自动探测局域网 SMB 设备并自动填入地址与共享名。',
+            'SMB wizard "Scan LAN devices": a titled top button auto-discovers LAN SMB devices on port 445 without entering an IP, and auto-fills host and share name.',
+          ),
+          zhEn(
+            '图片查看器拍摄地点显示：顶部元信息条显示拍摄 GPS 坐标，无位置信息自动隐藏该行，点击唤起系统地图。',
+            'Image viewer shooting location: the top bar shows capture GPS coordinates and auto-hides when none; tap to open the system map.',
+          ),
+          zhEn(
+            '图片编辑器「清除元数据」：tab 栏「裁剪」右侧新增入口，字节级无损剥离 EXIF / GPS / ICC，不重编码、不损失画质。',
+            'Image editor "Clear metadata": a new entry next to Crop; byte-level lossless strip of EXIF / GPS / ICC without re-encoding or quality loss.',
+          ),
+          gap(8),
 
-          // ── 新增 ──
-          Text(l10n.changelog_section_new, style: sectionStyle),
-          gap(4),
-          bulletText(l10n.changelog_v1134_new_1),
+          // ── 问题修复 / Bug Fixes ──
+          Text('🐛 问题修复 · Bug Fixes', style: sectionStyle),
           gap(6),
-          bulletText(l10n.changelog_v1134_new_2),
-          gap(6),
-          bulletText(l10n.changelog_v1134_new_3),
-          gap(14),
+          zhEn(
+            '快传大文件接收卡死 / 闪退：接收端改为 Uint8List 分块队列 + TCP 背压水位（8MB / 1MB），≥1GB 文件稳定接收。',
+            'Quick Transfer large-file crash: the receiver now uses a chunked Uint8List queue + TCP backpressure (8MB / 1MB watermark); files ≥1GB are received stably.',
+          ),
+          zhEn(
+            '图片查看器「无 EXIF 却误显示拍摄参数标题」：标题仅在含实际拍摄参数字段（光圈 / 快门 / ISO / 设备）时显示。',
+            'Image viewer wrong EXIF title: the title now shows only when real capture-parameter fields (aperture / shutter / ISO / device) exist.',
+          ),
+          zhEn(
+            '多标签页设置缺陷修复：接入范围选择弹窗、仅在开启时弹出、3 处硬编码中文改多语言。',
+            'Multi-tab settings fixes: wired the scope picker, pops only when enabling, and localized 3 hardcoded Chinese strings.',
+          ),
+          zhEn(
+            '构建失败（Java 堆内存不足）：将 gradle -Xmx 从 1536M 提升至 6144M。',
+            'Build failed (Java heap space): raised gradle -Xmx from 1536M to 6144M.',
+          ),
+          gap(8),
 
-          // ── 优化 ──
-          Text(l10n.changelog_section_optimizations, style: sectionStyle),
-          gap(4),
-          bulletText(l10n.changelog_v1134_opt_1),
+          // ── 优化 / Optimizations ──
+          Text('🔧 优化 · Optimizations', style: sectionStyle),
           gap(6),
-          bulletText(l10n.changelog_v1134_opt_2),
-          gap(6),
-          bulletText(l10n.changelog_v1134_opt_3),
+          zhEn(
+            '快传分块缓冲 + TCP 背压，内存稳定；清除元数据字节级剥离，结果确定；SMB 扫描与向导复用同一过滤逻辑。',
+            'Quick Transfer chunked buffer + TCP backpressure keeps memory stable; clear metadata is byte-level strip; SMB scan reuses the same filter logic as the wizard.',
+          ),
         ],
       ),
     );

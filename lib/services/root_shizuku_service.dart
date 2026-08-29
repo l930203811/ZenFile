@@ -166,7 +166,21 @@ class RootShizukuService {
     final searchPrefix = cleanPath == '/' ? '' : cleanPath;
     // FUSE 绕过（见 _toFuseBypassPath 注释）。ES 文件管理器做法一致：
     // 对 Android/data 用底层 ext4 路径执行 glob/stat。
-    final cmdPrefix = _toFuseBypassPath(searchPrefix);
+    final bypassPrefix = _toFuseBypassPath(searchPrefix);
+
+    // 双路径尝试：小米/华为等 ROM 的 FUSE 层拦截 shell 访问 /storage 直达
+    // 路径、放行底层 /data/media/0；vivo 等定制 ROM 的 SELinux 恰好相反——
+    // 拦截 shell 访问 /data/media/0、放行 FUSE 直达路径。先底层后 FUSE，
+    // 任一条路径能列出内容即采用。
+    var items = await _listViaShell(bypassPrefix, useRoot: useRoot, showHiddenFiles: showHiddenFiles);
+    if (items.isEmpty && bypassPrefix != searchPrefix) {
+      debugPrint('[ZenFile] listFiles: bypass path empty, retry FUSE direct path: $searchPrefix');
+      items = await _listViaShell(searchPrefix, useRoot: useRoot, showHiddenFiles: showHiddenFiles);
+    }
+    return items;
+  }
+
+  static Future<List<FileItemModel>> _listViaShell(String cmdPrefix, {required bool useRoot, required bool showHiddenFiles}) async {
     // 使用 find 命令列出目录内容，比 glob 更可靠（避免 shell 展开失败）
     final cmd = 'find "$cmdPrefix" -maxdepth 1 -mindepth 1 -exec stat -L -c "%F|%s|%Y|%n" {} \\; 2>&1';
     debugPrint('[ZenFile] Shell command: useRoot=$useRoot cmdPrefix=$cmdPrefix');
@@ -459,19 +473,22 @@ class SafAndroidDataService {
   }
 
   /// 使用 SAF 列出指定子路径的内容。
-  /// [subPath] 相对于 Android/data 的子路径，如 "com.tencent.mm" 或 ""。
+  /// [subPath] 相对于 Android/data（或 obb）的子路径，如 "com.tencent.mm" 或 ""。
+  /// [isObb] 为 true 时基于 Android/obb 树构建 document ID。
   static Future<List<FileItemModel>?> listAndroidDataSubDirViaSAF(
     String subPath, {
     bool showHiddenFiles = false,
+    bool isObb = false,
   }) async {
-    final treeUri = await getAndroidDataTreeUri();
+    final treeUri = isObb ? await getAndroidObbTreeUri() : await getAndroidDataTreeUri();
     if (treeUri == null) return null;
 
     // 构建子路径的 document URI
     String pathUri = '';
     if (subPath.isNotEmpty) {
       // 将子路径转换为 SAF document ID 格式
-      final docId = 'primary:Android/data/$subPath';
+      final base = isObb ? 'Android/obb' : 'Android/data';
+      final docId = 'primary:$base/$subPath';
       pathUri = 'content://com.android.externalstorage.documents/document/${Uri.encodeComponent(docId)}';
     }
 

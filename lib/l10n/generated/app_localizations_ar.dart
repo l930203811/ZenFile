@@ -2797,6 +2797,18 @@ class L10nAr extends L10n {
   String get ui_multi_tab_scope_all => 'جميع النوافذ';
 
   @override
+  String get ui_multi_tab_scope_split_only_desc =>
+      'تمكين علامات تبويب متعددة في وضع النافذة المزدوجة فقط';
+
+  @override
+  String get ui_multi_tab_scope_all_desc =>
+      'تمكين علامات تبويب متعددة في وضعي النافذة الواحدة والمزدوجة';
+
+  @override
+  String get ui_multi_tab_scope_subtitle =>
+      'اختر نطاق عمل علامات التبويب المتعددة';
+
+  @override
   String get ui_enable_split_screen => 'تمكين تقسيم الشاشة';
 
   @override
@@ -6013,4 +6025,36 @@ class L10nAr extends L10n {
   @override
   String get quick_transfer_ask_peer_connect =>
       'اطلب من الجهاز الآخر أيضًا الضغط على زر الاتصال لهذا الجهاز في النقل السريع';
+
+  @override
+  String get ui_scan_shares => 'مسح المشاركات';
+
+  @override
+  String get ui_scanning_shares => 'جارٍ مسح المشاركات…';
+
+  @override
+  String get ui_select_share_to_fill => 'انقر على اسم مشاركة لإدخاله';
+
+  @override
+  String get ui_no_shares_found => 'لم يتم العثور على مشاركات';
+
+  @override
+  String ui_share_scan_failed(Object error) {
+    return 'فشل مسح المشاركات: \$error';
+  }
+
+  @override
+  String get ui_scan_lan_devices => 'مسح أجهزة الشبكة المحلية';
+
+  @override
+  String get ui_scanning_lan => 'جارٍ مسح أجهزة الشبكة…';
+
+  @override
+  String get ui_lan_no_devices => 'لم يتم العثور على أجهزة SMB على الشبكة';
+
+  @override
+  String get ui_lan_scan_hint => 'اضغط على جهاز لملء عنوانه واسم المشاركة';
+
+  @override
+  String get ui_enter_host_first => 'أدخل عنوان المضيف والمنفذ أولاً';
 }

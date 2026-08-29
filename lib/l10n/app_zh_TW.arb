@@ -3207,6 +3207,18 @@
     "description": "more_settings_screen.dart"
   },
   "ui_multi_tab_scope_all": "全部",
+  "@ui_multi_tab_scope_split_only_desc": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_split_only_desc": "僅在雙視窗分屏模式下啟用多標籤頁",
+  "@ui_multi_tab_scope_all_desc": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_all_desc": "單視窗與雙視窗模式均啟用多標籤頁",
+  "@ui_multi_tab_scope_subtitle": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_subtitle": "選擇多標籤頁生效的視窗範圍",
   "ui_enable_split_screen": "啟用分屏",
   "ui_password_auth": "密碼認證",
   "@ui_password_auth": {
@@ -6188,5 +6200,48 @@
   "cat_toolbox": "工具箱",
   "cat_toolbox_desc": "工具",
   "quick_transfer_waiting_for_x": "等待 {name} 點擊連線…",
-  "quick_transfer_ask_peer_connect": "請讓對端裝置也在快傳中點擊本機的「連線」按鈕"
+  "quick_transfer_ask_peer_connect": "請讓對端裝置也在快傳中點擊本機的「連線」按鈕",
+  "ui_scan_shares": "掃描共享名",
+  "@ui_scan_shares": {
+    "description": "SMB wizard button: scan share names on the entered server"
+  },
+  "ui_scanning_shares": "正在掃描共享名…",
+  "@ui_scanning_shares": {
+    "description": "SMB wizard: scanning share names in progress"
+  },
+  "ui_select_share_to_fill": "點擊共享名自動填入",
+  "@ui_select_share_to_fill": {
+    "description": "SMB wizard: hint to tap a scanned share name to fill it"
+  },
+  "ui_no_shares_found": "未找到共享名",
+  "@ui_no_shares_found": {
+    "description": "SMB wizard: no share names found on the server"
+  },
+  "ui_share_scan_failed": "掃描共享名失敗：$error",
+  "@ui_share_scan_failed": {
+    "description": "SMB wizard: share scan failed with error",
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "ui_scan_lan_devices": "掃描區域網路共享裝置",
+  "@ui_scan_lan_devices": {
+    "description": "SMB wizard: button to scan LAN for SMB devices without entering an IP"
+  },
+  "ui_scanning_lan": "正在掃描區域網路裝置…",
+  "@ui_scanning_lan": {
+    "description": "SMB wizard: scanning LAN devices in progress"
+  },
+  "ui_lan_no_devices": "未發現區域網路共享裝置",
+  "@ui_lan_no_devices": {
+    "description": "SMB wizard: no SMB devices found on the LAN"
+  },
+  "ui_lan_scan_hint": "點擊裝置自動填入位址與共用名稱",
+  "@ui_lan_scan_hint": {
+    "description": "SMB wizard: hint to tap a discovered device to fill address and share name"
+  },
+  "ui_enter_host_first": "請先填寫主機地址與連接埠",
+  "@ui_enter_host_first": {
+    "description": "SMB wizard: prompt to enter host and port before scanning"
+  }
 }

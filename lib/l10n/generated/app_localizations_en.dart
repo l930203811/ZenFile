@@ -2801,6 +2801,18 @@ class L10nEn extends L10n {
   String get ui_multi_tab_scope_all => 'All Windows';
 
   @override
+  String get ui_multi_tab_scope_split_only_desc =>
+      'Enable multiple tabs only in dual-window split mode';
+
+  @override
+  String get ui_multi_tab_scope_all_desc =>
+      'Enable multiple tabs in both single and dual-window modes';
+
+  @override
+  String get ui_multi_tab_scope_subtitle =>
+      'Choose where multiple tabs take effect';
+
+  @override
   String get ui_enable_split_screen => 'Enable Split Screen';
 
   @override
@@ -6047,4 +6059,37 @@ class L10nEn extends L10n {
   @override
   String get quick_transfer_ask_peer_connect =>
       'Ask the other device to also tap the Connect button for this device in Quick Transfer';
+
+  @override
+  String get ui_scan_shares => 'Scan Shares';
+
+  @override
+  String get ui_scanning_shares => 'Scanning shares…';
+
+  @override
+  String get ui_select_share_to_fill => 'Tap a share name to fill it in';
+
+  @override
+  String get ui_no_shares_found => 'No shares found';
+
+  @override
+  String ui_share_scan_failed(Object error) {
+    return 'Failed to scan shares: \$error';
+  }
+
+  @override
+  String get ui_scan_lan_devices => 'Scan LAN devices';
+
+  @override
+  String get ui_scanning_lan => 'Scanning LAN devices…';
+
+  @override
+  String get ui_lan_no_devices => 'No SMB devices found on the LAN';
+
+  @override
+  String get ui_lan_scan_hint =>
+      'Tap a device to fill its address and share name';
+
+  @override
+  String get ui_enter_host_first => 'Enter the host address and port first';
 }

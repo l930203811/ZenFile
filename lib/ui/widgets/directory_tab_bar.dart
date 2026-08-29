@@ -38,12 +38,22 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
               itemCount: tabs.length,
               itemBuilder: (context, index) {
                 final tab = tabs[index];
-                final isSelected = index == activeIndex;
                 final isRoot = tab.currentPath == provider.rootPath;
-                // 单窗口模式下，远程标签页固定显示“已保存的远程客户端名称”（如“WebDAV连接”），
-                // 不随当前浏览目录变化，方便区分是哪个远程客户端；本地标签页与双窗口模式保持原状。
+                // 双窗口多标签：标签页栏同时承载两个 pane 的标签页。
+                // 焦点 pane 的标签用主色高亮；另一 pane 的标签用次级高亮（secondary 边框），
+                // 方便区分左右窗口当前各自显示的是哪个标签。
+                final isSplitMulti = provider.isSplitMultiTabActive;
+                final pane0 = provider.paneTabIndex(0);
+                final pane1 = provider.paneTabIndex(1);
+                final bool inFocusPane = isSplitMulti && index == activeIndex;
+                final bool inOtherPane =
+                    isSplitMulti && !inFocusPane && (index == pane0 || index == pane1);
+                final isSelected =
+                    isSplitMulti ? (inFocusPane || inOtherPane) : index == activeIndex;
+                // 单窗口、双窗口多标签模式下，远程标签页固定显示“已保存的远程客户端名称”，
+                // 方便区分是哪个远程客户端；仅双窗口但未启用多标签时不显示（显示路径）。
                 final bool useRemoteName =
-                    tab.isRemote && tab.remoteConnection != null && !provider.enableSplitScreen;
+                    tab.isRemote && tab.remoteConnection != null && !isSplitMulti;
                 final title = useRemoteName
                     ? tab.remoteConnection!.name
                     : (isRoot ? L10n.of(context).msgfefea1b3 : p.basename(tab.currentPath));
@@ -51,7 +61,7 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
                 return Container(
                   margin: const EdgeInsets.only(right: 4),
                   child: Material(
-                    color: isSelected
+                    color: inFocusPane
                         ? theme.colorScheme.primaryContainer.withOpacity(0.35)
                         : theme.colorScheme.surfaceVariant.withOpacity(0.4),
                     borderRadius: BorderRadius.circular(10),
@@ -70,10 +80,12 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                            color: isSelected
+                            color: inFocusPane
                                 ? theme.colorScheme.primary.withOpacity(0.4)
-                                : theme.dividerColor.withOpacity(0.05),
-                            width: 1.2,
+                                : (inOtherPane
+                                    ? theme.colorScheme.secondary.withOpacity(0.6)
+                                    : theme.dividerColor.withOpacity(0.05)),
+                            width: inOtherPane ? 1.6 : 1.2,
                           ),
                         ),
                         child: Row(
@@ -173,7 +185,7 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        (tab.isRemote && tab.remoteConnection != null && !provider.enableSplitScreen)
+                        (tab.isRemote && tab.remoteConnection != null && !provider.isSplitMultiTabActive)
                             ? tab.remoteConnection!.name
                             : (tab.currentPath == provider.rootPath
                                 ? L10n.of(context).msgfefea1b3

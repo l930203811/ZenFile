@@ -60,6 +60,19 @@ enum FileSortType {
   type,
 }
 
+/// 多标签页功能的适用范围。
+///
+/// 由于双窗口（分屏）模式下左右两个 pane 各自显示一个标签页，多标签页在
+/// 双窗口下的行为与单窗口不同，因此允许用户在设置里选择生效范围：
+/// * [singleOnly] 仅在单窗口模式下启用
+/// * [splitOnly] 仅在双窗口模式下启用
+/// * [all]       单窗口与双窗口都启用
+enum MultiTabPaneMode {
+  singleOnly,
+  splitOnly,
+  all,
+}
+
 class StorageVolume {
   final String name;
   final String path;
@@ -175,6 +188,10 @@ class FileManagerProvider extends ChangeNotifier {
     _showHomeBrowseNav = PreferencesService.getShowHomeBrowseNav();
     _showMediaPreviews = PreferencesService.getShowMediaPreviews();
     _enableMultipleTabs = PreferencesService.getEnableMultipleTabs();
+    _multiTabPaneMode = MultiTabPaneMode.values.firstWhere(
+      (m) => m.name == PreferencesService.getMultiTabPaneMode(),
+      orElse: () => MultiTabPaneMode.all,
+    );
     _enableSplitScreen = PreferencesService.getEnableSplitScreen();
     _accentColorOption = PreferencesService.getAccentColor();
     _fontFamilyOption = PreferencesService.getFontFamily();
@@ -1217,9 +1234,103 @@ class FileManagerProvider extends ChangeNotifier {
     _enableMultipleTabs = !_enableMultipleTabs;
     PreferencesService.saveEnableMultipleTabs(_enableMultipleTabs);
     if (!_enableMultipleTabs) {
-      closeOtherTabs();
+      // 双窗口下两个 pane 各需要一个标签页，不能收敛到 1 个，否则右 pane 无内容。
+      if (_enableSplitScreen && _tabs.length > 2) {
+        _collapseTabsTo(2);
+      } else {
+        closeOtherTabs();
+      }
     }
     notifyListeners();
+  }
+
+  /// 多标签页的适用范围，默认单窗口与双窗口均启用。
+  MultiTabPaneMode _multiTabPaneMode = MultiTabPaneMode.all;
+  MultiTabPaneMode get multiTabPaneMode => _multiTabPaneMode;
+
+  void setMultiTabPaneMode(MultiTabPaneMode mode) {
+    if (_multiTabPaneMode == mode) return;
+    _multiTabPaneMode = mode;
+    PreferencesService.saveMultiTabPaneMode(mode.name);
+    // 切回「仅单窗口」时，双窗口下已堆积的多余标签页变得不可达
+    // （pane 只显示前两个），需要收敛。
+    if (_enableSplitScreen && !isMultiTabEnabledInSplitPane && _tabs.length > 2) {
+      _collapseTabsTo(2);
+    }
+    notifyListeners();
+  }
+
+  /// 单窗口模式下多标签页是否启用。
+  bool get isMultiTabEnabledInSinglePane =>
+      _enableMultipleTabs &&
+      (_multiTabPaneMode == MultiTabPaneMode.singleOnly ||
+          _multiTabPaneMode == MultiTabPaneMode.all);
+
+  /// 双窗口模式下多标签页是否启用。
+  bool get isMultiTabEnabledInSplitPane =>
+      _enableMultipleTabs &&
+      (_multiTabPaneMode == MultiTabPaneMode.splitOnly ||
+          _multiTabPaneMode == MultiTabPaneMode.all);
+
+  /// 顶部标签页栏在当前窗口模式下是否需要显示。
+  bool get showTabBar =>
+      _enableSplitScreen ? isMultiTabEnabledInSplitPane : isMultiTabEnabledInSinglePane;
+
+  /// 双窗口 + 多标签页同时生效：此时标签页可超过 2 个，左右 pane 各自映射一个。
+  bool get isSplitMultiTabActive => _enableSplitScreen && isMultiTabEnabledInSplitPane;
+
+  /// 双窗口下左右 pane 各自显示的标签页索引。
+  /// 仅在 [isSplitMultiTabActive] 时有意义；否则固定为 0 / 1。
+  final List<int> _paneTabIndexes = [0, 1];
+
+  /// 当前获得焦点的 pane（0 = 左，1 = 右）。标签页栏高亮并跟随此 pane。
+  int _activePaneIndex = 0;
+  int get activePaneIndex => _activePaneIndex;
+
+  /// 返回 [paneIndex] 对应的标签页索引，越界时自动回落到安全值。
+  int paneTabIndex(int paneIndex) {
+    if (_tabs.isEmpty) return 0;
+    if (!isSplitMultiTabActive) {
+      return paneIndex.clamp(0, _tabs.length - 1);
+    }
+    final raw = (paneIndex >= 0 && paneIndex < _paneTabIndexes.length)
+        ? _paneTabIndexes[paneIndex]
+        : 0;
+    if (raw < 0 || raw >= _tabs.length) {
+      return _activeTabIndex.clamp(0, _tabs.length - 1);
+    }
+    return raw;
+  }
+
+  /// 让 [paneIndex] 对应的 pane 获得焦点。
+  void setActivePane(int paneIndex) {
+    if (paneIndex < 0 || paneIndex > 1) return;
+    _activePaneIndex = paneIndex;
+    final target = paneTabIndex(paneIndex);
+    if (target != _activeTabIndex) {
+      clearSelection();
+      _activeTabIndex = target;
+    }
+    _persistTabs();
+    notifyListeners();
+  }
+
+  /// 将标签页收敛到 [keep] 个：优先保留当前激活的标签页，其余从尾部丢弃。
+  void _collapseTabsTo(int keep) {
+    if (_tabs.length <= keep || keep <= 0) return;
+    final activeIndex = _activeTabIndex.clamp(0, _tabs.length - 1);
+    final active = _tabs[activeIndex];
+    if (activeIndex >= keep) {
+      // 激活的标签页不在保留范围内，把它挪到首位再截断。
+      _tabs.removeAt(activeIndex);
+      _tabs.insert(0, active);
+    }
+    _tabs = _tabs.take(keep).toList();
+    _activeTabIndex = 0;
+    _activePaneIndex = 0;
+    _paneTabIndexes[0] = 0;
+    _paneTabIndexes[1] = _tabs.length > 1 ? 1 : 0;
+    _persistTabs();
   }
 
   bool _enableSplitScreen = false;
@@ -1278,9 +1389,18 @@ class FileManagerProvider extends ChangeNotifier {
         );
         _tabs.add(newTab);
       }
-      loadDirectoryForTab(0, _tabs[0].currentPath, showLoading: false);
-      loadDirectoryForTab(1, _tabs[1].currentPath, showLoading: false);
+      // 进入双窗口时重置 pane 映射，保证左右 pane 各指向一个存在的标签页
+      _activePaneIndex = 0;
+      _paneTabIndexes[0] = 0;
+      _paneTabIndexes[1] = _tabs.length > 1 ? 1 : 0;
+      final leftIndex = paneTabIndex(0);
+      final rightIndex = paneTabIndex(1);
+      loadDirectoryForTab(leftIndex, _tabs[leftIndex].currentPath, showLoading: false);
+      if (rightIndex != leftIndex) {
+        loadDirectoryForTab(rightIndex, _tabs[rightIndex].currentPath, showLoading: false);
+      }
     } else {
+      _activePaneIndex = 0;
       if (_activeTabIndex >= _tabs.length) {
         _activeTabIndex = 0;
       }
@@ -1363,8 +1483,14 @@ class FileManagerProvider extends ChangeNotifier {
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       currentPath: path,
     );
-    // 在双窗口模式下，如果已有2个或更多tab，替换未激活的tab
-    if (enableSplitScreen && _tabs.length >= 2) {
+    if (isSplitMultiTabActive) {
+      // 双窗口多标签：追加标签页，并交给当前聚焦的 pane 显示
+      _tabs.add(newTab);
+      final newIndex = _tabs.length - 1;
+      _paneTabIndexes[_activePaneIndex] = newIndex;
+      _activeTabIndex = newIndex;
+    } else if (enableSplitScreen && _tabs.length >= 2) {
+      // 双窗口未启用多标签：保持原行为，替换未激活的 tab
       final inactiveIndex = _activeTabIndex == 0 ? 1 : 0;
       _tabs[inactiveIndex] = newTab;
       _activeTabIndex = inactiveIndex;
@@ -1388,8 +1514,15 @@ class FileManagerProvider extends ChangeNotifier {
       remoteConnection: connection,
     );
 
-    if (enableSplitScreen) {
-      // 双窗口模式：保持原行为——先移除所有已有远程 tab，再替换未激活的 tab。
+    if (isSplitMultiTabActive) {
+      // 双窗口多标签：每个远程连接独立成一个标签页，追加后交给当前聚焦的 pane，
+      // 不再覆盖已打开的远程连接。
+      _tabs.add(newTab);
+      final newIndex = _tabs.length - 1;
+      _paneTabIndexes[_activePaneIndex] = newIndex;
+      _activeTabIndex = newIndex;
+    } else if (enableSplitScreen) {
+      // 双窗口未启用多标签：保持原行为——先移除所有已有远程 tab，再替换未激活的 tab。
       // 双窗口只有两个 pane，远程连接始终占用其中一个 pane，覆盖是预期行为。
       _tabs.removeWhere((t) => t.isRemote);
       if (_tabs.length >= 2) {
@@ -1560,6 +1693,60 @@ class FileManagerProvider extends ChangeNotifier {
     }
 
     return null;
+  }
+
+  /// 列出 SMB 服务器上可浏览的共享名路径（如 `/Public`）。
+  /// 复用 [_ignoredSmbShareNames] 与 `$` 结尾过滤，与 [detectSmbShare] 保持一致。
+  /// 供 SMB 添加向导「扫描共享名」按钮调用：连接后列出根目录共享，供用户点选填入。
+  static Future<List<String>> listSmbShares(RemoteClient client) async {
+    final items = await client.listDirectory('/');
+    final shares = <String>[];
+    for (final item in items) {
+      if (!item.isDirectory) continue;
+      final lower = item.name.toLowerCase();
+      if (_ignoredSmbShareNames.contains(lower)) continue;
+      if (lower.endsWith(r'$')) continue;
+      shares.add('/${item.name}');
+    }
+    return shares;
+  }
+
+  /// 扫描局域网内的 SMB 共享设备（无需预先填写 IP 地址）。
+  /// 先用 [LanClient.scanSubnet] 探测开放 445 端口的设备，再逐台尝试
+  /// 列出根共享名（复用 [listSmbShares] 的过滤逻辑）。
+  /// 返回 `host -> 共享名列表`；能发现但无法列出共享（如需要认证）的值为空列表。
+  static Future<Map<String, List<String>>> discoverSmbDevices({
+    String username = '',
+    String password = '',
+    Function(double)? onProgress,
+  }) async {
+    final discovered = await LanClient.scanSubnet(
+      onProgress: onProgress ?? (double _) {},
+    );
+    final smbDevices = discovered.where((d) => d.type == 'SMB').toList();
+    final result = <String, List<String>>{};
+    for (final d in smbDevices) {
+      final client = LanClient(
+        host: d.host,
+        port: d.port,
+        username: username,
+        password: password,
+      );
+      try {
+        await client.connect().timeout(const Duration(seconds: 6));
+        final shares = await listSmbShares(client);
+        result[d.host] = shares.map((s) => s.startsWith('/') ? s.substring(1) : s).toList();
+      } catch (_) {
+        result[d.host] = const [];
+      } finally {
+        try {
+          await client.disconnect();
+        } catch (_) {
+          // 忽略断开异常
+        }
+      }
+    }
+    return result;
   }
 
   /// Factory: create the correct RemoteClient subclass for a connection model.
@@ -1801,12 +1988,16 @@ class FileManagerProvider extends ChangeNotifier {
 
   void closeTab(int index) {
     if (_tabs.length <= 1) return;
+    // 双窗口多标签：两个 pane 各需要一个标签页，不允许关到 2 个以下
+    if (isSplitMultiTabActive && _tabs.length <= 2) return;
     final removed = _tabs[index];
     if (removed.isRemote) {
       removed.remoteClient?.disconnect();
     }
     _tabs.removeAt(index);
-    if (_activeTabIndex >= _tabs.length) {
+    if (isSplitMultiTabActive) {
+      _remapPaneIndexesAfterRemove(index);
+    } else if (_activeTabIndex >= _tabs.length) {
       _activeTabIndex = _tabs.length - 1;
     } else if (_activeTabIndex == index) {
       if (_activeTabIndex >= _tabs.length) {
@@ -1821,6 +2012,12 @@ class FileManagerProvider extends ChangeNotifier {
 
   void closeOtherTabs() {
     if (_tabs.length <= 1) return;
+    // 双窗口下两个 pane 各需要一个标签页，不能收敛到 1 个
+    if (_enableSplitScreen) {
+      _collapseTabsTo(2);
+      notifyListeners();
+      return;
+    }
     final active = activeTab;
     _tabs = [active];
     _activeTabIndex = 0;
@@ -1849,9 +2046,15 @@ class FileManagerProvider extends ChangeNotifier {
       pathHistory: List<String>.from(active.pathHistory),
       historyIndex: active.historyIndex,
     );
-    // 双窗口模式下，复制激活 tab 到未激活的 pane（索引 0 或 1），
-    // 而不是新增 tab（否则 tabs 数量 > 2，PaneBrowser 看不到新增的 tab）
-    if (enableSplitScreen && _tabs.length >= 2) {
+    if (isSplitMultiTabActive) {
+      // 双窗口多标签：复制为独立标签页，交给当前聚焦的 pane 显示
+      _tabs.add(dup);
+      final newIndex = _tabs.length - 1;
+      _paneTabIndexes[_activePaneIndex] = newIndex;
+      _activeTabIndex = newIndex;
+    } else if (enableSplitScreen && _tabs.length >= 2) {
+      // 双窗口未启用多标签：复制激活 tab 到未激活的 pane（索引 0 或 1），
+      // 而不是新增 tab（否则 tabs 数量 > 2，PaneBrowser 看不到新增的 tab）
       final inactiveIndex = _activeTabIndex == 0 ? 1 : 0;
       // 如果未激活 pane 是被钉住的，不覆盖
       if (_tabs[inactiveIndex].isPinned) {
@@ -1902,14 +2105,72 @@ class FileManagerProvider extends ChangeNotifier {
   }
 
   void setActiveTab(int index) {
-    if (index >= 0 && index < _tabs.length) {
+    if (index < 0 || index >= _tabs.length) return;
+    if (isSplitMultiTabActive) {
+      // 双窗口多标签：点击的标签页交给当前聚焦的 pane 显示。
+      // 若它正显示在另一个 pane，则两个 pane 内容互换，
+      // 避免同一个标签页被两个 pane 同时持有（滚动位置/选择集会互相打架）。
+      final otherPane = _activePaneIndex == 0 ? 1 : 0;
+      if (_paneTabIndexes[otherPane] == index) {
+        final current = _paneTabIndexes[_activePaneIndex];
+        _paneTabIndexes[otherPane] = current;
+        _paneTabIndexes[_activePaneIndex] = index;
+      } else {
+        _paneTabIndexes[_activePaneIndex] = index;
+      }
       if (index != _activeTabIndex) {
         clearSelection();
+        _activeTabIndex = index;
       }
-      _activeTabIndex = index;
       _persistTabs();
       notifyListeners();
+      return;
     }
+    if (index != _activeTabIndex) {
+      clearSelection();
+    }
+    _activeTabIndex = index;
+    _persistTabs();
+    notifyListeners();
+  }
+
+  /// 关闭标签页后修正 pane → 标签页的映射：
+  /// 索引整体前移，并为失去内容的 pane 重新分配一个未被占用的标签页。
+  void _remapPaneIndexesAfterRemove(int removedIndex) {
+    if (_tabs.isEmpty) {
+      _activeTabIndex = 0;
+      _paneTabIndexes[0] = 0;
+      _paneTabIndexes[1] = 0;
+      return;
+    }
+    final maxIndex = _tabs.length - 1;
+    for (int i = 0; i < _paneTabIndexes.length; i++) {
+      final v = _paneTabIndexes[i];
+      if (v == removedIndex) {
+        _paneTabIndexes[i] = _findFreeTabIndex(i);
+      } else if (v > removedIndex) {
+        _paneTabIndexes[i] = v - 1;
+      }
+    }
+    // 两个 pane 不允许指向同一个标签页
+    if (_paneTabIndexes[0] == _paneTabIndexes[1] && maxIndex > 0) {
+      _paneTabIndexes[1] = _findFreeTabIndex(1);
+    }
+    for (int i = 0; i < _paneTabIndexes.length; i++) {
+      _paneTabIndexes[i] = _paneTabIndexes[i].clamp(0, maxIndex);
+    }
+    _activeTabIndex = _paneTabIndexes[_activePaneIndex].clamp(0, maxIndex);
+  }
+
+  /// 为 [forPane] 找一个未被另一个 pane 占用的标签页索引。
+  int _findFreeTabIndex(int forPane) {
+    final other = forPane == 0 ? 1 : 0;
+    final used = (other >= 0 && other < _paneTabIndexes.length) ? _paneTabIndexes[other] : -1;
+    if (_tabs.isEmpty) return 0;
+    for (int i = 0; i < _tabs.length; i++) {
+      if (i != used) return i;
+    }
+    return 0;
   }
 
   void _persistTabs() {
@@ -2564,6 +2825,11 @@ class FileManagerProvider extends ChangeNotifier {
       _activeTabIndex = 0;
     }
 
+    // 恢复标签页后重置 pane 映射，保证双窗口下左右 pane 各指向一个存在的标签页
+    _activePaneIndex = 0;
+    _paneTabIndexes[0] = 0;
+    _paneTabIndexes[1] = _tabs.length > 1 ? 1 : 0;
+
     await _detectStorageVolumes();
     final path0 = _tabs.isNotEmpty ? _tabs[0].currentPath : (homeLeft ?? initialPath);
     // 清除应用数据后权限状态可能不一致（系统显示已授权但实际被拒），
@@ -2587,6 +2853,9 @@ class FileManagerProvider extends ChangeNotifier {
       debugPrint('[ZenFile] init 恢复 tab 异常，使用默认本地 tab: $e');
       _tabs = [FolderTab(id: DateTime.now().millisecondsSinceEpoch.toString(), currentPath: initialPath)];
       _activeTabIndex = 0;
+      _activePaneIndex = 0;
+      _paneTabIndexes[0] = 0;
+      _paneTabIndexes[1] = 0;
     }
   }
 
@@ -2768,45 +3037,77 @@ class FileManagerProvider extends ChangeNotifier {
     // 失败或返回空时再走 Shizuku/root 受限模式。
     // 这样即便 Shizuku 被 FUSE 拦截，标准 API 仍可正常工作（部分 ROM 行为）。
     if (activeTab.isRestrictedMode && _isRestrictedAndroidPath(path)) {
-      // ── Android/data 三级 fallback 策略 ──────────────────────────────────
-      // 1. 标准 API（/storage/...）：适用于未加固 ROM（FUSE 不拦截该路径）
-      // 2. 原始路径（/data/media/0/...）：适用于部分 ROM（FUSE 仅拦截 /storage 路径）
-      // 3. Shizuku/root shell：适用于以上均不可用的情况（需授权或 root）
+      // ── Android/data 多级 fallback 策略 ──────────────────────────────────
+      // 1a. 标准 API（/storage/...）：不以 exists() 为门槛——部分 ROM 的 FUSE
+      //     层拦截 stat 但放行 opendir，直接 list() 更宽容。
+      // 1b. '/./' 变体路径（/storage/emulated/0/Android/./data）：vivo 等定制
+      //     ROM 对 /Android/{data,obb} 的拦截基于路径串匹配，插入 '/./'
+      //     组件可绕过（用户经收藏夹自定义路径验证该机制可行）。成功后把
+      //     条目路径归一化回标准路径。
+      // 2. 原始路径（/data/media/0/...）：Kotlin Java File API（app 进程内）。
+      // 3. Shizuku/root shell：底层路径与 FUSE 直达路径双跳（见 listFiles）。
+      // 4. SAF 系统授权兜底。
       debugPrint('[ZenFile] Trying Android/data access for: $path');
 
-      // 1. 标准 API
-      try {
-        final dir = Directory(path);
-        if (await dir.exists()) {
-          final entities = await dir.list().toList();
-          debugPrint('[ZenFile] Standard API returned ${entities.length} items for $path');
-          if (entities.isNotEmpty) {
-            final folders = <FileItemModel>[];
-            final files = <FileItemModel>[];
-            final items = await Future.wait(entities.map((e) => FileItemModel.fromEntityAsync(e)));
-            for (var item in items) {
-              if (!_showHiddenFiles && item.isHidden) continue;
-              if (item.isDirectory) folders.add(item);
-              else files.add(item);
+      Future<List<FileItemModel>?> tryStandardApi(String target) async {
+        try {
+          final entities = await Directory(target).list().toList();
+          debugPrint('[ZenFile] Standard API ($target) returned ${entities.length} items');
+          if (entities.isEmpty) return null;
+          final items = await Future.wait(entities.map((e) => FileItemModel.fromEntityAsync(e)));
+          final folders = <FileItemModel>[];
+          final files = <FileItemModel>[];
+          for (var item in items) {
+            if (!_showHiddenFiles && item.isHidden) continue;
+            if (item.isDirectory) {
+              folders.add(item);
+            } else {
+              files.add(item);
             }
-            final filteredFiles = _filterType == FileFilterType.all
-                ? files
-                : files.where((e) => _matchesFilter(e.path)).toList();
-            final filteredFolders = (_filterType != FileFilterType.all && _hideFoldersInFilter) ? <FileItemModel>[] : folders;
-            _sortList(filteredFolders, path);
-            _sortList(filteredFiles, path);
-            activeTab.currentFiles = [...filteredFolders, ...filteredFiles];
-            activeTab.isLoading = false;
-            activeTab.needsPermission = false;
-            activeTab.useRootMode = false;
-            activeTab.useShizukuMode = false;
-            _persistTabs();
-            notifyListeners();
-            return;
           }
+          return [...folders, ...files];
+        } catch (e) {
+          debugPrint('[ZenFile] Standard API exception for $target: $e');
+          return null;
         }
-      } catch (e) {
-        debugPrint('[ZenFile] Standard API exception for $path: $e');
+      }
+
+      // 1a. 标准 API
+      var stdItems = await tryStandardApi(path);
+      // 1b. '/./' 变体路径（仅标准路径失败时尝试）
+      final dotVariant = _androidDotVariantPath(path);
+      if (stdItems == null && dotVariant != null) {
+        stdItems = await tryStandardApi(dotVariant);
+        if (stdItems != null) {
+          debugPrint('[ZenFile] Dot variant path worked: $dotVariant');
+          stdItems = stdItems
+              .map((it) => FileItemModel.fromCustom(
+                    path: it.path.replaceAll('/Android/./', '/Android/'),
+                    isDirectory: it.isDirectory,
+                    size: it.size,
+                    modified: it.modified,
+                  ))
+              .toList();
+        }
+      }
+      if (stdItems != null) {
+        final folders = stdItems.where((e) => e.isDirectory).toList();
+        final files = stdItems.where((e) => !e.isDirectory).toList();
+        final filteredFiles = _filterType == FileFilterType.all
+            ? files
+            : files.where((e) => _matchesFilter(e.path)).toList();
+        final filteredFolders = (_filterType != FileFilterType.all && _hideFoldersInFilter) ? <FileItemModel>[] : folders;
+        _sortList(filteredFolders, path);
+        _sortList(filteredFiles, path);
+        activeTab.currentPath = path;
+        activeTab.currentFiles = [...filteredFolders, ...filteredFiles];
+        activeTab.isLoading = false;
+        activeTab.needsPermission = false;
+        activeTab.useRootMode = false;
+        activeTab.useShizukuMode = false;
+        _persistTabs();
+        notifyListeners();
+        return;
       }
 
       // 2. 原始路径（/data/media/0/...）绕开 FUSE — Java File API（app 进程内）
@@ -2824,7 +3125,7 @@ class FileManagerProvider extends ChangeNotifier {
         return;
       }
 
-      // 3. Shizuku/root shell（FUSE 绕过路径）
+      // 3. Shizuku/root shell（双路径），4. SAF — 继续走下方受限模式分支
     }
 
     if (activeTab.isRestrictedMode) {
@@ -2873,14 +3174,27 @@ class FileManagerProvider extends ChangeNotifier {
       try {
         activeTab.currentPath = path;
         final items = await RootShizukuService.listFiles(path, useRoot: activeTab.useRootMode, showHiddenFiles: _showHiddenFiles);
-        // Shizuku shell 也返回空时（部分 ROM 如 vivo FUSE 拦截 shell），
-        // 尝试 SAF 授权访问作为最终兜底。
+        // Shizuku shell 双路径均返回空时（部分 ROM 如 vivo FUSE/SELinux 拦截
+        // shell），尝试 SAF 授权访问作为最终兜底。
         if (items.isEmpty && _isRestrictedAndroidPath(path)) {
           debugPrint('[ZenFile] Shizuku returned empty for $path, trying SAF');
           final safItems = await _trySafAccess(path);
           if (safItems != null) {
             activeTab.currentFiles = safItems;
             activeTab.isLoading = false;
+            _persistTabs();
+            notifyListeners();
+            return;
+          }
+          // Android/{data,obb} 根层几乎不可能为空（至少包含各应用包名目录）。
+          // 标准 API/变体路径/原始路径/shell 双路径/SAF 全部失败时，判定为
+          // ROM 拦截：展示受限提示页（含系统授权按钮）而非静默空目录，
+          // 避免用户误以为目录为空（vivo 授权 Shizuku 后空目录问题的根治）。
+          if (_isAndroidDataObbRoot(path)) {
+            debugPrint('[ZenFile] All access methods blocked for $path, showing restricted banner');
+            activeTab.currentFiles = [];
+            activeTab.isLoading = false;
+            activeTab.needsPermission = true;
             _persistTabs();
             notifyListeners();
             return;
@@ -2909,6 +3223,14 @@ class FileManagerProvider extends ChangeNotifier {
             notifyListeners();
             return;
           }
+        }
+        if (_isAndroidDataObbRoot(path)) {
+          activeTab.currentFiles = [];
+          activeTab.isLoading = false;
+          activeTab.needsPermission = true;
+          _persistTabs();
+          notifyListeners();
+          return;
         }
         activeTab.currentFiles = [];
       }
@@ -5398,6 +5720,26 @@ class FileManagerProvider extends ChangeNotifier {
     return !sub.startsWith('data/com.sequl.zenfile') && !sub.startsWith('obb/com.sequl.zenfile');
   }
 
+  /// 是否为 Android/{data,obb} 根目录本身（非深层子路径）。
+  /// 根层几乎不可能为空（至少包含各应用包名目录），用于区分「ROM 拦截」
+  /// 与「目录真的为空」。
+  bool _isAndroidDataObbRoot(String path) {
+    final normalized = path.replaceAll(RegExp(r'/+'), '/').replaceAll(RegExp(r'/+$'), '');
+    return normalized == '/storage/emulated/0/Android/data' || normalized == '/storage/emulated/0/Android/obb';
+  }
+
+  /// 生成 '/./' 变体路径：'/storage/emulated/0/Android/data' →
+  /// '/storage/emulated/0/Android/./data'。vivo 等定制 ROM 对
+  /// /Android/{data,obb} 的 FUSE/SELinux 拦截基于路径串匹配，插入 '/./'
+  /// 组件可绕过该检查（用户经收藏夹自定义路径验证该机制可行）。
+  /// 非 Android 区路径返回 null。
+  String? _androidDotVariantPath(String path) {
+    const base = '/storage/emulated/0/Android/';
+    final normalized = path.replaceAll(RegExp(r'/+'), '/');
+    if (!normalized.startsWith(base)) return null;
+    return '/storage/emulated/0/Android/./${normalized.substring(base.length)}';
+  }
+
   /// 尝试通过 SAF（系统文件选择器授权）访问受限路径。
   /// 已有授权时直接列出；无授权时返回 null（由调用方决定是否弹出授权）。
   Future<List<FileItemModel>?> _trySafAccess(String path) async {
@@ -5422,6 +5764,7 @@ class FileManagerProvider extends ChangeNotifier {
     final items = await SafAndroidDataService.listAndroidDataSubDirViaSAF(
       subPath,
       showHiddenFiles: _showHiddenFiles,
+      isObb: isObb,
     );
     return items;
   }

@@ -5188,6 +5188,24 @@ abstract class L10n {
   /// **'全部'**
   String get ui_multi_tab_scope_all;
 
+  /// more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'仅在双窗口分屏模式下启用多标签页'**
+  String get ui_multi_tab_scope_split_only_desc;
+
+  /// more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'单窗口与双窗口模式均启用多标签页'**
+  String get ui_multi_tab_scope_all_desc;
+
+  /// more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'选择多标签页生效的窗口范围'**
+  String get ui_multi_tab_scope_subtitle;
+
   /// No description provided for @ui_enable_split_screen.
   ///
   /// In zh, this message translates to:
@@ -10821,6 +10839,66 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'请让对端设备也在快传中点击本机的「连接」按钮'**
   String get quick_transfer_ask_peer_connect;
+
+  /// SMB wizard button: scan share names on the entered server
+  ///
+  /// In zh, this message translates to:
+  /// **'扫描共享名'**
+  String get ui_scan_shares;
+
+  /// SMB wizard: scanning share names in progress
+  ///
+  /// In zh, this message translates to:
+  /// **'正在扫描共享名…'**
+  String get ui_scanning_shares;
+
+  /// SMB wizard: hint to tap a scanned share name to fill it
+  ///
+  /// In zh, this message translates to:
+  /// **'点击共享名自动填入'**
+  String get ui_select_share_to_fill;
+
+  /// SMB wizard: no share names found on the server
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到共享名'**
+  String get ui_no_shares_found;
+
+  /// SMB wizard: share scan failed with error
+  ///
+  /// In zh, this message translates to:
+  /// **'扫描共享名失败：\$error'**
+  String ui_share_scan_failed(Object error);
+
+  /// SMB wizard: button to scan LAN for SMB devices without entering an IP
+  ///
+  /// In zh, this message translates to:
+  /// **'扫描局域网共享设备'**
+  String get ui_scan_lan_devices;
+
+  /// SMB wizard: scanning LAN devices in progress
+  ///
+  /// In zh, this message translates to:
+  /// **'正在扫描局域网设备…'**
+  String get ui_scanning_lan;
+
+  /// SMB wizard: no SMB devices found on the LAN
+  ///
+  /// In zh, this message translates to:
+  /// **'未发现局域网共享设备'**
+  String get ui_lan_no_devices;
+
+  /// SMB wizard: hint to tap a discovered device to fill address and share name
+  ///
+  /// In zh, this message translates to:
+  /// **'点击设备自动填入地址与共享名'**
+  String get ui_lan_scan_hint;
+
+  /// SMB wizard: prompt to enter host and port before scanning
+  ///
+  /// In zh, this message translates to:
+  /// **'请先填写主机地址与端口'**
+  String get ui_enter_host_first;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

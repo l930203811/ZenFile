@@ -3136,6 +3136,18 @@
     "description": "more_settings_screen.dart"
   },
   "ui_multi_tab_scope_all": "Во всех окнах",
+  "@ui_multi_tab_scope_split_only_desc": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_split_only_desc": "Включить несколько вкладок только в режиме двух окон",
+  "@ui_multi_tab_scope_all_desc": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_all_desc": "Включить несколько вкладок в режимах одного и двух окон",
+  "@ui_multi_tab_scope_subtitle": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_subtitle": "Выберите, где будут действовать несколько вкладок",
   "ui_enable_split_screen": "Включить Разделённый Экран",
   "ui_password_auth": "Парольная аутентификация",
   "@ui_password_auth": {
@@ -6040,5 +6052,48 @@
   "cat_toolbox": "Ящик инструментов",
   "cat_toolbox_desc": "Инструменты",
   "quick_transfer_waiting_for_x": "Ожидание нажатия «Подключить» устройством {name}…",
-  "quick_transfer_ask_peer_connect": "Попросите другое устройство также нажать кнопку «Подключить» для этого устройства в Быстрой передаче"
+  "quick_transfer_ask_peer_connect": "Попросите другое устройство также нажать кнопку «Подключить» для этого устройства в Быстрой передаче",
+  "ui_scan_shares": "Сканировать папки",
+  "@ui_scan_shares": {
+    "description": "SMB wizard button: scan share names on the entered server"
+  },
+  "ui_scanning_shares": "Сканирование папок…",
+  "@ui_scanning_shares": {
+    "description": "SMB wizard: scanning share names in progress"
+  },
+  "ui_select_share_to_fill": "Нажмите имя папки для заполнения",
+  "@ui_select_share_to_fill": {
+    "description": "SMB wizard: hint to tap a scanned share name to fill it"
+  },
+  "ui_no_shares_found": "Папки не найдены",
+  "@ui_no_shares_found": {
+    "description": "SMB wizard: no share names found on the server"
+  },
+  "ui_share_scan_failed": "Ошибка сканирования папок: $error",
+  "@ui_share_scan_failed": {
+    "description": "SMB wizard: share scan failed with error",
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "ui_scan_lan_devices": "Сканировать устройства LAN",
+  "@ui_scan_lan_devices": {
+    "description": "SMB wizard: button to scan LAN for SMB devices without entering an IP"
+  },
+  "ui_scanning_lan": "Сканирование устройств LAN…",
+  "@ui_scanning_lan": {
+    "description": "SMB wizard: scanning LAN devices in progress"
+  },
+  "ui_lan_no_devices": "Устройства SMB в LAN не найдены",
+  "@ui_lan_no_devices": {
+    "description": "SMB wizard: no SMB devices found on the LAN"
+  },
+  "ui_lan_scan_hint": "Нажмите устройство, чтобы заполнить адрес и имя ресурса",
+  "@ui_lan_scan_hint": {
+    "description": "SMB wizard: hint to tap a discovered device to fill address and share name"
+  },
+  "ui_enter_host_first": "Сначала введите адрес и порт хоста",
+  "@ui_enter_host_first": {
+    "description": "SMB wizard: prompt to enter host and port before scanning"
+  }
 }

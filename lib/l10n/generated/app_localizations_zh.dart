@@ -2707,6 +2707,15 @@ class L10nZh extends L10n {
   String get ui_multi_tab_scope_all => '全部';
 
   @override
+  String get ui_multi_tab_scope_split_only_desc => '仅在双窗口分屏模式下启用多标签页';
+
+  @override
+  String get ui_multi_tab_scope_all_desc => '单窗口与双窗口模式均启用多标签页';
+
+  @override
+  String get ui_multi_tab_scope_subtitle => '选择多标签页生效的窗口范围';
+
+  @override
   String get ui_enable_split_screen => '启用分屏';
 
   @override
@@ -5780,6 +5789,38 @@ class L10nZh extends L10n {
 
   @override
   String get quick_transfer_ask_peer_connect => '请让对端设备也在快传中点击本机的「连接」按钮';
+
+  @override
+  String get ui_scan_shares => '扫描共享名';
+
+  @override
+  String get ui_scanning_shares => '正在扫描共享名…';
+
+  @override
+  String get ui_select_share_to_fill => '点击共享名自动填入';
+
+  @override
+  String get ui_no_shares_found => '未找到共享名';
+
+  @override
+  String ui_share_scan_failed(Object error) {
+    return '扫描共享名失败：\$error';
+  }
+
+  @override
+  String get ui_scan_lan_devices => '扫描局域网共享设备';
+
+  @override
+  String get ui_scanning_lan => '正在扫描局域网设备…';
+
+  @override
+  String get ui_lan_no_devices => '未发现局域网共享设备';
+
+  @override
+  String get ui_lan_scan_hint => '点击设备自动填入地址与共享名';
+
+  @override
+  String get ui_enter_host_first => '请先填写主机地址与端口';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -8474,6 +8515,15 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_multi_tab_scope_all => '全部';
+
+  @override
+  String get ui_multi_tab_scope_split_only_desc => '僅在雙視窗分屏模式下啟用多標籤頁';
+
+  @override
+  String get ui_multi_tab_scope_all_desc => '單視窗與雙視窗模式均啟用多標籤頁';
+
+  @override
+  String get ui_multi_tab_scope_subtitle => '選擇多標籤頁生效的視窗範圍';
 
   @override
   String get ui_enable_split_screen => '啟用分屏';
@@ -11525,4 +11575,36 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get quick_transfer_ask_peer_connect => '請讓對端裝置也在快傳中點擊本機的「連線」按鈕';
+
+  @override
+  String get ui_scan_shares => '掃描共享名';
+
+  @override
+  String get ui_scanning_shares => '正在掃描共享名…';
+
+  @override
+  String get ui_select_share_to_fill => '點擊共享名自動填入';
+
+  @override
+  String get ui_no_shares_found => '未找到共享名';
+
+  @override
+  String ui_share_scan_failed(Object error) {
+    return '掃描共享名失敗：\$error';
+  }
+
+  @override
+  String get ui_scan_lan_devices => '掃描區域網路共享裝置';
+
+  @override
+  String get ui_scanning_lan => '正在掃描區域網路裝置…';
+
+  @override
+  String get ui_lan_no_devices => '未發現區域網路共享裝置';
+
+  @override
+  String get ui_lan_scan_hint => '點擊裝置自動填入位址與共用名稱';
+
+  @override
+  String get ui_enter_host_first => '請先填寫主機地址與連接埠';
 }

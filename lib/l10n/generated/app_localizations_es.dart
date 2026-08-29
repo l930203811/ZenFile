@@ -2863,6 +2863,18 @@ class L10nEs extends L10n {
   String get ui_multi_tab_scope_all => 'Todas las ventanas';
 
   @override
+  String get ui_multi_tab_scope_split_only_desc =>
+      'Habilitar múltiples pestañas solo en modo de ventana doble';
+
+  @override
+  String get ui_multi_tab_scope_all_desc =>
+      'Habilitar múltiples pestañas en modo de ventana única y doble';
+
+  @override
+  String get ui_multi_tab_scope_subtitle =>
+      'Elija dónde se aplican las pestañas múltiples';
+
+  @override
   String get ui_enable_split_screen => 'Habilitar Pantalla Dividida';
 
   @override
@@ -6107,4 +6119,40 @@ class L10nEs extends L10n {
   @override
   String get quick_transfer_ask_peer_connect =>
       'Pide al otro dispositivo que también toque el botón Conectar de este dispositivo en Quick Transfer';
+
+  @override
+  String get ui_scan_shares => 'Escanear recursos';
+
+  @override
+  String get ui_scanning_shares => 'Escaneando recursos…';
+
+  @override
+  String get ui_select_share_to_fill =>
+      'Toca un nombre de recurso para rellenarlo';
+
+  @override
+  String get ui_no_shares_found => 'No se encontraron recursos';
+
+  @override
+  String ui_share_scan_failed(Object error) {
+    return 'Error al escanear recursos: \$error';
+  }
+
+  @override
+  String get ui_scan_lan_devices => 'Escanear dispositivos de red';
+
+  @override
+  String get ui_scanning_lan => 'Escaneando dispositivos de red…';
+
+  @override
+  String get ui_lan_no_devices =>
+      'No se encontraron dispositivos SMB en la red';
+
+  @override
+  String get ui_lan_scan_hint =>
+      'Toca un dispositivo para rellenar su dirección y nombre de recurso';
+
+  @override
+  String get ui_enter_host_first =>
+      'Introduzca primero la dirección y el puerto del host';
 }

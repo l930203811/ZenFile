@@ -2849,6 +2849,18 @@ class L10nRu extends L10n {
   String get ui_multi_tab_scope_all => 'Во всех окнах';
 
   @override
+  String get ui_multi_tab_scope_split_only_desc =>
+      'Включить несколько вкладок только в режиме двух окон';
+
+  @override
+  String get ui_multi_tab_scope_all_desc =>
+      'Включить несколько вкладок в режимах одного и двух окон';
+
+  @override
+  String get ui_multi_tab_scope_subtitle =>
+      'Выберите, где будут действовать несколько вкладок';
+
+  @override
   String get ui_enable_split_screen => 'Включить Разделённый Экран';
 
   @override
@@ -6092,4 +6104,37 @@ class L10nRu extends L10n {
   @override
   String get quick_transfer_ask_peer_connect =>
       'Попросите другое устройство также нажать кнопку «Подключить» для этого устройства в Быстрой передаче';
+
+  @override
+  String get ui_scan_shares => 'Сканировать папки';
+
+  @override
+  String get ui_scanning_shares => 'Сканирование папок…';
+
+  @override
+  String get ui_select_share_to_fill => 'Нажмите имя папки для заполнения';
+
+  @override
+  String get ui_no_shares_found => 'Папки не найдены';
+
+  @override
+  String ui_share_scan_failed(Object error) {
+    return 'Ошибка сканирования папок: \$error';
+  }
+
+  @override
+  String get ui_scan_lan_devices => 'Сканировать устройства LAN';
+
+  @override
+  String get ui_scanning_lan => 'Сканирование устройств LAN…';
+
+  @override
+  String get ui_lan_no_devices => 'Устройства SMB в LAN не найдены';
+
+  @override
+  String get ui_lan_scan_hint =>
+      'Нажмите устройство, чтобы заполнить адрес и имя ресурса';
+
+  @override
+  String get ui_enter_host_first => 'Сначала введите адрес и порт хоста';
 }

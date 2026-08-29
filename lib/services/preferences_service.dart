@@ -30,6 +30,8 @@ class PreferencesService {
   static const String _keyShowBottomActionBar = 'show_bottom_action_bar';
   static const String _keyEnableMultipleTabs = 'enable_multiple_tabs';
   static const String _keyEnableSplitScreen = 'enable_split_screen';
+  // 多标签页的适用范围：singleOnly / splitOnly / all
+  static const String _keyMultiTabPaneMode = 'multi_tab_pane_mode';
   static const String _keyShowAddressBar = 'show_address_bar';
   static const String _keyAmoledMode = 'amoled_mode';
   static const String _keyFolderSortTypes = 'folder_sort_types';
@@ -219,6 +221,15 @@ class PreferencesService {
 
   static Future<void> saveEnableSplitScreen(bool val) async {
     await _prefs?.setBool(_keyEnableSplitScreen, val);
+  }
+
+  /// 多标签页的适用范围，默认 'all'（单窗口与双窗口均启用多标签页）。
+  static String getMultiTabPaneMode() {
+    return _prefs?.getString(_keyMultiTabPaneMode) ?? 'all';
+  }
+
+  static Future<void> saveMultiTabPaneMode(String val) async {
+    await _prefs?.setString(_keyMultiTabPaneMode, val);
   }
 
   static bool getIsGridView() {

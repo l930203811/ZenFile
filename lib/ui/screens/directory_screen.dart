@@ -253,10 +253,10 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
 /// 构建顶部固定区域（标签页 + 路径面包屑）
   Widget _buildFixedTopArea(BuildContext context, FileManagerProvider provider) {
     final theme = Theme.of(context);
-    // 双屏模式下隐藏标签页栏（含标签页切换、+ 新建标签页、三点菜单），
-    // 因为每个 PaneBrowser 内部已有自己的导航，不需要顶部标签页切换。
-    // 隐藏后，下方面包屑栏和文件列表会自然上移，充分利用屏幕空间。
-    final hasTabs = provider.enableMultipleTabs && !provider.enableSplitScreen;
+    // 标签页栏是否显示由「启用多标签页」开关及其适用范围共同决定：
+    // 单窗口下看是否允许单窗口多标签，双窗口下看是否允许双窗口多标签。
+    // 双窗口且不在适用范围内时隐藏，下方面包屑栏和文件列表会自然上移，充分利用屏幕空间。
+    final hasTabs = provider.showTabBar;
     final hasAddressBar = provider.showAddressBar;
     // 当底部导航栏开启时，底部已被镜像 AppBar 占用，浏览操作栏改为显示在顶部
     // showFloatingAddButton（设置项"显示操作按钮"）控制操作栏是否显示
@@ -1213,10 +1213,10 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                       return GestureDetector(
                     behavior: HitTestBehavior.translucent,
                     child: provider.enableSplitScreen
-                      ? const Row(
+                      ? Row(
                           children: [
-                            Expanded(child: PaneBrowser(tabIndex: 0)),
-                            Expanded(child: PaneBrowser(tabIndex: 1)),
+                            Expanded(child: PaneBrowser(tabIndex: provider.paneTabIndex(0), paneIndex: 0)),
+                            Expanded(child: PaneBrowser(tabIndex: provider.paneTabIndex(1), paneIndex: 1)),
                           ],
                         )
                       : (provider.isLoading && provider.currentFiles.isEmpty && !provider.isPasting)

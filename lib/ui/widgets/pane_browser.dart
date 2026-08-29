@@ -36,7 +36,10 @@ import 'package:path_provider/path_provider.dart';
 
 class PaneBrowser extends StatefulWidget {
   final int tabIndex;
-  const PaneBrowser({super.key, required this.tabIndex});
+  /// 所属的 pane 序号（0 = 左，1 = 右），仅双窗口多标签模式下有意义，
+  /// 用于点击时通知 provider 该 pane 获得焦点。
+  final int paneIndex;
+  const PaneBrowser({super.key, required this.tabIndex, this.paneIndex = 0});
 
   @override
   State<PaneBrowser> createState() => _PaneBrowserState();
@@ -57,6 +60,14 @@ class _PaneBrowserState extends State<PaneBrowser> {
   }
 
   void _activatePane(FileManagerProvider provider) {
+    if (provider.isSplitMultiTabActive) {
+      // 双窗口多标签：把当前 pane 设为焦点 pane，由 provider 同步激活的标签页。
+      if (provider.activePaneIndex != widget.paneIndex ||
+          provider.activeTabIndex != widget.tabIndex) {
+        provider.setActivePane(widget.paneIndex);
+      }
+      return;
+    }
     if (provider.activeTabIndex != widget.tabIndex) {
       provider.setActiveTab(widget.tabIndex);
     }

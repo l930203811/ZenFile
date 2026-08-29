@@ -3136,6 +3136,18 @@
     "description": "more_settings_screen.dart"
   },
   "ui_multi_tab_scope_all": "جميع النوافذ",
+  "@ui_multi_tab_scope_split_only_desc": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_split_only_desc": "تمكين علامات تبويب متعددة في وضع النافذة المزدوجة فقط",
+  "@ui_multi_tab_scope_all_desc": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_all_desc": "تمكين علامات تبويب متعددة في وضعي النافذة الواحدة والمزدوجة",
+  "@ui_multi_tab_scope_subtitle": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_subtitle": "اختر نطاق عمل علامات التبويب المتعددة",
   "ui_enable_split_screen": "تمكين تقسيم الشاشة",
   "ui_password_auth": "المصادقة بكلمة المرور",
   "@ui_password_auth": {
@@ -6040,5 +6052,48 @@
   "cat_toolbox": "صندوق الأدوات",
   "cat_toolbox_desc": "أدوات",
   "quick_transfer_waiting_for_x": "بانتظار أن يضغط {name} على اتصال…",
-  "quick_transfer_ask_peer_connect": "اطلب من الجهاز الآخر أيضًا الضغط على زر الاتصال لهذا الجهاز في النقل السريع"
+  "quick_transfer_ask_peer_connect": "اطلب من الجهاز الآخر أيضًا الضغط على زر الاتصال لهذا الجهاز في النقل السريع",
+  "ui_scan_shares": "مسح المشاركات",
+  "@ui_scan_shares": {
+    "description": "SMB wizard button: scan share names on the entered server"
+  },
+  "ui_scanning_shares": "جارٍ مسح المشاركات…",
+  "@ui_scanning_shares": {
+    "description": "SMB wizard: scanning share names in progress"
+  },
+  "ui_select_share_to_fill": "انقر على اسم مشاركة لإدخاله",
+  "@ui_select_share_to_fill": {
+    "description": "SMB wizard: hint to tap a scanned share name to fill it"
+  },
+  "ui_no_shares_found": "لم يتم العثور على مشاركات",
+  "@ui_no_shares_found": {
+    "description": "SMB wizard: no share names found on the server"
+  },
+  "ui_share_scan_failed": "فشل مسح المشاركات: $error",
+  "@ui_share_scan_failed": {
+    "description": "SMB wizard: share scan failed with error",
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "ui_scan_lan_devices": "مسح أجهزة الشبكة المحلية",
+  "@ui_scan_lan_devices": {
+    "description": "SMB wizard: button to scan LAN for SMB devices without entering an IP"
+  },
+  "ui_scanning_lan": "جارٍ مسح أجهزة الشبكة…",
+  "@ui_scanning_lan": {
+    "description": "SMB wizard: scanning LAN devices in progress"
+  },
+  "ui_lan_no_devices": "لم يتم العثور على أجهزة SMB على الشبكة",
+  "@ui_lan_no_devices": {
+    "description": "SMB wizard: no SMB devices found on the LAN"
+  },
+  "ui_lan_scan_hint": "اضغط على جهاز لملء عنوانه واسم المشاركة",
+  "@ui_lan_scan_hint": {
+    "description": "SMB wizard: hint to tap a discovered device to fill address and share name"
+  },
+  "ui_enter_host_first": "أدخل عنوان المضيف والمنفذ أولاً",
+  "@ui_enter_host_first": {
+    "description": "SMB wizard: prompt to enter host and port before scanning"
+  }
 }
