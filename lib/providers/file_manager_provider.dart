@@ -2768,14 +2768,18 @@ class FileManagerProvider extends ChangeNotifier {
     // 失败或返回空时再走 Shizuku/root 受限模式。
     // 这样即便 Shizuku 被 FUSE 拦截，标准 API 仍可正常工作（部分 ROM 行为）。
     if (activeTab.isRestrictedMode && _isRestrictedAndroidPath(path)) {
-      // 策略：依次尝试标准 API → 原始路径（绕开 FUSE）→ Shizuku/root shell。
-      // 1. 标准 API：适用于部分 ROM（FUSE 未拦截 Android/data 时）。
-      // 2. 原始路径：适用于 FUSE 拦截了 /storage 路径但未拦截 /data/media/0 的 ROM。
-      // 3. Shizuku/root：适用于以上均不可用的情况。
+      // ── Android/data 三级 fallback 策略 ──────────────────────────────────
+      // 1. 标准 API（/storage/...）：适用于未加固 ROM（FUSE 不拦截该路径）
+      // 2. 原始路径（/data/media/0/...）：适用于部分 ROM（FUSE 仅拦截 /storage 路径）
+      // 3. Shizuku/root shell：适用于以上均不可用的情况（需授权或 root）
+      debugPrint('[ZenFile] Trying Android/data access for: $path');
+
+      // 1. 标准 API
       try {
         final dir = Directory(path);
         if (await dir.exists()) {
           final entities = await dir.list().toList();
+          debugPrint('[ZenFile] Standard API returned ${entities.length} items for $path');
           if (entities.isNotEmpty) {
             final folders = <FileItemModel>[];
             final files = <FileItemModel>[];
@@ -2802,10 +2806,12 @@ class FileManagerProvider extends ChangeNotifier {
           }
         }
       } catch (e) {
-        debugPrint('[ZenFile] Standard API failed for restricted path $path: $e, trying raw path');
+        debugPrint('[ZenFile] Standard API exception for $path: $e');
       }
-      // 2. 原始路径（绕开 FUSE）
+
+      // 2. 原始路径（/data/media/0/...）绕开 FUSE
       final rawItems = await RootShizukuService.listViaRawPath(path, showHiddenFiles: _showHiddenFiles);
+      debugPrint('[ZenFile] Raw path returned ${rawItems?.length ?? 'null'} items for $path');
       if (rawItems != null && rawItems.isNotEmpty) {
         activeTab.currentPath = path;
         activeTab.currentFiles = rawItems;
@@ -2817,7 +2823,8 @@ class FileManagerProvider extends ChangeNotifier {
         notifyListeners();
         return;
       }
-      // 3. 继续走下方 Shizuku/root 分支
+
+      // 3. Shizuku/root shell（FUSE 绕过路径）
     }
 
     if (activeTab.isRestrictedMode) {

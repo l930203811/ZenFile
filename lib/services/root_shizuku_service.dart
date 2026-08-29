@@ -109,8 +109,11 @@ class RootShizukuService {
         'command': command,
         'useRoot': useRoot,
       });
-      return res?.toString();
+      final output = res?.toString() ?? '';
+      debugPrint('[ZenFile] runCommand (${useRoot ? "root" : "shizuku"}): "$command" => "${output.substring(0, output.length.clamp(0, 200))}${output.length > 200 ? "..." : ""}"');
+      return output;
     } catch (e) {
+      debugPrint('[ZenFile] runCommand exception: $e');
       throw Exception('Execution failed: $e');
     }
   }
@@ -123,10 +126,14 @@ class RootShizukuService {
       {bool showHiddenFiles = false}) async {
     if (!Platform.isAndroid) return null;
     final rawPath = _toFuseBypassPath(path);
+    debugPrint('[ZenFile] listViaRawPath: rawPath=$rawPath');
     try {
       final dir = Directory(rawPath);
-      if (!await dir.exists()) return null;
+      final exists = await dir.exists();
+      debugPrint('[ZenFile] listViaRawPath: exists=$exists');
+      if (!exists) return null;
       final entities = await dir.list().toList();
+      debugPrint('[ZenFile] listViaRawPath: got ${entities.length} entities');
       final items = <FileItemModel>[];
       for (final entity in entities) {
         final name = p.basename(entity.path);
@@ -159,9 +166,12 @@ class RootShizukuService {
     // FUSE 绕过（见 _toFuseBypassPath 注释）。ES 文件管理器做法一致：
     // 对 Android/data 用底层 ext4 路径执行 glob/stat。
     final cmdPrefix = _toFuseBypassPath(searchPrefix);
-    final cmd = 'for f in "$cmdPrefix"/* "$cmdPrefix"/.*; do [ -e "\$f" ] && [ "\${f##*/}" != "." ] && [ "\${f##*/}" != ".." ] && (stat -L -c "%F|%s|%Y|%n" "\$f" 2>/dev/null || stat -c "%F|%s|%Y|%n" "\$f"); done';
+    // 使用 find 命令列出目录内容，比 glob 更可靠（避免 shell 展开失败）
+    final cmd = 'find "$cmdPrefix" -maxdepth 1 -mindepth 1 -exec stat -L -c "%F|%s|%Y|%n" {} \\; 2>&1';
+    debugPrint('[ZenFile] Shell command: useRoot=$useRoot cmdPrefix=$cmdPrefix');
 
     final output = await runCommand(cmd, useRoot: useRoot);
+    debugPrint('[ZenFile] listFiles: got ${output?.length ?? 0} chars, ${output?.split('\n').length ?? 0} lines');
     if (output == null || output.trim().isEmpty) return [];
 
     final lines = output.split('\n');
