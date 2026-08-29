@@ -2809,9 +2809,9 @@ class FileManagerProvider extends ChangeNotifier {
         debugPrint('[ZenFile] Standard API exception for $path: $e');
       }
 
-      // 2. 原始路径（/data/media/0/...）绕开 FUSE
-      final rawItems = await RootShizukuService.listViaRawPath(path, showHiddenFiles: _showHiddenFiles);
-      debugPrint('[ZenFile] Raw path returned ${rawItems?.length ?? 'null'} items for $path');
+      // 2. 原始路径（/data/media/0/...）绕开 FUSE — Java File API（app 进程内）
+      final rawItems = await RootShizukuService.listRawPath(path, showHiddenFiles: _showHiddenFiles);
+      debugPrint('[ZenFile] Raw path (Kotlin) returned ${rawItems?.length ?? 'null'} items for $path');
       if (rawItems != null && rawItems.isNotEmpty) {
         activeTab.currentPath = path;
         activeTab.currentFiles = rawItems;

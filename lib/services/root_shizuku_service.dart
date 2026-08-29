@@ -347,4 +347,34 @@ class RootShizukuService {
     }
     return null;
   }
+
+  /// 直接用 Java File API 在 app 进程内访问原始路径（绕开 shell 进程）。
+  /// 适用于 shell 进程被 SELinux 限制但 app 进程可以访问的场景。
+  static Future<List<FileItemModel>?> listRawPath(String path,
+      {bool showHiddenFiles = false}) async {
+    if (!Platform.isAndroid) return null;
+    final rawPath = _toFuseBypassPath(path);
+    debugPrint('[ZenFile] listRawPath (Kotlin): rawPath=$rawPath');
+    try {
+      final res = await _channel.invokeMethod<List<dynamic>>('listRawPath', {'path': rawPath});
+      if (res == null) return null;
+      final items = <FileItemModel>[];
+      for (final entry in res) {
+        final map = Map<String, dynamic>.from(entry as Map);
+        final name = map['name'] as String;
+        if (!showHiddenFiles && name.startsWith('.') && name != '.' && name != '..') continue;
+        items.add(FileItemModel.fromCustom(
+          path: _fromFuseBypassPath(p.join(rawPath, name)),
+          isDirectory: map['isDirectory'] as bool? ?? false,
+          size: (map['length'] as num?)?.toInt() ?? 0,
+          modified: DateTime.fromMillisecondsSinceEpoch((map['lastModified'] as num?)?.toInt() ?? 0),
+        ));
+      }
+      debugPrint('[ZenFile] listRawPath (Kotlin): got ${items.length} items');
+      return items;
+    } catch (e) {
+      debugPrint('[ZenFile] listRawPath (Kotlin) failed: $e');
+      return null;
+    }
+  }
 }

@@ -348,6 +348,30 @@ class MainActivity : AudioServiceFragmentActivity() {
                         }
                     }
                 }
+                // 直接用 Java File API 访问原始路径（绕开 shell，在 app 进程内执行）
+                "listRawPath" -> {
+                    val rawPathArg = call.argument<String>("path") ?: ""
+                    executor.execute {
+                        try {
+                            val file = File(rawPathArg)
+                            val entries = file.list() ?: arrayOf<String>()
+                            val listResult = mutableListOf<Map<String, Any>>()
+                            for (name in entries) {
+                                val child = File(file, name)
+                                listResult.add(mapOf(
+                                    "name" to name,
+                                    "isDirectory" to child.isDirectory,
+                                    "length" to child.length(),
+                                    "lastModified" to child.lastModified()
+                                ))
+                            }
+                            runOnUiThread { result.success(listResult) }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            runOnUiThread { result.error("RAW_PATH_ERROR", e.message, null) }
+                        }
+                    }
+                }
                 "resolveContentUri" -> {
                     val uriString = call.argument<String>("uri") ?: ""
                     executor.execute {
