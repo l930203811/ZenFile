@@ -857,6 +857,27 @@ class MainActivity : AudioServiceFragmentActivity() {
                         result.error("ACTIVITY_NOT_FOUND", "No application found to handle folder selection: ${e.message}", null)
                     }
                 }
+                // 请求 SAF 权限并定位到指定路径（如 Android/data）
+                // 通过 EXTRA_INITIAL_URI 让系统文件选择器直接定位到目标目录
+                "requestSafWithInitialUri" -> {
+                    safPermissionResult = result
+                    try {
+                        val initialDocId = call.argument<String>("initialDocId") ?: "primary:Android/data"
+                        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                        // 设置初始 URI，让系统文件选择器打开时直接定位到 Android/data
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            val initialUri = DocumentsContract.buildDocumentUri(
+                                "com.android.externalstorage.documents",
+                                initialDocId
+                            )
+                            intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, initialUri)
+                        }
+                        startActivityForResult(intent, SAF_REQUEST_CODE)
+                    } catch (e: Exception) {
+                        safPermissionResult = null
+                        result.error("ACTIVITY_NOT_FOUND", "No application found to handle folder selection: ${e.message}", null)
+                    }
+                }
                 "listDirectory" -> {
                     val rootUriStr = call.argument<String>("rootUri") ?: ""
                     val pathUriStr = call.argument<String>("pathUri") ?: ""

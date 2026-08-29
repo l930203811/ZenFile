@@ -1225,6 +1225,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                               ? RestrictedFolderBanner(
                                   onEnableRoot: () => provider.enableRootMode(),
                                   onEnableShizuku: () => provider.enableShizukuMode(),
+                                  onEnableSaf: () => provider.requestSafAndReload(),
                                   onGoBack: provider.canGoBack ? () => _goBack(provider) : null,
                                   isRootAvailable: provider.isRootAvailable,
                                 )

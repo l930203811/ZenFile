@@ -575,6 +575,10 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                       _activatePane(provider);
                                       provider.enableShizukuMode();
                                     },
+                                    onEnableSaf: () {
+                                      _activatePane(provider);
+                                      provider.requestSafAndReload();
+                                    },
                                     onGoBack: () => _goBack(provider),
                                     isRootAvailable: tab.isRootAvailable,
                                   )

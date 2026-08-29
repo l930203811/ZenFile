@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/file_item_model.dart';
 import 'package:path/path.dart' as p;
 
@@ -374,6 +375,175 @@ class RootShizukuService {
       return items;
     } catch (e) {
       debugPrint('[ZenFile] listRawPath (Kotlin) failed: $e');
+      return null;
+    }
+  }
+}
+
+/// SAF (Storage Access Framework) 服务：用于在 Shizuku/root 不可用时
+/// 通过系统文件选择器授权访问 Android/data 等受限目录。
+/// 这是 Android 11+ 官方推荐的访问方式，无需 Shizuku 或 root。
+class SafAndroidDataService {
+  static const MethodChannel _channel = MethodChannel('com.sequl.zenfile/saf');
+
+  /// 已授权的 Android/data SAF tree URI（持久化存储的 key）
+  static const String _prefKeyAndroidDataUri = 'saf_android_data_tree_uri';
+  static const String _prefKeyAndroidObbUri = 'saf_android_obb_tree_uri';
+
+  /// 请求 SAF 授权访问 Android/data（系统文件选择器直接定位到该目录）。
+  /// 返回授权的 tree URI 字符串，用户取消返回 null。
+  static Future<String?> requestAndroidDataAccess() async {
+    if (!Platform.isAndroid) return null;
+    try {
+      final result = await _channel.invokeMethod<Map<dynamic, dynamic>>(
+        'requestSafWithInitialUri',
+        {'initialDocId': 'primary:Android/data'},
+      );
+      if (result == null) return null;
+      final uri = result['uri'] as String?;
+      if (uri != null) {
+        await _saveTreeUri(_prefKeyAndroidDataUri, uri);
+        debugPrint('[ZenFile] SAF Android/data authorized: $uri');
+      }
+      return uri;
+    } catch (e) {
+      debugPrint('[ZenFile] SAF request failed: $e');
+      return null;
+    }
+  }
+
+  /// 请求 SAF 授权访问 Android/obb。
+  static Future<String?> requestAndroidObbAccess() async {
+    if (!Platform.isAndroid) return null;
+    try {
+      final result = await _channel.invokeMethod<Map<dynamic, dynamic>>(
+        'requestSafWithInitialUri',
+        {'initialDocId': 'primary:Android/obb'},
+      );
+      if (result == null) return null;
+      final uri = result['uri'] as String?;
+      if (uri != null) {
+        await _saveTreeUri(_prefKeyAndroidObbUri, uri);
+      }
+      return uri;
+    } catch (e) {
+      debugPrint('[ZenFile] SAF obb request failed: $e');
+      return null;
+    }
+  }
+
+  /// 获取已存储的 Android/data SAF tree URI。
+  static Future<String?> getAndroidDataTreeUri() async {
+    return _getTreeUri(_prefKeyAndroidDataUri);
+  }
+
+  /// 获取已存储的 Android/obb SAF tree URI。
+  static Future<String?> getAndroidObbTreeUri() async {
+    return _getTreeUri(_prefKeyAndroidObbUri);
+  }
+
+  /// 检查是否已有 Android/data 的 SAF 授权。
+  static Future<bool> hasAndroidDataAccess() async {
+    final uri = await getAndroidDataTreeUri();
+    return uri != null && uri.isNotEmpty;
+  }
+
+  /// 使用 SAF 列出 Android/data 目录内容。
+  /// 返回 FileItemModel 列表，失败返回 null。
+  static Future<List<FileItemModel>?> listAndroidDataViaSAF({
+    bool showHiddenFiles = false,
+  }) async {
+    final treeUri = await getAndroidDataTreeUri();
+    if (treeUri == null) return null;
+    return _listViaSAF(treeUri, '', showHiddenFiles: showHiddenFiles);
+  }
+
+  /// 使用 SAF 列出指定子路径的内容。
+  /// [subPath] 相对于 Android/data 的子路径，如 "com.tencent.mm" 或 ""。
+  static Future<List<FileItemModel>?> listAndroidDataSubDirViaSAF(
+    String subPath, {
+    bool showHiddenFiles = false,
+  }) async {
+    final treeUri = await getAndroidDataTreeUri();
+    if (treeUri == null) return null;
+
+    // 构建子路径的 document URI
+    String pathUri = '';
+    if (subPath.isNotEmpty) {
+      // 将子路径转换为 SAF document ID 格式
+      final docId = 'primary:Android/data/$subPath';
+      pathUri = 'content://com.android.externalstorage.documents/document/${Uri.encodeComponent(docId)}';
+    }
+
+    return _listViaSAF(treeUri, pathUri, showHiddenFiles: showHiddenFiles);
+  }
+
+  /// 使用 SAF 列出目录内容。
+  static Future<List<FileItemModel>?> _listViaSAF(
+    String treeUri,
+    String pathUri, {
+    bool showHiddenFiles = false,
+  }) async {
+    try {
+      final List<dynamic> result = await _channel.invokeMethod('listDirectory', {
+        'rootUri': treeUri,
+        'pathUri': pathUri,
+      });
+
+      final items = <FileItemModel>[];
+      for (final entry in result) {
+        final map = Map<String, dynamic>.from(entry as Map);
+        final name = map['name'] as String;
+        if (!showHiddenFiles && name.startsWith('.') && name != '.' && name != '..') continue;
+
+        // SAF URI 路径转换为本地路径格式
+        final safPath = map['path'] as String;
+        final localPath = _safUriToLocalPath(safPath);
+
+        items.add(FileItemModel.fromCustom(
+          path: localPath,
+          isDirectory: map['isDirectory'] as bool? ?? false,
+          size: (map['size'] as num?)?.toInt() ?? 0,
+          modified: DateTime.fromMillisecondsSinceEpoch((map['modified'] as num?)?.toInt() ?? 0),
+        ));
+      }
+      debugPrint('[ZenFile] SAF listDirectory: got ${items.length} items');
+      return items;
+    } catch (e) {
+      debugPrint('[ZenFile] SAF listDirectory failed: $e');
+      return null;
+    }
+  }
+
+  /// 将 SAF document URI 转换为本地文件路径。
+  /// 例如: content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fdata/document/primary%3AAndroid%2Fdata%2Fcom.tencent.mm
+  /// → /storage/emulated/0/Android/data/com.tencent.mm
+  static String _safUriToLocalPath(String safUri) {
+    try {
+      final uri = Uri.parse(safUri);
+      final docId = uri.pathSegments.last;
+      final decoded = Uri.decodeComponent(docId);
+      // decoded 格式: "primary:Android/data/com.tencent.mm"
+      if (decoded.startsWith('primary:')) {
+        final relPath = decoded.substring('primary:'.length);
+        return '/storage/emulated/0/$relPath';
+      }
+    } catch (_) {}
+    return safUri;
+  }
+
+  static Future<void> _saveTreeUri(String key, String uri) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(key, uri);
+    } catch (_) {}
+  }
+
+  static Future<String?> _getTreeUri(String key) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(key);
+    } catch (_) {
       return null;
     }
   }

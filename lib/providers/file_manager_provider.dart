@@ -2845,6 +2845,23 @@ class FileManagerProvider extends ChangeNotifier {
         activeTab.useShizukuMode = false;
         activeTab.needsPermission = false;
       } else {
+        // Shizuku 和 root 均不可用 → 尝试 SAF 授权访问
+        // SAF 是 Android 11+ 官方推荐的访问 Android/data 的方式，
+        // 无需 Shizuku 或 root，通过系统文件选择器授权。
+        if (_isRestrictedAndroidPath(path)) {
+          final safItems = await _trySafAccess(path);
+          if (safItems != null) {
+            activeTab.currentPath = path;
+            activeTab.currentFiles = safItems;
+            activeTab.isLoading = false;
+            activeTab.needsPermission = false;
+            activeTab.useRootMode = false;
+            activeTab.useShizukuMode = false;
+            _persistTabs();
+            notifyListeners();
+            return;
+          }
+        }
         activeTab.needsPermission = true;
         activeTab.currentPath = path;
         activeTab.currentFiles = [];
@@ -2856,6 +2873,19 @@ class FileManagerProvider extends ChangeNotifier {
       try {
         activeTab.currentPath = path;
         final items = await RootShizukuService.listFiles(path, useRoot: activeTab.useRootMode, showHiddenFiles: _showHiddenFiles);
+        // Shizuku shell 也返回空时（部分 ROM 如 vivo FUSE 拦截 shell），
+        // 尝试 SAF 授权访问作为最终兜底。
+        if (items.isEmpty && _isRestrictedAndroidPath(path)) {
+          debugPrint('[ZenFile] Shizuku returned empty for $path, trying SAF');
+          final safItems = await _trySafAccess(path);
+          if (safItems != null) {
+            activeTab.currentFiles = safItems;
+            activeTab.isLoading = false;
+            _persistTabs();
+            notifyListeners();
+            return;
+          }
+        }
         final folders = items.where((e) => e.isDirectory).toList();
         final files = items.where((e) => !e.isDirectory).toList();
 
@@ -2869,6 +2899,17 @@ class FileManagerProvider extends ChangeNotifier {
         activeTab.currentFiles = [...filteredFolders, ...filteredFiles];
       } catch (e) {
         debugPrint('Error loading restricted directory: $e');
+        // Shizuku 异常时也尝试 SAF
+        if (_isRestrictedAndroidPath(path)) {
+          final safItems = await _trySafAccess(path);
+          if (safItems != null) {
+            activeTab.currentFiles = safItems;
+            activeTab.isLoading = false;
+            _persistTabs();
+            notifyListeners();
+            return;
+          }
+        }
         activeTab.currentFiles = [];
       }
       activeTab.isLoading = false;
@@ -5355,6 +5396,54 @@ class FileManagerProvider extends ChangeNotifier {
     if (sub != 'data' && !sub.startsWith('data/') && sub != 'obb' && !sub.startsWith('obb/')) return false;
     // 自身外部目录（如 Android/data/com.sequl.zenfile/cache）可正常访问
     return !sub.startsWith('data/com.sequl.zenfile') && !sub.startsWith('obb/com.sequl.zenfile');
+  }
+
+  /// 尝试通过 SAF（系统文件选择器授权）访问受限路径。
+  /// 已有授权时直接列出；无授权时返回 null（由调用方决定是否弹出授权）。
+  Future<List<FileItemModel>?> _trySafAccess(String path) async {
+    // 判断是 data 还是 obb
+    final isObb = path.contains('/Android/obb');
+    final hasAccess = isObb
+        ? (await SafAndroidDataService.getAndroidObbTreeUri()) != null
+        : (await SafAndroidDataService.getAndroidDataTreeUri()) != null;
+    if (!hasAccess) {
+      debugPrint('[ZenFile] SAF: no stored permission for $path');
+      return null;
+    }
+
+    // 计算相对于 Android/data 或 Android/obb 的子路径
+    final marker = isObb ? '/storage/emulated/0/Android/obb' : '/storage/emulated/0/Android/data';
+    String subPath = '';
+    if (path.length > marker.length) {
+      subPath = path.substring(marker.length).replaceAll(RegExp(r'^/+'), '');
+    }
+
+    debugPrint('[ZenFile] SAF: listing subPath="$subPath" for $path');
+    final items = await SafAndroidDataService.listAndroidDataSubDirViaSAF(
+      subPath,
+      showHiddenFiles: _showHiddenFiles,
+    );
+    return items;
+  }
+
+  /// 请求 SAF 授权后重新加载当前受限目录。
+  /// 由受限模式提示界面的"使用系统授权"按钮调用。
+  Future<void> requestSafAndReload() async {
+    final path = activeTab.currentPath;
+    if (!_isRestrictedAndroidPath(path)) return;
+
+    final isObb = path.contains('/Android/obb');
+    final uri = isObb
+        ? await SafAndroidDataService.requestAndroidObbAccess()
+        : await SafAndroidDataService.requestAndroidDataAccess();
+
+    if (uri != null) {
+      debugPrint('[ZenFile] SAF authorized: $uri, reloading $path');
+      // 授权成功后重新加载
+      await loadDirectory(path, showLoading: true);
+    } else {
+      debugPrint('[ZenFile] SAF authorization cancelled by user');
+    }
   }
 
   /// 受限路径且 Dart IO 不可见（需要走 shell 绕过）。
