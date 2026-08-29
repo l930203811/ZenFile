@@ -2927,6 +2927,10 @@
     "description": "ui\\widgets\\restricted_folder_banner.dart"
   },
   "shizukuroot": "Предоставить Доступ к Shizuku (Root Не Требуется)",
+  "safSystemAccess": "Системный доступ с разрешением",
+  "@safSystemAccess": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
   "@selectedcount1": {
     "type": "text"
   },
@@ -3116,6 +3120,22 @@
   "ui_enable_drag_drop": "Включить Перетаскивание",
   "ui_confirm_drag_drop": "Подтверждать Перетаскивание",
   "ui_enable_multi_tabs": "Включить Несколько Вкладок",
+  "@ui_multi_tab_scope_title": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_title": "Область действия вкладок",
+  "@ui_multi_tab_scope_single_only": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_single_only": "Только в одном окне",
+  "@ui_multi_tab_scope_split_only": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_split_only": "Только в разделённом окне",
+  "@ui_multi_tab_scope_all": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_all": "Во всех окнах",
   "ui_enable_split_screen": "Включить Разделённый Экран",
   "ui_single_window": "Одиночное окно",
   "ui_dual_window": "Двойное окно",

@@ -2927,6 +2927,10 @@
     "description": "ui\\widgets\\restricted_folder_banner.dart"
   },
   "shizukuroot": "Accorder l'accès Shizuku (Pas de root requis)",
+  "safSystemAccess": "Accès système autorisé",
+  "@safSystemAccess": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
   "@selectedcount1": {
     "type": "text"
   },
@@ -3116,6 +3120,22 @@
   "ui_enable_drag_drop": "Activer le glisser-déposer",
   "ui_confirm_drag_drop": "Confirmer le glisser-déposer",
   "ui_enable_multi_tabs": "Activer les onglets multiples",
+  "@ui_multi_tab_scope_title": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_title": "Portée des onglets multiples",
+  "@ui_multi_tab_scope_single_only": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_single_only": "Fenêtre unique uniquement",
+  "@ui_multi_tab_scope_split_only": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_split_only": "Écran partagé uniquement",
+  "@ui_multi_tab_scope_all": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_all": "Toutes les fenêtres",
   "ui_enable_split_screen": "Activer l'écran partagé",
   "ui_single_window": "Fenêtre unique",
   "ui_dual_window": "Fenêtre double",

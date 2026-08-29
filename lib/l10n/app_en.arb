@@ -2934,6 +2934,10 @@
     "description": "ui\\widgets\\restricted_folder_banner.dart"
   },
   "shizukuroot": "Grant Shizuku Access (No Root Required)",
+  "@safSystemAccess": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
+  "safSystemAccess": "System Authorized Access",
   "@selectedcount1": {
     "type": "text"
   },
@@ -3123,6 +3127,22 @@
   "ui_enable_drag_drop": "Enable Drag & Drop",
   "ui_confirm_drag_drop": "Confirm Drag & Drop",
   "ui_enable_multi_tabs": "Enable Multiple Tabs",
+  "@ui_multi_tab_scope_title": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_title": "Multiple Tabs Scope",
+  "@ui_multi_tab_scope_single_only": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_single_only": "Single Window Only",
+  "@ui_multi_tab_scope_split_only": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_split_only": "Dual Window Only",
+  "@ui_multi_tab_scope_all": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_all": "All Windows",
   "ui_enable_split_screen": "Enable Split Screen",
   "ui_single_window": "Single Window",
   "ui_dual_window": "Dual Window",

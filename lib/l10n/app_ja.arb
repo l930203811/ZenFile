@@ -2931,6 +2931,10 @@
     "description": "ui\\widgets\\restricted_folder_banner.dart"
   },
   "shizukuroot": "Shizukuアクセスを許可（Root不要）",
+  "safSystemAccess": "システム承認アクセス",
+  "@safSystemAccess": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
   "@selectedcount1": {
     "type": "text"
   },
@@ -3120,6 +3124,22 @@
   "ui_enable_drag_drop": "ドラッグ＆ドロップを有効にする",
   "ui_confirm_drag_drop": "ドラッグ＆ドロップ操作を確認",
   "ui_enable_multi_tabs": "マルチタブを有効にする",
+  "@ui_multi_tab_scope_title": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_title": "複数タブの適用範囲",
+  "@ui_multi_tab_scope_single_only": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_single_only": "単一ウィンドウのみ",
+  "@ui_multi_tab_scope_split_only": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_split_only": "分割ウィンドウのみ",
+  "@ui_multi_tab_scope_all": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_all": "全ウィンドウ",
   "ui_enable_split_screen": "分割画面を有効にする",
   "ui_single_window": "単一ウィンドウ",
   "ui_dual_window": "二画面",

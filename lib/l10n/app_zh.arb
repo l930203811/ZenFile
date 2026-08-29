@@ -2999,6 +2999,10 @@
   "@shizukuroot": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
   },
+  "safSystemAccess": "系统授权访问",
+  "@safSystemAccess": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
   "fusebypass": "一键兼容访问",
   "@fusebypass": {
     "description": "ui\\widgets\\restricted_folder_banner.dart - 绕过FUSE限制"
@@ -3205,6 +3209,22 @@
   "ui_enable_drag_drop": "启用拖放",
   "ui_confirm_drag_drop": "确认拖放操作",
   "ui_enable_multi_tabs": "启用多标签页",
+  "@ui_multi_tab_scope_title": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_title": "多标签页适用范围",
+  "@ui_multi_tab_scope_single_only": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_single_only": "仅在单窗口",
+  "@ui_multi_tab_scope_split_only": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_split_only": "仅在双窗口",
+  "@ui_multi_tab_scope_all": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_all": "全部",
   "ui_enable_split_screen": "启用分屏",
   "ui_single_window": "单窗口",
   "ui_dual_window": "双窗口",

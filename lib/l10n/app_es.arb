@@ -2927,6 +2927,10 @@
     "description": "ui\\widgets\\restricted_folder_banner.dart"
   },
   "shizukuroot": "Conceder Acceso a Shizuku (No Requiere Root)",
+  "safSystemAccess": "Acceso autorizado del sistema",
+  "@safSystemAccess": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
   "@selectedcount1": {
     "type": "text"
   },
@@ -3116,6 +3120,22 @@
   "ui_enable_drag_drop": "Habilitar Arrastrar y Soltar",
   "ui_confirm_drag_drop": "Confirmar Arrastrar y Soltar",
   "ui_enable_multi_tabs": "Habilitar Múltiples Pestañas",
+  "@ui_multi_tab_scope_title": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_title": "Ámbito de pestañas múltiples",
+  "@ui_multi_tab_scope_single_only": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_single_only": "Solo ventana única",
+  "@ui_multi_tab_scope_split_only": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_split_only": "Solo pantalla dividida",
+  "@ui_multi_tab_scope_all": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_all": "Todas las ventanas",
   "ui_enable_split_screen": "Habilitar Pantalla Dividida",
   "ui_single_window": "Ventana única",
   "ui_dual_window": "Ventana doble",

@@ -5170,14 +5170,20 @@ abstract class L10n {
   /// **'多标签页适用范围'**
   String get ui_multi_tab_scope_title;
 
+  /// more_settings_screen.dart
+  ///
   /// In zh, this message translates to:
   /// **'仅在单窗口'**
   String get ui_multi_tab_scope_single_only;
 
+  /// more_settings_screen.dart
+  ///
   /// In zh, this message translates to:
   /// **'仅在双窗口'**
   String get ui_multi_tab_scope_split_only;
 
+  /// more_settings_screen.dart
+  ///
   /// In zh, this message translates to:
   /// **'全部'**
   String get ui_multi_tab_scope_all;

@@ -2991,6 +2991,10 @@
   "@shizukuroot": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
   },
+  "safSystemAccess": "系統授權訪問",
+  "@safSystemAccess": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
   "selectedcount1": "已選擇 {selectedCount} 項",
   "@selectedcount1": {
     "description": "ui\\widgets\\selection_action_bar.dart",
@@ -3187,6 +3191,22 @@
   "ui_enable_drag_drop": "啟用拖放",
   "ui_confirm_drag_drop": "確認拖放操作",
   "ui_enable_multi_tabs": "啟用多標籤頁",
+  "@ui_multi_tab_scope_title": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_title": "多標籤頁適用範圍",
+  "@ui_multi_tab_scope_single_only": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_single_only": "僅在單視窗",
+  "@ui_multi_tab_scope_split_only": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_split_only": "僅在雙視窗",
+  "@ui_multi_tab_scope_all": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_all": "全部",
   "ui_enable_split_screen": "啟用分屏",
   "ui_single_window": "單一視窗",
   "ui_dual_window": "雙視窗",

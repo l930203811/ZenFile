@@ -2924,6 +2924,10 @@
     "description": "ui\\widgets\\restricted_folder_banner.dart"
   },
   "shizukuroot": "Shizuku-Zugriff gewähren (Kein Root erforderlich)",
+  "safSystemAccess": "Systemautorisierter Zugriff",
+  "@safSystemAccess": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
   "@selectedcount1": {
     "type": "text"
   },
@@ -3113,6 +3117,22 @@
   "ui_enable_drag_drop": "Drag & Drop aktivieren",
   "ui_confirm_drag_drop": "Drag & Drop bestätigen",
   "ui_enable_multi_tabs": "Mehrere Tabs aktivieren",
+  "@ui_multi_tab_scope_title": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_title": "Geltungsbereich für mehrere Tabs",
+  "@ui_multi_tab_scope_single_only": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_single_only": "Nur Einzelfenster",
+  "@ui_multi_tab_scope_split_only": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_split_only": "Nur Geteilter Bildschirm",
+  "@ui_multi_tab_scope_all": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_all": "Alle Fenster",
   "ui_enable_split_screen": "Geteilten Bildschirm aktivieren",
   "ui_single_window": "Einzelnes Fenster",
   "ui_dual_window": "Doppeltes Fenster",

@@ -2927,6 +2927,10 @@
     "description": "ui\\widgets\\restricted_folder_banner.dart"
   },
   "shizukuroot": "Shizuku 접근 권한 부여 (루트 불필요)",
+  "safSystemAccess": "시스템 승인 접근",
+  "@safSystemAccess": {
+    "description": "ui\\widgets\\restricted_folder_banner.dart"
+  },
   "@selectedcount1": {
     "type": "text"
   },
@@ -3116,6 +3120,22 @@
   "ui_enable_drag_drop": "드래그 앤 드롭 활성화",
   "ui_confirm_drag_drop": "드래그 앤 드롭 확인",
   "ui_enable_multi_tabs": "여러 탭 활성화",
+  "@ui_multi_tab_scope_title": {
+    "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_title": "여러 탭 적용 범위",
+  "@ui_multi_tab_scope_single_only": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_single_only": "단일 창에서만",
+  "@ui_multi_tab_scope_split_only": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_split_only": "분할 창에서만",
+  "@ui_multi_tab_scope_all": {
+    "description": "more_settings_screen.dart"
+  },
+  "ui_multi_tab_scope_all": "모든 창",
   "ui_enable_split_screen": "분할 화면 활성화",
   "ui_single_window": "단일 창",
   "ui_dual_window": "이중 창",
