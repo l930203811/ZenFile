@@ -160,7 +160,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   const SizedBox(height: 6),
                   // 版本号文本（硬编码，无需 l10n；以后升级版本只改这里）
                   Text(
-                    'v1.1.35',
+                    'v1.1.36',
                     style: TextStyle(
                       color: theme.colorScheme.onSurface.withOpacity(0.7),
                       fontSize: 13,
@@ -716,7 +716,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   Text(L10n.of(context).msg305734ce, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
 
-                  _buildV1135Changelog(ctx, theme),
+                  _buildV1136Changelog(ctx, theme),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -812,6 +812,86 @@ class AboutZenFileScreen extends StatelessWidget {
           bulletText(l10n.changelog_v1133_fix_5),
         ],
       ),
+    );
+  }
+
+  Widget _buildV1136Changelog(BuildContext ctx, ThemeData theme) {
+    final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
+    final enStyle = TextStyle(fontSize: 12, height: 1.5, color: theme.colorScheme.onSurface.withOpacity(0.5));
+    final sectionStyle = TextStyle(fontSize: 14, height: 1.6, color: theme.colorScheme.primary, fontWeight: FontWeight.w700);
+
+    Widget gap([double h = 6]) => SizedBox(height: h);
+    // 双语条目：中文在上，英文在下
+    Widget zhEn(String zh, String en) => Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('· $zh', style: textStyle),
+          const SizedBox(height: 2),
+          Text('  $en', style: enStyle),
+        ],
+      ),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ── 1.1.36 当前版本 ──
+        Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.06)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text('v1.1.36', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+                  ),
+                  const SizedBox(width: 10),
+                  Text('2026-08-29', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+                ],
+              ),
+              gap(14),
+              Text('🔧 问题修复 · Bug Fixes', style: sectionStyle),
+              gap(6),
+              zhEn(
+                '单窗口模式：当前激活（已打开）的标签页按钮背景现在会高亮，之前只有标题文字高亮、背景无区分。',
+                'Single-pane mode: the active (current) tab button now shows a highlighted background; previously only the title text was highlighted with no background distinction.',
+              ),
+              zhEn(
+                '双窗口多标签显示/切换重构：A 在左窗口、B 在右窗口；新建或切换到其他标签页时，已激活的标签页始终保持所在窗口位置不变，被顶替的始终是未激活一侧窗口。',
+                'Split-pane multi-tab display/switch reworked: tab A stays in the left pane, B in the right; when creating or switching to another tab, the active tab keeps its pane position and only the inactive pane gets replaced.',
+              ),
+              zhEn(
+                '双窗口仅剩两个标签页时现在可关闭任意一个，关闭后会自动新建一个标签页顶替被关闭的位置，保证两侧窗口始终有内容。',
+                'When only two tabs remain in split-pane mode, either one can now be closed; closing auto-creates a replacement tab so both panes always show content.',
+              ),
+              zhEn(
+                '双窗口模式下远程标签页标题固定显示已保存的远程客户端名称（此前会随打开的目录变化）。',
+                'In split-pane mode a remote tab title now always shows the saved remote client name (previously it changed with the opened directory).',
+              ),
+              zhEn(
+                '远程标签页标题左侧图标替换为云徽图标，方便一眼辨别远程/本地标签。',
+                'The icon on the left of a remote tab title is now a cloud badge, making remote vs. local tabs easy to distinguish.',
+              ),
+            ],
+          ),
+        ),
+        // ── 历史版本 ──
+        _buildV1135Changelog(ctx, theme),
+      ],
     );
   }
 

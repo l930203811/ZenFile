@@ -85,7 +85,10 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
     if (conn.type == 'FTP') {
       _client = FtpRemoteClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
     } else if (conn.type == 'SFTP') {
-      _client = SftpRemoteClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
+      _client = SftpRemoteClient(
+        host: conn.host, port: conn.port, username: conn.username, password: conn.password,
+        sshKeyPath: conn.sshKeyPath, sshKeyPassword: conn.sshKeyPassword, authMethod: conn.authMethod,
+      );
     } else if (conn.type == 'WebDav') {
       _client = WebDavRemoteClient(
         host: conn.host,

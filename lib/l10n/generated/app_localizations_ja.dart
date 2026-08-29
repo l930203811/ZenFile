@@ -2988,6 +2988,12 @@ class L10nJa extends L10n {
   String get ui_close_tab => 'タブを閉じる';
 
   @override
+  String get ui_close_all_tabs => 'すべてのタブを閉じる';
+
+  @override
+  String get ui_close_all_tabs_message => '開いているすべてのタブを閉じますか？この操作は元に戻せません。';
+
+  @override
   String ui_not_found_title(String title) {
     return '$titleが見つかりません';
   }

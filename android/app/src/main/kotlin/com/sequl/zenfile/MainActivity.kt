@@ -1311,7 +1311,9 @@ class MainActivity : AudioServiceFragmentActivity() {
                             val port = call.argument<Int>("port") ?: 22
                             val username = call.argument<String>("username") ?: ""
                             val password = call.argument<String>("password") ?: ""
-                            val id = ssh.connect(host, port, username, password)
+                            val sshKeyPath = call.argument<String>("sshKeyPath")
+                            val sshKeyPassword = call.argument<String>("sshKeyPassword")
+                            val id = ssh.connect(host, port, username, password, sshKeyPath, sshKeyPassword)
                             runOnUiThread { result.success(id) }
                         }
                         "listDirectory" -> {

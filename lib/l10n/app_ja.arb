@@ -3420,6 +3420,15 @@
   "@ui_close_tab": {
     "description": "ui widgets"
   },
+  "ui_close_all_tabs": "すべてのタブを閉じる",
+  "@ui_close_all_tabs": {
+    "description": "ui widgets"
+  },
+  "ui_close_all_tabs_message": "開いているすべてのタブを閉じますか？この操作は元に戻せません。",
+  "@ui_close_all_tabs_message": {
+    "description": "ui widgets"
+  },
+
   "ui_not_found_title": "{title}が見つかりません",
   "@ui_not_found_title": {
     "description": "ui widgets",

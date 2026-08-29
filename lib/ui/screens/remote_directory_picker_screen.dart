@@ -68,6 +68,9 @@ class _RemoteDirectoryPickerScreenState extends State<RemoteDirectoryPickerScree
         port: conn.port,
         username: conn.username,
         password: conn.password,
+        sshKeyPath: conn.sshKeyPath,
+        sshKeyPassword: conn.sshKeyPassword,
+        authMethod: conn.authMethod,
       );
     } else if (conn.type == 'WebDav') {
       _client = WebDavRemoteClient(

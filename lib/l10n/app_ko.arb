@@ -3416,6 +3416,15 @@
   "@ui_close_tab": {
     "description": "ui widgets"
   },
+  "ui_close_all_tabs": "모든 탭 닫기",
+  "@ui_close_all_tabs": {
+    "description": "ui widgets"
+  },
+  "ui_close_all_tabs_message": "열려 있는 모든 탭을 닫을까요? 이 작업은 취소할 수 없습니다.",
+  "@ui_close_all_tabs_message": {
+    "description": "ui widgets"
+  },
+
   "ui_not_found_title": "{title}을(를) 찾을 수 없습니다",
   "@ui_not_found_title": {
     "description": "ui widgets",

@@ -3416,6 +3416,15 @@
   "@ui_close_tab": {
     "description": "ui widgets"
   },
+  "ui_close_all_tabs": "Cerrar todas las pestañas",
+  "@ui_close_all_tabs": {
+    "description": "ui widgets"
+  },
+  "ui_close_all_tabs_message": "¿Cerrar todas las pestañas abiertas? Esta acción no se puede deshacer.",
+  "@ui_close_all_tabs_message": {
+    "description": "ui widgets"
+  },
+
   "ui_not_found_title": "No se encontró {title}",
   "@ui_not_found_title": {
     "description": "ui widgets",

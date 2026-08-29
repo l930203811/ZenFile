@@ -3145,6 +3145,13 @@ class L10nFr extends L10n {
   String get ui_close_tab => 'Fermer l\'onglet';
 
   @override
+  String get ui_close_all_tabs => 'Fermer tous les onglets';
+
+  @override
+  String get ui_close_all_tabs_message =>
+      'Fermer tous les onglets ouverts ? Cette action est irréversible.';
+
+  @override
   String ui_not_found_title(String title) {
     return 'Aucun $title trouvé';
   }

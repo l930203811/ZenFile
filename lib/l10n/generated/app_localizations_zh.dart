@@ -2977,6 +2977,12 @@ class L10nZh extends L10n {
   String get ui_close_tab => '关闭标签页';
 
   @override
+  String get ui_close_all_tabs => '关闭所有标签';
+
+  @override
+  String get ui_close_all_tabs_message => '确定要关闭所有打开的标签页吗？此操作不可撤销。';
+
+  @override
   String ui_not_found_title(String title) {
     return '未找到 $title';
   }
@@ -8785,6 +8791,12 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_close_tab => '關閉標籤頁';
+
+  @override
+  String get ui_close_all_tabs => '關閉所有標籤';
+
+  @override
+  String get ui_close_all_tabs_message => '確定要關閉所有開啟的標籤頁嗎？此操作不可撤銷。';
 
   @override
   String ui_not_found_title(String title) {

@@ -50,10 +50,21 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
                     isSplitMulti && !inFocusPane && (index == pane0 || index == pane1);
                 final isSelected =
                     isSplitMulti ? (inFocusPane || inOtherPane) : index == activeIndex;
-                // 单窗口、双窗口多标签模式下，远程标签页固定显示“已保存的远程客户端名称”，
-                // 方便区分是哪个远程客户端；仅双窗口但未启用多标签时不显示（显示路径）。
+                // 「激活态」统一判定：
+                // - 双窗口多标签 → 焦点 pane 的标签（inFocusPane）；
+                // - 单窗口 → index == activeIndex。
+                // 此前单窗口下背景只按 inFocusPane 判定（恒为 false），
+                // 导致激活标签只有文字高亮、背景无区分，这里一并修正。
+                final bool isActiveTab = isSplitMulti ? inFocusPane : index == activeIndex;
+                // 远程标签页固定显示“已保存的远程客户端名称”，方便区分是哪个远程客户端。
+                // 单窗口与双窗口多标签模式都生效（此前双窗口多标签被排除，
+                // 导致标题随打开的目录变化）。
                 final bool useRemoteName =
-                    tab.isRemote && tab.remoteConnection != null && !isSplitMulti;
+                    tab.isRemote && tab.remoteConnection != null;
+                // 标签按钮背景底色：用于云徽 badge 的“挖空”效果，使其与按钮背景融合。
+                final tileBg = isActiveTab
+                    ? theme.colorScheme.primaryContainer.withOpacity(0.35)
+                    : theme.colorScheme.surfaceVariant.withOpacity(0.4);
                 final title = useRemoteName
                     ? tab.remoteConnection!.name
                     : (isRoot ? L10n.of(context).msgfefea1b3 : p.basename(tab.currentPath));
@@ -61,7 +72,7 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
                 return Container(
                   margin: const EdgeInsets.only(right: 4),
                   child: Material(
-                    color: inFocusPane
+                    color: isActiveTab
                         ? theme.colorScheme.primaryContainer.withOpacity(0.35)
                         : theme.colorScheme.surfaceVariant.withOpacity(0.4),
                     borderRadius: BorderRadius.circular(10),
@@ -80,7 +91,7 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                            color: inFocusPane
+                            color: isActiveTab
                                 ? theme.colorScheme.primary.withOpacity(0.4)
                                 : (inOtherPane
                                     ? theme.colorScheme.secondary.withOpacity(0.6)
@@ -91,16 +102,14 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              tab.isPinned
-                                  ? Icons.push_pin_rounded
-                                  : (isRoot ? Broken.home_1 : Broken.folder),
+                            _buildTabIcon(
+                              context: context,
+                              isRemote: tab.isRemote,
+                              isPinned: tab.isPinned,
+                              isRoot: isRoot,
+                              isSelected: isSelected,
+                              badgeBg: tileBg,
                               size: 14,
-                              color: tab.isPinned
-                                  ? Colors.orange
-                                  : (isSelected
-                                      ? theme.colorScheme.primary
-                                      : theme.colorScheme.onSurface.withOpacity(0.6)),
                             ),
                             const SizedBox(width: 6),
                             Flexible(
@@ -134,8 +143,93 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
             tooltip: L10n.of(context).msgb52d4a73,
             onPressed: () => provider.addTab(provider.rootPath),
           ),
+          // 关闭所有标签页按钮：点击弹出多语言确认，确认后
+          // 单窗口保留 1 个、双窗口新建 2 个本地根目录标签。
+          IconButton(
+            constraints: const BoxConstraints(),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            icon: const Icon(Broken.close_circle, size: 18),
+            tooltip: L10n.of(context).ui_close_all_tabs,
+            onPressed: () => _confirmCloseAllTabs(context, provider),
+          ),
         ],
       ),
+    );
+  }
+
+  /// 标签按钮左侧图标：
+  /// - 远程标签 → 文件夹图标 + 右下角云徽（badge）叠加，方便一眼辨别远程/本地，
+  ///   而非用云徽图标直接替换文件夹图标。
+  /// - 钉住标签 → 图钉图标；根目录 → 房子图标；其余 → 文件夹图标。
+  Widget _buildTabIcon({
+    required BuildContext context,
+    required bool isRemote,
+    required bool isPinned,
+    required bool isRoot,
+    required bool isSelected,
+    required Color badgeBg,
+    double size = 14,
+  }) {
+    final theme = Theme.of(context);
+    final Color baseColor = isPinned
+        ? Colors.orange
+        : (isSelected
+            ? theme.colorScheme.primary
+            : theme.colorScheme.onSurface.withOpacity(0.6));
+    final IconData base =
+        isPinned ? Icons.push_pin_rounded : (isRoot ? Broken.home_1 : Broken.folder);
+    if (isRemote && !isPinned) {
+      // 文件夹图标 + 右下角云徽叠加（不替换原图标）
+      return Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Icon(base, size: size, color: baseColor),
+          Positioned(
+            right: -2.5,
+            bottom: -2.5,
+            child: Container(
+              padding: const EdgeInsets.all(0.5),
+              decoration: BoxDecoration(color: badgeBg, shape: BoxShape.circle),
+              child: Icon(
+                Broken.cloud,
+                size: size * 0.62,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+    return Icon(base, size: size, color: baseColor);
+  }
+
+  void _confirmCloseAllTabs(BuildContext context, FileManagerProvider provider) {
+    final l10n = L10n.of(context);
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(l10n.ui_close_all_tabs),
+          content: Text(l10n.ui_close_all_tabs_message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(l10n.ui_cancel),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                provider.closeAllTabs();
+              },
+              child: Text(l10n.ui_confirm),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -177,15 +271,19 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 child: Row(
                   children: [
-                    Icon(
-                      tab.isPinned ? Icons.push_pin_rounded : Broken.folder,
+                    _buildTabIcon(
+                      context: context,
+                      isRemote: tab.isRemote,
+                      isPinned: tab.isPinned,
+                      isRoot: tab.currentPath == provider.rootPath,
+                      isSelected: true,
+                      badgeBg: theme.colorScheme.surface,
                       size: 18,
-                      color: theme.colorScheme.primary,
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        (tab.isRemote && tab.remoteConnection != null && !provider.isSplitMultiTabActive)
+                        (tab.isRemote && tab.remoteConnection != null)
                             ? tab.remoteConnection!.name
                             : (tab.currentPath == provider.rootPath
                                 ? L10n.of(context).msgfefea1b3

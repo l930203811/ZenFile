@@ -3143,6 +3143,13 @@ class L10nEs extends L10n {
   String get ui_close_tab => 'Cerrar Pestaña';
 
   @override
+  String get ui_close_all_tabs => 'Cerrar todas las pestañas';
+
+  @override
+  String get ui_close_all_tabs_message =>
+      '¿Cerrar todas las pestañas abiertas? Esta acción no se puede deshacer.';
+
+  @override
   String ui_not_found_title(String title) {
     return 'No se encontró $title';
   }

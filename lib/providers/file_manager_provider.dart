@@ -1484,11 +1484,10 @@ class FileManagerProvider extends ChangeNotifier {
       currentPath: path,
     );
     if (isSplitMultiTabActive) {
-      // 双窗口多标签：追加标签页，并交给当前聚焦的 pane 显示
+      // 双窗口多标签：追加标签页，交给**未聚焦**的 pane 显示。
+      // 已激活的标签页保持其窗口位置不变，被顶替的是未激活那一侧窗口。
       _tabs.add(newTab);
-      final newIndex = _tabs.length - 1;
-      _paneTabIndexes[_activePaneIndex] = newIndex;
-      _activeTabIndex = newIndex;
+      _placeTabInInactivePane(_tabs.length - 1);
     } else if (enableSplitScreen && _tabs.length >= 2) {
       // 双窗口未启用多标签：保持原行为，替换未激活的 tab
       final inactiveIndex = _activeTabIndex == 0 ? 1 : 0;
@@ -1515,12 +1514,10 @@ class FileManagerProvider extends ChangeNotifier {
     );
 
     if (isSplitMultiTabActive) {
-      // 双窗口多标签：每个远程连接独立成一个标签页，追加后交给当前聚焦的 pane，
-      // 不再覆盖已打开的远程连接。
+      // 双窗口多标签：每个远程连接独立成一个标签页，追加后交给**未聚焦**的 pane，
+      // 不再覆盖已打开的远程连接；已激活标签保持窗口位置不变。
       _tabs.add(newTab);
-      final newIndex = _tabs.length - 1;
-      _paneTabIndexes[_activePaneIndex] = newIndex;
-      _activeTabIndex = newIndex;
+      _placeTabInInactivePane(_tabs.length - 1);
     } else if (enableSplitScreen) {
       // 双窗口未启用多标签：保持原行为——先移除所有已有远程 tab，再替换未激活的 tab。
       // 双窗口只有两个 pane，远程连接始终占用其中一个 pane，覆盖是预期行为。
@@ -1755,7 +1752,10 @@ class FileManagerProvider extends ChangeNotifier {
       return FtpRemoteClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
     }
     if (conn.type == 'SFTP') {
-      return SftpRemoteClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
+      return SftpRemoteClient(
+        host: conn.host, port: conn.port, username: conn.username, password: conn.password,
+        sshKeyPath: conn.sshKeyPath, sshKeyPassword: conn.sshKeyPassword, authMethod: conn.authMethod,
+      );
     }
     if (conn.type == 'WebDav') {
       return WebDavRemoteClient(
@@ -1988,11 +1988,27 @@ class FileManagerProvider extends ChangeNotifier {
 
   void closeTab(int index) {
     if (_tabs.length <= 1) return;
-    // 双窗口多标签：两个 pane 各需要一个标签页，不允许关到 2 个以下
-    if (isSplitMultiTabActive && _tabs.length <= 2) return;
+    if (index < 0 || index >= _tabs.length) return;
     final removed = _tabs[index];
+    // 双窗口多标签：两个 pane 各需要一个标签页。只剩 2 个时也允许关闭，
+    // 但会即时新建一个标签页顶替被关闭的位置，保证两个 pane 始终有内容可显示
+    // （此前是直接 return，导致最后两个标签一个都关不掉）。
+    final bool refill = isSplitMultiTabActive && _tabs.length <= 2;
     if (removed.isRemote) {
       removed.remoteClient?.disconnect();
+    }
+    if (refill) {
+      // 原地替换：标签索引不变，因此 pane → 标签页映射无需重排。
+      // - 关闭的是未激活标签 → 焦点保持在另一侧不变；
+      // - 关闭的是激活标签 → 新标签自然接管焦点（索引与原激活索引相同）。
+      _tabs[index] = FolderTab(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        currentPath: _rootPath.isNotEmpty ? _rootPath : '/',
+      );
+      _persistTabs();
+      notifyListeners();
+      loadDirectoryForTab(index, _tabs[index].currentPath, showLoading: false);
+      return;
     }
     _tabs.removeAt(index);
     if (isSplitMultiTabActive) {
@@ -2025,6 +2041,55 @@ class FileManagerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 关闭所有标签页：
+  /// - 单窗口模式：仅保留 1 个本地根目录标签页（关闭后自动新建一个）。
+  /// - 双窗口模式：关闭全部并新建 2 个本地根目录标签页（左右窗口各一）。
+  /// 远程标签页在关闭时断开其连接。
+  void closeAllTabs() {
+    for (final t in _tabs) {
+      if (t.isRemote) {
+        t.remoteClient?.disconnect();
+      }
+    }
+    final root = _rootPath.isNotEmpty ? _rootPath : '/';
+    if (_enableSplitScreen) {
+      // 双窗口：关闭所有标签并新建两个标签页（左、右各一）
+      _tabs = [
+        FolderTab(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          currentPath: root,
+        ),
+        FolderTab(
+          id: (DateTime.now().millisecondsSinceEpoch + 1).toString(),
+          currentPath: root,
+        ),
+      ];
+      _activeTabIndex = 0;
+      _activePaneIndex = 0;
+      _paneTabIndexes[0] = 0;
+      _paneTabIndexes[1] = 1;
+      _persistTabs();
+      notifyListeners();
+      loadDirectoryForTab(0, _tabs[0].currentPath, showLoading: false);
+      loadDirectoryForTab(1, _tabs[1].currentPath, showLoading: false);
+    } else {
+      // 单窗口：仅保留一个标签页（已新建）
+      _tabs = [
+        FolderTab(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          currentPath: root,
+        ),
+      ];
+      _activeTabIndex = 0;
+      _activePaneIndex = 0;
+      _paneTabIndexes[0] = 0;
+      _paneTabIndexes[1] = 0;
+      _persistTabs();
+      notifyListeners();
+      loadDirectoryForTab(0, _tabs[0].currentPath, showLoading: false);
+    }
+  }
+
   void duplicateActiveTab() {
     if (_tabs.isEmpty) return;
     final active = activeTab;
@@ -2047,11 +2112,10 @@ class FileManagerProvider extends ChangeNotifier {
       historyIndex: active.historyIndex,
     );
     if (isSplitMultiTabActive) {
-      // 双窗口多标签：复制为独立标签页，交给当前聚焦的 pane 显示
+      // 双窗口多标签：复制为独立标签页，交给**未聚焦**的 pane 显示，
+      // 已激活标签保持窗口位置不变。
       _tabs.add(dup);
-      final newIndex = _tabs.length - 1;
-      _paneTabIndexes[_activePaneIndex] = newIndex;
-      _activeTabIndex = newIndex;
+      _placeTabInInactivePane(_tabs.length - 1);
     } else if (enableSplitScreen && _tabs.length >= 2) {
       // 双窗口未启用多标签：复制激活 tab 到未激活的 pane（索引 0 或 1），
       // 而不是新增 tab（否则 tabs 数量 > 2，PaneBrowser 看不到新增的 tab）
@@ -2107,20 +2171,23 @@ class FileManagerProvider extends ChangeNotifier {
   void setActiveTab(int index) {
     if (index < 0 || index >= _tabs.length) return;
     if (isSplitMultiTabActive) {
-      // 双窗口多标签：点击的标签页交给当前聚焦的 pane 显示。
-      // 若它正显示在另一个 pane，则两个 pane 内容互换，
-      // 避免同一个标签页被两个 pane 同时持有（滚动位置/选择集会互相打架）。
+      // 双窗口多标签：统一遵循「已激活标签保持窗口位置不变，未激活一侧窗口被顶替」。
+      // 1) 点击的标签已在聚焦 pane 显示（即它就是当前激活标签）→ 无需变动；
+      // 2) 点击的标签正显示在未聚焦的 pane → 只把焦点移过去，两侧窗口内容原位不动；
+      // 3) 点击的标签未被任何 pane 显示 → 交给未聚焦的 pane 顶替显示，并把焦点切过去。
       final otherPane = _activePaneIndex == 0 ? 1 : 0;
-      if (_paneTabIndexes[otherPane] == index) {
-        final current = _paneTabIndexes[_activePaneIndex];
-        _paneTabIndexes[otherPane] = current;
-        _paneTabIndexes[_activePaneIndex] = index;
-      } else {
-        _paneTabIndexes[_activePaneIndex] = index;
-      }
-      if (index != _activeTabIndex) {
-        clearSelection();
+      if (index == _paneTabIndexes[_activePaneIndex]) {
+        // 情形 1：已是当前激活标签，保持原状
         _activeTabIndex = index;
+      } else if (index == _paneTabIndexes[otherPane]) {
+        // 情形 2：显示在另一侧窗口，仅转移焦点，两侧内容都保持原位
+        if (index != _activeTabIndex) clearSelection();
+        _activePaneIndex = otherPane;
+        _activeTabIndex = index;
+      } else {
+        // 情形 3：当前未显示，交给未聚焦的 pane 顶替（已激活标签位置不变）
+        clearSelection();
+        _placeTabInInactivePane(index);
       }
       _persistTabs();
       notifyListeners();
@@ -2171,6 +2238,20 @@ class FileManagerProvider extends ChangeNotifier {
       if (i != used) return i;
     }
     return 0;
+  }
+
+  /// 双窗口多标签：把 [index] 交给当前**未聚焦**的 pane 显示（顶替该 pane 原有
+  /// 的标签页），并把焦点切到该 pane；原本已激活（聚焦）的标签页则保持其窗口
+  /// 位置不变。
+  ///
+  /// 这是「新建标签页 / 切换到当前未显示的标签页」的统一行为：新标签顶替的是
+  /// **未激活**那一侧窗口，已激活一侧原地不动。
+  void _placeTabInInactivePane(int index) {
+    if (index < 0 || index >= _tabs.length) return;
+    final inactivePane = _activePaneIndex == 0 ? 1 : 0;
+    _paneTabIndexes[inactivePane] = index;
+    _activePaneIndex = inactivePane;
+    _activeTabIndex = index;
   }
 
   void _persistTabs() {
@@ -4235,7 +4316,10 @@ class FileManagerProvider extends ChangeNotifier {
     if (conn.type == 'FTP') {
       client = FtpRemoteClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
     } else if (conn.type == 'SFTP') {
-      client = SftpRemoteClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
+      client = SftpRemoteClient(
+        host: conn.host, port: conn.port, username: conn.username, password: conn.password,
+        sshKeyPath: conn.sshKeyPath, sshKeyPassword: conn.sshKeyPassword, authMethod: conn.authMethod,
+      );
     } else if (conn.type == 'WebDav') {
       client = WebDavRemoteClient(
         host: conn.host,
@@ -5109,7 +5193,10 @@ class FileManagerProvider extends ChangeNotifier {
     if (conn.type == 'FTP') {
       return FtpRemoteClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
     } else if (conn.type == 'SFTP') {
-      return SftpRemoteClient(host: conn.host, port: conn.port, username: conn.username, password: conn.password);
+      return SftpRemoteClient(
+        host: conn.host, port: conn.port, username: conn.username, password: conn.password,
+        sshKeyPath: conn.sshKeyPath, sshKeyPassword: conn.sshKeyPassword, authMethod: conn.authMethod,
+      );
     } else if (conn.type == 'WebDav') {
       return WebDavRemoteClient(
         host: conn.host, port: conn.port, username: conn.username, password: conn.password,

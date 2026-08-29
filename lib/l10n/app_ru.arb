@@ -3416,6 +3416,15 @@
   "@ui_close_tab": {
     "description": "ui widgets"
   },
+  "ui_close_all_tabs": "Закрыть все вкладки",
+  "@ui_close_all_tabs": {
+    "description": "ui widgets"
+  },
+  "ui_close_all_tabs_message": "Закрыть все открытые вкладки? Это действие необратимо.",
+  "@ui_close_all_tabs_message": {
+    "description": "ui widgets"
+  },
+
   "ui_not_found_title": "{title} не найдено",
   "@ui_not_found_title": {
     "description": "ui widgets",

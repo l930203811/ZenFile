@@ -78,6 +78,9 @@ class SettingsBackupService {
         port: conn.port,
         username: conn.username,
         password: conn.password,
+        sshKeyPath: conn.sshKeyPath,
+        sshKeyPassword: conn.sshKeyPassword,
+        authMethod: conn.authMethod,
       );
     } else if (conn.type == 'WebDav') {
       return WebDavRemoteClient(

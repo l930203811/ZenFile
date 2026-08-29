@@ -50,11 +50,35 @@ class SshSftpService {
 
     // ── 连接管理 ────────────────────────────────────────────────────────────
 
-    /** 建立密码登录的 SSH 连接，返回 sessionId。 */
-    fun connect(host: String, port: Int, username: String, password: String): String {
+    /** 建立 SSH 连接，返回 sessionId。
+     *  - 传 [sshKeyPath]（非空）走私钥认证（JSch addIdentity，硬件加速加解密）；
+     *  - 否则走密码认证。 */
+    fun connect(
+        host: String,
+        port: Int,
+        username: String,
+        password: String,
+        sshKeyPath: String? = null,
+        sshKeyPassword: String? = null,
+    ): String {
         val jsch = JSch()
+        val useKey = !sshKeyPath.isNullOrEmpty()
+        if (useKey) {
+            try {
+                // passphrase 为空时调用单参重载（JSch 的 String 重载不接受 null）
+                if (sshKeyPassword.isNullOrEmpty()) {
+                    jsch.addIdentity(sshKeyPath)
+                } else {
+                    jsch.addIdentity(sshKeyPath, sshKeyPassword)
+                }
+            } catch (e: Throwable) {
+                throw JSchException("Failed to load SSH private key: ${e.message}", e)
+            }
+        }
         val session = jsch.getSession(username, host, if (port > 0) port else 22)
-        session.setPassword(password)
+        if (!useKey) {
+            session.setPassword(password)
+        }
         val config = Properties().apply {
             // 不校验主机密钥（内网 NAS 场景；若需严格校验可改为 ask/known_hosts）
             put("StrictHostKeyChecking", "no")

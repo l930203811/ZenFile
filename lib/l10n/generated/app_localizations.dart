@@ -5695,6 +5695,18 @@ abstract class L10n {
   /// ui widgets
   ///
   /// In zh, this message translates to:
+  /// **'关闭所有标签'**
+  String get ui_close_all_tabs;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要关闭所有打开的标签页吗？此操作不可撤销。'**
+  String get ui_close_all_tabs_message;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
   /// **'未找到 {title}'**
   String ui_not_found_title(String title);
 

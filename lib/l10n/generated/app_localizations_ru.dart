@@ -3128,6 +3128,13 @@ class L10nRu extends L10n {
   String get ui_close_tab => 'Закрыть Вкладку';
 
   @override
+  String get ui_close_all_tabs => 'Закрыть все вкладки';
+
+  @override
+  String get ui_close_all_tabs_message =>
+      'Закрыть все открытые вкладки? Это действие необратимо.';
+
+  @override
   String ui_not_found_title(String title) {
     return '$title не найдено';
   }

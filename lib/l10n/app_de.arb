@@ -3413,6 +3413,15 @@
   "@ui_close_tab": {
     "description": "ui widgets"
   },
+  "ui_close_all_tabs": "Alle Tabs schließen",
+  "@ui_close_all_tabs": {
+    "description": "ui widgets"
+  },
+  "ui_close_all_tabs_message": "Alle geöffneten Tabs schließen? Dies kann nicht rückgängig gemacht werden.",
+  "@ui_close_all_tabs_message": {
+    "description": "ui widgets"
+  },
+
   "ui_not_found_title": "Kein {title} gefunden",
   "@ui_not_found_title": {
     "description": "ui widgets",

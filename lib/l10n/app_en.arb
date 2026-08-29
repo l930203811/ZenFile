@@ -3423,6 +3423,15 @@
   "@ui_close_tab": {
     "description": "ui widgets"
   },
+  "ui_close_all_tabs": "Close All Tabs",
+  "@ui_close_all_tabs": {
+    "description": "ui widgets"
+  },
+  "ui_close_all_tabs_message": "Close all open tabs? This action cannot be undone.",
+  "@ui_close_all_tabs_message": {
+    "description": "ui widgets"
+  },
+
   "ui_not_found_title": "No {title} found",
   "@ui_not_found_title": {
     "description": "ui widgets",

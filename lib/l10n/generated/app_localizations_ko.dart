@@ -2985,6 +2985,12 @@ class L10nKo extends L10n {
   String get ui_close_tab => '탭 닫기';
 
   @override
+  String get ui_close_all_tabs => '모든 탭 닫기';
+
+  @override
+  String get ui_close_all_tabs_message => '열려 있는 모든 탭을 닫을까요? 이 작업은 취소할 수 없습니다.';
+
+  @override
   String ui_not_found_title(String title) {
     return '$title을(를) 찾을 수 없습니다';
   }

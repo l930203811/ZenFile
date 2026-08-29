@@ -3505,6 +3505,15 @@
   "@ui_close_tab": {
     "description": "ui widgets"
   },
+  "ui_close_all_tabs": "关闭所有标签",
+  "@ui_close_all_tabs": {
+    "description": "ui widgets"
+  },
+  "ui_close_all_tabs_message": "确定要关闭所有打开的标签页吗？此操作不可撤销。",
+  "@ui_close_all_tabs_message": {
+    "description": "ui widgets"
+  },
+
   "ui_not_found_title": "未找到 {title}",
   "@ui_not_found_title": {
     "description": "ui widgets",

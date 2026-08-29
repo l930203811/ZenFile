@@ -3124,6 +3124,13 @@ class L10nDe extends L10n {
   String get ui_close_tab => 'Tab schließen';
 
   @override
+  String get ui_close_all_tabs => 'Alle Tabs schließen';
+
+  @override
+  String get ui_close_all_tabs_message =>
+      'Alle geöffneten Tabs schließen? Dies kann nicht rückgängig gemacht werden.';
+
+  @override
   String ui_not_found_title(String title) {
     return 'Kein $title gefunden';
   }
