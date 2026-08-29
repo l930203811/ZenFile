@@ -261,6 +261,93 @@ class MainActivity : AudioServiceFragmentActivity() {
                         }
                     }
                 }
+                // 通过反射访问 StorageManager 内部 API 获取存储卷信息
+                // 绕过部分 ROM 对 Android/data 的 FUSE 限制
+                "getStorageVolumes" -> {
+                    executor.execute {
+                        try {
+                            val sm = applicationContext.getSystemService(Context.STORAGE_SERVICE)
+                            val methods = arrayListOf<Map<String, Any>>()
+
+                            // Android 10+ (API 29+)
+                            try {
+                                val getVolumesMethod = sm::class.java.getMethod("getStorageVolumes")
+                                val volumes = getVolumesMethod.invoke(sm) as List<*>
+                                for (vol in volumes) {
+                                    val volAny = vol as Any
+                                    val volMap = mutableMapOf<String, Any>()
+                                    // 获取卷的标识信息
+                                    try {
+                                        val getTypeMethod = volAny::class.java.getMethod("getType")
+                                        volMap["type"] = getTypeMethod.invoke(volAny)
+                                    } catch (e: Exception) {}
+                                    try {
+                                        val isEmulatedMethod = volAny::class.java.getMethod("isEmulated")
+                                        volMap["isEmulated"] = isEmulatedMethod.invoke(volAny)
+                                    } catch (e: Exception) {}
+                                    try {
+                                        val isMountedMethod = volAny::class.java.getMethod("isMounted")
+                                        volMap["isMounted"] = isMountedMethod.invoke(volAny)
+                                    } catch (e: Exception) {}
+                                    try {
+                                        val descriptionMethod = volAny::class.java.getMethod("getDescription")
+                                        volMap["description"] = descriptionMethod.invoke(volAny)
+                                    } catch (e: Exception) {}
+                                    // 获取卷的路径
+                                    try {
+                                        val getDirectoryMethod = volAny::class.java.getMethod("getDirectory")
+                                        val dir = getDirectoryMethod.invoke(volAny) as File?
+                                        if (dir != null) {
+                                            volMap["path"] = dir.path
+                                        }
+                                    } catch (e: Exception) {}
+                                    try {
+                                        val getIdMethod = volAny::class.java.getMethod("getId")
+                                        volMap["id"] = getIdMethod.invoke(volAny)
+                                    } catch (e: Exception) {}
+                                    methods.add(volMap)
+                                }
+                            } catch (e: Exception) {
+                                // getStorageVolumes not available, try legacy methods
+                            }
+
+                            // Android 8-9 (API 26-28)
+                            if (methods.isEmpty()) {
+                                try {
+                                    val getVolumeListMethod = sm::class.java.getMethod("getVolumeList")
+                                    val volumes = getVolumeListMethod.invoke(sm) as List<*>
+                                    for (vol in volumes) {
+                                        val volAny = vol as Any
+                                        val volMap = mutableMapOf<String, Any>()
+                                        try {
+                                            val getStateMethod = volAny::class.java.getMethod("getState")
+                                            volMap["state"] = getStateMethod.invoke(volAny)
+                                        } catch (e: Exception) {}
+                                        try {
+                                            val getFullPathMethod = volAny::class.java.getMethod("getFullPath")
+                                            volMap["path"] = getFullPathMethod.invoke(volAny)
+                                        } catch (e: Exception) {}
+                                        methods.add(volMap)
+                                    }
+                                } catch (e: Exception) {}
+                            }
+
+                            // Android 7- (API < 26)
+                            if (methods.isEmpty()) {
+                                try {
+                                    val getExternalStorageDirectoryMethod = Environment::class.java.getMethod("getExternalStorageDirectory")
+                                    val dir = getExternalStorageDirectoryMethod.invoke(null) as File
+                                    methods.add(mapOf("path" to dir.path, "isEmulated" to true))
+                                } catch (e: Exception) {}
+                            }
+
+                            runOnUiThread { result.success(methods) }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            runOnUiThread { result.error("STORAGE_ERROR", e.message, null) }
+                        }
+                    }
+                }
                 "resolveContentUri" -> {
                     val uriString = call.argument<String>("uri") ?: ""
                     executor.execute {

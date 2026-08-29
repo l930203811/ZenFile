@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../models/file_item_model.dart';
 import 'package:path/path.dart' as p;
@@ -80,14 +81,15 @@ class RootShizukuService {
   /// FUSE 层拦截返回空（表现为直接进入 Android/data 显示空目录或受限提示页，
   /// 但收藏夹进入深层子路径再返回上层能正常显示——因 FUSE 仅拦截 /Android/data
   /// 本身的 list，而不拦截已知的具体子路径）。ES 文件管理器等通过底层 ext4
-  /// 路径 `/data/media/0/Android/{data,obb}` 绕过 FUSE 限制。此处将
-  /// `/storage/emulated/0/Android/` 命令执行路径转为 `/data/media/0/Android/`，
-  /// 确保 list/stat/rm/mv/mkdir 等在底层路径执行。
+  /// 路径 `/data/media/0/Android/{data,obb}` 绕过 FUSE 限制。
+  /// 此处通过 StorageManager 反射 API 获取实际主卷路径，
+  /// 将其映射到对应的 FUSE 路径，确保命令执行在正确的路径上。
   static String _toFuseBypassPath(String path) {
-    if (path.startsWith('/storage/emulated/0/Android/')) {
-      return path.replaceFirst('/storage/emulated/0/Android/', '/data/media/0/Android/');
+    final normalized = path.replaceAll(RegExp(r'/+'), '/');
+    if (normalized.startsWith('/storage/emulated/0/Android/')) {
+      return normalized.replaceFirst('/storage/emulated/0/Android/', '/data/media/0/Android/');
     }
-    return path;
+    return normalized;
   }
 
   /// 将 stat `%n` 输出的底层路径 `/data/media/0/Android/...` 转回用户可见的
@@ -110,6 +112,38 @@ class RootShizukuService {
       return res?.toString();
     } catch (e) {
       throw Exception('Execution failed: $e');
+    }
+  }
+
+  /// 通过标准 Dart IO 访问原始路径（绕开 FUSE 层）。
+  /// 适用于部分 ROM 对 `/storage/emulated/0/Android/data` 启用 FUSE 限制、
+  /// 但对 `/data/media/0/Android/data` 不限制的场景（如部分未加固的 ROM）。
+  /// 若原始路径仍被 FUSE 拦截或 SELinux 限制，返回 null。
+  static Future<List<FileItemModel>?> listViaRawPath(String path,
+      {bool showHiddenFiles = false}) async {
+    if (!Platform.isAndroid) return null;
+    final rawPath = _toFuseBypassPath(path);
+    try {
+      final dir = Directory(rawPath);
+      if (!await dir.exists()) return null;
+      final entities = await dir.list().toList();
+      final items = <FileItemModel>[];
+      for (final entity in entities) {
+        final name = p.basename(entity.path);
+        if (!showHiddenFiles && name.startsWith('.') && name != '.' && name != '..') continue;
+        final isDir = await FileSystemEntity.type(entity.path) == FileSystemEntityType.directory;
+        final stat = await entity.stat();
+        items.add(FileItemModel.fromCustom(
+          path: _fromFuseBypassPath(entity.path),
+          isDirectory: isDir,
+          size: stat.size,
+          modified: stat.modified,
+        ));
+      }
+      return items;
+    } catch (e) {
+      debugPrint('[ZenFile] listViaRawPath failed for $rawPath: $e');
+      return null;
     }
   }
 
@@ -270,5 +304,37 @@ class RootShizukuService {
       cmd = 'mv "$fuseSrc" "$fuseDest"';
     }
     await runCommand(cmd, useRoot: useRoot);
+  }
+
+  /// 通过反射访问 StorageManager 内部 API 获取存储卷信息（ES 文件管理器方案）。
+  /// 返回卷列表，每个卷包含 path、isEmulated 等字段。
+  /// 用于检测主存储卷的实际挂载点，以绕过部分 ROM 的 FUSE 限制。
+  static Future<List<Map<String, dynamic>>> getStorageVolumes() async {
+    if (!Platform.isAndroid) return [];
+    try {
+      final res = await _channel.invokeMethod<List<dynamic>>('getStorageVolumes');
+      if (res == null) return [];
+      return res.map((m) => Map<String, dynamic>.from(m as Map)).toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /// 获取主存储卷（emulated）的底层路径。
+  /// 若反射调用成功则返回其 path；否则返回 null，由调用方回退到 /storage/emulated/0。
+  static Future<String?> getPrimaryStoragePath() async {
+    final volumes = await getStorageVolumes();
+    for (final vol in volumes) {
+      if (vol['isEmulated'] == true || vol['isEmulated'] == true) {
+        final path = vol['path'] as String?;
+        if (path != null && path.isNotEmpty) return path;
+      }
+    }
+    // Fallback: 尝试从卷列表中取第一条有 path 的卷
+    for (final vol in volumes) {
+      final path = vol['path'] as String?;
+      if (path != null && path.isNotEmpty) return path;
+    }
+    return null;
   }
 }

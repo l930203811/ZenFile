@@ -2381,6 +2381,38 @@ class FileManagerProvider extends ChangeNotifier {
 
   Future<void> _detectStorageVolumes() async {
     final volumes = <StorageVolume>[];
+
+    // 优先通过 StorageManager 反射 API 获取存储卷（ES 文件管理器方案）
+    // 可正确识别主卷底层路径 /data/media/0 及可拆卸 SD 卡
+    try {
+      final rawVolumes = await RootShizukuService.getStorageVolumes();
+      if (rawVolumes.isNotEmpty) {
+        final seenPaths = <String>{};
+        for (final vol in rawVolumes) {
+          final path = vol['path'] as String?;
+          if (path == null || path.isEmpty || seenPaths.contains(path)) continue;
+          seenPaths.add(path);
+          final isEmulated = vol['isEmulated'] as bool? ?? false;
+          final name = (vol['description'] as String?)?.isNotEmpty == true
+              ? vol['description']
+              : (path == '/storage/emulated/0' ? 'Internal Storage' : 'SD Card');
+          volumes.add(StorageVolume(
+            name: name ?? 'Unknown',
+            path: path,
+            isInternal: isEmulated,
+          ));
+        }
+        if (volumes.isNotEmpty) {
+          _storageVolumes = volumes;
+          await updateStorageSpace();
+          return;
+        }
+      }
+    } catch (e) {
+      debugPrint('[ZenFile] _detectStorageVolumes reflection failed: $e');
+    }
+
+    // 回退：使用标准 API
     if (Platform.isAndroid) {
       volumes.add(StorageVolume(name: 'Internal Storage', path: '/storage/emulated/0', isInternal: true));
 
@@ -2736,38 +2768,56 @@ class FileManagerProvider extends ChangeNotifier {
     // 失败或返回空时再走 Shizuku/root 受限模式。
     // 这样即便 Shizuku 被 FUSE 拦截，标准 API 仍可正常工作（部分 ROM 行为）。
     if (activeTab.isRestrictedMode && _isRestrictedAndroidPath(path)) {
+      // 策略：依次尝试标准 API → 原始路径（绕开 FUSE）→ Shizuku/root shell。
+      // 1. 标准 API：适用于部分 ROM（FUSE 未拦截 Android/data 时）。
+      // 2. 原始路径：适用于 FUSE 拦截了 /storage 路径但未拦截 /data/media/0 的 ROM。
+      // 3. Shizuku/root：适用于以上均不可用的情况。
       try {
-        activeTab.currentPath = path;
         final dir = Directory(path);
         if (await dir.exists()) {
           final entities = await dir.list().toList();
-          final folders = <FileItemModel>[];
-          final files = <FileItemModel>[];
-          final items = await Future.wait(entities.map((e) => FileItemModel.fromEntityAsync(e)));
-          for (var item in items) {
-            if (!_showHiddenFiles && item.isHidden) continue;
-            if (item.isDirectory) folders.add(item);
-            else files.add(item);
+          if (entities.isNotEmpty) {
+            final folders = <FileItemModel>[];
+            final files = <FileItemModel>[];
+            final items = await Future.wait(entities.map((e) => FileItemModel.fromEntityAsync(e)));
+            for (var item in items) {
+              if (!_showHiddenFiles && item.isHidden) continue;
+              if (item.isDirectory) folders.add(item);
+              else files.add(item);
+            }
+            final filteredFiles = _filterType == FileFilterType.all
+                ? files
+                : files.where((e) => _matchesFilter(e.path)).toList();
+            final filteredFolders = (_filterType != FileFilterType.all && _hideFoldersInFilter) ? <FileItemModel>[] : folders;
+            _sortList(filteredFolders, path);
+            _sortList(filteredFiles, path);
+            activeTab.currentFiles = [...filteredFolders, ...filteredFiles];
+            activeTab.isLoading = false;
+            activeTab.needsPermission = false;
+            activeTab.useRootMode = false;
+            activeTab.useShizukuMode = false;
+            _persistTabs();
+            notifyListeners();
+            return;
           }
-          final filteredFiles = _filterType == FileFilterType.all
-              ? files
-              : files.where((e) => _matchesFilter(e.path)).toList();
-          final filteredFolders = (_filterType != FileFilterType.all && _hideFoldersInFilter) ? <FileItemModel>[] : folders;
-          _sortList(filteredFolders, path);
-          _sortList(filteredFiles, path);
-          activeTab.currentFiles = [...filteredFolders, ...filteredFiles];
-          activeTab.isLoading = false;
-          activeTab.needsPermission = false;
-          activeTab.useRootMode = false;
-          activeTab.useShizukuMode = false;
-          _persistTabs();
-          notifyListeners();
-          return;
         }
       } catch (e) {
-        debugPrint('[ZenFile] Standard API failed for restricted path $path: $e, falling back to Shizuku/root');
+        debugPrint('[ZenFile] Standard API failed for restricted path $path: $e, trying raw path');
       }
-      // 标准 API 失败，继续走下方 Shizuku/root 分支
+      // 2. 原始路径（绕开 FUSE）
+      final rawItems = await RootShizukuService.listViaRawPath(path, showHiddenFiles: _showHiddenFiles);
+      if (rawItems != null && rawItems.isNotEmpty) {
+        activeTab.currentPath = path;
+        activeTab.currentFiles = rawItems;
+        activeTab.isLoading = false;
+        activeTab.needsPermission = false;
+        activeTab.useRootMode = false;
+        activeTab.useShizukuMode = false;
+        _persistTabs();
+        notifyListeners();
+        return;
+      }
+      // 3. 继续走下方 Shizuku/root 分支
     }
 
     if (activeTab.isRestrictedMode) {
@@ -2902,36 +2952,6 @@ class FileManagerProvider extends ChangeNotifier {
     activeTab.isLoading = false;
     _persistTabs();
     notifyListeners();
-  }
-
-  /// 标准 Directory.list() 加载目录（用于受限路径的 fallback）。
-  /// 当 Shizuku shell 返回空但标准 API 仍可访问时（部分 ROM 行为），使用此方法。
-  Future<void> _loadDirectoryWithStdFallback(String path, {bool showLoading = false}) async {
-    try {
-      final dir = Directory(path);
-      if (await dir.exists()) {
-        activeTab.currentPath = path;
-        final entities = await dir.list().toList();
-        final folders = <FileItemModel>[];
-        final files = <FileItemModel>[];
-        final items = await Future.wait(entities.map((e) => FileItemModel.fromEntityAsync(e)));
-        for (var item in items) {
-          if (!_showHiddenFiles && item.isHidden) continue;
-          if (item.isDirectory) folders.add(item);
-          else files.add(item);
-        }
-        final filteredFiles = _filterType == FileFilterType.all
-            ? files
-            : files.where((e) => _matchesFilter(e.path)).toList();
-        final filteredFolders = (_filterType != FileFilterType.all && _hideFoldersInFilter) ? <FileItemModel>[] : folders;
-        _sortList(filteredFolders, path);
-        _sortList(filteredFiles, path);
-        activeTab.currentFiles = [...filteredFolders, ...filteredFiles];
-      }
-    } catch (e) {
-      debugPrint('[ZenFile] _loadDirectoryWithStdFallback error for $path: $e');
-      activeTab.currentFiles = [];
-    }
   }
 
   void toggleSelection(String path) {
