@@ -5323,8 +5323,9 @@ class FileManagerProvider extends ChangeNotifier {
   /// 自身包名目录 app 本身可读写，无需绕过。
   bool _isRestrictedAndroidPath(String path) {
     if (!path.startsWith('/storage/emulated/0/Android/')) return false;
-    final sub = path.substring('/storage/emulated/0/Android/'.length);
-    if (!sub.startsWith('data/') && !sub.startsWith('obb/')) return false;
+    final sub = path.substring('/storage/emulated/0/Android/'.length).replaceAll(RegExp(r'/+$'), '');
+    // 匹配 data 或 data/... 以及 obb 或 obb/...
+    if (sub != 'data' && !sub.startsWith('data/') && sub != 'obb' && !sub.startsWith('obb/')) return false;
     // 自身外部目录（如 Android/data/com.sequl.zenfile/cache）可正常访问
     return !sub.startsWith('data/com.sequl.zenfile') && !sub.startsWith('obb/com.sequl.zenfile');
   }
