@@ -3144,6 +3144,30 @@
   },
   "ui_multi_tab_scope_all": "All Windows",
   "ui_enable_split_screen": "Enable Split Screen",
+  "ui_password_auth": "Password Authentication",
+  "@ui_password_auth": {
+    "description": "network_connection_wizard_screen.dart"
+  },
+  "ui_ssh_key_auth": "SSH Key Authentication",
+  "@ui_ssh_key_auth": {
+    "description": "network_connection_wizard_screen.dart"
+  },
+  "ui_private_key_file": "Private Key File",
+  "@ui_private_key_file": {
+    "description": "network_connection_wizard_screen.dart"
+  },
+  "ui_passphrase": "Passphrase",
+  "@ui_passphrase": {
+    "description": "network_connection_wizard_screen.dart"
+  },
+  "ui_optional": "Optional",
+  "@ui_optional": {
+    "description": "network_connection_wizard_screen.dart"
+  },
+  "ui_ssh_key_password_hint": "Only required if the private key is passphrase-protected",
+  "@ui_ssh_key_password_hint": {
+    "description": "network_connection_wizard_screen.dart"
+  },
   "ui_single_window": "Single Window",
   "ui_dual_window": "Dual Window",
   "ui_filter_by_category": "Filter by Category",

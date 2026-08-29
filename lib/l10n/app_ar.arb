@@ -3137,6 +3137,30 @@
   },
   "ui_multi_tab_scope_all": "جميع النوافذ",
   "ui_enable_split_screen": "تمكين تقسيم الشاشة",
+  "ui_password_auth": "المصادقة بكلمة المرور",
+  "@ui_password_auth": {
+    "description": "network_connection_wizard_screen.dart"
+  },
+  "ui_ssh_key_auth": "المصادقة بمفتاح SSH",
+  "@ui_ssh_key_auth": {
+    "description": "network_connection_wizard_screen.dart"
+  },
+  "ui_private_key_file": "ملف المفتاح الخاص",
+  "@ui_private_key_file": {
+    "description": "network_connection_wizard_screen.dart"
+  },
+  "ui_passphrase": "عبارة المرور",
+  "@ui_passphrase": {
+    "description": "network_connection_wizard_screen.dart"
+  },
+  "ui_optional": "اختياري",
+  "@ui_optional": {
+    "description": "network_connection_wizard_screen.dart"
+  },
+  "ui_ssh_key_password_hint": "مطلوب فقط إذا كان المفتاح الخاص محميًا بكلمة مرور",
+  "@ui_ssh_key_password_hint": {
+    "description": "network_connection_wizard_screen.dart"
+  },
   "ui_single_window": "نافذة واحدة",
   "ui_dual_window": "نافذتان",
   "ui_filter_by_category": "تصفية حسب الفئة",

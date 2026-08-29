@@ -2847,6 +2847,25 @@ class L10nDe extends L10n {
   String get ui_enable_split_screen => 'Geteilten Bildschirm aktivieren';
 
   @override
+  String get ui_password_auth => 'Passwort-Authentifizierung';
+
+  @override
+  String get ui_ssh_key_auth => 'SSH-Schlüssel-Authentifizierung';
+
+  @override
+  String get ui_private_key_file => 'Privater Schlüsseldatei';
+
+  @override
+  String get ui_passphrase => 'Passphrase';
+
+  @override
+  String get ui_optional => 'Optional';
+
+  @override
+  String get ui_ssh_key_password_hint =>
+      'Nur erforderlich, wenn der private Schlüssel passphrasengeschützt ist';
+
+  @override
   String get ui_single_window => 'Einzelnes Fenster';
 
   @override

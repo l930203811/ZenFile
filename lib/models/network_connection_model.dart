@@ -8,6 +8,10 @@ class NetworkConnectionModel {
   final String password;
   final String rootPath;
   final String protocol;
+  // SSH 密钥认证相关字段（仅 SFTP 使用）
+  final String? sshKeyPath;
+  final String? sshKeyPassword;
+  final String authMethod; // 'password' or 'key'
 
   NetworkConnectionModel({
     required this.id,
@@ -19,6 +23,9 @@ class NetworkConnectionModel {
     required this.password,
     this.rootPath = '/',
     this.protocol = 'http',
+    this.sshKeyPath,
+    this.sshKeyPassword,
+    this.authMethod = 'password',
   });
 
   Map<String, dynamic> toJson() => {
@@ -31,6 +38,9 @@ class NetworkConnectionModel {
         'password': password,
         'rootPath': rootPath,
         'protocol': protocol,
+        'sshKeyPath': sshKeyPath,
+        'sshKeyPassword': sshKeyPassword,
+        'authMethod': authMethod,
       };
 
   factory NetworkConnectionModel.fromJson(Map<String, dynamic> json) =>
@@ -44,5 +54,8 @@ class NetworkConnectionModel {
         password: json['password'] as String,
         rootPath: (json['rootPath'] as String?) ?? '/',
         protocol: (json['protocol'] as String?) ?? 'http',
+        sshKeyPath: json['sshKeyPath'] as String?,
+        sshKeyPassword: json['sshKeyPassword'] as String?,
+        authMethod: (json['authMethod'] as String?) ?? 'password',
       );
 }

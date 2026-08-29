@@ -2721,6 +2721,24 @@ class L10nJa extends L10n {
   String get ui_enable_split_screen => '分割画面を有効にする';
 
   @override
+  String get ui_password_auth => 'パスワード認証';
+
+  @override
+  String get ui_ssh_key_auth => 'SSH キー認証';
+
+  @override
+  String get ui_private_key_file => '秘密鍵ファイル';
+
+  @override
+  String get ui_passphrase => 'パスフレーズ';
+
+  @override
+  String get ui_optional => 'オプション';
+
+  @override
+  String get ui_ssh_key_password_hint => '秘密鍵がパスフレーズで保護されている場合のみ必要';
+
+  @override
   String get ui_single_window => '単一ウィンドウ';
 
   @override

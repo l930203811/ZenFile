@@ -2866,6 +2866,25 @@ class L10nEs extends L10n {
   String get ui_enable_split_screen => 'Habilitar Pantalla Dividida';
 
   @override
+  String get ui_password_auth => 'Autenticación por contraseña';
+
+  @override
+  String get ui_ssh_key_auth => 'Autenticación con clave SSH';
+
+  @override
+  String get ui_private_key_file => 'Archivo de clave privada';
+
+  @override
+  String get ui_passphrase => 'Frase de contraseña';
+
+  @override
+  String get ui_optional => 'Opcional';
+
+  @override
+  String get ui_ssh_key_password_hint =>
+      'Solo requerido si la clave privada está protegida con contraseña';
+
+  @override
   String get ui_single_window => 'Ventana única';
 
   @override

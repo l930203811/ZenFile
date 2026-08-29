@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../models/network_connection_model.dart';
 import '../../providers/file_manager_provider.dart';
@@ -36,6 +38,11 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
   String _webdavProtocol = 'http';
   final _pathController = TextEditingController(text: '/');
 
+  // SSH 密钥认证相关
+  String? _sshKeyPath;
+  final _sshKeyPasswordController = TextEditingController();
+  bool _obscureSshKeyPassword = true;
+
   // Testing steps states
   bool _isTesting = false;
   int _testStepIndex = 0;
@@ -55,6 +62,8 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
       _usernameController.text = existing.username;
       _passwordController.text = existing.password;
       _pathController.text = existing.rootPath;
+      _sshKeyPath = existing.sshKeyPath;
+      _sshKeyPasswordController.text = existing.sshKeyPassword ?? '';
       if (existing.type == 'WebDav') {
         _webdavProtocol = existing.protocol;
       }
@@ -78,6 +87,7 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
     _usernameController.dispose();
     _passwordController.dispose();
     _pathController.dispose();
+    _sshKeyPasswordController.dispose();
     super.dispose();
   }
 
@@ -252,10 +262,22 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
     final path = (_selectedType == 'WebDav' || _selectedType == L10n.of(context).smb)
         ? (((outPath != null ? outPath : _pathController.text).trim().isEmpty) ? '/' : (outPath != null ? outPath : _pathController.text).trim())
         : '/';
+
+    // 确定认证方式
+    final authMethod = (_selectedType == 'SFTP' && _sshKeyPath != null) ? 'key' : 'password';
+
     if (_selectedType == 'FTP') {
       return FtpRemoteClient(host: host, port: port, username: username, password: password);
     } else if (_selectedType == 'SFTP') {
-      return SftpRemoteClient(host: host, port: port, username: username, password: password);
+      return SftpRemoteClient(
+        host: host,
+        port: port,
+        username: username,
+        password: password,
+        sshKeyPath: _sshKeyPath,
+        sshKeyPassword: _sshKeyPasswordController.text.trim().isEmpty ? null : _sshKeyPasswordController.text,
+        authMethod: authMethod,
+      );
     } else if (_selectedType == 'WebDav') {
       return WebDavRemoteClient(
         host: host,
@@ -415,6 +437,9 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
         ? (_pathController.text.trim().isEmpty ? '/' : _pathController.text.trim())
         : '/';
 
+    // 确定认证方式
+    final authMethod = (_selectedType == 'SFTP' && _sshKeyPath != null) ? 'key' : 'password';
+
     final connection = NetworkConnectionModel(
       id: widget.existingConnection?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
       name: _nameController.text.trim(),
@@ -425,6 +450,9 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
       password: password,
       rootPath: path,
       protocol: _selectedType == 'WebDav' ? _webdavProtocol : 'http',
+      sshKeyPath: _sshKeyPath,
+      sshKeyPassword: _sshKeyPasswordController.text.trim().isEmpty ? null : _sshKeyPasswordController.text,
+      authMethod: authMethod,
     );
 
     if (widget.existingConnection != null) {
@@ -756,6 +784,12 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
             suffix: passwordSuffix,
           ),
 
+          // SFTP SSH 密钥认证选项
+          if (_selectedType == 'SFTP') ...[
+            const SizedBox(height: 24),
+            _buildSshKeySection(theme),
+          ],
+
           const SizedBox(height: 40),
 
           // Three-button action bar: BACK (left) · TEST (center) · SAVE (right, primary)
@@ -947,6 +981,153 @@ class _NetworkConnectionWizardScreenState extends State<NetworkConnectionWizardS
   }
 
   // --- Helper Layout widgets ---
+
+  /// 构建 SSH 密钥认证部分 UI
+  Widget _buildSshKeySection(ThemeData theme) {
+    final l10n = L10n.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 认证方式切换
+        Row(
+          children: [
+            Expanded(
+              child: _buildAuthMethodButton(
+                theme: theme,
+                label: l10n.ui_password_auth,
+                isSelected: _sshKeyPath == null,
+                onTap: () => setState(() => _sshKeyPath = null),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildAuthMethodButton(
+                theme: theme,
+                label: l10n.ui_ssh_key_auth,
+                isSelected: _sshKeyPath != null,
+                onTap: () => _selectSshKey(),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+
+        // 密钥文件选择
+        if (_sshKeyPath != null) ...[
+          _buildInputLabel(l10n.ui_private_key_file),
+          InkWell(
+            onTap: _selectSshKey,
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E293B) : theme.colorScheme.primary.withOpacity(0.04),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: theme.colorScheme.primary.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Broken.key, size: 20, color: theme.colorScheme.primary),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      _sshKeyPath!,
+                      style: const TextStyle(fontSize: 13),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 18),
+                    onPressed: () => setState(() => _sshKeyPath = null),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+
+        // 密钥密码短语（可选）
+        if (_sshKeyPath != null) ...[
+          _buildInputLabel('${l10n.ui_passphrase} (${l10n.ui_optional})'),
+          _buildTextField(
+            controller: _sshKeyPasswordController,
+            hint: '••••••••',
+            icon: Broken.lock,
+            obscure: _obscureSshKeyPassword,
+            suffix: IconButton(
+              icon: Icon(
+                _obscureSshKeyPassword ? Broken.eye_slash : Broken.eye,
+                size: 18,
+                color: theme.colorScheme.onSurface.withOpacity(0.5),
+              ),
+              onPressed: () => setState(() => _obscureSshKeyPassword = !_obscureSshKeyPassword),
+              splashRadius: 20,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            l10n.ui_ssh_key_password_hint,
+            style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildAuthMethodButton({
+    required ThemeData theme,
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    final isDark = theme.brightness == Brightness.dark;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? theme.colorScheme.primary.withOpacity(0.12)
+              : (isDark ? const Color(0xFF1E293B) : theme.colorScheme.primary.withOpacity(0.04)),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.outline.withOpacity(0.1),
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.6),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _selectSshKey() async {
+    final result = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pem', 'key', 'pub'],
+      allowMultiple: false,
+    );
+
+    if (result != null && result.files.single.path != null) {
+      setState(() {
+        _sshKeyPath = result.files.single.path!;
+      });
+    }
+  }
 
   Widget _buildInputLabel(String label) {
     return Padding(

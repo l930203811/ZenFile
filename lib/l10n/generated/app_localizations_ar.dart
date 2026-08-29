@@ -2800,6 +2800,25 @@ class L10nAr extends L10n {
   String get ui_enable_split_screen => 'تمكين تقسيم الشاشة';
 
   @override
+  String get ui_password_auth => 'المصادقة بكلمة المرور';
+
+  @override
+  String get ui_ssh_key_auth => 'المصادقة بمفتاح SSH';
+
+  @override
+  String get ui_private_key_file => 'ملف المفتاح الخاص';
+
+  @override
+  String get ui_passphrase => 'عبارة المرور';
+
+  @override
+  String get ui_optional => 'اختياري';
+
+  @override
+  String get ui_ssh_key_password_hint =>
+      'مطلوب فقط إذا كان المفتاح الخاص محميًا بكلمة مرور';
+
+  @override
   String get ui_single_window => 'نافذة واحدة';
 
   @override

@@ -2718,6 +2718,24 @@ class L10nKo extends L10n {
   String get ui_enable_split_screen => '분할 화면 활성화';
 
   @override
+  String get ui_password_auth => '비밀번호 인증';
+
+  @override
+  String get ui_ssh_key_auth => 'SSH 키 인증';
+
+  @override
+  String get ui_private_key_file => '개인 키 파일';
+
+  @override
+  String get ui_passphrase => '암호 문구';
+
+  @override
+  String get ui_optional => '옵션';
+
+  @override
+  String get ui_ssh_key_password_hint => '개인 키가 암호로 보호된 경우에만 필요';
+
+  @override
   String get ui_single_window => '단일 창';
 
   @override

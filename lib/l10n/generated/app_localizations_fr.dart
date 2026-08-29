@@ -2867,6 +2867,25 @@ class L10nFr extends L10n {
   String get ui_enable_split_screen => 'Activer l\'écran partagé';
 
   @override
+  String get ui_password_auth => 'Authentification par mot de passe';
+
+  @override
+  String get ui_ssh_key_auth => 'Authentification par clé SSH';
+
+  @override
+  String get ui_private_key_file => 'Fichier de clé privée';
+
+  @override
+  String get ui_passphrase => 'Phrase de passe';
+
+  @override
+  String get ui_optional => 'Facultatif';
+
+  @override
+  String get ui_ssh_key_password_hint =>
+      'Requis uniquement si la clé privée est protégée par un mot de passe';
+
+  @override
   String get ui_single_window => 'Fenêtre unique';
 
   @override

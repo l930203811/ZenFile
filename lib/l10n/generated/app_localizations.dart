@@ -5194,6 +5194,42 @@ abstract class L10n {
   /// **'启用分屏'**
   String get ui_enable_split_screen;
 
+  /// network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'密码认证'**
+  String get ui_password_auth;
+
+  /// network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'SSH 密钥认证'**
+  String get ui_ssh_key_auth;
+
+  /// network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'私钥文件'**
+  String get ui_private_key_file;
+
+  /// network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'密码短语'**
+  String get ui_passphrase;
+
+  /// network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'可选'**
+  String get ui_optional;
+
+  /// network_connection_wizard_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'仅当私钥文件受密码保护时需要填写'**
+  String get ui_ssh_key_password_hint;
+
   /// No description provided for @ui_single_window.
   ///
   /// In zh, this message translates to:

@@ -2710,6 +2710,24 @@ class L10nZh extends L10n {
   String get ui_enable_split_screen => '启用分屏';
 
   @override
+  String get ui_password_auth => '密码认证';
+
+  @override
+  String get ui_ssh_key_auth => 'SSH 密钥认证';
+
+  @override
+  String get ui_private_key_file => '私钥文件';
+
+  @override
+  String get ui_passphrase => '密码短语';
+
+  @override
+  String get ui_optional => '可选';
+
+  @override
+  String get ui_ssh_key_password_hint => '仅当私钥文件受密码保护时需要填写';
+
+  @override
   String get ui_single_window => '单窗口';
 
   @override
@@ -8459,6 +8477,24 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_enable_split_screen => '啟用分屏';
+
+  @override
+  String get ui_password_auth => '密碼認證';
+
+  @override
+  String get ui_ssh_key_auth => 'SSH 金鑰認證';
+
+  @override
+  String get ui_private_key_file => '私鑰檔案';
+
+  @override
+  String get ui_passphrase => '密碼短語';
+
+  @override
+  String get ui_optional => '選填';
+
+  @override
+  String get ui_ssh_key_password_hint => '僅當私鑰檔案受密碼保護時需要填寫';
 
   @override
   String get ui_single_window => '單一視窗';

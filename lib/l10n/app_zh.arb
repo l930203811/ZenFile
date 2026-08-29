@@ -3226,6 +3226,30 @@
   },
   "ui_multi_tab_scope_all": "全部",
   "ui_enable_split_screen": "启用分屏",
+  "ui_password_auth": "密码认证",
+  "@ui_password_auth": {
+    "description": "network_connection_wizard_screen.dart"
+  },
+  "ui_ssh_key_auth": "SSH 密钥认证",
+  "@ui_ssh_key_auth": {
+    "description": "network_connection_wizard_screen.dart"
+  },
+  "ui_private_key_file": "私钥文件",
+  "@ui_private_key_file": {
+    "description": "network_connection_wizard_screen.dart"
+  },
+  "ui_passphrase": "密码短语",
+  "@ui_passphrase": {
+    "description": "network_connection_wizard_screen.dart"
+  },
+  "ui_optional": "可选",
+  "@ui_optional": {
+    "description": "network_connection_wizard_screen.dart"
+  },
+  "ui_ssh_key_password_hint": "仅当私钥文件受密码保护时需要填写",
+  "@ui_ssh_key_password_hint": {
+    "description": "network_connection_wizard_screen.dart"
+  },
   "ui_single_window": "单窗口",
   "ui_dual_window": "双窗口",
   "ui_filter_by_category": "按类别过滤",

@@ -2852,6 +2852,25 @@ class L10nRu extends L10n {
   String get ui_enable_split_screen => 'Включить Разделённый Экран';
 
   @override
+  String get ui_password_auth => 'Парольная аутентификация';
+
+  @override
+  String get ui_ssh_key_auth => 'Аутентификация SSH-ключом';
+
+  @override
+  String get ui_private_key_file => 'Файл закрытого ключа';
+
+  @override
+  String get ui_passphrase => 'Парольная фраза';
+
+  @override
+  String get ui_optional => 'Необязательно';
+
+  @override
+  String get ui_ssh_key_password_hint =>
+      'Требуется только если закрытый ключ защищён паролем';
+
+  @override
   String get ui_single_window => 'Одиночное окно';
 
   @override

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dartssh2/dartssh2.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'remote_client.dart';
 
 /// 原生 SSH/SFTP 通道：在 Android 上用 Java JSch 实现（加解密走系统硬件加速），
@@ -14,7 +15,11 @@ class SftpRemoteClient extends RemoteClient {
   final int port;
   final String username;
   final String password;
-  
+  // SSH 密钥认证相关
+  final String? sshKeyPath;
+  final String? sshKeyPassword;
+  final String authMethod; // 'password' or 'key'
+
   SSHClient? _sshClient;
   SftpClient? _sftpClient;
 
@@ -59,6 +64,9 @@ class SftpRemoteClient extends RemoteClient {
     required this.port,
     required this.username,
     required this.password,
+    this.sshKeyPath,
+    this.sshKeyPassword,
+    this.authMethod = 'password',
   });
 
   @override
@@ -66,9 +74,20 @@ class SftpRemoteClient extends RemoteClient {
     // 优先尝试原生 SSH 通道（Android + 硬件加速加解密，突破纯 Dart 速率上限）。
     if (_isAndroid) {
       try {
+        final nativeParams = <String, dynamic>{
+          'host': host,
+          'port': port,
+          'username': username,
+          'password': password,
+          'authMethod': authMethod,
+        };
+        if (authMethod == 'key' && sshKeyPath != null) {
+          nativeParams['sshKeyPath'] = sshKeyPath;
+          nativeParams['sshKeyPassword'] = sshKeyPassword ?? '';
+        }
         _nativeSessionId = await const MethodChannel(_kSftpNativeChannel).invokeMethod<String>(
           'connect',
-          {'host': host, 'port': port, 'username': username, 'password': password},
+          nativeParams,
         );
         _useNative = _nativeSessionId != null && _nativeSessionId!.isNotEmpty;
         if (_useNative) return;
@@ -85,10 +104,27 @@ class SftpRemoteClient extends RemoteClient {
       // Retry once if connection fails
       socket = await SSHSocket.connect(host, port, timeout: const Duration(seconds: 15));
     }
+
+    // 构建身份验证身份列表
+    final List<SSHIdentity> identities = [];
+
+    if (authMethod == 'key' && sshKeyPath != null) {
+      // 使用 SSH 私钥认证
+      final keyData = await File(sshKeyPath!).readAsString();
+      try {
+        // 解析 PEM 格式的私钥（支持 OpenSSH/RSA/ED25519 等格式）
+        final keyPairs = SSHKeyPair.fromPem(keyData, sshKeyPassword);
+        identities.addAll(keyPairs);
+      } catch (e) {
+        throw Exception('无法解析 SSH 私钥：$e');
+      }
+    }
+
     _sshClient = SSHClient(
       socket,
       username: username,
-      onPasswordRequest: () => password,
+      identities: identities,
+      onPasswordRequest: authMethod == 'key' ? null : () => password,
     );
     _sftpClient = await _sshClient!.sftp();
   }
@@ -522,7 +558,25 @@ class SftpRemoteClient extends RemoteClient {
       // 与主连接一致：失败重试一次，容忍瞬时握手抖动。
       socket = await SSHSocket.connect(host, port, timeout: const Duration(seconds: 15));
     }
-    final ssh = SSHClient(socket, username: username, onPasswordRequest: () => password);
+
+    final List<SSHIdentity> identities = [];
+
+    if (authMethod == 'key' && sshKeyPath != null) {
+      final keyData = await File(sshKeyPath!).readAsString();
+      try {
+        final keyPairs = SSHKeyPair.fromPem(keyData, sshKeyPassword);
+        identities.addAll(keyPairs);
+      } catch (e) {
+        throw Exception('无法解析 SSH 私钥：$e');
+      }
+    }
+
+    final ssh = SSHClient(
+      socket,
+      username: username,
+      identities: identities,
+      onPasswordRequest: authMethod == 'key' ? null : () => password,
+    );
     final sftp = await ssh.sftp();
     return _AuxSsh(ssh, sftp);
   }

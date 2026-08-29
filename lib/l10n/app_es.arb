@@ -3137,6 +3137,30 @@
   },
   "ui_multi_tab_scope_all": "Todas las ventanas",
   "ui_enable_split_screen": "Habilitar Pantalla Dividida",
+  "ui_password_auth": "Autenticación por contraseña",
+  "@ui_password_auth": {
+    "description": "network_connection_wizard_screen.dart"
+  },
+  "ui_ssh_key_auth": "Autenticación con clave SSH",
+  "@ui_ssh_key_auth": {
+    "description": "network_connection_wizard_screen.dart"
+  },
+  "ui_private_key_file": "Archivo de clave privada",
+  "@ui_private_key_file": {
+    "description": "network_connection_wizard_screen.dart"
+  },
+  "ui_passphrase": "Frase de contraseña",
+  "@ui_passphrase": {
+    "description": "network_connection_wizard_screen.dart"
+  },
+  "ui_optional": "Opcional",
+  "@ui_optional": {
+    "description": "network_connection_wizard_screen.dart"
+  },
+  "ui_ssh_key_password_hint": "Solo requerido si la clave privada está protegida con contraseña",
+  "@ui_ssh_key_password_hint": {
+    "description": "network_connection_wizard_screen.dart"
+  },
   "ui_single_window": "Ventana única",
   "ui_dual_window": "Ventana doble",
   "ui_filter_by_category": "Filtrar por categoría",

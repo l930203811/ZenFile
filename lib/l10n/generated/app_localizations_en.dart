@@ -2804,6 +2804,25 @@ class L10nEn extends L10n {
   String get ui_enable_split_screen => 'Enable Split Screen';
 
   @override
+  String get ui_password_auth => 'Password Authentication';
+
+  @override
+  String get ui_ssh_key_auth => 'SSH Key Authentication';
+
+  @override
+  String get ui_private_key_file => 'Private Key File';
+
+  @override
+  String get ui_passphrase => 'Passphrase';
+
+  @override
+  String get ui_optional => 'Optional';
+
+  @override
+  String get ui_ssh_key_password_hint =>
+      'Only required if the private key is passphrase-protected';
+
+  @override
   String get ui_single_window => 'Single Window';
 
   @override

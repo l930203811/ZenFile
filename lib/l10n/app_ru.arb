@@ -3137,6 +3137,30 @@
   },
   "ui_multi_tab_scope_all": "Во всех окнах",
   "ui_enable_split_screen": "Включить Разделённый Экран",
+  "ui_password_auth": "Парольная аутентификация",
+  "@ui_password_auth": {
+    "description": "network_connection_wizard_screen.dart"
+  },
+  "ui_ssh_key_auth": "Аутентификация SSH-ключом",
+  "@ui_ssh_key_auth": {
+    "description": "network_connection_wizard_screen.dart"
+  },
+  "ui_private_key_file": "Файл закрытого ключа",
+  "@ui_private_key_file": {
+    "description": "network_connection_wizard_screen.dart"
+  },
+  "ui_passphrase": "Парольная фраза",
+  "@ui_passphrase": {
+    "description": "network_connection_wizard_screen.dart"
+  },
+  "ui_optional": "Необязательно",
+  "@ui_optional": {
+    "description": "network_connection_wizard_screen.dart"
+  },
+  "ui_ssh_key_password_hint": "Требуется только если закрытый ключ защищён паролем",
+  "@ui_ssh_key_password_hint": {
+    "description": "network_connection_wizard_screen.dart"
+  },
   "ui_single_window": "Одиночное окно",
   "ui_dual_window": "Двойное окно",
   "ui_filter_by_category": "Фильтр по категории",
