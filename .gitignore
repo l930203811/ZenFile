@@ -34,3 +34,9 @@ test/ZenFile-v1.1.32/
 
 # Windows 保留设备名误创建的文件
 /nul
+
+# 版本发布日志（App 内「查看更新」页已承载，仓库不再跟踪）
+RELEASE_NOTES.md
+
+# OOM 调试堆转储
+*.hprof
