@@ -1385,15 +1385,13 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
       Directory? thumbDir;
       Directory? tempDir;
       try {
-        // 统一缩略图缓存路径为 thumbnails/remote（与 file_item.dart 一致）
-        thumbDir = Directory('/storage/emulated/0/ZenFile/cache/thumbnails/remote');
-        if (!thumbDir.existsSync()) thumbDir.createSync(recursive: true);
+        // 统一缩略图缓存路径为 .nomedia/thumbnails/remote（与 file_item.dart 一致，避免被媒体库索引）
+        thumbDir = await MediaThumbnailService.getThumbDir();
         tempDir = Directory('/storage/emulated/0/ZenFile/cache/temp');
         if (!tempDir.existsSync()) tempDir.createSync(recursive: true);
       } catch (_) {
         final appDir = await getApplicationDocumentsDirectory();
-        thumbDir = Directory(p.join(appDir.path, 'ZenFile', 'cache', 'thumbnails', 'remote'));
-        if (!thumbDir.existsSync()) thumbDir.createSync(recursive: true);
+        thumbDir = await MediaThumbnailService.getThumbDir();
         tempDir = Directory(p.join(appDir.path, 'ZenFile', 'cache', 'temp'));
         if (!tempDir.existsSync()) tempDir.createSync(recursive: true);
       }

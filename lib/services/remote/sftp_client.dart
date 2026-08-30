@@ -190,27 +190,44 @@ class SftpRemoteClient extends RemoteClient {
     for (int i = 0; i < items.length; i++) {
       final item = items[i];
       if (item.filename == '.' || item.filename == '..') continue;
-      
-      var isDir = item.attr.isDirectory;
-      // If mode is null, try parsing the longname field first (no network call)
-      if (item.attr.mode == null) {
-        if (item.longname.isNotEmpty) {
-          // Unix-style longname: first character indicates file type
-          // 'd' = directory, '-' = regular file, 'l' = symlink
-          isDir = item.longname.startsWith('d');
-        } else {
-          // No longname available — mark for batch stat
-          final statPath = (targetPath == '.' || targetPath == '')
-              ? item.filename
-              : '$targetPath/${item.filename}';
-          needStat[i] = statPath;
-        }
-      }
-      
-      final fullPath = (path == '/' || path.isEmpty) 
-          ? '/${item.filename}' 
+
+      final fullPath = (path == '/' || path.isEmpty)
+          ? '/${item.filename}'
           : '${path.endsWith('/') ? path.substring(0, path.length - 1) : path}/${item.filename}';
-      
+
+      var isDir = item.attr.isDirectory;
+      var size = item.attr.size ?? 0;
+
+      // Detect symlinks via longname prefix 'l' (SFTP standard; robust across
+      // dartssh2 versions). SFTP listdir returns lstat-like attrs for links,
+      // so /sdcard shows as a small file. Use stat() to follow the link and
+      // reveal the real target type/size.
+      final mode = item.attr.mode;
+      // 符号链接检测：使用 longname 首字符 'l'（SFTP 标准行为，跨 dartssh2 版本稳健）。
+      // 说明：SftpFileMode 未定义 & 运算符，且 0o 八进制字面量在部分 Dart 版本不被识别，
+      // 故直接依赖 longname 而非位运算。listdir 返回的是 lstat 风格属性，软链不会自动跟随，
+      // 因此 /sdcard 这类软链会被当成小文件——下方用 stat() 跟随链接解析真实目标类型与大小。
+      final bool isSymlink = item.longname.isNotEmpty && item.longname.startsWith('l');
+
+      if (isSymlink) {
+        try {
+          final resolved = await _sftpClient!.stat(fullPath);
+          isDir = resolved.isDirectory;
+          size = resolved.size ?? size;
+        } catch (_) {
+          isDir = false;
+        }
+      } else if (mode == null && item.longname.isNotEmpty) {
+        // No mode, but longname is available — fall back to its first char.
+        isDir = item.longname.startsWith('d');
+      } else if (mode == null && item.longname.isEmpty) {
+        // No mode and no longname — mark for batch stat.
+        final statPath = (targetPath == '.' || targetPath == '')
+            ? item.filename
+            : '$targetPath/${item.filename}';
+        needStat[i] = statPath;
+      }
+
       final modifyTimeSeconds = item.attr.modifyTime;
       final modifiedDate = modifyTimeSeconds != null
           ? DateTime.fromMillisecondsSinceEpoch(modifyTimeSeconds * 1000)
@@ -220,7 +237,7 @@ class SftpRemoteClient extends RemoteClient {
         name: item.filename,
         path: fullPath,
         isDirectory: isDir,
-        size: item.attr.size ?? 0,
+        size: size,
         modified: modifiedDate,
       ));
     }

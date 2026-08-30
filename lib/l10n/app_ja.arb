@@ -2931,10 +2931,6 @@
     "description": "ui\\widgets\\restricted_folder_banner.dart"
   },
   "shizukuroot": "Shizukuアクセスを許可（Root不要）",
-  "safSystemAccess": "システム承認アクセス",
-  "@safSystemAccess": {
-    "description": "ui\\widgets\\restricted_folder_banner.dart"
-  },
   "@selectedcount1": {
     "type": "text"
   },

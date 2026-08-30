@@ -2991,10 +2991,6 @@
   "@shizukuroot": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
   },
-  "safSystemAccess": "系統授權訪問",
-  "@safSystemAccess": {
-    "description": "ui\\widgets\\restricted_folder_banner.dart"
-  },
   "selectedcount1": "已選擇 {selectedCount} 項",
   "@selectedcount1": {
     "description": "ui\\widgets\\selection_action_bar.dart",

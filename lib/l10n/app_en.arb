@@ -2934,10 +2934,6 @@
     "description": "ui\\widgets\\restricted_folder_banner.dart"
   },
   "shizukuroot": "Grant Shizuku Access (No Root Required)",
-  "@safSystemAccess": {
-    "description": "ui\\widgets\\restricted_folder_banner.dart"
-  },
-  "safSystemAccess": "System Authorized Access",
   "@selectedcount1": {
     "type": "text"
   },

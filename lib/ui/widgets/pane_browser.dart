@@ -23,6 +23,7 @@ import 'drag_drop_handler.dart';
 import 'archive_type_icon.dart';
 import 'file_type_icon.dart';
 import 'restricted_folder_banner.dart';
+import 'file_operation_progress_dialog.dart';
 import 'file_action_dialogs.dart';
 import 'remote_cloud_badge.dart';
 import 'create_archive_dialog.dart';
@@ -448,11 +449,21 @@ class _PaneBrowserState extends State<PaneBrowser> {
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       curve: Curves.easeInOut,
-                      height: provider.hasClipboard ? 28.0 : 14.0,
+                      height: (provider.hasClipboard || provider.progressMinimized.value)
+                          ? 28.0
+                          : 16.0,
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.surfaceVariant.withOpacity(0.25),
+                        color: isActive
+                            ? theme.colorScheme.primary.withOpacity(0.16)
+                            : theme.colorScheme.surfaceVariant.withOpacity(0.25),
                         border: Border(
+                          top: isActive
+                              ? BorderSide(
+                                  color: theme.colorScheme.primary,
+                                  width: 2.5,
+                                )
+                              : BorderSide.none,
                           bottom: BorderSide(
                             color: theme.colorScheme.outline.withOpacity(0.08),
                           ),
@@ -460,25 +471,50 @@ class _PaneBrowserState extends State<PaneBrowser> {
                       ),
                       child: Row(
                         children: [
-                          // 左侧：激活窗口指示器（小亮点）
-                          Container(
-                            width: 7,
-                            height: 7,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: isActive
-                                  ? theme.colorScheme.primary
-                                  : theme.colorScheme.onSurface.withOpacity(0.15),
-                              boxShadow: isActive
-                                  ? [
-                                      BoxShadow(
-                                        color: theme.colorScheme.primary.withOpacity(0.4),
-                                        blurRadius: 4,
-                                        spreadRadius: 1,
+                          // 左侧：复制/剪切进度最小化浮窗按钮（点击后台后出现，可重新打开进度页）
+                          ValueListenableBuilder<bool>(
+                            valueListenable: provider.progressMinimized,
+                            builder: (ctx, minimized, _) {
+                              if (!minimized) return const SizedBox.shrink();
+                              return GestureDetector(
+                                onTap: () {
+                                  // 重新打开复制/剪切进度弹窗
+                                  provider.progressNotifier.backgroundMode = false;
+                                  provider.progressMinimized.value = false;
+                                  FileOperationProgressDialog.show(ctx, provider);
+                                },
+                                child: Container(
+                                  width: 22,
+                                  height: 22,
+                                  margin: const EdgeInsets.only(right: 6),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: theme.colorScheme.primary.withOpacity(0.12),
+                                    border: Border.all(
+                                      color: theme.colorScheme.primary.withOpacity(0.45),
+                                      width: 0.5,
+                                    ),
+                                  ),
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      SizedBox(
+                                        width: 14,
+                                        height: 14,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation<Color>(
+                                              theme.colorScheme.primary),
+                                        ),
                                       ),
-                                    ]
-                                  : null,
-                            ),
+                                      Icon(Icons.sync,
+                                          size: 9,
+                                          color: theme.colorScheme.primary),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                           // 右侧：剪贴板内容摘要（有剪贴板时展开显示）
                           if (provider.hasClipboard) ...[
@@ -585,10 +621,6 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                     onEnableShizuku: () {
                                       _activatePane(provider);
                                       provider.enableShizukuMode();
-                                    },
-                                    onEnableSaf: () {
-                                      _activatePane(provider);
-                                      provider.requestSafAndReload();
                                     },
                                     onGoBack: () => _goBack(provider),
                                     isRootAvailable: tab.isRootAvailable,
@@ -1298,16 +1330,8 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
     final client = widget.remoteClient;
     if (client == null) return;
     try {
-      // 缩略图缓存目录（异步创建，避免阻塞主线程）
-      Directory thumbDir;
-      try {
-        thumbDir = Directory('/storage/emulated/0/ZenFile/cache/thumbnails/remote');
-        if (!await thumbDir.exists()) await thumbDir.create(recursive: true);
-      } catch (_) {
-        final appDir = await getApplicationDocumentsDirectory();
-        thumbDir = Directory(p.join(appDir.path, 'ZenFile', 'cache', 'thumbnails', 'remote'));
-        if (!await thumbDir.exists()) await thumbDir.create(recursive: true);
-      }
+      // 缩略图缓存目录（已迁移至 .nomedia 下，避免被媒体库索引）
+      final thumbDir = await MediaThumbnailService.getThumbDir();
       // 缓存文件名加入 connection 标识 + modified + size：
       // ① connection 标识区分不同远程连接（路径/修改时间/大小相同也会串图）；
       // ② modified/size 区分同名文件删除重建。

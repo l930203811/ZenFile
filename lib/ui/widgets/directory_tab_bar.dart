@@ -61,10 +61,6 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
                 // 导致标题随打开的目录变化）。
                 final bool useRemoteName =
                     tab.isRemote && tab.remoteConnection != null;
-                // 标签按钮背景底色：用于云徽 badge 的“挖空”效果，使其与按钮背景融合。
-                final tileBg = isActiveTab
-                    ? theme.colorScheme.primaryContainer.withOpacity(0.35)
-                    : theme.colorScheme.surfaceVariant.withOpacity(0.4);
                 final title = useRemoteName
                     ? tab.remoteConnection!.name
                     : (isRoot ? L10n.of(context).msgfefea1b3 : p.basename(tab.currentPath));
@@ -108,7 +104,6 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
                               isPinned: tab.isPinned,
                               isRoot: isRoot,
                               isSelected: isSelected,
-                              badgeBg: tileBg,
                               size: 14,
                             ),
                             const SizedBox(width: 6),
@@ -158,8 +153,7 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   /// 标签按钮左侧图标：
-  /// - 远程标签 → 文件夹图标 + 右下角云徽（badge）叠加，方便一眼辨别远程/本地，
-  ///   而非用云徽图标直接替换文件夹图标。
+  /// - 远程标签 → 云图标（Broken.cloud），**直接替换**文件夹图标，方便一眼辨别远程/本地浏览页。
   /// - 钉住标签 → 图钉图标；根目录 → 房子图标；其余 → 文件夹图标。
   Widget _buildTabIcon({
     required BuildContext context,
@@ -167,7 +161,6 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
     required bool isPinned,
     required bool isRoot,
     required bool isSelected,
-    required Color badgeBg,
     double size = 14,
   }) {
     final theme = Theme.of(context);
@@ -176,30 +169,14 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
         : (isSelected
             ? theme.colorScheme.primary
             : theme.colorScheme.onSurface.withOpacity(0.6));
-    final IconData base =
-        isPinned ? Icons.push_pin_rounded : (isRoot ? Broken.home_1 : Broken.folder);
-    if (isRemote && !isPinned) {
-      // 文件夹图标 + 右下角云徽叠加（不替换原图标）
-      return Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Icon(base, size: size, color: baseColor),
-          Positioned(
-            right: -2.5,
-            bottom: -2.5,
-            child: Container(
-              padding: const EdgeInsets.all(0.5),
-              decoration: BoxDecoration(color: badgeBg, shape: BoxShape.circle),
-              child: Icon(
-                Broken.cloud,
-                size: size * 0.62,
-                color: theme.colorScheme.primary,
-              ),
-            ),
-          ),
-        ],
-      );
+    if (isPinned) {
+      return Icon(Icons.push_pin_rounded, size: size, color: baseColor);
     }
+    // 远程浏览页标签：用云图标直接替换文件夹图标
+    if (isRemote) {
+      return Icon(Broken.cloud, size: size, color: baseColor);
+    }
+    final IconData base = isRoot ? Broken.home_1 : Broken.folder;
     return Icon(base, size: size, color: baseColor);
   }
 
@@ -277,7 +254,6 @@ class DirectoryTabBar extends StatelessWidget implements PreferredSizeWidget {
                       isPinned: tab.isPinned,
                       isRoot: tab.currentPath == provider.rootPath,
                       isSelected: true,
-                      badgeBg: theme.colorScheme.surface,
                       size: 18,
                     ),
                     const SizedBox(width: 10),

@@ -23,6 +23,7 @@ import '../widgets/restricted_folder_banner.dart';
 import '../widgets/directory_tab_bar.dart';
 import '../../services/folder_share_service.dart';
 import '../widgets/pane_browser.dart';
+import '../widgets/file_operation_progress_dialog.dart';
 import '../../services/network_connections_service.dart';
 import 'network_connection_wizard_screen.dart';
 import '../../services/preferences_service.dart';
@@ -1225,29 +1226,69 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                               ? RestrictedFolderBanner(
                                   onEnableRoot: () => provider.enableRootMode(),
                                   onEnableShizuku: () => provider.enableShizukuMode(),
-                                  onEnableSaf: () => provider.requestSafAndReload(),
                                   onGoBack: provider.canGoBack ? () => _goBack(provider) : null,
                                   isRootAvailable: provider.isRootAvailable,
                                 )
                               : Column(
                                   children: [
-                                    // 顶部剪贴板栏（折叠/展开）
-                                    AnimatedContainer(
-                                      duration: const Duration(milliseconds: 200),
-                                      curve: Curves.easeInOut,
-                                      height: provider.hasClipboard ? 28.0 : 0.0,
-                                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                                      decoration: BoxDecoration(
-                                        color: theme.colorScheme.surfaceVariant.withOpacity(0.25),
-                                        border: Border(
-                                          bottom: BorderSide(
-                                            color: theme.colorScheme.outline.withOpacity(0.08),
+                                    // 顶部剪贴板栏（折叠/展开）+ 复制/剪切进度最小化浮窗（单窗口同样生效，靠左）
+                                    ValueListenableBuilder<bool>(
+                                      valueListenable: provider.progressMinimized,
+                                      builder: (ctx, progressMin, _) {
+                                        return AnimatedContainer(
+                                          duration: const Duration(milliseconds: 200),
+                                          curve: Curves.easeInOut,
+                                          height: (provider.hasClipboard || progressMin) ? 28.0 : 0.0,
+                                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                                          decoration: BoxDecoration(
+                                            color: theme.colorScheme.surfaceVariant.withOpacity(0.25),
+                                            border: Border(
+                                              bottom: BorderSide(
+                                                color: theme.colorScheme.outline.withOpacity(0.08),
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                      ),
-                                      child: provider.hasClipboard
-                                          ? Row(
-                                              children: [
+                                          child: Row(
+                                            children: [
+                                              // 左侧：复制/剪切进度最小化浮窗按钮（点击后台后出现，可重新打开进度页）
+                                              if (progressMin)
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    provider.progressNotifier.backgroundMode = false;
+                                                    provider.progressMinimized.value = false;
+                                                    FileOperationProgressDialog.show(ctx, provider);
+                                                  },
+                                                  child: Container(
+                                                    width: 22,
+                                                    height: 22,
+                                                    margin: const EdgeInsets.only(right: 6),
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      color: theme.colorScheme.primary.withOpacity(0.12),
+                                                      border: Border.all(
+                                                        color: theme.colorScheme.primary.withOpacity(0.45),
+                                                        width: 0.5,
+                                                      ),
+                                                    ),
+                                                    child: Stack(
+                                                      alignment: Alignment.center,
+                                                      children: [
+                                                        SizedBox(
+                                                          width: 14,
+                                                          height: 14,
+                                                          child: CircularProgressIndicator(
+                                                            strokeWidth: 2,
+                                                            valueColor: AlwaysStoppedAnimation<Color>(
+                                                                theme.colorScheme.primary),
+                                                          ),
+                                                        ),
+                                                        Icon(Icons.sync, size: 9, color: theme.colorScheme.primary),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              // 右侧：剪贴板内容摘要（有剪贴板时展开显示）
+                                              if (provider.hasClipboard) ...[
                                                 const Spacer(),
                                                 GestureDetector(
                                                   onTap: () => _showClipboardMenuSheet(context, provider),
@@ -1297,8 +1338,10 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                                   ),
                                                 ),
                                               ],
-                                            )
-                                          : null,
+                                            ],
+                                          ),
+                                        );
+                                      },
                                     ),
                                     Expanded(
                                       child: CustomScrollView(

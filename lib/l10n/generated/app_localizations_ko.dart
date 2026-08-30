@@ -2345,9 +2345,6 @@ class L10nKo extends L10n {
   String get shizukuroot => 'Shizuku 접근 권한 부여 (루트 불필요)';
 
   @override
-  String get safSystemAccess => '시스템 승인 접근';
-
-  @override
   String get fusebypass => '一键兼容访问';
 
   @override

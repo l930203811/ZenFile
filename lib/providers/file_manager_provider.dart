@@ -187,6 +187,8 @@ class FileManagerProvider extends ChangeNotifier {
     _showBottomActionBar = PreferencesService.getShowBottomActionBar();
     _showHomeBrowseNav = PreferencesService.getShowHomeBrowseNav();
     _showMediaPreviews = PreferencesService.getShowMediaPreviews();
+    // 进度通知器在进度置空时清除最小化状态（字段初始化器无法访问实例方法，故在此赋值）。
+    progressNotifier.onClosed = clearMinimizedProgress;
     _enableMultipleTabs = PreferencesService.getEnableMultipleTabs();
     _multiTabPaneMode = MultiTabPaneMode.values.firstWhere(
       (m) => m.name == PreferencesService.getMultiTabPaneMode(),
@@ -272,9 +274,39 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
+  /// 进度条点击「后台」后是否处于最小化状态。为 true 时，对应页面（浏览页双窗口
+  /// 状态栏 / 分类页工具栏）会显示一个可点击重新打开进度弹窗的浮窗按钮。
+  final ValueNotifier<bool> progressMinimized = ValueNotifier<bool>(false);
+
+  /// 重新打开「分类页备份进度」弹窗的回调（由分类页在点击后台时注册）。
+  /// 浏览页复制/剪切进度在浮窗按钮内硬编码重开，无需此回调。
+  VoidCallback? _resumeCategoryBackup;
+
   /// 自定义进度通知器：后台模式下忽略所有非 null 赋值，避免对话框重新弹出。
-  /// 设置为 null 始终生效（用于关闭对话框）。
-  final _BackgroundAwareProgressNotifier progressNotifier = _BackgroundAwareProgressNotifier();
+  /// 设置为 null 始终生效（用于关闭对话框，并清除最小化状态）。
+  final _BackgroundAwareProgressNotifier progressNotifier =
+      _BackgroundAwareProgressNotifier();
+
+  /// 进入最小化：关闭进度弹窗后，标记置位，等待用户点击浮窗按钮重新打开。
+  /// [resume] 为重新打开弹窗的回调（分类页备份用；浏览页复制/剪切传 null，由浮窗按钮硬编码重开）。
+  void minimizeProgress([VoidCallback? resume]) {
+    _resumeCategoryBackup = resume;
+    progressMinimized.value = true;
+  }
+
+  /// 重新打开被最小化的「分类页备份进度」弹窗。
+  void resumeProgress() {
+    final r = _resumeCategoryBackup;
+    _resumeCategoryBackup = null;
+    progressMinimized.value = false;
+    r?.call();
+  }
+
+  /// 清除最小化状态（传输完成 / 取消时调用），使浮窗按钮消失。
+  void clearMinimizedProgress() {
+    _resumeCategoryBackup = null;
+    if (progressMinimized.value) progressMinimized.value = false;
+  }
   bool _isOperationCancelled = false;
   bool _isPasting = false;
   bool get isPasting => _isPasting;
@@ -298,12 +330,12 @@ class FileManagerProvider extends ChangeNotifier {
     _activeTransferClient = client;
   }
 
-  /// 切换到后台运行：关闭进度对话框，传输继续在后台执行。
-  /// 设置 backgroundMode = true 后，进度通知器会忽略所有非 null 赋值，
-  /// 传输 Future 不受影响，仍在后台运行。设置 null 会正常生效以关闭对话框。
+  /// 切换到后台运行：传输继续在后台执行。
+  /// 仅设置 backgroundMode = true（不再将进度置空）：保留最后一次进度值，
+  /// 便于后续通过浮窗按钮重新打开进度弹窗。弹窗关闭由调用方（进度对话框的
+  /// 「后台」按钮）显式 pop。
   void runInBackground() {
     progressNotifier.backgroundMode = true;
-    progressNotifier.value = null;
   }
 
   RemoteClient? _activeTransferClient;
@@ -5856,26 +5888,6 @@ class FileManagerProvider extends ChangeNotifier {
     return items;
   }
 
-  /// 请求 SAF 授权后重新加载当前受限目录。
-  /// 由受限模式提示界面的"使用系统授权"按钮调用。
-  Future<void> requestSafAndReload() async {
-    final path = activeTab.currentPath;
-    if (!_isRestrictedAndroidPath(path)) return;
-
-    final isObb = path.contains('/Android/obb');
-    final uri = isObb
-        ? await SafAndroidDataService.requestAndroidObbAccess()
-        : await SafAndroidDataService.requestAndroidDataAccess();
-
-    if (uri != null) {
-      debugPrint('[ZenFile] SAF authorized: $uri, reloading $path');
-      // 授权成功后重新加载
-      await loadDirectory(path, showLoading: true);
-    } else {
-      debugPrint('[ZenFile] SAF authorization cancelled by user');
-    }
-  }
-
   /// 受限路径且 Dart IO 不可见（需要走 shell 绕过）。
   bool _needsBypass(String path) =>
       _isRestrictedAndroidPath(path) &&
@@ -7364,14 +7376,17 @@ class FileManagerProvider extends ChangeNotifier {
 /// 新传输开始时需将 [backgroundMode] 重置为 false。
 class _BackgroundAwareProgressNotifier extends ValueNotifier<FileOperationProgress?> {
   bool backgroundMode = false;
+  VoidCallback? onClosed;
 
-  _BackgroundAwareProgressNotifier() : super(null);
+  _BackgroundAwareProgressNotifier({this.onClosed}) : super(null);
 
   @override
   set value(FileOperationProgress? newValue) {
     // 后台模式下忽略非 null 赋值；null 始终生效（用于关闭对话框）
     if (backgroundMode && newValue != null) return;
     super.value = newValue;
+    // 进度置空（传输结束 / 取消）→ 同步清除最小化状态，浮窗按钮消失
+    if (newValue == null) onClosed?.call();
   }
 }
 

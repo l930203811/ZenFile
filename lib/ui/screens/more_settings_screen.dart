@@ -1571,7 +1571,7 @@ class MediaSettingsScreen extends StatefulWidget {
 
 class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
   bool _preferFolders = false;
-  int _autoCleanMinutes = 5;
+  int _autoCleanMinutes = 0;
   bool _remoteThumbnailPreview = false;
 
   @override
@@ -1624,11 +1624,16 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
           } catch (_) {}
         }
         // 清理后重建必要的运行目录
-        for (final sub in const ['cache', '.remote_cache']) {
+        for (final sub in const ['cache', '.remote_cache', '.nomedia']) {
           try {
             await Directory(p.join(basePath, sub)).create(recursive: true);
           } catch (_) {}
         }
+        // 重建 .nomedia 标记文件，确保清理后远程缩略图缓存仍不被媒体库索引
+        try {
+          final marker = File(p.join(basePath, '.nomedia', '.nomedia'));
+          if (!marker.existsSync()) await marker.create();
+        } catch (_) {}
       }
 
       // 同时清理旧版残留的缓存位置

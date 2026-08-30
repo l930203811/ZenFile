@@ -2422,9 +2422,6 @@ class L10nAr extends L10n {
   String get shizukuroot => 'منح وصول Shizuku (لا يتطلب جذر)';
 
   @override
-  String get safSystemAccess => 'منح وصول النظام';
-
-  @override
   String get fusebypass => '一键兼容访问';
 
   @override

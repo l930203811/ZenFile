@@ -441,6 +441,24 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     }
     final statusNotifier = ValueNotifier<String>(L10n.of(context).ui_syncing);
     var wentBackground = false;
+    // 点击「后台」后的最小化逻辑：关闭弹窗并注册重新打开回调，
+    // 由分类页工具栏浮窗按钮（排序按钮左侧）调用 fm.resumeProgress() 重新打开。
+    void onBg() {
+      wentBackground = true;
+      if (Navigator.canPop(context)) Navigator.of(context).pop();
+      fm.minimizeProgress(() {
+        CircularProgressDialog.show(
+          context: context,
+          title: L10n.of(context).ui_backup,
+          statusNotifier: statusNotifier,
+          percentage: null,
+          onCancel: () {
+            if (Navigator.canPop(context)) Navigator.of(context).pop();
+          },
+          onBackground: onBg,
+        );
+      });
+    }
     if (mounted) {
       unawaited(
         CircularProgressDialog.show(
@@ -452,11 +470,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             // 取消：通过 pop 关闭对话框，syncCategoryPairs 内部会捕获中断
             if (Navigator.canPop(context)) Navigator.of(context).pop();
           },
-          onBackground: () {
-            // 后台：关闭对话框，备份任务继续在后台运行（下方 await 不中断）。
-            wentBackground = true;
-            if (Navigator.canPop(context)) Navigator.of(context).pop();
-          },
+          onBackground: onBg,
         ),
       );
     }
@@ -467,6 +481,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
         onStatus: (s) => statusNotifier.value = s,
       );
       if (mounted) {
+        fm.clearMinimizedProgress();
         if (Navigator.canPop(context)) Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(L10n.of(context).ui_sync_done)),
@@ -477,6 +492,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       }
     } catch (e) {
       if (mounted) {
+        fm.clearMinimizedProgress();
         if (Navigator.canPop(context)) Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(L10n.of(context).ui_backup_failed(e.toString()))),
@@ -1536,6 +1552,33 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                 tooltip: L10n.of(context).msg419be096,
                 onPressed: _handlePaste,
               ),
+            // 备份进度最小化浮窗按钮（位于排序按钮左侧）；点击重新打开进度页
+            ValueListenableBuilder<bool>(
+              valueListenable: fm.progressMinimized,
+              builder: (ctx, minimized, _) {
+                if (!minimized) return const SizedBox.shrink();
+                return IconButton(
+                  icon: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              theme.colorScheme.primary),
+                        ),
+                      ),
+                      Icon(Icons.sync,
+                          size: 12, color: theme.colorScheme.primary),
+                    ],
+                  ),
+                  tooltip: L10n.of(context).ui_background,
+                  onPressed: () => fm.resumeProgress(),
+                );
+              },
+            ),
             // 查看与排序综合菜单：排序选项 + 列表/网格视图 + 播放器控制器显隐
             Consumer<MediaProvider>(
               builder: (context, provider, child) {

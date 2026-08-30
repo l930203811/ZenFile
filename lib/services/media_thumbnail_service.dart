@@ -75,18 +75,41 @@ class MediaThumbnailService {
     }
   }
 
+  /// 远程缩略图缓存基目录。
+  /// 以 `.nomedia` 开头（且内含 `.nomedia` 标记文件），双重保险：
+  /// 避免被 MediaStore 媒体库及其他文件管理器索引到缓存的远程缩略图。
+  static const String _remoteThumbBasePath = '/storage/emulated/0/ZenFile/.nomedia';
+
   /// Get the thumbnail cache directory.
+  ///
+  /// 目录已迁移至 [_remoteThumbBasePath]/thumbnails/remote，并在基目录写入
+  /// `.nomedia` 标记文件，确保其他应用不会扫描或索引这些缩略图。
   static Future<Directory> getThumbDir() async {
     try {
-      final dir = Directory('/storage/emulated/0/ZenFile/cache/thumbnails/remote');
+      final dir = Directory('$_remoteThumbBasePath/thumbnails/remote');
       if (!dir.existsSync()) dir.createSync(recursive: true);
+      _ensureNoMediaMarker();
       return dir;
     } catch (_) {
       final appDir = await getApplicationDocumentsDirectory();
-      final dir = Directory(p.join(appDir.path, 'ZenFile', 'cache', 'thumbnails', 'remote'));
+      final base = p.join(appDir.path, 'ZenFile', '.nomedia');
+      final dir = Directory(p.join(base, 'thumbnails', 'remote'));
       if (!dir.existsSync()) dir.createSync(recursive: true);
+      _ensureNoMediaMarker(base: base);
       return dir;
     }
+  }
+
+  /// 在基目录写入 `.nomedia` 标记文件（空文件即可）。
+  ///
+  /// 这是 Android 官方阻止 MediaStore 扫描的标准做法：标记文件所在目录及其
+  /// 所有子目录都不会被媒体库索引。Android 也会跳过以点（.）开头的目录，
+  /// 这里 `.nomedia` 目录名 + 标记文件双重保险。
+  static void _ensureNoMediaMarker({String? base}) {
+    try {
+      final marker = File(p.join(base ?? _remoteThumbBasePath, '.nomedia'));
+      if (!marker.existsSync()) marker.createSync();
+    } catch (_) {}
   }
 
   /// Get the temp download directory.

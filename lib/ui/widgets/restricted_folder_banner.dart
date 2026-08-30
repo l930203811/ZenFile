@@ -6,7 +6,6 @@ import 'package:zenfile/l10n/generated/app_localizations.dart';
 class RestrictedFolderBanner extends StatelessWidget {
   final VoidCallback onEnableRoot;
   final VoidCallback onEnableShizuku;
-  final VoidCallback? onEnableSaf;
   final VoidCallback? onGoBack;
   final bool isRootAvailable;
 
@@ -14,7 +13,6 @@ class RestrictedFolderBanner extends StatelessWidget {
     super.key,
     required this.onEnableRoot,
     required this.onEnableShizuku,
-    this.onEnableSaf,
     this.onGoBack,
     required this.isRootAvailable,
   });
@@ -111,22 +109,6 @@ class RestrictedFolderBanner extends StatelessWidget {
                   label: Text(L10n.of(context).shizukuroot, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   onPressed: onEnableShizuku,
                 ),
-                // SAF 系统授权按钮（无需 Shizuku/root，Android 11+ 官方推荐方式）
-                if (onEnableSaf != null) ...[
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal,
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size.fromHeight(54),
-                      elevation: 6,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                    ),
-                    icon: const Icon(Broken.folder_open, size: 24),
-                    label: Text(L10n.of(context).safSystemAccess, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    onPressed: onEnableSaf,
-                  ),
-                ],
                 const SizedBox(height: 20),
                 TextButton.icon(
                   icon: Icon(Broken.info_circle, size: 18, color: theme.colorScheme.primary),

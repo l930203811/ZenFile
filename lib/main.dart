@@ -1252,11 +1252,16 @@ int _wipeZenFileExceptBackups() {
   wipeDirectory(baseDir);
 
   // 清理后重建必要的运行目录，避免调用方因目录缺失而异常
-  for (final sub in const ['cache', '.remote_cache']) {
+  for (final sub in const ['cache', '.remote_cache', '.nomedia']) {
     try {
       Directory(p.join(_zenFileBasePath, sub)).createSync(recursive: true);
     } catch (_) {}
   }
+  // 重建 .nomedia 标记文件，确保清理后远程缩略图缓存仍不被媒体库索引
+  try {
+    final marker = File(p.join(_zenFileBasePath, '.nomedia', '.nomedia'));
+    if (!marker.existsSync()) marker.createSync();
+  } catch (_) {}
 
   if (deletedCount > 0) {
     // ignore: avoid_print

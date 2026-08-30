@@ -2427,9 +2427,6 @@ class L10nEn extends L10n {
   String get shizukuroot => 'Grant Shizuku Access (No Root Required)';
 
   @override
-  String get safSystemAccess => 'System Authorized Access';
-
-  @override
   String get fusebypass => '一键兼容访问';
 
   @override

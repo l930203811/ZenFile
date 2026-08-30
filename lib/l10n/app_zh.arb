@@ -2999,10 +2999,6 @@
   "@shizukuroot": {
     "description": "ui\\widgets\\restricted_folder_banner.dart"
   },
-  "safSystemAccess": "系统授权访问",
-  "@safSystemAccess": {
-    "description": "ui\\widgets\\restricted_folder_banner.dart"
-  },
   "fusebypass": "一键兼容访问",
   "@fusebypass": {
     "description": "ui\\widgets\\restricted_folder_banner.dart - 绕过FUSE限制"

@@ -2349,9 +2349,6 @@ class L10nJa extends L10n {
   String get shizukuroot => 'Shizukuアクセスを許可（Root不要）';
 
   @override
-  String get safSystemAccess => 'システム承認アクセス';
-
-  @override
   String get fusebypass => '一键兼容访问';
 
   @override

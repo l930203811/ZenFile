@@ -2927,10 +2927,6 @@
     "description": "ui\\widgets\\restricted_folder_banner.dart"
   },
   "shizukuroot": "Shizuku 접근 권한 부여 (루트 불필요)",
-  "safSystemAccess": "시스템 승인 접근",
-  "@safSystemAccess": {
-    "description": "ui\\widgets\\restricted_folder_banner.dart"
-  },
   "@selectedcount1": {
     "type": "text"
   },

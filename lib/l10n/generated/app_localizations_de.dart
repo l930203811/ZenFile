@@ -2463,9 +2463,6 @@ class L10nDe extends L10n {
   String get shizukuroot => 'Shizuku-Zugriff gewähren (Kein Root erforderlich)';
 
   @override
-  String get safSystemAccess => 'Systemautorisierter Zugriff';
-
-  @override
   String get fusebypass => '一键兼容访问';
 
   @override

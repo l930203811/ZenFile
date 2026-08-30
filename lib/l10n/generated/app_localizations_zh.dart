@@ -2340,9 +2340,6 @@ class L10nZh extends L10n {
   String get shizukuroot => '授予Shizuku访问权限（无需Root）';
 
   @override
-  String get safSystemAccess => '系统授权访问';
-
-  @override
   String get fusebypass => '一键兼容访问';
 
   @override
@@ -8157,9 +8154,6 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get shizukuroot => '授予Shizuku訪問許可權（無需Root）';
-
-  @override
-  String get safSystemAccess => '系統授權訪問';
 
   @override
   String selectedcount1(Object selectedCount) {

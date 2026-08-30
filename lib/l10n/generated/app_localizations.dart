@@ -4486,12 +4486,6 @@ abstract class L10n {
   /// **'授予Shizuku访问权限（无需Root）'**
   String get shizukuroot;
 
-  /// ui\widgets\restricted_folder_banner.dart
-  ///
-  /// In zh, this message translates to:
-  /// **'系统授权访问'**
-  String get safSystemAccess;
-
   /// ui\widgets\restricted_folder_banner.dart - 绕过FUSE限制
   ///
   /// In zh, this message translates to:

@@ -899,20 +899,20 @@ class PreferencesService {
   }
 
   /// 获取自动清理间隔（分钟）。
-  /// 默认 5 分钟（即 0天0小时5分钟）。
+  /// 默认 0（不自动清理）。
   /// 0 表示不自动清理。
   static int getRemoteCacheAutoCleanMinutes() {
     // 兼容旧版本：如果新键不存在但旧键有值，转换为新单位
     if (_prefs?.containsKey(_keyRemoteCacheAutoCleanMinutes) ?? false) {
-      return _prefs?.getInt(_keyRemoteCacheAutoCleanMinutes) ?? 5;
+      return _prefs?.getInt(_keyRemoteCacheAutoCleanMinutes) ?? 0;
     }
     // 旧版本值转换为分钟
     final oldDays = _prefs?.getInt(_keyRemoteCacheAutoCleanDays) ?? 0;
     if (oldDays > 0) {
       return oldDays * 24 * 60;
     }
-    // 首次安装默认 5 分钟
-    return 5;
+    // 首次安装默认不自动清理
+    return 0;
   }
 
   static Future<void> saveRemoteCacheAutoCleanMinutes(int minutes) async {

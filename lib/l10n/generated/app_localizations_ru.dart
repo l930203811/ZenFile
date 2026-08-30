@@ -2469,9 +2469,6 @@ class L10nRu extends L10n {
   String get shizukuroot => 'Предоставить Доступ к Shizuku (Root Не Требуется)';
 
   @override
-  String get safSystemAccess => 'Системный доступ с разрешением';
-
-  @override
   String get fusebypass => '一键兼容访问';
 
   @override

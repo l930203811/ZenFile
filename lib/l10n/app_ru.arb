@@ -2927,10 +2927,6 @@
     "description": "ui\\widgets\\restricted_folder_banner.dart"
   },
   "shizukuroot": "Предоставить Доступ к Shizuku (Root Не Требуется)",
-  "safSystemAccess": "Системный доступ с разрешением",
-  "@safSystemAccess": {
-    "description": "ui\\widgets\\restricted_folder_banner.dart"
-  },
   "@selectedcount1": {
     "type": "text"
   },

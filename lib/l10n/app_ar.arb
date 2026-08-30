@@ -2927,10 +2927,6 @@
     "description": "ui\\widgets\\restricted_folder_banner.dart"
   },
   "shizukuroot": "منح وصول Shizuku (لا يتطلب جذر)",
-  "safSystemAccess": "منح وصول النظام",
-  "@safSystemAccess": {
-    "description": "ui\\widgets\\restricted_folder_banner.dart"
-  },
   "@selectedcount1": {
     "type": "text"
   },

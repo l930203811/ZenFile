@@ -100,6 +100,9 @@ class FileOperationProgressDialog extends StatelessWidget {
                           child: OutlinedButton(
                             onPressed: () {
                               provider.runInBackground();
+                              if (Navigator.canPop(context)) Navigator.pop(context);
+                              // 最小化到双窗口状态栏，保留重新打开入口
+                              provider.minimizeProgress();
                             },
                             style: OutlinedButton.styleFrom(
                               foregroundColor: theme.colorScheme.primary,

@@ -395,10 +395,8 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
       if (activeTab.remoteClient == null) return;
       final client = activeTab.remoteClient!;
 
-      final thumbDir = Directory('/storage/emulated/0/ZenFile/cache/thumbnails/remote');
-      if (!await thumbDir.exists()) {
-        await thumbDir.create(recursive: true);
-      }
+      // 缩略图缓存目录（已迁移至 .nomedia 下，避免被媒体库索引）
+      final thumbDir = await MediaThumbnailService.getThumbDir();
       // 缓存文件名加入 connection 标识 + modified + size：
       // ① connection 标识区分不同远程连接（路径/修改时间/大小相同也会串图）；
       // ② modified/size 区分同名文件删除重建。

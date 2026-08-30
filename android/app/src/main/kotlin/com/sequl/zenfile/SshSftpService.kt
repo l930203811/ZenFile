@@ -130,16 +130,21 @@ class SshSftpService {
             val name = entry.filename
             if (name == "." || name == "..") continue
             val attrs: SftpATTRS = entry.attrs
-            val isDir = attrs.isDir
-            val size = if (isDir) 0 else attrs.size
-            // attrs.mTime：修改时间（秒）。longname 首字符也可辅助判断类型，但 attrs 已可靠。
-            val modified = (attrs.mTime.toLong()) * 1000L
             val fullPath = if (path == "/" || path.isEmpty()) {
                 "/$name"
             } else {
                 val base = if (path.endsWith("/")) path.substring(0, path.length - 1) else path
                 "$base/$name"
             }
+            // 对符号链接跟随解析：SFTP 列目录返回的是 lstat 式属性，/sdcard 等链接
+            // 会显示为普通文件。用 stat() 跟随链接以获取真实目标类型与大小。
+            val resolvedAttrs = if (attrs.isLink) {
+                try { ch.stat(fullPath) } catch (e: Throwable) { null }
+            } else null
+            val isDir = resolvedAttrs?.isDir ?: attrs.isDir
+            val size = if (isDir) 0 else (resolvedAttrs?.size ?: attrs.size)
+            // attrs.mTime：修改时间（秒）。longname 首字符也可辅助判断类型，但 attrs 已可靠。
+            val modified = (attrs.mTime.toLong()) * 1000L
             result.add(
                 mapOf(
                     "name" to name,
