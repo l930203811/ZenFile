@@ -4178,7 +4178,7 @@ class L10nKo extends L10n {
   String get msg_rotate_video => '비디오 회전';
 
   @override
-  String get msg_aspect_fit => '화면에 맞춤';
+  String get msg_aspect_fit => '원본 비율';
 
   @override
   String get msg_aspect_fill => '늘려 채우기';

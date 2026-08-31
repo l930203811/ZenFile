@@ -4464,7 +4464,7 @@
   "@msg_rotate_video": {
     "description": "Rotate video clockwise in video player"
   },
-  "msg_aspect_fit": "适应屏幕",
+  "msg_aspect_fit": "原始比例",
   "@msg_aspect_fit": {
     "description": "Video aspect ratio mode: fit to screen"
   },

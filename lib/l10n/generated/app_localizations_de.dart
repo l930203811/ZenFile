@@ -4356,7 +4356,7 @@ class L10nDe extends L10n {
   String get msg_rotate_video => 'Video drehen';
 
   @override
-  String get msg_aspect_fit => 'An Bildschirm anpassen';
+  String get msg_aspect_fit => 'Originales Seitenverhältnis';
 
   @override
   String get msg_aspect_fill => 'Strecken und Füllen';

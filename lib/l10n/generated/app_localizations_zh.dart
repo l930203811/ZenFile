@@ -4144,7 +4144,7 @@ class L10nZh extends L10n {
   String get msg_rotate_video => '旋转画面';
 
   @override
-  String get msg_aspect_fit => '适应屏幕';
+  String get msg_aspect_fit => '原始比例';
 
   @override
   String get msg_aspect_fill => '拉伸填充';
@@ -9916,7 +9916,7 @@ class L10nZhTw extends L10nZh {
   String get msg_rotate_video => '旋轉畫面';
 
   @override
-  String get msg_aspect_fit => '符合螢幕';
+  String get msg_aspect_fit => '原始比例';
 
   @override
   String get msg_aspect_fill => '拉伸填滿';

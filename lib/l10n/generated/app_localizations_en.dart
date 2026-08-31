@@ -4315,7 +4315,7 @@ class L10nEn extends L10n {
   String get msg_rotate_video => 'Rotate Video';
 
   @override
-  String get msg_aspect_fit => 'Fit to Screen';
+  String get msg_aspect_fit => 'Original Aspect Ratio';
 
   @override
   String get msg_aspect_fill => 'Stretch Fill';

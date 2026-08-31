@@ -4297,7 +4297,7 @@ class L10nAr extends L10n {
   String get msg_rotate_video => 'تدوير الفيديو';
 
   @override
-  String get msg_aspect_fit => 'ملاءمة الشاشة';
+  String get msg_aspect_fit => 'نسبة العرض الأصلية';
 
   @override
   String get msg_aspect_fill => 'تمديد للتعبئة';

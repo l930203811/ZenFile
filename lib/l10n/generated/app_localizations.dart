@@ -7807,7 +7807,7 @@ abstract class L10n {
   /// Video aspect ratio mode: fit to screen
   ///
   /// In zh, this message translates to:
-  /// **'适应屏幕'**
+  /// **'原始比例'**
   String get msg_aspect_fit;
 
   /// Video aspect ratio mode: stretch to fill

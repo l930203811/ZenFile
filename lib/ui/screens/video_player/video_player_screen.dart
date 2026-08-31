@@ -112,7 +112,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   bool _isMuted = false;
   int _repeatMode = 0; // 0=none, 1=one, 2=all
   int _rotationTurns = 0; // 0=0°, 1=90°顺时针, 2=180°, 3=270°
-  int _aspectRatioMode = 0; // 0=适应屏幕, 1=拉伸填充, 2=居中, 3=填充屏幕, 4=16:9, 5=4:3, 6=自定义
+  int _aspectRatioMode = 0; // 0=原始比例, 1=拉伸填充, 2=居中, 3=填充屏幕, 4=16:9, 5=4:3, 6=自定义
   double _customAspectRatio = 16 / 9;
   // 用户是否手动切换过缩放模式。未触碰时，全屏自动用 cover 填满（贴近 MX 无黑边）；
   // 一旦手动切换，则尊重用户选择，不再自动覆盖。
@@ -2059,7 +2059,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
 
   /// 根据当前伸缩比例模式构建视频画面。
   /// 参照 VLC (libVLC MediaPlayer.ScaleType) 的语义实现：
-  /// - 0 适应屏幕  = BEST_FIT   等比例适配，可能留黑边 (BoxFit.contain)
+  /// - 0 原始比例  = BEST_FIT   等比例适配，可能留黑边 (BoxFit.contain)
   /// - 1 拉伸填充  = FILL       拉伸填满，画面会变形   (BoxFit.fill)
   /// - 2 居中      = ORIGINAL   原始尺寸居中           (BoxFit.none)
   /// - 3 填充屏幕  = FIT_SCREEN 等比例裁剪填满，无黑边 (BoxFit.cover)
@@ -2094,15 +2094,15 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         fit = BoxFit.cover;
         forcedRatio = _customAspectRatio;
         break;
-      default: // 0 适应屏幕
+      default: // 0 原始比例
         fit = BoxFit.contain;
     }
 
     // 全屏且用户未手动切换缩放时，自动以 cover 填满屏幕，消除左右/上下黑边
     // （贴近 MX / VLC FIT_SCREEN 观感）；用户一旦手动切过缩放档，则尊重其选择。
-    if (_isFullScreen && !_userTouchedAspect && _aspectRatioMode == 0) {
-      fit = BoxFit.cover;
-    }
+    // 注意：此行为已被移除，因为用户期望全屏时保持原始比例（contain），
+    // 而非自动裁剪填满。若需裁剪填满，可手动切换到「填充屏幕」模式。
+    // 保留注释以说明历史行为。
 
     Widget video = Video(
       controller: controller,

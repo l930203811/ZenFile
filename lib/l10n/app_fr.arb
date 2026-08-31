@@ -4243,7 +4243,7 @@
   "@msg_rotate_video": {
     "description": "Rotate video clockwise in video player"
   },
-  "msg_aspect_fit": "Ajuster à l'écran",
+  "msg_aspect_fit": "Format d'origine",
   "@msg_aspect_fit": {
     "description": "Video aspect ratio mode: fit to screen"
   },

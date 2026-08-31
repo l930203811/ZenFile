@@ -4247,7 +4247,7 @@
   "@msg_rotate_video": {
     "description": "Rotate video clockwise in video player"
   },
-  "msg_aspect_fit": "画面に合わせる",
+  "msg_aspect_fit": "元のアスペクト比",
   "@msg_aspect_fit": {
     "description": "Video aspect ratio mode: fit to screen"
   },

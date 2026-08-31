@@ -4362,7 +4362,7 @@ class L10nRu extends L10n {
   String get msg_rotate_video => 'Повернуть видео';
 
   @override
-  String get msg_aspect_fit => 'По размеру экрана';
+  String get msg_aspect_fit => 'Исходное соотношение сторон';
 
   @override
   String get msg_aspect_fill => 'Растянуть';

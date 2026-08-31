@@ -4383,7 +4383,7 @@ class L10nFr extends L10n {
   String get msg_rotate_video => 'Faire pivoter la vidéo';
 
   @override
-  String get msg_aspect_fit => 'Ajuster à l\'écran';
+  String get msg_aspect_fit => 'Format d\'origine';
 
   @override
   String get msg_aspect_fill => 'Étirer pour remplir';

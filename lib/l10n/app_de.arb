@@ -4240,7 +4240,7 @@
   "@msg_rotate_video": {
     "description": "Rotate video clockwise in video player"
   },
-  "msg_aspect_fit": "An Bildschirm anpassen",
+  "msg_aspect_fit": "Originales Seitenverhältnis",
   "@msg_aspect_fit": {
     "description": "Video aspect ratio mode: fit to screen"
   },

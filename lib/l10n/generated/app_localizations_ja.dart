@@ -4180,7 +4180,7 @@ class L10nJa extends L10n {
   String get msg_rotate_video => '動画を回転';
 
   @override
-  String get msg_aspect_fit => '画面に合わせる';
+  String get msg_aspect_fit => '元のアスペクト比';
 
   @override
   String get msg_aspect_fill => '引き伸ばし';
