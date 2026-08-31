@@ -185,6 +185,15 @@ class ZenFileAudioHandler extends BaseAudioHandler
     _player = null;
   }
 
+  /// 当用户开始播放视频时调用：立即暂停正在播放的后台音频，避免两路声音混在一起。
+  /// 仅暂停不销毁播放器，返回音频播放页时仍可恢复原进度。
+  void pauseForVideo() {
+    final p = _player;
+    if (p != null && p.state.playing) {
+      p.pause();
+    }
+  }
+
   // ─── AudioHandler overrides ─────────────────────────────────────────────
 
   @override

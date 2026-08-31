@@ -449,28 +449,31 @@ class _PaneBrowserState extends State<PaneBrowser> {
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       curve: Curves.easeInOut,
-                      height: (provider.hasClipboard || provider.progressMinimized.value)
+                      height: (provider.hasClipboard ||
+                              provider.progressMinimized.value ||
+                              (provider.showFolderFileCount && !isSelectionMode))
                           ? 28.0
                           : 16.0,
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       decoration: BoxDecoration(
                         color: isActive
-                            ? theme.colorScheme.primary.withOpacity(0.16)
+                            ? theme.colorScheme.primary.withOpacity(0.28)
                             : theme.colorScheme.surfaceVariant.withOpacity(0.25),
                         border: Border(
                           top: isActive
                               ? BorderSide(
                                   color: theme.colorScheme.primary,
-                                  width: 2.5,
+                                  width: 3.5,
                                 )
                               : BorderSide.none,
-                          bottom: BorderSide(
-                            color: theme.colorScheme.outline.withOpacity(0.08),
-                          ),
                         ),
                       ),
-                      child: Row(
+                      child: Stack(
                         children: [
+                          // 底层：进度浮窗按钮 + 文件/文件夹计数（左对齐填充整行）
+                          Positioned.fill(
+                            child: Row(
+                              children: [
                           // 左侧：复制/剪切进度最小化浮窗按钮（点击后台后出现，可重新打开进度页）
                           ValueListenableBuilder<bool>(
                             valueListenable: provider.progressMinimized,
@@ -516,62 +519,105 @@ class _PaneBrowserState extends State<PaneBrowser> {
                               );
                             },
                           ),
-                          // 右侧：剪贴板内容摘要（有剪贴板时展开显示）
-                          if (provider.hasClipboard) ...[
-                            const Spacer(),
-                            GestureDetector(
-                              onTap: () => _showClipboardMenu(provider, theme),
-                              child: Container(
-                                height: 22,
-                                padding: const EdgeInsets.symmetric(horizontal: 7),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(11),
-                                  color: provider.isCut
-                                      ? Colors.orange.withOpacity(0.12)
-                                      : theme.colorScheme.primary.withOpacity(0.12),
-                                  border: Border.all(
-                                    color: provider.isCut
-                                        ? Colors.orange.withOpacity(0.3)
-                                        : theme.colorScheme.primary.withOpacity(0.3),
-                                    width: 0.5,
-                                  ),
+                          // 中间：文件/文件夹计数（开启「显示文件名和文件计数标题」且非多选时显示）
+                          if (provider.showFolderFileCount && !isSelectionMode) ...[
+                            const SizedBox(width: 10),
+                            Icon(Broken.folder, size: 12, color: theme.colorScheme.onSurface.withOpacity(0.65)),
+                            const SizedBox(width: 4),
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 80),
+                              child: Text(
+                                L10n.of(context).ui_folders_count(
+                                  tab.currentFiles.where((e) => e.isDirectory).length,
                                 ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      provider.isCut ? Broken.scissor : Broken.clipboard,
-                                      size: 11,
-                                      color: provider.isCut
-                                          ? Colors.orange
-                                          : theme.colorScheme.primary,
-                                    ),
-                                    const SizedBox(width: 3),
-                                    ConstrainedBox(
-                                      constraints: const BoxConstraints(maxWidth: 80),
-                                      child: Text(
-                                        _clipboardLabel(provider, context),
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                          color: provider.isCut
-                                              ? Colors.orange
-                                              : theme.colorScheme.primary,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: theme.colorScheme.onSurface.withOpacity(0.75),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Icon(Broken.document, size: 12, color: theme.colorScheme.onSurface.withOpacity(0.65)),
+                            const SizedBox(width: 4),
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 80),
+                              child: Text(
+                                L10n.of(context).ui_files_count(
+                                  tab.currentFiles.where((e) => !e.isDirectory).length,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: theme.colorScheme.onSurface.withOpacity(0.75),
                                 ),
                               ),
                             ),
                           ],
+                              ],
+                            ),
+                          ),
+                          // 顶层：剪贴板摘要（右对齐，临时显示，可覆盖计数，不被挤压）
+                          if (provider.hasClipboard)
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: GestureDetector(
+                                onTap: () => _showClipboardMenu(provider, theme),
+                                child: Container(
+                                  height: 22,
+                                  margin: const EdgeInsets.only(left: 8),
+                                  padding: const EdgeInsets.symmetric(horizontal: 7),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(11),
+                                    // 接近实色的背景，覆盖到文件计数时不透出下层文字
+                                    color: provider.isCut
+                                        ? Colors.orange.withOpacity(0.92)
+                                        : theme.colorScheme.primary.withOpacity(0.92),
+                                    border: Border.all(
+                                      color: provider.isCut
+                                          ? Colors.orange
+                                          : theme.colorScheme.primary,
+                                      width: 0.5,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        provider.isCut ? Broken.scissor : Broken.clipboard,
+                                        size: 11,
+                                        color: provider.isCut
+                                            ? Colors.white
+                                            : theme.colorScheme.onPrimary,
+                                      ),
+                                      const SizedBox(width: 3),
+                                      ConstrainedBox(
+                                        constraints: const BoxConstraints(maxWidth: 80),
+                                        child: Text(
+                                          _clipboardLabel(provider, context),
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: provider.isCut
+                                                ? Colors.white
+                                                : theme.colorScheme.onPrimary,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
                         ],
                       ),
-                    ),
-
-                  // 路径已在浏览页顶部显示，此处移除
+                  ),
                   if (provider.filterType != FileFilterType.all)
                     _buildActiveFilterBanner(context, provider),
                   

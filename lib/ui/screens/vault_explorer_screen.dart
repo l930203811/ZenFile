@@ -213,7 +213,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
               actions: [
                 Column(
                   children: [
-                    // Premium Button for Sandbox (Safe)
+                    // 加密到应用私有安全保险库（受保护存储：不再原地留可见 .nfv）
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: theme.colorScheme.primary,
@@ -222,34 +222,20 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         elevation: 0,
                       ),
-                      onPressed: () => Navigator.pop(context, true), // true = Sandbox move
+                      onPressed: () => Navigator.pop(context, true),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Broken.lock, size: 20),
+                          const Icon(Broken.security_safe, size: 20),
                           const SizedBox(width: 8),
                           Text(L10n.of(context).ui_secure_import, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                         ],
                       ),
                     ),
                     const SizedBox(height: 10),
-                    // Outlined Button for In-place (Fast)
-                    OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: theme.colorScheme.primary,
-                        minimumSize: const Size(double.maxFinite, 52),
-                        side: BorderSide(color: theme.colorScheme.primary.withOpacity(0.4)),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
-                      onPressed: () => Navigator.pop(context, false), // false = In-place scramble
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Broken.flash_1, size: 20),
-                          const SizedBox(width: 8),
-                          Text(L10n.of(context).ui_in_place_scramble, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                        ],
-                      ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, null),
+                      child: Text(L10n.of(context).ui_cancel, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                     ),
                   ],
                 ),

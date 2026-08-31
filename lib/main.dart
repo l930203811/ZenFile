@@ -30,6 +30,7 @@ import 'services/pin_service.dart';
 import 'services/recycle_bin_service.dart';
 import 'services/audio_background_handler.dart';
 import 'ui/screens/home_screen.dart';
+import 'ui/screens/audio_player/audio_player_screen.dart';
 import 'ui/screens/remote_guard_screen.dart';
 import 'services/remote_guard_service.dart';
 
@@ -146,9 +147,10 @@ void main() {
           androidNotificationIcon: 'mipmap/ic_launcher',
           androidShowNotificationBadge: true,
           androidStopForegroundOnPause: false,
-          // 避免 AudioService 在未获取 activityClassName 时设置 contentIntent=null，
-          // 部分 ROM 对 setContentIntent(null) 处理不一致。
-          androidNotificationClickStartsActivity: false,
+          // 允许点击通知空白区域启动 MainActivity，从而跳转到音频播放页。
+          // fork 版 audio_service 在 androidNotificationClickStartsActivity: true 时
+          // 会自动生成有效的 contentIntent，不会传入 null。
+          androidNotificationClickStartsActivity: true,
           notificationColor: Color(0xFF6200EE),
         ),
       );
@@ -226,6 +228,10 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
   // 首次启动标志：未选择语言时为 true，用于延迟权限申请直到语言选择完成
   bool _isFirstLaunch = false;
   StreamSubscription<List<SharedMediaFile>>? _sharingIntentSubscription;
+  // 音频通知栏点击跳转：监听 AudioService.notificationClicked，点击时打开音频播放页并恢复当前播放
+  StreamSubscription<bool>? _audioNotificationClickSub;
+  // 防抖：避免同一通知点击事件被重复处理
+  bool _isHandlingNotificationClick = false;
   // 缓存上次的导航栏隐藏开关，避免 MaterialApp.builder 在每次重建（如键盘 Insets
   // 逐帧变化）时重复调用平台通道 setEnabledSystemUIMode。
   bool? _lastHideNavigationBar;
@@ -266,6 +272,7 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
     final savedLocale = PreferencesService.getAppLocale();
     _locale = _localeFromCode(savedLocale);
     _initializeApplication();
+    _initAudioNotificationClickListener();
   }
 
   /// 读取「启动应用保护」开关，决定是否在冷启动时显示 PIN 闸门
@@ -306,6 +313,7 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
     _cancelAutoCleanTimer();
     WidgetsBinding.instance.removeObserver(this);
     _sharingIntentSubscription?.cancel();
+    _audioNotificationClickSub?.cancel();
     super.dispose();
   }
 
@@ -330,6 +338,62 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
     // 避免「清除数据/缓存」后系统误报已授权导致误判）。权限确认后由 _checkStoragePermission
     // 内部完成缓存迁移、监听与媒体加载，无需在此重复。
     await _checkStoragePermission();
+  }
+
+  /// 监听音频通知栏点击事件：点击通知时打开音频播放页并恢复当前后台播放。
+  /// fork 版 audio_service 将点击事件经 platform channel 推送到
+  /// `AudioService.notificationClicked`（BehaviorSubject<bool>），点击时变为 true。
+  void _initAudioNotificationClickListener() {
+    if (_audioNotificationClickSub != null) return;
+    _audioNotificationClickSub = AudioService.notificationClicked
+        .distinct()
+        .where((clicked) => clicked)
+        .listen((_) => _openAudioPlayerFromNotification());
+  }
+
+  /// 从通知栏点击跳转到音频播放页。复用后台播放中的 player，
+  /// 保持当前播放状态与进度不中断。
+  Future<void> _openAudioPlayerFromNotification() async {
+    if (_isHandlingNotificationClick) return;
+    _isHandlingNotificationClick = true;
+    try {
+      // 延迟到首帧渲染后再跳转，避免冷启动/后台恢复时 navigator 尚未就绪
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        try {
+          final handler = getAudioHandler();
+          final item = handler.currentMediaItem;
+          final player = handler.currentPlayer;
+          if (item == null || player == null) return;
+
+          final context = navigatorKey.currentContext;
+          if (context == null || !context.mounted) return;
+
+          // 判断是否远程路径：remote:// 前缀或 http(s) 流式 URL
+          final id = item.id;
+          final bool isRemote = id.startsWith('remote://') ||
+              id.startsWith('http://') ||
+              id.startsWith('https://');
+
+          Navigator.of(context, rootNavigator: true).push(
+            MaterialPageRoute(
+              builder: (_) => AudioPlayerScreen(
+                audioPath: id,
+                title: item.title,
+                artist: item.artist ?? '',
+                isRemote: isRemote,
+                existingPlayer: player,
+              ),
+            ),
+          );
+        } finally {
+          // 稍作延时复位，避免连续点击被误过滤
+          await Future.delayed(const Duration(milliseconds: 500));
+          _isHandlingNotificationClick = false;
+        }
+      });
+    } catch (_) {
+      _isHandlingNotificationClick = false;
+    }
   }
 
   /// 迁移旧的 Download/ZenFile_Remote 缓存目录到新的 /ZenFile 目录。

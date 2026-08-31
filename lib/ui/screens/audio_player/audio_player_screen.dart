@@ -203,7 +203,14 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       _loadLyrics();
       // 重新建立 skip 回调（dispose 时清除了），确保通知栏切歌仍能同步 UI
       getAudioHandler().setSkipCallback(_onBackgroundSkip);
-      _updateBackgroundItem();
+      // 修复 bug：后台仍在播 A 时，从类别页点开 B/C，需立即切换并播放当前选中的文件。
+      // 若请求的路径与当前后台播放的路径不同，则打开新曲目；相同则保持原进度不重启。
+      if (getAudioHandler().currentPath != _currentPath) {
+        _openTrack();
+        _updateBackgroundItem();
+      } else {
+        _updateBackgroundItem();
+      }
     } else {
       player = Player(
         configuration: const PlayerConfiguration(

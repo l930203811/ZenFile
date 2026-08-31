@@ -1238,7 +1238,12 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                         return AnimatedContainer(
                                           duration: const Duration(milliseconds: 200),
                                           curve: Curves.easeInOut,
-                                          height: (provider.hasClipboard || progressMin) ? 28.0 : 0.0,
+                                          height: (progressMin ||
+                                                  provider.hasClipboard ||
+                                                  (provider.showFolderFileCount &&
+                                                      !isSelectionMode))
+                                              ? 28.0
+                                              : 0.0,
                                           padding: const EdgeInsets.symmetric(horizontal: 8),
                                           decoration: BoxDecoration(
                                             color: theme.colorScheme.surfaceVariant.withOpacity(0.25),
@@ -1248,96 +1253,143 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                               ),
                                             ),
                                           ),
-                                          child: Row(
+                                          child: Stack(
                                             children: [
-                                              // 左侧：复制/剪切进度最小化浮窗按钮（点击后台后出现，可重新打开进度页）
-                                              if (progressMin)
-                                                GestureDetector(
-                                                  onTap: () {
-                                                    provider.progressNotifier.backgroundMode = false;
-                                                    provider.progressMinimized.value = false;
-                                                    FileOperationProgressDialog.show(ctx, provider);
-                                                  },
-                                                  child: Container(
-                                                    width: 22,
-                                                    height: 22,
-                                                    margin: const EdgeInsets.only(right: 6),
-                                                    decoration: BoxDecoration(
-                                                      shape: BoxShape.circle,
-                                                      color: theme.colorScheme.primary.withOpacity(0.12),
-                                                      border: Border.all(
-                                                        color: theme.colorScheme.primary.withOpacity(0.45),
-                                                        width: 0.5,
-                                                      ),
-                                                    ),
-                                                    child: Stack(
-                                                      alignment: Alignment.center,
-                                                      children: [
-                                                        SizedBox(
-                                                          width: 14,
-                                                          height: 14,
-                                                          child: CircularProgressIndicator(
-                                                            strokeWidth: 2,
-                                                            valueColor: AlwaysStoppedAnimation<Color>(
-                                                                theme.colorScheme.primary),
+                                              // 底层：进度浮窗按钮 + 文件/文件夹计数（左对齐填充整行）
+                                              Positioned.fill(
+                                                child: Row(
+                                                  children: [
+                                                    // 左侧：复制/剪切进度最小化浮窗按钮（点击后台后出现，可重新打开进度页）
+                                                    if (progressMin)
+                                                      GestureDetector(
+                                                        onTap: () {
+                                                          provider.progressNotifier.backgroundMode = false;
+                                                          provider.progressMinimized.value = false;
+                                                          FileOperationProgressDialog.show(ctx, provider);
+                                                        },
+                                                        child: Container(
+                                                          width: 22,
+                                                          height: 22,
+                                                          margin: const EdgeInsets.only(right: 6),
+                                                          decoration: BoxDecoration(
+                                                            shape: BoxShape.circle,
+                                                            color: theme.colorScheme.primary.withOpacity(0.12),
+                                                            border: Border.all(
+                                                              color: theme.colorScheme.primary.withOpacity(0.45),
+                                                              width: 0.5,
+                                                            ),
+                                                          ),
+                                                          child: Stack(
+                                                            alignment: Alignment.center,
+                                                            children: [
+                                                              SizedBox(
+                                                                width: 14,
+                                                                height: 14,
+                                                                child: CircularProgressIndicator(
+                                                                  strokeWidth: 2,
+                                                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                                                      theme.colorScheme.primary),
+                                                                ),
+                                                              ),
+                                                              Icon(Icons.sync, size: 9, color: theme.colorScheme.primary),
+                                                            ],
                                                           ),
                                                         ),
-                                                        Icon(Icons.sync, size: 9, color: theme.colorScheme.primary),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                              // 右侧：剪贴板内容摘要（有剪贴板时展开显示）
-                                              if (provider.hasClipboard) ...[
-                                                const Spacer(),
-                                                GestureDetector(
-                                                  onTap: () => _showClipboardMenuSheet(context, provider),
-                                                  child: Container(
-                                                    height: 22,
-                                                    padding: const EdgeInsets.symmetric(horizontal: 7),
-                                                    decoration: BoxDecoration(
-                                                      borderRadius: BorderRadius.circular(11),
-                                                      color: provider.isCut
-                                                          ? Colors.orange.withOpacity(0.12)
-                                                          : theme.colorScheme.primary.withOpacity(0.12),
-                                                      border: Border.all(
-                                                        color: provider.isCut
-                                                            ? Colors.orange.withOpacity(0.3)
-                                                            : theme.colorScheme.primary.withOpacity(0.3),
-                                                        width: 0.5,
                                                       ),
-                                                    ),
-                                                    child: Row(
-                                                      mainAxisSize: MainAxisSize.min,
-                                                      children: [
-                                                        Icon(
-                                                          provider.isCut ? Broken.scissor : Broken.clipboard,
-                                                          size: 11,
+                                                    // 中间：文件/文件夹计数（开启计数且非多选时显示，固定不随滚动消失）
+                                                    if (provider.showFolderFileCount && !isSelectionMode) ...[
+                                                      const SizedBox(width: 10),
+                                                      Icon(Broken.folder, size: 13, color: theme.colorScheme.onSurface.withOpacity(0.7)),
+                                                      const SizedBox(width: 4),
+                                                      ConstrainedBox(
+                                                        constraints: const BoxConstraints(maxWidth: 90),
+                                                        child: Text(
+                                                          L10n.of(context).ui_folders_count(
+                                                            provider.currentFiles.where((e) => e.isDirectory).length,
+                                                          ),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow.ellipsis,
+                                                          style: TextStyle(
+                                                            fontSize: 11,
+                                                            fontWeight: FontWeight.w600,
+                                                            color: theme.colorScheme.onSurface.withOpacity(0.8),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 12),
+                                                      Icon(Broken.document, size: 13, color: theme.colorScheme.onSurface.withOpacity(0.7)),
+                                                      const SizedBox(width: 4),
+                                                      ConstrainedBox(
+                                                        constraints: const BoxConstraints(maxWidth: 90),
+                                                        child: Text(
+                                                          L10n.of(context).ui_files_count(
+                                                            provider.currentFiles.where((e) => !e.isDirectory).length,
+                                                          ),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow.ellipsis,
+                                                          style: TextStyle(
+                                                            fontSize: 11,
+                                                            fontWeight: FontWeight.w600,
+                                                            color: theme.colorScheme.onSurface.withOpacity(0.8),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ],
+                                                ),
+                                              ),
+                                              // 顶层：剪贴板摘要（右对齐，临时显示，覆盖计数，不随滚动消失）
+                                              if (provider.hasClipboard)
+                                                Align(
+                                                  alignment: Alignment.centerRight,
+                                                  child: GestureDetector(
+                                                    onTap: () => _showClipboardMenuSheet(context, provider),
+                                                    child: Container(
+                                                      height: 22,
+                                                      padding: const EdgeInsets.symmetric(horizontal: 7),
+                                                      decoration: BoxDecoration(
+                                                        borderRadius: BorderRadius.circular(11),
+                                                        color: provider.isCut
+                                                            ? Colors.orange.withOpacity(0.92)
+                                                            : theme.colorScheme.primary.withOpacity(0.92),
+                                                        border: Border.all(
                                                           color: provider.isCut
                                                               ? Colors.orange
                                                               : theme.colorScheme.primary,
+                                                          width: 0.5,
                                                         ),
-                                                        const SizedBox(width: 3),
-                                                        ConstrainedBox(
-                                                          constraints: const BoxConstraints(maxWidth: 120),
-                                                          child: Text(
-                                                            _clipboardLabel(provider),
-                                                            style: TextStyle(
-                                                              fontSize: 10,
-                                                              fontWeight: FontWeight.bold,
-                                                              color: provider.isCut
-                                                                  ? Colors.orange
-                                                                  : theme.colorScheme.primary,
-                                                            ),
-                                                            maxLines: 1,
-                                                            overflow: TextOverflow.ellipsis,
+                                                      ),
+                                                      child: Row(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          Icon(
+                                                            provider.isCut ? Broken.scissor : Broken.clipboard,
+                                                            size: 11,
+                                                            color: provider.isCut
+                                                                ? Colors.white
+                                                                : theme.colorScheme.onPrimary,
                                                           ),
-                                                        ),
-                                                      ],
+                                                          const SizedBox(width: 3),
+                                                          ConstrainedBox(
+                                                            constraints: const BoxConstraints(maxWidth: 120),
+                                                            child: Text(
+                                                              _clipboardLabel(provider),
+                                                              style: TextStyle(
+                                                                fontSize: 10,
+                                                                fontWeight: FontWeight.bold,
+                                                                color: provider.isCut
+                                                                    ? Colors.white
+                                                                    : theme.colorScheme.onPrimary,
+                                                              ),
+                                                              maxLines: 1,
+                                                              overflow: TextOverflow.ellipsis,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
-                                              ],
                                             ],
                                           ),
                                         );
@@ -1351,27 +1403,6 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                       CupertinoSliverRefreshControl(
                         onRefresh: () => provider.loadDirectory(provider.currentPath, showLoading: false, clearCache: true),
                       ),
-                      if (!isSelectionMode && provider.showFolderFileCount)
-                        SliverToBoxAdapter(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.4),
-                              border: Border(bottom: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.1))),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Broken.folder, size: 16, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
-                                const SizedBox(width: 6),
-                                Text(L10n.of(context).ui_folders_count(provider.currentFiles.where((e) => e.isDirectory).length), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8))),
-                                const SizedBox(width: 20),
-                                Icon(Broken.document, size: 16, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
-                                const SizedBox(width: 6),
-                                Text(L10n.of(context).ui_files_count(provider.currentFiles.where((e) => !e.isDirectory).length), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8))),
-                              ],
-                            ),
-                          ),
-                        ),
                       if (provider.currentFiles.isEmpty)
                         SliverFillRemaining(
                           hasScrollBody: false,

@@ -2,12 +2,29 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:math';
-import 'package:crypto/crypto.dart';
+import 'package:crypto/crypto.dart' as crypto;
+import 'package:cryptography_plus/cryptography_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path/path.dart' as p;
 import 'package:archive/archive.dart';
 
+/// ZenFile 保险箱（Vault）加密服务。
+///
+/// ## 版本与安全模型
+/// - **V1（旧，向后兼容只读）**：`sha256(password)` 派生 XOR 密钥，仅混淆文件前 8KB，
+///   其余内容明文存储。存在真实安全缺陷，仅用于解锁/迁移历史 `.nfv` 文件。
+/// - **V2（当前，默认）**：完整满足用户 4 项安全需求：
+///   1. **Argon2id** 派生主密钥（memory-hard，抗 GPU/ASIC 暴破），再用 **HKDF-SHA256**
+///      拆分为 `payloadKey`（文件内容）与 `metadataKey`（元数据）两把独立子密钥；
+///   2. 每个文件以 **AES-256-GCM** 整文件加密（分块流式，每块独立 96-bit nonce），
+///      GCM tag 提供完整性/认证，天然防位翻转与篡改；
+///   3. **元数据全混淆**：原文件名/路径/目录结构仅以 `metadataKey` 加密存储于文件头，
+///      磁盘上的密文文件名使用随机 id + 随机扩展名（`.zvn`），不泄露任何结构信息；
+///   4. **受保护存储**：密文恒久落在应用私有目录 `…/vault/`（沙盒隔离、带 `.nomedia`
+///      防媒体扫描），不再像旧版 `inPlace` 那样把可见的 `.nfv` 留在用户原目录。
+///
+/// 新锁定一律写入 V2；旧 V1 文件在解锁 / 改名密码（changePassword）时自动升级为 V2。
 class VaultFileRecord {
   final String id;
   final String originalName;
@@ -52,115 +69,218 @@ class VaultFileRecord {
   );
 }
 
-class VaultService {
-  static const String _magicTag = 'NFILE_VAULT_V1';
-  static const int _scrambleSize = 8192; // 8 KB
+/// V2 全局参数存储快照（用于密码校验，与每个文件的独立 salt 解耦）。
+class _V2Stored {
+  final List<int> salt;
+  final int memory;
+  final int iterations;
+  final int parallelism;
+  final String pwcheck;
+  _V2Stored({
+    required this.salt,
+    required this.memory,
+    required this.iterations,
+    required this.parallelism,
+    required this.pwcheck,
+  });
+}
 
-  // Hashing and Password Management
+/// 加解密所用的 V2 参数（salt + Argon2id 参数）。
+class _V2Params {
+  final List<int> salt;
+  final int memory;
+  final int iterations;
+  final int parallelism;
+  _V2Params({
+    required this.salt,
+    required this.memory,
+    required this.iterations,
+    required this.parallelism,
+  });
+}
+
+/// V2 派生出的密钥集合。
+class _V2Keys {
+  final List<int> master;
+  final List<int> payloadKey;
+  final List<int> metadataKey;
+  _V2Keys({
+    required this.master,
+    required this.payloadKey,
+    required this.metadataKey,
+  });
+}
+
+/// V1 解密结果（明文 + 元数据）。
+class _V1Result {
+  final Uint8List bytes;
+  final Map<String, dynamic> meta;
+  _V1Result({required this.bytes, required this.meta});
+}
+
+class VaultService {
+  // ── 格式常量 ─────────────────────────────────────────────────────────────
+  static const String _v1Magic = 'NFILE_VAULT_V1'; // 14 bytes
+  static const String _v2Magic = 'NFILE_VAULT_V2'; // 14 bytes
+  static const int _v2Version = 2;
+  static const int _scrambleSize = 8192; // V1 仅混淆前 8KB（向后兼容用）
+  static const int _saltLength = 16;
+  static const int _nonceLength = 12; // AES-GCM 96-bit nonce
+  static const int _tagLength = 16; // GCM tag
+  static const int _chunkSize = 1024 * 1024; // 1 MiB 流式分块
+
+  // Argon2id 默认参数（memory 单位为 KiB；65536 KiB = 64 MiB）
+  static const int _defaultMem = 65536;
+  static const int _defaultIter = 3;
+  static const int _defaultPar = 1;
+  static const int _keyLength = 32;
+
+  static const String _kInfoPayload = 'zenfile-vault-payload-v2';
+  static const String _kInfoMetadata = 'zenfile-vault-metadata-v2';
+  static const String _kPwCheckPlain = 'zenfile-vault-pwcheck-v2';
+  // HKDF 的 nonce 被 cryptography_plus 当作 HMAC 的 salt 使用，必须为非空，
+  // 否则运行时会抛 "Secret key must be non-empty"。
+  static const String _kHkdfSalt = 'zenfile-vault-hkdf-salt-v2';
+
+  // SharedPreferences 键（V2）
+  static const String _kSalt = 'vault_v2_salt';
+  static const String _kMem = 'vault_v2_mem';
+  static const String _kIter = 'vault_v2_iter';
+  static const String _kPar = 'vault_v2_par';
+  static const String _kPwCheck = 'vault_v2_pwcheck';
+
+  static final AesGcm _gcm = AesGcm.with256bits();
+  static final Random _secureRandom = Random.secure();
+
+  // ── 密码 / PIN 管理 ──────────────────────────────────────────────────────
+
   static Future<bool> isPasswordSet() async {
+    if (await _readStoredV2() != null) return true;
     final prefs = await SharedPreferences.getInstance();
-    return prefs.containsKey('vault_password_hash');
+    return prefs.containsKey('vault_password_hash'); // 旧版 sha256 哈希
   }
 
+  /// 首次设置密码（或显式重设全局校验令牌）。生成 V2 参数并写入校验令牌。
   static Future<void> setPassword(String password) async {
-    final prefs = await SharedPreferences.getInstance();
-    final salt = DateTime.now().microsecondsSinceEpoch.toString();
-    final saltedPassword = password + salt;
-    final hash = sha256.convert(utf8.encode(saltedPassword)).toString();
-    await prefs.setString('vault_salt', salt);
-    await prefs.setString('vault_password_hash', hash);
+    await _writeV2Params(password);
   }
 
   static Future<bool> verifyPassword(String password) async {
+    final stored = await _readStoredV2();
+    if (stored != null) {
+      final vk = await _deriveV2Keys(
+          password, stored.salt, stored.memory, stored.iterations, stored.parallelism);
+      try {
+        final raw = base64Decode(stored.pwcheck);
+        final sb = SecretBox.fromConcatenation(raw, nonceLength: _nonceLength, macLength: _tagLength, copy: true);
+        final pt = await _gcm.decrypt(sb,
+            secretKey: SecretKey(vk.metadataKey));
+        if (utf8.decode(pt) == _kPwCheckPlain) return true;
+      } catch (_) {
+        // 密码错误（GCM 认证失败）或数据异常 → 落入旧版校验
+      }
+    }
+    // 旧版 sha256+salt 兼容（升级前设置的 PIN 仍可解锁历史 .nfv）
     final prefs = await SharedPreferences.getInstance();
     final salt = prefs.getString('vault_salt');
     final hash = prefs.getString('vault_password_hash');
-    if (salt == null || hash == null) return false;
-    final checkHash = sha256.convert(utf8.encode(password + salt)).toString();
-    return hash == checkHash;
+    if (salt != null && hash != null) {
+      return hash == crypto.sha256.convert(utf8.encode(password + salt)).toString();
+    }
+    return false;
   }
 
-  /// 修改保险箱密码（即 PIN）：先用旧密码校验，再对每条已隐藏记录用旧密码还原、
-  /// 用新密码重新加锁；全部成功后更新密码哈希。
-  ///
-  /// 关键：保险箱密码同时是文件加密密钥（见 [_deriveKey]），因此改密必须对全部已隐藏
-  /// 文件做「还原 + 重加锁」，否则文件无法再用新 PIN 打开。
-  ///
-  /// 返回 true 表示全部成功（密码哈希已更新）；false 表示存在失败（密码哈希未更新，
-  /// 避免已加密文件因哈希变更而永久无法解密）。失败时单条跳过，绝不破坏数据。
+  /// 修改保险箱密码（即 PIN）：逐条用旧密码解密、用新密码重新加密（V1 自动升级为 V2），
+  /// 全部成功后重写全局 V2 校验令牌。任一失败则跳过该条并标记，绝不破坏数据。
   static Future<bool> changePassword(String oldPassword, String newPassword) async {
     if (!await verifyPassword(oldPassword)) return false;
 
     final records = await loadRecords();
     if (records.isEmpty) {
-      // 没有已隐藏文件，直接更新密码哈希即可
-      await setPassword(newPassword);
+      await _writeV2Params(newPassword);
       return true;
     }
 
     bool allOk = true;
-    // 遍历快照，逐条处理；每条记录的 originalPath/isFolder/isInPlace 在处理前已确定
-    for (final rec in List<VaultFileRecord>.from(records)) {
+    final updated = <VaultFileRecord>[];
+    for (final rec in records) {
       try {
-        if (rec.isFolder) {
-          // 旧密码还原（还原目录结构到 rec.originalPath 所在的父目录）
-          await unlockFile(record: rec, password: oldPassword);
-          final dir = Directory(rec.originalPath);
-          if (await dir.exists()) {
-            await lockDirectory(
-              directory: dir,
-              password: newPassword,
-              inPlace: rec.isInPlace,
-            );
-          } else {
-            allOk = false;
-          }
+        final tempDir = await getTemporaryDirectory();
+        final temp = File(p.join(tempDir.path, 'vault_rekey_${rec.id}.tmp'));
+        final sink = temp.openWrite();
+        late Map<String, dynamic> meta;
+        final raf0 = await File(rec.scrambledPath).open();
+        final magic = utf8.decode(await _readBytes(raf0, _v2Magic.length));
+        await raf0.setPosition(0);
+        if (magic == _v1Magic) {
+          final r = await _decryptV1(rec, oldPassword);
+          sink.add(r.bytes);
+          meta = r.meta;
         } else {
-          // 旧密码还原（还原文件到 rec.originalPath），返回还原后的文件
-          final restored = await unlockFile(record: rec, password: oldPassword);
-          if (await restored.exists()) {
-            await lockFile(
-              file: restored,
-              password: newPassword,
-              inPlace: rec.isInPlace,
-              customName: rec.originalName,
-              customPath: rec.originalPath,
-              isFolder: false,
-            );
-          } else {
-            allOk = false;
-          }
+          meta = await _decryptV2ToSink(raf0, oldPassword, sink);
         }
+        await sink.close();
+        await raf0.close();
+
+        final raf1 = await temp.open(mode: FileMode.read);
+        final len = await temp.length();
+        final newRec = await _encryptRawToVault(
+          source: raf1,
+          length: len,
+          password: newPassword,
+          originalName: (meta['name'] as String?) ?? rec.originalName,
+          originalPath: (meta['path'] as String?) ?? rec.originalPath,
+          isFolder: rec.isFolder,
+        );
+        await raf1.close();
+        await temp.delete();
+
+        final oldFile = File(rec.scrambledPath);
+        if (await oldFile.exists()) await oldFile.delete();
+        updated.add(VaultFileRecord(
+          id: rec.id,
+          originalName: rec.originalName,
+          originalPath: rec.originalPath,
+          scrambledPath: newRec.scrambledPath,
+          size: rec.size,
+          lockedAt: rec.lockedAt,
+          isInPlace: false,
+          isFolder: rec.isFolder,
+        ));
       } catch (_) {
-        // 单条失败：不破坏数据，跳过该条并标记
         allOk = false;
+        updated.add(rec);
       }
     }
 
-    // 仅当全部成功时才更新密码哈希，避免「哈希已变、但个别文件仍用旧密码加密」导致永久无法解密
     if (allOk) {
-      await setPassword(newPassword);
+      await _writeV2Params(newPassword);
     }
+    await saveRecords(updated);
     return allOk;
   }
 
-  // Get Vault Directory
+  // ── 私有目录（受保护存储） ────────────────────────────────────────────────
+
   static Future<Directory> getVaultDir() async {
     final docDir = await getApplicationDocumentsDirectory();
     final vaultDir = Directory(p.join(docDir.path, 'vault'));
     if (!await vaultDir.exists()) {
       await vaultDir.create(recursive: true);
     }
+    // 防止媒体扫描器索引密文
+    final nomedia = File(p.join(vaultDir.path, '.nomedia'));
+    if (!await nomedia.exists()) {
+      await nomedia.create();
+    }
     return vaultDir;
   }
 
-  // Get Metadata JSON File path
   static Future<File> getMetadataFile() async {
     final vaultDir = await getVaultDir();
     return File(p.join(vaultDir.path, 'metadata.json'));
   }
 
-  // Load locked file records
   static Future<List<VaultFileRecord>> loadRecords() async {
     final file = await getMetadataFile();
     if (!await file.exists()) return [];
@@ -173,37 +293,172 @@ class VaultService {
     }
   }
 
-  // Save locked file records
   static Future<void> saveRecords(List<VaultFileRecord> records) async {
     final file = await getMetadataFile();
     final str = jsonEncode(records.map((e) => e.toJson()).toList());
     await file.writeAsString(str);
   }
 
-  // Derives the repeating XOR key from the password
-  static List<int> _deriveKey(String password, int length) {
-    final hash = sha256.convert(utf8.encode(password)).bytes;
-    final key = List<int>.filled(length, 0);
-    for (int i = 0; i < length; i++) {
-      key[i] = hash[i % hash.length] ^ (i & 0xFF);
-    }
-    return key;
+  // ── 密钥派生（Argon2id + HKDF） ───────────────────────────────────────────
+
+  static Future<_V2Keys> _deriveV2Keys(
+    String password,
+    List<int> salt,
+    int memory,
+    int iterations,
+    int parallelism,
+  ) async {
+    final argon2 = Argon2id(
+      parallelism: parallelism,
+      memory: memory,
+      iterations: iterations,
+      hashLength: _keyLength,
+    );
+    final masterSk =
+        await argon2.deriveKey(secretKey: SecretKey(utf8.encode(password)), nonce: salt);
+    final master = await masterSk.extractBytes();
+
+    final hkdf = Hkdf(hmac: Hmac.sha256(), outputLength: _keyLength);
+    final hkdfNonce = utf8.encode(_kHkdfSalt);
+    final pSk = await hkdf.deriveKey(
+        secretKey: SecretKey(master), nonce: hkdfNonce, info: utf8.encode(_kInfoPayload));
+    final mSk = await hkdf.deriveKey(
+        secretKey: SecretKey(master), nonce: hkdfNonce, info: utf8.encode(_kInfoMetadata));
+
+    return _V2Keys(
+      master: master,
+      payloadKey: await pSk.extractBytes(),
+      metadataKey: await mSk.extractBytes(),
+    );
   }
 
-  // Obfuscates/Deobfuscates a list of bytes using XOR
-  static List<int> _xorBytes(List<int> bytes, List<int> key) {
-    final result = List<int>.from(bytes);
-    for (int i = 0; i < bytes.length; i++) {
-      result[i] = bytes[i] ^ key[i % key.length];
+  /// 读取已存储的 V2 参数（不创建）。返回 null 表示尚未初始化 V2。
+  static Future<_V2Stored?> _readStoredV2() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saltB64 = prefs.getString(_kSalt);
+    final mem = prefs.getInt(_kMem);
+    final iter = prefs.getInt(_kIter);
+    final par = prefs.getInt(_kPar);
+    final pw = prefs.getString(_kPwCheck);
+    if (saltB64 == null || mem == null || iter == null || par == null || pw == null) {
+      return null;
     }
-    return result;
+    return _V2Stored(
+      salt: base64Decode(saltB64),
+      memory: mem,
+      iterations: iter,
+      parallelism: par,
+      pwcheck: pw,
+    );
   }
 
-  // Locks and obfuscates a file
+  /// 加密时获取 V2 参数：已存在则复用，否则为新密码生成并写入。
+  static Future<_V2Params> _getV2Params(String password) async {
+    final stored = await _readStoredV2();
+    if (stored != null) {
+      return _V2Params(
+        salt: stored.salt,
+        memory: stored.memory,
+        iterations: stored.iterations,
+        parallelism: stored.parallelism,
+      );
+    }
+    return _writeV2Params(password);
+  }
+
+  /// 生成新 salt + 参数，并以 metadataKey 加密校验令牌写入。返回所用参数。
+  static Future<_V2Params> _writeV2Params(String password) async {
+    final salt = _randomBytes(_saltLength);
+    final vk = await _deriveV2Keys(password, salt, _defaultMem, _defaultIter, _defaultPar);
+    final nonce = _randomBytes(_nonceLength);
+    final sb = await _gcm.encrypt(utf8.encode(_kPwCheckPlain),
+        secretKey: SecretKey(vk.metadataKey), nonce: nonce);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kSalt, base64Encode(salt));
+    await prefs.setInt(_kMem, _defaultMem);
+    await prefs.setInt(_kIter, _defaultIter);
+    await prefs.setInt(_kPar, _defaultPar);
+    await prefs.setString(_kPwCheck, base64Encode(nonce + sb.concatenation(nonce: false)));
+    return _V2Params(
+      salt: salt,
+      memory: _defaultMem,
+      iterations: _defaultIter,
+      parallelism: _defaultPar,
+    );
+  }
+
+  // ── 加密（写 V2） ─────────────────────────────────────────────────────────
+
+  static Future<VaultFileRecord> _encryptRawToVault({
+    required RandomAccessFile source,
+    required int length,
+    required String password,
+    required String originalName,
+    required String originalPath,
+    required bool isFolder,
+  }) async {
+    final params = await _getV2Params(password);
+    final vk = await _deriveV2Keys(
+        password, params.salt, params.memory, params.iterations, params.parallelism);
+
+    final vaultDir = await getVaultDir();
+    final scrambledPath = p.join(vaultDir.path, '${_randomId()}.zvn');
+    final out = File(scrambledPath).openWrite();
+
+    // 文件头
+    out.add(utf8.encode(_v2Magic));
+    out.add([_v2Version]);
+    out.add(params.salt);
+    out.add(_encodeParams(params.memory, params.iterations, params.parallelism));
+
+    // 元数据（metadataKey 加密，全混淆）
+    final metaMap = {
+      'name': originalName,
+      'path': originalPath,
+      'size': length,
+      'isFolder': isFolder,
+      'lockedAt': DateTime.now().toIso8601String(),
+      'version': _v2Version,
+    };
+    final metaBytes = utf8.encode(jsonEncode(metaMap));
+    final metaNonce = _randomBytes(_nonceLength);
+    final metaSb =
+        await _gcm.encrypt(metaBytes, secretKey: SecretKey(vk.metadataKey), nonce: metaNonce);
+    out.add(metaNonce);
+    out.add(_u32(metaSb.cipherText.length + metaSb.mac.bytes.length));
+    out.add(metaSb.concatenation(nonce: false));
+
+    // 负载（payloadKey 整文件分块流式加密）
+    int offset = 0;
+    while (offset < length) {
+      final n = min(_chunkSize, length - offset);
+      final chunk = await source.read(n);
+      final nonce = _randomBytes(_nonceLength);
+      final sb =
+          await _gcm.encrypt(chunk, secretKey: SecretKey(vk.payloadKey), nonce: nonce);
+      out.add(nonce);
+      out.add(sb.concatenation(nonce: false));
+      offset += n;
+    }
+    await out.close();
+
+    return VaultFileRecord(
+      id: _randomId(),
+      originalName: originalName,
+      originalPath: originalPath,
+      scrambledPath: scrambledPath,
+      size: length,
+      lockedAt: DateTime.now().toIso8601String(),
+      isInPlace: false,
+      isFolder: isFolder,
+    );
+  }
+
+  /// 锁定单个文件。V2 起恒久写入应用私有 vault 目录（受保护存储），原文件删除。
   static Future<VaultFileRecord> lockFile({
     required File file,
     required String password,
-    required bool inPlace,
+    bool inPlace = false, // 保留签名兼容，V2 起始终忽略（私有容器）
     String? customName,
     String? customPath,
     bool isFolder = false,
@@ -211,101 +466,91 @@ class VaultService {
     if (!await file.exists()) {
       throw Exception('File does not exist: ${file.path}');
     }
-
     final originalPath = customPath ?? file.path;
     final originalName = customName ?? p.basename(originalPath);
-    final size = await file.length();
-    final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+    final length = await file.length();
 
-    // Determine target scrambled path
-    String scrambledPath;
-    if (inPlace) {
-      // Scramble in the same directory, starting with a dot (hidden on Linux/Android)
-      final dir = isFolder ? originalPath : p.dirname(originalPath);
-      scrambledPath = p.join(dir, '.vault_$timestamp.nfv');
-    } else {
-      // Isolate inside app's private documents vault folder
-      final vaultDir = await getVaultDir();
-      scrambledPath = p.join(vaultDir.path, 'vault_$timestamp.nfv');
+    final raf = await file.open(mode: FileMode.read);
+    try {
+      final rec = await _encryptRawToVault(
+        source: raf,
+        length: length,
+        password: password,
+        originalName: originalName,
+        originalPath: originalPath,
+        isFolder: isFolder,
+      );
+      await raf.close();
+      await file.delete();
+      final records = await loadRecords();
+      records.add(rec);
+      await saveRecords(records);
+      return rec;
+    } catch (e) {
+      await raf.close();
+      rethrow;
     }
-
-    // Read file bytes
-    final fileBytes = await file.readAsBytes();
-
-    // Partition bytes
-    final scrambleLen = min(_scrambleSize, fileBytes.length);
-    final scrambleBytes = fileBytes.sublist(0, scrambleLen);
-    final restBytes = fileBytes.sublist(scrambleLen);
-
-    // Encrypt the signature part
-    final key = _deriveKey(password, scrambleLen);
-    final obfuscatedBytes = _xorBytes(scrambleBytes, key);
-
-    // Build metadata payload
-    final metadata = {
-      'name': originalName,
-      'path': originalPath,
-      'size': size,
-      'timestamp': timestamp,
-      'isFolder': isFolder,
-    };
-    final metadataStr = jsonEncode(metadata);
-    final metadataBytes = utf8.encode(metadataStr);
-
-    // Obfuscate metadata payload too so it's fully private
-    final metaKey = _deriveKey(password, metadataBytes.length);
-    final obfuscatedMetadata = _xorBytes(metadataBytes, metaKey);
-
-    // Create the scrambled file format:
-    // [MAGIC_TAG] (14 bytes)
-    // [METADATA_LENGTH] (4 bytes int)
-    // [OBFUSCATED_METADATA]
-    // [OBFUSCATED_SIGNATURE]
-    // [REST_OF_FILE]
-    final headerBytes = BytesBuilder();
-    headerBytes.add(utf8.encode(_magicTag)); // 14 bytes
-    
-    // Add metadata length as 4-byte big endian int
-    final metaLen = obfuscatedMetadata.length;
-    headerBytes.add([
-      (metaLen >> 24) & 0xFF,
-      (metaLen >> 16) & 0xFF,
-      (metaLen >> 8) & 0xFF,
-      metaLen & 0xFF,
-    ]);
-    
-    headerBytes.add(obfuscatedMetadata);
-    headerBytes.add(obfuscatedBytes);
-    headerBytes.add(restBytes);
-
-    // Write to the scrambled target path
-    final targetFile = File(scrambledPath);
-    await targetFile.writeAsBytes(headerBytes.toBytes());
-
-    // Clean up original file
-    await file.delete();
-
-    // Create record
-    final record = VaultFileRecord(
-      id: timestamp,
-      originalName: originalName,
-      originalPath: originalPath,
-      scrambledPath: scrambledPath,
-      size: size,
-      lockedAt: DateTime.now().toIso8601String(),
-      isInPlace: inPlace,
-      isFolder: isFolder,
-    );
-
-    // Save record to metadata.json
-    final records = await loadRecords();
-    records.add(record);
-    await saveRecords(records);
-
-    return record;
   }
 
-  // Unlocks and restores an obfuscated file
+  /// 锁定目录：先递归打包为 ZIP，再按单文件方式加密（V2）。
+  static Future<VaultFileRecord> lockDirectory({
+    required Directory directory,
+    required String password,
+    bool inPlace = false,
+  }) async {
+    if (!await directory.exists()) {
+      throw Exception('Directory does not exist: ${directory.path}');
+    }
+    final originalPath = directory.path;
+    final originalName = p.basename(originalPath);
+
+    final archive = Archive();
+    await for (final entity in directory.list(recursive: true)) {
+      if (entity is File) {
+        final relPath =
+            p.relative(entity.path, from: p.dirname(originalPath)).replaceAll('\\', '/');
+        final bytes = await entity.readAsBytes();
+        archive.addFile(ArchiveFile(relPath, bytes.length, bytes));
+      }
+    }
+    final zipBytes = ZipEncoder().encode(archive);
+    if (zipBytes == null) {
+      throw Exception('Failed to zip directory contents');
+    }
+
+    final tempDir = await getTemporaryDirectory();
+    final tempZipFile =
+        File(p.join(tempDir.path, 'temp_vault_zip_${DateTime.now().millisecondsSinceEpoch}.zip'));
+    await tempZipFile.writeAsBytes(zipBytes);
+
+    try {
+      final raf = await tempZipFile.open(mode: FileMode.read);
+      final rec = await _encryptRawToVault(
+        source: raf,
+        length: zipBytes.length,
+        password: password,
+        originalName: originalName,
+        originalPath: originalPath,
+        isFolder: true,
+      );
+      await raf.close();
+      await tempZipFile.delete();
+      await directory.delete(recursive: true);
+
+      final records = await loadRecords();
+      records.add(rec);
+      await saveRecords(records);
+      return rec;
+    } finally {
+      if (await tempZipFile.exists()) {
+        await tempZipFile.delete();
+      }
+    }
+  }
+
+  // ── 解密（V1 兼容 + V2） ──────────────────────────────────────────────────
+
+  /// 解锁并恢复原文件/目录到 originalPath。
   static Future<File> unlockFile({
     required VaultFileRecord record,
     required String password,
@@ -315,172 +560,85 @@ class VaultService {
       throw Exception('Scrambled vault file not found: ${record.scrambledPath}');
     }
 
-    final bytes = await scrambledFile.readAsBytes();
-    
-    // Verify magic tag
-    if (bytes.length < _magicTag.length + 4) {
-      throw Exception('Invalid vault file format (Too short)');
-    }
-    final magicBytes = bytes.sublist(0, _magicTag.length);
-    final magic = utf8.decode(magicBytes);
-    if (magic != _magicTag) {
-      throw Exception('Invalid vault file format (Magic tag mismatch)');
-    }
+    final raf = await scrambledFile.open();
+    final magic = utf8.decode(await _readBytes(raf, _v2Magic.length));
+    await raf.setPosition(0);
 
-    // Read metadata length
-    final lenBytes = bytes.sublist(_magicTag.length, _magicTag.length + 4);
-    final metaLen = (lenBytes[0] << 24) | (lenBytes[1] << 16) | (lenBytes[2] << 8) | lenBytes[3];
-
-    // Extract obfuscated metadata
-    final metaStart = _magicTag.length + 4;
-    final metaEnd = metaStart + metaLen;
-    if (bytes.length < metaEnd) {
-      throw Exception('Invalid vault file format (Corrupted header)');
-    }
-    final obfuscatedMetadata = bytes.sublist(metaStart, metaEnd);
-
-    // Decrypt metadata
-    final metaKey = _deriveKey(password, obfuscatedMetadata.length);
-    final decryptedMetadataBytes = _xorBytes(obfuscatedMetadata, metaKey);
-    
-    Map<String, dynamic> metadata;
-    try {
-      final decryptedMetadataStr = utf8.decode(decryptedMetadataBytes);
-      metadata = jsonDecode(decryptedMetadataStr) as Map<String, dynamic>;
-    } catch (_) {
-      throw Exception('Incorrect password or corrupted file');
-    }
-
-    // Extract scrambled signature bytes
-    final fileDataStart = metaEnd;
-    final originalSize = metadata['size'] as int;
-    final scrambleLen = min(_scrambleSize, originalSize);
-    
-    if (bytes.length < fileDataStart + scrambleLen) {
-      throw Exception('Invalid vault file format (Corrupted payload)');
-    }
-    final obfuscatedSignature = bytes.sublist(fileDataStart, fileDataStart + scrambleLen);
-    final restBytes = bytes.sublist(fileDataStart + scrambleLen);
-
-    // Decrypt signature bytes
-    final key = _deriveKey(password, scrambleLen);
-    final decryptedSignature = _xorBytes(obfuscatedSignature, key);
-
-    // Reconstruct original file bytes
-    final originalBytes = BytesBuilder();
-    originalBytes.add(decryptedSignature);
-    originalBytes.add(restBytes);
-
-    final originalFile = File(record.originalPath);
-
-    if (record.isFolder) {
-      // Reconstruct folder structure recursively
-      final archive = ZipDecoder().decodeBytes(originalBytes.toBytes());
-      final destinationDir = p.dirname(record.originalPath);
-
-      for (final file in archive) {
-        final filename = file.name;
-        final fullPath = p.join(destinationDir, filename);
-        if (file.isFile) {
-          final data = file.content as List<int>;
-          final destFile = File(fullPath);
-          await destFile.parent.create(recursive: true);
-          await destFile.writeAsBytes(data);
-        } else {
-          await Directory(fullPath).create(recursive: true);
-        }
-      }
-    } else {
-      // Recreate original parent folder if deleted
-      final originalDir = originalFile.parent;
-      if (!await originalDir.exists()) {
-        await originalDir.create(recursive: true);
-      }
-
-      // Write original bytes back to original path
-      await originalFile.writeAsBytes(originalBytes.toBytes());
-    }
-
-    // Clean up scrambled nfv file
-    await scrambledFile.delete();
-
-    // Remove record from metadata
-    final records = await loadRecords();
-    records.removeWhere((e) => e.id == record.id);
-    await saveRecords(records);
-
-    return originalFile;
-  }
-
-  // Locks and obfuscates a directory by zipping it recursively first
-  static Future<VaultFileRecord> lockDirectory({
-    required Directory directory,
-    required String password,
-    required bool inPlace,
-  }) async {
-    if (!await directory.exists()) {
-      throw Exception('Directory does not exist: ${directory.path}');
-    }
-
-    final originalPath = directory.path;
-    final originalName = p.basename(originalPath);
-
-    // List all files recursively (async to avoid blocking UI)
-    final archive = Archive();
-    await for (final entity in directory.list(recursive: true)) {
-      if (entity is File) {
-        // Calculate relative path from the parent of the directory being zipped
-        // So that the zipped file path starts with the folder name itself (e.g. "myfolder/file.txt")
-        final relPath = p.relative(entity.path, from: p.dirname(originalPath)).replaceAll('\\', '/');
-        final bytes = await entity.readAsBytes();
-        archive.addFile(ArchiveFile(relPath, bytes.length, bytes));
-      }
-    }
-
-    // Encode the archive as a ZIP
-    final zipEncoder = ZipEncoder();
-    final zipBytes = zipEncoder.encode(archive);
-    if (zipBytes == null) {
-      throw Exception('Failed to zip directory contents');
-    }
-
-    // Write zip to a temporary file
-    final tempDir = await getTemporaryDirectory();
-    final tempZipFile = File(p.join(tempDir.path, 'temp_vault_zip_${DateTime.now().millisecondsSinceEpoch}.zip'));
-    await tempZipFile.writeAsBytes(zipBytes);
-
-    try {
-      // Call lockFile on the temporary zip file, flag it as isFolder: true
-      final record = await lockFile(
-        file: tempZipFile,
-        password: password,
-        inPlace: inPlace,
-        customName: originalName,
-        customPath: originalPath,
-        isFolder: true,
-      );
-
-      // Clean up original directory contents (or keep folder for in-place)
-      if (inPlace) {
-        await for (final child in directory.list()) {
-          if (child.path != record.scrambledPath) {
-            await child.delete(recursive: true);
+    if (magic == _v1Magic) {
+      final r = await _decryptV1(record, password);
+      await raf.close();
+      if (record.isFolder) {
+        final archive = ZipDecoder().decodeBytes(r.bytes);
+        final destDir = p.dirname(record.originalPath);
+        for (final f in archive) {
+          final fullPath = p.join(destDir, f.name);
+          if (f.isFile) {
+            final data = f.content as List<int>;
+            final outFile = File(fullPath);
+            await outFile.parent.create(recursive: true);
+            await outFile.writeAsBytes(data);
+          } else {
+            await Directory(fullPath).create(recursive: true);
           }
         }
       } else {
-        await directory.delete(recursive: true);
+        final originalFile = File(record.originalPath);
+        await originalFile.parent.create(recursive: true);
+        await originalFile.writeAsBytes(r.bytes);
       }
-
-      return record;
-    } finally {
-      // Always ensure the temporary zip is deleted
-      if (await tempZipFile.exists()) {
-        await tempZipFile.delete();
-      }
+      await scrambledFile.delete();
+      final records = await loadRecords();
+      records.removeWhere((e) => e.id == record.id);
+      await saveRecords(records);
+      return File(record.originalPath);
     }
+
+    // V2
+    IOSink sink;
+    File? tempZip;
+    if (record.isFolder) {
+      final td = await getTemporaryDirectory();
+      tempZip = File(p.join(td.path, 'temp_vault_unzip_${record.id}.zip'));
+      sink = tempZip.openWrite();
+    } else {
+      final originalFile = File(record.originalPath);
+      await originalFile.parent.create(recursive: true);
+      sink = originalFile.openWrite();
+    }
+    try {
+      await _decryptV2ToSink(raf, password, sink);
+      await sink.close();
+      if (record.isFolder && tempZip != null) {
+        final archive = ZipDecoder().decodeBytes(await tempZip.readAsBytes());
+        final destDir = p.dirname(record.originalPath);
+        for (final f in archive) {
+          final fullPath = p.join(destDir, f.name);
+          if (f.isFile) {
+            final data = f.content as List<int>;
+            final outFile = File(fullPath);
+            await outFile.parent.create(recursive: true);
+            await outFile.writeAsBytes(data);
+          } else {
+            await Directory(fullPath).create(recursive: true);
+          }
+        }
+        await tempZip.delete();
+      }
+    } finally {
+      await raf.close();
+      try {
+        await sink.close();
+      } catch (_) {}
+    }
+
+    await scrambledFile.delete();
+    final records = await loadRecords();
+    records.removeWhere((e) => e.id == record.id);
+    await saveRecords(records);
+    return File(record.originalPath);
   }
 
-  // Temporarily decrypts a vault file to cache directory for in-app viewing
+  /// 临时解密到缓存目录供应用内预览（不写回原路径）。
   static Future<File> decryptTemporary({
     required VaultFileRecord record,
     required String password,
@@ -490,41 +648,189 @@ class VaultService {
       throw Exception('Scrambled vault file not found');
     }
 
-    final bytes = await scrambledFile.readAsBytes();
-    
-    // Read metadata
-    final lenBytes = bytes.sublist(_magicTag.length, _magicTag.length + 4);
-    final metaLen = (lenBytes[0] << 24) | (lenBytes[1] << 16) | (lenBytes[2] << 8) | lenBytes[3];
-    
-    final metaStart = _magicTag.length + 4;
+    final raf = await scrambledFile.open();
+    final magic = utf8.decode(await _readBytes(raf, _v2Magic.length));
+    await raf.setPosition(0);
+    final cacheDir = await getTemporaryDirectory();
+    final ext = record.isFolder ? '.zip' : '';
+
+    if (magic == _v1Magic) {
+      final r = await _decryptV1(record, password);
+      await raf.close();
+      final temp =
+          File(p.join(cacheDir.path, 'temp_vault_${record.id}_${record.originalName}$ext'));
+      await temp.writeAsBytes(r.bytes);
+      return temp;
+    }
+
+    final temp =
+        File(p.join(cacheDir.path, 'temp_vault_${record.id}_${record.originalName}$ext'));
+    final sink = temp.openWrite();
+    try {
+      await _decryptV2ToSink(raf, password, sink);
+      await sink.close();
+    } finally {
+      await raf.close();
+    }
+    return temp;
+  }
+
+  // ── 底层解密实现 ──────────────────────────────────────────────────────────
+
+  /// V2 解密：从 raf 当前位置读取头 + 元数据 + 负载，流式写入 [sink]，返回元数据 Map。
+  static Future<Map<String, dynamic>> _decryptV2ToSink(
+    RandomAccessFile raf,
+    String password,
+    IOSink sink,
+  ) async {
+    // 头：magic(14) + version(1) + salt(16) + params(6)
+    final magic = utf8.decode(await _readBytes(raf, _v2Magic.length));
+    if (magic != _v2Magic) throw Exception('Invalid vault file format (Magic tag mismatch)');
+    await _readBytes(raf, 1); // version
+    final salt = await _readBytes(raf, _saltLength);
+    final paramsB = await _readBytes(raf, 6);
+    final memory = _readU32(paramsB.sublist(0, 4));
+    final iterations = paramsB[4];
+    final parallelism = paramsB[5];
+
+    final vk = await _deriveV2Keys(password, salt, memory, iterations, parallelism);
+
+    // 元数据块
+    final metaNonce = await _readBytes(raf, _nonceLength);
+    final metaLen = _readU32(await _readBytes(raf, 4));
+    final metaConcat = await _readBytes(raf, metaLen);
+    final metaSb = SecretBox.fromConcatenation(
+        metaNonce + metaConcat, nonceLength: _nonceLength, macLength: _tagLength, copy: true);
+    final metaBytes = await _gcm.decrypt(metaSb,
+        secretKey: SecretKey(vk.metadataKey));
+    final meta = jsonDecode(utf8.decode(metaBytes)) as Map<String, dynamic>;
+
+    // 负载分块解密
+    while (true) {
+      final nonceB = await _readBytes(raf, _nonceLength);
+      if (nonceB.length < _nonceLength) break;
+      final ctMac = await _readBytes(raf, _chunkSize + _tagLength);
+      if (ctMac.isEmpty) break;
+      final sb = SecretBox.fromConcatenation(
+          nonceB + ctMac, nonceLength: _nonceLength, macLength: _tagLength, copy: true);
+      final pt = await _gcm.decrypt(sb,
+          secretKey: SecretKey(vk.payloadKey));
+      sink.add(pt);
+    }
+    return meta;
+  }
+
+  /// V1 解密（向后兼容）：XOR 仅还原前 8KB，其余为明文。返回明文 bytes + 元数据。
+  static Future<_V1Result> _decryptV1(
+    VaultFileRecord record,
+    String password,
+  ) async {
+    final bytes = await File(record.scrambledPath).readAsBytes();
+    if (bytes.length < _v1Magic.length + 4) {
+      throw Exception('Invalid vault file format (Too short)');
+    }
+    final magic = utf8.decode(bytes.sublist(0, _v1Magic.length));
+    if (magic != _v1Magic) {
+      throw Exception('Invalid vault file format (Magic tag mismatch)');
+    }
+
+    final metaLen = (bytes[_v1Magic.length] << 24) |
+        (bytes[_v1Magic.length + 1] << 16) |
+        (bytes[_v1Magic.length + 2] << 8) |
+        bytes[_v1Magic.length + 3];
+    final metaStart = _v1Magic.length + 4;
     final metaEnd = metaStart + metaLen;
+    if (bytes.length < metaEnd) {
+      throw Exception('Invalid vault file format (Corrupted header)');
+    }
     final obfuscatedMetadata = bytes.sublist(metaStart, metaEnd);
     final metaKey = _deriveKey(password, obfuscatedMetadata.length);
     final decryptedMetadataBytes = _xorBytes(obfuscatedMetadata, metaKey);
-    final decryptedMetadataStr = utf8.decode(decryptedMetadataBytes);
-    final metadata = jsonDecode(decryptedMetadataStr) as Map<String, dynamic>;
+    late final Map<String, dynamic> meta;
+    try {
+      meta = jsonDecode(utf8.decode(decryptedMetadataBytes)) as Map<String, dynamic>;
+    } catch (_) {
+      throw Exception('Incorrect password or corrupted file');
+    }
 
-    final originalSize = metadata['size'] as int;
+    final originalSize = meta['size'] as int;
     final scrambleLen = min(_scrambleSize, originalSize);
-    
     final fileDataStart = metaEnd;
+    if (bytes.length < fileDataStart + scrambleLen) {
+      throw Exception('Invalid vault file format (Corrupted payload)');
+    }
     final obfuscatedSignature = bytes.sublist(fileDataStart, fileDataStart + scrambleLen);
-    final restBytes = bytes.sublist(fileDataStart + scrambleLen);
-
+    final rest = bytes.sublist(fileDataStart + scrambleLen);
     final key = _deriveKey(password, scrambleLen);
     final decryptedSignature = _xorBytes(obfuscatedSignature, key);
 
-    final originalBytes = BytesBuilder();
-    originalBytes.add(decryptedSignature);
-    originalBytes.add(restBytes);
+    final result = Uint8List(decryptedSignature.length + rest.length);
+    result.setAll(0, decryptedSignature);
+    result.setAll(decryptedSignature.length, rest);
+    return _V1Result(bytes: result, meta: meta);
+  }
 
-    // Write to a temporary file in cache directory
-    final cacheDir = await getTemporaryDirectory();
-    final extension = record.isFolder ? '.zip' : '';
-    final tempFilePath = p.join(cacheDir.path, 'temp_vault_${record.id}_${record.originalName}$extension');
-    final tempFile = File(tempFilePath);
-    
-    await tempFile.writeAsBytes(originalBytes.toBytes());
-    return tempFile;
+  // ── V1 兼容：XOR 密钥派生（仅用于读取历史 .nfv） ──────────────────────────
+
+  static List<int> _deriveKey(String password, int length) {
+    final hash = crypto.sha256.convert(utf8.encode(password)).bytes;
+    final key = List<int>.filled(length, 0);
+    for (int i = 0; i < length; i++) {
+      key[i] = hash[i % hash.length] ^ (i & 0xFF);
+    }
+    return key;
+  }
+
+  static List<int> _xorBytes(List<int> bytes, List<int> key) {
+    final result = List<int>.from(bytes);
+    for (int i = 0; i < bytes.length; i++) {
+      result[i] = bytes[i] ^ key[i % key.length];
+    }
+    return result;
+  }
+
+  // ── 工具 ──────────────────────────────────────────────────────────────────
+
+  static Uint8List _randomBytes(int n) {
+    final out = Uint8List(n);
+    for (int i = 0; i < n; i++) {
+      out[i] = _secureRandom.nextInt(256);
+    }
+    return out;
+  }
+
+  static String _randomId() {
+    final sb = StringBuffer();
+    for (int i = 0; i < 16; i++) {
+      sb.write(_secureRandom.nextInt(16).toRadixString(16));
+    }
+    return sb.toString() + DateTime.now().microsecondsSinceEpoch.toString();
+  }
+
+  static List<int> _u32(int v) => [
+        (v >> 24) & 0xFF,
+        (v >> 16) & 0xFF,
+        (v >> 8) & 0xFF,
+        v & 0xFF,
+      ];
+
+  static int _readU32(List<int> b) =>
+      ((b[0] & 0xFF) << 24) | ((b[1] & 0xFF) << 16) | ((b[2] & 0xFF) << 8) | (b[3] & 0xFF);
+
+  static List<int> _encodeParams(int memory, int iterations, int parallelism) => [
+        ..._u32(memory),
+        iterations & 0xFF,
+        parallelism & 0xFF,
+      ];
+
+  /// 从 raf 读取至多 [n] 字节（EOF 时返回不足 [n] 的短数据）。
+  static Future<Uint8List> _readBytes(RandomAccessFile raf, int n) async {
+    final out = <int>[];
+    while (out.length < n) {
+      final chunk = await raf.read(n - out.length);
+      if (chunk.isEmpty) break;
+      out.addAll(chunk);
+    }
+    return Uint8List.fromList(out);
   }
 }

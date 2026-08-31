@@ -12,6 +12,8 @@ import 'package:zenfile/services/preferences_service.dart';
 import 'package:zenfile/services/remote_streaming_service.dart';
 import 'package:zenfile/services/network_connections_service.dart';
 import 'package:zenfile/services/subtitle_parser.dart';
+import 'package:zenfile/services/audio_background_handler.dart';
+import 'package:zenfile/services/audio_equalizer_service.dart';
 import 'package:zenfile/providers/file_manager_provider.dart';
 import 'package:provider/provider.dart';
 import '../internal_file_picker_screen.dart';
@@ -63,6 +65,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   Orientation _currentOrientation = Orientation.portrait;
   bool _isLocked = false;
   double _playbackSpeed = 1.0;
+  // 音频均衡器（复用音频播放器的 mpv lavfi equalizer 服务）
+  final AudioEqualizerService _eqService = AudioEqualizerService();
+  EqPreset _eqPreset = EqPreset.flat;
   bool _isBuffering = false;
   bool _isWaitingForCache = false;
   Timer? _cacheCheckTimer;
@@ -220,6 +225,15 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         if (!_useHardwareDecode) {
           await _applySoftwareDecodeOptimizations(platform);
         }
+        // 音频均衡器：绑定到当前 mpv 原生播放器，恢复上次使用的预设
+        try {
+          await _eqService.attach(platform);
+          final savedEq = PreferencesService.getAudioEqPreset();
+          _eqPreset = EqPresetExtension.fromKey(savedEq);
+          await _eqService.applyPreset(_eqPreset);
+        } catch (eqErr) {
+          debugPrint('视频均衡器初始化失败: $eqErr');
+        }
       }
       } catch (e) {
         debugPrint('设置 network-timeout 失败: $e');
@@ -277,6 +291,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   }
 
   void _startPlayback() async {
+    // 视频开始播放时，立即暂停后台音频，避免两路声音混在一起
+    try {
+      getAudioHandler().pauseForVideo();
+    } catch (_) {}
     if (!widget.videoPath.startsWith('http://') &&
         !widget.videoPath.startsWith('https://') &&
         !widget.videoPath.startsWith('remote://')) {
@@ -900,6 +918,95 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
             );
           },
         );
+      },
+    );
+  }
+
+  /// 视频播放器音频均衡器对话框（复用音频播放器的 mpv lavfi equalizer）。
+  /// 仅含均衡器预设，不包含播放速度/音调（视频通过顶部菜单单独调速度）。
+  void _showEqualizerDialog() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setModalState) {
+          return DefaultTextStyle(
+            style: const TextStyle(color: Colors.white),
+            child: AlertDialog(
+              backgroundColor: const Color(0xFF1E1E2E),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              title: Row(
+                children: [
+                  const Icon(Icons.equalizer_rounded, color: Colors.deepPurpleAccent),
+                  const SizedBox(width: 10),
+                  Text(L10n.of(context).msgb7c87215, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                ],
+              ),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(L10n.of(dialogContext).eq_presets, style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
+                        children: [
+                          for (final preset in EqPreset.values)
+                            _eqPresetChip(preset, setModalState),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          icon: const Icon(Icons.restart_alt_rounded, color: Colors.white70, size: 18),
+                          label: Text(L10n.of(dialogContext).ui_restore_default, style: const TextStyle(color: Colors.white70)),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
+                          onPressed: () {
+                            setModalState(() => _eqPreset = EqPreset.flat);
+                            setState(() {});
+                            _eqService.reset();
+                            PreferencesService.saveAudioEqPreset('flat');
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: Text(L10n.of(dialogContext).ui_done, style: const TextStyle(color: Colors.deepPurpleAccent, fontWeight: FontWeight.bold, fontSize: 16)),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// 均衡器预设芯片组件。
+  Widget _eqPresetChip(EqPreset preset, StateSetter setModalState) {
+    final isSelected = _eqPreset == preset;
+    return ChoiceChip(
+      label: Text(preset.labelL10n(L10n.of(context)), style: TextStyle(fontSize: 12, color: isSelected ? Colors.white : Colors.white70)),
+      selected: isSelected,
+      selectedColor: Colors.deepPurpleAccent,
+      backgroundColor: const Color(0xFF2A2A3E),
+      onSelected: (selected) {
+        if (!selected) return;
+        setModalState(() => _eqPreset = preset);
+        setState(() {});
+        _eqService.applyPreset(preset);
+        PreferencesService.saveAudioEqPreset(preset.key);
       },
     );
   }
@@ -1945,6 +2052,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     // dispose() 不能是 async（Framework 要求 void），
     // 但 stopStreaming 内部会调用 client.disconnect() 取消下载。
     _stopCurrentStream();
+    _eqService.detach();
     player.dispose();
     // 离开播放页复位 edge-to-edge，避免影响其它页面布局。
     _setEdgeToEdge(false);
@@ -2578,6 +2686,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                     onCustomAspectRatio: _showCustomAspectRatioDialog,
                     onAddSubtitle: _addSubtitle,
                     onSubtitleSettings: _showSubtitleSettings,
+                    onEqualizer: _showEqualizerDialog,
                     onToggleSubtitle: _toggleSubtitle,
                     onSelectAudioTrack: _showAudioTrackSelector,
                     onSelectSubtitleTrack: _showSubtitleTrackSelector,

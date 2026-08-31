@@ -37,6 +37,7 @@ class VideoControlsOverlay extends StatelessWidget {
   final VoidCallback onCustomAspectRatio;
   final VoidCallback onAddSubtitle;
   final VoidCallback onSubtitleSettings;
+  final VoidCallback onEqualizer;
   final VoidCallback onToggleSubtitle;
   final VoidCallback onSelectAudioTrack;
   final VoidCallback onSelectSubtitleTrack;
@@ -81,6 +82,7 @@ class VideoControlsOverlay extends StatelessWidget {
     required this.onCustomAspectRatio,
     required this.onAddSubtitle,
     required this.onSubtitleSettings,
+    required this.onEqualizer,
     required this.onToggleSubtitle,
     required this.onSelectAudioTrack,
     required this.onSelectSubtitleTrack,
@@ -289,6 +291,8 @@ class VideoControlsOverlay extends StatelessWidget {
                         onSubtitleSettings();
                       } else if (value == 'custom_aspect') {
                         onCustomAspectRatio();
+                      } else if (value == 'equalizer') {
+                        onEqualizer();
                       }
                     },
                     itemBuilder: (_) => [
@@ -300,6 +304,22 @@ class VideoControlsOverlay extends StatelessWidget {
                             const SizedBox(width: 12),
                             Text(
                               L10n.of(context).msg_custom_aspect_ratio,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'equalizer',
+                        child: Row(
+                          children: [
+                            Icon(Icons.equalizer_rounded, size: 20, color: Colors.white),
+                            const SizedBox(width: 12),
+                            Text(
+                              L10n.of(context).msgb7c87215,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w500,

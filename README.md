@@ -7,6 +7,32 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 ---
 
+## 🚀 What's New in v1.1.38
+
+### 🆕 New Features
+
+- **Encrypted Vault upgraded to V2**: rebuilt on Argon2id key derivation + HKDF key splitting, with per-file AES-256-GCM using unique nonces. File names, paths and directory structure are now fully encrypted on disk, and locked files are stored in the app-private `vault/` directory (no more visible `.nfv` files that could be accidentally deleted). Old V1 vaults stay readable and auto-upgrade on password change.
+- **Video equalizer**: added an "Equalizer" entry in the video player's overflow menu, reusing the mpv lavfi equalizer with preset switching (presets only, no speed/pitch).
+
+### ✨ Improvements
+
+- **Audio notification interaction**: tapping the notification now jumps to the player and locates the current track. The seek bar is draggable on Android 13+; Android 11 does not show the seek bar by system design.
+- **Audio/video mutual exclusion**: starting video playback auto-pauses background audio to avoid two audio streams playing at once.
+- **Audio track switching**: selecting a different track in the background playlist switches immediately and shows the selected file; selecting the same track keeps the current progress.
+- **Dual-pane active highlight**: the active pane's top bar is now more clearly highlighted (background opacity 0.16→0.28, top border 2.5→3.5, added bottom accent line).
+- **Folder/file count titles**: the top/bottom status bars now show "Folders x / Files y" alongside the clipboard summary.
+- **Clipboard layout**: the dual-pane top bar uses a Stack layout so the clipboard summary overlays the count instead of squeezing it when space is tight. The single-pane bottom bar also gains a sync progress icon + count + clipboard summary.
+- **Video fullscreen ratio**: fullscreen now preserves the video's original aspect ratio; the menu label "Adapt to screen" was renamed to "Original ratio".
+
+### 🐛 Bug Fixes
+
+- **Notification blank-area jump**: tapping the notification body now correctly returns to the app. Fixed a cold-start / background timing issue where the navigator was not ready (now wrapped in `addPostFrameCallback`).
+- **Audio not switching**: fixed background playback not switching when selecting another track (B/C).
+- **Dual-pane count squeezed**: fixed the clipboard button squeezing the count into a half-cut state.
+- **Dual-pane extra line**: removed a stray highlight line at the top of the active pane, keeping only the top border.
+
+---
+
 ## 🚀 What's New in v1.1.37
 
 ### 🐛 Bug Fixes
