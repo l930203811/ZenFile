@@ -172,7 +172,7 @@ class QuickCategoriesGrid extends StatefulWidget {
       },
       '压缩包': {
         'label': l10n.msgc806d0fa,
-        'icon': Broken.archive,
+        'icon': Broken.box,
         'color': categoryColor,
         'iconColor': iconColor(170), // 青绿
         'count': formatSizeCount('压缩包'),
@@ -196,9 +196,9 @@ class QuickCategoriesGrid extends StatefulWidget {
       },
       '安装包': {
         'label': l10n.msg03070d08,
-        'icon': Broken.box,
+        'icon': Icons.android_rounded,
         'color': categoryColor,
-        'iconColor': iconColor(45), // 琥珀
+        'iconColor': iconColor(140), // 安卓绿
         'count': formatSizeCount('安装包'),
         'isCustom': false,
         'pageBuilder': () => MediaCategoryScreen(

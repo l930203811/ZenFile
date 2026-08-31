@@ -270,6 +270,69 @@ class FileUtils {
     return ext.length <= 4 ? ext.toUpperCase() : ext.substring(0, 4).toUpperCase();
   }
 
+  /// 判断是否为安装包（Android 应用包）。
+  static bool isInstallPackage(String path) {
+    final lower = path.toLowerCase();
+    return lower.endsWith('.apk') ||
+        lower.endsWith('.xapk') ||
+        lower.endsWith('.apks') ||
+        lower.endsWith('.apkm') ||
+        lower.endsWith('.aab');
+  }
+
+  /// 返回安装包格式的简短标签（大写），用于图标显示。
+  /// 例如 .apk → "APK"，.apks → "APKS"，.xapk → "XAPK"
+  static String getInstallPackageTypeLabel(String path) {
+    final ext = path.toLowerCase().split('.').last;
+    const labels = {
+      'apk': 'APK',
+      'xapk': 'XAPK',
+      'apks': 'APKS',
+      'apkm': 'APKM',
+      'aab': 'AAB',
+    };
+    return labels[ext] ?? (ext.length <= 4 ? ext.toUpperCase() : ext.substring(0, 4).toUpperCase());
+  }
+
+  /// 返回视频格式的简短标签（大写），用于图标显示。
+  /// 例如 .mp4 → "MP4"，.mkv → "MKV"
+  static String getVideoTypeLabel(String path) {
+    final ext = path.toLowerCase().split('.').last;
+    const labels = {
+      'mp4': 'MP4',
+      'mkv': 'MKV',
+      'webm': 'WEBM',
+      'avi': 'AVI',
+      'mov': 'MOV',
+      'flv': 'FLV',
+      'ts': 'TS',
+      'mts': 'MTS',
+      'm4v': 'M4V',
+      '3gp': '3GP',
+      'wmv': 'WMV',
+    };
+    return labels[ext] ?? (ext.length <= 4 ? ext.toUpperCase() : ext.substring(0, 4).toUpperCase());
+  }
+
+  /// 返回音频格式的简短标签（大写），用于图标显示。
+  /// 例如 .mp3 → "MP3"，.flac → "FLAC"
+  static String getAudioTypeLabel(String path) {
+    final ext = path.toLowerCase().split('.').last;
+    const labels = {
+      'mp3': 'MP3',
+      'wav': 'WAV',
+      'm4a': 'M4A',
+      'ogg': 'OGG',
+      'oga': 'OGA',
+      'flac': 'FLAC',
+      'aac': 'AAC',
+      'wma': 'WMA',
+      'opus': 'OPUS',
+      'amr': 'AMR',
+    };
+    return labels[ext] ?? (ext.length <= 4 ? ext.toUpperCase() : ext.substring(0, 4).toUpperCase());
+  }
+
   static IconData getIconForFile(String path) {
     final ext = path.split('.').last.toLowerCase();
     if (isArchive(path)) return Broken.box;
@@ -291,7 +354,7 @@ class FileUtils {
       case 'csv': return Icons.table_chart;
       case 'log': return Icons.receipt_long;
       case 'db': case 'sqlite': case 'sqlite3': return Icons.storage;
-      case 'apk': case 'aab': return Broken.mobile;
+      case 'apk': case 'aab': return Icons.android_rounded;
       case 'sh': case 'bat': case 'cmd': return Icons.terminal;
       case 'py': case 'js': case 'ts': case 'dart': case 'java': case 'kt': case 'cpp': case 'c': case 'h': case 'hpp': case 'cs': case 'php': case 'rb': case 'go': case 'rs': case 'swift': return Icons.code;
       case 'sql': return Icons.storage_outlined;

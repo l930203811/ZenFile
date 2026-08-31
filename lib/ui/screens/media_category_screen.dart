@@ -659,7 +659,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
       case MediaType.downloads:
         return Broken.document_download;
       case MediaType.apks:
-        return Broken.box;
+        return Icons.android_rounded;
       case MediaType.screenshots:
         return Broken.mobile;
     }
@@ -2522,7 +2522,14 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
             onLongPress: () => isAsset ? _toggleSelection(null, item.id) : _toggleSelection(path, null),
             child: Container(
               color: theme.colorScheme.primaryContainer.withOpacity(0.3),
-              child: Center(child: Icon(Broken.image, size: 32, color: theme.colorScheme.onPrimaryContainer.withOpacity(0.6))),
+              child: Center(
+                child: FileTypeIcon(
+                  icon: Broken.image,
+                  label: _videoImageLabel(title, video: false),
+                  color: theme.colorScheme.onPrimaryContainer,
+                  iconScale: 32 / 28,
+                ),
+              ),
             ),
           ),
         if (showDate)
@@ -2724,13 +2731,13 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                       ? SvgPicture.file(File(path), fit: BoxFit.cover,
                           placeholderBuilder: (context) => Container(
                             color: Colors.grey.withOpacity(0.1),
-                            child: const Center(child: Icon(Broken.image, size: 20, color: Colors.grey)),
+                            child: Center(child: FileTypeIcon(icon: Broken.image, label: FileUtils.getImageTypeLabel(path), color: Colors.grey, iconScale: 20 / 28)),
                           ),
                         )
                       : Image.file(File(path), fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) => Container(
                             color: Colors.grey.withOpacity(0.1),
-                            child: const Center(child: Icon(Broken.image, size: 20, color: Colors.grey)),
+                            child: Center(child: FileTypeIcon(icon: Broken.image, label: FileUtils.getImageTypeLabel(path), color: Colors.grey, iconScale: 20 / 28)),
                           ),
                         ),
             ),
@@ -3100,7 +3107,12 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
           else if (!isRemote && showThumb)
             _VideoListThumbnail(filePath: path, size: 40)
           else
-            Icon(Broken.video, size: 40, color: theme.colorScheme.primary.withOpacity(0.6)),
+            FileTypeIcon(
+              icon: Broken.video,
+              label: _videoImageLabel(title, video: true),
+              color: theme.colorScheme.primary,
+              iconScale: 40 / 28,
+            ),
           if (_showCloudBadge(path))
             Positioned(
               top: 0,
@@ -3201,9 +3213,34 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                     artworkFit: BoxFit.cover,
                     artworkWidth: 40,
                     artworkHeight: 40,
-                    nullArtworkWidget: Icon(Icons.music_note, size: 22, color: theme.colorScheme.onPrimaryContainer),
+                    nullArtworkWidget: Icon(Broken.music, size: 22, color: theme.colorScheme.onPrimaryContainer),
                   )
-                : Icon(Icons.music_note, size: 22, color: theme.colorScheme.onPrimaryContainer),
+                : Icon(Broken.music, size: 22, color: theme.colorScheme.onPrimaryContainer),
+          ),
+          Positioned(
+            left: 2,
+            right: 2,
+            bottom: 0,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 1),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primaryContainer.withOpacity(0.9),
+                borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(10), bottomRight: Radius.circular(10)),
+              ),
+              child: Text(
+                FileUtils.getAudioTypeLabel(path),
+                style: TextStyle(
+                  fontSize: 7.5,
+                  fontWeight: FontWeight.w800,
+                  color: theme.colorScheme.onPrimaryContainer,
+                  letterSpacing: 0.2,
+                  height: 1.0,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.clip,
+              ),
+            ),
           ),
           if (_showCloudBadge(path))
             Positioned(
@@ -3376,7 +3413,20 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Broken.music, size: 32, color: theme.colorScheme.primary),
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
+                Text(
+                  FileUtils.getAudioTypeLabel(path),
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w800,
+                    color: theme.colorScheme.primary,
+                    letterSpacing: 0.3,
+                    height: 1.0,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.clip,
+                ),
+                const SizedBox(height: 4),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 6),
                   child: Text(title, maxLines: 2, overflow: TextOverflow.ellipsis,
@@ -5354,7 +5404,12 @@ class _LocalVideoTileState extends State<_LocalVideoTile> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Broken.video, size: 28, color: widget.theme.colorScheme.primary),
+          FileTypeIcon(
+            icon: Broken.video,
+            label: _videoImageLabel(widget.title, video: true),
+            color: widget.theme.colorScheme.primary,
+            iconScale: 1.0,
+          ),
           const SizedBox(height: 6),
           Text(
             widget.title,
@@ -5773,10 +5828,29 @@ class _ApkThumbnailState extends State<_ApkThumbnail> {
           fit: BoxFit.cover,
           width: 44,
           height: 44,
-          errorBuilder: (context, error, stackTrace) => Icon(Broken.mobile, color: widget.iconColor, size: 22),
+          errorBuilder: (context, error, stackTrace) => FileTypeIcon(
+          icon: Icons.android_rounded,
+          label: FileUtils.getInstallPackageTypeLabel(widget.path),
+          color: widget.iconColor,
+          iconScale: 22 / 28,
+        ),
         ),
       );
     }
-    return Icon(Broken.mobile, color: widget.iconColor, size: 22);
+    return FileTypeIcon(
+      icon: Icons.android_rounded,
+      label: FileUtils.getInstallPackageTypeLabel(widget.path),
+      color: widget.iconColor,
+      iconScale: 22 / 28,
+    );
   }
+}
+
+/// 从文件名/标题推导图片或视频的格式标签（无扩展名时回退为 IMG/VID）。
+String _videoImageLabel(String src, {required bool video}) {
+  final ext = path_helper.extension(src).toLowerCase().replaceAll('.', '');
+  if (ext.isEmpty) return video ? 'VID' : 'IMG';
+  return video
+      ? FileUtils.getVideoTypeLabel('x.$ext')
+      : FileUtils.getImageTypeLabel('x.$ext');
 }

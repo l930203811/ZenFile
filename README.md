@@ -7,41 +7,26 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 ---
 
-## 🚀 What's New in v1.1.36 (Bug Fixes)
+## 🚀 What's New in v1.1.37
 
 ### 🐛 Bug Fixes
 
-- **Single-pane active tab background highlight**: the active (current) tab button now shows a highlighted background instead of only the title text.
-- **Split-pane multi-tab display/switch reworked**: tab A stays in the left pane, B in the right; when creating or switching to another tab, the active tab keeps its pane position while only the inactive pane gets replaced.
-- **Split-pane can close the last two tabs**: either of the last two tabs can now be closed; closing auto-creates a replacement tab in the closed position so both panes always show content.
-- **Split-pane remote tab title**: now always shows the saved remote client name (no longer changes with the opened directory).
-- **Remote tab cloud badge**: the icon on the left of a remote tab title is now a cloud badge to distinguish remote vs. local tabs.
+- **Remote media playback stutter / seek jumps to start**: rebuilt the local HTTP streaming proxy's seek cache and chunked prefetch; fixed a non-zero-region read offset bug so first-byte latency dropped from "whole 24 MB segment" to "first chunk". Dragging no longer jumps back to the start on SFTP/SMB/FTP.
+- **SFTP upload capped at ~2MB/s**: upgraded JSch 0.1.55 to 2.28.7 to support rsa-sha2/ED25519/OpenSSH-v1 keys, eliminating the silent fallback to the pure-Dart dartssh2 (the root cause of the cap); setBulkRequests(128) raises in-flight requests.
+- **SFTP symlink directory (e.g. /sdcard) recognition**: follow the symlink's real target type on listing so directories can be entered normally.
+- **Compile error (progress-minimize state machine)**: a field initializer referencing an instance method failed to compile; moved the assignment into the constructor body and relaxed final.
 
----
+### ✨ New Features / Improvements
 
-## 🚀 What's New in v1.1.35
+- **Split-pane active window top highlight**: the entire top status bar of the active pane is highlighted (primary background + 2.5px accent edge) for clearer identification.
+- **Progress minimized to floating widget**: after tapping "background" on copy/move or category backup progress, a clickable circular floating button (with a spinning progress ring) appears in the status/tool bar; tap to reopen the progress page; it auto-dismisses when transfer completes/cancels.
+- **Remote tab cloud icon**: the left icon of a remote tab is now a cloud icon replacing the folder icon; local tabs keep the folder icon.
+- **File-type icon polish**: when no media thumbnail is available, images/videos/audio/install-packages show a "type icon + format label" (MP4/MKV/MP3/FLAC/APK...); install packages use the Android-robot icon (green), archives use a bundle icon (Broken.box) with ZIP/7Z/RAR labels; the music category page also shows a format label under each music icon; browsing and category pages share consistent icons.
+- **Remote thumbnail privacy**: remote media thumbnails moved into a .nomedia directory with a marker file so they are not indexed by the system media library / other file managers; default remote-cache auto-clean interval changed to 0 (disabled).
 
-### ✨ New Features
+### 🎨 Performance
 
-- **Multi-tab pane scope selector**: enabling "Multi-tab" pops a 3-option dialog (Single window only / Split window only / All); split mode now has its own tabs; selection persists.
-- **SFTP SSH key auth**: switch between password and SSH key; pick a local private key (.pem / .key / .pub) with optional passphrase; compatible with OpenSSH / RSA / ED25519 / ECDSA.
-- **SAF system authorization for Android/data**: four-tier fallback; a "System authorized access" button appears on failure; the tree URI is persisted after grant.
-- **SMB wizard "Scan LAN devices"**: a titled top button auto-discovers LAN SMB devices without IP entry and auto-fills host and share name.
-- **Image viewer shooting location**: the top bar shows capture GPS coordinates and auto-hides when none; tap to open the system map.
-- **Image editor "Clear metadata"**: byte-level lossless strip of EXIF / GPS / ICC without re-encoding or quality loss.
-
-### 🐛 Bug Fixes
-
-- **Quick Transfer large-file crash**: the receiver now uses a chunked Uint8List queue + TCP backpressure (8MB / 1MB watermark); files ≥1GB are received stably.
-- **Image viewer wrong EXIF title**: the title now shows only when real capture-parameter fields exist.
-- **Multi-tab settings fixes**: wired the scope picker, pops only when enabling, and localized 3 hardcoded Chinese strings.
-- **Build failed (Java heap space)**: raised gradle -Xmx from 1536M to 6144M.
-
-### 🎨 Improvements
-
-- **Quick Transfer chunked buffer + TCP backpressure**: stable memory, no freeze on ≥1GB files.
-- **Clear metadata byte-level strip**: deterministic and lossless.
-- **SMB scan reuses the same filter logic as the wizard**: consistent behavior.
+- **Remote media streaming proxy tuning**: multi-region seek cache (max 4 regions) avoids re-buffering on back-and-forth seeks; enlarged mpv buffering (cache-secs 60 / demuxer-max-bytes 300M) reduces periodic stutter; 16 MB prefetch and 24 MB on-demand fetch improve start-up and seek responsiveness.
 
 ---
 

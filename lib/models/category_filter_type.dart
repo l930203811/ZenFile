@@ -55,9 +55,9 @@ extension CategoryFilterTypeExtension on CategoryFilterType {
       case CategoryFilterType.documents:
         return Broken.document;
       case CategoryFilterType.archives:
-        return Broken.archive;
+        return Broken.box;
       case CategoryFilterType.apks:
-        return Broken.mobile;
+        return Icons.android_rounded;
       case CategoryFilterType.others:
         return Broken.more_circle;
     }

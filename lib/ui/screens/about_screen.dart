@@ -160,7 +160,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   const SizedBox(height: 6),
                   // 版本号文本（硬编码，无需 l10n；以后升级版本只改这里）
                   Text(
-                    'v1.1.36',
+                    'v1.1.37',
                     style: TextStyle(
                       color: theme.colorScheme.onSurface.withOpacity(0.7),
                       fontSize: 13,
@@ -716,7 +716,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   Text(L10n.of(context).msg305734ce, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
 
-                  _buildV1136Changelog(ctx, theme),
+                  _buildV1137Changelog(ctx, theme),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -812,6 +812,115 @@ class AboutZenFileScreen extends StatelessWidget {
           bulletText(l10n.changelog_v1133_fix_5),
         ],
       ),
+    );
+  }
+
+  Widget _buildV1137Changelog(BuildContext ctx, ThemeData theme) {
+    final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
+    final enStyle = TextStyle(fontSize: 12, height: 1.5, color: theme.colorScheme.onSurface.withOpacity(0.5));
+    final sectionStyle = TextStyle(fontSize: 14, height: 1.6, color: theme.colorScheme.primary, fontWeight: FontWeight.w700);
+
+    Widget gap([double h = 6]) => SizedBox(height: h);
+    // 双语条目：中文在上，英文在下
+    Widget zhEn(String zh, String en) => Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('· $zh', style: textStyle),
+          const SizedBox(height: 2),
+          Text('  $en', style: enStyle),
+        ],
+      ),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ── 1.1.37 当前版本 ──
+        Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.06)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text('v1.1.37', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+                  ),
+                  const SizedBox(width: 10),
+                  Text('2026-08-31', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+                ],
+              ),
+              gap(14),
+
+              Text('🐛 问题修复 · Bug Fixes', style: sectionStyle),
+              gap(6),
+              zhEn(
+                '远程媒体播放卡顿 / 拖动进度条跳回原点：重构本地 HTTP 流式代理的 seek 缓存与分块填充，修复非零偏移区域读取 bug；拖动后首字节延迟由整段 24MB 降为首个分块，SFTP/SMB/FTP 拖动不再跳回原点。',
+                'Remote media playback stutter / seek jumps to start: rebuilt the local HTTP streaming proxy seek cache and chunked prefetch; fixed a non-zero-region read offset bug; first-byte latency dropped from the whole 24 MB segment to the first chunk, so dragging no longer jumps back on SFTP/SMB/FTP.',
+              ),
+              zhEn(
+                'SFTP 上传限速约 2MB/s：升级 JSch 0.1.55 → 2.28.7 以支持 rsa-sha2/ED25519/OpenSSH-v1 密钥，避免静默回退到纯 Dart 的 dartssh2（限速根因）；setBulkRequests(128) 提升在途请求数。',
+                'SFTP upload capped at ~2MB/s: upgraded JSch 0.1.55 to 2.28.7 to support rsa-sha2/ED25519/OpenSSH-v1 keys, eliminating the silent fallback to the pure-Dart dartssh2 (root cause of the cap); setBulkRequests(128) raises in-flight requests.',
+              ),
+              zhEn(
+                'SFTP 符号链接目录（如 /sdcard）识别：列表时跟随符号链接真实目标类型，目录可正常进入。',
+                "SFTP symlink directory (e.g. /sdcard) recognition: follow the symlink's real target type on listing so directories can be entered normally.",
+              ),
+              zhEn(
+                '编译错误（进度最小化状态机）：字段初始化器引用实例方法导致编译失败，改为构造函数体内赋值并放宽 final。',
+                'Compile error (progress-minimize state machine): a field initializer referencing an instance method failed to compile; moved the assignment into the constructor body and relaxed final.',
+              ),
+              gap(14),
+
+              Text('✨ 新功能 / 功能优化 · New Features / Improvements', style: sectionStyle),
+              gap(6),
+              zhEn(
+                '双窗口激活窗口顶部高亮：激活窗口的整个顶部状态栏高亮（primary 背景 + 2.5px 高亮边），更易识别。',
+                'Split-pane active window top highlight: the entire top status bar of the active pane is highlighted (primary background + 2.5px accent edge) for clearer identification.',
+              ),
+              zhEn(
+                '进度后台最小化为浮窗：复制/剪切与分类页备份进度点「后台」后，在状态栏/工具栏显示可点击的圆形浮窗按钮（带旋转进度环），点击重开进度页；传输完成/取消后自动消失。',
+                'Progress minimized to floating widget: after tapping "background" on copy/move or category backup progress, a clickable circular floating button (spinning progress ring) appears in the status/tool bar; tap to reopen the progress page; it auto-dismisses when transfer completes/cancels.',
+              ),
+              zhEn(
+                '远程 Tab 云图标：远程浏览页 Tab 左侧图标直接用云图标替换原文件夹图标，本地 Tab 仍为文件夹图标。',
+                'Remote tab cloud icon: the left icon of a remote tab is now a cloud icon replacing the folder icon; local tabs keep the folder icon.',
+              ),
+              zhEn(
+                '文件类型图标优化：未获取媒体缩略图时，图片/视频/音频/安装包显示「类型图标 + 格式标签」（MP4/MKV/MP3/FLAC/APK 等）；安装包用安卓机器人图标（绿色），压缩包用捆绑包图标（Broken.box）并显示 ZIP/7Z/RAR 格式；分类页音乐页音乐图标下方也显示格式标签；浏览页与分类页图标显示一致。',
+                'File-type icon polish: when no media thumbnail is available, images/videos/audio/install-packages show a "type icon + format label" (MP4/MKV/MP3/FLAC/APK...); install packages use the Android-robot icon (green), archives use a bundle icon (Broken.box) with ZIP/7Z/RAR labels; the music category page also shows a format label under each music icon; browsing and category pages share consistent icons.',
+              ),
+              zhEn(
+                '远程缩略图缓存隐私保护：远程媒体缩略图缓存迁入 .nomedia 目录并写入标记文件，避免被系统媒体库/其他文件管理器索引；默认远程缓存自动清理间隔改为 0（不自动清理）。',
+                'Remote thumbnail privacy: remote media thumbnails moved into a .nomedia directory with a marker file so they are not indexed by the system media library / other file managers; default remote-cache auto-clean interval changed to 0 (disabled).',
+              ),
+              gap(14),
+
+              Text('🎨 性能优化 · Performance', style: sectionStyle),
+              gap(6),
+              zhEn(
+                '远程媒体流式代理调优：多段独立 seek 缓存（上限 4 段）避免来回拖动反复缓冲；mpv 缓冲参数放大（cache-secs 60 / demuxer-max-bytes 300M）减少周期卡顿；引导预取 16MB、按需抓取 24MB 提升起播与拖动跟手度。',
+                'Remote media streaming proxy tuning: multi-region seek cache (max 4 regions) avoids re-buffering on back-and-forth seeks; enlarged mpv buffering (cache-secs 60 / demuxer-max-bytes 300M) reduces periodic stutter; 16 MB prefetch and 24 MB on-demand fetch improve start-up and seek responsiveness.',
+              ),
+            ],
+          ),
+        ),
+        // ── 历史版本 ──
+        _buildV1136Changelog(ctx, theme),
+      ],
     );
   }
 

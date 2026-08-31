@@ -177,7 +177,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _controlsAnimController.value = 1.0;
 
     // 软解模式使用更大的缓冲区，减少高码率视频卡顿
-    const bufferSize = 32 * 1024 * 1024;
+    const bufferSize = 64 * 1024 * 1024;
     player = Player(
       configuration: const PlayerConfiguration(
         ready: null,
@@ -208,9 +208,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         // 脉冲式抖动，使 SFTP/FTP/SMB 与 WebDAV 直连一样流畅。此前这些仅在软解模式
         // 才设置，硬解（默认）下 demuxer 缓冲极小，代理轻微抖动即导致 libmpv 缓冲
         // 耗尽而周期性卡顿。WebDAV 直连不经过 Dart 代理故不受影响。
-        await platform.setProperty('cache-secs', '30');
-        await platform.setProperty('demuxer-max-bytes', '150M');
-        await platform.setProperty('demuxer-readahead-secs', '20');
+        await platform.setProperty('cache-secs', '60');
+        await platform.setProperty('demuxer-max-bytes', '300M');
+        await platform.setProperty('demuxer-readahead-secs', '60');
         // 注意：不在初始化时设置 sub-ass-override，否则会破坏 VOBSub 位图字幕渲染
         // sub-ass-override 仅在加载 ASS/SSA 字幕时应用（见 _applySubtitle）
         await platform.setProperty('sub-font-size', _subtitleFontSize.round().toString());
@@ -1287,7 +1287,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       configuration: const PlayerConfiguration(
         ready: null,
         logLevel: MPVLogLevel.warn,
-        bufferSize: 32 * 1024 * 1024,
+        bufferSize: 64 * 1024 * 1024,
       ),
     );
     controller = VideoController(
@@ -1313,9 +1313,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         await platform.setProperty('network-timeout', '60');
         // 与初始播放一致：所有解码模式都放大缓存/解复用缓冲，掩盖代理喂流抖动
         // （硬解默认路径此前只有 cache-secs=10，demuxer 缓冲极小 → 远程视频卡顿）。
-        await platform.setProperty('cache-secs', '30');
-        await platform.setProperty('demuxer-max-bytes', '150M');
-        await platform.setProperty('demuxer-readahead-secs', '20');
+        await platform.setProperty('cache-secs', '60');
+        await platform.setProperty('demuxer-max-bytes', '300M');
+        await platform.setProperty('demuxer-readahead-secs', '60');
         await platform.setProperty('sub-font-size', _subtitleFontSize.round().toString());
         await platform.setProperty('sub-pos', _subtitlePosition.round().toString());
         await _applySubtitleBackgroundProps(platform);
@@ -1388,10 +1388,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       // 允许丢帧保持音画同步：解码跟不上时优先保音频连续
       await platform.setProperty('frame-drop', 'decoder');
       // 增大解复用缓冲区，减少高码率视频卡顿
-      await platform.setProperty('demuxer-max-bytes', '150M');
-      await platform.setProperty('demuxer-readahead-secs', '20');
+      await platform.setProperty('demuxer-max-bytes', '300M');
+      await platform.setProperty('demuxer-readahead-secs', '60');
       // 增大播放缓存时长，减少网络视频卡顿
-      await platform.setProperty('cache-secs', '30');
+      await platform.setProperty('cache-secs', '60');
       // 快速解码模式：启用 libavcodec 内部优化
       await platform.setProperty('vd-lavc-fast', '1');
     } catch (e) {

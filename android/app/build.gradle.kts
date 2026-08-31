@@ -66,7 +66,13 @@ android {
 
     packaging {
         jniLibs.useLegacyPackaging = false
+        // OSGi 元数据与 Android 运行时无关，多个依赖重复携带时直接排除即可。
+        // mwiede/jsch(2.28.7) 与项目已有的 bcprov-jdk18on 都带有这些文件，
+        // 不排除会让 mergeReleaseJavaResource 因「同路径多来源」而失败。
         resources.excludes.add("META-INF/versions/9/OSGI-INF/MANIFEST.MF")
+        resources.excludes.add("META-INF/versions/11/OSGI-INF/MANIFEST.MF")
+        resources.excludes.add("META-INF/versions/15/OSGI-INF/MANIFEST.MF")
+        resources.excludes.add("META-INF/versions/17/OSGI-INF/MANIFEST.MF")
     }
 
 
@@ -89,5 +95,16 @@ dependencies {
     implementation("com.google.guava:guava:33.5.0-android")
     implementation("com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava")
     // 原生 SSH/SFTP（JSch）：加解密走 Android JCE/OpenSSL 硬件加速，突破纯 Dart 加密速率上限
-    implementation("com.jcraft:jsch:0.1.55")
+    //
+    // 重要：官方 com.jcraft:jsch 停在 0.1.55（2018-11），既不支持 rsa-sha2-256/512，
+    // 也不支持 ED25519 与 OpenSSH-v1 私钥格式；而 OpenSSH 8.8+ 已默认禁用
+    // ssh-rsa(SHA-1)。结果是对较新服务器握手失败（Algorithm negotiation fail /
+    // Auth fail / invalid privatekey），connect() 抛异常后静默回退 dartssh2
+    // （纯 Dart 加密，约 2MB/s 天花板）——这正是「部分用户 SFTP 上传只有 2MB/s」的根因。
+    //
+    // 改用社区维护分支 mwiede/jsch：它保留 com.jcraft.jsch 包名与全部 API，
+    // 是 drop-in 替换，并已适配新算法协议（rsa-sha2-*、ed25519、curve25519、
+    // OpenSSH-v1 私钥）。注意该分支默认禁用 ssh-rsa，故 SshSftpService.connect
+    // 里显式把新旧算法一并列入，以兼容老服务器（见 SshSftpService 注释）。
+    implementation("com.github.mwiede:jsch:2.28.7")
 }

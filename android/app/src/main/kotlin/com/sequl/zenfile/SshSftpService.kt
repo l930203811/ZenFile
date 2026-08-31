@@ -1,5 +1,6 @@
 package com.sequl.zenfile
 
+import android.util.Log
 import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.JSchException
@@ -31,6 +32,36 @@ class SshSftpService {
 
     companion object {
         val instance = SshSftpService()
+
+        private const val TAG = "SshSftpService"
+
+        /**
+         * 主机密钥算法：现代算法优先，**ssh-rsa 兜底**。
+         *
+         * 迁移到 mwiede/jsch 后必须显式列出：该分支为安全起见默认禁用
+         * ssh-rsa(SHA-1)，而大量老 NAS / 老服务器只提供 ssh-rsa，不显式放开
+         * 会导致升级后这些设备反而连不上（功能回归）。新服务器会协商到
+         * rsa-sha2-* 与 ed25519，老服务器仍可落到 ssh-rsa，两头都通。
+         */
+        private const val HOST_KEY_ALGOS =
+            "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521," +
+                "rsa-sha2-512,rsa-sha2-256,ssh-rsa,ssh-dss"
+
+        /** 公钥认证算法：与 [HOST_KEY_ALGOS] 同理，保留 ssh-rsa 兜底。 */
+        private const val PUB_KEY_ALGOS =
+            "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521," +
+                "rsa-sha2-512,rsa-sha2-256,ssh-rsa,ssh-dss"
+
+        /**
+         * SFTP 在途请求数（pipelining）。
+         *
+         * JSch 默认 16。SFTP 是「请求-应答」协议：在途请求越少，每批数据越要等
+         * 一个完整 RTT，高延迟链路上吞吐 ≈ 在途字节数 / RTT，被死死卡住（正是
+         * 「上传只有 2MB/s」的典型形态）。提高在途请求数可让多包同时在链路上，
+         * 吃满带宽时延积。取 128 为经验值，对局域网与大文件传输均有利；
+         * 服务端不接受时 setBulkRequests 会抛异常，已 try/catch 降级为默认值。
+         */
+        private const val BULK_REQUESTS = 128
     }
 
     private data class SessionHolder(
@@ -85,9 +116,27 @@ class SshSftpService {
             // 启用保活，避免长传输被中间设备掐断
             put("ServerAliveInterval", "30")
             put("ServerAliveCountMax", "3")
+            // 算法兼容：现代算法优先 + ssh-rsa 兜底，保证新老服务器都能协商成功。
+            // 详细说明见 HOST_KEY_ALGOS / PUB_KEY_ALGOS 注释。
+            put("server_host_key", HOST_KEY_ALGOS)
+            put("client_pubkey", PUB_KEY_ALGOS)
+            // 部分版本按 OpenSSH 风格键名读取客户端公钥算法，一并设置（无副作用）
+            put("PubkeyAcceptedAlgorithms", PUB_KEY_ALGOS)
         }
         session.setConfig(config)
-        session.connect(15000)
+        try {
+            session.connect(15000)
+        } catch (e: Throwable) {
+            // 明确记录失败原因。原生通道失败会导致 Dart 侧【静默】回退 dartssh2
+            // （纯 Dart 加密，约 2MB/s 天花板），本行日志是定位该问题的关键依据：
+            // 常见原因为 Algorithm negotiation fail / Auth fail / invalid privatekey。
+            Log.e(
+                TAG,
+                "SSH native connect failed: host=$host:$port user=$username " +
+                    "keyAuth=$useKey reason=${e.javaClass.simpleName}: ${e.message}"
+            )
+            throw e
+        }
         val id = UUID.randomUUID().toString()
         sessions[id] = SessionHolder(session, null)
         return id
@@ -99,7 +148,24 @@ class SshSftpService {
         var ch = holder.sftp
         if (ch == null || !ch.isConnected) {
             ch = holder.session.openChannel("sftp") as ChannelSftp
+            // 提高在途请求数以降低高 RTT 链路上的往返等待（详见 BULK_REQUESTS 说明）。
+            // 不同实现/版本对「connect 之前还是之后设置」要求不一致，故两处都尝试；
+            // 都失败则降级为默认 16，仅损失吞吐、不影响连通性。
+            var bulkApplied = false
+            try {
+                ch.setBulkRequests(BULK_REQUESTS)
+                bulkApplied = true
+            } catch (_: Throwable) {
+                // 部分实现要求先 connect，connect 之后再试一次
+            }
             ch.connect(15000)
+            if (!bulkApplied) {
+                try {
+                    ch.setBulkRequests(BULK_REQUESTS)
+                } catch (t: Throwable) {
+                    Log.w(TAG, "setBulkRequests($BULK_REQUESTS) unsupported, fallback to default: ${t.message}")
+                }
+            }
             holder.sftp = ch
         }
         return ch
@@ -271,7 +337,7 @@ class SshSftpService {
             // 内部 SFTP READ 请求直接从 startByte 起读（服务端 seek），不再从文件头传输
             // 再本地 skip。旧实现 ch.get(remotePath) 打开整文件流 + 循环 skip(startByte) 等于
             // 先把 [0,startByte) 全部下载后丢弃——大文件拖到中部/尾部要等数分钟，正是
-            // 「SFTP 拖动卡死」根因。与猫头鹰(OWL)一致：播放器只发 Range，代理对每段做
+            // 「SFTP 拖动卡死」根因。播放器只发 Range，代理对每段做
             // 远程协议真实偏移随机读，再由本地 .seekcache 兜住重复请求。
             // 用 monitor 在累计下载达到 length 时返回 false 中止传输，从而只取
             // [startByte, startByte+length) 而非下载到文件尾（缩略图只取头部、拖动只取一段）。

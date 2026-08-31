@@ -1999,7 +1999,7 @@ class MediaProvider extends ChangeNotifier {
   /// 非媒体分类「主路径」：直接查询系统 MediaStore.Files（全量文件索引表）
   /// 填充文档/压缩包/安装包/下载，取代启动递归扫描。
   ///
-  /// 参考猫头鹰文件(Skyjos File Explorer)：其分类由 ProtocolTypeMediaStore 协议
+  /// 参考主流文件管理器：其分类由 ProtocolTypeMediaStore 协议
   /// 经 MediaStore.Files 按 media_type 查询得到，故在大存储多文件设备上不卡顿、
   /// 分类永远完整。ZenFile 此前用 dart:io 全盘递归（_runFileSystemScanInIsolate），
   /// 在数十万文件下会造成 I/O 饱和与整机卡顿、类别加载不全。
@@ -2144,8 +2144,8 @@ class MediaProvider extends ChangeNotifier {
     // 无条件通知：分类页底部提示条可靠出现（无论懒加载触发还是强制刷新）
     notifyListeners();
     try {
-      // 主路径：直接查询系统 MediaStore.Files 索引填充非媒体分类（参考猫头鹰文件
-      // 的 ProtocolTypeMediaStore 协议）。系统已预建索引→瞬时、穷尽、完整，
+      // 主路径：直接查询系统 MediaStore.Files 索引填充非媒体分类（基于其
+      // ProtocolTypeMediaStore 协议）。系统已预建索引→瞬时、穷尽、完整，
       // 彻底消除 dart:io 全盘递归在数十万文件下的 I/O 饱和与类别加载不全。
       // 仅当 MediaStore 不可用/无数据时回退到递归扫描（不卡顿场景下等价兜底）。
       final viaMediaStore =

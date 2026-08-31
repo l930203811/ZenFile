@@ -1578,7 +1578,7 @@ class MainActivity : AudioServiceFragmentActivity() {
 
         // 媒体/文件索引通道：直接查询系统 MediaStore.Files（全量文件索引表），
         // 用于文档/压缩包/安装包/下载等分类，避免全盘递归扫描导致大存储卡顿。
-        // 参考猫头鹰文件(Skyjos File Explorer)：其分类即由 ProtocolTypeMediaStore 协议经
+        // 参考主流文件管理器：其分类即由 ProtocolTypeMediaStore 协议经
         // MediaStore.Files 按 media_type 查询得到，故在大存储下不卡、分类永远完整。
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.sequl.zenfile/media_store").setMethodCallHandler { call, result ->
             when (call.method) {

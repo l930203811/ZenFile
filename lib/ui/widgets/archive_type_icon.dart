@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 
-/// 压缩包格式图标：箱子图标在上，格式标签（ZIP、7Z、RAR 等）在图标下方。
+/// 压缩包格式图标：复用「捆绑包」图标（Broken.box）在上，格式标签（ZIP、7Z、RAR 等）在图标下方。
 class ArchiveTypeIcon extends StatelessWidget {
   final String label;
   final Color color;

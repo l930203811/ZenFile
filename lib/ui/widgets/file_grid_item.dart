@@ -506,6 +506,52 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
     } catch (_) {}
   }
 
+  /// 无缩略图时的兜底图标：图标在上、格式标签在下（与压缩包/文档一致的参考设计）。
+  /// 安装包用安卓机器人图标；图片/视频/音频用各自类型图标并标注格式（MP4/MP3/JPG 等）。
+  /// 仅当缩略图不可用时调用——一旦拿到缩略图，上层已优先返回缩略图。
+  Widget _noThumbIcon() {
+    final path = widget.file.path;
+    final color = widget.iconColor;
+    final scale = widget.iconScale;
+    if (FileUtils.isInstallPackage(path)) {
+      return FileTypeIcon(
+        icon: Icons.android_rounded,
+        label: FileUtils.getInstallPackageTypeLabel(path),
+        color: color,
+        iconScale: scale,
+      );
+    }
+    if (FileUtils.isVideo(path)) {
+      return FileTypeIcon(
+        icon: Broken.video,
+        label: FileUtils.getVideoTypeLabel(path),
+        color: color,
+        iconScale: scale,
+      );
+    }
+    if (FileUtils.isAudio(path)) {
+      return FileTypeIcon(
+        icon: Broken.music,
+        label: FileUtils.getAudioTypeLabel(path),
+        color: color,
+        iconScale: scale,
+      );
+    }
+    if (FileUtils.isImage(path)) {
+      return FileTypeIcon(
+        icon: Broken.image,
+        label: FileUtils.getImageTypeLabel(path),
+        color: color,
+        iconScale: scale,
+      );
+    }
+    return Icon(
+      FileUtils.getIconForFile(path),
+      color: color,
+      size: 28 * scale,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final showMediaPreviews = context.select<FileManagerProvider, bool>((p) => p.showMediaPreviews) &&
@@ -548,11 +594,7 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
           iconScale: widget.iconScale,
         );
       }
-      return Icon(
-        FileUtils.getIconForFile(widget.file.path),
-        color: widget.iconColor,
-        size: 28 * widget.iconScale,
-      );
+      return _noThumbIcon();
     }
 
     if (isApk && _apkIcon != null) {
@@ -563,7 +605,7 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
         height: double.infinity,
         cacheWidth: 160,
         cacheHeight: 160,
-        errorBuilder: (context, error, stackTrace) => Icon(Broken.mobile, color: widget.iconColor, size: 28 * widget.iconScale),
+        errorBuilder: (context, error, stackTrace) => _noThumbIcon(),
       );
     }
 
@@ -679,10 +721,6 @@ class _MediaThumbnailState extends State<_MediaThumbnail> {
       );
     }
 
-    return Icon(
-      FileUtils.getIconForFile(widget.file.path),
-      color: widget.iconColor,
-      size: 28 * widget.iconScale,
-    );
+    return _noThumbIcon();
   }
 }

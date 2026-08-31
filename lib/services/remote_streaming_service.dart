@@ -54,131 +54,73 @@ class _Mutex {
   }
 }
 
-/// Fetch [start, start+length) from the remote server via [session.seekClient]
-/// (random read) and write it to [tempSeekPath].
+/// 抓取 [start, start+length) 到 [outPath]，返回实际落盘字节数。
 ///
-/// Runs serialized via [session._seekLock] so concurrent HTTP range requests
-/// never issue overlapping random reads on the same server session. The data is
-/// copied in small blocks (never loaded fully into memory) so seeking near the
-/// end of a huge file is safe. The fetched bytes are served directly from this
-/// temp file — they are NOT merged into the background-downloaded partial file,
-/// which avoids creating sparse-file gaps (zeros) that the player could read.
-Future<void> _fetchRangeToFile(
+/// 经 [session._seekLock] 串行化，避免同一服务器会话上并发随机读互相干扰。
+///
+/// 注意这里**不做「已被 seek 缓存覆盖」的跳过判断**：后台填充会先登记整段
+/// 目标区间、再逐块拉取，若沿用旧的 `_seekCovers` 判断，第 2 块及以后会被
+/// 误判为「已缓存」而直接返回，区域将永远填不满。
+Future<int> _fetchRangeChunk(
   _StreamSession session,
   int start,
   int length,
-  String tempSeekPath,
+  String outPath,
 ) async {
   final seekClient = session.seekClient;
-  if (seekClient == null || length <= 0) return;
-  if (start < 0) return;
+  if (seekClient == null || length <= 0) return 0;
+  if (start < 0) return 0;
 
-  final sc = seekClient; // 非 null 绑定，供闭包内使用（避免闭包内可空收窄失效）
+  final sc = seekClient; // 非 null 绑定，供闭包内使用
   await session._seekLock.run(() async {
-    // 重新检查：后台顺序下载或本会话 seek 缓存可能已覆盖该区间，避免重复远程读取
-    if (start < session.downloadedBytes) return;
-    if (start >= session._mergedStart && start < session._mergedEnd) return;
-
+    if (session._disposed) return;
     try {
-      await sc.downloadRange(session.remotePath, tempSeekPath, start, length);
-      final src = File(tempSeekPath);
-      if (!await src.exists()) {
-        debugPrint('RemoteStreamingService: on-demand range file not created');
-      }
+      await sc.downloadRange(session.remotePath, outPath, start, length);
     } catch (e) {
-      debugPrint('RemoteStreamingService: on-demand range fetch failed: $e');
+      debugPrint('RemoteStreamingService: fill chunk fetch failed: $e');
     }
   });
-}
-
-/// Merge the on-demand range bytes in [tempPath] into the session's seek cache
-/// file [session.seekCachePath] at the real byte offset [start]. Returns the
-/// number of bytes merged (so the caller can remember the cached range).
-///
-/// Keeping fetched ranges in a persistent per-session cache (instead of a
-/// throwaway temp file) is what makes seeking smooth: the next request for the
-/// same region — and libmpv routinely re-requests overlapping ranges right
-/// after a drag — is served from local disk, not from another remote read.
-///
-/// The cache file is written in [FileMode.append] so existing bytes are
-/// preserved (no truncation) and the write lands at the exact offset.
-/// 把 [tempPath] 的内容以 [start] 偏移写入 [targetPath]（不截断已有内容）。
-///
-/// 关键点：用 append 模式打开后再 [FileRandomAccessFile.setPosition]，可在
-/// 任意偏移写入而不破坏其它位置已有字节——这正是把「按需随机读」与「后台分块
-/// 下载」各自落盘的数据拼回同一 `.partial` / `.seekcache` 的正确方式（write
-/// 模式会清空整文件，append 模式才不会）。
-/// 把 [tempPath] 的内容以 [start] 偏移写入 [targetPath]（不截断已有内容）。
-///
-/// 关键点：用 append 模式打开后再 [FileRandomAccessFile.setPosition]，可在
-/// 任意偏移写入而不破坏其它位置已有字节——这正是把「按需随机读」与「后台分块
-/// 下载」各自落盘的数据拼回同一 `.partial` / `.seekcache` 的正确方式（write
-/// 模式会清空整文件，append 模式才不会）。
-///
-/// 重要：改为**分块流式拷贝**（64KB/块），不再用 [File.readAsBytes] 一次性把
-/// 整段（后台块 16MB、按需 seek 最多 64MB）载入内存。旧实现会把 16~64MB 一次性
-/// 读进 RAM 再整体写回，在主 isolate 上造成 100~300ms 的同步阻塞——这正是
-/// 退出播放器后整个浏览页（甚至本地浏览页）卡死/崩溃的根因。分块拷贝每次只
-/// 处理 64KB，且每个 await 之间事件循环可响应 UI，彻底消除主线程长阻塞。
-/// [isCancelled] 允许在拷贝中途（如 dispose 已触发）立即中止，避免无谓的 IO。
-/// 把 [tempPath] 的内容按 [start] 偏移写入【已打开的】[raf]。
-///
-/// 关键修复（v2 回归）：早期实现用 `FileMode.append` 打开目标文件再
-/// `setPosition(start)` 写入，但在 Linux/Android（O_APPEND）上，append 模式的
-/// 写操作【始终追加到文件末尾】，setPosition 对写无效。于是当 [start] 不是文件
-/// 末尾（例如拖动进度条后的随机偏移、或 reseed 跳到播放头）时，数据被写错位置，
-/// partial / seekcache 出现错位脏数据，播放器读到乱码 → 「播放一两秒后卡死闪退」。
-///
-/// 正确做法：由调用方持有【以 `FileMode.write` 打开、会话级持久】的 RandomAccessFile
-/// 句柄（write 模式非 O_APPEND，setPosition 对写生效），本函数【自己不开关文件】，
-/// 只在给定句柄的精确偏移处写入。无论顺序下载还是随机 seek 写入，落盘偏移都精确
-/// 等于 [start]，彻底消除错位。
-Future<int> _spliceIntoFile(
-  RandomAccessFile raf,
-  String tempPath,
-  int start, {
-  bool Function()? isCancelled,
-}) async {
-  final temp = File(tempPath);
-  if (!await temp.exists()) return 0;
-  final length = await temp.length();
-  if (length <= 0) return 0;
-    var remaining = length;
-    try {
-      await raf.setPosition(start);
-      final inFile = await temp.open(mode: FileMode.read);
-      try {
-        const block = 64 * 1024;
-        while (remaining > 0) {
-        if (isCancelled?.call() == true) break;
-        final toRead = remaining > block ? block : remaining;
-        final data = await inFile.read(toRead);
-        if (data.isEmpty) break;
-        await raf.writeFrom(data);
-        remaining -= data.length;
-      }
-    } finally {
-      await inFile.close();
-    }
-    return length - remaining;
-  } catch (e) {
-    debugPrint('RemoteStreamingService: splice error: $e');
+  try {
+    final f = File(outPath);
+    return f.existsSync() ? f.lengthSync() : 0;
+  } catch (_) {
     return 0;
   }
 }
 
-Future<int> _spliceIntoSeekCache(
+/// 等待 [path] 的文件长度达到 [minLen]（或超时），返回实际长度。
+///
+/// 轮询间隔 30ms：这是「首字节延迟」的直接来源之一，间隔越短首字节越早发出。
+Future<int> _waitForFileLength(String path, int minLen, Duration timeout) async {
+  final deadline = DateTime.now().add(timeout);
+  while (true) {
+    var n = 0;
+    try {
+      final f = File(path);
+      n = f.existsSync() ? f.lengthSync() : 0;
+    } catch (_) {}
+    if (n >= minLen) return n;
+    if (DateTime.now().isAfter(deadline)) return n;
+    await Future.delayed(const Duration(milliseconds: 30));
+  }
+}
+
+/// 确保 [start] 起的按需区域正在后台填充，并**只等首个小块落盘**，返回已落盘字节数。
+///
+/// 这是「首字节秒回」的核心。旧实现 await 一整段（最多 24MB）远程读取完成后
+/// 才设置并 flush 206 响应头——对 SFTP/SMB/FTP 意味着拖动后数秒收不到任何字节，
+/// libmpv 超时即判定 seek 失败、进度条跳回原点。现在首块（默认 512KB）落盘就
+/// 立刻响应，其余字节由 _streamRange 分支 B 按磁盘真实长度 tail-follow 持续供给。
+Future<int> _ensureRegionFilling(
   _StreamSession session,
-  String tempPath,
   int start,
-) async {
-  final raf = await session._seekCacheWriteHandle();
-  return _spliceIntoFile(
-    raf,
-    tempPath,
-    start,
-    isCancelled: () => session.disposed,
-  );
+  int targetLen, {
+  int headBytes = 512 * 1024,
+  Duration timeout = const Duration(seconds: 4),
+}) async {
+  unawaited(session._startRegionFill(start, targetLen));
+  final head = headBytes < targetLen ? headBytes : targetLen;
+  return _waitForFileLength(session._seekRegionPath(start), head, timeout);
 }
 
 class RemoteStreamingService {
@@ -351,10 +293,8 @@ class RemoteStreamingService {
     // 本地可用字节（后台顺序下载已落盘的部分）；下载完成后等于 fileSize。
     final partialAvail = session.downloadedBytes;
 
-    // 会话级 seek 缓存覆盖的连续区间 [_mergedStart, _mergedEnd)。
-    final seekStart = session._mergedStart;
-    final seekEnd = session._mergedEnd;
-    final seekCoversStart = seekEnd > 0 && start >= seekStart && start < seekEnd;
+    // 会话级 seek 缓存是否覆盖 start（多段区域，见 _StreamSession._seekRegions）。
+    final seekCoversStart = session._seekCovers(start);
 
     // 选择数据源（核心修复：拖动后卡顿的根因）
     // ------------------------------------------------------------------
@@ -366,13 +306,10 @@ class RemoteStreamingService {
     // 新逻辑：
     //  1) 后台下载已覆盖 start → 读 partial（按 downloadedBytes 门控，渐进流式）
     //  2) 后台未覆盖，但 seek 缓存已覆盖 → 读 seekcache，按文件【真实长度】
-    //     门控（isPartial=false），不再被后台停滞进度饿死
+    //     门控（不跟随后台停滞的下载进度），不再被后台进度饿死
     //  3) 两者都未覆盖 → 按需远程随机读，并入 seekcache 后再从本地读
-    String readFilePath;
-    int readFileStart;
     int rangeStart;
     int rangeEnd;
-    bool isPartial;
 
     // 数据源选择（修复「顺序播放也被迫走按需远程读」的卡顿回归）：
     //  · start 落在后台顺序下载已落盘区间内（含播放头） → 读 partial，跟随后台下载
@@ -387,51 +324,34 @@ class RemoteStreamingService {
     //  partial，杜绝每 16MB 发起一次按需抓取而与后台下载争抢带宽的卡顿。
     if (start <= partialAvail) {
       // 顺序播放/已下载区间：读 partial，跟随后台下载推进（最流畅路径）
-      readFilePath = session.partialPath;
-      readFileStart = start;
       rangeStart = start;
       rangeEnd = clampedEnd;
-      isPartial = true;
     } else if (seekCoversStart) {
-      // 后台未覆盖，但 seek 缓存已覆盖：从 seekcache 读真实长度（不门控后台进度）
-      readFilePath = session.seekCachePath;
-      readFileStart = start;
+      // 后台未覆盖，但某段 seek 缓存已覆盖：从对应缓存文件读真实长度（不门控后台进度）
+      final region = session._regionFor(start)!;
       rangeStart = start;
-      rangeEnd = clampedEnd < seekEnd - 1 ? clampedEnd : seekEnd - 1;
-      isPartial = false;
+      rangeEnd = clampedEnd < region.end - 1 ? clampedEnd : region.end - 1;
     } else {
-      // 需要按需远程随机读取（拖动到尚未下载到的位置）
-      const seekChunk = 16 * 1024 * 1024; // 单次预取上限：拖动后 1~2s 内即可恢复播放，
-      // 过大（如 64MB）会让拖动后长时间停在“正在缓存”而被误判为“拖动失效”。
-      final fetchLen = (fileSize - start).clamp(1, seekChunk);
-      final tempSeek = '${session.localPath}.seek.tmp';
-      await _fetchRangeToFile(session, start, fetchLen, tempSeek);
-      // 将远程读取结果合并进本地 seek 缓存（按偏移写入 .seekcache），之后复用
-      final cachedLen = await _spliceIntoSeekCache(session, tempSeek, start);
-      try {
-        await File(tempSeek).delete();
-      } catch (_) {}
-      if (cachedLen <= 0) {
-        // 远程抓取失败：降级为读 partial 并等待后台下载（不夸大 Content-Length）
-        readFilePath = session.partialPath;
-        readFileStart = start;
+      // 需要按需远程随机读取（拖动到尚未下载到的位置）。
+      //
+      // 关键改动（首字节秒回）：旧实现在这里 await 一整段（最多 24MB）远程读取
+      // 完成后，才去设置并 flush 206 响应头——对 SFTP/SMB/FTP 意味着拖动后数秒
+      // 收不到任何字节，libmpv 超时即判定 seek 失败、进度条跳回原点。
+      // 现在：后台分块填充直写区域文件（边下边播），这里只等首个小块落盘即响应，
+      // 首字节延迟由「整个 24MB」降为「首个 2MB 分块」。
+      const seekFill = 24 * 1024 * 1024; // 后台填充目标：足够覆盖后续连续播放
+      final fetchLen = (fileSize - start).clamp(1, seekFill);
+      final avail = await _ensureRegionFilling(session, start, fetchLen);
+      if (avail <= 0) {
+        // 首个分块都没拿到：降级为读 partial 并等待后台下载（不夸大 Content-Length）
         rangeStart = start;
         rangeEnd = clampedEnd;
-        isPartial = true;
       } else {
-        // 只记录【本次按需抓取】的精确区间 [start, start+cachedLen)，不取并集。
-        // 取并集会把两次不相邻的抓取（如 moov 在文件尾 + 拖动到文件头）合并成
-        // 一个大区间，中间的稀疏空洞（全 0）会被 seekCoversStart 误判为命中，
-        // 导致 _streamFrom 读到全 0 字节喂给 libmpv → 视频冻结/崩溃。
-        // 覆盖式记录虽会令跨区间重复请求重新抓取，但绝不会把空洞当命中，安全。
-        session._mergedStart = start;
-        session._mergedEnd = start + cachedLen;
-        readFilePath = session.seekCachePath;
-        readFileStart = start;
         rangeStart = start;
-        // 仅声明已真正抓取到的字节，避免 Content-Length 夸大导致播放器空等
-        rangeEnd = clampedEnd < session._mergedEnd - 1 ? clampedEnd : session._mergedEnd - 1;
-        isPartial = false;
+        // 仅声明已真正落盘的字节。夸大 Content-Length 会让播放器空等，或在
+        // 数据不足时提前截断响应——被截断的响应正是 libmpv 判定 seek 失败、
+        // 进度条跳回原点的直接原因。
+        rangeEnd = clampedEnd < start + avail - 1 ? clampedEnd : start + avail - 1;
       }
     }
 
@@ -483,7 +403,6 @@ class RemoteStreamingService {
     const chunkSize = 4 * 1024 * 1024; // 4MB 读块
     int readOffset = rangeStart;
     RandomAccessFile? partialRaf;
-    RandomAccessFile? seekRaf;
     bool bootstrapped = false;
     try {
       while (readOffset < endExclusive) {
@@ -500,9 +419,8 @@ class RemoteStreamingService {
           realLen = 0;
         }
         final downloaded = realLen > 0 ? realLen : session.downloadedBytes;
-        final seekStart = session._mergedStart;
-        final seekEnd = session._mergedEnd;
-        final seekCovers = seekEnd > 0 && readOffset >= seekStart && readOffset < seekEnd;
+        final region = session._regionFor(readOffset);
+        final seekCovers = region != null;
 
         // A) 后台顺序下载已覆盖当前位置 → 从 partial 读，跟随后台下载推进（主路径）
         // 优化：内循环连续读多个 chunk，每 4MB 批量 flush 一次。旧实现每 1MB 就
@@ -551,14 +469,23 @@ class RemoteStreamingService {
           continue;
         }
 
-        // B) seek 缓存覆盖当前位置 → 从本地 seekcache 读（拖动缓冲 / 初始 16MB 引导缓冲）
+        // B) 某段 seek 缓存覆盖当前位置 → 从对应缓存文件读（拖动缓冲 / 初始引导缓冲）。
+        //    多段缓存使前进后再后退也能命中本地数据，不再重复远程抓取。
         if (seekCovers) {
-          seekRaf ??= await File(session.seekCachePath).open(mode: FileMode.read);
-          final segEnd = seekEnd.clamp(readOffset, endExclusive);
-          final toRead = (segEnd - readOffset).clamp(0, chunkSize).toInt();
+          // ① 区域文件是【从 region.start 开始】的独立文件：其第 0 字节对应绝对
+          //    偏移 region.start，故读位置必须是 (readOffset - region.start)。
+          //    直接用绝对偏移会在（远小于该偏移的）区域文件上读到空数据，使
+          //    seek 缓存形同虚设——拖动后必然穿透到下面的分支重新远程抓取。
+          // ② 区域可能仍在后台填充，故上界取【磁盘真实已落盘长度】而非声明长度；
+          //    数据未到时短暂等待、保持连续供给，而不是穿透下去造成断流。
+          final availEnd = session._regionAvailableEnd(region);
+          final segEnd = availEnd < region.end ? availEnd : region.end;
+          final capped = segEnd < endExclusive ? segEnd : endExclusive;
+          final toRead = (capped - readOffset).clamp(0, chunkSize).toInt();
           if (toRead > 0) {
-            await seekRaf.setPosition(readOffset);
-            final data = await seekRaf.read(toRead);
+            final raf = await session._seekRafFor(region.path);
+            await raf.setPosition(readOffset - region.start);
+            final data = await raf.read(toRead);
             if (data.isNotEmpty) {
               response.add(data);
               await response.flush();
@@ -566,7 +493,13 @@ class RemoteStreamingService {
               continue;
             }
           }
-          // 本段缓存读完 → 重新评估（切回 partial 或再次按需拉取）
+          // 本段已读完、但后台填充仍在进行 → 等下一批落盘，保持连续供给。
+          // 填充结束（或失败）后 _regionFilling 会移除该路径，届时自然落到下面分支。
+          if (session._regionFilling[region.path] == true) {
+            await Future.delayed(const Duration(milliseconds: 30));
+            continue;
+          }
+          // 本段缓存读完且不再填充 → 重新评估（切回 partial 或再次按需拉取）
         }
 
         // C) 下载已完成且文件完整落盘 → 直接顺序服务剩余部分，不再轮询等待。
@@ -588,11 +521,7 @@ class RemoteStreamingService {
             try {
               await partialRaf?.close();
             } catch (_) {}
-            try {
-              await seekRaf?.close();
-            } catch (_) {}
             partialRaf = null;
-            seekRaf = null;
             final raf = await finalFile.open(mode: FileMode.read);
             try {
               await raf.setPosition(readOffset);
@@ -615,20 +544,15 @@ class RemoteStreamingService {
         // D) 真实「随机跳转」领先下载头（拖动到尚未下载到的位置）→ 按需经独立 seekClient 拉取
         final aheadBy = readOffset - downloaded;
         if (aheadBy > 1024 * 1024 && !seekCovers) {
-          final fetchLen = (endExclusive - readOffset).clamp(1, 16 * 1024 * 1024).toInt();
-          final tempSeek = '${session.localPath}.seek.tmp';
-          await _fetchRangeToFile(session, readOffset, fetchLen, tempSeek);
-          final cachedLen = await _spliceIntoSeekCache(session, tempSeek, readOffset);
-          try {
-            await File(tempSeek).delete();
-          } catch (_) {}
-          if (cachedLen > 0) {
-            session._mergedStart = readOffset;
-            session._mergedEnd = readOffset + cachedLen;
-            // 【关键修复】按需拉取成功后立即 continue 回到循环顶部，走 B 分支从
-            // seekcache 向播放器供数据。旧实现此处去等 partial（后台顺序下载）推进到
-            // readOffset——大文件前跳需要数分钟，30s 超时后 break 关闭连接，播放器
-            // seek 失败跳回原位置。seekcache 已有数据，无需等待顺序下载。
+          final fetchLen = (endExclusive - readOffset).clamp(1, 24 * 1024 * 1024).toInt();
+          // 后台分块填充 + 只等首块落盘，不再 await 整段 24MB。旧实现在这里阻塞
+          // 整段抓取，正是「拖动后卡在缓冲 / 拖动失效跳回原点」的直接原因。
+          final avail = await _ensureRegionFilling(session, readOffset, fetchLen);
+          if (avail > 0) {
+            // 【关键修复】首块落盘后立即回到循环顶部，走 B 分支从 seek 缓存向播放器
+            // 供数据。旧实现此处去等 partial（后台顺序下载）推进到 readOffset——
+            // 大文件前跳需要数分钟，30s 超时后 break 关闭连接，播放器 seek 失败
+            // 跳回原位置。现在区域已登记，由 B 分支 tail-follow 持续供给。
             continue;
           }
           // 拉取失败（0 字节）：短暂退避防自旋，再重试或等待下载推进。
@@ -639,20 +563,15 @@ class RemoteStreamingService {
           continue;
         }
 
-        // E) 启动引导：partial 仍为空时，先用独立 seekClient 拉前 32MB 作为初始缓冲，
-        //    使播放器立即拿到充足数据，避免等待首个分块下载完成才出画面（否则开局即卡）。
+        // E) 启动引导：partial 仍为空时，先用独立 seekClient 拉前一段作为初始缓冲，
+        //    使播放器立即拿到数据，避免等待首个分块下载完成才出画面（否则开局即卡）。
+        //    注意：**只等首块落盘就开始供数**，剩余字节交给后台填充 + B 分支
+        //    tail-follow 续供，不再阻塞等满 16MB（旧实现是起播慢的主因之一）。
         if (!bootstrapped && downloaded <= 0 && !seekCovers) {
           bootstrapped = true;
-          final tempSeek = '${session.localPath}.seek.tmp';
-          await _fetchRangeToFile(session, readOffset, 32 * 1024 * 1024, tempSeek);
-          final cachedLen = await _spliceIntoSeekCache(session, tempSeek, readOffset);
-          try {
-            await File(tempSeek).delete();
-          } catch (_) {}
-          if (cachedLen > 0) {
-            session._mergedStart = readOffset;
-            session._mergedEnd = readOffset + cachedLen;
-            // 引导数据已入 seekcache，立即 continue 走 B 分支供给播放器。
+          final avail = await _ensureRegionFilling(session, readOffset, 16 * 1024 * 1024);
+          if (avail > 0) {
+            // 引导数据首块已落盘，立即 continue 走 B 分支供给播放器。
             continue;
           }
           if (readOffset < session.downloadedBytes) continue;
@@ -661,7 +580,7 @@ class RemoteStreamingService {
           continue;
         }
 
-        // F) 追平下载头（readOffset == downloaded）：OWL 模型的关键一步——代理按
+        // F) 追平下载头（readOffset == downloaded）：代理按
         //    播放需求即时拉取，而非死等整文件顺序下载推进。
         //  ① 先给后台顺序下载 60ms 推进机会：快网/局域网下顺序下载速度通常远快于
         //     播放消费，几乎总能即时推进，此时走 A 分支读 partial（零额外开销、与
@@ -683,18 +602,13 @@ class RemoteStreamingService {
           session._syncFileLength();
           continue;
         }
-        // 顺序下载短期无进展 → 主动按需随机读补「当前播放所需数据」
-        final fetchLen = (endExclusive - readOffset).clamp(1, 16 * 1024 * 1024).toInt();
-        final tempSeek = '${session.localPath}.seek.tmp';
-        await _fetchRangeToFile(session, readOffset, fetchLen, tempSeek);
-        final cachedLen = await _spliceIntoSeekCache(session, tempSeek, readOffset);
-        try {
-          await File(tempSeek).delete();
-        } catch (_) {}
-        if (cachedLen > 0) {
-          session._mergedStart = readOffset;
-          session._mergedEnd = readOffset + cachedLen;
-          // 立即 continue 走 B 分支从 seekcache 向播放器供数据（OWL：按需即供）
+        // 顺序下载短期无进展 → 主动按需随机读补「当前播放所需数据」。
+        // 后台分块填充 + 只等首块落盘：旧实现每次补数据都阻塞一整段 24MB，期间
+        // 一个字节都不发给播放器，这正是「播放中周期卡顿」的直接来源。
+        final fetchLen = (endExclusive - readOffset).clamp(1, 24 * 1024 * 1024).toInt();
+        final avail = await _ensureRegionFilling(session, readOffset, fetchLen);
+        if (avail > 0) {
+          // 立即 continue 走 B 分支从 seekcache 向播放器供数据（按需即供）
           continue;
         }
         // 按需拉取也失败（极端弱网）：短暂退避后重试，或退化为等待顺序下载推进。
@@ -707,9 +621,6 @@ class RemoteStreamingService {
     } finally {
       try {
         await partialRaf?.close();
-      } catch (_) {}
-      try {
-        await seekRaf?.close();
       } catch (_) {}
       try {
         await response.close();
@@ -974,6 +885,13 @@ class RemoteStreamingService {
   }
 }
 
+class _SeekRegion {
+  final int start;
+  final int end;
+  final String path;
+  _SeekRegion(this.start, this.end, this.path);
+}
+
 class _StreamSession {
   final RemoteClient client;
   final RemoteClient? seekClient;
@@ -1001,20 +919,161 @@ class _StreamSession {
   int _downloadedBytes = 0;
   Completer<void>? _progressSignal;
 
-  // 会话级持久写句柄：以 FileMode.write 打开（非 O_APPEND），
-  // setPosition 对写生效，彻底消除 O_APPEND 下写入偏移被强制到文件末尾
-  // 导致的错位（这是「播放一两秒后卡死闪退」v2 回归的根因）。
-  RandomAccessFile? _partialRaf;
-  RandomAccessFile? _seekCacheRaf;
+  /// 按需 seek 缓存区域文件（每段独立，[start] 作为唯一标识）。
+  String _seekRegionPath(int start) => '$localPath.seekcache.$start';
 
-  Future<RandomAccessFile> _partialWriteHandle() async {
-    _partialRaf ??= await File(partialPath).open(mode: FileMode.write);
-    return _partialRaf!;
+  /// 是否存在覆盖 [off] 的 seek 缓存段。
+  bool _seekCovers(int off) =>
+      _seekRegions.any((r) => off >= r.start && off < r.end);
+
+  /// 返回覆盖 [off] 的 seek 缓存段（列表中第一段命中者）。
+  _SeekRegion? _regionFor(int off) {
+    for (final r in _seekRegions) {
+      if (off >= r.start && off < r.end) return r;
+    }
+    return null;
   }
 
-  Future<RandomAccessFile> _seekCacheWriteHandle() async {
-    _seekCacheRaf ??= await File(seekCachePath).open(mode: FileMode.write);
-    return _seekCacheRaf!;
+  /// 记录一段新抓取的按需区域 [start, start+cachedLen)。先淘汰被其完全包含的旧段，
+  /// 再追加；超过 [_maxSeekRegions] 时删除最旧段的文件。
+  void _recordSeekRegion(int start, int cachedLen) {
+    if (cachedLen <= 0) return;
+    final end = start + cachedLen;
+    _seekRegions.removeWhere((r) => r.start >= start && r.end <= end);
+    _seekRegions.add(_SeekRegion(start, end, _seekRegionPath(start)));
+    while (_seekRegions.length > _maxSeekRegions) {
+      final removed = _seekRegions.removeAt(0);
+      try {
+        File(removed.path).delete();
+      } catch (_) {}
+    }
+  }
+
+  /// 取（或缓存）某段 seek 缓存文件的读句柄。
+  Future<RandomAccessFile> _seekRafFor(String path) async {
+    var raf = _seekRafCache[path];
+    if (raf == null) {
+      raf = await File(path).open(mode: FileMode.read);
+      _seekRafCache[path] = raf;
+    }
+    return raf;
+  }
+
+  // ── 按需区域的后台填充（边下边播）────────────────────────────────────────
+  //
+  // 背景：旧实现在响应任何字节之前，先 await 一整段（最多 24MB）远程随机读，
+  // 完成后才设置 206 响应头并 flush。对 SFTP/SMB/FTP 而言，拖动后要等数秒才
+  // 等到第一个字节，libmpv 超时判定 seek 失败 → 进度条跳回原点。
+  //
+  // 新实现：远程读取放到后台【分块】填充，直接顺序写入该区域的缓存文件；请求
+  // 路径只等首个小块落盘就立刻回 206 并开始供数，剩余字节由 _streamRange 分支
+  // B 按磁盘真实长度 tail-follow 持续供给（与后台顺序下载的 partial 同理）。
+
+  /// 后台填充的单块大小。分块的意义：每块之间会释放 [_seekLock]，使用户中途
+  /// 再次拖动产生的新随机读可以插队，而不会被一次长填充整体阻塞。
+  static const int _fillChunkBytes = 2 * 1024 * 1024;
+
+  /// 正在后台填充的区域文件路径，防止同一区域被并发重复填充（并发 append 写坏文件）。
+  final Map<String, bool> _regionFilling = {};
+
+  /// 区域 [r] 当前【真实已落盘】的绝对结束偏移（exclusive）。
+  /// 区域文件自 [r.start] 起顺序写入，故「已落盘字节数 = 文件长度」。
+  int _regionAvailableEnd(_SeekRegion r) {
+    try {
+      final f = File(r.path);
+      return r.start + (f.existsSync() ? f.lengthSync() : 0);
+    } catch (_) {
+      return r.start;
+    }
+  }
+
+  /// 确保存在覆盖 [start, start+targetLen) 的区域声明。
+  /// 若已有同起点区域但声明过短，则就地延长——**绝不删除文件**，已落盘字节保留。
+  void _ensureRegionDeclared(int start, int targetLen) {
+    final end = start + targetLen;
+    final existing = _regionFor(start);
+    if (existing != null && existing.start == start) {
+      if (existing.end >= end) return;
+      _seekRegions.remove(existing);
+      _seekRegions.add(_SeekRegion(start, end, existing.path));
+      return;
+    }
+    _recordSeekRegion(start, targetLen);
+  }
+
+  /// 启动（或复用）[start] 起、长度 [targetLen] 的后台分块填充。幂等。
+  Future<void> _startRegionFill(int start, int targetLen) async {
+    final path = _seekRegionPath(start);
+    if (_regionFilling[path] == true) return;
+
+    final existing = _regionFor(start);
+    if (existing != null && _regionAvailableEnd(existing) >= start + targetLen) {
+      return; // 已填满
+    }
+
+    _regionFilling[path] = true;
+    // 立即登记整段目标区间。注意「声明长度」会大于「已落盘长度」，这是安全的：
+    // 分支 B 一律按磁盘真实长度（_regionAvailableEnd）门控，读不到就等待填充推进。
+    _ensureRegionDeclared(start, targetLen);
+
+    final tmp = '$path.filltmp';
+    try {
+      var off = start;
+      final end = start + targetLen;
+      while (off < end) {
+        if (_disposed || _downloadFailed) break;
+        // 区域被淘汰（被更新的拖动顶掉）→ 停止填充，避免写到已删除的文件
+        if (_regionFor(start)?.path != path) break;
+        // 后台顺序下载已追平此处 → partial 是更好的数据源，无需继续填充
+        if (off < downloadedBytes) break;
+        final want = _fillChunkBytes < (end - off) ? _fillChunkBytes : (end - off);
+        final got = await _fetchRangeChunk(this, off, want, tmp);
+        if (got <= 0) break;
+        final appended = await _appendFileToFile(tmp, path);
+        if (appended <= 0) break;
+        off += appended;
+      }
+    } catch (e) {
+      debugPrint('RemoteStreamingService: region fill error: $e');
+    } finally {
+      try {
+        final f = File(tmp);
+        if (f.existsSync()) f.deleteSync();
+      } catch (_) {}
+      _regionFilling.remove(path);
+    }
+  }
+
+  /// 把 [srcPath] 的内容以 256KB 分块追加到 [dstPath] 末尾，返回追加字节数。
+  /// 分块而非一次性 readAsBytes，避免大块数据一次性进内存阻塞事件循环。
+  Future<int> _appendFileToFile(String srcPath, String dstPath) async {
+    try {
+      final src = File(srcPath);
+      if (!await src.exists()) return 0;
+      final total = await src.length();
+      if (total <= 0) return 0;
+      final out = await File(dstPath).open(mode: FileMode.append);
+      final input = await src.open(mode: FileMode.read);
+      var written = 0;
+      try {
+        const block = 256 * 1024;
+        while (written < total) {
+          final toRead = (total - written) < block ? (total - written) : block;
+          final data = await input.read(toRead);
+          if (data.isEmpty) break;
+          await out.writeFrom(data);
+          written += data.length;
+        }
+      } finally {
+        await input.close();
+        await out.flush();
+        await out.close();
+      }
+      return written;
+    } catch (e) {
+      debugPrint('RemoteStreamingService: append fill chunk failed: $e');
+      return 0;
+    }
   }
 
   _StreamSession({
@@ -1040,10 +1099,14 @@ class _StreamSession {
   /// background `.partial` file to avoid sparse-file gaps and writer races.
   String get seekCachePath => '$localPath.seekcache';
 
-  /// [start, end) of the byte range currently held in [seekCachePath].
-  /// -1 means no region is cached yet. Used to short-circuit repeat seeks.
-  int _mergedStart = -1;
-  int _mergedEnd = -1;
+  /// 多段按需 seek 缓存区域（MRU，最多 [_maxSeekRegions] 段）。每次拖动抓取一段
+  /// 远程字节，存入独立文件（[seekCachePath].[start]），使前进后再后退也能命中
+  /// 本地数据、不再重复远程抓取。每段是完整独立文件，彻底避免单文件任意偏移写入
+  /// 可能产生的稀疏空洞（v2 O_APPEND 错位回归的根因）。
+  final List<_SeekRegion> _seekRegions = [];
+  static const int _maxSeekRegions = 4;
+  /// 按路径缓存的 seek 缓存读句柄，避免每段每次读都重新 open。
+  final Map<String, RandomAccessFile> _seekRafCache = {};
 
   // reseed 机制已移除：后台下载严格从 0 顺序写入 partial，绝不乱序偏移写入，
   // 避免 partial 出现稀疏空洞导致 _streamFrom 读取全 0 字节喂给播放器崩溃。
@@ -1268,16 +1331,25 @@ class _StreamSession {
         if (await f.exists()) await f.delete();
         final p = File('$_localPath.partial');
         if (await p.exists()) await p.delete();
-        final s = File('$_localPath.seekcache');
-        if (await s.exists()) await s.delete();
+        // 删除全部按需 seek 缓存段文件（每段独立）
+        for (final r in _seekRegions) {
+          try {
+            await File(r.path).delete();
+          } catch (_) {}
+          // 后台填充的临时分块文件。正常由填充自身的 finally 清理，
+          // 会话销毁时这里再做一次兜底，避免残留。
+          try {
+            final t = File('${r.path}.filltmp');
+            if (await t.exists()) await t.delete();
+          } catch (_) {}
+        }
       }
     } catch (_) {}
-    // 关闭会话级持久写句柄，避免文件描述符泄漏
-    try {
-      await _partialRaf?.close();
-    } catch (_) {}
-    try {
-      await _seekCacheRaf?.close();
-    } catch (_) {}
+    // 关闭 seek 缓存段的读句柄，避免文件描述符泄漏
+    for (final raf in _seekRafCache.values) {
+      try {
+        await raf.close();
+      } catch (_) {}
+    }
   }
 }

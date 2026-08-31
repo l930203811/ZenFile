@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:dartssh2/dartssh2.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
 import 'remote_client.dart';
 
 /// 原生 SSH/SFTP 通道：在 Android 上用 Java JSch 实现（加解密走系统硬件加速），
@@ -28,6 +27,14 @@ class SftpRemoteClient extends RemoteClient {
 
   /// 是否走原生通道（Android 且 connect 成功）。否则回退到下方 dartssh2 实现。
   bool _useNative = false;
+
+  /// 原生通道不可用的原因；为 null 表示正在使用原生（JSch，硬件加速）通道。
+  ///
+  /// 诊断价值：dartssh2 是纯 Dart 加解密，吞吐天花板约 2MB/s；原生通道走
+  /// Android JCE/OpenSSL 硬件加速。若用户反馈 SFTP 上传只有 2MB/s，先确认
+  /// 本字段是否非 null（即已回退）。常见原因：Algorithm negotiation fail
+  /// （服务器禁用了 ssh-rsa 而客户端库过旧）、Auth fail、invalid privatekey。
+  String? nativeFallbackReason;
 
   /// 仅在 Android 平台尝试原生 SSH；其余平台（桌面/Web/iOS）走 dartssh2。
   final bool _isAndroid = !kIsWeb && Platform.isAndroid;
@@ -90,9 +97,18 @@ class SftpRemoteClient extends RemoteClient {
           nativeParams,
         );
         _useNative = _nativeSessionId != null && _nativeSessionId!.isNotEmpty;
-        if (_useNative) return;
+        if (_useNative) {
+          nativeFallbackReason = null;
+          return;
+        }
       } catch (e) {
-        debugPrint('SFTP native connect failed, falling back to dartssh2: $e');
+        nativeFallbackReason = e.toString();
+        // 这里的回退会直接把吞吐打到 dartssh2 的纯 Dart 加密上限（约 2MB/s），
+        // 因此必须留下可检索的日志：用户反馈上传慢时，先看有没有这一行。
+        debugPrint(
+          'SFTP native connect failed ($host:$port, keyAuth=${authMethod == 'key'}), '
+          'falling back to dartssh2 (pure-Dart crypto, ~2MB/s ceiling): $e',
+        );
         _useNative = false;
       }
     }
