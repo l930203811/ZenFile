@@ -1097,15 +1097,17 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                   final crossAxisCount = (MediaQuery.of(context).size.width / (110 * provider.iconScale)).floor().clamp(2, 10);
                   final row = firstHighlightedIndex ~/ crossAxisCount;
                   final itemHeight = (150 * provider.iconScale * provider.itemPaddingMultiplier).clamp(100.0, 300.0);
-                  targetOffset = row * itemHeight;
+                  // 网格：定位到目标文件所在行的中央
+                  targetOffset = row * itemHeight + itemHeight / 2;
                 } else {
                   final itemHeight = (72 * provider.itemPaddingMultiplier).clamp(40.0, 150.0);
-                  targetOffset = firstHighlightedIndex * itemHeight;
+                  // 列表：定位到目标文件的中央
+                  targetOffset = firstHighlightedIndex * itemHeight + itemHeight / 2;
                 }
-                // 滚动到屏幕中间
-                final screenHeight = _scrollController.position.viewportDimension;
-                final clampedOffset = targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent);
-                final centerOffset = (clampedOffset - screenHeight / 3).clamp(0.0, _scrollController.position.maxScrollExtent);
+                // 真正居中：让目标文件垂直居中显示在可视区域内
+                final viewport = _scrollController.position.viewportDimension;
+                final maxScroll = _scrollController.position.maxScrollExtent;
+                final centerOffset = (targetOffset - viewport / 2).clamp(0.0, maxScroll);
                 _scrollController.jumpTo(centerOffset);
               }
             }

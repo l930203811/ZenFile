@@ -17,6 +17,8 @@ if (hasReleaseKeystore) {
 
 android {
     namespace = "com.sequl.zenfile"
+    // compileSdk=37：permission_handler_android / receive_sharing_intent 要求 compileSdk≥37；
+    // AGP 9.1.1 起官方支持 API 37（配套 Gradle 9.3.1）。
     compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
@@ -62,6 +64,13 @@ android {
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
+    }
+
+    lint {
+        // 禁用 release 的 lintVital 检查：AGP 9 下 lintVitalAnalyzeRelease 在 Windows 上会因
+        // lint 缓存 jar 被系统实时扫描锁定（FileSystemException "另一个程序正在使用此文件"）反复失败。
+        // lint 为静态检查，不影响 APK 产物与功能。
+        checkReleaseBuilds = false
     }
 
     packaging {

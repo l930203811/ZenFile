@@ -34,6 +34,8 @@
     <!-- 悬浮窗权限：用于桌面歌词悬浮窗显示 -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
+    <!-- 保险箱指纹解锁（local_auth） -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
 
     <application
         android:label="ZenFile"

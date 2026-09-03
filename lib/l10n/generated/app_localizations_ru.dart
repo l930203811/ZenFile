@@ -3577,7 +3577,7 @@ class L10nRu extends L10n {
 
   @override
   String get ui_vault_empty_desc =>
-      'Подписи XOR-обфускации делают файлы полностью непригодными для открытия и скрытыми от базы данных сканера системы. Нажмите кнопку ниже для их защиты.';
+      'Шифрование AES-256-GCM делает файлы полностью недоступными для системы и других приложений и скрывает их от медиа-сканера. Нажмите кнопку ниже, чтобы защитить их.';
 
   @override
   String ui_copied_n_items(Object count) {
@@ -3721,7 +3721,7 @@ class L10nRu extends L10n {
 
   @override
   String get msg_vault_mode_desc =>
-      'Выберите, как защитить выбранные файлы. Защищенные файлы мгновенно шифруются с помощью XOR.';
+      'Выберите, как защитить выбранные файлы. Защищённые файлы шифруются с помощью AES-256-GCM.';
 
   @override
   String get ui_secure_import => 'Безопасный импорт (Песочница)';
@@ -5108,7 +5108,7 @@ class L10nRu extends L10n {
 
   @override
   String get ui_remote_guard_desc =>
-      'Установите 4-значный PIN для защиты доступа к удалённым серверам. Введите PIN после запуска приложения или ручной блокировки.';
+      'Set a password to protect remote server access. Enter it after app launch or manual lock.';
 
   @override
   String get ui_remote_guard_enabled => 'Включено';
@@ -5136,7 +5136,7 @@ class L10nRu extends L10n {
   String get ui_remote_guard_change_pin => 'Изменить PIN';
 
   @override
-  String get ui_remote_guard_pin_hint => '4-значный цифровой PIN';
+  String get ui_remote_guard_pin_hint => 'Пароль (буквы, цифры или символы)';
 
   @override
   String get ui_remote_guard_lock_now => 'Заблокировать сейчас';
@@ -5157,10 +5157,10 @@ class L10nRu extends L10n {
 
   @override
   String get ui_app_lock_desc =>
-      'Требовать PIN для разблокировки приложения при каждом запуске';
+      'Require your password to unlock the app each time it launches';
 
   @override
-  String get ui_app_lock_set_pin_first => 'Set a 4-digit PIN before enabling';
+  String get ui_app_lock_set_pin_first => 'Set a password before enabling';
 
   @override
   String get ui_remote_guard_enter_current_pin => 'Введите текущий PIN';
@@ -5435,6 +5435,42 @@ class L10nRu extends L10n {
 
   @override
   String get editor_crop => 'Crop';
+
+  @override
+  String get ui_draw => 'Рисование';
+
+  @override
+  String get ui_edit => 'Изменить';
+
+  @override
+  String get ui_color => 'Цвет';
+
+  @override
+  String get ui_width => 'Толщина';
+
+  @override
+  String get ui_text => 'Текст';
+
+  @override
+  String get ui_rect => 'Прямоугольник';
+
+  @override
+  String get ui_ellipse => 'Эллипс';
+
+  @override
+  String get ui_line => 'Линия';
+
+  @override
+  String get ui_mosaic => 'Мозаика';
+
+  @override
+  String get ui_pen => 'Кисть';
+
+  @override
+  String get ui_arrow => 'Стрелка';
+
+  @override
+  String get ui_brush_size => 'Размер кисти';
 
   @override
   String get editor_rotate_flip => 'Rotate & Flip';
@@ -5797,6 +5833,18 @@ class L10nRu extends L10n {
   String get editor_undo => 'Отменить';
 
   @override
+  String get editor_text_hint => 'Введите текст';
+
+  @override
+  String get editor_font_bold => 'Полужирный';
+
+  @override
+  String get editor_font_italic => 'Курсив';
+
+  @override
+  String get editor_font_underline => 'Подчёркнутый';
+
+  @override
   String get wol_port_hint => 'Необязательно';
 
   @override
@@ -6141,4 +6189,137 @@ class L10nRu extends L10n {
 
   @override
   String get ui_enter_host_first => 'Сначала введите адрес и порт хоста';
+
+  @override
+  String get vault_enter_password => 'Введите пароль для разблокировки';
+
+  @override
+  String get vault_set_password => 'Установите пароль';
+
+  @override
+  String get vault_confirm_password => 'Введите ещё раз для подтверждения';
+
+  @override
+  String get vault_pins_mismatch => 'Пароли не совпадают';
+
+  @override
+  String get vault_incorrect_password => 'Неверный пароль';
+
+  @override
+  String get vault_password_set => 'Пароль установлен';
+
+  @override
+  String get vault_next => 'Далее';
+
+  @override
+  String get vault_unlock => 'Разблокировать';
+
+  @override
+  String get vault_use_keypad => 'Использовать цифровую клавиатуру';
+
+  @override
+  String get vault_use_text_input => 'Использовать буквенно-цифровой';
+
+  @override
+  String get vault_fingerprint => 'Разблокировать отпечатком';
+
+  @override
+  String get vault_fingerprint_failed => 'Ошибка аутентификации по отпечатку';
+
+  @override
+  String get vault_min_length => 'Пароль должен содержать не менее 4 символов';
+
+  @override
+  String get vault_pwd_alphanumeric => 'Пароль (буквы, цифры или символы)';
+
+  @override
+  String get vault_enable_fingerprint => 'Включить разблокировку отпечатком';
+
+  @override
+  String get vault_biometric_desc =>
+      'Используйте отпечаток для быстрой разблокировки хранилища';
+
+  @override
+  String get vault_export_backup => 'Экспорт резервной копии';
+
+  @override
+  String get vault_export_backup_desc =>
+      'Экспорт зашифрованной резервной копии хранилища (.zip)';
+
+  @override
+  String get vault_import_backup => 'Импорт резервной копии';
+
+  @override
+  String get vault_import_backup_desc =>
+      'Восстановить хранилище из резервной копии (.zip)';
+
+  @override
+  String get vault_uninstall_warning_title => 'Предупреждение об удалении';
+
+  @override
+  String get vault_uninstall_warning =>
+      'При удалении приложения хранилище очищается. Сначала экспортируйте резервную копию.';
+
+  @override
+  String get vault_backup_exported => 'Резервная копия экспортирована в';
+
+  @override
+  String get vault_backup_imported => 'Импортировано элементов';
+
+  @override
+  String get vault_export_failed => 'Ошибка экспорта резервной копии';
+
+  @override
+  String get vault_import_failed => 'Ошибка импорта резервной копии';
+
+  @override
+  String get ui_font_size => 'Шрифт';
+
+  @override
+  String get ui_line_width => 'Толщина';
+
+  @override
+  String archive_open_failed_with_reason(String e) {
+    return 'Не удалось открыть: $e';
+  }
+
+  @override
+  String archive_extract_failed_with_reason(String e) {
+    return 'Не удалось распаковать: $e';
+  }
+
+  @override
+  String get archive_unsupported_format =>
+      'Файл пуст или не может быть распакован (возможно, он слишком большой, повреждён или использует неподдерживаемый формат сжатия)';
+
+  @override
+  String get vault_export_backup_confirm =>
+      'The backup file will be saved to the following location:';
+
+  @override
+  String get vault_import_only_zip => 'Only .zip backup files are supported';
+
+  @override
+  String get vault_import_password_hint =>
+      'This backup uses a different password. Please re-unlock the vault with the password used when the backup was created';
+
+  @override
+  String get vault_open_backup_location =>
+      'Open the folder where the backup is saved?';
+
+  @override
+  String get open_file => 'Open';
+
+  @override
+  String get open_in_location => 'Open file location';
+
+  @override
+  String get open_with_title => 'Open with';
+
+  @override
+  String get share_permission_title => 'Permission required';
+
+  @override
+  String get share_permission_message =>
+      'ZenFile does not have permission to access this file. Please share it again or grant permission and retry.';
 }

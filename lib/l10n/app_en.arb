@@ -3427,7 +3427,6 @@
   "@ui_close_all_tabs_message": {
     "description": "ui widgets"
   },
-
   "ui_not_found_title": "No {title} found",
   "@ui_not_found_title": {
     "description": "ui widgets",
@@ -3621,7 +3620,7 @@
   "ui_documents": "Documents",
   "ui_no_matching_files": "No matching files found",
   "ui_try_modify_search": "Try modifying your search text to find hidden items.",
-  "ui_vault_empty_desc": "XOR obfuscation signatures make files completely unopenable and hidden from the system scanner database. Click the button below to protect them.",
+  "ui_vault_empty_desc": "AES-256-GCM encryption keeps your files completely unopenable by the system or other apps, and hides them from the media scanner. Tap the button below to protect them.",
   "ui_copied_n_items": "Copied {count} item(s) to clipboard",
   "ui_cut_n_items": "Cut {count} item(s) to clipboard",
   "ui_copy_tooltip": "Copy",
@@ -3695,7 +3694,7 @@
     "description": "Label for new file name input in rename dialog"
   },
   "msg_vault_choose_mode": "Choose Protection Mode",
-  "msg_vault_mode_desc": "Choose how you want to protect your selected files. Secured files are XOR scrambled instantly.",
+  "msg_vault_mode_desc": "Choose how to protect the selected files. Secured files are encrypted with AES-256-GCM.",
   "ui_secure_import": "Secure Import (Sandbox)",
   "ui_in_place_scramble": "In-Place Scramble (Fast)",
   "msg_scrambling": "Scrambling & Protecting...",
@@ -4963,7 +4962,7 @@
   "@ui_remote_guard": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_desc": "Set a 4-digit PIN to protect remote server access. Enter PIN after app launch or manual lock.",
+  "ui_remote_guard_desc": "Set a password to protect remote server access. Enter it after app launch or manual lock.",
   "@ui_remote_guard_desc": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -4999,7 +4998,7 @@
   "@ui_remote_guard_change_pin": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_pin_hint": "4-digit numeric PIN",
+  "ui_remote_guard_pin_hint": "Password (letters, digits or symbols)",
   "@ui_remote_guard_pin_hint": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -5023,11 +5022,11 @@
   "@ui_app_lock": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_app_lock_desc": "Require your PIN to unlock the app each time it launches",
+  "ui_app_lock_desc": "Require your password to unlock the app each time it launches",
   "@ui_app_lock_desc": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_app_lock_set_pin_first": "Set a 4-digit PIN before enabling",
+  "ui_app_lock_set_pin_first": "Set a password before enabling",
   "@ui_app_lock_set_pin_first": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -5328,6 +5327,54 @@
     "description": "Editor tab: resize"
   },
   "editor_crop": "Crop",
+  "ui_draw": "Draw",
+  "ui_edit": "Edit",
+  "@ui_edit": {
+    "description": "Edit object"
+  },
+  "ui_color": "Color",
+  "@ui_color": {
+    "description": "Draw color"
+  },
+  "ui_width": "Thickness",
+  "@ui_width": {
+    "description": "Stroke thickness / font size"
+  },
+  "ui_text": "Text",
+  "@ui_text": {
+    "description": "Draw tool: text"
+  },
+  "ui_rect": "Rectangle",
+  "@ui_rect": {
+    "description": "Draw tool: rectangle"
+  },
+  "ui_ellipse": "Ellipse",
+  "@ui_ellipse": {
+    "description": "Draw tool: ellipse"
+  },
+  "ui_line": "Line",
+  "@ui_line": {
+    "description": "Draw tool: line"
+  },
+  "ui_mosaic": "Mosaic",
+  "@ui_mosaic": {
+    "description": "Draw tool: mosaic"
+  },
+  "@ui_draw": {
+    "description": "Editor tab: draw"
+  },
+  "ui_pen": "Pen",
+  "@ui_pen": {
+    "description": "Draw tool: pen"
+  },
+  "ui_arrow": "Arrow",
+  "@ui_arrow": {
+    "description": "Draw tool: arrow"
+  },
+  "ui_brush_size": "Brush size",
+  "@ui_brush_size": {
+    "description": "Draw brush size"
+  },
   "@editor_crop": {
     "description": "Editor tab: crop"
   },
@@ -5790,6 +5837,22 @@
   "@editor_undo": {
     "description": "editor_undo label"
   },
+  "editor_text_hint": "Enter text",
+  "@editor_text_hint": {
+    "description": "Placeholder shown inside an empty text region box in image editor draw mode"
+  },
+  "editor_font_bold": "Bold",
+  "@editor_font_bold": {
+    "description": "Bold toggle for text tool in image editor"
+  },
+  "editor_font_italic": "Italic",
+  "@editor_font_italic": {
+    "description": "Italic toggle for text tool in image editor"
+  },
+  "editor_font_underline": "Underline",
+  "@editor_font_underline": {
+    "description": "Underline toggle for text tool in image editor"
+  },
   "wol_port_hint": "Optional",
   "@wol_port_hint": {
     "description": "wol_port_hint label"
@@ -6166,5 +6229,88 @@
   "ui_enter_host_first": "Enter the host address and port first",
   "@ui_enter_host_first": {
     "description": "SMB wizard: prompt to enter host and port before scanning"
+  },
+  "vault_enter_password": "Enter password to unlock",
+  "vault_set_password": "Set a password",
+  "vault_confirm_password": "Re-enter to confirm",
+  "vault_pins_mismatch": "Passwords do not match",
+  "vault_incorrect_password": "Incorrect password",
+  "vault_password_set": "Password set",
+  "vault_next": "Next",
+  "vault_unlock": "Unlock",
+  "vault_use_keypad": "Use numeric keypad",
+  "vault_use_text_input": "Use alphanumeric",
+  "vault_fingerprint": "Unlock with fingerprint",
+  "vault_fingerprint_failed": "Fingerprint authentication failed",
+  "vault_min_length": "Password must be at least 4 characters",
+  "vault_pwd_alphanumeric": "Password (letters, digits or symbols)",
+  "vault_enable_fingerprint": "Enable fingerprint unlock",
+  "vault_biometric_desc": "Use your fingerprint to unlock the vault quickly",
+  "vault_export_backup": "Export backup",
+  "vault_export_backup_desc": "Export an encrypted vault backup (.zip)",
+  "vault_import_backup": "Import backup",
+  "vault_import_backup_desc": "Restore vault from a backup (.zip)",
+  "vault_uninstall_warning_title": "Uninstall warning",
+  "vault_uninstall_warning": "Uninstalling the app clears the vault. Export a backup first.",
+  "vault_backup_exported": "Backup exported to",
+  "vault_backup_imported": "Items imported",
+  "vault_export_failed": "Backup export failed",
+  "vault_import_failed": "Backup import failed",
+  "ui_font_size": "Font",
+  "@ui_font_size": {
+    "description": "Slider label"
+  },
+  "ui_line_width": "Line width",
+  "@ui_line_width": {
+    "description": "Slider label"
+  },
+  "archive_open_failed_with_reason": "Cannot open: {e}",
+  "@archive_open_failed_with_reason": {
+    "description": "archive_viewer_screen.dart failed to open an item in archive",
+    "placeholders": {
+      "e": {
+        "type": "String"
+      }
+    }
+  },
+  "archive_extract_failed_with_reason": "Extraction failed: {e}",
+  "@archive_extract_failed_with_reason": {
+    "description": "archive_viewer_screen.dart failed to extract an item out of archive",
+    "placeholders": {
+      "e": {
+        "type": "String"
+      }
+    }
+  },
+  "archive_unsupported_format": "File is empty or cannot be decompressed (it may be too large, corrupted, or use an unsupported compression format)",
+  "@archive_unsupported_format": {
+    "description": "archive_viewer_screen.dart specific message for empty/unsupported archive entries"
+  },
+  "vault_export_backup_confirm": "The backup file will be saved to the following location:",
+  "@vault_export_backup_confirm": {
+    "description": "vault backup UI string"
+  },
+  "vault_import_only_zip": "Only .zip backup files are supported",
+  "@vault_import_only_zip": {
+    "description": "vault backup UI string"
+  },
+  "vault_import_password_hint": "This backup uses a different password. Please re-unlock the vault with the password used when the backup was created",
+  "@vault_import_password_hint": {
+    "description": "vault backup UI string"
+  },
+  "vault_open_backup_location": "Open the folder where the backup is saved?",
+  "@vault_open_backup_location": {
+    "description": "vault backup UI string"
+  },
+  "open_file": "Open",
+  "open_in_location": "Open file location",
+  "open_with_title": "Open with"  ,
+  "share_permission_title": "Permission required",
+  "share_permission_message": "ZenFile does not have permission to access this file. Please share it again or grant permission and retry.",
+  "@share_permission_title": {
+    "description": "Title for share permission prompt"
+  },
+  "@share_permission_message": {
+    "description": "Message for share permission prompt"
   }
 }

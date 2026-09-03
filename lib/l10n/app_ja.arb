@@ -3424,7 +3424,6 @@
   "@ui_close_all_tabs_message": {
     "description": "ui widgets"
   },
-
   "ui_not_found_title": "{title}が見つかりません",
   "@ui_not_found_title": {
     "description": "ui widgets",
@@ -3643,7 +3642,7 @@
   "ui_documents": "ドキュメント",
   "ui_no_matching_files": "一致するファイルが見つかりません",
   "ui_try_modify_search": "検索テキストを変更して隠しアイテムを探してみてください。",
-  "ui_vault_empty_desc": "XOR難読化署名により、ファイルは完全に開けなくなり、システムスキャナーデータベースから隠されます。下のボタンをクリックして保護してください。",
+  "ui_vault_empty_desc": "AES-256-GCM 暗号化により、ファイルはシステムや他のアプリから完全に開けなくなり、メディアスキャナーからも隠されます。下のボタンをタップして保護してください。",
   "ui_copied_n_items": "{count}個のアイテムをクリップボードにコピーしました",
   "ui_cut_n_items": "{count}個のアイテムをクリップボードに切り取りました",
   "ui_copy_tooltip": "コピー",
@@ -3676,7 +3675,7 @@
   "ui_add_selected": "選択を追加 ({count})",
   "ui_pin_selected": "選択をピン留め ({count})",
   "msg_vault_choose_mode": "保護モードを選択",
-  "msg_vault_mode_desc": "選択したファイルの保護方法を選択してください。セキュアファイルは即座にXORスクランブルされます。",
+  "msg_vault_mode_desc": "選択したファイルの保護方法を選択します。保護されたファイルは AES-256-GCM で暗号化されます。",
   "ui_secure_import": "セキュアインポート（サンドボックス）",
   "ui_in_place_scramble": "インプレーススクランブル（高速）",
   "msg_scrambling": "スクランブルと保護中...",
@@ -4907,7 +4906,7 @@
   "@ui_remote_guard": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_desc": "4桁のPINを設定してリモートサーバーへのアクセスを保護します。アプリ起動時や手動ロック後にPINを入力してください。",
+  "ui_remote_guard_desc": "Set a password to protect remote server access. Enter it after app launch or manual lock.",
   "@ui_remote_guard_desc": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -4943,7 +4942,7 @@
   "@ui_remote_guard_change_pin": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_pin_hint": "4桁の数字PIN",
+  "ui_remote_guard_pin_hint": "パスワード（英数字または記号）",
   "@ui_remote_guard_pin_hint": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -4967,11 +4966,11 @@
   "@ui_app_lock": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_app_lock_desc": "アプリ起動時にPINを入力して解除します",
+  "ui_app_lock_desc": "Require your password to unlock the app each time it launches",
   "@ui_app_lock_desc": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_app_lock_set_pin_first": "Set a 4-digit PIN before enabling",
+  "ui_app_lock_set_pin_first": "Set a password before enabling",
   "@ui_app_lock_set_pin_first": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -5272,6 +5271,54 @@
     "description": "Editor tab: resize"
   },
   "editor_crop": "Crop",
+  "ui_draw": "描画",
+  "ui_edit": "編集",
+  "@ui_edit": {
+    "description": "Edit object"
+  },
+  "ui_color": "色",
+  "@ui_color": {
+    "description": "Draw color"
+  },
+  "ui_width": "太さ",
+  "@ui_width": {
+    "description": "Stroke thickness / font size"
+  },
+  "ui_text": "テキスト",
+  "@ui_text": {
+    "description": "Draw tool: text"
+  },
+  "ui_rect": "長方形",
+  "@ui_rect": {
+    "description": "Draw tool: rectangle"
+  },
+  "ui_ellipse": "楕円",
+  "@ui_ellipse": {
+    "description": "Draw tool: ellipse"
+  },
+  "ui_line": "直線",
+  "@ui_line": {
+    "description": "Draw tool: line"
+  },
+  "ui_mosaic": "モザイク",
+  "@ui_mosaic": {
+    "description": "Draw tool: mosaic"
+  },
+  "@ui_draw": {
+    "description": "Editor tab: draw"
+  },
+  "ui_pen": "ペン",
+  "@ui_pen": {
+    "description": "Draw tool: pen"
+  },
+  "ui_arrow": "矢印",
+  "@ui_arrow": {
+    "description": "Draw tool: arrow"
+  },
+  "ui_brush_size": "ブラシサイズ",
+  "@ui_brush_size": {
+    "description": "Draw brush size"
+  },
   "@editor_crop": {
     "description": "Editor tab: crop"
   },
@@ -5734,6 +5781,22 @@
   "@editor_undo": {
     "description": "editor_undo label"
   },
+  "editor_text_hint": "テキストを入力",
+  "@editor_text_hint": {
+    "description": "Placeholder shown inside an empty text region box in image editor draw mode"
+  },
+  "editor_font_bold": "太字",
+  "@editor_font_bold": {
+    "description": "Bold toggle for text tool in image editor"
+  },
+  "editor_font_italic": "斜体",
+  "@editor_font_italic": {
+    "description": "Italic toggle for text tool in image editor"
+  },
+  "editor_font_underline": "下線",
+  "@editor_font_underline": {
+    "description": "Underline toggle for text tool in image editor"
+  },
   "wol_port_hint": "任意",
   "@wol_port_hint": {
     "description": "wol_port_hint label"
@@ -6104,5 +6167,88 @@
   "ui_enter_host_first": "まずホストアドレスとポートを入力",
   "@ui_enter_host_first": {
     "description": "SMB wizard: prompt to enter host and port before scanning"
+  },
+  "vault_enter_password": "ロック解除するにはパスワードを入力",
+  "vault_set_password": "パスワードを設定",
+  "vault_confirm_password": "確認のためもう一度入力",
+  "vault_pins_mismatch": "パスワードが一致しません",
+  "vault_incorrect_password": "パスワードが正しくありません",
+  "vault_password_set": "パスワードを設定しました",
+  "vault_next": "次へ",
+  "vault_unlock": "ロック解除",
+  "vault_use_keypad": "テンキーを使用",
+  "vault_use_text_input": "英数字を使用",
+  "vault_fingerprint": "指紋でロック解除",
+  "vault_fingerprint_failed": "指紋認証に失敗しました",
+  "vault_min_length": "パスワードは最低4文字必要です",
+  "vault_pwd_alphanumeric": "パスワード（英数字または記号）",
+  "vault_enable_fingerprint": "指紋ロック解除を有効にする",
+  "vault_biometric_desc": "指紋を使って金庫を素早くロック解除できます",
+  "vault_export_backup": "バックアップを書き出し",
+  "vault_export_backup_desc": "暗号化された金庫のバックアップを書き出し (.zip)",
+  "vault_import_backup": "バックアップを読み込み",
+  "vault_import_backup_desc": "バックアップから金庫を復元 (.zip)",
+  "vault_uninstall_warning_title": "アンインストールの警告",
+  "vault_uninstall_warning": "アプリをアンインストールすると金庫が消去されます。先にバックアップを書き出してください。",
+  "vault_backup_exported": "バックアップを書き出し先：",
+  "vault_backup_imported": "読み込んだ項目",
+  "vault_export_failed": "バックアップの書き出しに失敗",
+  "vault_import_failed": "バックアップの読み込みに失敗",
+  "ui_font_size": "フォント",
+  "@ui_font_size": {
+    "description": "Slider label"
+  },
+  "ui_line_width": "線の太さ",
+  "@ui_line_width": {
+    "description": "Slider label"
+  },
+  "archive_open_failed_with_reason": "開けませんでした: {e}",
+  "@archive_open_failed_with_reason": {
+    "description": "archive_viewer_screen.dart failed to open an item in archive",
+    "placeholders": {
+      "e": {
+        "type": "String"
+      }
+    }
+  },
+  "archive_extract_failed_with_reason": "解凍に失敗しました: {e}",
+  "@archive_extract_failed_with_reason": {
+    "description": "archive_viewer_screen.dart failed to extract an item out of archive",
+    "placeholders": {
+      "e": {
+        "type": "String"
+      }
+    }
+  },
+  "archive_unsupported_format": "ファイルが空であるか解凍できません（ファイルが大きすぎる、破損している、対応していない圧縮形式を使用している可能性があります）",
+  "@archive_unsupported_format": {
+    "description": "archive_viewer_screen.dart specific message for empty/unsupported archive entries"
+  },
+  "vault_export_backup_confirm": "The backup file will be saved to the following location:",
+  "@vault_export_backup_confirm": {
+    "description": "vault backup UI string"
+  },
+  "vault_import_only_zip": "Only .zip backup files are supported",
+  "@vault_import_only_zip": {
+    "description": "vault backup UI string"
+  },
+  "vault_import_password_hint": "This backup uses a different password. Please re-unlock the vault with the password used when the backup was created",
+  "@vault_import_password_hint": {
+    "description": "vault backup UI string"
+  },
+  "vault_open_backup_location": "Open the folder where the backup is saved?",
+  "@vault_open_backup_location": {
+    "description": "vault backup UI string"
+  },
+  "open_file": "Open",
+  "open_in_location": "Open file location",
+  "open_with_title": "Open with"  ,
+  "share_permission_title": "Permission required",
+  "share_permission_message": "ZenFile does not have permission to access this file. Please share it again or grant permission and retry.",
+  "@share_permission_title": {
+    "description": "Title for share permission prompt"
+  },
+  "@share_permission_message": {
+    "description": "Message for share permission prompt"
   }
 }

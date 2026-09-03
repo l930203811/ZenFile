@@ -187,7 +187,7 @@ class _ArchiveViewerScreenState extends State<ArchiveViewerScreen> {
       // 其他文件：提取单个文件到临时目录后交给系统默认打开方式
       final tempPath = await _extractItemToTemp(item);
       if (tempPath == null) {
-        throw Exception('文件内容为空或解压失败，可能文件过大、已损坏或使用了不支持的压缩方式');
+        throw Exception(L10n.of(context).archive_unsupported_format);
       }
 
       if (mounted) {
@@ -198,7 +198,7 @@ class _ArchiveViewerScreenState extends State<ArchiveViewerScreen> {
       debugPrint('Error opening item: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('无法打开: ${e.toString()}')),
+          SnackBar(content: Text(L10n.of(context).archive_open_failed_with_reason(e.toString()))),
         );
       }
     }
@@ -284,7 +284,7 @@ class _ArchiveViewerScreenState extends State<ArchiveViewerScreen> {
         final map = await ArchiveService.extractEntriesToBytes(widget.archivePath, [item.fullPath]);
         final content = map[item.fullPath];
         if (content == null || content.isEmpty) {
-          throw Exception('文件内容为空或无法解压（可能文件过大、已损坏或使用了不支持的压缩方式）');
+          throw Exception(L10n.of(context).archive_unsupported_format);
         }
         final destFile = File(p.join(destDir, item.name));
         await destFile.writeAsBytes(content);
@@ -312,7 +312,7 @@ class _ArchiveViewerScreenState extends State<ArchiveViewerScreen> {
       debugPrint('Error extracting out: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('解压失败: ${e.toString()}')),
+          SnackBar(content: Text(L10n.of(context).archive_extract_failed_with_reason(e.toString()))),
         );
       }
     } finally {

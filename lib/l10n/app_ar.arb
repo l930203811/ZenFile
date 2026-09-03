@@ -3420,7 +3420,6 @@
   "@ui_close_all_tabs_message": {
     "description": "ui widgets"
   },
-
   "ui_not_found_title": "لم يتم العثور على {title}",
   "@ui_not_found_title": {
     "description": "ui widgets",
@@ -3639,7 +3638,7 @@
   "ui_documents": "المستندات",
   "ui_no_matching_files": "لم يتم العثور على ملفات مطابقة",
   "ui_try_modify_search": "حاول تعديل نص البحث للعثور على العناصر المخفية.",
-  "ui_vault_empty_desc": "توقيعات التشويش XOR تجعل الملفات غير قابلة للفتح تماماً ومخفية من قاعدة بيانات فاحص النظام. انقر على الزر أدناه لحمايتها.",
+  "ui_vault_empty_desc": "تشفير AES-256-GCM يجعل الملفات غير قابلة للفتح تماماً من قبل النظام أو التطبيقات الأخرى، ومخفية من ماسح الوسائط. انقر الزر أدناه لحمايتها.",
   "ui_copied_n_items": "تم نسخ {count} عنصر(ات) إلى الحافظة",
   "ui_cut_n_items": "تم قص {count} عنصر(ات) إلى الحافظة",
   "ui_copy_tooltip": "نسخ",
@@ -3672,7 +3671,7 @@
   "ui_add_selected": "إضافة المحدد ({count})",
   "ui_pin_selected": "تثبيت المحدد ({count})",
   "msg_vault_choose_mode": "اختر وضع الحماية",
-  "msg_vault_mode_desc": "اختر كيفية حماية ملفاتك المحددة. يتم تشفير الملفات الآمنة فورًا باستخدام XOR.",
+  "msg_vault_mode_desc": "اختر كيفية حماية ملفاتك المحددة. يتم تشفير الملفات الآمنة باستخدام AES-256-GCM.",
   "ui_secure_import": "استيراد آمن (صندوق عزل)",
   "ui_in_place_scramble": "التشويش في المكان (سريع)",
   "msg_scrambling": "جاري التشويش والحماية...",
@@ -4903,7 +4902,7 @@
   "@ui_remote_guard": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_desc": "عيّن رمز PIN مكوناً من 4 أرقام لحماية الوصول إلى الخوادم البعيدة. أدخل رمز PIN بعد تشغيل التطبيق أو القفل اليدوي.",
+  "ui_remote_guard_desc": "Set a password to protect remote server access. Enter it after app launch or manual lock.",
   "@ui_remote_guard_desc": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -4939,7 +4938,7 @@
   "@ui_remote_guard_change_pin": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_pin_hint": "رمز PIN رقمي من 4 أرقام",
+  "ui_remote_guard_pin_hint": "كلمة مرور (أحرف أو أرقام أو رموز)",
   "@ui_remote_guard_pin_hint": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -4963,11 +4962,11 @@
   "@ui_app_lock": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_app_lock_desc": "يتطلب رمز PIN لإلغاء قفل التطبيق عند كل تشغيل",
+  "ui_app_lock_desc": "Require your password to unlock the app each time it launches",
   "@ui_app_lock_desc": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_app_lock_set_pin_first": "Set a 4-digit PIN before enabling",
+  "ui_app_lock_set_pin_first": "Set a password before enabling",
   "@ui_app_lock_set_pin_first": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -5268,6 +5267,54 @@
     "description": "Editor tab: resize"
   },
   "editor_crop": "Crop",
+  "ui_draw": "رسم",
+  "ui_edit": "تحرير",
+  "@ui_edit": {
+    "description": "Edit object"
+  },
+  "ui_color": "لون",
+  "@ui_color": {
+    "description": "Draw color"
+  },
+  "ui_width": "السماكة",
+  "@ui_width": {
+    "description": "Stroke thickness / font size"
+  },
+  "ui_text": "نص",
+  "@ui_text": {
+    "description": "Draw tool: text"
+  },
+  "ui_rect": "مستطيل",
+  "@ui_rect": {
+    "description": "Draw tool: rectangle"
+  },
+  "ui_ellipse": "بيضاوي",
+  "@ui_ellipse": {
+    "description": "Draw tool: ellipse"
+  },
+  "ui_line": "خط",
+  "@ui_line": {
+    "description": "Draw tool: line"
+  },
+  "ui_mosaic": "فسيفساء",
+  "@ui_mosaic": {
+    "description": "Draw tool: mosaic"
+  },
+  "@ui_draw": {
+    "description": "Editor tab: draw"
+  },
+  "ui_pen": "قلم",
+  "@ui_pen": {
+    "description": "Draw tool: pen"
+  },
+  "ui_arrow": "سهم",
+  "@ui_arrow": {
+    "description": "Draw tool: arrow"
+  },
+  "ui_brush_size": "حجم الفرشاة",
+  "@ui_brush_size": {
+    "description": "Draw brush size"
+  },
   "@editor_crop": {
     "description": "Editor tab: crop"
   },
@@ -5730,6 +5777,22 @@
   "@editor_undo": {
     "description": "editor_undo label"
   },
+  "editor_text_hint": "أدخل نصًا",
+  "@editor_text_hint": {
+    "description": "Placeholder shown inside an empty text region box in image editor draw mode"
+  },
+  "editor_font_bold": "عريض",
+  "@editor_font_bold": {
+    "description": "Bold toggle for text tool in image editor"
+  },
+  "editor_font_italic": "مائل",
+  "@editor_font_italic": {
+    "description": "Italic toggle for text tool in image editor"
+  },
+  "editor_font_underline": "تحته خط",
+  "@editor_font_underline": {
+    "description": "Underline toggle for text tool in image editor"
+  },
   "wol_port_hint": "اختياري",
   "@wol_port_hint": {
     "description": "wol_port_hint label"
@@ -6100,5 +6163,88 @@
   "ui_enter_host_first": "أدخل عنوان المضيف والمنفذ أولاً",
   "@ui_enter_host_first": {
     "description": "SMB wizard: prompt to enter host and port before scanning"
+  },
+  "vault_enter_password": "أدخل كلمة المرور لفتح القفل",
+  "vault_set_password": "تعيين كلمة مرور",
+  "vault_confirm_password": "أعد الإدخال للتأكيد",
+  "vault_pins_mismatch": "كلمتا المرور غير متطابقتين",
+  "vault_incorrect_password": "كلمة المرور غير صحيحة",
+  "vault_password_set": "تم تعيين كلمة المرور",
+  "vault_next": "التالي",
+  "vault_unlock": "فتح",
+  "vault_use_keypad": "استخدام لوحة المفاتيح الرقمية",
+  "vault_use_text_input": "استخدام أبجدي رقمي",
+  "vault_fingerprint": "فتح ببصمة الإصبع",
+  "vault_fingerprint_failed": "فشلت مصادقة البصمة",
+  "vault_min_length": "يجب ألا تقل كلمة المرور عن 4 أحرف",
+  "vault_pwd_alphanumeric": "كلمة مرور (أحرف أو أرقام أو رموز)",
+  "vault_enable_fingerprint": "تمكين فتح البصمة",
+  "vault_biometric_desc": "استخدم بصمتك لفتح الخزنة بسرعة",
+  "vault_export_backup": "تصدير النسخة الاحتياطية",
+  "vault_export_backup_desc": "تصدير نسخة احتياطية مشفرة من الخزنة (.zip)",
+  "vault_import_backup": "استيراد النسخة الاحتياطية",
+  "vault_import_backup_desc": "استعادة الخزنة من نسخة احتياطية (.zip)",
+  "vault_uninstall_warning_title": "تحذير إلغاء التثبيت",
+  "vault_uninstall_warning": "إزالة التطبيق تمحو الخزنة. صدّر نسخة احتياطية أولاً.",
+  "vault_backup_exported": "تم تصدير النسخة الاحتياطية إلى",
+  "vault_backup_imported": "تم استيراد عناصر",
+  "vault_export_failed": "فشل تصدير النسخة الاحتياطية",
+  "vault_import_failed": "فشل استيراد النسخة الاحتياطية",
+  "ui_font_size": "الخط",
+  "@ui_font_size": {
+    "description": "Slider label"
+  },
+  "ui_line_width": "سمك الخط",
+  "@ui_line_width": {
+    "description": "Slider label"
+  },
+  "archive_open_failed_with_reason": "تعذر الفتح: {e}",
+  "@archive_open_failed_with_reason": {
+    "description": "archive_viewer_screen.dart failed to open an item in archive",
+    "placeholders": {
+      "e": {
+        "type": "String"
+      }
+    }
+  },
+  "archive_extract_failed_with_reason": "فشل الاستخراج: {e}",
+  "@archive_extract_failed_with_reason": {
+    "description": "archive_viewer_screen.dart failed to extract an item out of archive",
+    "placeholders": {
+      "e": {
+        "type": "String"
+      }
+    }
+  },
+  "archive_unsupported_format": "الملف فارغ أو تعذر فك ضغطه (قد يكون كبيرًا جدًا أو تالفًا أو يستخدم تنسيق ضغط غير مدعوم)",
+  "@archive_unsupported_format": {
+    "description": "archive_viewer_screen.dart specific message for empty/unsupported archive entries"
+  },
+  "vault_export_backup_confirm": "The backup file will be saved to the following location:",
+  "@vault_export_backup_confirm": {
+    "description": "vault backup UI string"
+  },
+  "vault_import_only_zip": "Only .zip backup files are supported",
+  "@vault_import_only_zip": {
+    "description": "vault backup UI string"
+  },
+  "vault_import_password_hint": "This backup uses a different password. Please re-unlock the vault with the password used when the backup was created",
+  "@vault_import_password_hint": {
+    "description": "vault backup UI string"
+  },
+  "vault_open_backup_location": "Open the folder where the backup is saved?",
+  "@vault_open_backup_location": {
+    "description": "vault backup UI string"
+  },
+  "open_file": "Open",
+  "open_in_location": "Open file location",
+  "open_with_title": "Open with"  ,
+  "share_permission_title": "Permission required",
+  "share_permission_message": "ZenFile does not have permission to access this file. Please share it again or grant permission and retry.",
+  "@share_permission_title": {
+    "description": "Title for share permission prompt"
+  },
+  "@share_permission_message": {
+    "description": "Message for share permission prompt"
   }
 }

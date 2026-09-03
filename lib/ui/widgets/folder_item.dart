@@ -41,10 +41,14 @@ class FolderItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isHighlighted = context.select<FileManagerProvider, bool>(
-      (p) => p.forceHighlightedPaths.contains(folder.path) || (p.enableFolderHighlight && p.highlightedPaths.contains(folder.path)),
+      (p) =>
+          p.forceHighlightedPaths.contains(folder.path) ||
+          (p.enableFolderHighlight && p.highlightedPaths.contains(folder.path)),
     );
 
-    final showRemoteBadge = context.select<FileManagerProvider, bool>((p) => p.effectiveShowRemoteCloudBadge);
+    final showRemoteBadge = context.select<FileManagerProvider, bool>(
+      (p) => p.effectiveShowRemoteCloudBadge,
+    );
 
     final cardMargin = EdgeInsets.symmetric(
       horizontal: (16 * itemPaddingMultiplier).clamp(4.0, 32.0),
@@ -53,12 +57,16 @@ class FolderItem extends StatelessWidget {
 
     final child = Card(
       margin: cardMargin,
-      color: isSelected ? theme.colorScheme.primaryContainer.withOpacity(0.4) : theme.colorScheme.surface,
+      color: isSelected
+          ? theme.colorScheme.primaryContainer.withOpacity(0.4)
+          : theme.colorScheme.surface,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: isSelected ? theme.colorScheme.primary : theme.dividerColor.withOpacity(0.1),
+          color: isSelected
+              ? theme.colorScheme.primary
+              : theme.dividerColor.withOpacity(0.1),
           width: isSelected ? 1.5 : 1.0,
         ),
       ),
@@ -69,7 +77,9 @@ class FolderItem extends StatelessWidget {
         child: Stack(
           children: [
             Padding(
-              padding: EdgeInsets.all((12.0 * itemPaddingMultiplier).clamp(4.0, 24.0)),
+              padding: EdgeInsets.all(
+                (12.0 * itemPaddingMultiplier).clamp(4.0, 24.0),
+              ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -81,53 +91,86 @@ class FolderItem extends StatelessWidget {
                           width: 48 * iconScale,
                           height: 48 * iconScale,
                           decoration: BoxDecoration(
-                            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.primary.withOpacity(0.1),
+                            color: isSelected
+                                ? theme.colorScheme.primary
+                                : theme.colorScheme.primary.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: (() {
-                        final parentPath = p.dirname(folder.path).toLowerCase();
-                        final isPackageFolder = parentPath.endsWith('/android/data') || parentPath.endsWith('/android/obb') || parentPath.endsWith(r'\android\data') || parentPath.endsWith(r'\android\obb');
+                            final parentPath = p
+                                .dirname(folder.path)
+                                .toLowerCase();
+                            final isPackageFolder =
+                                parentPath.endsWith('/android/data') ||
+                                parentPath.endsWith('/android/obb') ||
+                                parentPath.endsWith(r'\android\data') ||
+                                parentPath.endsWith(r'\android\obb');
 
-                        if (isPackageFolder && !isSelected) {
-                          return FutureBuilder<Uint8List?>(
-                            future: AppManagerService.getAppIcon(folder.name),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState == ConnectionState.done && snapshot.data != null) {
-                                return Center(
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: Image.memory(
-                                      snapshot.data!,
-                                      width: 38 * iconScale,
-                                      height: 38 * iconScale,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => Icon(
-                                        FileUtils.getFolderIcon(context.select<FileManagerProvider, String>((p) => p.folderIconOption)),
-                                        color: theme.colorScheme.primary,
-                                        size: 28 * iconScale,
+                            if (isPackageFolder && !isSelected) {
+                              return FutureBuilder<Uint8List?>(
+                                future: AppManagerService.getAppIcon(
+                                  folder.name,
+                                ),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                          ConnectionState.done &&
+                                      snapshot.data != null) {
+                                    return Center(
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(10),
+                                        child: Image.memory(
+                                          snapshot.data!,
+                                          width: 38 * iconScale,
+                                          height: 38 * iconScale,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, __, ___) => Icon(
+                                            FileUtils.getFolderIcon(
+                                              context.select<
+                                                FileManagerProvider,
+                                                String
+                                              >((p) => p.folderIconOption),
+                                            ),
+                                            color: theme.colorScheme.primary,
+                                            size: 28 * iconScale,
+                                          ),
+                                        ),
                                       ),
+                                    );
+                                  }
+                                  return Icon(
+                                    FileUtils.getFolderIcon(
+                                      context
+                                          .select<FileManagerProvider, String>(
+                                            (p) => p.folderIconOption,
+                                          ),
                                     ),
-                                  ),
-                                );
-                              }
-                              return Icon(
-                                FileUtils.getFolderIcon(context.select<FileManagerProvider, String>((p) => p.folderIconOption)),
-                                color: theme.colorScheme.primary,
-                                size: 28 * iconScale,
+                                    color: theme.colorScheme.primary,
+                                    size: 28 * iconScale,
+                                  );
+                                },
                               );
-                            },
-                          );
-                        }
+                            }
 
-                        return Icon(
-                          isSelected ? Broken.tick_circle : FileUtils.getFolderIcon(context.select<FileManagerProvider, String>((p) => p.folderIconOption)),
-                          color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.primary,
-                          size: 28 * iconScale,
-                        );
-                      })(),
-                    ),
+                            return Icon(
+                              isSelected
+                                  ? Broken.tick_circle
+                                  : FileUtils.getFolderIcon(
+                                      context
+                                          .select<FileManagerProvider, String>(
+                                            (p) => p.folderIconOption,
+                                          ),
+                                    ),
+                              color: isSelected
+                                  ? theme.colorScheme.onPrimary
+                                  : theme.colorScheme.primary,
+                              size: 28 * iconScale,
+                            );
+                          })(),
+                        ),
                         if (folder.isRemote && showRemoteBadge)
-                          RemoteCloudBadge(size: 12 * (1 + (iconScale - 1) * 0.3)),
+                          RemoteCloudBadge(
+                            size: 12 * (1 + (iconScale - 1) * 0.3),
+                          ),
                       ],
                     ),
                   ),
@@ -153,7 +196,12 @@ class FolderItem extends StatelessWidget {
                                   fontWeight: FontWeight.w600,
                                   fontSize: 15 * (1 + (iconScale - 1) * 0.3),
                                 ),
-                                maxLines: context.select<FileManagerProvider, bool>((p) => p.adaptiveMultiLineNames) ? 3 : 1,
+                                maxLines:
+                                    context.select<FileManagerProvider, bool>(
+                                      (p) => p.adaptiveMultiLineNames,
+                                    )
+                                    ? 3
+                                    : 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -165,10 +213,16 @@ class FolderItem extends StatelessWidget {
                             final activeFilter = provider.filterType;
                             if (activeFilter != FileFilterType.all) {
                               return FutureBuilder<int>(
-                                future: provider.getMatchingFileCount(folder.path, activeFilter),
+                                future: provider.getMatchingFileCount(
+                                  folder.path,
+                                  activeFilter,
+                                ),
                                 builder: (context, snapshot) {
                                   final count = snapshot.data ?? 0;
-                                  final name = provider.getFilterTypeName(activeFilter, count);
+                                  final name = provider.getFilterTypeName(
+                                    activeFilter,
+                                    count,
+                                  );
                                   return Text(
                                     '$count $name',
                                     style: theme.textTheme.bodySmall?.copyWith(
@@ -181,38 +235,60 @@ class FolderItem extends StatelessWidget {
                                 },
                               );
                             } else {
-                              if (provider.hideTimeAndDate && !provider.showFolderContentsCount && !provider.showFolderSizes) {
+                              if (provider.hideTimeAndDate &&
+                                  !provider.showFolderContentsCount &&
+                                  !provider.showFolderSizes) {
                                 return const SizedBox.shrink();
                               }
                               return FutureBuilder<List<int>>(
                                 future: Future.wait([
-                                  provider.showFolderContentsCount ? provider.getFolderItemCount(folder.path, isRemote: folder.isRemote) : Future.value(-1),
-                                  provider.showFolderSizes ? provider.getFolderSize(folder.path) : Future.value(-1),
+                                  provider.showFolderContentsCount
+                                      ? provider.getFolderItemCount(
+                                          folder.path,
+                                          isRemote: folder.isRemote,
+                                        )
+                                      : Future.value(-1),
+                                  provider.showFolderSizes
+                                      ? provider.getFolderSize(folder.path)
+                                      : Future.value(-1),
                                 ]),
                                 builder: (context, snapshot) {
                                   final data = snapshot.data;
-                                  final count = (data != null && data[0] != -1) ? data[0] : null;
-                                  final size = (data != null && data[1] != -1) ? data[1] : null;
+                                  final count = (data != null && data[0] != -1)
+                                      ? data[0]
+                                      : null;
+                                  final size = (data != null && data[1] != -1)
+                                      ? data[1]
+                                      : null;
 
                                   final parts = <String>[];
                                   if (count != null) {
-                                    parts.add(count == 1
-                                      ? L10n.of(context).msg32a1bd25
-                                      : L10n.of(context).count4(count));
+                                    parts.add(
+                                      count == 1
+                                          ? L10n.of(context).msg32a1bd25
+                                          : L10n.of(context).count4(count),
+                                    );
                                   }
                                   if (size != null) {
                                     parts.add(FileUtils.formatBytes(size, 1));
                                   }
                                   if (!provider.hideTimeAndDate) {
-                                    parts.add(FileUtils.formatDateShort(folder.modified, use24Hour: provider.use24HourFormat));
+                                    parts.add(
+                                      FileUtils.formatDateShort(
+                                        folder.modified,
+                                        use24Hour: provider.use24HourFormat,
+                                      ),
+                                    );
                                   }
 
-                                  if (parts.isEmpty) return const SizedBox.shrink();
+                                  if (parts.isEmpty)
+                                    return const SizedBox.shrink();
 
                                   return Text(
                                     parts.join(' • '),
                                     style: theme.textTheme.bodySmall?.copyWith(
-                                      color: theme.textTheme.bodySmall?.color?.withOpacity(0.6),
+                                      color: theme.textTheme.bodySmall?.color
+                                          ?.withOpacity(0.6),
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -225,24 +301,32 @@ class FolderItem extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (!context.select<FileManagerProvider, bool>((p) => p.hideActionMenuButtons))
+                  if (!context.select<FileManagerProvider, bool>(
+                    (p) => p.hideActionMenuButtons,
+                  ))
                     const SizedBox(width: 32),
                 ],
               ),
             ),
-            if (!context.select<FileManagerProvider, bool>((p) => p.hideActionMenuButtons))
+            if (!context.select<FileManagerProvider, bool>(
+              (p) => p.hideActionMenuButtons,
+            ))
               Positioned(
                 top: 0,
                 right: 0,
                 child: IconButton(
                   icon: const Icon(Broken.more, size: 18),
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  constraints: const BoxConstraints(
+                    minWidth: 32,
+                    minHeight: 32,
+                  ),
                   onPressed: () {
                     FileActionSheet.show(
                       context,
                       onAction,
                       showSetAsHome: true,
+                      showShare: !folder.isRemote,
                     );
                   },
                 ),

@@ -55,3 +55,12 @@
 -keep class com.jcraft.jsch.** { *; }
 -dontwarn com.jcraft.jsch.**
 
+# Pdfium (barteksc pdfium-android) — JNI native 方法在 R8 下必须保留，否则 release APK
+# 运行时 UnsatisfiedLinkError 崩溃。同时保留其 native 包名 com.shockwave.pdfium。
+-keep class com.github.barteksc.pdfium.** { *; }
+-keep class com.shockwave.pdfium.** { *; }
+-keep class com.shockwave.pdfium.util.** { *; }
+-keepclasseswithmembernames class * { native <methods>; }
+-dontwarn com.github.barteksc.pdfium.**
+-dontwarn com.shockwave.pdfium.**
+

@@ -28,6 +28,7 @@ import 'file_action_dialogs.dart';
 import 'remote_cloud_badge.dart';
 import 'create_archive_dialog.dart';
 import 'batch_rename_dialog.dart';
+import '../../services/folder_share_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../services/remote/remote_client.dart';
 import '../../services/media_thumbnail_service.dart';
@@ -37,6 +38,7 @@ import 'package:path_provider/path_provider.dart';
 
 class PaneBrowser extends StatefulWidget {
   final int tabIndex;
+
   /// 所属的 pane 序号（0 = 左，1 = 右），仅双窗口多标签模式下有意义，
   /// 用于点击时通知 provider 该 pane 获得焦点。
   final int paneIndex;
@@ -75,22 +77,28 @@ class _PaneBrowserState extends State<PaneBrowser> {
   }
 
   String _clipboardLabel(FileManagerProvider provider, BuildContext context) {
-    final prefix = provider.isCut ? L10n.of(context).ui_cut : L10n.of(context).ui_copy;
+    final prefix = provider.isCut
+        ? L10n.of(context).ui_cut
+        : L10n.of(context).ui_copy;
     if (provider.isRemoteClipboard) {
       final items = provider.remoteClipboardItems;
       if (items.isEmpty) return prefix;
       final name = p.basename(items.first.path);
-      return items.length > 1 ? '$prefix: $name +${items.length - 1}' : '$prefix: $name';
+      return items.length > 1
+          ? '$prefix: $name +${items.length - 1}'
+          : '$prefix: $name';
     }
     final paths = provider.clipboardPaths;
     if (paths.isEmpty) return prefix;
     final name = p.basename(paths.first);
-    return paths.length > 1 ? '$prefix: $name +${paths.length - 1}' : '$prefix: $name';
+    return paths.length > 1
+        ? '$prefix: $name +${paths.length - 1}'
+        : '$prefix: $name';
   }
 
   void _showClipboardMenu(FileManagerProvider provider, ThemeData theme) {
     _activatePane(provider);
-    
+
     final itemNames = <String>[];
     if (provider.isRemoteClipboard) {
       for (final item in provider.remoteClipboardItems) {
@@ -131,121 +139,158 @@ class _PaneBrowserState extends State<PaneBrowser> {
                   ),
                 ],
               ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 剪贴板内容列表
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-              child: Row(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    provider.isCut ? Broken.scissor : Broken.clipboard,
-                    size: 16,
-                    color: provider.isCut ? Colors.orange : theme.colorScheme.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    l10n.ui_cut_copy_items(prefix, itemNames.length),
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: provider.isCut ? Colors.orange : theme.colorScheme.primary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Flexible(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxHeight: maxItemHeight),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  itemCount: itemNames.length,
-                  itemBuilder: (_, i) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 3),
+                  // 剪贴板内容列表
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                     child: Row(
                       children: [
                         Icon(
-                          Icons.insert_drive_file_outlined,
-                          size: 14,
-                          color: theme.colorScheme.onSurface.withOpacity(0.45),
+                          provider.isCut ? Broken.scissor : Broken.clipboard,
+                          size: 16,
+                          color: provider.isCut
+                              ? Colors.orange
+                              : theme.colorScheme.primary,
                         ),
                         const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            itemNames[i],
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurface.withOpacity(0.7),
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        Text(
+                          l10n.ui_cut_copy_items(prefix, itemNames.length),
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: provider.isCut
+                                ? Colors.orange
+                                : theme.colorScheme.primary,
                           ),
                         ),
                       ],
                     ),
                   ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            // 操作按钮
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-              child: Row(
-                children: [
-                  // 清除按钮（左侧，较小）
-                  Expanded(
-                    flex: 2,
-                    child: OutlinedButton(
-                      onPressed: () {
-                        Navigator.pop(sheetContext);
-                        provider.clearClipboard();
-                      },
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: theme.colorScheme.error,
-                        side: BorderSide(color: theme.colorScheme.error.withOpacity(0.25)),
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  Flexible(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxHeight: maxItemHeight),
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 4,
+                        ),
+                        itemCount: itemNames.length,
+                        itemBuilder: (_, i) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 3),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.insert_drive_file_outlined,
+                                size: 14,
+                                color: theme.colorScheme.onSurface.withOpacity(
+                                  0.45,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  itemNames[i],
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.onSurface
+                                        .withOpacity(0.7),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                      child: Text(l10n.ui_clear, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  // 粘贴按钮（右侧，较大）— 粘贴到当前 pane 对应的 tab
-                  Expanded(
-                    flex: 5,
-                    child: ElevatedButton.icon(
-                      onPressed: () async {
-                        Navigator.pop(sheetContext);
-                        await provider.pasteFileToTab(context, widget.tabIndex, clearAfterPaste: true);
-                      },
-                      icon: const Icon(Icons.content_paste, size: 16),
-                      label: Text(l10n.ui_paste, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.primary,
-                        foregroundColor: theme.colorScheme.onPrimary,
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
+                  const SizedBox(height: 4),
+                  // 操作按钮
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+                    child: Row(
+                      children: [
+                        // 清除按钮（左侧，较小）
+                        Expanded(
+                          flex: 2,
+                          child: OutlinedButton(
+                            onPressed: () {
+                              Navigator.pop(sheetContext);
+                              provider.clearClipboard();
+                            },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: theme.colorScheme.error,
+                              side: BorderSide(
+                                color: theme.colorScheme.error.withOpacity(
+                                  0.25,
+                                ),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: Text(
+                              l10n.ui_clear,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        // 粘贴按钮（右侧，较大）— 粘贴到当前 pane 对应的 tab
+                        Expanded(
+                          flex: 5,
+                          child: ElevatedButton.icon(
+                            onPressed: () async {
+                              Navigator.pop(sheetContext);
+                              await provider.pasteFileToTab(
+                                context,
+                                widget.tabIndex,
+                                clearAfterPaste: true,
+                              );
+                            },
+                            icon: const Icon(Icons.content_paste, size: 16),
+                            label: Text(
+                              l10n.ui_paste,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: theme.colorScheme.primary,
+                              foregroundColor: theme.colorScheme.onPrimary,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-            ),
-          ],
-        ),
     );
   }
 
   void _openFolder(FileManagerProvider provider, String path) {
     _activatePane(provider);
     if (_scrollController.hasClients) {
-      provider.saveScrollOffset(provider.tabs[widget.tabIndex].currentPath, _scrollController.offset);
+      provider.saveScrollOffset(
+        provider.tabs[widget.tabIndex].currentPath,
+        _scrollController.offset,
+      );
     }
     // 必须使用 loadDirectoryForTab，否则双窗口下点击非 active pane 的文件夹
     // 会加载到全局 activeTab 对应的面板，导致两个 pane 路径/内容错乱。
@@ -260,9 +305,14 @@ class _PaneBrowserState extends State<PaneBrowser> {
   void _goBack(FileManagerProvider provider) async {
     _activatePane(provider);
     if (_scrollController.hasClients) {
-      provider.saveScrollOffset(provider.tabs[widget.tabIndex].currentPath, _scrollController.offset);
+      provider.saveScrollOffset(
+        provider.tabs[widget.tabIndex].currentPath,
+        _scrollController.offset,
+      );
     }
-    final prevPath = p.posix.dirname(provider.tabs[widget.tabIndex].currentPath);
+    final prevPath = p.posix.dirname(
+      provider.tabs[widget.tabIndex].currentPath,
+    );
     final handled = await provider.goBack();
     if (handled && _scrollController.hasClients) {
       final savedOffset = provider.getSavedScrollOffset(prevPath);
@@ -308,7 +358,9 @@ class _PaneBrowserState extends State<PaneBrowser> {
         provider.cutFile(path);
         break;
       case 'rename':
-        final isMulti = provider.selectedPaths.isNotEmpty && provider.selectedPaths.contains(path);
+        final isMulti =
+            provider.selectedPaths.isNotEmpty &&
+            provider.selectedPaths.contains(path);
         if (isMulti && provider.selectedPaths.length > 1) {
           await BatchRenameDialog.show(context, provider);
         } else {
@@ -329,10 +381,14 @@ class _PaneBrowserState extends State<PaneBrowser> {
         }
         break;
       case 'delete':
-        final isMulti = provider.selectedPaths.isNotEmpty && provider.selectedPaths.contains(path);
+        final isMulti =
+            provider.selectedPaths.isNotEmpty &&
+            provider.selectedPaths.contains(path);
         final confirm = await FileActionDialogs.showConfirmDialog(
           context,
-          title: isMulti ? L10n.of(context).msgcd0b9aca : L10n.of(context).msg4b342999,
+          title: isMulti
+              ? L10n.of(context).msgcd0b9aca
+              : L10n.of(context).msg4b342999,
           content: isMulti
               ? L10n.of(context).count1(provider.selectedPaths.length)
               : L10n.of(context).msgee14ee27,
@@ -347,7 +403,10 @@ class _PaneBrowserState extends State<PaneBrowser> {
           } catch (e) {
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(L10n.of(context).msg_delete_failed(e)), behavior: SnackBarBehavior.floating),
+                SnackBar(
+                  content: Text(L10n.of(context).msg_delete_failed(e)),
+                  behavior: SnackBarBehavior.floating,
+                ),
               );
             }
           }
@@ -365,6 +424,9 @@ class _PaneBrowserState extends State<PaneBrowser> {
           );
         }
         break;
+      case 'share':
+        await FolderShareService.sharePaths(context, [path]);
+        break;
       case 'favorite':
         final name = p.posix.basename(path);
         final isRemote = provider.currIsRemote;
@@ -377,7 +439,14 @@ class _PaneBrowserState extends State<PaneBrowser> {
         if (!context.mounted) return;
         if (groupResult == null) break; // 用户取消
         final group = groupResult.isEmpty ? null : groupResult;
-        provider.addFavorite(path, name, isDir, isRemote: isRemote, connectionId: connectionId, group: group);
+        provider.addFavorite(
+          path,
+          name,
+          isDir,
+          isRemote: isRemote,
+          connectionId: connectionId,
+          group: group,
+        );
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -395,7 +464,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final provider = context.watch<FileManagerProvider>();
-    
+
     // 双窗口模式下，如果tabIndex超出范围，显示activeTab
     final FolderTab tab = widget.tabIndex < provider.tabs.length
         ? provider.tabs[widget.tabIndex]
@@ -406,6 +475,39 @@ class _PaneBrowserState extends State<PaneBrowser> {
     final isSelectionMode = tab.selectedPaths.isNotEmpty;
     // 应用全局「按类别过滤」后的显示列表（单/双窗口统一），文件夹始终保留
     final displayFiles = provider.getDisplayFilesForTab(tab);
+
+    // 滚动到高亮文件位置（与 directory_screen 行为一致）：
+    // 双窗口下，只有 highlight 命中本 pane 的 tab 时才滚动，避免另一窗口错位跳动。
+    if (provider.shouldScrollToHighlight &&
+        isActive &&
+        _scrollController.hasClients) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_scrollController.hasClients) return;
+        final idx = displayFiles.indexWhere(
+          (f) => provider.highlightedPaths.contains(f.path),
+        );
+        if (idx == -1) return;
+        // 计算目标文件中心在内容坐标系中的位置
+        double itemCenter;
+        if (provider.isGridView) {
+          final w = _scrollController.position.viewportDimension;
+          // pane 实际宽度 = CustomScrollView 在外层 Expanded 里的宽度；
+          // 单窗口时 w 即屏宽，双窗口时为屏宽一半左右。gridDelegate 用的就是它。
+          final crossAxisCount = (w / (110 * provider.iconScale)).floor().clamp(2, 10);
+          final row = idx ~/ crossAxisCount;
+          final itemHeight = (150 * provider.iconScale * provider.itemPaddingMultiplier).clamp(100.0, 300.0);
+          itemCenter = row * itemHeight + itemHeight / 2;
+        } else {
+          final itemHeight = (72 * provider.itemPaddingMultiplier).clamp(40.0, 150.0);
+          itemCenter = idx * itemHeight + itemHeight / 2;
+        }
+        final viewport = _scrollController.position.viewportDimension;
+        final maxScroll = _scrollController.position.maxScrollExtent;
+        final centerOffset = (itemCenter - viewport / 2).clamp(0.0, maxScroll);
+        _scrollController.jumpTo(centerOffset);
+        provider.resetScrollToHighlight();
+      });
+    }
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -418,18 +520,20 @@ class _PaneBrowserState extends State<PaneBrowser> {
           color: theme.colorScheme.surface.withOpacity(isActive ? 1.0 : 0.85),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isActive 
-                ? theme.colorScheme.primary.withOpacity(0.3) 
+            color: isActive
+                ? theme.colorScheme.primary.withOpacity(0.3)
                 : theme.colorScheme.outline.withOpacity(0.08),
             width: isActive ? 1.0 : 0.5,
           ),
-          boxShadow: isActive ? [
-            BoxShadow(
-              color: theme.colorScheme.primary.withOpacity(0.03),
-              blurRadius: 2,
-              spreadRadius: 0,
-            )
-          ] : null,
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: theme.colorScheme.primary.withOpacity(0.03),
+                    blurRadius: 2,
+                    spreadRadius: 0,
+                  ),
+                ]
+              : null,
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(6),
@@ -440,8 +544,12 @@ class _PaneBrowserState extends State<PaneBrowser> {
                   if (tab.isLoading)
                     LinearProgressIndicator(
                       minHeight: 2.0,
-                      backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-                      valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
+                      backgroundColor: theme.colorScheme.primary.withOpacity(
+                        0.1,
+                      ),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        theme.colorScheme.primary,
+                      ),
                     ),
 
                   // 双窗口顶部状态栏：激活指示器 + 剪贴板内容（折叠/展开）
@@ -449,16 +557,20 @@ class _PaneBrowserState extends State<PaneBrowser> {
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       curve: Curves.easeInOut,
-                      height: (provider.hasClipboard ||
+                      height:
+                          (provider.hasClipboard ||
                               provider.progressMinimized.value ||
-                              (provider.showFolderFileCount && !isSelectionMode))
+                              (provider.showFolderFileCount &&
+                                  !isSelectionMode))
                           ? 28.0
                           : 16.0,
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       decoration: BoxDecoration(
                         color: isActive
                             ? theme.colorScheme.primary.withOpacity(0.28)
-                            : theme.colorScheme.surfaceVariant.withOpacity(0.25),
+                            : theme.colorScheme.surfaceVariant.withOpacity(
+                                0.25,
+                              ),
                         border: Border(
                           top: isActive
                               ? BorderSide(
@@ -474,90 +586,127 @@ class _PaneBrowserState extends State<PaneBrowser> {
                           Positioned.fill(
                             child: Row(
                               children: [
-                          // 左侧：复制/剪切进度最小化浮窗按钮（点击后台后出现，可重新打开进度页）
-                          ValueListenableBuilder<bool>(
-                            valueListenable: provider.progressMinimized,
-                            builder: (ctx, minimized, _) {
-                              if (!minimized) return const SizedBox.shrink();
-                              return GestureDetector(
-                                onTap: () {
-                                  // 重新打开复制/剪切进度弹窗
-                                  provider.progressNotifier.backgroundMode = false;
-                                  provider.progressMinimized.value = false;
-                                  FileOperationProgressDialog.show(ctx, provider);
-                                },
-                                child: Container(
-                                  width: 22,
-                                  height: 22,
-                                  margin: const EdgeInsets.only(right: 6),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: theme.colorScheme.primary.withOpacity(0.12),
-                                    border: Border.all(
-                                      color: theme.colorScheme.primary.withOpacity(0.45),
-                                      width: 0.5,
-                                    ),
-                                  ),
-                                  child: Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      SizedBox(
-                                        width: 14,
-                                        height: 14,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor: AlwaysStoppedAnimation<Color>(
-                                              theme.colorScheme.primary),
+                                // 左侧：复制/剪切进度最小化浮窗按钮（点击后台后出现，可重新打开进度页）
+                                ValueListenableBuilder<bool>(
+                                  valueListenable: provider.progressMinimized,
+                                  builder: (ctx, minimized, _) {
+                                    if (!minimized)
+                                      return const SizedBox.shrink();
+                                    return GestureDetector(
+                                      onTap: () {
+                                        // 重新打开复制/剪切进度弹窗
+                                        provider
+                                                .progressNotifier
+                                                .backgroundMode =
+                                            false;
+                                        provider.progressMinimized.value =
+                                            false;
+                                        FileOperationProgressDialog.show(
+                                          ctx,
+                                          provider,
+                                        );
+                                      },
+                                      child: Container(
+                                        width: 22,
+                                        height: 22,
+                                        margin: const EdgeInsets.only(right: 6),
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: theme.colorScheme.primary
+                                              .withOpacity(0.12),
+                                          border: Border.all(
+                                            color: theme.colorScheme.primary
+                                                .withOpacity(0.45),
+                                            width: 0.5,
+                                          ),
+                                        ),
+                                        child: Stack(
+                                          alignment: Alignment.center,
+                                          children: [
+                                            SizedBox(
+                                              width: 14,
+                                              height: 14,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                valueColor:
+                                                    AlwaysStoppedAnimation<
+                                                      Color
+                                                    >(
+                                                      theme.colorScheme.primary,
+                                                    ),
+                                              ),
+                                            ),
+                                            Icon(
+                                              Icons.sync,
+                                              size: 9,
+                                              color: theme.colorScheme.primary,
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      Icon(Icons.sync,
-                                          size: 9,
-                                          color: theme.colorScheme.primary),
-                                    ],
+                                    );
+                                  },
+                                ),
+                                // 中间：文件/文件夹计数（开启「显示文件名和文件计数标题」且非多选时显示）
+                                if (provider.showFolderFileCount &&
+                                    !isSelectionMode) ...[
+                                  const SizedBox(width: 10),
+                                  Icon(
+                                    Broken.folder,
+                                    size: 12,
+                                    color: theme.colorScheme.onSurface
+                                        .withOpacity(0.65),
                                   ),
-                                ),
-                              );
-                            },
-                          ),
-                          // 中间：文件/文件夹计数（开启「显示文件名和文件计数标题」且非多选时显示）
-                          if (provider.showFolderFileCount && !isSelectionMode) ...[
-                            const SizedBox(width: 10),
-                            Icon(Broken.folder, size: 12, color: theme.colorScheme.onSurface.withOpacity(0.65)),
-                            const SizedBox(width: 4),
-                            ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 80),
-                              child: Text(
-                                L10n.of(context).ui_folders_count(
-                                  tab.currentFiles.where((e) => e.isDirectory).length,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                  color: theme.colorScheme.onSurface.withOpacity(0.75),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Icon(Broken.document, size: 12, color: theme.colorScheme.onSurface.withOpacity(0.65)),
-                            const SizedBox(width: 4),
-                            ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 80),
-                              child: Text(
-                                L10n.of(context).ui_files_count(
-                                  tab.currentFiles.where((e) => !e.isDirectory).length,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                  color: theme.colorScheme.onSurface.withOpacity(0.75),
-                                ),
-                              ),
-                            ),
-                          ],
+                                  const SizedBox(width: 4),
+                                  ConstrainedBox(
+                                    constraints: const BoxConstraints(
+                                      maxWidth: 80,
+                                    ),
+                                    child: Text(
+                                      L10n.of(context).ui_folders_count(
+                                        tab.currentFiles
+                                            .where((e) => e.isDirectory)
+                                            .length,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                        color: theme.colorScheme.onSurface
+                                            .withOpacity(0.75),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Icon(
+                                    Broken.document,
+                                    size: 12,
+                                    color: theme.colorScheme.onSurface
+                                        .withOpacity(0.65),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  ConstrainedBox(
+                                    constraints: const BoxConstraints(
+                                      maxWidth: 80,
+                                    ),
+                                    child: Text(
+                                      L10n.of(context).ui_files_count(
+                                        tab.currentFiles
+                                            .where((e) => !e.isDirectory)
+                                            .length,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                        color: theme.colorScheme.onSurface
+                                            .withOpacity(0.75),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
                           ),
@@ -566,17 +715,22 @@ class _PaneBrowserState extends State<PaneBrowser> {
                             Align(
                               alignment: Alignment.centerRight,
                               child: GestureDetector(
-                                onTap: () => _showClipboardMenu(provider, theme),
+                                onTap: () =>
+                                    _showClipboardMenu(provider, theme),
                                 child: Container(
                                   height: 22,
                                   margin: const EdgeInsets.only(left: 8),
-                                  padding: const EdgeInsets.symmetric(horizontal: 7),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 7,
+                                  ),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(11),
                                     // 接近实色的背景，覆盖到文件计数时不透出下层文字
                                     color: provider.isCut
                                         ? Colors.orange.withOpacity(0.92)
-                                        : theme.colorScheme.primary.withOpacity(0.92),
+                                        : theme.colorScheme.primary.withOpacity(
+                                            0.92,
+                                          ),
                                     border: Border.all(
                                       color: provider.isCut
                                           ? Colors.orange
@@ -588,7 +742,9 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(
-                                        provider.isCut ? Broken.scissor : Broken.clipboard,
+                                        provider.isCut
+                                            ? Broken.scissor
+                                            : Broken.clipboard,
                                         size: 11,
                                         color: provider.isCut
                                             ? Colors.white
@@ -596,7 +752,9 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                       ),
                                       const SizedBox(width: 3),
                                       ConstrainedBox(
-                                        constraints: const BoxConstraints(maxWidth: 80),
+                                        constraints: const BoxConstraints(
+                                          maxWidth: 80,
+                                        ),
                                         child: Text(
                                           _clipboardLabel(provider, context),
                                           style: TextStyle(
@@ -617,10 +775,10 @@ class _PaneBrowserState extends State<PaneBrowser> {
                             ),
                         ],
                       ),
-                  ),
+                    ),
                   if (provider.filterType != FileFilterType.all)
                     _buildActiveFilterBanner(context, provider),
-                  
+
                   // --- Pane Body ---
                   Expanded(
                     child: DragTarget<DragPayload>(
@@ -628,7 +786,12 @@ class _PaneBrowserState extends State<PaneBrowser> {
                         if (data == null || data.paths.isEmpty) return false;
                         final sourceParent = p.posix.dirname(data.paths.first);
                         if (sourceParent == tab.currentPath) return false;
-                        if (data.paths.any((x) => tab.currentPath == x || tab.currentPath.startsWith(x + p.posix.separator))) return false;
+                        if (data.paths.any(
+                          (x) =>
+                              tab.currentPath == x ||
+                              tab.currentPath.startsWith(x + p.posix.separator),
+                        ))
+                          return false;
                         return true;
                       },
                       onAccept: (data) async {
@@ -641,199 +804,346 @@ class _PaneBrowserState extends State<PaneBrowser> {
                             sourcePaths: data.paths,
                             initialTargetPath: targetPath,
                           );
-                        } else if (data.isRemote && data.remoteItems != null && data.connection != null) {
+                        } else if (data.isRemote &&
+                            data.remoteItems != null &&
+                            data.connection != null) {
                           // 远程文件拖放到本地目标pane
-                          provider.setRemoteClipboard(data.remoteItems!, isCut: true, connection: data.connection!);
-                          await provider.pasteFileToTab(context, targetTabIndex, clearAfterPaste: true);
+                          provider.setRemoteClipboard(
+                            data.remoteItems!,
+                            isCut: true,
+                            connection: data.connection!,
+                          );
+                          await provider.pasteFileToTab(
+                            context,
+                            targetTabIndex,
+                            clearAfterPaste: true,
+                          );
                         } else if (tab.isRemote && tab.remoteClient != null) {
                           // 本地文件拖放到远程目标pane
                           provider.setClipboard(data.paths, isCut: true);
-                          await provider.pasteFileToTab(context, targetTabIndex, clearAfterPaste: true);
+                          await provider.pasteFileToTab(
+                            context,
+                            targetTabIndex,
+                            clearAfterPaste: true,
+                          );
                         } else {
                           // 本地拖放移动文件 — 通过剪贴板+paste路径获得字节级进度
                           provider.setClipboard(data.paths, isCut: true);
-                          await provider.pasteFileToTab(context, targetTabIndex, clearAfterPaste: true);
+                          await provider.pasteFileToTab(
+                            context,
+                            targetTabIndex,
+                            clearAfterPaste: true,
+                          );
                         }
                       },
                       builder: (context, candidateData, rejectedData) {
                         return (tab.isLoading && tab.currentFiles.isEmpty)
                             ? const Center(child: CircularProgressIndicator())
                             : tab.needsPermission
-                                ? RestrictedFolderBanner(
-                                    onEnableRoot: () {
-                                      _activatePane(provider);
-                                      provider.enableRootMode();
-                                    },
-                                    onEnableShizuku: () {
-                                      _activatePane(provider);
-                                      provider.enableShizukuMode();
-                                    },
-                                    onGoBack: () => _goBack(provider),
-                                    isRootAvailable: tab.isRootAvailable,
-                                  )
-                                : CustomScrollView(
-                                      controller: _scrollController,
-                                      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                                      slivers: [
-                                      CupertinoSliverRefreshControl(
-                                        onRefresh: () => provider.loadDirectoryForTab(widget.tabIndex, tab.currentPath, showLoading: false, clearCache: true, forceRefresh: true),
-                                      ),
-                                      if (displayFiles.isEmpty)
-                                        SliverFillRemaining(
-                                          hasScrollBody: false,
-                                          child: Center(
-                                            child: Padding(
-                                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-                                              child: Column(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: [
-                                                  Container(
-                                                    padding: const EdgeInsets.all(16),
-                                                    decoration: BoxDecoration(
-                                                      color: theme.colorScheme.primary.withOpacity(0.08),
-                                                      shape: BoxShape.circle,
-                                                    ),
-                                                    child: Icon(
-                                                      Broken.folder_open,
-                                                      size: 48,
-                                                      color: theme.colorScheme.primary.withOpacity(0.6),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 16),
-                                                  Text(
-                                                    L10n.of(context).msge9691076,
-                                                    style: theme.textTheme.titleMedium?.copyWith(
-                                                      fontWeight: FontWeight.bold,
-                                                      color: theme.colorScheme.onSurface,
-                                                    ),
-                                                  ),
-                                                ],
+                            ? RestrictedFolderBanner(
+                                onEnableRoot: () {
+                                  _activatePane(provider);
+                                  provider.enableRootMode();
+                                },
+                                onEnableShizuku: () {
+                                  _activatePane(provider);
+                                  provider.enableShizukuMode();
+                                },
+                                onGoBack: () => _goBack(provider),
+                                isRootAvailable: tab.isRootAvailable,
+                              )
+                            : CustomScrollView(
+                                controller: _scrollController,
+                                physics: const BouncingScrollPhysics(
+                                  parent: AlwaysScrollableScrollPhysics(),
+                                ),
+                                slivers: [
+                                  CupertinoSliverRefreshControl(
+                                    onRefresh: () =>
+                                        provider.loadDirectoryForTab(
+                                          widget.tabIndex,
+                                          tab.currentPath,
+                                          showLoading: false,
+                                          clearCache: true,
+                                          forceRefresh: true,
+                                        ),
+                                  ),
+                                  if (displayFiles.isEmpty)
+                                    SliverFillRemaining(
+                                      hasScrollBody: false,
+                                      child: Center(
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 24,
+                                          ),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Container(
+                                                padding: const EdgeInsets.all(
+                                                  16,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: theme
+                                                      .colorScheme
+                                                      .primary
+                                                      .withOpacity(0.08),
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: Icon(
+                                                  Broken.folder_open,
+                                                  size: 48,
+                                                  color: theme
+                                                      .colorScheme
+                                                      .primary
+                                                      .withOpacity(0.6),
+                                                ),
                                               ),
-                                            ),
+                                              const SizedBox(height: 16),
+                                              Text(
+                                                L10n.of(context).msge9691076,
+                                                style: theme
+                                                    .textTheme
+                                                    .titleMedium
+                                                    ?.copyWith(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: theme
+                                                          .colorScheme
+                                                          .onSurface,
+                                                    ),
+                                              ),
+                                            ],
                                           ),
-                                        )
-                                      else
-                                        SliverPadding(
-                                          padding: EdgeInsets.only(
-                                            bottom: 80,
-                                            left: provider.isGridView ? 8 : 0,
-                                            right: provider.isGridView ? 8 : 0,
-                                            top: 0,
-                                          ),
-                                          sliver: provider.isGridView
-                                              ? SliverLayoutBuilder(
-                                                  builder: (context, constraints) {
-                                                    final paneWidth = constraints.crossAxisExtent;
-                                                    return SliverGrid(
-                                                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                                        crossAxisCount: (paneWidth / (110 * provider.iconScale)).floor().clamp(2, 10),
-                                                        mainAxisSpacing: (12 * provider.itemPaddingMultiplier).clamp(4.0, 24.0),
-                                                        crossAxisSpacing: (12 * provider.itemPaddingMultiplier).clamp(4.0, 24.0),
-                                                        childAspectRatio: 0.75 / provider.iconScale.clamp(0.7, 1.5),
-                                                      ),
-                                                      delegate: SliverChildBuilderDelegate(
+                                        ),
+                                      ),
+                                    )
+                                  else
+                                    SliverPadding(
+                                      padding: EdgeInsets.only(
+                                        bottom: 80,
+                                        left: provider.isGridView ? 8 : 0,
+                                        right: provider.isGridView ? 8 : 0,
+                                        top: 0,
+                                      ),
+                                      sliver: provider.isGridView
+                                          ? SliverLayoutBuilder(
+                                              builder: (context, constraints) {
+                                                final paneWidth =
+                                                    constraints.crossAxisExtent;
+                                                return SliverGrid(
+                                                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                                    crossAxisCount:
+                                                        (paneWidth /
+                                                                (110 *
+                                                                    provider
+                                                                        .iconScale))
+                                                            .floor()
+                                                            .clamp(2, 10),
+                                                    mainAxisSpacing:
+                                                        (12 *
+                                                                provider
+                                                                    .itemPaddingMultiplier)
+                                                            .clamp(4.0, 24.0),
+                                                    crossAxisSpacing:
+                                                        (12 *
+                                                                provider
+                                                                    .itemPaddingMultiplier)
+                                                            .clamp(4.0, 24.0),
+                                                    childAspectRatio:
+                                                        0.75 /
+                                                        provider.iconScale
+                                                            .clamp(0.7, 1.5),
+                                                  ),
+                                                  delegate: SliverChildBuilderDelegate(
                                                     (context, index) {
-                                                      final item = displayFiles[index];
-                                                      final isSelected = tab.selectedPaths.contains(item.path);
+                                                      final item =
+                                                          displayFiles[index];
+                                                      final isSelected = tab
+                                                          .selectedPaths
+                                                          .contains(item.path);
                                                       if (item.isDirectory) {
                                                         final itemLongPress = () {
-                                                          _activatePane(provider);
-                                                          provider.toggleSelection(item.path);
+                                                          _activatePane(
+                                                            provider,
+                                                          );
+                                                          provider
+                                                              .toggleSelection(
+                                                                item.path,
+                                                              );
                                                         };
                                                         return DragDropHandler(
                                                           path: item.path,
                                                           isDirectory: true,
-                                                          onLongPress: itemLongPress,
-                                                          isRemote: item.isRemote,
-                                                          remoteItems: item.remoteSource != null ? [item.remoteSource!] : null,
-                                                          connection: item.isRemote ? tab.remoteConnection : null,
+                                                          onLongPress:
+                                                              itemLongPress,
+                                                          isRemote:
+                                                              item.isRemote,
+                                                          remoteItems:
+                                                              item.remoteSource !=
+                                                                  null
+                                                              ? [
+                                                                  item.remoteSource!,
+                                                                ]
+                                                              : null,
+                                                          connection:
+                                                              item.isRemote
+                                                              ? tab.remoteConnection
+                                                              : null,
                                                           child: FolderGridItem(
                                                             folder: item,
-                                                            isSelected: isSelected,
-                                                            iconScale: provider.iconScale,
-                                                            itemPaddingMultiplier: provider.itemPaddingMultiplier,
+                                                            isSelected:
+                                                                isSelected,
+                                                            iconScale: provider
+                                                                .iconScale,
+                                                            itemPaddingMultiplier:
+                                                                provider
+                                                                    .itemPaddingMultiplier,
                                                             onTap: () {
-                                                              _activatePane(provider);
+                                                              _activatePane(
+                                                                provider,
+                                                              );
                                                               if (isSelectionMode) {
-                                                                provider.toggleSelection(item.path);
+                                                                provider
+                                                                    .toggleSelection(
+                                                                      item.path,
+                                                                    );
                                                               } else {
-                                                                _openFolder(provider, item.path);
+                                                                _openFolder(
+                                                                  provider,
+                                                                  item.path,
+                                                                );
                                                               }
                                                             },
-                                                            onLongPress: provider.enableDragDrop ? null : itemLongPress,
-                                                            onIconTap: itemLongPress,
-                                                            onAction: (action) => _handleAction(context, action, item.path),
+                                                            onLongPress:
+                                                                provider
+                                                                    .enableDragDrop
+                                                                ? null
+                                                                : itemLongPress,
+                                                            onIconTap:
+                                                                itemLongPress,
+                                                            onAction: (action) =>
+                                                                _handleAction(
+                                                                  context,
+                                                                  action,
+                                                                  item.path,
+                                                                ),
                                                           ),
                                                         );
                                                       } else {
                                                         final itemLongPress = () {
-                                                          _activatePane(provider);
-                                                          provider.toggleSelection(item.path);
+                                                          _activatePane(
+                                                            provider,
+                                                          );
+                                                          provider
+                                                              .toggleSelection(
+                                                                item.path,
+                                                              );
                                                         };
                                                         return DragDropHandler(
                                                           path: item.path,
                                                           isDirectory: false,
-                                                          onLongPress: itemLongPress,
-                                                          isRemote: item.isRemote,
-                                                          remoteItems: item.remoteSource != null ? [item.remoteSource!] : null,
-                                                          connection: item.isRemote ? tab.remoteConnection : null,
+                                                          onLongPress:
+                                                              itemLongPress,
+                                                          isRemote:
+                                                              item.isRemote,
+                                                          remoteItems:
+                                                              item.remoteSource !=
+                                                                  null
+                                                              ? [
+                                                                  item.remoteSource!,
+                                                                ]
+                                                              : null,
+                                                          connection:
+                                                              item.isRemote
+                                                              ? tab.remoteConnection
+                                                              : null,
                                                           child: FileGridItem(
                                                             file: item,
-                                                            isSelected: isSelected,
-                                                            iconScale: provider.iconScale,
-                                                            itemPaddingMultiplier: provider.itemPaddingMultiplier,
+                                                            isSelected:
+                                                                isSelected,
+                                                            iconScale: provider
+                                                                .iconScale,
+                                                            itemPaddingMultiplier:
+                                                                provider
+                                                                    .itemPaddingMultiplier,
                                                             onTap: () {
-                                                              _activatePane(provider);
+                                                              _activatePane(
+                                                                provider,
+                                                              );
                                                               if (isSelectionMode) {
-                                                                provider.toggleSelection(item.path);
+                                                                provider
+                                                                    .toggleSelection(
+                                                                      item.path,
+                                                                    );
                                                               } else {
-                                                                provider.openFile(context, item.path);
+                                                                provider
+                                                                    .openFile(
+                                                                      context,
+                                                                      item.path,
+                                                                    );
                                                               }
                                                             },
-                                                            onLongPress: provider.enableDragDrop ? null : itemLongPress,
-                                                            onIconTap: itemLongPress,
-                                                            onAction: (action) => _handleAction(context, action, item.path),
+                                                            onLongPress:
+                                                                provider
+                                                                    .enableDragDrop
+                                                                ? null
+                                                                : itemLongPress,
+                                                            onIconTap:
+                                                                itemLongPress,
+                                                            onAction: (action) =>
+                                                                _handleAction(
+                                                                  context,
+                                                                  action,
+                                                                  item.path,
+                                                                ),
                                                           ),
                                                         );
                                                       }
                                                     },
-                                                    childCount: displayFiles.length,
+                                                    childCount:
+                                                        displayFiles.length,
                                                   ),
                                                 );
                                               },
                                             )
-                                            : SliverList(
-                                                  delegate: SliverChildBuilderDelegate(
-                                                    (context, index) {
-                                                      final item = displayFiles[index];
-                                                      final isSelected = tab.selectedPaths.contains(item.path);
-                                                      if (item.isDirectory) {
-                                                        return _buildCompactFolderItem(
-                                                          context,
-                                                          provider,
-                                                          item,
-                                                          isSelected,
-                                                          isSelectionMode,
-                                                          tab.remoteConnection,
-                                                        );
-                                                      } else {
-                                                        return _buildCompactFileItem(
-                                                          context,
-                                                          provider,
-                                                          item,
-                                                          isSelected,
-                                                          isSelectionMode,
-                                                          tab.remoteConnection,
-                                                          tab.remoteClient,
-                                                        );
-                                                      }
-                                                    },
-                                                    childCount: displayFiles.length,
-                                                  ),
-                                                ),
-                                        ),
-                                      ],
-                                    );
+                                          : SliverList(
+                                              delegate: SliverChildBuilderDelegate((
+                                                context,
+                                                index,
+                                              ) {
+                                                final item =
+                                                    displayFiles[index];
+                                                final isSelected = tab
+                                                    .selectedPaths
+                                                    .contains(item.path);
+                                                if (item.isDirectory) {
+                                                  return _buildCompactFolderItem(
+                                                    context,
+                                                    provider,
+                                                    item,
+                                                    isSelected,
+                                                    isSelectionMode,
+                                                    tab.remoteConnection,
+                                                  );
+                                                } else {
+                                                  return _buildCompactFileItem(
+                                                    context,
+                                                    provider,
+                                                    item,
+                                                    isSelected,
+                                                    isSelectionMode,
+                                                    tab.remoteConnection,
+                                                    tab.remoteClient,
+                                                  );
+                                                }
+                                              }, childCount: displayFiles.length),
+                                            ),
+                                    ),
+                                ],
+                              );
                       },
                     ),
                   ),
@@ -855,7 +1165,10 @@ class _PaneBrowserState extends State<PaneBrowser> {
     NetworkConnectionModel? remoteConnection,
   ) {
     final theme = Theme.of(context);
-    final isHighlighted = provider.forceHighlightedPaths.contains(folder.path) || (provider.enableFolderHighlight && provider.highlightedPaths.contains(folder.path));
+    final isHighlighted =
+        provider.forceHighlightedPaths.contains(folder.path) ||
+        (provider.enableFolderHighlight &&
+            provider.highlightedPaths.contains(folder.path));
 
     final itemLongPress = () {
       _activatePane(provider);
@@ -887,11 +1200,14 @@ class _PaneBrowserState extends State<PaneBrowser> {
                 color: isSelected
                     ? theme.colorScheme.primaryContainer.withOpacity(0.4)
                     : isHighlighted
-                        ? theme.colorScheme.primary.withOpacity(0.05)
-                        : Colors.transparent,
+                    ? theme.colorScheme.primary.withOpacity(0.05)
+                    : Colors.transparent,
                 border: isHighlighted
                     ? Border(
-                        left: BorderSide(color: theme.colorScheme.primary, width: 3),
+                        left: BorderSide(
+                          color: theme.colorScheme.primary,
+                          width: 3,
+                        ),
                       )
                     : null,
               ),
@@ -914,14 +1230,17 @@ class _PaneBrowserState extends State<PaneBrowser> {
                           child: Icon(
                             isSelected
                                 ? Broken.tick_circle
-                                : FileUtils.getFolderIcon(provider.folderIconOption),
+                                : FileUtils.getFolderIcon(
+                                    provider.folderIconOption,
+                                  ),
                             color: isSelected
                                 ? theme.colorScheme.onPrimary
                                 : theme.colorScheme.primary,
                             size: 16,
                           ),
                         ),
-                        if (folder.isRemote && provider.effectiveShowRemoteCloudBadge)
+                        if (folder.isRemote &&
+                            provider.effectiveShowRemoteCloudBadge)
                           RemoteCloudBadge(size: 9),
                       ],
                     ),
@@ -950,15 +1269,80 @@ class _PaneBrowserState extends State<PaneBrowser> {
                               final activeFilter = provider.filterType;
                               if (activeFilter != FileFilterType.all) {
                                 return FutureBuilder<int>(
-                                  future: provider.getMatchingFileCount(folder.path, activeFilter),
+                                  future: provider.getMatchingFileCount(
+                                    folder.path,
+                                    activeFilter,
+                                  ),
                                   builder: (context, snapshot) {
                                     final count = snapshot.data ?? 0;
-                                    final name = provider.getFilterTypeName(activeFilter, count);
+                                    final name = provider.getFilterTypeName(
+                                      activeFilter,
+                                      count,
+                                    );
                                     return Text(
                                       '$count $name',
+                                      style: theme.textTheme.bodySmall
+                                          ?.copyWith(
+                                            color: theme.colorScheme.primary,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 10.5,
+                                          ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    );
+                                  },
+                                );
+                              } else {
+                                final showCount = provider.showFolderContentsCount;
+                                final showSize = provider.showFolderSizes;
+                                final showDate = !provider.hideTimeAndDate;
+
+                                if (!showCount && !showSize && !showDate) {
+                                  return const SizedBox.shrink();
+                                }
+
+                                return FutureBuilder<List<int>>(
+                                  future: Future.wait([
+                                    showCount
+                                        ? provider.getFolderItemCount(
+                                            folder.path,
+                                            isRemote: folder.isRemote,
+                                          )
+                                        : Future.value(-1),
+                                    showSize
+                                        ? provider.getFolderSize(folder.path)
+                                        : Future.value(-1),
+                                  ]),
+                                  builder: (context, snapshot) {
+                                    final data = snapshot.data;
+                                    final count = (data != null && data[0] != -1) ? data[0] : null;
+                                    final size = (data != null && data[1] != -1) ? data[1] : null;
+
+                                    final parts = <String>[];
+                                    if (count != null) {
+                                      parts.add(count == 1
+                                          ? L10n.of(context).msg32a1bd25
+                                          : L10n.of(context).count4(count));
+                                    }
+                                    if (size != null) {
+                                      parts.add(FileUtils.formatBytes(size, 1));
+                                    }
+                                    if (showDate) {
+                                      parts.add(FileUtils.formatDateCompact(
+                                        folder.modified,
+                                        use24Hour: provider.use24HourFormat,
+                                      ));
+                                    }
+
+                                    if (parts.isEmpty) {
+                                      return const SizedBox.shrink();
+                                    }
+
+                                    return Text(
+                                      parts.join(' • '),
                                       style: theme.textTheme.bodySmall?.copyWith(
-                                        color: theme.colorScheme.primary,
-                                        fontWeight: FontWeight.bold,
+                                        color: theme.textTheme.bodySmall?.color
+                                            ?.withOpacity(0.55),
                                         fontSize: 10.5,
                                       ),
                                       maxLines: 1,
@@ -966,50 +1350,6 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                     );
                                   },
                                 );
-                              } else {
-                                if (provider.hideTimeAndDate && !provider.showFolderContentsCount) {
-                                  return const SizedBox.shrink();
-                                }
-                                if (provider.showFolderContentsCount) {
-                                  return FutureBuilder<int>(
-                                    future: provider.getFolderItemCount(folder.path, isRemote: folder.isRemote),
-                                    builder: (context, snapshot) {
-                                      final count = snapshot.data ?? 0;
-                                      final countStr = count == 1 ? '1 item' : '$count items';
-                                      if (provider.hideTimeAndDate) {
-                                        return Text(
-                                          countStr,
-                                          style: theme.textTheme.bodySmall?.copyWith(
-                                            color: theme.textTheme.bodySmall?.color?.withOpacity(0.55),
-                                            fontSize: 10.5,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        );
-                                      } else {
-                                  return Text(
-                                      '$countStr • ${FileUtils.formatDate(folder.modified, use24Hour: provider.use24HourFormat)}',
-                                      style: theme.textTheme.bodySmall?.copyWith(
-                                        color: theme.textTheme.bodySmall?.color?.withOpacity(0.55),
-                                        fontSize: 10,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        );
-                                      }
-                                    },
-                                  );
-                                } else {
-                                  return Text(
-                                    FileUtils.formatDate(folder.modified, use24Hour: provider.use24HourFormat),
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: theme.textTheme.bodySmall?.color?.withOpacity(0.55),
-                                      fontSize: 10.5,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  );
-                                }
                               }
                             },
                           ),
@@ -1020,14 +1360,19 @@ class _PaneBrowserState extends State<PaneBrowser> {
                 ],
               ),
             ),
-            if (!context.select<FileManagerProvider, bool>((p) => p.hideActionMenuButtons))
+            if (!context.select<FileManagerProvider, bool>(
+              (p) => p.hideActionMenuButtons,
+            ))
               Positioned(
                 top: 0,
                 right: 0,
                 child: IconButton(
                   icon: const Icon(Broken.more, size: 13),
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                  constraints: const BoxConstraints(
+                    minWidth: 18,
+                    minHeight: 18,
+                  ),
                   onPressed: () {
                     _activatePane(provider);
                     FileActionSheet.show(
@@ -1035,6 +1380,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                       (action) => _handleAction(context, action, folder.path),
                       isArchive: false,
                       showSetAsHome: true,
+                      showShare: !folder.isRemote,
                     );
                   },
                 ),
@@ -1055,7 +1401,10 @@ class _PaneBrowserState extends State<PaneBrowser> {
     RemoteClient? remoteClient,
   ) {
     final theme = Theme.of(context);
-    final isHighlighted = provider.forceHighlightedPaths.contains(file.path) || (provider.enableFolderHighlight && provider.highlightedPaths.contains(file.path));
+    final isHighlighted =
+        provider.forceHighlightedPaths.contains(file.path) ||
+        (provider.enableFolderHighlight &&
+            provider.highlightedPaths.contains(file.path));
     final iconColor = FileUtils.getColorForFile(file.path, context);
 
     final itemLongPress = () {
@@ -1088,11 +1437,14 @@ class _PaneBrowserState extends State<PaneBrowser> {
                 color: isSelected
                     ? theme.colorScheme.primaryContainer.withOpacity(0.4)
                     : isHighlighted
-                        ? theme.colorScheme.primary.withOpacity(0.05)
-                        : Colors.transparent,
+                    ? theme.colorScheme.primary.withOpacity(0.05)
+                    : Colors.transparent,
                 border: isHighlighted
                     ? Border(
-                        left: BorderSide(color: theme.colorScheme.primary, width: 3),
+                        left: BorderSide(
+                          color: theme.colorScheme.primary,
+                          width: 3,
+                        ),
                       )
                     : null,
               ),
@@ -1146,9 +1498,13 @@ class _PaneBrowserState extends State<PaneBrowser> {
                               if (!provider.hideTimeAndDate) ...[
                                 Expanded(
                                   child: Text(
-                                    FileUtils.formatDateCompact(file.modified, use24Hour: provider.use24HourFormat),
+                                    FileUtils.formatDateCompact(
+                                      file.modified,
+                                      use24Hour: provider.use24HourFormat,
+                                    ),
                                     style: theme.textTheme.bodySmall?.copyWith(
-                                      color: theme.textTheme.bodySmall?.color?.withOpacity(0.55),
+                                      color: theme.textTheme.bodySmall?.color
+                                          ?.withOpacity(0.55),
                                       fontSize: 9,
                                       letterSpacing: -0.2,
                                     ),
@@ -1161,7 +1517,8 @@ class _PaneBrowserState extends State<PaneBrowser> {
                               Text(
                                 FileUtils.formatBytesCompact(file.size, 1),
                                 style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.textTheme.bodySmall?.color?.withOpacity(0.55),
+                                  color: theme.textTheme.bodySmall?.color
+                                      ?.withOpacity(0.55),
                                   fontSize: 9,
                                   letterSpacing: -0.2,
                                 ),
@@ -1175,14 +1532,19 @@ class _PaneBrowserState extends State<PaneBrowser> {
                 ],
               ),
             ),
-            if (!context.select<FileManagerProvider, bool>((p) => p.hideActionMenuButtons))
+            if (!context.select<FileManagerProvider, bool>(
+              (p) => p.hideActionMenuButtons,
+            ))
               Positioned(
                 top: 0,
                 right: 0,
                 child: IconButton(
                   icon: const Icon(Broken.more, size: 13),
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                  constraints: const BoxConstraints(
+                    minWidth: 18,
+                    minHeight: 18,
+                  ),
                   onPressed: () {
                     _activatePane(provider);
                     FileActionSheet.show(
@@ -1190,6 +1552,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                       (action) => _handleAction(context, action, file.path),
                       isArchive: FileUtils.isArchive(file.path),
                       openWith: !file.isDirectory,
+                      showShare: !file.isRemote,
                     );
                   },
                 ),
@@ -1200,7 +1563,10 @@ class _PaneBrowserState extends State<PaneBrowser> {
     );
   }
 
-  Widget _buildActiveFilterBanner(BuildContext context, FileManagerProvider provider) {
+  Widget _buildActiveFilterBanner(
+    BuildContext context,
+    FileManagerProvider provider,
+  ) {
     final theme = Theme.of(context);
     final filter = provider.filterType;
     String label = '';
@@ -1270,7 +1636,9 @@ class _PaneBrowserState extends State<PaneBrowser> {
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  provider.hideFoldersInFilter ? Broken.folder : Broken.folder_connection,
+                  provider.hideFoldersInFilter
+                      ? Broken.folder
+                      : Broken.folder_connection,
                   color: color,
                   size: 13,
                 ),
@@ -1331,13 +1699,18 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
       if (!mounted) return;
       final lowerPath = widget.file.path.toLowerCase();
       // 远程文件优先走远程缩略图加载逻辑（受「远程媒体缩略图」开关控制）
-      if (widget.file.isRemote && widget.remoteClient != null && PreferencesService.getRemoteMediaThumbnailPreview()) {
+      if (widget.file.isRemote &&
+          widget.remoteClient != null &&
+          PreferencesService.getRemoteMediaThumbnailPreview()) {
         _loadRemoteThumb();
       } else if (!widget.file.isRemote && FileUtils.isVideo(widget.file.path)) {
         _loadVideoThumb();
       } else if (!widget.file.isRemote && FileUtils.isAudio(widget.file.path)) {
         _loadAudioThumb();
-      } else if (lowerPath.endsWith('.apk') || lowerPath.endsWith('.xapk') || lowerPath.endsWith('.apks') || lowerPath.endsWith('.apkm')) {
+      } else if (lowerPath.endsWith('.apk') ||
+          lowerPath.endsWith('.xapk') ||
+          lowerPath.endsWith('.apks') ||
+          lowerPath.endsWith('.apkm')) {
         _loadApkIcon();
       }
     });
@@ -1348,7 +1721,8 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
     super.didUpdateWidget(oldWidget);
     // 路径、修改时间或大小任一变化都说明文件内容已变更，必须清掉旧缩略图重新生成。
     // 仅判 path 不够：同名文件被删除重建后 path 不变但内容已变，旧缩略图会错误复用。
-    final fileChanged = widget.file.path != oldWidget.file.path ||
+    final fileChanged =
+        widget.file.path != oldWidget.file.path ||
         widget.file.modified != oldWidget.file.modified ||
         widget.file.size != oldWidget.file.size;
     if (fileChanged) {
@@ -1359,13 +1733,18 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
         _remoteThumb = null;
       });
       final lowerPath = widget.file.path.toLowerCase();
-      if (widget.file.isRemote && widget.remoteClient != null && PreferencesService.getRemoteMediaThumbnailPreview()) {
+      if (widget.file.isRemote &&
+          widget.remoteClient != null &&
+          PreferencesService.getRemoteMediaThumbnailPreview()) {
         _loadRemoteThumb();
       } else if (!widget.file.isRemote && FileUtils.isVideo(widget.file.path)) {
         _loadVideoThumb();
       } else if (!widget.file.isRemote && FileUtils.isAudio(widget.file.path)) {
         _loadAudioThumb();
-      } else if (lowerPath.endsWith('.apk') || lowerPath.endsWith('.xapk') || lowerPath.endsWith('.apks') || lowerPath.endsWith('.apkm')) {
+      } else if (lowerPath.endsWith('.apk') ||
+          lowerPath.endsWith('.xapk') ||
+          lowerPath.endsWith('.apks') ||
+          lowerPath.endsWith('.apkm')) {
         _loadApkIcon();
       }
     }
@@ -1381,7 +1760,12 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
       // 缓存文件名加入 connection 标识 + modified + size：
       // ① connection 标识区分不同远程连接（路径/修改时间/大小相同也会串图）；
       // ② modified/size 区分同名文件删除重建。
-      final thumbName = MediaThumbnailService.remoteThumbName(widget.connection?.id, widget.file.path, widget.file.modified, widget.file.size);
+      final thumbName = MediaThumbnailService.remoteThumbName(
+        widget.connection?.id,
+        widget.file.path,
+        widget.file.modified,
+        widget.file.size,
+      );
       final thumbPath = p.join(thumbDir.path, thumbName);
       final thumbFile = File(thumbPath);
 
@@ -1412,7 +1796,10 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
       }
 
       final ext = p.extension(widget.file.name).toLowerCase();
-      final tempPath = p.join(tempDir.path, MediaThumbnailService.uniqueTempName(ext));
+      final tempPath = p.join(
+        tempDir.path,
+        MediaThumbnailService.uniqueTempName(ext),
+      );
 
       // 远程连接已建立，直接下载
       final isVideo = FileUtils.isVideo(widget.file.path);
@@ -1422,7 +1809,12 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
         // 并发受限流保护：避免一屏多个远程媒体同时下载造成带宽竞争/超时失败
         await MediaThumbnailService.withRemoteThrottle(() async {
           try {
-            await client.downloadRange(widget.file.path, tempPath, 0, 2 * 1024 * 1024);
+            await client.downloadRange(
+              widget.file.path,
+              tempPath,
+              0,
+              2 * 1024 * 1024,
+            );
           } catch (e) {
             await client.downloadFile(widget.file.path, tempPath, (_) {});
           }
@@ -1439,7 +1831,8 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
         // 仅头部 2MB 解析失败 → 完整下载重试一次，仍失败才放弃。
         thumbBytes = await MediaThumbnailService.withRemoteThrottle(() async {
           var tb = await MediaThumbnailService.generateVideoThumbnail(tempPath);
-          if ((tb == null || tb.length <= 20) && widget.file.size <= 100 * 1024 * 1024) {
+          if ((tb == null || tb.length <= 20) &&
+              widget.file.size <= 100 * 1024 * 1024) {
             try {
               await client.downloadFile(widget.file.path, tempPath, (_) {});
               tb = await MediaThumbnailService.generateVideoThumbnail(tempPath);
@@ -1452,7 +1845,9 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
           if (mounted) setState(() => _videoThumb = thumbBytes);
         }
       } else if (isAudio) {
-        thumbBytes = await MediaThumbnailService.generateAudioThumbnail(tempPath);
+        thumbBytes = await MediaThumbnailService.generateAudioThumbnail(
+          tempPath,
+        );
         if (thumbBytes != null && thumbBytes.length > 20) {
           await thumbFile.writeAsBytes(thumbBytes);
           if (mounted) setState(() => _audioThumb = thumbBytes);
@@ -1510,7 +1905,9 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
     if (!mounted) return;
     try {
       final mediaProvider = context.read<MediaProvider>();
-      final match = mediaProvider.audios.where((s) => s.data == widget.file.path).firstOrNull;
+      final match = mediaProvider.audios
+          .where((s) => s.data == widget.file.path)
+          .firstOrNull;
       if (match != null) {
         final artwork = await OnAudioQuery().queryArtwork(
           match.id,
@@ -1540,7 +1937,8 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
       for (final asset in assetEntities) {
         try {
           final assetPath = await asset.originFile.then((f) => f?.path);
-          if (assetPath != null && assetPath.toLowerCase() == widget.file.path.toLowerCase()) {
+          if (assetPath != null &&
+              assetPath.toLowerCase() == widget.file.path.toLowerCase()) {
             final thumbData = await asset.thumbnailDataWithSize(
               const ThumbnailSize.square(300),
               quality: 80,
@@ -1558,7 +1956,9 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
 
       // 回退：文件不在系统相册中（下载目录、NAS 挂载目录等），
       // 直接通过原生 MediaMetadataRetriever 从文件路径生成首帧缩略图。
-      final thumbBytes = await MediaThumbnailService.generateVideoThumbnail(widget.file.path);
+      final thumbBytes = await MediaThumbnailService.generateVideoThumbnail(
+        widget.file.path,
+      );
       if (mounted && thumbBytes != null && thumbBytes.isNotEmpty) {
         setState(() {
           _videoThumb = thumbBytes;
@@ -1569,14 +1969,24 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
 
   @override
   Widget build(BuildContext context) {
-    final showMediaPreviews = context.select<FileManagerProvider, bool>((p) => p.showMediaPreviews);
+    final showMediaPreviews = context.select<FileManagerProvider, bool>(
+      (p) => p.showMediaPreviews,
+    );
     final isImg = FileUtils.isImage(widget.file.path);
     final isVid = FileUtils.isVideo(widget.file.path);
     final isAud = FileUtils.isAudio(widget.file.path);
-    final isApk = widget.file.path.toLowerCase().endsWith('.apk') || widget.file.path.toLowerCase().endsWith('.xapk') || widget.file.path.toLowerCase().endsWith('.apks') || widget.file.path.toLowerCase().endsWith('.apkm');
+    final isApk =
+        widget.file.path.toLowerCase().endsWith('.apk') ||
+        widget.file.path.toLowerCase().endsWith('.xapk') ||
+        widget.file.path.toLowerCase().endsWith('.apks') ||
+        widget.file.path.toLowerCase().endsWith('.apkm');
 
     if (widget.isSelected) {
-      return Icon(Broken.tick_circle, color: Theme.of(context).colorScheme.onPrimary, size: 18);
+      return Icon(
+        Broken.tick_circle,
+        color: Theme.of(context).colorScheme.onPrimary,
+        size: 18,
+      );
     }
 
     // 压缩包：显示带格式标签的自定义图标
@@ -1615,7 +2025,9 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
     }
 
     // 远程文件缩略图额外受「远程媒体缩略图」开关控制
-    final showRemoteThumb = !widget.file.isRemote || PreferencesService.getRemoteMediaThumbnailPreview();
+    final showRemoteThumb =
+        !widget.file.isRemote ||
+        PreferencesService.getRemoteMediaThumbnailPreview();
     if (!showRemoteThumb) {
       if (isImg) {
         return FileTypeIcon(
@@ -1640,7 +2052,8 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
         height: double.infinity,
         cacheWidth: 80,
         cacheHeight: 80,
-        errorBuilder: (context, error, stackTrace) => Icon(Broken.mobile, color: widget.iconColor, size: 18),
+        errorBuilder: (context, error, stackTrace) =>
+            Icon(Broken.mobile, color: widget.iconColor, size: 18),
       );
     }
 
@@ -1666,7 +2079,10 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
             Center(
               child: Container(
                 padding: const EdgeInsets.all(2),
-                decoration: BoxDecoration(color: Colors.black.withOpacity(0.6), shape: BoxShape.circle),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.6),
+                  shape: BoxShape.circle,
+                ),
                 child: const Icon(Broken.play, color: Colors.white, size: 10),
               ),
             ),
@@ -1681,7 +2097,12 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
           fit: BoxFit.cover,
           width: double.infinity,
           height: double.infinity,
-          errorBuilder: (context, error, stackTrace) => FileTypeIcon(icon: Broken.image, label: FileUtils.getImageTypeLabel(widget.file.path), color: widget.iconColor, iconScale: 18 / 28),
+          errorBuilder: (context, error, stackTrace) => FileTypeIcon(
+            icon: Broken.image,
+            label: FileUtils.getImageTypeLabel(widget.file.path),
+            color: widget.iconColor,
+            iconScale: 18 / 28,
+          ),
         );
       }
       return Image.file(
@@ -1690,7 +2111,12 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
         width: double.infinity,
         height: double.infinity,
         cacheWidth: 80,
-        errorBuilder: (context, error, stackTrace) => FileTypeIcon(icon: Broken.image, label: FileUtils.getImageTypeLabel(widget.file.path), color: widget.iconColor, iconScale: 18 / 28),
+        errorBuilder: (context, error, stackTrace) => FileTypeIcon(
+          icon: Broken.image,
+          label: FileUtils.getImageTypeLabel(widget.file.path),
+          color: widget.iconColor,
+          iconScale: 18 / 28,
+        ),
       );
     }
 
@@ -1705,12 +2131,16 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
             height: double.infinity,
             cacheWidth: 80,
             cacheHeight: 80,
-            errorBuilder: (context, error, stackTrace) => Icon(Broken.video, color: widget.iconColor, size: 18),
+            errorBuilder: (context, error, stackTrace) =>
+                Icon(Broken.video, color: widget.iconColor, size: 18),
           ),
           Center(
             child: Container(
               padding: const EdgeInsets.all(2),
-              decoration: BoxDecoration(color: Colors.black.withOpacity(0.6), shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.6),
+                shape: BoxShape.circle,
+              ),
               child: Icon(Broken.video, color: Colors.white, size: 10),
             ),
           ),
@@ -1729,12 +2159,16 @@ class _CompactMediaThumbnailState extends State<_CompactMediaThumbnail> {
             height: double.infinity,
             cacheWidth: 80,
             cacheHeight: 80,
-            errorBuilder: (context, error, stackTrace) => Icon(Broken.music, color: widget.iconColor, size: 18),
+            errorBuilder: (context, error, stackTrace) =>
+                Icon(Broken.music, color: widget.iconColor, size: 18),
           ),
           Center(
             child: Container(
               padding: const EdgeInsets.all(2),
-              decoration: BoxDecoration(color: Colors.black.withOpacity(0.6), shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.6),
+                shape: BoxShape.circle,
+              ),
               child: Icon(Broken.music, color: Colors.white, size: 10),
             ),
           ),

@@ -15,13 +15,14 @@ import 'package:zenfile/l10n/generated/app_localizations.dart';
 class InternalFilePickerScreen extends StatefulWidget {
   final String rootPath;
   final bool pickDirectory;
+  final String? initialPath;
 
-  const InternalFilePickerScreen({super.key, required this.rootPath, this.pickDirectory = false});
+  const InternalFilePickerScreen({super.key, required this.rootPath, this.pickDirectory = false, this.initialPath});
 
-  static Future<List<String>?> show(BuildContext context, {required String rootPath, bool pickDirectory = false}) {
+  static Future<List<String>?> show(BuildContext context, {required String rootPath, bool pickDirectory = false, String? initialPath}) {
     return Navigator.push<List<String>>(
       context,
-      MaterialPageRoute(builder: (_) => InternalFilePickerScreen(rootPath: rootPath, pickDirectory: pickDirectory)),
+      MaterialPageRoute(builder: (_) => InternalFilePickerScreen(rootPath: rootPath, pickDirectory: pickDirectory, initialPath: initialPath)),
     );
   }
 
@@ -42,7 +43,7 @@ class _InternalFilePickerScreenState extends State<InternalFilePickerScreen> {
   void initState() {
     super.initState();
     _activeRootPath = widget.rootPath;
-    _currentPath = widget.rootPath;
+    _currentPath = widget.initialPath ?? widget.rootPath;
     _scrollController.addListener(() {
       _scrollOffsets[_currentPath] = _scrollController.offset;
     });

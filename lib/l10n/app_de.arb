@@ -3417,7 +3417,6 @@
   "@ui_close_all_tabs_message": {
     "description": "ui widgets"
   },
-
   "ui_not_found_title": "Kein {title} gefunden",
   "@ui_not_found_title": {
     "description": "ui widgets",
@@ -3636,7 +3635,7 @@
   "ui_documents": "Dokumente",
   "ui_no_matching_files": "Keine übereinstimmenden Dateien gefunden",
   "ui_try_modify_search": "Versuchen Sie, Ihren Suchtext zu ändern, um versteckte Elemente zu finden.",
-  "ui_vault_empty_desc": "XOR-Verschlüsselungssignaturen machen Dateien völlig unöffnbar und im System-Scanner-Datenbank versteckt. Klicken Sie auf die Schaltfläche unten, um sie zu schützen.",
+  "ui_vault_empty_desc": "AES-256-GCM-Verschlüsselung macht Dateien für das System oder andere Apps völlig unöffbar und versteckt sie vor dem Medien-Scanner. Tippe unten auf die Schaltfläche, um sie zu schützen.",
   "ui_copied_n_items": "{count} Element(e) in Zwischenablage kopiert",
   "ui_cut_n_items": "{count} Element(e) in Zwischenablage ausgeschnitten",
   "ui_copy_tooltip": "Kopieren",
@@ -3669,7 +3668,7 @@
   "ui_add_selected": "Auswahl hinzufügen ({count})",
   "ui_pin_selected": "Auswahl anheften ({count})",
   "msg_vault_choose_mode": "Schutzmodus wählen",
-  "msg_vault_mode_desc": "Wählen Sie, wie Sie Ihre ausgewählten Dateien schützen möchten. Sichere Dateien werden sofort XOR-verschlüsselt.",
+  "msg_vault_mode_desc": "Wähle, wie du deine ausgewählten Dateien schützen möchtest. Gesicherte Dateien werden mit AES-256-GCM verschlüsselt.",
   "ui_secure_import": "Sicherer Import (Sandbox)",
   "ui_in_place_scramble": "In-Place-Scramble (Schnell)",
   "msg_scrambling": "Scramble & Schutz...",
@@ -4900,7 +4899,7 @@
   "@ui_remote_guard": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_desc": "Legen Sie eine 4-stellige PIN fest, um den Zugriff auf Remote-Server zu schützen. PIN nach App-Start oder manueller Sperre eingeben.",
+  "ui_remote_guard_desc": "Set a password to protect remote server access. Enter it after app launch or manual lock.",
   "@ui_remote_guard_desc": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -4936,7 +4935,7 @@
   "@ui_remote_guard_change_pin": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_pin_hint": "4-stellige numerische PIN",
+  "ui_remote_guard_pin_hint": "Passwort (Buchstaben, Ziffern oder Symbole)",
   "@ui_remote_guard_pin_hint": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -4960,11 +4959,11 @@
   "@ui_app_lock": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_app_lock_desc": "PIN beim App-Start eingeben, um die App zu entsperren",
+  "ui_app_lock_desc": "Require your password to unlock the app each time it launches",
   "@ui_app_lock_desc": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_app_lock_set_pin_first": "Set a 4-digit PIN before enabling",
+  "ui_app_lock_set_pin_first": "Set a password before enabling",
   "@ui_app_lock_set_pin_first": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -5265,6 +5264,54 @@
     "description": "Editor tab: resize"
   },
   "editor_crop": "Crop",
+  "ui_draw": "Zeichnen",
+  "ui_edit": "Bearbeiten",
+  "@ui_edit": {
+    "description": "Edit object"
+  },
+  "ui_color": "Farbe",
+  "@ui_color": {
+    "description": "Draw color"
+  },
+  "ui_width": "Dicke",
+  "@ui_width": {
+    "description": "Stroke thickness / font size"
+  },
+  "ui_text": "Text",
+  "@ui_text": {
+    "description": "Draw tool: text"
+  },
+  "ui_rect": "Rechteck",
+  "@ui_rect": {
+    "description": "Draw tool: rectangle"
+  },
+  "ui_ellipse": "Ellipse",
+  "@ui_ellipse": {
+    "description": "Draw tool: ellipse"
+  },
+  "ui_line": "Linie",
+  "@ui_line": {
+    "description": "Draw tool: line"
+  },
+  "ui_mosaic": "Mosaik",
+  "@ui_mosaic": {
+    "description": "Draw tool: mosaic"
+  },
+  "@ui_draw": {
+    "description": "Editor tab: draw"
+  },
+  "ui_pen": "Stift",
+  "@ui_pen": {
+    "description": "Draw tool: pen"
+  },
+  "ui_arrow": "Pfeil",
+  "@ui_arrow": {
+    "description": "Draw tool: arrow"
+  },
+  "ui_brush_size": "Pinselgröße",
+  "@ui_brush_size": {
+    "description": "Draw brush size"
+  },
   "@editor_crop": {
     "description": "Editor tab: crop"
   },
@@ -5727,6 +5774,22 @@
   "@editor_undo": {
     "description": "editor_undo label"
   },
+  "editor_text_hint": "Text eingeben",
+  "@editor_text_hint": {
+    "description": "Placeholder shown inside an empty text region box in image editor draw mode"
+  },
+  "editor_font_bold": "Fett",
+  "@editor_font_bold": {
+    "description": "Bold toggle for text tool in image editor"
+  },
+  "editor_font_italic": "Kursiv",
+  "@editor_font_italic": {
+    "description": "Italic toggle for text tool in image editor"
+  },
+  "editor_font_underline": "Unterstrichen",
+  "@editor_font_underline": {
+    "description": "Underline toggle for text tool in image editor"
+  },
   "wol_port_hint": "Optional",
   "@wol_port_hint": {
     "description": "wol_port_hint label"
@@ -6097,5 +6160,88 @@
   "ui_enter_host_first": "Geben Sie zuerst Host-Adresse und Port ein",
   "@ui_enter_host_first": {
     "description": "SMB wizard: prompt to enter host and port before scanning"
+  },
+  "vault_enter_password": "Passwort eingeben zum Entsperren",
+  "vault_set_password": "Passwort festlegen",
+  "vault_confirm_password": "Erneut eingeben zur Bestätigung",
+  "vault_pins_mismatch": "Passwörter stimmen nicht überein",
+  "vault_incorrect_password": "Falsches Passwort",
+  "vault_password_set": "Passwort festgelegt",
+  "vault_next": "Weiter",
+  "vault_unlock": "Entsperren",
+  "vault_use_keypad": "Numerische Tastatur verwenden",
+  "vault_use_text_input": "Alphanumerisch verwenden",
+  "vault_fingerprint": "Mit Fingerabdruck entsperren",
+  "vault_fingerprint_failed": "Fingerabdruck-Authentifizierung fehlgeschlagen",
+  "vault_min_length": "Passwort muss mindestens 4 Zeichen lang sein",
+  "vault_pwd_alphanumeric": "Passwort (Buchstaben, Ziffern oder Symbole)",
+  "vault_enable_fingerprint": "Fingerabdruck-Entsperrung aktivieren",
+  "vault_biometric_desc": "Nutzen Sie Ihren Fingerabdruck, um den Tresor schnell zu entsperren",
+  "vault_export_backup": "Sicherung exportieren",
+  "vault_export_backup_desc": "Verschlüsselte Tresor-Sicherung exportieren (.zip)",
+  "vault_import_backup": "Sicherung importieren",
+  "vault_import_backup_desc": "Tresor aus Sicherung wiederherstellen (.zip)",
+  "vault_uninstall_warning_title": "Deinstallationswarnung",
+  "vault_uninstall_warning": "Bei Deinstallation der App wird der Tresor gelöscht. Exportieren Sie zuerst eine Sicherung.",
+  "vault_backup_exported": "Sicherung exportiert nach",
+  "vault_backup_imported": "Elemente importiert",
+  "vault_export_failed": "Sicherung export fehlgeschlagen",
+  "vault_import_failed": "Sicherung import fehlgeschlagen",
+  "ui_font_size": "Schrift",
+  "@ui_font_size": {
+    "description": "Slider label"
+  },
+  "ui_line_width": "Linienstärke",
+  "@ui_line_width": {
+    "description": "Slider label"
+  },
+  "archive_open_failed_with_reason": "Öffnen fehlgeschlagen: {e}",
+  "@archive_open_failed_with_reason": {
+    "description": "archive_viewer_screen.dart failed to open an item in archive",
+    "placeholders": {
+      "e": {
+        "type": "String"
+      }
+    }
+  },
+  "archive_extract_failed_with_reason": "Entpacken fehlgeschlagen: {e}",
+  "@archive_extract_failed_with_reason": {
+    "description": "archive_viewer_screen.dart failed to extract an item out of archive",
+    "placeholders": {
+      "e": {
+        "type": "String"
+      }
+    }
+  },
+  "archive_unsupported_format": "Datei ist leer oder kann nicht entpackt werden (möglicherweise zu groß, beschädigt oder in einem nicht unterstützten Format)",
+  "@archive_unsupported_format": {
+    "description": "archive_viewer_screen.dart specific message for empty/unsupported archive entries"
+  },
+  "vault_export_backup_confirm": "The backup file will be saved to the following location:",
+  "@vault_export_backup_confirm": {
+    "description": "vault backup UI string"
+  },
+  "vault_import_only_zip": "Only .zip backup files are supported",
+  "@vault_import_only_zip": {
+    "description": "vault backup UI string"
+  },
+  "vault_import_password_hint": "This backup uses a different password. Please re-unlock the vault with the password used when the backup was created",
+  "@vault_import_password_hint": {
+    "description": "vault backup UI string"
+  },
+  "vault_open_backup_location": "Open the folder where the backup is saved?",
+  "@vault_open_backup_location": {
+    "description": "vault backup UI string"
+  },
+  "open_file": "Open",
+  "open_in_location": "Open file location",
+  "open_with_title": "Open with"  ,
+  "share_permission_title": "Permission required",
+  "share_permission_message": "ZenFile does not have permission to access this file. Please share it again or grant permission and retry.",
+  "@share_permission_title": {
+    "description": "Title for share permission prompt"
+  },
+  "@share_permission_message": {
+    "description": "Message for share permission prompt"
   }
 }

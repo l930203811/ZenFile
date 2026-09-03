@@ -1005,6 +1005,23 @@ class FileManagerProvider extends ChangeNotifier {
       } catch (_) {}
     } else {
       try {
+        // 受限路径（如 /Android/data 根层）被 FUSE 拦截，标准 Directory.list()
+        // 会抛异常而返回 0 项。优先用 Kotlin 原始路径 API 绕开 FUSE 来计数。
+        if (isRestrictedPath(folderPath)) {
+          final rawItems = await RootShizukuService.listRawPath(
+            folderPath,
+            showHiddenFiles: _showHiddenFiles,
+          );
+          if (rawItems != null) {
+            for (final it in rawItems) {
+              final name = p.basename(it.path);
+              if (!_showHiddenFiles && name.startsWith('.')) continue;
+              count++;
+            }
+            _folderItemCounts[cacheKey] = count;
+            return count;
+          }
+        }
         final dir = Directory(folderPath);
         if (await dir.exists()) {
           final entities = await dir.list().toList();
@@ -2429,12 +2446,10 @@ class FileManagerProvider extends ChangeNotifier {
     _forceHighlightedPaths.add(filePath);
     _shouldScrollToHighlight = true;
     notifyListeners();
-    Timer(const Duration(milliseconds: 2000), () {
-      _forceHighlightedPaths.remove(filePath);
-      if (_highlightedPaths.remove(filePath)) {
-        notifyListeners();
-      }
-    });
+    // 持久高亮：不再用 2s Timer 自动清除。清除时机：
+    //   1) 用户加载其它目录（_highlightedPaths.clear() 已在 loadDirectory 路径变化处触发）
+    //   2) 用户打开/操作其它文件（openFile 处 _highlightedPaths.clear()）
+    //   3) 再次调用 setHighlightedPaths / showFileInLocation 时覆盖
   }
 
   /// 打开 remote:// 文件所在连接的远程标签页，并定位到其父目录（分类页「查看文件所在位置」用）。
@@ -2465,12 +2480,7 @@ class FileManagerProvider extends ChangeNotifier {
     _forceHighlightedPaths.add(remotePathStr);
     _shouldScrollToHighlight = true;
     notifyListeners();
-    Timer(const Duration(milliseconds: 2000), () {
-      _forceHighlightedPaths.remove(remotePathStr);
-      if (_highlightedPaths.remove(remotePathStr)) {
-        notifyListeners();
-      }
-    });
+    // 持久高亮（直到下次加载目录 / / 打开其它文件自动清除，逻辑同 showFileInLocation）
   }
 
   String _rootPath = '';
@@ -2986,11 +2996,26 @@ class FileManagerProvider extends ChangeNotifier {
       normalized = normalized.replaceFirst('/mnt/sdcard', '/storage/emulated/0');
     }
 
+    // App's own private directories are always readable/writable by the app itself.
+    // Do not treat them as restricted: using shell `cp` on /data/user/0/<pkg>/cache
+    // fails on Android 10+ because the shell process lacks permission to read the
+    // app's private data. Dart IO can read these files directly.
+    const packageName = 'com.sequl.zenfile';
+    final ownPrivateRoots = [
+      '/data/data/$packageName',
+      '/data/user/0/$packageName',
+    ];
+    for (final root in ownPrivateRoots) {
+      if (normalized == root || normalized.startsWith('$root/')) {
+        return false;
+      }
+    }
+
     final lower = normalized.toLowerCase();
     if (lower.contains('/android/data') || lower.contains('/android/obb')) {
       return true;
     }
-    // Only /data (excluding /data/media) is strictly restricted by default
+    // Only /data (excluding /data/media and app's own private tree) is strictly restricted by default
     if (normalized == '/data' || (normalized.startsWith('/data/') && !normalized.startsWith('/data/media'))) {
       return true;
     }

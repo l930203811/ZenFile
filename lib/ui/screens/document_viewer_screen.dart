@@ -59,6 +59,8 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
   PdfScrollDirection _pdfScrollDirection = PdfScrollDirection.vertical;
   bool _pdfEnableTextSelection = true;
 
+  int _pdfViewerVersion = 0;
+
   @override
   void initState() {
     super.initState();
@@ -656,7 +658,9 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Scaffold(
+    return PopScope(
+      canPop: true,
+      child: Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
@@ -768,9 +772,10 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
                       ? _buildExcelViewer(theme, isDark)
                       : _isPpt
                           ? _buildPptViewer(theme, isDark)
-                          : _isPdf
-                              ? _buildPdfViewer(theme, isDark)
-                              : _buildDocumentPreview(theme, isDark),
+          : _isPdf
+              ? _buildPdfViewer(theme, isDark)
+              : _buildDocumentPreview(theme, isDark),
+      ),
     );
   }
 
@@ -779,6 +784,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
       color: isDark ? const Color(0xFF0D0D1A) : const Color(0xFFF9F9FF),
       child: SfPdfViewer.file(
         File(widget.filePath),
+        key: ValueKey(_pdfViewerVersion),
         canShowScrollHead: true,
         canShowScrollStatus: true,
         canShowPaginationDialog: true,

@@ -3380,7 +3380,7 @@ class L10nZh extends L10n {
 
   @override
   String get ui_vault_empty_desc =>
-      'XOR混淆签名混淆使文件完全无法打开，并从系统扫描器数据库中隐藏。点击下方的按钮来保护它们。';
+      'AES-256-GCM 强加密使文件完全无法被系统或其他应用打开，并从媒体扫描器中隐藏。点击下方按钮来保护它们。';
 
   @override
   String ui_copied_n_items(Object count) {
@@ -3521,7 +3521,7 @@ class L10nZh extends L10n {
   String get msg_vault_choose_mode => '选择保护模式';
 
   @override
-  String get msg_vault_mode_desc => '选择如何保护选中的文件。安全文件将立即进行 XOR 混淆加密。';
+  String get msg_vault_mode_desc => '选择如何保护选中的文件。安全文件将使用 AES-256-GCM 强加密。';
 
   @override
   String get ui_secure_import => '安全导入（沙盒）';
@@ -4843,8 +4843,7 @@ class L10nZh extends L10n {
   String get ui_remote_guard => '远程守卫';
 
   @override
-  String get ui_remote_guard_desc =>
-      '设置4位PIN码保护远程服务器访问，每次启动应用或手动锁定后需输入PIN码才能进入远程服务器';
+  String get ui_remote_guard_desc => '设置密码保护远程服务器访问，每次启动应用或手动锁定后需输入密码才能进入远程服务器';
 
   @override
   String get ui_remote_guard_enabled => '已启用';
@@ -4871,7 +4870,7 @@ class L10nZh extends L10n {
   String get ui_remote_guard_change_pin => '修改PIN码';
 
   @override
-  String get ui_remote_guard_pin_hint => '4位数字PIN码';
+  String get ui_remote_guard_pin_hint => '可含字母、数字或符号的密码';
 
   @override
   String get ui_remote_guard_lock_now => '立即锁定';
@@ -4889,10 +4888,10 @@ class L10nZh extends L10n {
   String get ui_app_lock => '启动应用保护';
 
   @override
-  String get ui_app_lock_desc => '启动应用时需输入PIN码解锁才能进入';
+  String get ui_app_lock_desc => '启动应用时需输入密码解锁才能进入';
 
   @override
-  String get ui_app_lock_set_pin_first => '启用前请先设置4位PIN码';
+  String get ui_app_lock_set_pin_first => '启用前请先设置密码';
 
   @override
   String get ui_remote_guard_enter_current_pin => '请输入当前 PIN 码';
@@ -5152,6 +5151,42 @@ class L10nZh extends L10n {
 
   @override
   String get editor_crop => '裁剪';
+
+  @override
+  String get ui_draw => '绘图';
+
+  @override
+  String get ui_edit => '编辑';
+
+  @override
+  String get ui_color => '颜色';
+
+  @override
+  String get ui_width => '粗细';
+
+  @override
+  String get ui_text => '文本';
+
+  @override
+  String get ui_rect => '矩形';
+
+  @override
+  String get ui_ellipse => '椭圆';
+
+  @override
+  String get ui_line => '直线';
+
+  @override
+  String get ui_mosaic => '马赛克';
+
+  @override
+  String get ui_pen => '画笔';
+
+  @override
+  String get ui_arrow => '箭头';
+
+  @override
+  String get ui_brush_size => '笔刷大小';
 
   @override
   String get editor_rotate_flip => '旋转与翻转';
@@ -5506,6 +5541,18 @@ class L10nZh extends L10n {
   String get editor_undo => '撤销';
 
   @override
+  String get editor_text_hint => '请输入文本';
+
+  @override
+  String get editor_font_bold => '加粗';
+
+  @override
+  String get editor_font_italic => '斜体';
+
+  @override
+  String get editor_font_underline => '下划线';
+
+  @override
   String get wol_port_hint => '选填';
 
   @override
@@ -5824,6 +5871,130 @@ class L10nZh extends L10n {
 
   @override
   String get ui_enter_host_first => '请先填写主机地址与端口';
+
+  @override
+  String get vault_enter_password => '输入密码解锁';
+
+  @override
+  String get vault_set_password => '设置密码';
+
+  @override
+  String get vault_confirm_password => '再次输入以确认';
+
+  @override
+  String get vault_pins_mismatch => '两次输入的密码不一致';
+
+  @override
+  String get vault_incorrect_password => '密码错误，请重试';
+
+  @override
+  String get vault_password_set => '密码已设置';
+
+  @override
+  String get vault_next => '下一步';
+
+  @override
+  String get vault_unlock => '解锁';
+
+  @override
+  String get vault_use_keypad => '使用数字键盘';
+
+  @override
+  String get vault_use_text_input => '使用字母数字';
+
+  @override
+  String get vault_fingerprint => '使用指纹解锁';
+
+  @override
+  String get vault_fingerprint_failed => '指纹验证失败';
+
+  @override
+  String get vault_min_length => '密码至少需要 4 位';
+
+  @override
+  String get vault_pwd_alphanumeric => '可含字母、数字或符号的密码';
+
+  @override
+  String get vault_enable_fingerprint => '启用指纹解锁';
+
+  @override
+  String get vault_biometric_desc => '使用指纹快速解锁保险箱';
+
+  @override
+  String get vault_export_backup => '导出备份';
+
+  @override
+  String get vault_export_backup_desc => '导出加密的保险箱备份 (.zip)';
+
+  @override
+  String get vault_import_backup => '导入备份';
+
+  @override
+  String get vault_import_backup_desc => '从备份文件 (.zip) 还原保险箱';
+
+  @override
+  String get vault_uninstall_warning_title => '卸载警告';
+
+  @override
+  String get vault_uninstall_warning => '卸载应用会清空保险箱，建议先导出备份';
+
+  @override
+  String get vault_backup_exported => '备份已导出到';
+
+  @override
+  String get vault_backup_imported => '已导入条目';
+
+  @override
+  String get vault_export_failed => '备份导出失败';
+
+  @override
+  String get vault_import_failed => '备份导入失败';
+
+  @override
+  String get ui_font_size => '字体';
+
+  @override
+  String get ui_line_width => '线粗';
+
+  @override
+  String archive_open_failed_with_reason(String e) {
+    return '无法打开: $e';
+  }
+
+  @override
+  String archive_extract_failed_with_reason(String e) {
+    return '解压失败: $e';
+  }
+
+  @override
+  String get archive_unsupported_format => '文件内容为空或解压失败，可能文件过大、已损坏或使用了不支持的压缩方式';
+
+  @override
+  String get vault_export_backup_confirm => '备份文件将保存到以下位置：';
+
+  @override
+  String get vault_import_only_zip => '仅支持 .zip 格式的备份文件';
+
+  @override
+  String get vault_import_password_hint => '该备份使用另一组密码，请使用备份时的密码重新解锁保险箱';
+
+  @override
+  String get vault_open_backup_location => '是否打开备份文件所在位置？';
+
+  @override
+  String get open_file => '打开';
+
+  @override
+  String get open_in_location => '打开文件所在位置';
+
+  @override
+  String get open_with_title => '打开方式';
+
+  @override
+  String get share_permission_title => '需要权限';
+
+  @override
+  String get share_permission_message => 'ZenFile 没有权限访问该文件，请重新分享或授予权限后重试。';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -9157,7 +9328,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_vault_empty_desc =>
-      'XOR混淆簽名混淆使檔案完全無法開啟，並從系統掃描器資料庫中隱藏。點選下方的按鈕來保護它們。';
+      'AES-256-GCM 強加密使檔案完全無法被系統或其他應用程式開啟，並從媒體掃描器中隱藏。點選下方的按鈕來保護它們。';
 
   @override
   String ui_copied_n_items(Object count) {
@@ -9298,7 +9469,7 @@ class L10nZhTw extends L10nZh {
   String get msg_vault_choose_mode => '選擇保護模式';
 
   @override
-  String get msg_vault_mode_desc => '選擇如何保護選中的檔案。安全檔案將立即進行 XOR 混淆加密。';
+  String get msg_vault_mode_desc => '選擇如何保護選中的檔案。安全檔案將使用 AES-256-GCM 強加密。';
 
   @override
   String get ui_secure_import => '安全匯入（沙盒）';
@@ -10624,7 +10795,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_remote_guard_desc =>
-      '设置4位PIN码保护远程服务器访问，每次启动应用或手动锁定后需输入PIN码才能进入远程服务器';
+      '設定密碼保護遠端伺服器存取，每次啟動應用程式或手動鎖定後需輸入密碼才能進入遠端伺服器';
 
   @override
   String get ui_remote_guard_enabled => '已启用';
@@ -10651,7 +10822,7 @@ class L10nZhTw extends L10nZh {
   String get ui_remote_guard_change_pin => '修改PIN码';
 
   @override
-  String get ui_remote_guard_pin_hint => '4位数字PIN码';
+  String get ui_remote_guard_pin_hint => '可含字母、數字或符號的密碼';
 
   @override
   String get ui_remote_guard_lock_now => '立即锁定';
@@ -10669,10 +10840,10 @@ class L10nZhTw extends L10nZh {
   String get ui_app_lock => '啟動應用保護';
 
   @override
-  String get ui_app_lock_desc => '啟動應用時需輸入PIN碼解鎖才能進入';
+  String get ui_app_lock_desc => '啟動應用程式時需輸入密碼解鎖才能進入';
 
   @override
-  String get ui_app_lock_set_pin_first => '啟用前請先設定4位PIN碼';
+  String get ui_app_lock_set_pin_first => '啟用前請先設定密碼';
 
   @override
   String get ui_remote_guard_enter_current_pin => '請輸入目前 PIN 碼';
@@ -10941,6 +11112,42 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get editor_crop => 'Crop';
+
+  @override
+  String get ui_draw => '繪圖';
+
+  @override
+  String get ui_edit => '編輯';
+
+  @override
+  String get ui_color => '顏色';
+
+  @override
+  String get ui_width => '粗細';
+
+  @override
+  String get ui_text => '文字';
+
+  @override
+  String get ui_rect => '矩形';
+
+  @override
+  String get ui_ellipse => '橢圓';
+
+  @override
+  String get ui_line => '直線';
+
+  @override
+  String get ui_mosaic => '馬賽克';
+
+  @override
+  String get ui_pen => '畫筆';
+
+  @override
+  String get ui_arrow => '箭頭';
+
+  @override
+  String get ui_brush_size => '筆刷大小';
 
   @override
   String get editor_rotate_flip => 'Rotate & Flip';
@@ -11295,6 +11502,18 @@ class L10nZhTw extends L10nZh {
   String get editor_undo => '撤銷';
 
   @override
+  String get editor_text_hint => '請輸入文字';
+
+  @override
+  String get editor_font_bold => '粗體';
+
+  @override
+  String get editor_font_italic => '斜體';
+
+  @override
+  String get editor_font_underline => '底線';
+
+  @override
   String get wol_port_hint => '選填';
 
   @override
@@ -11613,4 +11832,128 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_enter_host_first => '請先填寫主機地址與連接埠';
+
+  @override
+  String get vault_enter_password => '输入密码解锁';
+
+  @override
+  String get vault_set_password => '设置密码';
+
+  @override
+  String get vault_confirm_password => '再次输入以确认';
+
+  @override
+  String get vault_pins_mismatch => '两次输入的密码不一致';
+
+  @override
+  String get vault_incorrect_password => '密码错误，请重试';
+
+  @override
+  String get vault_password_set => '密码已设置';
+
+  @override
+  String get vault_next => '下一步';
+
+  @override
+  String get vault_unlock => '解锁';
+
+  @override
+  String get vault_use_keypad => '使用数字键盘';
+
+  @override
+  String get vault_use_text_input => '使用字母数字';
+
+  @override
+  String get vault_fingerprint => '使用指纹解锁';
+
+  @override
+  String get vault_fingerprint_failed => '指纹验证失败';
+
+  @override
+  String get vault_min_length => '密码至少需要 4 位';
+
+  @override
+  String get vault_pwd_alphanumeric => '可含字母、數字或符號的密碼';
+
+  @override
+  String get vault_enable_fingerprint => '启用指纹解锁';
+
+  @override
+  String get vault_biometric_desc => '使用指纹快速解锁保险箱';
+
+  @override
+  String get vault_export_backup => '导出备份';
+
+  @override
+  String get vault_export_backup_desc => '导出加密的保险箱备份 (.zip)';
+
+  @override
+  String get vault_import_backup => '导入备份';
+
+  @override
+  String get vault_import_backup_desc => '从备份文件 (.zip) 还原保险箱';
+
+  @override
+  String get vault_uninstall_warning_title => '卸载警告';
+
+  @override
+  String get vault_uninstall_warning => '卸载应用会清空保险箱，建议先导出备份';
+
+  @override
+  String get vault_backup_exported => '备份已导出到';
+
+  @override
+  String get vault_backup_imported => '已导入条目';
+
+  @override
+  String get vault_export_failed => '备份导出失败';
+
+  @override
+  String get vault_import_failed => '备份导入失败';
+
+  @override
+  String get ui_font_size => '字體';
+
+  @override
+  String get ui_line_width => '線粗';
+
+  @override
+  String archive_open_failed_with_reason(String e) {
+    return '無法打開: $e';
+  }
+
+  @override
+  String archive_extract_failed_with_reason(String e) {
+    return '解壓失敗: $e';
+  }
+
+  @override
+  String get archive_unsupported_format => '檔案內容為空或解壓失敗，可能檔案過大、已損壞或使用了不支援的壓縮方式';
+
+  @override
+  String get vault_export_backup_confirm => '備份檔案將儲存到以下位置：';
+
+  @override
+  String get vault_import_only_zip => '僅支援 .zip 格式的備份檔案';
+
+  @override
+  String get vault_import_password_hint => '該備份使用另一組密碼，請使用備份時的密碼重新解鎖保險箱';
+
+  @override
+  String get vault_open_backup_location => '是否開啟備份檔案所在位置？';
+
+  @override
+  String get open_file => '打開';
+
+  @override
+  String get open_in_location => '打開檔案所在位置';
+
+  @override
+  String get open_with_title => '打開方式';
+
+  @override
+  String get share_permission_title => '需要權限';
+
+  @override
+  String get share_permission_message => 'ZenFile 沒有權限存取該檔案，請重新分享或授予權限後重試。';
 }

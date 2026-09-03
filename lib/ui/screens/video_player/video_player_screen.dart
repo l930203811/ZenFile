@@ -197,6 +197,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         hwdec: _useHardwareDecode ? 'auto-safe' : 'no',
       ),
     );
+    // 播放器内部音量固定最大，由系统音量统一控制（与切换解码路径保持一致）
+    player.setVolume(100.0);
 
     // 覆盖 media_kit 硬编码的 network-timeout=5s。
     // SMB/FTP/SFTP 建立连接+认证可能需要 5-10s，5s 超时会导致 libmpv
@@ -1408,6 +1410,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     //（VideoController 本身无 dispose() 方法），与本项目 dispose() 约定一致。
     setState(() {});
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // 释放旧播放器前先把均衡器从旧 player 解绑，避免 _eqService 仍指向已销毁对象
+      try {
+        _eqService.detach();
+      } catch (_) {}
       try {
         oldPlayer.dispose();
       } catch (_) {}
@@ -1444,6 +1450,20 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _externalCues = const [];
     _activeCueIndex = -1;
     _initTrackListeners();
+    // 重建播放器后重新挂接音频均衡器，保持与首次打开一致（否则切换解码后 EQ 失效，
+    // 且旧 player 销毁后 _eqService 仍指向已失效对象）。挂接失败（如设备不支持
+    // lavfi 滤波器）时 _applyGains 内部会清空 af 以恢复声音，不会静音。
+    try {
+      final eqPlatform = player.platform;
+      if (eqPlatform is NativePlayer) {
+        await _eqService.attach(eqPlatform);
+        final savedEq = PreferencesService.getAudioEqPreset();
+        _eqPreset = EqPresetExtension.fromKey(savedEq);
+        await _eqService.applyPreset(_eqPreset);
+      }
+    } catch (eqErr) {
+      debugPrint('切换解码后均衡器初始化失败: $eqErr');
+    }
     await player.open(Media(uri), play: false);
     if (pos > Duration.zero) {
       try {

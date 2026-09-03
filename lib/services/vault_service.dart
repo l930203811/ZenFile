@@ -299,6 +299,137 @@ class VaultService {
     await file.writeAsString(str);
   }
 
+  // ── 整库导出 / 导入（便携加密备份，防止卸载丢库） ─────────────────────────
+
+  /// 将保险箱内所有 .zvn 密文 + metadata.json 打包为便携 .zip。
+  /// 文件本身已是 AES-256-GCM 密文（需密码才能解密），故导出件全程不落地明文。
+  /// [destDir] 为目标目录（需可写）。返回生成的 zip 路径。
+  static Future<String> exportVault(String destDir) async {
+    final vaultDir = await getVaultDir();
+    final outDir = Directory(destDir);
+    if (!await outDir.exists()) {
+      await outDir.create(recursive: true);
+    }
+    final archive = Archive();
+    // 便携备份同时携带 V2 全局参数（salt/mem/iter/par/pwcheck），
+    // 以便卸载重装后导入即可用原密码解锁并恢复（否则校验令牌随应用数据丢失，
+    // 用户被迫重设密码，再用新密码去解旧 .zvn 会因 GCM 认证失败而「恢复失败」）。
+    final params = await _readV2ParamsForExport();
+    if (params != null) {
+      final pBytes = utf8.encode(jsonEncode(params));
+      archive.addFile(ArchiveFile('vault_params.json', pBytes.length, pBytes));
+    }
+    final ents = await vaultDir.list().toList();
+    for (final ent in ents) {
+      if (ent is! File) continue;
+      final name = p.basename(ent.path);
+      if (!name.endsWith('.zvn') && name != 'metadata.json') continue;
+      final bytes = await ent.readAsBytes();
+      archive.addFile(ArchiveFile(name, bytes.length, bytes));
+    }
+    final ts = DateTime.now()
+        .toIso8601String()
+        .replaceAll(RegExp(r'[^0-9]'), '')
+        .substring(0, 14);
+    final zipBytes = ZipEncoder().encode(archive);
+    if (zipBytes == null) {
+      throw Exception('Failed to create backup archive');
+    }
+    final outPath = p.join(destDir, 'zenfile_vault_backup_$ts.zip');
+    await File(outPath).writeAsBytes(zipBytes);
+    return outPath;
+  }
+
+  /// 从导出件 .zip 还原保险箱：解压 .zvn + metadata.json 到 vault 目录，
+  /// 并按 id 去重合并 metadata（不破坏现有记录）。
+  /// 返回 `(新导入条目数, 是否恢复了备份自带的 V2 全局参数)`。
+  static Future<(int imported, bool paramsRestored)> importVault(String zipPath) async {
+    final bytes = await File(zipPath).readAsBytes();
+    final archive = ZipDecoder().decodeBytes(bytes);
+    final vaultDir = await getVaultDir();
+    final currentRecords = await loadRecords();
+    final currentIds = <String>{for (final r in currentRecords) r.id};
+    // 仅在「空保险箱」时恢复备份自带的 V2 全局参数，避免覆盖已有保险箱的密码校验令牌
+    // （否则现有 .zvn 会用新参数而无法解密）。导入到非空库时仅按 id 合并新记录。
+    final isFreshImport = currentRecords.isEmpty;
+    int imported = 0;
+    bool paramsRestored = false;
+    List<VaultFileRecord>? importedMeta;
+    for (final f in archive) {
+      if (!f.isFile) continue;
+      final name = f.name;
+      if (name == 'vault_params.json') {
+        // 仅用于恢复密码校验令牌，不落盘到 vault 目录。
+        if (isFreshImport) {
+          try {
+            final m = jsonDecode(utf8.decode(f.content as List<int>)) as Map<String, dynamic>;
+            await _restoreV2Params(m);
+            paramsRestored = true;
+          } catch (_) {}
+        }
+        continue;
+      }
+      final outFile = File(p.join(vaultDir.path, name));
+      await outFile.writeAsBytes(f.content as List<int>);
+      if (name == 'metadata.json') {
+        try {
+          final list = jsonDecode(utf8.decode(await outFile.readAsBytes())) as List;
+          importedMeta = list
+              .map((e) => VaultFileRecord.fromJson(e as Map<String, dynamic>))
+              .toList();
+        } catch (_) {
+          importedMeta = null;
+        }
+      } else if (name.endsWith('.zvn')) {
+        imported++;
+      }
+    }
+    if (importedMeta != null) {
+      final merged = List<VaultFileRecord>.from(currentRecords);
+      for (final r in importedMeta) {
+        if (!currentIds.contains(r.id)) {
+          // 重新指向导入后的真实 .zvn 位置：备份包内 metadata.json 记录的是导出设备的
+          // 绝对路径，重装/跨设备后该路径失效，会导致「恢复时找不到密文」而失败。
+          merged.add(VaultFileRecord(
+            id: r.id,
+            originalName: r.originalName,
+            originalPath: r.originalPath,
+            scrambledPath: p.join(vaultDir.path, p.basename(r.scrambledPath)),
+            size: r.size,
+            lockedAt: r.lockedAt,
+            isInPlace: r.isInPlace,
+            isFolder: r.isFolder,
+          ));
+        }
+      }
+      await saveRecords(merged);
+    }
+    return (imported, paramsRestored);
+  }
+
+  /// 读取当前 V2 全局参数用于导出备份（无则返回 null，导出件不含参数文件）。
+  static Future<Map<String, dynamic>?> _readV2ParamsForExport() async {
+    final stored = await _readStoredV2();
+    if (stored == null) return null;
+    return {
+      'salt': base64Encode(stored.salt),
+      'memory': stored.memory,
+      'iterations': stored.iterations,
+      'parallelism': stored.parallelism,
+      'pwcheck': stored.pwcheck,
+    };
+  }
+
+  /// 将 V2 全局参数写回 SharedPreferences（导入备份时恢复密码校验令牌）。
+  static Future<void> _restoreV2Params(Map<String, dynamic> params) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kSalt, params['salt'] as String);
+    await prefs.setInt(_kMem, params['memory'] as int);
+    await prefs.setInt(_kIter, params['iterations'] as int);
+    await prefs.setInt(_kPar, params['parallelism'] as int);
+    await prefs.setString(_kPwCheck, params['pwcheck'] as String);
+  }
+
   // ── 密钥派生（Argon2id + HKDF） ───────────────────────────────────────────
 
   static Future<_V2Keys> _deriveV2Keys(

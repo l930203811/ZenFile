@@ -40,3 +40,9 @@ RELEASE_NOTES.md
 
 # OOM 调试堆转储
 *.hprof
+
+# Android Kotlin 构建缓存（不参与版本管理）
+android/.kotlin/
+
+# PDF 编辑器调试产物（编辑器已移除，相关样本/渲染比对图/诊断脚本不入库）
+pdf_test/

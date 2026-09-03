@@ -6457,7 +6457,7 @@ abstract class L10n {
   /// No description provided for @ui_vault_empty_desc.
   ///
   /// In zh, this message translates to:
-  /// **'XOR混淆签名混淆使文件完全无法打开，并从系统扫描器数据库中隐藏。点击下方的按钮来保护它们。'**
+  /// **'AES-256-GCM 强加密使文件完全无法被系统或其他应用打开，并从媒体扫描器中隐藏。点击下方按钮来保护它们。'**
   String get ui_vault_empty_desc;
 
   /// No description provided for @ui_copied_n_items.
@@ -6703,7 +6703,7 @@ abstract class L10n {
   /// Vault protection mode dialog description
   ///
   /// In zh, this message translates to:
-  /// **'选择如何保护选中的文件。安全文件将立即进行 XOR 混淆加密。'**
+  /// **'选择如何保护选中的文件。安全文件将使用 AES-256-GCM 强加密。'**
   String get msg_vault_mode_desc;
 
   /// Vault sandbox import button
@@ -9115,7 +9115,7 @@ abstract class L10n {
   /// ui\screens\remote_guard_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'设置4位PIN码保护远程服务器访问，每次启动应用或手动锁定后需输入PIN码才能进入远程服务器'**
+  /// **'设置密码保护远程服务器访问，每次启动应用或手动锁定后需输入密码才能进入远程服务器'**
   String get ui_remote_guard_desc;
 
   /// ui\screens\remote_guard_screen.dart
@@ -9169,7 +9169,7 @@ abstract class L10n {
   /// ui\screens\remote_guard_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'4位数字PIN码'**
+  /// **'可含字母、数字或符号的密码'**
   String get ui_remote_guard_pin_hint;
 
   /// ui\screens\remote_guard_screen.dart
@@ -9205,13 +9205,13 @@ abstract class L10n {
   /// ui\screens\remote_guard_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'启动应用时需输入PIN码解锁才能进入'**
+  /// **'启动应用时需输入密码解锁才能进入'**
   String get ui_app_lock_desc;
 
   /// ui\screens\remote_guard_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'启用前请先设置4位PIN码'**
+  /// **'启用前请先设置密码'**
   String get ui_app_lock_set_pin_first;
 
   /// ui/screens/remote_guard_screen.dart
@@ -9663,6 +9663,78 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'裁剪'**
   String get editor_crop;
+
+  /// Editor tab: draw
+  ///
+  /// In zh, this message translates to:
+  /// **'绘图'**
+  String get ui_draw;
+
+  /// Edit object
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑'**
+  String get ui_edit;
+
+  /// Draw color
+  ///
+  /// In zh, this message translates to:
+  /// **'颜色'**
+  String get ui_color;
+
+  /// Stroke thickness / font size
+  ///
+  /// In zh, this message translates to:
+  /// **'粗细'**
+  String get ui_width;
+
+  /// Draw tool: text
+  ///
+  /// In zh, this message translates to:
+  /// **'文本'**
+  String get ui_text;
+
+  /// Draw tool: rectangle
+  ///
+  /// In zh, this message translates to:
+  /// **'矩形'**
+  String get ui_rect;
+
+  /// Draw tool: ellipse
+  ///
+  /// In zh, this message translates to:
+  /// **'椭圆'**
+  String get ui_ellipse;
+
+  /// Draw tool: line
+  ///
+  /// In zh, this message translates to:
+  /// **'直线'**
+  String get ui_line;
+
+  /// Draw tool: mosaic
+  ///
+  /// In zh, this message translates to:
+  /// **'马赛克'**
+  String get ui_mosaic;
+
+  /// Draw tool: pen
+  ///
+  /// In zh, this message translates to:
+  /// **'画笔'**
+  String get ui_pen;
+
+  /// Draw tool: arrow
+  ///
+  /// In zh, this message translates to:
+  /// **'箭头'**
+  String get ui_arrow;
+
+  /// Draw brush size
+  ///
+  /// In zh, this message translates to:
+  /// **'笔刷大小'**
+  String get ui_brush_size;
 
   /// Editor tab: rotate & flip
   ///
@@ -10336,6 +10408,30 @@ abstract class L10n {
   /// **'撤销'**
   String get editor_undo;
 
+  /// Placeholder shown inside an empty text region box in image editor draw mode
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入文本'**
+  String get editor_text_hint;
+
+  /// Bold toggle for text tool in image editor
+  ///
+  /// In zh, this message translates to:
+  /// **'加粗'**
+  String get editor_font_bold;
+
+  /// Italic toggle for text tool in image editor
+  ///
+  /// In zh, this message translates to:
+  /// **'斜体'**
+  String get editor_font_italic;
+
+  /// Underline toggle for text tool in image editor
+  ///
+  /// In zh, this message translates to:
+  /// **'下划线'**
+  String get editor_font_underline;
+
   /// wol_port_hint label
   ///
   /// In zh, this message translates to:
@@ -10905,6 +11001,246 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'请先填写主机地址与端口'**
   String get ui_enter_host_first;
+
+  /// No description provided for @vault_enter_password.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入密码解锁'**
+  String get vault_enter_password;
+
+  /// No description provided for @vault_set_password.
+  ///
+  /// In zh, this message translates to:
+  /// **'设置密码'**
+  String get vault_set_password;
+
+  /// No description provided for @vault_confirm_password.
+  ///
+  /// In zh, this message translates to:
+  /// **'再次输入以确认'**
+  String get vault_confirm_password;
+
+  /// No description provided for @vault_pins_mismatch.
+  ///
+  /// In zh, this message translates to:
+  /// **'两次输入的密码不一致'**
+  String get vault_pins_mismatch;
+
+  /// No description provided for @vault_incorrect_password.
+  ///
+  /// In zh, this message translates to:
+  /// **'密码错误，请重试'**
+  String get vault_incorrect_password;
+
+  /// No description provided for @vault_password_set.
+  ///
+  /// In zh, this message translates to:
+  /// **'密码已设置'**
+  String get vault_password_set;
+
+  /// No description provided for @vault_next.
+  ///
+  /// In zh, this message translates to:
+  /// **'下一步'**
+  String get vault_next;
+
+  /// No description provided for @vault_unlock.
+  ///
+  /// In zh, this message translates to:
+  /// **'解锁'**
+  String get vault_unlock;
+
+  /// No description provided for @vault_use_keypad.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用数字键盘'**
+  String get vault_use_keypad;
+
+  /// No description provided for @vault_use_text_input.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用字母数字'**
+  String get vault_use_text_input;
+
+  /// No description provided for @vault_fingerprint.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用指纹解锁'**
+  String get vault_fingerprint;
+
+  /// No description provided for @vault_fingerprint_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'指纹验证失败'**
+  String get vault_fingerprint_failed;
+
+  /// No description provided for @vault_min_length.
+  ///
+  /// In zh, this message translates to:
+  /// **'密码至少需要 4 位'**
+  String get vault_min_length;
+
+  /// No description provided for @vault_pwd_alphanumeric.
+  ///
+  /// In zh, this message translates to:
+  /// **'可含字母、数字或符号的密码'**
+  String get vault_pwd_alphanumeric;
+
+  /// No description provided for @vault_enable_fingerprint.
+  ///
+  /// In zh, this message translates to:
+  /// **'启用指纹解锁'**
+  String get vault_enable_fingerprint;
+
+  /// No description provided for @vault_biometric_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用指纹快速解锁保险箱'**
+  String get vault_biometric_desc;
+
+  /// No description provided for @vault_export_backup.
+  ///
+  /// In zh, this message translates to:
+  /// **'导出备份'**
+  String get vault_export_backup;
+
+  /// No description provided for @vault_export_backup_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'导出加密的保险箱备份 (.zip)'**
+  String get vault_export_backup_desc;
+
+  /// No description provided for @vault_import_backup.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入备份'**
+  String get vault_import_backup;
+
+  /// No description provided for @vault_import_backup_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'从备份文件 (.zip) 还原保险箱'**
+  String get vault_import_backup_desc;
+
+  /// No description provided for @vault_uninstall_warning_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'卸载警告'**
+  String get vault_uninstall_warning_title;
+
+  /// No description provided for @vault_uninstall_warning.
+  ///
+  /// In zh, this message translates to:
+  /// **'卸载应用会清空保险箱，建议先导出备份'**
+  String get vault_uninstall_warning;
+
+  /// No description provided for @vault_backup_exported.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份已导出到'**
+  String get vault_backup_exported;
+
+  /// No description provided for @vault_backup_imported.
+  ///
+  /// In zh, this message translates to:
+  /// **'已导入条目'**
+  String get vault_backup_imported;
+
+  /// No description provided for @vault_export_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份导出失败'**
+  String get vault_export_failed;
+
+  /// No description provided for @vault_import_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份导入失败'**
+  String get vault_import_failed;
+
+  /// Slider label
+  ///
+  /// In zh, this message translates to:
+  /// **'字体'**
+  String get ui_font_size;
+
+  /// Slider label
+  ///
+  /// In zh, this message translates to:
+  /// **'线粗'**
+  String get ui_line_width;
+
+  /// archive_viewer_screen.dart failed to open an item in archive
+  ///
+  /// In zh, this message translates to:
+  /// **'无法打开: {e}'**
+  String archive_open_failed_with_reason(String e);
+
+  /// archive_viewer_screen.dart failed to extract an item out of archive
+  ///
+  /// In zh, this message translates to:
+  /// **'解压失败: {e}'**
+  String archive_extract_failed_with_reason(String e);
+
+  /// archive_viewer_screen.dart specific message for empty/unsupported archive entries
+  ///
+  /// In zh, this message translates to:
+  /// **'文件内容为空或解压失败，可能文件过大、已损坏或使用了不支持的压缩方式'**
+  String get archive_unsupported_format;
+
+  /// vault backup UI string
+  ///
+  /// In zh, this message translates to:
+  /// **'备份文件将保存到以下位置：'**
+  String get vault_export_backup_confirm;
+
+  /// vault backup UI string
+  ///
+  /// In zh, this message translates to:
+  /// **'仅支持 .zip 格式的备份文件'**
+  String get vault_import_only_zip;
+
+  /// vault backup UI string
+  ///
+  /// In zh, this message translates to:
+  /// **'该备份使用另一组密码，请使用备份时的密码重新解锁保险箱'**
+  String get vault_import_password_hint;
+
+  /// vault backup UI string
+  ///
+  /// In zh, this message translates to:
+  /// **'是否打开备份文件所在位置？'**
+  String get vault_open_backup_location;
+
+  /// No description provided for @open_file.
+  ///
+  /// In zh, this message translates to:
+  /// **'打开'**
+  String get open_file;
+
+  /// No description provided for @open_in_location.
+  ///
+  /// In zh, this message translates to:
+  /// **'打开文件所在位置'**
+  String get open_in_location;
+
+  /// No description provided for @open_with_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'打开方式'**
+  String get open_with_title;
+
+  /// Title for share permission prompt
+  ///
+  /// In zh, this message translates to:
+  /// **'需要权限'**
+  String get share_permission_title;
+
+  /// Message for share permission prompt
+  ///
+  /// In zh, this message translates to:
+  /// **'ZenFile 没有权限访问该文件，请重新分享或授予权限后重试。'**
+  String get share_permission_message;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

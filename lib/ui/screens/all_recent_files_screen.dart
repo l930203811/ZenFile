@@ -12,6 +12,7 @@ import '../widgets/folder_item.dart';
 import '../widgets/file_action_dialogs.dart';
 import '../widgets/selection_action_bar.dart';
 import '../widgets/create_archive_dialog.dart';
+import '../../services/folder_share_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class AllRecentFilesScreen extends StatefulWidget {
@@ -104,7 +105,7 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
     if (await rootDir.exists()) {
       try {
         final List<String> pathsToScan = [];
-        
+
         final rootEntities = await rootDir.list(recursive: false).toList();
         for (final entity in rootEntities) {
           if (entity is Directory) {
@@ -121,31 +122,36 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
           '/storage/emulated/0/Documents',
         ]);
 
-        await Future.wait(pathsToScan.map((path) async {
-          final dir = Directory(path);
-          if (await dir.exists()) {
-            try {
-              final entities = await dir.list(recursive: false).toList();
-              for (final entity in entities) {
-                if (!seen.contains(entity.path)) {
-                  seen.add(entity.path);
-                  list.add(entity);
-                }
-                if (entity is Directory && !p.basename(entity.path).startsWith('.')) {
-                  try {
-                    final subEntities = await entity.list(recursive: false).toList();
-                    for (final sub in subEntities) {
-                      if (!seen.contains(sub.path)) {
-                        seen.add(sub.path);
-                        list.add(sub);
+        await Future.wait(
+          pathsToScan.map((path) async {
+            final dir = Directory(path);
+            if (await dir.exists()) {
+              try {
+                final entities = await dir.list(recursive: false).toList();
+                for (final entity in entities) {
+                  if (!seen.contains(entity.path)) {
+                    seen.add(entity.path);
+                    list.add(entity);
+                  }
+                  if (entity is Directory &&
+                      !p.basename(entity.path).startsWith('.')) {
+                    try {
+                      final subEntities = await entity
+                          .list(recursive: false)
+                          .toList();
+                      for (final sub in subEntities) {
+                        if (!seen.contains(sub.path)) {
+                          seen.add(sub.path);
+                          list.add(sub);
+                        }
                       }
-                    }
-                  } catch (_) {}
+                    } catch (_) {}
+                  }
                 }
-              }
-            } catch (_) {}
-          }
-        }));
+              } catch (_) {}
+            }
+          }),
+        );
       } catch (_) {}
     }
 
@@ -181,7 +187,8 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
       if (entity is Directory) {
         bool hasNestedChild = false;
         for (final other in list) {
-          if (other.path != entity.path && p.isWithin(entity.path, other.path)) {
+          if (other.path != entity.path &&
+              p.isWithin(entity.path, other.path)) {
             hasNestedChild = true;
             break;
           }
@@ -194,25 +201,29 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
     }
 
     final items = <FileItemModel>[];
-    await Future.wait(filteredList.map((f) async {
-      try {
-        final isDir = f is Directory;
-        if (isDir) return;
+    await Future.wait(
+      filteredList.map((f) async {
+        try {
+          final isDir = f is Directory;
+          if (isDir) return;
 
-        final name = p.basename(f.path);
-        if (name.startsWith('.')) return;
+          final name = p.basename(f.path);
+          if (name.startsWith('.')) return;
 
-        final stat = await f.stat();
-        items.add(FileItemModel(
-          entity: f,
-          name: name,
-          path: f.path,
-          isDirectory: false,
-          size: stat.size,
-          modified: stat.modified,
-        ));
-      } catch (_) {}
-    }));
+          final stat = await f.stat();
+          items.add(
+            FileItemModel(
+              entity: f,
+              name: name,
+              path: f.path,
+              isDirectory: false,
+              size: stat.size,
+              modified: stat.modified,
+            ),
+          );
+        } catch (_) {}
+      }),
+    );
 
     items.sort((a, b) => b.modified.compareTo(a.modified));
     return items;
@@ -250,23 +261,19 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
         provider.showOpenWithSheet(context, path);
         break;
       case 'share':
-        if (FileSystemEntity.isFileSync(path)) {
-          try {
-            await Share.shareXFiles([XFile(path)]);
-          } catch (e) {
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('分享出错：{e}')));
-            }
-          }
-        }
+        await FolderShareService.sharePaths(context, [path]);
         break;
       case 'copy':
         provider.copyFile(path);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).msg4fb42e6e)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(L10n.of(context).msg4fb42e6e)));
         break;
       case 'cut':
         provider.cutFile(path);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L10n.of(context).msge5212c58)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(L10n.of(context).msge5212c58)));
         break;
       case 'archive':
         final res = await CreateArchiveDialog.show(
@@ -305,9 +312,9 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
             await provider.renameFile(path, newName);
           } catch (e) {
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('重命名失败: $e')),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('重命名失败: $e')));
             }
             return;
           }
@@ -325,9 +332,9 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
             await provider.deleteFile(path);
           } catch (e) {
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('删除失败: $e')),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('删除失败: $e')));
             }
           }
         }
@@ -337,10 +344,20 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
         final isRemote = provider.currIsRemote;
         final connectionId = provider.activeTab.remoteConnection?.id;
         final isDir = isRemote ? true : Directory(path).existsSync();
-        provider.addFavorite(path, name, isDir, isRemote: isRemote, connectionId: connectionId);
+        provider.addFavorite(
+          path,
+          name,
+          isDir,
+          isRemote: isRemote,
+          connectionId: connectionId,
+        );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(L10n.of(context).msg_favorited(name)), behavior: SnackBarBehavior.floating, duration: const Duration(seconds: 2)),
+            SnackBar(
+              content: Text(L10n.of(context).msg_favorited(name)),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 2),
+            ),
           );
         }
         break;
@@ -356,14 +373,19 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         leading: _isSelectionMode
-            ? IconButton(icon: const Icon(Broken.close_square), onPressed: _clearSelection)
+            ? IconButton(
+                icon: const Icon(Broken.close_square),
+                onPressed: _clearSelection,
+              )
             : IconButton(
                 icon: const Icon(Broken.arrow_left),
                 onPressed: () => Navigator.pop(context),
               ),
         title: Text(
           _isSelectionMode ? '' : L10n.of(context).msg54355dd8,
-          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
         ),
         actions: _isSelectionMode
             ? [
@@ -390,74 +412,91 @@ class _AllRecentFilesScreenState extends State<AllRecentFilesScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _recentFiles.isEmpty
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(color: theme.colorScheme.primary.withAlpha(20), shape: BoxShape.circle),
-                          child: Icon(Broken.document_filter, size: 64, color: theme.colorScheme.primary),
-                        ),
-                        const SizedBox(height: 24),
-                        Text(L10n.of(context).msg47809e5d, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 8),
-                        Text(
-                          L10n.of(context).msg7a7e6c25,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: theme.colorScheme.onSurface.withAlpha(127), fontSize: 15),
-                        ),
-                      ],
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withAlpha(20),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Broken.document_filter,
+                        size: 64,
+                        color: theme.colorScheme.primary,
+                      ),
                     ),
-                  ),
-                )
-              : ListView.builder(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.only(top: 8, bottom: 24),
-                  itemCount: _recentFiles.length,
-                  itemBuilder: (context, index) {
-                    final item = _recentFiles[index];
-                    final isItemSelected = _selectedPaths.contains(item.path);
-
-                    if (item.isDirectory) {
-                      return FolderItem(
-                        folder: item,
-                        isSelected: isItemSelected,
-                        onTap: () {
-                          if (_isSelectionMode) {
-                            _toggleSelection(item.path);
-                          } else {
-                            provider.loadDirectory(item.path);
-                          }
-                        },
-                        onLongPress: () {
-                          _toggleSelection(item.path);
-                        },
-                        onAction: (action) => _handleAction(context, action, item.path),
-                      );
-                    } else {
-                      return FileItem(
-                        file: item,
-                        isSelected: isItemSelected,
-                        showShowInLocationOption: true,
-                        showOpenWithOption: true,
-                        onTap: () {
-                          if (_isSelectionMode) {
-                            _toggleSelection(item.path);
-                          } else {
-                            provider.openFile(context, item.path);
-                          }
-                        },
-                        onLongPress: () {
-                          _toggleSelection(item.path);
-                        },
-                        onAction: (action) => _handleAction(context, action, item.path),
-                      );
-                    }
-                  },
+                    const SizedBox(height: 24),
+                    Text(
+                      L10n.of(context).msg47809e5d,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      L10n.of(context).msg7a7e6c25,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface.withAlpha(127),
+                        fontSize: 15,
+                      ),
+                    ),
+                  ],
                 ),
+              ),
+            )
+          : ListView.builder(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.only(top: 8, bottom: 24),
+              itemCount: _recentFiles.length,
+              itemBuilder: (context, index) {
+                final item = _recentFiles[index];
+                final isItemSelected = _selectedPaths.contains(item.path);
+
+                if (item.isDirectory) {
+                  return FolderItem(
+                    folder: item,
+                    isSelected: isItemSelected,
+                    onTap: () {
+                      if (_isSelectionMode) {
+                        _toggleSelection(item.path);
+                      } else {
+                        provider.loadDirectory(item.path);
+                      }
+                    },
+                    onLongPress: () {
+                      _toggleSelection(item.path);
+                    },
+                    onAction: (action) =>
+                        _handleAction(context, action, item.path),
+                  );
+                } else {
+                  return FileItem(
+                    file: item,
+                    isSelected: isItemSelected,
+                    showShowInLocationOption: true,
+                    showOpenWithOption: true,
+                    onTap: () {
+                      if (_isSelectionMode) {
+                        _toggleSelection(item.path);
+                      } else {
+                        provider.openFile(context, item.path);
+                      }
+                    },
+                    onLongPress: () {
+                      _toggleSelection(item.path);
+                    },
+                    onAction: (action) =>
+                        _handleAction(context, action, item.path),
+                  );
+                }
+              },
+            ),
     );
   }
 }

@@ -3420,7 +3420,6 @@
   "@ui_close_all_tabs_message": {
     "description": "ui widgets"
   },
-
   "ui_not_found_title": "{title} не найдено",
   "@ui_not_found_title": {
     "description": "ui widgets",
@@ -3639,7 +3638,7 @@
   "ui_documents": "Документы",
   "ui_no_matching_files": "Соответствующие файлы не найдены",
   "ui_try_modify_search": "Попробуйте изменить текст поиска для поиска скрытых элементов.",
-  "ui_vault_empty_desc": "Подписи XOR-обфускации делают файлы полностью непригодными для открытия и скрытыми от базы данных сканера системы. Нажмите кнопку ниже для их защиты.",
+  "ui_vault_empty_desc": "Шифрование AES-256-GCM делает файлы полностью недоступными для системы и других приложений и скрывает их от медиа-сканера. Нажмите кнопку ниже, чтобы защитить их.",
   "ui_copied_n_items": "{count} элемент(ов) скопировано в буфер обмена",
   "ui_cut_n_items": "{count} элемент(ов) вырезано в буфер обмена",
   "ui_copy_tooltip": "Копировать",
@@ -3672,7 +3671,7 @@
   "ui_add_selected": "Добавить Выбранные ({count})",
   "ui_pin_selected": "Закрепить выбранное ({count})",
   "msg_vault_choose_mode": "Выбрать режим защиты",
-  "msg_vault_mode_desc": "Выберите, как защитить выбранные файлы. Защищенные файлы мгновенно шифруются с помощью XOR.",
+  "msg_vault_mode_desc": "Выберите, как защитить выбранные файлы. Защищённые файлы шифруются с помощью AES-256-GCM.",
   "ui_secure_import": "Безопасный импорт (Песочница)",
   "ui_in_place_scramble": "Перемешивание на месте (Быстро)",
   "msg_scrambling": "Перемешивание и защита...",
@@ -4903,7 +4902,7 @@
   "@ui_remote_guard": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_desc": "Установите 4-значный PIN для защиты доступа к удалённым серверам. Введите PIN после запуска приложения или ручной блокировки.",
+  "ui_remote_guard_desc": "Set a password to protect remote server access. Enter it after app launch or manual lock.",
   "@ui_remote_guard_desc": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -4939,7 +4938,7 @@
   "@ui_remote_guard_change_pin": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_pin_hint": "4-значный цифровой PIN",
+  "ui_remote_guard_pin_hint": "Пароль (буквы, цифры или символы)",
   "@ui_remote_guard_pin_hint": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -4963,11 +4962,11 @@
   "@ui_app_lock": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_app_lock_desc": "Требовать PIN для разблокировки приложения при каждом запуске",
+  "ui_app_lock_desc": "Require your password to unlock the app each time it launches",
   "@ui_app_lock_desc": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_app_lock_set_pin_first": "Set a 4-digit PIN before enabling",
+  "ui_app_lock_set_pin_first": "Set a password before enabling",
   "@ui_app_lock_set_pin_first": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -5268,6 +5267,54 @@
     "description": "Editor tab: resize"
   },
   "editor_crop": "Crop",
+  "ui_draw": "Рисование",
+  "ui_edit": "Изменить",
+  "@ui_edit": {
+    "description": "Edit object"
+  },
+  "ui_color": "Цвет",
+  "@ui_color": {
+    "description": "Draw color"
+  },
+  "ui_width": "Толщина",
+  "@ui_width": {
+    "description": "Stroke thickness / font size"
+  },
+  "ui_text": "Текст",
+  "@ui_text": {
+    "description": "Draw tool: text"
+  },
+  "ui_rect": "Прямоугольник",
+  "@ui_rect": {
+    "description": "Draw tool: rectangle"
+  },
+  "ui_ellipse": "Эллипс",
+  "@ui_ellipse": {
+    "description": "Draw tool: ellipse"
+  },
+  "ui_line": "Линия",
+  "@ui_line": {
+    "description": "Draw tool: line"
+  },
+  "ui_mosaic": "Мозаика",
+  "@ui_mosaic": {
+    "description": "Draw tool: mosaic"
+  },
+  "@ui_draw": {
+    "description": "Editor tab: draw"
+  },
+  "ui_pen": "Кисть",
+  "@ui_pen": {
+    "description": "Draw tool: pen"
+  },
+  "ui_arrow": "Стрелка",
+  "@ui_arrow": {
+    "description": "Draw tool: arrow"
+  },
+  "ui_brush_size": "Размер кисти",
+  "@ui_brush_size": {
+    "description": "Draw brush size"
+  },
   "@editor_crop": {
     "description": "Editor tab: crop"
   },
@@ -5730,6 +5777,22 @@
   "@editor_undo": {
     "description": "editor_undo label"
   },
+  "editor_text_hint": "Введите текст",
+  "@editor_text_hint": {
+    "description": "Placeholder shown inside an empty text region box in image editor draw mode"
+  },
+  "editor_font_bold": "Полужирный",
+  "@editor_font_bold": {
+    "description": "Bold toggle for text tool in image editor"
+  },
+  "editor_font_italic": "Курсив",
+  "@editor_font_italic": {
+    "description": "Italic toggle for text tool in image editor"
+  },
+  "editor_font_underline": "Подчёркнутый",
+  "@editor_font_underline": {
+    "description": "Underline toggle for text tool in image editor"
+  },
   "wol_port_hint": "Необязательно",
   "@wol_port_hint": {
     "description": "wol_port_hint label"
@@ -6100,5 +6163,88 @@
   "ui_enter_host_first": "Сначала введите адрес и порт хоста",
   "@ui_enter_host_first": {
     "description": "SMB wizard: prompt to enter host and port before scanning"
+  },
+  "vault_enter_password": "Введите пароль для разблокировки",
+  "vault_set_password": "Установите пароль",
+  "vault_confirm_password": "Введите ещё раз для подтверждения",
+  "vault_pins_mismatch": "Пароли не совпадают",
+  "vault_incorrect_password": "Неверный пароль",
+  "vault_password_set": "Пароль установлен",
+  "vault_next": "Далее",
+  "vault_unlock": "Разблокировать",
+  "vault_use_keypad": "Использовать цифровую клавиатуру",
+  "vault_use_text_input": "Использовать буквенно-цифровой",
+  "vault_fingerprint": "Разблокировать отпечатком",
+  "vault_fingerprint_failed": "Ошибка аутентификации по отпечатку",
+  "vault_min_length": "Пароль должен содержать не менее 4 символов",
+  "vault_pwd_alphanumeric": "Пароль (буквы, цифры или символы)",
+  "vault_enable_fingerprint": "Включить разблокировку отпечатком",
+  "vault_biometric_desc": "Используйте отпечаток для быстрой разблокировки хранилища",
+  "vault_export_backup": "Экспорт резервной копии",
+  "vault_export_backup_desc": "Экспорт зашифрованной резервной копии хранилища (.zip)",
+  "vault_import_backup": "Импорт резервной копии",
+  "vault_import_backup_desc": "Восстановить хранилище из резервной копии (.zip)",
+  "vault_uninstall_warning_title": "Предупреждение об удалении",
+  "vault_uninstall_warning": "При удалении приложения хранилище очищается. Сначала экспортируйте резервную копию.",
+  "vault_backup_exported": "Резервная копия экспортирована в",
+  "vault_backup_imported": "Импортировано элементов",
+  "vault_export_failed": "Ошибка экспорта резервной копии",
+  "vault_import_failed": "Ошибка импорта резервной копии",
+  "ui_font_size": "Шрифт",
+  "@ui_font_size": {
+    "description": "Slider label"
+  },
+  "ui_line_width": "Толщина",
+  "@ui_line_width": {
+    "description": "Slider label"
+  },
+  "archive_open_failed_with_reason": "Не удалось открыть: {e}",
+  "@archive_open_failed_with_reason": {
+    "description": "archive_viewer_screen.dart failed to open an item in archive",
+    "placeholders": {
+      "e": {
+        "type": "String"
+      }
+    }
+  },
+  "archive_extract_failed_with_reason": "Не удалось распаковать: {e}",
+  "@archive_extract_failed_with_reason": {
+    "description": "archive_viewer_screen.dart failed to extract an item out of archive",
+    "placeholders": {
+      "e": {
+        "type": "String"
+      }
+    }
+  },
+  "archive_unsupported_format": "Файл пуст или не может быть распакован (возможно, он слишком большой, повреждён или использует неподдерживаемый формат сжатия)",
+  "@archive_unsupported_format": {
+    "description": "archive_viewer_screen.dart specific message for empty/unsupported archive entries"
+  },
+  "vault_export_backup_confirm": "The backup file will be saved to the following location:",
+  "@vault_export_backup_confirm": {
+    "description": "vault backup UI string"
+  },
+  "vault_import_only_zip": "Only .zip backup files are supported",
+  "@vault_import_only_zip": {
+    "description": "vault backup UI string"
+  },
+  "vault_import_password_hint": "This backup uses a different password. Please re-unlock the vault with the password used when the backup was created",
+  "@vault_import_password_hint": {
+    "description": "vault backup UI string"
+  },
+  "vault_open_backup_location": "Open the folder where the backup is saved?",
+  "@vault_open_backup_location": {
+    "description": "vault backup UI string"
+  },
+  "open_file": "Open",
+  "open_in_location": "Open file location",
+  "open_with_title": "Open with"  ,
+  "share_permission_title": "Permission required",
+  "share_permission_message": "ZenFile does not have permission to access this file. Please share it again or grant permission and retry.",
+  "@share_permission_title": {
+    "description": "Title for share permission prompt"
+  },
+  "@share_permission_message": {
+    "description": "Message for share permission prompt"
   }
 }

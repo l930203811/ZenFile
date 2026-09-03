@@ -164,11 +164,25 @@ class AudioEqualizerService {
       debugPrint('[EQ] 应用滤波器: $filterString');
       await player.setProperty('af', filterString);
 
-      // 验证滤波器是否被应用
+      // 验证滤波器是否真被 mpv 接受：部分 Android 的 libmpv 缺少 libavfilter，
+      // 设置 lavfi 后会被静音（af 实际为空或未生效）。若读回的 af 不含 equalizer，
+      // 说明设备不支持该滤波链，清空 af 以恢复原始音频，避免“无声”问题。
       try {
         final result = await player.getProperty('af');
         debugPrint('[EQ] 当前 af 属性: $result');
-      } catch (_) {}
+        final afStr = result.toString();
+        if (!afStr.contains('equalizer')) {
+          debugPrint('[EQ] 设备不支持该音频滤波器，清空 af 以恢复声音');
+          await player.setProperty('af', '');
+          return false;
+        }
+      } catch (verifyErr) {
+        debugPrint('[EQ] 读取 af 失败，清空 af 以恢复声音: $verifyErr');
+        try {
+          await player.setProperty('af', '');
+        } catch (_) {}
+        return false;
+      }
 
       return true;
     } catch (e) {

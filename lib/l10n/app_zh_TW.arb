@@ -3491,7 +3491,6 @@
   "@ui_close_all_tabs_message": {
     "description": "ui widgets"
   },
-
   "ui_not_found_title": "未找到 {title}",
   "@ui_not_found_title": {
     "description": "ui widgets",
@@ -3710,7 +3709,7 @@
   "ui_documents": "文件",
   "ui_no_matching_files": "未找到匹配檔案",
   "ui_try_modify_search": "請嘗試修改搜尋文字以查詢隱藏專案。",
-  "ui_vault_empty_desc": "XOR混淆簽名混淆使檔案完全無法開啟，並從系統掃描器資料庫中隱藏。點選下方的按鈕來保護它們。",
+  "ui_vault_empty_desc": "AES-256-GCM 強加密使檔案完全無法被系統或其他應用程式開啟，並從媒體掃描器中隱藏。點選下方的按鈕來保護它們。",
   "ui_copied_n_items": "已複製 {count} 個專案到剪貼簿",
   "ui_cut_n_items": "已剪下 {count} 個專案到剪貼簿",
   "ui_copy_tooltip": "複製",
@@ -3743,7 +3742,7 @@
   "ui_add_selected": "新增所選 ({count})",
   "ui_pin_selected": "固定所選 ({count})",
   "msg_vault_choose_mode": "選擇保護模式",
-  "msg_vault_mode_desc": "選擇如何保護選中的檔案。安全檔案將立即進行 XOR 混淆加密。",
+  "msg_vault_mode_desc": "選擇如何保護選中的檔案。安全檔案將使用 AES-256-GCM 強加密。",
   "ui_secure_import": "安全匯入（沙盒）",
   "ui_in_place_scramble": "原地混淆（快速）",
   "msg_scrambling": "正在混淆加密...",
@@ -5051,7 +5050,7 @@
   "@ui_remote_guard": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_desc": "设置4位PIN码保护远程服务器访问，每次启动应用或手动锁定后需输入PIN码才能进入远程服务器",
+  "ui_remote_guard_desc": "設定密碼保護遠端伺服器存取，每次啟動應用程式或手動鎖定後需輸入密碼才能進入遠端伺服器",
   "@ui_remote_guard_desc": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -5087,7 +5086,7 @@
   "@ui_remote_guard_change_pin": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_pin_hint": "4位数字PIN码",
+  "ui_remote_guard_pin_hint": "可含字母、數字或符號的密碼",
   "@ui_remote_guard_pin_hint": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -5111,11 +5110,11 @@
   "@ui_app_lock": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_app_lock_desc": "啟動應用時需輸入PIN碼解鎖才能進入",
+  "ui_app_lock_desc": "啟動應用程式時需輸入密碼解鎖才能進入",
   "@ui_app_lock_desc": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_app_lock_set_pin_first": "啟用前請先設定4位PIN碼",
+  "ui_app_lock_set_pin_first": "啟用前請先設定密碼",
   "@ui_app_lock_set_pin_first": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -5416,6 +5415,54 @@
     "description": "Editor tab: resize"
   },
   "editor_crop": "Crop",
+  "ui_draw": "繪圖",
+  "ui_edit": "編輯",
+  "@ui_edit": {
+    "description": "Edit object"
+  },
+  "ui_color": "顏色",
+  "@ui_color": {
+    "description": "Draw color"
+  },
+  "ui_width": "粗細",
+  "@ui_width": {
+    "description": "Stroke thickness / font size"
+  },
+  "ui_text": "文字",
+  "@ui_text": {
+    "description": "Draw tool: text"
+  },
+  "ui_rect": "矩形",
+  "@ui_rect": {
+    "description": "Draw tool: rectangle"
+  },
+  "ui_ellipse": "橢圓",
+  "@ui_ellipse": {
+    "description": "Draw tool: ellipse"
+  },
+  "ui_line": "直線",
+  "@ui_line": {
+    "description": "Draw tool: line"
+  },
+  "ui_mosaic": "馬賽克",
+  "@ui_mosaic": {
+    "description": "Draw tool: mosaic"
+  },
+  "@ui_draw": {
+    "description": "Editor tab: draw"
+  },
+  "ui_pen": "畫筆",
+  "@ui_pen": {
+    "description": "Draw tool: pen"
+  },
+  "ui_arrow": "箭頭",
+  "@ui_arrow": {
+    "description": "Draw tool: arrow"
+  },
+  "ui_brush_size": "筆刷大小",
+  "@ui_brush_size": {
+    "description": "Draw brush size"
+  },
   "@editor_crop": {
     "description": "Editor tab: crop"
   },
@@ -5878,6 +5925,22 @@
   "@editor_undo": {
     "description": "editor_undo label"
   },
+  "editor_text_hint": "請輸入文字",
+  "@editor_text_hint": {
+    "description": "Placeholder shown inside an empty text region box in image editor draw mode"
+  },
+  "editor_font_bold": "粗體",
+  "@editor_font_bold": {
+    "description": "Bold toggle for text tool in image editor"
+  },
+  "editor_font_italic": "斜體",
+  "@editor_font_italic": {
+    "description": "Italic toggle for text tool in image editor"
+  },
+  "editor_font_underline": "底線",
+  "@editor_font_underline": {
+    "description": "Underline toggle for text tool in image editor"
+  },
   "wol_port_hint": "選填",
   "@wol_port_hint": {
     "description": "wol_port_hint label"
@@ -6248,5 +6311,88 @@
   "ui_enter_host_first": "請先填寫主機地址與連接埠",
   "@ui_enter_host_first": {
     "description": "SMB wizard: prompt to enter host and port before scanning"
+  },
+  "vault_enter_password": "输入密码解锁",
+  "vault_set_password": "设置密码",
+  "vault_confirm_password": "再次输入以确认",
+  "vault_pins_mismatch": "两次输入的密码不一致",
+  "vault_incorrect_password": "密码错误，请重试",
+  "vault_password_set": "密码已设置",
+  "vault_next": "下一步",
+  "vault_unlock": "解锁",
+  "vault_use_keypad": "使用数字键盘",
+  "vault_use_text_input": "使用字母数字",
+  "vault_fingerprint": "使用指纹解锁",
+  "vault_fingerprint_failed": "指纹验证失败",
+  "vault_min_length": "密码至少需要 4 位",
+  "vault_pwd_alphanumeric": "可含字母、數字或符號的密碼",
+  "vault_enable_fingerprint": "启用指纹解锁",
+  "vault_biometric_desc": "使用指纹快速解锁保险箱",
+  "vault_export_backup": "导出备份",
+  "vault_export_backup_desc": "导出加密的保险箱备份 (.zip)",
+  "vault_import_backup": "导入备份",
+  "vault_import_backup_desc": "从备份文件 (.zip) 还原保险箱",
+  "vault_uninstall_warning_title": "卸载警告",
+  "vault_uninstall_warning": "卸载应用会清空保险箱，建议先导出备份",
+  "vault_backup_exported": "备份已导出到",
+  "vault_backup_imported": "已导入条目",
+  "vault_export_failed": "备份导出失败",
+  "vault_import_failed": "备份导入失败",
+  "ui_font_size": "字體",
+  "@ui_font_size": {
+    "description": "Slider label"
+  },
+  "ui_line_width": "線粗",
+  "@ui_line_width": {
+    "description": "Slider label"
+  },
+  "archive_open_failed_with_reason": "無法打開: {e}",
+  "@archive_open_failed_with_reason": {
+    "description": "archive_viewer_screen.dart failed to open an item in archive",
+    "placeholders": {
+      "e": {
+        "type": "String"
+      }
+    }
+  },
+  "archive_extract_failed_with_reason": "解壓失敗: {e}",
+  "@archive_extract_failed_with_reason": {
+    "description": "archive_viewer_screen.dart failed to extract an item out of archive",
+    "placeholders": {
+      "e": {
+        "type": "String"
+      }
+    }
+  },
+  "archive_unsupported_format": "檔案內容為空或解壓失敗，可能檔案過大、已損壞或使用了不支援的壓縮方式",
+  "@archive_unsupported_format": {
+    "description": "archive_viewer_screen.dart specific message for empty/unsupported archive entries"
+  },
+  "vault_export_backup_confirm": "備份檔案將儲存到以下位置：",
+  "@vault_export_backup_confirm": {
+    "description": "vault backup UI string"
+  },
+  "vault_import_only_zip": "僅支援 .zip 格式的備份檔案",
+  "@vault_import_only_zip": {
+    "description": "vault backup UI string"
+  },
+  "vault_import_password_hint": "該備份使用另一組密碼，請使用備份時的密碼重新解鎖保險箱",
+  "@vault_import_password_hint": {
+    "description": "vault backup UI string"
+  },
+  "vault_open_backup_location": "是否開啟備份檔案所在位置？",
+  "@vault_open_backup_location": {
+    "description": "vault backup UI string"
+  },
+  "open_file": "打開",
+  "open_in_location": "打開檔案所在位置",
+  "open_with_title": "打開方式"  ,
+  "share_permission_title": "需要權限",
+  "share_permission_message": "ZenFile 沒有權限存取該檔案，請重新分享或授予權限後重試。",
+  "@share_permission_title": {
+    "description": "Title for share permission prompt"
+  },
+  "@share_permission_message": {
+    "description": "Message for share permission prompt"
   }
 }

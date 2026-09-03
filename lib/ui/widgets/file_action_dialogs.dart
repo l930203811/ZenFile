@@ -9,6 +9,7 @@ class FileActionDialogs {
     required String hint,
     String initialValue = '',
     required String actionText,
+
     /// 为 true 时自动选中文件名主体（不含扩展名），光标落在扩展名前，
     /// 方便重命名且不易误改后缀名。一般仅重命名场景使用。
     bool selectNameWithoutExtension = false,
@@ -34,7 +35,9 @@ class FileActionDialogs {
         }
         return AlertDialog(
           title: Text(title),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           content: TextField(
             controller: controller,
             decoration: InputDecoration(
@@ -83,7 +86,9 @@ class FileActionDialogs {
         return AlertDialog(
           title: Text(title),
           content: Text(content),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
@@ -138,7 +143,9 @@ class FileActionDialogs {
           return AlertDialog(
             title: Text(l10n.msg_rename_extension_warning_title),
             content: Text(l10n.msg_rename_extension_warning_content),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
@@ -183,7 +190,9 @@ class FileActionDialogs {
         return AlertDialog(
           title: Text(title),
           content: Text(content),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           actions: [
             FilledButton(
               onPressed: () => Navigator.pop(context),
@@ -210,17 +219,24 @@ class FileActionDialogs {
     final l10n = L10n.of(context);
     final newGroupController = TextEditingController(text: currentGroup);
     const newGroupValue = '__new__';
-    final isExisting = currentGroup != null && currentGroup.isNotEmpty && existingGroups.contains(currentGroup);
+    final isExisting =
+        currentGroup != null &&
+        currentGroup.isNotEmpty &&
+        existingGroups.contains(currentGroup);
     String? selectedGroup = isExisting
         ? currentGroup
-        : (currentGroup != null && currentGroup.isNotEmpty ? newGroupValue : null);
+        : (currentGroup != null && currentGroup.isNotEmpty
+              ? newGroupValue
+              : null);
 
     return showDialog<String?>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSt) => AlertDialog(
           title: Text(l10n.ui_select_group),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -233,9 +249,17 @@ class FileActionDialogs {
                       isDense: true,
                       isExpanded: true,
                       items: [
-                        DropdownMenuItem(value: null, child: Text(l10n.ui_default_group)),
-                        ...existingGroups.map((g) => DropdownMenuItem(value: g, child: Text(g))),
-                        DropdownMenuItem(value: newGroupValue, child: Text(l10n.ui_new_group)),
+                        DropdownMenuItem(
+                          value: null,
+                          child: Text(l10n.ui_default_group),
+                        ),
+                        ...existingGroups.map(
+                          (g) => DropdownMenuItem(value: g, child: Text(g)),
+                        ),
+                        DropdownMenuItem(
+                          value: newGroupValue,
+                          child: Text(l10n.ui_new_group),
+                        ),
                       ],
                       onChanged: (v) => setSt(() => selectedGroup = v),
                     ),
@@ -273,7 +297,9 @@ class FileActionDialogs {
                 Navigator.pop(ctx, group ?? '');
               },
               style: FilledButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: Text(l10n.ui_save),
             ),
@@ -297,17 +323,24 @@ class FileActionDialogs {
     final nameController = TextEditingController(text: initialName);
     final newGroupController = TextEditingController(text: initialGroup);
     const newGroupValue = '__new__';
-    final isExisting = initialGroup != null && initialGroup.isNotEmpty && existingGroups.contains(initialGroup);
+    final isExisting =
+        initialGroup != null &&
+        initialGroup.isNotEmpty &&
+        existingGroups.contains(initialGroup);
     String? selectedGroup = isExisting
         ? initialGroup
-        : (initialGroup != null && initialGroup.isNotEmpty ? newGroupValue : null);
+        : (initialGroup != null && initialGroup.isNotEmpty
+              ? newGroupValue
+              : null);
 
     return showDialog<FavoriteEditResult>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSt) => AlertDialog(
           title: Text(l10n.ui_edit_favorite),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -332,9 +365,17 @@ class FileActionDialogs {
                       isDense: true,
                       isExpanded: true,
                       items: [
-                        DropdownMenuItem(value: null, child: Text(l10n.ui_default_group)),
-                        ...existingGroups.map((g) => DropdownMenuItem(value: g, child: Text(g))),
-                        DropdownMenuItem(value: newGroupValue, child: Text(l10n.ui_new_group)),
+                        DropdownMenuItem(
+                          value: null,
+                          child: Text(l10n.ui_default_group),
+                        ),
+                        ...existingGroups.map(
+                          (g) => DropdownMenuItem(value: g, child: Text(g)),
+                        ),
+                        DropdownMenuItem(
+                          value: newGroupValue,
+                          child: Text(l10n.ui_new_group),
+                        ),
                       ],
                       onChanged: (v) => setSt(() => selectedGroup = v),
                     ),
@@ -386,7 +427,9 @@ class FileActionDialogs {
                 Navigator.pop(ctx, FavoriteEditResult(path, name, group));
               },
               style: FilledButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: Text(l10n.ui_save),
             ),
@@ -406,7 +449,9 @@ class FavoriteEditResult {
 }
 
 class FileActionSheet {
-  static Future<void> show(BuildContext context, Function(String) onAction, {
+  static Future<void> show(
+    BuildContext context,
+    Function(String) onAction, {
     bool isArchive = false,
     bool showShare = false,
     bool showInLocation = false,
@@ -418,7 +463,9 @@ class FileActionSheet {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (ctx) {
         return Container(
           constraints: BoxConstraints(
@@ -435,28 +482,103 @@ class FileActionSheet {
                 children: [
                   Center(
                     child: Container(
-                      width: 38, height: 4, margin: const EdgeInsets.only(top: 12, bottom: 8),
-                      decoration: BoxDecoration(color: theme.colorScheme.onSurface.withOpacity(0.15), borderRadius: BorderRadius.circular(2)),
+                      width: 38,
+                      height: 4,
+                      margin: const EdgeInsets.only(top: 12, bottom: 8),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.onSurface.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
-                  // 顺序与 _showSingleItemOptions 保持一致：解压、复制、剪切、删除、重命名、在位置中显示、打开方式、压缩、分享、收藏
+                  // 顺序：解压、复制、剪切、删除、重命名、在位置中显示、打开方式、压缩、收藏、设为首页、分享（分享在最底部）
                   if (isArchive)
-                    _buildTile(ctx, theme, icon: Broken.archive, title: L10n.of(ctx).ui_extract, value: 'extract', onAction: onAction),
-                  _buildTile(ctx, theme, icon: Broken.document_copy, title: L10n.of(context).ui_copy, value: 'copy', onAction: onAction),
-                  _buildTile(ctx, theme, icon: Broken.scissor, title: L10n.of(context).ui_cut, value: 'cut', onAction: onAction),
+                    _buildTile(
+                      ctx,
+                      theme,
+                      icon: Broken.archive,
+                      title: L10n.of(ctx).ui_extract,
+                      value: 'extract',
+                      onAction: onAction,
+                    ),
+                  _buildTile(
+                    ctx,
+                    theme,
+                    icon: Broken.document_copy,
+                    title: L10n.of(context).ui_copy,
+                    value: 'copy',
+                    onAction: onAction,
+                  ),
+                  _buildTile(
+                    ctx,
+                    theme,
+                    icon: Broken.scissor,
+                    title: L10n.of(context).ui_cut,
+                    value: 'cut',
+                    onAction: onAction,
+                  ),
                   _buildDeleteTile(ctx, theme, onAction: onAction),
-                  _buildTile(ctx, theme, icon: Broken.edit, title: L10n.of(context).msgc8ce4b36, value: 'rename', onAction: onAction),
+                  _buildTile(
+                    ctx,
+                    theme,
+                    icon: Broken.edit,
+                    title: L10n.of(context).msgc8ce4b36,
+                    value: 'rename',
+                    onAction: onAction,
+                  ),
                   if (showInLocation)
-                    _buildTile(ctx, theme, icon: Broken.folder_open, title: L10n.of(context).msgcd8264f1, value: 'show_in_location', onAction: onAction),
+                    _buildTile(
+                      ctx,
+                      theme,
+                      icon: Broken.folder_open,
+                      title: L10n.of(context).msgcd8264f1,
+                      value: 'show_in_location',
+                      onAction: onAction,
+                    ),
                   if (openWith)
-                    _buildTile(ctx, theme, icon: Broken.eye, title: L10n.of(context).msg2a4cfb07, value: 'open_with', onAction: onAction),
-                  _buildTile(ctx, theme, icon: Broken.box_add, title: L10n.of(context).ui_compress, value: 'archive', onAction: onAction),
-                  if (showShare)
-                    _buildTile(ctx, theme, icon: Icons.share_outlined, title: L10n.of(context).ui_share, value: 'share', onAction: onAction),
-                  _buildTile(ctx, theme, icon: Broken.folder_favorite, title: L10n.of(ctx).ui_favorite, value: 'favorite', onAction: onAction),
+                    _buildTile(
+                      ctx,
+                      theme,
+                      icon: Broken.eye,
+                      title: L10n.of(context).msg2a4cfb07,
+                      value: 'open_with',
+                      onAction: onAction,
+                    ),
+                  _buildTile(
+                    ctx,
+                    theme,
+                    icon: Broken.box_add,
+                    title: L10n.of(context).ui_compress,
+                    value: 'archive',
+                    onAction: onAction,
+                  ),
+                  _buildTile(
+                    ctx,
+                    theme,
+                    icon: Broken.folder_favorite,
+                    title: L10n.of(ctx).ui_favorite,
+                    value: 'favorite',
+                    onAction: onAction,
+                  ),
                   if (showSetAsHome)
-                    _buildTile(ctx, theme, icon: Broken.home_2, title: L10n.of(ctx).ui_set_as_home, value: 'set_as_home', onAction: onAction),
+                    _buildTile(
+                      ctx,
+                      theme,
+                      icon: Broken.home_2,
+                      title: L10n.of(ctx).ui_set_as_home,
+                      value: 'set_as_home',
+                      onAction: onAction,
+                    ),
+                  if (showShare)
+                    _buildTile(
+                      ctx,
+                      theme,
+                      icon: Icons.share_outlined,
+                      title: L10n.of(context).ui_share,
+                      value: 'share',
+                      onAction: onAction,
+                    ),
                   const SizedBox(height: 8),
                 ],
               ),
@@ -467,19 +589,42 @@ class FileActionSheet {
     );
   }
 
-  static Widget _buildTile(BuildContext ctx, ThemeData theme, {required IconData icon, required String title, required String value, required Function(String) onAction}) {
+  static Widget _buildTile(
+    BuildContext ctx,
+    ThemeData theme, {
+    required IconData icon,
+    required String title,
+    required String value,
+    required Function(String) onAction,
+  }) {
     return ListTile(
       leading: Icon(icon, size: 22),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-      onTap: () { Navigator.pop(ctx); onAction(value); },
+      onTap: () {
+        Navigator.pop(ctx);
+        onAction(value);
+      },
     );
   }
 
-  static Widget _buildDeleteTile(BuildContext ctx, ThemeData theme, {required Function(String) onAction}) {
+  static Widget _buildDeleteTile(
+    BuildContext ctx,
+    ThemeData theme, {
+    required Function(String) onAction,
+  }) {
     return ListTile(
       leading: const Icon(Broken.trash, size: 22, color: Colors.redAccent),
-      title: Text(L10n.of(ctx).ui_delete, style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.redAccent)),
-      onTap: () { Navigator.pop(ctx); onAction('delete'); },
+      title: Text(
+        L10n.of(ctx).ui_delete,
+        style: const TextStyle(
+          fontWeight: FontWeight.w600,
+          color: Colors.redAccent,
+        ),
+      ),
+      onTap: () {
+        Navigator.pop(ctx);
+        onAction('delete');
+      },
     );
   }
 }

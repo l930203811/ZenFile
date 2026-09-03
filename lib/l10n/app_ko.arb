@@ -3420,7 +3420,6 @@
   "@ui_close_all_tabs_message": {
     "description": "ui widgets"
   },
-
   "ui_not_found_title": "{title}을(를) 찾을 수 없습니다",
   "@ui_not_found_title": {
     "description": "ui widgets",
@@ -3639,7 +3638,7 @@
   "ui_documents": "문서",
   "ui_no_matching_files": "일치하는 파일을 찾을 수 없습니다",
   "ui_try_modify_search": "검색 텍스트를 수정하여 숨겨진 항목을 찾아보세요.",
-  "ui_vault_empty_desc": "XOR 난독화 서명은 파일을 완전히 열 수 없게 만들고 시스템 스캐너 데이터베이스에서 숨깁니다. 아래 버튼을 클릭하여 보호하세요.",
+  "ui_vault_empty_desc": "AES-256-GCM 암호화로 인해 파일은 시스템이나 다른 앱에서 완전히 열 수 없게 되며 미디어 스캐너에서도 숨겨집니다. 아래 버튼을 탭하여 보호하세요.",
   "ui_copied_n_items": "{count}개 항목이 클립보드에 복사되었습니다",
   "ui_cut_n_items": "{count}개 항목이 클립보드에 잘라내기 되었습니다",
   "ui_copy_tooltip": "복사",
@@ -3672,7 +3671,7 @@
   "ui_add_selected": "선택 항목 추가 ({count})",
   "ui_pin_selected": "선택 항목 고정 ({count})",
   "msg_vault_choose_mode": "보호 모드 선택",
-  "msg_vault_mode_desc": "선택한 파일을 보호할 방법을 선택하세요. 보안 파일은 즉시 XOR 스크램블됩니다.",
+  "msg_vault_mode_desc": "선택한 파일을 보호할 방법을 선택하세요. 보안 파일은 AES-256-GCM으로 암호화됩니다.",
   "ui_secure_import": "보안 가져오기(샌드박스)",
   "ui_in_place_scramble": "제자리 스크램블(빠름)",
   "msg_scrambling": "스크램블 및 보호 중...",
@@ -4903,7 +4902,7 @@
   "@ui_remote_guard": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_desc": "4자리 PIN을 설정하여 원격 서버 접근을 보호합니다. 앱 실행 시 또는 수동 잠금 후 PIN을 입력하세요.",
+  "ui_remote_guard_desc": "Set a password to protect remote server access. Enter it after app launch or manual lock.",
   "@ui_remote_guard_desc": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -4939,7 +4938,7 @@
   "@ui_remote_guard_change_pin": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_remote_guard_pin_hint": "4자리 숫자 PIN",
+  "ui_remote_guard_pin_hint": "비밀번호(문자, 숫자 또는 기호)",
   "@ui_remote_guard_pin_hint": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -4963,11 +4962,11 @@
   "@ui_app_lock": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_app_lock_desc": "앱을 실행할 때마다 PIN으로 잠금 해제",
+  "ui_app_lock_desc": "Require your password to unlock the app each time it launches",
   "@ui_app_lock_desc": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
-  "ui_app_lock_set_pin_first": "Set a 4-digit PIN before enabling",
+  "ui_app_lock_set_pin_first": "Set a password before enabling",
   "@ui_app_lock_set_pin_first": {
     "description": "ui\\screens\\remote_guard_screen.dart"
   },
@@ -5268,6 +5267,54 @@
     "description": "Editor tab: resize"
   },
   "editor_crop": "Crop",
+  "ui_draw": "그리기",
+  "ui_edit": "편집",
+  "@ui_edit": {
+    "description": "Edit object"
+  },
+  "ui_color": "색상",
+  "@ui_color": {
+    "description": "Draw color"
+  },
+  "ui_width": "굵기",
+  "@ui_width": {
+    "description": "Stroke thickness / font size"
+  },
+  "ui_text": "텍스트",
+  "@ui_text": {
+    "description": "Draw tool: text"
+  },
+  "ui_rect": "사각형",
+  "@ui_rect": {
+    "description": "Draw tool: rectangle"
+  },
+  "ui_ellipse": "타원",
+  "@ui_ellipse": {
+    "description": "Draw tool: ellipse"
+  },
+  "ui_line": "직선",
+  "@ui_line": {
+    "description": "Draw tool: line"
+  },
+  "ui_mosaic": "모자이크",
+  "@ui_mosaic": {
+    "description": "Draw tool: mosaic"
+  },
+  "@ui_draw": {
+    "description": "Editor tab: draw"
+  },
+  "ui_pen": "펜",
+  "@ui_pen": {
+    "description": "Draw tool: pen"
+  },
+  "ui_arrow": "화살표",
+  "@ui_arrow": {
+    "description": "Draw tool: arrow"
+  },
+  "ui_brush_size": "브러시 크기",
+  "@ui_brush_size": {
+    "description": "Draw brush size"
+  },
   "@editor_crop": {
     "description": "Editor tab: crop"
   },
@@ -5730,6 +5777,22 @@
   "@editor_undo": {
     "description": "editor_undo label"
   },
+  "editor_text_hint": "텍스트 입력",
+  "@editor_text_hint": {
+    "description": "Placeholder shown inside an empty text region box in image editor draw mode"
+  },
+  "editor_font_bold": "굵게",
+  "@editor_font_bold": {
+    "description": "Bold toggle for text tool in image editor"
+  },
+  "editor_font_italic": "기울임꼴",
+  "@editor_font_italic": {
+    "description": "Italic toggle for text tool in image editor"
+  },
+  "editor_font_underline": "밑줄",
+  "@editor_font_underline": {
+    "description": "Underline toggle for text tool in image editor"
+  },
   "wol_port_hint": "선택 사항",
   "@wol_port_hint": {
     "description": "wol_port_hint label"
@@ -6100,5 +6163,88 @@
   "ui_enter_host_first": "먼저 호스트 주소와 포트를 입력하세요",
   "@ui_enter_host_first": {
     "description": "SMB wizard: prompt to enter host and port before scanning"
+  },
+  "vault_enter_password": "잠금 해제하려면 비밀번호 입력",
+  "vault_set_password": "비밀번호 설정",
+  "vault_confirm_password": "확인을 위해 다시 입력",
+  "vault_pins_mismatch": "비밀번호가 일치하지 않습니다",
+  "vault_incorrect_password": "잘못된 비밀번호",
+  "vault_password_set": "비밀번호가 설정되었습니다",
+  "vault_next": "다음",
+  "vault_unlock": "잠금 해제",
+  "vault_use_keypad": "숫자 키패드 사용",
+  "vault_use_text_input": "영숫자 사용",
+  "vault_fingerprint": "지문으로 잠금 해제",
+  "vault_fingerprint_failed": "지문 인증에 실패했습니다",
+  "vault_min_length": "비밀번호는 최소 4자 이상이어야 합니다",
+  "vault_pwd_alphanumeric": "비밀번호(문자, 숫자 또는 기호)",
+  "vault_enable_fingerprint": "지문 잠금 해제 사용",
+  "vault_biometric_desc": "지문을 사용하여 금고를 빠르게 잠금 해제하세요",
+  "vault_export_backup": "백업 내보내기",
+  "vault_export_backup_desc": "암호화된 금고 백업 내보내기 (.zip)",
+  "vault_import_backup": "백업 가져오기",
+  "vault_import_backup_desc": "백업에서 금고 복원 (.zip)",
+  "vault_uninstall_warning_title": "제거 경고",
+  "vault_uninstall_warning": "앱을 제거하면 금고가 삭제됩니다. 먼저 백업을 내보내세요.",
+  "vault_backup_exported": "백업 내보낸 위치:",
+  "vault_backup_imported": "가져온 항목",
+  "vault_export_failed": "백업 내보내기 실패",
+  "vault_import_failed": "백업 가져오기 실패",
+  "ui_font_size": "글꼴",
+  "@ui_font_size": {
+    "description": "Slider label"
+  },
+  "ui_line_width": "선 굵기",
+  "@ui_line_width": {
+    "description": "Slider label"
+  },
+  "archive_open_failed_with_reason": "열 수 없습니다: {e}",
+  "@archive_open_failed_with_reason": {
+    "description": "archive_viewer_screen.dart failed to open an item in archive",
+    "placeholders": {
+      "e": {
+        "type": "String"
+      }
+    }
+  },
+  "archive_extract_failed_with_reason": "압축 해제 실패: {e}",
+  "@archive_extract_failed_with_reason": {
+    "description": "archive_viewer_screen.dart failed to extract an item out of archive",
+    "placeholders": {
+      "e": {
+        "type": "String"
+      }
+    }
+  },
+  "archive_unsupported_format": "파일이 비어 있거나 압축을 해제할 수 없습니다(파일이 너무 크거나, 손상되었거나, 지원되지 않는 압축 형식일 수 있습니다)",
+  "@archive_unsupported_format": {
+    "description": "archive_viewer_screen.dart specific message for empty/unsupported archive entries"
+  },
+  "vault_export_backup_confirm": "The backup file will be saved to the following location:",
+  "@vault_export_backup_confirm": {
+    "description": "vault backup UI string"
+  },
+  "vault_import_only_zip": "Only .zip backup files are supported",
+  "@vault_import_only_zip": {
+    "description": "vault backup UI string"
+  },
+  "vault_import_password_hint": "This backup uses a different password. Please re-unlock the vault with the password used when the backup was created",
+  "@vault_import_password_hint": {
+    "description": "vault backup UI string"
+  },
+  "vault_open_backup_location": "Open the folder where the backup is saved?",
+  "@vault_open_backup_location": {
+    "description": "vault backup UI string"
+  },
+  "open_file": "Open",
+  "open_in_location": "Open file location",
+  "open_with_title": "Open with"  ,
+  "share_permission_title": "Permission required",
+  "share_permission_message": "ZenFile does not have permission to access this file. Please share it again or grant permission and retry.",
+  "@share_permission_title": {
+    "description": "Title for share permission prompt"
+  },
+  "@share_permission_message": {
+    "description": "Message for share permission prompt"
   }
 }

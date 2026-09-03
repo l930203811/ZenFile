@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.1.38+64
+version: 1.1.39+66
 
 environment:
   sdk: ^3.11.5
@@ -37,6 +37,12 @@ dependency_overrides:
   # 任何非 idle 状态均激活 MediaSession/前台服务，确保 13+ 媒体卡片出现）。
   audio_service:
     path: plugins/audio_service
+  # 本地 fork：修复 file_picker 11.0.3 在 AGP 9 + Flutter legacy 模式（android.builtInKotlin=false）下
+  # 不应用 kotlin-android，导致 FilePickerPlugin 未被编译、GeneratedPluginRegistrant 编译失败的问题。
+  # 上游修复（AGP9 legacy 兼容）仅在 12.x，但 12.x 为 federated 破坏性重构暂不升级；
+  # 补丁见 vendor/file_picker/android/build.gradle。
+  file_picker:
+    path: vendor/file_picker
 
 dependencies:
   flutter:
@@ -96,6 +102,8 @@ dependencies:
   exif: ^3.3.0
   file_picker: ^11.0.3
   cryptography_plus: ^3.0.0
+  local_auth: ^3.0.2
+  flutter_secure_storage: ^10.3.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

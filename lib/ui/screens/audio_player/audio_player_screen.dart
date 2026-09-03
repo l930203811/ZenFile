@@ -574,8 +574,8 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       // 桌面歌词也应保持显示，不随页面关闭而消失
       // DesktopLyricController 继续运行，独立于 widget 生命周期更新歌词
       getAudioHandler().setSkipCallback(null);
-      // 释放均衡器资源
-      _disposeEqualizer();
+      // 后台模式：保留均衡器（player 仍在后台播放），不 detach，
+      // 否则切后台后 af 被清空、预设失效变回 Flat
     } else {
       // 非后台模式：停止控制器并隐藏悬浮窗
       DesktopLyricController.instance.stop();
@@ -1769,28 +1769,39 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   bool _eqReady = false;
   EqPreset _eqPreset = EqPreset.flat;
 
-  /// 初始化均衡器（在播放器打开音频后调用）。
+  /// 应用已保存的均衡器预设（每次打开音频后调用）。
   /// 使用 mpv 内置 equalizer 音频滤波器，直接在 libmpv 管线内处理，全设备通用。
+  ///
+  /// 修复（反馈 #1）：此前仅在首次 _initEqualizer 时尝试 attach，若当时
+  /// player.platform 尚未就绪（非 NativePlayer）则整段跳过、_eqReady 永久为
+  /// false，导致之后点预设也因 _nativePlayer 为 null 而静默失败（需重启才生效）。
+  /// 现改为 attach 一次性，但每次播放都重新应用预设；platform 未就绪时延迟重试，
+  /// 直至生效。这同时覆盖了 open 后 af 被重置的边界情况。
   Future<void> _initEqualizer() async {
-    if (_eqReady) return;
     try {
       final platform = player.platform;
       if (platform is NativePlayer) {
-        await _eqService.attach(platform);
-        _eqReady = true;
-        // 恢复上次使用的预设
-        final savedKey = PreferencesService.getAudioEqPreset();
-        if (savedKey.isNotEmpty) {
-          _eqPreset = EqPresetExtension.fromKey(savedKey);
-          await _eqService.applyPreset(_eqPreset);
+        if (!_eqReady) {
+          await _eqService.attach(platform);
+          _eqReady = true;
         }
+        // 每次播放都恢复上次使用的预设（覆盖 open 后 af 被重置的边界情况）
+        final savedKey = PreferencesService.getAudioEqPreset();
+        _eqPreset = savedKey.isNotEmpty
+            ? EqPresetExtension.fromKey(savedKey)
+            : EqPreset.flat;
+        await _eqService.applyPreset(_eqPreset);
+      } else {
+        // platform 尚未就绪：延迟重试，避免预设永久失效
+        await Future.delayed(const Duration(milliseconds: 400));
+        if (mounted) _initEqualizer();
       }
     } catch (e) {
       debugPrint('[EQ] 初始化失败: $e');
     }
   }
 
-  /// 释放均衡器资源。
+  /// 释放均衡器资源（仅完全停止播放时调用，后台模式保留以免变回 Flat）。
   void _disposeEqualizer() {
     _eqService.detach();
     _eqReady = false;

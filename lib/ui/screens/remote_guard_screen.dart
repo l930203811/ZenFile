@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:local_auth/local_auth.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../services/remote_guard_service.dart';
+import '../../services/vault_biometric_store.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 /// 远程保护页面模式
@@ -26,13 +28,16 @@ enum RemoteGuardMode {
 
 /// 远程访问保护：PIN 设置 / 验证 / 修改 PIN 页面。
 ///
-/// 设计参考私人保险箱（VaultLockScreen）：同款渐变背景、圆形 PIN 键盘、
-/// 抖动动画。主要入口：
+/// 设计参考私人保险箱（VaultLockScreen）：同款渐变背景、密码输入框（字母/数字/符号）、
+/// 抖动动画、指纹解锁。主要入口：
 ///  - [RemoteGuardMode.entry]      管理面板（现仅保留修改 PIN 入口）
 ///  - [RemoteGuardMode.gate]       访问远程内容前的 PIN 验证，通过后 pop(true)
 ///  - [RemoteGuardMode.setupPinOnly] 仅设置 PIN，成功后 pop(true)
 ///  - [RemoteGuardMode.appLock]    启动应用保护闸门，验证后回调 onUnlocked
 ///  - [RemoteGuardMode.changePin]  保险箱首页「修改 PIN」直接入口，验证当前 PIN 后直接进入改密流程
+///
+/// 注：远程守卫 PIN 与保险箱密码共用同一套（RemoteGuardService 委托 VaultService），
+/// 故解锁输入同样为密码（字母/数字/符号）；指纹解锁复用 VaultBiometricStore 中保存的同一密码。
 class RemoteGuardScreen extends StatefulWidget {
   final RemoteGuardMode mode;
   /// 仅 [RemoteGuardMode.appLock] 使用：PIN 验证成功后的回调（用于通知外层切换到主界面）
@@ -62,12 +67,18 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
   String _inputBuffer = '';
   String _message = '';
   bool _isError = false;
+  final TextEditingController _textController = TextEditingController();
 
   // 修改 PIN 流程状态
   bool _isChangingPin = false; // 是否处于「修改 PIN」流程
   bool _oldPinVerified = false; // 当前 PIN 是否已验证通过
   String _oldPin = ''; // 已验证的当前 PIN（用于重加密）
   bool _changingProgress = false; // 重加密进行中（显示进度，禁用返回）
+
+  // 生物识别
+  final LocalAuthentication _auth = LocalAuthentication();
+  bool _biometricAvailable = false;
+  bool _biometricEnabled = false;
 
   late final AnimationController _shakeController;
 
@@ -84,9 +95,23 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
   Future<void> _initState() async {
     final pinSet = await RemoteGuardService.isPinSet();
     if (!mounted) return;
+    // 生物识别状态
+    bool available = false;
+    bool enabled = false;
+    try {
+      final bios = await _auth.getAvailableBiometrics();
+      available = bios.isNotEmpty;
+      enabled = await VaultBiometricStore.hasCredential();
+    } catch (_) {
+      // 设备不支持生物识别：静默降级为手动输入
+    }
+    final preferred = await VaultBiometricStore.readGuardPreferredUnlock();
+    if (!mounted) return;
     setState(() {
       _isPinSet = pinSet;
       _checking = false;
+      _biometricAvailable = available;
+      _biometricEnabled = enabled;
       // entry 模式：已设置 PIN 且已解锁 → 直接管理面板，否则键盘流程
       if (widget.mode == RemoteGuardMode.entry &&
           pinSet &&
@@ -109,6 +134,17 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
         Navigator.pop(context, false);
       }
     }
+
+    // 访问守卫 / 启动闸门：若偏好指纹且可用，进页面即自动弹出生物识别
+    if ((widget.mode == RemoteGuardMode.gate || widget.mode == RemoteGuardMode.appLock) &&
+        pinSet &&
+        available &&
+        enabled &&
+        preferred == 'biometric') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _onFingerprint();
+      });
+    }
   }
 
   String _initialMessage() {
@@ -117,20 +153,45 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
     return l10n.ui_remote_guard_enter_pin;
   }
 
-  void _onKeyPress(String key) {
-    if (_inputBuffer.length >= 8) return;
-    HapticFeedback.lightImpact();
+  void _onTextChanged(String value) {
+    final cleaned = value.replaceAll('\n', '');
+    if (cleaned.length > 64) {
+      _textController.text = cleaned.substring(0, 64);
+      _textController.selection = TextSelection.fromPosition(
+        TextPosition(offset: _textController.text.length),
+      );
+      return;
+    }
     setState(() {
       _isError = false;
-      _inputBuffer += key;
+      _inputBuffer = cleaned;
     });
+  }
 
-    if (_inputBuffer.length == 4) {
-      Future.delayed(const Duration(milliseconds: 200), () => _onPinComplete());
+  void _onClear() {
+    HapticFeedback.mediumImpact();
+    setState(() {
+      _isError = false;
+      _inputBuffer = '';
+      _textController.clear();
+    });
+  }
+
+  void _showError(String msg) {
+    HapticFeedback.heavyImpact();
+    _shakeController.forward(from: 0.0);
+    if (mounted) {
+      setState(() {
+        _inputBuffer = '';
+        _textController.clear();
+        _isError = true;
+        _message = msg;
+      });
     }
   }
 
-  Future<void> _onPinComplete() async {
+  /// 提交当前输入（设置 / 确认 / 验证 / 修改 PIN），由解锁按钮或键盘「完成」触发。
+  Future<void> _submit() async {
     final l10n = L10n.of(context);
 
     // ── 修改 PIN 流程（验证旧 PIN → 设新 PIN → 重加密） ──
@@ -144,6 +205,7 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
       setState(() {
         _tempPin = _inputBuffer;
         _inputBuffer = '';
+        _textController.clear();
         _isConfirmMode = true;
         _message = l10n.ui_remote_guard_confirm_pin;
       });
@@ -155,12 +217,17 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
       if (_inputBuffer == _tempPin) {
         HapticFeedback.mediumImpact();
         await RemoteGuardService.setPin(_inputBuffer);
-        RemoteGuardService.unlock();
+        // 启用指纹解锁：把密码存入 Keystore，并记录偏好为密码
+        try {
+          await VaultBiometricStore.save(_inputBuffer);
+          await VaultBiometricStore.saveGuardPreferredUnlock('password');
+        } catch (_) {}
         if (!mounted) return;
         setState(() {
           _isPinSet = true;
           _isConfirmMode = false;
           _inputBuffer = '';
+          _textController.clear();
         });
         if (widget.mode == RemoteGuardMode.setupPinOnly) {
           // 仅设置 PIN，由调用方决定启用哪个开关
@@ -177,13 +244,7 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
           setState(() => _showManage = true);
         }
       } else {
-        HapticFeedback.heavyImpact();
-        _shakeController.forward(from: 0.0);
-        setState(() {
-          _inputBuffer = '';
-          _isError = true;
-          _message = l10n.ui_remote_guard_pin_mismatch;
-        });
+        _showError(l10n.ui_remote_guard_pin_mismatch);
       }
       return;
     }
@@ -192,6 +253,11 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
     final success = await RemoteGuardService.verifyPin(_inputBuffer);
     if (!mounted) return;
     if (success) {
+      // 密码解锁成功：刷新 Keystore 密码 + 记录偏好为密码
+      try {
+        await VaultBiometricStore.save(_inputBuffer);
+        await VaultBiometricStore.saveGuardPreferredUnlock('password');
+      } catch (_) {}
       if (widget.mode == RemoteGuardMode.appLock) {
         HapticFeedback.mediumImpact();
         RemoteGuardService.unlockApp();
@@ -200,20 +266,64 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
       }
       HapticFeedback.mediumImpact();
       RemoteGuardService.unlock();
-      setState(() => _inputBuffer = '');
+      setState(() {
+        _inputBuffer = '';
+        _textController.clear();
+      });
       if (widget.mode == RemoteGuardMode.gate) {
         Navigator.pop(context, true);
       } else {
         setState(() => _showManage = true);
       }
     } else {
-      HapticFeedback.heavyImpact();
-      _shakeController.forward(from: 0.0);
+      _showError(l10n.ui_remote_guard_wrong_pin);
+    }
+  }
+
+  /// 指纹解锁：验证通过后用 Keystore 中保存的密码自动解锁，并记录偏好为指纹。
+  Future<void> _onFingerprint() async {
+    final l10n = L10n.of(context);
+    try {
+      final did = await _auth.authenticate(
+        localizedReason: l10n.ui_remote_guard,
+        biometricOnly: true,
+      );
+      if (!did) return;
+      final pw = await VaultBiometricStore.read();
+      if (pw == null || !await RemoteGuardService.verifyPin(pw)) {
+        _showError(l10n.ui_remote_guard_wrong_pin);
+        return;
+      }
+      try {
+        await VaultBiometricStore.saveGuardPreferredUnlock('biometric');
+      } catch (_) {}
+      if (widget.mode == RemoteGuardMode.appLock) {
+        RemoteGuardService.unlockApp();
+        widget.onUnlocked?.call();
+        return;
+      }
+      RemoteGuardService.unlock();
       setState(() {
         _inputBuffer = '';
-        _isError = true;
-        _message = l10n.ui_remote_guard_wrong_pin;
+        _textController.clear();
       });
+      if (widget.mode == RemoteGuardMode.gate) {
+        Navigator.pop(context, true);
+      } else if (widget.mode == RemoteGuardMode.changePin) {
+        // 生物识别等价于当前 PIN 验证通过，直接进入输入新 PIN
+        setState(() {
+          _oldPin = pw;
+          _oldPinVerified = true;
+          _isConfirmMode = false;
+          _inputBuffer = '';
+          _textController.clear();
+          _message = l10n.ui_remote_guard_set_pin;
+        });
+      } else {
+        setState(() => _showManage = true);
+      }
+    } catch (_) {
+      _showError(l10n.ui_remote_guard_wrong_pin);
     }
   }
 
@@ -231,16 +341,11 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
           _oldPinVerified = true;
           _isConfirmMode = false;
           _inputBuffer = '';
+          _textController.clear();
           _message = l10n.ui_remote_guard_set_pin; // 复用「设置 PIN 码」作为新 PIN 提示
         });
       } else {
-        HapticFeedback.heavyImpact();
-        _shakeController.forward(from: 0.0);
-        setState(() {
-          _inputBuffer = '';
-          _isError = true;
-          _message = l10n.ui_remote_guard_wrong_pin;
-        });
+        _showError(l10n.ui_remote_guard_wrong_pin);
       }
       return;
     }
@@ -250,6 +355,7 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
       setState(() {
         _tempPin = _inputBuffer;
         _inputBuffer = '';
+        _textController.clear();
         _isConfirmMode = true;
         _message = l10n.ui_remote_guard_confirm_pin;
       });
@@ -264,6 +370,7 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
       _shakeController.forward(from: 0.0);
       setState(() {
         _inputBuffer = '';
+        _textController.clear();
         _isConfirmMode = false;
         _tempPin = '';
         _isError = true;
@@ -277,12 +384,18 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
     setState(() {
       _changingProgress = true;
       _inputBuffer = '';
+      _textController.clear();
       _isError = false;
       _message = l10n.ui_remote_guard_reencrypting;
     });
     final ok = await RemoteGuardService.changePin(oldPin, newPin);
     if (!mounted) return;
     if (ok) {
+      // 密码已变更：同步刷新 Keystore 中保存的密码，并记录偏好为密码
+      try {
+        await VaultBiometricStore.save(newPin);
+        await VaultBiometricStore.saveGuardPreferredUnlock('password');
+      } catch (_) {}
       setState(() {
         _changingProgress = false;
         _message = l10n.ui_remote_guard_pin_changed;
@@ -301,23 +414,6 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
     }
   }
 
-  void _onDelete() {
-    if (_inputBuffer.isEmpty) return;
-    HapticFeedback.selectionClick();
-    setState(() {
-      _isError = false;
-      _inputBuffer = _inputBuffer.substring(0, _inputBuffer.length - 1);
-    });
-  }
-
-  void _onClear() {
-    HapticFeedback.mediumImpact();
-    setState(() {
-      _inputBuffer = '';
-      _isError = false;
-    });
-  }
-
   /// 修改 PIN：进入「验证当前 PIN → 输入新 PIN 两次 → 重加密」流程
   void _startChangePin() {
     setState(() {
@@ -327,6 +423,7 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
       _isConfirmMode = false;
       _tempPin = '';
       _inputBuffer = '';
+      _textController.clear();
       _isError = false;
       _showManage = false;
       _message = L10n.of(context).ui_remote_guard_enter_current_pin;
@@ -336,6 +433,7 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
   @override
   void dispose() {
     _shakeController.dispose();
+    _textController.dispose();
     super.dispose();
   }
 
@@ -357,50 +455,50 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
       canPop: widget.mode != RemoteGuardMode.appLock,
       child: Scaffold(
         body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: isDark
-                ? [const Color(0xFF0F172A), const Color(0xFF1E293B), const Color(0xFF020617)]
-                : [theme.colorScheme.primaryContainer.withOpacity(0.4), theme.colorScheme.surface, theme.colorScheme.surface],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isDark
+                  ? [const Color(0xFF0F172A), const Color(0xFF1E293B), const Color(0xFF020617)]
+                  : [theme.colorScheme.primaryContainer.withOpacity(0.4), theme.colorScheme.surface, theme.colorScheme.surface],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              Align(
-                alignment: Alignment.topLeft,
-                child: (widget.mode == RemoteGuardMode.appLock || _changingProgress)
-                    ? const SizedBox.shrink()
-                    : Padding(
-                        padding: const EdgeInsets.only(left: 12.0, top: 12.0),
-                        child: IconButton(
-                          icon: const Icon(Broken.arrow_left, size: 26),
-                          onPressed: _onBackPressed,
+          child: SafeArea(
+            child: Column(
+              children: [
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: (widget.mode == RemoteGuardMode.appLock || _changingProgress)
+                      ? const SizedBox.shrink()
+                      : Padding(
+                          padding: const EdgeInsets.only(left: 12.0, top: 12.0),
+                          child: IconButton(
+                            icon: const Icon(Broken.arrow_left, size: 26),
+                            onPressed: _onBackPressed,
+                          ),
                         ),
-                      ),
-              ),
-              if (_changingProgress)
-                Expanded(child: _buildChangingProgress(theme))
-              else if (_showManage && widget.mode == RemoteGuardMode.entry)
-                Expanded(child: _buildManagePanel(theme))
-              else
-                Expanded(
-                  child: _buildPinPad(
-                    theme,
-                    isDark,
-                    titleOverride: widget.mode == RemoteGuardMode.appLock
-                        ? L10n.of(context).ui_app_lock
-                        : (_isChangingPin
-                            ? L10n.of(context).ui_remote_guard_change_pin
-                            : null),
-                  ),
                 ),
-            ],
+                if (_changingProgress)
+                  Expanded(child: _buildChangingProgress(theme))
+                else if (_showManage && widget.mode == RemoteGuardMode.entry)
+                  Expanded(child: _buildManagePanel(theme))
+                else
+                  Expanded(
+                    child: _buildPinPad(
+                      theme,
+                      isDark,
+                      titleOverride: widget.mode == RemoteGuardMode.appLock
+                          ? L10n.of(context).ui_app_lock
+                          : (_isChangingPin
+                              ? L10n.of(context).ui_remote_guard_change_pin
+                              : null),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -485,9 +583,21 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
     );
   }
 
-  // ── PIN 键盘（参考 VaultLockScreen） ───────────────────────────────────
+  // ── 字母+数字密码输入 + 指纹（参考 VaultLockScreen） ──────────────────────
 
   Widget _buildPinPad(ThemeData theme, bool isDark, {String? titleOverride}) {
+    final l10n = L10n.of(context);
+    final canSubmit = _inputBuffer.length >= 4;
+    final confirmLabel = _isConfirmMode
+        ? l10n.ui_confirm
+        : (_isPinSet ? l10n.vault_unlock : l10n.vault_next);
+
+    // 指纹按钮：已设置 PIN 且已启用凭据时显示（改密流程输入新密码阶段隐藏）
+    final showFingerprint = _biometricAvailable &&
+        _biometricEnabled &&
+        _isPinSet &&
+        !(_isChangingPin && _oldPinVerified);
+
     return Column(
       children: [
         const Spacer(),
@@ -527,43 +637,67 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
           ),
         ),
         const SizedBox(height: 36),
-        _ShakeWidget(
-          controller: _shakeController,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(4, (index) {
-              final isFilled = index < _inputBuffer.length;
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                margin: const EdgeInsets.symmetric(horizontal: 12),
-                width: 16,
-                height: 16,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isFilled ? theme.colorScheme.primary : Colors.transparent,
-                  border: Border.all(
-                    color: isFilled
-                        ? theme.colorScheme.primary
-                        : theme.colorScheme.onSurface.withOpacity(0.24),
-                    width: 2,
-                  ),
-                  boxShadow: isFilled
-                      ? [
-                          BoxShadow(
-                            color: theme.colorScheme.primary.withOpacity(0.4),
-                            blurRadius: 10,
-                            spreadRadius: 1,
-                          ),
-                        ]
-                      : null,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 48.0),
+          child: _ShakeWidget(
+            controller: _shakeController,
+            child: TextField(
+              controller: _textController,
+              onChanged: _onTextChanged,
+              obscureText: true,
+              keyboardType: TextInputType.visiblePassword,
+              autocorrect: false,
+              enableSuggestions: false,
+              autofocus: true,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 20, letterSpacing: 4, fontWeight: FontWeight.bold),
+              decoration: InputDecoration(
+                hintText: l10n.ui_remote_guard_pin_hint,
+                hintStyle: TextStyle(
+                  fontSize: 14,
+                  letterSpacing: 0.3,
+                  fontWeight: FontWeight.normal,
+                  color: theme.colorScheme.onSurface.withOpacity(0.4),
                 ),
-              );
-            }),
+                hintMaxLines: 2,
+                filled: true,
+                fillColor: isDark ? Colors.white.withOpacity(0.04) : Colors.black.withOpacity(0.02),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              ),
+              onSubmitted: (_) {
+                if (canSubmit) _submit();
+              },
+            ),
           ),
         ),
+        const SizedBox(height: 20),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 48.0),
+          child: SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: FilledButton(
+              onPressed: canSubmit ? _submit : null,
+              style: FilledButton.styleFrom(
+                backgroundColor: theme.colorScheme.primary,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              child: Text(confirmLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        if (showFingerprint)
+          IconButton(
+            onPressed: _onFingerprint,
+            icon: Icon(Broken.finger_scan, size: 30, color: theme.colorScheme.primary),
+            tooltip: l10n.ui_remote_guard,
+          ),
         const Spacer(flex: 2),
-        _buildKeypad(theme),
-        const SizedBox(height: 24),
       ],
     );
   }
@@ -583,6 +717,7 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
         _isConfirmMode = false;
         _tempPin = '';
         _inputBuffer = '';
+        _textController.clear();
         _isError = false;
         _showManage = true;
         _message = L10n.of(context).ui_remote_guard_enter_pin;
@@ -617,121 +752,6 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
         ),
         const Spacer(flex: 2),
       ],
-    );
-  }
-
-  Widget _buildKeypad(ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 48.0),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildKeyButton('1'),
-              _buildKeyButton('2'),
-              _buildKeyButton('3'),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildKeyButton('4'),
-              _buildKeyButton('5'),
-              _buildKeyButton('6'),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildKeyButton('7'),
-              _buildKeyButton('8'),
-              _buildKeyButton('9'),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildActionKeyButton(
-                icon: Icons.clear_rounded,
-                onPressed: _onClear,
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
-              ),
-              _buildKeyButton('0'),
-              _buildActionKeyButton(
-                icon: Icons.backspace_rounded,
-                onPressed: _onDelete,
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildKeyButton(String label) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => _onKeyPress(label),
-        borderRadius: BorderRadius.circular(40),
-        splashColor: theme.colorScheme.primary.withOpacity(0.12),
-        highlightColor: theme.colorScheme.primary.withOpacity(0.06),
-        child: Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: theme.colorScheme.outline.withOpacity(0.1),
-              width: 1.5,
-            ),
-            color: isDark
-                ? Colors.white.withOpacity(0.02)
-                : Colors.black.withOpacity(0.01),
-          ),
-          child: Center(
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionKeyButton({
-    required IconData icon,
-    required VoidCallback onPressed,
-    required Color color,
-  }) {
-    final theme = Theme.of(context);
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(40),
-        splashColor: theme.colorScheme.primary.withOpacity(0.12),
-        highlightColor: theme.colorScheme.primary.withOpacity(0.06),
-        child: Container(
-          width: 72,
-          height: 72,
-          decoration: const BoxDecoration(shape: BoxShape.circle),
-          child: Center(child: Icon(icon, size: 24, color: color)),
-        ),
-      ),
     );
   }
 }

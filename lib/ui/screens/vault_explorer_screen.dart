@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:mime/mime.dart';
 import 'package:open_filex/open_filex.dart';
@@ -9,7 +8,11 @@ import '../../core/utils.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../services/vault_service.dart';
 import '../../services/remote_guard_service.dart';
+import '../../services/vault_biometric_store.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:local_auth/local_auth.dart';
 import 'remote_guard_screen.dart';
+import 'vault_lock_screen.dart';
 import 'image_viewer_screen.dart';
 import 'video_player/video_player_screen.dart';
 import 'audio_player/audio_player_screen.dart';
@@ -38,11 +41,17 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
   bool _remoteGuardEnabled = false;
   bool _appLockEnabled = false;
 
+  // 生物识别（指纹解锁）开关状态
+  bool _biometricAvailable = false;
+  bool _biometricEnabled = false;
+  final LocalAuthentication _auth = LocalAuthentication();
+
   @override
   void initState() {
     super.initState();
     _loadVaultData();
     _loadSecurityState();
+    _loadBiometricState();
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -96,6 +105,227 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     } else {
       await RemoteGuardService.setAppLockEnabled(false);
       await _loadSecurityState();
+    }
+  }
+
+  Future<void> _loadBiometricState() async {
+    try {
+      final available = await _auth.getAvailableBiometrics();
+      final enabled = await VaultBiometricStore.hasCredential();
+      if (mounted) {
+        setState(() {
+          _biometricAvailable = available.isNotEmpty;
+          _biometricEnabled = enabled;
+        });
+      }
+    } catch (_) {
+      // 设备不支持生物识别：静默忽略
+    }
+  }
+
+  Future<void> _onBiometricChanged(bool value) async {
+    final l10n = L10n.of(context);
+    if (value) {
+      try {
+        final did = await _auth.authenticate(
+          localizedReason: l10n.vault_fingerprint,
+          biometricOnly: true,
+        );
+        if (did) {
+          await VaultBiometricStore.save(widget.password);
+        }
+      } catch (_) {
+        // 用户取消或验证失败：保持关闭
+      }
+    } else {
+      await VaultBiometricStore.clear();
+    }
+    await _loadBiometricState();
+  }
+
+  void _toast(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  Future<void> _exportBackup() async {
+    final l10n = L10n.of(context);
+    // 导出到公开目录 /storage/emulated/0/ZenFile/Backups/safe，
+    // 避免落到 Android/data 应用私有目录导致无权限设备无法找回/导入。
+    const preferred = '/storage/emulated/0/ZenFile/Backups/safe';
+
+    // 1) 先提示导出路径，由用户确认/取消。
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(l10n.vault_export_backup),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.vault_export_backup_confirm),
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.4),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: SelectableText(
+                preferred,
+                style: const TextStyle(fontSize: 13, fontFamily: 'monospace'),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.ui_cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.ui_confirm),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    // 2) 执行导出（带加载指示）。
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+    String? exportedPath;
+    try {
+      exportedPath = await VaultService.exportVault(preferred);
+    } catch (_) {
+      // 兜底：公开目录不可写时退回应用私有外部目录，保证导出功能不彻底失效
+      try {
+        final fallback = (await getExternalStorageDirectory())?.path ??
+            (await getApplicationDocumentsDirectory()).path;
+        exportedPath = await VaultService.exportVault(fallback);
+      } catch (e) {
+        if (mounted) Navigator.pop(context);
+        _toast(l10n.vault_export_failed);
+        return;
+      }
+    }
+    if (mounted) Navigator.pop(context);
+    _toast('${l10n.vault_backup_exported}: $exportedPath');
+
+    // 3) 导出完成后询问是否打开文件所在位置（应用内文件浏览器定位并高亮）。
+    final open = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(l10n.vault_backup_exported),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SelectableText(
+              exportedPath!,
+              style: const TextStyle(fontSize: 13, fontFamily: 'monospace'),
+            ),
+            const SizedBox(height: 12),
+            Text(l10n.vault_open_backup_location),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.ui_cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.ui_confirm),
+          ),
+        ],
+      ),
+    );
+    if (open == true && mounted) {
+      final fm = context.read<FileManagerProvider>();
+      // 返回首页并切到「浏览」页：先置位 navigateToBrowseTab，由首页
+      // ValueListenableBuilder 在 pop 回首页后完成顶层 Tab 切换；再 popUntil
+      // 一路弹回首页（关闭保险箱/工具箱等上层路由），最后定位并高亮备份文件所在文件夹。
+      // 与图片查看器「在位置中显示」、全局搜索跳转行为一致，解决从抽屉/分类页进入时
+      // 弹回后仍停留在分类页或卡在工具箱页的问题。
+      fm.setNavigateToBrowseTab(true);
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      await fm.showFileInLocation(exportedPath);
+    }
+  }
+
+  Future<void> _importBackup() async {
+    final l10n = L10n.of(context);
+    // 优先定位到默认导出备份目录，但允许在应用内浏览器自行浏览到其它路径选择备份文件。
+    String startPath = '/storage/emulated/0/ZenFile/Backups/safe';
+    final safeDir = Directory(startPath);
+    if (!await safeDir.exists()) {
+      final backupsDir = Directory('/storage/emulated/0/ZenFile/Backups');
+      if (await backupsDir.exists()) {
+        startPath = backupsDir.path;
+      } else {
+        // 默认目录尚不存在：尝试创建以便定位；失败则回退到内部存储根。
+        try {
+          await safeDir.create(recursive: true);
+        } catch (_) {
+          startPath = '/storage/emulated/0';
+        }
+      }
+    }
+    final selected = await InternalFilePickerScreen.show(
+      context,
+      rootPath: '/storage/emulated/0',
+      initialPath: startPath,
+    );
+    if (selected == null || selected.isEmpty) return;
+    final path = selected.first;
+    if (!path.toLowerCase().endsWith('.zip')) {
+      _toast(l10n.vault_import_only_zip);
+      return;
+    }
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+    try {
+      final (imported, paramsRestored) = await VaultService.importVault(path);
+      await _loadVaultData();
+      if (mounted) Navigator.pop(context);
+      _toast('${l10n.vault_backup_imported}: $imported');
+      // 若导入恢复了备份自带的密码参数（说明备份用的是另一组密码），当前会话密码可能已失效，
+      // 提示用户用备份时的密码重新解锁保险箱，避免后续恢复因密码不匹配而失败。
+      if (paramsRestored && mounted) {
+        final ok = await VaultService.verifyPassword(widget.password);
+        if (!ok) {
+          _toast(l10n.vault_import_password_hint);
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const VaultLockScreen()),
+            );
+          }
+          return;
+        }
+      }
+    } catch (e) {
+      if (mounted) Navigator.pop(context);
+      _toast(l10n.vault_import_failed);
     }
   }
 
@@ -572,8 +802,10 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
           ),
         ),
         child: SafeArea(
-          child: Column(
-            children: [
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              children: [
               // Custom Header Bar
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
@@ -661,14 +893,16 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
               ),
 
               // Files List or Placeholder
-              Expanded(
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _filteredRecords.isEmpty
-                        ? _buildPlaceholder(theme, isDark)
-                        : _buildFilesList(theme, isDark),
-              ),
+              _isLoading
+                  ? const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 48),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  : _filteredRecords.isEmpty
+                      ? _buildPlaceholder(theme, isDark)
+                      : _buildFilesList(theme, isDark),
             ],
+            ),
           ),
         ),
       ),
@@ -753,6 +987,36 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
               }
               await _loadSecurityState();
             },
+          ),
+          if (_biometricAvailable)
+            _buildSwitchTile(
+              theme,
+              icon: Broken.finger_scan,
+              title: l10n.vault_enable_fingerprint,
+              subtitle: l10n.vault_biometric_desc,
+              value: _biometricEnabled,
+              onChanged: _onBiometricChanged,
+            ),
+          _buildSecurityNavTile(
+            theme,
+            icon: Broken.security_safe,
+            title: l10n.vault_export_backup,
+            subtitle: l10n.vault_export_backup_desc,
+            onTap: _exportBackup,
+          ),
+          _buildSecurityNavTile(
+            theme,
+            icon: Broken.import,
+            title: l10n.vault_import_backup,
+            subtitle: l10n.vault_import_backup_desc,
+            onTap: _importBackup,
+          ),
+          _buildSecurityNavTile(
+            theme,
+            icon: Broken.shield_slash,
+            title: l10n.vault_uninstall_warning_title,
+            subtitle: l10n.vault_uninstall_warning,
+            onTap: () {},
           ),
         ],
       ),
@@ -904,52 +1168,50 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
   }
 
   Widget _buildPlaceholder(ThemeData theme, bool isDark) {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 48.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(28),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withOpacity(0.08),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Broken.security_safe,
-                size: 64,
-                color: theme.colorScheme.primary,
-              ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 48.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(28),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primary.withOpacity(0.08),
+              shape: BoxShape.circle,
             ),
-            const SizedBox(height: 24),
-            Text(
-              _searchQuery.isNotEmpty
-                  ? L10n.of(context).ui_no_matching_files : L10n.of(context).ui_vault_empty,
-              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            child: Icon(
+              Broken.security_safe,
+              size: 64,
+              color: theme.colorScheme.primary,
             ),
-            const SizedBox(height: 12),
-            Text(
-              _searchQuery.isNotEmpty
-                  ? L10n.of(context).ui_try_modify_search
-                  : L10n.of(context).ui_vault_empty_desc,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: theme.colorScheme.onSurface.withOpacity(0.5),
-                height: 1.5,
-              ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            _searchQuery.isNotEmpty
+                ? L10n.of(context).ui_no_matching_files : L10n.of(context).ui_vault_empty,
+            style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            _searchQuery.isNotEmpty
+                ? L10n.of(context).ui_try_modify_search
+                : L10n.of(context).ui_vault_empty_desc,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              color: theme.colorScheme.onSurface.withOpacity(0.5),
+              height: 1.5,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildFilesList(ThemeData theme, bool isDark) {
     return ListView.builder(
-      physics: const BouncingScrollPhysics(),
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       itemCount: _filteredRecords.length,
       padding: const EdgeInsets.only(bottom: 88, left: 12, right: 12),
       itemBuilder: (context, index) {

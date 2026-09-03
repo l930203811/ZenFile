@@ -3409,7 +3409,7 @@ class L10nKo extends L10n {
 
   @override
   String get ui_vault_empty_desc =>
-      'XOR 난독화 서명은 파일을 완전히 열 수 없게 만들고 시스템 스캐너 데이터베이스에서 숨깁니다. 아래 버튼을 클릭하여 보호하세요.';
+      'AES-256-GCM 암호화로 인해 파일은 시스템이나 다른 앱에서 완전히 열 수 없게 되며 미디어 스캐너에서도 숨겨집니다. 아래 버튼을 탭하여 보호하세요.';
 
   @override
   String ui_copied_n_items(Object count) {
@@ -3551,7 +3551,7 @@ class L10nKo extends L10n {
 
   @override
   String get msg_vault_mode_desc =>
-      '선택한 파일을 보호할 방법을 선택하세요. 보안 파일은 즉시 XOR 스크램블됩니다.';
+      '선택한 파일을 보호할 방법을 선택하세요. 보안 파일은 AES-256-GCM으로 암호화됩니다.';
 
   @override
   String get ui_secure_import => '보안 가져오기(샌드박스)';
@@ -4905,7 +4905,7 @@ class L10nKo extends L10n {
 
   @override
   String get ui_remote_guard_desc =>
-      '4자리 PIN을 설정하여 원격 서버 접근을 보호합니다. 앱 실행 시 또는 수동 잠금 후 PIN을 입력하세요.';
+      'Set a password to protect remote server access. Enter it after app launch or manual lock.';
 
   @override
   String get ui_remote_guard_enabled => '사용 중';
@@ -4932,7 +4932,7 @@ class L10nKo extends L10n {
   String get ui_remote_guard_change_pin => 'PIN 변경';
 
   @override
-  String get ui_remote_guard_pin_hint => '4자리 숫자 PIN';
+  String get ui_remote_guard_pin_hint => '비밀번호(문자, 숫자 또는 기호)';
 
   @override
   String get ui_remote_guard_lock_now => '지금 잠금';
@@ -4951,10 +4951,11 @@ class L10nKo extends L10n {
   String get ui_app_lock => '앱 실행 보호';
 
   @override
-  String get ui_app_lock_desc => '앱을 실행할 때마다 PIN으로 잠금 해제';
+  String get ui_app_lock_desc =>
+      'Require your password to unlock the app each time it launches';
 
   @override
-  String get ui_app_lock_set_pin_first => 'Set a 4-digit PIN before enabling';
+  String get ui_app_lock_set_pin_first => 'Set a password before enabling';
 
   @override
   String get ui_remote_guard_enter_current_pin => '현재 PIN 입력';
@@ -5227,6 +5228,42 @@ class L10nKo extends L10n {
 
   @override
   String get editor_crop => 'Crop';
+
+  @override
+  String get ui_draw => '그리기';
+
+  @override
+  String get ui_edit => '편집';
+
+  @override
+  String get ui_color => '색상';
+
+  @override
+  String get ui_width => '굵기';
+
+  @override
+  String get ui_text => '텍스트';
+
+  @override
+  String get ui_rect => '사각형';
+
+  @override
+  String get ui_ellipse => '타원';
+
+  @override
+  String get ui_line => '직선';
+
+  @override
+  String get ui_mosaic => '모자이크';
+
+  @override
+  String get ui_pen => '펜';
+
+  @override
+  String get ui_arrow => '화살표';
+
+  @override
+  String get ui_brush_size => '브러시 크기';
 
   @override
   String get editor_rotate_flip => 'Rotate & Flip';
@@ -5583,6 +5620,18 @@ class L10nKo extends L10n {
   String get editor_undo => '실행 취소';
 
   @override
+  String get editor_text_hint => '텍스트 입력';
+
+  @override
+  String get editor_font_bold => '굵게';
+
+  @override
+  String get editor_font_italic => '기울임꼴';
+
+  @override
+  String get editor_font_underline => '밑줄';
+
+  @override
   String get wol_port_hint => '선택 사항';
 
   @override
@@ -5915,4 +5964,133 @@ class L10nKo extends L10n {
 
   @override
   String get ui_enter_host_first => '먼저 호스트 주소와 포트를 입력하세요';
+
+  @override
+  String get vault_enter_password => '잠금 해제하려면 비밀번호 입력';
+
+  @override
+  String get vault_set_password => '비밀번호 설정';
+
+  @override
+  String get vault_confirm_password => '확인을 위해 다시 입력';
+
+  @override
+  String get vault_pins_mismatch => '비밀번호가 일치하지 않습니다';
+
+  @override
+  String get vault_incorrect_password => '잘못된 비밀번호';
+
+  @override
+  String get vault_password_set => '비밀번호가 설정되었습니다';
+
+  @override
+  String get vault_next => '다음';
+
+  @override
+  String get vault_unlock => '잠금 해제';
+
+  @override
+  String get vault_use_keypad => '숫자 키패드 사용';
+
+  @override
+  String get vault_use_text_input => '영숫자 사용';
+
+  @override
+  String get vault_fingerprint => '지문으로 잠금 해제';
+
+  @override
+  String get vault_fingerprint_failed => '지문 인증에 실패했습니다';
+
+  @override
+  String get vault_min_length => '비밀번호는 최소 4자 이상이어야 합니다';
+
+  @override
+  String get vault_pwd_alphanumeric => '비밀번호(문자, 숫자 또는 기호)';
+
+  @override
+  String get vault_enable_fingerprint => '지문 잠금 해제 사용';
+
+  @override
+  String get vault_biometric_desc => '지문을 사용하여 금고를 빠르게 잠금 해제하세요';
+
+  @override
+  String get vault_export_backup => '백업 내보내기';
+
+  @override
+  String get vault_export_backup_desc => '암호화된 금고 백업 내보내기 (.zip)';
+
+  @override
+  String get vault_import_backup => '백업 가져오기';
+
+  @override
+  String get vault_import_backup_desc => '백업에서 금고 복원 (.zip)';
+
+  @override
+  String get vault_uninstall_warning_title => '제거 경고';
+
+  @override
+  String get vault_uninstall_warning => '앱을 제거하면 금고가 삭제됩니다. 먼저 백업을 내보내세요.';
+
+  @override
+  String get vault_backup_exported => '백업 내보낸 위치:';
+
+  @override
+  String get vault_backup_imported => '가져온 항목';
+
+  @override
+  String get vault_export_failed => '백업 내보내기 실패';
+
+  @override
+  String get vault_import_failed => '백업 가져오기 실패';
+
+  @override
+  String get ui_font_size => '글꼴';
+
+  @override
+  String get ui_line_width => '선 굵기';
+
+  @override
+  String archive_open_failed_with_reason(String e) {
+    return '열 수 없습니다: $e';
+  }
+
+  @override
+  String archive_extract_failed_with_reason(String e) {
+    return '압축 해제 실패: $e';
+  }
+
+  @override
+  String get archive_unsupported_format =>
+      '파일이 비어 있거나 압축을 해제할 수 없습니다(파일이 너무 크거나, 손상되었거나, 지원되지 않는 압축 형식일 수 있습니다)';
+
+  @override
+  String get vault_export_backup_confirm =>
+      'The backup file will be saved to the following location:';
+
+  @override
+  String get vault_import_only_zip => 'Only .zip backup files are supported';
+
+  @override
+  String get vault_import_password_hint =>
+      'This backup uses a different password. Please re-unlock the vault with the password used when the backup was created';
+
+  @override
+  String get vault_open_backup_location =>
+      'Open the folder where the backup is saved?';
+
+  @override
+  String get open_file => 'Open';
+
+  @override
+  String get open_in_location => 'Open file location';
+
+  @override
+  String get open_with_title => 'Open with';
+
+  @override
+  String get share_permission_title => 'Permission required';
+
+  @override
+  String get share_permission_message =>
+      'ZenFile does not have permission to access this file. Please share it again or grant permission and retry.';
 }

@@ -3410,7 +3410,7 @@ class L10nJa extends L10n {
 
   @override
   String get ui_vault_empty_desc =>
-      'XOR難読化署名により、ファイルは完全に開けなくなり、システムスキャナーデータベースから隠されます。下のボタンをクリックして保護してください。';
+      'AES-256-GCM 暗号化により、ファイルはシステムや他のアプリから完全に開けなくなり、メディアスキャナーからも隠されます。下のボタンをタップして保護してください。';
 
   @override
   String ui_copied_n_items(Object count) {
@@ -3552,7 +3552,7 @@ class L10nJa extends L10n {
 
   @override
   String get msg_vault_mode_desc =>
-      '選択したファイルの保護方法を選択してください。セキュアファイルは即座にXORスクランブルされます。';
+      '選択したファイルの保護方法を選択します。保護されたファイルは AES-256-GCM で暗号化されます。';
 
   @override
   String get ui_secure_import => 'セキュアインポート（サンドボックス）';
@@ -4907,7 +4907,7 @@ class L10nJa extends L10n {
 
   @override
   String get ui_remote_guard_desc =>
-      '4桁のPINを設定してリモートサーバーへのアクセスを保護します。アプリ起動時や手動ロック後にPINを入力してください。';
+      'Set a password to protect remote server access. Enter it after app launch or manual lock.';
 
   @override
   String get ui_remote_guard_enabled => '有効';
@@ -4934,7 +4934,7 @@ class L10nJa extends L10n {
   String get ui_remote_guard_change_pin => 'PINを変更';
 
   @override
-  String get ui_remote_guard_pin_hint => '4桁の数字PIN';
+  String get ui_remote_guard_pin_hint => 'パスワード（英数字または記号）';
 
   @override
   String get ui_remote_guard_lock_now => '今すぐロック';
@@ -4954,10 +4954,11 @@ class L10nJa extends L10n {
   String get ui_app_lock => 'アプリ起動保護';
 
   @override
-  String get ui_app_lock_desc => 'アプリ起動時にPINを入力して解除します';
+  String get ui_app_lock_desc =>
+      'Require your password to unlock the app each time it launches';
 
   @override
-  String get ui_app_lock_set_pin_first => 'Set a 4-digit PIN before enabling';
+  String get ui_app_lock_set_pin_first => 'Set a password before enabling';
 
   @override
   String get ui_remote_guard_enter_current_pin => '現在のPINを入力';
@@ -5230,6 +5231,42 @@ class L10nJa extends L10n {
 
   @override
   String get editor_crop => 'Crop';
+
+  @override
+  String get ui_draw => '描画';
+
+  @override
+  String get ui_edit => '編集';
+
+  @override
+  String get ui_color => '色';
+
+  @override
+  String get ui_width => '太さ';
+
+  @override
+  String get ui_text => 'テキスト';
+
+  @override
+  String get ui_rect => '長方形';
+
+  @override
+  String get ui_ellipse => '楕円';
+
+  @override
+  String get ui_line => '直線';
+
+  @override
+  String get ui_mosaic => 'モザイク';
+
+  @override
+  String get ui_pen => 'ペン';
+
+  @override
+  String get ui_arrow => '矢印';
+
+  @override
+  String get ui_brush_size => 'ブラシサイズ';
 
   @override
   String get editor_rotate_flip => 'Rotate & Flip';
@@ -5586,6 +5623,18 @@ class L10nJa extends L10n {
   String get editor_undo => '元に戻す';
 
   @override
+  String get editor_text_hint => 'テキストを入力';
+
+  @override
+  String get editor_font_bold => '太字';
+
+  @override
+  String get editor_font_italic => '斜体';
+
+  @override
+  String get editor_font_underline => '下線';
+
+  @override
   String get wol_port_hint => '任意';
 
   @override
@@ -5919,4 +5968,134 @@ class L10nJa extends L10n {
 
   @override
   String get ui_enter_host_first => 'まずホストアドレスとポートを入力';
+
+  @override
+  String get vault_enter_password => 'ロック解除するにはパスワードを入力';
+
+  @override
+  String get vault_set_password => 'パスワードを設定';
+
+  @override
+  String get vault_confirm_password => '確認のためもう一度入力';
+
+  @override
+  String get vault_pins_mismatch => 'パスワードが一致しません';
+
+  @override
+  String get vault_incorrect_password => 'パスワードが正しくありません';
+
+  @override
+  String get vault_password_set => 'パスワードを設定しました';
+
+  @override
+  String get vault_next => '次へ';
+
+  @override
+  String get vault_unlock => 'ロック解除';
+
+  @override
+  String get vault_use_keypad => 'テンキーを使用';
+
+  @override
+  String get vault_use_text_input => '英数字を使用';
+
+  @override
+  String get vault_fingerprint => '指紋でロック解除';
+
+  @override
+  String get vault_fingerprint_failed => '指紋認証に失敗しました';
+
+  @override
+  String get vault_min_length => 'パスワードは最低4文字必要です';
+
+  @override
+  String get vault_pwd_alphanumeric => 'パスワード（英数字または記号）';
+
+  @override
+  String get vault_enable_fingerprint => '指紋ロック解除を有効にする';
+
+  @override
+  String get vault_biometric_desc => '指紋を使って金庫を素早くロック解除できます';
+
+  @override
+  String get vault_export_backup => 'バックアップを書き出し';
+
+  @override
+  String get vault_export_backup_desc => '暗号化された金庫のバックアップを書き出し (.zip)';
+
+  @override
+  String get vault_import_backup => 'バックアップを読み込み';
+
+  @override
+  String get vault_import_backup_desc => 'バックアップから金庫を復元 (.zip)';
+
+  @override
+  String get vault_uninstall_warning_title => 'アンインストールの警告';
+
+  @override
+  String get vault_uninstall_warning =>
+      'アプリをアンインストールすると金庫が消去されます。先にバックアップを書き出してください。';
+
+  @override
+  String get vault_backup_exported => 'バックアップを書き出し先：';
+
+  @override
+  String get vault_backup_imported => '読み込んだ項目';
+
+  @override
+  String get vault_export_failed => 'バックアップの書き出しに失敗';
+
+  @override
+  String get vault_import_failed => 'バックアップの読み込みに失敗';
+
+  @override
+  String get ui_font_size => 'フォント';
+
+  @override
+  String get ui_line_width => '線の太さ';
+
+  @override
+  String archive_open_failed_with_reason(String e) {
+    return '開けませんでした: $e';
+  }
+
+  @override
+  String archive_extract_failed_with_reason(String e) {
+    return '解凍に失敗しました: $e';
+  }
+
+  @override
+  String get archive_unsupported_format =>
+      'ファイルが空であるか解凍できません（ファイルが大きすぎる、破損している、対応していない圧縮形式を使用している可能性があります）';
+
+  @override
+  String get vault_export_backup_confirm =>
+      'The backup file will be saved to the following location:';
+
+  @override
+  String get vault_import_only_zip => 'Only .zip backup files are supported';
+
+  @override
+  String get vault_import_password_hint =>
+      'This backup uses a different password. Please re-unlock the vault with the password used when the backup was created';
+
+  @override
+  String get vault_open_backup_location =>
+      'Open the folder where the backup is saved?';
+
+  @override
+  String get open_file => 'Open';
+
+  @override
+  String get open_in_location => 'Open file location';
+
+  @override
+  String get open_with_title => 'Open with';
+
+  @override
+  String get share_permission_title => 'Permission required';
+
+  @override
+  String get share_permission_message =>
+      'ZenFile does not have permission to access this file. Please share it again or grant permission and retry.';
 }

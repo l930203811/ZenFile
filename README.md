@@ -7,52 +7,36 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 ---
 
-## 🚀 What's New in v1.1.38
+## 🚀 What's New in v1.1.39
 
-### 🆕 New Features
+> 📥 For users in China, download from any of the mirrors below (identical to the GitHub Release):
 
-- **Encrypted Vault upgraded to V2**: rebuilt on Argon2id key derivation + HKDF key splitting, with per-file AES-256-GCM using unique nonces. File names, paths and directory structure are now fully encrypted on disk, and locked files are stored in the app-private `vault/` directory (no more visible `.nfv` files that could be accidentally deleted). Old V1 vaults stay readable and auto-upgrade on password change.
-- **Video equalizer**: added an "Equalizer" entry in the video player's overflow menu, reusing the mpv lavfi equalizer with preset switching (presets only, no speed/pitch).
+- ☁️ **123 Cloud Drive**: https://1820255615.share.123pan.cn/123pan/WrRojv-JHpnA?pwd=hBR2
+- ☁️ **115 Cloud**: https://115cdn.com/s/swsho4j3hc6?password=m490
+- ☁️ **Baidu Netdisk**: https://pan.baidu.com/s/1kYSfzTriRXwQPRL_c5Awig?pwd=xg94
+- ☁️ **Quark**: https://pan.quark.cn/s/e6081a88d463
+- ☁️ **PikPak**: https://mypikpak.com/s/VOxGdQB3fVNO32sq_I3o2Wkmo2
 
-### ✨ Improvements
+### ✨ New Features
 
-- **Audio notification interaction**: tapping the notification now jumps to the player and locates the current track. The seek bar is draggable on Android 13+; Android 11 does not show the seek bar by system design.
-- **Audio/video mutual exclusion**: starting video playback auto-pauses background audio to avoid two audio streams playing at once.
-- **Audio track switching**: selecting a different track in the background playlist switches immediately and shows the selected file; selecting the same track keeps the current progress.
-- **Dual-pane active highlight**: the active pane's top bar is now more clearly highlighted (background opacity 0.16→0.28, top border 2.5→3.5, added bottom accent line).
-- **Folder/file count titles**: the top/bottom status bars now show "Folders x / Files y" alongside the clipboard summary.
-- **Clipboard layout**: the dual-pane top bar uses a Stack layout so the clipboard summary overlays the count instead of squeezing it when space is tight. The single-pane bottom bar also gains a sync progress icon + count + clipboard summary.
-- **Video fullscreen ratio**: fullscreen now preserves the video's original aspect ratio; the menu label "Adapt to screen" was renamed to "Original ratio".
+- **Image editor drawing tool**: 7 tools added (brush / text / rectangle / ellipse / line / arrow / mosaic). Text renders fully live (no ellipsis truncation), rectangles / ellipses preview instantly, helper boxes auto-hide (shown only for the tapped item), and switching tools auto-saves with the top undo button available.
+- **Vault fingerprint unlock + export / import backup**: unlock with fingerprint; export / import a full vault backup in one tap so data survives uninstall & reinstall.
 
 ### 🐛 Bug Fixes
 
-- **Notification blank-area jump**: tapping the notification body now correctly returns to the app. Fixed a cold-start / background timing issue where the navigator was not ready (now wrapped in `addPostFrameCallback`).
-- **Audio not switching**: fixed background playback not switching when selecting another track (B/C).
-- **Dual-pane count squeezed**: fixed the clipboard button squeezing the count into a half-cut state.
-- **Dual-pane extra line**: removed a stray highlight line at the top of the active pane, keeping only the top border.
+- **Sharing from other apps no longer copies into the app-private cache**: files from gallery / file manager / media library open in place with no extra space; "Open file location" jumps to the real folder and highlights the file. Private-content shares (e.g. WhatsApp) still cache because the system hides the real path.
+- **Share dialog polish**: lacking permission to read a shared file now prompts for permission directly (no doomed copy); the external-open chooser is left-aligned and ordered "Open → Open file location → Cancel".
+- **Precise "Open file location" after sharing**: it now switches to the browse tab, loads the parent directory, and highlights the target file.
+- **Video no-audio fixed**: video now has sound on first open; toggling soft / hard decode re-attaches the equalizer and keeps audio; reopening the player no longer loses sound.
+- **Equalizer fixes**: preset applies when switching from video back to audio; returning from background no longer resets to Flat — the preset is reapplied and stays attached during background playback.
+- **Media notification tap** now correctly jumps to the relevant player screen.
+- **Android/data root showing 0 items**: now falls back to raw Shizuku path listing.
+- **Split-pane browser folder items**: fixed missing size / count / date and hardcoded English; now shown as compact "count • size • date" and localized.
+- **Vault restore failure after reinstall**: the backup now embeds V2 password parameters so the original password unlocks after reinstall; cross-device import redirects records to the real vault path.
 
----
+### 🔧 Other
 
-## 🚀 What's New in v1.1.37
-
-### 🐛 Bug Fixes
-
-- **Remote media playback stutter / seek jumps to start**: rebuilt the local HTTP streaming proxy's seek cache and chunked prefetch; fixed a non-zero-region read offset bug so first-byte latency dropped from "whole 24 MB segment" to "first chunk". Dragging no longer jumps back to the start on SFTP/SMB/FTP.
-- **SFTP upload capped at ~2MB/s**: upgraded JSch 0.1.55 to 2.28.7 to support rsa-sha2/ED25519/OpenSSH-v1 keys, eliminating the silent fallback to the pure-Dart dartssh2 (the root cause of the cap); setBulkRequests(128) raises in-flight requests.
-- **SFTP symlink directory (e.g. /sdcard) recognition**: follow the symlink's real target type on listing so directories can be entered normally.
-- **Compile error (progress-minimize state machine)**: a field initializer referencing an instance method failed to compile; moved the assignment into the constructor body and relaxed final.
-
-### ✨ New Features / Improvements
-
-- **Split-pane active window top highlight**: the entire top status bar of the active pane is highlighted (primary background + 2.5px accent edge) for clearer identification.
-- **Progress minimized to floating widget**: after tapping "background" on copy/move or category backup progress, a clickable circular floating button (with a spinning progress ring) appears in the status/tool bar; tap to reopen the progress page; it auto-dismisses when transfer completes/cancels.
-- **Remote tab cloud icon**: the left icon of a remote tab is now a cloud icon replacing the folder icon; local tabs keep the folder icon.
-- **File-type icon polish**: when no media thumbnail is available, images/videos/audio/install-packages show a "type icon + format label" (MP4/MKV/MP3/FLAC/APK...); install packages use the Android-robot icon (green), archives use a bundle icon (Broken.box) with ZIP/7Z/RAR labels; the music category page also shows a format label under each music icon; browsing and category pages share consistent icons.
-- **Remote thumbnail privacy**: remote media thumbnails moved into a .nomedia directory with a marker file so they are not indexed by the system media library / other file managers; default remote-cache auto-clean interval changed to 0 (disabled).
-
-### 🎨 Performance
-
-- **Remote media streaming proxy tuning**: multi-region seek cache (max 4 regions) avoids re-buffering on back-and-forth seeks; enlarged mpv buffering (cache-secs 60 / demuxer-max-bytes 300M) reduces periodic stutter; 16 MB prefetch and 24 MB on-demand fetch improve start-up and seek responsiveness.
+- **Category multi-select bar**: fixed text overflow under narrow languages; **image viewer action bar**: fixed overflow of long-language labels (e.g. Russian).
 
 ---
 

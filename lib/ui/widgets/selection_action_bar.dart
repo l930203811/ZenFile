@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
@@ -46,7 +47,9 @@ class SelectionActionBar extends StatelessWidget {
               decoration: BoxDecoration(
                 color: theme.colorScheme.primary.withOpacity(0.06),
                 border: Border(
-                  bottom: BorderSide(color: theme.colorScheme.primary.withOpacity(0.1)),
+                  bottom: BorderSide(
+                    color: theme.colorScheme.primary.withOpacity(0.1),
+                  ),
                 ),
               ),
               child: Center(
@@ -62,343 +65,472 @@ class SelectionActionBar extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-            _ActionButton(
-              icon: Broken.document_copy,
-              label: L10n.of(context).ui_copy,
-              hideLabel: provider.hideActionText,
-              onTap: () {
-                provider.copySelected();
-                // ScaffoldMessenger.of(context).showSnackBar(
-                //   SnackBar(content: Text('Copied $selectedCount item(s)')),
-                // );
-              },
-            ),
-            _ActionButton(
-              icon: Broken.scissor,
-              label: L10n.of(context).ui_cut,
-              hideLabel: provider.hideActionText,
-              onTap: () {
-                provider.cutSelected();
-                // ScaffoldMessenger.of(context).showSnackBar(
-                //   SnackBar(content: Text('Cut $selectedCount item(s)')),
-                // );
-              },
-            ),
-            _ActionButton(
-              icon: Broken.edit,
-              label: L10n.of(context).msgc8ce4b36,
-              hideLabel: provider.hideActionText,
-              onTap: () async {
-                if (selectedCount == 1) {
-                  final path = provider.selectedPaths.first;
-                  final currentName = p.basename(path);
-                  final newName = await FileActionDialogs.showRenameDialog(
-                    context,
-                    currentName: currentName,
-                    title: L10n.of(context).msgc8ce4b36,
-                    hint: L10n.of(context).msgf139c5cf,
-                    actionText: L10n.of(context).msgc8ce4b36,
-                  );
-                  if (newName != null && newName.isNotEmpty) {
-                    await provider.renameFile(path, newName);
-                    provider.clearSelection();
-                  }
-                } else if (selectedCount > 1) {
-                  await BatchRenameDialog.show(context, provider);
-                }
-              },
-            ),
-            _ActionButton(
-              icon: Broken.tick_square,
-              label: L10n.of(context).ui_select_all,
-              hideLabel: provider.hideActionText,
-              onTap: () {
-                provider.selectAll();
-              },
-            ),
-            _ActionButton(
-              icon: Broken.trash,
-              label: L10n.of(context).ui_delete,
-              color: Colors.redAccent,
-              hideLabel: provider.hideActionText,
-              onTap: () async {
-                final confirm = await FileActionDialogs.showConfirmDialog(
-                  context,
-                  title: L10n.of(context).msgcd0b9aca,
-                  content: L10n.of(context).selectedcount2(provider.selectedPaths.length),
-                );
-                if (confirm) {
-                  try {
-                    await provider.deleteSelected();
-                  } catch (e) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(L10n.of(context).msg_delete_failed(e)), behavior: SnackBarBehavior.floating),
+                Expanded(
+                  child: _ActionButton(
+                    icon: Broken.document_copy,
+                    label: L10n.of(context).ui_copy,
+                    hideLabel: provider.hideActionText,
+                    onTap: () {
+                      provider.copySelected();
+                      // ScaffoldMessenger.of(context).showSnackBar(
+                      //   SnackBar(content: Text('Copied $selectedCount item(s)')),
+                      // );
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: _ActionButton(
+                    icon: Broken.scissor,
+                    label: L10n.of(context).ui_cut,
+                    hideLabel: provider.hideActionText,
+                    onTap: () {
+                      provider.cutSelected();
+                      // ScaffoldMessenger.of(context).showSnackBar(
+                      //   SnackBar(content: Text('Cut $selectedCount item(s)')),
+                      // );
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: _ActionButton(
+                    icon: Broken.edit,
+                    label: L10n.of(context).msgc8ce4b36,
+                    hideLabel: provider.hideActionText,
+                    onTap: () async {
+                      if (selectedCount == 1) {
+                        final path = provider.selectedPaths.first;
+                        final currentName = p.basename(path);
+                        final newName =
+                            await FileActionDialogs.showRenameDialog(
+                              context,
+                              currentName: currentName,
+                              title: L10n.of(context).msgc8ce4b36,
+                              hint: L10n.of(context).msgf139c5cf,
+                              actionText: L10n.of(context).msgc8ce4b36,
+                            );
+                        if (newName != null && newName.isNotEmpty) {
+                          await provider.renameFile(path, newName);
+                          provider.clearSelection();
+                        }
+                      } else if (selectedCount > 1) {
+                        await BatchRenameDialog.show(context, provider);
+                      }
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: _ActionButton(
+                    icon: Broken.tick_square,
+                    label: L10n.of(context).ui_select_all,
+                    hideLabel: provider.hideActionText,
+                    onTap: () {
+                      provider.selectAll();
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: _ActionButton(
+                    icon: Broken.trash,
+                    label: L10n.of(context).ui_delete,
+                    color: Colors.redAccent,
+                    hideLabel: provider.hideActionText,
+                    onTap: () async {
+                      final confirm = await FileActionDialogs.showConfirmDialog(
+                        context,
+                        title: L10n.of(context).msgcd0b9aca,
+                        content: L10n.of(
+                          context,
+                        ).selectedcount2(provider.selectedPaths.length),
                       );
-                    }
-                  }
-                }
-              },
-            ),
-            PopupMenuButton<String>(
-              icon: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Broken.more, size: 24),
-                  if (!provider.hideActionText) ...[
-                    const SizedBox(height: 4),
-                    Text(L10n.of(context).ui_more, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
-                  ],
-                ],
-              ),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              position: PopupMenuPosition.under,
-              elevation: 8,
-              onSelected: (action) async {
-                if (action == 'extract') {
-                  final selectedPaths = provider.selectedPaths.toList();
-                  final archivePath = selectedPaths.firstWhere((p) => FileUtils.isArchive(p), orElse: () => '');
-                  if (archivePath.isNotEmpty) {
-                    await provider.extractArchiveDirectly(
-                      context,
-                      archivePath,
-                    );
-                  }
-                } else if (action == 'archive') {
-                  // 缓存选中路径，避免弹窗异步过程中 selectedPaths 被其他操作修改
-                  final selectedPaths = provider.selectedPaths.toList();
-                  final initialName = selectedPaths.length == 1
-                      ? p.basename(selectedPaths.first)
-                      : (p.basename(provider.currentPath).isEmpty ? 'archive' : p.basename(provider.currentPath));
-                  final res = await CreateArchiveDialog.show(
-                    context,
-                    initialName: initialName,
-                    isMultiSelection: selectedCount > 1,
-                  );
-                  if (res != null) {
-                    // 用根 navigator 的 context 而非 widget context：
-                    // createArchive 内部会 selectedPaths.clear() 退出选择模式，
-                    // 导致 SelectionActionBar unmount、widget context 失效。
-                    // 用 navigatorKey.currentContext 确保 startCompression 显示的
-                    // 进度弹窗和后续刷新不依赖已 unmount 的 widget。
-                    final rootContext = navigatorKey.currentContext ?? context;
-                    await provider.createArchive(
-                      archiveName: res.archiveName,
-                      format: res.format,
-                      compressionLevel: res.compressionLevel,
-                      password: res.password,
-                      splitSizeMB: res.splitSizeMB,
-                      deleteSource: res.deleteSource,
-                      separateArchives: res.separateArchives,
-                      targetPaths: selectedPaths,
-                      context: rootContext,
-                    );
-                  }
-                } else if (action == 'paste') {
-                  await provider.pasteFile(context);
-                  provider.clearSelection();
-                } else if (action == 'share') {
-                  final selectedPaths = provider.selectedPaths.toList();
-                  await FolderShareService.sharePaths(context, selectedPaths);
-                } else if (action == 'favorite') {
-                  final selectedPaths = provider.selectedPaths.toList();
-                  if (selectedPaths.isEmpty) return;
-                  final group = await FileActionDialogs.showFavoriteGroupPicker(
-                    context,
-                    existingGroups: provider.getFavoriteGroups(),
-                  );
-                  if (group == null) return;
-                  final isRemote = provider.currIsRemote;
-                  final connectionId = provider.activeTab.remoteConnection?.id;
-                  for (final path in selectedPaths) {
-                    final name = p.basename(path);
-                    final isDir = isRemote ? true : Directory(path).existsSync();
-                    provider.addFavorite(path, name, isDir, isRemote: isRemote, connectionId: connectionId, group: group.isEmpty ? null : group);
-                  }
-                  provider.clearSelection();
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(L10n.of(context).msg_favorited(p.basename(selectedPaths.first))),
-                        behavior: SnackBarBehavior.floating,
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
-                  }
-                } else if (action == 'open_with') {
-                  final selectedPaths = provider.selectedPaths.toList();
-                  if (selectedPaths.length == 1) {
-                    await provider.showOpenWithSheet(context, selectedPaths.first);
-                  } else {
-                    for (final path in selectedPaths) {
-                      await provider.openWithSystemChooser(path);
-                    }
-                  }
-                  provider.clearSelection();
-                } else if (action == 'pin_to_top') {
-                  final selected = provider.selectedPaths.toList();
-                  final allPinned = selected.every((p) => PinService.isPinned(p));
-                  for (final path in selected) {
-                    if (allPinned) {
-                      await PinService.unpin(path);
-                    } else {
-                      await PinService.pin(path);
-                    }
-                  }
-                  provider.refreshDirectoryView();
-                  provider.clearSelection();
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(allPinned ? L10n.of(context).msga9b87614 : L10n.of(context).ui_pinned_selected),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  }
-                } else if (action == 'set_as_home') {
-                  final selectedPaths = provider.selectedPaths.toList();
-                  if (selectedPaths.isNotEmpty) {
-                    await provider.setAsHomeDirectory(selectedPaths.first);
-                  }
-                  provider.clearSelection();
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(L10n.of(context).ui_set_as_home),
-                        behavior: SnackBarBehavior.floating,
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
-                  }
-                } else if (action == 'properties') {
-                  _showPropertiesModal(context, provider);
-                }
-              },
-              itemBuilder: (context) {
-                final selected = provider.selectedPaths.toList();
-                final allPinned = selected.isNotEmpty && selected.every((p) => PinService.isPinned(p));
-                final hasArchive = selected.any((p) => FileUtils.isArchive(p));
-                final selectedFiles = provider.currentFiles.where((f) => selected.contains(f.path)).toList();
-                final hasSingleDirectory = selected.length == 1 && selectedFiles.isNotEmpty && selectedFiles.first.isDirectory;
-                return [
-                  if (hasArchive)
-                    PopupMenuItem(
-                      value: 'extract',
-                      child: Row(
-                        children: [
-                          const Icon(Broken.box, size: 20),
-                          const SizedBox(width: 12),
-                          Text(L10n.of(context).ui_extract, style: const TextStyle(fontWeight: FontWeight.w500)),
+                      if (confirm) {
+                        try {
+                          await provider.deleteSelected();
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  L10n.of(context).msg_delete_failed(e),
+                                ),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        }
+                      }
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: PopupMenuButton<String>(
+                    icon: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Broken.more, size: 24),
+                        if (!provider.hideActionText) ...[
+                          const SizedBox(height: 4),
+                          AutoSizeText(
+                            L10n.of(context).ui_more,
+                            minFontSize: 8,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                         ],
-                      ),
-                    ),
-                  PopupMenuItem(
-                    value: 'archive',
-                    child: Row(
-                      children: [
-                        const Icon(Broken.box_add, size: 20),
-                        const SizedBox(width: 12),
-                        Text(L10n.of(context).ui_compress, style: const TextStyle(fontWeight: FontWeight.w500)),
                       ],
                     ),
-                  ),
-                  if (hasClipboard)
-                    PopupMenuItem(
-                      value: 'paste',
-                      child: Row(
-                        children: [
-                          const Icon(Broken.clipboard, size: 20),
-                          const SizedBox(width: 12),
-                          Text(L10n.of(context).msg419be096, style: const TextStyle(fontWeight: FontWeight.w500)),
-                        ],
-                      ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                  PopupMenuItem(
-                    value: 'share',
-                    child: Row(
-                      children: [
-                        const Icon(Icons.share_outlined, size: 20),
-                        const SizedBox(width: 12),
-                        Text(L10n.of(context).ui_share, style: const TextStyle(fontWeight: FontWeight.w500)),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'favorite',
-                    child: Row(
-                      children: [
-                        const Icon(Broken.folder_favorite, size: 20),
-                        const SizedBox(width: 12),
-                        Text(L10n.of(context).ui_favorite, style: const TextStyle(fontWeight: FontWeight.w500)),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'pin_to_top',
-                    child: Row(
-                      children: [
-                        Icon(
-                          allPinned ? Icons.push_pin_rounded : Icons.push_pin_outlined,
-                          size: 20,
-                          color: allPinned ? Colors.orange : null,
+                    position: PopupMenuPosition.under,
+                    elevation: 8,
+                    onSelected: (action) async {
+                      if (action == 'extract') {
+                        final selectedPaths = provider.selectedPaths.toList();
+                        final archivePath = selectedPaths.firstWhere(
+                          (p) => FileUtils.isArchive(p),
+                          orElse: () => '',
+                        );
+                        if (archivePath.isNotEmpty) {
+                          await provider.extractArchiveDirectly(
+                            context,
+                            archivePath,
+                          );
+                        }
+                      } else if (action == 'archive') {
+                        // 缓存选中路径，避免弹窗异步过程中 selectedPaths 被其他操作修改
+                        final selectedPaths = provider.selectedPaths.toList();
+                        final initialName = selectedPaths.length == 1
+                            ? p.basename(selectedPaths.first)
+                            : (p.basename(provider.currentPath).isEmpty
+                                  ? 'archive'
+                                  : p.basename(provider.currentPath));
+                        final res = await CreateArchiveDialog.show(
+                          context,
+                          initialName: initialName,
+                          isMultiSelection: selectedCount > 1,
+                        );
+                        if (res != null) {
+                          // 用根 navigator 的 context 而非 widget context：
+                          // createArchive 内部会 selectedPaths.clear() 退出选择模式，
+                          // 导致 SelectionActionBar unmount、widget context 失效。
+                          // 用 navigatorKey.currentContext 确保 startCompression 显示的
+                          // 进度弹窗和后续刷新不依赖已 unmount 的 widget。
+                          final rootContext =
+                              navigatorKey.currentContext ?? context;
+                          await provider.createArchive(
+                            archiveName: res.archiveName,
+                            format: res.format,
+                            compressionLevel: res.compressionLevel,
+                            password: res.password,
+                            splitSizeMB: res.splitSizeMB,
+                            deleteSource: res.deleteSource,
+                            separateArchives: res.separateArchives,
+                            targetPaths: selectedPaths,
+                            context: rootContext,
+                          );
+                        }
+                      } else if (action == 'paste') {
+                        await provider.pasteFile(context);
+                        provider.clearSelection();
+                      } else if (action == 'share') {
+                        final selectedPaths = provider.selectedPaths.toList();
+                        await FolderShareService.sharePaths(
+                          context,
+                          selectedPaths,
+                        );
+                      } else if (action == 'favorite') {
+                        final selectedPaths = provider.selectedPaths.toList();
+                        if (selectedPaths.isEmpty) return;
+                        final group =
+                            await FileActionDialogs.showFavoriteGroupPicker(
+                              context,
+                              existingGroups: provider.getFavoriteGroups(),
+                            );
+                        if (group == null) return;
+                        final isRemote = provider.currIsRemote;
+                        final connectionId =
+                            provider.activeTab.remoteConnection?.id;
+                        for (final path in selectedPaths) {
+                          final name = p.basename(path);
+                          final isDir = isRemote
+                              ? true
+                              : Directory(path).existsSync();
+                          provider.addFavorite(
+                            path,
+                            name,
+                            isDir,
+                            isRemote: isRemote,
+                            connectionId: connectionId,
+                            group: group.isEmpty ? null : group,
+                          );
+                        }
+                        provider.clearSelection();
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                L10n.of(context).msg_favorited(
+                                  p.basename(selectedPaths.first),
+                                ),
+                              ),
+                              behavior: SnackBarBehavior.floating,
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      } else if (action == 'open_with') {
+                        final selectedPaths = provider.selectedPaths.toList();
+                        if (selectedPaths.length == 1) {
+                          await provider.showOpenWithSheet(
+                            context,
+                            selectedPaths.first,
+                          );
+                        } else {
+                          for (final path in selectedPaths) {
+                            await provider.openWithSystemChooser(path);
+                          }
+                        }
+                        provider.clearSelection();
+                      } else if (action == 'pin_to_top') {
+                        final selected = provider.selectedPaths.toList();
+                        final allPinned = selected.every(
+                          (p) => PinService.isPinned(p),
+                        );
+                        for (final path in selected) {
+                          if (allPinned) {
+                            await PinService.unpin(path);
+                          } else {
+                            await PinService.pin(path);
+                          }
+                        }
+                        provider.refreshDirectoryView();
+                        provider.clearSelection();
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                allPinned
+                                    ? L10n.of(context).msga9b87614
+                                    : L10n.of(context).ui_pinned_selected,
+                              ),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      } else if (action == 'set_as_home') {
+                        final selectedPaths = provider.selectedPaths.toList();
+                        if (selectedPaths.isNotEmpty) {
+                          await provider.setAsHomeDirectory(
+                            selectedPaths.first,
+                          );
+                        }
+                        provider.clearSelection();
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(L10n.of(context).ui_set_as_home),
+                              behavior: SnackBarBehavior.floating,
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      } else if (action == 'properties') {
+                        _showPropertiesModal(context, provider);
+                      }
+                    },
+                    itemBuilder: (context) {
+                      final selected = provider.selectedPaths.toList();
+                      final allPinned =
+                          selected.isNotEmpty &&
+                          selected.every((p) => PinService.isPinned(p));
+                      final hasArchive = selected.any(
+                        (p) => FileUtils.isArchive(p),
+                      );
+                      final selectedFiles = provider.currentFiles
+                          .where((f) => selected.contains(f.path))
+                          .toList();
+                      final hasSingleDirectory =
+                          selected.length == 1 &&
+                          selectedFiles.isNotEmpty &&
+                          selectedFiles.first.isDirectory;
+                      return [
+                        if (hasArchive)
+                          PopupMenuItem(
+                            value: 'extract',
+                            child: Row(
+                              children: [
+                                const Icon(Broken.box, size: 20),
+                                const SizedBox(width: 12),
+                                Text(
+                                  L10n.of(context).ui_extract,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        PopupMenuItem(
+                          value: 'archive',
+                          child: Row(
+                            children: [
+                              const Icon(Broken.box_add, size: 20),
+                              const SizedBox(width: 12),
+                              Text(
+                                L10n.of(context).ui_compress,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        const SizedBox(width: 12),
-                        Text(allPinned ? L10n.of(context).msga9b87614 : L10n.of(context).ui_pin_to_top, style: const TextStyle(fontWeight: FontWeight.w500)),
-                      ],
-                    ),
+                        if (hasClipboard)
+                          PopupMenuItem(
+                            value: 'paste',
+                            child: Row(
+                              children: [
+                                const Icon(Broken.clipboard, size: 20),
+                                const SizedBox(width: 12),
+                                Text(
+                                  L10n.of(context).msg419be096,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        PopupMenuItem(
+                          value: 'share',
+                          child: Row(
+                            children: [
+                              const Icon(Icons.share_outlined, size: 20),
+                              const SizedBox(width: 12),
+                              Text(
+                                L10n.of(context).ui_share,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'favorite',
+                          child: Row(
+                            children: [
+                              const Icon(Broken.folder_favorite, size: 20),
+                              const SizedBox(width: 12),
+                              Text(
+                                L10n.of(context).ui_favorite,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'pin_to_top',
+                          child: Row(
+                            children: [
+                              Icon(
+                                allPinned
+                                    ? Icons.push_pin_rounded
+                                    : Icons.push_pin_outlined,
+                                size: 20,
+                                color: allPinned ? Colors.orange : null,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                allPinned
+                                    ? L10n.of(context).msga9b87614
+                                    : L10n.of(context).ui_pin_to_top,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (hasSingleDirectory)
+                          PopupMenuItem(
+                            value: 'set_as_home',
+                            child: Row(
+                              children: [
+                                const Icon(Broken.home_2, size: 20),
+                                const SizedBox(width: 12),
+                                Text(
+                                  L10n.of(context).ui_set_as_home,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        PopupMenuItem(
+                          value: 'open_with',
+                          child: Row(
+                            children: [
+                              const Icon(Broken.export, size: 20),
+                              const SizedBox(width: 12),
+                              Text(
+                                L10n.of(context).msg2a4cfb07,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'properties',
+                          child: Row(
+                            children: [
+                              const Icon(Broken.info_circle, size: 20),
+                              const SizedBox(width: 12),
+                              Text(
+                                L10n.of(context).ui_properties,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ];
+                    },
                   ),
-                  if (hasSingleDirectory)
-                    PopupMenuItem(
-                      value: 'set_as_home',
-                      child: Row(
-                        children: [
-                          const Icon(Broken.home_2, size: 20),
-                          const SizedBox(width: 12),
-                          Text(L10n.of(context).ui_set_as_home, style: const TextStyle(fontWeight: FontWeight.w500)),
-                        ],
-                      ),
-                    ),
-                  PopupMenuItem(
-                    value: 'open_with',
-                    child: Row(
-                      children: [
-                        const Icon(Broken.export, size: 20),
-                        const SizedBox(width: 12),
-                        Text(L10n.of(context).msg2a4cfb07, style: const TextStyle(fontWeight: FontWeight.w500)),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'properties',
-                    child: Row(
-                      children: [
-                        const Icon(Broken.info_circle, size: 20),
-                        const SizedBox(width: 12),
-                        Text(L10n.of(context).ui_properties, style: const TextStyle(fontWeight: FontWeight.w500)),
-                      ],
-                    ),
-                  ),
-                ];
-              },
+                ),
+              ],
             ),
+            const SizedBox(height: 8),
           ],
         ),
-        const SizedBox(height: 8),
-      ],
-    ),
       ),
     );
   }
 
-  void _showPropertiesModal(BuildContext context, FileManagerProvider provider) {
+  void _showPropertiesModal(
+    BuildContext context,
+    FileManagerProvider provider,
+  ) {
     final selectedPaths = provider.selectedPaths.toList();
     if (selectedPaths.isEmpty) return;
 
     showDialog(
       context: context,
-      builder: (context) => PropertiesModalDialog(selectedPaths: selectedPaths, provider: provider),
+      builder: (context) => PropertiesModalDialog(
+        selectedPaths: selectedPaths,
+        provider: provider,
+      ),
     );
   }
 }
@@ -407,7 +539,11 @@ class PropertiesModalDialog extends StatefulWidget {
   final List<String> selectedPaths;
   final FileManagerProvider provider;
 
-  const PropertiesModalDialog({super.key, required this.selectedPaths, required this.provider});
+  const PropertiesModalDialog({
+    super.key,
+    required this.selectedPaths,
+    required this.provider,
+  });
 
   @override
   State<PropertiesModalDialog> createState() => PropertiesModalDialogState();
@@ -433,7 +569,9 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
     int folders = 0;
     int files = 0;
 
-    final currentFilesMap = {for (var f in widget.provider.currentFiles) f.path: f};
+    final currentFilesMap = {
+      for (var f in widget.provider.currentFiles) f.path: f,
+    };
 
     for (final path in widget.selectedPaths) {
       try {
@@ -448,7 +586,8 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
               final canRead = (stat.mode & 0x100) != 0;
               final canWrite = (stat.mode & 0x80) != 0;
               if (canRead && canWrite) {
-                _permissions = '${L10n.of(navigatorKey.currentContext!).prop_read} / ${L10n.of(navigatorKey.currentContext!).prop_write}';
+                _permissions =
+                    '${L10n.of(navigatorKey.currentContext!).prop_read} / ${L10n.of(navigatorKey.currentContext!).prop_write}';
               } else if (canRead) {
                 _permissions = L10n.of(navigatorKey.currentContext!).prop_read;
               } else if (canWrite) {
@@ -456,7 +595,10 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
               }
             }
             try {
-              await for (final entity in dir.list(recursive: true, followLinks: false)) {
+              await for (final entity in dir.list(
+                recursive: true,
+                followLinks: false,
+              )) {
                 if (entity is File) {
                   files++;
                   bytes += await entity.length();
@@ -477,7 +619,8 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
               final canRead = (stat.mode & 0x100) != 0;
               final canWrite = (stat.mode & 0x80) != 0;
               if (canRead && canWrite) {
-                _permissions = '${L10n.of(navigatorKey.currentContext!).prop_read} / ${L10n.of(navigatorKey.currentContext!).prop_write}';
+                _permissions =
+                    '${L10n.of(navigatorKey.currentContext!).prop_read} / ${L10n.of(navigatorKey.currentContext!).prop_write}';
               } else if (canRead) {
                 _permissions = L10n.of(navigatorKey.currentContext!).prop_read;
               } else if (canWrite) {
@@ -512,12 +655,16 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
 
     if (widget.selectedPaths.length == 1) {
       final pStr = widget.selectedPaths.first;
-      final ext = pStr.contains('.') ? pStr.substring(pStr.lastIndexOf('.')).toLowerCase() : '';
+      final ext = pStr.contains('.')
+          ? pStr.substring(pStr.lastIndexOf('.')).toLowerCase()
+          : '';
       final l10n = L10n.of(navigatorKey.currentContext!);
       if (folders > 0) {
         _mimeType = l10n.prop_folder_directory;
       } else {
-        _mimeType = ext.isNotEmpty ? '${l10n.prop_file} ($ext)' : l10n.prop_file;
+        _mimeType = ext.isNotEmpty
+            ? '${l10n.prop_file} ($ext)'
+            : l10n.prop_file;
       }
     }
 
@@ -538,14 +685,19 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
     final count = widget.selectedPaths.length;
     final isSingle = count == 1;
     final isFolderType = _mimeType == l10n.prop_folder_directory;
-    final nameDisplay = isSingle ? p.basename(widget.selectedPaths.first) : l10n.prop_items_selected(count);
+    final nameDisplay = isSingle
+        ? p.basename(widget.selectedPaths.first)
+        : l10n.prop_items_selected(count);
 
     return AlertDialog(
       title: Row(
         children: [
           Icon(Broken.info_circle, color: theme.colorScheme.primary, size: 28),
           const SizedBox(width: 12),
-          Text(L10n.of(context).ui_properties, style: TextStyle(fontWeight: FontWeight.bold)),
+          Text(
+            L10n.of(context).ui_properties,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
         ],
       ),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
@@ -557,7 +709,10 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
                 children: [
                   const CircularProgressIndicator(),
                   const SizedBox(height: 16),
-                  Text(L10n.of(context).msg3be9abab, style: TextStyle(color: Colors.grey)),
+                  Text(
+                    L10n.of(context).msg3be9abab,
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ],
               ),
             )
@@ -567,32 +722,64 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (isSingle) ...[
-                    _CopyablePropertyRow(label: l10n.ui_name, value: nameDisplay),
-                    _CopyablePropertyRow(label: l10n.ui_path, value: widget.selectedPaths.first),
+                    _CopyablePropertyRow(
+                      label: l10n.ui_name,
+                      value: nameDisplay,
+                    ),
+                    _CopyablePropertyRow(
+                      label: l10n.ui_path,
+                      value: widget.selectedPaths.first,
+                    ),
                     _CopyablePropertyRow(
                       label: l10n.ui_size,
-                      value: '${FileUtils.formatBytes(_totalBytes, 2)} ($_totalBytes ${l10n.prop_bytes})',
+                      value:
+                          '${FileUtils.formatBytes(_totalBytes, 2)} ($_totalBytes ${l10n.prop_bytes})',
                     ),
                     if (isFolderType)
                       _CopyablePropertyRow(
                         label: l10n.ui_contains,
-                        value: l10n.prop_contains_format(_folderCount - 1, _fileCount),
+                        value: l10n.prop_contains_format(
+                          _folderCount - 1,
+                          _fileCount,
+                        ),
                       ),
                     if (_lastModified != null)
-                      _CopyablePropertyRow(label: l10n.msg1303e638, value: FileUtils.formatDate(_lastModified!)),
-                    if (_mimeType.isNotEmpty) _CopyablePropertyRow(label: l10n.ui_type, value: _mimeType),
-                    if (_permissions.isNotEmpty) _CopyablePropertyRow(label: l10n.ui_permissions, value: _permissions),
+                      _CopyablePropertyRow(
+                        label: l10n.msg1303e638,
+                        value: FileUtils.formatDate(_lastModified!),
+                      ),
+                    if (_mimeType.isNotEmpty)
+                      _CopyablePropertyRow(
+                        label: l10n.ui_type,
+                        value: _mimeType,
+                      ),
+                    if (_permissions.isNotEmpty)
+                      _CopyablePropertyRow(
+                        label: l10n.ui_permissions,
+                        value: _permissions,
+                      ),
                   ] else ...[
                     _CopyablePropertyRow(
                       label: l10n.msg880a18f3,
-                      value: l10n.prop_items_summary(count, _folderCount, _fileCount),
+                      value: l10n.prop_items_summary(
+                        count,
+                        _folderCount,
+                        _fileCount,
+                      ),
                     ),
                     _CopyablePropertyRow(
                       label: l10n.msgea9ecb93,
-                      value: '${FileUtils.formatBytes(_totalBytes, 2)} ($_totalBytes ${l10n.prop_bytes})',
+                      value:
+                          '${FileUtils.formatBytes(_totalBytes, 2)} ($_totalBytes ${l10n.prop_bytes})',
                     ),
                     const SizedBox(height: 12),
-                    Text(l10n.msg7704aa2c, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                    Text(
+                      l10n.msg7704aa2c,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     ConstrainedBox(
                       constraints: const BoxConstraints(maxHeight: 180),
@@ -600,20 +787,27 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+                          color: theme.colorScheme.surfaceVariant.withOpacity(
+                            0.5,
+                          ),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: SingleChildScrollView(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: widget.selectedPaths
-                                .map((path) => Padding(
-                                      padding: const EdgeInsets.only(bottom: 6.0),
-                                      child: SelectableText(
-                                        p.basename(path),
-                                        style: const TextStyle(fontSize: 13, fontFamily: 'monospace'),
+                                .map(
+                                  (path) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 6.0),
+                                    child: SelectableText(
+                                      p.basename(path),
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontFamily: 'monospace',
                                       ),
-                                    ))
+                                    ),
+                                  ),
+                                )
                                 .toList(),
                           ),
                         ),
@@ -626,7 +820,11 @@ class PropertiesModalDialogState extends State<PropertiesModalDialog> {
       actions: [
         FilledButton(
           onPressed: () => Navigator.pop(context),
-          style: FilledButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+          style: FilledButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
           child: Text(L10n.of(context).ui_done),
         ),
       ],
@@ -665,8 +863,11 @@ class _ActionButton extends StatelessWidget {
             Icon(icon, color: displayColor, size: 24),
             if (!hideLabel) ...[
               const SizedBox(height: 4),
-              Text(
+              AutoSizeText(
                 label,
+                minFontSize: 8,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
@@ -698,7 +899,10 @@ class _CopyablePropertyRow extends StatelessWidget {
         onTap: () {
           Clipboard.setData(ClipboardData(text: value));
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(L10n.of(context).label1(label)), duration: const Duration(seconds: 1)),
+            SnackBar(
+              content: Text(L10n.of(context).label1(label)),
+              duration: const Duration(seconds: 1),
+            ),
           );
         },
         borderRadius: BorderRadius.circular(8),
@@ -711,7 +915,11 @@ class _CopyablePropertyRow extends StatelessWidget {
                 flex: 3,
                 child: Text(
                   label,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: theme.colorScheme.primary),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
               ),
               Expanded(
@@ -722,12 +930,19 @@ class _CopyablePropertyRow extends StatelessWidget {
                     Expanded(
                       child: Text(
                         value,
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
                         softWrap: true,
                       ),
                     ),
                     const SizedBox(width: 4),
-                    Icon(Broken.document_copy, size: 14, color: theme.colorScheme.onSurface.withOpacity(0.4)),
+                    Icon(
+                      Broken.document_copy,
+                      size: 14,
+                      color: theme.colorScheme.onSurface.withOpacity(0.4),
+                    ),
                   ],
                 ),
               ),

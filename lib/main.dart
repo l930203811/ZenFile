@@ -365,7 +365,13 @@ class _ZenFileAppState extends State<ZenFileApp> with WidgetsBindingObserver {
           final player = handler.currentPlayer;
           if (item == null || player == null) return;
 
-          final context = navigatorKey.currentContext;
+          // 后台恢复时首帧 navigator 可能尚未就绪，延迟重试一次再跳转，
+          // 避免直接 return 导致点击通知后停在「最后使用的页面」而非正在播放页。
+          var context = navigatorKey.currentContext;
+          if (context == null || !context.mounted) {
+            await Future.delayed(const Duration(milliseconds: 300));
+            context = navigatorKey.currentContext;
+          }
           if (context == null || !context.mounted) return;
 
           // 判断是否远程路径：remote:// 前缀或 http(s) 流式 URL

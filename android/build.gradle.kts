@@ -26,7 +26,7 @@ subprojects {
     if (project.name != "app") {
         project.plugins.withId("com.android.library") {
             project.extensions.configure<com.android.build.gradle.LibraryExtension> {
-                compileSdk = 35
+                compileSdk = 37
                 compileOptions {
                     sourceCompatibility = JavaVersion.VERSION_17
                     targetCompatibility = JavaVersion.VERSION_17
@@ -36,6 +36,10 @@ subprojects {
         project.afterEvaluate {
             project.plugins.withId("com.android.library") {
                 project.extensions.configure<com.android.build.gradle.LibraryExtension> {
+                    // AGP 9：部分插件（如 flutter_avif_android 硬编码 compileSdkVersion 31）会在
+                    // withId 回调之后覆盖 compileSdk，需在 afterEvaluate 阶段最终强制为 37
+                    //（与 app 一致，同时满足 permission_handler_android 需要的 API 37 常量）。
+                    compileSdk = 37
                     compileOptions {
                         sourceCompatibility = JavaVersion.VERSION_17
                         targetCompatibility = JavaVersion.VERSION_17

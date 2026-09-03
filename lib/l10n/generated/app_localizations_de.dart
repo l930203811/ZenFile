@@ -3573,7 +3573,7 @@ class L10nDe extends L10n {
 
   @override
   String get ui_vault_empty_desc =>
-      'XOR-Verschlüsselungssignaturen machen Dateien völlig unöffnbar und im System-Scanner-Datenbank versteckt. Klicken Sie auf die Schaltfläche unten, um sie zu schützen.';
+      'AES-256-GCM-Verschlüsselung macht Dateien für das System oder andere Apps völlig unöffbar und versteckt sie vor dem Medien-Scanner. Tippe unten auf die Schaltfläche, um sie zu schützen.';
 
   @override
   String ui_copied_n_items(Object count) {
@@ -3716,7 +3716,7 @@ class L10nDe extends L10n {
 
   @override
   String get msg_vault_mode_desc =>
-      'Wählen Sie, wie Sie Ihre ausgewählten Dateien schützen möchten. Sichere Dateien werden sofort XOR-verschlüsselt.';
+      'Wähle, wie du deine ausgewählten Dateien schützen möchtest. Gesicherte Dateien werden mit AES-256-GCM verschlüsselt.';
 
   @override
   String get ui_secure_import => 'Sicherer Import (Sandbox)';
@@ -5100,7 +5100,7 @@ class L10nDe extends L10n {
 
   @override
   String get ui_remote_guard_desc =>
-      'Legen Sie eine 4-stellige PIN fest, um den Zugriff auf Remote-Server zu schützen. PIN nach App-Start oder manueller Sperre eingeben.';
+      'Set a password to protect remote server access. Enter it after app launch or manual lock.';
 
   @override
   String get ui_remote_guard_enabled => 'Aktiviert';
@@ -5129,7 +5129,8 @@ class L10nDe extends L10n {
   String get ui_remote_guard_change_pin => 'PIN ändern';
 
   @override
-  String get ui_remote_guard_pin_hint => '4-stellige numerische PIN';
+  String get ui_remote_guard_pin_hint =>
+      'Passwort (Buchstaben, Ziffern oder Symbole)';
 
   @override
   String get ui_remote_guard_lock_now => 'Jetzt sperren';
@@ -5150,10 +5151,10 @@ class L10nDe extends L10n {
 
   @override
   String get ui_app_lock_desc =>
-      'PIN beim App-Start eingeben, um die App zu entsperren';
+      'Require your password to unlock the app each time it launches';
 
   @override
-  String get ui_app_lock_set_pin_first => 'Set a 4-digit PIN before enabling';
+  String get ui_app_lock_set_pin_first => 'Set a password before enabling';
 
   @override
   String get ui_remote_guard_enter_current_pin => 'Aktuelle PIN eingeben';
@@ -5428,6 +5429,42 @@ class L10nDe extends L10n {
 
   @override
   String get editor_crop => 'Crop';
+
+  @override
+  String get ui_draw => 'Zeichnen';
+
+  @override
+  String get ui_edit => 'Bearbeiten';
+
+  @override
+  String get ui_color => 'Farbe';
+
+  @override
+  String get ui_width => 'Dicke';
+
+  @override
+  String get ui_text => 'Text';
+
+  @override
+  String get ui_rect => 'Rechteck';
+
+  @override
+  String get ui_ellipse => 'Ellipse';
+
+  @override
+  String get ui_line => 'Linie';
+
+  @override
+  String get ui_mosaic => 'Mosaik';
+
+  @override
+  String get ui_pen => 'Stift';
+
+  @override
+  String get ui_arrow => 'Pfeil';
+
+  @override
+  String get ui_brush_size => 'Pinselgröße';
 
   @override
   String get editor_rotate_flip => 'Rotate & Flip';
@@ -5792,6 +5829,18 @@ class L10nDe extends L10n {
   String get editor_undo => 'Rückgängig';
 
   @override
+  String get editor_text_hint => 'Text eingeben';
+
+  @override
+  String get editor_font_bold => 'Fett';
+
+  @override
+  String get editor_font_italic => 'Kursiv';
+
+  @override
+  String get editor_font_underline => 'Unterstrichen';
+
+  @override
   String get wol_port_hint => 'Optional';
 
   @override
@@ -6139,4 +6188,139 @@ class L10nDe extends L10n {
   @override
   String get ui_enter_host_first =>
       'Geben Sie zuerst Host-Adresse und Port ein';
+
+  @override
+  String get vault_enter_password => 'Passwort eingeben zum Entsperren';
+
+  @override
+  String get vault_set_password => 'Passwort festlegen';
+
+  @override
+  String get vault_confirm_password => 'Erneut eingeben zur Bestätigung';
+
+  @override
+  String get vault_pins_mismatch => 'Passwörter stimmen nicht überein';
+
+  @override
+  String get vault_incorrect_password => 'Falsches Passwort';
+
+  @override
+  String get vault_password_set => 'Passwort festgelegt';
+
+  @override
+  String get vault_next => 'Weiter';
+
+  @override
+  String get vault_unlock => 'Entsperren';
+
+  @override
+  String get vault_use_keypad => 'Numerische Tastatur verwenden';
+
+  @override
+  String get vault_use_text_input => 'Alphanumerisch verwenden';
+
+  @override
+  String get vault_fingerprint => 'Mit Fingerabdruck entsperren';
+
+  @override
+  String get vault_fingerprint_failed =>
+      'Fingerabdruck-Authentifizierung fehlgeschlagen';
+
+  @override
+  String get vault_min_length => 'Passwort muss mindestens 4 Zeichen lang sein';
+
+  @override
+  String get vault_pwd_alphanumeric =>
+      'Passwort (Buchstaben, Ziffern oder Symbole)';
+
+  @override
+  String get vault_enable_fingerprint => 'Fingerabdruck-Entsperrung aktivieren';
+
+  @override
+  String get vault_biometric_desc =>
+      'Nutzen Sie Ihren Fingerabdruck, um den Tresor schnell zu entsperren';
+
+  @override
+  String get vault_export_backup => 'Sicherung exportieren';
+
+  @override
+  String get vault_export_backup_desc =>
+      'Verschlüsselte Tresor-Sicherung exportieren (.zip)';
+
+  @override
+  String get vault_import_backup => 'Sicherung importieren';
+
+  @override
+  String get vault_import_backup_desc =>
+      'Tresor aus Sicherung wiederherstellen (.zip)';
+
+  @override
+  String get vault_uninstall_warning_title => 'Deinstallationswarnung';
+
+  @override
+  String get vault_uninstall_warning =>
+      'Bei Deinstallation der App wird der Tresor gelöscht. Exportieren Sie zuerst eine Sicherung.';
+
+  @override
+  String get vault_backup_exported => 'Sicherung exportiert nach';
+
+  @override
+  String get vault_backup_imported => 'Elemente importiert';
+
+  @override
+  String get vault_export_failed => 'Sicherung export fehlgeschlagen';
+
+  @override
+  String get vault_import_failed => 'Sicherung import fehlgeschlagen';
+
+  @override
+  String get ui_font_size => 'Schrift';
+
+  @override
+  String get ui_line_width => 'Linienstärke';
+
+  @override
+  String archive_open_failed_with_reason(String e) {
+    return 'Öffnen fehlgeschlagen: $e';
+  }
+
+  @override
+  String archive_extract_failed_with_reason(String e) {
+    return 'Entpacken fehlgeschlagen: $e';
+  }
+
+  @override
+  String get archive_unsupported_format =>
+      'Datei ist leer oder kann nicht entpackt werden (möglicherweise zu groß, beschädigt oder in einem nicht unterstützten Format)';
+
+  @override
+  String get vault_export_backup_confirm =>
+      'The backup file will be saved to the following location:';
+
+  @override
+  String get vault_import_only_zip => 'Only .zip backup files are supported';
+
+  @override
+  String get vault_import_password_hint =>
+      'This backup uses a different password. Please re-unlock the vault with the password used when the backup was created';
+
+  @override
+  String get vault_open_backup_location =>
+      'Open the folder where the backup is saved?';
+
+  @override
+  String get open_file => 'Open';
+
+  @override
+  String get open_in_location => 'Open file location';
+
+  @override
+  String get open_with_title => 'Open with';
+
+  @override
+  String get share_permission_title => 'Permission required';
+
+  @override
+  String get share_permission_message =>
+      'ZenFile does not have permission to access this file. Please share it again or grant permission and retry.';
 }

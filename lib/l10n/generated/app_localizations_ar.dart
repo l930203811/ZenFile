@@ -3518,7 +3518,7 @@ class L10nAr extends L10n {
 
   @override
   String get ui_vault_empty_desc =>
-      'توقيعات التشويش XOR تجعل الملفات غير قابلة للفتح تماماً ومخفية من قاعدة بيانات فاحص النظام. انقر على الزر أدناه لحمايتها.';
+      'تشفير AES-256-GCM يجعل الملفات غير قابلة للفتح تماماً من قبل النظام أو التطبيقات الأخرى، ومخفية من ماسح الوسائط. انقر الزر أدناه لحمايتها.';
 
   @override
   String ui_copied_n_items(Object count) {
@@ -3660,7 +3660,7 @@ class L10nAr extends L10n {
 
   @override
   String get msg_vault_mode_desc =>
-      'اختر كيفية حماية ملفاتك المحددة. يتم تشفير الملفات الآمنة فورًا باستخدام XOR.';
+      'اختر كيفية حماية ملفاتك المحددة. يتم تشفير الملفات الآمنة باستخدام AES-256-GCM.';
 
   @override
   String get ui_secure_import => 'استيراد آمن (صندوق عزل)';
@@ -5038,7 +5038,7 @@ class L10nAr extends L10n {
 
   @override
   String get ui_remote_guard_desc =>
-      'عيّن رمز PIN مكوناً من 4 أرقام لحماية الوصول إلى الخوادم البعيدة. أدخل رمز PIN بعد تشغيل التطبيق أو القفل اليدوي.';
+      'Set a password to protect remote server access. Enter it after app launch or manual lock.';
 
   @override
   String get ui_remote_guard_enabled => 'مُفعّل';
@@ -5066,7 +5066,7 @@ class L10nAr extends L10n {
   String get ui_remote_guard_change_pin => 'تغيير رمز PIN';
 
   @override
-  String get ui_remote_guard_pin_hint => 'رمز PIN رقمي من 4 أرقام';
+  String get ui_remote_guard_pin_hint => 'كلمة مرور (أحرف أو أرقام أو رموز)';
 
   @override
   String get ui_remote_guard_lock_now => 'قفل الآن';
@@ -5087,10 +5087,10 @@ class L10nAr extends L10n {
 
   @override
   String get ui_app_lock_desc =>
-      'يتطلب رمز PIN لإلغاء قفل التطبيق عند كل تشغيل';
+      'Require your password to unlock the app each time it launches';
 
   @override
-  String get ui_app_lock_set_pin_first => 'Set a 4-digit PIN before enabling';
+  String get ui_app_lock_set_pin_first => 'Set a password before enabling';
 
   @override
   String get ui_remote_guard_enter_current_pin => 'أدخل رمز PIN الحالي';
@@ -5364,6 +5364,42 @@ class L10nAr extends L10n {
 
   @override
   String get editor_crop => 'Crop';
+
+  @override
+  String get ui_draw => 'رسم';
+
+  @override
+  String get ui_edit => 'تحرير';
+
+  @override
+  String get ui_color => 'لون';
+
+  @override
+  String get ui_width => 'السماكة';
+
+  @override
+  String get ui_text => 'نص';
+
+  @override
+  String get ui_rect => 'مستطيل';
+
+  @override
+  String get ui_ellipse => 'بيضاوي';
+
+  @override
+  String get ui_line => 'خط';
+
+  @override
+  String get ui_mosaic => 'فسيفساء';
+
+  @override
+  String get ui_pen => 'قلم';
+
+  @override
+  String get ui_arrow => 'سهم';
+
+  @override
+  String get ui_brush_size => 'حجم الفرشاة';
 
   @override
   String get editor_rotate_flip => 'Rotate & Flip';
@@ -5722,6 +5758,18 @@ class L10nAr extends L10n {
   String get editor_undo => 'تراجع';
 
   @override
+  String get editor_text_hint => 'أدخل نصًا';
+
+  @override
+  String get editor_font_bold => 'عريض';
+
+  @override
+  String get editor_font_italic => 'مائل';
+
+  @override
+  String get editor_font_underline => 'تحته خط';
+
+  @override
   String get wol_port_hint => 'اختياري';
 
   @override
@@ -6061,4 +6109,136 @@ class L10nAr extends L10n {
 
   @override
   String get ui_enter_host_first => 'أدخل عنوان المضيف والمنفذ أولاً';
+
+  @override
+  String get vault_enter_password => 'أدخل كلمة المرور لفتح القفل';
+
+  @override
+  String get vault_set_password => 'تعيين كلمة مرور';
+
+  @override
+  String get vault_confirm_password => 'أعد الإدخال للتأكيد';
+
+  @override
+  String get vault_pins_mismatch => 'كلمتا المرور غير متطابقتين';
+
+  @override
+  String get vault_incorrect_password => 'كلمة المرور غير صحيحة';
+
+  @override
+  String get vault_password_set => 'تم تعيين كلمة المرور';
+
+  @override
+  String get vault_next => 'التالي';
+
+  @override
+  String get vault_unlock => 'فتح';
+
+  @override
+  String get vault_use_keypad => 'استخدام لوحة المفاتيح الرقمية';
+
+  @override
+  String get vault_use_text_input => 'استخدام أبجدي رقمي';
+
+  @override
+  String get vault_fingerprint => 'فتح ببصمة الإصبع';
+
+  @override
+  String get vault_fingerprint_failed => 'فشلت مصادقة البصمة';
+
+  @override
+  String get vault_min_length => 'يجب ألا تقل كلمة المرور عن 4 أحرف';
+
+  @override
+  String get vault_pwd_alphanumeric => 'كلمة مرور (أحرف أو أرقام أو رموز)';
+
+  @override
+  String get vault_enable_fingerprint => 'تمكين فتح البصمة';
+
+  @override
+  String get vault_biometric_desc => 'استخدم بصمتك لفتح الخزنة بسرعة';
+
+  @override
+  String get vault_export_backup => 'تصدير النسخة الاحتياطية';
+
+  @override
+  String get vault_export_backup_desc =>
+      'تصدير نسخة احتياطية مشفرة من الخزنة (.zip)';
+
+  @override
+  String get vault_import_backup => 'استيراد النسخة الاحتياطية';
+
+  @override
+  String get vault_import_backup_desc =>
+      'استعادة الخزنة من نسخة احتياطية (.zip)';
+
+  @override
+  String get vault_uninstall_warning_title => 'تحذير إلغاء التثبيت';
+
+  @override
+  String get vault_uninstall_warning =>
+      'إزالة التطبيق تمحو الخزنة. صدّر نسخة احتياطية أولاً.';
+
+  @override
+  String get vault_backup_exported => 'تم تصدير النسخة الاحتياطية إلى';
+
+  @override
+  String get vault_backup_imported => 'تم استيراد عناصر';
+
+  @override
+  String get vault_export_failed => 'فشل تصدير النسخة الاحتياطية';
+
+  @override
+  String get vault_import_failed => 'فشل استيراد النسخة الاحتياطية';
+
+  @override
+  String get ui_font_size => 'الخط';
+
+  @override
+  String get ui_line_width => 'سمك الخط';
+
+  @override
+  String archive_open_failed_with_reason(String e) {
+    return 'تعذر الفتح: $e';
+  }
+
+  @override
+  String archive_extract_failed_with_reason(String e) {
+    return 'فشل الاستخراج: $e';
+  }
+
+  @override
+  String get archive_unsupported_format =>
+      'الملف فارغ أو تعذر فك ضغطه (قد يكون كبيرًا جدًا أو تالفًا أو يستخدم تنسيق ضغط غير مدعوم)';
+
+  @override
+  String get vault_export_backup_confirm =>
+      'The backup file will be saved to the following location:';
+
+  @override
+  String get vault_import_only_zip => 'Only .zip backup files are supported';
+
+  @override
+  String get vault_import_password_hint =>
+      'This backup uses a different password. Please re-unlock the vault with the password used when the backup was created';
+
+  @override
+  String get vault_open_backup_location =>
+      'Open the folder where the backup is saved?';
+
+  @override
+  String get open_file => 'Open';
+
+  @override
+  String get open_in_location => 'Open file location';
+
+  @override
+  String get open_with_title => 'Open with';
+
+  @override
+  String get share_permission_title => 'Permission required';
+
+  @override
+  String get share_permission_message =>
+      'ZenFile does not have permission to access this file. Please share it again or grant permission and retry.';
 }

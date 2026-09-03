@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math' as math;
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:photo_view/photo_view.dart';
@@ -23,12 +24,73 @@ import 'package:zenfile/l10n/generated/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 final Uint8List _kTransparentImage = Uint8List.fromList([
-  0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
-  0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
-  0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00,
-  0x0A, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
-  0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x49,
-  0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+  0x89,
+  0x50,
+  0x4E,
+  0x47,
+  0x0D,
+  0x0A,
+  0x1A,
+  0x0A,
+  0x00,
+  0x00,
+  0x00,
+  0x0D,
+  0x49,
+  0x48,
+  0x44,
+  0x52,
+  0x00,
+  0x00,
+  0x00,
+  0x01,
+  0x00,
+  0x00,
+  0x00,
+  0x01,
+  0x08,
+  0x06,
+  0x00,
+  0x00,
+  0x00,
+  0x1F,
+  0x15,
+  0xC4,
+  0x89,
+  0x00,
+  0x00,
+  0x00,
+  0x0A,
+  0x49,
+  0x44,
+  0x41,
+  0x54,
+  0x78,
+  0x9C,
+  0x63,
+  0x00,
+  0x01,
+  0x00,
+  0x00,
+  0x05,
+  0x00,
+  0x01,
+  0x0D,
+  0x0A,
+  0x2D,
+  0xB4,
+  0x00,
+  0x00,
+  0x00,
+  0x00,
+  0x49,
+  0x45,
+  0x4E,
+  0x44,
+  0xAE,
+  0x42,
+  0x60,
+  0x82,
 ]);
 
 class ImageViewerScreen extends StatefulWidget {
@@ -98,7 +160,9 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     }
 
     if (widget.siblingAssets != null && widget.siblingAssets!.isNotEmpty) {
-      _currentIndex = widget.siblingAssets!.indexWhere((e) => e.id == widget.initialAssetId);
+      _currentIndex = widget.siblingAssets!.indexWhere(
+        (e) => e.id == widget.initialAssetId,
+      );
       if (_currentIndex == -1) _currentIndex = 0;
       return;
     }
@@ -118,7 +182,8 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
       for (final f in files) {
         if (f is File) {
           final mime = lookupMimeType(f.path);
-          if ((mime != null && mime.startsWith('image/')) || f.path.toLowerCase().endsWith('.avif')) {
+          if ((mime != null && mime.startsWith('image/')) ||
+              f.path.toLowerCase().endsWith('.avif')) {
             images.add(f.path);
           }
         }
@@ -150,7 +215,9 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
 
   /// 取指定页索引对应的文件路径（远程或本地）。
   String? _pathAtIndex(int index) {
-    if (widget.siblingItems != null && index >= 0 && index < widget.siblingItems!.length) {
+    if (widget.siblingItems != null &&
+        index >= 0 &&
+        index < widget.siblingItems!.length) {
       final item = widget.siblingItems![index];
       if (item is FileSystemEntity) return item.path;
     }
@@ -164,7 +231,8 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
   Future<void> _loadRemoteFile(int index) async {
     final path = _pathAtIndex(index);
     if (path == null || !path.startsWith('remote://')) return;
-    if (_remoteCache.containsKey(index) || _remoteLoading.contains(index)) return;
+    if (_remoteCache.containsKey(index) || _remoteLoading.contains(index))
+      return;
     _remoteLoading.add(index);
     try {
       final local = await FileManagerProvider.downloadRemoteFileToCache(path);
@@ -173,7 +241,8 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
           _remoteCache[index] = File(local);
         });
       }
-    } catch (_) {} finally {
+    } catch (_) {
+    } finally {
       _remoteLoading.remove(index);
     }
   }
@@ -221,15 +290,18 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
 
   /// 获取当前图片的 File 对象
   File? _getCurrentFile() {
-    if (widget.siblingItems != null && _currentIndex < widget.siblingItems!.length) {
+    if (widget.siblingItems != null &&
+        _currentIndex < widget.siblingItems!.length) {
       final item = widget.siblingItems![_currentIndex];
       if (item is AssetEntity) {
         return _fileCache[_currentIndex];
       } else if (item is FileSystemEntity) {
-        if (item.path.startsWith('remote://')) return _remoteCache[_currentIndex];
+        if (item.path.startsWith('remote://'))
+          return _remoteCache[_currentIndex];
         return File(item.path);
       }
-    } else if (widget.siblingAssets != null && _currentIndex < widget.siblingAssets!.length) {
+    } else if (widget.siblingAssets != null &&
+        _currentIndex < widget.siblingAssets!.length) {
       return _fileCache[_currentIndex];
     } else if (_imageList.isNotEmpty && _currentIndex < _imageList.length) {
       final fp = _imageList[_currentIndex];
@@ -241,10 +313,12 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
 
   /// 获取当前图片对应的相册 [AssetEntity]（仅相册入口有，文件系统/远程为 null）。
   AssetEntity? _getCurrentAsset() {
-    if (widget.siblingItems != null && _currentIndex < widget.siblingItems!.length) {
+    if (widget.siblingItems != null &&
+        _currentIndex < widget.siblingItems!.length) {
       final item = widget.siblingItems![_currentIndex];
       if (item is AssetEntity) return item;
-    } else if (widget.siblingAssets != null && _currentIndex < widget.siblingAssets!.length) {
+    } else if (widget.siblingAssets != null &&
+        _currentIndex < widget.siblingAssets!.length) {
       return widget.siblingAssets![_currentIndex];
     }
     return null;
@@ -276,7 +350,11 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
       String? modified;
       try {
         final stat = await file.stat();
-        modified = stat.modified.toString().replaceFirst('.000', '').split('.').first;
+        modified = stat.modified
+            .toString()
+            .replaceFirst('.000', '')
+            .split('.')
+            .first;
       } catch (_) {
         modified = null;
       }
@@ -328,14 +406,19 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     if (file == null) return;
     String localPath = file.path;
     if (localPath.startsWith('remote://')) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.editor_downloading)),
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.editor_downloading)));
+      final cached = await FileManagerProvider.downloadRemoteFileToCache(
+        localPath,
       );
-      final cached = await FileManagerProvider.downloadRemoteFileToCache(localPath);
       if (cached == null) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.editor_unsupported), backgroundColor: Colors.redAccent),
+          SnackBar(
+            content: Text(l10n.editor_unsupported),
+            backgroundColor: Colors.redAccent,
+          ),
         );
         return;
       }
@@ -343,7 +426,9 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     }
     if (!mounted) return;
     final result = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => ImageEditorScreen(imagePath: localPath)),
+      MaterialPageRoute(
+        builder: (_) => ImageEditorScreen(imagePath: localPath),
+      ),
     );
     if (result == true && mounted) setState(() {});
   }
@@ -381,7 +466,10 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                     Expanded(
                       child: Text(
                         file?.path.split('/').last.split('\\').last ?? 'Image',
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -427,12 +515,12 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                 ),
                 ListTile(
                   leading: Icon(Broken.edit, color: primary, size: 22),
-                title: Text(l10n.msgc8ce4b36),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _renameFile();
-                },
-              ),
+                  title: Text(l10n.msgc8ce4b36),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _renameFile();
+                  },
+                ),
                 ListTile(
                   leading: Icon(Broken.eye, color: primary, size: 22),
                   title: Text(l10n.msg2a4cfb07),
@@ -521,10 +609,15 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     if (trimmed.isEmpty) return;
 
     try {
-      await context.read<FileManagerProvider>().renameFile(file.path, trimmed, context);
+      await context.read<FileManagerProvider>().renameFile(
+        file.path,
+        trimmed,
+        context,
+      );
       final newPath = p.join(file.parent.path, trimmed);
 
-      if (widget.siblingItems != null && _currentIndex < widget.siblingItems!.length) {
+      if (widget.siblingItems != null &&
+          _currentIndex < widget.siblingItems!.length) {
         final item = widget.siblingItems![_currentIndex];
         if (item is FileSystemEntity) {
           widget.siblingItems![_currentIndex] = File(newPath);
@@ -538,7 +631,10 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString()), backgroundColor: Colors.redAccent),
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Colors.redAccent,
+        ),
       );
     }
   }
@@ -552,7 +648,10 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
   void _extractArchive() {
     final file = _getCurrentFile();
     if (file == null) return;
-    context.read<FileManagerProvider>().extractArchiveDirectly(context, file.path);
+    context.read<FileManagerProvider>().extractArchiveDirectly(
+      context,
+      file.path,
+    );
   }
 
   Future<void> _shareCurrentImage() async {
@@ -568,10 +667,12 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
 
     // 检查是否为 AssetEntity（相册图片）
     AssetEntity? asset;
-    if (widget.siblingItems != null && _currentIndex < widget.siblingItems!.length) {
+    if (widget.siblingItems != null &&
+        _currentIndex < widget.siblingItems!.length) {
       final item = widget.siblingItems![_currentIndex];
       if (item is AssetEntity) asset = item;
-    } else if (widget.siblingAssets != null && _currentIndex < widget.siblingAssets!.length) {
+    } else if (widget.siblingAssets != null &&
+        _currentIndex < widget.siblingAssets!.length) {
       asset = widget.siblingAssets![_currentIndex];
     }
 
@@ -583,7 +684,10 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
         title: Text(l10n.ui_delete),
         content: Text(l10n.ui_delete_file_confirm),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.ui_cancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.ui_cancel),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
@@ -598,7 +702,8 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     try {
       // 判断是否为远程路径
       final currentPath = _pathAtIndex(_currentIndex);
-      final isRemote = currentPath != null && currentPath.startsWith('remote://');
+      final isRemote =
+          currentPath != null && currentPath.startsWith('remote://');
 
       if (asset != null) {
         // 相册图片通过 PhotoManager 删除
@@ -619,14 +724,16 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
       }
 
       // 从列表中移除并导航
-      final total = widget.siblingItems?.length ??
+      final total =
+          widget.siblingItems?.length ??
           widget.siblingAssets?.length ??
           _imageList.length;
       if (_imageList.isNotEmpty && _currentIndex < _imageList.length) {
         _imageList.removeAt(_currentIndex);
       }
       // 同步更新 siblingItems，使分类页返回后列表不再残留已删文件
-      if (widget.siblingItems != null && _currentIndex < widget.siblingItems!.length) {
+      if (widget.siblingItems != null &&
+          _currentIndex < widget.siblingItems!.length) {
         widget.siblingItems!.removeAt(_currentIndex);
       }
       if (total <= 1) {
@@ -644,7 +751,10 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString()), backgroundColor: Colors.redAccent),
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Colors.redAccent,
+        ),
       );
     }
   }
@@ -684,7 +794,10 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(fileName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+            Text(
+              fileName,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            ),
             const SizedBox(height: 12),
             _infoRow(l10n.ui_path, filePath),
             const SizedBox(height: 8),
@@ -696,7 +809,10 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.ui_close)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.ui_close),
+          ),
         ],
       ),
     );
@@ -706,7 +822,13 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('$label: ', style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
+        Text(
+          '$label: ',
+          style: TextStyle(
+            fontSize: 13,
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+          ),
+        ),
         Expanded(child: Text(value, style: const TextStyle(fontSize: 13))),
       ],
     );
@@ -716,16 +838,20 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
   Widget build(BuildContext context) {
     final int totalCount = widget.siblingItems != null
         ? widget.siblingItems!.length
-        : (widget.siblingAssets != null ? widget.siblingAssets!.length : _imageList.length);
+        : (widget.siblingAssets != null
+              ? widget.siblingAssets!.length
+              : _imageList.length);
     String currentTitle = 'Image';
-    if (widget.siblingItems != null && _currentIndex < widget.siblingItems!.length) {
+    if (widget.siblingItems != null &&
+        _currentIndex < widget.siblingItems!.length) {
       final item = widget.siblingItems![_currentIndex];
       if (item is AssetEntity) {
         currentTitle = item.title ?? 'Image';
       } else if (item is FileSystemEntity) {
         currentTitle = item.path.split('/').last.split('\\').last;
       }
-    } else if (widget.siblingAssets != null && _currentIndex < widget.siblingAssets!.length) {
+    } else if (widget.siblingAssets != null &&
+        _currentIndex < widget.siblingAssets!.length) {
       currentTitle = widget.siblingAssets![_currentIndex].title ?? 'Image';
     } else if (_imageList.isNotEmpty && _currentIndex < _imageList.length) {
       currentTitle = _imageList[_currentIndex].split('/').last.split('\\').last;
@@ -739,7 +865,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
       child: Scaffold(
         backgroundColor: Colors.black,
         extendBodyBehindAppBar: true,
-        appBar: _showUI 
+        appBar: _showUI
             ? AppBar(
                 backgroundColor: Colors.black.withValues(alpha: 0.55),
                 elevation: 0,
@@ -751,7 +877,11 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+                      icon: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
@@ -761,14 +891,23 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                   children: [
                     Text(
                       currentTitle,
-                      style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold, letterSpacing: 0.3),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.3,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
                     Text(
                       '${_currentIndex + 1} of $totalCount',
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 12, fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
@@ -780,7 +919,9 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
           children: [
             Dismissible(
               key: const ValueKey('image_viewer_dismissible'),
-              direction: _isZoomed ? DismissDirection.none : DismissDirection.vertical,
+              direction: _isZoomed
+                  ? DismissDirection.none
+                  : DismissDirection.vertical,
               onDismissed: (_) => Navigator.pop(context),
               dismissThresholds: const {
                 DismissDirection.down: 0.2,
@@ -793,7 +934,9 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                   });
                 },
                 child: PhotoViewGallery.builder(
-                  scrollPhysics: _isZoomed ? const NeverScrollableScrollPhysics() : const BouncingScrollPhysics(),
+                  scrollPhysics: _isZoomed
+                      ? const NeverScrollableScrollPhysics()
+                      : const BouncingScrollPhysics(),
                   pageController: _pageController,
                   itemCount: totalCount,
                   onPageChanged: (index) {
@@ -805,109 +948,117 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                     _refreshMeta();
                   },
                   scaleStateChangedCallback: (state) {
-                setState(() {
-                  _isZoomed = state != PhotoViewScaleState.initial;
-                });
-              },
-              builder: (context, index) {
-                File? imgFile;
-                Uint8List? thumbData;
-                String tagKey = 'img_$index';
-
-                if (widget.siblingItems != null) {
-                  final item = widget.siblingItems![index];
-                  if (item is AssetEntity) {
-                    tagKey = item.id;
-                    imgFile = _fileCache[index];
-                    thumbData = ThumbnailCache.getCached(item.id);
-                  } else if (item is FileSystemEntity) {
-                    tagKey = item.path;
-                    if (item.path.startsWith('remote://')) {
-                      imgFile = _remoteCache[index];
-                      if (imgFile == null) _loadRemoteFile(index);
-                    } else {
-                      imgFile = File(item.path);
-                    }
-                  }
-                } else if (widget.siblingAssets != null) {
-                  final asset = widget.siblingAssets![index];
-                  tagKey = asset.id;
-                  imgFile = _fileCache[index];
-                  thumbData = ThumbnailCache.getCached(asset.id);
-                } else {
-                  final path = _imageList[index];
-                  tagKey = path;
-                  if (path.startsWith('remote://')) {
-                    imgFile = _remoteCache[index];
-                    if (imgFile == null) _loadRemoteFile(index);
-                  } else {
-                    imgFile = File(path);
-                  }
-                }
-
-                // 远程图片下载中：显示加载指示，避免空白。
-                if (imgFile == null && _pathAtIndex(index)?.startsWith('remote://') == true) {
-                  return PhotoViewGalleryPageOptions.customChild(
-                    child: const Center(
-                      child: CircularProgressIndicator(color: Colors.white70),
-                    ),
-                    heroAttributes: PhotoViewHeroAttributes(tag: tagKey),
-                  );
-                }
-
-                final bool isValidFile = imgFile != null && imgFile.existsSync() && imgFile.lengthSync() > 16;
-                final bool isAvif = imgFile != null && imgFile.path.toLowerCase().endsWith('.avif');
-                final bool isSvg = imgFile != null && imgFile.path.toLowerCase().endsWith('.svg');
-
-                if (isSvg) {
-                  return PhotoViewGalleryPageOptions.customChild(
-                    child: SvgPicture.file(imgFile, fit: BoxFit.contain),
-                    initialScale: PhotoViewComputedScale.contained,
-                    minScale: PhotoViewComputedScale.contained,
-                    maxScale: PhotoViewComputedScale.covered * 4,
-                    heroAttributes: PhotoViewHeroAttributes(tag: tagKey),
-                  );
-                }
-
-                final ImageProvider provider = isValidFile
-                    ? (isAvif ? FileAvifImage(imgFile) : FileImage(imgFile)) as ImageProvider
-                    : (thumbData != null ? MemoryImage(thumbData) : MemoryImage(_kTransparentImage));
-
-                return PhotoViewGalleryPageOptions.customChild(
-                  child: Transform.rotate(
-                    angle: _rotation,
-                    child: Image(image: provider, fit: BoxFit.contain),
-                  ),
-                  initialScale: PhotoViewComputedScale.contained,
-                  minScale: PhotoViewComputedScale.contained,
-                  maxScale: PhotoViewComputedScale.covered * 4,
-                  heroAttributes: PhotoViewHeroAttributes(tag: tagKey),
-                  onTapUp: (context, details, controllerValue) {
                     setState(() {
-                      _showUI = !_showUI;
+                      _isZoomed = state != PhotoViewScaleState.initial;
                     });
                   },
-                );
-              },
+                  builder: (context, index) {
+                    File? imgFile;
+                    Uint8List? thumbData;
+                    String tagKey = 'img_$index';
+
+                    if (widget.siblingItems != null) {
+                      final item = widget.siblingItems![index];
+                      if (item is AssetEntity) {
+                        tagKey = item.id;
+                        imgFile = _fileCache[index];
+                        thumbData = ThumbnailCache.getCached(item.id);
+                      } else if (item is FileSystemEntity) {
+                        tagKey = item.path;
+                        if (item.path.startsWith('remote://')) {
+                          imgFile = _remoteCache[index];
+                          if (imgFile == null) _loadRemoteFile(index);
+                        } else {
+                          imgFile = File(item.path);
+                        }
+                      }
+                    } else if (widget.siblingAssets != null) {
+                      final asset = widget.siblingAssets![index];
+                      tagKey = asset.id;
+                      imgFile = _fileCache[index];
+                      thumbData = ThumbnailCache.getCached(asset.id);
+                    } else {
+                      final path = _imageList[index];
+                      tagKey = path;
+                      if (path.startsWith('remote://')) {
+                        imgFile = _remoteCache[index];
+                        if (imgFile == null) _loadRemoteFile(index);
+                      } else {
+                        imgFile = File(path);
+                      }
+                    }
+
+                    // 远程图片下载中：显示加载指示，避免空白。
+                    if (imgFile == null &&
+                        _pathAtIndex(index)?.startsWith('remote://') == true) {
+                      return PhotoViewGalleryPageOptions.customChild(
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.white70,
+                          ),
+                        ),
+                        heroAttributes: PhotoViewHeroAttributes(tag: tagKey),
+                      );
+                    }
+
+                    final bool isValidFile =
+                        imgFile != null &&
+                        imgFile.existsSync() &&
+                        imgFile.lengthSync() > 16;
+                    final bool isAvif =
+                        imgFile != null &&
+                        imgFile.path.toLowerCase().endsWith('.avif');
+                    final bool isSvg =
+                        imgFile != null &&
+                        imgFile.path.toLowerCase().endsWith('.svg');
+
+                    if (isSvg) {
+                      return PhotoViewGalleryPageOptions.customChild(
+                        child: SvgPicture.file(imgFile, fit: BoxFit.contain),
+                        initialScale: PhotoViewComputedScale.contained,
+                        minScale: PhotoViewComputedScale.contained,
+                        maxScale: PhotoViewComputedScale.covered * 4,
+                        heroAttributes: PhotoViewHeroAttributes(tag: tagKey),
+                      );
+                    }
+
+                    final ImageProvider provider = isValidFile
+                        ? (isAvif ? FileAvifImage(imgFile) : FileImage(imgFile))
+                              as ImageProvider
+                        : (thumbData != null
+                              ? MemoryImage(thumbData)
+                              : MemoryImage(_kTransparentImage));
+
+                    return PhotoViewGalleryPageOptions.customChild(
+                      child: Transform.rotate(
+                        angle: _rotation,
+                        child: Image(image: provider, fit: BoxFit.contain),
+                      ),
+                      initialScale: PhotoViewComputedScale.contained,
+                      minScale: PhotoViewComputedScale.contained,
+                      maxScale: PhotoViewComputedScale.covered * 4,
+                      heroAttributes: PhotoViewHeroAttributes(tag: tagKey),
+                      onTapUp: (context, details, controllerValue) {
+                        setState(() {
+                          _showUI = !_showUI;
+                        });
+                      },
+                    );
+                  },
+                ),
+              ),
             ),
-          ),
-            ),
-          if (_showUI) ...[
-            // 顶部元信息条（EXIF + 尺寸 / 大小 / 格式）
-            Positioned(
-              left: 0,
-              right: 0,
-              top: 0,
-              child: _buildTopMetaBar(),
-            ),
-            // 底部操作按钮栏：分享 · 旋转 · 编辑 · 删除 · 更多（三点）
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: _buildBottomActionBar(),
-            ),
-          ],
+            if (_showUI) ...[
+              // 顶部元信息条（EXIF + 尺寸 / 大小 / 格式）
+              Positioned(left: 0, right: 0, top: 0, child: _buildTopMetaBar()),
+              // 底部操作按钮栏：分享 · 旋转 · 编辑 · 删除 · 更多（三点）
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: _buildBottomActionBar(),
+              ),
+            ],
           ],
         ),
       ),
@@ -919,12 +1070,16 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     final parts = <String>[];
     if (exif.aperture != null && exif.aperture!.isNotEmpty) {
       // service 返回形如 "F:2.8"，统一为 "f/2.8"。
-      final v = exif.aperture!.startsWith('F:') ? exif.aperture!.substring(2) : exif.aperture!;
+      final v = exif.aperture!.startsWith('F:')
+          ? exif.aperture!.substring(2)
+          : exif.aperture!;
       parts.add('f/$v');
     }
     if (exif.shutter != null && exif.shutter!.isNotEmpty) {
       // service 返回形如 "S:1/100" 或 "S:2.0s"，去掉前缀并补 s。
-      final v = exif.shutter!.startsWith('S:') ? exif.shutter!.substring(2) : exif.shutter!;
+      final v = exif.shutter!.startsWith('S:')
+          ? exif.shutter!.substring(2)
+          : exif.shutter!;
       parts.add(v.endsWith('s') ? v : '$v');
     }
     if (exif.iso != null && exif.iso!.isNotEmpty) {
@@ -957,7 +1112,9 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     final size = _currentSizeStr ?? '…';
     final fmt = _currentFormat ?? '…';
     final modified = _currentModified ?? '…';
-    final exifSubtitle = _currentExif != null ? _buildExifSubtitle(_currentExif!) : '';
+    final exifSubtitle = _currentExif != null
+        ? _buildExifSubtitle(_currentExif!)
+        : '';
     // 仅当存在实际拍摄参数字段（光圈/快门/ISO/设备…）才显示标题，
     // 避免「有 EXIF 块但无参数字段」的图片误显示拍摄参数标题。
     final hasExif = exifSubtitle.isNotEmpty;
@@ -975,24 +1132,31 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 第一行：尺寸（左） + 格式（右）
+            // 尺寸/大小（左，自适应占满剩余空间） + 格式/时间（右，wrap content，整体右移）。
+            // 右侧列内部左对齐，使"格式"和"时间"对齐；整体不 Expanded，靠左侧 Expanded 推到右边，
+            // 避免英文 Dimensions/Format/Time 标签过长时挤压左侧尺寸值。
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(flex: 2, child: _infoLine(l10n.img_dimensions, dims)),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _infoLine(l10n.img_dimensions, dims),
+                      const SizedBox(height: 4),
+                      _infoLine(l10n.ui_size, size),
+                    ],
+                  ),
+                ),
                 const SizedBox(width: 8),
-                Expanded(flex: 3, child: _infoLine(l10n.img_info_format, fmt)),
-              ],
-            ),
-            const SizedBox(height: 4),
-            // 第二行：大小（左） + 时间（右）。右侧列 flex 与第一行保持一致，
-            // 使"格式"和"时间"左对齐，同时时间列更宽、位置往右回调。
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(flex: 2, child: _infoLine(l10n.ui_size, size)),
-                const SizedBox(width: 8),
-                Expanded(flex: 3, child: _infoLine(l10n.img_info_file_time, modified)),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _infoLine(l10n.img_info_format, fmt),
+                    const SizedBox(height: 4),
+                    _infoLine(l10n.img_info_file_time, modified),
+                  ],
+                ),
               ],
             ),
             // 拍摄参数最下方：有则显示，无则不显示（切换图片时不突兀）。
@@ -1009,7 +1173,10 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: _infoLine(l10n.img_info_shoot_location, _currentLocationText!),
+                      child: _infoLine(
+                        l10n.img_info_shoot_location,
+                        _currentLocationText!,
+                      ),
                     ),
                   ],
                 ),
@@ -1030,11 +1197,19 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
         children: [
           TextSpan(
             text: '$label: ',
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12, fontWeight: FontWeight.w500),
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.6),
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
           ),
           TextSpan(
             text: value,
-            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
@@ -1083,10 +1258,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
       padding: const EdgeInsets.fromLTRB(12, 18, 12, 12),
       child: SafeArea(
         top: false,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: items,
-        ),
+        child: Row(children: [for (final item in items) Expanded(child: item)]),
       ),
     );
   }
@@ -1119,9 +1291,16 @@ class _ActionBarButton extends StatelessWidget {
           children: [
             Icon(icon, color: tint, size: 24),
             const SizedBox(height: 4),
-            Text(
+            AutoSizeText(
               label,
-              style: TextStyle(color: tint, fontSize: 11, fontWeight: FontWeight.w500),
+              minFontSize: 8,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: tint,
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),

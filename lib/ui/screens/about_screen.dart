@@ -160,7 +160,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   const SizedBox(height: 6),
                   // 版本号文本（硬编码，无需 l10n；以后升级版本只改这里）
                   Text(
-                    'v1.1.37',
+                    'v1.1.40',
                     style: TextStyle(
                       color: theme.colorScheme.onSurface.withOpacity(0.7),
                       fontSize: 13,
@@ -716,7 +716,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   Text(L10n.of(context).msg305734ce, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
 
-                  _buildV1137Changelog(ctx, theme),
+                  _buildV1139Changelog(ctx, theme),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -727,95 +727,7 @@ class AboutZenFileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildV1133Changelog(BuildContext ctx, ThemeData theme) {
-    final l10n = L10n.of(ctx);
-    final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
-    final sectionStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.primary, fontWeight: FontWeight.w600);
-
-    Widget gap([double h = 6]) => SizedBox(height: h);
-    Widget bulletText(String text) => Text('· $text', style: textStyle);
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.06)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text('v1.1.33', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
-              ),
-              const SizedBox(width: 10),
-              Text('2026-08-26', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
-            ],
-          ),
-          gap(14),
-
-          // ── 新增 ──
-          Text(l10n.changelog_section_new, style: sectionStyle),
-          gap(4),
-          bulletText(l10n.changelog_v1133_new_1),
-          gap(6),
-          bulletText(l10n.changelog_v1133_new_2),
-          gap(6),
-          bulletText(l10n.changelog_v1133_new_3),
-          gap(6),
-          bulletText(l10n.changelog_v1133_new_4),
-          gap(6),
-          bulletText(l10n.changelog_v1133_new_5),
-          gap(6),
-          bulletText(l10n.changelog_v1133_new_6),
-          gap(6),
-          bulletText(l10n.changelog_v1133_new_7),
-          gap(6),
-          bulletText(l10n.changelog_v1133_new_8),
-          gap(14),
-
-          // ── 优化 ──
-          Text(l10n.changelog_section_optimizations, style: sectionStyle),
-          gap(4),
-          bulletText(l10n.changelog_v1133_opt_1),
-          gap(6),
-          bulletText(l10n.changelog_v1133_opt_2),
-          gap(6),
-          bulletText(l10n.changelog_v1133_opt_3),
-          gap(6),
-          bulletText(l10n.changelog_v1133_opt_4),
-          gap(6),
-          bulletText(l10n.changelog_v1133_opt_5),
-          gap(6),
-          bulletText(l10n.changelog_v1133_opt_6),
-          gap(14),
-
-          // ── 问题修复 ──
-          Text(l10n.changelog_section_fixes, style: sectionStyle),
-          gap(4),
-          bulletText(l10n.changelog_v1133_fix_1),
-          gap(6),
-          bulletText(l10n.changelog_v1133_fix_2),
-          gap(6),
-          bulletText(l10n.changelog_v1133_fix_3),
-          gap(6),
-          bulletText(l10n.changelog_v1133_fix_4),
-          gap(6),
-          bulletText(l10n.changelog_v1133_fix_5),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildV1137Changelog(BuildContext ctx, ThemeData theme) {
+  Widget _buildV1139Changelog(BuildContext ctx, ThemeData theme) {
     final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
     final enStyle = TextStyle(fontSize: 12, height: 1.5, color: theme.colorScheme.onSurface.withOpacity(0.5));
     final sectionStyle = TextStyle(fontSize: 14, height: 1.6, color: theme.colorScheme.primary, fontWeight: FontWeight.w700);
@@ -827,196 +739,7 @@ class AboutZenFileScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('· $zh', style: textStyle),
-          const SizedBox(height: 2),
-          Text('  $en', style: enStyle),
-        ],
-      ),
-    );
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // ── 1.1.37 当前版本 ──
-        Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.06)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text('v1.1.37', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
-                  ),
-                  const SizedBox(width: 10),
-                  Text('2026-08-31', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
-                ],
-              ),
-              gap(14),
-
-              Text('🐛 问题修复 · Bug Fixes', style: sectionStyle),
-              gap(6),
-              zhEn(
-                '远程媒体播放卡顿 / 拖动进度条跳回原点：重构本地 HTTP 流式代理的 seek 缓存与分块填充，修复非零偏移区域读取 bug；拖动后首字节延迟由整段 24MB 降为首个分块，SFTP/SMB/FTP 拖动不再跳回原点。',
-                'Remote media playback stutter / seek jumps to start: rebuilt the local HTTP streaming proxy seek cache and chunked prefetch; fixed a non-zero-region read offset bug; first-byte latency dropped from the whole 24 MB segment to the first chunk, so dragging no longer jumps back on SFTP/SMB/FTP.',
-              ),
-              zhEn(
-                'SFTP 上传限速约 2MB/s：升级 JSch 0.1.55 → 2.28.7 以支持 rsa-sha2/ED25519/OpenSSH-v1 密钥，避免静默回退到纯 Dart 的 dartssh2（限速根因）；setBulkRequests(128) 提升在途请求数。',
-                'SFTP upload capped at ~2MB/s: upgraded JSch 0.1.55 to 2.28.7 to support rsa-sha2/ED25519/OpenSSH-v1 keys, eliminating the silent fallback to the pure-Dart dartssh2 (root cause of the cap); setBulkRequests(128) raises in-flight requests.',
-              ),
-              zhEn(
-                'SFTP 符号链接目录（如 /sdcard）识别：列表时跟随符号链接真实目标类型，目录可正常进入。',
-                "SFTP symlink directory (e.g. /sdcard) recognition: follow the symlink's real target type on listing so directories can be entered normally.",
-              ),
-              zhEn(
-                '编译错误（进度最小化状态机）：字段初始化器引用实例方法导致编译失败，改为构造函数体内赋值并放宽 final。',
-                'Compile error (progress-minimize state machine): a field initializer referencing an instance method failed to compile; moved the assignment into the constructor body and relaxed final.',
-              ),
-              gap(14),
-
-              Text('✨ 新功能 / 功能优化 · New Features / Improvements', style: sectionStyle),
-              gap(6),
-              zhEn(
-                '双窗口激活窗口顶部高亮：激活窗口的整个顶部状态栏高亮（primary 背景 + 2.5px 高亮边），更易识别。',
-                'Split-pane active window top highlight: the entire top status bar of the active pane is highlighted (primary background + 2.5px accent edge) for clearer identification.',
-              ),
-              zhEn(
-                '进度后台最小化为浮窗：复制/剪切与分类页备份进度点「后台」后，在状态栏/工具栏显示可点击的圆形浮窗按钮（带旋转进度环），点击重开进度页；传输完成/取消后自动消失。',
-                'Progress minimized to floating widget: after tapping "background" on copy/move or category backup progress, a clickable circular floating button (spinning progress ring) appears in the status/tool bar; tap to reopen the progress page; it auto-dismisses when transfer completes/cancels.',
-              ),
-              zhEn(
-                '远程 Tab 云图标：远程浏览页 Tab 左侧图标直接用云图标替换原文件夹图标，本地 Tab 仍为文件夹图标。',
-                'Remote tab cloud icon: the left icon of a remote tab is now a cloud icon replacing the folder icon; local tabs keep the folder icon.',
-              ),
-              zhEn(
-                '文件类型图标优化：未获取媒体缩略图时，图片/视频/音频/安装包显示「类型图标 + 格式标签」（MP4/MKV/MP3/FLAC/APK 等）；安装包用安卓机器人图标（绿色），压缩包用捆绑包图标（Broken.box）并显示 ZIP/7Z/RAR 格式；分类页音乐页音乐图标下方也显示格式标签；浏览页与分类页图标显示一致。',
-                'File-type icon polish: when no media thumbnail is available, images/videos/audio/install-packages show a "type icon + format label" (MP4/MKV/MP3/FLAC/APK...); install packages use the Android-robot icon (green), archives use a bundle icon (Broken.box) with ZIP/7Z/RAR labels; the music category page also shows a format label under each music icon; browsing and category pages share consistent icons.',
-              ),
-              zhEn(
-                '远程缩略图缓存隐私保护：远程媒体缩略图缓存迁入 .nomedia 目录并写入标记文件，避免被系统媒体库/其他文件管理器索引；默认远程缓存自动清理间隔改为 0（不自动清理）。',
-                'Remote thumbnail privacy: remote media thumbnails moved into a .nomedia directory with a marker file so they are not indexed by the system media library / other file managers; default remote-cache auto-clean interval changed to 0 (disabled).',
-              ),
-              gap(14),
-
-              Text('🎨 性能优化 · Performance', style: sectionStyle),
-              gap(6),
-              zhEn(
-                '远程媒体流式代理调优：多段独立 seek 缓存（上限 4 段）避免来回拖动反复缓冲；mpv 缓冲参数放大（cache-secs 60 / demuxer-max-bytes 300M）减少周期卡顿；引导预取 16MB、按需抓取 24MB 提升起播与拖动跟手度。',
-                'Remote media streaming proxy tuning: multi-region seek cache (max 4 regions) avoids re-buffering on back-and-forth seeks; enlarged mpv buffering (cache-secs 60 / demuxer-max-bytes 300M) reduces periodic stutter; 16 MB prefetch and 24 MB on-demand fetch improve start-up and seek responsiveness.',
-              ),
-            ],
-          ),
-        ),
-        // ── 历史版本 ──
-        _buildV1136Changelog(ctx, theme),
-      ],
-    );
-  }
-
-  Widget _buildV1136Changelog(BuildContext ctx, ThemeData theme) {
-    final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
-    final enStyle = TextStyle(fontSize: 12, height: 1.5, color: theme.colorScheme.onSurface.withOpacity(0.5));
-    final sectionStyle = TextStyle(fontSize: 14, height: 1.6, color: theme.colorScheme.primary, fontWeight: FontWeight.w700);
-
-    Widget gap([double h = 6]) => SizedBox(height: h);
-    // 双语条目：中文在上，英文在下
-    Widget zhEn(String zh, String en) => Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('· $zh', style: textStyle),
-          const SizedBox(height: 2),
-          Text('  $en', style: enStyle),
-        ],
-      ),
-    );
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // ── 1.1.36 当前版本 ──
-        Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.06)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text('v1.1.36', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
-                  ),
-                  const SizedBox(width: 10),
-                  Text('2026-08-29', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
-                ],
-              ),
-              gap(14),
-              Text('🔧 问题修复 · Bug Fixes', style: sectionStyle),
-              gap(6),
-              zhEn(
-                '单窗口模式：当前激活（已打开）的标签页按钮背景现在会高亮，之前只有标题文字高亮、背景无区分。',
-                'Single-pane mode: the active (current) tab button now shows a highlighted background; previously only the title text was highlighted with no background distinction.',
-              ),
-              zhEn(
-                '双窗口多标签显示/切换重构：A 在左窗口、B 在右窗口；新建或切换到其他标签页时，已激活的标签页始终保持所在窗口位置不变，被顶替的始终是未激活一侧窗口。',
-                'Split-pane multi-tab display/switch reworked: tab A stays in the left pane, B in the right; when creating or switching to another tab, the active tab keeps its pane position and only the inactive pane gets replaced.',
-              ),
-              zhEn(
-                '双窗口仅剩两个标签页时现在可关闭任意一个，关闭后会自动新建一个标签页顶替被关闭的位置，保证两侧窗口始终有内容。',
-                'When only two tabs remain in split-pane mode, either one can now be closed; closing auto-creates a replacement tab so both panes always show content.',
-              ),
-              zhEn(
-                '双窗口模式下远程标签页标题固定显示已保存的远程客户端名称（此前会随打开的目录变化）。',
-                'In split-pane mode a remote tab title now always shows the saved remote client name (previously it changed with the opened directory).',
-              ),
-              zhEn(
-                '远程标签页标题左侧图标替换为云徽图标，方便一眼辨别远程/本地标签。',
-                'The icon on the left of a remote tab title is now a cloud badge, making remote vs. local tabs easy to distinguish.',
-              ),
-            ],
-          ),
-        ),
-        // ── 历史版本 ──
-        _buildV1135Changelog(ctx, theme),
-      ],
-    );
-  }
-
-  Widget _buildV1135Changelog(BuildContext ctx, ThemeData theme) {
-    final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
-    final enStyle = TextStyle(fontSize: 12, height: 1.5, color: theme.colorScheme.onSurface.withOpacity(0.5));
-    final sectionStyle = TextStyle(fontSize: 14, height: 1.6, color: theme.colorScheme.primary, fontWeight: FontWeight.w700);
-
-    Widget gap([double h = 6]) => SizedBox(height: h);
-    // 双语条目：中文在上，英文在下
-    Widget zhEn(String zh, String en) => Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('· $zh', style: textStyle),
+          Text('\u00b7 $zh', style: textStyle),
           const SizedBox(height: 2),
           Text('  $en', style: enStyle),
         ],
@@ -1042,70 +765,71 @@ class AboutZenFileScreen extends StatelessWidget {
                   color: theme.colorScheme.primary.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text('v1.1.35', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+                child: Text('v1.1.39', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
               ),
               const SizedBox(width: 10),
-              Text('2026-08-29', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+              Text('2026-09-03', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
             ],
           ),
           gap(14),
 
-          // ── 新增功能 / New Features ──
           Text('✨ 新增功能 · New Features', style: sectionStyle),
           gap(6),
           zhEn(
-            '多标签页适用范围选择器：开启「启用多标签页」后弹出三选项（仅在单窗口 / 仅在双窗口 / 全部），双窗口模式现支持独立多标签页，选择持久化。',
-            'Multi-tab pane scope selector: enabling "Multi-tab" pops a 3-option dialog (Single only / Split only / All); split mode now has its own tabs; selection persists.',
+            '图片编辑器绘图工具：新增 7 种绘图工具（画笔 / 文本 / 矩形 / 椭圆 / 直线 / 箭头 / 马赛克）；文本实时完整显示（不再被省略截断），矩形 / 椭圆即时预览，辅助框自动隐藏（仅点击选中项才显示），切换工具自动保存且可经顶部按钮撤回。',
+            'Image editor drawing tool: 7 tools added (brush / text / rectangle / ellipse / line / arrow / mosaic). Text renders fully live, rectangles/ellipses preview instantly, helper boxes auto-hide (shown only for the tapped item), and switching tools auto-saves with the top undo button available.',
           ),
           zhEn(
-            'SFTP SSH 密钥认证：支持密码与 SSH 密钥认证切换，可选本地私钥（.pem / .key / .pub）与密码短语，兼容 OpenSSH / RSA / ED25519 / ECDSA。',
-            'SFTP SSH key auth: switch between password and SSH key; pick a local private key (.pem / .key / .pub) with optional passphrase; compatible with OpenSSH / RSA / ED25519 / ECDSA.',
+            '保险箱指纹解锁 + 导出 / 导入备份：支持指纹解锁；可一键导出 / 导入整库备份，避免卸载重装后数据丢失。',
+            'Vault fingerprint unlock + export/import backup: unlock with fingerprint; export/import a full vault backup in one tap so data survives uninstall & reinstall.',
           ),
-          zhEn(
-            'SAF 系统授权访问 Android/data（vivo 等 ROM）：四级兜底策略，进入失败时显示「系统授权访问」按钮，授权后树形 URI 持久保存。',
-            'SAF system authorization for Android/data (vivo etc.): four-tier fallback; a "System authorized access" button appears on failure; the tree URI is persisted after grant.',
-          ),
-          zhEn(
-            'SMB 向导「扫描局域网共享设备」：顶部带文字标题的按钮，无需输入 IP 即自动探测局域网 SMB 设备并自动填入地址与共享名。',
-            'SMB wizard "Scan LAN devices": a titled top button auto-discovers LAN SMB devices on port 445 without entering an IP, and auto-fills host and share name.',
-          ),
-          zhEn(
-            '图片查看器拍摄地点显示：顶部元信息条显示拍摄 GPS 坐标，无位置信息自动隐藏该行，点击唤起系统地图。',
-            'Image viewer shooting location: the top bar shows capture GPS coordinates and auto-hides when none; tap to open the system map.',
-          ),
-          zhEn(
-            '图片编辑器「清除元数据」：tab 栏「裁剪」右侧新增入口，字节级无损剥离 EXIF / GPS / ICC，不重编码、不损失画质。',
-            'Image editor "Clear metadata": a new entry next to Crop; byte-level lossless strip of EXIF / GPS / ICC without re-encoding or quality loss.',
-          ),
-          gap(8),
+          gap(14),
 
-          // ── 问题修复 / Bug Fixes ──
           Text('🐛 问题修复 · Bug Fixes', style: sectionStyle),
           gap(6),
           zhEn(
-            '快传大文件接收卡死 / 闪退：接收端改为 Uint8List 分块队列 + TCP 背压水位（8MB / 1MB），≥1GB 文件稳定接收。',
-            'Quick Transfer large-file crash: the receiver now uses a chunked Uint8List queue + TCP backpressure (8MB / 1MB watermark); files ≥1GB are received stably.',
+            '从其它应用分享不再复制进应用私有缓存：图库 / 文件管理器 / 媒体库的文件保留在原位置打开，不额外占空间；「打开文件所在位置」直达真实文件夹并高亮。私有内容分享（如 WhatsApp）因系统不暴露真实路径仍会缓存。',
+            'Sharing from other apps no longer copies into the app-private cache: files from gallery / file manager / media library open in place with no extra space; "Open file location" jumps to the real folder and highlights the file. Private-content shares (e.g. WhatsApp) still cache because the system hides the real path.',
           ),
           zhEn(
-            '图片查看器「无 EXIF 却误显示拍摄参数标题」：标题仅在含实际拍摄参数字段（光圈 / 快门 / ISO / 设备）时显示。',
-            'Image viewer wrong EXIF title: the title now shows only when real capture-parameter fields (aperture / shutter / ISO / device) exist.',
+            '分享入口选择框：无权限读取分享文件时直接弹权限提示（不再尝试注定失败的复制）；外部打开方式选择框改为左对齐，顺序为「打开 → 打开文件所在位置 → 取消」。',
+            'Share dialog: lacking permission to read a shared file now prompts for permission directly (no doomed copy); the external-open chooser is left-aligned and ordered "Open → Open file location → Cancel".',
           ),
           zhEn(
-            '多标签页设置缺陷修复：接入范围选择弹窗、仅在开启时弹出、3 处硬编码中文改多语言。',
-            'Multi-tab settings fixes: wired the scope picker, pops only when enabling, and localized 3 hardcoded Chinese strings.',
+            '分享后「打开文件所在位置」精准跳转：先切到浏览页，再加载父目录并居中高亮目标文件。',
+            'Precise "Open file location" after sharing: it now switches to the browse tab, loads the parent directory, and highlights the target file.',
           ),
           zhEn(
-            '构建失败（Java 堆内存不足）：将 gradle -Xmx 从 1536M 提升至 6144M。',
-            'Build failed (Java heap space): raised gradle -Xmx from 1536M to 6144M.',
+            '视频无声修复：首次打开即有声音；软解 / 硬解切换后均衡器重新挂载且仍有声；退出重开不再丢失声音。',
+            'Video no-audio fixed: video now has sound on first open; toggling soft/hard decode re-attaches the equalizer and keeps audio; reopening the player no longer loses sound.',
           ),
-          gap(8),
+          zhEn(
+            '均衡器修复：视频切回音频时预设生效；从后台返回不再被重置为 Flat，预设重新应用且后台播放保持挂载。',
+            'Equalizer fixes: preset applies when switching from video back to audio; returning from background no longer resets to Flat — the preset is reapplied and stays attached during background playback.',
+          ),
+          zhEn(
+            '点击媒体通知栏可正确跳转到对应播放页。',
+            'Tapping the media notification now correctly jumps to the relevant player screen.',
+          ),
+          zhEn(
+            'Android/data 根目录显示 0 项：回退到 Shizuku 原始路径列举以正确显示内容。',
+            'Android/data root showing 0 items: now falls back to raw Shizuku path listing.',
+          ),
+          zhEn(
+            '双窗口浏览器文件夹项：修复大小 / 数量 / 日期缺失与英文硬编码，现以紧凑的「数量 • 大小 • 日期」展示并跟随多语言。',
+            'Split-pane browser folder items: fixed missing size/count/date and hardcoded English; now shown as compact "count • size • date" and localized.',
+          ),
+          zhEn(
+            '卸载重装后保险箱恢复失败：备份包内嵌 V2 密码校验参数，重装后可用原密码解锁恢复；跨设备导入时把记录重新指向真实保险箱路径。',
+            'Vault restore failure after reinstall: the backup now embeds V2 password parameters so the original password unlocks after reinstall; cross-device import redirects records to the real vault path.',
+          ),
+          gap(14),
 
-          // ── 优化 / Optimizations ──
-          Text('🔧 优化 · Optimizations', style: sectionStyle),
+          Text('🔧 其它优化 · Other', style: sectionStyle),
           gap(6),
           zhEn(
-            '快传分块缓冲 + TCP 背压，内存稳定；清除元数据字节级剥离，结果确定；SMB 扫描与向导复用同一过滤逻辑。',
-            'Quick Transfer chunked buffer + TCP backpressure keeps memory stable; clear metadata is byte-level strip; SMB scan reuses the same filter logic as the wizard.',
+            '分类页多选栏：修复窄语言下的文字溢出；图片查看器操作栏：修复俄语等较长语言标签的溢出。',
+            'Category multi-select bar: fixed text overflow under narrow languages; image viewer action bar: fixed overflow of long-language labels (e.g. Russian).',
           ),
         ],
       ),

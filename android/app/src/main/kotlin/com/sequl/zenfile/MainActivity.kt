@@ -12,6 +12,7 @@ import android.os.Environment
 import android.os.StatFs
 import android.net.Uri
 import android.provider.OpenableColumns
+import android.provider.MediaStore
 import android.webkit.MimeTypeMap
 import android.graphics.BitmapFactory
 import android.provider.DocumentsContract
@@ -396,29 +397,70 @@ class MainActivity : AudioServiceFragmentActivity() {
                                 }
                             }
 
-                            val cacheDir = applicationContext.cacheDir
-                            val prefix = "incoming_" + System.currentTimeMillis() + "_"
-                            val ext = if (fileName.contains(".")) {
-                                "." + fileName.substringAfterLast(".")
-                            } else {
-                                ""
-                            }
-                            
-                            val tempFile = File.createTempFile(prefix, ext, cacheDir)
-                            
-                            contentResolver.openInputStream(uri)?.use { inputStream ->
-                                FileOutputStream(tempFile).use { outputStream ->
-                                    inputStream.copyTo(outputStream)
+                            // 优先解析文件原始真实路径，避免复制到应用私有缓存（占用额外空间、且“打开所在位置”会错乱）
+                            var realPath: String? = null
+                            try {
+                                val proj = arrayOf(MediaStore.MediaColumns.DATA)
+                                contentResolver.query(uri, proj, null, null, null)?.use { cursor ->
+                                    if (cursor.moveToFirst()) {
+                                        val dataIndex = cursor.getColumnIndex(MediaStore.MediaColumns.DATA)
+                                        if (dataIndex != -1) {
+                                            val p = cursor.getString(dataIndex)
+                                            if (!p.isNullOrEmpty() && File(p).canRead()) {
+                                                realPath = p
+                                            }
+                                        }
+                                    }
                                 }
+                            } catch (e: Exception) {
+                                realPath = null
                             }
 
-                            val res = mapOf(
-                                "success" to true,
-                                "cachePath" to tempFile.absolutePath,
-                                "fileName" to fileName,
-                                "mimeType" to mimeType
-                            )
-                            runOnUiThread { result.success(res) }
+                            if (realPath != null) {
+                                // 直接使用原始文件路径：不复制、不占用额外存储空间
+                                val res = mapOf(
+                                    "success" to true,
+                                    "path" to realPath,
+                                    "isCache" to false,
+                                    "fileName" to fileName,
+                                    "mimeType" to mimeType
+                                )
+                                runOnUiThread { result.success(res) }
+                            } else {
+                                // 无法解析真实路径（如 WhatsApp 等私有 content provider）时，回退复制到缓存
+                                val cacheDir = applicationContext.cacheDir
+                                val prefix = "incoming_" + System.currentTimeMillis() + "_"
+                                val ext = if (fileName.contains(".")) {
+                                    "." + fileName.substringAfterLast(".")
+                                } else {
+                                    ""
+                                }
+
+                                val tempFile = File.createTempFile(prefix, ext, cacheDir)
+
+                                val inputStream = contentResolver.openInputStream(uri)
+                                if (inputStream == null) {
+                                    runOnUiThread { result.error("RESOLVE_ERROR", "Unable to open input stream", null) }
+                                    return@execute
+                                }
+                                inputStream.use { stream ->
+                                    FileOutputStream(tempFile).use { outputStream ->
+                                        stream.copyTo(outputStream)
+                                    }
+                                }
+
+                                val res = mapOf(
+                                    "success" to true,
+                                    "path" to tempFile.absolutePath,
+                                    "isCache" to true,
+                                    "fileName" to fileName,
+                                    "mimeType" to mimeType
+                                )
+                                runOnUiThread { result.success(res) }
+                            }
+                        } catch (se: SecurityException) {
+                            // 分享方未授予读取权限：无需尝试复制，直接提示用户
+                            runOnUiThread { result.error("NO_PERMISSION", se.message, null) }
                         } catch (e: Exception) {
                             e.printStackTrace()
                             runOnUiThread { result.error("RESOLVE_ERROR", e.message, null) }

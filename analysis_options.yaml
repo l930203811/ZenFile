@@ -16,6 +16,9 @@ analyzer:
     - windows/**
     - macos/**
     - linux/**
+    # vendor/ 为本地依赖补丁副本（file_picker 等），其自带 example 等
+    # 不属于本项目源码，不参与 analyze，避免误报 error。
+    - vendor/**
 include: package:flutter_lints/flutter.yaml
 
 linter:

@@ -58,7 +58,9 @@ class FileItem extends StatelessWidget {
     final iconColor = FileUtils.getColorForFile(file.path, context);
     final isArchive = FileUtils.isArchive(file.path);
     final isHighlighted = context.select<FileManagerProvider, bool>(
-      (p) => p.forceHighlightedPaths.contains(file.path) || (p.enableFolderHighlight && p.highlightedPaths.contains(file.path)),
+      (p) =>
+          p.forceHighlightedPaths.contains(file.path) ||
+          (p.enableFolderHighlight && p.highlightedPaths.contains(file.path)),
     );
 
     final cardMargin = EdgeInsets.symmetric(
@@ -68,12 +70,16 @@ class FileItem extends StatelessWidget {
 
     final child = Card(
       margin: cardMargin,
-      color: isSelected ? theme.colorScheme.primaryContainer.withOpacity(0.4) : theme.colorScheme.surface,
+      color: isSelected
+          ? theme.colorScheme.primaryContainer.withOpacity(0.4)
+          : theme.colorScheme.surface,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: isSelected ? theme.colorScheme.primary : theme.dividerColor.withOpacity(0.1),
+          color: isSelected
+              ? theme.colorScheme.primary
+              : theme.dividerColor.withOpacity(0.1),
           width: isSelected ? 1.5 : 1.0,
         ),
       ),
@@ -84,7 +90,9 @@ class FileItem extends StatelessWidget {
         child: Stack(
           children: [
             Padding(
-              padding: EdgeInsets.all((12.0 * itemPaddingMultiplier).clamp(4.0, 24.0)),
+              padding: EdgeInsets.all(
+                (12.0 * itemPaddingMultiplier).clamp(4.0, 24.0),
+              ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -96,7 +104,9 @@ class FileItem extends StatelessWidget {
                           width: 48 * iconScale,
                           height: 48 * iconScale,
                           decoration: BoxDecoration(
-                            color: isSelected ? theme.colorScheme.primary : iconColor.withOpacity(0.1),
+                            color: isSelected
+                                ? theme.colorScheme.primary
+                                : iconColor.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: ClipRRect(
@@ -110,8 +120,13 @@ class FileItem extends StatelessWidget {
                             ),
                           ),
                         ),
-                        if (file.isRemote && context.select<FileManagerProvider, bool>((p) => p.effectiveShowRemoteCloudBadge))
-                          RemoteCloudBadge(size: 12 * (1 + (iconScale - 1) * 0.3)),
+                        if (file.isRemote &&
+                            context.select<FileManagerProvider, bool>(
+                              (p) => p.effectiveShowRemoteCloudBadge,
+                            ))
+                          RemoteCloudBadge(
+                            size: 12 * (1 + (iconScale - 1) * 0.3),
+                          ),
                       ],
                     ),
                   ),
@@ -137,7 +152,12 @@ class FileItem extends StatelessWidget {
                                   fontWeight: FontWeight.w600,
                                   fontSize: 15 * (1 + (iconScale - 1) * 0.3),
                                 ),
-                                maxLines: context.select<FileManagerProvider, bool>((p) => p.adaptiveMultiLineNames) ? 3 : 1,
+                                maxLines:
+                                    context.select<FileManagerProvider, bool>(
+                                      (p) => p.adaptiveMultiLineNames,
+                                    )
+                                    ? 3
+                                    : 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -151,10 +171,18 @@ class FileItem extends StatelessWidget {
                                 if (!provider.hideTimeAndDate) ...[
                                   Expanded(
                                     child: Text(
-                                      FileUtils.formatDateShort(file.modified, use24Hour: provider.use24HourFormat),
-                                      style: theme.textTheme.bodySmall?.copyWith(
-                                        color: theme.textTheme.bodySmall?.color?.withOpacity(0.6),
+                                      FileUtils.formatDateShort(
+                                        file.modified,
+                                        use24Hour: provider.use24HourFormat,
                                       ),
+                                      style: theme.textTheme.bodySmall
+                                          ?.copyWith(
+                                            color: theme
+                                                .textTheme
+                                                .bodySmall
+                                                ?.color
+                                                ?.withOpacity(0.6),
+                                          ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -164,7 +192,8 @@ class FileItem extends StatelessWidget {
                                 Text(
                                   FileUtils.formatBytes(file.size, 2),
                                   style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.textTheme.bodySmall?.color?.withOpacity(0.6),
+                                    color: theme.textTheme.bodySmall?.color
+                                        ?.withOpacity(0.6),
                                   ),
                                 ),
                               ],
@@ -174,7 +203,9 @@ class FileItem extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (!context.select<FileManagerProvider, bool>((p) => p.hideActionMenuButtons))
+                  if (!context.select<FileManagerProvider, bool>(
+                    (p) => p.hideActionMenuButtons,
+                  ))
                     const SizedBox(width: 32)
                   else
                     _TrailingInfoWidget(
@@ -185,14 +216,19 @@ class FileItem extends StatelessWidget {
                 ],
               ),
             ),
-            if (!context.select<FileManagerProvider, bool>((p) => p.hideActionMenuButtons))
+            if (!context.select<FileManagerProvider, bool>(
+              (p) => p.hideActionMenuButtons,
+            ))
               Positioned(
                 top: 0,
                 right: 0,
                 child: IconButton(
                   icon: const Icon(Broken.more, size: 18),
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  constraints: const BoxConstraints(
+                    minWidth: 32,
+                    minHeight: 32,
+                  ),
                   onPressed: () {
                     FileActionSheet.show(
                       context,
@@ -200,6 +236,7 @@ class FileItem extends StatelessWidget {
                       isArchive: isArchive,
                       showInLocation: showShowInLocationOption,
                       openWith: showOpenWithOption && !file.isDirectory,
+                      showShare: !file.isRemote,
                     );
                   },
                 ),
@@ -260,7 +297,7 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
   Uint8List? _videoThumb;
   Uint8List? _audioThumb;
   Uint8List? _apkIcon;
-  Uint8List? _remoteThumb;  // 远程文件缩略图
+  Uint8List? _remoteThumb; // 远程文件缩略图
 
   @override
   void initState() {
@@ -269,7 +306,8 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       // 远程文件优先处理
-      if (widget.file.isRemote && PreferencesService.getRemoteMediaThumbnailPreview()) {
+      if (widget.file.isRemote &&
+          PreferencesService.getRemoteMediaThumbnailPreview()) {
         _loadRemoteThumbnail();
         return;
       }
@@ -278,7 +316,10 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         _loadVideoThumb();
       } else if (FileUtils.isAudio(widget.file.path)) {
         _loadAudioThumb();
-      } else if (lowerPath.endsWith('.apk') || lowerPath.endsWith('.xapk') || lowerPath.endsWith('.apks') || lowerPath.endsWith('.apkm')) {
+      } else if (lowerPath.endsWith('.apk') ||
+          lowerPath.endsWith('.xapk') ||
+          lowerPath.endsWith('.apks') ||
+          lowerPath.endsWith('.apkm')) {
         _loadApkIcon();
       } else if (lowerPath.endsWith('.svg')) {
         // SVG 本地文件无需预加载，SvgPicture.file 会直接渲染
@@ -292,7 +333,8 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
     super.didUpdateWidget(oldWidget);
     // 路径、修改时间或大小任一变化都说明文件内容已变更，必须清掉旧缩略图重新生成。
     // 仅判 path 不够：同名文件被删除重建后 path 不变但内容已变，旧缩略图会错误复用。
-    final fileChanged = widget.file.path != oldWidget.file.path ||
+    final fileChanged =
+        widget.file.path != oldWidget.file.path ||
         widget.file.modified != oldWidget.file.modified ||
         widget.file.size != oldWidget.file.size;
     if (fileChanged) {
@@ -303,7 +345,8 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         _remoteThumb = null;
       });
       // 远程文件优先处理
-      if (widget.file.isRemote && PreferencesService.getRemoteMediaThumbnailPreview()) {
+      if (widget.file.isRemote &&
+          PreferencesService.getRemoteMediaThumbnailPreview()) {
         _loadRemoteThumbnail();
         return;
       }
@@ -312,7 +355,10 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         _loadVideoThumb();
       } else if (FileUtils.isAudio(widget.file.path)) {
         _loadAudioThumb();
-      } else if (lowerPath.endsWith('.apk') || lowerPath.endsWith('.xapk') || lowerPath.endsWith('.apks') || lowerPath.endsWith('.apkm')) {
+      } else if (lowerPath.endsWith('.apk') ||
+          lowerPath.endsWith('.xapk') ||
+          lowerPath.endsWith('.apks') ||
+          lowerPath.endsWith('.apkm')) {
         _loadApkIcon();
       } else if (lowerPath.endsWith('.svg')) {
         // SVG 本地文件无需预加载，SvgPicture.file 会直接渲染
@@ -328,21 +374,26 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
     try {
       final remoteSource = widget.file.remoteSource;
       if (remoteSource == null) return;
-      
+
       // 从 widget 树获取 remoteClient
       final provider = context.read<FileManagerProvider>();
       final activeTab = provider.activeTab;
       if (activeTab.remoteClient == null) return;
-      
+
       final client = activeTab.remoteClient!;
-      
+
       // 构造缩略图缓存路径（已迁移至 .nomedia 下，避免被媒体库索引）
       final thumbDir = await MediaThumbnailService.getThumbDir();
-      
+
       // 缓存文件名加入 connection 标识 + modified + size：
       // ① connection 标识区分不同远程连接（路径/修改时间/大小相同也会串图）；
       // ② modified/size 区分同名文件删除重建。
-      final thumbName = MediaThumbnailService.remoteThumbName(widget.connection?.id, widget.file.path, widget.file.modified, widget.file.size);
+      final thumbName = MediaThumbnailService.remoteThumbName(
+        widget.connection?.id,
+        widget.file.path,
+        widget.file.modified,
+        widget.file.size,
+      );
       final thumbPath = p.join(thumbDir.path, thumbName);
       final thumbFile = File(thumbPath);
 
@@ -360,7 +411,7 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         }
         return;
       }
-      
+
       // 下载到临时目录
       Directory tempDir;
       try {
@@ -371,10 +422,13 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         tempDir = Directory(p.join(appDir.path, 'ZenFile', 'cache', 'temp'));
         if (!tempDir.existsSync()) tempDir.createSync(recursive: true);
       }
-      
+
       final ext = p.extension(widget.file.name).toLowerCase();
-      final tempPath = p.join(tempDir.path, MediaThumbnailService.uniqueTempName(ext));
-      
+      final tempPath = p.join(
+        tempDir.path,
+        MediaThumbnailService.uniqueTempName(ext),
+      );
+
       try {
         // 视频/音频只需下载头部 2MB 即可由 MediaMetadataRetriever 提取缩略图/封面
         // 图片/SVG 需要完整文件用于直接显示
@@ -384,7 +438,12 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
           // 并发受限流保护：避免一屏多个远程媒体同时下载造成带宽竞争/超时失败
           await MediaThumbnailService.withRemoteThrottle(() async {
             try {
-              await client.downloadRange(widget.file.path, tempPath, 0, 2 * 1024 * 1024);
+              await client.downloadRange(
+                widget.file.path,
+                tempPath,
+                0,
+                2 * 1024 * 1024,
+              );
             } catch (e) {
               // 部分服务器/客户端不支持 range 下载，回退到完整下载
               debugPrint('downloadRange 失败，回退完整下载: $e');
@@ -405,7 +464,15 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         }
 
         // 图片直接复制作为缩略图
-        if (['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.heic'].contains(ext)) {
+        if ([
+          '.jpg',
+          '.jpeg',
+          '.png',
+          '.gif',
+          '.webp',
+          '.bmp',
+          '.heic',
+        ].contains(ext)) {
           await File(tempPath).copy(thumbPath);
           // 读取缩略图字节并更新UI
           final bytes = await thumbFile.readAsBytes();
@@ -417,23 +484,32 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
           // 视频缩略图：通过原生 MediaMetadataRetriever 生成。
           // 少部分视频的 moov 元数据在文件尾部（非 faststart 编码），
           // 仅头部 2MB 解析失败返回 null → 完整下载重试一次，仍失败才放弃。
-          final thumbBytes = await MediaThumbnailService.withRemoteThrottle(() async {
-            var tb = await MediaThumbnailService.generateVideoThumbnail(tempPath);
-            if ((tb == null || tb.isEmpty) && widget.file.size <= 100 * 1024 * 1024) {
-              try {
-                await client.downloadFile(widget.file.path, tempPath, (_) {});
-                tb = await MediaThumbnailService.generateVideoThumbnail(tempPath);
-              } catch (_) {}
-            }
-            return tb;
-          });
+          final thumbBytes = await MediaThumbnailService.withRemoteThrottle(
+            () async {
+              var tb = await MediaThumbnailService.generateVideoThumbnail(
+                tempPath,
+              );
+              if ((tb == null || tb.isEmpty) &&
+                  widget.file.size <= 100 * 1024 * 1024) {
+                try {
+                  await client.downloadFile(widget.file.path, tempPath, (_) {});
+                  tb = await MediaThumbnailService.generateVideoThumbnail(
+                    tempPath,
+                  );
+                } catch (_) {}
+              }
+              return tb;
+            },
+          );
           if (thumbBytes != null && thumbBytes.isNotEmpty) {
             await thumbFile.writeAsBytes(thumbBytes, flush: true);
             if (mounted) setState(() => _videoThumb = thumbBytes);
           }
         } else if (FileUtils.isAudio(widget.file.path)) {
           // 音频缩略图：通过原生 MediaMetadataRetriever 提取内嵌封面
-          final thumbBytes = await MediaThumbnailService.generateAudioThumbnail(tempPath);
+          final thumbBytes = await MediaThumbnailService.generateAudioThumbnail(
+            tempPath,
+          );
           if (thumbBytes != null && thumbBytes.isNotEmpty) {
             await thumbFile.writeAsBytes(thumbBytes, flush: true);
             if (mounted) setState(() => _audioThumb = thumbBytes);
@@ -454,7 +530,9 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         }
       } finally {
         // 清理临时文件
-        try { await File(tempPath).delete(); } catch (_) {}
+        try {
+          await File(tempPath).delete();
+        } catch (_) {}
       }
     } catch (e) {
       debugPrint('远程缩略图加载失败: $e');
@@ -487,7 +565,9 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
     if (!mounted) return;
     try {
       final mediaProvider = context.read<MediaProvider>();
-      final match = mediaProvider.audios.where((s) => s.data == widget.file.path).firstOrNull;
+      final match = mediaProvider.audios
+          .where((s) => s.data == widget.file.path)
+          .firstOrNull;
       if (match != null) {
         final artwork = await OnAudioQuery().queryArtwork(
           match.id,
@@ -525,11 +605,12 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
       // 查询打满设备线程、丢弃输入并卡住播放启动。
       final matchedAsset = await MediaProvider.getVideoAssetByPath(filePath);
       if (matchedAsset != null) {
-        final thumbData = await MediaProvider.runBoundedThumb(() =>
-          matchedAsset.thumbnailDataWithSize(
+        final thumbData = await MediaProvider.runBoundedThumb(
+          () => matchedAsset.thumbnailDataWithSize(
             const ThumbnailSize.square(300),
             quality: 80,
-          ));
+          ),
+        );
         if (mounted && thumbData != null && thumbData.isNotEmpty) {
           setState(() => _videoThumb = thumbData);
           return;
@@ -538,7 +619,9 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
 
       // 回退2：文件不在系统相册中（下载目录、NAS 挂载目录等），
       // 直接通过原生 MediaMetadataRetriever 从文件路径生成首帧缩略图。
-      final thumbBytes = await MediaThumbnailService.generateVideoThumbnail(filePath);
+      final thumbBytes = await MediaThumbnailService.generateVideoThumbnail(
+        filePath,
+      );
       if (mounted && thumbBytes != null && thumbBytes.isNotEmpty) {
         setState(() => _videoThumb = thumbBytes);
       }
@@ -583,25 +666,31 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         iconScale: scale,
       );
     }
-    return Icon(
-      FileUtils.getIconForFile(path),
-      color: color,
-      size: 28 * scale,
-    );
+    return Icon(FileUtils.getIconForFile(path), color: color, size: 28 * scale);
   }
 
   @override
   Widget build(BuildContext context) {
-    final showMediaPreviews = context.select<FileManagerProvider, bool>((p) => p.showMediaPreviews) &&
+    final showMediaPreviews =
+        context.select<FileManagerProvider, bool>((p) => p.showMediaPreviews) &&
         // 远程文件额外受「远程媒体缩略图」开关控制
-        (!widget.file.isRemote || PreferencesService.getRemoteMediaThumbnailPreview());
+        (!widget.file.isRemote ||
+            PreferencesService.getRemoteMediaThumbnailPreview());
     final isImg = FileUtils.isImage(widget.file.path);
     final isVid = FileUtils.isVideo(widget.file.path);
     final isAud = FileUtils.isAudio(widget.file.path);
-    final isApk = widget.file.path.toLowerCase().endsWith('.apk') || widget.file.path.toLowerCase().endsWith('.xapk') || widget.file.path.toLowerCase().endsWith('.apks') || widget.file.path.toLowerCase().endsWith('.apkm');
+    final isApk =
+        widget.file.path.toLowerCase().endsWith('.apk') ||
+        widget.file.path.toLowerCase().endsWith('.xapk') ||
+        widget.file.path.toLowerCase().endsWith('.apks') ||
+        widget.file.path.toLowerCase().endsWith('.apkm');
 
     if (widget.isSelected) {
-      return Icon(Broken.tick_circle, color: Theme.of(context).colorScheme.onPrimary, size: 28 * widget.iconScale);
+      return Icon(
+        Broken.tick_circle,
+        color: Theme.of(context).colorScheme.onPrimary,
+        size: 28 * widget.iconScale,
+      );
     }
 
     // 压缩包：显示带格式标签的自定义图标
@@ -655,13 +744,23 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
           return SvgPicture.memory(
             _remoteThumb!,
             fit: BoxFit.cover,
-            placeholderBuilder: (context) => FileTypeIcon(icon: Broken.image, label: FileUtils.getImageTypeLabel(widget.file.path), color: widget.iconColor, iconScale: widget.iconScale),
+            placeholderBuilder: (context) => FileTypeIcon(
+              icon: Broken.image,
+              label: FileUtils.getImageTypeLabel(widget.file.path),
+              color: widget.iconColor,
+              iconScale: widget.iconScale,
+            ),
           );
         }
         return SvgPicture.file(
           File(widget.file.path),
           fit: BoxFit.cover,
-          placeholderBuilder: (context) => FileTypeIcon(icon: Broken.image, label: FileUtils.getImageTypeLabel(widget.file.path), color: widget.iconColor, iconScale: widget.iconScale),
+          placeholderBuilder: (context) => FileTypeIcon(
+            icon: Broken.image,
+            label: FileUtils.getImageTypeLabel(widget.file.path),
+            color: widget.iconColor,
+            iconScale: widget.iconScale,
+          ),
         );
       }
       if (widget.file.path.toLowerCase().endsWith('.avif')) {
@@ -670,7 +769,12 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
           fit: BoxFit.cover,
           width: double.infinity,
           height: double.infinity,
-          errorBuilder: (context, error, stackTrace) => FileTypeIcon(icon: Broken.image, label: FileUtils.getImageTypeLabel(widget.file.path), color: widget.iconColor, iconScale: widget.iconScale),
+          errorBuilder: (context, error, stackTrace) => FileTypeIcon(
+            icon: Broken.image,
+            label: FileUtils.getImageTypeLabel(widget.file.path),
+            color: widget.iconColor,
+            iconScale: widget.iconScale,
+          ),
         );
       }
       // 远程图片优先使用已下载的缩略图缓存
@@ -682,7 +786,12 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
           height: double.infinity,
           cacheWidth: 160,
           cacheHeight: 160,
-          errorBuilder: (context, error, stackTrace) => FileTypeIcon(icon: Broken.image, label: FileUtils.getImageTypeLabel(widget.file.path), color: widget.iconColor, iconScale: widget.iconScale),
+          errorBuilder: (context, error, stackTrace) => FileTypeIcon(
+            icon: Broken.image,
+            label: FileUtils.getImageTypeLabel(widget.file.path),
+            color: widget.iconColor,
+            iconScale: widget.iconScale,
+          ),
         );
       }
       return Image.file(
@@ -691,7 +800,12 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         width: double.infinity,
         height: double.infinity,
         cacheWidth: 160,
-        errorBuilder: (context, error, stackTrace) => FileTypeIcon(icon: Broken.image, label: FileUtils.getImageTypeLabel(widget.file.path), color: widget.iconColor, iconScale: widget.iconScale),
+        errorBuilder: (context, error, stackTrace) => FileTypeIcon(
+          icon: Broken.image,
+          label: FileUtils.getImageTypeLabel(widget.file.path),
+          color: widget.iconColor,
+          iconScale: widget.iconScale,
+        ),
       );
     }
 
@@ -701,13 +815,23 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         return SvgPicture.memory(
           _remoteThumb!,
           fit: BoxFit.cover,
-          placeholderBuilder: (context) => FileTypeIcon(icon: Broken.image, label: FileUtils.getImageTypeLabel(widget.file.path), color: widget.iconColor, iconScale: widget.iconScale),
+          placeholderBuilder: (context) => FileTypeIcon(
+            icon: Broken.image,
+            label: FileUtils.getImageTypeLabel(widget.file.path),
+            color: widget.iconColor,
+            iconScale: widget.iconScale,
+          ),
         );
       }
       return SvgPicture.file(
         File(widget.file.path),
         fit: BoxFit.cover,
-        placeholderBuilder: (context) => FileTypeIcon(icon: Broken.image, label: FileUtils.getImageTypeLabel(widget.file.path), color: widget.iconColor, iconScale: widget.iconScale),
+        placeholderBuilder: (context) => FileTypeIcon(
+          icon: Broken.image,
+          label: FileUtils.getImageTypeLabel(widget.file.path),
+          color: widget.iconColor,
+          iconScale: widget.iconScale,
+        ),
       );
     }
 
@@ -722,13 +846,24 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
             height: double.infinity,
             cacheWidth: 160,
             cacheHeight: 160,
-            errorBuilder: (context, error, stackTrace) => Icon(Broken.video, color: widget.iconColor, size: 28 * widget.iconScale),
+            errorBuilder: (context, error, stackTrace) => Icon(
+              Broken.video,
+              color: widget.iconColor,
+              size: 28 * widget.iconScale,
+            ),
           ),
           Center(
             child: Container(
               padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(color: Colors.black.withOpacity(0.6), shape: BoxShape.circle),
-              child: Icon(Broken.video, color: Colors.white, size: 16 * widget.iconScale),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.6),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Broken.video,
+                color: Colors.white,
+                size: 16 * widget.iconScale,
+              ),
             ),
           ),
         ],
@@ -746,13 +881,24 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
             height: double.infinity,
             cacheWidth: 160,
             cacheHeight: 160,
-            errorBuilder: (context, error, stackTrace) => Icon(Broken.music, color: widget.iconColor, size: 28 * widget.iconScale),
+            errorBuilder: (context, error, stackTrace) => Icon(
+              Broken.music,
+              color: widget.iconColor,
+              size: 28 * widget.iconScale,
+            ),
           ),
           Center(
             child: Container(
               padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(color: Colors.black.withOpacity(0.6), shape: BoxShape.circle),
-              child: Icon(Broken.music, color: Colors.white, size: 16 * widget.iconScale),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.6),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Broken.music,
+                color: Colors.white,
+                size: 16 * widget.iconScale,
+              ),
             ),
           ),
         ],
@@ -804,7 +950,10 @@ class _TrailingInfoWidget extends StatelessWidget {
       return Padding(
         padding: const EdgeInsets.only(left: 8.0),
         child: Text(
-          FileUtils.formatDate(item.modified, use24Hour: provider.use24HourFormat),
+          FileUtils.formatDate(
+            item.modified,
+            use24Hour: provider.use24HourFormat,
+          ),
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.textTheme.bodySmall?.color?.withOpacity(0.5),
             fontSize: 12.0 * (1 + (iconScale - 1) * 0.3),
