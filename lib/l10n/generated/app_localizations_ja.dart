@@ -6101,4 +6101,7 @@ class L10nJa extends L10n {
   @override
   String get share_permission_message =>
       'ZenFile does not have permission to access this file. Please share it again or grant permission and retry.';
+
+  @override
+  String get qqGroup => 'QQグループ: 792408214';
 }

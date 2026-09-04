@@ -11247,6 +11247,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'ZenFile 没有权限访问该文件，请重新分享或授予权限后重试。'**
   String get share_permission_message;
+
+  /// No description provided for @qqGroup.
+  ///
+  /// In zh, this message translates to:
+  /// **'QQ 群：792408214'**
+  String get qqGroup;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

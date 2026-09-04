@@ -24,6 +24,30 @@ class AboutZenFileScreen extends StatelessWidget {
     }
   }
 
+  /// 跳转 QQ 群加群。
+  /// 优先使用 mqqapi scheme 直接唤起 QQ 应用（不经过浏览器）；
+  /// 若 QQ 未安装或无法处理该 scheme，则回退到官方加群页链接。
+  Future<void> _joinQQGroup(BuildContext context) async {
+    const groupCode = '792408214';
+    final mqq = Uri.parse(
+      'mqqapi://card/show_pslcard?src_type=internal&version=1'
+      '&uin=$groupCode&card_type=group&source=qrcode',
+    );
+    try {
+      final opened = await launchUrl(mqq, mode: LaunchMode.externalApplication);
+      if (opened) return;
+    } catch (_) {}
+    // 回退：官方加群页（该页在移动端也会尝试唤起 QQ）
+    await _launchUrl(
+      context,
+      'https://qun.qq.com/universal-share/share?ac=1'
+      '&authKey=073RXV65qHzzOS3mT1FUc3zHaX2y2Gb%2BN6uhcfTktUKYit4D9V92wGkvtj%2BEcLa2'
+      '&busi_data=eyJncm91cENvZGUiOiI3OTI0MDgyMTQiLCJ0b2tlbiI6IkZ3Z05TMXBabmZGaVE0a2lvdERYMTJnK01OVmo5d0dTOFB2QXJRc0RmN1ZCdE9JT1VJYlh5UWFZdzJBS3BUZ1UiLCJ1aW4iOiI5MzAyMDM4MTEifQ%3D%3D'
+      '&data=mrv0ABsYyT3K-lef1Obq0pmjrg4szRt_ultVH8umFVcnlh5AX_xnY2DZ2ngWTE3Ayeq0MQUfMYiAtFI3Z8J-MA'
+      '&svctype=4&tempid=h5_group_info',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -160,7 +184,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   const SizedBox(height: 6),
                   // 版本号文本（硬编码，无需 l10n；以后升级版本只改这里）
                   Text(
-                    'v1.1.40',
+                    'v1.1.41',
                     style: TextStyle(
                       color: theme.colorScheme.onSurface.withOpacity(0.7),
                       fontSize: 13,
@@ -332,8 +356,7 @@ class AboutZenFileScreen extends StatelessWidget {
                     context,
                     icon: Icons.email_rounded,
                     label: L10n.of(context).sequeldpdnsorg,
-                    onTap: () {},
-                    onLongPress: () {
+                    onTap: () {
                       Clipboard.setData(const ClipboardData(text: '1@sequel.dpdns.org'));
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
@@ -347,17 +370,8 @@ class AboutZenFileScreen extends StatelessWidget {
                   _buildSocialAction(
                     context,
                     icon: Icons.group_rounded,
-                    label: 'QQ 群：792408214',
-                    onTap: () {},
-                    onLongPress: () {
-                      Clipboard.setData(const ClipboardData(text: '792408214'));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('QQ 群号已复制到剪贴板'),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    },
+                    label: L10n.of(context).qqGroup,
+                    onTap: () => _joinQQGroup(context),
                   ),
                   const SizedBox(height: 10),
                   _buildSocialAction(
@@ -765,7 +779,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   color: theme.colorScheme.primary.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text('v1.1.40', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+                child: Text('v1.1.41', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
               ),
               const SizedBox(width: 10),
               Text('2026-09-04', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),

@@ -1717,6 +1717,17 @@ class MediaProvider extends ChangeNotifier {
 
   Future<void> _saveAudioCache(List<SongModel> songs) async {
     if (songs.isEmpty || songs.length == _lastSavedAudioCount) return;
+    // 骤减保护：本次数量远小于上次成功保存数量（不足一半）时，极可能是部分
+    // 结果（fallback 递归扫描目录不全、或 MediaStore 瞬时繁忙只返回少量行），
+    // 跳过落盘，防止把完好的大缓存覆盖成「只剩录音机」的残缺缓存——缓存一旦
+    // 被污染，冷启动恢复的就是部分结果、叠加 querySongs 空时表现为音乐清零且
+    // 刷新救不回（大存储多文件设备复现）。真删歌场景下仅缓存略陈旧，代价远小
+    // 于污染。
+    if (_lastSavedAudioCount > 0 && songs.length * 2 < _lastSavedAudioCount) {
+      debugPrint('[ZenFile] audio cache save skipped: ${songs.length} << '
+          '$_lastSavedAudioCount（疑似部分结果，防止覆盖完好缓存）');
+      return;
+    }
     try {
       final file = await _audioCacheFile();
       final list = <Map<dynamic, dynamic>>[];
@@ -1760,6 +1771,10 @@ class MediaProvider extends ChangeNotifier {
         _audios = songs;
         _audioFolders = _groupAudiosByParentDir(_audios);
         _fsCategorySizes['音频'] = _calcAudioSize(_audios);
+        // 对齐内存计数：本次会话的「上次保存数量」即磁盘缓存数量，使
+        // _saveAudioCache 的骤减保护跨进程生效——恢复全量后若某次保存
+        // 试图写入远小于它的部分结果，会被拦截而不污染缓存。
+        _lastSavedAudioCount = songs.length;
         debugPrint('[ZenFile] audio index cache restored: ${songs.length}, '
             'size=${_fsCategorySizes['音频']}');
         return true;
@@ -2459,19 +2474,25 @@ class MediaProvider extends ChangeNotifier {
       _images = unionMedia(_images, result.images, supImages);
       _videos = unionMedia(_videos, result.videos, supVideos);
       _screenshots = unionMedia(_screenshots, result.screenshots, supScreenshots);
-      // 音频：先移除上次递归扫描并入的合成条目（_id 800000+，与自定义路径
-      // 合成的 900000+ 区分），再按 _data 路径去重并入本次结果，避免跨次
-      // 刷新 _id 撞号（与 _scanCustomCategories 对 900000+ 的处理对称）。
-      _audios.removeWhere((song) => song.id >= 800000 && song.id < 900000);
+      // 音频：不再整体剥离 800000+ 合成条目（与 _mergeSupplementaryMedia 同理：
+      // 列表可能整表来自缓存恢复的合成条目，querySongs 失败时是唯一数据源，
+      // 剥掉即清零）。按 _data 路径去重并入本次结果；新条目编号从现有 800000+
+      // 最大号之后递增，避免 _id 撞号。
       final audioSeen = <String>{
         for (final s in _audios) _normalizeMediaPath(s.data),
       };
+      var synthId = 800000;
+      for (final s in _audios) {
+        if (s.id >= synthId && s.id < 900000) synthId = s.id + 1;
+      }
       final supAudios = <Map<String, dynamic>>[];
       for (final m in result.audios) {
         final data = (m['_data'] as String?) ?? '';
         if (data.isEmpty) continue;
         if (audioSeen.add(_normalizeMediaPath(data))) {
-          _audios.add(SongModel(Map<String, dynamic>.from(m)));
+          final map = Map<String, dynamic>.from(m);
+          map['_id'] = synthId++;
+          _audios.add(SongModel(map));
           supAudios.add(m);
         }
       }
@@ -2617,22 +2638,29 @@ class MediaProvider extends ChangeNotifier {
       _screenshots = unionPaths(_screenshots, pathsOf('screenshots'));
       final shotAdded = _screenshots.length - shotBefore;
 
-      _audios.removeWhere((song) => song.id >= 800000 && song.id < 900000);
+      // 音频：不再整体剥离 800000+ 合成条目。列表可能整表来自磁盘缓存恢复的
+      // 合成条目（历史版本 fallback 扫描整体替换后落盘污染所致），此刻 querySongs
+      // 瞬时失败时它们是唯一数据源——先剥后并会把它们清零（「启动先显示 700+
+      // 随后全部消失」的根因）。改为按归一化路径去重并入；新合成条目编号从
+      // 现有 800000+ 最大号之后递增，同样避免 _id 撞号。幽灵条目待 querySongs
+      // 成功整表替换或用户显式删除时自然清理。
       final audioSeen = <String>{
         for (final s in _audios) _normalizeMediaPath(s.data),
       };
+      var synthId = 800000;
+      for (final s in _audios) {
+        if (s.id >= synthId && s.id < 900000) synthId = s.id + 1;
+      }
       final rawAudios = sup['audios'];
       var audioAdded = 0;
       if (rawAudios is List) {
-        var idx = 0;
         for (final m in rawAudios) {
           if (m is! Map) continue;
           final data = m['_data'] as String?;
           if (data == null || data.isEmpty) continue;
           if (audioSeen.add(_normalizeMediaPath(data))) {
             final map = Map<String, dynamic>.from(m);
-            map['_id'] = 800000 + idx;
-            idx++;
+            map['_id'] = synthId++;
             _audios.add(SongModel(map));
             audioAdded++;
           }
@@ -2862,10 +2890,28 @@ class MediaProvider extends ChangeNotifier {
 
       _images = images;
       _videos = videos;
-      // 仅当本次递归扫描确实找到音频时才覆盖；若扫描被打断/过滤为空，
-      // 不得用空列表清空已通过系统索引加载的 _audios（会导致音频莫名消失）。
+      // 音频改并集合并：此 fallback 的扫描目录范围有限（热点目录不含 Music 等，
+      // 主目录仅 depth 1），大存储设备 isolate 扫描失败走此路径时，整体替换会把
+      // 系统索引（querySongs）加载的全量音乐冲成「只剩录音机的音频」。与
+      // _runFileSystemScanInIsolate 的 includeMedia 成功路径语义一致：先移除上次
+      // 递归扫描合成的 800000+ 条目，再按归一化路径去重并入，绝不因部分结果
+      // 缩减既有列表；空结果同样不清空（保留已显示音频）。
       if (audios.isNotEmpty) {
-        _audios = audios;
+        final audioSeen = <String>{
+          for (final s in _audios) _normalizeMediaPath(s.data),
+        };
+        var synthId = 800000;
+        for (final s in _audios) {
+          if (s.id >= synthId && s.id < 900000) synthId = s.id + 1;
+        }
+        for (final s in audios) {
+          if (audioSeen.add(_normalizeMediaPath(s.data))) {
+            final map = Map<String, dynamic>.from(s.getMap);
+            map['_id'] = synthId++;
+            _audios.add(SongModel(map));
+          }
+        }
+        _fsCategorySizes['音频'] = _calcAudioSize(_audios);
       }
       _screenshots = screenshots;
       // fallback 整表替换同样会清掉补充媒体（上次主动刷新持久化的
@@ -3383,8 +3429,22 @@ class MediaProvider extends ChangeNotifier {
 
     final audioPaths = _customCategoryPaths['音频'] ?? [];
     final customAudFiles = await _scanCustomPaths(audioPaths, FileUtils.isAudio);
-    _audios.removeWhere((song) => song.id >= 900000);
+    // 仅当本次自定义路径扫描确实有产出（或本就无自定义路径配置）时，才按
+    // 差集剥离旧合成条目（900000+，清掉已删除文件的幽灵）。远程服务器未
+    // 连接 / 本地路径瞬时不可读时 _scanCustomPaths 返回空，旧逻辑「先剥后扫」
+    // 会把磁盘缓存恢复的自定义音频全部清掉——「启动先显示 700+ 随后全部
+    // 消失」的根因之一。扫描为空时保留旧条目，待下次扫描成功再清理幽灵。
+    final customAudioPathSet = customAudFiles.map((f) => f.path).toSet();
+    if (audioPaths.isEmpty || customAudFiles.isNotEmpty) {
+      _audios.removeWhere(
+          (song) => song.id >= 900000 && !customAudioPathSet.contains(song.data));
+    }
     final existingAudioPaths = _audios.map((s) => s.data).toSet();
+    // 新增条目编号从现有 900000+ 最大号之后递增，避免与保留的旧条目撞号。
+    var customAudioId = 900000;
+    for (final s in _audios) {
+      if (s.id >= customAudioId) customAudioId = s.id + 1;
+    }
     for (int i = 0; i < customAudFiles.length; i++) {
       final file = customAudFiles[i];
       if (!existingAudioPaths.contains(file.path)) {
@@ -3399,7 +3459,7 @@ class MediaProvider extends ChangeNotifier {
               ? file.path.split('|').last.split('/').last
               : p.basename(file.path);
           final songMap = {
-            '_id': 900000 + i,
+            '_id': customAudioId++,
             '_data': file.path,
             'title': fileName.contains('.') ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName,
             'artist': '',

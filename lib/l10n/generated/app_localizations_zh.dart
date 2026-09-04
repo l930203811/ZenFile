@@ -5998,6 +5998,9 @@ class L10nZh extends L10n {
 
   @override
   String get share_permission_message => 'ZenFile 没有权限访问该文件，请重新分享或授予权限后重试。';
+
+  @override
+  String get qqGroup => 'QQ 群：792408214';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -11962,4 +11965,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get share_permission_message => 'ZenFile 沒有權限存取該檔案，請重新分享或授予權限後重試。';
+
+  @override
+  String get qqGroup => 'QQ 群：792408214';
 }

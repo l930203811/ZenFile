@@ -6247,5 +6247,6 @@
   },
   "@share_permission_message": {
     "description": "Message for share permission prompt"
-  }
+  },
+  "qqGroup": "Grupo QQ: 792408214"
 }
