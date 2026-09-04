@@ -1005,21 +1005,34 @@ class FileManagerProvider extends ChangeNotifier {
       } catch (_) {}
     } else {
       try {
-        // 受限路径（如 /Android/data 根层）被 FUSE 拦截，标准 Directory.list()
-        // 会抛异常而返回 0 项。优先用 Kotlin 原始路径 API 绕开 FUSE 来计数。
+        // 受限路径（如 /Android/data 根层或其它应用子目录）被 FUSE 拦截，
+        // 标准 Directory.list() 会抛异常而返回 0 项。且 app 进程内的
+        // listRawPath（Java File API）对「其它应用」的 Android/data 无权限
+        // （File.list() 返回 null → 空列表），会误报 0 项。因此受限路径优先
+        // 走 Root/Shizuku shell（find+stat 双路径），与浏览层一致。
         if (isRestrictedPath(folderPath)) {
+          final status = await RootShizukuService.checkStatus();
+          final rootOk = status.isRootAvailable;
+          final shizukuOk = status.isShizukuAvailable && status.shizukuPermissionGranted;
+          if (rootOk || shizukuOk) {
+            final shellItems = await RootShizukuService.listFiles(
+              folderPath,
+              useRoot: rootOk, // root 对底层路径有完全权限，优先
+              showHiddenFiles: _showHiddenFiles,
+            );
+            if (shellItems.isNotEmpty) {
+              _folderItemCounts[cacheKey] = shellItems.length;
+              return shellItems.length;
+            }
+          }
+          // 兜底：仅自身可读目录（如 ZenFile 自己的 data）等场景
           final rawItems = await RootShizukuService.listRawPath(
             folderPath,
             showHiddenFiles: _showHiddenFiles,
           );
-          if (rawItems != null) {
-            for (final it in rawItems) {
-              final name = p.basename(it.path);
-              if (!_showHiddenFiles && name.startsWith('.')) continue;
-              count++;
-            }
-            _folderItemCounts[cacheKey] = count;
-            return count;
+          if (rawItems != null && rawItems.isNotEmpty) {
+            _folderItemCounts[cacheKey] = rawItems.length;
+            return rawItems.length;
           }
         }
         final dir = Directory(folderPath);
@@ -1046,6 +1059,25 @@ class FileManagerProvider extends ChangeNotifier {
   Future<int> getFolderSize(String folderPath) async {
     if (_folderSizes.containsKey(folderPath)) {
       return _folderSizes[folderPath]!;
+    }
+
+    // 受限路径（Android/data、Android/obb 等）下 Dart IO 被 FUSE 层拦截，
+    // Directory.listSync 返回空 → 误报 0 B。与 getFolderItemCount 一致，
+    // 优先走 Root/Shizuku shell（find+stat 底层/FUSE 双路径）统计真实字节数。
+    if (isRestrictedPath(folderPath)) {
+      final status = await RootShizukuService.checkStatus();
+      final rootOk = status.isRootAvailable;
+      final shizukuOk = status.isShizukuAvailable && status.shizukuPermissionGranted;
+      if (rootOk || shizukuOk) {
+        final shellSize = await RootShizukuService.getFolderSizeShell(
+          folderPath,
+          useRoot: rootOk, // root 对底层路径有完全权限，优先
+        );
+        if (shellSize != null) {
+          _folderSizes[folderPath] = shellSize;
+          return shellSize;
+        }
+      }
     }
 
     // Offload directory size calculation to a background isolate (compute)
@@ -4160,37 +4192,62 @@ class FileManagerProvider extends ChangeNotifier {
         );
 
         // 受限源（其它应用的 Android/data|obb）：Dart IO 读写均被 FUSE 拦截，
-        // 复制/删除改走 Root/Shizuku shell（cp 一条命令，无逐块进度）
+        // 复制/删除改走 Root/Shizuku shell（cp/mv 一条命令，无逐块进度）。
+        // 移动（剪切）优先用原子 mv（同文件系统内其它文件管理器经 FUSE 路径
+        // 已验证可行），避免 copy+rm 在 rm 失败时留下副本；mv 失败（跨文件
+        // 系统 EXDEV 等）回退 copy + delete。
         if (item['restricted'] == true && bypassUseRoot != null) {
           final srcPath = source.path as String;
-          if (isDir) {
-            final destDir = Directory(finalDestPath);
-            if (!destDir.existsSync()) {
-              await destDir.create(recursive: true);
-            }
-          } else {
-            final parentDir = Directory(p.dirname(finalDestPath));
-            if (!parentDir.existsSync()) {
-              await parentDir.create(recursive: true);
-            }
-            await RootShizukuService.copyItem(srcPath, finalDestPath, useRoot: bypassUseRoot);
-            bytesProcessed += size;
-            final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
-            final speed = elapsedSeconds > 0 ? (bytesProcessed / (1024 * 1024)) / elapsedSeconds : 0.0;
-            progressNotifier.value = FileOperationProgress(
-              totalFiles: totalFiles,
-              currentFileIndex: i + 1,
-              currentFileName: fileName,
-              percentage: totalBytes > 0 ? (bytesProcessed / totalBytes) : (i / totalFiles),
-              speedMBs: speed,
-              eta: Duration.zero,
-              totalBytes: totalBytes > 0 ? totalBytes : 1,
-              bytesProcessed: bytesProcessed,
-            );
+          final parentDir = Directory(p.dirname(finalDestPath));
+          if (!parentDir.existsSync()) {
+            await parentDir.create(recursive: true);
           }
           if (_isCut) {
-            await RootShizukuService.deleteItem(srcPath, useRoot: bypassUseRoot);
+            bool moved = false;
+            try {
+              await RootShizukuService.moveItem(srcPath, finalDestPath, useRoot: bypassUseRoot);
+              moved = true;
+            } catch (e) {
+              debugPrint('Restricted moveItem failed, fallback copy+delete: $e');
+            }
+            if (!moved) {
+              if (isDir) {
+                final destDir = Directory(finalDestPath);
+                if (!destDir.existsSync()) {
+                  await destDir.create(recursive: true);
+                }
+              } else {
+                await RootShizukuService.copyItem(srcPath, finalDestPath, useRoot: bypassUseRoot);
+              }
+              try {
+                await RootShizukuService.deleteItem(srcPath, useRoot: bypassUseRoot);
+              } catch (e) {
+                debugPrint('Restricted source delete failed after cut: $e');
+              }
+            }
+          } else {
+            if (isDir) {
+              final destDir = Directory(finalDestPath);
+              if (!destDir.existsSync()) {
+                await destDir.create(recursive: true);
+              }
+            } else {
+              await RootShizukuService.copyItem(srcPath, finalDestPath, useRoot: bypassUseRoot);
+            }
           }
+          bytesProcessed += size;
+          final elapsedSeconds = stopwatch.elapsed.inMilliseconds / 1000.0;
+          final speed = elapsedSeconds > 0 ? (bytesProcessed / (1024 * 1024)) / elapsedSeconds : 0.0;
+          progressNotifier.value = FileOperationProgress(
+            totalFiles: totalFiles,
+            currentFileIndex: i + 1,
+            currentFileName: fileName,
+            percentage: totalBytes > 0 ? (bytesProcessed / totalBytes) : (i / totalFiles),
+            speedMBs: speed,
+            eta: Duration.zero,
+            totalBytes: totalBytes > 0 ? totalBytes : 1,
+            bytesProcessed: bytesProcessed,
+          );
           continue;
         }
 
@@ -4277,6 +4334,15 @@ class FileManagerProvider extends ChangeNotifier {
         // 否则会导致剪切变复制且剪贴板不自动消失。
         final cutSourcePaths = List<String>.from(_clipboardPaths);
         for (final srcPath in _clipboardPaths) {
+          // 受限源目录：Dart IO typeSync 被 FUSE 拦截返回 notFound，走 shell rm
+          if (bypassUseRoot != null && _needsBypass(srcPath)) {
+            try {
+              await RootShizukuService.deleteItem(srcPath, useRoot: bypassUseRoot);
+            } catch (delErr) {
+              debugPrint('Cut restricted source dir delete failed: $delErr');
+            }
+            continue;
+          }
           final type = FileSystemEntity.typeSync(srcPath);
           if (type == FileSystemEntityType.directory) {
             final dir = Directory(srcPath);

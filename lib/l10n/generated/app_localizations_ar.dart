@@ -3133,10 +3133,10 @@ class L10nAr extends L10n {
   String get ui_file => 'ملف';
 
   @override
-  String get ui_backup_settings => 'نسخ احتياطي';
+  String get ui_backup_settings => 'بدء النسخ الاحتياطي';
 
   @override
-  String get ui_restore_settings => 'استعادة';
+  String get ui_restore_settings => 'بدء الاستعادة';
 
   @override
   String get ui_backup_info => 'معلومات النسخ الاحتياطي';
@@ -4806,7 +4806,7 @@ class L10nAr extends L10n {
       'قد لا يزال تشغيل الفيديو عن بُعد عبر SMB / FTP / SFTP متقطعاً في بعض الحالات؛ التحسين مستمر.';
 
   @override
-  String get ui_select_backup_path => 'اختيار مسار النسخ الاحتياطي';
+  String get ui_select_backup_path => 'مسار نسخ احتياطي مخصص';
 
   @override
   String get ui_backup_path_local => 'محلي';
@@ -6167,6 +6167,9 @@ class L10nAr extends L10n {
 
   @override
   String get vault_import_backup => 'استيراد النسخة الاحتياطية';
+
+  @override
+  String get vault_backup_restore => 'نسخ احتياطي / استعادة';
 
   @override
   String get vault_import_backup_desc =>

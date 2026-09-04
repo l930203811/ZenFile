@@ -46,3 +46,10 @@ android/.kotlin/
 
 # PDF 编辑器调试产物（编辑器已移除，相关样本/渲染比对图/诊断脚本不入库）
 pdf_test/
+# Flutter 工具内部状态与 l10n 生成临时输出（不入库）
+.flutter_tool_state
+gen_err.txt
+gen_out.txt
+
+# 第三方插件 vendored 源码（本地依赖修复用，不入库）
+vendor/

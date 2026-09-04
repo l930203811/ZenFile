@@ -237,15 +237,28 @@ class RootShizukuService {
         ? 'rm -rf "$fuse" 2>/dev/null || rm -rf "$raw"'
         : 'rm -rf "$fuse"';
     await runCommand(cmd, useRoot: useRoot);
+    // 结果校验：删除后源应不存在。剪切（cut）等场景若静默失败会导致
+    // 「移动变成复制一份」——必须让调用方感知失败。
+    if (await _exists(path, useRoot: useRoot)) {
+      throw Exception('Delete failed (source still exists): $path');
+    }
   }
 
-  /// stat 单个路径（受限路径走底层绕过）。返回 null 表示不存在。
+  /// stat 单个路径（受限路径走底层绕过 + FUSE 回退）。返回 null 表示不存在。
   /// 复制/上传链路用于替代 Dart IO 的 typeSync/lengthSync——Android 11+
   /// FUSE 层使 app 进程对其它应用的 Android/{data,obb} 文件不可见，
   /// 只能经 shell/root 在 /data/media/0 底层路径访问。
+  /// 底层路径与 FUSE 直达路径双试：小米/华为等 ROM 底层放行、FUSE 拦 shell；
+  /// vivo 等 ROM 恰好相反（拦底层、放行 FUSE 直达）。
   static Future<FileItemModel?> statItem(String path, {required bool useRoot}) async {
-    final clean = _toFuseBypassPath(_normalize(path));
-    final cmd = 'stat -L -c "%F|%s|%Y|%n" "$clean" 2>/dev/null || stat -c "%F|%s|%Y|%n" "$clean" 2>/dev/null';
+    final fuse = _normalize(path);
+    final raw = _toFuseBypassPath(fuse);
+    final String cmd;
+    if (raw != fuse) {
+      cmd = 'stat -L -c "%F|%s|%Y|%n" "$raw" 2>/dev/null || stat -L -c "%F|%s|%Y|%n" "$fuse" 2>/dev/null || stat -c "%F|%s|%Y|%n" "$fuse" 2>/dev/null';
+    } else {
+      cmd = 'stat -L -c "%F|%s|%Y|%n" "$fuse" 2>/dev/null || stat -c "%F|%s|%Y|%n" "$fuse" 2>/dev/null';
+    }
     final output = await runCommand(cmd, useRoot: useRoot);
     final line = output?.trim();
     if (line == null || line.isEmpty) return null;
@@ -261,10 +274,25 @@ class RootShizukuService {
   }
 
   static Future<void> renameItem(String oldPath, String newName, {required bool useRoot}) async {
-    final cleanOld = _toFuseBypassPath(_normalize(oldPath));
-    final cleanNew = _toFuseBypassPath(_normalize(p.join(p.dirname(oldPath), newName)));
-    final cmd = 'mv "$cleanOld" "$cleanNew"';
+    final fuseOld = _normalize(oldPath);
+    final rawOld = _toFuseBypassPath(fuseOld);
+    final fuseNew = _normalize(p.join(p.dirname(oldPath), newName));
+    final rawNew = _toFuseBypassPath(fuseNew);
+    // 与 moveItem/deleteItem/copyItem 一致的「FUSE 直接路径优先、底层路径回退」
+    // 双跳：底层 /data/media/0 上其它应用的 Android/{data,obb} 文件属主为对应
+    // app uid，shell（Shizuku uid 2000）无权限；FUSE 直接路径对 shell 可写
+    // （其它文件管理器经 FUSE 路径可正常重命名 Android/data 内文件）。
+    final String cmd;
+    if (rawOld != fuseOld || rawNew != fuseNew) {
+      cmd = 'mv "$fuseOld" "$fuseNew" 2>/dev/null || mv "$rawOld" "$rawNew"';
+    } else {
+      cmd = 'mv "$fuseOld" "$fuseNew"';
+    }
     await runCommand(cmd, useRoot: useRoot);
+    // 结果校验：重命名后新路径应存在，否则抛出（避免静默无效）。
+    if (!await _exists(fuseNew, useRoot: useRoot)) {
+      throw Exception('Rename failed: $oldPath -> $newName');
+    }
   }
 
   static Future<void> createFolder(String parentPath, String name, {required bool useRoot}) async {
@@ -284,9 +312,11 @@ class RootShizukuService {
   /// 复制文件/目录。受限路径采用「FUSE 直接路径优先、底层 /data/media/0
   /// 路径回退」双跳策略：底层 ext4 上其它应用的 Android/{data,obb} 文件为
   /// 0660（属主为对应 app uid），shell（Shizuku uid 2000）无读权限，只能经
-  /// FUSE 直接子路径读取；root 两条路径均可用。复制完成后校验目标存在，
-  /// 失败抛异常，避免静默失败导致后续链路（如上传暂存文件缺失）报
-  /// "Local file not found"。
+  /// FUSE 直接子路径读取；root 两条路径均可用。
+  ///
+  /// 复制完成后校验目标存在且（源为文件时）大小与源一致；不一致说明 FUSE
+  /// 读取内容受限（部分 ROM 对其它应用 Android/data 文件只开放元数据/0 字节），
+  /// 自动删除不完整目标并改用底层路径重试，仍失败抛异常，避免静默 0 字节。
   static Future<void> copyItem(String srcPath, String destPath, {required bool useRoot}) async {
     final fuseSrc = _normalize(srcPath);
     final rawSrc = _toFuseBypassPath(fuseSrc);
@@ -302,12 +332,33 @@ class RootShizukuService {
     if (!await _exists(destPath, useRoot: useRoot)) {
       throw Exception('Copy failed: $srcPath -> $destPath');
     }
+    // 大小一致性校验（仅文件，目录元数据无意义）
+    final srcStat = await statItem(srcPath, useRoot: useRoot);
+    if (srcStat != null && !srcStat.isDirectory) {
+      final destStat = await statItem(destPath, useRoot: useRoot);
+      if (destStat == null || destStat.size != srcStat.size) {
+        debugPrint('[ZenFile] copyItem size mismatch $srcPath (${srcStat.size}) -> $destPath (${destStat?.size})');
+        if (rawSrc != fuseSrc || rawDest != fuseDest) {
+          // 删除不完整目标，改用底层 ext4 路径重试（FUSE 读受限、底层可读时）
+          await runCommand('rm -rf "$fuseDest" 2>/dev/null || rm -rf "$rawDest"', useRoot: useRoot);
+          await runCommand('cp -r "$rawSrc" "$rawDest"', useRoot: useRoot);
+          final retryStat = await statItem(destPath, useRoot: useRoot);
+          if (retryStat != null && retryStat.size == srcStat.size) {
+            return;
+          }
+        }
+        throw Exception('Copy size mismatch: $srcPath -> $destPath');
+      }
+    }
   }
 
-  /// shell stat 检测路径是否存在（用于复制结果校验）。
+  /// shell stat 检测路径是否存在（受限路径底层/FUSE 双试，用于复制等结果校验）。
   static Future<bool> _exists(String path, {required bool useRoot}) async {
-    final clean = _toFuseBypassPath(_normalize(path));
-    final cmd = 'stat -c "%n" "$clean" 2>/dev/null';
+    final fuse = _normalize(path);
+    final raw = _toFuseBypassPath(fuse);
+    final cmd = raw != fuse
+        ? 'stat -c "%n" "$raw" 2>/dev/null || stat -c "%n" "$fuse" 2>/dev/null'
+        : 'stat -c "%n" "$fuse" 2>/dev/null';
     try {
       final out = await runCommand(cmd, useRoot: useRoot);
       return out != null && out.trim().isNotEmpty;
@@ -329,6 +380,13 @@ class RootShizukuService {
       cmd = 'mv "$fuseSrc" "$fuseDest"';
     }
     await runCommand(cmd, useRoot: useRoot);
+    // 结果校验：mv 原子成功时源消失、目标存在；跨文件系统（EXDEV）或
+    // 权限失败时源仍存在 → 抛异常，由调用方决定回退 copy+delete。
+    final srcGone = !await _exists(srcPath, useRoot: useRoot);
+    final destExists = await _exists(destPath, useRoot: useRoot);
+    if (!srcGone || !destExists) {
+      throw Exception('Move failed: $srcPath -> $destPath');
+    }
   }
 
   /// 通过反射访问 StorageManager 内部 API 获取存储卷信息（ES 文件管理器方案）。
@@ -391,6 +449,50 @@ class RootShizukuService {
       debugPrint('[ZenFile] listRawPath (Kotlin) failed: $e');
       return null;
     }
+  }
+
+  /// 统计目录内所有文件的总字节数（递归）。受限路径（Android/data、Android/obb 等）
+  /// 下 Dart IO 会被 FUSE 层拦截返回 0，必须经 shell du 在底层 /data/media/0 路径
+  /// （或 FUSE 直达路径）上统计，与 listFiles 的访问方式一致。
+  /// 返回 null 表示计算失败（由调用方回退 Dart IO）。
+  ///
+  /// 注意：不能在 shell 命令里用 `||` 做双路径回退——awk/cut 管道总是 exit 0，
+  /// 在 vivo 等 ROM 上底层路径被 SELinux 拦截返回「假 0」（exit 0）时会吞掉回退，
+  /// 导致 FUSE 直达路径永不执行（表现为文件夹大小恒为 0 B）。
+  /// 因此改为 Dart 层双路径：底层结果无效（0/失败）时再试 FUSE 直达路径。
+  static Future<int?> getFolderSizeShell(String path, {required bool useRoot}) async {
+    final fuse = _normalize(path);
+    final raw = _toFuseBypassPath(fuse);
+
+    Future<int?> runDu(String p) async {
+      // du -sb：递归统计字节数，输出 "<bytes>\t<path>"，cut -f1 取字节列。
+      final cmd = 'du -sb "$p" 2>/dev/null | cut -f1';
+      try {
+        final output = await runCommand(cmd, useRoot: useRoot);
+        final trimmed = output?.trim();
+        if (trimmed == null || trimmed.isEmpty) return null;
+        // 取最后一个非空行（避免路径/环境噪音干扰）
+        for (final line in trimmed.split('\n').reversed) {
+          if (line.trim().isEmpty) continue;
+          return int.tryParse(line.trim());
+        }
+        return null;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    // 底层 /data/media/0 优先；若结果为 0/失败且存在 FUSE 直达路径，则回退
+    // FUSE 路径（小米/华为拦 FUSE 放底层、vivo 相反，需双试）。
+    final rawSize = await runDu(raw);
+    if (rawSize != null && rawSize > 0) return rawSize;
+    if (raw != fuse) {
+      final fuseSize = await runDu(fuse);
+      if (fuseSize != null && fuseSize > 0) return fuseSize;
+      // 两层都 0/失败：返回底层结果（空目录为 0，权限假 0 也无法再突破）
+      return rawSize;
+    }
+    return rawSize;
   }
 }
 

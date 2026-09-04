@@ -3035,10 +3035,10 @@ class L10nZh extends L10n {
   String get ui_file => '文件';
 
   @override
-  String get ui_backup_settings => '备份';
+  String get ui_backup_settings => '开始备份';
 
   @override
-  String get ui_restore_settings => '恢复';
+  String get ui_restore_settings => '开始恢复';
 
   @override
   String get ui_backup_info => '备份信息';
@@ -4637,7 +4637,7 @@ class L10nZh extends L10n {
       'SMB / FTP / SFTP 远程视频播放在部分场景下仍可能出现卡顿，正在持续优化中。';
 
   @override
-  String get ui_select_backup_path => '选择备份路径';
+  String get ui_select_backup_path => '自定义备份路径';
 
   @override
   String get ui_backup_path_local => '本地';
@@ -5928,6 +5928,9 @@ class L10nZh extends L10n {
 
   @override
   String get vault_import_backup => '导入备份';
+
+  @override
+  String get vault_backup_restore => '备份/恢复';
 
   @override
   String get vault_import_backup_desc => '从备份文件 (.zip) 还原保险箱';
@@ -9019,10 +9022,10 @@ class L10nZhTw extends L10nZh {
   String get ui_file => '檔案';
 
   @override
-  String get ui_backup_settings => '備份';
+  String get ui_backup_settings => '開始備份';
 
   @override
-  String get ui_restore_settings => '恢復';
+  String get ui_restore_settings => '開始還原';
 
   @override
   String get ui_backup_info => '備份資訊';
@@ -10582,7 +10585,7 @@ class L10nZhTw extends L10nZh {
       'SMB / FTP / SFTP 遠端影片播放於部分場景下仍可能出現卡頓，持續最佳化中。';
 
   @override
-  String get ui_select_backup_path => '選擇備份路徑';
+  String get ui_select_backup_path => '自訂備份路徑';
 
   @override
   String get ui_backup_path_local => '本機';
@@ -11889,6 +11892,9 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get vault_import_backup => '导入备份';
+
+  @override
+  String get vault_backup_restore => '備份/還原';
 
   @override
   String get vault_import_backup_desc => '从备份文件 (.zip) 还原保险箱';

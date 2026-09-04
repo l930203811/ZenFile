@@ -5791,13 +5791,13 @@ abstract class L10n {
   /// No description provided for @ui_backup_settings.
   ///
   /// In zh, this message translates to:
-  /// **'备份'**
+  /// **'开始备份'**
   String get ui_backup_settings;
 
   /// No description provided for @ui_restore_settings.
   ///
   /// In zh, this message translates to:
-  /// **'恢复'**
+  /// **'开始恢复'**
   String get ui_restore_settings;
 
   /// No description provided for @ui_backup_info.
@@ -8725,7 +8725,7 @@ abstract class L10n {
   /// Backup & restore settings screen
   ///
   /// In zh, this message translates to:
-  /// **'选择备份路径'**
+  /// **'自定义备份路径'**
   String get ui_select_backup_path;
 
   /// Backup & restore settings screen
@@ -11115,6 +11115,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'导入备份'**
   String get vault_import_backup;
+
+  /// No description provided for @vault_backup_restore.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份/恢复'**
+  String get vault_backup_restore;
 
   /// No description provided for @vault_import_backup_desc.
   ///

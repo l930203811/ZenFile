@@ -3046,10 +3046,10 @@ class L10nJa extends L10n {
   String get ui_file => 'ファイル';
 
   @override
-  String get ui_backup_settings => 'バックアップ';
+  String get ui_backup_settings => 'バックアップを開始';
 
   @override
-  String get ui_restore_settings => '復元';
+  String get ui_restore_settings => '復元を開始';
 
   @override
   String get ui_backup_info => 'バックアップ情報';
@@ -4683,7 +4683,7 @@ class L10nJa extends L10n {
       'SMB / FTP / SFTP のリモート動画再生は、一部の場面でまだカクつくことがあります。継続的に最適化中です。';
 
   @override
-  String get ui_select_backup_path => 'バックアップ先を選択';
+  String get ui_select_backup_path => 'バックアップ先をカスタマイズ';
 
   @override
   String get ui_backup_path_local => 'ローカル';
@@ -6025,6 +6025,9 @@ class L10nJa extends L10n {
 
   @override
   String get vault_import_backup => 'バックアップを読み込み';
+
+  @override
+  String get vault_backup_restore => 'バックアップ/復元';
 
   @override
   String get vault_import_backup_desc => 'バックアップから金庫を復元 (.zip)';

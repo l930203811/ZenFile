@@ -3137,10 +3137,10 @@ class L10nEn extends L10n {
   String get ui_file => 'File';
 
   @override
-  String get ui_backup_settings => 'Backup';
+  String get ui_backup_settings => 'Start backup';
 
   @override
-  String get ui_restore_settings => 'Restore';
+  String get ui_restore_settings => 'Start restore';
 
   @override
   String get ui_backup_info => 'Backup Info';
@@ -4823,7 +4823,7 @@ class L10nEn extends L10n {
       'SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.';
 
   @override
-  String get ui_select_backup_path => 'Select Backup Path';
+  String get ui_select_backup_path => 'Custom backup path';
 
   @override
   String get ui_backup_path_local => 'Local';
@@ -6204,6 +6204,9 @@ class L10nEn extends L10n {
 
   @override
   String get vault_import_backup => 'Import backup';
+
+  @override
+  String get vault_backup_restore => 'Backup / Restore';
 
   @override
   String get vault_import_backup_desc => 'Restore vault from a backup (.zip)';

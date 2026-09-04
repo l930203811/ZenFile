@@ -3502,8 +3502,8 @@
   "@ui_file": {
     "description": "ui widgets"
   },
-  "ui_backup_settings": "نسخ احتياطي",
-  "ui_restore_settings": "استعادة",
+  "ui_backup_settings": "بدء النسخ الاحتياطي",
+  "ui_restore_settings": "بدء الاستعادة",
   "ui_backup_info": "معلومات النسخ الاحتياطي",
   "ui_backup_file": "ملف النسخ الاحتياطي",
   "ui_no_backup_file": "لا يوجد ملف نسخ احتياطي",
@@ -4720,7 +4720,7 @@
     "description": "v1.1.26 changelog entry"
   },
   "changelog_v1126_known_1": "قد لا يزال تشغيل الفيديو عن بُعد عبر SMB / FTP / SFTP متقطعاً في بعض الحالات؛ التحسين مستمر.",
-  "ui_select_backup_path": "اختيار مسار النسخ الاحتياطي",
+  "ui_select_backup_path": "مسار نسخ احتياطي مخصص",
   "@ui_select_backup_path": {
     "description": "Backup & restore settings screen"
   },
@@ -6183,6 +6183,7 @@
   "vault_export_backup": "تصدير النسخة الاحتياطية",
   "vault_export_backup_desc": "تصدير نسخة احتياطية مشفرة من الخزنة (.zip)",
   "vault_import_backup": "استيراد النسخة الاحتياطية",
+  "vault_backup_restore": "نسخ احتياطي / استعادة",
   "vault_import_backup_desc": "استعادة الخزنة من نسخة احتياطية (.zip)",
   "vault_uninstall_warning_title": "تحذير إلغاء التثبيت",
   "vault_uninstall_warning": "إزالة التطبيق تمحو الخزنة. صدّر نسخة احتياطية أولاً.",
@@ -6238,7 +6239,7 @@
   },
   "open_file": "Open",
   "open_in_location": "Open file location",
-  "open_with_title": "Open with"  ,
+  "open_with_title": "Open with",
   "share_permission_title": "Permission required",
   "share_permission_message": "ZenFile does not have permission to access this file. Please share it again or grant permission and retry.",
   "@share_permission_title": {

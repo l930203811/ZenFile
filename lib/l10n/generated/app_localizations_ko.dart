@@ -3043,10 +3043,10 @@ class L10nKo extends L10n {
   String get ui_file => '파일';
 
   @override
-  String get ui_backup_settings => '백업';
+  String get ui_backup_settings => '백업 시작';
 
   @override
-  String get ui_restore_settings => '복원';
+  String get ui_restore_settings => '복원 시작';
 
   @override
   String get ui_backup_info => '백업 정보';
@@ -4681,7 +4681,7 @@ class L10nKo extends L10n {
       'SMB / FTP / SFTP 원격 동영상 재생은 일부 상황에서 여전히 버벅일 수 있으며 지속적으로 최적화 중입니다.';
 
   @override
-  String get ui_select_backup_path => '백업 경로 선택';
+  String get ui_select_backup_path => '백업 경로 사용자 지정';
 
   @override
   String get ui_backup_path_local => '로컬';
@@ -6021,6 +6021,9 @@ class L10nKo extends L10n {
 
   @override
   String get vault_import_backup => '백업 가져오기';
+
+  @override
+  String get vault_backup_restore => '백업/복원';
 
   @override
   String get vault_import_backup_desc => '백업에서 금고 복원 (.zip)';

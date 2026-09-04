@@ -3184,10 +3184,10 @@ class L10nDe extends L10n {
   String get ui_file => 'Datei';
 
   @override
-  String get ui_backup_settings => 'Sichern';
+  String get ui_backup_settings => 'Sicherung starten';
 
   @override
-  String get ui_restore_settings => 'Wiederherstellen';
+  String get ui_restore_settings => 'Wiederherstellung starten';
 
   @override
   String get ui_backup_info => 'Sicherungsinformationen';
@@ -4868,7 +4868,7 @@ class L10nDe extends L10n {
       'Die Wiedergabe von Remote-Video über SMB / FTP / SFTP kann in einigen Fällen noch ruckeln; die Optimierung läuft weiter.';
 
   @override
-  String get ui_select_backup_path => 'Sicherungspfad auswählen';
+  String get ui_select_backup_path => 'Eigenen Sicherungspfad wählen';
 
   @override
   String get ui_backup_path_local => 'Lokal';
@@ -6249,6 +6249,9 @@ class L10nDe extends L10n {
 
   @override
   String get vault_import_backup => 'Sicherung importieren';
+
+  @override
+  String get vault_backup_restore => 'Sichern / Wiederherstellen';
 
   @override
   String get vault_import_backup_desc =>

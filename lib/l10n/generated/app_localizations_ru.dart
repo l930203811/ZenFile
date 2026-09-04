@@ -3188,10 +3188,10 @@ class L10nRu extends L10n {
   String get ui_file => 'Файл';
 
   @override
-  String get ui_backup_settings => 'Резервное копирование';
+  String get ui_backup_settings => 'Начать резервное копирование';
 
   @override
-  String get ui_restore_settings => 'Восстановить';
+  String get ui_restore_settings => 'Начать восстановление';
 
   @override
   String get ui_backup_info => 'Информация о Резервной Копии';
@@ -4876,7 +4876,7 @@ class L10nRu extends L10n {
       'Воспроизведение удалённого видео по SMB / FTP / SFTP в некоторых сценариях всё ещё может подтормаживать; оптимизация продолжается.';
 
   @override
-  String get ui_select_backup_path => 'Выбрать путь резервной копии';
+  String get ui_select_backup_path => 'Свой путь резервного копирования';
 
   @override
   String get ui_backup_path_local => 'Локальный';
@@ -6248,6 +6248,9 @@ class L10nRu extends L10n {
 
   @override
   String get vault_import_backup => 'Импорт резервной копии';
+
+  @override
+  String get vault_backup_restore => 'Резервная копия / Восстановление';
 
   @override
   String get vault_import_backup_desc =>

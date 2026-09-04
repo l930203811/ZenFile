@@ -3573,8 +3573,8 @@
   "@ui_file": {
     "description": "ui widgets"
   },
-  "ui_backup_settings": "備份",
-  "ui_restore_settings": "恢復",
+  "ui_backup_settings": "開始備份",
+  "ui_restore_settings": "開始還原",
   "ui_backup_info": "備份資訊",
   "ui_backup_file": "備份檔案",
   "ui_no_backup_file": "暫無備份檔案",
@@ -4868,7 +4868,7 @@
     "description": "v1.1.26 changelog entry"
   },
   "changelog_v1126_known_1": "SMB / FTP / SFTP 遠端影片播放於部分場景下仍可能出現卡頓，持續最佳化中。",
-  "ui_select_backup_path": "選擇備份路徑",
+  "ui_select_backup_path": "自訂備份路徑",
   "@ui_select_backup_path": {
     "description": "Backup & restore settings screen"
   },
@@ -6331,6 +6331,7 @@
   "vault_export_backup": "导出备份",
   "vault_export_backup_desc": "导出加密的保险箱备份 (.zip)",
   "vault_import_backup": "导入备份",
+  "vault_backup_restore": "備份/還原",
   "vault_import_backup_desc": "从备份文件 (.zip) 还原保险箱",
   "vault_uninstall_warning_title": "卸载警告",
   "vault_uninstall_warning": "卸载应用会清空保险箱，建议先导出备份",
@@ -6386,7 +6387,7 @@
   },
   "open_file": "打開",
   "open_in_location": "打開檔案所在位置",
-  "open_with_title": "打開方式"  ,
+  "open_with_title": "打開方式",
   "share_permission_title": "需要權限",
   "share_permission_message": "ZenFile 沒有權限存取該檔案，請重新分享或授予權限後重試。",
   "@share_permission_title": {

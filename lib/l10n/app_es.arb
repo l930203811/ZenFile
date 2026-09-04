@@ -3502,8 +3502,8 @@
   "@ui_file": {
     "description": "ui widgets"
   },
-  "ui_backup_settings": "Respaldar",
-  "ui_restore_settings": "Restaurar",
+  "ui_backup_settings": "Iniciar copia de seguridad",
+  "ui_restore_settings": "Iniciar restauración",
   "ui_backup_info": "Información de Respaldo",
   "ui_backup_file": "Archivo de Respaldo",
   "ui_no_backup_file": "Sin archivo de respaldo",
@@ -4720,7 +4720,7 @@
     "description": "v1.1.26 changelog entry"
   },
   "changelog_v1126_known_1": "La reproducción de vídeo remoto SMB / FTP / SFTP aún puede titubear en algunos escenarios; la optimización continúa.",
-  "ui_select_backup_path": "Seleccionar ruta de respaldo",
+  "ui_select_backup_path": "Ruta de copia personalizada",
   "@ui_select_backup_path": {
     "description": "Backup & restore settings screen"
   },
@@ -6183,6 +6183,7 @@
   "vault_export_backup": "Exportar copia de seguridad",
   "vault_export_backup_desc": "Exporta una copia de seguridad cifrada de la caja fuerte (.zip)",
   "vault_import_backup": "Importar copia de seguridad",
+  "vault_backup_restore": "Copia de seguridad / Restaurar",
   "vault_import_backup_desc": "Restaura la caja fuerte desde una copia de seguridad (.zip)",
   "vault_uninstall_warning_title": "Aviso de desinstalación",
   "vault_uninstall_warning": "Al desinstalar la app se borra la caja fuerte. Exporta una copia de seguridad antes.",
@@ -6238,7 +6239,7 @@
   },
   "open_file": "Open",
   "open_in_location": "Open file location",
-  "open_with_title": "Open with"  ,
+  "open_with_title": "Open with",
   "share_permission_title": "Permission required",
   "share_permission_message": "ZenFile does not have permission to access this file. Please share it again or grant permission and retry.",
   "@share_permission_title": {

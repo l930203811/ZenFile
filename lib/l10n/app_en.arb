@@ -3509,8 +3509,8 @@
   "@ui_file": {
     "description": "ui widgets"
   },
-  "ui_backup_settings": "Backup",
-  "ui_restore_settings": "Restore",
+  "ui_backup_settings": "Start backup",
+  "ui_restore_settings": "Start restore",
   "ui_backup_info": "Backup Info",
   "ui_backup_file": "Backup File",
   "ui_no_backup_file": "No backup file",
@@ -4772,7 +4772,7 @@
     "description": "v1.1.26 changelog entry"
   },
   "changelog_v1126_known_1": "SMB / FTP / SFTP remote video playback may still stutter in some scenarios; optimization is ongoing.",
-  "ui_select_backup_path": "Select Backup Path",
+  "ui_select_backup_path": "Custom backup path",
   "@ui_select_backup_path": {
     "description": "Backup & restore settings screen"
   },
@@ -6249,6 +6249,7 @@
   "vault_export_backup": "Export backup",
   "vault_export_backup_desc": "Export an encrypted vault backup (.zip)",
   "vault_import_backup": "Import backup",
+  "vault_backup_restore": "Backup / Restore",
   "vault_import_backup_desc": "Restore vault from a backup (.zip)",
   "vault_uninstall_warning_title": "Uninstall warning",
   "vault_uninstall_warning": "Uninstalling the app clears the vault. Export a backup first.",
@@ -6304,7 +6305,7 @@
   },
   "open_file": "Open",
   "open_in_location": "Open file location",
-  "open_with_title": "Open with"  ,
+  "open_with_title": "Open with",
   "share_permission_title": "Permission required",
   "share_permission_message": "ZenFile does not have permission to access this file. Please share it again or grant permission and retry.",
   "@share_permission_title": {

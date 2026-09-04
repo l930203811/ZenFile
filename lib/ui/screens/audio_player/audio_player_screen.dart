@@ -362,11 +362,14 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
               timer.cancel();
               if (mounted) {
                 setState(() => _isWaitingForCache = false);
+                // 均衡器在 open 之前挂接（与视频播放器一致，af 随音频链初始化生效）
+                _initEqualizer();
                 await _openMediaSafe(Media(playPath), play: true);
                 player.setRate(_playbackSpeed);
                 player.setPitch(_pitch);
                 _resetFade();
                 _loadLyrics();
+                _initEqualizer();
               }
             }
           } catch (_) {}
@@ -374,11 +377,14 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
         return;
       }
     }
+    // 均衡器在 open 之前挂接：与视频播放器一致，mpv 初始化音频链时即应用 af 滤镜，
+    // 避免 Android 上播放中动态修改 af 不生效的问题。
+    _initEqualizer();
     if (!await _openMediaSafe(Media(playPath), play: true)) return;
     player.setRate(_playbackSpeed);
     player.setPitch(_pitch);
     _resetFade();
-    // 音频打开成功后初始化均衡器
+    // 音频打开成功后再次应用预设（覆盖 open 后 af 被重置的边界情况）
     _initEqualizer();
   }
 
@@ -1766,25 +1772,29 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
 
   // ─── 均衡器状态（mpv 内置 equalizer 滤波器）──────────────────────────
   final AudioEqualizerService _eqService = AudioEqualizerService();
-  bool _eqReady = false;
+  int _eqRetryCount = 0;
   EqPreset _eqPreset = EqPreset.flat;
 
-  /// 应用已保存的均衡器预设（每次打开音频后调用）。
+  /// 应用已保存的均衡器预设（每次打开音频前/后调用）。
   /// 使用 mpv 内置 equalizer 音频滤波器，直接在 libmpv 管线内处理，全设备通用。
   ///
   /// 修复（反馈 #1）：此前仅在首次 _initEqualizer 时尝试 attach，若当时
   /// player.platform 尚未就绪（非 NativePlayer）则整段跳过、_eqReady 永久为
   /// false，导致之后点预设也因 _nativePlayer 为 null 而静默失败（需重启才生效）。
-  /// 现改为 attach 一次性，但每次播放都重新应用预设；platform 未就绪时延迟重试，
-  /// 直至生效。这同时覆盖了 open 后 af 被重置的边界情况。
+  ///
+  /// 修复（反馈 #2）：均衡器在音频播放器不生效。视频播放器在 open 之前 attach
+  /// af 滤镜，mpv 初始化音频链时即应用，故生效；而本播放器此前在 open 成功之后
+  /// 才 attach，Android 上播放中动态修改 af 经常不生效。现改为：
+  /// ① 每次播放都重新 attach 到当前 platform（防止 player 实例变化导致旧引用）；
+  /// ② attach 时机前移到 open 之前（与视频播放器一致，af 随音频链初始化生效）；
+  /// ③ platform 未就绪时有限重试（最多 3 次），避免无限递归。
   Future<void> _initEqualizer() async {
     try {
       final platform = player.platform;
       if (platform is NativePlayer) {
-        if (!_eqReady) {
-          await _eqService.attach(platform);
-          _eqReady = true;
-        }
+        _eqRetryCount = 0;
+        // 每次播放都重新 attach 到当前 platform
+        await _eqService.attach(platform);
         // 每次播放都恢复上次使用的预设（覆盖 open 后 af 被重置的边界情况）
         final savedKey = PreferencesService.getAudioEqPreset();
         _eqPreset = savedKey.isNotEmpty
@@ -1792,9 +1802,14 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
             : EqPreset.flat;
         await _eqService.applyPreset(_eqPreset);
       } else {
-        // platform 尚未就绪：延迟重试，避免预设永久失效
-        await Future.delayed(const Duration(milliseconds: 400));
-        if (mounted) _initEqualizer();
+        // platform 尚未就绪：有限重试，避免无限递归
+        if (_eqRetryCount < 3) {
+          _eqRetryCount++;
+          await Future.delayed(const Duration(milliseconds: 300));
+          if (mounted) _initEqualizer();
+        } else {
+          debugPrint('[EQ] 均衡器初始化重试耗尽，跳过');
+        }
       }
     } catch (e) {
       debugPrint('[EQ] 初始化失败: $e');
@@ -1804,7 +1819,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
   /// 释放均衡器资源（仅完全停止播放时调用，后台模式保留以免变回 Flat）。
   void _disposeEqualizer() {
     _eqService.detach();
-    _eqReady = false;
   }
 
   void _showEqualizerDialog() {

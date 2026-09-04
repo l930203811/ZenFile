@@ -46,6 +46,10 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
   bool _biometricEnabled = false;
   final LocalAuthentication _auth = LocalAuthentication();
 
+  // 折叠区展开状态（安全设置 / 备份恢复，默认收缩）
+  bool _securityExpanded = false;
+  bool _backupExpanded = false;
+
   @override
   void initState() {
     super.initState();
@@ -850,7 +854,10 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
                 ),
               ),
 
-              // 安全设置：远程守卫 + 启动应用保护
+              // 黄色卸载警告（独立区域，不与安全设置/备份恢复同卡）
+              _buildSecurityWarningBanner(theme, isDark),
+
+              // 安全设置 + 备份/恢复 折叠分组
               _buildSecuritySettings(theme, isDark),
 
               // Storage Overview Card
@@ -924,7 +931,6 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     final l10n = L10n.of(context);
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      padding: const EdgeInsets.only(bottom: 6),
       decoration: BoxDecoration(
         color: isDark ? Colors.white.withOpacity(0.02) : Colors.black.withOpacity(0.01),
         borderRadius: BorderRadius.circular(20),
@@ -934,92 +940,202 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
         ),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // 安全设置：可下拉折叠标题（靠左 + 边框，默认收缩）
+          _buildCollapsibleHeader(
+            theme,
+            title: l10n.ui_security_settings,
+            expanded: _securityExpanded,
+            onTap: () => setState(() => _securityExpanded = !_securityExpanded),
+          ),
+          // 折叠内容：远程守卫 / 启动应用保护 / 修改PIN码 / 启用指纹解锁
+          _buildCollapsibleBody(
+            expanded: _securityExpanded,
+            child: Column(
+              children: [
+                _buildSwitchTile(
+                  theme,
+                  icon: Broken.shield_tick,
+                  title: l10n.ui_remote_guard,
+                  subtitle: l10n.ui_remote_guard_switch_desc,
+                  value: _remoteGuardEnabled,
+                  onChanged: _onRemoteGuardChanged,
+                ),
+                _buildSwitchTile(
+                  theme,
+                  icon: Broken.lock,
+                  title: l10n.ui_app_lock,
+                  subtitle: l10n.ui_app_lock_desc,
+                  value: _appLockEnabled,
+                  onChanged: _onAppLockChanged,
+                ),
+                _buildSecurityNavTile(
+                  theme,
+                  icon: Broken.unlock,
+                  title: l10n.ui_remote_guard_change_pin,
+                  subtitle: l10n.ui_change_vault_pin_desc,
+                  onTap: () async {
+                    if (!await RemoteGuardService.isPinSet()) return;
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const RemoteGuardScreen(mode: RemoteGuardMode.changePin),
+                      ),
+                    );
+                    // 修改 PIN 成功：result 为新的 PIN 字符串，用新密码重建保险箱页面
+                    // （当前 widget.password 已过期，否则预览/还原会失败）
+                    if (result is String && result.isNotEmpty) {
+                      if (mounted) {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => VaultExplorerScreen(password: result),
+                          ),
+                        );
+                      }
+                      return;
+                    }
+                    await _loadSecurityState();
+                  },
+                ),
+                if (_biometricAvailable)
+                  _buildSwitchTile(
+                    theme,
+                    icon: Broken.finger_scan,
+                    title: l10n.vault_enable_fingerprint,
+                    subtitle: l10n.vault_biometric_desc,
+                    value: _biometricEnabled,
+                    onChanged: _onBiometricChanged,
+                  ),
+              ],
+            ),
+          ),
+          // 备份/恢复：可下拉折叠标题（居中展示，默认收缩）
+          _buildCollapsibleHeader(
+            theme,
+            title: l10n.vault_backup_restore,
+            expanded: _backupExpanded,
+            onTap: () => setState(() => _backupExpanded = !_backupExpanded),
+          ),
+          // 折叠内容：导出备份 / 导入备份
+          _buildCollapsibleBody(
+            expanded: _backupExpanded,
+            child: Column(
+              children: [
+                _buildSecurityNavTile(
+                  theme,
+                  icon: Broken.security_safe,
+                  title: l10n.vault_export_backup,
+                  subtitle: l10n.vault_export_backup_desc,
+                  onTap: _exportBackup,
+                ),
+                _buildSecurityNavTile(
+                  theme,
+                  icon: Broken.import,
+                  title: l10n.vault_import_backup,
+                  subtitle: l10n.vault_import_backup_desc,
+                  onTap: _importBackup,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+        ],
+      ),
+    );
+  }
+
+  /// 黄色卸载警告：独立卡片区域（不嵌入安全设置/备份恢复卡片），⚠️ 纯展示
+  Widget _buildSecurityWarningBanner(ThemeData theme, bool isDark) {
+    final l10n = L10n.of(context);
+    const amber = Color(0xFFF5A623);
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? amber.withOpacity(0.16) : amber.withOpacity(0.11),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: amber.withOpacity(0.45), width: 1),
+      ),
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 2),
+          Icon(Icons.warning_amber_rounded, color: amber, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
             child: Text(
-              l10n.ui_security_settings,
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              l10n.vault_uninstall_warning,
+              style: TextStyle(
+                fontSize: 12.5,
+                height: 1.4,
+                fontWeight: FontWeight.w500,
+                color: isDark ? const Color(0xFFFFD54F) : const Color(0xFF7A5B00),
+              ),
             ),
-          ),
-          _buildSwitchTile(
-            theme,
-            icon: Broken.shield_tick,
-            title: l10n.ui_remote_guard,
-            subtitle: l10n.ui_remote_guard_switch_desc,
-            value: _remoteGuardEnabled,
-            onChanged: _onRemoteGuardChanged,
-          ),
-          _buildSwitchTile(
-            theme,
-            icon: Broken.lock,
-            title: l10n.ui_app_lock,
-            subtitle: l10n.ui_app_lock_desc,
-            value: _appLockEnabled,
-            onChanged: _onAppLockChanged,
-          ),
-          _buildSecurityNavTile(
-            theme,
-            icon: Broken.unlock,
-            title: l10n.ui_remote_guard_change_pin,
-            subtitle: l10n.ui_change_vault_pin_desc,
-            onTap: () async {
-              if (!await RemoteGuardService.isPinSet()) return;
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const RemoteGuardScreen(mode: RemoteGuardMode.changePin),
-                ),
-              );
-              // 修改 PIN 成功：result 为新的 PIN 字符串，用新密码重建保险箱页面
-              // （当前 widget.password 已过期，否则预览/还原会失败）
-              if (result is String && result.isNotEmpty) {
-                if (mounted) {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => VaultExplorerScreen(password: result),
-                    ),
-                  );
-                }
-                return;
-              }
-              await _loadSecurityState();
-            },
-          ),
-          if (_biometricAvailable)
-            _buildSwitchTile(
-              theme,
-              icon: Broken.finger_scan,
-              title: l10n.vault_enable_fingerprint,
-              subtitle: l10n.vault_biometric_desc,
-              value: _biometricEnabled,
-              onChanged: _onBiometricChanged,
-            ),
-          _buildSecurityNavTile(
-            theme,
-            icon: Broken.security_safe,
-            title: l10n.vault_export_backup,
-            subtitle: l10n.vault_export_backup_desc,
-            onTap: _exportBackup,
-          ),
-          _buildSecurityNavTile(
-            theme,
-            icon: Broken.import,
-            title: l10n.vault_import_backup,
-            subtitle: l10n.vault_import_backup_desc,
-            onTap: _importBackup,
-          ),
-          _buildSecurityNavTile(
-            theme,
-            icon: Broken.shield_slash,
-            title: l10n.vault_uninstall_warning_title,
-            subtitle: l10n.vault_uninstall_warning,
-            onTap: () {},
           ),
         ],
       ),
+    );
+  }
+
+  /// 可下拉折叠标题：靠左展示 + 细边框 + 旋转箭头，点击展开/收缩。
+  Widget _buildCollapsibleHeader(
+    ThemeData theme, {
+    required String title,
+    required bool expanded,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: theme.colorScheme.outline.withOpacity(0.18),
+          width: 1,
+        ),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Flexible(
+                child: Text(
+                  title,
+                  textAlign: TextAlign.start,
+                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 6),
+              AnimatedRotation(
+                turns: expanded ? 0.5 : 0,
+                duration: const Duration(milliseconds: 200),
+                child: Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  size: 22,
+                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                ),
+              ),
+          ],
+        ),
+      ),
+      ),
+    );
+  }
+
+  /// 折叠区主体：展开/收缩平滑动画
+  Widget _buildCollapsibleBody({required bool expanded, required Widget child}) {
+    return AnimatedCrossFade(
+      firstChild: const SizedBox(width: double.infinity, height: 0),
+      secondChild: child,
+      crossFadeState: expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+      duration: const Duration(milliseconds: 220),
+      sizeCurve: Curves.easeInOut,
     );
   }
 

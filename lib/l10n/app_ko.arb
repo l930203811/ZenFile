@@ -3502,8 +3502,8 @@
   "@ui_file": {
     "description": "ui widgets"
   },
-  "ui_backup_settings": "백업",
-  "ui_restore_settings": "복원",
+  "ui_backup_settings": "백업 시작",
+  "ui_restore_settings": "복원 시작",
   "ui_backup_info": "백업 정보",
   "ui_backup_file": "백업 파일",
   "ui_no_backup_file": "백업 파일 없음",
@@ -4720,7 +4720,7 @@
     "description": "v1.1.26 changelog entry"
   },
   "changelog_v1126_known_1": "SMB / FTP / SFTP 원격 동영상 재생은 일부 상황에서 여전히 버벅일 수 있으며 지속적으로 최적화 중입니다.",
-  "ui_select_backup_path": "백업 경로 선택",
+  "ui_select_backup_path": "백업 경로 사용자 지정",
   "@ui_select_backup_path": {
     "description": "Backup & restore settings screen"
   },
@@ -6183,6 +6183,7 @@
   "vault_export_backup": "백업 내보내기",
   "vault_export_backup_desc": "암호화된 금고 백업 내보내기 (.zip)",
   "vault_import_backup": "백업 가져오기",
+  "vault_backup_restore": "백업/복원",
   "vault_import_backup_desc": "백업에서 금고 복원 (.zip)",
   "vault_uninstall_warning_title": "제거 경고",
   "vault_uninstall_warning": "앱을 제거하면 금고가 삭제됩니다. 먼저 백업을 내보내세요.",
@@ -6238,7 +6239,7 @@
   },
   "open_file": "Open",
   "open_in_location": "Open file location",
-  "open_with_title": "Open with"  ,
+  "open_with_title": "Open with",
   "share_permission_title": "Permission required",
   "share_permission_message": "ZenFile does not have permission to access this file. Please share it again or grant permission and retry.",
   "@share_permission_title": {

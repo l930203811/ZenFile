@@ -3205,10 +3205,10 @@ class L10nFr extends L10n {
   String get ui_file => 'Fichier';
 
   @override
-  String get ui_backup_settings => 'Sauvegarder';
+  String get ui_backup_settings => 'Démarrer la sauvegarde';
 
   @override
-  String get ui_restore_settings => 'Restaurer';
+  String get ui_restore_settings => 'Démarrer la restauration';
 
   @override
   String get ui_backup_info => 'Informations de sauvegarde';
@@ -4895,7 +4895,7 @@ class L10nFr extends L10n {
       'La lecture vidéo distante SMB / FTP / SFTP peut encore saccader dans certains cas ; l\'optimisation se poursuit.';
 
   @override
-  String get ui_select_backup_path => 'Sélectionner le chemin de sauvegarde';
+  String get ui_select_backup_path => 'Chemin de sauvegarde personnalisé';
 
   @override
   String get ui_backup_path_local => 'Local';
@@ -6280,6 +6280,9 @@ class L10nFr extends L10n {
 
   @override
   String get vault_import_backup => 'Importer la sauvegarde';
+
+  @override
+  String get vault_backup_restore => 'Sauvegarde / Restauration';
 
   @override
   String get vault_import_backup_desc =>

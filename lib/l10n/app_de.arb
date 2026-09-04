@@ -3499,8 +3499,8 @@
   "@ui_file": {
     "description": "ui widgets"
   },
-  "ui_backup_settings": "Sichern",
-  "ui_restore_settings": "Wiederherstellen",
+  "ui_backup_settings": "Sicherung starten",
+  "ui_restore_settings": "Wiederherstellung starten",
   "ui_backup_info": "Sicherungsinformationen",
   "ui_backup_file": "Sicherungsdatei",
   "ui_no_backup_file": "Keine Sicherungsdatei",
@@ -4717,7 +4717,7 @@
     "description": "v1.1.26 changelog entry"
   },
   "changelog_v1126_known_1": "Die Wiedergabe von Remote-Video über SMB / FTP / SFTP kann in einigen Fällen noch ruckeln; die Optimierung läuft weiter.",
-  "ui_select_backup_path": "Sicherungspfad auswählen",
+  "ui_select_backup_path": "Eigenen Sicherungspfad wählen",
   "@ui_select_backup_path": {
     "description": "Backup & restore settings screen"
   },
@@ -6180,6 +6180,7 @@
   "vault_export_backup": "Sicherung exportieren",
   "vault_export_backup_desc": "Verschlüsselte Tresor-Sicherung exportieren (.zip)",
   "vault_import_backup": "Sicherung importieren",
+  "vault_backup_restore": "Sichern / Wiederherstellen",
   "vault_import_backup_desc": "Tresor aus Sicherung wiederherstellen (.zip)",
   "vault_uninstall_warning_title": "Deinstallationswarnung",
   "vault_uninstall_warning": "Bei Deinstallation der App wird der Tresor gelöscht. Exportieren Sie zuerst eine Sicherung.",
@@ -6235,7 +6236,7 @@
   },
   "open_file": "Open",
   "open_in_location": "Open file location",
-  "open_with_title": "Open with"  ,
+  "open_with_title": "Open with",
   "share_permission_title": "Permission required",
   "share_permission_message": "ZenFile does not have permission to access this file. Please share it again or grant permission and retry.",
   "@share_permission_title": {

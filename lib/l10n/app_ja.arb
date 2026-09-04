@@ -3506,8 +3506,8 @@
   "@ui_file": {
     "description": "ui widgets"
   },
-  "ui_backup_settings": "バックアップ",
-  "ui_restore_settings": "復元",
+  "ui_backup_settings": "バックアップを開始",
+  "ui_restore_settings": "復元を開始",
   "ui_backup_info": "バックアップ情報",
   "ui_backup_file": "バックアップファイル",
   "ui_no_backup_file": "バックアップファイルはありません",
@@ -4724,7 +4724,7 @@
     "description": "v1.1.26 changelog entry"
   },
   "changelog_v1126_known_1": "SMB / FTP / SFTP のリモート動画再生は、一部の場面でまだカクつくことがあります。継続的に最適化中です。",
-  "ui_select_backup_path": "バックアップ先を選択",
+  "ui_select_backup_path": "バックアップ先をカスタマイズ",
   "@ui_select_backup_path": {
     "description": "Backup & restore settings screen"
   },
@@ -6187,6 +6187,7 @@
   "vault_export_backup": "バックアップを書き出し",
   "vault_export_backup_desc": "暗号化された金庫のバックアップを書き出し (.zip)",
   "vault_import_backup": "バックアップを読み込み",
+  "vault_backup_restore": "バックアップ/復元",
   "vault_import_backup_desc": "バックアップから金庫を復元 (.zip)",
   "vault_uninstall_warning_title": "アンインストールの警告",
   "vault_uninstall_warning": "アプリをアンインストールすると金庫が消去されます。先にバックアップを書き出してください。",
@@ -6242,7 +6243,7 @@
   },
   "open_file": "Open",
   "open_in_location": "Open file location",
-  "open_with_title": "Open with"  ,
+  "open_with_title": "Open with",
   "share_permission_title": "Permission required",
   "share_permission_message": "ZenFile does not have permission to access this file. Please share it again or grant permission and retry.",
   "@share_permission_title": {

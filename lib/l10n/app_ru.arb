@@ -3502,8 +3502,8 @@
   "@ui_file": {
     "description": "ui widgets"
   },
-  "ui_backup_settings": "Резервное копирование",
-  "ui_restore_settings": "Восстановить",
+  "ui_backup_settings": "Начать резервное копирование",
+  "ui_restore_settings": "Начать восстановление",
   "ui_backup_info": "Информация о Резервной Копии",
   "ui_backup_file": "Файл Резервной Копии",
   "ui_no_backup_file": "Нет файла резервной копии",
@@ -4720,7 +4720,7 @@
     "description": "v1.1.26 changelog entry"
   },
   "changelog_v1126_known_1": "Воспроизведение удалённого видео по SMB / FTP / SFTP в некоторых сценариях всё ещё может подтормаживать; оптимизация продолжается.",
-  "ui_select_backup_path": "Выбрать путь резервной копии",
+  "ui_select_backup_path": "Свой путь резервного копирования",
   "@ui_select_backup_path": {
     "description": "Backup & restore settings screen"
   },
@@ -6183,6 +6183,7 @@
   "vault_export_backup": "Экспорт резервной копии",
   "vault_export_backup_desc": "Экспорт зашифрованной резервной копии хранилища (.zip)",
   "vault_import_backup": "Импорт резервной копии",
+  "vault_backup_restore": "Резервная копия / Восстановление",
   "vault_import_backup_desc": "Восстановить хранилище из резервной копии (.zip)",
   "vault_uninstall_warning_title": "Предупреждение об удалении",
   "vault_uninstall_warning": "При удалении приложения хранилище очищается. Сначала экспортируйте резервную копию.",
@@ -6238,7 +6239,7 @@
   },
   "open_file": "Open",
   "open_in_location": "Open file location",
-  "open_with_title": "Open with"  ,
+  "open_with_title": "Open with",
   "share_permission_title": "Permission required",
   "share_permission_message": "ZenFile does not have permission to access this file. Please share it again or grant permission and retry.",
   "@share_permission_title": {
