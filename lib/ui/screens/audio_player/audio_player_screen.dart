@@ -23,6 +23,7 @@ import '../../../providers/file_manager_provider.dart';
 import '../internal_file_picker_screen.dart';
 import 'audio_artwork_widget.dart';
 import 'audio_waveform_widget.dart';
+import 'marquee_text_widget.dart';
 import 'audio_controls_widget.dart';
 import 'audio_queue_sheet.dart';
 import 'audio_particles_widget.dart';
@@ -2549,10 +2550,12 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                _currentTitle,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                              // 超长标题向左循环滚动（跑马灯），避免省略号截断
+                              MarqueeText(
+                                text: _currentTitle,
+                                textAlign: TextAlign.left,
+                                active: isPlaying,
+                                scrollWhenPaused: true,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w800,
                                   fontSize: 24,
@@ -2698,11 +2701,12 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Text(
-                                _currentTitle,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
+                              // 超长标题向左循环滚动（跑马灯），避免省略号截断
+                              MarqueeText(
+                                text: _currentTitle,
                                 textAlign: TextAlign.center,
+                                active: isPlaying,
+                                scrollWhenPaused: true,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w800,
                                   fontSize: 20,

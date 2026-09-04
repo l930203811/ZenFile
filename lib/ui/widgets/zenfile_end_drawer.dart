@@ -242,58 +242,79 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
       child: Material(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(12),
-        child: InkWell(
-          onTap: onTap,
-          onLongPress: () => _showItemMenu(context, fav),
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: Row(
-              children: [
-                Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Icon(
-                      isDirectory ? Broken.folder : Broken.document,
-                      size: 22,
-                      color: isDirectory ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.7),
-                    ),
-                    if (isRemote)
-                      Positioned(
-                        right: -3,
-                        bottom: -3,
-                        child: Container(
-                          padding: const EdgeInsets.all(1.5),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.surface,
-                            shape: BoxShape.circle,
+        child: Row(
+          children: [
+            // 主内容：点击打开收藏，长按弹出「编辑 / 删除」菜单
+            Expanded(
+              child: InkWell(
+                onTap: onTap,
+                onLongPress: () => _showItemMenu(context, fav),
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  child: Row(
+                    children: [
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Icon(
+                            isDirectory ? Broken.folder : Broken.document,
+                            size: 22,
+                            color: isDirectory ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.7),
                           ),
-                          child: Icon(
-                            Broken.cloud,
-                            size: 9,
-                            color: theme.colorScheme.primary,
-                          ),
+                          if (isRemote)
+                            Positioned(
+                              right: -3,
+                              bottom: -3,
+                              child: Container(
+                                padding: const EdgeInsets.all(1.5),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.surface,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Broken.cloud,
+                                  size: 9,
+                                  color: theme.colorScheme.primary,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          name,
+                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                  ],
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    name,
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-                    overflow: TextOverflow.ellipsis,
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
+            // 右侧三点按钮：竖向三点（⋮），点击同样弹出「编辑 / 删除」菜单，靠右对齐
+            IconButton(
+              icon: Icon(
+                Icons.more_vert,
+                size: 22,
+                color: theme.colorScheme.onSurface.withOpacity(0.6),
+              ),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              tooltip: L10n.of(context).ui_more,
+              onPressed: () => _showItemMenu(context, fav),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  /// 处理收藏项点击：远程收藏需要重建连接会话，本地收藏直接 loadDirectory。
+  /// 处理收藏项点击：无论本地还是远程，均使用「新标签页」打开，
+  /// 不再覆盖已激活的 Tab；双窗口模式下新标签会落到未激活的那一侧窗口。
+  /// 远程收藏需要重建连接会话（见 [_openRemoteFavorite]），本地收藏用 addTab 打开。
   /// 无论哪种情况，完成后都切换到浏览页。
   void _openFavorite(Map<String, dynamic> fav, BuildContext context) {
     final provider = widget.provider;
@@ -312,23 +333,16 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
           return;
         }
       }
-      // 连接信息缺失或已删除，回退到本地 loadDirectory（多半会失败，但至少有兜底）
+      // 连接信息缺失或已删除，回退到本地新建标签页
     }
 
-    // 本地收藏：若当前激活 Tab 是远程 Tab，loadDirectory 会走远程分支
-    // 用 remoteClient 列本地路径导致空目录，故先切回本地 Tab 再加载。
-    if (provider.activeTab.isRemote) {
-      final localTabIndex = provider.tabs.indexWhere((t) => !t.isRemote);
-      if (localTabIndex >= 0) {
-        provider.setActiveTab(localTabIndex);
-      }
-    }
-
+    // 一律使用新标签页打开（不再覆盖已激活的 Tab）；
+    // 双窗口模式下 addTab 会自动把新标签放到未激活的那一侧窗口。
     if (isDirectory) {
-      provider.loadDirectory(path);
+      provider.addTab(path);
     } else {
-      provider.loadDirectory(p.dirname(path));
-      // 跳转到父目录后，打开文件本身
+      provider.addTab(p.dirname(path));
+      // 跳转到父目录后，在新建标签页中打开文件本身
       provider.showFileInLocation(path);
       provider.openFile(context, path);
     }
@@ -583,7 +597,7 @@ class _ZenFileEndDrawerState extends State<ZenFileEndDrawer> {
           children: [
             ListTile(
               leading: Icon(Broken.edit_2, size: 22),
-              title: Text(l10n.ui_edit_favorite),
+              title: Text(l10n.ui_edit),
               onTap: () {
                 Navigator.pop(ctx);
                 _editFavorite(fav);

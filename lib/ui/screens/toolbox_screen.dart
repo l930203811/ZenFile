@@ -41,33 +41,44 @@ class ToolboxScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(l10n.cat_toolbox),
       ),
-      body: ListView.separated(
+      body: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: items.length,
-        separatorBuilder: (_, __) => const Divider(height: 1),
         itemBuilder: (context, index) {
           final item = items[index];
-          return ListTile(
-            leading: Container(
-              width: 44,
-              height: 44,
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Container(
               decoration: BoxDecoration(
-                color: item.color.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: theme.colorScheme.onSurface.withOpacity(0.18),
+                  width: 1,
+                ),
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(item.icon, color: item.color, size: 24),
+              child: ListTile(
+                leading: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: item.color.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(item.icon, color: item.color, size: 24),
+                ),
+                title: Text(item.title),
+                trailing: Icon(
+                  Icons.chevron_right,
+                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => item.buildPage()),
+                  );
+                },
+              ),
             ),
-            title: Text(item.title),
-            trailing: Icon(
-              Icons.chevron_right,
-              color: theme.colorScheme.onSurface.withOpacity(0.5),
-            ),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => item.buildPage()),
-              );
-            },
           );
         },
       ),

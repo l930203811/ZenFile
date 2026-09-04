@@ -12,12 +12,14 @@ import 'package:intl/intl.dart';
 import 'package:audio_service/audio_service.dart';
 import '../../providers/media_provider.dart';
 import '../../providers/file_manager_provider.dart';
+import '../../services/pin_service.dart';
 import '../../services/remote/remote_client.dart';
 import '../../services/preferences_service.dart';
 import '../../services/category_sync_service.dart';
 import '../../services/remote_guard_service.dart';
 import '../../services/audio_background_handler.dart';
 import '../../core/utils.dart';
+import '../../core/navigator_key.dart';
 import '../../services/app_manager_service.dart';
 import '../../services/media_thumbnail_service.dart';
 import 'image_viewer_screen.dart';
@@ -28,6 +30,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../widgets/file_action_dialogs.dart';
 import '../widgets/batch_rename_dialog.dart';
+import '../widgets/create_archive_dialog.dart';
 import '../widgets/archive_type_icon.dart';
 import '../widgets/file_type_icon.dart';
 import '../widgets/remote_path_picker.dart';
@@ -2595,75 +2598,389 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
     );
   }
 
+  /// 多选底栏：结构与「最近」页共享的 SelectionActionBar 对齐
+  /// （复制/剪切/重命名/全选/删除 + 「更多」弹窗），但复用本页自身的
+  /// 选择状态（_selectedFilePaths / _selectedAssetIds）与各 handler。
   Widget _buildBottomActionBar(ThemeData theme) {
+    final l10n = L10n.of(context);
+    final selectedCount = _selectedFilePaths.length + _selectedAssetIds.length;
+
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
           ),
         ],
       ),
       child: SafeArea(
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(
-              child: _buildActionItem(
-                theme,
-                icon: Broken.document_copy,
-                label: L10n.of(context).ui_copy,
-                onTap: () => _handleCopyCut(false),
+            // 选中计数条
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withOpacity(0.06),
+                border: Border(
+                  bottom: BorderSide(
+                    color: theme.colorScheme.primary.withOpacity(0.1),
+                  ),
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  l10n.selectedcount(selectedCount),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
               ),
             ),
-            Expanded(
-              child: _buildActionItem(
-                theme,
-                icon: Broken.scissor,
-                label: L10n.of(context).ui_cut,
-                onTap: () => _handleCopyCut(true),
-              ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildActionItem(
+                    theme,
+                    icon: Broken.document_copy,
+                    label: l10n.ui_copy,
+                    onTap: () => _handleCopyCut(false),
+                  ),
+                ),
+                Expanded(
+                  child: _buildActionItem(
+                    theme,
+                    icon: Broken.scissor,
+                    label: l10n.ui_cut,
+                    onTap: () => _handleCopyCut(true),
+                  ),
+                ),
+                Expanded(
+                  child: _buildActionItem(
+                    theme,
+                    icon: Broken.edit,
+                    label: l10n.msgc8ce4b36,
+                    onTap: _handleBatchRename,
+                  ),
+                ),
+                Expanded(
+                  child: _buildActionItem(
+                    theme,
+                    icon: Broken.tick_square,
+                    label: l10n.ui_select_all,
+                    onTap: () => _selectAll(context.read<MediaProvider>()),
+                  ),
+                ),
+                Expanded(
+                  child: _buildActionItem(
+                    theme,
+                    icon: Broken.trash,
+                    label: l10n.ui_delete,
+                    color: Colors.redAccent,
+                    onTap: _handleDelete,
+                  ),
+                ),
+                Expanded(
+                  child: PopupMenuButton<String>(
+                    icon: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Broken.more, size: 24),
+                        const SizedBox(height: 4),
+                        AutoSizeText(
+                          l10n.ui_more,
+                          minFontSize: 8,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    position: PopupMenuPosition.under,
+                    elevation: 8,
+                    onSelected: (action) => _onSelectionActionSelected(action),
+                    itemBuilder: (ctx) => _buildSelectionMoreItems(),
+                  ),
+                ),
+              ],
             ),
-            Expanded(
-              child: _buildActionItem(
-                theme,
-                icon: Broken.edit,
-                label: L10n.of(context).msgc8ce4b36,
-                onTap: _handleBatchRename,
-              ),
-            ),
-            Expanded(
-              child: _buildActionItem(
-                theme,
-                icon: Broken.trash,
-                label: L10n.of(context).ui_delete,
-                color: Colors.red,
-                onTap: _handleDelete,
-              ),
-            ),
-            Expanded(
-              child: _buildActionItem(
-                theme,
-                icon: Icons.share_outlined,
-                label: L10n.of(context).ui_share,
-                onTap: _handleShare,
-              ),
-            ),
-            Expanded(
-              child: _buildActionItem(
-                theme,
-                icon: Broken.info_circle,
-                label: L10n.of(context).ui_info,
-                onTap: () => _showPropertiesDialog(),
-              ),
-            ),
+            const SizedBox(height: 8),
           ],
         ),
       ),
     );
+  }
+
+  /// 将当前选中的媒体项解析为真实文件路径列表（含把 assetId 对应的媒体文件
+  /// 解析为本地文件），供「更多」弹窗中需要文件路径的操作（压缩/收藏/置顶/打开方式）使用。
+  Future<List<String>> _resolveSelectedFilePaths() async {
+    final result = <String>[..._selectedFilePaths];
+    if (_selectedAssetIds.isNotEmpty) {
+      final provider = context.read<MediaProvider>();
+      final allAssets = [
+        ...provider.images,
+        ...provider.videos,
+        ...provider.screenshots,
+      ];
+      for (final id in _selectedAssetIds) {
+        final match = allAssets.where((a) => a.id == id).firstOrNull;
+        if (match != null) {
+          final f = await match.file;
+          if (f != null) result.add(f.path);
+        }
+      }
+    }
+    return result;
+  }
+
+  List<PopupMenuEntry<String>> _buildSelectionMoreItems() {
+    final l10n = L10n.of(context);
+    final selected = <String>[..._selectedFilePaths];
+    final hasArchive = selected.any((p) => FileUtils.isArchive(p));
+    final allPinned =
+        selected.isNotEmpty &&
+        selected.every((p) => PinService.isPinned(p));
+    final hasClipboard = context.read<FileManagerProvider>().hasClipboard;
+
+    return [
+      if (hasArchive)
+        PopupMenuItem(
+          value: 'extract',
+          child: Row(
+            children: [
+              const Icon(Broken.box, size: 20),
+              const SizedBox(width: 12),
+              Text(
+                l10n.ui_extract,
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+        ),
+      PopupMenuItem(
+        value: 'archive',
+        child: Row(
+          children: [
+            const Icon(Broken.box_add, size: 20),
+            const SizedBox(width: 12),
+            Text(
+              l10n.ui_compress,
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+      ),
+      if (hasClipboard)
+        PopupMenuItem(
+          value: 'paste',
+          child: Row(
+            children: [
+              const Icon(Broken.clipboard, size: 20),
+              const SizedBox(width: 12),
+              Text(
+                l10n.msg419be096,
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+        ),
+      PopupMenuItem(
+        value: 'share',
+        child: Row(
+          children: [
+            const Icon(Icons.share_outlined, size: 20),
+            const SizedBox(width: 12),
+            Text(
+              l10n.ui_share,
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+      ),
+      PopupMenuItem(
+        value: 'favorite',
+        child: Row(
+          children: [
+            const Icon(Broken.folder_favorite, size: 20),
+            const SizedBox(width: 12),
+            Text(
+              l10n.ui_favorite,
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+      ),
+      PopupMenuItem(
+        value: 'pin_to_top',
+        child: Row(
+          children: [
+            Icon(
+              allPinned ? Icons.push_pin_rounded : Icons.push_pin_outlined,
+              size: 20,
+              color: allPinned ? Colors.orange : null,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              allPinned ? l10n.msga9b87614 : l10n.ui_pin_to_top,
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+      ),
+      PopupMenuItem(
+        value: 'open_with',
+        child: Row(
+          children: [
+            const Icon(Broken.export, size: 20),
+            const SizedBox(width: 12),
+            Text(
+              l10n.msg2a4cfb07,
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+      ),
+      PopupMenuItem(
+        value: 'properties',
+        child: Row(
+          children: [
+            const Icon(Broken.info_circle, size: 20),
+            const SizedBox(width: 12),
+            Text(
+              l10n.ui_properties,
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+      ),
+    ];
+  }
+
+  Future<void> _onSelectionActionSelected(String action) async {
+    final l10n = L10n.of(context);
+    final fm = context.read<FileManagerProvider>();
+
+    if (action == 'extract') {
+      final archivePath = _selectedFilePaths.firstWhere(
+        (p) => FileUtils.isArchive(p),
+        orElse: () => '',
+      );
+      if (archivePath.isNotEmpty) {
+        await fm.extractArchiveDirectly(context, archivePath);
+      }
+    } else if (action == 'archive') {
+      final paths = await _resolveSelectedFilePaths();
+      if (paths.isEmpty) return;
+      final initialName =
+          paths.length == 1 ? path_helper.basename(paths.first) : 'archive';
+      final res = await CreateArchiveDialog.show(
+        context,
+        initialName: initialName,
+        isMultiSelection: paths.length > 1,
+      );
+      if (res != null) {
+        // 用根 navigator 的 context，避免 createArchive 内退出选择模式后
+        // 本 widget context 失效导致进度弹窗挂载失败。
+        final rootContext = navigatorKey.currentContext ?? context;
+        await fm.createArchive(
+          archiveName: res.archiveName,
+          format: res.format,
+          compressionLevel: res.compressionLevel,
+          password: res.password,
+          splitSizeMB: res.splitSizeMB,
+          deleteSource: res.deleteSource,
+          separateArchives: res.separateArchives,
+          targetPaths: paths,
+          context: rootContext,
+        );
+      }
+    } else if (action == 'paste') {
+      await _handlePaste();
+      _clearSelection();
+    } else if (action == 'share') {
+      await _handleShare();
+    } else if (action == 'favorite') {
+      final paths = await _resolveSelectedFilePaths();
+      if (paths.isEmpty) return;
+      final group = await FileActionDialogs.showFavoriteGroupPicker(
+        context,
+        existingGroups: fm.getFavoriteGroups(),
+      );
+      if (group == null) return;
+      for (final p in paths) {
+        final isRemote = p.startsWith('remote://');
+        final connId =
+            isRemote ? FileManagerProvider.connectionForRemotePath(p)?.id : null;
+        final isDir = isRemote ? true : Directory(p).existsSync();
+        fm.addFavorite(
+          p,
+          path_helper.basename(p),
+          isDir,
+          isRemote: isRemote,
+          connectionId: connId,
+          group: group.isEmpty ? null : group,
+        );
+      }
+      _clearSelection();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.msg_favorited(path_helper.basename(paths.first))),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } else if (action == 'pin_to_top') {
+      final paths = await _resolveSelectedFilePaths();
+      if (paths.isEmpty) return;
+      final allPinned = paths.every((p) => PinService.isPinned(p));
+      for (final p in paths) {
+        if (allPinned) {
+          await PinService.unpin(p);
+        } else {
+          await PinService.pin(p);
+        }
+      }
+      fm.refreshDirectoryView();
+      _clearSelection();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              allPinned ? l10n.msga9b87614 : l10n.ui_pinned_selected,
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } else if (action == 'open_with') {
+      final paths = await _resolveSelectedFilePaths();
+      if (paths.isEmpty) return;
+      if (paths.length == 1) {
+        await fm.showOpenWithSheet(context, paths.first);
+      } else {
+        for (final p in paths) {
+          await fm.openWithSystemChooser(p);
+        }
+      }
+      _clearSelection();
+    } else if (action == 'properties') {
+      await _showPropertiesDialog();
+    }
   }
 
   Widget _buildActionItem(

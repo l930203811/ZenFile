@@ -148,16 +148,30 @@ class _AudioWaveformWidgetState extends State<AudioWaveformWidget>
         return AnimatedBuilder(
           animation: _animController,
           builder: (context, _) {
-            // subtle dynamic breathing when playing
-            final breath = widget.isPlaying ? sin(_animController.value * 2 * pi) * 0.08 : 0.0;
+            // 播放时“鼓点节奏”跳动：以低频鼓点包络为主驱动，整体随鼓点起伏
+            // （≈1.3Hz，接近 70~80 BPM 的节拍），高频仅做轻微细节扰动，
+            // 避免之前的高频快速闪烁；暂停时回落到静态波形。
+            final t = _animController.value;
+            final drum = sin(t * 2 * pi * 1.9); // 低频鼓点，-1..1
+            final barHeights = List<double>.generate(_barCount, (i) {
+              final base = _normalizedHeights[i];
+              if (widget.isPlaying) {
+                final x = i / _barCount;
+                // 高频细节微扰（不抢鼓点主节奏）
+                final detail = 0.16 * sin(t * 2 * pi * (3.0 + x * 4.0) + i * 0.6);
+                // 鼓点驱动：低频柱（左侧）跟随鼓点更明显
+                final kick = (1.0 - x * 0.35) * drum;
+                final level = (0.72 * kick + detail).clamp(-1.0, 1.0);
+                return (base * (1 + 0.6 * level)).clamp(0.0, 1.0);
+              }
+              return base;
+            });
 
             final behindBars = Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: List.generate(_barCount, (i) {
-                double h = (_normalizedHeights[i] + (i % 2 == 0 ? breath : -breath))
-                        .clamp(0.0, 1.0) *
-                    maxBarHeight;
+                double h = barHeights[i] * maxBarHeight;
                 h = h.clamp(minBarHeight, maxBarHeight);
                 return SizedBox(
                   width: barWidth,
@@ -171,9 +185,7 @@ class _AudioWaveformWidgetState extends State<AudioWaveformWidget>
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: List.generate(_barCount, (i) {
-                double h = (_normalizedHeights[i] + (i % 2 == 0 ? breath : -breath))
-                        .clamp(0.0, 1.0) *
-                    maxBarHeight;
+                double h = barHeights[i] * maxBarHeight;
                 h = h.clamp(minBarHeight, maxBarHeight);
                 return SizedBox(
                   width: barWidth,
