@@ -716,7 +716,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   Text(L10n.of(context).msg305734ce, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
 
-                  _buildV1139Changelog(ctx, theme),
+                  _buildV1140Changelog(ctx, theme),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -727,7 +727,7 @@ class AboutZenFileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildV1139Changelog(BuildContext ctx, ThemeData theme) {
+  Widget _buildV1140Changelog(BuildContext ctx, ThemeData theme) {
     final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
     final enStyle = TextStyle(fontSize: 12, height: 1.5, color: theme.colorScheme.onSurface.withOpacity(0.5));
     final sectionStyle = TextStyle(fontSize: 14, height: 1.6, color: theme.colorScheme.primary, fontWeight: FontWeight.w700);
@@ -765,71 +765,59 @@ class AboutZenFileScreen extends StatelessWidget {
                   color: theme.colorScheme.primary.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text('v1.1.39', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
+                child: Text('v1.1.40', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
               ),
               const SizedBox(width: 10),
-              Text('2026-09-03', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+              Text('2026-09-04', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
             ],
           ),
           gap(14),
 
-          Text('✨ 新增功能 · New Features', style: sectionStyle),
+          Text('🎵 音频播放器 · Audio Player', style: sectionStyle),
           gap(6),
           zhEn(
-            '图片编辑器绘图工具：新增 7 种绘图工具（画笔 / 文本 / 矩形 / 椭圆 / 直线 / 箭头 / 马赛克）；文本实时完整显示（不再被省略截断），矩形 / 椭圆即时预览，辅助框自动隐藏（仅点击选中项才显示），切换工具自动保存且可经顶部按钮撤回。',
-            'Image editor drawing tool: 7 tools added (brush / text / rectangle / ellipse / line / arrow / mosaic). Text renders fully live, rectangles/ellipses preview instantly, helper boxes auto-hide (shown only for the tapped item), and switching tools auto-saves with the top undo button available.',
+            '标题跑马灯：主播放页标题过长时自动无缝向左循环滚动，未超宽时静态居中。',
+            'Title marquee: When the main player title is too long, it auto-scrolls seamlessly and loops to the left; when it fits within the width, it stays statically centered.',
           ),
           zhEn(
-            '保险箱指纹解锁 + 导出 / 导入备份：支持指纹解锁；可一键导出 / 导入整库备份，避免卸载重装后数据丢失。',
-            'Vault fingerprint unlock + export/import backup: unlock with fingerprint; export/import a full vault backup in one tap so data survives uninstall & reinstall.',
+            '均衡器修复：修复播放中均衡器不生效——attach 时机前移到 open 之前（与视频播放器一致），每次播放重新 attach 当前 platform，platform 未就绪时有限重试以防死循环。',
+            'Equalizer fix: Fixed the equalizer not taking effect during playback — the attach step is moved to before open (consistent with the video player), re-attaching the current platform on every playback, with limited retries when the platform is not ready to avoid infinite loops.',
           ),
           gap(14),
 
-          Text('🐛 问题修复 · Bug Fixes', style: sectionStyle),
+          Text('📁 受限路径修复 · Restricted Path Fixes', style: sectionStyle),
           gap(6),
           zhEn(
-            '从其它应用分享不再复制进应用私有缓存：图库 / 文件管理器 / 媒体库的文件保留在原位置打开，不额外占空间；「打开文件所在位置」直达真实文件夹并高亮。私有内容分享（如 WhatsApp）因系统不暴露真实路径仍会缓存。',
-            'Sharing from other apps no longer copies into the app-private cache: files from gallery / file manager / media library open in place with no extra space; "Open file location" jumps to the real folder and highlights the file. Private-content shares (e.g. WhatsApp) still cache because the system hides the real path.',
+            '文件夹大小 0B：受限路径改用 Shizuku shell（find+stat 双路径）统计，底层 /data/media/0 优先、FUSE 直达回退，与 listFiles 策略一致；Dart IO 仅作兜底。',
+            'Folder size showing 0B: Restricted paths now use the Shizuku shell (dual find+stat paths) for size calculation, preferring the underlying /data/media/0 with a FUSE direct fallback, consistent with the listFiles strategy; Dart IO is only used as a last resort.',
           ),
           zhEn(
-            '分享入口选择框：无权限读取分享文件时直接弹权限提示（不再尝试注定失败的复制）；外部打开方式选择框改为左对齐，顺序为「打开 → 打开文件所在位置 → 取消」。',
-            'Share dialog: lacking permission to read a shared file now prompts for permission directly (no doomed copy); the external-open chooser is left-aligned and ordered "Open → Open file location → Cancel".',
+            '重命名无效：受限路径重命名改为 FUSE 直达优先 + 底层回退双跳并校验结果。',
+            'Rename not working: restricted-path rename now uses FUSE direct-first + underlying fallback with a double jump and result verification.',
           ),
           zhEn(
-            '分享后「打开文件所在位置」精准跳转：先切到浏览页，再加载父目录并居中高亮目标文件。',
-            'Precise "Open file location" after sharing: it now switches to the browse tab, loads the parent directory, and highlights the target file.',
+            '并排查看 0 项：受限路径计数优先走 shell listFiles，listRawPath 仅兜底。',
+            'Side-by-side view showing 0 items: restricted-path counting prefers the shell listFiles, with listRawPath only as a fallback.',
           ),
           zhEn(
-            '视频无声修复：首次打开即有声音；软解 / 硬解切换后均衡器重新挂载且仍有声；退出重开不再丢失声音。',
-            'Video no-audio fixed: video now has sound on first open; toggling soft/hard decode re-attaches the equalizer and keeps audio; reopening the player no longer loses sound.',
-          ),
-          zhEn(
-            '均衡器修复：视频切回音频时预设生效；从后台返回不再被重置为 Flat，预设重新应用且后台播放保持挂载。',
-            'Equalizer fixes: preset applies when switching from video back to audio; returning from background no longer resets to Flat — the preset is reapplied and stays attached during background playback.',
-          ),
-          zhEn(
-            '点击媒体通知栏可正确跳转到对应播放页。',
-            'Tapping the media notification now correctly jumps to the relevant player screen.',
-          ),
-          zhEn(
-            'Android/data 根目录显示 0 项：回退到 Shizuku 原始路径列举以正确显示内容。',
-            'Android/data root showing 0 items: now falls back to raw Shizuku path listing.',
-          ),
-          zhEn(
-            '双窗口浏览器文件夹项：修复大小 / 数量 / 日期缺失与英文硬编码，现以紧凑的「数量 • 大小 • 日期」展示并跟随多语言。',
-            'Split-pane browser folder items: fixed missing size/count/date and hardcoded English; now shown as compact "count • size • date" and localized.',
-          ),
-          zhEn(
-            '卸载重装后保险箱恢复失败：备份包内嵌 V2 密码校验参数，重装后可用原密码解锁恢复；跨设备导入时把记录重新指向真实保险箱路径。',
-            'Vault restore failure after reinstall: the backup now embeds V2 password parameters so the original password unlocks after reinstall; cross-device import redirects records to the real vault path.',
+            '移动变复制 + 0 字节：受限源移动优先原子 mv，失败回退 copy+delete；copy 增加源/目标 size 一致性校验，FUSE 读受限时自动删目标并底层重试；rename/move/delete 增加结果校验，失败显式抛错不再静默。',
+            'Move turned into copy + 0 bytes: restricted-source move prefers atomic mv, falling back to copy+delete; copy adds a source/target size-consistency check, auto-deletes the target and retries at the underlying layer when FUSE read is restricted; rename/move/delete add result verification and throw explicitly on failure instead of failing silently.',
           ),
           gap(14),
 
-          Text('🔧 其它优化 · Other', style: sectionStyle),
+          Text('🔐 保险箱设置页重构 · Vault Settings Page Refactor', style: sectionStyle),
           gap(6),
           zhEn(
-            '分类页多选栏：修复窄语言下的文字溢出；图片查看器操作栏：修复俄语等较长语言标签的溢出。',
-            'Category multi-select bar: fixed text overflow under narrow languages; image viewer action bar: fixed overflow of long-language labels (e.g. Russian).',
+            '黄色 ⚠️ 安全警告独立展示于「安全设置」标题上方（纯展示、无涟漪无边框）。',
+            'The yellow ⚠️ security warning is shown independently above the Security Settings title (display-only, no ripple, no border).',
+          ),
+          zhEn(
+            '「安全设置」「备份/恢复」改为可下拉折叠分组（居中标题 + 旋转箭头），默认收缩。',
+            'Security Settings and Backup/Restore are now collapsible grouped sections (centered title + rotating arrow), collapsed by default.',
+          ),
+          zhEn(
+            '卸载警告拆为独立卡片区域；折叠标题改靠左对齐并加 1px 细边框圆角容器。',
+            'The uninstall warning is split into its own card area; the collapsible-section title is now left-aligned and wrapped in a 1px thin-bordered rounded container.',
           ),
         ],
       ),

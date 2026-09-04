@@ -7,8 +7,6 @@ A beautifully crafted, open-source file manager and offline media center for And
 
 ---
 
-## 🚀 What's New in v1.1.39
-
 > 📥 For users in China, download from any of the mirrors below (identical to the GitHub Release):
 
 - ☁️ **123 Cloud Drive**: https://1820255615.share.123pan.cn/123pan/WrRojv-JHpnA?pwd=hBR2
@@ -17,26 +15,6 @@ A beautifully crafted, open-source file manager and offline media center for And
 - ☁️ **Quark**: https://pan.quark.cn/s/e6081a88d463
 - ☁️ **PikPak**: https://mypikpak.com/s/VOxGdQB3fVNO32sq_I3o2Wkmo2
 
-### ✨ New Features
-
-- **Image editor drawing tool**: 7 tools added (brush / text / rectangle / ellipse / line / arrow / mosaic). Text renders fully live (no ellipsis truncation), rectangles / ellipses preview instantly, helper boxes auto-hide (shown only for the tapped item), and switching tools auto-saves with the top undo button available.
-- **Vault fingerprint unlock + export / import backup**: unlock with fingerprint; export / import a full vault backup in one tap so data survives uninstall & reinstall.
-
-### 🐛 Bug Fixes
-
-- **Sharing from other apps no longer copies into the app-private cache**: files from gallery / file manager / media library open in place with no extra space; "Open file location" jumps to the real folder and highlights the file. Private-content shares (e.g. WhatsApp) still cache because the system hides the real path.
-- **Share dialog polish**: lacking permission to read a shared file now prompts for permission directly (no doomed copy); the external-open chooser is left-aligned and ordered "Open → Open file location → Cancel".
-- **Precise "Open file location" after sharing**: it now switches to the browse tab, loads the parent directory, and highlights the target file.
-- **Video no-audio fixed**: video now has sound on first open; toggling soft / hard decode re-attaches the equalizer and keeps audio; reopening the player no longer loses sound.
-- **Equalizer fixes**: preset applies when switching from video back to audio; returning from background no longer resets to Flat — the preset is reapplied and stays attached during background playback.
-- **Media notification tap** now correctly jumps to the relevant player screen.
-- **Android/data root showing 0 items**: now falls back to raw Shizuku path listing.
-- **Split-pane browser folder items**: fixed missing size / count / date and hardcoded English; now shown as compact "count • size • date" and localized.
-- **Vault restore failure after reinstall**: the backup now embeds V2 password parameters so the original password unlocks after reinstall; cross-device import redirects records to the real vault path.
-
-### 🔧 Other
-
-- **Category multi-select bar**: fixed text overflow under narrow languages; **image viewer action bar**: fixed overflow of long-language labels (e.g. Russian).
 
 ---
 
