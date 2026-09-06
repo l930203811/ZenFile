@@ -3110,7 +3110,20 @@ class L10nDe extends L10n {
   String get ui_exclude_location => 'Speicherort ausschließen';
 
   @override
-  String get ui_add_custom_path => 'Benutzerdefinierten Pfad hinzufügen';
+  String get ui_add_custom_path => 'Lokalen Pfad hinzufügen';
+
+  @override
+  String get ui_excluded_folders_title => 'Ausgeschlossene Ordner';
+
+  @override
+  String get ui_excluded_folders_empty =>
+      'Keine ausgeschlossenen Ordner. Dateien in hinzugefügten Ordnern werden in dieser Kategorie nicht gescannt.';
+
+  @override
+  String get ui_add_excluded_folder => 'Ordner hinzufügen';
+
+  @override
+  String get ui_remove_excluded_folder => 'Entfernen';
 
   @override
   String ui_added_custom_paths(int count) {

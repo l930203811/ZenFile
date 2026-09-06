@@ -2974,7 +2974,20 @@ class L10nJa extends L10n {
   String get ui_exclude_location => '除外場所';
 
   @override
-  String get ui_add_custom_path => 'カスタムパスを追加';
+  String get ui_add_custom_path => 'ローカルパスを追加';
+
+  @override
+  String get ui_excluded_folders_title => '除外フォルダ';
+
+  @override
+  String get ui_excluded_folders_empty =>
+      '除外フォルダはありません。追加したフォルダ内のファイルはこのカテゴリでスキャンされません。';
+
+  @override
+  String get ui_add_excluded_folder => '除外フォルダを追加';
+
+  @override
+  String get ui_remove_excluded_folder => '除外を解除';
 
   @override
   String ui_added_custom_paths(int count) {

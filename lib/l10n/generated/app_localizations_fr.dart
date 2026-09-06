@@ -3131,7 +3131,20 @@ class L10nFr extends L10n {
   String get ui_exclude_location => 'Exclure l\'emplacement';
 
   @override
-  String get ui_add_custom_path => 'Ajouter un chemin personnalisé';
+  String get ui_add_custom_path => 'Ajouter un chemin local';
+
+  @override
+  String get ui_excluded_folders_title => 'Dossiers exclus';
+
+  @override
+  String get ui_excluded_folders_empty =>
+      'Aucun dossier exclu. Les fichiers des dossiers ajoutés ne seront pas analysés dans cette catégorie.';
+
+  @override
+  String get ui_add_excluded_folder => 'Ajouter un dossier exclu';
+
+  @override
+  String get ui_remove_excluded_folder => 'Retirer';
 
   @override
   String ui_added_custom_paths(int count) {

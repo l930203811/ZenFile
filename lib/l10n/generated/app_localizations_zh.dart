@@ -2963,7 +2963,19 @@ class L10nZh extends L10n {
   String get ui_exclude_location => '排除位置';
 
   @override
-  String get ui_add_custom_path => '添加自定义路径';
+  String get ui_add_custom_path => '添加本地路径';
+
+  @override
+  String get ui_excluded_folders_title => '屏蔽文件夹';
+
+  @override
+  String get ui_excluded_folders_empty => '暂无屏蔽文件夹，添加后该分类将不再扫描此文件夹下的文件';
+
+  @override
+  String get ui_add_excluded_folder => '添加屏蔽文件夹';
+
+  @override
+  String get ui_remove_excluded_folder => '移除屏蔽';
 
   @override
   String ui_added_custom_paths(int count) {
@@ -9199,7 +9211,19 @@ class L10nZhTw extends L10nZh {
   String get ui_exclude_location => '排除位置';
 
   @override
-  String get ui_add_custom_path => '新增自定義路徑';
+  String get ui_add_custom_path => '新增本機路徑';
+
+  @override
+  String get ui_excluded_folders_title => '封鎖資料夾';
+
+  @override
+  String get ui_excluded_folders_empty => '暫無封鎖資料夾，新增後此分類將不再掃描此資料夾下的檔案';
+
+  @override
+  String get ui_add_excluded_folder => '新增封鎖資料夾';
+
+  @override
+  String get ui_remove_excluded_folder => '移除封鎖';
 
   @override
   String ui_added_custom_paths(int count) {

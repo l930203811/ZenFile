@@ -6701,5 +6701,21 @@
   "ui_category_settings_description": "管理该分类的过滤规则与扫描位置",
   "@ui_category_settings_description": {
     "description": "category settings screen description (ui_category_settings_description)"
+  },
+  "ui_excluded_folders_title": "屏蔽資料夾",
+  "@ui_excluded_folders_title": {
+    "description": "category settings - blocked folders"
+  },
+  "ui_excluded_folders_empty": "暫無屏蔽資料夾，新增後該分類將不再掃描此資料夾下的檔案",
+  "@ui_excluded_folders_empty": {
+    "description": "category settings - blocked folders"
+  },
+  "ui_add_excluded_folder": "新增屏蔽資料夾",
+  "@ui_add_excluded_folder": {
+    "description": "category settings - blocked folders"
+  },
+  "ui_remove_excluded_folder": "移除屏蔽"
+  "@ui_remove_excluded_folder": {
+    "description": "category settings - blocked folders"
   }
 }

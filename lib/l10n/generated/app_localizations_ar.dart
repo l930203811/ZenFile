@@ -3059,7 +3059,20 @@ class L10nAr extends L10n {
   String get ui_exclude_location => 'استبعاد الموقع';
 
   @override
-  String get ui_add_custom_path => 'إضافة مسار مخصص';
+  String get ui_add_custom_path => 'إضافة مسار محلي';
+
+  @override
+  String get ui_excluded_folders_title => 'المجلدات المستثناة';
+
+  @override
+  String get ui_excluded_folders_empty =>
+      'لا توجد مجلدات مستثناة. لن يتم مسح ملفات المجلدات المضافة في هذه الفئة.';
+
+  @override
+  String get ui_add_excluded_folder => 'إضافة مجلد مستثنى';
+
+  @override
+  String get ui_remove_excluded_folder => 'إزالة';
 
   @override
   String ui_added_custom_paths(int count) {

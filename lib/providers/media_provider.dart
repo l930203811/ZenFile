@@ -90,6 +90,12 @@ class _FSScanParams {
   /// 各类别"噪音过滤"开关：从主线程偏好同步读入（isolate 无法直接调静态 getter），
   /// 控制 isolate 内是否按 _kMin* 阈值丢弃小文件/0字节/损坏文件。默认全开。
   final _MediaNoiseFilter noiseFilter;
+  /// 各分类「屏蔽文件夹」列表（与类别设置页 UI 对应）。key 为分类名（图片/视频/…
+  /// 音频/文档/压缩包/下载/安装包/截图），value 为绝对目录路径列表。
+  /// isolate 内据此对整个目录树做剪枝：被屏蔽目录及其子目录不再枚举，
+  /// 实现「添加后不再扫描/索引该文件夹下任何文件」。isolate 不可调静态 getter，
+  /// 故由主线程把 MediaProvider._excludedFolders 透传入参。
+  final Map<String, List<String>> excludedFolders;
   const _FSScanParams({
     required this.roots,
     required this.imageExtensions,
@@ -103,6 +109,7 @@ class _FSScanParams {
     this.onlyApk = false,
     this.dirCache = const {},
     this.noiseFilter = const _MediaNoiseFilter(),
+    this.excludedFolders = const <String, List<String>>{},
   });
 }
 
@@ -361,12 +368,27 @@ Future<_FSScanResult> _scanMediaFileSystemIsolate(_FSScanParams params) async {
   int scannedDirs = 0;
   debugPrint('[ZenFile][isolate] scan roots=${params.roots}');
 
+  // 屏蔽文件夹：把各分类的屏蔽目录合并成一个集合，做目录级剪枝——
+  // 被屏蔽目录及其所有子目录整体跳过枚举，真正「不再扫描」该文件夹下的任何文件。
+  final allExcluded = <String>{
+    for (final list in params.excludedFolders.values) ...list,
+  };
+  bool _dirExcluded(String dir) {
+    if (allExcluded.contains(dir)) return true;
+    for (final excl in allExcluded) {
+      if (p.isWithin(excl, dir)) return true;
+    }
+    return false;
+  }
+
   while (queue.isNotEmpty) {
     final item = queue.removeAt(0);
     final current = item.path;
     final currentDepth = item.depth;
     final currentCap = item.cap;
     if (!queued.add(current)) continue;
+    // 屏蔽文件夹：跳过整棵子树，不枚举其下任何文件/子目录。
+    if (_dirExcluded(current)) continue;
     final isDownloadDir = params.downloadDirs.contains(current);
 
     // 目录可达性探测已移除：原实现对每个目录做 statSync（×3 重试）只为在存储
@@ -1004,6 +1026,7 @@ class MediaProvider extends ChangeNotifier {
     }
     _customCategoryPaths = PreferencesService.getCustomCategoryPaths();
     _excludedDefaultPaths = PreferencesService.getExcludedDefaultPaths();
+    _excludedFolders = PreferencesService.getExcludedFolders();
     _customCategoryLabels = PreferencesService.getCustomCategoryLabels();
     _instance = this;
   }
@@ -1034,6 +1057,8 @@ class MediaProvider extends ChangeNotifier {
   Map<String, List<String>> get customCategoryPaths => _customCategoryPaths;
   Map<String, List<String>> _excludedDefaultPaths = {};
   Map<String, List<String>> get excludedDefaultPaths => _excludedDefaultPaths;
+  Map<String, List<String>> _excludedFolders = {};
+  Map<String, List<String>> get excludedFolders => _excludedFolders;
   Map<String, String> _customCategoryLabels = {};
   Map<String, String> get customCategoryLabels => _customCategoryLabels;
   List<FileItemModel> _recentFiles = [];
@@ -1303,7 +1328,7 @@ class MediaProvider extends ChangeNotifier {
   /// 文件级去重由 [_dedupeMediaByPath] 按完整路径保证，本地与远程各自独立。
 
   List<dynamic> get images {
-    final excluded = _excludedDefaultPaths['图片'] ?? const [];
+    final excluded = <String>[...(_excludedDefaultPaths['图片'] ?? const <String>[]), ...(_excludedFolders['图片'] ?? const <String>[])];
     final stamp = _stampFor(_images, _customImages, excluded);
     if (_imagesOut != null && _imagesStamp == stamp) return _imagesOut!;
     final raw = [..._images, ..._customImages].where((item) {
@@ -1323,7 +1348,7 @@ class MediaProvider extends ChangeNotifier {
   }
 
   List<dynamic> get videos {
-    final excluded = _excludedDefaultPaths['视频'] ?? const [];
+    final excluded = <String>[...(_excludedDefaultPaths['视频'] ?? const <String>[]), ...(_excludedFolders['视频'] ?? const <String>[])];
     final stamp = _stampFor(_videos, _customVideos, excluded);
     if (_videosOut != null && _videosStamp == stamp) return _videosOut!;
     final raw = [..._videos, ..._customVideos].where((item) {
@@ -1341,7 +1366,7 @@ class MediaProvider extends ChangeNotifier {
   }
 
   List<SongModel> get audios {
-    final excluded = _excludedDefaultPaths['音频'] ?? [];
+    final excluded = <String>[...(_excludedDefaultPaths['音频'] ?? const <String>[]), ...(_excludedFolders['音频'] ?? const <String>[])];
     final list = _audios.where((song) {
       final path = song.data;
       if (_isPathExcluded(path, excluded)) return false;
@@ -1351,7 +1376,7 @@ class MediaProvider extends ChangeNotifier {
   }
 
   List<FileSystemEntity> get documents {
-    final excluded = _excludedDefaultPaths['文档'] ?? [];
+    final excluded = <String>[...(_excludedDefaultPaths['文档'] ?? const <String>[]), ...(_excludedFolders['文档'] ?? const <String>[])];
     final excludeAllScanned = excluded.contains('内部存储（扫描所有文件夹）');
     final list = _documents.where((file) {
       final docPaths = _customCategoryPaths['文档'] ?? [];
@@ -1364,7 +1389,7 @@ class MediaProvider extends ChangeNotifier {
   }
 
   List<FileSystemEntity> get archives {
-    final excluded = _excludedDefaultPaths['压缩包'] ?? [];
+    final excluded = <String>[...(_excludedDefaultPaths['压缩包'] ?? const <String>[]), ...(_excludedFolders['压缩包'] ?? const <String>[])];
     final excludeAllScanned = excluded.contains('内部存储（扫描所有文件夹）');
     final list = _archives.where((file) {
       final archPaths = _customCategoryPaths['压缩包'] ?? [];
@@ -1377,7 +1402,7 @@ class MediaProvider extends ChangeNotifier {
   }
 
   List<FileSystemEntity> get downloads {
-    final excluded = _excludedDefaultPaths['下载'] ?? [];
+    final excluded = <String>[...(_excludedDefaultPaths['下载'] ?? const <String>[]), ...(_excludedFolders['下载'] ?? const <String>[])];
     final list = _downloads.where((file) {
       if (_isPathExcluded(file.path, excluded)) return false;
       return true;
@@ -1386,7 +1411,7 @@ class MediaProvider extends ChangeNotifier {
   }
 
   List<FileSystemEntity> get apks {
-    final excluded = _excludedDefaultPaths['安装包'] ?? [];
+    final excluded = <String>[...(_excludedDefaultPaths['安装包'] ?? const <String>[]), ...(_excludedFolders['安装包'] ?? const <String>[])];
     final excludeAllScanned = excluded.contains('内部存储（扫描所有文件夹）');
     final list = _apks.where((file) {
       final apkPaths = _customCategoryPaths['安装包'] ?? [];
@@ -1399,7 +1424,7 @@ class MediaProvider extends ChangeNotifier {
   }
 
   List<dynamic> get screenshots {
-    final excluded = _excludedDefaultPaths['截图'] ?? const [];
+    final excluded = <String>[...(_excludedDefaultPaths['截图'] ?? const <String>[]), ...(_excludedFolders['截图'] ?? const <String>[])];
     final stamp = _stampFor(_screenshots, _customScreenshots, excluded);
     if (_shotsOut != null && _shotsStamp == stamp) return _shotsOut!;
     final raw = [..._screenshots, ..._customScreenshots].where((item) {
@@ -2506,6 +2531,7 @@ class MediaProvider extends ChangeNotifier {
       onlyApk: onlyApk,
       dirCache: _dirCache,
       noiseFilter: noiseFilter,
+      excludedFolders: _excludedFolders,
     );
     final result = await compute(_scanMediaFileSystemIsolate, params);
     // 整 map 替换前保留媒体大小（由系统索引路径 _computeMediaCategorySizes/_loadAudios
@@ -3139,6 +3165,14 @@ class MediaProvider extends ChangeNotifier {
       for (final f in screenshotFiles) {
         if (!shots.contains(f)) shots.add(f);
       }
+      // 屏蔽文件夹：系统媒体索引无法按目录排除，故在结果层面按各自分类剔除
+      // 被屏蔽目录下的文件。与文件系统扫描的目录级剪枝共同保证「不再索引」。
+      final imgExcl = _excludedFolders['图片'] ?? const <String>[];
+      final vidExcl = _excludedFolders['视频'] ?? const <String>[];
+      final shotExcl = _excludedFolders['截图'] ?? const <String>[];
+      if (imgExcl.isNotEmpty) imgs.removeWhere((f) => _isPathExcluded(f.path, imgExcl));
+      if (vidExcl.isNotEmpty) vids.removeWhere((f) => _isPathExcluded(f.path, vidExcl));
+      if (shotExcl.isNotEmpty) shots.removeWhere((f) => _isPathExcluded(f.path, shotExcl));
       // 空结果不覆盖旧数据（与音频一致）：系统库瞬时异常时保留上次列表
       if (imgs.isNotEmpty || _images.isEmpty) _images = imgs.toList();
       if (vids.isNotEmpty || _videos.isEmpty) _videos = vids.toList();
@@ -3283,6 +3317,12 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
         }
       }
       songs = best;
+
+      // 屏蔽文件夹：系统音频索引无法按目录排除，按路径剔除被屏蔽目录下的音频。
+      final audioExcl = _excludedFolders['音频'] ?? const <String>[];
+      if (songs != null && audioExcl.isNotEmpty) {
+        songs = songs.where((s) => !_isPathExcluded(s.data, audioExcl)).toList();
+      }
 
       if (songs != null && songs.isNotEmpty) {
         // 仅在结果不比现有更少时覆盖：后台刷新（onResume）若拿到部分结果
@@ -3784,6 +3824,29 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
     if (_excludedDefaultPaths.containsKey(category)) {
       if (_excludedDefaultPaths[category]!.remove(path)) {
         PreferencesService.saveExcludedDefaultPaths(_excludedDefaultPaths);
+        notifyListeners();
+        loadMedia(forceRefresh: true);
+      }
+    }
+  }
+
+  // --- 分类屏蔽文件夹：添加后该分类不再扫描/索引此文件夹下的文件 ---
+  void addExcludedFolder(String category, String path) {
+    if (!_excludedFolders.containsKey(category)) {
+      _excludedFolders[category] = [];
+    }
+    if (!_excludedFolders[category]!.contains(path)) {
+      _excludedFolders[category]!.add(path);
+      PreferencesService.saveExcludedFolders(_excludedFolders);
+      notifyListeners();
+      loadMedia(forceRefresh: true);
+    }
+  }
+
+  void removeExcludedFolder(String category, String path) {
+    if (_excludedFolders.containsKey(category)) {
+      if (_excludedFolders[category]!.remove(path)) {
+        PreferencesService.saveExcludedFolders(_excludedFolders);
         notifyListeners();
         loadMedia(forceRefresh: true);
       }

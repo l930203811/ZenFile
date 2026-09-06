@@ -3063,7 +3063,20 @@ class L10nEn extends L10n {
   String get ui_exclude_location => 'Exclude Location';
 
   @override
-  String get ui_add_custom_path => 'Add Custom Path';
+  String get ui_add_custom_path => 'Add Local Path';
+
+  @override
+  String get ui_excluded_folders_title => 'Excluded Folders';
+
+  @override
+  String get ui_excluded_folders_empty =>
+      'No excluded folders. Files in added folders will not be scanned in this category.';
+
+  @override
+  String get ui_add_excluded_folder => 'Add Excluded Folder';
+
+  @override
+  String get ui_remove_excluded_folder => 'Remove';
 
   @override
   String ui_added_custom_paths(int count) {

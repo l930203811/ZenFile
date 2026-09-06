@@ -219,6 +219,9 @@ class _MediaCategorySettingsScreenState
             const SizedBox(height: 20),
             _sectionTitle(theme, l10n.msg21de5dd7),
             _buildCustomLocationsCard(theme),
+            const SizedBox(height: 20),
+            _sectionTitle(theme, l10n.ui_excluded_folders_title),
+            _buildExcludedFoldersCard(theme),
             const SizedBox(height: 24),
             Center(
               child: TextButton.icon(
@@ -636,6 +639,134 @@ class _MediaCategorySettingsScreenState
             ),
             onPressed: () =>
                 provider.removeCustomCategoryPath(_categoryName, path),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            visualDensity: VisualDensity.compact,
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 屏蔽文件夹：添加后该分类不再扫描/索引此文件夹下的文件。
+  Widget _buildExcludedFoldersCard(ThemeData theme) {
+    return Consumer<MediaProvider>(
+      builder: (context, provider, _) {
+        final fileManager = context.read<FileManagerProvider>();
+        final excludedFolders =
+            provider.excludedFolders[_categoryName] ?? const <String>[];
+        return Container(
+          decoration: _cardDecoration(theme),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (excludedFolders.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12.0,
+                    horizontal: 12,
+                  ),
+                  child: Text(
+                    L10n.of(context).ui_excluded_folders_empty,
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface.withOpacity(0.4),
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                )
+              else
+                ...excludedFolders.map(
+                  (path) => _excludedFolderRow(theme, provider, path),
+                ),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                child: TextButton.icon(
+                  onPressed: () async {
+                    final pickedPaths = await InternalFilePickerScreen.show(
+                      context,
+                      rootPath: fileManager.rootPath,
+                      pickDirectory: true,
+                    );
+                    if (pickedPaths != null && pickedPaths.isNotEmpty) {
+                      for (final p in pickedPaths) {
+                        provider.addExcludedFolder(_categoryName, p);
+                      }
+                    }
+                  },
+                  icon: const Icon(Broken.folder_add, size: 16),
+                  label: Text(
+                    L10n.of(context).ui_add_excluded_folder,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  style: TextButton.styleFrom(
+                    foregroundColor: theme.colorScheme.primary,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    backgroundColor:
+                        theme.colorScheme.primary.withOpacity(0.08),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _excludedFolderRow(
+    ThemeData theme,
+    MediaProvider provider,
+    String path,
+  ) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.error.withOpacity(0.03),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: theme.colorScheme.error.withOpacity(0.1),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.folder_off_outlined,
+            size: 16,
+            color: theme.colorScheme.error.withOpacity(0.6),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              path,
+              style: TextStyle(
+                fontSize: 12,
+                color: theme.colorScheme.onSurface.withOpacity(0.7),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          IconButton(
+            icon: const Icon(
+              Broken.trash,
+              color: Colors.redAccent,
+              size: 18,
+            ),
+            tooltip: L10n.of(context).ui_remove_excluded_folder,
+            onPressed: () => provider.removeExcludedFolder(_categoryName, path),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
             visualDensity: VisualDensity.compact,

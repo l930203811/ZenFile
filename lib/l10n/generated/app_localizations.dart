@@ -5671,8 +5671,32 @@ abstract class L10n {
   /// ui widgets
   ///
   /// In zh, this message translates to:
-  /// **'添加自定义路径'**
+  /// **'添加本地路径'**
   String get ui_add_custom_path;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'屏蔽文件夹'**
+  String get ui_excluded_folders_title;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无屏蔽文件夹，添加后该分类将不再扫描此文件夹下的文件'**
+  String get ui_excluded_folders_empty;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'添加屏蔽文件夹'**
+  String get ui_add_excluded_folder;
+
+  /// ui widgets
+  ///
+  /// In zh, this message translates to:
+  /// **'移除屏蔽'**
+  String get ui_remove_excluded_folder;
 
   /// ui widgets
   ///

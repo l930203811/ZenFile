@@ -1035,6 +1035,24 @@ class PreferencesService {
     await _prefs?.setString(_keyExcludedDefaultPaths, jsonEncode(map));
   }
 
+  // --- 分类屏蔽文件夹（添加后该分类不再扫描/索引此文件夹下的文件） ---
+  static const String _keyExcludedFolders = 'excluded_folders';
+
+  static Map<String, List<String>> getExcludedFolders() {
+    final str = _prefs?.getString(_keyExcludedFolders);
+    if (str == null) return {};
+    try {
+      final map = jsonDecode(str) as Map<String, dynamic>;
+      return map.map((key, value) => MapEntry(key, List<String>.from(value)));
+    } catch (_) {
+      return {};
+    }
+  }
+
+  static Future<void> saveExcludedFolders(Map<String, List<String>> map) async {
+    await _prefs?.setString(_keyExcludedFolders, jsonEncode(map));
+  }
+
   static const String _keyCustomCategoryLabels = 'custom_category_labels';
 
   static Map<String, String> getCustomCategoryLabels() {

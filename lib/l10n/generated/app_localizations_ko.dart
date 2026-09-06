@@ -2971,7 +2971,20 @@ class L10nKo extends L10n {
   String get ui_exclude_location => '위치 제외';
 
   @override
-  String get ui_add_custom_path => '사용자 정의 경로 추가';
+  String get ui_add_custom_path => '로컬 경로 추가';
+
+  @override
+  String get ui_excluded_folders_title => '제외 폴더';
+
+  @override
+  String get ui_excluded_folders_empty =>
+      '제외된 폴더가 없습니다. 추가된 폴더의 파일은 이 카테고리에서 스캔되지 않습니다.';
+
+  @override
+  String get ui_add_excluded_folder => '제외 폴더 추가';
+
+  @override
+  String get ui_remove_excluded_folder => '제외 해제';
 
   @override
   String ui_added_custom_paths(int count) {

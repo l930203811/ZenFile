@@ -3129,7 +3129,20 @@ class L10nEs extends L10n {
   String get ui_exclude_location => 'Excluir Ubicación';
 
   @override
-  String get ui_add_custom_path => 'Añadir Ruta Personalizada';
+  String get ui_add_custom_path => 'Agregar ruta local';
+
+  @override
+  String get ui_excluded_folders_title => 'Carpetas excluidas';
+
+  @override
+  String get ui_excluded_folders_empty =>
+      'No hay carpetas excluidas. Los archivos en las carpetas añadidas no se escanearán en esta categoría.';
+
+  @override
+  String get ui_add_excluded_folder => 'Añadir carpeta excluida';
+
+  @override
+  String get ui_remove_excluded_folder => 'Quitar';
 
   @override
   String ui_added_custom_paths(int count) {

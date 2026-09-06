@@ -3114,7 +3114,20 @@ class L10nRu extends L10n {
   String get ui_exclude_location => 'Исключить Расположение';
 
   @override
-  String get ui_add_custom_path => 'Добавить Пользовательский Путь';
+  String get ui_add_custom_path => 'Добавить локальный путь';
+
+  @override
+  String get ui_excluded_folders_title => 'Исключённые папки';
+
+  @override
+  String get ui_excluded_folders_empty =>
+      'Нет исключённых папок. Файлы в добавленных папках не будут сканироваться в этой категории.';
+
+  @override
+  String get ui_add_excluded_folder => 'Добавить папку';
+
+  @override
+  String get ui_remove_excluded_folder => 'Удалить';
 
   @override
   String ui_added_custom_paths(int count) {
