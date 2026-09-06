@@ -6461,9 +6461,6 @@ class L10nAr extends L10n {
       'التثبيت الصامت، الاحتفاظ بالمثبت، الفحص الأمني';
 
   @override
-  String get ui_category_noise_filter_title => 'مرشح الضوضاء حسب الفئة';
-
-  @override
   String get ui_noise_filter_images_subtitle =>
       'إخفاء الرموز والصور الصغيرة جدًا (<30 كيلوبايت)';
 
@@ -6494,4 +6491,24 @@ class L10nAr extends L10n {
   @override
   String get ui_noise_filter_apks_subtitle =>
       'إخفاء حزم APK التالفة/الصغيرة (<100 كيلوبايت)';
+
+  @override
+  String get ui_media_filter_title => 'إعدادات التصفية';
+
+  @override
+  String get ui_media_filter_description =>
+      'تخصيص شروج تصفية الملفات لهذه الفئة';
+
+  @override
+  String get ui_media_filter_master_switch => 'تمكين الفلتر الذكي';
+
+  @override
+  String get ui_media_filter_master_hint =>
+      'عند التمكين، سيتم تصفية الملفات الصغيرة ومقاطع الفيديو/الصوت القصيرة والضوضاء الأخرى حسب القواعد أدناه';
+
+  @override
+  String get ui_media_filter_rules => 'قواعد التصفية';
+
+  @override
+  String get ui_media_filter_restore_default => 'استعادة الافتراضي';
 }

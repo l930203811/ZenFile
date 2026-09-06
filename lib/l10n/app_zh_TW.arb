@@ -6638,10 +6638,6 @@
   "@vt_install_settings_subtitle": {
     "description": "apk install settings page title and subtitle"
   },
-  "ui_category_noise_filter_title": "類別噪音過濾",
-  "@ui_category_noise_filter_title": {
-    "description": "category noise filter (ui_category_noise_filter_title)"
-  },
   "ui_noise_filter_images_subtitle": "隱藏圖示/超小圖片 (<30KB)",
   "@ui_noise_filter_images_subtitle": {
     "description": "category noise filter (ui_noise_filter_images_subtitle)"
@@ -6673,5 +6669,29 @@
   "ui_noise_filter_apks_subtitle": "隱藏損壞/極小安裝包 (<100KB)",
   "@ui_noise_filter_apks_subtitle": {
     "description": "category noise filter (ui_noise_filter_apks_subtitle)"
+  },
+  "ui_media_filter_title": "過濾設定",
+  "@ui_media_filter_title": {
+    "description": "media filter screen (ui_media_filter_title)"
+  },
+  "ui_media_filter_description": "自訂該分類下需要過濾的檔案條件",
+  "@ui_media_filter_description": {
+    "description": "media filter screen (ui_media_filter_description)"
+  },
+  "ui_media_filter_master_switch": "啟用智慧過濾",
+  "@ui_media_filter_master_switch": {
+    "description": "media filter screen (ui_media_filter_master_switch)"
+  },
+  "ui_media_filter_master_hint": "開啟後將按下方規則過濾小檔案、短影片/音訊等雜訊",
+  "@ui_media_filter_master_hint": {
+    "description": "media filter screen (ui_media_filter_master_hint)"
+  },
+  "ui_media_filter_rules": "過濾規則",
+  "@ui_media_filter_rules": {
+    "description": "media filter screen (ui_media_filter_rules)"
+  },
+  "ui_media_filter_restore_default": "恢復預設",
+  "@ui_media_filter_restore_default": {
+    "description": "media filter screen (ui_media_filter_restore_default)"
   }
 }

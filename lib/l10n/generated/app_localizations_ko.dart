@@ -6302,9 +6302,6 @@ class L10nKo extends L10n {
   String get vt_install_settings_subtitle => '자동 설치, 설치 프로그램 유지, 보안 검사';
 
   @override
-  String get ui_category_noise_filter_title => '카테고리별 노이즈 필터';
-
-  @override
   String get ui_noise_filter_images_subtitle => '아이콘과 아주 작은 이미지 숨기기 (<30KB)';
 
   @override
@@ -6327,4 +6324,23 @@ class L10nKo extends L10n {
 
   @override
   String get ui_noise_filter_apks_subtitle => '손상/아주 작은 APK 숨기기 (<100KB)';
+
+  @override
+  String get ui_media_filter_title => '필터 설정';
+
+  @override
+  String get ui_media_filter_description => '이 카테고리의 파일 필터 조건을 사용자 지정';
+
+  @override
+  String get ui_media_filter_master_switch => '스마트 필터 사용';
+
+  @override
+  String get ui_media_filter_master_hint =>
+      '활성화되면 아래 규칙에 따라 작은 파일, 짧은 동영상/오디오 등의 노이즈가 필터링됩니다';
+
+  @override
+  String get ui_media_filter_rules => '필터 규칙';
+
+  @override
+  String get ui_media_filter_restore_default => '기본값 복원';
 }

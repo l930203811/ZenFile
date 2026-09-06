@@ -6494,10 +6494,6 @@
   "@vt_install_settings_subtitle": {
     "description": "apk install settings page title and subtitle"
   },
-  "ui_category_noise_filter_title": "カテゴリごとのノイズフィルター",
-  "@ui_category_noise_filter_title": {
-    "description": "category noise filter (ui_category_noise_filter_title)"
-  },
   "ui_noise_filter_images_subtitle": "アイコンと極小画像を非表示 (<30KB)",
   "@ui_noise_filter_images_subtitle": {
     "description": "category noise filter (ui_noise_filter_images_subtitle)"
@@ -6529,5 +6525,29 @@
   "ui_noise_filter_apks_subtitle": "破損/極小のAPKを非表示 (<100KB)",
   "@ui_noise_filter_apks_subtitle": {
     "description": "category noise filter (ui_noise_filter_apks_subtitle)"
+  },
+  "ui_media_filter_title": "フィルター設定",
+  "@ui_media_filter_title": {
+    "description": "media filter screen (ui_media_filter_title)"
+  },
+  "ui_media_filter_description": "このカテゴリのファイルフィルター条件をカスタマイズ",
+  "@ui_media_filter_description": {
+    "description": "media filter screen (ui_media_filter_description)"
+  },
+  "ui_media_filter_master_switch": "スマートフィルターを有効化",
+  "@ui_media_filter_master_switch": {
+    "description": "media filter screen (ui_media_filter_master_switch)"
+  },
+  "ui_media_filter_master_hint": "有効にすると、以下のルールに従って小さなファイル、短い動画/音楽などのノイズをフィルタリングします",
+  "@ui_media_filter_master_hint": {
+    "description": "media filter screen (ui_media_filter_master_hint)"
+  },
+  "ui_media_filter_rules": "フィルタールール",
+  "@ui_media_filter_rules": {
+    "description": "media filter screen (ui_media_filter_rules)"
+  },
+  "ui_media_filter_restore_default": "デフォルトに戻す",
+  "@ui_media_filter_restore_default": {
+    "description": "media filter screen (ui_media_filter_restore_default)"
   }
 }

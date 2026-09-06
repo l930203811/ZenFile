@@ -36,6 +36,7 @@ import '../widgets/file_type_icon.dart';
 import '../widgets/remote_path_picker.dart';
 import '../widgets/circular_progress_dialog.dart';
 import 'internal_file_picker_screen.dart';
+import 'media_filter_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 enum MediaType {
@@ -1943,6 +1944,21 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                     ),
                     tooltip: L10n.of(context).ui_background,
                     onPressed: () => fm.resumeProgress(),
+                  );
+                },
+              ),
+              // 过滤设置按钮：进入当前分类的噪音过滤页
+              IconButton(
+                icon: const Icon(Broken.filter),
+                tooltip: L10n.of(context).ui_media_filter_title,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => MediaFilterScreen(
+                        mediaType: widget.mediaType,
+                      ),
+                    ),
                   );
                 },
               ),

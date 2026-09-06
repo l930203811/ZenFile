@@ -6497,9 +6497,6 @@ class L10nEn extends L10n {
       'Silent install, keep installer, security scan';
 
   @override
-  String get ui_category_noise_filter_title => 'Category noise filter';
-
-  @override
   String get ui_noise_filter_images_subtitle =>
       'Hide icons & tiny images (<30KB)';
 
@@ -6529,4 +6526,24 @@ class L10nEn extends L10n {
 
   @override
   String get ui_noise_filter_apks_subtitle => 'Hide broken/tiny APKs (<100KB)';
+
+  @override
+  String get ui_media_filter_title => 'Filter Settings';
+
+  @override
+  String get ui_media_filter_description =>
+      'Customize file filtering conditions for this category';
+
+  @override
+  String get ui_media_filter_master_switch => 'Enable Smart Filter';
+
+  @override
+  String get ui_media_filter_master_hint =>
+      'When enabled, small files, short videos/audios and other noise will be filtered by the rules below';
+
+  @override
+  String get ui_media_filter_rules => 'Filter Rules';
+
+  @override
+  String get ui_media_filter_restore_default => 'Restore Default';
 }

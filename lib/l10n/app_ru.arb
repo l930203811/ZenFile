@@ -6490,10 +6490,6 @@
   "@vt_install_settings_subtitle": {
     "description": "apk install settings page title and subtitle"
   },
-  "ui_category_noise_filter_title": "Фильтр шума по категориям",
-  "@ui_category_noise_filter_title": {
-    "description": "category noise filter (ui_category_noise_filter_title)"
-  },
   "ui_noise_filter_images_subtitle": "Скрыть значки и крошечные изображения (<30 КБ)",
   "@ui_noise_filter_images_subtitle": {
     "description": "category noise filter (ui_noise_filter_images_subtitle)"
@@ -6525,5 +6521,29 @@
   "ui_noise_filter_apks_subtitle": "Скрыть повреждённые/крошечные APK (<100 КБ)",
   "@ui_noise_filter_apks_subtitle": {
     "description": "category noise filter (ui_noise_filter_apks_subtitle)"
+  },
+  "ui_media_filter_title": "Настройки Фильтра",
+  "@ui_media_filter_title": {
+    "description": "media filter screen (ui_media_filter_title)"
+  },
+  "ui_media_filter_description": "Настроить условия фильтрации файлов для этой категории",
+  "@ui_media_filter_description": {
+    "description": "media filter screen (ui_media_filter_description)"
+  },
+  "ui_media_filter_master_switch": "Включить Умный Фильтр",
+  "@ui_media_filter_master_switch": {
+    "description": "media filter screen (ui_media_filter_master_switch)"
+  },
+  "ui_media_filter_master_hint": "При включении мелкие файлы, короткие видео/аудио и прочий шум будут отфильтрованы по правилам ниже",
+  "@ui_media_filter_master_hint": {
+    "description": "media filter screen (ui_media_filter_master_hint)"
+  },
+  "ui_media_filter_rules": "Правила Фильтра",
+  "@ui_media_filter_rules": {
+    "description": "media filter screen (ui_media_filter_rules)"
+  },
+  "ui_media_filter_restore_default": "Восстановить По Умолчанию",
+  "@ui_media_filter_restore_default": {
+    "description": "media filter screen (ui_media_filter_restore_default)"
   }
 }

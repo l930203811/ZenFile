@@ -6547,9 +6547,6 @@ class L10nRu extends L10n {
       'Тихая установка, сохранение установщика, сканирование';
 
   @override
-  String get ui_category_noise_filter_title => 'Фильтр шума по категориям';
-
-  @override
   String get ui_noise_filter_images_subtitle =>
       'Скрыть значки и крошечные изображения (<30 КБ)';
 
@@ -6580,4 +6577,24 @@ class L10nRu extends L10n {
   @override
   String get ui_noise_filter_apks_subtitle =>
       'Скрыть повреждённые/крошечные APK (<100 КБ)';
+
+  @override
+  String get ui_media_filter_title => 'Настройки Фильтра';
+
+  @override
+  String get ui_media_filter_description =>
+      'Настроить условия фильтрации файлов для этой категории';
+
+  @override
+  String get ui_media_filter_master_switch => 'Включить Умный Фильтр';
+
+  @override
+  String get ui_media_filter_master_hint =>
+      'При включении мелкие файлы, короткие видео/аудио и прочий шум будут отфильтрованы по правилам ниже';
+
+  @override
+  String get ui_media_filter_rules => 'Правила Фильтра';
+
+  @override
+  String get ui_media_filter_restore_default => 'Восстановить По Умолчанию';
 }

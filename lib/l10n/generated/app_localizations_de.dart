@@ -6548,9 +6548,6 @@ class L10nDe extends L10n {
       'Stumme Installation, Installer behalten, Sicherheitsscan';
 
   @override
-  String get ui_category_noise_filter_title => 'Rauschfilter nach Kategorie';
-
-  @override
   String get ui_noise_filter_images_subtitle =>
       'Symbole und Mini-Bilder ausblenden (<30KB)';
 
@@ -6581,4 +6578,24 @@ class L10nDe extends L10n {
   @override
   String get ui_noise_filter_apks_subtitle =>
       'Beschädigte/zu kleine APKs ausblenden (<100KB)';
+
+  @override
+  String get ui_media_filter_title => 'Filtereinstellungen';
+
+  @override
+  String get ui_media_filter_description =>
+      'Filterbedingungen für diese Kategorie anpassen';
+
+  @override
+  String get ui_media_filter_master_switch => 'Intelligenten Filter Aktivieren';
+
+  @override
+  String get ui_media_filter_master_hint =>
+      'Bei Aktivierung werden kleine Dateien, kurze Videos/Audios und andere Störungen nach den untenstehenden Regeln gefiltert';
+
+  @override
+  String get ui_media_filter_rules => 'Filterregeln';
+
+  @override
+  String get ui_media_filter_restore_default => 'Standard Wiederherstellen';
 }

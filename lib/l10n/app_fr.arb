@@ -6490,10 +6490,6 @@
   "@vt_install_settings_subtitle": {
     "description": "apk install settings page title and subtitle"
   },
-  "ui_category_noise_filter_title": "Filtre anti-bruit par catégorie",
-  "@ui_category_noise_filter_title": {
-    "description": "category noise filter (ui_category_noise_filter_title)"
-  },
   "ui_noise_filter_images_subtitle": "Masquer les icônes et mini-images (<30 Ko)",
   "@ui_noise_filter_images_subtitle": {
     "description": "category noise filter (ui_noise_filter_images_subtitle)"
@@ -6525,5 +6521,29 @@
   "ui_noise_filter_apks_subtitle": "Masquer les APK endommagés ou trop petits (<100 Ko)",
   "@ui_noise_filter_apks_subtitle": {
     "description": "category noise filter (ui_noise_filter_apks_subtitle)"
+  },
+  "ui_media_filter_title": "Paramètres du Filtre",
+  "@ui_media_filter_title": {
+    "description": "media filter screen (ui_media_filter_title)"
+  },
+  "ui_media_filter_description": "Personnaliser les conditions de filtrage des fichiers pour cette catégorie",
+  "@ui_media_filter_description": {
+    "description": "media filter screen (ui_media_filter_description)"
+  },
+  "ui_media_filter_master_switch": "Activer le Filtre Intelligent",
+  "@ui_media_filter_master_switch": {
+    "description": "media filter screen (ui_media_filter_master_switch)"
+  },
+  "ui_media_filter_master_hint": "Lorsqu'activé, les petits fichiers, courtes vidéos/audios et autres bruits seront filtrés selon les règles ci-dessous",
+  "@ui_media_filter_master_hint": {
+    "description": "media filter screen (ui_media_filter_master_hint)"
+  },
+  "ui_media_filter_rules": "Règles de Filtre",
+  "@ui_media_filter_rules": {
+    "description": "media filter screen (ui_media_filter_rules)"
+  },
+  "ui_media_filter_restore_default": "Réinitialiser",
+  "@ui_media_filter_restore_default": {
+    "description": "media filter screen (ui_media_filter_restore_default)"
   }
 }

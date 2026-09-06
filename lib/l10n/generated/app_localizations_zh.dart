@@ -6201,9 +6201,6 @@ class L10nZh extends L10n {
   String get vt_install_settings_subtitle => '静默安装、保留安装包、安全扫描';
 
   @override
-  String get ui_category_noise_filter_title => '类别噪音过滤';
-
-  @override
   String get ui_noise_filter_images_subtitle => '隐藏图标/超小图片 (<30KB)';
 
   @override
@@ -6226,6 +6223,24 @@ class L10nZh extends L10n {
 
   @override
   String get ui_noise_filter_apks_subtitle => '隐藏损坏/极小安装包 (<100KB)';
+
+  @override
+  String get ui_media_filter_title => '过滤设置';
+
+  @override
+  String get ui_media_filter_description => '自定义该分类下需要过滤的文件条件';
+
+  @override
+  String get ui_media_filter_master_switch => '启用智能过滤';
+
+  @override
+  String get ui_media_filter_master_hint => '开启后将按下方规则过滤小文件、短视频/音频等噪声';
+
+  @override
+  String get ui_media_filter_rules => '过滤规则';
+
+  @override
+  String get ui_media_filter_restore_default => '恢复默认';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -12393,9 +12408,6 @@ class L10nZhTw extends L10nZh {
   String get vt_install_settings_subtitle => '靜默安裝、保留安裝包、安全掃描';
 
   @override
-  String get ui_category_noise_filter_title => '類別噪音過濾';
-
-  @override
   String get ui_noise_filter_images_subtitle => '隱藏圖示/超小圖片 (<30KB)';
 
   @override
@@ -12418,4 +12430,22 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_noise_filter_apks_subtitle => '隱藏損壞/極小安裝包 (<100KB)';
+
+  @override
+  String get ui_media_filter_title => '過濾設定';
+
+  @override
+  String get ui_media_filter_description => '自訂該分類下需要過濾的檔案條件';
+
+  @override
+  String get ui_media_filter_master_switch => '啟用智慧過濾';
+
+  @override
+  String get ui_media_filter_master_hint => '開啟後將按下方規則過濾小檔案、短影片/音訊等雜訊';
+
+  @override
+  String get ui_media_filter_rules => '過濾規則';
+
+  @override
+  String get ui_media_filter_restore_default => '恢復預設';
 }

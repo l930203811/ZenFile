@@ -6306,9 +6306,6 @@ class L10nJa extends L10n {
   String get vt_install_settings_subtitle => 'サイレントインストール、インストーラー保持、セキュリティスキャン';
 
   @override
-  String get ui_category_noise_filter_title => 'カテゴリごとのノイズフィルター';
-
-  @override
   String get ui_noise_filter_images_subtitle => 'アイコンと極小画像を非表示 (<30KB)';
 
   @override
@@ -6332,4 +6329,23 @@ class L10nJa extends L10n {
 
   @override
   String get ui_noise_filter_apks_subtitle => '破損/極小のAPKを非表示 (<100KB)';
+
+  @override
+  String get ui_media_filter_title => 'フィルター設定';
+
+  @override
+  String get ui_media_filter_description => 'このカテゴリのファイルフィルター条件をカスタマイズ';
+
+  @override
+  String get ui_media_filter_master_switch => 'スマートフィルターを有効化';
+
+  @override
+  String get ui_media_filter_master_hint =>
+      '有効にすると、以下のルールに従って小さなファイル、短い動画/音楽などのノイズをフィルタリングします';
+
+  @override
+  String get ui_media_filter_rules => 'フィルタールール';
+
+  @override
+  String get ui_media_filter_restore_default => 'デフォルトに戻す';
 }

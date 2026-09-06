@@ -11620,12 +11620,6 @@ abstract class L10n {
   /// **'静默安装、保留安装包、安全扫描'**
   String get vt_install_settings_subtitle;
 
-  /// category noise filter (ui_category_noise_filter_title)
-  ///
-  /// In zh, this message translates to:
-  /// **'类别噪音过滤'**
-  String get ui_category_noise_filter_title;
-
   /// category noise filter (ui_noise_filter_images_subtitle)
   ///
   /// In zh, this message translates to:
@@ -11673,6 +11667,42 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'隐藏损坏/极小安装包 (<100KB)'**
   String get ui_noise_filter_apks_subtitle;
+
+  /// media filter screen (ui_media_filter_title)
+  ///
+  /// In zh, this message translates to:
+  /// **'过滤设置'**
+  String get ui_media_filter_title;
+
+  /// media filter screen (ui_media_filter_description)
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义该分类下需要过滤的文件条件'**
+  String get ui_media_filter_description;
+
+  /// media filter screen (ui_media_filter_master_switch)
+  ///
+  /// In zh, this message translates to:
+  /// **'启用智能过滤'**
+  String get ui_media_filter_master_switch;
+
+  /// media filter screen (ui_media_filter_master_hint)
+  ///
+  /// In zh, this message translates to:
+  /// **'开启后将按下方规则过滤小文件、短视频/音频等噪声'**
+  String get ui_media_filter_master_hint;
+
+  /// media filter screen (ui_media_filter_rules)
+  ///
+  /// In zh, this message translates to:
+  /// **'过滤规则'**
+  String get ui_media_filter_rules;
+
+  /// media filter screen (ui_media_filter_restore_default)
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复默认'**
+  String get ui_media_filter_restore_default;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {
