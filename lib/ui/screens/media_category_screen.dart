@@ -22,6 +22,7 @@ import '../../core/utils.dart';
 import '../../core/navigator_key.dart';
 import '../../services/app_manager_service.dart';
 import '../../services/media_thumbnail_service.dart';
+import '../../models/media_type.dart';
 import 'image_viewer_screen.dart';
 import 'video_player/video_player_screen.dart';
 import 'audio_player/audio_player_screen.dart';
@@ -36,19 +37,8 @@ import '../widgets/file_type_icon.dart';
 import '../widgets/remote_path_picker.dart';
 import '../widgets/circular_progress_dialog.dart';
 import 'internal_file_picker_screen.dart';
-import 'media_filter_screen.dart';
+import 'media_category_settings_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
-
-enum MediaType {
-  images,
-  videos,
-  audios,
-  documents,
-  archives,
-  downloads,
-  apks,
-  screenshots,
-}
 
 /// 媒体分类页右上角「查看与排序」菜单动作
 enum _ViewMenuAction {
@@ -1947,21 +1937,6 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                   );
                 },
               ),
-              // 过滤设置按钮：进入当前分类的噪音过滤页
-              IconButton(
-                icon: const Icon(Broken.filter),
-                tooltip: L10n.of(context).ui_media_filter_title,
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => MediaFilterScreen(
-                        mediaType: widget.mediaType,
-                      ),
-                    ),
-                  );
-                },
-              ),
               // 查看与排序综合菜单：排序选项 + 列表/网格视图 + 播放器控制器显隐
               Consumer<MediaProvider>(
                 builder: (context, provider, child) {
@@ -2200,6 +2175,21 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                     return const SizedBox.shrink();
                   },
                 ),
+              // 类别设置按钮（右侧最末）：进入当前分类的「类别设置」页
+              IconButton(
+                icon: const Icon(Broken.setting_2),
+                tooltip: L10n.of(context).ui_category_settings_title,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => MediaCategorySettingsScreen(
+                        mediaType: widget.mediaType,
+                      ),
+                    ),
+                  );
+                },
+              ),
             ],
           ],
         ),

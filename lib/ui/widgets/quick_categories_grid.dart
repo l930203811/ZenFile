@@ -5,11 +5,11 @@ import '../../core/icon_fonts/broken_icons.dart';
 import '../../providers/media_provider.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../services/preferences_service.dart';
-import '../../services/network_connections_service.dart';
 import '../screens/media_category_screen.dart';
 import '../screens/internal_file_picker_screen.dart';
 import '../screens/storage_analyzer/app_manager_screen.dart';
 import '../screens/more_settings_screen.dart';
+import '../../models/media_type.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../core/utils.dart';
 
@@ -17,14 +17,11 @@ import '../screens/network_category_screen.dart';
 import '../screens/all_recent_files_screen.dart';
 import '../screens/ftp_server_screen.dart';
 import '../screens/web_sharing_screen.dart';
-import '../screens/quick_transfer_screen.dart';
 import '../screens/storage_analyzer/storage_analyzer_screen.dart';
-import '../screens/vault_lock_screen.dart';
 import '../screens/toolbox_screen.dart';
 import '../screens/recycle_bin_screen.dart';
 import '../screens/backup_settings_screen.dart';
 import '../../services/recycle_bin_service.dart';
-import 'remote_path_picker.dart';
 
 class QuickCategoriesGrid extends StatefulWidget {
   final Function(int) onNavigateTab;
@@ -404,18 +401,6 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
   // 长按菜单→拖拽切换用
   Offset? _longPressOrigin;
 
-  // 标准媒体类别（有自定义扫描路径功能）
-  static const _standardMediaCategories = [
-    '图片',
-    '视频',
-    '音频',
-    '文档',
-    '压缩包',
-    '下载',
-    '安装包',
-    '截图',
-  ];
-
   // 获取活跃分类的标签列表（用于拖拽排序更新）
   List<String> _getActiveCategoryLabels(
     MediaProvider mediaProvider,
@@ -587,7 +572,6 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
   }) {
     _closeMenuOverlay();
     final mediaProvider = context.read<MediaProvider>();
-    final isStandard = _standardMediaCategories.contains(labelKey);
     final isEnabled = mediaProvider.activeCategories.contains(labelKey);
     final l10n = L10n.of(context);
     final theme = Theme.of(context);
@@ -607,7 +591,6 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
           menuTop: position.dy,
           labelKey: labelKey,
           color: color,
-          isStandard: isStandard,
           isEnabled: isEnabled,
           theme: theme,
           l10n: l10n,
@@ -707,12 +690,6 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
 
   void _handleMenuAction(String action, String labelKey) {
     switch (action) {
-      case 'scan_paths':
-        QuickCategoriesGrid.showCustomizeDialog(
-          context,
-          widget.onNavigateTab,
-          labelKey,
-        );
       case 'rename':
         _showRenameDialogForGrid(labelKey);
       case 'toggle':
@@ -1075,7 +1052,6 @@ class _CategoryMenuOverlayWidget extends StatefulWidget {
   final double menuTop;
   final String labelKey;
   final Color color;
-  final bool isStandard;
   final bool isEnabled;
   final ThemeData theme;
   final dynamic l10n; // L10n 类型
@@ -1093,7 +1069,6 @@ class _CategoryMenuOverlayWidget extends StatefulWidget {
     required this.menuTop,
     required this.labelKey,
     required this.color,
-    required this.isStandard,
     required this.isEnabled,
     required this.theme,
     required this.l10n,
@@ -1176,20 +1151,11 @@ class _CategoryMenuOverlayWidgetState extends State<_CategoryMenuOverlayWidget> 
                       ),
                     ],
                   ),
-                  child: IntrinsicWidth(
+child: IntrinsicWidth(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                      if (widget.isStandard) ...[
-                        widget.buildMenuItem(
-                          Icons.folder_special,
-                          widget.l10n.msg_custom_scan_paths,
-                          widget.color,
-                          () => widget.onMenuAction('scan_paths'),
-                        ),
-                        const Divider(height: 1),
-                      ],
                       widget.buildMenuItem(
                         Icons.edit,
                         widget.l10n.msgc8ce4b36,
@@ -1205,10 +1171,10 @@ class _CategoryMenuOverlayWidgetState extends State<_CategoryMenuOverlayWidget> 
                       ),
                     ],
                   ),
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -1596,8 +1562,6 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                                   isEnabled: isEnabled,
                                   provider: provider,
                                   index: index,
-                                  initiallyExpanded:
-                                      label == widget.initialExpandLabelKey,
                                 ),
                               );
                             },
@@ -1706,7 +1670,6 @@ class CategoryItemWidget extends StatefulWidget {
   final bool isEnabled;
   final MediaProvider provider;
   final int index;
-  final bool initiallyExpanded;
 
   const CategoryItemWidget({
     super.key,
@@ -1715,7 +1678,6 @@ class CategoryItemWidget extends StatefulWidget {
     required this.isEnabled,
     required this.provider,
     required this.index,
-    this.initiallyExpanded = false,
   });
 
   @override
@@ -1723,20 +1685,6 @@ class CategoryItemWidget extends StatefulWidget {
 }
 
 class _CategoryItemWidgetState extends State<CategoryItemWidget> {
-  late bool _isExpanded = widget.initiallyExpanded;
-
-  /// 支持远程服务器自定义路径的分类
-  static const _remotePathCategories = [
-    '图片',
-    '视频',
-    '音频',
-    '文档',
-    '压缩包',
-    '下载',
-    '安装包',
-    '截图',
-  ];
-
   Future<void> _showRenameDialog(BuildContext context) async {
     final theme = Theme.of(context);
     final currentLabel = widget.cat['label'] as String;
@@ -1798,45 +1746,7 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
     );
   }
 
-  List<String> _getDefaultPaths(String category) {
-    switch (category) {
-      case '图片':
-        return [
-          L10n.of(context).msge86bd662,
-          '/storage/emulated/0/DCIM',
-          '/storage/emulated/0/Pictures',
-        ];
-      case '视频':
-        return [
-          L10n.of(context).msge86bd662,
-          '/storage/emulated/0/DCIM',
-          '/storage/emulated/0/Movies',
-        ];
-      case '音频':
-        return [L10n.of(context).msg16166a01, '/storage/emulated/0/Music'];
-      case '文档':
-        return ['/storage/emulated/0/Documents', L10n.of(context).msgbb34b7ec];
-      case '压缩包':
-        return ['/storage/emulated/0/Download', L10n.of(context).msgbb34b7ec];
-      case '下载':
-        return [
-          '/storage/emulated/0/Download',
-          '/storage/emulated/0/Downloads',
-        ];
-      case '安装包':
-        return ['/storage/emulated/0/Download', L10n.of(context).msgbb34b7ec];
-      case '截图':
-        return [
-          L10n.of(context).msg26a1f2d9,
-          '/storage/emulated/0/DCIM/Screenshots',
-          '/storage/emulated/0/Pictures/Screenshots',
-        ];
-      default:
-        return [];
-    }
-  }
-
-  @override
+@override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final iconShape = context.watch<FileManagerProvider>().categoryIconShape;
@@ -1889,24 +1799,6 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
                   ),
                 ),
               ),
-              if (isStandardCategory) ...[
-                IconButton(
-                  icon: Icon(
-                    _isExpanded
-                        ? Icons.keyboard_arrow_up
-                        : Icons.keyboard_arrow_down,
-                    size: 20,
-                    color: theme.colorScheme.primary,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _isExpanded = !_isExpanded;
-                    });
-                  },
-                  visualDensity: VisualDensity.compact,
-                  tooltip: L10n.of(context).msg4f356348,
-                ),
-              ],
             ],
           ),
           subtitle: isCustom
@@ -1961,295 +1853,6 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
             ],
           ),
         ),
-        if (isStandardCategory && _isExpanded) ...[
-          Padding(
-            padding: const EdgeInsets.only(
-              left: 72.0,
-              right: 16.0,
-              bottom: 8.0,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  L10n.of(context).ui_default_scan_locations,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.primary.withOpacity(0.8),
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                ..._getDefaultPaths(label).map((path) {
-                  final isExcluded =
-                      widget.provider.excludedDefaultPaths[label]?.contains(
-                        path,
-                      ) ==
-                      true;
-                  return Container(
-                    margin: const EdgeInsets.symmetric(vertical: 4),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isExcluded
-                          ? theme.colorScheme.error.withOpacity(0.03)
-                          : theme.colorScheme.primary.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: isExcluded
-                            ? theme.colorScheme.error.withOpacity(0.1)
-                            : theme.colorScheme.primary.withOpacity(0.1),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.folder_shared_outlined,
-                          size: 16,
-                          color: isExcluded
-                              ? theme.colorScheme.error.withOpacity(0.5)
-                              : theme.colorScheme.primary,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            path,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: isExcluded
-                                  ? theme.colorScheme.onSurface.withOpacity(0.4)
-                                  : theme.colorScheme.onSurface.withOpacity(
-                                      0.85,
-                                    ),
-                              decoration: isExcluded
-                                  ? TextDecoration.lineThrough
-                                  : null,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (isExcluded)
-                          IconButton(
-                            icon: const Icon(
-                              Icons.add_circle_outline,
-                              color: Colors.green,
-                              size: 18,
-                            ),
-                            tooltip: L10n.of(context).msg5c29ad2f,
-                            onPressed: () {
-                              widget.provider.includeDefaultCategoryPath(
-                                label,
-                                path,
-                              );
-                            },
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            visualDensity: VisualDensity.compact,
-                          )
-                        else
-                          IconButton(
-                            icon: const Icon(
-                              Broken.trash,
-                              color: Colors.redAccent,
-                              size: 18,
-                            ),
-                            tooltip: L10n.of(context).ui_exclude_location,
-                            onPressed: () {
-                              widget.provider.excludeDefaultCategoryPath(
-                                label,
-                                path,
-                              );
-                            },
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            visualDensity: VisualDensity.compact,
-                          ),
-                      ],
-                    ),
-                  );
-                }),
-                const SizedBox(height: 12),
-                Text(
-                  L10n.of(context).msg21de5dd7,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.onSurface.withOpacity(0.6),
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                if (customPaths.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                    child: Text(
-                      L10n.of(context).msg4bb81f99,
-                      style: TextStyle(
-                        color: theme.colorScheme.onSurface.withOpacity(0.4),
-                        fontSize: 12,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  )
-                else
-                  ...customPaths.map((path) {
-                    final isRemote = path.startsWith('remote://');
-                    String displayPath;
-                    IconData pathIcon;
-                    if (isRemote) {
-                      final uriPart = path.substring('remote://'.length);
-                      final separatorIndex = uriPart.indexOf('|');
-                      final connId = separatorIndex > 0
-                          ? uriPart.substring(0, separatorIndex)
-                          : '';
-                      final remotePath = separatorIndex > 0
-                          ? uriPart.substring(separatorIndex + 1)
-                          : '/';
-                      final conn = NetworkConnectionsService.getConnections()
-                          .where((c) => c.id == connId)
-                          .firstOrNull;
-                      displayPath = '${conn?.name ?? connId}:$remotePath';
-                      pathIcon = Broken.wifi;
-                    } else {
-                      displayPath = path;
-                      pathIcon = Broken.folder;
-                    }
-                    return Container(
-                      margin: const EdgeInsets.symmetric(vertical: 4),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surfaceVariant.withOpacity(
-                          0.3,
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            pathIcon,
-                            size: 16,
-                            color: isRemote
-                                ? theme.colorScheme.primary
-                                : Colors.grey,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              displayPath,
-                              style: const TextStyle(fontSize: 12),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(
-                              Broken.trash,
-                              color: Colors.redAccent,
-                              size: 18,
-                            ),
-                            onPressed: () {
-                              widget.provider.removeCustomCategoryPath(
-                                label,
-                                path,
-                              );
-                            },
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            visualDensity: VisualDensity.compact,
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    TextButton.icon(
-                      onPressed: () async {
-                        final fileManager = context.read<FileManagerProvider>();
-                        final pickedPaths = await InternalFilePickerScreen.show(
-                          context,
-                          rootPath: fileManager.rootPath,
-                          pickDirectory: true,
-                        );
-                        if (pickedPaths != null && pickedPaths.isNotEmpty) {
-                          for (final p in pickedPaths) {
-                            widget.provider.addCustomCategoryPath(label, p);
-                          }
-                        }
-                      },
-                      icon: const Icon(Broken.folder_add, size: 16),
-                      label: Text(
-                        L10n.of(context).ui_add_custom_path,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      style: TextButton.styleFrom(
-                        foregroundColor: theme.colorScheme.primary,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        backgroundColor: theme.colorScheme.primary.withOpacity(
-                          0.08,
-                        ),
-                      ),
-                    ),
-                    if (_remotePathCategories.contains(label)) ...[
-                      const SizedBox(width: 8),
-                      TextButton.icon(
-                        onPressed: () async {
-                          final remotePath = await showRemotePathPicker(
-                            context,
-                          );
-                          if (remotePath != null) {
-                            widget.provider.addCustomCategoryPath(
-                              label,
-                              remotePath,
-                            );
-                          }
-                        },
-                        icon: const Icon(Broken.wifi, size: 16),
-                        label: Text(
-                          L10n.of(context).ui_add_remote_path,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        style: TextButton.styleFrom(
-                          foregroundColor: theme.colorScheme.primary,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          backgroundColor: theme.colorScheme.primary
-                              .withOpacity(0.08),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const Divider(height: 1),
-        ],
       ],
     );
   }

@@ -11703,6 +11703,18 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'恢复默认'**
   String get ui_media_filter_restore_default;
+
+  /// category settings screen (ui_category_settings_title)
+  ///
+  /// In zh, this message translates to:
+  /// **'类别设置'**
+  String get ui_category_settings_title;
+
+  /// category settings screen description (ui_category_settings_description)
+  ///
+  /// In zh, this message translates to:
+  /// **'管理该分类的过滤规则与扫描位置'**
+  String get ui_category_settings_description;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

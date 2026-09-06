@@ -6616,4 +6616,10 @@ class L10nEs extends L10n {
 
   @override
   String get ui_media_filter_restore_default => 'Restaurar Predeterminado';
+
+  @override
+  String get ui_category_settings_title => '类别设置';
+
+  @override
+  String get ui_category_settings_description => '管理该分类的过滤规则与扫描位置';
 }

@@ -7,6 +7,7 @@ import '../../../providers/file_manager_provider.dart';
 import '../../../core/utils.dart';
 import '../../../services/app_manager_service.dart';
 import '../media_category_screen.dart';
+import '../../../models/media_type.dart';
 import 'app_manager_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
