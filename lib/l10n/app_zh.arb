@@ -6776,5 +6776,41 @@
   "vt_install_settings_subtitle": "静默安装、保留安装包、安全扫描",
   "@vt_install_settings_subtitle": {
     "description": "apk install settings page title and subtitle"
+  },
+  "ui_category_noise_filter_title": "类别噪音过滤",
+  "@ui_category_noise_filter_title": {
+    "description": "category noise filter (ui_category_noise_filter_title)"
+  },
+  "ui_noise_filter_images_subtitle": "隐藏图标/超小图片 (<30KB)",
+  "@ui_noise_filter_images_subtitle": {
+    "description": "category noise filter (ui_noise_filter_images_subtitle)"
+  },
+  "ui_noise_filter_videos_subtitle": "隐藏短视频/碎片 (<1MB)",
+  "@ui_noise_filter_videos_subtitle": {
+    "description": "category noise filter (ui_noise_filter_videos_subtitle)"
+  },
+  "ui_noise_filter_screenshots_subtitle": "隐藏通知/快捷方式图标 (<5KB)",
+  "@ui_noise_filter_screenshots_subtitle": {
+    "description": "category noise filter (ui_noise_filter_screenshots_subtitle)"
+  },
+  "ui_noise_filter_audios_subtitle": "隐藏音效/提示音/录音 (<60秒)",
+  "@ui_noise_filter_audios_subtitle": {
+    "description": "category noise filter (ui_noise_filter_audios_subtitle)"
+  },
+  "ui_noise_filter_documents_subtitle": "隐藏损坏/空文档 (0KB)",
+  "@ui_noise_filter_documents_subtitle": {
+    "description": "category noise filter (ui_noise_filter_documents_subtitle)"
+  },
+  "ui_noise_filter_archives_subtitle": "隐藏损坏/空压缩包 (<100B)",
+  "@ui_noise_filter_archives_subtitle": {
+    "description": "category noise filter (ui_noise_filter_archives_subtitle)"
+  },
+  "ui_noise_filter_downloads_subtitle": "隐藏损坏/空下载 (0KB)",
+  "@ui_noise_filter_downloads_subtitle": {
+    "description": "category noise filter (ui_noise_filter_downloads_subtitle)"
+  },
+  "ui_noise_filter_apks_subtitle": "隐藏损坏/极小安装包 (<100KB)",
+  "@ui_noise_filter_apks_subtitle": {
+    "description": "category noise filter (ui_noise_filter_apks_subtitle)"
   }
 }

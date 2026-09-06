@@ -6300,4 +6300,31 @@ class L10nKo extends L10n {
 
   @override
   String get vt_install_settings_subtitle => '자동 설치, 설치 프로그램 유지, 보안 검사';
+
+  @override
+  String get ui_category_noise_filter_title => '카테고리별 노이즈 필터';
+
+  @override
+  String get ui_noise_filter_images_subtitle => '아이콘과 아주 작은 이미지 숨기기 (<30KB)';
+
+  @override
+  String get ui_noise_filter_videos_subtitle => '짧은 클립과 조각 숨기기 (<1MB)';
+
+  @override
+  String get ui_noise_filter_screenshots_subtitle => '알림/바로가기 아이콘 숨기기 (<5KB)';
+
+  @override
+  String get ui_noise_filter_audios_subtitle => '효과음/알림/녹음 숨기기 (<60초)';
+
+  @override
+  String get ui_noise_filter_documents_subtitle => '손상/빈 문서 숨기기 (0KB)';
+
+  @override
+  String get ui_noise_filter_archives_subtitle => '손상/빈 압축 파일 숨기기 (<100B)';
+
+  @override
+  String get ui_noise_filter_downloads_subtitle => '손상/빈 다운로드 숨기기 (0KB)';
+
+  @override
+  String get ui_noise_filter_apks_subtitle => '손상/아주 작은 APK 숨기기 (<100KB)';
 }

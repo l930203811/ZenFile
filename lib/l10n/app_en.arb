@@ -6555,5 +6555,41 @@
   "vt_install_settings_subtitle": "Silent install, keep installer, security scan",
   "@vt_install_settings_subtitle": {
     "description": "apk install settings page title and subtitle"
+  },
+  "ui_category_noise_filter_title": "Category noise filter",
+  "@ui_category_noise_filter_title": {
+    "description": "category noise filter (ui_category_noise_filter_title)"
+  },
+  "ui_noise_filter_images_subtitle": "Hide icons & tiny images (<30KB)",
+  "@ui_noise_filter_images_subtitle": {
+    "description": "category noise filter (ui_noise_filter_images_subtitle)"
+  },
+  "ui_noise_filter_videos_subtitle": "Hide short clips & fragments (<1MB)",
+  "@ui_noise_filter_videos_subtitle": {
+    "description": "category noise filter (ui_noise_filter_videos_subtitle)"
+  },
+  "ui_noise_filter_screenshots_subtitle": "Hide notification & shortcut icons (<5KB)",
+  "@ui_noise_filter_screenshots_subtitle": {
+    "description": "category noise filter (ui_noise_filter_screenshots_subtitle)"
+  },
+  "ui_noise_filter_audios_subtitle": "Hide sound effects, alerts & recordings (<60s)",
+  "@ui_noise_filter_audios_subtitle": {
+    "description": "category noise filter (ui_noise_filter_audios_subtitle)"
+  },
+  "ui_noise_filter_documents_subtitle": "Hide broken/empty documents (0KB)",
+  "@ui_noise_filter_documents_subtitle": {
+    "description": "category noise filter (ui_noise_filter_documents_subtitle)"
+  },
+  "ui_noise_filter_archives_subtitle": "Hide broken/empty archives (<100B)",
+  "@ui_noise_filter_archives_subtitle": {
+    "description": "category noise filter (ui_noise_filter_archives_subtitle)"
+  },
+  "ui_noise_filter_downloads_subtitle": "Hide broken/empty downloads (0KB)",
+  "@ui_noise_filter_downloads_subtitle": {
+    "description": "category noise filter (ui_noise_filter_downloads_subtitle)"
+  },
+  "ui_noise_filter_apks_subtitle": "Hide broken/tiny APKs (<100KB)",
+  "@ui_noise_filter_apks_subtitle": {
+    "description": "category noise filter (ui_noise_filter_apks_subtitle)"
   }
 }

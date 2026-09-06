@@ -1566,6 +1566,31 @@ class _CustomizeCategoriesSheetState extends State<_CustomizeCategoriesSheet> {
                         ),
                         const SizedBox(height: 8),
                         const Divider(),
+                        // ===== 媒体类别噪音过滤 =====
+                        // 用户原话："添加一些常规的过滤功能，比如过滤60秒以内的音频，
+                        // 比较小的图片或短视频"。在「自定义快捷方式页面」（sheet）
+                        // 末尾追加 8 个 SwitchListTile，每行控制一个标准媒体类别的
+                        // 「按尺寸/时长过滤小文件」开关；默认全开，关闭后该类别
+                        // 不再按尺寸过滤，保留原始文件。
+                        // 当前 settings 持久化到 SharedPreferences，下一次扫描生效。
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              L10n.of(context).ui_category_noise_filter_title,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: _CategoryNoiseFilterList(),
+                        ),
+                        const SizedBox(height: 8),
                         Expanded(
                           child: ReorderableListView.builder(
                             scrollController: scrollController,
@@ -2253,4 +2278,158 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
       ],
     );
   }
+}
+
+/// 「自定义快捷方式页面」末尾的「媒体类别噪音过滤」开关组。
+/// 每行控制一个标准媒体类别（图片/视频/音频/截图/文档/压缩包/下载/安装包）的
+/// 「按尺寸/时长过滤」开关；默认全开，关闭后该类别不再按 _kMin* 阈值过滤，
+/// 保留全部原始文件。设置持久化到 SharedPreferences，下次扫描（isolate 重启）
+/// 与下次 _loadAudios（系统索引路径）均会按新偏好生效。
+class _CategoryNoiseFilterList extends StatelessWidget {
+  /// 类别显示标签（与 MediaProvider 内部「图片/视频/...」一一对应）、
+  /// 类别图标、描述 ARB key。顺序按 UI 重要度排列：媒体（用户最常见）→ 文档
+  /// → 压缩包 → 下载 → APK。但其它类别同理可扩展。
+  static const List<_NoiseFilterRow> _rows = [
+    _NoiseFilterRow(
+      category: '图片',
+      icon: Broken.image,
+      subtitleKey: _SubtitleKey.images,
+    ),
+    _NoiseFilterRow(
+      category: '视频',
+      icon: Broken.video,
+      subtitleKey: _SubtitleKey.videos,
+    ),
+    _NoiseFilterRow(
+      category: '音频',
+      icon: Broken.music,
+      subtitleKey: _SubtitleKey.audios,
+    ),
+    _NoiseFilterRow(
+      category: '截图',
+      icon: Broken.camera,
+      subtitleKey: _SubtitleKey.screenshots,
+    ),
+    _NoiseFilterRow(
+      category: '文档',
+      icon: Broken.document,
+      subtitleKey: _SubtitleKey.documents,
+    ),
+    _NoiseFilterRow(
+      category: '压缩包',
+      icon: Broken.archive,
+      subtitleKey: _SubtitleKey.archives,
+    ),
+    _NoiseFilterRow(
+      category: '下载',
+      icon: Broken.document_download,
+      subtitleKey: _SubtitleKey.downloads,
+    ),
+    _NoiseFilterRow(
+      category: '安装包',
+      icon: Broken.box,
+      subtitleKey: _SubtitleKey.apks,
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final row in _rows) _buildRow(context, theme, row),
+      ],
+    );
+  }
+
+  Widget _buildRow(
+    BuildContext context,
+    ThemeData theme,
+    _NoiseFilterRow row,
+  ) {
+    final enabled = PreferencesService.getMediaNoiseFilter(row.category);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 6),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceVariant.withOpacity(0.25),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: SwitchListTile(
+        value: enabled,
+        activeColor: theme.colorScheme.primary,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+        dense: true,
+        secondary: Icon(
+          row.icon,
+          color: theme.colorScheme.primary,
+          size: 22,
+        ),
+        title: Text(
+          row.category,
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+        ),
+        subtitle: Text(
+          _subtitleFor(context, row.subtitleKey),
+          style: TextStyle(
+            fontSize: 11,
+            color: theme.colorScheme.onSurface.withOpacity(0.55),
+          ),
+        ),
+        onChanged: (val) async {
+          await PreferencesService.saveMediaNoiseFilter(row.category, val);
+          // 主动通知：MediaProvider 的扫描/过滤可能基于偏好值缓存，
+          // 但本类只持久化偏好，下次冷启动/手动刷新时 isolate 与 _loadAudios
+          // 都重新读 prefs 生效。本类无需重建 Provider。
+          // 触发 sheet 重绘：用户即时看到开关状态变化。
+          (context as Element).markNeedsBuild();
+        },
+      ),
+    );
+  }
+
+  String _subtitleFor(BuildContext context, _SubtitleKey k) {
+    final l = L10n.of(context);
+    switch (k) {
+      case _SubtitleKey.images:
+        return l.ui_noise_filter_images_subtitle;
+      case _SubtitleKey.videos:
+        return l.ui_noise_filter_videos_subtitle;
+      case _SubtitleKey.audios:
+        return l.ui_noise_filter_audios_subtitle;
+      case _SubtitleKey.screenshots:
+        return l.ui_noise_filter_screenshots_subtitle;
+      case _SubtitleKey.documents:
+        return l.ui_noise_filter_documents_subtitle;
+      case _SubtitleKey.archives:
+        return l.ui_noise_filter_archives_subtitle;
+      case _SubtitleKey.downloads:
+        return l.ui_noise_filter_downloads_subtitle;
+      case _SubtitleKey.apks:
+        return l.ui_noise_filter_apks_subtitle;
+    }
+  }
+}
+
+enum _SubtitleKey {
+  images,
+  videos,
+  audios,
+  screenshots,
+  documents,
+  archives,
+  downloads,
+  apks,
+}
+
+class _NoiseFilterRow {
+  final String category;
+  final IconData icon;
+  final _SubtitleKey subtitleKey;
+  const _NoiseFilterRow({
+    required this.category,
+    required this.icon,
+    required this.subtitleKey,
+  });
 }

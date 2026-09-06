@@ -6199,6 +6199,33 @@ class L10nZh extends L10n {
 
   @override
   String get vt_install_settings_subtitle => '静默安装、保留安装包、安全扫描';
+
+  @override
+  String get ui_category_noise_filter_title => '类别噪音过滤';
+
+  @override
+  String get ui_noise_filter_images_subtitle => '隐藏图标/超小图片 (<30KB)';
+
+  @override
+  String get ui_noise_filter_videos_subtitle => '隐藏短视频/碎片 (<1MB)';
+
+  @override
+  String get ui_noise_filter_screenshots_subtitle => '隐藏通知/快捷方式图标 (<5KB)';
+
+  @override
+  String get ui_noise_filter_audios_subtitle => '隐藏音效/提示音/录音 (<60秒)';
+
+  @override
+  String get ui_noise_filter_documents_subtitle => '隐藏损坏/空文档 (0KB)';
+
+  @override
+  String get ui_noise_filter_archives_subtitle => '隐藏损坏/空压缩包 (<100B)';
+
+  @override
+  String get ui_noise_filter_downloads_subtitle => '隐藏损坏/空下载 (0KB)';
+
+  @override
+  String get ui_noise_filter_apks_subtitle => '隐藏损坏/极小安装包 (<100KB)';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -12364,4 +12391,31 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get vt_install_settings_subtitle => '靜默安裝、保留安裝包、安全掃描';
+
+  @override
+  String get ui_category_noise_filter_title => '類別噪音過濾';
+
+  @override
+  String get ui_noise_filter_images_subtitle => '隱藏圖示/超小圖片 (<30KB)';
+
+  @override
+  String get ui_noise_filter_videos_subtitle => '隱藏短影片/碎片 (<1MB)';
+
+  @override
+  String get ui_noise_filter_screenshots_subtitle => '隱藏通知/捷徑圖示 (<5KB)';
+
+  @override
+  String get ui_noise_filter_audios_subtitle => '隱藏音效/提示音/錄音 (<60秒)';
+
+  @override
+  String get ui_noise_filter_documents_subtitle => '隱藏損壞/空文件 (0KB)';
+
+  @override
+  String get ui_noise_filter_archives_subtitle => '隱藏損壞/空壓縮檔 (<100B)';
+
+  @override
+  String get ui_noise_filter_downloads_subtitle => '隱藏損壞/空下載 (0KB)';
+
+  @override
+  String get ui_noise_filter_apks_subtitle => '隱藏損壞/極小安裝包 (<100KB)';
 }

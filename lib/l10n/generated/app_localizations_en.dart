@@ -6495,4 +6495,38 @@ class L10nEn extends L10n {
   @override
   String get vt_install_settings_subtitle =>
       'Silent install, keep installer, security scan';
+
+  @override
+  String get ui_category_noise_filter_title => 'Category noise filter';
+
+  @override
+  String get ui_noise_filter_images_subtitle =>
+      'Hide icons & tiny images (<30KB)';
+
+  @override
+  String get ui_noise_filter_videos_subtitle =>
+      'Hide short clips & fragments (<1MB)';
+
+  @override
+  String get ui_noise_filter_screenshots_subtitle =>
+      'Hide notification & shortcut icons (<5KB)';
+
+  @override
+  String get ui_noise_filter_audios_subtitle =>
+      'Hide sound effects, alerts & recordings (<60s)';
+
+  @override
+  String get ui_noise_filter_documents_subtitle =>
+      'Hide broken/empty documents (0KB)';
+
+  @override
+  String get ui_noise_filter_archives_subtitle =>
+      'Hide broken/empty archives (<100B)';
+
+  @override
+  String get ui_noise_filter_downloads_subtitle =>
+      'Hide broken/empty downloads (0KB)';
+
+  @override
+  String get ui_noise_filter_apks_subtitle => 'Hide broken/tiny APKs (<100KB)';
 }

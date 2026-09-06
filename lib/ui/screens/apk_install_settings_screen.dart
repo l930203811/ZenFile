@@ -23,7 +23,8 @@ class _ApkInstallSettingsScreenState extends State<ApkInstallSettingsScreen> {
     super.initState();
     _silentInstall = PreferencesService.getSilentInstall();
     _keepApk = PreferencesService.getKeepApkAfterInstall();
-    _securityScan = (VirusTotalService.getApiKey() ?? '').isNotEmpty;
+    // 扫描开关独立于 API Key：关闭开关只禁用扫描，不清空 Key
+    _securityScan = PreferencesService.getVirusTotalScanEnabled();
     _loadStatus();
   }
 
@@ -86,20 +87,27 @@ class _ApkInstallSettingsScreenState extends State<ApkInstallSettingsScreen> {
             value: _securityScan,
             onChanged: (val) async {
               if (val) {
-                // 打开开关 → 进入 VirusTotal 配置页
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const VirusTotalSettingsScreen()),
-                );
-                // 返回后刷新开关状态（用户可能没配置 key 就返回）
-                if (mounted) {
-                  setState(() {
-                    _securityScan = (VirusTotalService.getApiKey() ?? '').isNotEmpty;
-                  });
+                // 打开开关：如果已有 Key 直接启用，没有则跳转配置页
+                final existingKey = VirusTotalService.getApiKey();
+                if (existingKey != null && existingKey.isNotEmpty) {
+                  await PreferencesService.saveVirusTotalScanEnabled(true);
+                  if (mounted) setState(() => _securityScan = true);
+                } else {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const VirusTotalSettingsScreen()),
+                  );
+                  // 返回后：如果配置了 Key 则启用，否则保持关闭
+                  if (mounted) {
+                    final key = VirusTotalService.getApiKey();
+                    final enabled = key != null && key.isNotEmpty;
+                    await PreferencesService.saveVirusTotalScanEnabled(enabled);
+                    setState(() => _securityScan = enabled);
+                  }
                 }
               } else {
-                // 关闭开关 → 清空 API Key
-                await VirusTotalService.saveApiKey('');
+                // 关闭开关：只禁用扫描，不清空 API Key（Key 持久化保留）
+                await PreferencesService.saveVirusTotalScanEnabled(false);
                 if (mounted) setState(() => _securityScan = false);
               }
             },

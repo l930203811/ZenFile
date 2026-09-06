@@ -6493,5 +6493,41 @@
   "vt_install_settings_subtitle": "サイレントインストール、インストーラー保持、セキュリティスキャン",
   "@vt_install_settings_subtitle": {
     "description": "apk install settings page title and subtitle"
+  },
+  "ui_category_noise_filter_title": "カテゴリごとのノイズフィルター",
+  "@ui_category_noise_filter_title": {
+    "description": "category noise filter (ui_category_noise_filter_title)"
+  },
+  "ui_noise_filter_images_subtitle": "アイコンと極小画像を非表示 (<30KB)",
+  "@ui_noise_filter_images_subtitle": {
+    "description": "category noise filter (ui_noise_filter_images_subtitle)"
+  },
+  "ui_noise_filter_videos_subtitle": "短いクリップと断片を非表示 (<1MB)",
+  "@ui_noise_filter_videos_subtitle": {
+    "description": "category noise filter (ui_noise_filter_videos_subtitle)"
+  },
+  "ui_noise_filter_screenshots_subtitle": "通知/ショートカットアイコンを非表示 (<5KB)",
+  "@ui_noise_filter_screenshots_subtitle": {
+    "description": "category noise filter (ui_noise_filter_screenshots_subtitle)"
+  },
+  "ui_noise_filter_audios_subtitle": "効果音/アラート/録音を非表示 (<60秒)",
+  "@ui_noise_filter_audios_subtitle": {
+    "description": "category noise filter (ui_noise_filter_audios_subtitle)"
+  },
+  "ui_noise_filter_documents_subtitle": "破損/空のドキュメントを非表示 (0KB)",
+  "@ui_noise_filter_documents_subtitle": {
+    "description": "category noise filter (ui_noise_filter_documents_subtitle)"
+  },
+  "ui_noise_filter_archives_subtitle": "破損/空のアーカイブを非表示 (<100B)",
+  "@ui_noise_filter_archives_subtitle": {
+    "description": "category noise filter (ui_noise_filter_archives_subtitle)"
+  },
+  "ui_noise_filter_downloads_subtitle": "破損/空のダウンロードを非表示 (0KB)",
+  "@ui_noise_filter_downloads_subtitle": {
+    "description": "category noise filter (ui_noise_filter_downloads_subtitle)"
+  },
+  "ui_noise_filter_apks_subtitle": "破損/極小のAPKを非表示 (<100KB)",
+  "@ui_noise_filter_apks_subtitle": {
+    "description": "category noise filter (ui_noise_filter_apks_subtitle)"
   }
 }

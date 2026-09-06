@@ -6489,5 +6489,41 @@
   "vt_install_settings_subtitle": "التثبيت الصامت، الاحتفاظ بالمثبت، الفحص الأمني",
   "@vt_install_settings_subtitle": {
     "description": "apk install settings page title and subtitle"
+  },
+  "ui_category_noise_filter_title": "مرشح الضوضاء حسب الفئة",
+  "@ui_category_noise_filter_title": {
+    "description": "category noise filter (ui_category_noise_filter_title)"
+  },
+  "ui_noise_filter_images_subtitle": "إخفاء الرموز والصور الصغيرة جدًا (<30 كيلوبايت)",
+  "@ui_noise_filter_images_subtitle": {
+    "description": "category noise filter (ui_noise_filter_images_subtitle)"
+  },
+  "ui_noise_filter_videos_subtitle": "إخفاء المقاطع القصيرة والفتات (<1 ميغابايت)",
+  "@ui_noise_filter_videos_subtitle": {
+    "description": "category noise filter (ui_noise_filter_videos_subtitle)"
+  },
+  "ui_noise_filter_screenshots_subtitle": "إخفاء أيقونات الإشعارات/الاختصارات (<5 كيلوبايت)",
+  "@ui_noise_filter_screenshots_subtitle": {
+    "description": "category noise filter (ui_noise_filter_screenshots_subtitle)"
+  },
+  "ui_noise_filter_audios_subtitle": "إخفاء المؤثرات والتنبيهات والتسجيلات (<60 ثانية)",
+  "@ui_noise_filter_audios_subtitle": {
+    "description": "category noise filter (ui_noise_filter_audios_subtitle)"
+  },
+  "ui_noise_filter_documents_subtitle": "إخفاء المستندات التالفة/الفارغة (0 كيلوبايت)",
+  "@ui_noise_filter_documents_subtitle": {
+    "description": "category noise filter (ui_noise_filter_documents_subtitle)"
+  },
+  "ui_noise_filter_archives_subtitle": "إخفاء الأرشيفات التالفة/الفارغة (<100 بايت)",
+  "@ui_noise_filter_archives_subtitle": {
+    "description": "category noise filter (ui_noise_filter_archives_subtitle)"
+  },
+  "ui_noise_filter_downloads_subtitle": "إخفاء التنزيلات التالفة/الفارغة (0 كيلوبايت)",
+  "@ui_noise_filter_downloads_subtitle": {
+    "description": "category noise filter (ui_noise_filter_downloads_subtitle)"
+  },
+  "ui_noise_filter_apks_subtitle": "إخفاء حزم APK التالفة/الصغيرة (<100 كيلوبايت)",
+  "@ui_noise_filter_apks_subtitle": {
+    "description": "category noise filter (ui_noise_filter_apks_subtitle)"
   }
 }

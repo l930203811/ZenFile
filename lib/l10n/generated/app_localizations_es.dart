@@ -6564,4 +6564,39 @@ class L10nEs extends L10n {
   @override
   String get vt_install_settings_subtitle =>
       'Instalación silenciosa, mantener instalador, escaneo de seguridad';
+
+  @override
+  String get ui_category_noise_filter_title => 'Filtro de ruido por categoría';
+
+  @override
+  String get ui_noise_filter_images_subtitle =>
+      'Ocultar iconos e imágenes diminutas (<30KB)';
+
+  @override
+  String get ui_noise_filter_videos_subtitle =>
+      'Ocultar clips cortos y fragmentos (<1MB)';
+
+  @override
+  String get ui_noise_filter_screenshots_subtitle =>
+      'Ocultar iconos de notificación/acceso directo (<5KB)';
+
+  @override
+  String get ui_noise_filter_audios_subtitle =>
+      'Ocultar efectos, alertas y grabaciones (<60s)';
+
+  @override
+  String get ui_noise_filter_documents_subtitle =>
+      'Ocultar documentos vacíos o dañados (0KB)';
+
+  @override
+  String get ui_noise_filter_archives_subtitle =>
+      'Ocultar archivos comprimidos vacíos o dañados (<100B)';
+
+  @override
+  String get ui_noise_filter_downloads_subtitle =>
+      'Ocultar descargas vacías o dañadas (0KB)';
+
+  @override
+  String get ui_noise_filter_apks_subtitle =>
+      'Ocultar APKs dañados o diminutos (<100KB)';
 }

@@ -6545,4 +6545,39 @@ class L10nRu extends L10n {
   @override
   String get vt_install_settings_subtitle =>
       'Тихая установка, сохранение установщика, сканирование';
+
+  @override
+  String get ui_category_noise_filter_title => 'Фильтр шума по категориям';
+
+  @override
+  String get ui_noise_filter_images_subtitle =>
+      'Скрыть значки и крошечные изображения (<30 КБ)';
+
+  @override
+  String get ui_noise_filter_videos_subtitle =>
+      'Скрыть короткие клипы и фрагменты (<1 МБ)';
+
+  @override
+  String get ui_noise_filter_screenshots_subtitle =>
+      'Скрыть значки уведомлений/ярлыков (<5 КБ)';
+
+  @override
+  String get ui_noise_filter_audios_subtitle =>
+      'Скрыть эффекты, оповещения и записи (<60 с)';
+
+  @override
+  String get ui_noise_filter_documents_subtitle =>
+      'Скрыть пустые/повреждённые документы (0 КБ)';
+
+  @override
+  String get ui_noise_filter_archives_subtitle =>
+      'Скрыть пустые/повреждённые архивы (<100 Б)';
+
+  @override
+  String get ui_noise_filter_downloads_subtitle =>
+      'Скрыть пустые/повреждённые загрузки (0 КБ)';
+
+  @override
+  String get ui_noise_filter_apks_subtitle =>
+      'Скрыть повреждённые/крошечные APK (<100 КБ)';
 }

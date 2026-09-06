@@ -11619,6 +11619,60 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'静默安装、保留安装包、安全扫描'**
   String get vt_install_settings_subtitle;
+
+  /// category noise filter (ui_category_noise_filter_title)
+  ///
+  /// In zh, this message translates to:
+  /// **'类别噪音过滤'**
+  String get ui_category_noise_filter_title;
+
+  /// category noise filter (ui_noise_filter_images_subtitle)
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏图标/超小图片 (<30KB)'**
+  String get ui_noise_filter_images_subtitle;
+
+  /// category noise filter (ui_noise_filter_videos_subtitle)
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏短视频/碎片 (<1MB)'**
+  String get ui_noise_filter_videos_subtitle;
+
+  /// category noise filter (ui_noise_filter_screenshots_subtitle)
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏通知/快捷方式图标 (<5KB)'**
+  String get ui_noise_filter_screenshots_subtitle;
+
+  /// category noise filter (ui_noise_filter_audios_subtitle)
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏音效/提示音/录音 (<60秒)'**
+  String get ui_noise_filter_audios_subtitle;
+
+  /// category noise filter (ui_noise_filter_documents_subtitle)
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏损坏/空文档 (0KB)'**
+  String get ui_noise_filter_documents_subtitle;
+
+  /// category noise filter (ui_noise_filter_archives_subtitle)
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏损坏/空压缩包 (<100B)'**
+  String get ui_noise_filter_archives_subtitle;
+
+  /// category noise filter (ui_noise_filter_downloads_subtitle)
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏损坏/空下载 (0KB)'**
+  String get ui_noise_filter_downloads_subtitle;
+
+  /// category noise filter (ui_noise_filter_apks_subtitle)
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏损坏/极小安装包 (<100KB)'**
+  String get ui_noise_filter_apks_subtitle;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

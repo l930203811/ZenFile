@@ -6546,4 +6546,39 @@ class L10nDe extends L10n {
   @override
   String get vt_install_settings_subtitle =>
       'Stumme Installation, Installer behalten, Sicherheitsscan';
+
+  @override
+  String get ui_category_noise_filter_title => 'Rauschfilter nach Kategorie';
+
+  @override
+  String get ui_noise_filter_images_subtitle =>
+      'Symbole und Mini-Bilder ausblenden (<30KB)';
+
+  @override
+  String get ui_noise_filter_videos_subtitle =>
+      'Kurze Clips und Fragmente ausblenden (<1MB)';
+
+  @override
+  String get ui_noise_filter_screenshots_subtitle =>
+      'Benachrichtigungs-/Verknüpfungssymbole ausblenden (<5KB)';
+
+  @override
+  String get ui_noise_filter_audios_subtitle =>
+      'Soundeffekte, Hinweise und Aufnahmen ausblenden (<60s)';
+
+  @override
+  String get ui_noise_filter_documents_subtitle =>
+      'Beschädigte/leere Dokumente ausblenden (0KB)';
+
+  @override
+  String get ui_noise_filter_archives_subtitle =>
+      'Beschädigte/leere Archive ausblenden (<100B)';
+
+  @override
+  String get ui_noise_filter_downloads_subtitle =>
+      'Beschädigte/leere Downloads ausblenden (0KB)';
+
+  @override
+  String get ui_noise_filter_apks_subtitle =>
+      'Beschädigte/zu kleine APKs ausblenden (<100KB)';
 }

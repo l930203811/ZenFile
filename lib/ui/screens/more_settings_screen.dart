@@ -23,7 +23,6 @@ class MoreSettingsScreen extends StatefulWidget {
 }
 
 class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
-  bool _preferFolders = false;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   bool _isSearching = false;
@@ -31,7 +30,6 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
   @override
   void initState() {
     super.initState();
-    _preferFolders = PreferencesService.getPreferFoldersInMedia('images');
   }
 
   @override
@@ -198,7 +196,6 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
 
     // Visibilities for global search filtering
     final showAddressBarVis = _shouldShow(L10n.of(context).msg26e4c5d6, L10n.of(context).windows1);
-    final preferFoldersVis = _shouldShow(L10n.of(context).msg20c87c8e, L10n.of(context).msg74e86197);
     final hideNavBarVis = _shouldShow(L10n.of(context).msga1fbf3c6, L10n.of(context).msg02dddc02);
     final resetViewersVis = _shouldShow(L10n.of(context).ui_reset_default_viewers, L10n.of(context).msg50923c95);
     final skipDialogVis = _shouldShow(L10n.of(context).msg6fdc09ac, L10n.of(context).msg0a4b0442);
@@ -252,7 +249,6 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
     ];
 
     final mediaActionsList = [
-      preferFoldersVis,
       mediaPreviewsVis,
       skipDialogVis,
       resetViewersVis,
@@ -886,32 +882,6 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                   if (_shouldShowHeader(mediaActionsList)) ...[
                     const SizedBox(height: 24),
                     _buildSectionHeader(theme, L10n.of(context).msga4333788),
-                    if (preferFoldersVis)
-                      SettingsTile(
-                        icon: Broken.folder_2,
-                        title: L10n.of(context).msg20c87c8e,
-                        subtitle: L10n.of(context).msg74e86197,
-                        trailing: Transform.scale(
-                          scale: 0.85,
-                          child: Switch(
-                            value: _preferFolders,
-                            activeColor: theme.colorScheme.primary,
-                            onChanged: (val) {
-                              setState(() {
-                                _preferFolders = val;
-                              });
-                              PreferencesService.savePreferFoldersInMedia("images", val); PreferencesService.savePreferFoldersInMedia("videos", val); PreferencesService.savePreferFoldersInMedia("audios", val);
-                            },
-                          ),
-                        ),
-                        onTap: () {
-                          final val = !_preferFolders;
-                          setState(() {
-                            _preferFolders = val;
-                          });
-                          PreferencesService.savePreferFoldersInMedia("images", val); PreferencesService.savePreferFoldersInMedia("videos", val); PreferencesService.savePreferFoldersInMedia("audios", val);
-                        },
-                      ),
                     if (mediaPreviewsVis)
                       SettingsTile(
                         icon: Broken.image,
@@ -1578,14 +1548,12 @@ class MediaSettingsScreen extends StatefulWidget {
 }
 
 class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
-  bool _preferFolders = false;
   int _autoCleanMinutes = 0;
   bool _remoteThumbnailPreview = false;
 
   @override
   void initState() {
     super.initState();
-    _preferFolders = PreferencesService.getPreferFoldersInMedia('images');
     _autoCleanMinutes = PreferencesService.getRemoteCacheAutoCleanMinutes();
     _remoteThumbnailPreview = PreferencesService.getRemoteMediaThumbnailPreview();
   }
@@ -1956,31 +1924,6 @@ class _MediaSettingsScreenState extends State<MediaSettingsScreen> {
           physics: const BouncingScrollPhysics(),
           padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.of(context).padding.bottom + 16),
           children: [
-            SettingsTile(
-              icon: Broken.folder_2,
-              title: L10n.of(context).msg20c87c8e,
-              subtitle: L10n.of(context).msg74e86197,
-              trailing: Transform.scale(
-                scale: 0.85,
-                child: Switch(
-                  value: _preferFolders,
-                  activeColor: theme.colorScheme.primary,
-                  onChanged: (val) {
-                    setState(() {
-                      _preferFolders = val;
-                    });
-                    PreferencesService.savePreferFoldersInMedia("images", val); PreferencesService.savePreferFoldersInMedia("videos", val); PreferencesService.savePreferFoldersInMedia("audios", val);
-                  },
-                ),
-              ),
-              onTap: () {
-                final val = !_preferFolders;
-                setState(() {
-                  _preferFolders = val;
-                });
-                PreferencesService.savePreferFoldersInMedia("images", val); PreferencesService.savePreferFoldersInMedia("videos", val); PreferencesService.savePreferFoldersInMedia("audios", val);
-              },
-            ),
             SettingsTile(
               icon: Broken.image,
               title: L10n.of(context).ui_show_media_previews,

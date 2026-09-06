@@ -7247,6 +7247,13 @@ class FileManagerProvider extends ChangeNotifier {
       }
     }
 
+    // APK 安装包（含 .xapk/.apks/.apkm/.aab bundle）：优先使用内置安装器，
+    // 即使用户设过"外部打开"默认也不走系统选择器，避免弹出"打开方式"
+    if (ApkInstallerService.isApk(targetPath)) {
+      await ApkInstallerService.installApk(context, targetPath);
+      return;
+    }
+
     // 默认/弹窗选择了"使用外部系统选择器打开" → 调用系统选择器
     if (openAction == 'external') {
       await openWithSystemChooser(targetPath);

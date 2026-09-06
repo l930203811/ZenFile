@@ -22,10 +22,14 @@ class ApkInstallerService {
 
   static Future<void> installApk(BuildContext context, String path) async {
     final ext = p.extension(path).toLowerCase();
-    final hasKey = (VirusTotalService.getApiKey() ?? '').isNotEmpty;
+    final apiKey = VirusTotalService.getApiKey();
+    final hasKey = apiKey != null && apiKey.isNotEmpty;
+    // 扫描需同时满足：已配置 Key + 扫描开关已开启（关闭开关不清空 Key）
+    final scanEnabled = PreferencesService.getVirusTotalScanEnabled();
+    final shouldScan = hasKey && scanEnabled;
 
     if (ext == '.apk') {
-      if (hasKey) {
+      if (shouldScan) {
         await _scanThenInstallApk(context, path);
       } else {
         await _openInstaller(context, path);
@@ -34,7 +38,7 @@ class ApkInstallerService {
     }
 
     // Bundle: .xapk .apks .apkm .aab —— 先扫描压缩包本身，再解压安装
-    if (hasKey) {
+    if (shouldScan) {
       await _scanThenInstallApk(context, path);
     } else {
       await _installBundle(context, path);

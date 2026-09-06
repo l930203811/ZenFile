@@ -494,6 +494,21 @@ class PreferencesService {
     await _prefs?.setBool('$_keyPreferFoldersInMedia$mediaType', val);
   }
 
+  // --- Media Category Noise Filter Settings ---
+  // 按媒体类别启用"过滤小文件/短音视频/0字节/损坏"的噪音过滤。默认全部开启，
+  // 用户在"自定义快捷方式"页面可单独关闭任一类。键名格式 `media_noise_filter_<类别名>`。
+  static const String _keyMediaNoiseFilterPrefix = 'media_noise_filter_';
+
+  /// 媒体类别噪音过滤的默认档位：
+  /// 默认全部开启（true）。关闭后该类别不再按尺寸/时长过滤，保留全部文件。
+  static bool getMediaNoiseFilter(String category, {bool defaultValue = true}) {
+    return _prefs?.getBool('$_keyMediaNoiseFilterPrefix$category') ?? defaultValue;
+  }
+
+  static Future<void> saveMediaNoiseFilter(String category, bool enabled) async {
+    await _prefs?.setBool('$_keyMediaNoiseFilterPrefix$category', enabled);
+  }
+
   static bool getHideNavigationBar() {
     return _prefs?.getBool(_keyHideNavigationBar) ?? false;
   }
@@ -736,6 +751,17 @@ class PreferencesService {
 
   static Future<void> saveVirusTotalApiKey(String key) async {
     await _prefs?.setString(_keyVirusTotalApiKey, key);
+  }
+
+  // --- VirusTotal 扫描开关（独立于 API Key，关闭不清空 Key） ---
+  static const String _keyVirusTotalScanEnabled = 'virustotal_scan_enabled';
+
+  static bool getVirusTotalScanEnabled() {
+    return _prefs?.getBool(_keyVirusTotalScanEnabled) ?? false;
+  }
+
+  static Future<void> saveVirusTotalScanEnabled(bool val) async {
+    await _prefs?.setBool(_keyVirusTotalScanEnabled, val);
   }
 
   // --- APK 静默安装（root/shizuku） ---

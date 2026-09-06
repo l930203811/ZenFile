@@ -6304,4 +6304,32 @@ class L10nJa extends L10n {
 
   @override
   String get vt_install_settings_subtitle => 'サイレントインストール、インストーラー保持、セキュリティスキャン';
+
+  @override
+  String get ui_category_noise_filter_title => 'カテゴリごとのノイズフィルター';
+
+  @override
+  String get ui_noise_filter_images_subtitle => 'アイコンと極小画像を非表示 (<30KB)';
+
+  @override
+  String get ui_noise_filter_videos_subtitle => '短いクリップと断片を非表示 (<1MB)';
+
+  @override
+  String get ui_noise_filter_screenshots_subtitle =>
+      '通知/ショートカットアイコンを非表示 (<5KB)';
+
+  @override
+  String get ui_noise_filter_audios_subtitle => '効果音/アラート/録音を非表示 (<60秒)';
+
+  @override
+  String get ui_noise_filter_documents_subtitle => '破損/空のドキュメントを非表示 (0KB)';
+
+  @override
+  String get ui_noise_filter_archives_subtitle => '破損/空のアーカイブを非表示 (<100B)';
+
+  @override
+  String get ui_noise_filter_downloads_subtitle => '破損/空のダウンロードを非表示 (0KB)';
+
+  @override
+  String get ui_noise_filter_apks_subtitle => '破損/極小のAPKを非表示 (<100KB)';
 }

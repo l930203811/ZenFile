@@ -87,6 +87,9 @@ class _FSScanParams {
   /// 避免部分 ROM 不更新目录 mtime 导致新文件永不出现）。非媒体类别目录树
   /// 较小，每次扫描都会重新枚举以保证完整性。
   final Map<String, Map<String, dynamic>> dirCache;
+  /// 各类别"噪音过滤"开关：从主线程偏好同步读入（isolate 无法直接调静态 getter），
+  /// 控制 isolate 内是否按 _kMin* 阈值丢弃小文件/0字节/损坏文件。默认全开。
+  final _MediaNoiseFilter noiseFilter;
   const _FSScanParams({
     required this.roots,
     required this.imageExtensions,
@@ -99,6 +102,7 @@ class _FSScanParams {
     this.skipMediaCategories = false,
     this.onlyApk = false,
     this.dirCache = const {},
+    this.noiseFilter = const _MediaNoiseFilter(),
   });
 }
 
@@ -295,6 +299,37 @@ List<Map<dynamic, dynamic>>? _readAudioCacheIsolate(String path) {
 const int _kMinImageBytes = 30 * 1024; // 30 KB
 /// - 视频小于此值视为流媒体小片段/广告碎片（如 .ts 碎片），不进「视频」分类。
 const int _kMinVideoBytes = 1024 * 1024; // 1 MB
+/// - 截图小于此值视为通知/快捷方式图标噪声，不进「截图」分类。
+const int _kMinScreenshotBytes = 5 * 1024; // 5 KB
+/// - 文档/下载：0 字节空文件视为损坏/未下载完，不进分类。
+const int _kMinDocBytes = 1;
+const int _kMinDownloadBytes = 1;
+/// - 压缩包/安装包：< 100B 视为损坏/伪装的非压缩包，不进分类。
+///   100KB 是常见最小可用 APK/压缩包的 1/100，留足缓冲。
+const int _kMinArchiveBytes = 100;
+const int _kMinApkBytes = 100 * 1024;
+
+/// 媒体类别"按尺寸过滤小文件"开关（PreferencesService.getMediaNoiseFilter）。
+/// 默认 true；用户可在"自定义快捷方式页面 → 媒体类别过滤"独立切换每一类。
+/// 设置为 false 后，对应类别不再按尺寸过滤，保留全部原始文件（_kMin* 不再生效）。
+class _MediaNoiseFilter {
+  final bool images;
+  final bool videos;
+  final bool screenshots;
+  final bool documents;
+  final bool archives;
+  final bool downloads;
+  final bool apks;
+  const _MediaNoiseFilter({
+    this.images = true,
+    this.videos = true,
+    this.screenshots = true,
+    this.documents = true,
+    this.archives = true,
+    this.downloads = true,
+    this.apks = true,
+  });
+}
 
 /// 在独立 isolate 中递归遍历 [params.roots]，按扩展名一次性收集所有类别。
 /// 与 1.1.22 系统级索引（MediaStore 独立进程）等价：扫描完全不占用 UI 主线程。
@@ -376,48 +411,69 @@ Future<_FSScanResult> _scanMediaFileSystemIsolate(_FSScanParams params) async {
           final ext = p.extension(lower);
           if (isDownloadDir && !seenDownloads.contains(entity.path)) {
             seenDownloads.add(entity.path);
-            downloads.add(entity.path);
+            int dlSize = 0;
             try {
-              dirAddSize('下载', entity.lengthSync());
+              dlSize = entity.lengthSync();
             } catch (_) {}
+            // 下载过滤：开关开启时跳过 0 字节空文件（未下载完/失败的占位）。
+            if (!params.noiseFilter.downloads || dlSize >= _kMinDownloadBytes) {
+              downloads.add(entity.path);
+              dirAddSize('下载', dlSize);
+            }
           }
           if (params.onlyApk) {
             // 仅收集 APK（安装包），不收集其他非媒体类别
             if (params.apkExtensions.contains(ext)) {
-              if (seenNonMedia.add(entity.path)) {
+              int apkSize = 0;
+              try {
+                apkSize = entity.lengthSync();
+              } catch (_) {}
+              // 安装包过滤：开关开启时跳过 < 100KB 的伪 APK（损坏 / 错误下载）。
+              if (params.noiseFilter.apks && apkSize < _kMinApkBytes) {
+                // skip
+              } else if (seenNonMedia.add(entity.path)) {
                 apks.add(entity.path);
-                try {
-                  dirAddSize('安装包', entity.lengthSync());
-                } catch (_) {}
+                dirAddSize('安装包', apkSize);
               }
             }
           } else if (params.skipMediaCategories) {
             // 媒体类别（图/视/截/音）由系统级索引提供，此处跳过，
             // 只处理下方文档/压缩包/安装包分支。
             if (params.docExtensions.contains(ext)) {
-              if (seenNonMedia.add(entity.path)) {
+              int docSize = 0;
+              try {
+                docSize = entity.lengthSync();
+              } catch (_) {}
+              // 文档过滤：开关开启时跳过 0 字节空文件（损坏/未下载完）。
+              if (params.noiseFilter.documents && docSize < _kMinDocBytes) {
+                // skip
+              } else if (seenNonMedia.add(entity.path)) {
                 documents.add(entity.path);
-                try {
-                  dirAddSize('文档', entity.lengthSync());
-                } catch (_) {}
+                dirAddSize('文档', docSize);
               }
             } else if (params.archiveExtensions.contains(ext)) {
-              if (seenNonMedia.add(entity.path)) {
+              int archSize = 0;
+              try {
+                archSize = entity.lengthSync();
+              } catch (_) {}
+              // 压缩包过滤：开关开启时跳过 < 100B 的损坏/伪装的非压缩包。
+              if (params.noiseFilter.archives && archSize < _kMinArchiveBytes) {
+                // skip
+              } else if (seenNonMedia.add(entity.path)) {
                 archives.add(entity.path);
-                try {
-                  dirAddSize('压缩包', entity.lengthSync());
-                } catch (_) {}
+                dirAddSize('压缩包', archSize);
               }
             }
           } else if (params.videoExtensions.contains(ext)) {
-            // 过滤掉极小视频片段（如 .ts 流媒体碎片），避免污染「视频」分类
+            // 过滤掉极小视频片段（如 .ts 流媒体碎片），避免污染「视频」分类。
+            // 开关关闭时不过滤（保留原始文件，包括 < 1MB 的短视频/广告片段）。
             int size;
             try {
               size = entity.lengthSync();
             } catch (_) {
               size = 0;
             }
-            if (size < _kMinVideoBytes) continue;
+            if (params.noiseFilter.videos && size < _kMinVideoBytes) continue;
             videos.add(entity.path);
             dirAddSize('视频', size);
           } else if (params.audioExtensions.contains(ext)) {
@@ -444,15 +500,21 @@ Future<_FSScanResult> _scanMediaFileSystemIsolate(_FSScanParams params) async {
               });
             }
           } else if (params.imageExtensions.contains(ext)) {
-            // 过滤掉极小图片（如 app 图标、通知图标等噪声），避免污染「图片」分类
+            // 过滤掉极小图片（如 app 图标、通知图标等噪声），避免污染「图片」分类。
+            // 开关关闭时不过滤（保留原始文件，包括 < 30KB 的小图标/截图）。
             int size;
             try {
               size = entity.lengthSync();
             } catch (_) {
               size = 0;
             }
-            if (size < _kMinImageBytes) continue;
-            if (lower.contains('screenshot') || lower.contains('截图')) {
+            final isScreenshot = lower.contains('screenshot') || lower.contains('截图');
+            final minBytes = isScreenshot ? _kMinScreenshotBytes : _kMinImageBytes;
+            final enableFilter = isScreenshot
+                ? params.noiseFilter.screenshots
+                : params.noiseFilter.images;
+            if (enableFilter && size < minBytes) continue;
+            if (isScreenshot) {
               screenshots.add(entity.path);
               dirAddSize('截图', size);
             } else {
@@ -460,25 +522,40 @@ Future<_FSScanResult> _scanMediaFileSystemIsolate(_FSScanParams params) async {
               dirAddSize('图片', size);
             }
           } else if (params.docExtensions.contains(ext)) {
-            if (seenNonMedia.add(entity.path)) {
+            int docSize = 0;
+            try {
+              docSize = entity.lengthSync();
+            } catch (_) {}
+            // 文档过滤：开关开启时跳过 0 字节空文件（损坏/未下载完）。
+            if (params.noiseFilter.documents && docSize < _kMinDocBytes) {
+              // skip
+            } else if (seenNonMedia.add(entity.path)) {
               documents.add(entity.path);
-              try {
-                dirAddSize('文档', entity.lengthSync());
-              } catch (_) {}
+              dirAddSize('文档', docSize);
             }
           } else if (params.archiveExtensions.contains(ext)) {
-            if (seenNonMedia.add(entity.path)) {
+            int archSize = 0;
+            try {
+              archSize = entity.lengthSync();
+            } catch (_) {}
+            // 压缩包过滤：开关开启时跳过 < 100B 的损坏/伪装的非压缩包。
+            if (params.noiseFilter.archives && archSize < _kMinArchiveBytes) {
+              // skip
+            } else if (seenNonMedia.add(entity.path)) {
               archives.add(entity.path);
-              try {
-                dirAddSize('压缩包', entity.lengthSync());
-              } catch (_) {}
+              dirAddSize('压缩包', archSize);
             }
           } else if (params.apkExtensions.contains(ext)) {
-            if (seenNonMedia.add(entity.path)) {
+            int apkSize = 0;
+            try {
+              apkSize = entity.lengthSync();
+            } catch (_) {}
+            // 安装包过滤：开关开启时跳过 < 100KB 的伪 APK。
+            if (params.noiseFilter.apks && apkSize < _kMinApkBytes) {
+              // skip
+            } else if (seenNonMedia.add(entity.path)) {
               apks.add(entity.path);
-              try {
-                dirAddSize('安装包', entity.lengthSync());
-              } catch (_) {}
+              dirAddSize('安装包', apkSize);
             }
           }
         }
@@ -2400,6 +2477,19 @@ class MediaProvider extends ChangeNotifier {
       debugPrint('[ZenFile] 注意: dart:io 存储访问探测失败，仍尝试递归扫描'
           '（不可读目录将沿用缓存，空结果保留上次列表）');
     }
+    // 把"媒体类别噪音过滤"开关 prefetch 进 isolate 入参（isolate 静态方法不可
+    // 调 PreferencesService），主线程读取一次后透传，isolate 内按开关决定是否
+    // 触发 _kMin* 阈值。用户关闭某类后，该类别不再按尺寸过滤，保留全部原始
+    // 文件——与"自定义快捷方式页面"中开关的语义一致。
+    final noiseFilter = _MediaNoiseFilter(
+      images: PreferencesService.getMediaNoiseFilter('图片'),
+      videos: PreferencesService.getMediaNoiseFilter('视频'),
+      screenshots: PreferencesService.getMediaNoiseFilter('截图'),
+      documents: PreferencesService.getMediaNoiseFilter('文档'),
+      archives: PreferencesService.getMediaNoiseFilter('压缩包'),
+      downloads: PreferencesService.getMediaNoiseFilter('下载'),
+      apks: PreferencesService.getMediaNoiseFilter('安装包'),
+    );
     final params = _FSScanParams(
       roots: searchDirs,
       imageExtensions: _imageExtensions,
@@ -2415,6 +2505,7 @@ class MediaProvider extends ChangeNotifier {
       skipMediaCategories: !onlyApk && !includeMedia,
       onlyApk: onlyApk,
       dirCache: _dirCache,
+      noiseFilter: noiseFilter,
     );
     final result = await compute(_scanMediaFileSystemIsolate, params);
     // 整 map 替换前保留媒体大小（由系统索引路径 _computeMediaCategorySizes/_loadAudios
@@ -3109,8 +3200,16 @@ class MediaProvider extends ChangeNotifier {
     }
   }
 
+  /// 音频时长阈值（用户原话"过滤 60 秒以内的音频"）。
+/// 仅对系统 MediaStore 索引（on_audio_query）返回的真实 duration 起效；
+/// 文件系统补充的合成音频（duration=0）不受此过滤，避免把"未知时长"的
+/// 音频当成音效过滤掉。受用户偏好控制：关闭后整段过滤短路，恢复全部。
+static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
+
   /// 音频：改回系统级索引（MediaStore Audio 表，经 on_audio_query 查询）。
   /// SongModel._data 为完整路径，文件夹分组/播放器/缓存逻辑零改动。
+  /// 用户偏好"音频噪音过滤"开启时，duration < 60s 的系统索引音频（音效/通知/
+  /// 录音）会被过滤；用户偏好关闭时保留全部。
   Future<void> _loadAudios() async {
     try {
       bool isStorageGranted = false;
@@ -3130,6 +3229,27 @@ class MediaProvider extends ChangeNotifier {
         }
       }
 
+      // 用户偏好：是否对音频按时长过滤（默认开）。关闭后保留系统索引返回的
+      // 全量音频（含 < 60s 的音效/通知/录音）。文件系统补充的合成音频不应用此过滤。
+      final audioFilterEnabled =
+          PreferencesService.getMediaNoiseFilter('音频');
+
+      /// 时长过滤 helper：对系统索引返回的真实音频条目按 duration 阈值过滤。
+      /// 文件系统补充的合成条目（duration == 0 或 null）放行，不当作"短音"。
+      List<SongModel> applyDurationFilter(List<SongModel> input) {
+        if (!audioFilterEnabled) return input;
+        return input.where((s) {
+          try {
+            final d = s.duration;
+            // duration 为 null 或 0 表示未知（多来自文件系统补充），保留。
+            if (d == null || d <= 0) return true;
+            return d >= _kMinAudioDurationMs;
+          } catch (_) {
+            return true;
+          }
+        }).toList();
+      }
+
       // 大存储 / 多文件设备上，冷启动的 MediaStore 音频表可能瞬时未就绪，
       // querySongs 偶发返回空列表（不抛异常）。这里做多次重试（指数退避），
       // 拿到非空结果即采用；重试后仍为空时：若此前已有数据则保留旧数据，
@@ -3146,12 +3266,15 @@ class MediaProvider extends ChangeNotifier {
           await Future<void>.delayed(Duration(milliseconds: 400 * attempt));
         }
         try {
-          final result = await _audioQuery.querySongs(
+          final raw = await _audioQuery.querySongs(
             sortType: null,
             orderType: OrderType.ASC_OR_SMALLER,
             uriType: UriType.EXTERNAL,
             ignoreCase: true,
           );
+          // 时长过滤应用在每次 attempt 的结果上，与"best 候选保留更大集合"
+          // 配合：先过滤后比大小，避免把"过滤后很小但实际很大"的候选误淘汰。
+          final result = applyDurationFilter(raw);
           if (result.isNotEmpty) {
             if (best == null || result.length > best.length) best = result;
           }
@@ -3258,8 +3381,13 @@ class MediaProvider extends ChangeNotifier {
     try {
       final rootDir = Directory('/storage/emulated/0');
       if (await rootDir.exists()) {
-        // 主目录浅层兜底：直接文件 + 一级子目录（depth 1）。
-        roots.add(const _ScanRoot('/storage/emulated/0', 1));
+        // 主目录 depth 2 兜底：一级子目录及其下的二级子目录。覆盖「音乐文件不在
+        // /Music 等标准目录、用户随手丢在某个应用目录（如 com.tencent.mm/...）」的
+        // 场景；与下方限深 4 的热点目录互补，扫描量增量为「主目录多一层 list」，对
+        // 大存储设备的影响忽略不计（IO 主要来自热点目录与 dart:io 共享带宽），却
+        // 让「音乐文件未被 MediaStore 索引」的用户也能扫到——这是「只看到录音、
+        // 加自定义路径后才看到音乐」现象的根治：默认扫描根本就覆盖不到默认深度。
+        roots.add(const _ScanRoot('/storage/emulated/0', 2));
         // 热点深扫（depth 4）：文档/压缩包/安装包/下载绝大多数位于这些标准目录。
         const hotspots = [
           '/storage/emulated/0/Download',
@@ -3285,6 +3413,27 @@ class MediaProvider extends ChangeNotifier {
           '/storage/emulated/0/Recording',
           '/storage/emulated/0/Sounds',
           '/storage/emulated/0/Ringtones',
+          // 通用录音目录名（多 OEM 共用），覆盖未列入 /Music 系列的录音/音乐/播客。
+          '/storage/emulated/0/Voice Recorder',
+          '/storage/emulated/0/VoiceRecorder',
+          '/storage/emulated/0/Recordings',
+          '/storage/emulated/0/Podcasts',
+          '/storage/emulated/0/Audiobooks',
+          '/storage/emulated/0/Audio',
+          '/storage/emulated/0/Alarm',
+          '/storage/emulated/0/Notifications',
+          // 常见 OEM 录音/音乐专属目录：澎湃 OS（小米）、ColorOS（OPPO）、
+          // MagicOS（荣耀）、EMUI/HarmonyOS（华为）等。路径不存在时 isolate 内
+          // list() 抛异常被 catch 兜底，扫描成本几乎 0；存在时直接兜住录音/音乐。
+          '/storage/emulated/0/MIUI/sound_recorder',
+          '/storage/emulated/0/MIUI/Recorder',
+          '/storage/emulated/0/MIUI/Music',
+          '/storage/emulated/0/MIUI/ringtone',
+          '/storage/emulated/0/ColorOS/Recorder',
+          '/storage/emulated/0/ColorOS/Music',
+          '/storage/emulated/0/HarmonyOS/Recorder',
+          '/storage/emulated/0/Huawei/Music',
+          '/storage/emulated/0/Honor/Recorder',
         ];
         for (final h in hotspots) {
           roots.add(_ScanRoot(h, 4));
@@ -3343,126 +3492,8 @@ class MediaProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> _loadDocuments() async {
-    final docs = <FileSystemEntity>[];
-    final searchDirs = await _getUserSearchDirs();
-    final excluded = _excludedDefaultPaths['文档'] ?? [];
-
-    for (final root in searchDirs) {
-      final dirPath = root.path;
-      if (_isPathExcluded(dirPath, excluded)) continue;
-      await _scanDirectoryRecursively(
-        dirPath,
-        (ext) => _docExtensions.contains(ext),
-        (file) => docs.add(file),
-      );
-    }
-
-    final docPaths = _customCategoryPaths['文档'] ?? [];
-    for (final dirPath in docPaths) {
-      if (await Directory(dirPath).exists()) {
-        await _scanDirectoryRecursively(
-          dirPath,
-          (ext) => _docExtensions.contains(ext),
-          (file) {
-            if (!docs.any((d) => d.path == file.path)) {
-              docs.add(file);
-            }
-          },
-        );
-      }
-    }
-
-    _documents = docs;
-  }
-
   static const List<String> _archiveExtensions = ['.zip', '.tar', '.gz', '.bz2', '.rar', '.7z'];
   static const List<String> _apkExtensions = ['.apk', '.xapk', '.apks', '.aab'];
-
-  Future<void> _loadArchivesDownloadsAndApks() async {
-    final arch = <FileSystemEntity>[];
-    final dl = <FileSystemEntity>[];
-    final apkList = <FileSystemEntity>[];
-
-    // For downloads
-    final dlDirs = ['/storage/emulated/0/Download', '/storage/emulated/0/Downloads'];
-    final customDlPaths = _customCategoryPaths['下载'] ?? [];
-    final allDlDirs = {...dlDirs, ...customDlPaths};
-    final excludedDl = _excludedDefaultPaths['下载'] ?? [];
-    for (final dirPath in allDlDirs) {
-      if (_isPathExcluded(dirPath, excludedDl)) continue;
-      final dir = Directory(dirPath);
-      if (await dir.exists()) {
-        try {
-          await for (final entity in dir.list(recursive: false)) {
-            if (entity is File) {
-              if (!dl.any((e) => e.path == entity.path)) {
-                dl.add(entity);
-              }
-            }
-          }
-        } catch (_) {}
-      }
-    }
-
-    final searchDirs = await _getUserSearchDirs();
-    final excludedArch = _excludedDefaultPaths['压缩包'] ?? [];
-    final excludedApk = _excludedDefaultPaths['安装包'] ?? [];
-
-    for (final root in searchDirs) {
-      final dirPath = root.path;
-      final isArchExcl = _isPathExcluded(dirPath, excludedArch);
-      final isApkExcl = _isPathExcluded(dirPath, excludedApk);
-      if (isArchExcl && isApkExcl) continue;
-
-      await _scanDirectoryRecursively(
-        dirPath,
-        (ext) => _archiveExtensions.contains(ext) || _apkExtensions.contains(ext),
-        (file) {
-          final ext = p.extension(file.path).toLowerCase();
-          if (_archiveExtensions.contains(ext) && !isArchExcl) {
-            arch.add(file);
-          } else if (_apkExtensions.contains(ext) && !isApkExcl) {
-            apkList.add(file);
-          }
-        },
-      );
-    }
-
-    final archPaths = _customCategoryPaths['压缩包'] ?? [];
-    for (final dirPath in archPaths) {
-      if (await Directory(dirPath).exists()) {
-        await _scanDirectoryRecursively(
-          dirPath,
-          (ext) => _archiveExtensions.contains(ext),
-          (file) {
-            if (!arch.any((d) => d.path == file.path)) {
-              arch.add(file);
-            }
-          },
-        );
-      }
-    }
-
-    final apkPaths = _customCategoryPaths['安装包'] ?? [];
-    for (final dirPath in apkPaths) {
-      if (await Directory(dirPath).exists()) {
-        await _scanDirectoryRecursively(
-          dirPath,
-          (ext) => _apkExtensions.contains(ext),
-          (file) {
-            if (!apkList.any((d) => d.path == file.path)) {
-              apkList.add(file);
-            }
-          },
-        );
-      }
-    }
-
-    _downloads = dl;
-    _archives = arch;
-    _apks = apkList;
-  }
 
   Future<void> _scanCustomCategories() async {
     final imagePaths = _customCategoryPaths['图片'] ?? [];

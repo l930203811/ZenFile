@@ -6459,4 +6459,39 @@ class L10nAr extends L10n {
   @override
   String get vt_install_settings_subtitle =>
       'التثبيت الصامت، الاحتفاظ بالمثبت، الفحص الأمني';
+
+  @override
+  String get ui_category_noise_filter_title => 'مرشح الضوضاء حسب الفئة';
+
+  @override
+  String get ui_noise_filter_images_subtitle =>
+      'إخفاء الرموز والصور الصغيرة جدًا (<30 كيلوبايت)';
+
+  @override
+  String get ui_noise_filter_videos_subtitle =>
+      'إخفاء المقاطع القصيرة والفتات (<1 ميغابايت)';
+
+  @override
+  String get ui_noise_filter_screenshots_subtitle =>
+      'إخفاء أيقونات الإشعارات/الاختصارات (<5 كيلوبايت)';
+
+  @override
+  String get ui_noise_filter_audios_subtitle =>
+      'إخفاء المؤثرات والتنبيهات والتسجيلات (<60 ثانية)';
+
+  @override
+  String get ui_noise_filter_documents_subtitle =>
+      'إخفاء المستندات التالفة/الفارغة (0 كيلوبايت)';
+
+  @override
+  String get ui_noise_filter_archives_subtitle =>
+      'إخفاء الأرشيفات التالفة/الفارغة (<100 بايت)';
+
+  @override
+  String get ui_noise_filter_downloads_subtitle =>
+      'إخفاء التنزيلات التالفة/الفارغة (0 كيلوبايت)';
+
+  @override
+  String get ui_noise_filter_apks_subtitle =>
+      'إخفاء حزم APK التالفة/الصغيرة (<100 كيلوبايت)';
 }
