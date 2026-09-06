@@ -730,7 +730,7 @@ class AboutZenFileScreen extends StatelessWidget {
                   Text(L10n.of(context).msg305734ce, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
 
-                  _buildV1140Changelog(ctx, theme),
+                  _buildV1141Changelog(ctx, theme),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -741,13 +741,12 @@ class AboutZenFileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildV1140Changelog(BuildContext ctx, ThemeData theme) {
+  Widget _buildV1141Changelog(BuildContext ctx, ThemeData theme) {
     final textStyle = TextStyle(fontSize: 13.5, height: 1.6, color: theme.colorScheme.onSurface.withOpacity(0.85));
     final enStyle = TextStyle(fontSize: 12, height: 1.5, color: theme.colorScheme.onSurface.withOpacity(0.5));
     final sectionStyle = TextStyle(fontSize: 14, height: 1.6, color: theme.colorScheme.primary, fontWeight: FontWeight.w700);
 
     Widget gap([double h = 6]) => SizedBox(height: h);
-    // 双语条目：中文在上，英文在下
     Widget zhEn(String zh, String en) => Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Column(
@@ -782,57 +781,113 @@ class AboutZenFileScreen extends StatelessWidget {
                 child: Text('v1.1.41', style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'LexendDeca')),
               ),
               const SizedBox(width: 10),
-              Text('2026-09-04', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+              Text('2026-09-06', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.4))),
             ],
           ),
           gap(14),
 
-          Text('🎵 音频播放器 · Audio Player', style: sectionStyle),
+          Text('\u{1f512} 保险箱重大升级 · Vault Major Upgrade', style: sectionStyle),
           gap(6),
-          zhEn(
-            '标题跑马灯：主播放页标题过长时自动无缝向左循环滚动，未超宽时静态居中。',
-            'Title marquee: When the main player title is too long, it auto-scrolls seamlessly and loops to the left; when it fits within the width, it stays statically centered.',
-          ),
-          zhEn(
-            '均衡器修复：修复播放中均衡器不生效——attach 时机前移到 open 之前（与视频播放器一致），每次播放重新 attach 当前 platform，platform 未就绪时有限重试以防死循环。',
-            'Equalizer fix: Fixed the equalizer not taking effect during playback — the attach step is moved to before open (consistent with the video player), re-attaching the current platform on every playback, with limited retries when the platform is not ready to avoid infinite loops.',
-          ),
+          zhEn('V3 加密格式：内容加密从 AES-256-GCM 升级为 XChaCha20-Poly1305，吞吐提升约 3 倍（7.1 → 21.7 MiB/s），V1/V2 老文件仍可正常解密。',
+               'V3 encryption format: Content encryption upgraded from AES-256-GCM to XChaCha20-Poly1305, throughput improved ~3x (7.1 → 21.7 MiB/s). V1/V2 legacy files remain decryptable.'),
+          zhEn('会话级密钥缓存：派生一次密钥留在内存复用，批量加解密只有第一次慢，改密码派生次数从 2N 降到 2。',
+               'Session-level key cache: Derive key once and reuse in memory. Batch encrypt/decrypt is slow only on first run; password change derivation reduced from 2N to 2.'),
+          zhEn('加解密下沉 isolate：KDF + AEAD 分块循环在独立 isolate 执行，主线程不再卡顿；isolate 不可用时自动回退。',
+               'Encrypt/decrypt offloaded to isolate: KDF + AEAD chunk loop runs in a separate isolate, main thread no longer freezes; auto-fallback when isolate unavailable.'),
+          zhEn('目录锁定改流式 ZIP：ZipFileEncoder 逐文件落盘，不再整目录进内存，大目录 OOM 风险解除。',
+               'Directory locking uses streaming ZIP: ZipFileEncoder writes file-by-file to disk, no longer loading entire directory into memory; large-directory OOM risk eliminated.'),
+          zhEn('修复密码错误时截断目标文件：原实现先 openWrite 再解密，密码错误会留下空文件，现已修复。',
+               'Fixed target file truncation on wrong password: Original implementation opened write before decrypting, leaving an empty file on wrong password; now fixed.'),
           gap(14),
 
-          Text('📁 受限路径修复 · Restricted Path Fixes', style: sectionStyle),
+          Text('\u{1f4e6} APK 安装器与安全扫描 · APK Installer & Security Scan', style: sectionStyle),
           gap(6),
-          zhEn(
-            '文件夹大小 0B：受限路径改用 Shizuku shell（find+stat 双路径）统计，底层 /data/media/0 优先、FUSE 直达回退，与 listFiles 策略一致；Dart IO 仅作兜底。',
-            'Folder size showing 0B: Restricted paths now use the Shizuku shell (dual find+stat paths) for size calculation, preferring the underlying /data/media/0 with a FUSE direct fallback, consistent with the listFiles strategy; Dart IO is only used as a last resort.',
-          ),
-          zhEn(
-            '重命名无效：受限路径重命名改为 FUSE 直达优先 + 底层回退双跳并校验结果。',
-            'Rename not working: restricted-path rename now uses FUSE direct-first + underlying fallback with a double jump and result verification.',
-          ),
-          zhEn(
-            '并排查看 0 项：受限路径计数优先走 shell listFiles，listRawPath 仅兜底。',
-            'Side-by-side view showing 0 items: restricted-path counting prefers the shell listFiles, with listRawPath only as a fallback.',
-          ),
-          zhEn(
-            '移动变复制 + 0 字节：受限源移动优先原子 mv，失败回退 copy+delete；copy 增加源/目标 size 一致性校验，FUSE 读受限时自动删目标并底层重试；rename/move/delete 增加结果校验，失败显式抛错不再静默。',
-            'Move turned into copy + 0 bytes: restricted-source move prefers atomic mv, falling back to copy+delete; copy adds a source/target size-consistency check, auto-deletes the target and retries at the underlying layer when FUSE read is restricted; rename/move/delete add result verification and throw explicitly on failure instead of failing silently.',
-          ),
+          zhEn('VirusTotal APK 安装安全扫描：安装 APK 前自动哈希查询，支持安全/风险/未收录/扫描失败四态弹窗，未收录可上传完整扫描。',
+               'VirusTotal APK install security scan: Auto hash query before installing APK. Supports 4-state dialog (safe/risky/not found/scan failed); full upload scan available for not-found files.'),
+          zhEn('支持 xapk/apks/apkm/aab 格式扫描与安装：bundle 包先扫描再解压安装。',
+               'Supports xapk/apks/apkm/aab format scan & install: Bundle packages are scanned first, then extracted and installed.'),
+          zhEn('root/shizuku 静默安装器：获取权限后自动后台安装，支持单 APK 和多 APK 会话机制，失败自动回退系统安装器。',
+               'root/shizuku silent installer: Auto background install after permission granted. Supports single APK and multi-APK session mechanism; auto-fallback to system installer on failure.'),
+          zhEn('安装后保留安装包开关：开启后安装临时副本，防止系统安装器自动删除源 APK。',
+               'Keep APK after install switch: When enabled, installs a temporary copy to prevent the system installer from auto-deleting the source APK.'),
+          zhEn('安全扫描开关与 API Key 分离：关闭扫描不再清空 Key，Key 持久化保留；备份/恢复自动包含 Key 和开关状态。',
+               'Scan switch separated from API Key: Turning off scan no longer clears the Key; Key is persistently retained. Backup/restore automatically includes Key and switch state.'),
           gap(14),
 
-          Text('🔐 保险箱设置页重构 · Vault Settings Page Refactor', style: sectionStyle),
+          Text('\u{1f4c1} 文件管理与导航 · File Management & Navigation', style: sectionStyle),
           gap(6),
-          zhEn(
-            '黄色 ⚠️ 安全警告独立展示于「安全设置」标题上方（纯展示、无涟漪无边框）。',
-            'The yellow ⚠️ security warning is shown independently above the Security Settings title (display-only, no ripple, no border).',
-          ),
-          zhEn(
-            '「安全设置」「备份/恢复」改为可下拉折叠分组（居中标题 + 旋转箭头），默认收缩。',
-            'Security Settings and Backup/Restore are now collapsible grouped sections (centered title + rotating arrow), collapsed by default.',
-          ),
-          zhEn(
-            '卸载警告拆为独立卡片区域；折叠标题改靠左对齐并加 1px 细边框圆角容器。',
-            'The uninstall warning is split into its own card area; the collapsible-section title is now left-aligned and wrapped in a 1px thin-bordered rounded container.',
-          ),
+          zhEn('导航按钮逻辑重构：参考 Windows 资源管理器，回退基于历史栈后退，向上进入父目录，前进基于历史栈前进（修复前进按钮永远灰色的问题）。',
+               'Navigation button logic refactor: Following Windows Explorer, Back uses history stack, Up goes to parent directory, Forward uses history stack (fixed Forward button always greyed out).'),
+          zhEn('双窗口模式文件拖放优化：一次长按即可开始拖放（无需先选中再长按），长按拖放期间抑制左右滑动切页和多选菜单误触。',
+               'Dual-pane file drag-and-drop optimized: One long-press starts dragging (no need to select first). Swipe-to-switch-pane and multi-select menu are suppressed during drag.'),
+          zhEn('Android/data 受限路径复制优化：受限 Android 路径文件一律走 shell cp（FUSE 直接路径 + 底层路径双跳 + 大小校验），从根本上避免复制出 0 字节文件。',
+               'Android/data restricted path copy optimized: All restricted Android path files use shell cp (FUSE direct path + underlying path dual-fallback + size verification), fundamentally preventing 0-byte copies.'),
+          zhEn('多选操作菜单俄语溢出修复：俄语长文案导致删除和更多按钮被挤出屏幕，优化横向布局。',
+               'Fixed Russian overflow in multi-select action bar: Long Russian text caused Delete and More buttons to be pushed off-screen; horizontal layout optimized.'),
+          zhEn('文件/文件夹三点菜单新增分享功能：分享按钮位于菜单底部，最近页同样支持。',
+               'Added Share to file/folder three-dot menu: Share button at the bottom of the menu; also supported in the Recent page.'),
+          gap(14),
+
+          Text('\u{1f5bc}\ufe0f 分类页与媒体库 · Categories & Media Library', style: sectionStyle),
+          gap(6),
+          zhEn('类别设置屏蔽文件夹：每个类别（图片/视频/音频/文档等）独立设置屏蔽文件夹，添加后不再扫描该文件夹下的文件。',
+               'Category setting: Exclude folders: Each category (images/videos/audio/documents, etc.) independently sets excluded folders; files under excluded folders are no longer scanned.'),
+          zhEn('按类别独立排序 + 持久化：每个类别记住各自的排序方式（名称/日期/大小/类型），切换类别不互相影响。',
+               'Per-category independent sort + persistence: Each category remembers its own sort method (name/date/size/type); switching categories does not affect each other.'),
+          zhEn('修复图片/视频大小排序无效：根因是批量预加载 stat 时只检查 mtime 缓存不检查 size 缓存，导致系统索引文件 size 被误填为 0。',
+               'Fixed image/video size sort not working: Root cause was that batch preload stat only checked mtime cache but not size cache, causing system-indexed file sizes to be incorrectly filled as 0.'),
+          zhEn('修复图片/视频预览页快速下滑闪退：4 处 Image.file 添加 cacheWidth 限制。',
+               'Fixed crash on fast scroll-down in image/video preview page: Added cacheWidth limit to 4 Image.file instances.'),
+          zhEn('修复分类页音频列表启动后莫名清零：querySongs 不可靠，改文件系统枚举兜底，7 处修复确保任何路径都无法清空列表。',
+               'Fixed category audio list mysteriously clearing on startup: querySongs unreliable, switched to filesystem enumeration fallback. 7 fixes ensure no path can clear the list.'),
+          zhEn('分类页长按类别图标弹窗新增"自定义快捷方式"按钮。',
+               'Added "Custom Shortcut" button to long-press category icon dialog in Categories page.'),
+          gap(14),
+
+          Text('\u{1f3b5} 音频播放器 · Audio Player', style: sectionStyle),
+          gap(6),
+          zhEn('音频均衡器在音频播放器生效：此前仅视频播放器生效，现已修复。',
+               'Audio equalizer now works in audio player: Previously only worked in video player; now fixed.'),
+          zhEn('音频文件名过长自动滚动：向左循环滚动，速度优化至最低，避免闪眼。',
+               'Auto-scroll for long audio filenames: Loops scrolling left, speed optimized to minimum to avoid eye strain.'),
+          zhEn('波形跳动根据音频频率：根据实际音频频率动态跳动，不再固定高度。',
+               'Waveform beats according to audio frequency: Dynamically pulses based on actual audio frequency, no longer fixed height.'),
+          gap(14),
+
+          Text('\u{1f3a8} 图片编辑器 · Image Editor', style: sectionStyle),
+          gap(6),
+          zhEn('重建绘图功能：父 tab 位于调整与滤镜之间，子 tab 紧挨父 tab；支持画笔、橡皮擦、文字、矩形、椭圆、马赛克、箭头、直线。',
+               'Rebuilt drawing feature: Parent tab between Adjust and Filters, child tab immediately below. Supports brush, eraser, text, rectangle, ellipse, mosaic, arrow, line.'),
+          zhEn('文字/矩形/椭圆区域框操作：右下角手柄缩放旋转、左上角关闭按钮、长按移动、点击二次编辑；缩放/旋转/移动实时预览。',
+               'Text/rectangle/ellipse bounding box: Bottom-right handle for scale/rotate, top-left close button, long-press to move, tap to re-edit; real-time preview for scale/rotate/move.'),
+          zhEn('滑块智能切换：文本工具显示"字体"大小，其它工具显示"线粗"；切换工具自动保存当前绘制，可通过顶部撤回按钮撤销。',
+               'Smart slider switch: Text tool shows "Font" size, other tools show "Line thickness"; switching tools auto-saves current drawing, undoable via top Undo button.'),
+          gap(14),
+
+          Text('\u{1f3a8} 界面与多语言 · UI & Localization', style: sectionStyle),
+          gap(6),
+          zhEn('AMOLED 纯黑模式真正变黑：此前与深色模式无区别，现已优化为真正的纯黑。',
+               'AMOLED pure black mode truly black: Previously indistinguishable from dark mode; now optimized to true pure black.'),
+          zhEn('关于页 QQ 群直唤加群：点击按钮通过 mqqapi 直接唤起 QQ 申请加群，无需打开浏览器；QQ 群文案支持多语言。',
+               'About page QQ group direct join: Tap button to directly launch QQ group join via mqqapi, no browser needed; QQ group text supports multi-language.'),
+          zhEn('关于页邮箱点击复制：从长按复制改为点击复制，复制提示文案支持多语言。',
+               'About page email tap-to-copy: Changed from long-press copy to tap copy; copy toast text supports multi-language.'),
+          zhEn('10 语言全同步：中文/繁体中文/英文/俄语/日语/韩语/德语/西班牙语/法语/阿拉伯语。',
+               '10 languages fully synced: Chinese/Traditional Chinese/English/Russian/Japanese/Korean/German/Spanish/French/Arabic.'),
+          gap(14),
+
+          Text('\u{1f41b} 其它修复 · Other Fixes', style: sectionStyle),
+          gap(6),
+          zhEn('修复 Android/data 文件夹大小显示 0B：受限路径 stat 走底层绕过 + FUSE 回退双路径。',
+               'Fixed Android/data folder size showing 0B: Restricted path stat uses underlying bypass + FUSE fallback dual paths.'),
+          zhEn('修复 .xapk/.apkm 点击弹"打开方式"：所有 APK 格式一律走内置安装器，不受"外部打开"默认动作影响。',
+               'Fixed .xapk/.apkm tap showing "Open with": All APK formats use the built-in installer, unaffected by "Open externally" default action.'),
+          zhEn('修复保险箱指纹弹窗标题硬编码：启动应用保护时标题不再显示"远程守卫"，按业务场景区分文案。',
+               'Fixed vault fingerprint dialog title hardcoded: Title no longer shows "Remote Guard" when launching app protection; text differentiated by business scenario.'),
+          zhEn('修复 APK 上传扫描网络错误：优先直接 POST /files，仅文件过大时回退 upload_url 且不带 x-apikey header。',
+               'Fixed APK upload scan network error: Prefer direct POST /files, only fallback to upload_url for oversized files without x-apikey header.'),
+          zhEn('移除 PDF 编辑器：因依赖库导致安装包体积增大 10MB 且空白渲染问题未解决，已移除。',
+               'Removed PDF editor: Removed due to dependency library increasing APK size by 10MB and unresolved blank rendering issue.'),
         ],
       ),
     );

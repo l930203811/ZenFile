@@ -2974,20 +2974,7 @@ class L10nJa extends L10n {
   String get ui_exclude_location => '除外場所';
 
   @override
-  String get ui_add_custom_path => 'ローカルパスを追加';
-
-  @override
-  String get ui_excluded_folders_title => '除外フォルダ';
-
-  @override
-  String get ui_excluded_folders_empty =>
-      '除外フォルダはありません。追加したフォルダ内のファイルはこのカテゴリでスキャンされません。';
-
-  @override
-  String get ui_add_excluded_folder => '除外フォルダを追加';
-
-  @override
-  String get ui_remove_excluded_folder => '除外を解除';
+  String get ui_add_custom_path => 'カスタムパスを追加';
 
   @override
   String ui_added_custom_paths(int count) {
@@ -6367,4 +6354,36 @@ class L10nJa extends L10n {
 
   @override
   String get ui_category_settings_description => '管理该分类的过滤规则与扫描位置';
+
+  @override
+  String get ui_excluded_folders_title => 'Blocked folders';
+
+  @override
+  String get ui_excluded_folders_empty =>
+      'No blocked folders yet. After adding, this category will no longer scan files in that folder';
+
+  @override
+  String get ui_add_excluded_folder => 'Add blocked folder';
+
+  @override
+  String get ui_remove_excluded_folder => 'Remove block';
+
+  @override
+  String get vt_extracting => '解凍中…';
+
+  @override
+  String get vt_no_apk_in_bundle => 'バンドル内にインストール可能なAPKが見つかりません';
+
+  @override
+  String get vt_split_installer_launch_failed => '分割APKインストーラーを起動できません';
+
+  @override
+  String get vt_extract_failed => 'パッケージの解凍に失敗：';
+
+  @override
+  String get vt_open_report_failed => 'レポートリンクを開けません';
+
+  @override
+  String get vt_silent_fallback =>
+      'サイレントインストールを試みましたが権限が不足していました。システムインストーラーを使用します';
 }

@@ -5671,32 +5671,8 @@ abstract class L10n {
   /// ui widgets
   ///
   /// In zh, this message translates to:
-  /// **'添加本地路径'**
+  /// **'添加自定义路径'**
   String get ui_add_custom_path;
-
-  /// ui widgets
-  ///
-  /// In zh, this message translates to:
-  /// **'屏蔽文件夹'**
-  String get ui_excluded_folders_title;
-
-  /// ui widgets
-  ///
-  /// In zh, this message translates to:
-  /// **'暂无屏蔽文件夹，添加后该分类将不再扫描此文件夹下的文件'**
-  String get ui_excluded_folders_empty;
-
-  /// ui widgets
-  ///
-  /// In zh, this message translates to:
-  /// **'添加屏蔽文件夹'**
-  String get ui_add_excluded_folder;
-
-  /// ui widgets
-  ///
-  /// In zh, this message translates to:
-  /// **'移除屏蔽'**
-  String get ui_remove_excluded_folder;
 
   /// ui widgets
   ///
@@ -11739,6 +11715,66 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'管理该分类的过滤规则与扫描位置'**
   String get ui_category_settings_description;
+
+  /// category settings - blocked folders
+  ///
+  /// In zh, this message translates to:
+  /// **'屏蔽文件夹'**
+  String get ui_excluded_folders_title;
+
+  /// category settings - blocked folders
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无屏蔽文件夹，添加后该分类将不再扫描此文件夹下的文件'**
+  String get ui_excluded_folders_empty;
+
+  /// category settings - blocked folders
+  ///
+  /// In zh, this message translates to:
+  /// **'添加屏蔽文件夹'**
+  String get ui_add_excluded_folder;
+
+  /// category settings - blocked folders
+  ///
+  /// In zh, this message translates to:
+  /// **'移除屏蔽'**
+  String get ui_remove_excluded_folder;
+
+  /// apk bundle install - extracting dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'正在解压安装包…'**
+  String get vt_extracting;
+
+  /// apk bundle install - no apk found in bundle
+  ///
+  /// In zh, this message translates to:
+  /// **'安装包中未找到可安装的APK'**
+  String get vt_no_apk_in_bundle;
+
+  /// apk bundle install - cannot launch split installer
+  ///
+  /// In zh, this message translates to:
+  /// **'无法启动分包APK安装器'**
+  String get vt_split_installer_launch_failed;
+
+  /// apk bundle install - extract failed prefix
+  ///
+  /// In zh, this message translates to:
+  /// **'解压安装包失败：'**
+  String get vt_extract_failed;
+
+  /// virus total - cannot open report link
+  ///
+  /// In zh, this message translates to:
+  /// **'无法打开报告链接'**
+  String get vt_open_report_failed;
+
+  /// silent install fallback to system installer notice
+  ///
+  /// In zh, this message translates to:
+  /// **'已尝试静默安装，权限不足，改用系统安装器'**
+  String get vt_silent_fallback;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

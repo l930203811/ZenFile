@@ -3114,20 +3114,7 @@ class L10nRu extends L10n {
   String get ui_exclude_location => 'Исключить Расположение';
 
   @override
-  String get ui_add_custom_path => 'Добавить локальный путь';
-
-  @override
-  String get ui_excluded_folders_title => 'Исключённые папки';
-
-  @override
-  String get ui_excluded_folders_empty =>
-      'Нет исключённых папок. Файлы в добавленных папках не будут сканироваться в этой категории.';
-
-  @override
-  String get ui_add_excluded_folder => 'Добавить папку';
-
-  @override
-  String get ui_remove_excluded_folder => 'Удалить';
+  String get ui_add_custom_path => 'Добавить Пользовательский Путь';
 
   @override
   String ui_added_custom_paths(int count) {
@@ -6616,4 +6603,37 @@ class L10nRu extends L10n {
 
   @override
   String get ui_category_settings_description => '管理该分类的过滤规则与扫描位置';
+
+  @override
+  String get ui_excluded_folders_title => 'Blocked folders';
+
+  @override
+  String get ui_excluded_folders_empty =>
+      'No blocked folders yet. After adding, this category will no longer scan files in that folder';
+
+  @override
+  String get ui_add_excluded_folder => 'Add blocked folder';
+
+  @override
+  String get ui_remove_excluded_folder => 'Remove block';
+
+  @override
+  String get vt_extracting => 'Распаковка…';
+
+  @override
+  String get vt_no_apk_in_bundle => 'В бандле не найдено устанавливаемых APK';
+
+  @override
+  String get vt_split_installer_launch_failed =>
+      'Не удалось запустить установщик разделённых APK';
+
+  @override
+  String get vt_extract_failed => 'Ошибка распаковки пакета: ';
+
+  @override
+  String get vt_open_report_failed => 'Не удалось открыть ссылку на отчёт';
+
+  @override
+  String get vt_silent_fallback =>
+      'Попытка тихой установки не удалась из-за прав; используется системный установщик';
 }

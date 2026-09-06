@@ -6566,8 +6566,32 @@
   "@ui_add_excluded_folder": {
     "description": "category settings - blocked folders"
   },
-  "ui_remove_excluded_folder": "Remove block"
+  "ui_remove_excluded_folder": "Remove block",
   "@ui_remove_excluded_folder": {
     "description": "category settings - blocked folders"
+  },
+  "vt_extracting": "압축 해제 중…",
+  "@vt_extracting": {
+    "description": "apk bundle install - extracting dialog"
+  },
+  "vt_no_apk_in_bundle": "번들에서 설치 가능한 APK를 찾을 수 없습니다",
+  "@vt_no_apk_in_bundle": {
+    "description": "apk bundle install - no apk found in bundle"
+  },
+  "vt_split_installer_launch_failed": "분할 APK 설치 프로그램을 시작할 수 없습니다",
+  "@vt_split_installer_launch_failed": {
+    "description": "apk bundle install - cannot launch split installer"
+  },
+  "vt_extract_failed": "패키지 압축 해제 실패: ",
+  "@vt_extract_failed": {
+    "description": "apk bundle install - extract failed prefix"
+  },
+  "vt_open_report_failed": "보고서 링크를 열 수 없습니다",
+  "@vt_open_report_failed": {
+    "description": "virus total - cannot open report link"
+  },
+  "vt_silent_fallback": "자동 설치를 시도했지만 권한이 부족합니다. 시스템 설치 프로그램을 사용합니다",
+  "@vt_silent_fallback": {
+    "description": "silent install fallback to system installer notice"
   }
 }

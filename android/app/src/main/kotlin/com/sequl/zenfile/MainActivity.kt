@@ -2306,6 +2306,11 @@ class MainActivity : AudioServiceFragmentActivity() {
         if (exitCode != 0 && output.isEmpty() && errOutput.isNotEmpty()) {
             throw Exception(errOutput.toString().trim())
         }
+        // 非零退出码时把 stderr 附在输出尾部（带 [stderr] 标记），供 Dart 侧
+        // 诊断失败根因（EACCES / cross-device / Read-only 等），成功时原样返回。
+        if (exitCode != 0 && errOutput.isNotEmpty()) {
+            return output.toString() + "[stderr] " + errOutput.toString().trim()
+        }
         return output.toString()
     }
 }

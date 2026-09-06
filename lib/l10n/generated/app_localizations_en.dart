@@ -3063,20 +3063,7 @@ class L10nEn extends L10n {
   String get ui_exclude_location => 'Exclude Location';
 
   @override
-  String get ui_add_custom_path => 'Add Local Path';
-
-  @override
-  String get ui_excluded_folders_title => 'Excluded Folders';
-
-  @override
-  String get ui_excluded_folders_empty =>
-      'No excluded folders. Files in added folders will not be scanned in this category.';
-
-  @override
-  String get ui_add_excluded_folder => 'Add Excluded Folder';
-
-  @override
-  String get ui_remove_excluded_folder => 'Remove';
+  String get ui_add_custom_path => 'Add Custom Path';
 
   @override
   String ui_added_custom_paths(int count) {
@@ -6565,4 +6552,37 @@ class L10nEn extends L10n {
 
   @override
   String get ui_category_settings_description => '管理该分类的过滤规则与扫描位置';
+
+  @override
+  String get ui_excluded_folders_title => 'Blocked folders';
+
+  @override
+  String get ui_excluded_folders_empty =>
+      'No blocked folders yet. After adding, this category will no longer scan files in that folder';
+
+  @override
+  String get ui_add_excluded_folder => 'Add blocked folder';
+
+  @override
+  String get ui_remove_excluded_folder => 'Remove block';
+
+  @override
+  String get vt_extracting => 'Extracting…';
+
+  @override
+  String get vt_no_apk_in_bundle => 'No installable APK found in the bundle';
+
+  @override
+  String get vt_split_installer_launch_failed =>
+      'Unable to launch split APK installer';
+
+  @override
+  String get vt_extract_failed => 'Failed to extract package: ';
+
+  @override
+  String get vt_open_report_failed => 'Unable to open report link';
+
+  @override
+  String get vt_silent_fallback =>
+      'Silent install attempted but lacked permission; using the system installer';
 }

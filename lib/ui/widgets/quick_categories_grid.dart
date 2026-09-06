@@ -692,6 +692,8 @@ class _QuickCategoriesGridState extends State<QuickCategoriesGrid> {
     switch (action) {
       case 'rename':
         _showRenameDialogForGrid(labelKey);
+      case 'customize':
+        QuickCategoriesGrid.showCustomizeDialog(context, widget.onNavigateTab);
       case 'toggle':
         context.read<MediaProvider>().toggleCategory(labelKey);
     }
@@ -1168,6 +1170,13 @@ child: IntrinsicWidth(
                         widget.isEnabled ? widget.l10n.ui_close_category : widget.l10n.ui_open_category,
                         widget.color,
                         () => widget.onMenuAction('toggle'),
+                      ),
+                      const Divider(height: 1),
+                      widget.buildMenuItem(
+                        Icons.shortcut,
+                        widget.l10n.msge7d18d73,
+                        widget.color,
+                        () => widget.onMenuAction('customize'),
                       ),
                     ],
                   ),

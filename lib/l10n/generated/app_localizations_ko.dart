@@ -2971,20 +2971,7 @@ class L10nKo extends L10n {
   String get ui_exclude_location => '위치 제외';
 
   @override
-  String get ui_add_custom_path => '로컬 경로 추가';
-
-  @override
-  String get ui_excluded_folders_title => '제외 폴더';
-
-  @override
-  String get ui_excluded_folders_empty =>
-      '제외된 폴더가 없습니다. 추가된 폴더의 파일은 이 카테고리에서 스캔되지 않습니다.';
-
-  @override
-  String get ui_add_excluded_folder => '제외 폴더 추가';
-
-  @override
-  String get ui_remove_excluded_folder => '제외 해제';
+  String get ui_add_custom_path => '사용자 정의 경로 추가';
 
   @override
   String ui_added_custom_paths(int count) {
@@ -6362,4 +6349,35 @@ class L10nKo extends L10n {
 
   @override
   String get ui_category_settings_description => '管理该分类的过滤规则与扫描位置';
+
+  @override
+  String get ui_excluded_folders_title => 'Blocked folders';
+
+  @override
+  String get ui_excluded_folders_empty =>
+      'No blocked folders yet. After adding, this category will no longer scan files in that folder';
+
+  @override
+  String get ui_add_excluded_folder => 'Add blocked folder';
+
+  @override
+  String get ui_remove_excluded_folder => 'Remove block';
+
+  @override
+  String get vt_extracting => '압축 해제 중…';
+
+  @override
+  String get vt_no_apk_in_bundle => '번들에서 설치 가능한 APK를 찾을 수 없습니다';
+
+  @override
+  String get vt_split_installer_launch_failed => '분할 APK 설치 프로그램을 시작할 수 없습니다';
+
+  @override
+  String get vt_extract_failed => '패키지 압축 해제 실패: ';
+
+  @override
+  String get vt_open_report_failed => '보고서 링크를 열 수 없습니다';
+
+  @override
+  String get vt_silent_fallback => '자동 설치를 시도했지만 권한이 부족합니다. 시스템 설치 프로그램을 사용합니다';
 }

@@ -6714,8 +6714,32 @@
   "@ui_add_excluded_folder": {
     "description": "category settings - blocked folders"
   },
-  "ui_remove_excluded_folder": "移除屏蔽"
+  "ui_remove_excluded_folder": "移除屏蔽",
   "@ui_remove_excluded_folder": {
     "description": "category settings - blocked folders"
+  },
+  "vt_extracting": "正在解壓安裝套件…",
+  "@vt_extracting": {
+    "description": "apk bundle install - extracting dialog"
+  },
+  "vt_no_apk_in_bundle": "安裝套件中找不到可安裝的APK",
+  "@vt_no_apk_in_bundle": {
+    "description": "apk bundle install - no apk found in bundle"
+  },
+  "vt_split_installer_launch_failed": "無法啟動分包APK安裝程式",
+  "@vt_split_installer_launch_failed": {
+    "description": "apk bundle install - cannot launch split installer"
+  },
+  "vt_extract_failed": "解壓安裝套件失敗：",
+  "@vt_extract_failed": {
+    "description": "apk bundle install - extract failed prefix"
+  },
+  "vt_open_report_failed": "無法開啟報告連結",
+  "@vt_open_report_failed": {
+    "description": "virus total - cannot open report link"
+  },
+  "vt_silent_fallback": "已嘗試靜默安裝，權限不足，改用系統安裝程式",
+  "@vt_silent_fallback": {
+    "description": "silent install fallback to system installer notice"
   }
 }

@@ -126,28 +126,29 @@ class _DragDropHandlerState extends State<DragDropHandler> {
       ),
     );
 
-    // 未选中状态：只响应长按选中，不响应拖拽
-    // 选中状态：响应拖拽操作，但拖拽释放时不触发 onLongPress（避免弹出多选菜单）
-    Widget itemWidget = isSelected
-        ? DraggableItem(
-            key: ValueKey('draggable_${widget.path}'),
-            data: DragPayload(
-              path: widget.path,
-              isDirectory: widget.isDirectory,
-              paths: dragPaths,
-              isRemote: widget.isRemote,
-              remoteItems: widget.remoteItems,
-              connection: widget.connection,
-            ),
-            feedback: feedback,
-            // 选中状态下拖拽释放不触发 onLongPress，避免弹出多选菜单
-            onLongPress: null,
-            child: widget.child,
-          )
-        : GestureDetector(
-            onLongPress: widget.onLongPress,
-            child: widget.child,
-          );
+    // 统一使用 DraggableItem：未选中时长按不移动则选中，移动则自动选中并开始拖拽
+    // 选中状态：响应拖拽操作，拖拽释放不触发 onLongPress（避免弹出多选菜单）
+    Widget itemWidget = DraggableItem(
+      key: ValueKey('draggable_${widget.path}'),
+      data: DragPayload(
+        path: widget.path,
+        isDirectory: widget.isDirectory,
+        paths: dragPaths,
+        isRemote: widget.isRemote,
+        remoteItems: widget.remoteItems,
+        connection: widget.connection,
+      ),
+      feedback: feedback,
+      // 未选中状态：长按不移动则触发选中；选中状态：拖拽释放不触发 onLongPress
+      onLongPress: isSelected ? null : widget.onLongPress,
+      // 拖拽开始时如果未选中，自动选中当前文件
+      onDragStarted: isSelected ? null : () {
+        if (widget.onLongPress != null) {
+          widget.onLongPress!();
+        }
+      },
+      child: widget.child,
+    );
 
         // If it's a directory, wrap in a DragTarget to allow dropping items onto it
         if (widget.isDirectory) {

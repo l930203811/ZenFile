@@ -524,9 +524,18 @@ class RootShizukuService {
       final sessionId = match.group(1)!;
 
       // 2. 逐个写入 APK
-      for (var i = 0; i < paths.length; i++) {
+      // 语法：pm install-write [-S BYTES] SESSION_ID SPLIT_NAME PATH
+      // SPLIT_NAME 用真实文件名（如 base.apk / config.arm64_v8a.apk），
+      // -S 传该文件实际字节大小（可选，但显式传入更可靠）。
+      for (final apkPath in paths) {
+        int sizeBytes = 0;
+        try {
+          final f = await File(apkPath).length();
+          sizeBytes = f;
+        } catch (_) {}
+        final splitName = p.basename(apkPath);
         final writeOut = await runCommand(
-          'pm install-write -S $sessionId $i "${paths[i]}" 2>&1',
+          'pm install-write -S $sizeBytes $sessionId "$splitName" "$apkPath" 2>&1',
           useRoot: useRoot,
         );
         if (writeOut == null || !writeOut.toLowerCase().contains('success')) {

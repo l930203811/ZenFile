@@ -6632,8 +6632,32 @@
   "@ui_add_excluded_folder": {
     "description": "category settings - blocked folders"
   },
-  "ui_remove_excluded_folder": "Remove block"
+  "ui_remove_excluded_folder": "Remove block",
   "@ui_remove_excluded_folder": {
     "description": "category settings - blocked folders"
+  },
+  "vt_extracting": "Extracting…",
+  "@vt_extracting": {
+    "description": "apk bundle install - extracting dialog"
+  },
+  "vt_no_apk_in_bundle": "No installable APK found in the bundle",
+  "@vt_no_apk_in_bundle": {
+    "description": "apk bundle install - no apk found in bundle"
+  },
+  "vt_split_installer_launch_failed": "Unable to launch split APK installer",
+  "@vt_split_installer_launch_failed": {
+    "description": "apk bundle install - cannot launch split installer"
+  },
+  "vt_extract_failed": "Failed to extract package: ",
+  "@vt_extract_failed": {
+    "description": "apk bundle install - extract failed prefix"
+  },
+  "vt_open_report_failed": "Unable to open report link",
+  "@vt_open_report_failed": {
+    "description": "virus total - cannot open report link"
+  },
+  "vt_silent_fallback": "Silent install attempted but lacked permission; using the system installer",
+  "@vt_silent_fallback": {
+    "description": "silent install fallback to system installer notice"
   }
 }

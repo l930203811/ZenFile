@@ -1293,6 +1293,9 @@ class MediaProvider extends ChangeNotifier {
   // 多个扫描并发跑在主线程会把 UI 撑爆（表现为「打开 app 几秒后卡死」）。
   DateTime? _lastBackgroundRefresh;
   MediaSortOrder _sortOrder = MediaSortOrder.newest;
+  /// 按类别独立排序设置：key=类别名(图片/视频/音频/文档/压缩包/下载/安装包/截图)，value=排序方式。
+  /// 优先于全局 _sortOrder；未设置的类别回退到全局排序。
+  final Map<String, MediaSortOrder> _categorySortOrders = {};
 
   String? _getItemPath(dynamic item) {
     if (item is FileSystemEntity) return item.path;
@@ -1329,7 +1332,8 @@ class MediaProvider extends ChangeNotifier {
 
   List<dynamic> get images {
     final excluded = <String>[...(_excludedDefaultPaths['图片'] ?? const <String>[]), ...(_excludedFolders['图片'] ?? const <String>[])];
-    final stamp = _stampFor(_images, _customImages, excluded);
+    final sortOrder = getSortOrderForCategory('图片');
+    final stamp = _stampFor(_images, _customImages, excluded, sortOrder);
     if (_imagesOut != null && _imagesStamp == stamp) return _imagesOut!;
     final raw = [..._images, ..._customImages].where((item) {
       final path = _getItemPath(item);
@@ -1341,7 +1345,7 @@ class MediaProvider extends ChangeNotifier {
     // 修复：此前 _dedupeMediaByPath 的返回值被丢弃，同路径文件
     // （系统索引 + 自定义分类双收录）会在列表中重复显示
     final list = _dedupeMediaByPath(raw);
-    _sortDynamicList(list);
+    _sortDynamicList(list, sortOrder);
     _imagesOut = list;
     _imagesStamp = stamp;
     return list;
@@ -1349,7 +1353,8 @@ class MediaProvider extends ChangeNotifier {
 
   List<dynamic> get videos {
     final excluded = <String>[...(_excludedDefaultPaths['视频'] ?? const <String>[]), ...(_excludedFolders['视频'] ?? const <String>[])];
-    final stamp = _stampFor(_videos, _customVideos, excluded);
+    final sortOrder = getSortOrderForCategory('视频');
+    final stamp = _stampFor(_videos, _customVideos, excluded, sortOrder);
     if (_videosOut != null && _videosStamp == stamp) return _videosOut!;
     final raw = [..._videos, ..._customVideos].where((item) {
       final path = _getItemPath(item);
@@ -1359,7 +1364,7 @@ class MediaProvider extends ChangeNotifier {
       return true;
     }).toList();
     final list = _dedupeMediaByPath(raw);
-    _sortDynamicList(list);
+    _sortDynamicList(list, sortOrder);
     _videosOut = list;
     _videosStamp = stamp;
     return list;
@@ -1425,7 +1430,8 @@ class MediaProvider extends ChangeNotifier {
 
   List<dynamic> get screenshots {
     final excluded = <String>[...(_excludedDefaultPaths['截图'] ?? const <String>[]), ...(_excludedFolders['截图'] ?? const <String>[])];
-    final stamp = _stampFor(_screenshots, _customScreenshots, excluded);
+    final sortOrder = getSortOrderForCategory('截图');
+    final stamp = _stampFor(_screenshots, _customScreenshots, excluded, sortOrder);
     if (_shotsOut != null && _shotsStamp == stamp) return _shotsOut!;
     final raw = [..._screenshots, ..._customScreenshots].where((item) {
       final path = _getItemPath(item);
@@ -1437,33 +1443,34 @@ class MediaProvider extends ChangeNotifier {
     // 修复：截图「实际 1 张显示 2 张同路径」——系统索引截图相册与
     // 「全部媒体」循环双收录/自定义分类双收录时，去重结果此前被丢弃
     final list = _dedupeMediaByPath(raw);
-    _sortDynamicList(list);
+    _sortDynamicList(list, sortOrder);
     _shotsOut = list;
     _shotsStamp = stamp;
     return list;
   }
   List<FileItemModel> get recentFiles => _recentFiles;
 
-  void _sortDynamicList(List<dynamic> list) {
+  void _sortDynamicList(List<dynamic> list, [MediaSortOrder? sortOrder]) {
+    final effectiveOrder = sortOrder ?? _sortOrder;
     int Function(dynamic, dynamic) compare;
-    if (_sortOrder == MediaSortOrder.newest ||
-        _sortOrder == MediaSortOrder.newestGrouped ||
-        _sortOrder == MediaSortOrder.dateWise) {
+    if (effectiveOrder == MediaSortOrder.newest ||
+        effectiveOrder == MediaSortOrder.newestGrouped ||
+        effectiveOrder == MediaSortOrder.dateWise) {
       compare = (a, b) {
         final aTime = _getDateTime(a);
         final bTime = _getDateTime(b);
         return bTime.compareTo(aTime);
       };
-    } else if (_sortOrder == MediaSortOrder.oldest ||
-               _sortOrder == MediaSortOrder.oldestGrouped) {
+    } else if (effectiveOrder == MediaSortOrder.oldest ||
+               effectiveOrder == MediaSortOrder.oldestGrouped) {
       compare = (a, b) {
         final aTime = _getDateTime(a);
         final bTime = _getDateTime(b);
         return aTime.compareTo(bTime);
       };
-    } else if (_sortOrder == MediaSortOrder.sizeLargest ||
-               _sortOrder == MediaSortOrder.sizeSmallest) {
-      final isSmallest = _sortOrder == MediaSortOrder.sizeSmallest;
+    } else if (effectiveOrder == MediaSortOrder.sizeLargest ||
+               effectiveOrder == MediaSortOrder.sizeSmallest) {
+      final isSmallest = effectiveOrder == MediaSortOrder.sizeSmallest;
       compare = (a, b) {
         final aSize = _getSize(a);
         final bSize = _getSize(b);
@@ -1504,6 +1511,21 @@ class MediaProvider extends ChangeNotifier {
       } catch (_) {}
       return 0;
     }
+    if (item is AssetEntity) {
+      // AssetEntity.size 是图片尺寸(Size)而非文件大小，
+      // 先转 File 再走 FileSystemEntity 的缓存+stat 逻辑。
+      final f = _assetToFile(item);
+      if (f != null) {
+        final cached = _sizeCache[f.path];
+        if (cached != null) return cached;
+        try {
+          final s = f.lengthSync();
+          _sizeCache[f.path] = s;
+          return s;
+        } catch (_) {}
+      }
+      return 0;
+    }
     if (item is FileSystemEntity) {
       final cached = _sizeCache[item.path];
       if (cached != null) return cached;
@@ -1520,9 +1542,9 @@ class MediaProvider extends ChangeNotifier {
   /// 列表被重新赋值（加载/删除/刷新）或排序/排除变化 → 戳变化 → 重算。
   /// 包含列表长度：原地 removeWhere 修改列表时对象引用不变，
   /// 但长度会变 → 强制 getter 重新计算，覆盖删除后残留场景。
-  int _stampFor(List a, List b, List excluded) =>
+  int _stampFor(List a, List b, List excluded, [MediaSortOrder? sortOrder]) =>
       Object.hash(identityHashCode(a), identityHashCode(b),
-          identityHashCode(excluded), _sortOrder.index, a.length, b.length);
+          identityHashCode(excluded), (sortOrder ?? _sortOrder).index, a.length, b.length);
   List<CustomShortcutModel> get customShortcuts => _customShortcuts;
   List<String> get categoryOrder => _categoryOrder;
   List<String> get activeCategories => _activeCategories;
@@ -1534,6 +1556,25 @@ class MediaProvider extends ChangeNotifier {
   bool get nonMediaScanDone => _nonMediaScanDone;
   bool get nonMediaScanning => _nonMediaScanRunning;
   MediaSortOrder get sortOrder => _sortOrder;
+
+  /// 获取指定类别的排序方式：优先使用类别独立设置，未设置时回退到全局排序。
+  MediaSortOrder getSortOrderForCategory(String category) {
+    return _categorySortOrders[category] ?? _sortOrder;
+  }
+
+  /// 从持久化存储加载所有类别的独立排序设置（init 时调用）。
+  Future<void> loadCategorySortOrders() async {
+    const categories = ['图片', '视频', '音频', '文档', '压缩包', '下载', '安装包', '截图'];
+    for (final cat in categories) {
+      final saved = PreferencesService.getCategorySortOrder(cat);
+      if (saved != null) {
+        final idx = MediaSortOrder.values.indexWhere((e) => e.name == saved);
+        if (idx >= 0) {
+          _categorySortOrders[cat] = MediaSortOrder.values[idx];
+        }
+      }
+    }
+  }
 
   void toggleCategory(String label) {
     if (_activeCategories.contains(label)) {
@@ -2821,6 +2862,11 @@ class MediaProvider extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
+      // 加载按类别独立排序的持久化设置（仅首次加载，后续设置时即时更新）
+      if (_categorySortOrders.isEmpty) {
+        await loadCategorySortOrders();
+      }
+
       // Fast initial load from disk cache
       await _loadFromDiskCache();
       // 音频冷启动兜底：磁盘缓存本身不恢复音频，若内存为空先尝试从音频索引
@@ -3964,10 +4010,35 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
     _recentFiles = items;
   }
 
-  Future<void> setSortOrder(MediaSortOrder order) async {
-    _sortOrder = order;
-    await _applySort();
+  Future<void> setSortOrder(MediaSortOrder order, {String? category}) async {
+    if (category != null) {
+      _categorySortOrders[category] = order;
+      await PreferencesService.saveCategorySortOrder(category, order.name);
+      // 清除该类别的 getter 缓存，强制重新排序
+      _clearCategoryCache(category);
+    } else {
+      _sortOrder = order;
+      await _applySort();
+    }
     notifyListeners();
+  }
+
+  /// 清除指定类别的 getter 缓存（排序/排除变化时调用）。
+  void _clearCategoryCache(String category) {
+    switch (category) {
+      case '图片':
+        _imagesOut = null;
+        _imagesStamp = 0;
+        break;
+      case '视频':
+        _videosOut = null;
+        _videosStamp = 0;
+        break;
+      case '截图':
+        _shotsOut = null;
+        _shotsStamp = 0;
+        break;
+    }
   }
 
   /// 批量预加载文件 stat（size + modified），避免排序比较器中 O(N·logN) 次同步 stat。
@@ -3979,8 +4050,11 @@ static const int _kMinAudioDurationMs = 60 * 1000; // 60 秒
     final map = <String, ({int size, DateTime modified})>{};
     final pending = <FileSystemEntity>[];
     for (final e in entities) {
-      if (_mtimeCache.containsKey(e.path)) {
-        map[e.path] = (size: _sizeCache[e.path] ?? 0, modified: _mtimeCache[e.path]!);
+      // 必须 mtime 和 size 都已缓存才跳过 stat；
+      // 此前只判 mtime 导致系统索引播种的文件 size 被误填 0 且永不重新 stat，
+      // 是「按大小排序完全无效」的根因。
+      if (_mtimeCache.containsKey(e.path) && _sizeCache.containsKey(e.path)) {
+        map[e.path] = (size: _sizeCache[e.path]!, modified: _mtimeCache[e.path]!);
       } else {
         pending.add(e);
       }

@@ -3059,20 +3059,7 @@ class L10nAr extends L10n {
   String get ui_exclude_location => 'استبعاد الموقع';
 
   @override
-  String get ui_add_custom_path => 'إضافة مسار محلي';
-
-  @override
-  String get ui_excluded_folders_title => 'المجلدات المستثناة';
-
-  @override
-  String get ui_excluded_folders_empty =>
-      'لا توجد مجلدات مستثناة. لن يتم مسح ملفات المجلدات المضافة في هذه الفئة.';
-
-  @override
-  String get ui_add_excluded_folder => 'إضافة مجلد مستثنى';
-
-  @override
-  String get ui_remove_excluded_folder => 'إزالة';
+  String get ui_add_custom_path => 'إضافة مسار مخصص';
 
   @override
   String ui_added_custom_paths(int count) {
@@ -6530,4 +6517,37 @@ class L10nAr extends L10n {
 
   @override
   String get ui_category_settings_description => '管理该分类的过滤规则与扫描位置';
+
+  @override
+  String get ui_excluded_folders_title => 'Blocked folders';
+
+  @override
+  String get ui_excluded_folders_empty =>
+      'No blocked folders yet. After adding, this category will no longer scan files in that folder';
+
+  @override
+  String get ui_add_excluded_folder => 'Add blocked folder';
+
+  @override
+  String get ui_remove_excluded_folder => 'Remove block';
+
+  @override
+  String get vt_extracting => 'جارٍ الاستخراج…';
+
+  @override
+  String get vt_no_apk_in_bundle =>
+      'لم يتم العثور على APK قابل للتثبيت في الحزمة';
+
+  @override
+  String get vt_split_installer_launch_failed => 'تعذر تشغيل مثبت APK المجزأة';
+
+  @override
+  String get vt_extract_failed => 'فشل استخراج الحزمة: ';
+
+  @override
+  String get vt_open_report_failed => 'تعذر فتح رابط التقرير';
+
+  @override
+  String get vt_silent_fallback =>
+      'تمت محاولة التثبيت الصامت لكن دون إذن؛ سيتم استخدام مثبّت النظام';
 }

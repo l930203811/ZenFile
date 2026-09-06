@@ -2,7 +2,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
@@ -59,10 +58,13 @@ class ApkInstallerService {
     if (PreferencesService.getSilentInstall()) {
       final status = await RootShizukuService.checkStatus();
       bool ok = false;
+      var tried = false;
       if (status.isRootAvailable) {
         ok = await RootShizukuService.installApkSilently(installPath, useRoot: true);
+        tried = true;
       } else if (status.isShizukuAvailable && status.shizukuPermissionGranted) {
         ok = await RootShizukuService.installApkSilently(installPath, useRoot: false);
+        tried = true;
       }
       if (ok) {
         if (context.mounted) {
@@ -72,7 +74,13 @@ class ApkInstallerService {
         }
         return;
       }
-      // 静默安装失败，回退系统安装器
+      // 静默安装失败 → 回退系统安装器。若已具备 root/shizuku 权限仍失败
+      // （多为 shell 无安装权限 / 受限 ROM），给用户明确提示，避免误解为静默成功。
+      if (tried && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(L10n.of(context).vt_silent_fallback)),
+        );
+      }
     }
 
     // 用原生 installApk（ACTION_VIEW + FileProvider + 优先指定系统包安装器），
@@ -84,14 +92,22 @@ class ApkInstallerService {
     }
   }
 
-  /// 开启"安装后保留安装包"时，把 APK 复制到应用临时目录再安装，防止系统安装器删除源文件。
+  /// 开启"安装后保留安装包"时，把 APK 复制一份到共享目录再安装，防止系统安装器删除源文件。
+  ///
+  /// 目标目录必须同时满足三类安装器可读：
+  ///  - 系统安装器 / PackageInstaller(FileProvider)：app 私有 cache 或共享目录均可；
+  ///  - Shizuku(root 之外的 shell pm install)：shell(uid 2000) **读不到** app 私有
+  ///    cache(/data/user/0/...)，只能读 /storage/emulated/0 共享目录。
+  /// 故统一复制到共享目录 `/storage/emulated/0/ZenFile/apk_install/`，
+  /// root / shizuku shell / 系统安装器 / app 自身全部可读。
+  /// 文件名加时间戳后缀，避免多个同名 split 相互覆盖。
   static Future<String> _prepareInstallPath(String path) async {
     if (!PreferencesService.getKeepApkAfterInstall()) return path;
     try {
-      final tempDir = await getTemporaryDirectory();
-      final installDir = Directory(p.join(tempDir.path, 'apk_install'));
-      if (!await installDir.exists()) await installDir.create(recursive: true);
-      final dest = p.join(installDir.path, p.basename(path));
+      final baseDir = Directory('/storage/emulated/0/ZenFile/apk_install');
+      if (!await baseDir.exists()) await baseDir.create(recursive: true);
+      final stamp = DateTime.now().millisecondsSinceEpoch;
+      final dest = p.join(baseDir.path, '${stamp}_${p.basename(path)}');
       await File(path).copy(dest);
       return dest;
     } catch (_) {
@@ -101,28 +117,37 @@ class ApkInstallerService {
 
   /// 解压并安装 bundle（.xapk/.apks/.apkm/.aab）。
   static Future<void> _installBundle(BuildContext context, String path) async {
+    final l10n = L10n.of(context);
+    // 解压进度对话框：用 mounted 守卫 + 单一出口关闭，避免页面退出时泄漏/双 pop。
+    var dialogOpen = true;
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const AlertDialog(
+      builder: (_) => AlertDialog(
         content: Row(
           children: [
-            CircularProgressIndicator(),
-            SizedBox(width: 20),
-            Expanded(child: Text('正在解压安装包...')),
+            const CircularProgressIndicator(),
+            const SizedBox(width: 20),
+            Expanded(child: Text(l10n.vt_extracting)),
           ],
         ),
       ),
     );
 
-    try {
-      final tempDir = await getTemporaryDirectory();
-      final bundleDirName = p.basenameWithoutExtension(path).replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
-      final extractDir = Directory(p.join(tempDir.path, 'apk_bundles', bundleDirName));
+    Future<void> closeDialog() async {
+      if (!dialogOpen) return;
+      dialogOpen = false;
+      if (context.mounted) Navigator.of(context, rootNavigator: true).pop();
+    }
 
-      if (await extractDir.exists()) {
-        await extractDir.delete(recursive: true);
-      }
+    try {
+      // 解压目标放共享目录（非 app 私有 cache）：bundle 内 split APK 需经
+      // Shizuku shell pm install 读取，shell(uid 2000) 读不到 /data/user/0/...
+      final baseDir = Directory('/storage/emulated/0/ZenFile/apk_extract');
+      if (!await baseDir.exists()) await baseDir.create(recursive: true);
+      final bundleDirName = p.basenameWithoutExtension(path).replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
+      final extractDir = Directory(p.join(baseDir.path, '${DateTime.now().millisecondsSinceEpoch}_$bundleDirName'));
+
       await extractDir.create(recursive: true);
 
       await ArchiveService.extractArchive(
@@ -130,42 +155,42 @@ class ApkInstallerService {
         destinationDir: extractDir.path,
       );
 
-      if (!context.mounted) return;
+      if (!context.mounted) {
+        // 清理解压残留，防止共享目录堆积
+        try {
+          await extractDir.delete(recursive: true);
+        } catch (_) {}
+        return;
+      }
 
-      List<File> allApks = [];
-
+      final allApks = <File>[];
       await for (final entity in extractDir.list(recursive: true)) {
-        if (entity is File && p.extension(entity.path).toLowerCase() == '.apk') {
+        if (entity is! File) continue;
+        final ext = p.extension(entity.path).toLowerCase();
+        if (ext == '.apk') {
           allApks.add(entity);
-        } else if (entity is File && p.extension(entity.path).toLowerCase() == '.obb') {
-          try {
-            final obbFileName = p.basename(entity.path);
-            final parentDir = p.basename(p.dirname(entity.path));
-            final targetObbDir = Directory('/storage/emulated/0/Android/obb/$parentDir');
-            if (!await targetObbDir.exists()) {
-              await targetObbDir.create(recursive: true);
-            }
-            await entity.copy('${targetObbDir.path}/$obbFileName');
-          } catch (_) {}
+        } else if (ext == '.obb') {
+          await _tryInstallObb(entity);
         }
       }
 
       if (allApks.isEmpty) {
-        if (!context.mounted) return;
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('安装包中未找到可安装的APK')),
-        );
+        await closeDialog();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.vt_no_apk_in_bundle)),
+          );
+        }
         return;
       }
 
+      await closeDialog();
       if (!context.mounted) return;
-      Navigator.pop(context);
 
       if (allApks.length == 1) {
         await _openInstaller(context, allApks.first.path);
       } else {
-        // 开启"保留安装包"时，每个内部 APK 先复制到临时目录
+        // 开启"保留安装包"时，每个内部 APK 先复制到共享目录
         final apkPaths = <String>[];
         for (final f in allApks) {
           apkPaths.add(await _prepareInstallPath(f.path));
@@ -174,35 +199,65 @@ class ApkInstallerService {
         if (PreferencesService.getSilentInstall()) {
           final status = await RootShizukuService.checkStatus();
           bool ok = false;
+          var tried = false;
           if (status.isRootAvailable) {
             ok = await RootShizukuService.installSplitApksSilently(apkPaths, useRoot: true);
+            tried = true;
           } else if (status.isShizukuAvailable && status.shizukuPermissionGranted) {
             ok = await RootShizukuService.installSplitApksSilently(apkPaths, useRoot: false);
+            tried = true;
           }
           if (ok) {
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(L10n.of(context).vt_install_success)),
+                SnackBar(content: Text(l10n.vt_install_success)),
               );
             }
             return;
+          }
+          if (tried && context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l10n.vt_silent_fallback)),
+            );
           }
         }
         // 回退系统分包安装器（PackageInstaller API）
         final success = await AppManagerService.installSplitApks(apkPaths);
         if (!success && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('无法启动分包APK安装器')),
+            SnackBar(content: Text(l10n.vt_split_installer_launch_failed)),
           );
         }
       }
     } catch (e) {
-      if (!context.mounted) return;
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('解压安装包失败：$e')),
-      );
+      await closeDialog();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${l10n.vt_extract_failed}$e')),
+        );
+      }
     }
+  }
+
+  /// 尽力把 bundle 内 OBB 复制到 Android/obb 对应包名目录。
+  /// 目录名启发式：优先取 OBB 文件前缀里的包名（如 `main.<ver>.<pkg>.obb`），
+  /// 取不到再取上层目录名。失败静默跳过（不致命）。
+  static Future<void> _tryInstallObb(File obbFile) async {
+    try {
+      final obbName = p.basenameWithoutExtension(obbFile.path); // main.123.com.example.game
+      var pkgName = '';
+      // main.<ver>.<pkg>.obb / patch.<ver>.<pkg>.obb
+      final seg = obbName.split('.');
+      if (seg.length >= 3) pkgName = seg.sublist(2).join('.');
+      if (pkgName.isEmpty) pkgName = p.basename(p.dirname(obbFile.path));
+      if (pkgName.isEmpty) return;
+      final targetDir = Directory('/storage/emulated/0/Android/obb/$pkgName');
+      if (!await targetDir.exists()) await targetDir.create(recursive: true);
+      final dest = p.join(targetDir.path, p.basename(obbFile.path));
+      if (!await File(dest).exists()) {
+        await obbFile.copy(dest);
+      }
+    } catch (_) {}
   }
 
   // ------------------------------------------------------------
@@ -497,19 +552,19 @@ class ApkInstallerService {
   static Future<void> _openReport(BuildContext context, VirusTotalResult result) async {
     final permalink = result.permalink;
     if (permalink == null) return;
-    try {
-      final ok = await launchUrl(Uri.parse(permalink), mode: LaunchMode.externalApplication);
-      if (!ok && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('无法打开报告链接')),
-        );
-      }
-    } catch (_) {
+    void notifyFailed() {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('无法打开报告链接')),
+          SnackBar(content: Text(L10n.of(context).vt_open_report_failed)),
         );
       }
+    }
+
+    try {
+      final ok = await launchUrl(Uri.parse(permalink), mode: LaunchMode.externalApplication);
+      if (!ok) notifyFailed();
+    } catch (_) {
+      notifyFailed();
     }
   }
 }

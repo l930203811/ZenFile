@@ -415,14 +415,14 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             tooltip: L10n.of(context).msg4e9c344a,
             onPressed: () => provider.duplicateActiveTab(),
           ),
-          // 向上（返回上一层路径）
+          // 向上（进入父目录，记录到历史栈）
           IconButton(
             icon: Icon(
               Broken.arrow_up_1,
-              color: provider.canGoBack ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.3),
+              color: provider.canGoUp ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.3),
             ),
             tooltip: L10n.of(context).ui_go_up,
-            onPressed: provider.canGoBack ? () => _goBack(provider) : null,
+            onPressed: provider.canGoUp ? () => _goUp(provider) : null,
           ),
         ],
       ),
@@ -600,13 +600,29 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     if (_scrollController.hasClients) {
       provider.saveScrollOffset(provider.currentPath, _scrollController.offset);
     }
-    final prevPath = p.posix.dirname(provider.currentPath);
+    // 历史栈后退：目标路径是历史栈中的上一个位置，而非父目录
+    final tab = provider.activeTab;
+    final prevPath = tab.historyIndex > 0
+        ? tab.pathHistory[tab.historyIndex - 1]
+        : p.posix.dirname(provider.currentPath);
     final handled = await provider.goBack();
     if (!handled) {
-      // 已无更上层可返回（本地根目录）：切到分类页。
+      // 已无可后退位置（本地根目录且历史栈为空）：切到分类页。
       widget.onNavigateTab?.call(0);
     } else if (_scrollController.hasClients) {
       final savedOffset = provider.getSavedScrollOffset(prevPath);
+      _scrollController.jumpTo(savedOffset);
+    }
+  }
+
+  void _goUp(FileManagerProvider provider) async {
+    if (_scrollController.hasClients) {
+      provider.saveScrollOffset(provider.currentPath, _scrollController.offset);
+    }
+    final parentPath = p.posix.dirname(provider.currentPath);
+    final handled = await provider.goUp();
+    if (handled && _scrollController.hasClients) {
+      final savedOffset = provider.getSavedScrollOffset(parentPath);
       _scrollController.jumpTo(savedOffset);
     }
   }

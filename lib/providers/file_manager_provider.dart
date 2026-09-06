@@ -876,6 +876,16 @@ class FileManagerProvider extends ChangeNotifier {
     _categoryReorderInteracting = value;
   }
 
+  // 文件浏览页"长按拖放文件"抑制页面滑动切换手势：
+  // 在 DraggableItem 长按开始/拖动期间置为 true，拖动结束/取消时置为 false，
+  // home 的滑动 Listener 据此取消本次手势追踪，避免长按拖放被误判为左右切页。
+  bool _fileDragInteracting = false;
+  bool get fileDragInteracting => _fileDragInteracting;
+  void setFileDragInteracting(bool value) {
+    // 故意不 notifyListeners：仅 home 的滑动 Listener 直接读取当前值，无需重建整树。
+    _fileDragInteracting = value;
+  }
+
   void setSwipeMode(String mode) {
     _swipeMode = mode;
     PreferencesService.saveSwipeMode(mode);
@@ -2521,10 +2531,16 @@ class FileManagerProvider extends ChangeNotifier {
   // 路径历史栈已迁移到 FolderTab，双窗口模式下每个 pane 拥有独立的历史，
   // 避免左/右窗口路径混在一起导致“在远程窗口按返回跳到本地路径”的问题。
 
-  /// 是否可“返回上一级目录”。基于当前 tab 的路径判断（而非历史栈）：
-  /// - 远程 tab：任意层级（含根）都可返回——子目录回上一级，根目录回本地。
-  /// - 本地 tab：只要不在本地存储根目录即可返回上一级。
+  /// 是否可“后退”。基于导航历史栈：历史栈中有上一个位置时才可用。
+  /// 参考 Windows 资源管理器：后退 = 回到历史上一个浏览位置，而非父目录。
   bool get canGoBack {
+    final tab = activeTab;
+    return tab.historyIndex > 0;
+  }
+
+  /// 是否可“向上”。基于当前路径：只要不在存储根目录就可导航到父目录。
+  /// 参考 Windows 资源管理器：向上 = 进入当前目录的父目录，并记录到历史栈。
+  bool get canGoUp {
     final tab = activeTab;
     if (tab.isRemote) return true;
     return tab.currentPath.isNotEmpty && tab.currentPath != _rootPath;
@@ -2578,41 +2594,80 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
-  /// 返回上一级目录（基于路径，而非历史栈）。
+  /// 后退：回到导航历史栈中的上一个位置（参考 Windows 资源管理器）。
   ///
-  /// 返回语义（与用户预期一致）：
-  /// - 远程子目录 → 返回远程父目录；
-  /// - 远程根目录 → 切换到本地浏览 tab（远程根→本地根）；
-  /// - 本地子目录 → 返回本地父目录；
-  /// - 本地根目录 → 返回 false（交由上层切到分类页）。
+  /// 与「向上」不同：后退是基于浏览历史的时间线回退，不一定是父目录。
+  /// 例如：从 /A 进入 /A/B/C，后退 → /A/B；再后退 → /A。
   ///
-  /// 返回值：true 表示已执行一次导航；false 表示已无更上层可返回。
+  /// 历史栈为空时回退到旧行为（导航到父目录），保证边界情况下仍可用。
+  ///
+  /// 返回值：true 表示已执行一次导航；false 表示已无可后退位置。
   Future<bool> goBack() async {
     final tab = activeTab;
+    // 优先走历史栈后退
+    if (tab.historyIndex > 0) {
+      tab.historyIndex--;
+      final prevPath = tab.pathHistory[tab.historyIndex];
+      final exited = tab.currentPath;
+      await loadDirectory(prevPath, showLoading: false, recordHistory: false);
+      _highlightExited(exited);
+      notifyListeners();
+      return true;
+    }
+    // 历史栈为空时回退到旧行为：导航到父目录
     if (tab.isRemote) {
-      // 远程根目录：切换到本地浏览 tab，而非弹出路由跳到分类页。
       if (tab.currentPath == _activeTabRoot) {
         return _switchToLocalTabOrRoot();
       }
       final parent = _parentOf(tab.currentPath);
       if (parent != tab.currentPath) {
         final exited = tab.currentPath;
-        await loadDirectory(parent, showLoading: false, recordHistory: false);
+        await loadDirectory(parent, showLoading: false, recordHistory: true);
         _highlightExited(exited);
         return true;
       }
-      // 已是最顶层（如 '/'），回退到本地浏览。
       return _switchToLocalTabOrRoot();
     } else {
-      // 本地根目录：无更上层，返回 false 交由上层切分类页。
       if (tab.currentPath.isEmpty || tab.currentPath == _rootPath) {
         return false;
       }
       final parent = _parentOf(tab.currentPath);
       if (parent == tab.currentPath) return false;
       final exited = tab.currentPath;
+      await loadDirectory(parent, showLoading: false, recordHistory: true);
+      _highlightExited(exited);
+      return true;
+    }
+  }
 
-      await loadDirectory(parent, showLoading: false, recordHistory: false);
+  /// 向上：导航到当前目录的父目录，并记录到历史栈（参考 Windows 资源管理器）。
+  ///
+  /// 与「后退」不同：向上总是进入父目录， regardless of 浏览历史。
+  /// 向上操作会将父目录加入历史栈，因此之后可以用「后退」回到当前目录。
+  ///
+  /// 返回值：true 表示已执行一次导航；false 表示已在根目录无法向上。
+  Future<bool> goUp() async {
+    final tab = activeTab;
+    if (tab.isRemote) {
+      if (tab.currentPath == _activeTabRoot) {
+        return _switchToLocalTabOrRoot();
+      }
+      final parent = _parentOf(tab.currentPath);
+      if (parent != tab.currentPath) {
+        final exited = tab.currentPath;
+        await loadDirectory(parent, showLoading: false, recordHistory: true);
+        _highlightExited(exited);
+        return true;
+      }
+      return _switchToLocalTabOrRoot();
+    } else {
+      if (tab.currentPath.isEmpty || tab.currentPath == _rootPath) {
+        return false;
+      }
+      final parent = _parentOf(tab.currentPath);
+      if (parent == tab.currentPath) return false;
+      final exited = tab.currentPath;
+      await loadDirectory(parent, showLoading: false, recordHistory: true);
       _highlightExited(exited);
       return true;
     }
@@ -3953,7 +4008,10 @@ class FileManagerProvider extends ChangeNotifier {
       // 受限源（其它应用的 Android/data|obb 文件）Dart IO 不可见，
       // 改走 Root/Shizuku shell（与浏览层一致的 /data/media/0 底层路径绕过）
       bool? bypassUseRoot;
-      if (_clipboardPaths.any(_needsBypass)) {
+      // 含 Android/{data,obb} 受限源时一律提前解析 bypass 模式：部分 ROM 的
+      // FUSE 层对受限文件「元数据可见、内容读取被拦」（typeSync 正常但复制
+      // 出 0 字节），_needsBypass 的 notFound 条件识别不到，仍需 shell 兜底。
+      if (_clipboardPaths.any((sp) => _needsBypass(sp) || _isRestrictedAndroidPath(sp))) {
         bypassUseRoot = await _resolveBypassMode();
         if (bypassUseRoot == null) {
           throw Exception('Restricted source requires ROOT or Shizuku');
@@ -3978,15 +4036,22 @@ class FileManagerProvider extends ChangeNotifier {
           return;
         }
 
-        // 受限源：typeSync 被 FUSE 拦截返回 notFound，经 shell stat 判定
+        // 受限源：typeSync 被 FUSE 拦截返回 notFound，经 shell stat 判定。
+        // 注意：某些 ROM 上 FUSE 层"元数据可见、内容读取被拦"——typeSync 返回 file、
+        // lengthSync 返回元数据大小，但 openRead 读流为空（复制出 0 字节）。
+        // 因此只要是受限 Android 路径且 bypass 可用，一律标记 restricted 走 shell cp，
+        // 不经过 Dart IO 流复制，从根本上避免 0 字节静默失败。
         FileItemModel? restrictedStat;
-        if (type == FileSystemEntityType.notFound &&
-            bypassUseRoot != null && _needsBypass(srcPath)) {
+        final bool isRestrictedAndroid = bypassUseRoot != null && _isRestrictedAndroidPath(srcPath);
+        if (type == FileSystemEntityType.notFound && isRestrictedAndroid) {
           restrictedStat = await RootShizukuService.statItem(srcPath, useRoot: bypassUseRoot);
           if (restrictedStat == null) continue; // 源已被外部删除
           type = restrictedStat.isDirectory
               ? FileSystemEntityType.directory
               : FileSystemEntityType.file;
+        } else if (isRestrictedAndroid && type != FileSystemEntityType.notFound) {
+          // 元数据可见但内容可能被拦：用 shell stat 获取真实大小（Dart lengthSync 可能也被拦）
+          restrictedStat = await RootShizukuService.statItem(srcPath, useRoot: bypassUseRoot);
         }
 
         if (type == FileSystemEntityType.file) {
@@ -4004,7 +4069,7 @@ class FileManagerProvider extends ChangeNotifier {
             'destPath': destPath,
             'size': size,
             'isDir': false,
-            if (restrictedStat != null) 'restricted': true,
+            if (isRestrictedAndroid) 'restricted': true,
           });
         } else if (type == FileSystemEntityType.directory) {
           final dir = Directory(srcPath);
@@ -4019,11 +4084,11 @@ class FileManagerProvider extends ChangeNotifier {
             'destPath': topDestPath,
             'size': 0,
             'isDir': true,
-            if (restrictedStat != null) 'restricted': true,
+            if (isRestrictedAndroid) 'restricted': true,
           });
 
-          if (restrictedStat != null) {
-            // 受限目录：listSync 被 FUSE 拦截，经 shell listFiles 递归收集
+          if (isRestrictedAndroid) {
+            // 受限目录：listSync 被 FUSE 拦截（或元数据可见内容被拦），经 shell listFiles 递归收集
             await _collectRestrictedDir(
               srcPath, topDestPath, itemsToProcess, bypassUseRoot!,
               () => totalBytes, (v) => totalBytes = v,
@@ -4295,6 +4360,10 @@ class FileManagerProvider extends ChangeNotifier {
                   );
                 },
               );
+              // 受限源防护：FUSE 元数据可见但内容被拦时 Dart IO 会复制出
+              // 0 字节文件，校验大小并回退 shell copyItem 重试。
+              await _verifyAndRetryRestrictedCopy(
+                srcFile.path, finalDestPath, size, bypassUseRoot);
               // 源文件删除失败不应中断整个剪切流程（避免剪切变复制 + 剪贴板不消失）
               try {
                 await srcFile.delete();
@@ -4325,6 +4394,10 @@ class FileManagerProvider extends ChangeNotifier {
                 );
               },
             );
+            // 受限源防护：FUSE 元数据可见但内容被拦时 Dart IO 会复制出
+            // 0 字节文件，校验大小并回退 shell copyItem 重试。
+            await _verifyAndRetryRestrictedCopy(
+              srcFile.path, finalDestPath, size, bypassUseRoot);
           }
         }
       }
@@ -5984,6 +6057,29 @@ class FileManagerProvider extends ChangeNotifier {
       _isRestrictedAndroidPath(path) &&
       FileSystemEntity.typeSync(path) == FileSystemEntityType.notFound;
 
+  /// Android/{data,obb} 受限源在「FUSE 元数据可见、内容读取被拦」的 ROM 上，
+  /// Dart IO 复制会产生 0 字节目标文件且不报错（lengthSync 返回元数据大小、
+  /// 实际读流为空）。此校验比对目标实际字节数与收集时的源元数据大小，
+  /// 不一致时删除目标并回退 shell copyItem（FUSE/底层双跳 + 大小校验）重试；
+  /// 仍失败由 copyItem 抛异常，避免静默 0 字节。仅对受限源路径生效。
+  Future<void> _verifyAndRetryRestrictedCopy(
+      String srcPath, String destPath, int expectedSize, bool? bypassUseRoot) async {
+    if (bypassUseRoot == null || expectedSize <= 0) return;
+    if (!_isRestrictedAndroidPath(srcPath)) return;
+    try {
+      final actual = await File(destPath).length();
+      if (actual == expectedSize) return;
+      debugPrint('[ZenFile] restricted copy size mismatch: '
+          '$srcPath -> $destPath ($actual/$expectedSize bytes), retry via shell');
+    } catch (_) {
+      return; // 目标读不到等异常：交由上层既有流程统一处理
+    }
+    try {
+      await File(destPath).delete();
+    } catch (_) {}
+    await RootShizukuService.copyItem(srcPath, destPath, useRoot: bypassUseRoot);
+  }
+
   /// 解析受限操作可用的执行模式：root 优先（对 FUSE 与底层路径均有完全
   /// 权限）。不依据当前 tab 的 useRootMode——用户从受限目录复制后导航到
   /// 普通目录粘贴时，tab 模式已被重置为 false，会误选 Shizuku（底层路径
@@ -6033,11 +6129,11 @@ class FileManagerProvider extends ChangeNotifier {
     for (final child in children) {
       final destPath = p.join(topDestPath, child.name);
       if (child.isDirectory) {
-        items.add({'source': child.path, 'destPath': destPath, 'size': 0, 'isDir': true, 'restricted': true});
+        items.add({'source': Directory(child.path), 'destPath': destPath, 'size': 0, 'isDir': true, 'restricted': true});
         await _collectRestrictedDir(child.path, destPath, items, useRoot, getTotal, addTotal);
       } else {
         addTotal(getTotal() + child.size);
-        items.add({'source': child.path, 'destPath': destPath, 'size': child.size, 'isDir': false, 'restricted': true});
+        items.add({'source': File(child.path), 'destPath': destPath, 'size': child.size, 'isDir': false, 'restricted': true});
       }
     }
   }

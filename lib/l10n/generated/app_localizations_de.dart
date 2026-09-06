@@ -3110,20 +3110,7 @@ class L10nDe extends L10n {
   String get ui_exclude_location => 'Speicherort ausschließen';
 
   @override
-  String get ui_add_custom_path => 'Lokalen Pfad hinzufügen';
-
-  @override
-  String get ui_excluded_folders_title => 'Ausgeschlossene Ordner';
-
-  @override
-  String get ui_excluded_folders_empty =>
-      'Keine ausgeschlossenen Ordner. Dateien in hinzugefügten Ordnern werden in dieser Kategorie nicht gescannt.';
-
-  @override
-  String get ui_add_excluded_folder => 'Ordner hinzufügen';
-
-  @override
-  String get ui_remove_excluded_folder => 'Entfernen';
+  String get ui_add_custom_path => 'Benutzerdefinierten Pfad hinzufügen';
 
   @override
   String ui_added_custom_paths(int count) {
@@ -6617,4 +6604,39 @@ class L10nDe extends L10n {
 
   @override
   String get ui_category_settings_description => '管理该分类的过滤规则与扫描位置';
+
+  @override
+  String get ui_excluded_folders_title => 'Blocked folders';
+
+  @override
+  String get ui_excluded_folders_empty =>
+      'No blocked folders yet. After adding, this category will no longer scan files in that folder';
+
+  @override
+  String get ui_add_excluded_folder => 'Add blocked folder';
+
+  @override
+  String get ui_remove_excluded_folder => 'Remove block';
+
+  @override
+  String get vt_extracting => 'Extrahiere…';
+
+  @override
+  String get vt_no_apk_in_bundle =>
+      'Kein installierbares APK im Bundle gefunden';
+
+  @override
+  String get vt_split_installer_launch_failed =>
+      'Geteilter APK-Installer konnte nicht gestartet werden';
+
+  @override
+  String get vt_extract_failed => 'Paket-Extraktion fehlgeschlagen: ';
+
+  @override
+  String get vt_open_report_failed =>
+      'Berichtslink konnte nicht geöffnet werden';
+
+  @override
+  String get vt_silent_fallback =>
+      'Stille Installation versucht, aber ohne Berechtigung; Systeminstaller wird verwendet';
 }

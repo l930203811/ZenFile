@@ -2963,19 +2963,7 @@ class L10nZh extends L10n {
   String get ui_exclude_location => '排除位置';
 
   @override
-  String get ui_add_custom_path => '添加本地路径';
-
-  @override
-  String get ui_excluded_folders_title => '屏蔽文件夹';
-
-  @override
-  String get ui_excluded_folders_empty => '暂无屏蔽文件夹，添加后该分类将不再扫描此文件夹下的文件';
-
-  @override
-  String get ui_add_excluded_folder => '添加屏蔽文件夹';
-
-  @override
-  String get ui_remove_excluded_folder => '移除屏蔽';
+  String get ui_add_custom_path => '添加自定义路径';
 
   @override
   String ui_added_custom_paths(int count) {
@@ -6259,6 +6247,36 @@ class L10nZh extends L10n {
 
   @override
   String get ui_category_settings_description => '管理该分类的过滤规则与扫描位置';
+
+  @override
+  String get ui_excluded_folders_title => '屏蔽文件夹';
+
+  @override
+  String get ui_excluded_folders_empty => '暂无屏蔽文件夹，添加后该分类将不再扫描此文件夹下的文件';
+
+  @override
+  String get ui_add_excluded_folder => '添加屏蔽文件夹';
+
+  @override
+  String get ui_remove_excluded_folder => '移除屏蔽';
+
+  @override
+  String get vt_extracting => '正在解压安装包…';
+
+  @override
+  String get vt_no_apk_in_bundle => '安装包中未找到可安装的APK';
+
+  @override
+  String get vt_split_installer_launch_failed => '无法启动分包APK安装器';
+
+  @override
+  String get vt_extract_failed => '解压安装包失败：';
+
+  @override
+  String get vt_open_report_failed => '无法打开报告链接';
+
+  @override
+  String get vt_silent_fallback => '已尝试静默安装，权限不足，改用系统安装器';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -9211,19 +9229,7 @@ class L10nZhTw extends L10nZh {
   String get ui_exclude_location => '排除位置';
 
   @override
-  String get ui_add_custom_path => '新增本機路徑';
-
-  @override
-  String get ui_excluded_folders_title => '封鎖資料夾';
-
-  @override
-  String get ui_excluded_folders_empty => '暫無封鎖資料夾，新增後此分類將不再掃描此資料夾下的檔案';
-
-  @override
-  String get ui_add_excluded_folder => '新增封鎖資料夾';
-
-  @override
-  String get ui_remove_excluded_folder => '移除封鎖';
+  String get ui_add_custom_path => '新增自定義路徑';
 
   @override
   String ui_added_custom_paths(int count) {
@@ -12484,4 +12490,34 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_category_settings_description => '管理该分类的过滤规则与扫描位置';
+
+  @override
+  String get ui_excluded_folders_title => '屏蔽資料夾';
+
+  @override
+  String get ui_excluded_folders_empty => '暫無屏蔽資料夾，新增後該分類將不再掃描此資料夾下的檔案';
+
+  @override
+  String get ui_add_excluded_folder => '新增屏蔽資料夾';
+
+  @override
+  String get ui_remove_excluded_folder => '移除屏蔽';
+
+  @override
+  String get vt_extracting => '正在解壓安裝套件…';
+
+  @override
+  String get vt_no_apk_in_bundle => '安裝套件中找不到可安裝的APK';
+
+  @override
+  String get vt_split_installer_launch_failed => '無法啟動分包APK安裝程式';
+
+  @override
+  String get vt_extract_failed => '解壓安裝套件失敗：';
+
+  @override
+  String get vt_open_report_failed => '無法開啟報告連結';
+
+  @override
+  String get vt_silent_fallback => '已嘗試靜默安裝，權限不足，改用系統安裝程式';
 }

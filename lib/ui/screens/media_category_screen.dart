@@ -1953,25 +1953,25 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                     onSelected: (action) async {
                       switch (action) {
                         case _ViewMenuAction.sortNewest:
-                          provider.setSortOrder(MediaSortOrder.newest);
+                          provider.setSortOrder(MediaSortOrder.newest, category: _categoryLabel);
                           break;
                         case _ViewMenuAction.sortOldest:
-                          provider.setSortOrder(MediaSortOrder.oldest);
+                          provider.setSortOrder(MediaSortOrder.oldest, category: _categoryLabel);
                           break;
                         case _ViewMenuAction.sortDateWise:
-                          provider.setSortOrder(MediaSortOrder.dateWise);
+                          provider.setSortOrder(MediaSortOrder.dateWise, category: _categoryLabel);
                           break;
                         case _ViewMenuAction.sortNewestGrouped:
-                          provider.setSortOrder(MediaSortOrder.newestGrouped);
+                          provider.setSortOrder(MediaSortOrder.newestGrouped, category: _categoryLabel);
                           break;
                         case _ViewMenuAction.sortOldestGrouped:
-                          provider.setSortOrder(MediaSortOrder.oldestGrouped);
+                          provider.setSortOrder(MediaSortOrder.oldestGrouped, category: _categoryLabel);
                           break;
                         case _ViewMenuAction.sortSizeLargest:
-                          provider.setSortOrder(MediaSortOrder.sizeLargest);
+                          provider.setSortOrder(MediaSortOrder.sizeLargest, category: _categoryLabel);
                           break;
                         case _ViewMenuAction.sortSizeSmallest:
-                          provider.setSortOrder(MediaSortOrder.sizeSmallest);
+                          provider.setSortOrder(MediaSortOrder.sizeSmallest, category: _categoryLabel);
                           break;
                         case _ViewMenuAction.viewList:
                           setState(() => _isGridView = false);
@@ -2019,41 +2019,41 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                     itemBuilder: (context) => [
                       CheckedPopupMenuItem(
                         value: _ViewMenuAction.sortNewest,
-                        checked: provider.sortOrder == MediaSortOrder.newest,
+                        checked: provider.getSortOrderForCategory(_categoryLabel) == MediaSortOrder.newest,
                         child: Text(L10n.of(context).msg5093bc80),
                       ),
                       CheckedPopupMenuItem(
                         value: _ViewMenuAction.sortOldest,
-                        checked: provider.sortOrder == MediaSortOrder.oldest,
+                        checked: provider.getSortOrderForCategory(_categoryLabel) == MediaSortOrder.oldest,
                         child: Text(L10n.of(context).ui_oldest_first),
                       ),
                       CheckedPopupMenuItem(
                         value: _ViewMenuAction.sortDateWise,
-                        checked: provider.sortOrder == MediaSortOrder.dateWise,
+                        checked: provider.getSortOrderForCategory(_categoryLabel) == MediaSortOrder.dateWise,
                         child: Text(L10n.of(context).msgbc74b5a8),
                       ),
                       CheckedPopupMenuItem(
                         value: _ViewMenuAction.sortNewestGrouped,
                         checked:
-                            provider.sortOrder == MediaSortOrder.newestGrouped,
+                            provider.getSortOrderForCategory(_categoryLabel) == MediaSortOrder.newestGrouped,
                         child: Text(L10n.of(context).msgef7ae768),
                       ),
                       CheckedPopupMenuItem(
                         value: _ViewMenuAction.sortOldestGrouped,
                         checked:
-                            provider.sortOrder == MediaSortOrder.oldestGrouped,
+                            provider.getSortOrderForCategory(_categoryLabel) == MediaSortOrder.oldestGrouped,
                         child: Text(L10n.of(context).msgb8140039),
                       ),
                       CheckedPopupMenuItem(
                         value: _ViewMenuAction.sortSizeLargest,
                         checked:
-                            provider.sortOrder == MediaSortOrder.sizeLargest,
+                            provider.getSortOrderForCategory(_categoryLabel) == MediaSortOrder.sizeLargest,
                         child: Text(L10n.of(context).msg2e2a26bb),
                       ),
                       CheckedPopupMenuItem(
                         value: _ViewMenuAction.sortSizeSmallest,
                         checked:
-                            provider.sortOrder == MediaSortOrder.sizeSmallest,
+                            provider.getSortOrderForCategory(_categoryLabel) == MediaSortOrder.sizeSmallest,
                         child: Text(L10n.of(context).ui_size_small),
                       ),
                       const PopupMenuDivider(),
@@ -2299,22 +2299,22 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                       return _buildShimmerLoading(theme);
                     }
                     final displayAssets = List<AssetEntity>.from(_albumAssets);
-                    if (provider.sortOrder == MediaSortOrder.newest ||
-                        provider.sortOrder == MediaSortOrder.newestGrouped ||
-                        provider.sortOrder == MediaSortOrder.dateWise) {
+                    if (provider.getSortOrderForCategory(_categoryLabel) == MediaSortOrder.newest ||
+                        provider.getSortOrderForCategory(_categoryLabel) == MediaSortOrder.newestGrouped ||
+                        provider.getSortOrderForCategory(_categoryLabel) == MediaSortOrder.dateWise) {
                       displayAssets.sort(
                         (a, b) => b.createDateTime.compareTo(a.createDateTime),
                       );
-                    } else if (provider.sortOrder == MediaSortOrder.oldest ||
-                        provider.sortOrder == MediaSortOrder.oldestGrouped) {
+                    } else if (provider.getSortOrderForCategory(_categoryLabel) == MediaSortOrder.oldest ||
+                        provider.getSortOrderForCategory(_categoryLabel) == MediaSortOrder.oldestGrouped) {
                       displayAssets.sort(
                         (a, b) => a.createDateTime.compareTo(b.createDateTime),
                       );
                     } else if (provider.sortOrder ==
                             MediaSortOrder.sizeLargest ||
-                        provider.sortOrder == MediaSortOrder.sizeSmallest) {
+                        provider.getSortOrderForCategory(_categoryLabel) == MediaSortOrder.sizeSmallest) {
                       final isSmallest =
-                          provider.sortOrder == MediaSortOrder.sizeSmallest;
+                          provider.getSortOrderForCategory(_categoryLabel) == MediaSortOrder.sizeSmallest;
                       displayAssets.sort((a, b) {
                         final aRes = a.width * a.height;
                         final bRes = b.width * b.height;
@@ -2325,11 +2325,11 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                     }
 
                     final isDateWise =
-                        provider.sortOrder == MediaSortOrder.dateWise;
+                        provider.getSortOrderForCategory(_categoryLabel) == MediaSortOrder.dateWise;
                     final isGrouped =
-                        provider.sortOrder == MediaSortOrder.newestGrouped ||
-                        provider.sortOrder == MediaSortOrder.oldestGrouped ||
-                        provider.sortOrder == MediaSortOrder.dateWise;
+                        provider.getSortOrderForCategory(_categoryLabel) == MediaSortOrder.newestGrouped ||
+                        provider.getSortOrderForCategory(_categoryLabel) == MediaSortOrder.oldestGrouped ||
+                        provider.getSortOrderForCategory(_categoryLabel) == MediaSortOrder.dateWise;
 
                     if (widget.mediaType == MediaType.images) {
                       return _buildImageGrid(
@@ -2351,11 +2351,11 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                   }
 
                   final isDateWise =
-                      provider.sortOrder == MediaSortOrder.dateWise;
+                      provider.getSortOrderForCategory(_categoryLabel) == MediaSortOrder.dateWise;
                   final isGrouped =
-                      provider.sortOrder == MediaSortOrder.newestGrouped ||
-                      provider.sortOrder == MediaSortOrder.oldestGrouped ||
-                      provider.sortOrder == MediaSortOrder.dateWise;
+                      provider.getSortOrderForCategory(_categoryLabel) == MediaSortOrder.newestGrouped ||
+                      provider.getSortOrderForCategory(_categoryLabel) == MediaSortOrder.oldestGrouped ||
+                      provider.getSortOrderForCategory(_categoryLabel) == MediaSortOrder.dateWise;
 
                   // 优先显示已加载的数据（缓存或实时），只有数据为空且未完成加载时才显示 shimmer
                   Widget? content;
@@ -3357,6 +3357,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                   fit: BoxFit.cover,
                   width: double.infinity,
                   height: double.infinity,
+                  cacheWidth: 300,
                   errorBuilder: (context, error, stackTrace) => Container(
                     color: Colors.grey.withOpacity(0.1),
                     child: const Center(
@@ -3770,6 +3771,7 @@ class _MediaCategoryScreenState extends State<MediaCategoryScreen>
                   : Image.file(
                       File(path),
                       fit: BoxFit.cover,
+                      cacheWidth: 120,
                       errorBuilder: (context, error, stackTrace) => Container(
                         color: Colors.grey.withOpacity(0.1),
                         child: Center(
@@ -6509,6 +6511,7 @@ class _RemoteImageThumbState extends State<_RemoteImageThumb> {
                             fit: BoxFit.cover,
                             width: double.infinity,
                             height: double.infinity,
+                            cacheWidth: 300,
                             errorBuilder: (c, e, s) => Container(
                               color: Colors.grey.withOpacity(0.1),
                               child: const Center(
@@ -7466,6 +7469,7 @@ class _MediaFolderCover extends StatelessWidget {
     return Image.file(
       File(samplePath),
       fit: BoxFit.cover,
+      cacheWidth: 200,
       errorBuilder: (context, error, stackTrace) => Container(
         color: Colors.grey.withOpacity(0.1),
         child: Center(

@@ -6570,8 +6570,32 @@
   "@ui_add_excluded_folder": {
     "description": "category settings - blocked folders"
   },
-  "ui_remove_excluded_folder": "Remove block"
+  "ui_remove_excluded_folder": "Remove block",
   "@ui_remove_excluded_folder": {
     "description": "category settings - blocked folders"
+  },
+  "vt_extracting": "解凍中…",
+  "@vt_extracting": {
+    "description": "apk bundle install - extracting dialog"
+  },
+  "vt_no_apk_in_bundle": "バンドル内にインストール可能なAPKが見つかりません",
+  "@vt_no_apk_in_bundle": {
+    "description": "apk bundle install - no apk found in bundle"
+  },
+  "vt_split_installer_launch_failed": "分割APKインストーラーを起動できません",
+  "@vt_split_installer_launch_failed": {
+    "description": "apk bundle install - cannot launch split installer"
+  },
+  "vt_extract_failed": "パッケージの解凍に失敗：",
+  "@vt_extract_failed": {
+    "description": "apk bundle install - extract failed prefix"
+  },
+  "vt_open_report_failed": "レポートリンクを開けません",
+  "@vt_open_report_failed": {
+    "description": "virus total - cannot open report link"
+  },
+  "vt_silent_fallback": "サイレントインストールを試みましたが権限が不足していました。システムインストーラーを使用します",
+  "@vt_silent_fallback": {
+    "description": "silent install fallback to system installer notice"
   }
 }

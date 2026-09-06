@@ -262,6 +262,17 @@ class PreferencesService {
     await _prefs?.setBool('$_keyMediaCategoryGridView$mediaType', val);
   }
 
+  // 媒体分类页面按类别独立排序方式（持久化，重启后保留）
+  static const String _keyCategorySortOrder = 'category_sort_order_';
+
+  static String? getCategorySortOrder(String mediaType) {
+    return _prefs?.getString('$_keyCategorySortOrder$mediaType');
+  }
+
+  static Future<void> saveCategorySortOrder(String mediaType, String order) async {
+    await _prefs?.setString('$_keyCategorySortOrder$mediaType', order);
+  }
+
   // 媒体分类页面是否显示「继续播放」音频/视频控制器
   static const String _keyShowResumeAudio = 'show_resume_audio_controller';
   static const String _keyShowResumeVideo = 'show_resume_video_controller';

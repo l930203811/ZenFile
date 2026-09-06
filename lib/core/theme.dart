@@ -29,9 +29,22 @@ class AppTheme {
       );
     }
 
+    // AMOLED 纯黑模式：覆盖 surface 系列颜色为纯黑/近纯黑，
+    // 使 NavigationBar、Drawer、Surface 等所有使用 colorScheme.surface 的组件真正变黑。
+    if (pitchBlack && !light) {
+      colorScheme = colorScheme.copyWith(
+        surface: Colors.black,
+        surfaceContainerLowest: Colors.black,
+        surfaceContainerLow: const Color(0xFF080808),
+        surfaceContainer: const Color(0xFF101010),
+        surfaceContainerHigh: const Color(0xFF1A1A1A),
+        surfaceContainerHighest: const Color(0xFF242424),
+      );
+    }
+
     final effectivePrimary = colorScheme.primary;
     final mainColorMultiplier = pitchBlack ? 0.1 : 0.8;
-    final pitchGrey = pitchBlack ? const Color.fromARGB(255, 20, 20, 20) : const Color.fromARGB(255, 35, 35, 35);
+    final pitchGrey = pitchBlack ? const Color.fromARGB(255, 14, 14, 14) : const Color.fromARGB(255, 35, 35, 35);
     final pitchBlackColor = pitchBlack ? const Color.fromARGB(255, 0, 0, 0) : null;
 
     int getColorAlpha(int a) => (a * mainColorMultiplier).round();

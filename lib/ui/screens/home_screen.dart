@@ -253,7 +253,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                 // 地址栏（面包屑）或分类网格的交互不触发页面左右滑动切换：
                 // 起点落在面包屑/类别图标上时，内层 Listener 已先置位对应标志，
                 // 此处跳过本次手势追踪（仅登记指针以便 up 时正常清理）。
-                if (fileProvider.breadcrumbInteracting || fileProvider.categoryReorderInteracting || fileProvider.tabBarInteracting) {
+                if (fileProvider.breadcrumbInteracting || fileProvider.categoryReorderInteracting || fileProvider.tabBarInteracting || fileProvider.fileDragInteracting) {
                   _activePointers[event.pointer] = event.position;
                   return;
                 }
@@ -279,7 +279,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                   _activePointers[event.pointer] = event.position;
                 }
                 // 分类页拖拽排序期间：放弃本次单指滑动追踪，避免误触切页
-                if (context.read<FileManagerProvider>().categoryReorderInteracting) {
+                if (context.read<FileManagerProvider>().categoryReorderInteracting || context.read<FileManagerProvider>().fileDragInteracting) {
                   _singleFingerStart = null;
                   _singleFingerLast = null;
                   return;
@@ -321,7 +321,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                 if (_activePointers.length == 1 && _singleFingerStart != null) {
                   final fileProvider = context.read<FileManagerProvider>();
                   // 拖拽操作期间不处理滑动（文件拖拽 or 分类页类别排序拖拽）
-                  if (fileProvider.isDragging || fileProvider.categoryReorderInteracting) {
+                  if (fileProvider.isDragging || fileProvider.categoryReorderInteracting || fileProvider.fileDragInteracting) {
                     // 拖拽中，不处理滑动
                     _singleFingerStart = null;
                     _singleFingerLast = null;
