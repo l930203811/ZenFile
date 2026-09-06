@@ -13,6 +13,7 @@ import 'internal_file_picker_screen.dart';
 import 'backup_settings_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../../main.dart';
+import 'apk_install_settings_screen.dart';
 
 class MoreSettingsScreen extends StatefulWidget {
   const MoreSettingsScreen({super.key});
@@ -416,6 +417,13 @@ class _MoreSettingsScreenState extends State<MoreSettingsScreen> {
                   title: L10n.of(context).ui_file_actions_viewers,
                   subtitle: L10n.of(context).msgeb3693fb,
                   targetScreen: const ActionsSettingsScreen(),
+                ),
+                SettingsTile(
+                  icon: Icons.install_mobile_rounded,
+                  title: L10n.of(context).vt_install_settings_title,
+                  subtitle: L10n.of(context).vt_install_settings_subtitle,
+                  trailing: Icon(Icons.chevron_right_rounded, color: theme.colorScheme.onSurface.withOpacity(0.4)),
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ApkInstallSettingsScreen())),
                 ),
                 SettingsTile(
                   icon: Broken.refresh_circle,

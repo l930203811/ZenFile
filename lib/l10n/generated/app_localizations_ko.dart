@@ -6099,4 +6099,205 @@ class L10nKo extends L10n {
 
   @override
   String get qqGroup => 'QQ 그룹: 792408214';
+
+  @override
+  String get emailCopied => '이메일이 클립보드에 복사되었습니다';
+
+  @override
+  String get vt_scanning => 'VirusTotal로 스캔 중(해시 조회)...';
+
+  @override
+  String get vt_uploading => 'VirusTotal에 업로드 후 분석을 기다리는 중입니다(약 1~2분)...';
+
+  @override
+  String get vt_safe_title => '검사 결과: 안전';
+
+  @override
+  String get vt_risk_title => '검사 결과: 위험 감지';
+
+  @override
+  String get vt_unknown_title => '검사 결과: 미등록';
+
+  @override
+  String vt_malicious_count(Object n) {
+    return '악성 탐지 엔진: $n';
+  }
+
+  @override
+  String vt_suspicious_count(Object n) {
+    return '의심 엔진: $n';
+  }
+
+  @override
+  String vt_harmless_count(Object n) {
+    return '무해 엔진: $n';
+  }
+
+  @override
+  String vt_undetected_count(Object n) {
+    return '미탐지 엔진: $n';
+  }
+
+  @override
+  String get vt_not_found_msg =>
+      '이 파일은 아직 VirusTotal 데이터베이스에 없습니다. 전체 검사를 위해 업로드하거나 건너뛰고 설치를 계속할 수 있습니다.';
+
+  @override
+  String vt_scan_failed(Object error) {
+    return '검사 실패: $error';
+  }
+
+  @override
+  String get vt_no_key_msg =>
+      'VirusTotal API 키가 설정되지 않아 검사를 건너뛰고 설치했습니다. 설정에서 키를 구성하면 설치 전 검사가 활성화됩니다.';
+
+  @override
+  String get vt_continue_install => '그래도 설치';
+
+  @override
+  String get vt_upload_scan => '업로드하여 전체 검사';
+
+  @override
+  String get vt_open_report => '전체 보고서 보기';
+
+  @override
+  String get vt_apikey_title => 'VirusTotal API 키';
+
+  @override
+  String get vt_apikey_subtitle => 'APK 설치 전 자동 보안 검사(virustotal.com에서 무료 발급)';
+
+  @override
+  String get vt_apikey_dialog_title => 'VirusTotal API 키 구성';
+
+  @override
+  String get vt_apikey_hint => 'API 키를 붙여넣으세요(무료: 분당 4회)';
+
+  @override
+  String get vt_save => '저장';
+
+  @override
+  String get vt_key_saved => 'VirusTotal API 키가 저장되었습니다';
+
+  @override
+  String get vt_key_invalid => 'API 키가 유효하지 않습니다. 확인 후 다시 시도하세요';
+
+  @override
+  String vt_key_masked(Object mask) {
+    return '구성됨($mask)';
+  }
+
+  @override
+  String get vt_scan_before_install => 'VirusTotal로 APK 검사 중...';
+
+  @override
+  String get vt_skip => '건너뛰기';
+
+  @override
+  String get vt_retry => '재시도';
+
+  @override
+  String get vt_cancel => '취소';
+
+  @override
+  String get vt_analyzing => 'VirusTotal 분석 결과를 기다리는 중...';
+
+  @override
+  String get vt_settings_title => 'APK 설치 보안 검사';
+
+  @override
+  String get vt_settings_subtitle => 'APK 설치 전 악성 소프트웨어 자동 감지(VirusTotal 기반)';
+
+  @override
+  String get vt_what_is_title => '이것은 무엇인가요?';
+
+  @override
+  String get vt_what_is_desc =>
+      '활성화하면 APK 설치 전 VirusTotal로 악성 소프트웨어를 자동 검사합니다. API 키가 없어도 기존과 동일하게 설치되며 사용에 영향을 주지 않습니다.';
+
+  @override
+  String get vt_api_key_label => 'API 키';
+
+  @override
+  String get vt_current_key_configured => '구성됨';
+
+  @override
+  String get vt_not_configured => '구성되지 않음';
+
+  @override
+  String get vt_api_key_hint => 'VirusTotal API 키를 붙여넣으세요';
+
+  @override
+  String get vt_save_key => '저장 및 확인';
+
+  @override
+  String get vt_how_to_get_title => 'API 키를 얻는 방법';
+
+  @override
+  String get vt_step_1 => '1. virustotal.com을 열고 로그인(Google 계정으로 무료 가입 가능)';
+
+  @override
+  String get vt_step_2 => '2. 오른쪽 상단 아바타를 누르고 \"API key\" 선택';
+
+  @override
+  String get vt_step_3 => '3. 복사 아이콘을 눌러 API 키 복사';
+
+  @override
+  String get vt_step_4 => '4. 이 페이지로 돌아와 위 입력창에 붙여넣기';
+
+  @override
+  String get vt_step_5 => '5. \"저장 및 확인\"을 누르세요. 잘못된 키는 알림이 표시됩니다';
+
+  @override
+  String get vt_open_vt => '공식 사이트 열기';
+
+  @override
+  String get vt_limit_note => '무료 계정 한도: 분당 4회 요청. 일상적인 설치 검사에 충분합니다.';
+
+  @override
+  String get vt_privacy_note =>
+      '개인정보 보호: 기본적으로 파일 해시만 조회에 전송되며 파일 자체는 전송되지 않습니다. 파일이 전송되는 것은 사용자가 \"전체 검사를 위해 업로드\"를 직접 선택한 경우에만 해당됩니다.';
+
+  @override
+  String get vt_silent_install => '자동 설치';
+
+  @override
+  String get vt_silent_install_ready =>
+      'Root 또는 Shizuku 권한이 감지되었습니다 — 확인 없이 설치됩니다';
+
+  @override
+  String get vt_silent_install_requires => '활성화하려면 Root 또는 Shizuku 권한이 필요합니다';
+
+  @override
+  String get vt_install_success => '설치 성공';
+
+  @override
+  String get vt_keep_apk => '설치 후 APK 유지';
+
+  @override
+  String get vt_keep_apk_desc =>
+      '설치 전 임시 복사본을 만들어 시스템 설치자가 원본 APK를 자동으로 삭제하는 것을 방지합니다';
+
+  @override
+  String get vt_install => '설치';
+
+  @override
+  String get vt_direct_install => '직접 설치';
+
+  @override
+  String get biometric_verify_hint => '계속하려면 지문을 인증하세요';
+
+  @override
+  String get biometric_reason_vault => '지문 인증으로 금고 잠금을 해제합니다';
+
+  @override
+  String get biometric_reason_remote_guard => '지문 인증으로 원격 가드를 통과합니다';
+
+  @override
+  String get biometric_reason_app_lock => '지문 인증으로 앱에 들어갑니다';
+
+  @override
+  String get vt_install_settings_title => 'APK 설치 설정';
+
+  @override
+  String get vt_install_settings_subtitle => '자동 설치, 설치 프로그램 유지, 보안 검사';
 }

@@ -11253,6 +11253,372 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'QQ 群：792408214'**
   String get qqGroup;
+
+  /// No description provided for @emailCopied.
+  ///
+  /// In zh, this message translates to:
+  /// **'邮箱已复制到剪贴板'**
+  String get emailCopied;
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'正在通过 VirusTotal 扫描（哈希查询）...'**
+  String get vt_scanning;
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'正在上传文件到 VirusTotal 并等待分析，约需 1-2 分钟...'**
+  String get vt_uploading;
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'扫描结果：安全'**
+  String get vt_safe_title;
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'扫描结果：检测到风险'**
+  String get vt_risk_title;
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'扫描结果：未收录'**
+  String get vt_unknown_title;
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'报毒引擎：{n}'**
+  String vt_malicious_count(Object n);
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'可疑引擎：{n}'**
+  String vt_suspicious_count(Object n);
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'安全引擎：{n}'**
+  String vt_harmless_count(Object n);
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'未检出引擎：{n}'**
+  String vt_undetected_count(Object n);
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'该文件尚未被 VirusTotal 收录。可上传进行完整扫描，或跳过扫描继续安装。'**
+  String get vt_not_found_msg;
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'扫描失败：{error}'**
+  String vt_scan_failed(Object error);
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'未配置 VirusTotal API Key，已跳过扫描直接安装。可在设置中配置后获得安装前自动扫描。'**
+  String get vt_no_key_msg;
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'仍然安装'**
+  String get vt_continue_install;
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'上传完整扫描'**
+  String get vt_upload_scan;
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'查看详细报告'**
+  String get vt_open_report;
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'VirusTotal API Key'**
+  String get vt_apikey_title;
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'安装 APK 前自动安全扫描（在 virustotal.com 免费申请）'**
+  String get vt_apikey_subtitle;
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'配置 VirusTotal API Key'**
+  String get vt_apikey_dialog_title;
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'粘贴你的 API Key（免费版限 4 次/分钟）'**
+  String get vt_apikey_hint;
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'保存'**
+  String get vt_save;
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'VirusTotal API Key 已保存'**
+  String get vt_key_saved;
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'API Key 无效，请检查后重试'**
+  String get vt_key_invalid;
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'已配置（{mask}）'**
+  String vt_key_masked(Object mask);
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'正在扫描 APK（VirusTotal）...'**
+  String get vt_scan_before_install;
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'跳过'**
+  String get vt_skip;
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'重试'**
+  String get vt_retry;
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'取消'**
+  String get vt_cancel;
+
+  /// virustotal scan
+  ///
+  /// In zh, this message translates to:
+  /// **'正在等待 VirusTotal 分析结果...'**
+  String get vt_analyzing;
+
+  /// virustotal settings
+  ///
+  /// In zh, this message translates to:
+  /// **'APK 安装安全扫描'**
+  String get vt_settings_title;
+
+  /// virustotal settings
+  ///
+  /// In zh, this message translates to:
+  /// **'安装 APK 前自动检测恶意软件（基于 VirusTotal）'**
+  String get vt_settings_subtitle;
+
+  /// virustotal settings
+  ///
+  /// In zh, this message translates to:
+  /// **'这是什么？'**
+  String get vt_what_is_title;
+
+  /// virustotal settings
+  ///
+  /// In zh, this message translates to:
+  /// **'开启后，安装 APK 前会自动通过 VirusTotal 检测文件是否包含恶意软件。未配置 API Key 时安装行为与之前一致，不会影响正常使用。'**
+  String get vt_what_is_desc;
+
+  /// virustotal settings
+  ///
+  /// In zh, this message translates to:
+  /// **'API Key'**
+  String get vt_api_key_label;
+
+  /// virustotal settings
+  ///
+  /// In zh, this message translates to:
+  /// **'已配置'**
+  String get vt_current_key_configured;
+
+  /// virustotal settings
+  ///
+  /// In zh, this message translates to:
+  /// **'未配置'**
+  String get vt_not_configured;
+
+  /// virustotal settings
+  ///
+  /// In zh, this message translates to:
+  /// **'粘贴你的 VirusTotal API Key'**
+  String get vt_api_key_hint;
+
+  /// virustotal settings
+  ///
+  /// In zh, this message translates to:
+  /// **'保存并验证'**
+  String get vt_save_key;
+
+  /// virustotal settings
+  ///
+  /// In zh, this message translates to:
+  /// **'如何获取 API Key？'**
+  String get vt_how_to_get_title;
+
+  /// virustotal settings
+  ///
+  /// In zh, this message translates to:
+  /// **'1. 打开 virustotal.com 并登录（可用 Google 账号免费注册）'**
+  String get vt_step_1;
+
+  /// virustotal settings
+  ///
+  /// In zh, this message translates to:
+  /// **'2. 点击右上角头像，选择「API key」'**
+  String get vt_step_2;
+
+  /// virustotal settings
+  ///
+  /// In zh, this message translates to:
+  /// **'3. 点击复制图标，复制你的 API Key'**
+  String get vt_step_3;
+
+  /// virustotal settings
+  ///
+  /// In zh, this message translates to:
+  /// **'4. 回到本页面，粘贴到上方输入框'**
+  String get vt_step_4;
+
+  /// virustotal settings
+  ///
+  /// In zh, this message translates to:
+  /// **'5. 点击「保存并验证」，无效的 Key 会被提示'**
+  String get vt_step_5;
+
+  /// virustotal settings
+  ///
+  /// In zh, this message translates to:
+  /// **'打开官网'**
+  String get vt_open_vt;
+
+  /// virustotal settings
+  ///
+  /// In zh, this message translates to:
+  /// **'免费账号限额：4 次请求/分钟，日常安装扫描足够使用。'**
+  String get vt_limit_note;
+
+  /// virustotal settings
+  ///
+  /// In zh, this message translates to:
+  /// **'隐私提示：默认仅上传文件哈希进行查询，不会上传文件本身；仅在你主动选择「上传完整扫描」时才会上传文件。'**
+  String get vt_privacy_note;
+
+  /// virustotal settings / silent install
+  ///
+  /// In zh, this message translates to:
+  /// **'静默安装'**
+  String get vt_silent_install;
+
+  /// virustotal settings / silent install
+  ///
+  /// In zh, this message translates to:
+  /// **'已获取 Root 或 Shizuku 权限，开启后安装无需手动确认'**
+  String get vt_silent_install_ready;
+
+  /// virustotal settings / silent install
+  ///
+  /// In zh, this message translates to:
+  /// **'需要 Root 或 Shizuku 权限才能启用'**
+  String get vt_silent_install_requires;
+
+  /// virustotal settings / silent install
+  ///
+  /// In zh, this message translates to:
+  /// **'安装成功'**
+  String get vt_install_success;
+
+  /// virustotal settings / keep apk
+  ///
+  /// In zh, this message translates to:
+  /// **'安装后保留安装包'**
+  String get vt_keep_apk;
+
+  /// virustotal settings / keep apk
+  ///
+  /// In zh, this message translates to:
+  /// **'开启后安装时复制临时副本，防止系统安装器自动删除源 APK'**
+  String get vt_keep_apk_desc;
+
+  /// virustotal scan dialog buttons
+  ///
+  /// In zh, this message translates to:
+  /// **'安装'**
+  String get vt_install;
+
+  /// virustotal scan dialog buttons
+  ///
+  /// In zh, this message translates to:
+  /// **'直接安装'**
+  String get vt_direct_install;
+
+  /// biometric prompt messages
+  ///
+  /// In zh, this message translates to:
+  /// **'请验证指纹以继续'**
+  String get biometric_verify_hint;
+
+  /// biometric prompt messages
+  ///
+  /// In zh, this message translates to:
+  /// **'验证指纹以解锁保险箱'**
+  String get biometric_reason_vault;
+
+  /// biometric prompt messages
+  ///
+  /// In zh, this message translates to:
+  /// **'验证指纹以通过远程守卫'**
+  String get biometric_reason_remote_guard;
+
+  /// biometric prompt messages
+  ///
+  /// In zh, this message translates to:
+  /// **'验证指纹以进入应用'**
+  String get biometric_reason_app_lock;
+
+  /// apk install settings page title and subtitle
+  ///
+  /// In zh, this message translates to:
+  /// **'APK 安装设置'**
+  String get vt_install_settings_title;
+
+  /// apk install settings page title and subtitle
+  ///
+  /// In zh, this message translates to:
+  /// **'静默安装、保留安装包、安全扫描'**
+  String get vt_install_settings_subtitle;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

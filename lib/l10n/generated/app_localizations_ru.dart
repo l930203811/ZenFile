@@ -6328,4 +6328,221 @@ class L10nRu extends L10n {
 
   @override
   String get qqGroup => 'QQ группа: 792408214';
+
+  @override
+  String get emailCopied => 'Адрес эл. почты скопирован в буфер обмена';
+
+  @override
+  String get vt_scanning => 'Проверка через VirusTotal (поиск по хешу)...';
+
+  @override
+  String get vt_uploading =>
+      'Загрузка файла в VirusTotal и ожидание анализа, около 1-2 минут...';
+
+  @override
+  String get vt_safe_title => 'Результат проверки: безопасно';
+
+  @override
+  String get vt_risk_title => 'Результат проверки: обнаружена угроза';
+
+  @override
+  String get vt_unknown_title => 'Результат проверки: нет в базе';
+
+  @override
+  String vt_malicious_count(Object n) {
+    return 'Обнаружили угрозу: $n';
+  }
+
+  @override
+  String vt_suspicious_count(Object n) {
+    return 'Подозрительных: $n';
+  }
+
+  @override
+  String vt_harmless_count(Object n) {
+    return 'Безопасно: $n';
+  }
+
+  @override
+  String vt_undetected_count(Object n) {
+    return 'Не обнаружили: $n';
+  }
+
+  @override
+  String get vt_not_found_msg =>
+      'Этот файл ещё не в базе VirusTotal. Можно загрузить его для полного сканирования или пропустить и продолжить установку.';
+
+  @override
+  String vt_scan_failed(Object error) {
+    return 'Ошибка проверки: $error';
+  }
+
+  @override
+  String get vt_no_key_msg =>
+      'API-ключ VirusTotal не настроен. Проверка пропущена, установка продолжена. Настройте ключ в настройках, чтобы включить проверку перед установкой.';
+
+  @override
+  String get vt_continue_install => 'Всё равно установить';
+
+  @override
+  String get vt_upload_scan => 'Загрузить для полного сканирования';
+
+  @override
+  String get vt_open_report => 'Открыть полный отчёт';
+
+  @override
+  String get vt_apikey_title => 'API-ключ VirusTotal';
+
+  @override
+  String get vt_apikey_subtitle =>
+      'Автоматическая проверка APK перед установкой (бесплатный ключ на virustotal.com)';
+
+  @override
+  String get vt_apikey_dialog_title => 'Настройка API-ключа VirusTotal';
+
+  @override
+  String get vt_apikey_hint =>
+      'Вставьте ваш API-ключ (бесплатный лимит: 4 запроса/мин)';
+
+  @override
+  String get vt_save => 'Сохранить';
+
+  @override
+  String get vt_key_saved => 'API-ключ VirusTotal сохранён';
+
+  @override
+  String get vt_key_invalid => 'Неверный API-ключ, проверьте и повторите';
+
+  @override
+  String vt_key_masked(Object mask) {
+    return 'Настроен ($mask)';
+  }
+
+  @override
+  String get vt_scan_before_install => 'Проверка APK через VirusTotal...';
+
+  @override
+  String get vt_skip => 'Пропустить';
+
+  @override
+  String get vt_retry => 'Повторить';
+
+  @override
+  String get vt_cancel => 'Отмена';
+
+  @override
+  String get vt_analyzing => 'Ожидание анализа VirusTotal...';
+
+  @override
+  String get vt_settings_title => 'Безопасная проверка при установке APK';
+
+  @override
+  String get vt_settings_subtitle =>
+      'Автоматическая проверка на вредоносное ПО перед установкой APK (VirusTotal)';
+
+  @override
+  String get vt_what_is_title => 'Что это?';
+
+  @override
+  String get vt_what_is_desc =>
+      'После включения файлы автоматически проверяются через VirusTotal на вредоносное ПО перед установкой APK. Без API-ключа установка работает как раньше и не меняется.';
+
+  @override
+  String get vt_api_key_label => 'API-ключ';
+
+  @override
+  String get vt_current_key_configured => 'Настроен';
+
+  @override
+  String get vt_not_configured => 'Не настроен';
+
+  @override
+  String get vt_api_key_hint => 'Вставьте ваш API-ключ VirusTotal';
+
+  @override
+  String get vt_save_key => 'Сохранить и проверить';
+
+  @override
+  String get vt_how_to_get_title => 'Как получить API-ключ?';
+
+  @override
+  String get vt_step_1 =>
+      '1. Откройте virustotal.com и войдите (бесплатная регистрация через Google)';
+
+  @override
+  String get vt_step_2 =>
+      '2. Нажмите на аватар в правом верхнем углу и выберите «API key»';
+
+  @override
+  String get vt_step_3 =>
+      '3. Нажмите на значок копирования, чтобы скопировать API-ключ';
+
+  @override
+  String get vt_step_4 =>
+      '4. Вернитесь на эту страницу и вставьте ключ в поле выше';
+
+  @override
+  String get vt_step_5 =>
+      '5. Нажмите «Сохранить и проверить»; неверный ключ будет помечен';
+
+  @override
+  String get vt_open_vt => 'Открыть сайт';
+
+  @override
+  String get vt_limit_note =>
+      'Лимит бесплатного аккаунта: 4 запроса/мин, достаточно для повседневной проверки при установке.';
+
+  @override
+  String get vt_privacy_note =>
+      'Приватность: по умолчанию загружается только хэш файла для поиска, а не сам файл; файл загружается только при активном выборе «Загрузить для полного сканирования».';
+
+  @override
+  String get vt_silent_install => 'Тихая установка';
+
+  @override
+  String get vt_silent_install_ready =>
+      'Доступ Root или Shizuku получен — установка пройдёт без подтверждения';
+
+  @override
+  String get vt_silent_install_requires =>
+      'Требуется Root или Shizuku для включения';
+
+  @override
+  String get vt_install_success => 'Установка выполнена';
+
+  @override
+  String get vt_keep_apk => 'Сохранять APK после установки';
+
+  @override
+  String get vt_keep_apk_desc =>
+      'Копировать временную копию перед установкой, чтобы системный установщик не удалил исходный APK';
+
+  @override
+  String get vt_install => 'Установить';
+
+  @override
+  String get vt_direct_install => 'Установить напрямую';
+
+  @override
+  String get biometric_verify_hint =>
+      'Подтвердите отпечаток пальца, чтобы продолжить';
+
+  @override
+  String get biometric_reason_vault =>
+      'Подтвердите отпечаток для разблокировки сейфа';
+
+  @override
+  String get biometric_reason_remote_guard =>
+      'Подтвердите отпечаток для прохождения удалённой защиты';
+
+  @override
+  String get biometric_reason_app_lock =>
+      'Подтвердите отпечаток, чтобы войти в приложение';
+
+  @override
+  String get vt_install_settings_title => 'Настройки установки APK';
+
+  @override
+  String get vt_install_settings_subtitle =>
+      'Тихая установка, сохранение установщика, сканирование';
 }

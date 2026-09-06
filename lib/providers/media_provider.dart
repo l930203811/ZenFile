@@ -2151,7 +2151,7 @@ class MediaProvider extends ChangeNotifier {
   /// 完成后合并自定义分类、排序并二次 notifyListeners 更新列表与首页计数。
   /// [force]：强制重扫（右上角刷新/仪表盘下拉刷新），直接采用本次扫描
   /// 结果替换旧列表（绕过并集兜底，清除已删除文件的幽灵条目）。
-  Future<void> _scanNonMediaInBackground({bool force = false}) async {
+  Future<void> _scanNonMediaInBackground({bool force = false, bool includeMedia = false}) async {
     if (_nonMediaScanRunning) return;
     if (_nonMediaScanDone && !force) return;
     _nonMediaScanRunning = true;
@@ -2184,13 +2184,16 @@ class MediaProvider extends ChangeNotifier {
         await _saveVisualCache(_images, _videos, _screenshots);
         await _saveAudioCache(_audios);
       } else if (!viaMediaStore) {
-        await _runFileSystemScanInIsolate(force: force).catchError((Object e) {
+        await _runFileSystemScanInIsolate(force: force, includeMedia: includeMedia)
+            .catchError((Object e) {
           debugPrint('[ZenFile] background non-media scan failed, fallback: $e');
           return _loadMediaFromFileSystem();
         });
       } else {
-        // MediaStore 不索引 APK，APK 单独走 onlyApk 补扫
-        await _runFileSystemScanInIsolate(force: force, onlyApk: true).catchError((Object e) {
+        // MediaStore 不索引 APK，APK 单独走 onlyApk 补扫；includeMedia 时
+        // 一并并集合并文件系统发现的音频/图视（默认路径下系统索引未收录的音乐）。
+        await _runFileSystemScanInIsolate(force: force, onlyApk: true, includeMedia: includeMedia)
+            .catchError((Object e) {
           debugPrint('[ZenFile] onlyApk supplementary scan failed: $e');
         });
       }
@@ -2213,6 +2216,15 @@ class MediaProvider extends ChangeNotifier {
         await Future<void>.delayed(const Duration(milliseconds: 100));
       }
       await _saveCache();
+      // 启动（非强制）扫描并集合并了文件系统发现的音频/图视后，将完整结果
+      // 落盘：下次启动从缓存恢复即为「系统索引 + 文件系统补充」的完整列表，
+      // 彻底消除「过一会只剩录音机、刷新救不回」。与视频/图片的 _saveVisualCache
+      // 一致；音频此前仅在 querySongs 全量时落盘，部分设备 querySongs 长期不全
+      // 导致缓存永远只有录音机——现由可靠的文件系统枚举兜底补齐并持久化。
+      if (includeMedia) {
+        await _saveVisualCache(_images, _videos, _screenshots);
+        await _saveAudioCache(_audios);
+      }
     } catch (e) {
       debugPrint('[ZenFile] _scanNonMediaInBackground error: $e');
       _nonMediaScanDone = true; // 失败也置完成，避免分类页永远 shimmer
@@ -2765,7 +2777,10 @@ class MediaProvider extends ChangeNotifier {
       // 自带并发/重复守卫，不会与懒加载或强制刷新叠加。
       // 强制刷新已由上方 pendingForceScan 覆盖，此处仅在初始（非强制）加载时启动，避免重复扫描。
       if (!forceRefresh) {
-        unawaited(_scanNonMediaInBackground());
+        // 启动即后台并集合并文件系统发现的音频/图视（含标准音乐目录），
+        // 以可靠的 dart:io 枚举兜底 on_audio_query querySongs 在部分设备上
+        // 返回不全（仅录音机）的问题——与视频/图片的索引+补充合并一致。
+        unawaited(_scanNonMediaInBackground(includeMedia: true));
       }
 
       await _scanCustomCategories();
@@ -3167,8 +3182,31 @@ class MediaProvider extends ChangeNotifier {
           // 落盘：作为「重查失败/provider 重建」时的恢复源，避免音频永久消失。
           await _saveAudioCache(_audios);
         } else {
-          debugPrint('[ZenFile] _loadAudios 新结果(${songs.length})少于现有'
-              '(${_audios.length})，保留现有音频，避免被部分结果冲掉');
+          // querySongs 返回部分结果（少于现有）：去重并入，绝不缩减既有列表。
+          // 部分 ROM/大存储设备 MediaStore 音频表瞬时未就绪或长期只返回子集
+          // （如仅录音机），整表替换会把已显示的完整音乐冲成「只剩录音机」，
+          // 且一旦内存列表丢失便刷新救不回。改为并集合并：已显示的保留，
+          // querySongs 新发现的（按路径去重）补入，与视频/图片的索引+补充
+          // 合并语义一致。
+          final seen = <String>{
+            for (final s in _audios) _normalizeMediaPath(s.data),
+          };
+          var added = 0;
+          for (final s in songs) {
+            final d = s.data;
+            if (d.isEmpty) continue;
+            if (seen.add(_normalizeMediaPath(d))) {
+              _audios.add(s);
+              added++;
+            }
+          }
+          if (added > 0) {
+            _fsCategorySizes['音频'] = _calcAudioSize(_audios);
+            _audioFolders = _groupAudiosByParentDir(_audios);
+            await _saveAudioCache(_audios);
+          }
+          debugPrint('[ZenFile] _loadAudios querySongs 部分结果(${songs.length})'
+              '少于现有(${_audios.length})，已去重并入 $added 条，保留完整列表');
         }
       } else if (_audios.isEmpty) {
         // 多次重试仍为空：尝试从磁盘缓存恢复（曾成功加载过则不会就此消失）。
@@ -3238,6 +3276,15 @@ class MediaProvider extends ChangeNotifier {
           '/storage/emulated/0/QuarkDownloads',
           '/storage/emulated/0/apk',
           '/storage/emulated/0/APK',
+          // 标准音乐/录音目录（depth 4）：on_audio_query 的 querySongs 在部分
+          // ROM/大存储设备上仅返回 MediaStore 音频表子集（如只剩录音机），
+          // 用户音乐库未被索引导致「音频加载后莫名消失、刷新救不回」。文件系统
+          // 枚举（dart:io）100% 可靠，补这些标准目录使音频并集合并兜底能扫到
+          // 用户音乐——与视频/图片「系统索引 + 文件系统补充合并」一致。
+          '/storage/emulated/0/Music',
+          '/storage/emulated/0/Recording',
+          '/storage/emulated/0/Sounds',
+          '/storage/emulated/0/Ringtones',
         ];
         for (final h in hotspots) {
           roots.add(_ScanRoot(h, 4));

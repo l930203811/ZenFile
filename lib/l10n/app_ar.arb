@@ -6248,5 +6248,246 @@
   "@share_permission_message": {
     "description": "Message for share permission prompt"
   },
-  "qqGroup": "مجموعة QQ: 792408214"
+  "qqGroup": "مجموعة QQ: 792408214",
+  "emailCopied": "تم نسخ البريد الإلكتروني إلى الحافظة",
+  "vt_scanning": "جارٍ الفحص عبر VirusTotal (استعلام التجزئة)...",
+  "@vt_scanning": {
+    "description": "virustotal scan"
+  },
+  "vt_uploading": "جارٍ رفع الملف إلى VirusTotal وانتظار التحليل، حوالي 1-2 دقيقة...",
+  "@vt_uploading": {
+    "description": "virustotal scan"
+  },
+  "vt_safe_title": "نتيجة الفحص: آمن",
+  "@vt_safe_title": {
+    "description": "virustotal scan"
+  },
+  "vt_risk_title": "نتيجة الفحص: تم اكتشاف خطر",
+  "@vt_risk_title": {
+    "description": "virustotal scan"
+  },
+  "vt_unknown_title": "نتيجة الفحص: غير مسجل",
+  "@vt_unknown_title": {
+    "description": "virustotal scan"
+  },
+  "vt_malicious_count": "المحركات الخبيثة: {n}",
+  "@vt_malicious_count": {
+    "description": "virustotal scan"
+  },
+  "vt_suspicious_count": "المحركات المشبوهة: {n}",
+  "@vt_suspicious_count": {
+    "description": "virustotal scan"
+  },
+  "vt_harmless_count": "المحركات الآمنة: {n}",
+  "@vt_harmless_count": {
+    "description": "virustotal scan"
+  },
+  "vt_undetected_count": "المحركات غير المكتشفة: {n}",
+  "@vt_undetected_count": {
+    "description": "virustotal scan"
+  },
+  "vt_not_found_msg": "هذا الملف غير مسجل بعد في قاعدة بيانات VirusTotal. يمكنك رفعه لإجراء فحص كامل، أو تخطي ذلك ومتابعة التثبيت.",
+  "@vt_not_found_msg": {
+    "description": "virustotal scan"
+  },
+  "vt_scan_failed": "فشل الفحص: {error}",
+  "@vt_scan_failed": {
+    "description": "virustotal scan"
+  },
+  "vt_no_key_msg": "لم يتم تكوين مفتاح API لـ VirusTotal، تم تخطي الفحص والتثبيت مباشرة. قم بتكوينه في الإعدادات لتفعيل الفحص قبل التثبيت.",
+  "@vt_no_key_msg": {
+    "description": "virustotal scan"
+  },
+  "vt_continue_install": "التثبيت على أي حال",
+  "@vt_continue_install": {
+    "description": "virustotal scan"
+  },
+  "vt_upload_scan": "رفع لإجراء فحص كامل",
+  "@vt_upload_scan": {
+    "description": "virustotal scan"
+  },
+  "vt_open_report": "عرض التقرير الكامل",
+  "@vt_open_report": {
+    "description": "virustotal scan"
+  },
+  "vt_apikey_title": "مفتاح API لـ VirusTotal",
+  "@vt_apikey_title": {
+    "description": "virustotal scan"
+  },
+  "vt_apikey_subtitle": "فحص أمان APK قبل التثبيت (مفتاح مجاني من virustotal.com)",
+  "@vt_apikey_subtitle": {
+    "description": "virustotal scan"
+  },
+  "vt_apikey_dialog_title": "تكوين مفتاح API لـ VirusTotal",
+  "@vt_apikey_dialog_title": {
+    "description": "virustotal scan"
+  },
+  "vt_apikey_hint": "الصق مفتاح API الخاص بك (الإصدار المجاني: 4 طلبات/دقيقة)",
+  "@vt_apikey_hint": {
+    "description": "virustotal scan"
+  },
+  "vt_save": "حفظ",
+  "@vt_save": {
+    "description": "virustotal scan"
+  },
+  "vt_key_saved": "تم حفظ مفتاح API لـ VirusTotal",
+  "@vt_key_saved": {
+    "description": "virustotal scan"
+  },
+  "vt_key_invalid": "مفتاح API غير صالح، تحقق منه وأعد المحاولة",
+  "@vt_key_invalid": {
+    "description": "virustotal scan"
+  },
+  "vt_key_masked": "تم التكوين ({mask})",
+  "@vt_key_masked": {
+    "description": "virustotal scan"
+  },
+  "vt_scan_before_install": "جارٍ فحص ملف APK عبر VirusTotal...",
+  "@vt_scan_before_install": {
+    "description": "virustotal scan"
+  },
+  "vt_skip": "تخطي",
+  "@vt_skip": {
+    "description": "virustotal scan"
+  },
+  "vt_retry": "إعادة المحاولة",
+  "@vt_retry": {
+    "description": "virustotal scan"
+  },
+  "vt_cancel": "إلغاء",
+  "@vt_cancel": {
+    "description": "virustotal scan"
+  },
+  "vt_analyzing": "في انتظار نتيجة تحليل VirusTotal...",
+  "@vt_analyzing": {
+    "description": "virustotal scan"
+  },
+  "vt_settings_title": "فحص أمان تثبيت ملفات APK",
+  "@vt_settings_title": {
+    "description": "virustotal settings"
+  },
+  "vt_settings_subtitle": "يكتشف البرامج الضارة تلقائيًا قبل تثبيت ملف APK (مدعوم من VirusTotal)",
+  "@vt_settings_subtitle": {
+    "description": "virustotal settings"
+  },
+  "vt_what_is_title": "ما هذا؟",
+  "@vt_what_is_title": {
+    "description": "virustotal settings"
+  },
+  "vt_what_is_desc": "عند التفعيل، يتم فحص الملفات تلقائيًا عبر VirusTotal للبحث عن البرامج الضارة قبل تثبيت ملف APK. بدون مفتاح API، يعمل التثبيت كما كان من قبل ولا يتأثر.",
+  "@vt_what_is_desc": {
+    "description": "virustotal settings"
+  },
+  "vt_api_key_label": "مفتاح API",
+  "@vt_api_key_label": {
+    "description": "virustotal settings"
+  },
+  "vt_current_key_configured": "تم التكوين",
+  "@vt_current_key_configured": {
+    "description": "virustotal settings"
+  },
+  "vt_not_configured": "غير مكوّن",
+  "@vt_not_configured": {
+    "description": "virustotal settings"
+  },
+  "vt_api_key_hint": "الصق مفتاح VirusTotal API الخاص بك",
+  "@vt_api_key_hint": {
+    "description": "virustotal settings"
+  },
+  "vt_save_key": "حفظ والتحقق",
+  "@vt_save_key": {
+    "description": "virustotal settings"
+  },
+  "vt_how_to_get_title": "كيفية الحصول على مفتاح API؟",
+  "@vt_how_to_get_title": {
+    "description": "virustotal settings"
+  },
+  "vt_step_1": "1. افتح virustotal.com وسجّل الدخول (تسجيل مجاني بحساب Google)",
+  "@vt_step_1": {
+    "description": "virustotal settings"
+  },
+  "vt_step_2": "2. اضغط على صورتك في الزاوية العلوية اليمنى، ثم اختر \"API key\"",
+  "@vt_step_2": {
+    "description": "virustotal settings"
+  },
+  "vt_step_3": "3. اضغط على أيقونة النسخ لنسخ مفتاح API الخاص بك",
+  "@vt_step_3": {
+    "description": "virustotal settings"
+  },
+  "vt_step_4": "4. ارجع إلى هذه الصفحة والصقه في الحقل أعلاه",
+  "@vt_step_4": {
+    "description": "virustotal settings"
+  },
+  "vt_step_5": "5. اضغط على \"حفظ والتحقق\"؛ سيتم تمييز المفتاح غير الصالح",
+  "@vt_step_5": {
+    "description": "virustotal settings"
+  },
+  "vt_open_vt": "فتح الموقع",
+  "@vt_open_vt": {
+    "description": "virustotal settings"
+  },
+  "vt_limit_note": "حد الحساب المجاني: 4 طلبات/دقيقة، يكفي لفحوصات التثبيت اليومية.",
+  "@vt_limit_note": {
+    "description": "virustotal settings"
+  },
+  "vt_privacy_note": "ملاحظة الخصوصية: بشكل افتراضي، يتم إرسال تجزئة الملف فقط للاستعلام، وليس الملف نفسه؛ لا يتم رفع الملفات إلا عندما تختار بنشاط \"رفع لإجراء فحص كامل\".",
+  "@vt_privacy_note": {
+    "description": "virustotal settings"
+  },
+  "vt_silent_install": "التثبيت الصامت",
+  "@vt_silent_install": {
+    "description": "virustotal settings / silent install"
+  },
+  "vt_silent_install_ready": "تم اكتشاف صلاحية Root أو Shizuku — ستتم التثبيتات دون تأكيد",
+  "@vt_silent_install_ready": {
+    "description": "virustotal settings / silent install"
+  },
+  "vt_silent_install_requires": "يتطلب صلاحية Root أو Shizuku للتفعيل",
+  "@vt_silent_install_requires": {
+    "description": "virustotal settings / silent install"
+  },
+  "vt_install_success": "نجح التثبيت",
+  "@vt_install_success": {
+    "description": "virustotal settings / silent install"
+  },
+  "vt_keep_apk": "الاحتفاظ بملف APK بعد التثبيت",
+  "@vt_keep_apk": {
+    "description": "virustotal settings / keep apk"
+  },
+  "vt_keep_apk_desc": "إنشاء نسخة مؤقتة قبل التثبيت لمنع مثبت النظام من حذف ملف APK الأصلي تلقائيًا",
+  "@vt_keep_apk_desc": {
+    "description": "virustotal settings / keep apk"
+  },
+  "vt_install": "تثبيت",
+  "@vt_install": {
+    "description": "virustotal scan dialog buttons"
+  },
+  "vt_direct_install": "تثبيت مباشر",
+  "@vt_direct_install": {
+    "description": "virustotal scan dialog buttons"
+  },
+  "biometric_verify_hint": "تحقق من بصمتك للمتابعة",
+  "@biometric_verify_hint": {
+    "description": "biometric prompt messages"
+  },
+  "biometric_reason_vault": "تحقق من بصمتك لفتح الخزنة",
+  "@biometric_reason_vault": {
+    "description": "biometric prompt messages"
+  },
+  "biometric_reason_remote_guard": "تحقق من بصمتك لاجتياز الحماية عن بُعد",
+  "@biometric_reason_remote_guard": {
+    "description": "biometric prompt messages"
+  },
+  "biometric_reason_app_lock": "تحقق من بصمتك للدخول إلى التطبيق",
+  "@biometric_reason_app_lock": {
+    "description": "biometric prompt messages"
+  },
+  "vt_install_settings_title": "إعدادات تثبيت APK",
+  "@vt_install_settings_title": {
+    "description": "apk install settings page title and subtitle"
+  },
+  "vt_install_settings_subtitle": "التثبيت الصامت، الاحتفاظ بالمثبت، الفحص الأمني",
+  "@vt_install_settings_subtitle": {
+    "description": "apk install settings page title and subtitle"
+  }
 }

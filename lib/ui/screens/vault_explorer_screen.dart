@@ -9,8 +9,8 @@ import '../../providers/file_manager_provider.dart';
 import '../../services/vault_service.dart';
 import '../../services/remote_guard_service.dart';
 import '../../services/vault_biometric_store.dart';
+import '../../services/biometric_auth_helper.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:local_auth/local_auth.dart';
 import 'remote_guard_screen.dart';
 import 'vault_lock_screen.dart';
 import 'image_viewer_screen.dart';
@@ -44,7 +44,6 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
   // 生物识别（指纹解锁）开关状态
   bool _biometricAvailable = false;
   bool _biometricEnabled = false;
-  final LocalAuthentication _auth = LocalAuthentication();
 
   // 折叠区展开状态（安全设置 / 备份恢复，默认收缩）
   bool _securityExpanded = false;
@@ -114,7 +113,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
 
   Future<void> _loadBiometricState() async {
     try {
-      final available = await _auth.getAvailableBiometrics();
+      final available = await BiometricAuthHelper.auth.getAvailableBiometrics();
       final enabled = await VaultBiometricStore.hasCredential();
       if (mounted) {
         setState(() {
@@ -128,12 +127,11 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
   }
 
   Future<void> _onBiometricChanged(bool value) async {
-    final l10n = L10n.of(context);
     if (value) {
       try {
-        final did = await _auth.authenticate(
-          localizedReason: l10n.vault_fingerprint,
-          biometricOnly: true,
+        final did = await BiometricAuthHelper.authenticate(
+          context,
+          scenario: BiometricScenario.vault,
         );
         if (did) {
           await VaultBiometricStore.save(widget.password);
@@ -336,6 +334,8 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    // 退出保险箱即清空内存中的会话密钥（下次进入会重新派生一次，符合最小暴露原则）。
+    VaultService.clearKeyCache();
     super.dispose();
   }
 

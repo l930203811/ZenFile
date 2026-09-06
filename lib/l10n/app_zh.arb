@@ -6535,5 +6535,246 @@
   "@share_permission_message": {
     "description": "Message for share permission prompt"
   },
-  "qqGroup": "QQ 群：792408214"
+  "qqGroup": "QQ 群：792408214",
+  "emailCopied": "邮箱已复制到剪贴板",
+  "vt_scanning": "正在通过 VirusTotal 扫描（哈希查询）...",
+  "@vt_scanning": {
+    "description": "virustotal scan"
+  },
+  "vt_uploading": "正在上传文件到 VirusTotal 并等待分析，约需 1-2 分钟...",
+  "@vt_uploading": {
+    "description": "virustotal scan"
+  },
+  "vt_safe_title": "扫描结果：安全",
+  "@vt_safe_title": {
+    "description": "virustotal scan"
+  },
+  "vt_risk_title": "扫描结果：检测到风险",
+  "@vt_risk_title": {
+    "description": "virustotal scan"
+  },
+  "vt_unknown_title": "扫描结果：未收录",
+  "@vt_unknown_title": {
+    "description": "virustotal scan"
+  },
+  "vt_malicious_count": "报毒引擎：{n}",
+  "@vt_malicious_count": {
+    "description": "virustotal scan"
+  },
+  "vt_suspicious_count": "可疑引擎：{n}",
+  "@vt_suspicious_count": {
+    "description": "virustotal scan"
+  },
+  "vt_harmless_count": "安全引擎：{n}",
+  "@vt_harmless_count": {
+    "description": "virustotal scan"
+  },
+  "vt_undetected_count": "未检出引擎：{n}",
+  "@vt_undetected_count": {
+    "description": "virustotal scan"
+  },
+  "vt_not_found_msg": "该文件尚未被 VirusTotal 收录。可上传进行完整扫描，或跳过扫描继续安装。",
+  "@vt_not_found_msg": {
+    "description": "virustotal scan"
+  },
+  "vt_scan_failed": "扫描失败：{error}",
+  "@vt_scan_failed": {
+    "description": "virustotal scan"
+  },
+  "vt_no_key_msg": "未配置 VirusTotal API Key，已跳过扫描直接安装。可在设置中配置后获得安装前自动扫描。",
+  "@vt_no_key_msg": {
+    "description": "virustotal scan"
+  },
+  "vt_continue_install": "仍然安装",
+  "@vt_continue_install": {
+    "description": "virustotal scan"
+  },
+  "vt_upload_scan": "上传完整扫描",
+  "@vt_upload_scan": {
+    "description": "virustotal scan"
+  },
+  "vt_open_report": "查看详细报告",
+  "@vt_open_report": {
+    "description": "virustotal scan"
+  },
+  "vt_apikey_title": "VirusTotal API Key",
+  "@vt_apikey_title": {
+    "description": "virustotal scan"
+  },
+  "vt_apikey_subtitle": "安装 APK 前自动安全扫描（在 virustotal.com 免费申请）",
+  "@vt_apikey_subtitle": {
+    "description": "virustotal scan"
+  },
+  "vt_apikey_dialog_title": "配置 VirusTotal API Key",
+  "@vt_apikey_dialog_title": {
+    "description": "virustotal scan"
+  },
+  "vt_apikey_hint": "粘贴你的 API Key（免费版限 4 次/分钟）",
+  "@vt_apikey_hint": {
+    "description": "virustotal scan"
+  },
+  "vt_save": "保存",
+  "@vt_save": {
+    "description": "virustotal scan"
+  },
+  "vt_key_saved": "VirusTotal API Key 已保存",
+  "@vt_key_saved": {
+    "description": "virustotal scan"
+  },
+  "vt_key_invalid": "API Key 无效，请检查后重试",
+  "@vt_key_invalid": {
+    "description": "virustotal scan"
+  },
+  "vt_key_masked": "已配置（{mask}）",
+  "@vt_key_masked": {
+    "description": "virustotal scan"
+  },
+  "vt_scan_before_install": "正在扫描 APK（VirusTotal）...",
+  "@vt_scan_before_install": {
+    "description": "virustotal scan"
+  },
+  "vt_skip": "跳过",
+  "@vt_skip": {
+    "description": "virustotal scan"
+  },
+  "vt_retry": "重试",
+  "@vt_retry": {
+    "description": "virustotal scan"
+  },
+  "vt_cancel": "取消",
+  "@vt_cancel": {
+    "description": "virustotal scan"
+  },
+  "vt_analyzing": "正在等待 VirusTotal 分析结果...",
+  "@vt_analyzing": {
+    "description": "virustotal scan"
+  },
+  "vt_settings_title": "APK 安装安全扫描",
+  "@vt_settings_title": {
+    "description": "virustotal settings"
+  },
+  "vt_settings_subtitle": "安装 APK 前自动检测恶意软件（基于 VirusTotal）",
+  "@vt_settings_subtitle": {
+    "description": "virustotal settings"
+  },
+  "vt_what_is_title": "这是什么？",
+  "@vt_what_is_title": {
+    "description": "virustotal settings"
+  },
+  "vt_what_is_desc": "开启后，安装 APK 前会自动通过 VirusTotal 检测文件是否包含恶意软件。未配置 API Key 时安装行为与之前一致，不会影响正常使用。",
+  "@vt_what_is_desc": {
+    "description": "virustotal settings"
+  },
+  "vt_api_key_label": "API Key",
+  "@vt_api_key_label": {
+    "description": "virustotal settings"
+  },
+  "vt_current_key_configured": "已配置",
+  "@vt_current_key_configured": {
+    "description": "virustotal settings"
+  },
+  "vt_not_configured": "未配置",
+  "@vt_not_configured": {
+    "description": "virustotal settings"
+  },
+  "vt_api_key_hint": "粘贴你的 VirusTotal API Key",
+  "@vt_api_key_hint": {
+    "description": "virustotal settings"
+  },
+  "vt_save_key": "保存并验证",
+  "@vt_save_key": {
+    "description": "virustotal settings"
+  },
+  "vt_how_to_get_title": "如何获取 API Key？",
+  "@vt_how_to_get_title": {
+    "description": "virustotal settings"
+  },
+  "vt_step_1": "1. 打开 virustotal.com 并登录（可用 Google 账号免费注册）",
+  "@vt_step_1": {
+    "description": "virustotal settings"
+  },
+  "vt_step_2": "2. 点击右上角头像，选择「API key」",
+  "@vt_step_2": {
+    "description": "virustotal settings"
+  },
+  "vt_step_3": "3. 点击复制图标，复制你的 API Key",
+  "@vt_step_3": {
+    "description": "virustotal settings"
+  },
+  "vt_step_4": "4. 回到本页面，粘贴到上方输入框",
+  "@vt_step_4": {
+    "description": "virustotal settings"
+  },
+  "vt_step_5": "5. 点击「保存并验证」，无效的 Key 会被提示",
+  "@vt_step_5": {
+    "description": "virustotal settings"
+  },
+  "vt_open_vt": "打开官网",
+  "@vt_open_vt": {
+    "description": "virustotal settings"
+  },
+  "vt_limit_note": "免费账号限额：4 次请求/分钟，日常安装扫描足够使用。",
+  "@vt_limit_note": {
+    "description": "virustotal settings"
+  },
+  "vt_privacy_note": "隐私提示：默认仅上传文件哈希进行查询，不会上传文件本身；仅在你主动选择「上传完整扫描」时才会上传文件。",
+  "@vt_privacy_note": {
+    "description": "virustotal settings"
+  },
+  "vt_silent_install": "静默安装",
+  "@vt_silent_install": {
+    "description": "virustotal settings / silent install"
+  },
+  "vt_silent_install_ready": "已获取 Root 或 Shizuku 权限，开启后安装无需手动确认",
+  "@vt_silent_install_ready": {
+    "description": "virustotal settings / silent install"
+  },
+  "vt_silent_install_requires": "需要 Root 或 Shizuku 权限才能启用",
+  "@vt_silent_install_requires": {
+    "description": "virustotal settings / silent install"
+  },
+  "vt_install_success": "安装成功",
+  "@vt_install_success": {
+    "description": "virustotal settings / silent install"
+  },
+  "vt_keep_apk": "安装后保留安装包",
+  "@vt_keep_apk": {
+    "description": "virustotal settings / keep apk"
+  },
+  "vt_keep_apk_desc": "开启后安装时复制临时副本，防止系统安装器自动删除源 APK",
+  "@vt_keep_apk_desc": {
+    "description": "virustotal settings / keep apk"
+  },
+  "vt_install": "安装",
+  "@vt_install": {
+    "description": "virustotal scan dialog buttons"
+  },
+  "vt_direct_install": "直接安装",
+  "@vt_direct_install": {
+    "description": "virustotal scan dialog buttons"
+  },
+  "biometric_verify_hint": "请验证指纹以继续",
+  "@biometric_verify_hint": {
+    "description": "biometric prompt messages"
+  },
+  "biometric_reason_vault": "验证指纹以解锁保险箱",
+  "@biometric_reason_vault": {
+    "description": "biometric prompt messages"
+  },
+  "biometric_reason_remote_guard": "验证指纹以通过远程守卫",
+  "@biometric_reason_remote_guard": {
+    "description": "biometric prompt messages"
+  },
+  "biometric_reason_app_lock": "验证指纹以进入应用",
+  "@biometric_reason_app_lock": {
+    "description": "biometric prompt messages"
+  },
+  "vt_install_settings_title": "APK 安装设置",
+  "@vt_install_settings_title": {
+    "description": "apk install settings page title and subtitle"
+  },
+  "vt_install_settings_subtitle": "静默安装、保留安装包、安全扫描",
+  "@vt_install_settings_subtitle": {
+    "description": "apk install settings page title and subtitle"
+  }
 }

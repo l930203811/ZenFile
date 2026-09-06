@@ -6248,5 +6248,246 @@
   "@share_permission_message": {
     "description": "Message for share permission prompt"
   },
-  "qqGroup": "Grupo QQ: 792408214"
+  "qqGroup": "Grupo QQ: 792408214",
+  "emailCopied": "Correo copiado al portapapeles",
+  "vt_scanning": "Analizando con VirusTotal (consulta de hash)...",
+  "@vt_scanning": {
+    "description": "virustotal scan"
+  },
+  "vt_uploading": "Subiendo archivo a VirusTotal y esperando el análisis, unos 1-2 minutos...",
+  "@vt_uploading": {
+    "description": "virustotal scan"
+  },
+  "vt_safe_title": "Resultado del análisis: seguro",
+  "@vt_safe_title": {
+    "description": "virustotal scan"
+  },
+  "vt_risk_title": "Resultado del análisis: riesgo detectado",
+  "@vt_risk_title": {
+    "description": "virustotal scan"
+  },
+  "vt_unknown_title": "Resultado del análisis: no registrado",
+  "@vt_unknown_title": {
+    "description": "virustotal scan"
+  },
+  "vt_malicious_count": "Motores maliciosos: {n}",
+  "@vt_malicious_count": {
+    "description": "virustotal scan"
+  },
+  "vt_suspicious_count": "Motores sospechosos: {n}",
+  "@vt_suspicious_count": {
+    "description": "virustotal scan"
+  },
+  "vt_harmless_count": "Motores seguros: {n}",
+  "@vt_harmless_count": {
+    "description": "virustotal scan"
+  },
+  "vt_undetected_count": "Motores sin detectar: {n}",
+  "@vt_undetected_count": {
+    "description": "virustotal scan"
+  },
+  "vt_not_found_msg": "Este archivo aún no está en la base de datos de VirusTotal. Puedes subirlo para un análisis completo u omitirlo y continuar con la instalación.",
+  "@vt_not_found_msg": {
+    "description": "virustotal scan"
+  },
+  "vt_scan_failed": "Error en el análisis: {error}",
+  "@vt_scan_failed": {
+    "description": "virustotal scan"
+  },
+  "vt_no_key_msg": "No hay clave API de VirusTotal configurada. Se omitió el análisis y se instaló directamente. Configúrala en Ajustes para activar el análisis previo a la instalación.",
+  "@vt_no_key_msg": {
+    "description": "virustotal scan"
+  },
+  "vt_continue_install": "Instalar de todos modos",
+  "@vt_continue_install": {
+    "description": "virustotal scan"
+  },
+  "vt_upload_scan": "Subir para análisis completo",
+  "@vt_upload_scan": {
+    "description": "virustotal scan"
+  },
+  "vt_open_report": "Ver informe completo",
+  "@vt_open_report": {
+    "description": "virustotal scan"
+  },
+  "vt_apikey_title": "Clave API de VirusTotal",
+  "@vt_apikey_title": {
+    "description": "virustotal scan"
+  },
+  "vt_apikey_subtitle": "Analiza APK antes de instalar (clave gratuita en virustotal.com)",
+  "@vt_apikey_subtitle": {
+    "description": "virustotal scan"
+  },
+  "vt_apikey_dialog_title": "Configurar la clave API de VirusTotal",
+  "@vt_apikey_dialog_title": {
+    "description": "virustotal scan"
+  },
+  "vt_apikey_hint": "Pega tu clave API (gratis: 4 solicitudes/min)",
+  "@vt_apikey_hint": {
+    "description": "virustotal scan"
+  },
+  "vt_save": "Guardar",
+  "@vt_save": {
+    "description": "virustotal scan"
+  },
+  "vt_key_saved": "Clave API de VirusTotal guardada",
+  "@vt_key_saved": {
+    "description": "virustotal scan"
+  },
+  "vt_key_invalid": "Clave API no válida, compruébala e inténtalo de nuevo",
+  "@vt_key_invalid": {
+    "description": "virustotal scan"
+  },
+  "vt_key_masked": "Configurada ({mask})",
+  "@vt_key_masked": {
+    "description": "virustotal scan"
+  },
+  "vt_scan_before_install": "Analizando APK con VirusTotal...",
+  "@vt_scan_before_install": {
+    "description": "virustotal scan"
+  },
+  "vt_skip": "Omitir",
+  "@vt_skip": {
+    "description": "virustotal scan"
+  },
+  "vt_retry": "Reintentar",
+  "@vt_retry": {
+    "description": "virustotal scan"
+  },
+  "vt_cancel": "Cancelar",
+  "@vt_cancel": {
+    "description": "virustotal scan"
+  },
+  "vt_analyzing": "Esperando el análisis de VirusTotal...",
+  "@vt_analyzing": {
+    "description": "virustotal scan"
+  },
+  "vt_settings_title": "Escaneo de seguridad al instalar APK",
+  "@vt_settings_title": {
+    "description": "virustotal settings"
+  },
+  "vt_settings_subtitle": "Detecta malware automáticamente antes de instalar APK (con VirusTotal)",
+  "@vt_settings_subtitle": {
+    "description": "virustotal settings"
+  },
+  "vt_what_is_title": "¿Qué es esto?",
+  "@vt_what_is_title": {
+    "description": "virustotal settings"
+  },
+  "vt_what_is_desc": "Al activarlo, los archivos se analizan automáticamente con VirusTotal en busca de malware antes de instalar un APK. Sin una clave API, la instalación funciona igual que antes y no se ve afectada.",
+  "@vt_what_is_desc": {
+    "description": "virustotal settings"
+  },
+  "vt_api_key_label": "Clave API",
+  "@vt_api_key_label": {
+    "description": "virustotal settings"
+  },
+  "vt_current_key_configured": "Configurada",
+  "@vt_current_key_configured": {
+    "description": "virustotal settings"
+  },
+  "vt_not_configured": "No configurada",
+  "@vt_not_configured": {
+    "description": "virustotal settings"
+  },
+  "vt_api_key_hint": "Pega tu clave API de VirusTotal",
+  "@vt_api_key_hint": {
+    "description": "virustotal settings"
+  },
+  "vt_save_key": "Guardar y verificar",
+  "@vt_save_key": {
+    "description": "virustotal settings"
+  },
+  "vt_how_to_get_title": "¿Cómo obtener una clave API?",
+  "@vt_how_to_get_title": {
+    "description": "virustotal settings"
+  },
+  "vt_step_1": "1. Abre virustotal.com e inicia sesión (registro gratuito con cuenta de Google)",
+  "@vt_step_1": {
+    "description": "virustotal settings"
+  },
+  "vt_step_2": "2. Toca tu avatar en la esquina superior derecha y selecciona \"API key\"",
+  "@vt_step_2": {
+    "description": "virustotal settings"
+  },
+  "vt_step_3": "3. Toca el icono de copiar para copiar tu clave API",
+  "@vt_step_3": {
+    "description": "virustotal settings"
+  },
+  "vt_step_4": "4. Vuelve a esta página y pégala en el campo de arriba",
+  "@vt_step_4": {
+    "description": "virustotal settings"
+  },
+  "vt_step_5": "5. Toca \"Guardar y verificar\"; una clave inválida se marcará",
+  "@vt_step_5": {
+    "description": "virustotal settings"
+  },
+  "vt_open_vt": "Abrir sitio",
+  "@vt_open_vt": {
+    "description": "virustotal settings"
+  },
+  "vt_limit_note": "Límite de cuenta gratuita: 4 solicitudes/minuto, suficiente para los análisis de instalación habituales.",
+  "@vt_limit_note": {
+    "description": "virustotal settings"
+  },
+  "vt_privacy_note": "Nota de privacidad: por defecto solo se sube el hash del archivo para la consulta, no el archivo en sí; los archivos solo se suben cuando eliges activamente \"Subir para análisis completo\".",
+  "@vt_privacy_note": {
+    "description": "virustotal settings"
+  },
+  "vt_silent_install": "Instalación silenciosa",
+  "@vt_silent_install": {
+    "description": "virustotal settings / silent install"
+  },
+  "vt_silent_install_ready": "Acceso Root o Shizuku detectado — las instalaciones proceden sin confirmación",
+  "@vt_silent_install_ready": {
+    "description": "virustotal settings / silent install"
+  },
+  "vt_silent_install_requires": "Requiere permiso Root o Shizuku para activar",
+  "@vt_silent_install_requires": {
+    "description": "virustotal settings / silent install"
+  },
+  "vt_install_success": "Instalación exitosa",
+  "@vt_install_success": {
+    "description": "virustotal settings / silent install"
+  },
+  "vt_keep_apk": "Mantener APK después de instalar",
+  "@vt_keep_apk": {
+    "description": "virustotal settings / keep apk"
+  },
+  "vt_keep_apk_desc": "Crear una copia temporal antes de instalar para evitar que el instalador del sistema elimine el APK original",
+  "@vt_keep_apk_desc": {
+    "description": "virustotal settings / keep apk"
+  },
+  "vt_install": "Instalar",
+  "@vt_install": {
+    "description": "virustotal scan dialog buttons"
+  },
+  "vt_direct_install": "Instalar directamente",
+  "@vt_direct_install": {
+    "description": "virustotal scan dialog buttons"
+  },
+  "biometric_verify_hint": "Verifica tu huella para continuar",
+  "@biometric_verify_hint": {
+    "description": "biometric prompt messages"
+  },
+  "biometric_reason_vault": "Verifica tu huella para desbloquear la caja fuerte",
+  "@biometric_reason_vault": {
+    "description": "biometric prompt messages"
+  },
+  "biometric_reason_remote_guard": "Verifica tu huella para pasar la protección remota",
+  "@biometric_reason_remote_guard": {
+    "description": "biometric prompt messages"
+  },
+  "biometric_reason_app_lock": "Verifica tu huella para entrar en la aplicación",
+  "@biometric_reason_app_lock": {
+    "description": "biometric prompt messages"
+  },
+  "vt_install_settings_title": "Ajustes de instalación APK",
+  "@vt_install_settings_title": {
+    "description": "apk install settings page title and subtitle"
+  },
+  "vt_install_settings_subtitle": "Instalación silenciosa, mantener instalador, escaneo de seguridad",
+  "@vt_install_settings_subtitle": {
+    "description": "apk install settings page title and subtitle"
+  }
 }

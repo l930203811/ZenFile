@@ -6329,4 +6329,221 @@ class L10nDe extends L10n {
 
   @override
   String get qqGroup => 'QQ-Gruppe: 792408214';
+
+  @override
+  String get emailCopied => 'E-Mail in die Zwischenablage kopiert';
+
+  @override
+  String get vt_scanning => 'VirusTotal-Scan läuft (Hash-Abfrage)...';
+
+  @override
+  String get vt_uploading =>
+      'Datei wird zu VirusTotal hochgeladen, Analyse dauert ca. 1-2 Minuten...';
+
+  @override
+  String get vt_safe_title => 'Scan-Ergebnis: Sicher';
+
+  @override
+  String get vt_risk_title => 'Scan-Ergebnis: Risiko erkannt';
+
+  @override
+  String get vt_unknown_title => 'Scan-Ergebnis: Nicht in Datenbank';
+
+  @override
+  String vt_malicious_count(Object n) {
+    return 'Schädlich erkannt: $n';
+  }
+
+  @override
+  String vt_suspicious_count(Object n) {
+    return 'Verdächtig: $n';
+  }
+
+  @override
+  String vt_harmless_count(Object n) {
+    return 'Harmlos: $n';
+  }
+
+  @override
+  String vt_undetected_count(Object n) {
+    return 'Nicht erkannt: $n';
+  }
+
+  @override
+  String get vt_not_found_msg =>
+      'Diese Datei ist noch nicht in der VirusTotal-Datenbank. Du kannst sie für einen vollständigen Scan hochladen oder überspringen und die Installation fortsetzen.';
+
+  @override
+  String vt_scan_failed(Object error) {
+    return 'Scan fehlgeschlagen: $error';
+  }
+
+  @override
+  String get vt_no_key_msg =>
+      'Kein VirusTotal-API-Key konfiguriert. Scan übersprungen und direkt installiert. Konfiguriere den Key in den Einstellungen, um das Scannen vor der Installation zu aktivieren.';
+
+  @override
+  String get vt_continue_install => 'Trotzdem installieren';
+
+  @override
+  String get vt_upload_scan => 'Für vollständigen Scan hochladen';
+
+  @override
+  String get vt_open_report => 'Vollständigen Bericht anzeigen';
+
+  @override
+  String get vt_apikey_title => 'VirusTotal-API-Key';
+
+  @override
+  String get vt_apikey_subtitle =>
+      'APKs vor der Installation automatisch prüfen (kostenloser Key auf virustotal.com)';
+
+  @override
+  String get vt_apikey_dialog_title => 'VirusTotal-API-Key konfigurieren';
+
+  @override
+  String get vt_apikey_hint => 'API-Key einfügen (kostenlos: 4 Anfragen/Min.)';
+
+  @override
+  String get vt_save => 'Speichern';
+
+  @override
+  String get vt_key_saved => 'VirusTotal-API-Key gespeichert';
+
+  @override
+  String get vt_key_invalid =>
+      'Ungültiger API-Key, bitte prüfen und erneut versuchen';
+
+  @override
+  String vt_key_masked(Object mask) {
+    return 'Konfiguriert ($mask)';
+  }
+
+  @override
+  String get vt_scan_before_install => 'APK wird mit VirusTotal gescannt...';
+
+  @override
+  String get vt_skip => 'Überspringen';
+
+  @override
+  String get vt_retry => 'Erneut versuchen';
+
+  @override
+  String get vt_cancel => 'Abbrechen';
+
+  @override
+  String get vt_analyzing => 'Warte auf VirusTotal-Analyse...';
+
+  @override
+  String get vt_settings_title => 'Sicherheitsscan bei APK-Installation';
+
+  @override
+  String get vt_settings_subtitle =>
+      'Erkennt Malware automatisch vor der APK-Installation (mit VirusTotal)';
+
+  @override
+  String get vt_what_is_title => 'Was ist das?';
+
+  @override
+  String get vt_what_is_desc =>
+      'Wenn aktiviert, werden Dateien vor der APK-Installation automatisch mit VirusTotal auf Malware geprüft. Ohne API-Key funktioniert die Installation wie zuvor und wird nicht beeinträchtigt.';
+
+  @override
+  String get vt_api_key_label => 'API-Key';
+
+  @override
+  String get vt_current_key_configured => 'Konfiguriert';
+
+  @override
+  String get vt_not_configured => 'Nicht konfiguriert';
+
+  @override
+  String get vt_api_key_hint => 'Füge deinen VirusTotal-API-Key ein';
+
+  @override
+  String get vt_save_key => 'Speichern & prüfen';
+
+  @override
+  String get vt_how_to_get_title => 'So erhälst du einen API-Key';
+
+  @override
+  String get vt_step_1 =>
+      '1. Öffne virustotal.com und melde dich an (kostenlose Registrierung mit Google)';
+
+  @override
+  String get vt_step_2 =>
+      '2. Tippe oben rechts auf dein Avatar und wähle „API key“';
+
+  @override
+  String get vt_step_3 =>
+      '3. Tippe auf das Kopiersymbol, um deinen API-Key zu kopieren';
+
+  @override
+  String get vt_step_4 =>
+      '4. Kehre zu dieser Seite zurück und füge ihn in das Feld oben ein';
+
+  @override
+  String get vt_step_5 =>
+      '5. Tippe auf „Speichern & prüfen“; ein ungültiger Key wird gemeldet';
+
+  @override
+  String get vt_open_vt => 'Website öffnen';
+
+  @override
+  String get vt_limit_note =>
+      'Limit des kostenlosen Accounts: 4 Anfragen/Min., reicht für alltägliche Installationsscans.';
+
+  @override
+  String get vt_privacy_note =>
+      'Datenschutz: Standardmäßig wird nur der Datei-Hash zur Abfrage hochgeladen, nicht die Datei selbst; Dateien werden nur hochgeladen, wenn du aktiv „Für vollständigen Scan hochladen“ wählst.';
+
+  @override
+  String get vt_silent_install => 'Stumme Installation';
+
+  @override
+  String get vt_silent_install_ready =>
+      'Root- oder Shizuku-Zugriff erkannt — Installationen erfolgen ohne Bestätigung';
+
+  @override
+  String get vt_silent_install_requires =>
+      'Erfordert Root- oder Shizuku-Berechtigung';
+
+  @override
+  String get vt_install_success => 'Installation erfolgreich';
+
+  @override
+  String get vt_keep_apk => 'APK nach Installation behalten';
+
+  @override
+  String get vt_keep_apk_desc =>
+      'Vor der Installation eine temporäre Kopie erstellen, damit der Systeminstaller die Quell-APK nicht automatisch löscht';
+
+  @override
+  String get vt_install => 'Installieren';
+
+  @override
+  String get vt_direct_install => 'Direkt installieren';
+
+  @override
+  String get biometric_verify_hint =>
+      'Bestätigen Sie Ihren Fingerabdruck, um fortzufahren';
+
+  @override
+  String get biometric_reason_vault =>
+      'Bestätigen Sie Ihren Fingerabdruck, um den Tresor zu entsperren';
+
+  @override
+  String get biometric_reason_remote_guard =>
+      'Bestätigen Sie Ihren Fingerabdruck für die Fernsicherung';
+
+  @override
+  String get biometric_reason_app_lock =>
+      'Bestätigen Sie Ihren Fingerabdruck, um die App zu öffnen';
+
+  @override
+  String get vt_install_settings_title => 'APK-Installationseinstellungen';
+
+  @override
+  String get vt_install_settings_subtitle =>
+      'Stumme Installation, Installer behalten, Sicherheitsscan';
 }

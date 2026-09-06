@@ -6252,5 +6252,246 @@
   "@share_permission_message": {
     "description": "Message for share permission prompt"
   },
-  "qqGroup": "QQグループ: 792408214"
+  "qqGroup": "QQグループ: 792408214",
+  "emailCopied": "メールアドレスをクリップボードにコピーしました",
+  "vt_scanning": "VirusTotal でスキャン中（ハッシュ照合）...",
+  "@vt_scanning": {
+    "description": "virustotal scan"
+  },
+  "vt_uploading": "VirusTotal にアップロードして解析を待っています（約 1〜2 分）...",
+  "@vt_uploading": {
+    "description": "virustotal scan"
+  },
+  "vt_safe_title": "スキャン結果：安全",
+  "@vt_safe_title": {
+    "description": "virustotal scan"
+  },
+  "vt_risk_title": "スキャン結果：リスクを検出",
+  "@vt_risk_title": {
+    "description": "virustotal scan"
+  },
+  "vt_unknown_title": "スキャン結果：未登録",
+  "@vt_unknown_title": {
+    "description": "virustotal scan"
+  },
+  "vt_malicious_count": "マルウェア検出エンジン：{n}",
+  "@vt_malicious_count": {
+    "description": "virustotal scan"
+  },
+  "vt_suspicious_count": "疑わしいエンジン：{n}",
+  "@vt_suspicious_count": {
+    "description": "virustotal scan"
+  },
+  "vt_harmless_count": "無害エンジン：{n}",
+  "@vt_harmless_count": {
+    "description": "virustotal scan"
+  },
+  "vt_undetected_count": "未検出エンジン：{n}",
+  "@vt_undetected_count": {
+    "description": "virustotal scan"
+  },
+  "vt_not_found_msg": "このファイルはまだ VirusTotal に登録されていません。完全スキャンのためにアップロードするか、スキップしてインストールを続行できます。",
+  "@vt_not_found_msg": {
+    "description": "virustotal scan"
+  },
+  "vt_scan_failed": "スキャン失敗：{error}",
+  "@vt_scan_failed": {
+    "description": "virustotal scan"
+  },
+  "vt_no_key_msg": "VirusTotal API キーが設定されていません。スキャンをスキップして直接インストールしました。設定でキーを設定すると、インストール前スキャンが有効になります。",
+  "@vt_no_key_msg": {
+    "description": "virustotal scan"
+  },
+  "vt_continue_install": "それでもインストール",
+  "@vt_continue_install": {
+    "description": "virustotal scan"
+  },
+  "vt_upload_scan": "アップロードして完全スキャン",
+  "@vt_upload_scan": {
+    "description": "virustotal scan"
+  },
+  "vt_open_report": "詳細レポートを表示",
+  "@vt_open_report": {
+    "description": "virustotal scan"
+  },
+  "vt_apikey_title": "VirusTotal API キー",
+  "@vt_apikey_title": {
+    "description": "virustotal scan"
+  },
+  "vt_apikey_subtitle": "APK インストール前に自動スキャン（virustotal.com で無料取得）",
+  "@vt_apikey_subtitle": {
+    "description": "virustotal scan"
+  },
+  "vt_apikey_dialog_title": "VirusTotal API キーの設定",
+  "@vt_apikey_dialog_title": {
+    "description": "virustotal scan"
+  },
+  "vt_apikey_hint": "API キーを貼り付け（無料版：毎分 4 回まで）",
+  "@vt_apikey_hint": {
+    "description": "virustotal scan"
+  },
+  "vt_save": "保存",
+  "@vt_save": {
+    "description": "virustotal scan"
+  },
+  "vt_key_saved": "VirusTotal API キーを保存しました",
+  "@vt_key_saved": {
+    "description": "virustotal scan"
+  },
+  "vt_key_invalid": "API キーが無効です。確認して再試行してください",
+  "@vt_key_invalid": {
+    "description": "virustotal scan"
+  },
+  "vt_key_masked": "設定済み（{mask}）",
+  "@vt_key_masked": {
+    "description": "virustotal scan"
+  },
+  "vt_scan_before_install": "VirusTotal で APK をスキャン中...",
+  "@vt_scan_before_install": {
+    "description": "virustotal scan"
+  },
+  "vt_skip": "スキップ",
+  "@vt_skip": {
+    "description": "virustotal scan"
+  },
+  "vt_retry": "再試行",
+  "@vt_retry": {
+    "description": "virustotal scan"
+  },
+  "vt_cancel": "キャンセル",
+  "@vt_cancel": {
+    "description": "virustotal scan"
+  },
+  "vt_analyzing": "VirusTotal の解析結果を待っています...",
+  "@vt_analyzing": {
+    "description": "virustotal scan"
+  },
+  "vt_settings_title": "APK インストール時のセキュリティスキャン",
+  "@vt_settings_title": {
+    "description": "virustotal settings"
+  },
+  "vt_settings_subtitle": "APK インストール前にマルウェアを自動検出（VirusTotal 搭載）",
+  "@vt_settings_subtitle": {
+    "description": "virustotal settings"
+  },
+  "vt_what_is_title": "これは何？",
+  "@vt_what_is_title": {
+    "description": "virustotal settings"
+  },
+  "vt_what_is_desc": "有効にすると、APK をインストールする前に VirusTotal でマルウェアを自動スキャンします。API Key 未設定時は従来通りの動作で、通常の使用に影響はありません。",
+  "@vt_what_is_desc": {
+    "description": "virustotal settings"
+  },
+  "vt_api_key_label": "API キー",
+  "@vt_api_key_label": {
+    "description": "virustotal settings"
+  },
+  "vt_current_key_configured": "設定済み",
+  "@vt_current_key_configured": {
+    "description": "virustotal settings"
+  },
+  "vt_not_configured": "未設定",
+  "@vt_not_configured": {
+    "description": "virustotal settings"
+  },
+  "vt_api_key_hint": "VirusTotal API キーを貼り付け",
+  "@vt_api_key_hint": {
+    "description": "virustotal settings"
+  },
+  "vt_save_key": "保存して検証",
+  "@vt_save_key": {
+    "description": "virustotal settings"
+  },
+  "vt_how_to_get_title": "API キーの取得方法",
+  "@vt_how_to_get_title": {
+    "description": "virustotal settings"
+  },
+  "vt_step_1": "1. virustotal.com を開いてログイン（Google アカウントで無料登録可能）",
+  "@vt_step_1": {
+    "description": "virustotal settings"
+  },
+  "vt_step_2": "2. 右上のアバターをタップし、「API key」を選択",
+  "@vt_step_2": {
+    "description": "virustotal settings"
+  },
+  "vt_step_3": "3. コピーアイコンをタップして API キーをコピー",
+  "@vt_step_3": {
+    "description": "virustotal settings"
+  },
+  "vt_step_4": "4. このページに戻り、上の入力欄に貼り付け",
+  "@vt_step_4": {
+    "description": "virustotal settings"
+  },
+  "vt_step_5": "5. 「保存して検証」をタップ。無効なキーはエラー表示されます",
+  "@vt_step_5": {
+    "description": "virustotal settings"
+  },
+  "vt_open_vt": "公式サイトを開く",
+  "@vt_open_vt": {
+    "description": "virustotal settings"
+  },
+  "vt_limit_note": "無料アカウントの制限：4 リクエスト/分。日常のインストール時スキャンには十分です。",
+  "@vt_limit_note": {
+    "description": "virustotal settings"
+  },
+  "vt_privacy_note": "プライバシー：デフォルトではファイルのハッシュのみを照会に送信し、ファイル自体は送信しません。ファイルが送信されるのは、あなたが「完全スキャンのためにアップロード」を選択した場合のみです。",
+  "@vt_privacy_note": {
+    "description": "virustotal settings"
+  },
+  "vt_silent_install": "サイレントインストール",
+  "@vt_silent_install": {
+    "description": "virustotal settings / silent install"
+  },
+  "vt_silent_install_ready": "RootまたはShizuku権限を検出 — 確認なしでインストールされます",
+  "@vt_silent_install_ready": {
+    "description": "virustotal settings / silent install"
+  },
+  "vt_silent_install_requires": "有効にするにはRootまたはShizuku権限が必要です",
+  "@vt_silent_install_requires": {
+    "description": "virustotal settings / silent install"
+  },
+  "vt_install_success": "インストール成功",
+  "@vt_install_success": {
+    "description": "virustotal settings / silent install"
+  },
+  "vt_keep_apk": "インストール後にAPKを保持",
+  "@vt_keep_apk": {
+    "description": "virustotal settings / keep apk"
+  },
+  "vt_keep_apk_desc": "インストール前に一時コピーを作成し、システムインストーラーが元のAPKを自動削除するのを防ぎます",
+  "@vt_keep_apk_desc": {
+    "description": "virustotal settings / keep apk"
+  },
+  "vt_install": "インストール",
+  "@vt_install": {
+    "description": "virustotal scan dialog buttons"
+  },
+  "vt_direct_install": "直接インストール",
+  "@vt_direct_install": {
+    "description": "virustotal scan dialog buttons"
+  },
+  "biometric_verify_hint": "続行するには指紋認証を行ってください",
+  "@biometric_verify_hint": {
+    "description": "biometric prompt messages"
+  },
+  "biometric_reason_vault": "指紋認証で金庫のロックを解除します",
+  "@biometric_reason_vault": {
+    "description": "biometric prompt messages"
+  },
+  "biometric_reason_remote_guard": "指紋認証でリモートガードを通過します",
+  "@biometric_reason_remote_guard": {
+    "description": "biometric prompt messages"
+  },
+  "biometric_reason_app_lock": "指紋認証でアプリを開きます",
+  "@biometric_reason_app_lock": {
+    "description": "biometric prompt messages"
+  },
+  "vt_install_settings_title": "APK インストール設定",
+  "@vt_install_settings_title": {
+    "description": "apk install settings page title and subtitle"
+  },
+  "vt_install_settings_subtitle": "サイレントインストール、インストーラー保持、セキュリティスキャン",
+  "@vt_install_settings_subtitle": {
+    "description": "apk install settings page title and subtitle"
+  }
 }

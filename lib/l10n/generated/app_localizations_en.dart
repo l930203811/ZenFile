@@ -6283,4 +6283,216 @@ class L10nEn extends L10n {
 
   @override
   String get qqGroup => 'QQ Group: 792408214';
+
+  @override
+  String get emailCopied => 'Email copied to clipboard';
+
+  @override
+  String get vt_scanning => 'Scanning with VirusTotal (hash lookup)...';
+
+  @override
+  String get vt_uploading =>
+      'Uploading to VirusTotal and waiting for analysis, about 1-2 minutes...';
+
+  @override
+  String get vt_safe_title => 'Scan result: Safe';
+
+  @override
+  String get vt_risk_title => 'Scan result: Risk detected';
+
+  @override
+  String get vt_unknown_title => 'Scan result: Not in database';
+
+  @override
+  String vt_malicious_count(Object n) {
+    return 'Malicious engines: $n';
+  }
+
+  @override
+  String vt_suspicious_count(Object n) {
+    return 'Suspicious engines: $n';
+  }
+
+  @override
+  String vt_harmless_count(Object n) {
+    return 'Harmless engines: $n';
+  }
+
+  @override
+  String vt_undetected_count(Object n) {
+    return 'Undetected engines: $n';
+  }
+
+  @override
+  String get vt_not_found_msg =>
+      'This file is not in the VirusTotal database yet. You can upload it for a full scan, or skip and continue installing.';
+
+  @override
+  String vt_scan_failed(Object error) {
+    return 'Scan failed: $error';
+  }
+
+  @override
+  String get vt_no_key_msg =>
+      'No VirusTotal API Key configured. Skipped scan and installed directly. Configure it in Settings to enable pre-install scanning.';
+
+  @override
+  String get vt_continue_install => 'Install anyway';
+
+  @override
+  String get vt_upload_scan => 'Upload for full scan';
+
+  @override
+  String get vt_open_report => 'View full report';
+
+  @override
+  String get vt_apikey_title => 'VirusTotal API Key';
+
+  @override
+  String get vt_apikey_subtitle =>
+      'Scan APKs for safety before installing (free key at virustotal.com)';
+
+  @override
+  String get vt_apikey_dialog_title => 'Configure VirusTotal API Key';
+
+  @override
+  String get vt_apikey_hint => 'Paste your API key (free tier: 4 requests/min)';
+
+  @override
+  String get vt_save => 'Save';
+
+  @override
+  String get vt_key_saved => 'VirusTotal API key saved';
+
+  @override
+  String get vt_key_invalid => 'Invalid API key, please check and retry';
+
+  @override
+  String vt_key_masked(Object mask) {
+    return 'Configured ($mask)';
+  }
+
+  @override
+  String get vt_scan_before_install => 'Scanning APK with VirusTotal...';
+
+  @override
+  String get vt_skip => 'Skip';
+
+  @override
+  String get vt_retry => 'Retry';
+
+  @override
+  String get vt_cancel => 'Cancel';
+
+  @override
+  String get vt_analyzing => 'Waiting for VirusTotal analysis...';
+
+  @override
+  String get vt_settings_title => 'APK Installation Security Scan';
+
+  @override
+  String get vt_settings_subtitle =>
+      'Automatically detect malware before installing APK (powered by VirusTotal)';
+
+  @override
+  String get vt_what_is_title => 'What is this?';
+
+  @override
+  String get vt_what_is_desc =>
+      'When enabled, files are automatically scanned with VirusTotal for malware before installing an APK. Without an API key, installation works exactly as before and is not affected.';
+
+  @override
+  String get vt_api_key_label => 'API Key';
+
+  @override
+  String get vt_current_key_configured => 'Configured';
+
+  @override
+  String get vt_not_configured => 'Not configured';
+
+  @override
+  String get vt_api_key_hint => 'Paste your VirusTotal API key';
+
+  @override
+  String get vt_save_key => 'Save & verify';
+
+  @override
+  String get vt_how_to_get_title => 'How to get an API key?';
+
+  @override
+  String get vt_step_1 =>
+      '1. Open virustotal.com and sign in (free registration with a Google account)';
+
+  @override
+  String get vt_step_2 =>
+      '2. Tap your avatar in the top-right corner, then select \"API key\"';
+
+  @override
+  String get vt_step_3 => '3. Tap the copy icon to copy your API key';
+
+  @override
+  String get vt_step_4 =>
+      '4. Return to this page and paste it into the field above';
+
+  @override
+  String get vt_step_5 =>
+      '5. Tap \"Save & verify\"; an invalid key will be flagged';
+
+  @override
+  String get vt_open_vt => 'Open website';
+
+  @override
+  String get vt_limit_note =>
+      'Free account limit: 4 requests/minute, enough for everyday installation scans.';
+
+  @override
+  String get vt_privacy_note =>
+      'Privacy note: by default only the file hash is uploaded for lookup, not the file itself; files are only uploaded when you actively choose \"Upload for full scan\".';
+
+  @override
+  String get vt_silent_install => 'Silent install';
+
+  @override
+  String get vt_silent_install_ready =>
+      'Root or Shizuku access detected — installations proceed without confirmation';
+
+  @override
+  String get vt_silent_install_requires =>
+      'Requires Root or Shizuku permission to enable';
+
+  @override
+  String get vt_install_success => 'Installation succeeded';
+
+  @override
+  String get vt_keep_apk => 'Keep APK after install';
+
+  @override
+  String get vt_keep_apk_desc =>
+      'Copy a temp copy before install to prevent the system installer from deleting the source APK';
+
+  @override
+  String get vt_install => 'Install';
+
+  @override
+  String get vt_direct_install => 'Install directly';
+
+  @override
+  String get biometric_verify_hint => 'Verify your fingerprint to continue';
+
+  @override
+  String get biometric_reason_vault => 'Verify fingerprint to unlock the vault';
+
+  @override
+  String get biometric_reason_remote_guard =>
+      'Verify fingerprint to pass Remote Guard';
+
+  @override
+  String get biometric_reason_app_lock => 'Verify fingerprint to enter the app';
+
+  @override
+  String get vt_install_settings_title => 'APK Install Settings';
+
+  @override
+  String get vt_install_settings_subtitle =>
+      'Silent install, keep installer, security scan';
 }

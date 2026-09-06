@@ -5,6 +5,7 @@ import 'package:local_auth/local_auth.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../services/vault_service.dart';
 import '../../services/vault_biometric_store.dart';
+import '../../services/biometric_auth_helper.dart';
 import 'vault_explorer_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
@@ -30,7 +31,6 @@ class _VaultLockScreenState extends State<VaultLockScreen> {
   final TextEditingController _textController = TextEditingController();
 
   // 生物识别
-  final LocalAuthentication _auth = LocalAuthentication();
   bool _biometricAvailable = false;
   bool _biometricEnabled = false;
 
@@ -53,7 +53,7 @@ class _VaultLockScreenState extends State<VaultLockScreen> {
     final available = <BiometricType>[];
     bool enabled = false;
     try {
-      available.addAll(await _auth.getAvailableBiometrics());
+      available.addAll(await BiometricAuthHelper.auth.getAvailableBiometrics());
       enabled = await VaultBiometricStore.hasCredential();
     } catch (_) {
       // 设备不支持生物识别：静默降级为手动输入
@@ -169,9 +169,9 @@ class _VaultLockScreenState extends State<VaultLockScreen> {
 
   Future<void> _onFingerprint() async {
     try {
-      final did = await _auth.authenticate(
-        localizedReason: L10n.of(context).vault_fingerprint,
-        biometricOnly: true,
+      final did = await BiometricAuthHelper.authenticate(
+        context,
+        scenario: BiometricScenario.vault,
       );
       if (!did) return;
       final pw = await VaultBiometricStore.read();

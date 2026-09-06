@@ -6245,5 +6245,246 @@
   "@share_permission_message": {
     "description": "Message for share permission prompt"
   },
-  "qqGroup": "QQ-Gruppe: 792408214"
+  "qqGroup": "QQ-Gruppe: 792408214",
+  "emailCopied": "E-Mail in die Zwischenablage kopiert",
+  "vt_scanning": "VirusTotal-Scan läuft (Hash-Abfrage)...",
+  "@vt_scanning": {
+    "description": "virustotal scan"
+  },
+  "vt_uploading": "Datei wird zu VirusTotal hochgeladen, Analyse dauert ca. 1-2 Minuten...",
+  "@vt_uploading": {
+    "description": "virustotal scan"
+  },
+  "vt_safe_title": "Scan-Ergebnis: Sicher",
+  "@vt_safe_title": {
+    "description": "virustotal scan"
+  },
+  "vt_risk_title": "Scan-Ergebnis: Risiko erkannt",
+  "@vt_risk_title": {
+    "description": "virustotal scan"
+  },
+  "vt_unknown_title": "Scan-Ergebnis: Nicht in Datenbank",
+  "@vt_unknown_title": {
+    "description": "virustotal scan"
+  },
+  "vt_malicious_count": "Schädlich erkannt: {n}",
+  "@vt_malicious_count": {
+    "description": "virustotal scan"
+  },
+  "vt_suspicious_count": "Verdächtig: {n}",
+  "@vt_suspicious_count": {
+    "description": "virustotal scan"
+  },
+  "vt_harmless_count": "Harmlos: {n}",
+  "@vt_harmless_count": {
+    "description": "virustotal scan"
+  },
+  "vt_undetected_count": "Nicht erkannt: {n}",
+  "@vt_undetected_count": {
+    "description": "virustotal scan"
+  },
+  "vt_not_found_msg": "Diese Datei ist noch nicht in der VirusTotal-Datenbank. Du kannst sie für einen vollständigen Scan hochladen oder überspringen und die Installation fortsetzen.",
+  "@vt_not_found_msg": {
+    "description": "virustotal scan"
+  },
+  "vt_scan_failed": "Scan fehlgeschlagen: {error}",
+  "@vt_scan_failed": {
+    "description": "virustotal scan"
+  },
+  "vt_no_key_msg": "Kein VirusTotal-API-Key konfiguriert. Scan übersprungen und direkt installiert. Konfiguriere den Key in den Einstellungen, um das Scannen vor der Installation zu aktivieren.",
+  "@vt_no_key_msg": {
+    "description": "virustotal scan"
+  },
+  "vt_continue_install": "Trotzdem installieren",
+  "@vt_continue_install": {
+    "description": "virustotal scan"
+  },
+  "vt_upload_scan": "Für vollständigen Scan hochladen",
+  "@vt_upload_scan": {
+    "description": "virustotal scan"
+  },
+  "vt_open_report": "Vollständigen Bericht anzeigen",
+  "@vt_open_report": {
+    "description": "virustotal scan"
+  },
+  "vt_apikey_title": "VirusTotal-API-Key",
+  "@vt_apikey_title": {
+    "description": "virustotal scan"
+  },
+  "vt_apikey_subtitle": "APKs vor der Installation automatisch prüfen (kostenloser Key auf virustotal.com)",
+  "@vt_apikey_subtitle": {
+    "description": "virustotal scan"
+  },
+  "vt_apikey_dialog_title": "VirusTotal-API-Key konfigurieren",
+  "@vt_apikey_dialog_title": {
+    "description": "virustotal scan"
+  },
+  "vt_apikey_hint": "API-Key einfügen (kostenlos: 4 Anfragen/Min.)",
+  "@vt_apikey_hint": {
+    "description": "virustotal scan"
+  },
+  "vt_save": "Speichern",
+  "@vt_save": {
+    "description": "virustotal scan"
+  },
+  "vt_key_saved": "VirusTotal-API-Key gespeichert",
+  "@vt_key_saved": {
+    "description": "virustotal scan"
+  },
+  "vt_key_invalid": "Ungültiger API-Key, bitte prüfen und erneut versuchen",
+  "@vt_key_invalid": {
+    "description": "virustotal scan"
+  },
+  "vt_key_masked": "Konfiguriert ({mask})",
+  "@vt_key_masked": {
+    "description": "virustotal scan"
+  },
+  "vt_scan_before_install": "APK wird mit VirusTotal gescannt...",
+  "@vt_scan_before_install": {
+    "description": "virustotal scan"
+  },
+  "vt_skip": "Überspringen",
+  "@vt_skip": {
+    "description": "virustotal scan"
+  },
+  "vt_retry": "Erneut versuchen",
+  "@vt_retry": {
+    "description": "virustotal scan"
+  },
+  "vt_cancel": "Abbrechen",
+  "@vt_cancel": {
+    "description": "virustotal scan"
+  },
+  "vt_analyzing": "Warte auf VirusTotal-Analyse...",
+  "@vt_analyzing": {
+    "description": "virustotal scan"
+  },
+  "vt_settings_title": "Sicherheitsscan bei APK-Installation",
+  "@vt_settings_title": {
+    "description": "virustotal settings"
+  },
+  "vt_settings_subtitle": "Erkennt Malware automatisch vor der APK-Installation (mit VirusTotal)",
+  "@vt_settings_subtitle": {
+    "description": "virustotal settings"
+  },
+  "vt_what_is_title": "Was ist das?",
+  "@vt_what_is_title": {
+    "description": "virustotal settings"
+  },
+  "vt_what_is_desc": "Wenn aktiviert, werden Dateien vor der APK-Installation automatisch mit VirusTotal auf Malware geprüft. Ohne API-Key funktioniert die Installation wie zuvor und wird nicht beeinträchtigt.",
+  "@vt_what_is_desc": {
+    "description": "virustotal settings"
+  },
+  "vt_api_key_label": "API-Key",
+  "@vt_api_key_label": {
+    "description": "virustotal settings"
+  },
+  "vt_current_key_configured": "Konfiguriert",
+  "@vt_current_key_configured": {
+    "description": "virustotal settings"
+  },
+  "vt_not_configured": "Nicht konfiguriert",
+  "@vt_not_configured": {
+    "description": "virustotal settings"
+  },
+  "vt_api_key_hint": "Füge deinen VirusTotal-API-Key ein",
+  "@vt_api_key_hint": {
+    "description": "virustotal settings"
+  },
+  "vt_save_key": "Speichern & prüfen",
+  "@vt_save_key": {
+    "description": "virustotal settings"
+  },
+  "vt_how_to_get_title": "So erhälst du einen API-Key",
+  "@vt_how_to_get_title": {
+    "description": "virustotal settings"
+  },
+  "vt_step_1": "1. Öffne virustotal.com und melde dich an (kostenlose Registrierung mit Google)",
+  "@vt_step_1": {
+    "description": "virustotal settings"
+  },
+  "vt_step_2": "2. Tippe oben rechts auf dein Avatar und wähle „API key“",
+  "@vt_step_2": {
+    "description": "virustotal settings"
+  },
+  "vt_step_3": "3. Tippe auf das Kopiersymbol, um deinen API-Key zu kopieren",
+  "@vt_step_3": {
+    "description": "virustotal settings"
+  },
+  "vt_step_4": "4. Kehre zu dieser Seite zurück und füge ihn in das Feld oben ein",
+  "@vt_step_4": {
+    "description": "virustotal settings"
+  },
+  "vt_step_5": "5. Tippe auf „Speichern & prüfen“; ein ungültiger Key wird gemeldet",
+  "@vt_step_5": {
+    "description": "virustotal settings"
+  },
+  "vt_open_vt": "Website öffnen",
+  "@vt_open_vt": {
+    "description": "virustotal settings"
+  },
+  "vt_limit_note": "Limit des kostenlosen Accounts: 4 Anfragen/Min., reicht für alltägliche Installationsscans.",
+  "@vt_limit_note": {
+    "description": "virustotal settings"
+  },
+  "vt_privacy_note": "Datenschutz: Standardmäßig wird nur der Datei-Hash zur Abfrage hochgeladen, nicht die Datei selbst; Dateien werden nur hochgeladen, wenn du aktiv „Für vollständigen Scan hochladen“ wählst.",
+  "@vt_privacy_note": {
+    "description": "virustotal settings"
+  },
+  "vt_silent_install": "Stumme Installation",
+  "@vt_silent_install": {
+    "description": "virustotal settings / silent install"
+  },
+  "vt_silent_install_ready": "Root- oder Shizuku-Zugriff erkannt — Installationen erfolgen ohne Bestätigung",
+  "@vt_silent_install_ready": {
+    "description": "virustotal settings / silent install"
+  },
+  "vt_silent_install_requires": "Erfordert Root- oder Shizuku-Berechtigung",
+  "@vt_silent_install_requires": {
+    "description": "virustotal settings / silent install"
+  },
+  "vt_install_success": "Installation erfolgreich",
+  "@vt_install_success": {
+    "description": "virustotal settings / silent install"
+  },
+  "vt_keep_apk": "APK nach Installation behalten",
+  "@vt_keep_apk": {
+    "description": "virustotal settings / keep apk"
+  },
+  "vt_keep_apk_desc": "Vor der Installation eine temporäre Kopie erstellen, damit der Systeminstaller die Quell-APK nicht automatisch löscht",
+  "@vt_keep_apk_desc": {
+    "description": "virustotal settings / keep apk"
+  },
+  "vt_install": "Installieren",
+  "@vt_install": {
+    "description": "virustotal scan dialog buttons"
+  },
+  "vt_direct_install": "Direkt installieren",
+  "@vt_direct_install": {
+    "description": "virustotal scan dialog buttons"
+  },
+  "biometric_verify_hint": "Bestätigen Sie Ihren Fingerabdruck, um fortzufahren",
+  "@biometric_verify_hint": {
+    "description": "biometric prompt messages"
+  },
+  "biometric_reason_vault": "Bestätigen Sie Ihren Fingerabdruck, um den Tresor zu entsperren",
+  "@biometric_reason_vault": {
+    "description": "biometric prompt messages"
+  },
+  "biometric_reason_remote_guard": "Bestätigen Sie Ihren Fingerabdruck für die Fernsicherung",
+  "@biometric_reason_remote_guard": {
+    "description": "biometric prompt messages"
+  },
+  "biometric_reason_app_lock": "Bestätigen Sie Ihren Fingerabdruck, um die App zu öffnen",
+  "@biometric_reason_app_lock": {
+    "description": "biometric prompt messages"
+  },
+  "vt_install_settings_title": "APK-Installationseinstellungen",
+  "@vt_install_settings_title": {
+    "description": "apk install settings page title and subtitle"
+  },
+  "vt_install_settings_subtitle": "Stumme Installation, Installer behalten, Sicherheitsscan",
+  "@vt_install_settings_subtitle": {
+    "description": "apk install settings page title and subtitle"
+  }
 }

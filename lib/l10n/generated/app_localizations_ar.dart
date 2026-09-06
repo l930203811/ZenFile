@@ -6247,4 +6247,216 @@ class L10nAr extends L10n {
 
   @override
   String get qqGroup => 'مجموعة QQ: 792408214';
+
+  @override
+  String get emailCopied => 'تم نسخ البريد الإلكتروني إلى الحافظة';
+
+  @override
+  String get vt_scanning => 'جارٍ الفحص عبر VirusTotal (استعلام التجزئة)...';
+
+  @override
+  String get vt_uploading =>
+      'جارٍ رفع الملف إلى VirusTotal وانتظار التحليل، حوالي 1-2 دقيقة...';
+
+  @override
+  String get vt_safe_title => 'نتيجة الفحص: آمن';
+
+  @override
+  String get vt_risk_title => 'نتيجة الفحص: تم اكتشاف خطر';
+
+  @override
+  String get vt_unknown_title => 'نتيجة الفحص: غير مسجل';
+
+  @override
+  String vt_malicious_count(Object n) {
+    return 'المحركات الخبيثة: $n';
+  }
+
+  @override
+  String vt_suspicious_count(Object n) {
+    return 'المحركات المشبوهة: $n';
+  }
+
+  @override
+  String vt_harmless_count(Object n) {
+    return 'المحركات الآمنة: $n';
+  }
+
+  @override
+  String vt_undetected_count(Object n) {
+    return 'المحركات غير المكتشفة: $n';
+  }
+
+  @override
+  String get vt_not_found_msg =>
+      'هذا الملف غير مسجل بعد في قاعدة بيانات VirusTotal. يمكنك رفعه لإجراء فحص كامل، أو تخطي ذلك ومتابعة التثبيت.';
+
+  @override
+  String vt_scan_failed(Object error) {
+    return 'فشل الفحص: $error';
+  }
+
+  @override
+  String get vt_no_key_msg =>
+      'لم يتم تكوين مفتاح API لـ VirusTotal، تم تخطي الفحص والتثبيت مباشرة. قم بتكوينه في الإعدادات لتفعيل الفحص قبل التثبيت.';
+
+  @override
+  String get vt_continue_install => 'التثبيت على أي حال';
+
+  @override
+  String get vt_upload_scan => 'رفع لإجراء فحص كامل';
+
+  @override
+  String get vt_open_report => 'عرض التقرير الكامل';
+
+  @override
+  String get vt_apikey_title => 'مفتاح API لـ VirusTotal';
+
+  @override
+  String get vt_apikey_subtitle =>
+      'فحص أمان APK قبل التثبيت (مفتاح مجاني من virustotal.com)';
+
+  @override
+  String get vt_apikey_dialog_title => 'تكوين مفتاح API لـ VirusTotal';
+
+  @override
+  String get vt_apikey_hint =>
+      'الصق مفتاح API الخاص بك (الإصدار المجاني: 4 طلبات/دقيقة)';
+
+  @override
+  String get vt_save => 'حفظ';
+
+  @override
+  String get vt_key_saved => 'تم حفظ مفتاح API لـ VirusTotal';
+
+  @override
+  String get vt_key_invalid => 'مفتاح API غير صالح، تحقق منه وأعد المحاولة';
+
+  @override
+  String vt_key_masked(Object mask) {
+    return 'تم التكوين ($mask)';
+  }
+
+  @override
+  String get vt_scan_before_install => 'جارٍ فحص ملف APK عبر VirusTotal...';
+
+  @override
+  String get vt_skip => 'تخطي';
+
+  @override
+  String get vt_retry => 'إعادة المحاولة';
+
+  @override
+  String get vt_cancel => 'إلغاء';
+
+  @override
+  String get vt_analyzing => 'في انتظار نتيجة تحليل VirusTotal...';
+
+  @override
+  String get vt_settings_title => 'فحص أمان تثبيت ملفات APK';
+
+  @override
+  String get vt_settings_subtitle =>
+      'يكتشف البرامج الضارة تلقائيًا قبل تثبيت ملف APK (مدعوم من VirusTotal)';
+
+  @override
+  String get vt_what_is_title => 'ما هذا؟';
+
+  @override
+  String get vt_what_is_desc =>
+      'عند التفعيل، يتم فحص الملفات تلقائيًا عبر VirusTotal للبحث عن البرامج الضارة قبل تثبيت ملف APK. بدون مفتاح API، يعمل التثبيت كما كان من قبل ولا يتأثر.';
+
+  @override
+  String get vt_api_key_label => 'مفتاح API';
+
+  @override
+  String get vt_current_key_configured => 'تم التكوين';
+
+  @override
+  String get vt_not_configured => 'غير مكوّن';
+
+  @override
+  String get vt_api_key_hint => 'الصق مفتاح VirusTotal API الخاص بك';
+
+  @override
+  String get vt_save_key => 'حفظ والتحقق';
+
+  @override
+  String get vt_how_to_get_title => 'كيفية الحصول على مفتاح API؟';
+
+  @override
+  String get vt_step_1 =>
+      '1. افتح virustotal.com وسجّل الدخول (تسجيل مجاني بحساب Google)';
+
+  @override
+  String get vt_step_2 =>
+      '2. اضغط على صورتك في الزاوية العلوية اليمنى، ثم اختر \"API key\"';
+
+  @override
+  String get vt_step_3 => '3. اضغط على أيقونة النسخ لنسخ مفتاح API الخاص بك';
+
+  @override
+  String get vt_step_4 => '4. ارجع إلى هذه الصفحة والصقه في الحقل أعلاه';
+
+  @override
+  String get vt_step_5 =>
+      '5. اضغط على \"حفظ والتحقق\"؛ سيتم تمييز المفتاح غير الصالح';
+
+  @override
+  String get vt_open_vt => 'فتح الموقع';
+
+  @override
+  String get vt_limit_note =>
+      'حد الحساب المجاني: 4 طلبات/دقيقة، يكفي لفحوصات التثبيت اليومية.';
+
+  @override
+  String get vt_privacy_note =>
+      'ملاحظة الخصوصية: بشكل افتراضي، يتم إرسال تجزئة الملف فقط للاستعلام، وليس الملف نفسه؛ لا يتم رفع الملفات إلا عندما تختار بنشاط \"رفع لإجراء فحص كامل\".';
+
+  @override
+  String get vt_silent_install => 'التثبيت الصامت';
+
+  @override
+  String get vt_silent_install_ready =>
+      'تم اكتشاف صلاحية Root أو Shizuku — ستتم التثبيتات دون تأكيد';
+
+  @override
+  String get vt_silent_install_requires =>
+      'يتطلب صلاحية Root أو Shizuku للتفعيل';
+
+  @override
+  String get vt_install_success => 'نجح التثبيت';
+
+  @override
+  String get vt_keep_apk => 'الاحتفاظ بملف APK بعد التثبيت';
+
+  @override
+  String get vt_keep_apk_desc =>
+      'إنشاء نسخة مؤقتة قبل التثبيت لمنع مثبت النظام من حذف ملف APK الأصلي تلقائيًا';
+
+  @override
+  String get vt_install => 'تثبيت';
+
+  @override
+  String get vt_direct_install => 'تثبيت مباشر';
+
+  @override
+  String get biometric_verify_hint => 'تحقق من بصمتك للمتابعة';
+
+  @override
+  String get biometric_reason_vault => 'تحقق من بصمتك لفتح الخزنة';
+
+  @override
+  String get biometric_reason_remote_guard =>
+      'تحقق من بصمتك لاجتياز الحماية عن بُعد';
+
+  @override
+  String get biometric_reason_app_lock => 'تحقق من بصمتك للدخول إلى التطبيق';
+
+  @override
+  String get vt_install_settings_title => 'إعدادات تثبيت APK';
+
+  @override
+  String get vt_install_settings_subtitle =>
+      'التثبيت الصامت، الاحتفاظ بالمثبت، الفحص الأمني';
 }

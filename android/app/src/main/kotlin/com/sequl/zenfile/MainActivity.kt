@@ -570,6 +570,41 @@ class MainActivity : AudioServiceFragmentActivity() {
                     val apkPaths = call.argument<List<String>>("apkPaths") ?: emptyList()
                     installSplitApks(apkPaths, result)
                 }
+                "installApk" -> {
+                    val apkPath = call.argument<String>("apkPath") ?: ""
+                    try {
+                        val file = java.io.File(apkPath)
+                        if (!file.exists()) {
+                            result.error("FILE_NOT_FOUND", "APK file not found: $apkPath", null)
+                            return@setMethodCallHandler
+                        }
+                        val uri = androidx.core.content.FileProvider.getUriForFile(
+                            this,
+                            "${packageName}.fileprovider",
+                            file
+                        )
+                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
+                            setDataAndType(uri, "application/vnd.android.package-archive")
+                            addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                            addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        // 优先指定系统包安装器，避免多安装器设备弹出"打开方式"选择器
+                        val resolveInfos = packageManager.queryIntentActivities(intent, 0)
+                        val systemInstaller = resolveInfos.firstOrNull {
+                            it.activityInfo.packageName in setOf(
+                                "com.android.packageinstaller",
+                                "com.google.android.packageinstaller"
+                            )
+                        }
+                        if (systemInstaller != null) {
+                            intent.setPackage(systemInstaller.activityInfo.packageName)
+                        }
+                        startActivity(intent)
+                        result.success(true)
+                    } catch (e: Exception) {
+                        result.error("INSTALL_ERROR", e.message, null)
+                    }
+                }
                 "checkUsageStatsPermission" -> {
                     val granted = isUsageStatsPermissionGranted()
                     result.success(granted)

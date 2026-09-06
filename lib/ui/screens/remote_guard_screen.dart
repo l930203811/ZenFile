@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:local_auth/local_auth.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../services/remote_guard_service.dart';
 import '../../services/vault_biometric_store.dart';
+import '../../services/biometric_auth_helper.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 /// 远程保护页面模式
@@ -76,7 +76,6 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
   bool _changingProgress = false; // 重加密进行中（显示进度，禁用返回）
 
   // 生物识别
-  final LocalAuthentication _auth = LocalAuthentication();
   bool _biometricAvailable = false;
   bool _biometricEnabled = false;
 
@@ -99,7 +98,7 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
     bool available = false;
     bool enabled = false;
     try {
-      final bios = await _auth.getAvailableBiometrics();
+      final bios = await BiometricAuthHelper.auth.getAvailableBiometrics();
       available = bios.isNotEmpty;
       enabled = await VaultBiometricStore.hasCredential();
     } catch (_) {
@@ -147,9 +146,20 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
     }
   }
 
+  /// 页面主标题：启动应用保护闸门显示「启动应用保护」，其余场景显示「远程守卫」。
+  String get _screenTitle {
+    final l10n = L10n.of(context);
+    return widget.mode == RemoteGuardMode.appLock
+        ? l10n.ui_app_lock
+        : l10n.ui_remote_guard;
+  }
+
   String _initialMessage() {
     final l10n = L10n.of(context);
     if (!_isPinSet) return l10n.ui_remote_guard_set_pin;
+    if (widget.mode == RemoteGuardMode.appLock) {
+      return l10n.ui_app_lock_desc;
+    }
     return l10n.ui_remote_guard_enter_pin;
   }
 
@@ -284,9 +294,13 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
   Future<void> _onFingerprint() async {
     final l10n = L10n.of(context);
     try {
-      final did = await _auth.authenticate(
-        localizedReason: l10n.ui_remote_guard,
-        biometricOnly: true,
+      // 启动应用保护闸门与远程守卫共用本页，弹窗文案需按场景区分，
+      // 否则冷启动时会在「启动应用保护」弹窗上看到「远程守卫」字样。
+      final did = await BiometricAuthHelper.authenticate(
+        context,
+        scenario: widget.mode == RemoteGuardMode.appLock
+            ? BiometricScenario.appLock
+            : BiometricScenario.remoteGuard,
       );
       if (!did) return;
       final pw = await VaultBiometricStore.read();
@@ -618,7 +632,7 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
         ),
         const SizedBox(height: 20),
         Text(
-          titleOverride ?? L10n.of(context).ui_remote_guard,
+          titleOverride ?? _screenTitle,
           style: theme.textTheme.headlineMedium?.copyWith(
             fontWeight: FontWeight.bold,
             letterSpacing: 0.5,
@@ -695,7 +709,7 @@ class _RemoteGuardScreenState extends State<RemoteGuardScreen>
           IconButton(
             onPressed: _onFingerprint,
             icon: Icon(Broken.finger_scan, size: 30, color: theme.colorScheme.primary),
-            tooltip: l10n.ui_remote_guard,
+            tooltip: _screenTitle,
           ),
         const Spacer(flex: 2),
       ],

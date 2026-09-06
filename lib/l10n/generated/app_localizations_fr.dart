@@ -6361,4 +6361,222 @@ class L10nFr extends L10n {
 
   @override
   String get qqGroup => 'Groupe QQ: 792408214';
+
+  @override
+  String get emailCopied => 'E-mail copié dans le presse-papiers';
+
+  @override
+  String get vt_scanning =>
+      'Analyse VirusTotal en cours (recherche par hash)...';
+
+  @override
+  String get vt_uploading =>
+      'Envoi vers VirusTotal et attente de l’analyse, environ 1-2 minutes...';
+
+  @override
+  String get vt_safe_title => 'Résultat de l’analyse : sûr';
+
+  @override
+  String get vt_risk_title => 'Résultat de l’analyse : risque détecté';
+
+  @override
+  String get vt_unknown_title => 'Résultat de l’analyse : non référencé';
+
+  @override
+  String vt_malicious_count(Object n) {
+    return 'Moteurs malveillants : $n';
+  }
+
+  @override
+  String vt_suspicious_count(Object n) {
+    return 'Moteurs suspects : $n';
+  }
+
+  @override
+  String vt_harmless_count(Object n) {
+    return 'Moteurs inoffensifs : $n';
+  }
+
+  @override
+  String vt_undetected_count(Object n) {
+    return 'Moteurs sans détection : $n';
+  }
+
+  @override
+  String get vt_not_found_msg =>
+      'Ce fichier n’est pas encore référencé dans VirusTotal. Vous pouvez l’envoyer pour une analyse complète ou ignorer et continuer l’installation.';
+
+  @override
+  String vt_scan_failed(Object error) {
+    return 'Échec de l’analyse : $error';
+  }
+
+  @override
+  String get vt_no_key_msg =>
+      'Aucune clé API VirusTotal configurée. Analyse ignorée et installation directe. Configurez la clé dans les paramètres pour activer l’analyse avant installation.';
+
+  @override
+  String get vt_continue_install => 'Installer quand même';
+
+  @override
+  String get vt_upload_scan => 'Envoyer pour analyse complète';
+
+  @override
+  String get vt_open_report => 'Voir le rapport complet';
+
+  @override
+  String get vt_apikey_title => 'Clé API VirusTotal';
+
+  @override
+  String get vt_apikey_subtitle =>
+      'Analyser les APK avant installation (clé gratuite sur virustotal.com)';
+
+  @override
+  String get vt_apikey_dialog_title => 'Configurer la clé API VirusTotal';
+
+  @override
+  String get vt_apikey_hint =>
+      'Collez votre clé API (gratuit : 4 requêtes/min)';
+
+  @override
+  String get vt_save => 'Enregistrer';
+
+  @override
+  String get vt_key_saved => 'Clé API VirusTotal enregistrée';
+
+  @override
+  String get vt_key_invalid => 'Clé API invalide, vérifiez et réessayez';
+
+  @override
+  String vt_key_masked(Object mask) {
+    return 'Configurée ($mask)';
+  }
+
+  @override
+  String get vt_scan_before_install => 'Analyse APK par VirusTotal...';
+
+  @override
+  String get vt_skip => 'Ignorer';
+
+  @override
+  String get vt_retry => 'Réessayer';
+
+  @override
+  String get vt_cancel => 'Annuler';
+
+  @override
+  String get vt_analyzing => 'Attente des résultats VirusTotal...';
+
+  @override
+  String get vt_settings_title =>
+      'Analyse de sécurité à l’installation des APK';
+
+  @override
+  String get vt_settings_subtitle =>
+      'Détecte automatiquement les logiciels malveillants avant l’installation des APK (via VirusTotal)';
+
+  @override
+  String get vt_what_is_title => 'Qu’est-ce que c’est ?';
+
+  @override
+  String get vt_what_is_desc =>
+      'Une fois activé, les fichiers sont automatiquement analysés par VirusTotal à la recherche de logiciels malveillants avant l’installation d’un APK. Sans clé API, l’installation fonctionne comme avant et n’est pas affectée.';
+
+  @override
+  String get vt_api_key_label => 'Clé API';
+
+  @override
+  String get vt_current_key_configured => 'Configurée';
+
+  @override
+  String get vt_not_configured => 'Non configurée';
+
+  @override
+  String get vt_api_key_hint => 'Collez votre clé API VirusTotal';
+
+  @override
+  String get vt_save_key => 'Enregistrer et vérifier';
+
+  @override
+  String get vt_how_to_get_title => 'Comment obtenir une clé API ?';
+
+  @override
+  String get vt_step_1 =>
+      '1. Ouvrez virustotal.com et connectez-vous (inscription gratuite avec un compte Google)';
+
+  @override
+  String get vt_step_2 =>
+      '2. Appuyez sur votre avatar en haut à droite, puis sélectionnez « API key »';
+
+  @override
+  String get vt_step_3 =>
+      '3. Appuyez sur l’icône de copie pour copier votre clé API';
+
+  @override
+  String get vt_step_4 =>
+      '4. Revenez sur cette page et collez-la dans le champ ci-dessus';
+
+  @override
+  String get vt_step_5 =>
+      '5. Appuyez sur « Enregistrer et vérifier » ; une clé invalide sera signalée';
+
+  @override
+  String get vt_open_vt => 'Ouvrir le site';
+
+  @override
+  String get vt_limit_note =>
+      'Limite du compte gratuit : 4 requêtes/minute, suffisant pour les analyses d’installation quotidiennes.';
+
+  @override
+  String get vt_privacy_note =>
+      'Note de confidentialité : par défaut, seul le hachage du fichier est envoyé pour la recherche, pas le fichier lui-même ; les fichiers ne sont envoyés que lorsque vous choisissez activement « Envoyer pour analyse complète ».';
+
+  @override
+  String get vt_silent_install => 'Installation silencieuse';
+
+  @override
+  String get vt_silent_install_ready =>
+      'Accès Root ou Shizuku détecté — les installations se poursuivent sans confirmation';
+
+  @override
+  String get vt_silent_install_requires =>
+      'Nécessite une autorisation Root ou Shizuku pour activer';
+
+  @override
+  String get vt_install_success => 'Installation réussie';
+
+  @override
+  String get vt_keep_apk => 'Conserver l\'APK après installation';
+
+  @override
+  String get vt_keep_apk_desc =>
+      'Créer une copie temporaire avant l\'installation pour empêcher le programme d\'installation système de supprimer l\'APK source';
+
+  @override
+  String get vt_install => 'Installer';
+
+  @override
+  String get vt_direct_install => 'Installer directement';
+
+  @override
+  String get biometric_verify_hint => 'Vérifiez votre empreinte pour continuer';
+
+  @override
+  String get biometric_reason_vault =>
+      'Vérifiez votre empreinte pour déverrouiller le coffre';
+
+  @override
+  String get biometric_reason_remote_guard =>
+      'Vérifiez votre empreinte pour passer la Protection distante';
+
+  @override
+  String get biometric_reason_app_lock =>
+      'Vérifiez votre empreinte pour accéder à l\'application';
+
+  @override
+  String get vt_install_settings_title => 'Paramètres d\'installation APK';
+
+  @override
+  String get vt_install_settings_subtitle =>
+      'Installation silencieuse, conserver l\'installateur, analyse de sécurité';
 }

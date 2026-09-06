@@ -355,5 +355,20 @@ class AppManagerService {
       return false;
     }
   }
+
+  /// 单 APK 安装：用 ACTION_VIEW + FileProvider，优先指定系统包安装器，
+  /// 避免多安装器设备弹出"打开方式"选择器。
+  static Future<bool> installApk(String apkPath) async {
+    try {
+      final bool? success = await _channel.invokeMethod<bool>(
+        'installApk',
+        {'apkPath': apkPath},
+      );
+      return success ?? false;
+    } catch (e) {
+      debugPrint('Error installing APK: $e');
+      return false;
+    }
+  }
 }
 

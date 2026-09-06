@@ -359,8 +359,8 @@ class AboutZenFileScreen extends StatelessWidget {
                     onTap: () {
                       Clipboard.setData(const ClipboardData(text: '1@sequel.dpdns.org'));
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('邮箱已复制到剪贴板'),
+                        SnackBar(
+                          content: Text(L10n.of(context).emailCopied),
                           behavior: SnackBarBehavior.floating,
                         ),
                       );

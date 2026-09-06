@@ -6001,6 +6001,204 @@ class L10nZh extends L10n {
 
   @override
   String get qqGroup => 'QQ 群：792408214';
+
+  @override
+  String get emailCopied => '邮箱已复制到剪贴板';
+
+  @override
+  String get vt_scanning => '正在通过 VirusTotal 扫描（哈希查询）...';
+
+  @override
+  String get vt_uploading => '正在上传文件到 VirusTotal 并等待分析，约需 1-2 分钟...';
+
+  @override
+  String get vt_safe_title => '扫描结果：安全';
+
+  @override
+  String get vt_risk_title => '扫描结果：检测到风险';
+
+  @override
+  String get vt_unknown_title => '扫描结果：未收录';
+
+  @override
+  String vt_malicious_count(Object n) {
+    return '报毒引擎：$n';
+  }
+
+  @override
+  String vt_suspicious_count(Object n) {
+    return '可疑引擎：$n';
+  }
+
+  @override
+  String vt_harmless_count(Object n) {
+    return '安全引擎：$n';
+  }
+
+  @override
+  String vt_undetected_count(Object n) {
+    return '未检出引擎：$n';
+  }
+
+  @override
+  String get vt_not_found_msg => '该文件尚未被 VirusTotal 收录。可上传进行完整扫描，或跳过扫描继续安装。';
+
+  @override
+  String vt_scan_failed(Object error) {
+    return '扫描失败：$error';
+  }
+
+  @override
+  String get vt_no_key_msg =>
+      '未配置 VirusTotal API Key，已跳过扫描直接安装。可在设置中配置后获得安装前自动扫描。';
+
+  @override
+  String get vt_continue_install => '仍然安装';
+
+  @override
+  String get vt_upload_scan => '上传完整扫描';
+
+  @override
+  String get vt_open_report => '查看详细报告';
+
+  @override
+  String get vt_apikey_title => 'VirusTotal API Key';
+
+  @override
+  String get vt_apikey_subtitle => '安装 APK 前自动安全扫描（在 virustotal.com 免费申请）';
+
+  @override
+  String get vt_apikey_dialog_title => '配置 VirusTotal API Key';
+
+  @override
+  String get vt_apikey_hint => '粘贴你的 API Key（免费版限 4 次/分钟）';
+
+  @override
+  String get vt_save => '保存';
+
+  @override
+  String get vt_key_saved => 'VirusTotal API Key 已保存';
+
+  @override
+  String get vt_key_invalid => 'API Key 无效，请检查后重试';
+
+  @override
+  String vt_key_masked(Object mask) {
+    return '已配置（$mask）';
+  }
+
+  @override
+  String get vt_scan_before_install => '正在扫描 APK（VirusTotal）...';
+
+  @override
+  String get vt_skip => '跳过';
+
+  @override
+  String get vt_retry => '重试';
+
+  @override
+  String get vt_cancel => '取消';
+
+  @override
+  String get vt_analyzing => '正在等待 VirusTotal 分析结果...';
+
+  @override
+  String get vt_settings_title => 'APK 安装安全扫描';
+
+  @override
+  String get vt_settings_subtitle => '安装 APK 前自动检测恶意软件（基于 VirusTotal）';
+
+  @override
+  String get vt_what_is_title => '这是什么？';
+
+  @override
+  String get vt_what_is_desc =>
+      '开启后，安装 APK 前会自动通过 VirusTotal 检测文件是否包含恶意软件。未配置 API Key 时安装行为与之前一致，不会影响正常使用。';
+
+  @override
+  String get vt_api_key_label => 'API Key';
+
+  @override
+  String get vt_current_key_configured => '已配置';
+
+  @override
+  String get vt_not_configured => '未配置';
+
+  @override
+  String get vt_api_key_hint => '粘贴你的 VirusTotal API Key';
+
+  @override
+  String get vt_save_key => '保存并验证';
+
+  @override
+  String get vt_how_to_get_title => '如何获取 API Key？';
+
+  @override
+  String get vt_step_1 => '1. 打开 virustotal.com 并登录（可用 Google 账号免费注册）';
+
+  @override
+  String get vt_step_2 => '2. 点击右上角头像，选择「API key」';
+
+  @override
+  String get vt_step_3 => '3. 点击复制图标，复制你的 API Key';
+
+  @override
+  String get vt_step_4 => '4. 回到本页面，粘贴到上方输入框';
+
+  @override
+  String get vt_step_5 => '5. 点击「保存并验证」，无效的 Key 会被提示';
+
+  @override
+  String get vt_open_vt => '打开官网';
+
+  @override
+  String get vt_limit_note => '免费账号限额：4 次请求/分钟，日常安装扫描足够使用。';
+
+  @override
+  String get vt_privacy_note =>
+      '隐私提示：默认仅上传文件哈希进行查询，不会上传文件本身；仅在你主动选择「上传完整扫描」时才会上传文件。';
+
+  @override
+  String get vt_silent_install => '静默安装';
+
+  @override
+  String get vt_silent_install_ready => '已获取 Root 或 Shizuku 权限，开启后安装无需手动确认';
+
+  @override
+  String get vt_silent_install_requires => '需要 Root 或 Shizuku 权限才能启用';
+
+  @override
+  String get vt_install_success => '安装成功';
+
+  @override
+  String get vt_keep_apk => '安装后保留安装包';
+
+  @override
+  String get vt_keep_apk_desc => '开启后安装时复制临时副本，防止系统安装器自动删除源 APK';
+
+  @override
+  String get vt_install => '安装';
+
+  @override
+  String get vt_direct_install => '直接安装';
+
+  @override
+  String get biometric_verify_hint => '请验证指纹以继续';
+
+  @override
+  String get biometric_reason_vault => '验证指纹以解锁保险箱';
+
+  @override
+  String get biometric_reason_remote_guard => '验证指纹以通过远程守卫';
+
+  @override
+  String get biometric_reason_app_lock => '验证指纹以进入应用';
+
+  @override
+  String get vt_install_settings_title => 'APK 安装设置';
+
+  @override
+  String get vt_install_settings_subtitle => '静默安装、保留安装包、安全扫描';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -11968,4 +12166,202 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get qqGroup => 'QQ 群：792408214';
+
+  @override
+  String get emailCopied => '郵箱已複製到剪貼簿';
+
+  @override
+  String get vt_scanning => '正在透過 VirusTotal 掃描（雜湊查詢）...';
+
+  @override
+  String get vt_uploading => '正在上傳檔案到 VirusTotal 並等待分析，約需 1-2 分鐘...';
+
+  @override
+  String get vt_safe_title => '掃描結果：安全';
+
+  @override
+  String get vt_risk_title => '掃描結果：偵測到風險';
+
+  @override
+  String get vt_unknown_title => '掃描結果：未收錄';
+
+  @override
+  String vt_malicious_count(Object n) {
+    return '報毒引擎：$n';
+  }
+
+  @override
+  String vt_suspicious_count(Object n) {
+    return '可疑引擎：$n';
+  }
+
+  @override
+  String vt_harmless_count(Object n) {
+    return '安全引擎：$n';
+  }
+
+  @override
+  String vt_undetected_count(Object n) {
+    return '未檢出引擎：$n';
+  }
+
+  @override
+  String get vt_not_found_msg => '該檔案尚未被 VirusTotal 收錄。可上傳進行完整掃描，或跳過掃描繼續安裝。';
+
+  @override
+  String vt_scan_failed(Object error) {
+    return '掃描失敗：$error';
+  }
+
+  @override
+  String get vt_no_key_msg =>
+      '未設定 VirusTotal API Key，已跳過掃描直接安裝。可在設定中設定後獲得安裝前自動掃描。';
+
+  @override
+  String get vt_continue_install => '仍然安裝';
+
+  @override
+  String get vt_upload_scan => '上傳完整掃描';
+
+  @override
+  String get vt_open_report => '查看詳細報告';
+
+  @override
+  String get vt_apikey_title => 'VirusTotal API Key';
+
+  @override
+  String get vt_apikey_subtitle => '安裝 APK 前自動安全掃描（在 virustotal.com 免費申請）';
+
+  @override
+  String get vt_apikey_dialog_title => '設定 VirusTotal API Key';
+
+  @override
+  String get vt_apikey_hint => '貼上你的 API Key（免費版限 4 次/分鐘）';
+
+  @override
+  String get vt_save => '儲存';
+
+  @override
+  String get vt_key_saved => 'VirusTotal API Key 已儲存';
+
+  @override
+  String get vt_key_invalid => 'API Key 無效，請檢查後重試';
+
+  @override
+  String vt_key_masked(Object mask) {
+    return '已設定（$mask）';
+  }
+
+  @override
+  String get vt_scan_before_install => '正在掃描 APK（VirusTotal）...';
+
+  @override
+  String get vt_skip => '跳過';
+
+  @override
+  String get vt_retry => '重試';
+
+  @override
+  String get vt_cancel => '取消';
+
+  @override
+  String get vt_analyzing => '正在等待 VirusTotal 分析結果...';
+
+  @override
+  String get vt_settings_title => 'APK 安裝安全掃描';
+
+  @override
+  String get vt_settings_subtitle => '安裝 APK 前自動偵測惡意軟體（基於 VirusTotal）';
+
+  @override
+  String get vt_what_is_title => '這是什麼？';
+
+  @override
+  String get vt_what_is_desc =>
+      '開啟後，安裝 APK 前會自動透過 VirusTotal 偵測檔案是否包含惡意軟體。未設定 API Key 時安裝行為與之前一致，不會影響正常使用。';
+
+  @override
+  String get vt_api_key_label => 'API Key';
+
+  @override
+  String get vt_current_key_configured => '已設定';
+
+  @override
+  String get vt_not_configured => '未設定';
+
+  @override
+  String get vt_api_key_hint => '貼上你的 VirusTotal API Key';
+
+  @override
+  String get vt_save_key => '儲存並驗證';
+
+  @override
+  String get vt_how_to_get_title => '如何取得 API Key？';
+
+  @override
+  String get vt_step_1 => '1. 開啟 virustotal.com 並登入（可用 Google 帳號免費註冊）';
+
+  @override
+  String get vt_step_2 => '2. 點擊右上角頭像，選擇「API key」';
+
+  @override
+  String get vt_step_3 => '3. 點擊複製圖示，複製你的 API Key';
+
+  @override
+  String get vt_step_4 => '4. 回到本頁面，貼到上方輸入框';
+
+  @override
+  String get vt_step_5 => '5. 點擊「儲存並驗證」，無效的 Key 會被提示';
+
+  @override
+  String get vt_open_vt => '開啟官網';
+
+  @override
+  String get vt_limit_note => '免費帳號限額：4 次請求/分鐘，日常安裝掃描足夠使用。';
+
+  @override
+  String get vt_privacy_note =>
+      '隱私提示：預設僅上傳檔案雜湊進行查詢，不會上傳檔案本身；僅在你主動選擇「上傳完整掃描」時才會上傳檔案。';
+
+  @override
+  String get vt_silent_install => '靜安裝';
+
+  @override
+  String get vt_silent_install_ready => '已取得 Root 或 Shizuku 權限，開啟後安裝無需手動確認';
+
+  @override
+  String get vt_silent_install_requires => '需要 Root 或 Shizuku 權限才能啟用';
+
+  @override
+  String get vt_install_success => '安裝成功';
+
+  @override
+  String get vt_keep_apk => '安裝後保留安裝包';
+
+  @override
+  String get vt_keep_apk_desc => '開啟後安裝時複製臨時副本，防止系統安裝器自動刪除來源 APK';
+
+  @override
+  String get vt_install => '安裝';
+
+  @override
+  String get vt_direct_install => '直接安裝';
+
+  @override
+  String get biometric_verify_hint => '請驗證指紋以繼續';
+
+  @override
+  String get biometric_reason_vault => '驗證指紋以解鎖保險箱';
+
+  @override
+  String get biometric_reason_remote_guard => '驗證指紋以通過遠端守衛';
+
+  @override
+  String get biometric_reason_app_lock => '驗證指紋以進入應用程式';
+
+  @override
+  String get vt_install_settings_title => 'APK 安裝設定';
+
+  @override
+  String get vt_install_settings_subtitle => '靜默安裝、保留安裝包、安全掃描';
 }

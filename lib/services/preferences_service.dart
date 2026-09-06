@@ -738,6 +738,29 @@ class PreferencesService {
     await _prefs?.setString(_keyVirusTotalApiKey, key);
   }
 
+  // --- APK 静默安装（root/shizuku） ---
+  static const String _keySilentInstall = 'silent_install_enabled';
+
+  static bool getSilentInstall() {
+    // 默认开启：检测到 root/shizuku 权限时自动静默安装
+    return _prefs?.getBool(_keySilentInstall) ?? true;
+  }
+
+  static Future<void> saveSilentInstall(bool val) async {
+    await _prefs?.setBool(_keySilentInstall, val);
+  }
+
+  // --- 安装后保留安装包（防止系统安装器自动删除源 APK） ---
+  static const String _keyKeepApkAfterInstall = 'keep_apk_after_install';
+
+  static bool getKeepApkAfterInstall() {
+    return _prefs?.getBool(_keyKeepApkAfterInstall) ?? false;
+  }
+
+  static Future<void> saveKeepApkAfterInstall(bool val) async {
+    await _prefs?.setBool(_keyKeepApkAfterInstall, val);
+  }
+
   // --- Google Drive 集成 (#7) ---
   static const String _keyGdriveAccessToken = 'gdrive_access_token';
   static const String _keyGdriveRefreshToken = 'gdrive_refresh_token';

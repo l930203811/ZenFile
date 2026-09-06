@@ -494,6 +494,55 @@ class RootShizukuService {
     }
     return rawSize;
   }
+
+  /// 静默安装单个 APK（root 或 shizuku 执行 pm install）。
+  /// 返回 true 表示安装成功，false 表示失败。
+  static Future<bool> installApkSilently(String path, {required bool useRoot}) async {
+    if (!Platform.isAndroid) return false;
+    try {
+      final output = await runCommand('pm install -r -d "$path" 2>&1', useRoot: useRoot);
+      return output != null && output.toLowerCase().contains('success');
+    } catch (e) {
+      debugPrint('[ZenFile] installApkSilently failed: $e');
+      return false;
+    }
+  }
+
+  /// 静默安装多个 APK split（root 或 shizuku）。
+  /// 使用 pm install-create / install-write / install-commit 会话机制。
+  static Future<bool> installSplitApksSilently(List<String> paths, {required bool useRoot}) async {
+    if (!Platform.isAndroid || paths.isEmpty) return false;
+    if (paths.length == 1) {
+      return installApkSilently(paths.first, useRoot: useRoot);
+    }
+    try {
+      // 1. 创建安装会话
+      final createOut = await runCommand('pm install-create -r 2>&1', useRoot: useRoot);
+      if (createOut == null || !createOut.contains('[')) return false;
+      final match = RegExp(r'\[(\d+)\]').firstMatch(createOut);
+      if (match == null) return false;
+      final sessionId = match.group(1)!;
+
+      // 2. 逐个写入 APK
+      for (var i = 0; i < paths.length; i++) {
+        final writeOut = await runCommand(
+          'pm install-write -S $sessionId $i "${paths[i]}" 2>&1',
+          useRoot: useRoot,
+        );
+        if (writeOut == null || !writeOut.toLowerCase().contains('success')) {
+          await runCommand('pm install-abandon $sessionId 2>&1', useRoot: useRoot);
+          return false;
+        }
+      }
+
+      // 3. 提交安装
+      final commitOut = await runCommand('pm install-commit $sessionId 2>&1', useRoot: useRoot);
+      return commitOut != null && commitOut.toLowerCase().contains('success');
+    } catch (e) {
+      debugPrint('[ZenFile] installSplitApksSilently failed: $e');
+      return false;
+    }
+  }
 }
 
 /// SAF (Storage Access Framework) 服务：用于在 Shizuku/root 不可用时

@@ -6248,5 +6248,246 @@
   "@share_permission_message": {
     "description": "Message for share permission prompt"
   },
-  "qqGroup": "QQ группа: 792408214"
+  "qqGroup": "QQ группа: 792408214",
+  "emailCopied": "Адрес эл. почты скопирован в буфер обмена",
+  "vt_scanning": "Проверка через VirusTotal (поиск по хешу)...",
+  "@vt_scanning": {
+    "description": "virustotal scan"
+  },
+  "vt_uploading": "Загрузка файла в VirusTotal и ожидание анализа, около 1-2 минут...",
+  "@vt_uploading": {
+    "description": "virustotal scan"
+  },
+  "vt_safe_title": "Результат проверки: безопасно",
+  "@vt_safe_title": {
+    "description": "virustotal scan"
+  },
+  "vt_risk_title": "Результат проверки: обнаружена угроза",
+  "@vt_risk_title": {
+    "description": "virustotal scan"
+  },
+  "vt_unknown_title": "Результат проверки: нет в базе",
+  "@vt_unknown_title": {
+    "description": "virustotal scan"
+  },
+  "vt_malicious_count": "Обнаружили угрозу: {n}",
+  "@vt_malicious_count": {
+    "description": "virustotal scan"
+  },
+  "vt_suspicious_count": "Подозрительных: {n}",
+  "@vt_suspicious_count": {
+    "description": "virustotal scan"
+  },
+  "vt_harmless_count": "Безопасно: {n}",
+  "@vt_harmless_count": {
+    "description": "virustotal scan"
+  },
+  "vt_undetected_count": "Не обнаружили: {n}",
+  "@vt_undetected_count": {
+    "description": "virustotal scan"
+  },
+  "vt_not_found_msg": "Этот файл ещё не в базе VirusTotal. Можно загрузить его для полного сканирования или пропустить и продолжить установку.",
+  "@vt_not_found_msg": {
+    "description": "virustotal scan"
+  },
+  "vt_scan_failed": "Ошибка проверки: {error}",
+  "@vt_scan_failed": {
+    "description": "virustotal scan"
+  },
+  "vt_no_key_msg": "API-ключ VirusTotal не настроен. Проверка пропущена, установка продолжена. Настройте ключ в настройках, чтобы включить проверку перед установкой.",
+  "@vt_no_key_msg": {
+    "description": "virustotal scan"
+  },
+  "vt_continue_install": "Всё равно установить",
+  "@vt_continue_install": {
+    "description": "virustotal scan"
+  },
+  "vt_upload_scan": "Загрузить для полного сканирования",
+  "@vt_upload_scan": {
+    "description": "virustotal scan"
+  },
+  "vt_open_report": "Открыть полный отчёт",
+  "@vt_open_report": {
+    "description": "virustotal scan"
+  },
+  "vt_apikey_title": "API-ключ VirusTotal",
+  "@vt_apikey_title": {
+    "description": "virustotal scan"
+  },
+  "vt_apikey_subtitle": "Автоматическая проверка APK перед установкой (бесплатный ключ на virustotal.com)",
+  "@vt_apikey_subtitle": {
+    "description": "virustotal scan"
+  },
+  "vt_apikey_dialog_title": "Настройка API-ключа VirusTotal",
+  "@vt_apikey_dialog_title": {
+    "description": "virustotal scan"
+  },
+  "vt_apikey_hint": "Вставьте ваш API-ключ (бесплатный лимит: 4 запроса/мин)",
+  "@vt_apikey_hint": {
+    "description": "virustotal scan"
+  },
+  "vt_save": "Сохранить",
+  "@vt_save": {
+    "description": "virustotal scan"
+  },
+  "vt_key_saved": "API-ключ VirusTotal сохранён",
+  "@vt_key_saved": {
+    "description": "virustotal scan"
+  },
+  "vt_key_invalid": "Неверный API-ключ, проверьте и повторите",
+  "@vt_key_invalid": {
+    "description": "virustotal scan"
+  },
+  "vt_key_masked": "Настроен ({mask})",
+  "@vt_key_masked": {
+    "description": "virustotal scan"
+  },
+  "vt_scan_before_install": "Проверка APK через VirusTotal...",
+  "@vt_scan_before_install": {
+    "description": "virustotal scan"
+  },
+  "vt_skip": "Пропустить",
+  "@vt_skip": {
+    "description": "virustotal scan"
+  },
+  "vt_retry": "Повторить",
+  "@vt_retry": {
+    "description": "virustotal scan"
+  },
+  "vt_cancel": "Отмена",
+  "@vt_cancel": {
+    "description": "virustotal scan"
+  },
+  "vt_analyzing": "Ожидание анализа VirusTotal...",
+  "@vt_analyzing": {
+    "description": "virustotal scan"
+  },
+  "vt_settings_title": "Безопасная проверка при установке APK",
+  "@vt_settings_title": {
+    "description": "virustotal settings"
+  },
+  "vt_settings_subtitle": "Автоматическая проверка на вредоносное ПО перед установкой APK (VirusTotal)",
+  "@vt_settings_subtitle": {
+    "description": "virustotal settings"
+  },
+  "vt_what_is_title": "Что это?",
+  "@vt_what_is_title": {
+    "description": "virustotal settings"
+  },
+  "vt_what_is_desc": "После включения файлы автоматически проверяются через VirusTotal на вредоносное ПО перед установкой APK. Без API-ключа установка работает как раньше и не меняется.",
+  "@vt_what_is_desc": {
+    "description": "virustotal settings"
+  },
+  "vt_api_key_label": "API-ключ",
+  "@vt_api_key_label": {
+    "description": "virustotal settings"
+  },
+  "vt_current_key_configured": "Настроен",
+  "@vt_current_key_configured": {
+    "description": "virustotal settings"
+  },
+  "vt_not_configured": "Не настроен",
+  "@vt_not_configured": {
+    "description": "virustotal settings"
+  },
+  "vt_api_key_hint": "Вставьте ваш API-ключ VirusTotal",
+  "@vt_api_key_hint": {
+    "description": "virustotal settings"
+  },
+  "vt_save_key": "Сохранить и проверить",
+  "@vt_save_key": {
+    "description": "virustotal settings"
+  },
+  "vt_how_to_get_title": "Как получить API-ключ?",
+  "@vt_how_to_get_title": {
+    "description": "virustotal settings"
+  },
+  "vt_step_1": "1. Откройте virustotal.com и войдите (бесплатная регистрация через Google)",
+  "@vt_step_1": {
+    "description": "virustotal settings"
+  },
+  "vt_step_2": "2. Нажмите на аватар в правом верхнем углу и выберите «API key»",
+  "@vt_step_2": {
+    "description": "virustotal settings"
+  },
+  "vt_step_3": "3. Нажмите на значок копирования, чтобы скопировать API-ключ",
+  "@vt_step_3": {
+    "description": "virustotal settings"
+  },
+  "vt_step_4": "4. Вернитесь на эту страницу и вставьте ключ в поле выше",
+  "@vt_step_4": {
+    "description": "virustotal settings"
+  },
+  "vt_step_5": "5. Нажмите «Сохранить и проверить»; неверный ключ будет помечен",
+  "@vt_step_5": {
+    "description": "virustotal settings"
+  },
+  "vt_open_vt": "Открыть сайт",
+  "@vt_open_vt": {
+    "description": "virustotal settings"
+  },
+  "vt_limit_note": "Лимит бесплатного аккаунта: 4 запроса/мин, достаточно для повседневной проверки при установке.",
+  "@vt_limit_note": {
+    "description": "virustotal settings"
+  },
+  "vt_privacy_note": "Приватность: по умолчанию загружается только хэш файла для поиска, а не сам файл; файл загружается только при активном выборе «Загрузить для полного сканирования».",
+  "@vt_privacy_note": {
+    "description": "virustotal settings"
+  },
+  "vt_silent_install": "Тихая установка",
+  "@vt_silent_install": {
+    "description": "virustotal settings / silent install"
+  },
+  "vt_silent_install_ready": "Доступ Root или Shizuku получен — установка пройдёт без подтверждения",
+  "@vt_silent_install_ready": {
+    "description": "virustotal settings / silent install"
+  },
+  "vt_silent_install_requires": "Требуется Root или Shizuku для включения",
+  "@vt_silent_install_requires": {
+    "description": "virustotal settings / silent install"
+  },
+  "vt_install_success": "Установка выполнена",
+  "@vt_install_success": {
+    "description": "virustotal settings / silent install"
+  },
+  "vt_keep_apk": "Сохранять APK после установки",
+  "@vt_keep_apk": {
+    "description": "virustotal settings / keep apk"
+  },
+  "vt_keep_apk_desc": "Копировать временную копию перед установкой, чтобы системный установщик не удалил исходный APK",
+  "@vt_keep_apk_desc": {
+    "description": "virustotal settings / keep apk"
+  },
+  "vt_install": "Установить",
+  "@vt_install": {
+    "description": "virustotal scan dialog buttons"
+  },
+  "vt_direct_install": "Установить напрямую",
+  "@vt_direct_install": {
+    "description": "virustotal scan dialog buttons"
+  },
+  "biometric_verify_hint": "Подтвердите отпечаток пальца, чтобы продолжить",
+  "@biometric_verify_hint": {
+    "description": "biometric prompt messages"
+  },
+  "biometric_reason_vault": "Подтвердите отпечаток для разблокировки сейфа",
+  "@biometric_reason_vault": {
+    "description": "biometric prompt messages"
+  },
+  "biometric_reason_remote_guard": "Подтвердите отпечаток для прохождения удалённой защиты",
+  "@biometric_reason_remote_guard": {
+    "description": "biometric prompt messages"
+  },
+  "biometric_reason_app_lock": "Подтвердите отпечаток, чтобы войти в приложение",
+  "@biometric_reason_app_lock": {
+    "description": "biometric prompt messages"
+  },
+  "vt_install_settings_title": "Настройки установки APK",
+  "@vt_install_settings_title": {
+    "description": "apk install settings page title and subtitle"
+  },
+  "vt_install_settings_subtitle": "Тихая установка, сохранение установщика, сканирование",
+  "@vt_install_settings_subtitle": {
+    "description": "apk install settings page title and subtitle"
+  }
 }
