@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:xml/xml.dart' as xml;
 import 'remote_client.dart';
 
@@ -13,6 +14,13 @@ class WebDavRemoteClient extends RemoteClient {
   final String rootPath;
   
   late HttpClient _httpClient;
+
+  /// 是否支持直接流式播放（无 302 重定向）。
+  /// 在 connect() 时通过 HEAD 请求检测一次：
+  /// - 普通 WebDAV 服务器 / OpenList 本机代理模式：无 302，支持直连（性能好）
+  /// - OpenList 302 重定向模式：有 302，返回 null 让视频播放器走本地代理服务
+  ///   （302 重定向到网盘直链后，media_kit 无法正常播放：防盗链/有效期/Range 不支持等）
+  bool _supportsDirectStreaming = true;
 
   /// 当前正在进行的上传请求（PUT），用于在取消时立即中断底层 socket。
   /// 若不中断，request.add 的数据会在后台继续发送，导致取消后仍传输十几秒，
@@ -73,6 +81,37 @@ class WebDavRemoteClient extends RemoteClient {
       throw Exception('Failed to connect to WebDAV: ${response.statusCode}');
     }
     await response.drain();
+
+    // 检测是否支持直接流式播放（无 302 重定向）
+    // 使用单独的 HttpClient（followRedirects: false）发送 HEAD 请求，
+    // 避免影响主 _httpClient 的连接池。
+    try {
+      final detectClient = HttpClient();
+      detectClient.connectionTimeout = const Duration(seconds: 5);
+      final detectUrl = Uri.parse('$_baseUrl$normalizedRoot');
+      final detectRequest = await detectClient.openUrl('HEAD', detectUrl);
+      // followRedirects 是 HttpClientRequest 的属性，不是 HttpClient 的属性
+      detectRequest.followRedirects = false;
+      final auth = _authHeader();
+      if (auth.isNotEmpty) {
+        detectRequest.headers.set('Authorization', auth);
+      }
+      final detectResponse = await detectRequest.close();
+      // 301/302/303/307/308 重定向：不支持直连，走代理服务
+      if (detectResponse.statusCode >= 300 && detectResponse.statusCode < 400) {
+        _supportsDirectStreaming = false;
+        debugPrint('[WebDAV] Detected ${detectResponse.statusCode} redirect, will use streaming proxy instead of direct URL');
+      } else {
+        _supportsDirectStreaming = true;
+        debugPrint('[WebDAV] No redirect detected, direct streaming supported');
+      }
+      await detectResponse.drain();
+      detectClient.close();
+    } catch (e) {
+      // HEAD 请求失败（服务器不支持 HEAD / 超时等），默认支持直连（保持原有行为）
+      _supportsDirectStreaming = true;
+      debugPrint('[WebDAV] Redirect detection failed, default to direct streaming: $e');
+    }
   }
 
   @override
@@ -326,15 +365,44 @@ class WebDavRemoteClient extends RemoteClient {
     await response.drain();
   }
 
+  /// 发送 GET 请求，遇到 301/302/307/308 时**手动**跟随重定向，并在跳转后
+  /// 【保留 Range 头】。
+  ///
+  /// 原因：dart:io 的 HttpClient 在自动跟随**跨域**重定向时会丢弃 Range 等自定义头，
+  /// OpenList「302 重定向」模式下网盘文件 GET 会 302 到云盘直链，于是拖动进度条
+  /// 的随机读退化成整文件重新下载（大视频表现为卡死/极慢）。这里手动跟随可在云盘
+  /// 直链上重新带上 Range，让 206 随机读正常工作。跨域跳转不再携带 Authorization
+  /// （避免向第三方云盘直链泄露凭据，且与 HttpClient 默认行为一致）。
+  Future<HttpClientResponse> _followRedirectGet(String urlStr, {String? range}) async {
+    var url = Uri.parse(urlStr);
+    String? auth = _authHeader();
+    for (int i = 0; i <= 3; i++) {
+      final request = await _httpClient.openUrl('GET', url);
+      if (auth != null && auth.isNotEmpty) {
+        request.headers.set('Authorization', auth);
+      }
+      if (range != null) {
+        request.headers.set(HttpHeaders.rangeHeader, range);
+      }
+      final response = await request.close();
+      final status = response.statusCode;
+      if (status >= 300 && status < 400) {
+        final location = response.headers.value(HttpHeaders.locationHeader);
+        try { await response.drain(); } catch (_) {}
+        if (location == null) return response;
+        // 跨域跳转：不再携带 Authorization；Range 下一轮会重新设置
+        auth = null;
+        url = url.resolve(location);
+        continue;
+      }
+      return response;
+    }
+    throw Exception('WebDAV: too many redirects for $urlStr');
+  }
+
   @override
   Future<void> downloadFile(String remotePath, String localPath, Function(double progress) onProgress) async {
-    final url = Uri.parse(_baseUrl + Uri.encodeFull(remotePath));
-    final request = await _httpClient.openUrl('GET', url);
-    final auth = _authHeader();
-    if (auth.isNotEmpty) {
-      request.headers.set('Authorization', auth);
-    }
-    final response = await request.close();
+    final response = await _followRedirectGet(_baseUrl + Uri.encodeFull(remotePath));
     if (response.statusCode >= 400) {
       throw Exception('WebDAV download error: ${response.statusCode}');
     }
@@ -366,15 +434,10 @@ class WebDavRemoteClient extends RemoteClient {
 
   @override
   Future<void> downloadRange(String remotePath, String localPath, int startByte, int length) async {
-    final url = Uri.parse(_baseUrl + Uri.encodeFull(remotePath));
-    final request = await _httpClient.openUrl('GET', url);
-    final auth = _authHeader();
-    if (auth.isNotEmpty) {
-      request.headers.set('Authorization', auth);
-    }
-    // HTTP Range 请求只下载指定字节范围
-    request.headers.set(HttpHeaders.rangeHeader, 'bytes=$startByte-${startByte + length - 1}');
-    final response = await request.close();
+    final response = await _followRedirectGet(
+      _baseUrl + Uri.encodeFull(remotePath),
+      range: 'bytes=$startByte-${startByte + length - 1}',
+    );
     // 206 = Partial Content（range 请求成功）；200 = 服务器忽略 Range 返回完整内容
     if (response.statusCode != 206 && response.statusCode != 200) {
       throw Exception('WebDAV downloadRange error: ${response.statusCode}');
@@ -472,7 +535,38 @@ class WebDavRemoteClient extends RemoteClient {
   }
 
   @override
-  String? getStreamUrl(String remotePath) {
+  Future<String?> getStreamUrl(String remotePath) async {
+    // 已通过连接期探测确定走代理（个别 OpenList 302 配置根目录也重定向）
+    if (!_supportsDirectStreaming) return null;
+
+    // OpenList「302 重定向」模式：目录列表(PROPFIND / 根目录 HEAD)正常返回 200，
+    // 但【实际文件】GET 时 302 跳转到网盘直链，media_kit 无法播放
+    // （防盗链校验 / 直链有效期 / Range 不支持等）。连接期只对根目录做了探测，
+    // 会漏判这种「仅文件重定向」的情况，所以这里对单个文件做重定向探测：
+    // 发 Range=bytes=0-0 的 GET 且 followRedirects=false，命中 3xx 则走本地
+    // 代理（RemoteStreamingService），否则直连性能更好。
+    try {
+      final probeClient = HttpClient();
+      probeClient.connectionTimeout = const Duration(seconds: 5);
+      final url = Uri.parse(_baseUrl + Uri.encodeFull(remotePath));
+      final req = await probeClient.openUrl('GET', url);
+      req.followRedirects = false;
+      final auth = _authHeader();
+      if (auth.isNotEmpty) req.headers.set('Authorization', auth);
+      req.headers.set(HttpHeaders.rangeHeader, 'bytes=0-0');
+      final resp = await req.close();
+      final isRedirect = resp.statusCode >= 300 && resp.statusCode < 400;
+      try { await resp.drain(); } catch (_) {}
+      probeClient.close();
+      if (isRedirect) {
+        debugPrint('[WebDAV] 文件 $remotePath 探测到 ${resp.statusCode} 重定向，走本地代理');
+        return null;
+      }
+    } catch (e) {
+      debugPrint('[WebDAV] 单文件重定向探测失败，沿用连接期判定: $e');
+      // 探测失败：沿用 connect() 的结果（根目录探测为 direct 时直连）
+    }
+
     // WebDAV supports HTTP streaming: construct URL with Basic Auth embedded
     var normalizedPath = remotePath;
     if (!normalizedPath.startsWith('/')) normalizedPath = '/$normalizedPath';

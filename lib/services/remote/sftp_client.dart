@@ -772,7 +772,7 @@ class SftpRemoteClient extends RemoteClient {
   }
 
   @override
-  String? getStreamUrl(String remotePath) => null;
+  Future<String?> getStreamUrl(String remotePath) async => null;
 
   // ── 原生 SSH/SFTP（Android，JSch）实现 ──────────────────────────────────────
 

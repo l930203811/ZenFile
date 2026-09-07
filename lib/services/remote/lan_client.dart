@@ -463,7 +463,7 @@ class LanClient extends RemoteClient {
   }
 
   @override
-  String? getStreamUrl(String remotePath) {
+  Future<String?> getStreamUrl(String remotePath) async {
     // SMB cannot expose an HTTP URL for direct streaming. The
     // RemoteStreamingService will download the file progressively and serve
     // it via the local HTTP proxy instead.

@@ -46,7 +46,8 @@ abstract class RemoteClient {
 
   /// Returns a URL that can be used for streaming playback, or null if streaming is not supported.
   /// Currently only WebDAV supports this (returns HTTP URL with Basic Auth).
-  String? getStreamUrl(String remotePath);
+  /// Returns null when the file requires the local proxy (e.g. OpenList 302 redirect mode).
+  Future<String?> getStreamUrl(String remotePath);
 
   /// Returns the file size in bytes, or -1 if unknown.
   /// Used by RemoteStreamingService for progressive streaming support.

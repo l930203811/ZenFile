@@ -1069,5 +1069,5 @@ class FtpRemoteClient extends RemoteClient {
   }
 
   @override
-  String? getStreamUrl(String remotePath) => null;
+  Future<String?> getStreamUrl(String remotePath) async => null;
 }

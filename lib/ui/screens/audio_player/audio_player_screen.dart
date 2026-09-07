@@ -466,7 +466,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen>
       await remoteClient.connect();
 
       // 优先尝试直接流式 URL（WebDAV 支持 HTTP 流）
-      final streamUrl = remoteClient.getStreamUrl(remoteFilePath);
+      final streamUrl = await remoteClient.getStreamUrl(remoteFilePath);
       if (streamUrl != null) {
         // WebDAV 流式播放：保持连接（由 GC 清理）
         return streamUrl;

@@ -1885,7 +1885,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       await remoteClient.connect();
 
       // 优先尝试直接流式 URL（WebDAV 支持 HTTP 流）
-      final streamUrl = remoteClient.getStreamUrl(remoteFilePath);
+      final streamUrl = await remoteClient.getStreamUrl(remoteFilePath);
       if (streamUrl != null) {
         return streamUrl;
       }

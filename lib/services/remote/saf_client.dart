@@ -114,7 +114,7 @@ class SafRemoteClient extends RemoteClient {
   }
 
   @override
-  String? getStreamUrl(String remotePath) => null;
+  Future<String?> getStreamUrl(String remotePath) async => null;
 
   @override
   Future<int> getFileSize(String remotePath) async {

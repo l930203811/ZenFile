@@ -7246,7 +7246,7 @@ class FileManagerProvider extends ChangeNotifier {
       // 优先尝试 WebDAV 直连流式 URL（libmpv 原生 HTTP Range 请求，与正常扩展名文件一致）
       final directClient = createRemoteClient(conn);
       try {
-        final streamUrl = directClient.getStreamUrl(remotePath);
+        final streamUrl = await directClient.getStreamUrl(remotePath);
         if (streamUrl != null) {
           debugPrint('_setupRemoteMediaStream: 使用直连流式 URL');
           return streamUrl;
@@ -7537,7 +7537,7 @@ class FileManagerProvider extends ChangeNotifier {
         // 媒体文件：无论选择"打开"还是"打开方式..."都采用流式播放
         if (isVideoFile || isAudioFile) {
           // 优先尝试直接流式 URL（WebDAV 支持 HTTP 流）
-          final streamUrl = remoteClient.getStreamUrl(path);
+          final streamUrl = await remoteClient.getStreamUrl(path);
           if (streamUrl != null) {
             if (openAction == 'external') {
               // 系统选择器打开流式 URL

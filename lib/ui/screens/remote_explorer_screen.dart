@@ -181,7 +181,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
     
     // For video/audio, use streaming (WebDAV direct HTTP, FTP/SFTP via local proxy)
     if (isVideo || isAudio) {
-      final streamUrl = _client!.getStreamUrl(item.path);
+      final streamUrl = await _client!.getStreamUrl(item.path);
       if (streamUrl != null) {
         // Direct streaming playback (WebDAV) — no download needed
         if (!mounted) return;
