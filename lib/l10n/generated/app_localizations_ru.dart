@@ -1383,7 +1383,7 @@ class L10nRu extends L10n {
   String get msgd58d230a => 'Сапфирово-Синий';
 
   @override
-  String get msg508b005e => 'Лесно-Зелёный';
+  String get msg508b005e => 'Лаймовый зелёный';
 
   @override
   String get msgefdde083 => 'Персиковый Закат';
@@ -2905,7 +2905,7 @@ class L10nRu extends L10n {
   String get ui_app_icon => 'Значок Приложения';
 
   @override
-  String get ui_emerald_green => 'Изумрудно-Зелёный';
+  String get ui_emerald_green => 'Неоновый циан';
 
   @override
   String get ui_deep_red => 'Глубокий Красный';
@@ -6636,4 +6636,13 @@ class L10nRu extends L10n {
   @override
   String get vt_silent_fallback =>
       'Попытка тихой установки не удалась из-за прав; используется системный установщик';
+
+  @override
+  String get ui_nav_back => 'Назад';
+
+  @override
+  String get ui_nav_forward => 'Вперёд';
+
+  @override
+  String get ui_custom_theme => 'Настраиваемый';
 }

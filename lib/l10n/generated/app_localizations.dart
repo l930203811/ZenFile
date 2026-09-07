@@ -2551,7 +2551,7 @@ abstract class L10n {
   /// ui\screens\more_settings_screen.dart
   ///
   /// In zh, this message translates to:
-  /// **'森林绿'**
+  /// **'青柠绿'**
   String get msg508b005e;
 
   /// ui\screens\more_settings_screen.dart
@@ -5293,7 +5293,7 @@ abstract class L10n {
   /// No description provided for @ui_emerald_green.
   ///
   /// In zh, this message translates to:
-  /// **'翠绿'**
+  /// **'霓虹青'**
   String get ui_emerald_green;
 
   /// No description provided for @ui_deep_red.
@@ -11775,6 +11775,24 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'已尝试静默安装，权限不足，改用系统安装器'**
   String get vt_silent_fallback;
+
+  /// File browser action bar: go back in navigation history
+  ///
+  /// In zh, this message translates to:
+  /// **'后退'**
+  String get ui_nav_back;
+
+  /// File browser action bar: go forward in navigation history
+  ///
+  /// In zh, this message translates to:
+  /// **'前进'**
+  String get ui_nav_forward;
+
+  /// ui\screens\more_settings_screen.dart
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义'**
+  String get ui_custom_theme;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

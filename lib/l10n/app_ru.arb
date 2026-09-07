@@ -1623,7 +1623,7 @@
   "@msg508b005e": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg508b005e": "Лесно-Зелёный",
+  "msg508b005e": "Лаймовый зелёный",
   "@msgefdde083": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -3177,7 +3177,7 @@
   "ui_remember_filter": "Запомнить фильтр",
   "msg_remember_filter_desc": "Действует только для текущего сеанса, если выключено",
   "ui_app_icon": "Значок Приложения",
-  "ui_emerald_green": "Изумрудно-Зелёный",
+  "ui_emerald_green": "Неоновый циан",
   "ui_deep_red": "Глубокий Красный",
   "ui_square": "Квадрат",
   "ui_circle": "Круг",
@@ -6593,5 +6593,17 @@
   "vt_silent_fallback": "Попытка тихой установки не удалась из-за прав; используется системный установщик",
   "@vt_silent_fallback": {
     "description": "silent install fallback to system installer notice"
+  },
+  "ui_nav_back": "Назад",
+  "@ui_nav_back": {
+    "description": "File browser action bar: go back in navigation history"
+  },
+  "ui_nav_forward": "Вперёд",
+  "@ui_nav_forward": {
+    "description": "File browser action bar: go forward in navigation history"
+  },
+  "ui_custom_theme": "Настраиваемый",
+  "@ui_custom_theme": {
+    "description": "ui\\screens\\more_settings_screen.dart"
   }
 }

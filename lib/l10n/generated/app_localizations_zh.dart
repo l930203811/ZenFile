@@ -1288,7 +1288,7 @@ class L10nZh extends L10n {
   String get msgd58d230a => '蓝宝石';
 
   @override
-  String get msg508b005e => '森林绿';
+  String get msg508b005e => '青柠绿';
 
   @override
   String get msgefdde083 => '日落桃';
@@ -2758,7 +2758,7 @@ class L10nZh extends L10n {
   String get ui_app_icon => '应用图标';
 
   @override
-  String get ui_emerald_green => '翠绿';
+  String get ui_emerald_green => '霓虹青';
 
   @override
   String get ui_deep_red => '深红';
@@ -6277,6 +6277,15 @@ class L10nZh extends L10n {
 
   @override
   String get vt_silent_fallback => '已尝试静默安装，权限不足，改用系统安装器';
+
+  @override
+  String get ui_nav_back => '后退';
+
+  @override
+  String get ui_nav_forward => '前进';
+
+  @override
+  String get ui_custom_theme => '自定义';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -7563,7 +7572,7 @@ class L10nZhTw extends L10nZh {
   String get msgd58d230a => '藍寶石';
 
   @override
-  String get msg508b005e => '森林綠';
+  String get msg508b005e => '青檸綠';
 
   @override
   String get msgefdde083 => '日落桃';
@@ -9024,7 +9033,7 @@ class L10nZhTw extends L10nZh {
   String get ui_app_icon => '應用圖示';
 
   @override
-  String get ui_emerald_green => '翠綠';
+  String get ui_emerald_green => '霓虹青';
 
   @override
   String get ui_deep_red => '深紅';
@@ -12520,4 +12529,13 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get vt_silent_fallback => '已嘗試靜默安裝，權限不足，改用系統安裝程式';
+
+  @override
+  String get ui_nav_back => '後退';
+
+  @override
+  String get ui_nav_forward => '前進';
+
+  @override
+  String get ui_custom_theme => '自訂';
 }

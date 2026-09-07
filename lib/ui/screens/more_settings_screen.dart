@@ -2535,12 +2535,12 @@ void _showThemePickerDialog(BuildContext context, FileManagerProvider fileManage
         {'key': 'dynamic', 'name': L10n.of(context).materialyou, 'color': Colors.teal},
         {'key': 'orange', 'name': L10n.of(context).msg05cff3ad, 'color': Color(0xFFFF6D00)},
         {'key': 'purple', 'name': L10n.of(context).msg5ed35657, 'color': Color(0xFF8E24AA)},
-        {'key': 'green', 'name': L10n.of(context).ui_emerald_green, 'color': const Color(0xFF00C853)},
+        {'key': 'green', 'name': L10n.of(context).ui_emerald_green, 'color': const Color(0xFF03FCE3)},
         {'key': 'red', 'name': L10n.of(context).ui_deep_red, 'color': const Color(0xFFD50000)},
         {'key': 'gold', 'name': L10n.of(context).msge74a7283, 'color': Color(0xFFFFD600)},
         {'key': 'pink', 'name': L10n.of(context).msg3904ba87, 'color': Color(0xFFFF2E93)},
         {'key': 'sapphire', 'name': L10n.of(context).msgd58d230a, 'color': Color(0xFF0F52BA)},
-        {'key': 'forest', 'name': L10n.of(context).msg508b005e, 'color': Color(0xFF228B22)},
+        {'key': 'forest', 'name': L10n.of(context).msg508b005e, 'color': Color(0xFFA9FC03)},
         {'key': 'peach', 'name': L10n.of(context).msgefdde083, 'color': Color(0xFFFF7F50)},
       ];
 
@@ -2598,6 +2598,37 @@ void _showThemePickerDialog(BuildContext context, FileManagerProvider fileManage
                       );
                     },
                   ),
+                  const Divider(height: 1),
+                  const SizedBox(height: 8),
+                  // 自定义主题颜色按钮
+                  ListTile(
+                    leading: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: current == 'custom' ? PreferencesService.getCustomAccentColor() : theme.colorScheme.primary.withOpacity(0.15),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: theme.colorScheme.primary.withOpacity(0.3), width: 1.5),
+                      ),
+                      child: Icon(
+                        Icons.colorize,
+                        color: current == 'custom' ? Colors.white : theme.colorScheme.primary,
+                        size: 20,
+                      ),
+                    ),
+                    title: Text(
+                      L10n.of(context).ui_custom_theme,
+                      style: TextStyle(fontWeight: current == 'custom' ? FontWeight.bold : FontWeight.normal),
+                    ),
+                    subtitle: current == 'custom'
+                        ? Text('#${PreferencesService.getCustomAccentColor().value.toRadixString(16).toUpperCase().padLeft(8, '0').substring(2)}', style: TextStyle(fontSize: 11, color: Colors.grey))
+                        : null,
+                    trailing: current == 'custom' ? Icon(Icons.radio_button_checked, color: theme.colorScheme.primary) : const Icon(Icons.chevron_right, color: Colors.grey),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _showCustomColorPickerDialog(context, fileManager, theme);
+                    },
+                  ),
                 ],
               ),
             ),
@@ -2605,6 +2636,158 @@ void _showThemePickerDialog(BuildContext context, FileManagerProvider fileManage
         ),
       );
     },
+  );
+}
+
+void _showCustomColorPickerDialog(BuildContext context, FileManagerProvider fileManager, ThemeData theme) {
+  final initialColor = PreferencesService.getCustomAccentColor();
+  double r = initialColor.red.toDouble();
+  double g = initialColor.green.toDouble();
+  double b = initialColor.blue.toDouble();
+
+  final presetColors = [
+    const Color(0xFFE91E63), const Color(0xFFFF5722), const Color(0xFFFF9800),
+    const Color(0xFFFFC107), const Color(0xFFFFEB3B), const Color(0xFFCDDC39),
+    const Color(0xFF8BC34A), const Color(0xFF4CAF50), const Color(0xFF009688),
+    const Color(0xFF00BCD4), const Color(0xFF03A9F4), const Color(0xFF2196F3),
+    const Color(0xFF3F51B5), const Color(0xFF673AB7), const Color(0xFF9C27B0),
+    const Color(0xFF000000), const Color(0xFFFFFFFF), const Color(0xFF795548),
+  ];
+
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: theme.scaffoldBackgroundColor,
+    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+    builder: (ctx) {
+      Color currentColor = Color.fromARGB(255, r.round(), g.round(), b.round());
+      return StatefulBuilder(
+        builder: (ctx, setState) {
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.withOpacity(0.3), borderRadius: BorderRadius.circular(2))),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(L10n.of(context).ui_custom_theme, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 16),
+                  // 颜色预览
+                  Center(
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: currentColor,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.2), width: 2),
+                        boxShadow: [BoxShadow(color: currentColor.withOpacity(0.4), blurRadius: 12, spreadRadius: 2)],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Center(
+                    child: Text('#${currentColor.value.toRadixString(16).toUpperCase().padLeft(8, '0').substring(2)}', style: TextStyle(fontSize: 13, color: Colors.grey, fontFamily: 'monospace')),
+                  ),
+                  const SizedBox(height: 20),
+                  // 预设颜色
+                  Text('预设颜色', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withOpacity(0.7))),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: presetColors.map((color) {
+                      final isSelected = color.value == currentColor.value;
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            r = color.red.toDouble();
+                            g = color.green.toDouble();
+                            b = color.blue.toDouble();
+                            currentColor = color;
+                          });
+                        },
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: color,
+                            shape: BoxShape.circle,
+                            border: isSelected ? Border.all(color: theme.colorScheme.primary, width: 3) : Border.all(color: theme.colorScheme.onSurface.withOpacity(0.15), width: 1),
+                          ),
+                          child: isSelected ? const Icon(Icons.check, color: Colors.white, size: 18) : null,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 20),
+                  // RGB 滑块
+                  _buildColorSlider('R', r, Colors.red, (val) => setState(() { r = val; currentColor = Color.fromARGB(255, val.round(), g.round(), b.round()); })),
+                  _buildColorSlider('G', g, Colors.green, (val) => setState(() { g = val; currentColor = Color.fromARGB(255, r.round(), val.round(), b.round()); })),
+                  _buildColorSlider('B', b, Colors.blue, (val) => setState(() { b = val; currentColor = Color.fromARGB(255, r.round(), g.round(), val.round()); })),
+                  const SizedBox(height: 24),
+                  // 确认按钮
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: currentColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () async {
+                        await PreferencesService.saveCustomAccentColor(currentColor);
+                        if (fileManager.accentColorOption != 'custom') {
+                          fileManager.setAccentColorOption('custom');
+                        } else {
+                          fileManager.notifyListeners();
+                        }
+                        if (ctx.mounted) Navigator.pop(ctx);
+                      },
+                      child: Text('确认', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
+}
+
+Widget _buildColorSlider(String label, double value, Color color, ValueChanged<double> onChanged) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Row(
+      children: [
+        SizedBox(
+          width: 24,
+          child: Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: color)),
+        ),
+        Expanded(
+          child: Slider(
+            value: value,
+            min: 0,
+            max: 255,
+            divisions: 255,
+            activeColor: color,
+            inactiveColor: color.withOpacity(0.2),
+            onChanged: onChanged,
+          ),
+        ),
+        SizedBox(
+          width: 36,
+          child: Text(value.round().toString(), style: const TextStyle(fontSize: 12, fontFamily: 'monospace')),
+        ),
+      ],
+    ),
   );
 }
 

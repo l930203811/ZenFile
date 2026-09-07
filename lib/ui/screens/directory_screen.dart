@@ -382,7 +382,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
               Broken.arrow_left_2,
               color: provider.canGoBack ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.3),
             ),
-            tooltip: L10n.of(context).ui_go_up,
+            tooltip: L10n.of(context).ui_nav_back,
             onPressed: provider.canGoBack ? () => _goBack(provider) : null,
           ),
           // 前进
@@ -391,8 +391,8 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
               Broken.arrow_right_3,
               color: provider.canGoForward ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.3),
             ),
-            tooltip: L10n.of(context).msg6ed14da7,
-            onPressed: provider.canGoForward ? () => provider.goForward() : null,
+            tooltip: L10n.of(context).ui_nav_forward,
+            onPressed: provider.canGoForward ? () => _goForward(provider) : null,
           ),
           // 新建（复刻 AppBar 右上角的 PopupMenuButton）
           PopupMenuButton<String>(
@@ -612,6 +612,20 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     } else if (_scrollController.hasClients) {
       final savedOffset = provider.getSavedScrollOffset(prevPath);
       _scrollController.jumpTo(savedOffset);
+    }
+  }
+
+  void _goForward(FileManagerProvider provider) async {
+    if (_scrollController.hasClients) {
+      provider.saveScrollOffset(provider.currentPath, _scrollController.offset);
+    }
+    final tab = provider.activeTab;
+    final nextPath = (tab.historyIndex + 1 < tab.pathHistory.length)
+        ? tab.pathHistory[tab.historyIndex + 1]
+        : '';
+    final ok = await provider.goForward();
+    if (ok && nextPath.isNotEmpty && _scrollController.hasClients) {
+      _scrollController.jumpTo(provider.getSavedScrollOffset(nextPath));
     }
   }
 

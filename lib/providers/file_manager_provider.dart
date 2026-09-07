@@ -2350,6 +2350,10 @@ class FileManagerProvider extends ChangeNotifier {
       'id': t.id,
       'currentPath': t.currentPath,
       'isPinned': t.isPinned,
+      // 持久化每个标签页的导航历史，避免重启后「后退/前进」全部变灰
+      // （v1.1.41 只存了 currentPath，恢复后历史栈为空）。
+      'pathHistory': t.pathHistory.take(60).toList(),
+      'historyIndex': t.historyIndex,
     }).toList();
     PreferencesService.saveSavedTabs(list);
   }
@@ -2531,11 +2535,17 @@ class FileManagerProvider extends ChangeNotifier {
   // 路径历史栈已迁移到 FolderTab，双窗口模式下每个 pane 拥有独立的历史，
   // 避免左/右窗口路径混在一起导致“在远程窗口按返回跳到本地路径”的问题。
 
-  /// 是否可“后退”。基于导航历史栈：历史栈中有上一个位置时才可用。
-  /// 参考 Windows 资源管理器：后退 = 回到历史上一个浏览位置，而非父目录。
+  /// 是否可“后退”。与 [goBack] 的真实能力保持一致：
+  /// - 历史栈中还有上一个位置时（historyIndex > 0）肯定可后退；
+  /// - 历史栈已耗尽但当前不在根目录时，[goBack] 会退到父目录，因此也算可后退。
+  ///
+  /// v1.1.41 只判断 historyIndex > 0，导致「标签页恢复后深层目录下按钮全灰、但
+  /// 系统返回键照样能返回」的矛盾表现。
   bool get canGoBack {
     final tab = activeTab;
-    return tab.historyIndex > 0;
+    if (tab.historyIndex > 0) return true;
+    if (tab.isRemote) return true;
+    return tab.currentPath.isNotEmpty && tab.currentPath != _rootPath;
   }
 
   /// 是否可“向上”。基于当前路径：只要不在存储根目录就可导航到父目录。
@@ -2583,6 +2593,15 @@ class FileManagerProvider extends ChangeNotifier {
 
   void _pushPathToHistory(String path) {
     final tab = activeTab;
+    if (path.isEmpty) return;
+    // 原地刷新 / 重复加载当前所在位置：历史栈完全不动。
+    // v1.1.41 会先截断前进历史再判断「是否与末项相同」，导致后退之后随便刷新
+    // 一下（下拉、自动重载、排序变更）前进历史就被静默清空，前进按钮莫名变灰。
+    if (tab.historyIndex >= 0 &&
+        tab.historyIndex < tab.pathHistory.length &&
+        tab.pathHistory[tab.historyIndex] == path) {
+      return;
+    }
     // 如果当前不是历史栈的最后一个，截断后面的历史（用户从中间位置导航到新路径）
     if (tab.historyIndex < tab.pathHistory.length - 1) {
       tab.pathHistory.removeRange(tab.historyIndex + 1, tab.pathHistory.length);
@@ -2590,8 +2609,39 @@ class FileManagerProvider extends ChangeNotifier {
     // 如果路径与当前最后一个不同，才添加
     if (tab.pathHistory.isEmpty || tab.pathHistory.last != path) {
       tab.pathHistory.add(path);
-      tab.historyIndex = tab.pathHistory.length - 1;
     }
+    tab.historyIndex = tab.pathHistory.length - 1;
+    // 限制历史长度，避免长时间使用无上限增长（同时持久化体积也受控）
+    const int maxHistory = 60;
+    if (tab.pathHistory.length > maxHistory) {
+      final removeCount = tab.pathHistory.length - maxHistory;
+      tab.pathHistory.removeRange(0, removeCount);
+      tab.historyIndex = (tab.historyIndex - removeCount).clamp(0, tab.pathHistory.length - 1).toInt();
+    }
+  }
+
+  /// 历史栈耗尽时的「后退到父目录」：把父目录插到当前位置**之前**，而不是追加到
+  /// 末尾。这样继续后退会一直向上，且「前进」能回到刚才的子目录，符合资源管理器
+  /// 的往返语义。v1.1.41 用 recordHistory:true 直接加载父目录，等于追加一条新历史
+  /// 并截断前进栈，会退化成「后退到父目录后再后退又回到子目录」的乒乓现象。
+  void _pushParentBeforeCurrent(String parent) {
+    final tab = activeTab;
+    if (tab.pathHistory.isEmpty) {
+      if (tab.currentPath.isNotEmpty) tab.pathHistory.add(tab.currentPath);
+      tab.historyIndex = 0;
+    }
+    if (tab.historyIndex < 0) tab.historyIndex = 0;
+    if (tab.historyIndex >= tab.pathHistory.length) {
+      tab.pathHistory.add(parent);
+      tab.historyIndex = tab.pathHistory.length - 1;
+      return;
+    }
+    // 历史栈当前位置与真实当前路径不一致（如标签页恢复后）时，先补齐当前路径
+    if (tab.pathHistory[tab.historyIndex] != tab.currentPath) {
+      tab.pathHistory.insert(tab.historyIndex + 1, tab.currentPath);
+    }
+    tab.pathHistory.insert(tab.historyIndex, parent);
+    // historyIndex 不变，插入后即指向父目录
   }
 
   /// 后退：回到导航历史栈中的上一个位置（参考 Windows 资源管理器）。
@@ -2622,7 +2672,8 @@ class FileManagerProvider extends ChangeNotifier {
       final parent = _parentOf(tab.currentPath);
       if (parent != tab.currentPath) {
         final exited = tab.currentPath;
-        await loadDirectory(parent, showLoading: false, recordHistory: true);
+        _pushParentBeforeCurrent(parent);
+        await loadDirectory(parent, showLoading: false, recordHistory: false);
         _highlightExited(exited);
         return true;
       }
@@ -2634,7 +2685,8 @@ class FileManagerProvider extends ChangeNotifier {
       final parent = _parentOf(tab.currentPath);
       if (parent == tab.currentPath) return false;
       final exited = tab.currentPath;
-      await loadDirectory(parent, showLoading: false, recordHistory: true);
+      _pushParentBeforeCurrent(parent);
+      await loadDirectory(parent, showLoading: false, recordHistory: false);
       _highlightExited(exited);
       return true;
     }
@@ -2967,10 +3019,20 @@ class FileManagerProvider extends ChangeNotifier {
     final savedTabsData = PreferencesService.getSavedTabs();
     if (savedTabsData.isNotEmpty) {
       final allTabs = savedTabsData.map((data) {
+        final hist = (data['pathHistory'] as List<dynamic>?)
+                ?.map((e) => e.toString())
+                .where((e) => e.isNotEmpty)
+                .toList() ??
+            <String>[];
+        final rawIdx = data['historyIndex'];
+        final idx = rawIdx is int ? rawIdx : -1;
+        final maxIdx = hist.isEmpty ? -1 : hist.length - 1;
         return FolderTab(
           id: data['id']?.toString() ?? DateTime.now().millisecondsSinceEpoch.toString(),
           currentPath: data['currentPath']?.toString() ?? initialPath,
           isPinned: data['isPinned'] ?? false,
+          pathHistory: hist,
+          historyIndex: idx.clamp(-1, maxIdx).toInt(),
         );
       }).toList();
 

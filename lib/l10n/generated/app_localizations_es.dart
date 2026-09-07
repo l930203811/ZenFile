@@ -1389,7 +1389,7 @@ class L10nEs extends L10n {
   String get msgd58d230a => 'Azul Zafiro';
 
   @override
-  String get msg508b005e => 'Verde Bosque';
+  String get msg508b005e => 'Verde lima';
 
   @override
   String get msgefdde083 => 'Melocotón Atardecer';
@@ -2919,7 +2919,7 @@ class L10nEs extends L10n {
   String get ui_app_icon => 'Icono de la App';
 
   @override
-  String get ui_emerald_green => 'Verde Esmeralda';
+  String get ui_emerald_green => 'Cian neón';
 
   @override
   String get ui_deep_red => 'Rojo Profundo';
@@ -6656,4 +6656,13 @@ class L10nEs extends L10n {
   @override
   String get vt_silent_fallback =>
       'Se intentó la instalación silenciosa, pero faltó permiso; se usará el instalador del sistema';
+
+  @override
+  String get ui_nav_back => 'Atrás';
+
+  @override
+  String get ui_nav_forward => 'Adelante';
+
+  @override
+  String get ui_custom_theme => 'Personalizado';
 }

@@ -1349,7 +1349,7 @@ class L10nAr extends L10n {
   String get msgd58d230a => 'أزرق ياقوتي';
 
   @override
-  String get msg508b005e => 'أخضر غابي';
+  String get msg508b005e => 'أخضر ليموني';
 
   @override
   String get msgefdde083 => 'خوخي غروب';
@@ -2852,7 +2852,7 @@ class L10nAr extends L10n {
   String get ui_app_icon => 'أيقونة التطبيق';
 
   @override
-  String get ui_emerald_green => 'أخضر زمردي';
+  String get ui_emerald_green => 'سماوي نيون';
 
   @override
   String get ui_deep_red => 'أحمر داكن';
@@ -6550,4 +6550,13 @@ class L10nAr extends L10n {
   @override
   String get vt_silent_fallback =>
       'تمت محاولة التثبيت الصامت لكن دون إذن؛ سيتم استخدام مثبّت النظام';
+
+  @override
+  String get ui_nav_back => 'رجوع';
+
+  @override
+  String get ui_nav_forward => 'التالي';
+
+  @override
+  String get ui_custom_theme => 'مخصص';
 }

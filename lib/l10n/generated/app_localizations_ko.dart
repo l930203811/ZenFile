@@ -1289,7 +1289,7 @@ class L10nKo extends L10n {
   String get msgd58d230a => '사파이어 블루';
 
   @override
-  String get msg508b005e => '포레스트 그린';
+  String get msg508b005e => '라임 그린';
 
   @override
   String get msgefdde083 => '선셋 피치';
@@ -2766,7 +2766,7 @@ class L10nKo extends L10n {
   String get ui_app_icon => '앱 아이콘';
 
   @override
-  String get ui_emerald_green => '에메랄드 그린';
+  String get ui_emerald_green => '네온 시안';
 
   @override
   String get ui_deep_red => '딥 레드';
@@ -6380,4 +6380,13 @@ class L10nKo extends L10n {
 
   @override
   String get vt_silent_fallback => '자동 설치를 시도했지만 권한이 부족합니다. 시스템 설치 프로그램을 사용합니다';
+
+  @override
+  String get ui_nav_back => '뒤로';
+
+  @override
+  String get ui_nav_forward => '앞으로';
+
+  @override
+  String get ui_custom_theme => '사용자 정의';
 }

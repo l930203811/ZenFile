@@ -1386,7 +1386,7 @@ class L10nFr extends L10n {
   String get msgd58d230a => 'Bleu saphir';
 
   @override
-  String get msg508b005e => 'Vert forêt';
+  String get msg508b005e => 'Vert citron vert';
 
   @override
   String get msgefdde083 => 'Pêche de coucher de soleil';
@@ -2920,7 +2920,7 @@ class L10nFr extends L10n {
   String get ui_app_icon => 'Icône de l\'application';
 
   @override
-  String get ui_emerald_green => 'Vert émeraude';
+  String get ui_emerald_green => 'Cyan néon';
 
   @override
   String get ui_deep_red => 'Rouge foncé';
@@ -6671,4 +6671,13 @@ class L10nFr extends L10n {
   @override
   String get vt_silent_fallback =>
       'Installation silencieuse tentée mais sans permission ; installation par le programme système';
+
+  @override
+  String get ui_nav_back => 'Retour';
+
+  @override
+  String get ui_nav_forward => 'Suivant';
+
+  @override
+  String get ui_custom_theme => 'Personnalisé';
 }

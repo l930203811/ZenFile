@@ -1627,7 +1627,7 @@
   "@msg508b005e": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg508b005e": "フォレストグリーン",
+  "msg508b005e": "ライムグリーン",
   "@msgefdde083": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -3181,7 +3181,7 @@
   "ui_remember_filter": "フィルターを記憶",
   "msg_remember_filter_desc": "オフの場合は今回のみ有効",
   "ui_app_icon": "アプリアイコン",
-  "ui_emerald_green": "エメラルドグリーン",
+  "ui_emerald_green": "ネオンシアン",
   "ui_deep_red": "ディープレッド",
   "ui_square": "角形",
   "ui_circle": "円形",
@@ -6597,5 +6597,17 @@
   "vt_silent_fallback": "サイレントインストールを試みましたが権限が不足していました。システムインストーラーを使用します",
   "@vt_silent_fallback": {
     "description": "silent install fallback to system installer notice"
+  },
+  "ui_nav_back": "戻る",
+  "@ui_nav_back": {
+    "description": "File browser action bar: go back in navigation history"
+  },
+  "ui_nav_forward": "進む",
+  "@ui_nav_forward": {
+    "description": "File browser action bar: go forward in navigation history"
+  },
+  "ui_custom_theme": "カスタム",
+  "@ui_custom_theme": {
+    "description": "ui\\screens\\more_settings_screen.dart"
   }
 }

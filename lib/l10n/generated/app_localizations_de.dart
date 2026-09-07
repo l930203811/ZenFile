@@ -1379,7 +1379,7 @@ class L10nDe extends L10n {
   String get msgd58d230a => 'Saphir-Blau';
 
   @override
-  String get msg508b005e => 'Wald-Grün';
+  String get msg508b005e => 'Limettengrün';
 
   @override
   String get msgefdde083 => 'Sonnenuntergang-Pfirsich';
@@ -2900,7 +2900,7 @@ class L10nDe extends L10n {
   String get ui_app_icon => 'App-Symbol';
 
   @override
-  String get ui_emerald_green => 'Smaragdgrün';
+  String get ui_emerald_green => 'Neon-Cyan';
 
   @override
   String get ui_deep_red => 'Dunkelrot';
@@ -6639,4 +6639,13 @@ class L10nDe extends L10n {
   @override
   String get vt_silent_fallback =>
       'Stille Installation versucht, aber ohne Berechtigung; Systeminstaller wird verwendet';
+
+  @override
+  String get ui_nav_back => 'Zurück';
+
+  @override
+  String get ui_nav_forward => 'Weiter';
+
+  @override
+  String get ui_custom_theme => 'Benutzerdefiniert';
 }
