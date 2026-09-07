@@ -181,8 +181,13 @@ class RootShizukuService {
   }
 
   static Future<List<FileItemModel>> _listViaShell(String cmdPrefix, {required bool useRoot, required bool showHiddenFiles}) async {
-    // 使用 find 命令列出目录内容，比 glob 更可靠（避免 shell 展开失败）
-    final cmd = 'find "$cmdPrefix" -maxdepth 1 -mindepth 1 -exec stat -L -c "%F|%s|%Y|%n" {} \\; 2>&1';
+    // 使用 find 命令列出目录内容，比 glob 更可靠（避免 shell 展开失败）。
+    // 关键性能修复：原 `-exec stat ... {} \;` 会为每个文件单独 fork 一个 stat 进程，
+    // 经 Shizuku 的 adb/IPC 通道逐次调用；文件极多（如 Telegram Images 数千张）
+    // 时累计延迟达数十秒，表现为“进入目录要等很久才打开”。改为 `{} +` 让 find 把
+    // 整目录文件分批一次性传给同一个 stat 进程（GNU/toybox find 均支持），进程数从
+    // O(n) 降到个位数，整目录元数据一次取回，解析逻辑保持不变。
+    final cmd = 'find "$cmdPrefix" -maxdepth 1 -mindepth 1 -exec stat -L -c "%F|%s|%Y|%n" {} + 2>/dev/null';
     debugPrint('[ZenFile] Shell command: useRoot=$useRoot cmdPrefix=$cmdPrefix');
 
     final output = await runCommand(cmd, useRoot: useRoot);
