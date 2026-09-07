@@ -6692,6 +6692,49 @@ class FileManagerProvider extends ChangeNotifier {
   }) async {
     final paths = targetPaths ?? (selectedPaths.isNotEmpty ? selectedPaths.toList() : [currentPath]);
 
+    // 纯 Shizuku 下，若压缩源位于其它应用的 Android/{data,obb}，dart:io 读不到内容，
+    // 需在 startCompression spawn isolate 之前经 SAF 递归下载到本地临时目录，再交给压缩
+    // isolate 处理；压缩完成（deleteSource 时）由 isolate 删除临时源副本，真实受限源保持不变。
+    List<String> effectivePaths = paths;
+    if (!useRootMode) {
+      final restrictedSources = paths.where(_isRestrictedAndroidPath).toList();
+      if (restrictedSources.isNotEmpty) {
+        // 预请求授权（首次会弹系统选择器），data 与 obb 分别处理。
+        if (restrictedSources.any((s) => s.contains('/Android/obb/')) &&
+            (await SafAndroidDataService.getAndroidObbTreeUri() ?? '').isEmpty) {
+          await SafAndroidDataService.requestAndroidObbAccess();
+        }
+        if (restrictedSources.any((s) => !s.contains('/Android/obb/')) &&
+            (await SafAndroidDataService.getAndroidDataTreeUri() ?? '').isEmpty) {
+          await SafAndroidDataService.requestAndroidDataAccess();
+        }
+        final tmpBase = await Directory.systemTemp.createTemp('zenfile_saf_src_');
+        final downloaded = <String>[];
+        for (final src in paths) {
+          if (_isRestrictedAndroidPath(src)) {
+            final isObb = src.contains('/Android/obb/');
+            final dest = p.join(tmpBase.path, p.basename(src));
+            if (await SafAndroidDataService.downloadPathViaSaf(src, dest, isObb: isObb)) {
+              downloaded.add(dest);
+            }
+          } else {
+            downloaded.add(src);
+          }
+        }
+        effectivePaths = downloaded;
+        if (effectivePaths.isEmpty) {
+          if (context != null && context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('无法访问所选受限目录文件，请确认已授权 Android/data 访问')),
+            );
+          }
+          selectedPaths.clear();
+          notifyListeners();
+          return;
+        }
+      }
+    }
+
     // Check size limit for TAR.LZ4 and TAR.ZSTD
     if (format == 'tar.lz4' || format == 'tar.zst') {
       final totalSize = await _calculateTotalSize(paths);
@@ -6723,7 +6766,7 @@ class FileManagerProvider extends ChangeNotifier {
       if (context != null && context.mounted) {
         await BackgroundArchiveService.instance.startCompression(
           context: context,
-          sourcePaths: paths,
+          sourcePaths: effectivePaths,
           destinationPath: p.join(currentPath, tempFileName),
           format: format,
           level: compressionLevel,
@@ -6739,7 +6782,7 @@ class FileManagerProvider extends ChangeNotifier {
       } else {
         try {
           await ArchiveService.createArchive(
-            sourcePaths: paths,
+            sourcePaths: effectivePaths,
             destinationDir: tempDir.path,
             archiveName: archiveName,
             format: format,
@@ -6780,7 +6823,7 @@ class FileManagerProvider extends ChangeNotifier {
       final targetDir = currentPath;
       await BackgroundArchiveService.instance.startCompression(
         context: context,
-        sourcePaths: paths,
+        sourcePaths: effectivePaths,
         destinationPath: destinationPath,
         format: format,
         level: compressionLevel,
@@ -6798,7 +6841,7 @@ class FileManagerProvider extends ChangeNotifier {
     } else {
       try {
         await ArchiveService.createArchive(
-          sourcePaths: paths,
+          sourcePaths: effectivePaths,
           destinationDir: currentPath,
           archiveName: archiveName,
           format: format,

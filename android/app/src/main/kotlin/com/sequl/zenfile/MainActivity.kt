@@ -1135,6 +1135,60 @@ class MainActivity : AudioServiceFragmentActivity() {
                         }
                     }
                 }
+                "downloadSaf" -> {
+                    val rootUriStr = call.argument<String>("rootUri") ?: ""
+                    val uriStr = call.argument<String>("uri") ?: ""
+                    val localPath = call.argument<String>("localPath") ?: ""
+                    executor.execute {
+                        try {
+                            val rootUri = Uri.parse(rootUriStr)
+                            val docId = DocumentsContract.getDocumentId(Uri.parse(uriStr))
+                            val docUri = DocumentsContract.buildDocumentUriUsingTree(rootUri, docId)
+                            val localFile = File(localPath)
+                            // 递归下载：文件直接 copy 字节，目录递归其子项（任意深度）。
+                            // 用于纯 Shizuku 下压缩位于其它应用 Android/{data,obb} 内的源文件
+                            // —— dart:io 读不到内容，必须走 ContentResolver。
+                            fun recurse(cr: ContentResolver, baseUri: Uri, nodeDocId: String, outFile: File) {
+                                val nodeUri = DocumentsContract.buildDocumentUriUsingTree(baseUri, nodeDocId)
+                                val cursor = cr.query(nodeUri, arrayOf(
+                                    DocumentsContract.Document.COLUMN_MIME_TYPE,
+                                    DocumentsContract.Document.COLUMN_DISPLAY_NAME
+                                ), null, null, null)
+                                cursor?.use { c ->
+                                    if (c.moveToFirst()) {
+                                        val mime = c.getString(0) ?: ""
+                                        val name = c.getString(1) ?: outFile.name
+                                        if (DocumentsContract.Document.MIME_TYPE_DIR == mime) {
+                                            outFile.mkdirs()
+                                            val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(baseUri, nodeDocId)
+                                            val childCursor = cr.query(childrenUri, arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID), null, null, null)
+                                            childCursor?.use { cc ->
+                                                while (cc.moveToNext()) {
+                                                    val childDocId = cc.getString(0)
+                                                    var childName = childDocId
+                                                    val childUri = DocumentsContract.buildDocumentUriUsingTree(baseUri, childDocId)
+                                                    val nameCursor = cr.query(childUri, arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME), null, null, null)
+                                                    nameCursor?.use { nc -> if (nc.moveToFirst()) childName = nc.getString(0) ?: childDocId }
+                                                    recurse(cr, baseUri, childDocId, File(outFile, childName))
+                                                }
+                                            }
+                                        } else {
+                                            outFile.parentFile?.mkdirs()
+                                            cr.openInputStream(nodeUri)?.use { input ->
+                                                FileOutputStream(outFile).use { output -> input.copyTo(output) }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            recurse(contentResolver, rootUri, docId, localFile)
+                            runOnUiThread { result.success(true) }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            runOnUiThread { result.error("DOWNLOAD_ERROR", e.message, null) }
+                        }
+                    }
+                }
                 "uploadFile" -> {
                     val rootUriStr = call.argument<String>("rootUri") ?: ""
                     val parentUriStr = call.argument<String>("parentUri") ?: ""

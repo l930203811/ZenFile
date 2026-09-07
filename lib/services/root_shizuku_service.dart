@@ -811,6 +811,36 @@ class SafAndroidDataService {
     return {'treeUri': treeUri, 'parentUri': parentUri};
   }
 
+  /// 经 SAF（已授权树）把受限源 [srcLocalPath]（文件或目录，自动递归）真实内容
+  /// 下载写出到 [destLocalPath]。用于纯 Shizuku 下压缩位于其它应用 Android/{data,obb}
+  /// 内的源文件——dart:io 读不到内容（shell 在 FUSE 只得到元数据、底层 0660 无权限），
+  /// 必须走 ContentResolver 读取真实字节。未授权自动请求；失败返回 false。
+  static Future<bool> downloadPathViaSaf(String srcLocalPath, String destLocalPath, {bool isObb = false}) async {
+    var treeUri = isObb ? await getAndroidObbTreeUri() : await getAndroidDataTreeUri();
+    if (treeUri == null || treeUri.isEmpty) {
+      // 未授权则尝试请求（首次压缩会弹系统选择器）
+      treeUri = isObb ? await requestAndroidObbAccess() : await requestAndroidDataAccess();
+    }
+    if (treeUri == null || treeUri.isEmpty) return false;
+    final rel = srcLocalPath.startsWith('/storage/emulated/0/')
+        ? srcLocalPath.substring('/storage/emulated/0/'.length)
+        : srcLocalPath;
+    if (!rel.startsWith('Android/')) return false;
+    final docId = 'primary:$rel';
+    final docUri = _buildSafDocUri(treeUri, docId);
+    try {
+      final out = await _channel.invokeMethod('downloadSaf', {
+        'rootUri': treeUri,
+        'uri': docUri,
+        'localPath': destLocalPath,
+      });
+      return out == true;
+    } catch (e) {
+      debugPrint('[ZenFile] SAF downloadPathViaSaf failed: $e');
+      return false;
+    }
+  }
+
   /// 经 SAF（已授权树）在受限目录下新建文件夹。
   /// 纯 Shizuku（无 root）下 shell(uid 2000) 经 FUSE 无其它应用 Android/{data,obb} 写权限，
   /// 故走 DocumentsContract.createDocument（与 MT 管理器同源方案）。未授权自动请求。
