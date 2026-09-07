@@ -1,4 +1,7 @@
 
+import 'dart:async';
+import 'dart:io';
+
 class RemoteFileItem {
   final String name;
   final String path;
@@ -73,4 +76,135 @@ abstract class RemoteClient {
   Future<bool> finalizeUpload(String remoteDir, String targetName, int expectedSize) async {
     return true; // 默认实现：不做任何检测，视为已最终化
   }
+
+  // ── 按需区间随机读（用于 HttpRangeProxyService 流式播放） ────────────────
+
+  /// 是否支持「从任意偏移读取指定长度」的随机读。
+  ///
+  /// 为 true 时流式播放走 `HttpRangeProxyService`：播放器请求哪个区间就取哪个
+  /// 区间（206 + Content-Range），开播只等首段缓冲、拖动进度条即时响应，
+  /// **不需要**先把整个文件下载完。
+  ///
+  /// 为 false 时退回 `RemoteStreamingService`（整文件顺序下载到 .partial 再供流）。
+  ///
+  /// 现状：WebDAV（HTTP Range）、FTP（REST）、SFTP（JSch 服务端偏移读）、
+  /// SMB（smbj skip，仅更新 readOffset）均支持；SAF 不支持。
+  bool get supportsRangeRead => false;
+
+  /// 按播放器给出的**原始 Range 头**取流。
+  ///
+  /// 默认实现走 [downloadRange]（写入临时文件后以流的形式返回），
+  /// HTTP 系协议（WebDAV）会覆盖为原样透传，避免多余的本地落盘。
+  ///
+  /// [maxChunk] 单次最多取多少字节：播放器常发开放式 Range（`bytes=0-`），
+  /// 若照单全收就等于把整个文件下完——这里截断成一个块，播放器读完会自然
+  /// 发起下一段请求，从而实现渐进式流式播放。
+  Future<RemoteRangeResponse> openRangeResponse(
+    String remotePath,
+    String? rangeHeader, {
+    required String tempDir,
+    int maxChunk = 4 * 1024 * 1024,
+    int? fileSize,
+  }) async {
+    final wanted = _parseRangeHeader(rangeHeader);
+    final start = wanted.start;
+    var total = fileSize ?? -1;
+    if (total <= 0) {
+      try {
+        total = await getFileSize(remotePath).timeout(const Duration(seconds: 8));
+      } catch (_) {
+        total = -1;
+      }
+    }
+
+    if (total > 0 && start >= total) {
+      return RemoteRangeResponse(
+        statusCode: HttpStatus.requestedRangeNotSatisfiable,
+        headers: {'content-range': 'bytes */$total'},
+        stream: const Stream.empty(),
+      );
+    }
+
+    int length;
+    if (total > 0) {
+      final remaining = total - start;
+      length = wanted.end != null
+          ? (wanted.end! - start + 1).clamp(0, remaining)
+          : remaining;
+    } else {
+      length = wanted.end != null ? (wanted.end! - start + 1) : maxChunk;
+    }
+    if (length <= 0) length = maxChunk;
+    if (length > maxChunk) length = maxChunk;
+
+    final tmp = '$tempDir/r_${DateTime.now().microsecondsSinceEpoch}_$start.bin';
+    await downloadRange(remotePath, tmp, start, length);
+
+    // total>0 时返回 206 + Content-Range（真流式、可 seek）；
+    // total<=0（getFileSize 失败）时不撒谎成 206，改返回 200 且不加
+    // Content-Length —— dart:io 会走分块编码，播放器读完本段会自然发起下
+    // 一段 Range 请求，从而渐进播放（虽不可 seek，但至少不会把整文件下完）。
+    final headers = <String, String>{};
+    int statusCode;
+    if (total > 0) {
+      headers['content-length'] = '$length';
+      headers['content-range'] = 'bytes $start-${start + length - 1}/$total';
+      headers['accept-ranges'] = 'bytes';
+      statusCode = HttpStatus.partialContent;
+    } else {
+      statusCode = HttpStatus.ok;
+    }
+    return RemoteRangeResponse(
+      statusCode: statusCode,
+      headers: headers,
+      stream: File(tmp).openRead(),
+      tempFilePath: tmp,
+    );
+  }
+}
+
+/// 解析后的 Range 请求。
+class _ParsedRange {
+  final int start;
+  final int? end; // null = 开放式（到文件尾）
+  _ParsedRange(this.start, this.end);
+}
+
+/// 解析 `bytes=start-end` / `bytes=start-` / `bytes=-suffixLength`。
+_ParsedRange _parseRangeHeader(String? header) {
+  if (header == null) return _ParsedRange(0, null);
+  final v = header.trim().toLowerCase();
+  const prefix = 'bytes=';
+  if (!v.startsWith(prefix)) return _ParsedRange(0, null);
+  final spec = v.substring(prefix.length).split(',').first.trim();
+  final dash = spec.indexOf('-');
+  if (dash < 0) return _ParsedRange(0, null);
+  final first = int.tryParse(spec.substring(0, dash).trim());
+  final second =
+      dash + 1 < spec.length ? int.tryParse(spec.substring(dash + 1).trim()) : null;
+  if (first == null) {
+    // 后缀形式 bytes=-N：只取最后 N 字节
+    if (second != null) return _ParsedRange(0, second - 1);
+    return _ParsedRange(0, null);
+  }
+  return _ParsedRange(first, second);
+}
+
+/// `RemoteClient.openRangeResponse` 的返回：按需区间取流的结果。
+class RemoteRangeResponse {
+  final int statusCode;
+  final Map<String, String> headers;
+
+  /// 响应体字节流。HTTP 系协议直接透传远端响应流，其余为本地临时文件流。
+  final Stream<List<int>> stream;
+
+  /// 需要在使用完毕后删除的临时文件路径（仅非 HTTP 协议存在）。
+  final String? tempFilePath;
+
+  RemoteRangeResponse({
+    required this.statusCode,
+    required this.headers,
+    required this.stream,
+    this.tempFilePath,
+  });
 }

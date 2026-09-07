@@ -140,6 +140,27 @@ class RemoteStreamingService {
   }) async {
     _cleanupStale();
 
+    // 【优先走按需 Range 反代】
+    // 本协议支持随机读时（WebDAV/FTP/SFTP/SMB），改用 HttpRangeProxyService：
+    // 播放器请求哪个区间就取哪个区间（206 + Content-Range），开播只等首段缓冲、
+    // 拖动即时响应；不再需要把整个文件顺序下载完（非 faststart 的 MP4 必须
+    // 先读文件尾部的 moov，顺序下载代理只能干等 → 实测要等 89s 才开播）。
+    final rangeUrl = await HttpRangeProxyService.startIfSupported(
+      client,
+      remotePath,
+      fileName: fileName,
+      fileSize: fileSize,
+    );
+    if (rangeUrl != null) {
+      // 反代按需单次取流即可随机读，不需要第二条 seek 连接，断开避免泄漏。
+      if (seekClient != null) {
+        try {
+          await seekClient.disconnect();
+        } catch (_) {}
+      }
+      return rangeUrl;
+    }
+
     // 重复保护：如果同一文件已有活跃会话，复用它而非创建新下载
     // 这避免了用户重新点击播放时启动重复下载
     for (final entry in _sessions.entries) {

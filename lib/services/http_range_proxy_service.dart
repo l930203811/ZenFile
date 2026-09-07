@@ -1,11 +1,12 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:mime/mime.dart';
 
-import 'remote/webdav_client.dart';
+import 'remote/remote_client.dart';
 import 'webdav_debug_log.dart';
 
-/// HTTP **按需 Range** 反代服务（专供 WebDAV / OpenList 302 模式流式播放）。
+/// 通用 **按需 Range** 反代服务（远程文件流式播放）。
 ///
 /// ## 为什么需要它（而不是复用 RemoteStreamingService）
 ///
@@ -15,17 +16,19 @@ import 'webdav_debug_log.dart';
 /// `Range: bytes=<尾部>-`），代理只能干等顺序下载追上来 —— 对非 faststart
 /// 的 MP4 就等于「必须等整个文件下载完才能开播」。实测日志：
 ///   01:17:41 代理启动(10.7MB) → 01:17:46 播放器请求尾部 → 01:19:10 才开播(89s)
-///   → 01:19:27 下载完成。
+/// 改成 Range 反代后同一视频 **2.1 秒**开播。
 ///
-/// 而 OpenList 302 解析出的网盘直链**本身支持 Range**（探测已验证返回 206），
-/// 所以正确做法是：播放器要哪个区间，就向远端取哪个区间，原样透传 206。
-/// 这样开播只等首段缓冲，拖动进度条也是即时取对应区间。
+/// ## 工作方式
+/// 播放器请求哪个字节区间，就通过 `RemoteClient.openRangeResponse` 向远端取
+/// 哪个区间，并以 206 + Content-Range 原样回给播放器：
+///   - **HTTP 系（WebDAV/OpenList）**：透传 Range 头与远端响应，零落盘；
+///   - **FTP / SFTP / SMB**：走各自协议的偏移随机读（REST / JSch offset /
+///     smbj skip），分片取回后流式返回，用完即删临时文件。
+/// 单次取流有上限（默认 4MB），播放器开放式请求 `bytes=0-` 会被截断成一段，
+/// 读完自然再请求下一段 —— 因此不会退化成整文件下载。
 ///
-/// ## 与 RemoteStreamingService 的分工
-/// - 本服务：**HTTP 系**远端（WebDAV/OpenList），支持真·Range 随机读。
-/// - RemoteStreamingService：SFTP/FTP/SMB 等，`downloadRange(pos>0)` 不可靠
-///   （见该文件注释），只能顺序下载。
-/// 两者互不干扰，本服务不改变其它协议的行为。
+/// 不支持随机读的协议（`supportsRangeRead == false`）请继续用
+/// RemoteStreamingService，两者互不干扰。
 class HttpRangeProxyService {
   HttpRangeProxyService._();
 
@@ -33,12 +36,12 @@ class HttpRangeProxyService {
 
   final Map<int, _RangeSession> _sessions = {};
 
-  /// 启动一个针对 [remotePath] 的反代，返回形如
-  /// `http://127.0.0.1:<port>/stream.mp4` 的本地 URL。
+  /// 启动针对 [remotePath] 的反代，返回 `http://127.0.0.1:<port>/stream<ext>`。
   Future<String> start(
-    WebDavRemoteClient client,
+    RemoteClient client,
     String remotePath, {
     String? fileName,
+    int? fileSize,
   }) async {
     final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     final name = fileName ?? remotePath.split('/').where((s) => s.isNotEmpty).last;
@@ -47,16 +50,39 @@ class HttpRangeProxyService {
       client: client,
       remotePath: remotePath,
       fileName: name,
+      fileSize: fileSize,
       server: server,
+      tempDir: _ensureTempDir(),
     );
     server.listen(
       (request) => _handle(server.port, request),
       onError: (e) => WebdavDebugLog.log('Range代理 server error: $e'),
     );
     final url = 'http://127.0.0.1:${server.port}/stream$ext';
-    WebdavDebugLog.log(
-        'Range代理启动 url=$url remotePath=$remotePath fileName=$name');
+    WebdavDebugLog.log('Range代理启动 url=$url remotePath=$remotePath '
+        'fileName=$name fileSize=$fileSize client=${client.runtimeType}');
     return url;
+  }
+
+  /// 客户端支持随机读时才启动；否则返回 null 交由调用方走顺序下载代理。
+  static Future<String?> startIfSupported(
+    RemoteClient client,
+    String remotePath, {
+    String? fileName,
+    int? fileSize,
+  }) async {
+    if (!client.supportsRangeRead) return null;
+    try {
+      return await instance.start(
+        client,
+        remotePath,
+        fileName: fileName,
+        fileSize: fileSize,
+      );
+    } catch (e) {
+      WebdavDebugLog.log('Range代理启动失败,回退顺序下载代理: $e');
+      return null;
+    }
   }
 
   bool isOurs(String url) {
@@ -73,15 +99,21 @@ class HttpRangeProxyService {
       final session = _sessions.remove(port);
       if (session == null) return;
       WebdavDebugLog.log('Range代理停止 url=$url');
+      session.closing = true;
+      // 等正在进行的请求返回，避免播放器收到「Connection refused」误报。
+      try {
+        await session.drain().timeout(const Duration(seconds: 3));
+      } catch (_) {}
       await session.server.close(force: true);
+      session.clearTemp();
     } catch (_) {}
   }
 
   Future<void> _handle(int port, HttpRequest request) async {
     final response = request.response;
     final session = _sessions[port];
-    if (session == null) {
-      response.statusCode = HttpStatus.notFound;
+    if (session == null || session.closing) {
+      response.statusCode = HttpStatus.serviceUnavailable;
       await response.close();
       return;
     }
@@ -89,56 +121,67 @@ class HttpRangeProxyService {
     final range = request.headers.value(HttpHeaders.rangeHeader);
     WebdavDebugLog.log(
         'Range代理收到 ${request.method} ${request.uri.path} range=$range');
-    HttpClientResponse? upstream;
+    RemoteRangeResponse? upstream;
+    session.active++;
     try {
-      upstream = await session.client
-          .openRangeResponse(session.remotePath, rangeHeader: range);
+      upstream = await session.client.openRangeResponse(
+        session.remotePath,
+        range,
+        tempDir: session.tempDir,
+        fileSize: session.fileSize,
+      );
 
       response.statusCode = upstream.statusCode;
-      // 只透传与实体相关的头；绝不能透传 Connection / Transfer-Encoding 等
-      // 逐跳头（dart:io 会自行处理分块编码）。
-      for (final name in const [
-        'content-type',
-        'content-length',
-        'content-range',
-        'accept-ranges',
-        'etag',
-        'last-modified',
-      ]) {
-        final value = upstream.headers.value(name);
-        if (value != null && value.isNotEmpty) {
-          response.headers.set(name, value);
-        }
-      }
+      // 只写实体头；绝不透传 Connection / Transfer-Encoding 等逐跳头
+      // （dart:io 会自行处理分块编码）。
+      upstream.headers.forEach((name, value) {
+        response.headers.set(name, value);
+      });
       if (response.headers.value('content-type') == null) {
-        final mime = lookupMimeType(session.fileName) ??
-            'application/octet-stream';
-        response.headers.set('content-type', mime);
+        response.headers
+            .set('content-type', lookupMimeType(session.fileName) ?? 'application/octet-stream');
       }
       // 206 说明远端确实支持随机读，据此告知播放器可 seek。
-      if (upstream.statusCode == 206) {
-        response.headers.set('accept-ranges', 'bytes');
+      if (upstream.statusCode == HttpStatus.partialContent) {
+        response.headers.set(HttpHeaders.acceptRangesHeader, 'bytes');
       }
 
       final status = upstream.statusCode;
       if (request.method == 'HEAD') {
-        await upstream.drain();
+        await upstream.stream.drain();
         await response.close();
       } else {
-        await response.addStream(upstream);
+        await response.addStream(upstream.stream);
         await response.close();
       }
       WebdavDebugLog.log('Range代理响应 $status range=$range');
     } catch (e) {
       WebdavDebugLog.log('Range代理【异常】: $e');
       try {
-        await upstream?.drain();
+        await upstream?.stream.drain();
       } catch (_) {}
       try {
         response.statusCode = HttpStatus.internalServerError;
         await response.close();
       } catch (_) {}
+    } finally {
+      session.active--;
+      session.notifyIdle();
+      final tmp = upstream?.tempFilePath;
+      if (tmp != null) {
+        session.tempFiles.add(tmp);
+        try {
+          await File(tmp).delete();
+        } catch (_) {}
+        session.tempFiles.remove(tmp);
+      }
     }
+  }
+
+  static String _ensureTempDir() {
+    final dir = Directory('/storage/emulated/0/ZenFile/cache/range');
+    if (!dir.existsSync()) dir.createSync(recursive: true);
+    return dir.path;
   }
 
   String _ext(String name) {
@@ -149,15 +192,45 @@ class HttpRangeProxyService {
 }
 
 class _RangeSession {
-  final WebDavRemoteClient client;
+  final RemoteClient client;
   final String remotePath;
   final String fileName;
+  final int? fileSize;
   final HttpServer server;
+  final String tempDir;
+
+  bool closing = false;
+  int active = 0;
+  Completer<void>? _idleWaiter;
+  final List<String> tempFiles = [];
 
   _RangeSession({
     required this.client,
     required this.remotePath,
     required this.fileName,
+    required this.fileSize,
     required this.server,
+    required this.tempDir,
   });
+
+  Future<void> drain() {
+    if (active <= 0) return Future.value();
+    _idleWaiter ??= Completer<void>();
+    return _idleWaiter!.future;
+  }
+
+  void notifyIdle() {
+    if (active <= 0 && _idleWaiter != null && !_idleWaiter!.isCompleted) {
+      _idleWaiter!.complete();
+    }
+  }
+
+  void clearTemp() {
+    for (final f in tempFiles) {
+      try {
+        File(f).deleteSync();
+      } catch (_) {}
+    }
+    tempFiles.clear();
+  }
 }

@@ -7,6 +7,9 @@ import 'package:path/path.dart' as p;
 import 'remote_client.dart';
 
 class FtpRemoteClient extends RemoteClient {
+  // FTP 的 downloadRange 走 REST 命令做服务端偏移随机读，支持按需区间流式播放。
+  @override
+  bool get supportsRangeRead => true;
   final String host;
   final int port;
   final String username;

@@ -426,18 +426,39 @@ class WebDavRemoteClient extends RemoteClient {
     throw Exception('WebDAV: too many redirects for $urlStr');
   }
 
-  /// 供 `HttpRangeProxyService` 使用：按播放器给出的 **原始 Range 头** 向远端取流，
-  /// 自动跟随 302 并在跳转后保留 Range，返回原始响应交由代理透传。
-  ///
-  /// 与 [downloadFile] 的区别：不做整文件顺序下载，只取播放器当前需要的区间，
-  /// 因此播放器请求文件尾部（MP4 moov）时能**立即**拿到，无需等待顺序下载追上。
-  Future<HttpClientResponse> openRangeResponse(
-    String remotePath, {
-    String? rangeHeader,
+  @override
+  bool get supportsRangeRead => true;
+
+  /// WebDAV 走**原生透传**：把播放器的 Range 头原样发给远端（自动跟随 302 并
+  /// 保留 Range），再原样回传状态码/实体头与响应流，不产生任何本地临时文件。
+  @override
+  Future<RemoteRangeResponse> openRangeResponse(
+    String remotePath,
+    String? rangeHeader, {
+    required String tempDir,
+    int maxChunk = 4 * 1024 * 1024,
+    int? fileSize,
   }) async {
-    return _followRedirectGet(
+    final resp = await _followRedirectGet(
       _baseUrl + Uri.encodeFull(remotePath),
       range: rangeHeader,
+    );
+    final headers = <String, String>{};
+    for (final name in const [
+      'content-type',
+      'content-length',
+      'content-range',
+      'accept-ranges',
+      'etag',
+      'last-modified',
+    ]) {
+      final value = resp.headers.value(name);
+      if (value != null && value.isNotEmpty) headers[name] = value;
+    }
+    return RemoteRangeResponse(
+      statusCode: resp.statusCode,
+      headers: headers,
+      stream: resp,
     );
   }
 

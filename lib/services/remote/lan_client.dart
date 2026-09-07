@@ -36,6 +36,11 @@ class LanDiscoveredServer {
 class LanClient extends RemoteClient {
   static const MethodChannel _channel = MethodChannel('com.sequl.zenfile/smb');
 
+  // SMB 的原生 downloadRange 用 smbj 的 InputStream.skip(offset)（仅更新内部
+  // readOffset，不实际传输被跳过的字节）做随机读，支持按需区间流式播放。
+  @override
+  bool get supportsRangeRead => true;
+
   final String host;
   final int port;
   final String username;

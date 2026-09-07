@@ -10,6 +10,10 @@ import 'remote_client.dart';
 const String _kSftpNativeChannel = 'com.sequl.zenfile/sftpNative';
 
 class SftpRemoteClient extends RemoteClient {
+  // 原生层 downloadRange 用 JSch 的 get(src,dst,monitor,mode,offset) 做服务端
+  // 偏移随机读（SftpProgressMonitor 到量即中止），支持按需区间流式播放。
+  @override
+  bool get supportsRangeRead => true;
   final String host;
   final int port;
   final String username;
