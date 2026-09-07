@@ -458,18 +458,32 @@ class PreferencesService {
     switch (name) {
       case 'orange': return const Color(0xFFFF6D00);
       case 'purple': return const Color(0xFF8E24AA);
-      case 'green': return const Color(0xFF00C853);
+      case 'green': return const Color(0xFF03FCE3);
       case 'red': return const Color(0xFFD50000);
       case 'gold': return const Color(0xFFFFD600);
       case 'pink': return const Color(0xFFFF2E93);
       case 'sapphire': return const Color(0xFF0F52BA);
-      case 'forest': return const Color(0xFF228B22);
+      case 'forest': return const Color(0xFFA9FC03);
       case 'peach': return const Color(0xFFFF7F50);
       case 'blue': return const Color(0xFF369FE7);
+      case 'custom':
+        return getCustomAccentColor();
       case 'dynamic':
       default:
         return const Color(0xFF369FE7);
     }
+  }
+
+  static const String _keyCustomAccentColor = 'custom_accent_color';
+
+  static Color getCustomAccentColor() {
+    final int? value = _prefs?.getInt(_keyCustomAccentColor);
+    if (value != null) return Color(value);
+    return const Color(0xFF03FCE3); // 默认霓虹青
+  }
+
+  static Future<void> saveCustomAccentColor(Color color) async {
+    await _prefs?.setInt(_keyCustomAccentColor, color.value);
   }
 
   static const String _keyFolderIconStyle = 'folder_icon_style';

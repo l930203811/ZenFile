@@ -142,6 +142,23 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
 
   // 解码方式：true=硬解(auto-safe), false=软解(no)，持久化保存
   bool _useHardwareDecode = true;
+
+  // ── 软解自适应画质档位 ────────────────────────────────────────────────
+  // v1.1.41 及之前软解固定写死 skiploopfilter=all（无条件关掉去块滤波），
+  // 低码率视频满屏块状伪影；同时 framedrop 因属性名写错（frame-drop）从未生效，
+  // 于是「糊」和「不流畅」两头都占。现改为：默认画质优先，运行时按解码器丢帧
+  // 计数自动逐级降质，流畅后再自动升回。
+  // 0=画质优先（不跳滤波 + spline36）→ 3=流畅优先（跳全部滤波 + bilinear）
+  int _swQualityTier = 0;
+  Timer? _frameDropWatchTimer;
+  int _frameDropCount = 0; // observeProperty 上报的最新解码器丢帧总数
+  int _frameDropBaseline = 0; // 上一个监测窗口结束时的计数值
+  int _cleanWindowsInARow = 0;
+  static const Duration _frameDropWindow = Duration(seconds: 2);
+  // 一个窗口（2s）内解码器丢帧达到该值即判定「跟不上」，降一级
+  static const int _frameDropDowngradeThreshold = 6;
+  // 连续多少个零丢帧窗口后升一级（20s 完全流畅才恢复画质，避免反复横跳）
+  static const int _cleanWindowsToUpgrade = 10;
   // 外挂字幕改用 Flutter overlay 渲染，确保字号/位置滑块对所有格式 100% 生效
   List<SubtitleCue> _externalCues = [];
   int _activeCueIndex = -1;
@@ -223,9 +240,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         await platform.setProperty('sub-font-size', _subtitleFontSize.round().toString());
         await platform.setProperty('sub-pos', _subtitlePosition.round().toString());
         await _applySubtitleBackgroundProps(platform);
-        // 软解模式额外启用解码性能优化
+        // 软解模式启用「画质优先 + 自适应降质」；硬解模式只提升输出缩放质量
         if (!_useHardwareDecode) {
           await _applySoftwareDecodeOptimizations(platform);
+        } else {
+          await _applyVideoOutputQuality(platform, highQuality: true);
         }
         // 音频均衡器：绑定到当前 mpv 原生播放器，恢复上次使用的预设
         try {
@@ -1432,9 +1451,15 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         await platform.setProperty('sub-font-size', _subtitleFontSize.round().toString());
         await platform.setProperty('sub-pos', _subtitlePosition.round().toString());
         await _applySubtitleBackgroundProps(platform);
-        // 切换到软解时启用性能优化
+        // 切换解码方式会重建 Player，旧的丢帧监测必须停掉（其 Timer 持有已废弃
+        // 的 platform 引用），否则会对着销毁中的播放器 setProperty。
+        _stopFrameDropWatch();
+        _swQualityTier = 0;
+        _cleanWindowsInARow = 0;
         if (!useHardware) {
           await _applySoftwareDecodeOptimizations(platform);
+        } else {
+          await _applyVideoOutputQuality(platform, highQuality: true);
         }
       }
     } catch (e) {
@@ -1504,25 +1529,121 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     });
   }
 
-  /// 软解模式性能优化：调整 mpv 属性减少 CPU 解码压力，降低卡顿。
-  /// 仅在 hwdec=no 时调用，硬解模式下不需要（GPU 已高效处理）。
+  /// 视频输出缩放质量。与解码方式无关——走的是 vo=gpu 的 shader，硬解/软解同样受益。
+  /// mpv 默认 scale=bilinear，480p/720p 全屏放大时明显发软，这是「糊」的第二来源。
+  Future<void> _applyVideoOutputQuality(NativePlayer platform,
+      {required bool highQuality}) async {
+    try {
+      // 亮度上采样：spline36 锐利且无明显振铃，GPU 开销中等
+      await platform.setProperty('scale', highQuality ? 'spline36' : 'bilinear');
+      // 色度上采样，与亮度保持一致
+      await platform.setProperty('cscale', highQuality ? 'spline36' : 'bilinear');
+      // 降采样（4K 片源 → 1080p 屏幕）用 mitchell，抗锯齿优于 spline36、不易振铃
+      await platform.setProperty('dscale', highQuality ? 'mitchell' : 'bilinear');
+    } catch (e) {
+      debugPrint('视频缩放质量设置失败: $e');
+    }
+  }
+
+  /// 软解模式性能优化：**画质优先起步 + 运行时自适应降质**。
+  ///
+  /// 仅供 hwdec=no 时调用，硬解模式下不需要（GPU 已高效处理）。
   Future<void> _applySoftwareDecodeOptimizations(NativePlayer platform) async {
     try {
       // 多线程解码：0=自动根据 CPU 核心数分配线程
       await platform.setProperty('vd-lavc-threads', '0');
-      // 跳过环路滤波：牺牲少量画质换取显著性能提升（软解卡顿的主要优化手段）
-      await platform.setProperty('vd-lavc-skiploopfilter', 'all');
-      // 允许丢帧保持音画同步：解码跟不上时优先保音频连续
-      await platform.setProperty('frame-drop', 'decoder');
+      // 解码队列：让解码在独立线程提前预解码，软解吞吐与平稳度提升明显
+      await platform.setProperty('vd-queue-enable', 'yes');
+      // 允许丢帧保持音画同步：解码跟不上时优先保音频连续。
+      // ⚠️ 属性名是 framedrop（无连字符）。此前写成 frame-drop，mpv 静默忽略、
+      //    异常被 try/catch 吞掉，这条「保流畅」的设置从未真正生效；而为了流畅
+      //    又无条件跳滤波牺牲画质，结果「糊」和「不流畅」两头都占。
+      await platform.setProperty('framedrop', 'decoder');
       // 增大解复用缓冲区，减少高码率视频卡顿
       await platform.setProperty('demuxer-max-bytes', '300M');
       await platform.setProperty('demuxer-readahead-secs', '60');
       // 增大播放缓存时长，减少网络视频卡顿
       await platform.setProperty('cache-secs', '60');
-      // 快速解码模式：启用 libavcodec 内部优化
-      await platform.setProperty('vd-lavc-fast', '1');
+      // 画质优先档位起步（不跳滤波 + spline36）
+      _swQualityTier = 0;
+      _cleanWindowsInARow = 0;
+      await _applyQualityTier(platform);
+      // 启动丢帧监测，卡顿时自动降质、恢复后自动升回
+      await _startFrameDropWatch(platform);
     } catch (e) {
       debugPrint('软解性能优化设置失败: $e');
+    }
+  }
+
+  /// 按当前档位应用「画质 ↔ 性能」相关属性。
+  /// tier: 0=不跳滤波（最清晰）1=跳非参考帧 2=跳双向帧 3=全跳（最快）
+  Future<void> _applyQualityTier(NativePlayer platform) async {
+    const skiploopfilter = ['none', 'nonref', 'bidir', 'all'];
+    final tier = _swQualityTier.clamp(0, 3);
+    try {
+      await platform.setProperty('vd-lavc-skiploopfilter', skiploopfilter[tier]);
+      // fast 会牺牲少量解码精度，仅在已经很吃力的最高档才启用
+      await platform.setProperty('vd-lavc-fast', tier >= 3 ? '1' : '0');
+      await _applyVideoOutputQuality(platform, highQuality: tier < 3);
+    } catch (e) {
+      debugPrint('画质档位($tier)应用失败: $e');
+    }
+  }
+
+  /// 观察 mpv 的解码器丢帧计数，按时间窗口自动升降画质档位。
+  Future<void> _startFrameDropWatch(NativePlayer platform) async {
+    _stopFrameDropWatch();
+    try {
+      _frameDropCount = 0;
+      _frameDropBaseline = 0;
+      await platform.observeProperty('decoder-frame-drop-count', (value) async {
+        final n = int.tryParse(value.trim()) ?? 0;
+        // 打开新片源时计数会归零，此时重置基线并回到画质优先，不误判为「流畅」
+        if (n < _frameDropCount) {
+          _frameDropBaseline = 0;
+          _swQualityTier = 0;
+          _cleanWindowsInARow = 0;
+        }
+        _frameDropCount = n;
+      });
+      _frameDropWatchTimer = Timer.periodic(
+        _frameDropWindow,
+        (_) => unawaited(_onFrameDropWindow()),
+      );
+    } catch (e) {
+      debugPrint('解码丢帧监测启动失败: $e');
+    }
+  }
+
+  void _stopFrameDropWatch() {
+    _frameDropWatchTimer?.cancel();
+    _frameDropWatchTimer = null;
+  }
+
+  /// 一个监测窗口结束：根据丢帧增量决定升档/降档。
+  Future<void> _onFrameDropWindow() async {
+    if (!mounted) return;
+    final platform = player.platform;
+    if (platform is! NativePlayer) return;
+    final delta = _frameDropCount - _frameDropBaseline;
+    _frameDropBaseline = _frameDropCount;
+    if (delta >= _frameDropDowngradeThreshold) {
+      // 解码持续跟不上：降一级画质换流畅
+      _cleanWindowsInARow = 0;
+      if (_swQualityTier < 3) {
+        _swQualityTier++;
+        await _applyQualityTier(platform);
+      }
+    } else if (delta == 0 && _frameDropCount > 0) {
+      // 完全不丢帧：连续多个窗口后才升回，避免在阈值附近反复横跳
+      _cleanWindowsInARow++;
+      if (_cleanWindowsInARow >= _cleanWindowsToUpgrade && _swQualityTier > 0) {
+        _swQualityTier--;
+        _cleanWindowsInARow = 0;
+        await _applyQualityTier(platform);
+      }
+    } else {
+      _cleanWindowsInARow = 0;
     }
   }
 

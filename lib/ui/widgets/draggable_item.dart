@@ -31,49 +31,46 @@ class _DraggableItemState extends State<DraggableItem> {
 
   @override
   Widget build(BuildContext context) {
-    return Listener(
-      // 手指按下即抑制左右滑动切页，避免长按等待拖动的 600ms 内移动被误判为切页
-      onPointerDown: (_) {
-        context.read<FileManagerProvider>().setFileDragInteracting(true);
+    // 注意：这里刻意不再用 Listener 在「按下瞬间」就置位 fileDragInteracting。
+    // 文件项占浏览页绝大部分面积，一旦按下即抑制，落在文件上的普通左右滑动
+    // 会被全部误杀，表现为切页失效/极不灵敏（v1.1.41 问题）。
+    // 改为只在拖拽「真正开始」后（onDragStarted）才置位，结束时复位；
+    // 长按未触发拖动的普通点按/滑动完全不受影响。
+    return LongPressDraggable<DragPayload>(
+      data: widget.data,
+      feedback: widget.feedback,
+      dragAnchorStrategy: pointerDragAnchorStrategy,
+      delay: widget.delay,
+      onDragStarted: () {
+        _hasMoved = false;
+        final provider = context.read<FileManagerProvider>();
+        provider.setDragging(true);
+        provider.setFileDragInteracting(true);
+        widget.onDragStarted?.call();
       },
-      onPointerUp: (_) {
-        context.read<FileManagerProvider>().setFileDragInteracting(false);
+      onDragUpdate: (details) {
+        if (details.delta.dx.abs() > 20.0 || details.delta.dy.abs() > 20.0) {
+          _hasMoved = true;
+        }
       },
-      onPointerCancel: (_) {
-        context.read<FileManagerProvider>().setFileDragInteracting(false);
+      onDragEnd: (details) {
+        final provider = context.read<FileManagerProvider>();
+        provider.setDragging(false);
+        provider.setFileDragInteracting(false);
+        if (!_hasMoved && widget.onLongPress != null) {
+          widget.onLongPress!();
+        }
       },
-      child: LongPressDraggable<DragPayload>(
-        data: widget.data,
-        feedback: widget.feedback,
-        dragAnchorStrategy: pointerDragAnchorStrategy,
-        delay: widget.delay,
-        onDragStarted: () {
-          _hasMoved = false;
-          context.read<FileManagerProvider>().setDragging(true);
-          widget.onDragStarted?.call();
-        },
-        onDragUpdate: (details) {
-          if (details.delta.dx.abs() > 20.0 || details.delta.dy.abs() > 20.0) {
-            _hasMoved = true;
-          }
-        },
-        onDragEnd: (details) {
-          context.read<FileManagerProvider>().setDragging(false);
-          context.read<FileManagerProvider>().setFileDragInteracting(false);
-          if (!_hasMoved && widget.onLongPress != null) {
-            widget.onLongPress!();
-          }
-        },
-        onDraggableCanceled: (velocity, offset) {
-          context.read<FileManagerProvider>().setDragging(false);
-          context.read<FileManagerProvider>().setFileDragInteracting(false);
-        },
-        childWhenDragging: Opacity(
-          opacity: 0.35,
-          child: widget.child,
-        ),
+      onDraggableCanceled: (velocity, offset) {
+        final provider = context.read<FileManagerProvider>();
+        provider.setDragging(false);
+        provider.setFileDragInteracting(false);
+      },
+      childWhenDragging: Opacity(
+        opacity: 0.35,
         child: widget.child,
       ),
+      child: widget.child,
     );
   }
 }

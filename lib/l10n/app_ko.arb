@@ -1623,7 +1623,7 @@
   "@msg508b005e": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg508b005e": "포레스트 그린",
+  "msg508b005e": "라임 그린",
   "@msgefdde083": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -3177,7 +3177,7 @@
   "ui_remember_filter": "필터 기억",
   "msg_remember_filter_desc": "꺼두면 이번 세션에만 적용",
   "ui_app_icon": "앱 아이콘",
-  "ui_emerald_green": "에메랄드 그린",
+  "ui_emerald_green": "네온 시안",
   "ui_deep_red": "딥 레드",
   "ui_square": "사각형",
   "ui_circle": "원형",
@@ -6593,5 +6593,17 @@
   "vt_silent_fallback": "자동 설치를 시도했지만 권한이 부족합니다. 시스템 설치 프로그램을 사용합니다",
   "@vt_silent_fallback": {
     "description": "silent install fallback to system installer notice"
+  },
+  "ui_nav_back": "뒤로",
+  "@ui_nav_back": {
+    "description": "File browser action bar: go back in navigation history"
+  },
+  "ui_nav_forward": "앞으로",
+  "@ui_nav_forward": {
+    "description": "File browser action bar: go forward in navigation history"
+  },
+  "ui_custom_theme": "사용자 정의",
+  "@ui_custom_theme": {
+    "description": "ui\\screens\\more_settings_screen.dart"
   }
 }

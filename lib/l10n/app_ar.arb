@@ -1623,7 +1623,7 @@
   "@msg508b005e": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg508b005e": "أخضر غابي",
+  "msg508b005e": "أخضر ليموني",
   "@msgefdde083": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -3177,7 +3177,7 @@
   "ui_remember_filter": "تذكر الفلتر",
   "msg_remember_filter_desc": "فعال لهذه الجلسة فقط عند الإيقاف",
   "ui_app_icon": "أيقونة التطبيق",
-  "ui_emerald_green": "أخضر زمردي",
+  "ui_emerald_green": "سماوي نيون",
   "ui_deep_red": "أحمر داكن",
   "ui_square": "مربع",
   "ui_circle": "دائرة",
@@ -6593,5 +6593,17 @@
   "vt_silent_fallback": "تمت محاولة التثبيت الصامت لكن دون إذن؛ سيتم استخدام مثبّت النظام",
   "@vt_silent_fallback": {
     "description": "silent install fallback to system installer notice"
+  },
+  "ui_nav_back": "رجوع",
+  "@ui_nav_back": {
+    "description": "File browser action bar: go back in navigation history"
+  },
+  "ui_nav_forward": "التالي",
+  "@ui_nav_forward": {
+    "description": "File browser action bar: go forward in navigation history"
+  },
+  "ui_custom_theme": "مخصص",
+  "@ui_custom_theme": {
+    "description": "ui\\screens\\more_settings_screen.dart"
   }
 }

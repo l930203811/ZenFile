@@ -1623,7 +1623,7 @@
   "@msg508b005e": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg508b005e": "Verde Bosque",
+  "msg508b005e": "Verde lima",
   "@msgefdde083": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -3177,7 +3177,7 @@
   "ui_remember_filter": "Recordar filtro",
   "msg_remember_filter_desc": "Solo efectivo para esta sesión si está desactivado",
   "ui_app_icon": "Icono de la App",
-  "ui_emerald_green": "Verde Esmeralda",
+  "ui_emerald_green": "Cian neón",
   "ui_deep_red": "Rojo Profundo",
   "ui_square": "Cuadrado",
   "ui_circle": "Círculo",
@@ -6593,5 +6593,17 @@
   "vt_silent_fallback": "Se intentó la instalación silenciosa, pero faltó permiso; se usará el instalador del sistema",
   "@vt_silent_fallback": {
     "description": "silent install fallback to system installer notice"
+  },
+  "ui_nav_back": "Atrás",
+  "@ui_nav_back": {
+    "description": "File browser action bar: go back in navigation history"
+  },
+  "ui_nav_forward": "Adelante",
+  "@ui_nav_forward": {
+    "description": "File browser action bar: go forward in navigation history"
+  },
+  "ui_custom_theme": "Personalizado",
+  "@ui_custom_theme": {
+    "description": "ui\\screens\\more_settings_screen.dart"
   }
 }

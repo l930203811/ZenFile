@@ -1291,7 +1291,7 @@ class L10nJa extends L10n {
   String get msgd58d230a => 'サファイアブルー';
 
   @override
-  String get msg508b005e => 'フォレストグリーン';
+  String get msg508b005e => 'ライムグリーン';
 
   @override
   String get msgefdde083 => 'サンセットピーチ';
@@ -2769,7 +2769,7 @@ class L10nJa extends L10n {
   String get ui_app_icon => 'アプリアイコン';
 
   @override
-  String get ui_emerald_green => 'エメラルドグリーン';
+  String get ui_emerald_green => 'ネオンシアン';
 
   @override
   String get ui_deep_red => 'ディープレッド';
@@ -6386,4 +6386,13 @@ class L10nJa extends L10n {
   @override
   String get vt_silent_fallback =>
       'サイレントインストールを試みましたが権限が不足していました。システムインストーラーを使用します';
+
+  @override
+  String get ui_nav_back => '戻る';
+
+  @override
+  String get ui_nav_forward => '進む';
+
+  @override
+  String get ui_custom_theme => 'カスタム';
 }

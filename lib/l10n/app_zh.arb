@@ -1656,7 +1656,7 @@
   "@msgd58d230a": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
-  "msg508b005e": "森林绿",
+  "msg508b005e": "青柠绿",
   "@msg508b005e": {
     "description": "ui\\screens\\more_settings_screen.dart"
   },
@@ -3266,7 +3266,7 @@
   "ui_remember_filter": "记住过滤",
   "msg_remember_filter_desc": "关闭后仅本次生效",
   "ui_app_icon": "应用图标",
-  "ui_emerald_green": "翠绿",
+  "ui_emerald_green": "霓虹青",
   "ui_deep_red": "深红",
   "ui_square": "方形",
   "ui_circle": "圆形",
@@ -6880,5 +6880,17 @@
   "vt_silent_fallback": "已尝试静默安装，权限不足，改用系统安装器",
   "@vt_silent_fallback": {
     "description": "silent install fallback to system installer notice"
+  },
+  "ui_nav_back": "后退",
+  "@ui_nav_back": {
+    "description": "File browser action bar: go back in navigation history"
+  },
+  "ui_nav_forward": "前进",
+  "@ui_nav_forward": {
+    "description": "File browser action bar: go forward in navigation history"
+  },
+  "ui_custom_theme": "自定义",
+  "@ui_custom_theme": {
+    "description": "ui\\screens\\more_settings_screen.dart"
   }
 }

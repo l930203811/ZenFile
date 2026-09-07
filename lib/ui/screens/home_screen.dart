@@ -37,8 +37,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
   // 单指滑动追踪（用 Listener 而非 GestureDetector，避免手势竞技场冲突）
   Offset? _singleFingerStart;
   Offset? _singleFingerLast;
+  DateTime? _singleFingerStartTime;
   DateTime? _singleFingerLastTime;
+  // 本次手势期间是否真的发生过「文件长按拖拽」。v1.1.41 用 fileDragInteracting
+  // 在 down 阶段就掐断追踪，而该标志在任一文件项按下时即置位，导致落在文件上的
+  // 正常滑动永远不触发切页（浏览页绝大部分面积都被文件项覆盖）。改为只在拖拽
+  // 真正开始后才抑制，既保留防误触又恢复灵敏度。
+  bool _dragStartedDuringGesture = false;
   static const double _dualFingerSwipeThreshold = 30.0;
+  // 单指切页阈值：最小水平位移 / 免速度门槛的长位移 / 最小速度 / 边缘保护
+  static const double _swipeMinDistance = 64.0;
+  static const double _swipeLongDistance = 110.0;
+  static const double _swipeMinVelocity = 260.0;
+  static const double _swipeEdgeGuard = 36.0;
 
   @override
   void initState() {
@@ -253,15 +264,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                 // 地址栏（面包屑）或分类网格的交互不触发页面左右滑动切换：
                 // 起点落在面包屑/类别图标上时，内层 Listener 已先置位对应标志，
                 // 此处跳过本次手势追踪（仅登记指针以便 up 时正常清理）。
-                if (fileProvider.breadcrumbInteracting || fileProvider.categoryReorderInteracting || fileProvider.tabBarInteracting || fileProvider.fileDragInteracting) {
+                // 注意：此处刻意不拦截 fileDragInteracting。该标志在任一文件项
+                // 按下时即置位，若在此 return，落在文件上的滑动（浏览页绝大部分
+                // 面积）将永远拿不到起始点，表现为「左右滑动切页失效/极不灵敏」。
+                // 真正的拖拽抑制下移到 move/up 阶段按「拖拽是否真的开始」判定。
+                if (fileProvider.breadcrumbInteracting || fileProvider.categoryReorderInteracting || fileProvider.tabBarInteracting) {
                   _activePointers[event.pointer] = event.position;
                   return;
                 }
                 _activePointers[event.pointer] = event.position;
                 if (_activePointers.length == 1) {
                   // 单指开始追踪
+                  _dragStartedDuringGesture = false;
                   _singleFingerStart = event.position;
                   _singleFingerLast = event.position;
+                  _singleFingerStartTime = DateTime.now();
                   _singleFingerLastTime = DateTime.now();
                 } else if (_activePointers.length == 2) {
                   // 双指开始追踪
@@ -278,8 +295,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                 if (_activePointers.containsKey(event.pointer)) {
                   _activePointers[event.pointer] = event.position;
                 }
+                final fp = context.read<FileManagerProvider>();
                 // 分类页拖拽排序期间：放弃本次单指滑动追踪，避免误触切页
-                if (context.read<FileManagerProvider>().categoryReorderInteracting || context.read<FileManagerProvider>().fileDragInteracting) {
+                if (fp.categoryReorderInteracting) {
+                  _singleFingerStart = null;
+                  _singleFingerLast = null;
+                  return;
+                }
+                // 文件长按拖拽「真正开始」后：放弃本次滑动追踪。仅凭
+                // fileDragInteracting 不够——它在任一文件项按下时就置位，
+                // 会把正常滑动一并误杀（v1.1.41 切页迟钝的根因）。
+                if (fp.isDragging) {
+                  _dragStartedDuringGesture = true;
                   _singleFingerStart = null;
                   _singleFingerLast = null;
                   return;
@@ -320,34 +347,36 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                 // 单指滑动处理（Listener 级别，不进入手势竞技场）
                 if (_activePointers.length == 1 && _singleFingerStart != null) {
                   final fileProvider = context.read<FileManagerProvider>();
-                  // 拖拽操作期间不处理滑动（文件拖拽 or 分类页类别排序拖拽）
-                  if (fileProvider.isDragging || fileProvider.categoryReorderInteracting || fileProvider.fileDragInteracting) {
-                    // 拖拽中，不处理滑动
+                  // 本次手势真的拖拽过文件 / 正在拖拽 / 分类排序拖拽：不切页
+                  if (_dragStartedDuringGesture || fileProvider.isDragging || fileProvider.categoryReorderInteracting) {
                     _singleFingerStart = null;
                     _singleFingerLast = null;
                   } else if (fileProvider.enableSingleFingerSwipe) {
                     final screenWidth = MediaQuery.of(context).size.width;
                     final startX = _singleFingerStart!.dx;
-                    // 屏幕边缘 48px 留给系统返回手势，不处理
-                    if (startX >= 48.0 && startX <= screenWidth - 48.0) {
-                      final endPos = _activePointers.values.first;
+                    // 屏幕边缘留给系统返回手势，不处理
+                    if (startX >= _swipeEdgeGuard && startX <= screenWidth - _swipeEdgeGuard) {
+                      final endPos = _singleFingerLast ?? event.position;
                       final dx = endPos.dx - _singleFingerStart!.dx;
                       final dy = endPos.dy - _singleFingerStart!.dy;
-                      // 垂直滑动主导时不触发左右切换（避免上下滚动误触）
-                      if (dy.abs() > dx.abs()) {
-                        // 上下滑动，不处理
-                      } else {
-                        // 最小滑动距离 80px，避免拖拽操作误触
-                        if (dx.abs() < 80.0) {
-                          // 滑动距离太小，不处理
-                        } else {
-                          final dt = DateTime.now().difference(_singleFingerLastTime!).inMilliseconds;
-                          final velocity = dt > 0 ? (dx / dt) * 1000 : 0.0; // px/s
-                          if (velocity < -300) {
+                      // 明显竖向滚动不切页；给 1.2 倍斜向容差，避免斜划被吞掉
+                      final horizontalDominant = dy.abs() <= dx.abs() * 1.2;
+                      // 最小水平位移 64px（v1.1.41 为 80px，偏迟钝）
+                      if (horizontalDominant && dx.abs() >= _swipeMinDistance) {
+                        // 速度按「整段手势时长」计算。v1.1.41 用的是「最后一次
+                        // move 到抬手」的间隔，抬手前稍作停顿速度就趋近 0，
+                        // 导致明明滑了很远也不切页——这是迟钝的第二大来源。
+                        final startT = _singleFingerStartTime ?? DateTime.now();
+                        final lastT = _singleFingerLastTime ?? DateTime.now();
+                        final totalMs = lastT.difference(startT).inMilliseconds;
+                        final velocity = totalMs > 0 ? (dx / totalMs) * 1000 : 0.0; // px/s
+                        // 快速轻扫 或 慢速长划（位移够大即忽略速度门槛）
+                        if (velocity.abs() >= _swipeMinVelocity || dx.abs() >= _swipeLongDistance) {
+                          if (dx < 0) {
                             // 向左滑动：分类页→浏览页，浏览页→快捷操作页面
                             if (_currentIndex == 0) _switchTab(1);
                             else if (_currentIndex == 1) _scaffoldKey.currentState?.openEndDrawer();
-                          } else if (velocity > 300) {
+                          } else {
                             // 向右滑动：快捷操作页面关闭、浏览页→分类页、分类页→抽屉
                             if (_currentIndex == 0) {
                               _scaffoldKey.currentState?.openDrawer();
@@ -370,6 +399,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                 if (_activePointers.isEmpty) {
                   _singleFingerStart = null;
                   _singleFingerLast = null;
+                  _singleFingerStartTime = null;
+                  _dragStartedDuringGesture = false;
                   // 分类拖拽排序结束：恢复左右滑动切页能力。
                   // 必须在 home 手势处理完（含切页判定）后才清，否则会与 onReorderEnd
                   // 竞争，导致抬起瞬间标志已 false 而被误判为「非拖拽」触发切页。
@@ -384,6 +415,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Si
                 if (_activePointers.isEmpty) {
                   _singleFingerStart = null;
                   _singleFingerLast = null;
+                  _singleFingerStartTime = null;
+                  _dragStartedDuringGesture = false;
                   // 分类拖拽排序结束：恢复左右滑动切页能力。
                   // 必须在 home 手势处理完（含切页判定）后才清，否则会与 onReorderEnd
                   // 竞争，导致抬起瞬间标志已 false 而被误判为「非拖拽」触发切页。

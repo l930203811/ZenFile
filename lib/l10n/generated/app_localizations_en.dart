@@ -1355,7 +1355,7 @@ class L10nEn extends L10n {
   String get msgd58d230a => 'Sapphire Blue';
 
   @override
-  String get msg508b005e => 'Forest Green';
+  String get msg508b005e => 'Lime Green';
 
   @override
   String get msgefdde083 => 'Sunset Peach';
@@ -2857,7 +2857,7 @@ class L10nEn extends L10n {
   String get ui_app_icon => 'App Icon';
 
   @override
-  String get ui_emerald_green => 'Emerald Green';
+  String get ui_emerald_green => 'Neon Cyan';
 
   @override
   String get ui_deep_red => 'Deep Red';
@@ -6585,4 +6585,13 @@ class L10nEn extends L10n {
   @override
   String get vt_silent_fallback =>
       'Silent install attempted but lacked permission; using the system installer';
+
+  @override
+  String get ui_nav_back => 'Back';
+
+  @override
+  String get ui_nav_forward => 'Forward';
+
+  @override
+  String get ui_custom_theme => 'Custom';
 }
