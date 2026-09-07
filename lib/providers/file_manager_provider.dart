@@ -7434,7 +7434,7 @@ class FileManagerProvider extends ChangeNotifier {
         // "打开" → 本应用内置播放器；"打开方式..." → 系统选择器（VLC 等也可流式播放）
         if (isVideoFile || isAudioFile) {
           // 优先尝试直接流式 URL（WebDAV 支持 HTTP 流）
-          final streamUrl = remoteClient.getStreamUrl(remotePath);
+          final streamUrl = await remoteClient.getStreamUrl(remotePath);
           if (streamUrl != null) {
             if (openAction == 'external') {
               // 系统选择器打开流式 URL
