@@ -1068,6 +1068,34 @@ class MainActivity : AudioServiceFragmentActivity() {
                         }
                     }
                 }
+                "createDocumentFile" -> {
+                    // 在 SAF 已授权树内创建空文件（等同于 touch），用于其它应用
+                    // Android/{data,obb} 下纯 Shizuku(shell uid 2000) 经 FUSE 无写权限的场景。
+                    val rootUriStr = call.argument<String>("rootUri") ?: ""
+                    val parentUriStr = call.argument<String>("parentUri") ?: ""
+                    val name = call.argument<String>("name") ?: "file"
+                    val mimeType = call.argument<String>("mimeType") ?: "application/octet-stream"
+                    executor.execute {
+                        try {
+                            val rootUri = Uri.parse(rootUriStr)
+                            val parentDocId = if (parentUriStr.isNotEmpty()) {
+                                DocumentsContract.getDocumentId(Uri.parse(parentUriStr))
+                            } else {
+                                DocumentsContract.getTreeDocumentId(rootUri)
+                            }
+                            val parentUri = DocumentsContract.buildDocumentUriUsingTree(rootUri, parentDocId)
+                            val newUri = DocumentsContract.createDocument(
+                                contentResolver,
+                                parentUri,
+                                mimeType,
+                                name
+                            )
+                            runOnUiThread { result.success(newUri?.toString()) }
+                        } catch (e: Exception) {
+                            runOnUiThread { result.error("CREATE_ERROR", e.message, null) }
+                        }
+                    }
+                }
                 "delete" -> {
                     val rootUriStr = call.argument<String>("rootUri") ?: ""
                     val uriStr = call.argument<String>("uri") ?: ""

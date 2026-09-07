@@ -301,6 +301,18 @@ class RootShizukuService {
   }
 
   static Future<void> createFolder(String parentPath, String name, {required bool useRoot}) async {
+    // 纯 Shizuku（无 root）受限目录：shell(uid 2000) 经 FUSE 层无其它应用
+    // Android/{data,obb} 子目录的写权限，mkdir 必然失败。改走 SAF 的
+    // DocumentsContract.createDocument（与 MT 管理器同源方案，需已授权树）。
+    if (!useRoot && _isRestrictedAndroidPath(parentPath)) {
+      final ok = await SafAndroidDataService.createFolderViaSaf(
+        parentPath,
+        name,
+        isObb: parentPath.contains('/Android/obb/'),
+      );
+      if (ok) return;
+      // SAF 不可用/被拒：回退 shell（多半失败，由上层抛错提示用户授权）
+    }
     final cleanParent = _toFuseBypassPath(_normalize(parentPath));
     final cleanPath = p.join(cleanParent, name);
     final cmd = 'mkdir -p "$cleanPath"';
@@ -308,6 +320,14 @@ class RootShizukuService {
   }
 
   static Future<void> createFile(String parentPath, String name, {required bool useRoot}) async {
+    if (!useRoot && _isRestrictedAndroidPath(parentPath)) {
+      final ok = await SafAndroidDataService.createFileViaSaf(
+        parentPath,
+        name,
+        isObb: parentPath.contains('/Android/obb/'),
+      );
+      if (ok) return;
+    }
     final cleanParent = _toFuseBypassPath(_normalize(parentPath));
     final cleanPath = p.join(cleanParent, name);
     final cmd = 'touch "$cleanPath"';
@@ -770,6 +790,112 @@ class SafAndroidDataService {
       debugPrint('[ZenFile] SAF copyFileViaSaf failed: $e');
       return false;
     }
+  }
+
+  /// 将本地路径映射到 SAF 父目录的 document URI（基于已授权的 Android/data 或 obb 树）。
+  /// [parentLocalPath] 形如 /storage/emulated/0/Android/data/com.tencent.mm/Telegram Images。
+  /// 返回 {'treeUri':..., 'parentUri':...}；未授权（且用户拒绝授权）则返回 null。
+  static Future<Map<String, String>?> _resolveSafParent(String parentLocalPath, {bool isObb = false}) async {
+    var treeUri = isObb ? await getAndroidObbTreeUri() : await getAndroidDataTreeUri();
+    if (treeUri == null || treeUri.isEmpty) {
+      // 未授权则尝试请求（首次创建会弹系统选择器）
+      treeUri = isObb ? await requestAndroidObbAccess() : await requestAndroidDataAccess();
+    }
+    if (treeUri == null || treeUri.isEmpty) return null;
+    final rel = parentLocalPath.startsWith('/storage/emulated/0/')
+        ? parentLocalPath.substring('/storage/emulated/0/'.length)
+        : parentLocalPath;
+    if (!rel.startsWith('Android/')) return null;
+    final docId = 'primary:$rel';
+    final parentUri = _buildSafDocUri(treeUri, docId);
+    return {'treeUri': treeUri, 'parentUri': parentUri};
+  }
+
+  /// 经 SAF（已授权树）在受限目录下新建文件夹。
+  /// 纯 Shizuku（无 root）下 shell(uid 2000) 经 FUSE 无其它应用 Android/{data,obb} 写权限，
+  /// 故走 DocumentsContract.createDocument（与 MT 管理器同源方案）。未授权自动请求。
+  /// 返回是否成功。
+  static Future<bool> createFolderViaSaf(String parentLocalPath, String name, {bool isObb = false}) async {
+    final resolved = await _resolveSafParent(parentLocalPath, isObb: isObb);
+    if (resolved == null) return false;
+    try {
+      final result = await _channel.invokeMethod('createDirectory', {
+        'rootUri': resolved['treeUri'],
+        'parentUri': resolved['parentUri'],
+        'name': name,
+      });
+      return result != null && result.toString().isNotEmpty;
+    } catch (e) {
+      debugPrint('[ZenFile] SAF createFolderViaSaf failed: $e');
+      return false;
+    }
+  }
+
+  /// 经 SAF 在受限目录下新建空文件（等同于 touch）。其余同 [createFolderViaSaf]。
+  static Future<bool> createFileViaSaf(String parentLocalPath, String name, {bool isObb = false}) async {
+    final resolved = await _resolveSafParent(parentLocalPath, isObb: isObb);
+    if (resolved == null) return false;
+    final ext = name.contains('.') ? name.split('.').last.toLowerCase() : '';
+    final mime = _safMimeForExt(ext);
+    try {
+      final result = await _channel.invokeMethod('createDocumentFile', {
+        'rootUri': resolved['treeUri'],
+        'parentUri': resolved['parentUri'],
+        'name': name,
+        'mimeType': mime,
+      });
+      return result != null && result.toString().isNotEmpty;
+    } catch (e) {
+      debugPrint('[ZenFile] SAF createFileViaSaf failed: $e');
+      return false;
+    }
+  }
+
+  /// 经 SAF 把本地文件上传（创建并写入内容）到受限父目录下，文件名 [fileName]。
+  /// 用于压缩包等需要写入内容的场景（纯 Shizuku 无 shell 写权限）。
+  static Future<bool> uploadFileViaSaf(String localPath, String parentLocalPath, String fileName, {bool isObb = false}) async {
+    final resolved = await _resolveSafParent(parentLocalPath, isObb: isObb);
+    if (resolved == null) return false;
+    try {
+      final result = await _channel.invokeMethod('uploadFile', {
+        'rootUri': resolved['treeUri'],
+        'parentUri': resolved['parentUri'],
+        'localPath': localPath,
+        'fileName': fileName,
+      });
+      return result == true;
+    } catch (e) {
+      debugPrint('[ZenFile] SAF uploadFileViaSaf failed: $e');
+      return false;
+    }
+  }
+
+  /// 受限目录下新建文件常用的 MIME 推断（Dart 侧无通用 MimeTypeMap，内联常见映射）。
+  static String _safMimeForExt(String ext) {
+    const map = {
+      'txt': 'text/plain',
+      'log': 'text/plain',
+      'csv': 'text/csv',
+      'json': 'application/json',
+      'xml': 'application/xml',
+      'html': 'text/html',
+      'htm': 'text/html',
+      'css': 'text/css',
+      'js': 'application/javascript',
+      'md': 'text/markdown',
+      'pdf': 'application/pdf',
+      'png': 'image/png',
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'gif': 'image/gif',
+      'webp': 'image/webp',
+      'mp3': 'audio/mpeg',
+      'wav': 'audio/x-wav',
+      'mp4': 'video/mp4',
+      'zip': 'application/zip',
+      'apk': 'application/vnd.android.package-archive',
+    };
+    return map[ext] ?? 'application/octet-stream';
   }
 
   /// 由 document ID 构建可被原生 `downloadFile` 解析的 content:// document URI。

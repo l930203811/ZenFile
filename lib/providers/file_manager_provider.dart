@@ -2902,12 +2902,14 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
-  /// 检测所有存储卷（内部存储 + SD 卡 + U 盘/OTG）。
+  /// 检测所有存储卷（内部存储 + SD 卡 + U 盘/OTG，支持 NTFS/exFAT 等非原生文件系统）。
   /// 优化点：
   /// 1. 反射 API 中 path 为空时从 id 推断路径（如 XXXX-XXXX → /storage/XXXX-XXXX）
   /// 2. 检查 isMounted 状态，只添加已挂载的卷
   /// 3. 即使反射 API 有结果，也继续走回退逻辑合并检测到的卷（修复 U 盘被跳过的问题）
   /// 4. 增强回退逻辑，枚举 /mnt/media_rw/ 目录（部分 ROM U 盘挂载点）
+  /// 5. 解析 /proc/mounts（最可靠方式，可检测 NTFS/exFAT/ext4 等非原生文件系统的 U 盘）
+  /// 6. 枚举更多常见 U 盘挂载路径（不同 ROM 挂载点不同，如 /mnt/usb_storage、/mnt/udisk 等）
   Future<void> _detectStorageVolumes() async {
     final volumes = <StorageVolume>[];
     final seenPaths = <String>{};
@@ -3035,6 +3037,95 @@ class FileManagerProvider extends ChangeNotifier {
           }
         }
       } catch (_) {}
+
+      // 2.4 解析 /proc/mounts（最可靠的方式，可检测 NTFS/exFAT 等非原生文件系统的 U 盘）
+      // /proc/mounts 格式：device mount_point filesystem_type options dump pass
+      try {
+        final mountsFile = File('/proc/mounts');
+        if (mountsFile.existsSync()) {
+          final lines = mountsFile.readAsLinesSync();
+          // 可移动存储常见的文件系统类型
+          const removableFsTypes = {
+            'vfat', 'fat', 'fat32', 'ntfs', 'exfat', 'ext4', 'ext3', 'ext2',
+            'f2fs', 'fuseblk', 'fuse.ntfs', 'fuse.exfat', 'sdcardfs', 'esdfs',
+          };
+          // 可移动存储常见的挂载点前缀
+          const removablePrefixes = [
+            '/storage/', '/mnt/media_rw/', '/mnt/usb', '/mnt/udisk',
+            '/mnt/usb_storage', '/mnt/usbhost', '/storage/usbdisk',
+            '/storage/usb', '/mnt/sdcard', '/mnt/extSdCard',
+          ];
+          // 内部存储挂载点（排除）
+          const internalMounts = {
+            '/storage/emulated', '/storage/emulated/0', '/storage/self',
+            '/mnt/runtime', '/mnt/user', '/data', '/system', '/vendor',
+            '/product', '/metadata', '/misc', '/cache', '/dev', '/proc',
+            '/sys', '/apex', '/linkerconfig', '/odm', '/oem', '/persist',
+          };
+
+          for (final line in lines) {
+            final parts = line.split(RegExp(r'\s+'));
+            if (parts.length < 3) continue;
+            final mountPoint = parts[1];
+            final fsType = parts[2];
+
+            // 跳过内部存储和系统挂载点
+            if (internalMounts.any((m) => mountPoint == m || mountPoint.startsWith('$m/'))) continue;
+            // 只关注可移动存储的挂载点前缀
+            if (!removablePrefixes.any((p) => mountPoint.startsWith(p))) continue;
+            // 只关注常见的可移动存储文件系统
+            if (!removableFsTypes.contains(fsType)) continue;
+            // 跳过 /storage/emulated 下的子目录
+            if (mountPoint.startsWith('/storage/emulated/')) continue;
+
+            final baseName = p.basename(mountPoint);
+            if (baseName.isEmpty || baseName == 'emulated' || baseName == 'self') continue;
+
+            // 根据文件系统类型和挂载点生成名称
+            String name;
+            if (fsType == 'ntfs' || fsType == 'fuse.ntfs' || fsType == 'fuseblk') {
+              name = 'USB Drive (NTFS)';
+            } else if (fsType == 'exfat' || fsType == 'fuse.exfat') {
+              name = 'USB Drive (exFAT)';
+            } else if (baseName.contains('-')) {
+              name = 'USB Drive ($baseName)';
+            } else {
+              name = 'USB Drive / SD Card';
+            }
+
+            addVolume(name, mountPoint, false);
+          }
+        }
+      } catch (e) {
+        debugPrint('[ZenFile] _detectStorageVolumes /proc/mounts parse failed: $e');
+      }
+
+      // 2.5 枚举更多常见 U 盘挂载路径（不同 ROM 挂载点不同）
+      const extraMountPaths = [
+        '/mnt/usb_storage', '/mnt/udisk', '/mnt/usb0', '/mnt/usb1',
+        '/mnt/usbhost', '/storage/usbdisk', '/storage/usb0', '/storage/usb1',
+        '/mnt/sdcard', '/mnt/extSdCard', '/mnt/extern_sd', '/mnt/usb_storage/USB_DISK0',
+      ];
+      for (final path in extraMountPaths) {
+        try {
+          final dir = Directory(path);
+          if (dir.existsSync()) {
+            // 检查是否有子目录（部分 ROM 会在 U 盘挂载点下再建子目录）
+            final subDirs = dir.listSync().whereType<Directory>().toList();
+            if (subDirs.isNotEmpty) {
+              for (final subDir in subDirs) {
+                final subBase = p.basename(subDir.path);
+                if (subBase != 'emulated' && subBase != 'self' && subBase.isNotEmpty) {
+                  addVolume('USB Drive ($subBase)', subDir.path, false);
+                }
+              }
+            } else {
+              final baseName = p.basename(path);
+              addVolume('USB Drive / SD Card ($baseName)', path, false);
+            }
+          }
+        } catch (_) {}
+      }
     } else {
       final dir = await getApplicationDocumentsDirectory();
       addVolume('文档', dir.path, true);
@@ -6620,6 +6711,62 @@ class FileManagerProvider extends ChangeNotifier {
 
     selectedPaths.clear();
     notifyListeners();
+
+    // 受限目录（纯 Shizuku 无 root）：shell(uid 2000) 经 FUSE 无其它应用
+    // Android/{data,obb} 写权限，无法直接把压缩包写到 currentPath。
+    // 改为先压缩到本地临时文件，由 BackgroundArchiveService 完成后经 SAF 上传到目标目录
+    // （逐文件模式另走服务端写入，此处仅处理单包场景，逐文件模式回落原逻辑）。
+    if (isRestrictedPath(currentPath) && !useRootMode && !separateArchives) {
+      final tempDir = Directory.systemTemp;
+      final tempFileName = '$archiveName.$format';
+      final tempPath = p.join(tempDir.path, tempFileName);
+      if (context != null && context.mounted) {
+        await BackgroundArchiveService.instance.startCompression(
+          context: context,
+          sourcePaths: paths,
+          destinationPath: p.join(currentPath, tempFileName),
+          format: format,
+          level: compressionLevel,
+          deleteSource: deleteSource,
+          targetRefreshDir: currentPath,
+          writeDestinationPath: tempPath,
+          safLocalPath: tempPath,
+          safParentDir: currentPath,
+          safFileName: tempFileName,
+          safIsObb: currentPath.contains('/Android/obb/'),
+          provider: this,
+        );
+      } else {
+        try {
+          await ArchiveService.createArchive(
+            sourcePaths: paths,
+            destinationDir: tempDir.path,
+            archiveName: archiveName,
+            format: format,
+            compressionLevel: compressionLevel,
+            password: password,
+            splitSizeMB: splitSizeMB,
+            deleteSource: deleteSource,
+            separateArchives: separateArchives,
+          );
+          final ok = await SafAndroidDataService.uploadFileViaSaf(
+            tempPath,
+            currentPath,
+            tempFileName,
+            isObb: currentPath.contains('/Android/obb/'),
+          );
+          if (ok) {
+            try {
+              await File(tempPath).delete();
+            } catch (_) {}
+          }
+        } catch (e) {
+          debugPrint('Error creating restricted archive: $e');
+        }
+        await loadDirectory(currentPath, showLoading: false, clearCache: true);
+      }
+      return;
+    }
 
     if (context != null && context.mounted) {
       var destinationPath = p.join(currentPath, '$archiveName.$format');

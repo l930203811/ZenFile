@@ -12,6 +12,7 @@ import 'package:charset/charset.dart';
 import 'package:just_zstd/just_zstd.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../providers/file_manager_provider.dart';
+import '../services/root_shizuku_service.dart';
 import 'package:provider/provider.dart';
 import '../core/navigator_key.dart';
 import '../ui/widgets/background_operation_progress_dialog.dart';
@@ -223,6 +224,13 @@ class BackgroundOperation {
   // 总字节数
   int totalBytes;
 
+  /// 受限目录（纯 Shizuku 无 root）下，压缩结果需经 SAF 上传：先写到本地临时文件，
+  /// 完成后由 _onOperationComplete 经 DocumentsContract 上传到目标目录（shell 无写权限）。
+  final String? safLocalPath;
+  final String? safParentDir;
+  final String? safFileName;
+  final bool safIsObb;
+
   BackgroundOperation({
     required this.id,
     required this.title,
@@ -236,6 +244,10 @@ class BackgroundOperation {
     this.speedBytesPerSecond = 0.0,
     this.bytesProcessed = 0,
     this.totalBytes = 0,
+    this.safLocalPath,
+    this.safParentDir,
+    this.safFileName,
+    this.safIsObb = false,
   });
 }
 
@@ -326,6 +338,13 @@ class BackgroundArchiveService {
     String? targetRefreshDir,
     VoidCallback? onComplete,
     FileManagerProvider? provider,
+    /// 实际写盘路径。受限目录（纯 Shizuku 无 root）下传临时文件，再经 SAF 上传。
+    String? writeDestinationPath,
+    /// SAF 上传信息：压缩完成的临时文件 -> 受限父目录下的目标文件名。
+    String? safLocalPath,
+    String? safParentDir,
+    String? safFileName,
+    bool safIsObb = false,
   }) async {
     final effectiveContext = context.mounted ? context : (navigatorKey.currentContext ?? context);
     final archiveName = p.basename(destinationPath);
@@ -336,6 +355,10 @@ class BackgroundArchiveService {
       isCompression: true,
       destinationDir: targetRefreshDir ?? p.dirname(destinationPath),
       destinationPath: destinationPath,
+      safLocalPath: safLocalPath,
+      safParentDir: safParentDir,
+      safFileName: safFileName,
+      safIsObb: safIsObb,
     );
 
     activeOperation.value = operation;
@@ -356,7 +379,7 @@ class BackgroundArchiveService {
       {
         'sendPort': _receivePort!.sendPort,
         'sourcePaths': sourcePaths,
-        'destinationPath': destinationPath,
+        'destinationPath': writeDestinationPath ?? destinationPath,
         'format': format,
         'level': level,
         'deleteSource': deleteSource,
@@ -568,6 +591,31 @@ class BackgroundArchiveService {
     _forceCloseDialog();
 
     await Future.delayed(const Duration(milliseconds: 350));
+
+    // 受限目录（纯 Shizuku 无 root）压缩结果：临时文件经 SAF 上传到目标目录后删除本地临时文件。
+    // shell(uid 2000) 经 FUSE 无其它应用 Android/{data,obb} 写权限，必须走 DocumentsContract。
+    if (!isError &&
+        operation.safLocalPath != null &&
+        operation.safParentDir != null &&
+        operation.safFileName != null) {
+      try {
+        final uploaded = await SafAndroidDataService.uploadFileViaSaf(
+          operation.safLocalPath!,
+          operation.safParentDir!,
+          operation.safFileName!,
+          isObb: operation.safIsObb,
+        );
+        if (uploaded) {
+          try {
+            await File(operation.safLocalPath!).delete();
+          } catch (_) {}
+        } else {
+          debugPrint('[ZenFile][Archive] SAF upload failed for ${operation.safLocalPath}');
+        }
+      } catch (e) {
+        debugPrint('[ZenFile][Archive] SAF upload error: $e');
+      }
+    }
 
     if (operation.isRunningInBackground) {
       if (Platform.isAndroid) {
