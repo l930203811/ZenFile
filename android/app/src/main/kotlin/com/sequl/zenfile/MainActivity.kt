@@ -52,6 +52,8 @@ import java.util.zip.ZipFile
 import android.media.audiofx.Equalizer
 class MainActivity : AudioServiceFragmentActivity() {
     private val CHANNEL = "com.sequl.zenfile/root_shizuku"
+    private val STORAGE_CHANNEL = "com.sequl.zenfile/storage"
+    private var storageEventChannel: MethodChannel? = null
     private val SHIZUKU_REQUEST_CODE = 10001
     private val executor = Executors.newCachedThreadPool()
     private var pendingPermissionResult: MethodChannel.Result? = null
@@ -66,6 +68,20 @@ class MainActivity : AudioServiceFragmentActivity() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == ACTION_CANCEL_OPERATION) {
                 notificationsChannel?.invokeMethod("cancelOperationFromNotification", null)
+            }
+        }
+    }
+
+    // 存储卷热插拔监听（U 盘/SD 卡插入/拔出时通知 Dart 端刷新）
+    private val storageReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when (intent?.action) {
+                Intent.ACTION_MEDIA_MOUNTED,
+                Intent.ACTION_MEDIA_UNMOUNTED,
+                Intent.ACTION_MEDIA_REMOVED,
+                Intent.ACTION_MEDIA_EJECT -> {
+                    storageEventChannel?.invokeMethod("onStorageVolumesChanged", null)
+                }
             }
         }
     }
@@ -100,6 +116,24 @@ class MainActivity : AudioServiceFragmentActivity() {
             e.printStackTrace()
         }
 
+        // 注册存储卷热插拔监听
+        try {
+            val storageFilter = IntentFilter().apply {
+                addAction(Intent.ACTION_MEDIA_MOUNTED)
+                addAction(Intent.ACTION_MEDIA_UNMOUNTED)
+                addAction(Intent.ACTION_MEDIA_REMOVED)
+                addAction(Intent.ACTION_MEDIA_EJECT)
+                addDataScheme("file")
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                registerReceiver(storageReceiver, storageFilter, Context.RECEIVER_NOT_EXPORTED)
+            } else {
+                registerReceiver(storageReceiver, storageFilter)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
         // 启动修复：确保默认启动图标别名始终处于启用状态。
         // 旧版本启用 design_* 备用图标时会把 MainActivityDefault 设为 DISABLED，
         // 而组件启用状态跨应用更新持久化；本版本已移除 design_* 别名，
@@ -121,6 +155,11 @@ class MainActivity : AudioServiceFragmentActivity() {
         }
         try {
             unregisterReceiver(cancelReceiver)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        try {
+            unregisterReceiver(storageReceiver)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -171,6 +210,7 @@ class MainActivity : AudioServiceFragmentActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        storageEventChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, STORAGE_CHANNEL)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "checkStatus" -> {

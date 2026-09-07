@@ -2902,43 +2902,82 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
+  /// 检测所有存储卷（内部存储 + SD 卡 + U 盘/OTG）。
+  /// 优化点：
+  /// 1. 反射 API 中 path 为空时从 id 推断路径（如 XXXX-XXXX → /storage/XXXX-XXXX）
+  /// 2. 检查 isMounted 状态，只添加已挂载的卷
+  /// 3. 即使反射 API 有结果，也继续走回退逻辑合并检测到的卷（修复 U 盘被跳过的问题）
+  /// 4. 增强回退逻辑，枚举 /mnt/media_rw/ 目录（部分 ROM U 盘挂载点）
   Future<void> _detectStorageVolumes() async {
     final volumes = <StorageVolume>[];
+    final seenPaths = <String>{};
 
-    // 优先通过 StorageManager 反射 API 获取存储卷（ES 文件管理器方案）
-    // 可正确识别主卷底层路径 /data/media/0 及可拆卸 SD 卡
+    void addVolume(String name, String path, bool isInternal) {
+      if (path.isEmpty || seenPaths.contains(path)) return;
+      try {
+        final dir = Directory(path);
+        if (!dir.existsSync()) return;
+      } catch (_) {
+        return;
+      }
+      seenPaths.add(path);
+      volumes.add(StorageVolume(name: name, path: path, isInternal: isInternal));
+    }
+
+    // ── 第一阶段：通过 StorageManager 反射 API 获取存储卷 ──
     try {
       final rawVolumes = await RootShizukuService.getStorageVolumes();
       if (rawVolumes.isNotEmpty) {
-        final seenPaths = <String>{};
         for (final vol in rawVolumes) {
-          final path = vol['path'] as String?;
-          if (path == null || path.isEmpty || seenPaths.contains(path)) continue;
-          seenPaths.add(path);
+          final isMounted = vol['isMounted'] as bool? ?? true;
+          if (!isMounted) continue;
+
+          var path = vol['path'] as String?;
           final isEmulated = vol['isEmulated'] as bool? ?? false;
-          final name = (vol['description'] as String?)?.isNotEmpty == true
-              ? vol['description']
-              : (path == '/storage/emulated/0' ? 'Internal Storage' : 'SD Card');
-          volumes.add(StorageVolume(
-            name: name ?? 'Unknown',
-            path: path,
-            isInternal: isEmulated,
-          ));
-        }
-        if (volumes.isNotEmpty) {
-          _storageVolumes = volumes;
-          await updateStorageSpace();
-          return;
+          final description = vol['description'] as String?;
+          final id = vol['id'] as String?;
+
+          // 修复：反射 API 中 U 盘/OTG 的 getDirectory() 常返回 null，
+          // 从 id 推断路径（如 id=XXXX-XXXX → /storage/XXXX-XXXX）
+          if ((path == null || path.isEmpty) && id != null && id.isNotEmpty) {
+            if (id.contains('-') && id.length <= 9) {
+              path = '/storage/$id';
+            } else if (id == 'primary') {
+              path = '/storage/emulated/0';
+            }
+          }
+
+          // 修复：内部存储卷强制使用 /storage/emulated/0，
+          // 避免反射 API 返回底层路径（如 /data/media/0）导致与回退逻辑重复
+          if (isEmulated) {
+            path = '/storage/emulated/0';
+          }
+
+          if (path == null || path.isEmpty) continue;
+
+          String name;
+          if (description != null && description.isNotEmpty) {
+            name = description;
+          } else if (path == '/storage/emulated/0') {
+            name = 'Internal Storage';
+          } else if (id != null && id.contains('-')) {
+            name = 'USB Drive ($id)';
+          } else {
+            name = 'SD Card / USB';
+          }
+
+          addVolume(name, path, isEmulated);
         }
       }
     } catch (e) {
       debugPrint('[ZenFile] _detectStorageVolumes reflection failed: $e');
     }
 
-    // 回退：使用标准 API
+    // ── 第二阶段：回退逻辑（即使反射 API 有结果也继续执行，合并 U 盘等被跳过的卷）──
     if (Platform.isAndroid) {
-      volumes.add(StorageVolume(name: 'Internal Storage', path: '/storage/emulated/0', isInternal: true));
+      addVolume('Internal Storage', '/storage/emulated/0', true);
 
+      // 2.1 通过 getExternalStorageDirectories 检测外置存储
       try {
         final extDirs = await getExternalStorageDirectories();
         if (extDirs != null) {
@@ -2947,16 +2986,16 @@ class FileManagerProvider extends ChangeNotifier {
             if (path.contains('/Android/')) {
               final root = path.substring(0, path.indexOf('/Android/'));
               if (root != '/storage/emulated/0' && root != '/storage/emulated') {
-                final name = root.contains('-') ? 'SD Card (${p.basename(root)})' : 'SD Card / USB';
-                if (!volumes.any((v) => v.path == root)) {
-                  volumes.add(StorageVolume(name: name, path: root, isInternal: false));
-                }
+                final baseName = p.basename(root);
+                final name = baseName.contains('-') ? 'USB Drive ($baseName)' : 'SD Card / USB';
+                addVolume(name, root, false);
               }
             }
           }
         }
       } catch (_) {}
 
+      // 2.2 枚举 /storage 目录（SD 卡和大部分 U 盘挂载在这里）
       try {
         final storageDir = Directory('/storage');
         if (storageDir.existsSync()) {
@@ -2964,10 +3003,32 @@ class FileManagerProvider extends ChangeNotifier {
           for (final entity in list) {
             if (entity is Directory) {
               final base = p.basename(entity.path);
-              if (base != 'emulated' && base != 'self' && base != 'enterprise') {
-                if (!volumes.any((v) => v.path == entity.path)) {
-                  final name = base.contains('-') ? 'SD Card ($base)' : 'SD Card / USB ($base)';
-                  volumes.add(StorageVolume(name: name, path: entity.path, isInternal: false));
+              if (base != 'emulated' && base != 'self' && base != 'enterprise' && base != 'runtime') {
+                final name = base.contains('-') ? 'USB Drive ($base)' : 'SD Card / USB ($base)';
+                addVolume(name, entity.path, false);
+              }
+            }
+          }
+        }
+      } catch (_) {}
+
+      // 2.3 枚举 /mnt/media_rw 目录（部分 ROM 的 U 盘/SD 卡挂载点）
+      // 只添加包含 - 的目录（SD 卡/U 盘典型格式 XXXX-XXXX），排除系统目录
+      try {
+        final mediaRwDir = Directory('/mnt/media_rw');
+        if (mediaRwDir.existsSync()) {
+          final list = mediaRwDir.listSync();
+          for (final entity in list) {
+            if (entity is Directory) {
+              final base = p.basename(entity.path);
+              // SD 卡/U 盘的目录名通常是 XXXX-XXXX 格式（包含连字符）
+              if (base.contains('-') && base.length <= 9) {
+                final storagePath = '/storage/$base';
+                final name = 'USB Drive ($base)';
+                if (Directory(storagePath).existsSync()) {
+                  addVolume(name, storagePath, false);
+                } else {
+                  addVolume(name, entity.path, false);
                 }
               }
             }
@@ -2976,13 +3037,40 @@ class FileManagerProvider extends ChangeNotifier {
       } catch (_) {}
     } else {
       final dir = await getApplicationDocumentsDirectory();
-      volumes.add(StorageVolume(name: '文档', path: dir.path, isInternal: true));
+      addVolume('文档', dir.path, true);
     }
+
     _storageVolumes = volumes;
     await updateStorageSpace();
+    debugPrint('[ZenFile] _detectStorageVolumes: found ${volumes.length} volumes: ${volumes.map((v) => "${v.name}(${v.path})").join(", ")}');
+  }
+
+  /// 公开方法：重新检测存储卷（用于 U 盘/SD 卡热插拔后刷新）
+  Future<void> refreshStorageVolumes() async {
+    await _detectStorageVolumes();
+    notifyListeners();
+  }
+
+  /// 存储卷变化事件通道（U 盘/SD 卡热插拔）
+  static const MethodChannel _storageChannel = MethodChannel('com.sequl.zenfile/storage');
+  bool _storageListenerRegistered = false;
+
+  /// 注册存储卷热插拔监听
+  void _registerStorageListener() {
+    if (_storageListenerRegistered || !Platform.isAndroid) return;
+    _storageListenerRegistered = true;
+    _storageChannel.setMethodCallHandler((call) async {
+      if (call.method == 'onStorageVolumesChanged') {
+        debugPrint('[ZenFile] Storage volumes changed, refreshing...');
+        await refreshStorageVolumes();
+      }
+    });
   }
 
   Future<void> init() async {
+    // 注册存储卷热插拔监听（U 盘/SD 卡插入/拔出时自动刷新）
+    _registerStorageListener();
+
     // 清除应用数据后权限状态可能不一致：若缺少“所有文件管理”权限，
     // 主动请求一次（与首次安装行为一致），避免后续 loadDirectory 因无权限访问而失败。
     if (Platform.isAndroid) {

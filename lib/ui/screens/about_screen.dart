@@ -797,6 +797,10 @@ class AboutZenFileScreen extends StatelessWidget {
           item('左右滑动切页迟钝修复：修复 v1.1.41 拖放防误触引入的回归——从文件项上起手滑动几乎完全失效；速度改为按整段手势计算，最小位移 80→64px，位移≥110px 忽略速度门槛，竖向 1.2 倍斜向容差。'),
           gap(8),
 
+          section('\u{1f4be} 存储设备'),
+          item('新增 U 盘/OTG/SD 卡支持：修复反射 API 中 U 盘 getDirectory() 返回 null 被跳过的问题；支持多种挂载路径（/storage/XXXX-XXXX、/mnt/media_rw/XXXX-XXXX）；U 盘/SD 卡热插拔自动检测，插入后立即显示在面包屑下拉菜单和存储概览中，无需重启 App。'),
+          gap(8),
+
           section('\u{1f3a8} 外观与主题'),
           item('主题颜色更新：翠绿 → 霓虹青（#03FCE3），森林绿 → 青柠绿（#A9FC03），10 语言名称同步更新。'),
           item('新增自定义主题颜色：主题列表底部新增「自定义」按钮，支持 18 个预设颜色快速选择 + RGB 三通道滑块精确调节，颜色实时预览，确认后立即应用并持久化保存。'),
@@ -812,6 +816,10 @@ class AboutZenFileScreen extends StatelessWidget {
           section('\u{1f4c1} File Management & Navigation'),
           item('Back/Forward button logic refactor: Fixed history stack loss after app restart causing both buttons greyed out; fixed forward history being cleared after back + pull-to-refresh; fixed ping-pong phenomenon where back to parent then back returns to child; auto enter parent when back history exhausted, forward can return to child.'),
           item('Fixed left/right swipe to switch pane lag: Fixed regression introduced by v1.1.41 drag-and-drop anti-mistouch — swipe starting on file items almost completely failed; velocity now calculated over entire gesture, min displacement 80→64px, velocity threshold ignored when displacement ≥110px, 1.2x diagonal tolerance for vertical.'),
+          gap(8),
+
+          section('\u{1f4be} Storage Devices'),
+          item('Added USB/OTG/SD card support: Fixed the issue where USB drive getDirectory() returns null in reflection API and is skipped; supports multiple mount paths (/storage/XXXX-XXXX, /mnt/media_rw/XXXX-XXXX); USB/SD card hot-plug auto-detection, displayed in breadcrumb dropdown and storage overview immediately after insertion, no app restart required.'),
           gap(8),
 
           section('\u{1f3a8} Appearance & Themes'),
