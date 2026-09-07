@@ -5,6 +5,21 @@ import 'package:flutter/foundation.dart';
 import 'package:xml/xml.dart' as xml;
 import 'remote_client.dart';
 
+/// `getStreamUrl` 重定向探测的结果。
+class _StreamTarget {
+  /// 是否发生过重定向（OpenList「302 重定向」模式）。
+  final bool isRedirect;
+
+  /// 跟随重定向后的最终网盘直链；仅当该直链支持 Range(206) 时非空。
+  final String? finalUrl;
+
+  _StreamTarget.direct()
+      : isRedirect = false,
+        finalUrl = null;
+
+  _StreamTarget.redirect(this.finalUrl) : isRedirect = true;
+}
+
 class WebDavRemoteClient extends RemoteClient {
   final String host;
   final int port;
@@ -549,36 +564,25 @@ class WebDavRemoteClient extends RemoteClient {
     if (!_supportsDirectStreaming) return null;
 
     // OpenList「302 重定向」模式：目录列表(PROPFIND / 根目录 HEAD)正常返回 200，
-    // 但【实际文件】GET 时 302 跳转到网盘直链，media_kit 无法播放
-    // （防盗链校验 / 直链有效期 / Range 不支持等）。连接期只对根目录做了探测，
-    // 会漏判这种「仅文件重定向」的情况，所以这里对单个文件做重定向探测：
-    // 发 Range=bytes=0-0 的 GET 且 followRedirects=false，命中 3xx 则走本地
-    // 代理（RemoteStreamingService），否则直连性能更好。
+    // 但【实际文件】GET 时 302 跳转到网盘直链。连接期只对根目录做了探测，会漏判
+    // 这种「仅文件重定向」，所以这里对单个文件做重定向探测（见 _resolveStreamTarget）：
+    //   · 无重定向（普通 WebDAV / OpenList 本机代理）→ 走下面的直连 URL；
+    //   · 有重定向且直链支持 Range → 返回解析后的网盘直链，真流式播放；
+    //   · 有重定向但直链不支持 Range / 解析失败 → 返回 null 走本地代理。
     try {
-      final probeClient = HttpClient();
-      // OpenList 302 模式下，服务器需先向网盘申请临时直链才返回 302，
-      // 该过程可能耗时数秒（部分网盘更久）；原来 5s 容易超时导致误判为"无重定向"
-      // 从而把会跳转的 URL 交给 media_kit（表现为播放失败）。这里放宽到 15s。
-      probeClient.connectionTimeout = const Duration(seconds: 15);
-      final url = Uri.parse(_baseUrl + Uri.encodeFull(remotePath));
-      final req = await probeClient.openUrl('GET', url);
-      req.followRedirects = false;
-      req.maxRedirects = 0;
+      final startUrl = Uri.parse(_baseUrl + Uri.encodeFull(remotePath));
       final auth = _authHeader();
-      if (auth.isNotEmpty) req.headers.set('Authorization', auth);
-      req.headers.set(HttpHeaders.rangeHeader, 'bytes=0-0');
-      final resp = await req.close();
-      final status = resp.statusCode;
-      try { await resp.drain(); } catch (_) {}
-      probeClient.close();
-      if (status >= 300 && status < 400) {
-        debugPrint('[WebDAV] 文件 $remotePath 探测到 $status 重定向，走本地代理');
+      final target = await _resolveStreamTarget(startUrl, auth.isEmpty ? null : auth);
+      if (target.isRedirect) {
+        final directUrl = target.finalUrl;
+        if (directUrl != null && directUrl.isNotEmpty) {
+          debugPrint('[WebDAV] 302 已解析为网盘直链，交给播放器直接流式播放');
+          return directUrl;
+        }
+        debugPrint('[WebDAV] 302 直链不支持 Range，走本地代理');
         return null;
       }
     } catch (e) {
-      // 探测失败（超时/网络异常）：一律走本地代理更安全。
-      // 代理内部 _followRedirectGet 会正确处理 302 并保留 Range，
-      // 直连把可能跳转的 URL 交给 media_kit 才会播放失败。
       debugPrint('[WebDAV] 单文件重定向探测失败，改走本地代理: $e');
       return null;
     }
@@ -597,6 +601,71 @@ class WebDavRemoteClient extends RemoteClient {
         .split('/').first;
     // media_kit / libmpv supports HTTP Basic Auth via URL credentials
     return '$protocol://$username:$password@$cleanHost:$port${Uri.encodeFull(normalizedPath)}';
+  }
+
+  /// 对单个文件做重定向探测，并在发生重定向时**自己把重定向跟到底**。
+  ///
+  /// 为什么要自己跟到底（而不是把会跳转的 OpenList URL 交给 media_kit）：
+  /// FFmpeg/mpv 跟随跨域 302 时会丢弃 Range 头、还可能把 WebDAV 的
+  /// Authorization 带去网盘直链被拒，播放器只能整文件缓冲 —— 表现为
+  ///「302 模式下要等视频下载完才能播」。这里解析出最终直链后直接给播放器，
+  /// media_kit 对直链发 Range 请求，即可实现真正的边下边播 + 拖动。
+  ///
+  /// 返回：
+  /// - `_StreamTarget.direct()`：无重定向（普通 WebDAV / OpenList 本机代理）；
+  /// - `_StreamTarget.redirect(url)`：发生重定向且最终直链支持 Range(206)；
+  /// - `_StreamTarget.redirect(null)`：重定向但直链不可用 → 调用方走本地代理。
+  Future<_StreamTarget> _resolveStreamTarget(Uri start, String? auth) async {
+    final client = HttpClient();
+    // OpenList 需先向网盘申请临时直链才返回 302，耗时可能数秒，放宽到 15s。
+    client.connectionTimeout = const Duration(seconds: 15);
+    var sawRedirect = false;
+    try {
+      var url = start;
+      var curAuth = auth;
+      for (int i = 0; i <= 5; i++) {
+        final req = await client.openUrl('GET', url);
+        // 必须关闭自动跟随：否则看不到 3xx，且跨域自动跳转会丢 Range。
+        req.followRedirects = false;
+        req.maxRedirects = 0;
+        if (curAuth != null && curAuth.isNotEmpty) {
+          req.headers.set('Authorization', curAuth);
+        }
+        req.headers.set(HttpHeaders.rangeHeader, 'bytes=0-0');
+        final resp = await req.close();
+        final status = resp.statusCode;
+        final location = resp.headers.value(HttpHeaders.locationHeader);
+
+        if (status >= 300 && status < 400) {
+          try { await resp.drain(); } catch (_) {}
+          if (location == null) return _StreamTarget.redirect(null);
+          sawRedirect = true;
+          // 跨域跳转：不再携带 Authorization，避免把 WebDAV 凭据泄露给网盘直链
+          curAuth = null;
+          url = url.resolve(location);
+          continue;
+        }
+
+        if (status >= 200 && status < 300) {
+          // 206 = 直链支持 Range（可拖动/真流式）；200 = 服务器忽略 Range，
+          // 播放器只能整文件缓冲，不如交给本地代理。
+          // 注意：200 时响应体是【整个文件】，绝不能 drain，否则会把整文件下下来。
+          final rangeOk = status == 206;
+          if (rangeOk) {
+            try { await resp.drain(); } catch (_) {}
+          }
+          if (!sawRedirect) return _StreamTarget.direct();
+          return _StreamTarget.redirect(rangeOk ? url.toString() : null);
+        }
+
+        // 其他状态码（4xx/5xx 等）：探测失败，走本地代理
+        try { await resp.drain(); } catch (_) {}
+        return _StreamTarget.redirect(null);
+      }
+      return _StreamTarget.redirect(null);
+    } finally {
+      client.close(force: true);
+    }
   }
 
   @override
