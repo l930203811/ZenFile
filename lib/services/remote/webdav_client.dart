@@ -378,6 +378,15 @@ class WebDavRemoteClient extends RemoteClient {
     String? auth = _authHeader();
     for (int i = 0; i <= 3; i++) {
       final request = await _httpClient.openUrl('GET', url);
+      // 必须关闭自动跟随，否则本函数的手动跟随逻辑永远不会触发：
+      // HttpClientRequest.followRedirects 默认 true（继承自 _httpClient），
+      // dart:io 会在 request.close() 内部直接跟完 302 再返回最终响应，
+      // 于是下面拿到的 status 已是 200，看不到 3xx；更严重的是 dart:io
+      // 自动跟随【跨域】重定向时会丢弃 Range 头，导致 downloadRange 拿到
+      // 整文件 200 而非 206，OpenList 302 模式下拖动进度条会退化成整文件重下
+      // （表现为播放失败/卡死）。
+      request.followRedirects = false;
+      request.maxRedirects = 0;
       if (auth != null && auth.isNotEmpty) {
         request.headers.set('Authorization', auth);
       }
@@ -547,24 +556,31 @@ class WebDavRemoteClient extends RemoteClient {
     // 代理（RemoteStreamingService），否则直连性能更好。
     try {
       final probeClient = HttpClient();
-      probeClient.connectionTimeout = const Duration(seconds: 5);
+      // OpenList 302 模式下，服务器需先向网盘申请临时直链才返回 302，
+      // 该过程可能耗时数秒（部分网盘更久）；原来 5s 容易超时导致误判为"无重定向"
+      // 从而把会跳转的 URL 交给 media_kit（表现为播放失败）。这里放宽到 15s。
+      probeClient.connectionTimeout = const Duration(seconds: 15);
       final url = Uri.parse(_baseUrl + Uri.encodeFull(remotePath));
       final req = await probeClient.openUrl('GET', url);
       req.followRedirects = false;
+      req.maxRedirects = 0;
       final auth = _authHeader();
       if (auth.isNotEmpty) req.headers.set('Authorization', auth);
       req.headers.set(HttpHeaders.rangeHeader, 'bytes=0-0');
       final resp = await req.close();
-      final isRedirect = resp.statusCode >= 300 && resp.statusCode < 400;
+      final status = resp.statusCode;
       try { await resp.drain(); } catch (_) {}
       probeClient.close();
-      if (isRedirect) {
-        debugPrint('[WebDAV] 文件 $remotePath 探测到 ${resp.statusCode} 重定向，走本地代理');
+      if (status >= 300 && status < 400) {
+        debugPrint('[WebDAV] 文件 $remotePath 探测到 $status 重定向，走本地代理');
         return null;
       }
     } catch (e) {
-      debugPrint('[WebDAV] 单文件重定向探测失败，沿用连接期判定: $e');
-      // 探测失败：沿用 connect() 的结果（根目录探测为 direct 时直连）
+      // 探测失败（超时/网络异常）：一律走本地代理更安全。
+      // 代理内部 _followRedirectGet 会正确处理 302 并保留 Range，
+      // 直连把可能跳转的 URL 交给 media_kit 才会播放失败。
+      debugPrint('[WebDAV] 单文件重定向探测失败，改走本地代理: $e');
+      return null;
     }
 
     // WebDAV supports HTTP streaming: construct URL with Basic Auth embedded
@@ -585,8 +601,37 @@ class WebDavRemoteClient extends RemoteClient {
 
   @override
   Future<int> getFileSize(String remotePath) async {
-    // WebDAV uses direct streaming via getStreamUrl, so getFileSize is not
-    // critical for streaming. Return -1 to indicate unknown.
+    // 之前固定返回 -1，导致本地代理(RemoteStreamingService)只能用 chunked 200
+    // （Accept-Ranges: none）响应：进度条不走、拖动进度条卡在"正在缓存"。
+    // 这里改为通过 PROPFIND(Depth:0) 读取真实 getcontentlength。
+    // 用 PROPFIND 而非 HEAD：OpenList 302 模式下文件的 GET/HEAD 会跳转到网盘直链，
+    // 而 PROPFIND 由 OpenList 自身应答（207），既能拿到真实大小又不会触发重定向。
+    var normalizedPath = remotePath;
+    if (!normalizedPath.startsWith('/')) normalizedPath = '/$normalizedPath';
+    try {
+      final url = Uri.parse(_baseUrl + Uri.encodeFull(normalizedPath));
+      final request = await _httpClient.openUrl('PROPFIND', url);
+      request.headers.set('Depth', '0');
+      final auth = _authHeader();
+      if (auth.isNotEmpty) {
+        request.headers.set('Authorization', auth);
+      }
+      final response = await request.close();
+      if (response.statusCode >= 400) return -1;
+      final body = await response.transform(utf8.decoder).join();
+      final document = xml.XmlDocument.parse(body);
+      final sizeText = document.descendants
+          .whereType<xml.XmlElement>()
+          .where((el) => el.name.local.toLowerCase() == 'getcontentlength')
+          .map((el) => el.innerText.trim())
+          .firstWhere((t) => t.isNotEmpty, orElse: () => '');
+      await response.drain();
+      if (sizeText.isNotEmpty) {
+        return int.tryParse(sizeText) ?? -1;
+      }
+    } catch (e) {
+      debugPrint('[WebDAV] getFileSize 失败: $e');
+    }
     return -1;
   }
 }
