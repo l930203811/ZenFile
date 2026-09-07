@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:xml/xml.dart' as xml;
 import 'remote_client.dart';
+import '../webdav_debug_log.dart';
 
 /// `getStreamUrl` 重定向探测的结果。
 class _StreamTarget {
@@ -561,7 +562,11 @@ class WebDavRemoteClient extends RemoteClient {
   @override
   Future<String?> getStreamUrl(String remotePath) async {
     // 已通过连接期探测确定走代理（个别 OpenList 302 配置根目录也重定向）
-    if (!_supportsDirectStreaming) return null;
+    if (!_supportsDirectStreaming) {
+      WebdavDebugLog.log('getStreamUrl: 连接期已判定不支持直连 -> null(走本地代理)');
+      return null;
+    }
+    WebdavDebugLog.log('getStreamUrl 开始 remotePath=$remotePath');
 
     // OpenList「302 重定向」模式：目录列表(PROPFIND / 根目录 HEAD)正常返回 200，
     // 但【实际文件】GET 时 302 跳转到网盘直链。连接期只对根目录做了探测，会漏判
@@ -577,13 +582,16 @@ class WebDavRemoteClient extends RemoteClient {
         final directUrl = target.finalUrl;
         if (directUrl != null && directUrl.isNotEmpty) {
           debugPrint('[WebDAV] 302 已解析为网盘直链，交给播放器直接流式播放');
+          WebdavDebugLog.log('getStreamUrl -> 返回网盘直链 ${WebdavDebugLog.mask(directUrl)}');
           return directUrl;
         }
         debugPrint('[WebDAV] 302 直链不支持 Range，走本地代理');
+        WebdavDebugLog.log('getStreamUrl -> null(直链不可用,走本地代理)');
         return null;
       }
     } catch (e) {
       debugPrint('[WebDAV] 单文件重定向探测失败，改走本地代理: $e');
+      WebdavDebugLog.log('getStreamUrl -> null(探测异常,走本地代理)');
       return null;
     }
 
@@ -591,8 +599,11 @@ class WebDavRemoteClient extends RemoteClient {
     var normalizedPath = remotePath;
     if (!normalizedPath.startsWith('/')) normalizedPath = '/$normalizedPath';
     final url = '$_baseUrl${Uri.encodeFull(normalizedPath)}';
-    final auth = _authHeader();
-    if (auth.isEmpty) return url;
+    final auth2 = _authHeader();
+    if (auth2.isEmpty) {
+      WebdavDebugLog.log('getStreamUrl -> WebDAV 直连(无认证) ${WebdavDebugLog.mask(url)}');
+      return url;
+    }
     // Embed credentials in URL for media_kit (format: http://user:pass@host:port/path)
     final sanitizedHost = host.trim();
     final cleanHost = sanitizedHost
@@ -600,7 +611,10 @@ class WebDavRemoteClient extends RemoteClient {
         .replaceFirst('https://', '')
         .split('/').first;
     // media_kit / libmpv supports HTTP Basic Auth via URL credentials
-    return '$protocol://$username:$password@$cleanHost:$port${Uri.encodeFull(normalizedPath)}';
+    final streamUrl =
+        '$protocol://$username:$password@$cleanHost:$port${Uri.encodeFull(normalizedPath)}';
+    WebdavDebugLog.log('getStreamUrl -> WebDAV 直连(带认证) ${WebdavDebugLog.mask(streamUrl)}');
+    return streamUrl;
   }
 
   /// 对单个文件做重定向探测，并在发生重定向时**自己把重定向跟到底**。
@@ -623,6 +637,7 @@ class WebDavRemoteClient extends RemoteClient {
     try {
       var url = start;
       var curAuth = auth;
+      WebdavDebugLog.log('探测开始 url=${WebdavDebugLog.mask(start.toString())}');
       for (int i = 0; i <= 5; i++) {
         final req = await client.openUrl('GET', url);
         // 必须关闭自动跟随：否则看不到 3xx，且跨域自动跳转会丢 Range。
@@ -635,10 +650,15 @@ class WebDavRemoteClient extends RemoteClient {
         final resp = await req.close();
         final status = resp.statusCode;
         final location = resp.headers.value(HttpHeaders.locationHeader);
+        WebdavDebugLog.log(
+            'hop=$i url=${WebdavDebugLog.mask(url.toString())} status=$status location=${WebdavDebugLog.mask(location ?? "(none)")}');
 
         if (status >= 300 && status < 400) {
           try { await resp.drain(); } catch (_) {}
-          if (location == null) return _StreamTarget.redirect(null);
+          if (location == null) {
+            WebdavDebugLog.log('结果: $status 但无 Location -> 走本地代理');
+            return _StreamTarget.redirect(null);
+          }
           sawRedirect = true;
           // 跨域跳转：不再携带 Authorization，避免把 WebDAV 凭据泄露给网盘直链
           curAuth = null;
@@ -654,15 +674,29 @@ class WebDavRemoteClient extends RemoteClient {
           if (rangeOk) {
             try { await resp.drain(); } catch (_) {}
           }
-          if (!sawRedirect) return _StreamTarget.direct();
-          return _StreamTarget.redirect(rangeOk ? url.toString() : null);
+          if (!sawRedirect) {
+            WebdavDebugLog.log('结果: 无重定向 -> 直连 WebDAV URL');
+            return _StreamTarget.direct();
+          }
+          if (rangeOk) {
+            WebdavDebugLog.log(
+                '结果: 302 已解析为直链(支持Range) url=${WebdavDebugLog.mask(url.toString())}');
+            return _StreamTarget.redirect(url.toString());
+          }
+          WebdavDebugLog.log('结果: 302 但直链不支持 Range(返回200) -> 走本地代理');
+          return _StreamTarget.redirect(null);
         }
 
         // 其他状态码（4xx/5xx 等）：探测失败，走本地代理
         try { await resp.drain(); } catch (_) {}
+        WebdavDebugLog.log('结果: 探测返回 $status -> 走本地代理');
         return _StreamTarget.redirect(null);
       }
+      WebdavDebugLog.log('结果: 重定向超过 5 跳 -> 走本地代理');
       return _StreamTarget.redirect(null);
+    } catch (e) {
+      WebdavDebugLog.log('结果: 探测异常 $e -> 走本地代理');
+      rethrow;
     } finally {
       client.close(force: true);
     }

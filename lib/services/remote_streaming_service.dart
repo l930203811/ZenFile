@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
 import 'remote/remote_client.dart';
+import 'webdav_debug_log.dart';
 
 /// Progressive streaming proxy for remote media files (FTP/SFTP/SMB).
 ///
@@ -160,6 +161,8 @@ class RemoteStreamingService {
 
     debugPrint('RemoteStreamingService: startStreaming remotePath=$remotePath fileName=$fileName knownSize=$fileSize');
     final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    WebdavDebugLog.log(
+        '代理启动 port=${server.port} remotePath=$remotePath fileName=$fileName knownSize=$fileSize');
     final session = _StreamSession(
       client: client,
       remotePath: remotePath,
@@ -215,6 +218,8 @@ class RemoteStreamingService {
       final mimeType = lookupMimeType(session.fileName) ?? 'application/octet-stream';
       final rangeHeader = request.headers.value(HttpHeaders.rangeHeader);
       debugPrint('RemoteStreamingService: request ${request.method} ${request.uri.path} range=$rangeHeader');
+      WebdavDebugLog.log(
+          '代理收到请求 ${request.method} ${request.uri.path} range=$rangeHeader');
 
       // 立即决定 fileSize，不等待 getFileSize（可耗 10-15s）。
       // 优先用 knownFileSize（来自文件列表元数据），否则用 -1 走 chunked 200。
@@ -235,13 +240,16 @@ class RemoteStreamingService {
 
       if (fileSize > 0) {
         debugPrint('RemoteStreamingService: serving 206 (seekable) fileSize=$fileSize');
+        WebdavDebugLog.log('代理响应 206(可seek) fileSize=$fileSize');
         await _serveProgressive(session, response, fileSize, mimeType, rangeHeader);
       } else {
         debugPrint('RemoteStreamingService: serving chunked 200 (unknown size)');
+        WebdavDebugLog.log('代理响应 chunked 200(大小未知,不可seek)');
         await _serveProgressiveUnknown(session, response, mimeType);
       }
     } catch (e) {
       debugPrint('RemoteStreamingService: request error: $e');
+      WebdavDebugLog.log('代理请求处理【异常】: $e');
       try {
         response.statusCode = HttpStatus.internalServerError;
       } catch (_) {}
@@ -1263,9 +1271,11 @@ class _StreamSession {
       _syncFileLength();
       _notifyProgress();
       debugPrint('RemoteStreamingService: download complete, totalBytes=$_totalBytes downloaded=$_downloadedBytes');
+      WebdavDebugLog.log('代理下载完成 downloaded=$_downloadedBytes total=$_totalBytes');
     } catch (e) {
       if (_disposed) return;
       debugPrint('RemoteStreamingService: downloadFile failed: $e');
+      WebdavDebugLog.log('代理下载【失败】: $e');
       _downloadFailed = true;
       _syncFileLength();
       _notifyProgress();

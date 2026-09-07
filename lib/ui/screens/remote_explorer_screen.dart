@@ -10,6 +10,7 @@ import '../../models/network_connection_model.dart';
 import '../../providers/file_manager_provider.dart';
 import '../../providers/media_provider.dart';
 import '../../services/preferences_service.dart';
+import '../../services/webdav_debug_log.dart';
 import '../../services/media_thumbnail_service.dart';
 import '../../services/remote/remote_client.dart';
 import '../../services/remote/ftp_client.dart';
@@ -182,6 +183,8 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
     // For video/audio, use streaming (WebDAV direct HTTP, FTP/SFTP via local proxy)
     if (isVideo || isAudio) {
       final streamUrl = await _client!.getStreamUrl(item.path);
+      WebdavDebugLog.log(
+          '播放开始 path=${item.path} size=${item.size} streamUrl=${streamUrl == null ? "null(走代理)" : WebdavDebugLog.mask(streamUrl)}');
       if (streamUrl != null) {
         // Direct streaming playback (WebDAV) — no download needed
         if (!mounted) return;
@@ -221,6 +224,7 @@ class _RemoteExplorerScreenState extends State<RemoteExplorerScreen> {
         return;
       } catch (e) {
         debugPrint('Streaming proxy failed, falling back to download: $e');
+        WebdavDebugLog.log('【代理路径异常,回退整文件下载】$e');
         // 回退到下载模式前断开已建立的独立连接，避免连接泄漏
         if (downloadClient != null) { try { await downloadClient.disconnect(); } catch (_) {} }
         if (seekClient != null) { try { await seekClient.disconnect(); } catch (_) {} }
