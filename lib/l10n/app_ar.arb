@@ -6605,5 +6605,9 @@
   "ui_custom_theme": "مخصص",
   "@ui_custom_theme": {
     "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "ui_preset_colors": "ألوان مسبقة",
+  "@ui_preset_colors": {
+    "description": "Custom theme color picker: ui_preset_colors"
   }
 }

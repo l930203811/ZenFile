@@ -6645,4 +6645,7 @@ class L10nRu extends L10n {
 
   @override
   String get ui_custom_theme => 'Настраиваемый';
+
+  @override
+  String get ui_preset_colors => 'Предустановленные цвета';
 }

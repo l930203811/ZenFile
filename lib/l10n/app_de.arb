@@ -6602,5 +6602,9 @@
   "ui_custom_theme": "Benutzerdefiniert",
   "@ui_custom_theme": {
     "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "ui_preset_colors": "Voreingestellte Farben",
+  "@ui_preset_colors": {
+    "description": "Custom theme color picker: ui_preset_colors"
   }
 }

@@ -2695,7 +2695,7 @@ void _showCustomColorPickerDialog(BuildContext context, FileManagerProvider file
                   ),
                   const SizedBox(height: 20),
                   // 预设颜色
-                  Text('预设颜色', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withOpacity(0.7))),
+                  Text(L10n.of(context).ui_preset_colors, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withOpacity(0.7))),
                   const SizedBox(height: 10),
                   Wrap(
                     spacing: 10,
@@ -2749,7 +2749,7 @@ void _showCustomColorPickerDialog(BuildContext context, FileManagerProvider file
                         }
                         if (ctx.mounted) Navigator.pop(ctx);
                       },
-                      child: Text('确认', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                      child: Text(L10n.of(context).ui_confirm, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],

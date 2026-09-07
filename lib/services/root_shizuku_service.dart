@@ -309,27 +309,54 @@ class RootShizukuService {
     await runCommand(cmd, useRoot: useRoot);
   }
 
-  /// 复制文件/目录。受限路径采用「FUSE 直接路径优先、底层 /data/media/0
-  /// 路径回退」双跳策略：底层 ext4 上其它应用的 Android/{data,obb} 文件为
-  /// 0660（属主为对应 app uid），shell（Shizuku uid 2000）无读权限，只能经
-  /// FUSE 直接子路径读取；root 两条路径均可用。
+  /// 是否为 FUSE 受限区（其它应用的 Android/data、Android/obb 文件）。
+  /// 镜像 file_manager_provider._isRestrictedAndroidPath：自身包名目录可读写，不在此列。
+  static bool _isRestrictedAndroidPath(String path) {
+    const prefix = '/storage/emulated/0/Android/';
+    if (!path.startsWith(prefix)) return false;
+    final sub = path.substring(prefix.length).replaceAll(RegExp(r'/+'), '');
+    if (sub != 'data' && !sub.startsWith('data/') && sub != 'obb' && !sub.startsWith('obb/')) {
+      return false;
+    }
+    return !sub.startsWith('data/com.sequl.zenfile') && !sub.startsWith('obb/com.sequl.zenfile');
+  }
+
+  /// 复制文件/目录。
   ///
-  /// 复制完成后校验目标存在且（源为文件时）大小与源一致；不一致说明 FUSE
-  /// 读取内容受限（部分 ROM 对其它应用 Android/data 文件只开放元数据/0 字节），
-  /// 自动删除不完整目标并改用底层路径重试，仍失败抛异常，避免静默 0 字节。
+  /// **纯 Shizuku（无 root）受限源（其它应用的 Android/{data,obb}）**：shell 物理上
+  /// 读不到文件内容——FUSE 仅开放元数据（cp 写出 0 字节且退出码 0），底层
+  /// /data/media/0 属主 0660（app uid）shell 亦无读权限；且部分 ROM 上 `stat`
+  /// 源会返回 null，使「大小一致性校验」整段被跳过，最终静默留下 0 字节文件。
+  /// 因此此类场景**直接走 SAF（ContentResolver）读取真实字节**，跳过注定失败的
+  /// shell 尝试；SAF 不可用（未授权/异常）才回退 shell 作最后兜底。
+  ///
+  /// **root / 普通路径**：维持原「底层 /data/media/0 优先、FUSE 直达回退」双跳，
+  /// 复制后校验目标存在且（文件）大小一致，不一致自动重试，仍失败抛异常。
   static Future<void> copyItem(String srcPath, String destPath, {required bool useRoot}) async {
     final fuseSrc = _normalize(srcPath);
     final rawSrc = _toFuseBypassPath(fuseSrc);
     final fuseDest = _normalize(destPath);
     final rawDest = _toFuseBypassPath(fuseDest);
+    final isObb = rawSrc.contains('/obb/');
+    final restrictedShizuku = !useRoot && _isRestrictedAndroidPath(srcPath);
+
+    // 纯 Shizuku 受限源：shell 读不到内容，直接 SAF 读取真实字节。
+    if (restrictedShizuku) {
+      if (await SafAndroidDataService.copyFileViaSaf(srcPath, destPath, isObb: isObb)) return;
+      // SAF 失败（未授权/不支持）再尝试 shell 作为最后兜底（通常仍 0 字节或失败）。
+    }
+
     final String cmd;
     if (rawSrc != fuseSrc || rawDest != fuseDest) {
-      cmd = 'cp -r "$fuseSrc" "$fuseDest" 2>/dev/null || cp -r "$rawSrc" "$rawDest"';
+      // 底层 /data/media/0 优先（root / 多数 ROM 底层可读真实内容），FUSE 直达兜底。
+      cmd = 'cp -r "$rawSrc" "$rawDest" 2>/dev/null || cp -r "$fuseSrc" "$fuseDest"';
     } else {
       cmd = 'cp -r "$fuseSrc" "$fuseDest"';
     }
     await runCommand(cmd, useRoot: useRoot);
     if (!await _exists(destPath, useRoot: useRoot)) {
+      // shell 完全失败：纯 Shizuku 受限场景经 SAF（已授权目录树）读取真实内容写出。
+      if (await SafAndroidDataService.copyFileViaSaf(srcPath, destPath, isObb: isObb)) return;
       throw Exception('Copy failed: $srcPath -> $destPath');
     }
     // 大小一致性校验（仅文件，目录元数据无意义）
@@ -339,14 +366,14 @@ class RootShizukuService {
       if (destStat == null || destStat.size != srcStat.size) {
         debugPrint('[ZenFile] copyItem size mismatch $srcPath (${srcStat.size}) -> $destPath (${destStat?.size})');
         if (rawSrc != fuseSrc || rawDest != fuseDest) {
-          // 删除不完整目标，改用底层 ext4 路径重试（FUSE 读受限、底层可读时）
+          // 删除不完整目标，改用 FUSE 直达路径重试（底层不可读时）
           await runCommand('rm -rf "$fuseDest" 2>/dev/null || rm -rf "$rawDest"', useRoot: useRoot);
-          await runCommand('cp -r "$rawSrc" "$rawDest"', useRoot: useRoot);
+          await runCommand('cp -r "$fuseSrc" "$fuseDest"', useRoot: useRoot);
           final retryStat = await statItem(destPath, useRoot: useRoot);
-          if (retryStat != null && retryStat.size == srcStat.size) {
-            return;
-          }
+          if (retryStat != null && retryStat.size == srcStat.size) return;
         }
+        // shell 两条路径均读不到内容（纯 Shizuku）：经 SAF 读取真实内容写出。
+        if (await SafAndroidDataService.copyFileViaSaf(srcPath, destPath, isObb: isObb)) return;
         throw Exception('Copy size mismatch: $srcPath -> $destPath');
       }
     }
@@ -707,6 +734,50 @@ class SafAndroidDataService {
       }
     } catch (_) {}
     return safUri;
+  }
+
+  /// 经 SAF（已授权目录树）把受限源文件 [srcLocalPath] 的真实内容读取并写出到
+  /// [destLocalPath]。这是纯 Shizuku（无 root）场景下唯一能读到其它应用
+  /// Android/{data,obb} 文件内容的路径（shell 在 FUSE 只得到元数据、底层 0660 无权限）。
+  /// 复用原生 `downloadFile`：把本地路径映射为 SAF document URI 后由 ContentResolver 读取。
+  /// 未授权时自动弹系统选择器请求授权；拒绝或失败返回 false，由调用方决定是否抛异常。
+  static Future<bool> copyFileViaSaf(String srcLocalPath, String destLocalPath, {bool isObb = false}) async {
+    var treeUri = isObb ? await getAndroidObbTreeUri() : await getAndroidDataTreeUri();
+    if (treeUri == null || treeUri.isEmpty) {
+      // 未授权则尝试请求（首次复制会弹系统选择器）
+      treeUri = isObb ? await requestAndroidObbAccess() : await requestAndroidDataAccess();
+    }
+    if (treeUri == null || treeUri.isEmpty) return false;
+    try {
+      final rel = srcLocalPath.startsWith('/storage/emulated/0/')
+          ? srcLocalPath.substring('/storage/emulated/0/'.length)
+          : srcLocalPath;
+      if (!rel.startsWith('Android/')) return false;
+      final docId = 'primary:$rel';
+      final docUri = _buildSafDocUri(treeUri, docId);
+      final out = await _channel.invokeMethod('downloadFile', {
+        'rootUri': treeUri,
+        'uri': docUri,
+        'localPath': destLocalPath,
+      });
+      return out == true;
+    } catch (e) {
+      debugPrint('[ZenFile] SAF copyFileViaSaf failed: $e');
+      return false;
+    }
+  }
+
+  /// 由 document ID 构建可被原生 `downloadFile` 解析的 content:// document URI。
+  /// 复用与本库 `listAndroidDataSubDirViaSAF` 完全相同的范式：
+  /// `content://com.android.externalstorage.documents/document/<encodeComponent(docId)>`。
+  /// 原生侧 `getDocumentId(Uri.parse(uri))` 会解码该 docId，再经
+  /// `buildDocumentUriUsingTree(rootUri, docId)` 重建，与 listDirectory 行为一致。
+  static String _buildSafDocUri(String treeUri, String docId) {
+    // 仅取 treeUri 的 authority（downloadFile 只用 rootUri 参数，docId 由 uri 反向解析）。
+    final uri = Uri.parse(treeUri);
+    final authority = uri.authority.isNotEmpty ? uri.authority : 'com.android.externalstorage.documents';
+    final encDoc = Uri.encodeComponent(docId);
+    return 'content://$authority/document/$encDoc';
   }
 
   static Future<void> _saveTreeUri(String key, String uri) async {

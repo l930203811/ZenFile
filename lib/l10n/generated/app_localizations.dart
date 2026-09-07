@@ -11793,6 +11793,12 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'自定义'**
   String get ui_custom_theme;
+
+  /// Custom theme color picker: ui_preset_colors
+  ///
+  /// In zh, this message translates to:
+  /// **'预设颜色'**
+  String get ui_preset_colors;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

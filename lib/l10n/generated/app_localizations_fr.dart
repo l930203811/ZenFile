@@ -6680,4 +6680,7 @@ class L10nFr extends L10n {
 
   @override
   String get ui_custom_theme => 'Personnalisé';
+
+  @override
+  String get ui_preset_colors => 'Couleurs prédéfinies';
 }

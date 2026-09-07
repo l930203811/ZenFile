@@ -6559,4 +6559,7 @@ class L10nAr extends L10n {
 
   @override
   String get ui_custom_theme => 'مخصص';
+
+  @override
+  String get ui_preset_colors => 'ألوان مسبقة';
 }

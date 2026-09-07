@@ -6286,6 +6286,9 @@ class L10nZh extends L10n {
 
   @override
   String get ui_custom_theme => '自定义';
+
+  @override
+  String get ui_preset_colors => '预设颜色';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -12538,4 +12541,7 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_custom_theme => '自訂';
+
+  @override
+  String get ui_preset_colors => '預設顏色';
 }

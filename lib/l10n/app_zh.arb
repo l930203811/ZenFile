@@ -6892,5 +6892,9 @@
   "ui_custom_theme": "自定义",
   "@ui_custom_theme": {
     "description": "ui\\screens\\more_settings_screen.dart"
+  },
+  "ui_preset_colors": "预设颜色",
+  "@ui_preset_colors": {
+    "description": "Custom theme color picker: ui_preset_colors"
   }
 }

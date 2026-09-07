@@ -6594,4 +6594,7 @@ class L10nEn extends L10n {
 
   @override
   String get ui_custom_theme => 'Custom';
+
+  @override
+  String get ui_preset_colors => 'Preset Colors';
 }

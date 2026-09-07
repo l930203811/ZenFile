@@ -6389,4 +6389,7 @@ class L10nKo extends L10n {
 
   @override
   String get ui_custom_theme => '사용자 정의';
+
+  @override
+  String get ui_preset_colors => '미리 설정된 색상';
 }

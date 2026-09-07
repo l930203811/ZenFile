@@ -6395,4 +6395,7 @@ class L10nJa extends L10n {
 
   @override
   String get ui_custom_theme => 'カスタム';
+
+  @override
+  String get ui_preset_colors => 'プリセットカラー';
 }

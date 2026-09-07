@@ -4166,6 +4166,22 @@ class FileManagerProvider extends ChangeNotifier {
         if (bypassUseRoot == null) {
           throw Exception('Restricted source requires ROOT or Shizuku');
         }
+        // 纯 Shizuku（无 root）时 shell 两种路径都读不到其它应用 Android/{data,obb}
+        // 文件内容（FUSE 只给元数据、底层 0660 无权限），必须经 SAF（ContentResolver）
+        // 读取。复制前先确保已授权，避免逐个文件复制时反复弹系统选择器打断流程。
+        if (bypassUseRoot == false) {
+          if (!await SafAndroidDataService.hasAndroidDataAccess()) {
+            if (await SafAndroidDataService.requestAndroidDataAccess() == null) {
+              throw Exception('需授权 Android/data 才能复制受限文件');
+            }
+          }
+          if (_clipboardPaths.any((sp) => sp.contains('/Android/obb/')) &&
+              (await SafAndroidDataService.getAndroidObbTreeUri()) == null) {
+            if (await SafAndroidDataService.requestAndroidObbAccess() == null) {
+              throw Exception('需授权 Android/obb 才能复制受限文件');
+            }
+          }
+        }
       }
 
       for (final srcPath in _clipboardPaths) {
@@ -6210,20 +6226,24 @@ class FileManagerProvider extends ChangeNotifier {
   /// Android/{data,obb} 受限源在「FUSE 元数据可见、内容读取被拦」的 ROM 上，
   /// Dart IO 复制会产生 0 字节目标文件且不报错（lengthSync 返回元数据大小、
   /// 实际读流为空）。此校验比对目标实际字节数与收集时的源元数据大小，
-  /// 不一致时删除目标并回退 shell copyItem（FUSE/底层双跳 + 大小校验）重试；
-  /// 仍失败由 copyItem 抛异常，避免静默 0 字节。仅对受限源路径生效。
+  /// 不一致时删除目标并回退 shell copyItem（底层优先双跳 + SAF 兜底）重试；
+  /// copyItem 内部已对纯 Shizuku 场景回退 SAF 读取真实内容，仍失败才抛异常。
+  /// 仅对受限源路径生效。注意：即便 expectedSize<=0（ROM 完全拦截导致 stat
+  /// 也拿不到真实大小），只要目标为 0 字节仍要重取，否则会静默 0 字节。
   Future<void> _verifyAndRetryRestrictedCopy(
       String srcPath, String destPath, int expectedSize, bool? bypassUseRoot) async {
-    if (bypassUseRoot == null || expectedSize <= 0) return;
+    if (bypassUseRoot == null) return;
     if (!_isRestrictedAndroidPath(srcPath)) return;
     try {
       final actual = await File(destPath).length();
-      if (actual == expectedSize) return;
-      debugPrint('[ZenFile] restricted copy size mismatch: '
-          '$srcPath -> $destPath ($actual/$expectedSize bytes), retry via shell');
+      // 大小一致：成功
+      if (expectedSize > 0 && actual == expectedSize) return;
+      // 目标已有真实内容（覆盖 stat 不准/返回 0 的极少数情形）
+      if (actual > 0) return;
     } catch (_) {
       return; // 目标读不到等异常：交由上层既有流程统一处理
     }
+    // 目标 0 字节或大小不符：删除后用 shell（底层优先）+ SAF 兜底重取真实内容
     try {
       await File(destPath).delete();
     } catch (_) {}

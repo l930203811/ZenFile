@@ -6648,4 +6648,7 @@ class L10nDe extends L10n {
 
   @override
   String get ui_custom_theme => 'Benutzerdefiniert';
+
+  @override
+  String get ui_preset_colors => 'Voreingestellte Farben';
 }
