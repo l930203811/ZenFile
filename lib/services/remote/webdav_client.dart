@@ -572,21 +572,29 @@ class WebDavRemoteClient extends RemoteClient {
     // 但【实际文件】GET 时 302 跳转到网盘直链。连接期只对根目录做了探测，会漏判
     // 这种「仅文件重定向」，所以这里对单个文件做重定向探测（见 _resolveStreamTarget）：
     //   · 无重定向（普通 WebDAV / OpenList 本机代理）→ 走下面的直连 URL；
-    //   · 有重定向且直链支持 Range → 返回解析后的网盘直链，真流式播放；
-    //   · 有重定向但直链不支持 Range / 解析失败 → 返回 null 走本地代理。
+    //   · 有重定向（OpenList 302 模式）→ 返回 null 走本地代理（原因见下方分支注释）。
     try {
       final startUrl = Uri.parse(_baseUrl + Uri.encodeFull(remotePath));
       final auth = _authHeader();
       final target = await _resolveStreamTarget(startUrl, auth.isEmpty ? null : auth);
       if (target.isRedirect) {
-        final directUrl = target.finalUrl;
-        if (directUrl != null && directUrl.isNotEmpty) {
-          debugPrint('[WebDAV] 302 已解析为网盘直链，交给播放器直接流式播放');
-          WebdavDebugLog.log('getStreamUrl -> 返回网盘直链 ${WebdavDebugLog.mask(directUrl)}');
-          return directUrl;
-        }
-        debugPrint('[WebDAV] 302 直链不支持 Range，走本地代理');
-        WebdavDebugLog.log('getStreamUrl -> null(直链不可用,走本地代理)');
+        // 【重要决策】302 模式一律走本地代理，不再把网盘直链交给播放器。
+        //
+        // 曾尝试「自己跟完重定向，把最终网盘直链交给 media_kit 直连流式」（a850432），
+        // 实测失败：直链解析完全成功（302 -> 115 CDN，且 Range 探测返回 206），
+        // 但播放器拿到直链后**完全不产生流量**（logcat/日志无取流，通知栏无速率）。
+        // 根因是能正常播放的场景（OpenList「本机代理」模式）走的是 **HTTP**
+        // （http://192.168.100.1:5244/dav/...），而 302 解析出的网盘直链是
+        // **HTTPS**（https://cdnfhnfile.115cdn.net/...）——media_kit/FFmpeg 在
+        // Android 上取 https 直链会因 TLS/CA 或防盗链(UA/Referer)校验直接失败，
+        // 表现为「点了播放但毫无反应」。
+        //
+        // 改走本地代理 RemoteStreamingService 后：
+        //   · 取流由 Dart 客户端完成（302 下上传/下载/重命名/删除均正常，通道已验证）；
+        //   · 播放器只连 http://127.0.0.1:<port>，纯 HTTP，无 TLS/防盗链问题；
+        //   · 属于 App 内传输，通知栏速率可见，符合用户预期。
+        WebdavDebugLog.log(
+            'getStreamUrl -> null(检测到 302 重定向,走本地代理) 解析到的直链=${WebdavDebugLog.mask(target.finalUrl ?? "(无)")}');
         return null;
       }
     } catch (e) {

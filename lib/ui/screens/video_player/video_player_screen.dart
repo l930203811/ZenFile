@@ -10,6 +10,7 @@ import 'package:zenfile/core/icon_fonts/broken_icons.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import 'package:zenfile/services/preferences_service.dart';
 import 'package:zenfile/services/remote_streaming_service.dart';
+import 'package:zenfile/services/webdav_debug_log.dart';
 import 'package:zenfile/services/network_connections_service.dart';
 import 'package:zenfile/services/subtitle_parser.dart';
 import 'package:zenfile/services/audio_background_handler.dart';
@@ -216,6 +217,18 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     );
     // 播放器内部音量固定最大，由系统音量统一控制（与切换解码路径保持一致）
     player.setVolume(100.0);
+
+    // 排查远程（WebDAV/OpenList 302、本地代理）播放失败：记录 libmpv 的错误事件。
+    // 与 webdav_debug.log 同源，release 包同样可查；排查完毕后随 WebdavDebugLog
+    // 总开关一起关闭。
+    player.stream.error.listen((err) {
+      WebdavDebugLog.log('【播放器错误】$err');
+    });
+    player.stream.playing.listen((playing) {
+      if (playing) {
+        WebdavDebugLog.log('播放器开始播放 path=${WebdavDebugLog.mask(widget.videoPath)}');
+      }
+    });
 
     // 覆盖 media_kit 硬编码的 network-timeout=5s。
     // SMB/FTP/SFTP 建立连接+认证可能需要 5-10s，5s 超时会导致 libmpv
