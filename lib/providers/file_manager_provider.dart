@@ -6603,7 +6603,10 @@ class FileManagerProvider extends ChangeNotifier {
     try {
       String finalName = name;
       final targetPath = currIsRemote ? _buildRemotePath(currentPath, name) : p.join(currentPath, name);
-      if (FileSystemEntity.typeSync(targetPath) != FileSystemEntityType.notFound) {
+      // 受限目录（其它应用 Android/{data,obb}）经 dart:io 无法 stat（FUSE 拒绝访问），
+      // typeSync 会抛异常被外层 catch 静默吞掉导致创建“不起作用”；故跳过重名检查，
+      // 直接走 SAF/root 创建。重名由底层（DocumentsContract 抛异常 / shell）自然处理。
+      if (!currIsRemote && !isRestrictedPath(currentPath) && FileSystemEntity.typeSync(targetPath) != FileSystemEntityType.notFound) {
         final uniquePath = _getUniquePath(targetPath, true);
         finalName = p.basename(uniquePath);
       }
@@ -6628,7 +6631,8 @@ class FileManagerProvider extends ChangeNotifier {
     try {
       String finalName = name;
       final targetPath = currIsRemote ? _buildRemotePath(currentPath, name) : p.join(currentPath, name);
-      if (!currIsRemote && FileSystemEntity.typeSync(targetPath) != FileSystemEntityType.notFound) {
+      // 受限目录（其它应用 Android/{data,obb}）dart:io 无法 stat，跳过重名检查直接走 SAF/root 创建。
+      if (!currIsRemote && !isRestrictedPath(currentPath) && FileSystemEntity.typeSync(targetPath) != FileSystemEntityType.notFound) {
         final uniquePath = _getUniquePath(targetPath, false);
         finalName = p.basename(uniquePath);
       }
