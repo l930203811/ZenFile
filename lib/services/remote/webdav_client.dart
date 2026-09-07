@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:xml/xml.dart' as xml;
 import 'remote_client.dart';
+import '../http_range_proxy_service.dart';
 import '../webdav_debug_log.dart';
 
 /// `getStreamUrl` 重定向探测的结果。
@@ -425,6 +426,21 @@ class WebDavRemoteClient extends RemoteClient {
     throw Exception('WebDAV: too many redirects for $urlStr');
   }
 
+  /// 供 `HttpRangeProxyService` 使用：按播放器给出的 **原始 Range 头** 向远端取流，
+  /// 自动跟随 302 并在跳转后保留 Range，返回原始响应交由代理透传。
+  ///
+  /// 与 [downloadFile] 的区别：不做整文件顺序下载，只取播放器当前需要的区间，
+  /// 因此播放器请求文件尾部（MP4 moov）时能**立即**拿到，无需等待顺序下载追上。
+  Future<HttpClientResponse> openRangeResponse(
+    String remotePath, {
+    String? rangeHeader,
+  }) async {
+    return _followRedirectGet(
+      _baseUrl + Uri.encodeFull(remotePath),
+      range: rangeHeader,
+    );
+  }
+
   @override
   Future<void> downloadFile(String remotePath, String localPath, Function(double progress) onProgress) async {
     final response = await _followRedirectGet(_baseUrl + Uri.encodeFull(remotePath));
@@ -593,9 +609,18 @@ class WebDavRemoteClient extends RemoteClient {
         //   · 取流由 Dart 客户端完成（302 下上传/下载/重命名/删除均正常，通道已验证）；
         //   · 播放器只连 http://127.0.0.1:<port>，纯 HTTP，无 TLS/防盗链问题；
         //   · 属于 App 内传输，通知栏速率可见，符合用户预期。
-        WebdavDebugLog.log(
-            'getStreamUrl -> null(检测到 302 重定向,走本地代理) 解析到的直链=${WebdavDebugLog.mask(target.finalUrl ?? "(无)")}');
-        return null;
+        // 取流走 HttpRangeProxyService：播放器要哪个区间就向远端取哪个区间并
+        // 原样透传 206，实现真正的边下边播（开播只等首段缓冲，拖动即时响应）。
+        // 启动失败则退回 null，由调用方走 RemoteStreamingService（顺序下载兜底）。
+        try {
+          final proxyUrl = await HttpRangeProxyService.instance
+              .start(this, remotePath);
+          WebdavDebugLog.log('getStreamUrl -> 走 Range 反代 $proxyUrl');
+          return proxyUrl;
+        } catch (e) {
+          WebdavDebugLog.log('getStreamUrl -> Range 反代启动失败,回退顺序下载代理: $e');
+          return null;
+        }
       }
     } catch (e) {
       debugPrint('[WebDAV] 单文件重定向探测失败，改走本地代理: $e');

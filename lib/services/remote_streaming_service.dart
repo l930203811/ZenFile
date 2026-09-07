@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
+import 'http_range_proxy_service.dart';
 import 'remote/remote_client.dart';
 import 'webdav_debug_log.dart';
 
@@ -184,6 +185,14 @@ class RemoteStreamingService {
   }
 
   Future<void> stopStreaming(String url) async {
+    // 该 URL 也可能是 HttpRangeProxyService（WebDAV/OpenList 302 的按需 Range
+    // 反代）启动的会话，交给它回收；不是它的一行内会自行跳过。
+    try {
+      if (HttpRangeProxyService.instance.isOurs(url)) {
+        await HttpRangeProxyService.instance.stop(url);
+        return;
+      }
+    } catch (_) {}
     try {
       final uri = Uri.parse(url);
       final session = _sessions.remove(uri.port);
