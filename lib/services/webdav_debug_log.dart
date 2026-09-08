@@ -20,7 +20,7 @@ class WebdavDebugLog {
   static const int _maxBytes = 2 * 1024 * 1024;
 
   /// 总开关。排查完毕可在发布前置 false（保留代码便于下次排查）。
-  static bool enabled = true;
+  static bool enabled = false;
 
   /// 写入一行日志（同步落盘，保证崩溃前也已写入）。
   static void log(String msg) {
