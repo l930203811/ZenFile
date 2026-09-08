@@ -323,7 +323,25 @@ class SshSftpService {
 
     /**
      * 下载远程文件的指定字节区间 [startByte, startByte+length) 到本地路径（用于缩略图头部、
-     * 流媒体按需 seek）。使用 get 返回的 InputStream 精确 skip + 拷贝，避免整文件下载。
+     * 流媒体按需 seek）。
+     *
+     * 修复（SFTP 流式播放失败根因）：旧实现用 `ch.get(src, dst, monitor, OVERWRITE, offset)`
+     * 期望 JSch 按 offset 做服务端偏移随机读。但查证 mwiede/jsch 源码确认：该 5 参重载【仅
+     * 在 mode==RESUME 时消费 offset】（`offset += skip` 用作首个 READ 请求位置），OVERWRITE
+     * 下 offset 被【直接忽略、始终从文件头读取】——于是除首段(bytes=0-)外的所有区间都返回了
+     * 文件头内容，播放器在文件中部读到 ftyp 头 → 海量「Error decoding audio」、或直接判定空
+     * 文件跳到结尾（无流量）。这正是 SFTP 相对 WebDAV/FTP/SMB 唯一炸掉的原因。
+     *
+     * 同时：`ch.get(src)` 返回的 InputStream【并未重写 skip()】，默认 skip 是「读并丢弃」，
+     * 若用它做逻辑 seek，每次区间读取都会把 [0,startByte) 整段重新下载——大文件拖到中部/尾部
+     * 会退化成「拖动卡死」，同样不可取。
+     *
+     * 正确做法：改用 `get(src, fos, monitor, RESUME, startByte)`。RESUME 模式把 offset=startByte
+     * 作为首个 READ 请求的起始位置，做到【真正的服务端随机读】（seek），绝不下载被跳过的字节；
+     * OutputStream 版 RESUME 对「offset > 本地文件大小」无守卫（本方法目标文件本就新建为空），
+     * 因此安全。注意 RESUME 会在 monitor.count 里先「预计」skip(=startByte) 字节，故终止条件
+     * 用 (counted - startByte) <= length（而非 length），写盘恰好 length 字节；进度上报扣掉
+     * 该预计量，显示本区间实际下载量。
      */
     fun downloadRange(id: String, remotePath: String, localPath: String, startByte: Long, length: Long) {
         val ch = sftp(id)
@@ -331,30 +349,27 @@ class SshSftpService {
         progressTotal[id] = length
         progressBytes[id] = 0L
         cancelFlags[id] = false
-        val monitor = makeMonitor(id)
+        Log.d(TAG, "downloadRange id=$id src=$remotePath start=$startByte len=$length")
         try {
-            // 服务端偏移随机读（JSch 0.1.55 原生支持）：get(src,dst,monitor,mode,offset)
-            // 内部 SFTP READ 请求直接从 startByte 起读（服务端 seek），不再从文件头传输
-            // 再本地 skip。旧实现 ch.get(remotePath) 打开整文件流 + 循环 skip(startByte) 等于
-            // 先把 [0,startByte) 全部下载后丢弃——大文件拖到中部/尾部要等数分钟，正是
-            // 「SFTP 拖动卡死」根因。播放器只发 Range，代理对每段做
-            // 远程协议真实偏移随机读，再由本地 .seekcache 兜住重复请求。
-            // 用 monitor 在累计下载达到 length 时返回 false 中止传输，从而只取
-            // [startByte, startByte+length) 而非下载到文件尾（缩略图只取头部、拖动只取一段）。
-            val fos = FileOutputStream(localPath)
-            val bounded = object : SftpProgressMonitor {
-                var counted = 0L
-                override fun count(c: Long): Boolean {
-                    if (cancelFlags[id] ?: false) return false
-                    counted += c
-                    return counted < length
+            FileOutputStream(localPath).use { fos ->
+                // 真正的服务端随机读：RESUME 模式消费 offset=startByte 作首个 READ 位置（服务端 seek）；
+                // OVERWRITE 下 offset 被忽略，故必须用 RESUME。目标文件新建为空，RESUME 无 offset>size 守卫，安全。
+                val bounded = object : SftpProgressMonitor {
+                    var counted = 0L
+                    override fun count(c: Long): Boolean {
+                        if (cancelFlags[id] ?: false) return false
+                        counted += c
+                        // 扣掉 RESUME 预计的 skip(=startByte)，显示本区间实际下载量。
+                        progressBytes[id] = (counted - startByte).coerceAtLeast(0L)
+                        // 终止条件：(实际已读字节) <= length。startByte==0 时与 OVERWRITE 等价。
+                        return (counted - startByte) <= length
+                    }
+                    override fun init(op: Int, src: String?, dst: String?, max: Long) {}
+                    override fun end() {}
                 }
-                override fun init(op: Int, src: String?, dst: String?, max: Long) {}
-                override fun end() {}
+                ch.get(remotePath, fos, bounded, ChannelSftp.RESUME, startByte)
             }
-            ch.get(remotePath, fos, bounded, ChannelSftp.OVERWRITE, startByte)
-            fos.close()
-            // monitor 可能在最后一笔略微超出 length，截断到精确区间
+            // 极保险：万一多读一丁点，截断到精确区间。
             if (length > 0) {
                 java.io.RandomAccessFile(localPath, "rw").use { raf ->
                     if (raf.length() > length) raf.setLength(length)
