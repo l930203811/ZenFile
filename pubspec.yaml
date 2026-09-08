@@ -102,8 +102,12 @@ dependencies:
   exif: ^3.3.0
   file_picker: ^11.0.3
   cryptography_plus: ^3.0.0
+  # XSalsa20-Poly1305 (NaCl secretbox)：rclone crypt 兼容层的内容加解密必需。
+  # cryptography_plus 不提供 XSalsa20（只有 XChaCha20），故显式依赖 pinenacl。
+  pinenacl: ^0.6.0
   local_auth: ^3.0.2
   flutter_secure_storage: ^10.3.1
+  qr_flutter: ^4.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

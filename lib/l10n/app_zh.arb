@@ -6896,5 +6896,317 @@
   "ui_preset_colors": "预设颜色",
   "@ui_preset_colors": {
     "description": "Custom theme color picker: ui_preset_colors"
+  },
+  "crypt_settings_title": "加密设置",
+  "@crypt_settings_title": {
+    "description": "crypt: crypt_settings_title"
+  },
+  "crypt_settings_subtitle": "管理加密文件夹和挂载点",
+  "@crypt_settings_subtitle": {
+    "description": "crypt: crypt_settings_subtitle"
+  },
+  "crypt_add_mount": "添加加密文件夹",
+  "@crypt_add_mount": {
+    "description": "crypt: crypt_add_mount"
+  },
+  "crypt_edit_mount": "编辑加密文件夹",
+  "@crypt_edit_mount": {
+    "description": "crypt: crypt_edit_mount"
+  },
+  "crypt_no_mounts_title": "暂无加密文件夹",
+  "@crypt_no_mounts_title": {
+    "description": "crypt: crypt_no_mounts_title"
+  },
+  "crypt_no_mounts_subtitle": "点击下方按钮添加第一个加密文件夹",
+  "@crypt_no_mounts_subtitle": {
+    "description": "crypt: crypt_no_mounts_subtitle"
+  },
+  "crypt_field_name": "名称",
+  "@crypt_field_name": {
+    "description": "crypt: crypt_field_name"
+  },
+  "crypt_field_name_hint": "可选，留空则使用文件夹名",
+  "@crypt_field_name_hint": {
+    "description": "crypt: crypt_field_name_hint"
+  },
+  "crypt_field_path": "文件夹路径",
+  "@crypt_field_path": {
+    "description": "crypt: crypt_field_path"
+  },
+  "crypt_field_path_hint": "选择要加密的文件夹",
+  "@crypt_field_path_hint": {
+    "description": "crypt: crypt_field_path_hint"
+  },
+  "crypt_field_password": "密码",
+  "@crypt_field_password": {
+    "description": "crypt: crypt_field_password"
+  },
+  "crypt_field_confirm_password": "确认密码",
+  "@crypt_field_confirm_password": {
+    "description": "crypt: crypt_field_confirm_password"
+  },
+  "crypt_error_path_required": "请选择文件夹路径",
+  "@crypt_error_path_required": {
+    "description": "crypt: crypt_error_path_required"
+  },
+  "crypt_error_password_required": "请输入密码",
+  "@crypt_error_password_required": {
+    "description": "crypt: crypt_error_password_required"
+  },
+  "crypt_error_password_short": "密码至少4个字符",
+  "@crypt_error_password_short": {
+    "description": "crypt: crypt_error_password_short"
+  },
+  "crypt_error_password_mismatch": "两次输入的密码不一致",
+  "@crypt_error_password_mismatch": {
+    "description": "crypt: crypt_error_password_mismatch"
+  },
+  "crypt_section_mode": "加密模式",
+  "@crypt_section_mode": {
+    "description": "crypt: crypt_section_mode"
+  },
+  "crypt_mode_inplace": "原地加密",
+  "@crypt_mode_inplace": {
+    "description": "crypt: crypt_mode_inplace"
+  },
+  "crypt_mode_inplace_desc": "文件保留在原位置，文件名和内容被加密",
+  "@crypt_mode_inplace_desc": {
+    "description": "crypt: crypt_mode_inplace_desc"
+  },
+  "crypt_mode_sandbox": "沙盒加密",
+  "@crypt_mode_sandbox": {
+    "description": "crypt: crypt_mode_sandbox"
+  },
+  "crypt_mode_sandbox_desc": "文件移动到沙盒目录，更安全但访问稍慢",
+  "@crypt_mode_sandbox_desc": {
+    "description": "crypt: crypt_mode_sandbox_desc"
+  },
+  "crypt_section_advanced": "高级选项",
+  "@crypt_section_advanced": {
+    "description": "crypt: crypt_section_advanced"
+  },
+  "crypt_advanced_toggle": "显示高级加密选项",
+  "@crypt_advanced_toggle": {
+    "description": "crypt: crypt_advanced_toggle"
+  },
+  "crypt_field_filename_enc": "文件名加密",
+  "@crypt_field_filename_enc": {
+    "description": "crypt: crypt_field_filename_enc"
+  },
+  "crypt_field_dirname_enc": "加密目录名",
+  "@crypt_field_dirname_enc": {
+    "description": "crypt: crypt_field_dirname_enc"
+  },
+  "crypt_field_filename_encoding": "文件名编码",
+  "@crypt_field_filename_encoding": {
+    "description": "crypt: crypt_field_filename_encoding"
+  },
+  "crypt_field_suffix": "加密后缀",
+  "@crypt_field_suffix": {
+    "description": "crypt: crypt_field_suffix"
+  },
+  "crypt_field_salt": "盐（可选）",
+  "@crypt_field_salt": {
+    "description": "crypt: crypt_field_salt"
+  },
+  "crypt_field_salt_hint": "留空则自动生成",
+  "@crypt_field_salt_hint": {
+    "description": "crypt: crypt_field_salt_hint"
+  },
+  "crypt_action_browse": "浏览",
+  "@crypt_action_browse": {
+    "description": "crypt: crypt_action_browse"
+  },
+  "crypt_delete_title": "删除加密文件夹",
+  "@crypt_delete_title": {
+    "description": "crypt: crypt_delete_title"
+  },
+  "crypt_delete_message": "确定要删除\"{name}\"的加密配置吗？文件本身不会被删除。",
+  "@crypt_delete_message": {
+    "description": "crypt: crypt_delete_message"
+  },
+  "crypt_filename_enc": "文件名加密",
+  "@crypt_filename_enc": {
+    "description": "crypt: crypt_filename_enc"
+  },
+  "crypt_share_title": "分享加密文件夹",
+  "@crypt_share_title": {
+    "description": "crypt: crypt_share_title"
+  },
+  "crypt_share_hint": "扫描二维码可导入加密配置，但需要手动输入密码才能解密文件",
+  "@crypt_share_hint": {
+    "description": "crypt: crypt_share_hint"
+  },
+  "crypt_action_share": "分享",
+  "@crypt_action_share": {
+    "description": "crypt: crypt_action_share"
+  },
+  "crypt_share_password_note": "二维码中不包含密码，请通过安全渠道单独告知密码",
+  "@crypt_share_password_note": {
+    "description": "crypt: crypt_share_password_note"
+  },
+  "crypt_action_encrypt": "立即加密",
+  "@crypt_action_encrypt": {
+    "description": "crypt: crypt_action_encrypt"
+  },
+  "crypt_action_decrypt": "解密",
+  "@crypt_action_decrypt": {
+    "description": "crypt: crypt_action_decrypt"
+  },
+  "crypt_encrypt_title": "加密确认",
+  "@crypt_encrypt_title": {
+    "description": "crypt: crypt_encrypt_title"
+  },
+  "crypt_encrypt_message": "此操作将加密文件夹中的所有文件和子文件夹。加密后，其他文件管理器将无法查看文件内容和文件名。确定要继续吗？",
+  "@crypt_encrypt_message": {
+    "description": "crypt: crypt_encrypt_message"
+  },
+  "crypt_encrypting": "正在加密...",
+  "@crypt_encrypting": {
+    "description": "crypt: crypt_encrypting"
+  },
+  "crypt_encrypt_success": "加密完成",
+  "@crypt_encrypt_success": {
+    "description": "crypt: crypt_encrypt_success"
+  },
+  "crypt_encrypt_failed": "加密失败：{error}",
+  "@crypt_encrypt_failed": {
+    "description": "crypt: crypt_encrypt_failed"
+  },
+  "crypt_decrypt_title": "解密确认",
+  "@crypt_decrypt_title": {
+    "description": "crypt: crypt_decrypt_title"
+  },
+  "crypt_decrypt_message": "此操作将解密文件夹中的所有文件和子文件夹。解密后，文件将恢复为普通文件。确定要继续吗？",
+  "@crypt_decrypt_message": {
+    "description": "crypt: crypt_decrypt_message"
+  },
+  "crypt_decrypting": "正在解密...",
+  "@crypt_decrypting": {
+    "description": "crypt: crypt_decrypting"
+  },
+  "crypt_decrypt_success": "解密完成",
+  "@crypt_decrypt_success": {
+    "description": "crypt: crypt_decrypt_success"
+  },
+  "crypt_decrypt_failed": "解密失败：{error}",
+  "@crypt_decrypt_failed": {
+    "description": "crypt: crypt_decrypt_failed"
+  },
+  "crypt_filename_enc_off": "关闭",
+  "@crypt_filename_enc_off": {
+    "description": "crypt: crypt_filename_enc_off"
+  },
+  "crypt_filename_enc_standard": "标准",
+  "@crypt_filename_enc_standard": {
+    "description": "crypt: crypt_filename_enc_standard"
+  },
+  "crypt_filename_enc_obfuscate": "混淆",
+  "@crypt_filename_enc_obfuscate": {
+    "description": "crypt: crypt_filename_enc_obfuscate"
+  },
+  "crypt_filename_enc_base64": "Base64",
+  "@crypt_filename_enc_base64": {
+    "description": "crypt: crypt_filename_enc_base64"
+  },
+  "crypt_filename_enc_base32": "Base32",
+  "@crypt_filename_enc_base32": {
+    "description": "crypt: crypt_filename_enc_base32"
+  },
+  "crypt_filename_enc_base32768": "Base32768",
+  "@crypt_filename_enc_base32768": {
+    "description": "crypt: crypt_filename_enc_base32768"
+  },
+  "crypt_dirname_enc_yes": "是",
+  "@crypt_dirname_enc_yes": {
+    "description": "crypt: crypt_dirname_enc_yes"
+  },
+  "crypt_dirname_enc_no": "否",
+  "@crypt_dirname_enc_no": {
+    "description": "crypt: crypt_dirname_enc_no"
+  },
+  "vault_encrypt_files": "+ 加密文件",
+  "@vault_encrypt_files": {
+    "description": "vault/crypt: vault_encrypt_files"
+  },
+  "vault_select_encryption_method": "选择加密方式",
+  "@vault_select_encryption_method": {
+    "description": "vault/crypt: vault_select_encryption_method"
+  },
+  "vault_inplace_encrypt": "原地加密",
+  "@vault_inplace_encrypt": {
+    "description": "vault/crypt: vault_inplace_encrypt"
+  },
+  "vault_inplace_encrypt_desc": "文件留在原目录，加密后文件名变为加密格式，浏览页显示🔐图徽",
+  "@vault_inplace_encrypt_desc": {
+    "description": "vault/crypt: vault_inplace_encrypt_desc"
+  },
+  "vault_sandbox_encrypt": "沙盒加密",
+  "@vault_sandbox_encrypt": {
+    "description": "vault/crypt: vault_sandbox_encrypt"
+  },
+  "vault_sandbox_encrypt_desc": "文件移动到保险箱私有目录，隐藏文件名，仅在保险箱页面可见",
+  "@vault_sandbox_encrypt_desc": {
+    "description": "vault/crypt: vault_sandbox_encrypt_desc"
+  },
+  "vault_need_set_password": "需要先设置加密主密码",
+  "@vault_need_set_password": {
+    "description": "vault/crypt: vault_need_set_password"
+  },
+  "vault_need_set_password_desc": "请先在加密设置中配置加密主密码和加盐，保存后即可进行原地加密。",
+  "@vault_need_set_password_desc": {
+    "description": "vault/crypt: vault_need_set_password_desc"
+  },
+  "vault_go_set_password": "去设置主密码",
+  "@vault_go_set_password": {
+    "description": "vault/crypt: vault_go_set_password"
+  },
+  "vault_encrypting": "正在加密...",
+  "@vault_encrypting": {
+    "description": "vault/crypt: vault_encrypting"
+  },
+  "vault_encrypting_desc": "正在加密选中的文件/文件夹，请稍候...",
+  "@vault_encrypting_desc": {
+    "description": "vault/crypt: vault_encrypting_desc"
+  },
+  "vault_inplace_encrypt_done": "原地加密完成，共加密 {count} 个文件/文件夹",
+  "@vault_inplace_encrypt_done": {
+    "description": "vault/crypt: vault_inplace_encrypt_done"
+  },
+  "vault_encrypt_failed": "加密失败: {error}",
+  "@vault_encrypt_failed": {
+    "description": "vault/crypt: vault_encrypt_failed"
+  },
+  "vault_inplace_section": "原地加密",
+  "@vault_inplace_section": {
+    "description": "vault/crypt: vault_inplace_section"
+  },
+  "vault_open_location": "打开位置",
+  "@vault_open_location": {
+    "description": "vault/crypt: vault_open_location"
+  },
+  "vault_decrypt_action": "解密",
+  "@vault_decrypt_action": {
+    "description": "vault/crypt: vault_decrypt_action"
+  },
+  "vault_decrypt_confirm_title": "解密文件",
+  "@vault_decrypt_confirm_title": {
+    "description": "vault/crypt: vault_decrypt_confirm_title"
+  },
+  "vault_decrypt_confirm_desc": "确定要解密「{name}」吗？解密后文件将恢复为普通文件。",
+  "@vault_decrypt_confirm_desc": {
+    "description": "vault/crypt: vault_decrypt_confirm_desc"
+  },
+  "vault_decrypt_success": "解密成功",
+  "@vault_decrypt_success": {
+    "description": "vault/crypt: vault_decrypt_success"
+  },
+  "vault_decrypt_failed": "解密失败: {error}",
+  "@vault_decrypt_failed": {
+    "description": "vault/crypt: vault_decrypt_failed"
+  },
+  "crypt_set_master_password": "设置加密主密码",
+  "@crypt_set_master_password": {
+    "description": "vault/crypt: crypt_set_master_password"
   }
 }

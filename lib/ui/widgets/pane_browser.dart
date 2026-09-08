@@ -28,6 +28,8 @@ import 'file_action_dialogs.dart';
 import 'remote_cloud_badge.dart';
 import 'create_archive_dialog.dart';
 import 'batch_rename_dialog.dart';
+import '../../services/crypt/crypt.dart';
+import '../../services/vault_service.dart';
 import '../../services/folder_share_service.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../services/remote/remote_client.dart';
@@ -412,6 +414,12 @@ class _PaneBrowserState extends State<PaneBrowser> {
       case 'extract':
         await provider.extractArchiveDirectly(context, path);
         break;
+      case 'encrypt':
+        await _handleEncrypt(context, provider, path);
+        break;
+      case 'decrypt':
+        await _handleDecrypt(context, provider, path);
+        break;
       case 'open_with':
         // 与单窗口 directory_screen 的 _handleAction 保持一致
         await provider.showOpenWithSheet(context, path);
@@ -522,6 +530,169 @@ class _PaneBrowserState extends State<PaneBrowser> {
           );
         }
         break;
+    }
+  }
+
+  /// 验证保险箱主密码（如果未解锁）
+  Future<String?> _verifyVaultPassword(BuildContext context) async {
+    if (VaultCryptService.instance.isUnlocked) {
+      return VaultCryptService.instance.unlockedPassword;
+    }
+    final controller = TextEditingController();
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('验证保险箱密码'),
+        content: TextField(
+          controller: controller,
+          obscureText: true,
+          decoration: const InputDecoration(
+            hintText: '请输入保险箱主密码',
+            border: OutlineInputBorder(),
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              final pw = controller.text;
+              if (await VaultService.verifyPassword(pw)) {
+                VaultCryptService.instance.markUnlocked(pw);
+                Navigator.pop(ctx, pw);
+              } else {
+                ScaffoldMessenger.of(ctx).showSnackBar(
+                  const SnackBar(content: Text('密码错误')),
+                );
+              }
+            },
+            child: const Text('确认'),
+          ),
+        ],
+      ),
+    );
+    return result;
+  }
+
+  /// 处理加密操作
+  Future<void> _handleEncrypt(BuildContext context, FileManagerProvider provider, String path) async {
+    final password = await _verifyVaultPassword(context);
+    if (password == null) return;
+
+    // 选择加密模式
+    final mode = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('选择加密方式'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.folder_open),
+              title: const Text('原地加密'),
+              subtitle: const Text('文件留在原目录，不显示在保险箱列表'),
+              onTap: () => Navigator.pop(ctx, 'inplace'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.lock),
+              title: const Text('沙盒加密'),
+              subtitle: const Text('文件移动到保险箱，显示在保险箱列表'),
+              onTap: () => Navigator.pop(ctx, 'sandbox'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('取消'),
+          ),
+        ],
+      ),
+    );
+
+    if (mode == null) return;
+
+    // 显示进度对话框
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const AlertDialog(
+        content: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(width: 16),
+            Text('加密中...'),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      if (mode == 'inplace') {
+        await VaultCryptService.instance.encryptInPlace(sourcePath: path, password: password);
+      } else {
+        await VaultCryptService.instance.encryptToSandbox(sourcePath: path, password: password);
+      }
+      if (context.mounted) {
+        Navigator.pop(context); // 关闭进度对话框
+        provider.refreshCryptMountPoints();
+        provider.loadDirectory(provider.activeTab.currentPath);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('加密成功')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context); // 关闭进度对话框
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('加密失败: $e')),
+        );
+      }
+    }
+  }
+
+  /// 处理解密操作
+  Future<void> _handleDecrypt(BuildContext context, FileManagerProvider provider, String path) async {
+    final password = await _verifyVaultPassword(context);
+    if (password == null) return;
+
+    // 显示进度对话框
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const AlertDialog(
+        content: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(width: 16),
+            Text('解密中...'),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      await VaultCryptService.instance.decryptInPlace(encryptedPath: path, password: password);
+      if (context.mounted) {
+        Navigator.pop(context); // 关闭进度对话框
+        provider.refreshCryptMountPoints();
+        provider.loadDirectory(provider.activeTab.currentPath);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('解密成功')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context); // 关闭进度对话框
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('解密失败: $e')),
+        );
+      }
     }
   }
 

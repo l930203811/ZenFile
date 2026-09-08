@@ -11799,6 +11799,474 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'预设颜色'**
   String get ui_preset_colors;
+
+  /// crypt: crypt_settings_title
+  ///
+  /// In zh, this message translates to:
+  /// **'加密设置'**
+  String get crypt_settings_title;
+
+  /// crypt: crypt_settings_subtitle
+  ///
+  /// In zh, this message translates to:
+  /// **'管理加密文件夹和挂载点'**
+  String get crypt_settings_subtitle;
+
+  /// crypt: crypt_add_mount
+  ///
+  /// In zh, this message translates to:
+  /// **'添加加密文件夹'**
+  String get crypt_add_mount;
+
+  /// crypt: crypt_edit_mount
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑加密文件夹'**
+  String get crypt_edit_mount;
+
+  /// crypt: crypt_no_mounts_title
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无加密文件夹'**
+  String get crypt_no_mounts_title;
+
+  /// crypt: crypt_no_mounts_subtitle
+  ///
+  /// In zh, this message translates to:
+  /// **'点击下方按钮添加第一个加密文件夹'**
+  String get crypt_no_mounts_subtitle;
+
+  /// crypt: crypt_field_name
+  ///
+  /// In zh, this message translates to:
+  /// **'名称'**
+  String get crypt_field_name;
+
+  /// crypt: crypt_field_name_hint
+  ///
+  /// In zh, this message translates to:
+  /// **'可选，留空则使用文件夹名'**
+  String get crypt_field_name_hint;
+
+  /// crypt: crypt_field_path
+  ///
+  /// In zh, this message translates to:
+  /// **'文件夹路径'**
+  String get crypt_field_path;
+
+  /// crypt: crypt_field_path_hint
+  ///
+  /// In zh, this message translates to:
+  /// **'选择要加密的文件夹'**
+  String get crypt_field_path_hint;
+
+  /// crypt: crypt_field_password
+  ///
+  /// In zh, this message translates to:
+  /// **'密码'**
+  String get crypt_field_password;
+
+  /// crypt: crypt_field_confirm_password
+  ///
+  /// In zh, this message translates to:
+  /// **'确认密码'**
+  String get crypt_field_confirm_password;
+
+  /// crypt: crypt_error_path_required
+  ///
+  /// In zh, this message translates to:
+  /// **'请选择文件夹路径'**
+  String get crypt_error_path_required;
+
+  /// crypt: crypt_error_password_required
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入密码'**
+  String get crypt_error_password_required;
+
+  /// crypt: crypt_error_password_short
+  ///
+  /// In zh, this message translates to:
+  /// **'密码至少4个字符'**
+  String get crypt_error_password_short;
+
+  /// crypt: crypt_error_password_mismatch
+  ///
+  /// In zh, this message translates to:
+  /// **'两次输入的密码不一致'**
+  String get crypt_error_password_mismatch;
+
+  /// crypt: crypt_section_mode
+  ///
+  /// In zh, this message translates to:
+  /// **'加密模式'**
+  String get crypt_section_mode;
+
+  /// crypt: crypt_mode_inplace
+  ///
+  /// In zh, this message translates to:
+  /// **'原地加密'**
+  String get crypt_mode_inplace;
+
+  /// crypt: crypt_mode_inplace_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'文件保留在原位置，文件名和内容被加密'**
+  String get crypt_mode_inplace_desc;
+
+  /// crypt: crypt_mode_sandbox
+  ///
+  /// In zh, this message translates to:
+  /// **'沙盒加密'**
+  String get crypt_mode_sandbox;
+
+  /// crypt: crypt_mode_sandbox_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'文件移动到沙盒目录，更安全但访问稍慢'**
+  String get crypt_mode_sandbox_desc;
+
+  /// crypt: crypt_section_advanced
+  ///
+  /// In zh, this message translates to:
+  /// **'高级选项'**
+  String get crypt_section_advanced;
+
+  /// crypt: crypt_advanced_toggle
+  ///
+  /// In zh, this message translates to:
+  /// **'显示高级加密选项'**
+  String get crypt_advanced_toggle;
+
+  /// crypt: crypt_field_filename_enc
+  ///
+  /// In zh, this message translates to:
+  /// **'文件名加密'**
+  String get crypt_field_filename_enc;
+
+  /// crypt: crypt_field_dirname_enc
+  ///
+  /// In zh, this message translates to:
+  /// **'加密目录名'**
+  String get crypt_field_dirname_enc;
+
+  /// crypt: crypt_field_filename_encoding
+  ///
+  /// In zh, this message translates to:
+  /// **'文件名编码'**
+  String get crypt_field_filename_encoding;
+
+  /// crypt: crypt_field_suffix
+  ///
+  /// In zh, this message translates to:
+  /// **'加密后缀'**
+  String get crypt_field_suffix;
+
+  /// crypt: crypt_field_salt
+  ///
+  /// In zh, this message translates to:
+  /// **'盐（可选）'**
+  String get crypt_field_salt;
+
+  /// crypt: crypt_field_salt_hint
+  ///
+  /// In zh, this message translates to:
+  /// **'留空则自动生成'**
+  String get crypt_field_salt_hint;
+
+  /// crypt: crypt_action_browse
+  ///
+  /// In zh, this message translates to:
+  /// **'浏览'**
+  String get crypt_action_browse;
+
+  /// crypt: crypt_delete_title
+  ///
+  /// In zh, this message translates to:
+  /// **'删除加密文件夹'**
+  String get crypt_delete_title;
+
+  /// crypt: crypt_delete_message
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要删除\"{name}\"的加密配置吗？文件本身不会被删除。'**
+  String crypt_delete_message(Object name);
+
+  /// crypt: crypt_filename_enc
+  ///
+  /// In zh, this message translates to:
+  /// **'文件名加密'**
+  String get crypt_filename_enc;
+
+  /// crypt: crypt_share_title
+  ///
+  /// In zh, this message translates to:
+  /// **'分享加密文件夹'**
+  String get crypt_share_title;
+
+  /// crypt: crypt_share_hint
+  ///
+  /// In zh, this message translates to:
+  /// **'扫描二维码可导入加密配置，但需要手动输入密码才能解密文件'**
+  String get crypt_share_hint;
+
+  /// crypt: crypt_action_share
+  ///
+  /// In zh, this message translates to:
+  /// **'分享'**
+  String get crypt_action_share;
+
+  /// crypt: crypt_share_password_note
+  ///
+  /// In zh, this message translates to:
+  /// **'二维码中不包含密码，请通过安全渠道单独告知密码'**
+  String get crypt_share_password_note;
+
+  /// crypt: crypt_action_encrypt
+  ///
+  /// In zh, this message translates to:
+  /// **'立即加密'**
+  String get crypt_action_encrypt;
+
+  /// crypt: crypt_action_decrypt
+  ///
+  /// In zh, this message translates to:
+  /// **'解密'**
+  String get crypt_action_decrypt;
+
+  /// crypt: crypt_encrypt_title
+  ///
+  /// In zh, this message translates to:
+  /// **'加密确认'**
+  String get crypt_encrypt_title;
+
+  /// crypt: crypt_encrypt_message
+  ///
+  /// In zh, this message translates to:
+  /// **'此操作将加密文件夹中的所有文件和子文件夹。加密后，其他文件管理器将无法查看文件内容和文件名。确定要继续吗？'**
+  String get crypt_encrypt_message;
+
+  /// crypt: crypt_encrypting
+  ///
+  /// In zh, this message translates to:
+  /// **'正在加密...'**
+  String get crypt_encrypting;
+
+  /// crypt: crypt_encrypt_success
+  ///
+  /// In zh, this message translates to:
+  /// **'加密完成'**
+  String get crypt_encrypt_success;
+
+  /// crypt: crypt_encrypt_failed
+  ///
+  /// In zh, this message translates to:
+  /// **'加密失败：{error}'**
+  String crypt_encrypt_failed(Object error);
+
+  /// crypt: crypt_decrypt_title
+  ///
+  /// In zh, this message translates to:
+  /// **'解密确认'**
+  String get crypt_decrypt_title;
+
+  /// crypt: crypt_decrypt_message
+  ///
+  /// In zh, this message translates to:
+  /// **'此操作将解密文件夹中的所有文件和子文件夹。解密后，文件将恢复为普通文件。确定要继续吗？'**
+  String get crypt_decrypt_message;
+
+  /// crypt: crypt_decrypting
+  ///
+  /// In zh, this message translates to:
+  /// **'正在解密...'**
+  String get crypt_decrypting;
+
+  /// crypt: crypt_decrypt_success
+  ///
+  /// In zh, this message translates to:
+  /// **'解密完成'**
+  String get crypt_decrypt_success;
+
+  /// crypt: crypt_decrypt_failed
+  ///
+  /// In zh, this message translates to:
+  /// **'解密失败：{error}'**
+  String crypt_decrypt_failed(Object error);
+
+  /// crypt: crypt_filename_enc_off
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭'**
+  String get crypt_filename_enc_off;
+
+  /// crypt: crypt_filename_enc_standard
+  ///
+  /// In zh, this message translates to:
+  /// **'标准'**
+  String get crypt_filename_enc_standard;
+
+  /// crypt: crypt_filename_enc_obfuscate
+  ///
+  /// In zh, this message translates to:
+  /// **'混淆'**
+  String get crypt_filename_enc_obfuscate;
+
+  /// crypt: crypt_filename_enc_base64
+  ///
+  /// In zh, this message translates to:
+  /// **'Base64'**
+  String get crypt_filename_enc_base64;
+
+  /// crypt: crypt_filename_enc_base32
+  ///
+  /// In zh, this message translates to:
+  /// **'Base32'**
+  String get crypt_filename_enc_base32;
+
+  /// crypt: crypt_filename_enc_base32768
+  ///
+  /// In zh, this message translates to:
+  /// **'Base32768'**
+  String get crypt_filename_enc_base32768;
+
+  /// crypt: crypt_dirname_enc_yes
+  ///
+  /// In zh, this message translates to:
+  /// **'是'**
+  String get crypt_dirname_enc_yes;
+
+  /// crypt: crypt_dirname_enc_no
+  ///
+  /// In zh, this message translates to:
+  /// **'否'**
+  String get crypt_dirname_enc_no;
+
+  /// vault/crypt: vault_encrypt_files
+  ///
+  /// In zh, this message translates to:
+  /// **'+ 加密文件'**
+  String get vault_encrypt_files;
+
+  /// vault/crypt: vault_select_encryption_method
+  ///
+  /// In zh, this message translates to:
+  /// **'选择加密方式'**
+  String get vault_select_encryption_method;
+
+  /// vault/crypt: vault_inplace_encrypt
+  ///
+  /// In zh, this message translates to:
+  /// **'原地加密'**
+  String get vault_inplace_encrypt;
+
+  /// vault/crypt: vault_inplace_encrypt_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'文件留在原目录，加密后文件名变为加密格式，浏览页显示🔐图徽'**
+  String get vault_inplace_encrypt_desc;
+
+  /// vault/crypt: vault_sandbox_encrypt
+  ///
+  /// In zh, this message translates to:
+  /// **'沙盒加密'**
+  String get vault_sandbox_encrypt;
+
+  /// vault/crypt: vault_sandbox_encrypt_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'文件移动到保险箱私有目录，隐藏文件名，仅在保险箱页面可见'**
+  String get vault_sandbox_encrypt_desc;
+
+  /// vault/crypt: vault_need_set_password
+  ///
+  /// In zh, this message translates to:
+  /// **'需要先设置加密主密码'**
+  String get vault_need_set_password;
+
+  /// vault/crypt: vault_need_set_password_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'请先在加密设置中配置加密主密码和加盐，保存后即可进行原地加密。'**
+  String get vault_need_set_password_desc;
+
+  /// vault/crypt: vault_go_set_password
+  ///
+  /// In zh, this message translates to:
+  /// **'去设置主密码'**
+  String get vault_go_set_password;
+
+  /// vault/crypt: vault_encrypting
+  ///
+  /// In zh, this message translates to:
+  /// **'正在加密...'**
+  String get vault_encrypting;
+
+  /// vault/crypt: vault_encrypting_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'正在加密选中的文件/文件夹，请稍候...'**
+  String get vault_encrypting_desc;
+
+  /// vault/crypt: vault_inplace_encrypt_done
+  ///
+  /// In zh, this message translates to:
+  /// **'原地加密完成，共加密 {count} 个文件/文件夹'**
+  String vault_inplace_encrypt_done(Object count);
+
+  /// vault/crypt: vault_encrypt_failed
+  ///
+  /// In zh, this message translates to:
+  /// **'加密失败: {error}'**
+  String vault_encrypt_failed(Object error);
+
+  /// vault/crypt: vault_inplace_section
+  ///
+  /// In zh, this message translates to:
+  /// **'原地加密'**
+  String get vault_inplace_section;
+
+  /// vault/crypt: vault_open_location
+  ///
+  /// In zh, this message translates to:
+  /// **'打开位置'**
+  String get vault_open_location;
+
+  /// vault/crypt: vault_decrypt_action
+  ///
+  /// In zh, this message translates to:
+  /// **'解密'**
+  String get vault_decrypt_action;
+
+  /// vault/crypt: vault_decrypt_confirm_title
+  ///
+  /// In zh, this message translates to:
+  /// **'解密文件'**
+  String get vault_decrypt_confirm_title;
+
+  /// vault/crypt: vault_decrypt_confirm_desc
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要解密「{name}」吗？解密后文件将恢复为普通文件。'**
+  String vault_decrypt_confirm_desc(Object name);
+
+  /// vault/crypt: vault_decrypt_success
+  ///
+  /// In zh, this message translates to:
+  /// **'解密成功'**
+  String get vault_decrypt_success;
+
+  /// vault/crypt: vault_decrypt_failed
+  ///
+  /// In zh, this message translates to:
+  /// **'解密失败: {error}'**
+  String vault_decrypt_failed(Object error);
+
+  /// vault/crypt: crypt_set_master_password
+  ///
+  /// In zh, this message translates to:
+  /// **'设置加密主密码'**
+  String get crypt_set_master_password;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

@@ -6289,6 +6289,256 @@ class L10nZh extends L10n {
 
   @override
   String get ui_preset_colors => '预设颜色';
+
+  @override
+  String get crypt_settings_title => '加密设置';
+
+  @override
+  String get crypt_settings_subtitle => '管理加密文件夹和挂载点';
+
+  @override
+  String get crypt_add_mount => '添加加密文件夹';
+
+  @override
+  String get crypt_edit_mount => '编辑加密文件夹';
+
+  @override
+  String get crypt_no_mounts_title => '暂无加密文件夹';
+
+  @override
+  String get crypt_no_mounts_subtitle => '点击下方按钮添加第一个加密文件夹';
+
+  @override
+  String get crypt_field_name => '名称';
+
+  @override
+  String get crypt_field_name_hint => '可选，留空则使用文件夹名';
+
+  @override
+  String get crypt_field_path => '文件夹路径';
+
+  @override
+  String get crypt_field_path_hint => '选择要加密的文件夹';
+
+  @override
+  String get crypt_field_password => '密码';
+
+  @override
+  String get crypt_field_confirm_password => '确认密码';
+
+  @override
+  String get crypt_error_path_required => '请选择文件夹路径';
+
+  @override
+  String get crypt_error_password_required => '请输入密码';
+
+  @override
+  String get crypt_error_password_short => '密码至少4个字符';
+
+  @override
+  String get crypt_error_password_mismatch => '两次输入的密码不一致';
+
+  @override
+  String get crypt_section_mode => '加密模式';
+
+  @override
+  String get crypt_mode_inplace => '原地加密';
+
+  @override
+  String get crypt_mode_inplace_desc => '文件保留在原位置，文件名和内容被加密';
+
+  @override
+  String get crypt_mode_sandbox => '沙盒加密';
+
+  @override
+  String get crypt_mode_sandbox_desc => '文件移动到沙盒目录，更安全但访问稍慢';
+
+  @override
+  String get crypt_section_advanced => '高级选项';
+
+  @override
+  String get crypt_advanced_toggle => '显示高级加密选项';
+
+  @override
+  String get crypt_field_filename_enc => '文件名加密';
+
+  @override
+  String get crypt_field_dirname_enc => '加密目录名';
+
+  @override
+  String get crypt_field_filename_encoding => '文件名编码';
+
+  @override
+  String get crypt_field_suffix => '加密后缀';
+
+  @override
+  String get crypt_field_salt => '盐（可选）';
+
+  @override
+  String get crypt_field_salt_hint => '留空则自动生成';
+
+  @override
+  String get crypt_action_browse => '浏览';
+
+  @override
+  String get crypt_delete_title => '删除加密文件夹';
+
+  @override
+  String crypt_delete_message(Object name) {
+    return '确定要删除\"$name\"的加密配置吗？文件本身不会被删除。';
+  }
+
+  @override
+  String get crypt_filename_enc => '文件名加密';
+
+  @override
+  String get crypt_share_title => '分享加密文件夹';
+
+  @override
+  String get crypt_share_hint => '扫描二维码可导入加密配置，但需要手动输入密码才能解密文件';
+
+  @override
+  String get crypt_action_share => '分享';
+
+  @override
+  String get crypt_share_password_note => '二维码中不包含密码，请通过安全渠道单独告知密码';
+
+  @override
+  String get crypt_action_encrypt => '立即加密';
+
+  @override
+  String get crypt_action_decrypt => '解密';
+
+  @override
+  String get crypt_encrypt_title => '加密确认';
+
+  @override
+  String get crypt_encrypt_message =>
+      '此操作将加密文件夹中的所有文件和子文件夹。加密后，其他文件管理器将无法查看文件内容和文件名。确定要继续吗？';
+
+  @override
+  String get crypt_encrypting => '正在加密...';
+
+  @override
+  String get crypt_encrypt_success => '加密完成';
+
+  @override
+  String crypt_encrypt_failed(Object error) {
+    return '加密失败：$error';
+  }
+
+  @override
+  String get crypt_decrypt_title => '解密确认';
+
+  @override
+  String get crypt_decrypt_message =>
+      '此操作将解密文件夹中的所有文件和子文件夹。解密后，文件将恢复为普通文件。确定要继续吗？';
+
+  @override
+  String get crypt_decrypting => '正在解密...';
+
+  @override
+  String get crypt_decrypt_success => '解密完成';
+
+  @override
+  String crypt_decrypt_failed(Object error) {
+    return '解密失败：$error';
+  }
+
+  @override
+  String get crypt_filename_enc_off => '关闭';
+
+  @override
+  String get crypt_filename_enc_standard => '标准';
+
+  @override
+  String get crypt_filename_enc_obfuscate => '混淆';
+
+  @override
+  String get crypt_filename_enc_base64 => 'Base64';
+
+  @override
+  String get crypt_filename_enc_base32 => 'Base32';
+
+  @override
+  String get crypt_filename_enc_base32768 => 'Base32768';
+
+  @override
+  String get crypt_dirname_enc_yes => '是';
+
+  @override
+  String get crypt_dirname_enc_no => '否';
+
+  @override
+  String get vault_encrypt_files => '+ 加密文件';
+
+  @override
+  String get vault_select_encryption_method => '选择加密方式';
+
+  @override
+  String get vault_inplace_encrypt => '原地加密';
+
+  @override
+  String get vault_inplace_encrypt_desc => '文件留在原目录，加密后文件名变为加密格式，浏览页显示🔐图徽';
+
+  @override
+  String get vault_sandbox_encrypt => '沙盒加密';
+
+  @override
+  String get vault_sandbox_encrypt_desc => '文件移动到保险箱私有目录，隐藏文件名，仅在保险箱页面可见';
+
+  @override
+  String get vault_need_set_password => '需要先设置加密主密码';
+
+  @override
+  String get vault_need_set_password_desc => '请先在加密设置中配置加密主密码和加盐，保存后即可进行原地加密。';
+
+  @override
+  String get vault_go_set_password => '去设置主密码';
+
+  @override
+  String get vault_encrypting => '正在加密...';
+
+  @override
+  String get vault_encrypting_desc => '正在加密选中的文件/文件夹，请稍候...';
+
+  @override
+  String vault_inplace_encrypt_done(Object count) {
+    return '原地加密完成，共加密 $count 个文件/文件夹';
+  }
+
+  @override
+  String vault_encrypt_failed(Object error) {
+    return '加密失败: $error';
+  }
+
+  @override
+  String get vault_inplace_section => '原地加密';
+
+  @override
+  String get vault_open_location => '打开位置';
+
+  @override
+  String get vault_decrypt_action => '解密';
+
+  @override
+  String get vault_decrypt_confirm_title => '解密文件';
+
+  @override
+  String vault_decrypt_confirm_desc(Object name) {
+    return '确定要解密「$name」吗？解密后文件将恢复为普通文件。';
+  }
+
+  @override
+  String get vault_decrypt_success => '解密成功';
+
+  @override
+  String vault_decrypt_failed(Object error) {
+    return '解密失败: $error';
+  }
+
+  @override
+  String get crypt_set_master_password => '设置加密主密码';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -12544,4 +12794,254 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get ui_preset_colors => '預設顏色';
+
+  @override
+  String get crypt_settings_title => '加密设置';
+
+  @override
+  String get crypt_settings_subtitle => '管理加密文件夹和挂载点';
+
+  @override
+  String get crypt_add_mount => '添加加密文件夹';
+
+  @override
+  String get crypt_edit_mount => '编辑加密文件夹';
+
+  @override
+  String get crypt_no_mounts_title => '暂无加密文件夹';
+
+  @override
+  String get crypt_no_mounts_subtitle => '点击下方按钮添加第一个加密文件夹';
+
+  @override
+  String get crypt_field_name => '名称';
+
+  @override
+  String get crypt_field_name_hint => '可选，留空则使用文件夹名';
+
+  @override
+  String get crypt_field_path => '文件夹路径';
+
+  @override
+  String get crypt_field_path_hint => '选择要加密的文件夹';
+
+  @override
+  String get crypt_field_password => '密码';
+
+  @override
+  String get crypt_field_confirm_password => '确认密码';
+
+  @override
+  String get crypt_error_path_required => '请选择文件夹路径';
+
+  @override
+  String get crypt_error_password_required => '请输入密码';
+
+  @override
+  String get crypt_error_password_short => '密码至少4个字符';
+
+  @override
+  String get crypt_error_password_mismatch => '两次输入的密码不一致';
+
+  @override
+  String get crypt_section_mode => '加密模式';
+
+  @override
+  String get crypt_mode_inplace => '原地加密';
+
+  @override
+  String get crypt_mode_inplace_desc => '文件保留在原位置，文件名和内容被加密';
+
+  @override
+  String get crypt_mode_sandbox => '沙盒加密';
+
+  @override
+  String get crypt_mode_sandbox_desc => '文件移动到沙盒目录，更安全但访问稍慢';
+
+  @override
+  String get crypt_section_advanced => '高级选项';
+
+  @override
+  String get crypt_advanced_toggle => '显示高级加密选项';
+
+  @override
+  String get crypt_field_filename_enc => '文件名加密';
+
+  @override
+  String get crypt_field_dirname_enc => '加密目录名';
+
+  @override
+  String get crypt_field_filename_encoding => '文件名编码';
+
+  @override
+  String get crypt_field_suffix => '加密后缀';
+
+  @override
+  String get crypt_field_salt => '盐（可选）';
+
+  @override
+  String get crypt_field_salt_hint => '留空则自动生成';
+
+  @override
+  String get crypt_action_browse => '浏览';
+
+  @override
+  String get crypt_delete_title => '删除加密文件夹';
+
+  @override
+  String crypt_delete_message(Object name) {
+    return '确定要删除\"$name\"的加密配置吗？文件本身不会被删除。';
+  }
+
+  @override
+  String get crypt_filename_enc => '文件名加密';
+
+  @override
+  String get crypt_share_title => '分享加密文件夹';
+
+  @override
+  String get crypt_share_hint => '扫描二维码可导入加密配置，但需要手动输入密码才能解密文件';
+
+  @override
+  String get crypt_action_share => '分享';
+
+  @override
+  String get crypt_share_password_note => '二维码中不包含密码，请通过安全渠道单独告知密码';
+
+  @override
+  String get crypt_action_encrypt => '立即加密';
+
+  @override
+  String get crypt_action_decrypt => '解密';
+
+  @override
+  String get crypt_encrypt_title => '加密确认';
+
+  @override
+  String get crypt_encrypt_message =>
+      '此操作将加密文件夹中的所有文件和子文件夹。加密后，其他文件管理器将无法查看文件内容和文件名。确定要继续吗？';
+
+  @override
+  String get crypt_encrypting => '正在加密...';
+
+  @override
+  String get crypt_encrypt_success => '加密完成';
+
+  @override
+  String crypt_encrypt_failed(Object error) {
+    return '加密失败：$error';
+  }
+
+  @override
+  String get crypt_decrypt_title => '解密确认';
+
+  @override
+  String get crypt_decrypt_message =>
+      '此操作将解密文件夹中的所有文件和子文件夹。解密后，文件将恢复为普通文件。确定要继续吗？';
+
+  @override
+  String get crypt_decrypting => '正在解密...';
+
+  @override
+  String get crypt_decrypt_success => '解密完成';
+
+  @override
+  String crypt_decrypt_failed(Object error) {
+    return '解密失败：$error';
+  }
+
+  @override
+  String get crypt_filename_enc_off => '关闭';
+
+  @override
+  String get crypt_filename_enc_standard => '标准';
+
+  @override
+  String get crypt_filename_enc_obfuscate => '混淆';
+
+  @override
+  String get crypt_filename_enc_base64 => 'Base64';
+
+  @override
+  String get crypt_filename_enc_base32 => 'Base32';
+
+  @override
+  String get crypt_filename_enc_base32768 => 'Base32768';
+
+  @override
+  String get crypt_dirname_enc_yes => '是';
+
+  @override
+  String get crypt_dirname_enc_no => '否';
+
+  @override
+  String get vault_encrypt_files => '+ 加密文件';
+
+  @override
+  String get vault_select_encryption_method => '选择加密方式';
+
+  @override
+  String get vault_inplace_encrypt => '原地加密';
+
+  @override
+  String get vault_inplace_encrypt_desc => '文件留在原目录，加密后文件名变为加密格式，浏览页显示🔐图徽';
+
+  @override
+  String get vault_sandbox_encrypt => '沙盒加密';
+
+  @override
+  String get vault_sandbox_encrypt_desc => '文件移动到保险箱私有目录，隐藏文件名，仅在保险箱页面可见';
+
+  @override
+  String get vault_need_set_password => '需要先设置加密主密码';
+
+  @override
+  String get vault_need_set_password_desc => '请先在加密设置中配置加密主密码和加盐，保存后即可进行原地加密。';
+
+  @override
+  String get vault_go_set_password => '去设置主密码';
+
+  @override
+  String get vault_encrypting => '正在加密...';
+
+  @override
+  String get vault_encrypting_desc => '正在加密选中的文件/文件夹，请稍候...';
+
+  @override
+  String vault_inplace_encrypt_done(Object count) {
+    return '原地加密完成，共加密 $count 个文件/文件夹';
+  }
+
+  @override
+  String vault_encrypt_failed(Object error) {
+    return '加密失败: $error';
+  }
+
+  @override
+  String get vault_inplace_section => '原地加密';
+
+  @override
+  String get vault_open_location => '打开位置';
+
+  @override
+  String get vault_decrypt_action => '解密';
+
+  @override
+  String get vault_decrypt_confirm_title => '解密文件';
+
+  @override
+  String vault_decrypt_confirm_desc(Object name) {
+    return '确定要解密「$name」吗？解密后文件将恢复为普通文件。';
+  }
+
+  @override
+  String get vault_decrypt_success => '解密成功';
+
+  @override
+  String vault_decrypt_failed(Object error) {
+    return '解密失败: $error';
+  }
+
+  @override
+  String get crypt_set_master_password => '设置加密主密码';
 }

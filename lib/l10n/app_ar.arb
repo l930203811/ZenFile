@@ -6609,5 +6609,317 @@
   "ui_preset_colors": "ألوان مسبقة",
   "@ui_preset_colors": {
     "description": "Custom theme color picker: ui_preset_colors"
+  },
+  "crypt_settings_title": "Encryption",
+  "@crypt_settings_title": {
+    "description": "crypt: crypt_settings_title"
+  },
+  "crypt_settings_subtitle": "Manage encrypted folders and mount points",
+  "@crypt_settings_subtitle": {
+    "description": "crypt: crypt_settings_subtitle"
+  },
+  "crypt_add_mount": "Add Encrypted Folder",
+  "@crypt_add_mount": {
+    "description": "crypt: crypt_add_mount"
+  },
+  "crypt_edit_mount": "Edit Encrypted Folder",
+  "@crypt_edit_mount": {
+    "description": "crypt: crypt_edit_mount"
+  },
+  "crypt_no_mounts_title": "No Encrypted Folders",
+  "@crypt_no_mounts_title": {
+    "description": "crypt: crypt_no_mounts_title"
+  },
+  "crypt_no_mounts_subtitle": "Tap the button below to add your first encrypted folder",
+  "@crypt_no_mounts_subtitle": {
+    "description": "crypt: crypt_no_mounts_subtitle"
+  },
+  "crypt_field_name": "Name",
+  "@crypt_field_name": {
+    "description": "crypt: crypt_field_name"
+  },
+  "crypt_field_name_hint": "Optional, uses folder name if empty",
+  "@crypt_field_name_hint": {
+    "description": "crypt: crypt_field_name_hint"
+  },
+  "crypt_field_path": "Folder Path",
+  "@crypt_field_path": {
+    "description": "crypt: crypt_field_path"
+  },
+  "crypt_field_path_hint": "Select folder to encrypt",
+  "@crypt_field_path_hint": {
+    "description": "crypt: crypt_field_path_hint"
+  },
+  "crypt_field_password": "Password",
+  "@crypt_field_password": {
+    "description": "crypt: crypt_field_password"
+  },
+  "crypt_field_confirm_password": "Confirm Password",
+  "@crypt_field_confirm_password": {
+    "description": "crypt: crypt_field_confirm_password"
+  },
+  "crypt_error_path_required": "Please select a folder path",
+  "@crypt_error_path_required": {
+    "description": "crypt: crypt_error_path_required"
+  },
+  "crypt_error_password_required": "Please enter a password",
+  "@crypt_error_password_required": {
+    "description": "crypt: crypt_error_password_required"
+  },
+  "crypt_error_password_short": "Password must be at least 4 characters",
+  "@crypt_error_password_short": {
+    "description": "crypt: crypt_error_password_short"
+  },
+  "crypt_error_password_mismatch": "Passwords do not match",
+  "@crypt_error_password_mismatch": {
+    "description": "crypt: crypt_error_password_mismatch"
+  },
+  "crypt_section_mode": "Encryption Mode",
+  "@crypt_section_mode": {
+    "description": "crypt: crypt_section_mode"
+  },
+  "crypt_mode_inplace": "In-place Encryption",
+  "@crypt_mode_inplace": {
+    "description": "crypt: crypt_mode_inplace"
+  },
+  "crypt_mode_inplace_desc": "Files stay in place, names and content are encrypted",
+  "@crypt_mode_inplace_desc": {
+    "description": "crypt: crypt_mode_inplace_desc"
+  },
+  "crypt_mode_sandbox": "Sandbox Encryption",
+  "@crypt_mode_sandbox": {
+    "description": "crypt: crypt_mode_sandbox"
+  },
+  "crypt_mode_sandbox_desc": "Files moved to sandbox, more secure but slightly slower",
+  "@crypt_mode_sandbox_desc": {
+    "description": "crypt: crypt_mode_sandbox_desc"
+  },
+  "crypt_section_advanced": "Advanced Options",
+  "@crypt_section_advanced": {
+    "description": "crypt: crypt_section_advanced"
+  },
+  "crypt_advanced_toggle": "Show advanced encryption options",
+  "@crypt_advanced_toggle": {
+    "description": "crypt: crypt_advanced_toggle"
+  },
+  "crypt_field_filename_enc": "Filename Encryption",
+  "@crypt_field_filename_enc": {
+    "description": "crypt: crypt_field_filename_enc"
+  },
+  "crypt_field_dirname_enc": "Encrypt Directory Names",
+  "@crypt_field_dirname_enc": {
+    "description": "crypt: crypt_field_dirname_enc"
+  },
+  "crypt_field_filename_encoding": "Filename Encoding",
+  "@crypt_field_filename_encoding": {
+    "description": "crypt: crypt_field_filename_encoding"
+  },
+  "crypt_field_suffix": "Encrypted Suffix",
+  "@crypt_field_suffix": {
+    "description": "crypt: crypt_field_suffix"
+  },
+  "crypt_field_salt": "Salt (optional)",
+  "@crypt_field_salt": {
+    "description": "crypt: crypt_field_salt"
+  },
+  "crypt_field_salt_hint": "Auto-generated if empty",
+  "@crypt_field_salt_hint": {
+    "description": "crypt: crypt_field_salt_hint"
+  },
+  "crypt_action_browse": "Browse",
+  "@crypt_action_browse": {
+    "description": "crypt: crypt_action_browse"
+  },
+  "crypt_delete_title": "Delete Encrypted Folder",
+  "@crypt_delete_title": {
+    "description": "crypt: crypt_delete_title"
+  },
+  "crypt_delete_message": "Delete encryption config for \"{name}\"? Files will not be deleted.",
+  "@crypt_delete_message": {
+    "description": "crypt: crypt_delete_message"
+  },
+  "crypt_filename_enc": "Filename Enc",
+  "@crypt_filename_enc": {
+    "description": "crypt: crypt_filename_enc"
+  },
+  "crypt_share_title": "Share Encrypted Folder",
+  "@crypt_share_title": {
+    "description": "crypt: crypt_share_title"
+  },
+  "crypt_share_hint": "Scan the QR code to import encryption config. Password is required to decrypt files.",
+  "@crypt_share_hint": {
+    "description": "crypt: crypt_share_hint"
+  },
+  "crypt_action_share": "Share",
+  "@crypt_action_share": {
+    "description": "crypt: crypt_action_share"
+  },
+  "crypt_share_password_note": "Password is NOT included in the QR code. Share it separately via a secure channel.",
+  "@crypt_share_password_note": {
+    "description": "crypt: crypt_share_password_note"
+  },
+  "crypt_action_encrypt": "Encrypt Now",
+  "@crypt_action_encrypt": {
+    "description": "crypt: crypt_action_encrypt"
+  },
+  "crypt_action_decrypt": "Decrypt",
+  "@crypt_action_decrypt": {
+    "description": "crypt: crypt_action_decrypt"
+  },
+  "crypt_encrypt_title": "Encryption Confirmation",
+  "@crypt_encrypt_title": {
+    "description": "crypt: crypt_encrypt_title"
+  },
+  "crypt_encrypt_message": "This will encrypt all files and subfolders. After encryption, other file managers cannot view file contents or names. Continue?",
+  "@crypt_encrypt_message": {
+    "description": "crypt: crypt_encrypt_message"
+  },
+  "crypt_encrypting": "Encrypting...",
+  "@crypt_encrypting": {
+    "description": "crypt: crypt_encrypting"
+  },
+  "crypt_encrypt_success": "Encryption completed",
+  "@crypt_encrypt_success": {
+    "description": "crypt: crypt_encrypt_success"
+  },
+  "crypt_encrypt_failed": "Encryption failed: {error}",
+  "@crypt_encrypt_failed": {
+    "description": "crypt: crypt_encrypt_failed"
+  },
+  "crypt_decrypt_title": "Decryption Confirmation",
+  "@crypt_decrypt_title": {
+    "description": "crypt: crypt_decrypt_title"
+  },
+  "crypt_decrypt_message": "This will decrypt all files and subfolders. After decryption, files will be restored to normal. Continue?",
+  "@crypt_decrypt_message": {
+    "description": "crypt: crypt_decrypt_message"
+  },
+  "crypt_decrypting": "Decrypting...",
+  "@crypt_decrypting": {
+    "description": "crypt: crypt_decrypting"
+  },
+  "crypt_decrypt_success": "Decryption completed",
+  "@crypt_decrypt_success": {
+    "description": "crypt: crypt_decrypt_success"
+  },
+  "crypt_decrypt_failed": "Decryption failed: {error}",
+  "@crypt_decrypt_failed": {
+    "description": "crypt: crypt_decrypt_failed"
+  },
+  "crypt_filename_enc_off": "Off",
+  "@crypt_filename_enc_off": {
+    "description": "crypt: crypt_filename_enc_off"
+  },
+  "crypt_filename_enc_standard": "Standard",
+  "@crypt_filename_enc_standard": {
+    "description": "crypt: crypt_filename_enc_standard"
+  },
+  "crypt_filename_enc_obfuscate": "Obfuscate",
+  "@crypt_filename_enc_obfuscate": {
+    "description": "crypt: crypt_filename_enc_obfuscate"
+  },
+  "crypt_filename_enc_base64": "Base64",
+  "@crypt_filename_enc_base64": {
+    "description": "crypt: crypt_filename_enc_base64"
+  },
+  "crypt_filename_enc_base32": "Base32",
+  "@crypt_filename_enc_base32": {
+    "description": "crypt: crypt_filename_enc_base32"
+  },
+  "crypt_filename_enc_base32768": "Base32768",
+  "@crypt_filename_enc_base32768": {
+    "description": "crypt: crypt_filename_enc_base32768"
+  },
+  "crypt_dirname_enc_yes": "Yes",
+  "@crypt_dirname_enc_yes": {
+    "description": "crypt: crypt_dirname_enc_yes"
+  },
+  "crypt_dirname_enc_no": "No",
+  "@crypt_dirname_enc_no": {
+    "description": "crypt: crypt_dirname_enc_no"
+  },
+  "vault_encrypt_files": "+ Encrypt Files",
+  "@vault_encrypt_files": {
+    "description": "vault/crypt: vault_encrypt_files"
+  },
+  "vault_select_encryption_method": "Select Encryption Method",
+  "@vault_select_encryption_method": {
+    "description": "vault/crypt: vault_select_encryption_method"
+  },
+  "vault_inplace_encrypt": "In-place Encryption",
+  "@vault_inplace_encrypt": {
+    "description": "vault/crypt: vault_inplace_encrypt"
+  },
+  "vault_inplace_encrypt_desc": "Files stay in original directory, filenames become encrypted after encryption, 🔐 badge shown in browser",
+  "@vault_inplace_encrypt_desc": {
+    "description": "vault/crypt: vault_inplace_encrypt_desc"
+  },
+  "vault_sandbox_encrypt": "Sandbox Encryption",
+  "@vault_sandbox_encrypt": {
+    "description": "vault/crypt: vault_sandbox_encrypt"
+  },
+  "vault_sandbox_encrypt_desc": "Files moved to vault private directory, filenames hidden, only visible in vault page",
+  "@vault_sandbox_encrypt_desc": {
+    "description": "vault/crypt: vault_sandbox_encrypt_desc"
+  },
+  "vault_need_set_password": "Need to Set Master Password First",
+  "@vault_need_set_password": {
+    "description": "vault/crypt: vault_need_set_password"
+  },
+  "vault_need_set_password_desc": "Please configure encryption master password and salt in encryption settings first, then you can perform in-place encryption.",
+  "@vault_need_set_password_desc": {
+    "description": "vault/crypt: vault_need_set_password_desc"
+  },
+  "vault_go_set_password": "Set Password",
+  "@vault_go_set_password": {
+    "description": "vault/crypt: vault_go_set_password"
+  },
+  "vault_encrypting": "Encrypting...",
+  "@vault_encrypting": {
+    "description": "vault/crypt: vault_encrypting"
+  },
+  "vault_encrypting_desc": "Encrypting selected files/folders, please wait...",
+  "@vault_encrypting_desc": {
+    "description": "vault/crypt: vault_encrypting_desc"
+  },
+  "vault_inplace_encrypt_done": "In-place encryption completed, {count} files/folders encrypted",
+  "@vault_inplace_encrypt_done": {
+    "description": "vault/crypt: vault_inplace_encrypt_done"
+  },
+  "vault_encrypt_failed": "Encryption failed: {error}",
+  "@vault_encrypt_failed": {
+    "description": "vault/crypt: vault_encrypt_failed"
+  },
+  "vault_inplace_section": "In-place Encryption",
+  "@vault_inplace_section": {
+    "description": "vault/crypt: vault_inplace_section"
+  },
+  "vault_open_location": "Open Location",
+  "@vault_open_location": {
+    "description": "vault/crypt: vault_open_location"
+  },
+  "vault_decrypt_action": "Decrypt",
+  "@vault_decrypt_action": {
+    "description": "vault/crypt: vault_decrypt_action"
+  },
+  "vault_decrypt_confirm_title": "Decrypt File",
+  "@vault_decrypt_confirm_title": {
+    "description": "vault/crypt: vault_decrypt_confirm_title"
+  },
+  "vault_decrypt_confirm_desc": "Are you sure you want to decrypt \"{name}\"? The file will be restored to normal after decryption.",
+  "@vault_decrypt_confirm_desc": {
+    "description": "vault/crypt: vault_decrypt_confirm_desc"
+  },
+  "vault_decrypt_success": "Decryption successful",
+  "@vault_decrypt_success": {
+    "description": "vault/crypt: vault_decrypt_success"
+  },
+  "vault_decrypt_failed": "Decryption failed: {error}",
+  "@vault_decrypt_failed": {
+    "description": "vault/crypt: vault_decrypt_failed"
+  },
+  "crypt_set_master_password": "Set Encryption Master Password",
+  "@crypt_set_master_password": {
+    "description": "vault/crypt: crypt_set_master_password"
   }
 }

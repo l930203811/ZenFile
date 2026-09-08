@@ -42,6 +42,7 @@ import '../services/background_archive_service.dart';
 import '../services/pin_service.dart';
 import '../models/network_connection_model.dart';
 import '../services/remote/remote_client.dart';
+import '../services/crypt/crypt.dart';
 import '../services/remote/ftp_client.dart';
 import '../services/remote/sftp_client.dart';
 import '../services/remote/webdav_client.dart';
@@ -1558,6 +1559,159 @@ class FileManagerProvider extends ChangeNotifier {
   /// 自动刷新把 openlist 本机储存的 staging 中间态暴露给用户（问题2/3 的
   /// 补充防御：即使轮询逻辑之外还有刷新入口，也能保持隐藏）。
   final Map<int, Set<String>> _pendingFinalizePaths = {};
+
+  // ── 加密挂载点（CryptVFS）缓存 ──────────────────────────────────────
+  List<CryptMountPoint> _cryptMountPoints = [];
+  bool _cryptMountsLoaded = false;
+
+  /// 加载加密挂载点配置（懒加载，首次访问加密目录时加载）
+  Future<void> _ensureCryptMountsLoaded() async {
+    if (_cryptMountsLoaded) return;
+    try {
+      _cryptMountPoints = await CryptMountService.loadMountPoints();
+    } catch (_) {
+      _cryptMountPoints = [];
+    }
+    _cryptMountsLoaded = true;
+    // 初始化流式解密服务器并注册挂载点（用于视频/音频边解密边播放）
+    try {
+      await CryptStreamServer.instance.ensureInitialized();
+      CryptStreamServer.instance.registerMounts(_cryptMountPoints);
+    } catch (_) {}
+  }
+
+  /// 刷新加密挂载点缓存（在加密设置页面修改后调用）
+  Future<void> refreshCryptMountPoints() async {
+    _cryptMountsLoaded = false;
+    await _ensureCryptMountsLoaded();
+    notifyListeners();
+  }
+
+  /// 查找包含给定路径的加密挂载点（最长匹配）
+  CryptMountPoint? _findCryptMountForPath(String path) {
+    CryptMountPoint? best;
+    for (final mount in _cryptMountPoints) {
+      if (mount.containsPath(path)) {
+        if (best == null || mount.physicalPath.length > best.physicalPath.length) {
+          best = mount;
+        }
+      }
+    }
+    return best;
+  }
+
+  /// 公开方法：判断路径是否在加密挂载点内（用于UI显示🔐图徽）
+  bool isPathEncrypted(String path) {
+    if (!_cryptMountsLoaded) return false;
+    return _findCryptMountForPath(path) != null;
+  }
+
+  /// 将 CryptFileEntry 转换为 FileItemModel
+  FileItemModel _cryptEntryToFileItem(CryptFileEntry entry) {
+    final entity = entry.isDirectory
+        ? Directory(entry.physicalPath)
+        : File(entry.physicalPath);
+    return FileItemModel(
+      entity: entity,
+      name: entry.name,
+      path: entry.virtualPath,
+      isDirectory: entry.isDirectory,
+      size: entry.size,
+      modified: entry.modified,
+    );
+  }
+
+  /// 加密文件临时解密目录
+  static const String _cryptTempDirName = 'crypt_temp';
+
+  /// 判断文件是否为视频或音频
+  bool _isVideoOrAudio(String path) {
+    final lower = path.toLowerCase();
+    const videoExts = ['.mp4', '.mkv', '.avi', '.mov', '.flv', '.wmv', '.webm', '.m4v', '.ts', '.mpg', '.mpeg'];
+    const audioExts = ['.mp3', '.aac', '.wav', '.flac', '.ogg', '.m4a', '.wma', '.opus', '.ape', '.aiff'];
+    for (final ext in videoExts) {
+      if (lower.endsWith(ext)) return true;
+    }
+    for (final ext in audioExts) {
+      if (lower.endsWith(ext)) return true;
+    }
+    return false;
+  }
+
+  /// 获取加密文件临时解密目录路径
+  Future<String> _getCryptTempDir() async {
+    final tempDir = await getTemporaryDirectory();
+    final cryptTempDir = Directory(p.join(tempDir.path, _cryptTempDirName));
+    if (!await cryptTempDir.exists()) {
+      await cryptTempDir.create(recursive: true);
+    }
+    return cryptTempDir.path;
+  }
+
+  /// 清理加密文件临时解密目录（应用启动时调用）
+  Future<void> clearCryptTempFiles() async {
+    try {
+      final tempDirPath = await _getCryptTempDir();
+      final tempDir = Directory(tempDirPath);
+      if (await tempDir.exists()) {
+        await for (final entity in tempDir.list()) {
+          try {
+            await entity.delete(recursive: true);
+          } catch (_) {}
+        }
+      }
+    } catch (_) {}
+  }
+
+  /// 如果文件在加密挂载点内，解密到临时目录并返回临时文件路径；否则返回原路径
+  ///
+  /// 用于在打开加密文件时，先解密到临时文件，再用内置查看器/播放器打开。
+  /// 对于视频和音频文件，返回流式播放 URL，实现边解密边播放。
+  Future<String> _decryptCryptFileIfNeeded(String path) async {
+    await _ensureCryptMountsLoaded();
+    final mount = _findCryptMountForPath(path);
+    if (mount == null) return path;
+
+    // 对于视频和音频文件，使用流式播放 URL，无需等待完整解密
+    if (_isVideoOrAudio(path)) {
+      try {
+        final streamUrl = CryptStreamServer.instance.getStreamUrl(path);
+        debugPrint('[ZenFile] Using stream URL for crypt media: $streamUrl');
+        return streamUrl;
+      } catch (e) {
+        debugPrint('[ZenFile] Failed to get stream URL, falling back to full decrypt: $e');
+      }
+    }
+
+    try {
+      // 将虚拟路径转换为物理路径（加密文件的实际路径）
+      final physicalPath = mount.virtualToPhysical(path);
+      final physicalFile = File(physicalPath);
+      if (!await physicalFile.exists()) {
+        debugPrint('[ZenFile] Crypt file not found: $physicalPath');
+        return path;
+      }
+
+      // 解密到临时目录
+      final tempDirPath = await _getCryptTempDir();
+      // 使用解密后的文件名作为临时文件名
+      final decryptedName = p.basename(path);
+      final tempFilePath = p.join(tempDirPath, '${DateTime.now().millisecondsSinceEpoch}_$decryptedName');
+
+      final cryptFile = await CryptFile.open(physicalPath, mount.crypt, mode: CryptFileMode.read);
+      final decryptedData = await cryptFile.read(0);
+      await cryptFile.close();
+
+      final tempFile = File(tempFilePath);
+      await tempFile.writeAsBytes(decryptedData);
+
+      debugPrint('[ZenFile] Decrypted crypt file to temp: $tempFilePath (${decryptedData.length} bytes)');
+      return tempFilePath;
+    } catch (e) {
+      debugPrint('[ZenFile] Failed to decrypt crypt file: $e');
+      return path;
+    }
+  }
 
   List<FolderTab> get tabs => _tabs;
   int get activeTabIndex => _activeTabIndex;
@@ -3710,6 +3864,52 @@ class FileManagerProvider extends ChangeNotifier {
     activeTab.useShizukuMode = false;
 
     try {
+      // ── 加密挂载点（CryptVFS）：如果路径在加密挂载点内，使用 CryptVFS 枚举 ──
+      await _ensureCryptMountsLoaded();
+      final cryptMount = _findCryptMountForPath(path);
+      if (cryptMount != null) {
+        debugPrint('[ZenFile] Loading encrypted directory via CryptVFS: $path');
+        activeTab.currentPath = path;
+        try {
+          final lister = CryptDirectoryLister(cryptMount);
+          final cryptEntries = await lister.listDirectory(
+            path,
+            showHidden: _showHiddenFiles,
+          );
+
+          final cryptFolders = <FileItemModel>[];
+          final cryptFiles = <FileItemModel>[];
+
+          for (final entry in cryptEntries) {
+            final item = _cryptEntryToFileItem(entry);
+            if (entry.isDirectory) {
+              cryptFolders.add(item);
+            } else {
+              cryptFiles.add(item);
+            }
+          }
+
+          final filteredCryptFiles = _filterType == FileFilterType.all
+              ? cryptFiles
+              : cryptFiles.where((e) => _matchesFilter(e.path)).toList();
+          final filteredCryptFolders = (_filterType != FileFilterType.all && _hideFoldersInFilter)
+              ? <FileItemModel>[]
+              : cryptFolders;
+
+          _sortList(filteredCryptFolders, path);
+          _sortList(filteredCryptFiles, path);
+
+          activeTab.currentFiles = [...filteredCryptFolders, ...filteredCryptFiles];
+        } catch (cryptErr) {
+          debugPrint('[ZenFile] CryptVFS directory load failed: $cryptErr');
+          activeTab.currentFiles = [];
+        }
+        activeTab.isLoading = false;
+        _persistTabs();
+        notifyListeners();
+        return;
+      }
+
       final dir = Directory(path);
       if (await dir.exists()) {
         activeTab.currentPath = path;
@@ -6966,7 +7166,11 @@ class FileManagerProvider extends ChangeNotifier {
   /// 尝试按文件实际类型直接用内置查看器/播放器打开。
   /// 返回是否成功打开（true = 已处理；false = 未知格式，需要让用户选择类型）。
   Future<bool> _tryOpenBuiltInDirectly(BuildContext context, String path) async {
-    final mimeType = lookupMimeType(path) ?? '';
+    // 保存原始路径（用于播放列表索引查找），然后对加密文件进行解密/流式处理
+    final originalPath = path;
+    path = await _decryptCryptFileIfNeeded(path);
+
+    final mimeType = lookupMimeType(originalPath) ?? '';
     final ext = p.extension(path).toLowerCase();
     const docExts = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.epub', '.odt'];
 
@@ -6993,7 +7197,12 @@ class FileManagerProvider extends ChangeNotifier {
           .where((f) => !f.isDirectory && (lookupMimeType(f.path)?.startsWith('video/') == true || FileUtils.isVideo(f.path)))
           .map((f) => f.path)
           .toList();
-      int initialIndex = folderVideoFiles.indexOf(path);
+      // 对播放列表中的加密文件也进行解密
+      final decryptedVideoFiles = <String>[];
+      for (final vp in folderVideoFiles) {
+        decryptedVideoFiles.add(await _decryptCryptFileIfNeeded(vp));
+      }
+      int initialIndex = folderVideoFiles.indexOf(originalPath);
       if (initialIndex == -1) initialIndex = 0;
 
       Navigator.push(
@@ -7001,7 +7210,7 @@ class FileManagerProvider extends ChangeNotifier {
         MaterialPageRoute(
           builder: (_) => VideoPlayerScreen(
             videoPath: path,
-            playlist: folderVideoFiles.isNotEmpty ? folderVideoFiles : [path],
+            playlist: decryptedVideoFiles.isNotEmpty ? decryptedVideoFiles : [path],
             initialIndex: initialIndex,
             isRemote: activeTab.isRemote,
           ),
@@ -7016,6 +7225,12 @@ class FileManagerProvider extends ChangeNotifier {
           .where((f) => !f.isDirectory && (lookupMimeType(f.path)?.startsWith('audio/') == true))
           .toList();
 
+      // 对播放列表中的加密文件也进行解密
+      final decryptedAudioPaths = <String>[];
+      for (final f in folderAudioFiles) {
+        decryptedAudioPaths.add(await _decryptCryptFileIfNeeded(f.path));
+      }
+
       List<SongModel>? allSongs;
       int initialIndex = 0;
 
@@ -7025,7 +7240,7 @@ class FileManagerProvider extends ChangeNotifier {
           final file = folderAudioFiles[i];
           final songMap = {
             '_id': i,
-            '_data': file.path,
+            '_data': decryptedAudioPaths[i],
             'title': p.basenameWithoutExtension(file.path),
             'artist': L10n.of(context).msg5e32276d,
             'album': L10n.of(context).msg497ec49d,
@@ -7036,7 +7251,7 @@ class FileManagerProvider extends ChangeNotifier {
             'is_music': true,
           };
           allSongs.add(SongModel(songMap));
-          if (file.path == path) {
+          if (file.path == originalPath) {
             initialIndex = i;
           }
         }

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import '../../core/icon_fonts/broken_icons.dart';
 import '../../services/vault_service.dart';
+import '../../services/crypt/crypt.dart';
 import '../../services/vault_biometric_store.dart';
 import '../../services/biometric_auth_helper.dart';
 import 'vault_explorer_screen.dart';
@@ -192,6 +193,8 @@ class _VaultLockScreenState extends State<VaultLockScreen> {
   }
 
   void _unlockWallet(String password) {
+    // 标记 VaultCryptService 为已解锁，供浏览页加密/解密操作使用
+    VaultCryptService.instance.markUnlocked(password);
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(

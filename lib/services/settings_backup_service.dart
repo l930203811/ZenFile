@@ -13,6 +13,7 @@ import '../services/remote/sftp_client.dart';
 import '../services/remote/webdav_client.dart';
 import '../services/remote/lan_client.dart';
 import '../services/remote/saf_client.dart';
+import '../services/crypt/crypt_mount_service.dart';
 
 class BackupFileInfo {
   final String name;
@@ -195,6 +196,22 @@ class SettingsBackupService {
         backupData[key] = value;
       }
 
+      // 额外备份加密挂载点的密码（密码存在 FlutterSecureStorage 中，不在 SharedPreferences 里）
+      try {
+        final cryptMounts = await CryptMountService.loadMountPoints();
+        if (cryptMounts.isNotEmpty) {
+          final passwords = <String, String>{};
+          for (final m in cryptMounts) {
+            if (m.config.password.isNotEmpty) {
+              passwords[m.physicalPath] = m.config.password;
+            }
+          }
+          if (passwords.isNotEmpty) {
+            backupData['_crypt_mount_passwords'] = passwords;
+          }
+        }
+      } catch (_) {}
+
       final jsonString = const JsonEncoder.withIndent('  ').convert(backupData);
       final dirPath = await getBackupDirPath();
       final fileName = _generateBackupFileName();
@@ -321,6 +338,22 @@ class SettingsBackupService {
           await prefs.setStringList(key, value.cast<String>());
         }
       }
+
+      // 恢复加密挂载点的密码到 FlutterSecureStorage
+      try {
+        final cryptPasswords = backupData['_crypt_mount_passwords'];
+        if (cryptPasswords is Map<String, dynamic>) {
+          // 重新保存挂载点配置（会触发密码写入 FlutterSecureStorage）
+          final mounts = await CryptMountService.loadMountPoints();
+          for (final m in mounts) {
+            final savedPw = cryptPasswords[m.physicalPath];
+            if (savedPw is String && savedPw.isNotEmpty) {
+              final updated = m.copyWith(password: savedPw);
+              await CryptMountService.addMountPoint(updated);
+            }
+          }
+        }
+      } catch (_) {}
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

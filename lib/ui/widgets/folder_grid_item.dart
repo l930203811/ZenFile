@@ -76,16 +76,40 @@ class FolderGridItem extends StatelessWidget {
                     children: [
                       GestureDetector(
                         onTap: onIconTap ?? onLongPress,
-                        child: Container(
-                          width: 48 * iconScale,
-                          height: 48 * iconScale,
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? theme.colorScheme.primary
-                                : theme.colorScheme.primary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: (() {
+                        child: Stack(
+                          children: [
+                            if (context.select<FileManagerProvider, bool>(
+                              (p) => p.isPathEncrypted(folder.path),
+                            ))
+                              Positioned(
+                                left: 0,
+                                top: 0,
+                                child: Container(
+                                  padding: EdgeInsets.all(2 * (1 + (iconScale - 1) * 0.3)),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.primary,
+                                    borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(16),
+                                      bottomRight: Radius.circular(8),
+                                    ),
+                                  ),
+                                  child: Icon(
+                                    Icons.lock,
+                                    size: 10 * (1 + (iconScale - 1) * 0.3),
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            Container(
+                              width: 48 * iconScale,
+                              height: 48 * iconScale,
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? theme.colorScheme.primary
+                                    : theme.colorScheme.primary.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: (() {
                             final parentPath = p
                                 .dirname(folder.path)
                                 .toLowerCase();
@@ -155,6 +179,8 @@ class FolderGridItem extends StatelessWidget {
                               size: 28 * iconScale,
                             );
                           })(),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 8),

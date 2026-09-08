@@ -457,6 +457,8 @@ class FileActionSheet {
     bool showInLocation = false,
     bool openWith = false,
     bool showSetAsHome = false,
+    String? filePath,
+    bool isEncrypted = false,
   }) {
     final theme = Theme.of(context);
     return showModalBottomSheet(
@@ -553,6 +555,26 @@ class FileActionSheet {
                     value: 'archive',
                     onAction: onAction,
                   ),
+                  // 加密/解密选项
+                  if (filePath != null)
+                    if (isEncrypted)
+                      _buildTile(
+                        ctx,
+                        theme,
+                        icon: Icons.lock_open,
+                        title: '解密',
+                        value: 'decrypt',
+                        onAction: onAction,
+                      )
+                    else
+                      _buildTile(
+                        ctx,
+                        theme,
+                        icon: Icons.lock,
+                        title: '加密',
+                        value: 'encrypt',
+                        onAction: onAction,
+                      ),
                   _buildTile(
                     ctx,
                     theme,

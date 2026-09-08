@@ -6648,4 +6648,265 @@ class L10nRu extends L10n {
 
   @override
   String get ui_preset_colors => 'Предустановленные цвета';
+
+  @override
+  String get crypt_settings_title => 'Encryption';
+
+  @override
+  String get crypt_settings_subtitle =>
+      'Manage encrypted folders and mount points';
+
+  @override
+  String get crypt_add_mount => 'Add Encrypted Folder';
+
+  @override
+  String get crypt_edit_mount => 'Edit Encrypted Folder';
+
+  @override
+  String get crypt_no_mounts_title => 'No Encrypted Folders';
+
+  @override
+  String get crypt_no_mounts_subtitle =>
+      'Tap the button below to add your first encrypted folder';
+
+  @override
+  String get crypt_field_name => 'Name';
+
+  @override
+  String get crypt_field_name_hint => 'Optional, uses folder name if empty';
+
+  @override
+  String get crypt_field_path => 'Folder Path';
+
+  @override
+  String get crypt_field_path_hint => 'Select folder to encrypt';
+
+  @override
+  String get crypt_field_password => 'Password';
+
+  @override
+  String get crypt_field_confirm_password => 'Confirm Password';
+
+  @override
+  String get crypt_error_path_required => 'Please select a folder path';
+
+  @override
+  String get crypt_error_password_required => 'Please enter a password';
+
+  @override
+  String get crypt_error_password_short =>
+      'Password must be at least 4 characters';
+
+  @override
+  String get crypt_error_password_mismatch => 'Passwords do not match';
+
+  @override
+  String get crypt_section_mode => 'Encryption Mode';
+
+  @override
+  String get crypt_mode_inplace => 'In-place Encryption';
+
+  @override
+  String get crypt_mode_inplace_desc =>
+      'Files stay in place, names and content are encrypted';
+
+  @override
+  String get crypt_mode_sandbox => 'Sandbox Encryption';
+
+  @override
+  String get crypt_mode_sandbox_desc =>
+      'Files moved to sandbox, more secure but slightly slower';
+
+  @override
+  String get crypt_section_advanced => 'Advanced Options';
+
+  @override
+  String get crypt_advanced_toggle => 'Show advanced encryption options';
+
+  @override
+  String get crypt_field_filename_enc => 'Filename Encryption';
+
+  @override
+  String get crypt_field_dirname_enc => 'Encrypt Directory Names';
+
+  @override
+  String get crypt_field_filename_encoding => 'Filename Encoding';
+
+  @override
+  String get crypt_field_suffix => 'Encrypted Suffix';
+
+  @override
+  String get crypt_field_salt => 'Salt (optional)';
+
+  @override
+  String get crypt_field_salt_hint => 'Auto-generated if empty';
+
+  @override
+  String get crypt_action_browse => 'Browse';
+
+  @override
+  String get crypt_delete_title => 'Delete Encrypted Folder';
+
+  @override
+  String crypt_delete_message(Object name) {
+    return 'Delete encryption config for \"$name\"? Files will not be deleted.';
+  }
+
+  @override
+  String get crypt_filename_enc => 'Filename Enc';
+
+  @override
+  String get crypt_share_title => 'Share Encrypted Folder';
+
+  @override
+  String get crypt_share_hint =>
+      'Scan the QR code to import encryption config. Password is required to decrypt files.';
+
+  @override
+  String get crypt_action_share => 'Share';
+
+  @override
+  String get crypt_share_password_note =>
+      'Password is NOT included in the QR code. Share it separately via a secure channel.';
+
+  @override
+  String get crypt_action_encrypt => 'Encrypt Now';
+
+  @override
+  String get crypt_action_decrypt => 'Decrypt';
+
+  @override
+  String get crypt_encrypt_title => 'Encryption Confirmation';
+
+  @override
+  String get crypt_encrypt_message =>
+      'This will encrypt all files and subfolders. After encryption, other file managers cannot view file contents or names. Continue?';
+
+  @override
+  String get crypt_encrypting => 'Encrypting...';
+
+  @override
+  String get crypt_encrypt_success => 'Encryption completed';
+
+  @override
+  String crypt_encrypt_failed(Object error) {
+    return 'Encryption failed: $error';
+  }
+
+  @override
+  String get crypt_decrypt_title => 'Decryption Confirmation';
+
+  @override
+  String get crypt_decrypt_message =>
+      'This will decrypt all files and subfolders. After decryption, files will be restored to normal. Continue?';
+
+  @override
+  String get crypt_decrypting => 'Decrypting...';
+
+  @override
+  String get crypt_decrypt_success => 'Decryption completed';
+
+  @override
+  String crypt_decrypt_failed(Object error) {
+    return 'Decryption failed: $error';
+  }
+
+  @override
+  String get crypt_filename_enc_off => 'Off';
+
+  @override
+  String get crypt_filename_enc_standard => 'Standard';
+
+  @override
+  String get crypt_filename_enc_obfuscate => 'Obfuscate';
+
+  @override
+  String get crypt_filename_enc_base64 => 'Base64';
+
+  @override
+  String get crypt_filename_enc_base32 => 'Base32';
+
+  @override
+  String get crypt_filename_enc_base32768 => 'Base32768';
+
+  @override
+  String get crypt_dirname_enc_yes => 'Yes';
+
+  @override
+  String get crypt_dirname_enc_no => 'No';
+
+  @override
+  String get vault_encrypt_files => '+ Encrypt Files';
+
+  @override
+  String get vault_select_encryption_method => 'Select Encryption Method';
+
+  @override
+  String get vault_inplace_encrypt => 'In-place Encryption';
+
+  @override
+  String get vault_inplace_encrypt_desc =>
+      'Files stay in original directory, filenames become encrypted after encryption, 🔐 badge shown in browser';
+
+  @override
+  String get vault_sandbox_encrypt => 'Sandbox Encryption';
+
+  @override
+  String get vault_sandbox_encrypt_desc =>
+      'Files moved to vault private directory, filenames hidden, only visible in vault page';
+
+  @override
+  String get vault_need_set_password => 'Need to Set Master Password First';
+
+  @override
+  String get vault_need_set_password_desc =>
+      'Please configure encryption master password and salt in encryption settings first, then you can perform in-place encryption.';
+
+  @override
+  String get vault_go_set_password => 'Set Password';
+
+  @override
+  String get vault_encrypting => 'Encrypting...';
+
+  @override
+  String get vault_encrypting_desc =>
+      'Encrypting selected files/folders, please wait...';
+
+  @override
+  String vault_inplace_encrypt_done(Object count) {
+    return 'In-place encryption completed, $count files/folders encrypted';
+  }
+
+  @override
+  String vault_encrypt_failed(Object error) {
+    return 'Encryption failed: $error';
+  }
+
+  @override
+  String get vault_inplace_section => 'In-place Encryption';
+
+  @override
+  String get vault_open_location => 'Open Location';
+
+  @override
+  String get vault_decrypt_action => 'Decrypt';
+
+  @override
+  String get vault_decrypt_confirm_title => 'Decrypt File';
+
+  @override
+  String vault_decrypt_confirm_desc(Object name) {
+    return 'Are you sure you want to decrypt \"$name\"? The file will be restored to normal after decryption.';
+  }
+
+  @override
+  String get vault_decrypt_success => 'Decryption successful';
+
+  @override
+  String vault_decrypt_failed(Object error) {
+    return 'Decryption failed: $error';
+  }
+
+  @override
+  String get crypt_set_master_password => 'Set Encryption Master Password';
 }

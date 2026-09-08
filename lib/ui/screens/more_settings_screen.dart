@@ -14,6 +14,7 @@ import 'backup_settings_screen.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../../main.dart';
 import 'apk_install_settings_screen.dart';
+import 'crypt_settings_screen.dart';
 
 class MoreSettingsScreen extends StatefulWidget {
   const MoreSettingsScreen({super.key});

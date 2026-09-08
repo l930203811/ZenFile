@@ -87,6 +87,28 @@ class FolderItem extends StatelessWidget {
                     onTap: onIconTap ?? onLongPress,
                     child: Stack(
                       children: [
+                        if (context.select<FileManagerProvider, bool>(
+                          (p) => p.isPathEncrypted(folder.path),
+                        ))
+                          Positioned(
+                            left: 0,
+                            top: 0,
+                            child: Container(
+                              padding: EdgeInsets.all(2 * (1 + (iconScale - 1) * 0.3)),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primary,
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(12),
+                                  bottomRight: Radius.circular(8),
+                                ),
+                              ),
+                              child: Icon(
+                                Icons.lock,
+                                size: 10 * (1 + (iconScale - 1) * 0.3),
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
                         Container(
                           width: 48 * iconScale,
                           height: 48 * iconScale,
