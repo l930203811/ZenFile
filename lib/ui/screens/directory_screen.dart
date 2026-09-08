@@ -6,6 +6,7 @@ import 'package:path/path.dart' as p;
 import '../../providers/file_manager_provider.dart';
 import '../../providers/media_provider.dart';
 import '../../models/file_filter_type.dart';
+import '../../models/file_item_model.dart';
 import '../../models/drag_payload.dart';
 import '../widgets/file_item.dart';
 import '../widgets/folder_item.dart';
