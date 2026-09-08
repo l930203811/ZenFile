@@ -641,6 +641,50 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     }
   }
 
+  /// 构造表示「返回父目录」的虚拟文件夹项（MT 管理器风格的 `...`）。
+  FileItemModel _parentDirectoryItem(FileManagerProvider provider) {
+    final parentPath = p.posix.dirname(provider.currentPath);
+    return FileItemModel(
+      entity: Directory(parentPath),
+      name: '...',
+      path: parentPath,
+      isDirectory: true,
+      size: 0,
+      modified: DateTime.now(),
+    );
+  }
+
+  /// 渲染顶部「返回父目录」项。非选择模式且存在父目录时作为列表第 0 项。
+  Widget _buildParentDirectoryItem(
+    BuildContext context,
+    FileManagerProvider provider, {
+    required bool isGrid,
+  }) {
+    final folder = _parentDirectoryItem(provider);
+    if (isGrid) {
+      return FolderGridItem(
+        folder: folder,
+        isSelected: false,
+        iconScale: provider.iconScale,
+        itemPaddingMultiplier: provider.itemPaddingMultiplier,
+        onTap: () => _goUp(provider),
+        onLongPress: null,
+        onIconTap: null,
+        onAction: (_) {},
+      );
+    }
+    return FolderItem(
+      folder: folder,
+      isSelected: false,
+      iconScale: provider.iconScale,
+      itemPaddingMultiplier: provider.itemPaddingMultiplier,
+      onTap: () => _goUp(provider),
+      onLongPress: null,
+      onIconTap: null,
+      onAction: (_) {},
+    );
+  }
+
   void _handleAction(BuildContext context, String action, String path) async {
     final provider = context.read<FileManagerProvider>();
     switch (action) {
@@ -1112,6 +1156,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
       builder: (context, provider, child) {
         final theme = Theme.of(context);
         final isSelectionMode = provider.isSelectionMode;
+        final showParentDirectory = !isSelectionMode && provider.canGoUp;
         final showBottomActionBar = provider.showBottomActionBar;
 
         if (provider.shouldScrollToHighlight) {
@@ -1435,7 +1480,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                       CupertinoSliverRefreshControl(
                         onRefresh: () => provider.loadDirectory(provider.currentPath, showLoading: false, clearCache: true),
                       ),
-                      if (provider.currentFiles.isEmpty)
+                      if (provider.currentFiles.isEmpty && !showParentDirectory)
                         SliverFillRemaining(
                           hasScrollBody: false,
                           child: Center(
@@ -1495,7 +1540,10 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                   ),
                                   delegate: SliverChildBuilderDelegate(
                                     (context, index) {
-                                      final item = provider.currentFiles[index];
+                                      if (showParentDirectory && index == 0) {
+                                        return _buildParentDirectoryItem(context, provider, isGrid: true);
+                                      }
+                                      final item = provider.currentFiles[index - (showParentDirectory ? 1 : 0)];
                                       final isSelected = provider.selectedPaths.contains(item.path);
                                       if (item.isDirectory) {
                                         final itemLongPress = () {
@@ -1554,13 +1602,16 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                         );
                                       }
                                     },
-                                    childCount: provider.currentFiles.length,
+                                    childCount: provider.currentFiles.length + (showParentDirectory ? 1 : 0),
                                   ),
                                 )
                               : SliverList(
                                   delegate: SliverChildBuilderDelegate(
                                     (context, index) {
-                                      final item = provider.currentFiles[index];
+                                      if (showParentDirectory && index == 0) {
+                                        return _buildParentDirectoryItem(context, provider, isGrid: false);
+                                      }
+                                      final item = provider.currentFiles[index - (showParentDirectory ? 1 : 0)];
                                       final isSelected = provider.selectedPaths.contains(item.path);
                                       if (item.isDirectory) {
                                         final itemLongPress = () {
@@ -1620,7 +1671,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                         );
                                       }
                                     },
-                                    childCount: provider.currentFiles.length,
+                                    childCount: provider.currentFiles.length + (showParentDirectory ? 1 : 0),
                                   ),
                                 ),
                         ),

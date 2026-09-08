@@ -320,6 +320,71 @@ class _PaneBrowserState extends State<PaneBrowser> {
     }
   }
 
+  /// 当前 pane 的 tab 是否可向上（用于显示 `...` 父目录项）。
+  bool _canGoUp(FileManagerProvider provider, FolderTab tab) {
+    if (tab.isRemote) return true;
+    return tab.currentPath.isNotEmpty && tab.currentPath != provider.rootPath;
+  }
+
+  /// 构造「返回父目录」的虚拟文件夹项。
+  FileItemModel _parentDirectoryItem(FileManagerProvider provider, FolderTab tab) {
+    final parentPath = p.posix.dirname(tab.currentPath);
+    return FileItemModel(
+      entity: Directory(parentPath),
+      name: '...',
+      path: parentPath,
+      isDirectory: true,
+      size: 0,
+      modified: DateTime.now(),
+    );
+  }
+
+  void _goUp(FileManagerProvider provider, FolderTab tab) {
+    _activatePane(provider);
+    final parentPath = p.posix.dirname(tab.currentPath);
+    if (parentPath == tab.currentPath) return;
+    if (_scrollController.hasClients) {
+      provider.saveScrollOffset(tab.currentPath, _scrollController.offset);
+    }
+    provider.loadDirectoryForTab(widget.tabIndex, parentPath).then((_) {
+      if (_scrollController.hasClients) {
+        final savedOffset = provider.getSavedScrollOffset(parentPath);
+        _scrollController.jumpTo(savedOffset);
+      }
+    });
+  }
+
+  Widget _buildParentDirectoryItem(
+    BuildContext context,
+    FileManagerProvider provider,
+    FolderTab tab, {
+    required bool isGrid,
+  }) {
+    final folder = _parentDirectoryItem(provider, tab);
+    if (isGrid) {
+      return FolderGridItem(
+        folder: folder,
+        isSelected: false,
+        iconScale: provider.iconScale,
+        itemPaddingMultiplier: provider.itemPaddingMultiplier,
+        onTap: () => _goUp(provider, tab),
+        onLongPress: null,
+        onIconTap: null,
+        onAction: (_) {},
+      );
+    }
+    return _buildCompactFolderItem(
+      context,
+      provider,
+      folder,
+      false,
+      false,
+      tab.remoteConnection,
+      isParentItem: true,
+      onTapOverride: () => _goUp(provider, tab),
+    );
+  }
+
   void _handleAction(BuildContext context, String action, String path) async {
     final provider = context.read<FileManagerProvider>();
     _activatePane(provider);
@@ -473,6 +538,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
         ? provider.activeTabIndex == widget.tabIndex
         : true;
     final isSelectionMode = tab.selectedPaths.isNotEmpty;
+    final showParentDirectory = !isSelectionMode && _canGoUp(provider, tab);
     // 应用全局「按类别过滤」后的显示列表（单/双窗口统一），文件夹始终保留
     final displayFiles = provider.getDisplayFilesForTab(tab);
 
@@ -868,7 +934,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                           forceRefresh: true,
                                         ),
                                   ),
-                                  if (displayFiles.isEmpty)
+                                  if (displayFiles.isEmpty && !showParentDirectory)
                                     SliverFillRemaining(
                                       hasScrollBody: false,
                                       child: Center(
@@ -959,11 +1025,11 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                                   ),
                                                   delegate: SliverChildBuilderDelegate(
                                                     (context, index) {
-                                                      final item =
-                                                          displayFiles[index];
-                                                      final isSelected = tab
-                                                          .selectedPaths
-                                                          .contains(item.path);
+                                                      if (showParentDirectory && index == 0) {
+                                                        return _buildParentDirectoryItem(context, provider, tab, isGrid: true);
+                                                      }
+                                                      final item = displayFiles[index - (showParentDirectory ? 1 : 0)];
+                                                      final isSelected = tab.selectedPaths.contains(item.path);
                                                       if (item.isDirectory) {
                                                         final itemLongPress = () {
                                                           _activatePane(
@@ -1104,7 +1170,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                                       }
                                                     },
                                                     childCount:
-                                                        displayFiles.length,
+                                                        displayFiles.length + (showParentDirectory ? 1 : 0),
                                                   ),
                                                 );
                                               },
@@ -1114,11 +1180,11 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                                 context,
                                                 index,
                                               ) {
-                                                final item =
-                                                    displayFiles[index];
-                                                final isSelected = tab
-                                                    .selectedPaths
-                                                    .contains(item.path);
+                                                if (showParentDirectory && index == 0) {
+                                                  return _buildParentDirectoryItem(context, provider, tab, isGrid: false);
+                                                }
+                                                final item = displayFiles[index - (showParentDirectory ? 1 : 0)];
+                                                final isSelected = tab.selectedPaths.contains(item.path);
                                                 if (item.isDirectory) {
                                                   return _buildCompactFolderItem(
                                                     context,
@@ -1139,7 +1205,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
                                                     tab.remoteClient,
                                                   );
                                                 }
-                                              }, childCount: displayFiles.length),
+                                              }, childCount: displayFiles.length + (showParentDirectory ? 1 : 0)),
                                             ),
                                     ),
                                 ],
@@ -1162,18 +1228,22 @@ class _PaneBrowserState extends State<PaneBrowser> {
     FileItemModel folder,
     bool isSelected,
     bool isSelectionMode,
-    NetworkConnectionModel? remoteConnection,
-  ) {
+    NetworkConnectionModel? remoteConnection, {
+    bool isParentItem = false,
+    VoidCallback? onTapOverride,
+  }) {
     final theme = Theme.of(context);
-    final isHighlighted =
-        provider.forceHighlightedPaths.contains(folder.path) ||
+    final isHighlighted = !isParentItem &&
+        (provider.forceHighlightedPaths.contains(folder.path) ||
         (provider.enableFolderHighlight &&
-            provider.highlightedPaths.contains(folder.path));
+            provider.highlightedPaths.contains(folder.path)));
 
-    final itemLongPress = () {
-      _activatePane(provider);
-      provider.toggleSelection(folder.path);
-    };
+    final itemLongPress = isParentItem
+        ? null
+        : () {
+            _activatePane(provider);
+            provider.toggleSelection(folder.path);
+          };
 
     return DragDropHandler(
       path: folder.path,
@@ -1183,7 +1253,7 @@ class _PaneBrowserState extends State<PaneBrowser> {
       remoteItems: folder.remoteSource != null ? [folder.remoteSource!] : null,
       connection: folder.isRemote ? remoteConnection : null,
       child: InkWell(
-        onTap: () {
+        onTap: onTapOverride ?? () {
           _activatePane(provider);
           if (isSelectionMode) {
             provider.toggleSelection(folder.path);
