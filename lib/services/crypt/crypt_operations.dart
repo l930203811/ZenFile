@@ -5,11 +5,8 @@
 library;
 
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:path/path.dart' as p;
-import 'crypt_config.dart';
 import 'crypt_mount.dart';
-import 'crypt_file.dart';
 import 'stream_cipher.dart';
 import 'rclone_crypt.dart';
 
@@ -56,9 +53,12 @@ class CryptDirectoryLister {
   ///
   /// [virtualDirPath] 解密后的目录路径（虚拟路径）
   /// [showHidden] 是否显示隐藏文件
+  /// [onlyEncrypted] 为 true 时只返回文件名/目录名能被成功解密的条目，
+  ///   用于「保险箱-原地加密」列表，避免把挂载点内未加密的普通文件也显示成已加密。
   Future<List<CryptFileEntry>> listDirectory(
     String virtualDirPath, {
     bool showHidden = false,
+    bool onlyEncrypted = false,
   }) async {
     // 将虚拟路径转换为物理路径
     final physicalDirPath = _mount.virtualToPhysical(virtualDirPath);
@@ -86,15 +86,22 @@ class CryptDirectoryLister {
 
       // 尝试解密文件名
       String virtualName;
+      var decryptionSucceeded = false;
       try {
         if (entity is Directory) {
           virtualName = _mount.crypt.decryptDirName(physicalName);
         } else {
           virtualName = _mount.crypt.decryptFileName(physicalName);
         }
+        decryptionSucceeded = true;
       } catch (_) {
         // 解密失败，可能不是加密文件，保留原名
         virtualName = physicalName;
+      }
+
+      // 保险箱「原地加密」列表只应显示真实已加密的文件/目录
+      if (onlyEncrypted && !decryptionSucceeded) {
+        continue;
       }
 
       // 隐藏文件过滤
@@ -135,9 +142,8 @@ class CryptDirectoryLister {
 /// 原地加密/解密操作
 class CryptOperations {
   final CryptMountPoint _mount;
-  final CryptDirectoryLister _lister;
 
-  CryptOperations(this._mount) : _lister = CryptDirectoryLister(_mount);
+  CryptOperations(this._mount);
 
   /// 加密单个文件（原地加密）
   ///

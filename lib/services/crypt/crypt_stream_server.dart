@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'crypt_mount.dart';
 import 'crypt_file.dart';
@@ -86,7 +85,8 @@ class CryptStreamServer {
       }
 
       final uri = request.uri;
-      if (uri.path != '/decrypt') {
+      // 兼容带扩展名的路径（如 /decrypt.mp4），让播放器能通过 URL 识别格式
+      if (!uri.path.startsWith('/decrypt')) {
         request.response.statusCode = HttpStatus.notFound;
         await request.response.close();
         return;
@@ -210,7 +210,16 @@ class CryptStreamServer {
   String getStreamUrl(String virtualPath) {
     if (_port == null) return virtualPath;
     final encodedPath = Uri.encodeQueryComponent(virtualPath);
-    return 'http://127.0.0.1:$_port/decrypt?path=$encodedPath';
+    // 把真实扩展名附加到路径上，帮助播放器/图片查看器识别格式
+    final ext = _extForPath(virtualPath);
+    return 'http://127.0.0.1:$_port/decrypt$ext?path=$encodedPath';
+  }
+
+  /// 提取路径扩展名（含点），用于流式 URL 伪装
+  String _extForPath(String path) {
+    final dotIndex = path.lastIndexOf('.');
+    if (dotIndex < 0 || dotIndex == path.length - 1) return '';
+    return path.substring(dotIndex);
   }
 
   /// 关闭服务器

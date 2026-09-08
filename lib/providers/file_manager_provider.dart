@@ -1699,13 +1699,27 @@ class FileManagerProvider extends ChangeNotifier {
       final tempFilePath = p.join(tempDirPath, '${DateTime.now().millisecondsSinceEpoch}_$decryptedName');
 
       final cryptFile = await CryptFile.open(physicalPath, mount.crypt, mode: CryptFileMode.read);
-      final decryptedData = await cryptFile.read(0);
-      await cryptFile.close();
-
       final tempFile = File(tempFilePath);
-      await tempFile.writeAsBytes(decryptedData);
+      final raf = await tempFile.open(mode: FileMode.write);
+      try {
+        // 流式分块解密写入临时文件，避免大文件一次性读入内存 OOM
+        const chunkSize = 256 * 1024; // 256KB
+        var offset = 0;
+        final decryptedSize = cryptFile.length;
+        while (offset < decryptedSize) {
+          final toRead = (offset + chunkSize > decryptedSize)
+              ? decryptedSize - offset
+              : chunkSize;
+          final data = await cryptFile.read(offset, toRead);
+          await raf.writeFrom(data);
+          offset += data.length;
+        }
+      } finally {
+        await raf.close();
+        await cryptFile.close();
+      }
 
-      debugPrint('[ZenFile] Decrypted crypt file to temp: $tempFilePath (${decryptedData.length} bytes)');
+      debugPrint('[ZenFile] Decrypted crypt file to temp: $tempFilePath (${cryptFile.length} bytes)');
       return tempFilePath;
     } catch (e) {
       debugPrint('[ZenFile] Failed to decrypt crypt file: $e');
