@@ -99,20 +99,49 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     }
   }
 
-  /// 使用当前保险箱密码加载加密挂载点，避免 SecureStorage 未读到密码导致解密失败
+  /// 加载已持久化的加密挂载点。
+  ///
+  /// ⚠️ 已持久化的「原地加密」挂载点密码来自安全存储（= 加密设置的主密码），
+  /// 绝不可用保险箱密码 [widget.password] 覆盖，否则解密必然失败。
+  /// 仅当挂载点自身没有密码时，才用保险箱密码兜底（沙盒挂载用保险箱密码）。
   Future<List<CryptMountPoint>> _loadMountsWithPassword() async {
     final mounts = await CryptMountService.loadMountPoints();
     final result = <CryptMountPoint>[];
     for (final m in mounts) {
-      try {
-        result.add(m.copyWith(password: widget.password));
-      } catch (e) {
-        // 单个挂载点重建失败不应拖垮整体流程，保留原配置继续
-        debugPrint('[vault] 挂载点重建失败 ${m.physicalPath}: $e');
-        result.add(m);
+      if (m.config.password.isEmpty) {
+        try {
+          result.add(m.copyWith(password: widget.password));
+          continue;
+        } catch (e) {
+          // 单个挂载点重建失败不应拖垮整体流程，保留原配置继续
+          debugPrint('[vault] 挂载点重建失败 ${m.physicalPath}: $e');
+        }
       }
+      result.add(m);
     }
     return result;
+  }
+
+  /// 为 [path] 解析一个用于加解密的 crypt 挂载点：
+  /// 1. 优先复用已持久化的「原地加密」挂载点（含其安全存储中的密码）；
+  /// 2. 否则回退到「加密设置」里配置的主密码/盐（crypt_last_password），
+  ///    并在 [path] 的父目录按此凭据创建一个挂载点（按需持久化）；
+  /// 3. 若用户尚未在加密设置中配置主密码，返回 null（调用方应引导去加密设置页）。
+  Future<CryptMountPoint?> _resolveCryptMountForPath(String path) async {
+    final mounts = await _loadMountsWithPassword();
+    for (final m in mounts) {
+      if (!m.isSandboxMode && m.containsPath(path)) return m;
+    }
+    final master = await VaultCryptService.instance.getMasterConfig();
+    if (master == null) return null;
+    final mount = CryptMountPoint(
+      physicalPath: p.dirname(path),
+      config: master,
+      name: p.basename(p.dirname(path)),
+      isSandboxMode: false,
+    );
+    await CryptMountService.addMountPoint(mount);
+    return mount;
   }
 
   /// 加载新版原地加密的文件/文件夹列表
@@ -657,35 +686,27 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
 
     try {
       if (inplace) {
-        final mounts = await _loadMountsWithPassword();
-        if (mounts.isEmpty) {
+        final mount = await _resolveCryptMountForPath(entry.path);
+        if (mount == null) {
           if (mounted) {
             navigator.pop();
             _showNeedPasswordDialog(l10n);
           }
           return;
         }
-        CryptMountPoint? target;
-        for (final mount in mounts) {
-          if (mount.containsPath(entry.path)) {
-            target = mount;
-            break;
-          }
-        }
-        target ??= mounts.first;
-        final ops = CryptOperations(target);
+        final ops = CryptOperations(mount);
 
         // 加密后文件名/目录名会被替换成密文名，必须同步更新清单里的路径，
         // 否则条目会指向已不存在的旧路径而「消失」。
         String newPath;
         if (entry.isDirectory) {
           await ops.encryptDirectory(entry.path);
-          final isMountRoot = p.equals(entry.path, target.physicalPath);
+          final isMountRoot = p.equals(entry.path, mount.physicalPath);
           newPath = isMountRoot
               ? entry.path
               : p.join(
                   p.dirname(entry.path),
-                  target.crypt.encryptDirName(p.basename(entry.path)),
+                  mount.crypt.encryptDirName(p.basename(entry.path)),
                 );
         } else {
           newPath = await ops.encryptFile(entry.path);
@@ -2176,63 +2197,36 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     Object? firstError;
     try {
       showLoading();
-      final mounts = await _loadMountsWithPassword();
-
-      // 1) 优先使用包含该路径的挂载点，其次退化为第一个挂载点
-      CryptMountPoint? mount;
-      for (final m in mounts) {
-        if (m.containsPath(path)) {
-          mount = m;
-          break;
-        }
-      }
-      mount ??= mounts.isNotEmpty ? mounts.first : null;
-
-      if (mount != null) {
-        try {
-          final ops = CryptOperations(mount);
-          if (isDirectory) {
-            await ops.decryptDirectory(path);
-          } else {
-            await ops.decryptFile(path);
-          }
-          await _afterDecrypt(path);
-          if (mounted) {
-            hideLoading();
-            scaffoldMessenger.showSnackBar(
-              SnackBar(content: Text(l10n.vault_decrypt_success)),
-            );
-          }
-          return;
-        } catch (e) {
-          firstError = e;
-        }
-      }
-
-      // 2) 已配置的密码/盐对不上 → 让用户输入后再试
-      hideLoading();
-      final creds = await _promptPasswordAndSalt();
-      if (creds == null) return;
-
-      showLoading();
-      final cfg = RcloneCryptConfig(password: creds.$1, salt: creds.$2);
-      final fallbackMount = CryptMountPoint(
-        physicalPath: p.dirname(path),
-        config: cfg,
-      );
-      final ops = CryptOperations(fallbackMount);
-      if (isDirectory) {
-        await ops.decryptDirectory(path);
-      } else {
-        await ops.decryptFile(path);
-      }
-      await _afterDecrypt(path);
-      if (mounted) {
+      final mount = await _resolveCryptMountForPath(path);
+      if (mount == null) {
+        // 尚未在加密设置中配置主密码 → 引导去设置页，不弹内联输入框
         hideLoading();
-        scaffoldMessenger.showSnackBar(
-          SnackBar(content: Text(l10n.vault_decrypt_success)),
-        );
+        _showNeedPasswordDialog(l10n);
+        return;
       }
+
+      try {
+        final ops = CryptOperations(mount);
+        if (isDirectory) {
+          await ops.decryptDirectory(path);
+        } else {
+          await ops.decryptFile(path);
+        }
+        await _afterDecrypt(path);
+        if (mounted) {
+          hideLoading();
+          scaffoldMessenger.showSnackBar(
+            SnackBar(content: Text(l10n.vault_decrypt_success)),
+          );
+        }
+        return;
+      } catch (e) {
+        firstError = e;
+      }
+
+      // 已配置的主密码/盐对不上 → 引导去加密设置重新配置（不再弹内联输入框）
+      hideLoading();
+      _showNeedPasswordDialog(l10n);
     } catch (e) {
       if (mounted) {
         hideLoading();
@@ -2248,53 +2242,6 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     await VaultImportStore.remove(path);
     await _loadImportEntries();
     await _loadInPlaceEncryptedFiles();
-  }
-
-  /// 弹出密码/盐输入框（已配置的凭据无法解密时使用）
-  Future<(String, String?)?> _promptPasswordAndSalt() async {
-    final l10n = L10n.of(context);
-    final passwordController = TextEditingController();
-    final saltController = TextEditingController();
-
-    final result = await showDialog<(String, String?)>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.vault_need_set_password),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              l10n.vault_decrypt_password_mismatch,
-              style: const TextStyle(fontSize: 13),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: InputDecoration(labelText: l10n.crypt_field_password),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: saltController,
-              obscureText: true,
-              decoration: InputDecoration(labelText: l10n.crypt_field_salt),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-          FilledButton(
-            onPressed: () {
-              final pwd = passwordController.text;
-              if (pwd.isEmpty) return;
-              Navigator.pop(context, (pwd, saltController.text.isEmpty ? null : saltController.text));
-            },
-            child: Text(l10n.vault_decrypt_action),
-          ),
-        ],
-      ),
-    );
-    return result;
   }
 
   String _formatSize(int bytes) {

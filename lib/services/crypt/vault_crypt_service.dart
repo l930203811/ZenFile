@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'crypt.dart';
 import '../vault_service.dart';
 
@@ -70,6 +71,28 @@ class VaultCryptService {
   Future<RcloneCryptConfig> getSandboxConfig(String password) async {
     return RcloneCryptConfig(
       password: password,
+      filenameEncryption: FilenameEncryption.standard,
+      directoryNameEncryption: true,
+      filenameEncoding: FilenameEncoding.base32,
+      encryptedSuffix: '.bin',
+    );
+  }
+
+  /// 读取「加密设置」里已配置的加密主密码与盐。
+  ///
+  /// 加密设置页（CryptMountEditScreen）在「新增」模式下只把主密码/盐写入
+  /// SharedPreferences（crypt_last_password / crypt_last_salt），并不创建整机
+  /// 挂载点（避免浏览页全锁）。原地加密 / 解密都依赖这组共享凭据，因此从这里读取。
+  ///
+  /// 返回 null 表示用户尚未在加密设置中配置主密码。
+  Future<RcloneCryptConfig?> getMasterConfig() async {
+    final prefs = await SharedPreferences.getInstance();
+    final password = prefs.getString('crypt_last_password') ?? '';
+    if (password.isEmpty) return null;
+    final saltStr = prefs.getString('crypt_last_salt');
+    return RcloneCryptConfig(
+      password: password,
+      salt: (saltStr == null || saltStr.isEmpty) ? null : saltStr,
       filenameEncryption: FilenameEncryption.standard,
       directoryNameEncryption: true,
       filenameEncoding: FilenameEncoding.base32,
