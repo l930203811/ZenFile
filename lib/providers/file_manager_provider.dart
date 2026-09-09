@@ -1587,10 +1587,25 @@ class FileManagerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 查找包含给定路径的加密挂载点（最长匹配）
+  /// 判断给定物理路径是否为「整机根目录」级别的挂载点。
+  /// 这类挂载点（如 /storage/emulated/0）会把整个存储当成加密目录，
+  /// 导致浏览页所有文件夹上锁、进入后内容为空。属于错误配置，应被忽略。
+  bool _isStorageRootMount(String physicalPath) {
+    final normalized = p.normalize(physicalPath);
+    return normalized == '/storage/emulated/0' ||
+        normalized == '/storage/emulated' ||
+        normalized == '/storage' ||
+        normalized == '/';
+  }
+
+  /// 查找包含给定路径的加密挂载点（最长匹配）。
+  ///
+  /// 用于「打开/解密文件」：包含沙盒挂载点（保险箱沙盒文件需要它），
+  /// 但忽略整机根目录级别的挂载点（错误配置）。
   CryptMountPoint? _findCryptMountForPath(String path) {
     CryptMountPoint? best;
     for (final mount in _cryptMountPoints) {
+      if (_isStorageRootMount(mount.physicalPath)) continue;
       if (mount.containsPath(path)) {
         if (best == null || mount.physicalPath.length > best.physicalPath.length) {
           best = mount;
@@ -1600,10 +1615,24 @@ class FileManagerProvider extends ChangeNotifier {
     return best;
   }
 
-  /// 公开方法：判断路径是否在加密挂载点内（用于UI显示🔐图徽）
-  bool isPathEncrypted(String path) {
-    if (!_cryptMountsLoaded) return false;
-    return _findCryptMountForPath(path) != null;
+  /// 查找用于「浏览页路由 + 🔐图徽」的加密挂载点（最长匹配）。
+  ///
+  /// 与 [_findCryptMountForPath] 不同：额外排除沙盒模式挂载点
+  /// （沙盒保险箱目录由保险箱页自身处理，不应在浏览页被当成 CryptVFS
+  /// 目录解密；此约定与 vault_crypt_service 的 `!mount.isSandboxMode` 一致），
+  /// 并同样忽略整机根目录级别的挂载点。
+  CryptMountPoint? _findCryptMountForBrowse(String path) {
+    CryptMountPoint? best;
+    for (final mount in _cryptMountPoints) {
+      if (mount.isSandboxMode) continue;
+      if (_isStorageRootMount(mount.physicalPath)) continue;
+      if (mount.containsPath(path)) {
+        if (best == null || mount.physicalPath.length > best.physicalPath.length) {
+          best = mount;
+        }
+      }
+    }
+    return best;
   }
 
   /// 将 CryptFileEntry 转换为 FileItemModel
@@ -1618,6 +1647,7 @@ class FileManagerProvider extends ChangeNotifier {
       isDirectory: entry.isDirectory,
       size: entry.size,
       modified: entry.modified,
+      isEncrypted: entry.isEncrypted,
     );
   }
 
@@ -3880,7 +3910,7 @@ class FileManagerProvider extends ChangeNotifier {
     try {
       // ── 加密挂载点（CryptVFS）：如果路径在加密挂载点内，使用 CryptVFS 枚举 ──
       await _ensureCryptMountsLoaded();
-      final cryptMount = _findCryptMountForPath(path);
+      final cryptMount = _findCryptMountForBrowse(path);
       if (cryptMount != null) {
         debugPrint('[ZenFile] Loading encrypted directory via CryptVFS: $path');
         activeTab.currentPath = path;

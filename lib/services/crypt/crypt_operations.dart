@@ -30,6 +30,10 @@ class CryptFileEntry {
   /// 最后修改时间
   final DateTime modified;
 
+  /// 是否真实被加密（文件名/目录名解密成功）。
+  /// 用于浏览页只给真实加密的条目显示🔐角标，其余正常显示。
+  final bool isEncrypted;
+
   CryptFileEntry({
     required this.name,
     required this.virtualPath,
@@ -37,6 +41,7 @@ class CryptFileEntry {
     required this.isDirectory,
     this.size = 0,
     required this.modified,
+    this.isEncrypted = false,
   });
 
   /// 文件扩展名（解密后的）
@@ -129,6 +134,7 @@ class CryptDirectoryLister {
         isDirectory: entity is Directory,
         size: size,
         modified: stat.modified,
+        isEncrypted: decryptionSucceeded,
       ));
     }
 

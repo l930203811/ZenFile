@@ -95,9 +95,7 @@ class FileGridItem extends StatelessWidget {
                         onTap: onIconTap ?? onLongPress,
                         child: Stack(
                           children: [
-                            if (context.select<FileManagerProvider, bool>(
-                              (p) => p.isPathEncrypted(file.path),
-                            ))
+                            if (file.isEncrypted)
                               Positioned(
                                 left: 0,
                                 top: 0,

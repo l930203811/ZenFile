@@ -127,9 +127,7 @@ class FileItem extends StatelessWidget {
                           RemoteCloudBadge(
                             size: 12 * (1 + (iconScale - 1) * 0.3),
                           ),
-                        if (context.select<FileManagerProvider, bool>(
-                          (p) => p.isPathEncrypted(file.path),
-                        ))
+                        if (file.isEncrypted)
                           Positioned(
                             left: 0,
                             top: 0,
@@ -260,7 +258,7 @@ class FileItem extends StatelessWidget {
                       openWith: showOpenWithOption && !file.isDirectory,
                       showShare: !file.isRemote,
                       filePath: file.path,
-                      isEncrypted: context.read<FileManagerProvider>().isPathEncrypted(file.path),
+                      isEncrypted: file.isEncrypted,
                     );
                   },
                 ),

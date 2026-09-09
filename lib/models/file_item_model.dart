@@ -9,6 +9,10 @@ class FileItemModel {
   final int size;
   final DateTime modified;
 
+  /// 是否真实被加密（仅在加密挂载点目录内枚举时由 CryptVFS 标记）。
+  /// 用于浏览页只给真实加密的条目显示🔐角标，其余正常显示。
+  final bool isEncrypted;
+
   /// Remote file metadata — null for local files
   final RemoteFileItem? remoteSource;
 
@@ -22,6 +26,7 @@ class FileItemModel {
     required this.size,
     required this.modified,
     this.remoteSource,
+    this.isEncrypted = false,
   });
 
   factory FileItemModel.fromEntity(FileSystemEntity entity) {

@@ -4,7 +4,6 @@ import 'package:zenfile/l10n/generated/app_localizations.dart';
 import '../../services/crypt/crypt_config.dart';
 import '../../services/crypt/crypt_mount.dart';
 import '../../services/crypt/crypt_mount_service.dart';
-import 'internal_file_picker_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// 添加/编辑加密挂载点页面
@@ -27,7 +26,6 @@ class _CryptMountEditScreenState extends State<CryptMountEditScreen> {
   late FilenameEncryption _filenameEncryption;
   late bool _directoryNameEncryption;
   late FilenameEncoding _filenameEncoding;
-  late bool _isSandboxMode;
   bool _showPassword = false;
 
   @override
@@ -41,7 +39,6 @@ class _CryptMountEditScreenState extends State<CryptMountEditScreen> {
     _filenameEncryption = mount?.config.filenameEncryption ?? FilenameEncryption.standard;
     _directoryNameEncryption = mount?.config.directoryNameEncryption ?? true;
     _filenameEncoding = mount?.config.filenameEncoding ?? FilenameEncoding.base32;
-    _isSandboxMode = mount?.isSandboxMode ?? false;
 
     // 如果是新建挂载点，从SharedPreferences读取上次保存的密码和加盐
     if (mount == null) {
@@ -110,42 +107,67 @@ class _CryptMountEditScreenState extends State<CryptMountEditScreen> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // 使用默认路径（内部存储根目录）
-    const path = '/storage/emulated/0';
     final password = _passwordController.text;
-    const name = '默认加密挂载点';
-
-    final config = RcloneCryptConfig(
-      password: password,
-      salt: _saltController.text.trim().isEmpty ? null : _saltController.text.trim(),
-      filenameEncryption: _filenameEncryption,
-      directoryNameEncryption: _directoryNameEncryption,
-      filenameEncoding: _filenameEncoding,
-      encryptedSuffix: _suffixController.text.trim().isEmpty ? '.bin' : _suffixController.text.trim(),
-    );
-
-    final mount = CryptMountPoint(
-      physicalPath: path,
-      config: config,
-      name: name,
-      isSandboxMode: _isSandboxMode,
-    );
-
-    await CryptMountService.addMountPoint(mount);
 
     // 保存密码和加盐到SharedPreferences，方便下次使用
     await _saveCredentials();
+
+    final existing = widget.existingMount;
+    if (existing != null) {
+      // 编辑已有挂载点：保留其物理路径/沙盒标记/名称，仅更新加密配置。
+      final updated = existing.copyWith(
+        config: RcloneCryptConfig(
+          password: password,
+          salt: _saltController.text.trim().isEmpty ? null : _saltController.text.trim(),
+          filenameEncryption: _filenameEncryption,
+          directoryNameEncryption: _directoryNameEncryption,
+          filenameEncoding: _filenameEncoding,
+          encryptedSuffix: _suffixController.text.trim().isEmpty ? '.bin' : _suffixController.text.trim(),
+        ),
+      );
+      await CryptMountService.addMountPoint(updated);
+    } else {
+      // 新增 = 仅设置「主密码 / 盐」这组共享凭据（供原地加密、沙盒加密复用）。
+      //
+      // ⚠️ 此前这里会创建一个 physicalPath=/storage/emulated/0 的整机
+      // CryptVFS 挂载点，导致浏览页把整个存储当成加密目录：所有文件夹
+      // 上锁、进入后内容为空。真正的原地加密挂载点由
+      // VaultCryptService.encryptInPlace 在加密【具体目录】时按需创建
+      // （挂载在父目录），沙盒挂载点由 ensureSandboxMount 按需创建，
+      // 都不应覆盖整机。
+      //
+      // 顺手清理历史遗留的「整机根目录」挂载点，避免已保存的错误配置
+      // 继续让浏览页全锁。
+      await _removeLegacyRootMounts();
+    }
 
     if (mounted) {
       Navigator.pop(context, true);
     }
   }
 
+  /// 移除历史遗留的「整机根目录」级别挂载点（错误配置）
+  Future<void> _removeLegacyRootMounts() async {
+    try {
+      final mounts = await CryptMountService.loadMountPoints();
+      var changed = false;
+      mounts.removeWhere((m) {
+        final normalized = p.normalize(m.physicalPath);
+        final isRoot = normalized == '/storage/emulated/0' ||
+            normalized == '/storage/emulated' ||
+            normalized == '/storage' ||
+            normalized == '/';
+        if (isRoot) changed = true;
+        return isRoot;
+      });
+      if (changed) await CryptMountService.saveMountPoints(mounts);
+    } catch (_) {}
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = L10n.of(context);
-    final isEdit = widget.existingMount != null;
 
     return Scaffold(
       appBar: AppBar(
