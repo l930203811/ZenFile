@@ -6886,6 +6886,35 @@ class L10nRu extends L10n {
   String get vault_inplace_section => 'In-place Encryption';
 
   @override
+  String get vault_decrypt_password_mismatch => 'Настроенный пароль или соль не могут расшифровать этот файл. Введите правильный мастер-пароль и соль.';
+
+  @override
+  String get vault_remove_from_list => 'Удалить';
+
+  @override
+  String get vault_no_files => 'Нет файлов';
+
+  @override
+  String vault_import_done(Object plain, Object enc) {
+    return 'Импорт завершён: не зашифровано $plain, зашифровано $enc';
+  }
+
+  @override
+  String get vault_section_unencrypted => 'Незашифрованные файлы';
+
+  @override
+  String get vault_section_inplace_files => 'Файлы, зашифрованные на месте';
+
+  @override
+  String get vault_section_sandbox_files => 'Файлы, зашифрованные в песочнице';
+
+  @override
+  String get vault_import_files => 'Импорт файлов/папок';
+
+  @override
+  String get vault_action_encrypt => 'Зашифровать';
+
+  @override
   String get vault_open_location => 'Open Location';
 
   @override

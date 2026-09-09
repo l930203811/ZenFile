@@ -6921,5 +6921,41 @@
   "crypt_set_master_password": "Set Encryption Master Password",
   "@crypt_set_master_password": {
     "description": "vault/crypt: crypt_set_master_password"
+  },
+  "vault_section_unencrypted": "Незашифрованные файлы",
+  "@vault_section_unencrypted": {
+    "description": "vault: vault_section_unencrypted"
+  },
+  "vault_section_inplace_files": "Файлы, зашифрованные на месте",
+  "@vault_section_inplace_files": {
+    "description": "vault: vault_section_inplace_files"
+  },
+  "vault_section_sandbox_files": "Файлы, зашифрованные в песочнице",
+  "@vault_section_sandbox_files": {
+    "description": "vault: vault_section_sandbox_files"
+  },
+  "vault_import_files": "Импорт файлов/папок",
+  "@vault_import_files": {
+    "description": "vault: vault_import_files"
+  },
+  "vault_action_encrypt": "Зашифровать",
+  "@vault_action_encrypt": {
+    "description": "vault: vault_action_encrypt"
+  },
+  "vault_import_done": "Импорт завершён: не зашифровано {plain}, зашифровано {enc}",
+  "@vault_import_done": {
+    "description": "vault: vault_import_done"
+  },
+  "vault_no_files": "Нет файлов",
+  "@vault_no_files": {
+    "description": "vault: vault_no_files"
+  },
+  "vault_decrypt_password_mismatch": "Настроенный пароль или соль не могут расшифровать этот файл. Введите правильный мастер-пароль и соль.",
+  "@vault_decrypt_password_mismatch": {
+    "description": "vault: vault_decrypt_password_mismatch"
+  },
+  "vault_remove_from_list": "Удалить",
+  "@vault_remove_from_list": {
+    "description": "vault: vault_remove_from_list"
   }
 }

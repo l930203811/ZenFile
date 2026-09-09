@@ -6921,5 +6921,41 @@
   "crypt_set_master_password": "Set Encryption Master Password",
   "@crypt_set_master_password": {
     "description": "vault/crypt: crypt_set_master_password"
+  },
+  "vault_section_unencrypted": "암호화되지 않은 파일",
+  "@vault_section_unencrypted": {
+    "description": "vault: vault_section_unencrypted"
+  },
+  "vault_section_inplace_files": "제자리 암호화 파일",
+  "@vault_section_inplace_files": {
+    "description": "vault: vault_section_inplace_files"
+  },
+  "vault_section_sandbox_files": "샌드박스 암호화 파일",
+  "@vault_section_sandbox_files": {
+    "description": "vault: vault_section_sandbox_files"
+  },
+  "vault_import_files": "파일/폴더 가져오기",
+  "@vault_import_files": {
+    "description": "vault: vault_import_files"
+  },
+  "vault_action_encrypt": "암호화",
+  "@vault_action_encrypt": {
+    "description": "vault: vault_action_encrypt"
+  },
+  "vault_import_done": "가져오기 완료: 암호화되지 않음 {plain}개, 암호화됨 {enc}개",
+  "@vault_import_done": {
+    "description": "vault: vault_import_done"
+  },
+  "vault_no_files": "파일이 없습니다",
+  "@vault_no_files": {
+    "description": "vault: vault_no_files"
+  },
+  "vault_decrypt_password_mismatch": "설정된 비밀번호나 솔트로 이 파일을 복호화할 수 없습니다. 올바른 마스터 비밀번호와 솔트를 입력하세요.",
+  "@vault_decrypt_password_mismatch": {
+    "description": "vault: vault_decrypt_password_mismatch"
+  },
+  "vault_remove_from_list": "제거",
+  "@vault_remove_from_list": {
+    "description": "vault: vault_remove_from_list"
   }
 }

@@ -6906,6 +6906,35 @@ class L10nEs extends L10n {
   String get vault_inplace_section => 'In-place Encryption';
 
   @override
+  String get vault_decrypt_password_mismatch => 'La contraseña o el salt configurados no pueden descifrar este archivo. Introduzca la contraseña maestra y el salt correctos.';
+
+  @override
+  String get vault_remove_from_list => 'Quitar';
+
+  @override
+  String get vault_no_files => 'Sin archivos';
+
+  @override
+  String vault_import_done(Object plain, Object enc) {
+    return 'Importado: $plain sin cifrar, $enc cifrados';
+  }
+
+  @override
+  String get vault_section_unencrypted => 'Archivos sin cifrar';
+
+  @override
+  String get vault_section_inplace_files => 'Archivos cifrados en su lugar';
+
+  @override
+  String get vault_section_sandbox_files => 'Archivos cifrados en espacio aislado';
+
+  @override
+  String get vault_import_files => 'Importar archivos/carpetas';
+
+  @override
+  String get vault_action_encrypt => 'Cifrar';
+
+  @override
   String get vault_open_location => 'Open Location';
 
   @override

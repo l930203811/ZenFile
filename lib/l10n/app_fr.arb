@@ -6921,5 +6921,41 @@
   "crypt_set_master_password": "Set Encryption Master Password",
   "@crypt_set_master_password": {
     "description": "vault/crypt: crypt_set_master_password"
+  },
+  "vault_section_unencrypted": "Fichiers non chiffrés",
+  "@vault_section_unencrypted": {
+    "description": "vault: vault_section_unencrypted"
+  },
+  "vault_section_inplace_files": "Fichiers chiffrés sur place",
+  "@vault_section_inplace_files": {
+    "description": "vault: vault_section_inplace_files"
+  },
+  "vault_section_sandbox_files": "Fichiers chiffrés en bac à sable",
+  "@vault_section_sandbox_files": {
+    "description": "vault: vault_section_sandbox_files"
+  },
+  "vault_import_files": "Importer des fichiers/dossiers",
+  "@vault_import_files": {
+    "description": "vault: vault_import_files"
+  },
+  "vault_action_encrypt": "Chiffrer",
+  "@vault_action_encrypt": {
+    "description": "vault: vault_action_encrypt"
+  },
+  "vault_import_done": "Importé : {plain} non chiffrés, {enc} chiffrés",
+  "@vault_import_done": {
+    "description": "vault: vault_import_done"
+  },
+  "vault_no_files": "Aucun fichier",
+  "@vault_no_files": {
+    "description": "vault: vault_no_files"
+  },
+  "vault_decrypt_password_mismatch": "Le mot de passe ou le sel configuré ne permet pas de déchiffrer ce fichier. Veuillez saisir le mot de passe principal et le sel corrects.",
+  "@vault_decrypt_password_mismatch": {
+    "description": "vault: vault_decrypt_password_mismatch"
+  },
+  "vault_remove_from_list": "Retirer",
+  "@vault_remove_from_list": {
+    "description": "vault: vault_remove_from_list"
   }
 }

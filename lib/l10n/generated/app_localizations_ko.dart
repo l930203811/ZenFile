@@ -6630,6 +6630,35 @@ class L10nKo extends L10n {
   String get vault_inplace_section => 'In-place Encryption';
 
   @override
+  String get vault_decrypt_password_mismatch => '설정된 비밀번호나 솔트로 이 파일을 복호화할 수 없습니다. 올바른 마스터 비밀번호와 솔트를 입력하세요.';
+
+  @override
+  String get vault_remove_from_list => '제거';
+
+  @override
+  String get vault_no_files => '파일이 없습니다';
+
+  @override
+  String vault_import_done(Object plain, Object enc) {
+    return '가져오기 완료: 암호화되지 않음 $plain개, 암호화됨 $enc개';
+  }
+
+  @override
+  String get vault_section_unencrypted => '암호화되지 않은 파일';
+
+  @override
+  String get vault_section_inplace_files => '제자리 암호화 파일';
+
+  @override
+  String get vault_section_sandbox_files => '샌드박스 암호화 파일';
+
+  @override
+  String get vault_import_files => '파일/폴더 가져오기';
+
+  @override
+  String get vault_action_encrypt => '암호화';
+
+  @override
   String get vault_open_location => 'Open Location';
 
   @override

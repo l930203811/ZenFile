@@ -6921,5 +6921,41 @@
   "crypt_set_master_password": "Set Encryption Master Password",
   "@crypt_set_master_password": {
     "description": "vault/crypt: crypt_set_master_password"
+  },
+  "vault_section_unencrypted": "Archivos sin cifrar",
+  "@vault_section_unencrypted": {
+    "description": "vault: vault_section_unencrypted"
+  },
+  "vault_section_inplace_files": "Archivos cifrados en su lugar",
+  "@vault_section_inplace_files": {
+    "description": "vault: vault_section_inplace_files"
+  },
+  "vault_section_sandbox_files": "Archivos cifrados en espacio aislado",
+  "@vault_section_sandbox_files": {
+    "description": "vault: vault_section_sandbox_files"
+  },
+  "vault_import_files": "Importar archivos/carpetas",
+  "@vault_import_files": {
+    "description": "vault: vault_import_files"
+  },
+  "vault_action_encrypt": "Cifrar",
+  "@vault_action_encrypt": {
+    "description": "vault: vault_action_encrypt"
+  },
+  "vault_import_done": "Importado: {plain} sin cifrar, {enc} cifrados",
+  "@vault_import_done": {
+    "description": "vault: vault_import_done"
+  },
+  "vault_no_files": "Sin archivos",
+  "@vault_no_files": {
+    "description": "vault: vault_no_files"
+  },
+  "vault_decrypt_password_mismatch": "La contraseña o el salt configurados no pueden descifrar este archivo. Introduzca la contraseña maestra y el salt correctos.",
+  "@vault_decrypt_password_mismatch": {
+    "description": "vault: vault_decrypt_password_mismatch"
+  },
+  "vault_remove_from_list": "Quitar",
+  "@vault_remove_from_list": {
+    "description": "vault: vault_remove_from_list"
   }
 }

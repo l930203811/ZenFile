@@ -6516,6 +6516,35 @@ class L10nZh extends L10n {
   String get vault_inplace_section => '原地加密';
 
   @override
+  String get vault_decrypt_password_mismatch => '已配置的密码或盐无法解密该文件，请输入正确的主密码和盐。';
+
+  @override
+  String get vault_remove_from_list => '移除';
+
+  @override
+  String get vault_no_files => '暂无文件';
+
+  @override
+  String vault_import_done(Object plain, Object enc) {
+    return '导入完成：未加密 $plain 项，已加密 $enc 项';
+  }
+
+  @override
+  String get vault_section_unencrypted => '未加密文件';
+
+  @override
+  String get vault_section_inplace_files => '原地加密文件';
+
+  @override
+  String get vault_section_sandbox_files => '沙盒加密文件';
+
+  @override
+  String get vault_import_files => '导入文件/文件夹';
+
+  @override
+  String get vault_action_encrypt => '加密';
+
+  @override
   String get vault_open_location => '打开位置';
 
   @override
@@ -13019,6 +13048,35 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get vault_inplace_section => '原地加密';
+
+  @override
+  String get vault_decrypt_password_mismatch => '已設定的密碼或鹽無法解密此檔案，請輸入正確的主密碼和鹽。';
+
+  @override
+  String get vault_remove_from_list => '移除';
+
+  @override
+  String get vault_no_files => '暫無檔案';
+
+  @override
+  String vault_import_done(Object plain, Object enc) {
+    return '匯入完成：未加密 $plain 項，已加密 $enc 項';
+  }
+
+  @override
+  String get vault_section_unencrypted => '未加密檔案';
+
+  @override
+  String get vault_section_inplace_files => '原地加密檔案';
+
+  @override
+  String get vault_section_sandbox_files => '沙盒加密檔案';
+
+  @override
+  String get vault_import_files => '匯入檔案/資料夾';
+
+  @override
+  String get vault_action_encrypt => '加密';
 
   @override
   String get vault_open_location => '打开位置';

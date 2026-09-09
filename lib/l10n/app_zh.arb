@@ -7208,5 +7208,41 @@
   "crypt_set_master_password": "设置加密主密码",
   "@crypt_set_master_password": {
     "description": "vault/crypt: crypt_set_master_password"
+  },
+  "vault_section_unencrypted": "未加密文件",
+  "@vault_section_unencrypted": {
+    "description": "vault: vault_section_unencrypted"
+  },
+  "vault_section_inplace_files": "原地加密文件",
+  "@vault_section_inplace_files": {
+    "description": "vault: vault_section_inplace_files"
+  },
+  "vault_section_sandbox_files": "沙盒加密文件",
+  "@vault_section_sandbox_files": {
+    "description": "vault: vault_section_sandbox_files"
+  },
+  "vault_import_files": "导入文件/文件夹",
+  "@vault_import_files": {
+    "description": "vault: vault_import_files"
+  },
+  "vault_action_encrypt": "加密",
+  "@vault_action_encrypt": {
+    "description": "vault: vault_action_encrypt"
+  },
+  "vault_import_done": "导入完成：未加密 {plain} 项，已加密 {enc} 项",
+  "@vault_import_done": {
+    "description": "vault: vault_import_done"
+  },
+  "vault_no_files": "暂无文件",
+  "@vault_no_files": {
+    "description": "vault: vault_no_files"
+  },
+  "vault_decrypt_password_mismatch": "已配置的密码或盐无法解密该文件，请输入正确的主密码和盐。",
+  "@vault_decrypt_password_mismatch": {
+    "description": "vault: vault_decrypt_password_mismatch"
+  },
+  "vault_remove_from_list": "移除",
+  "@vault_remove_from_list": {
+    "description": "vault: vault_remove_from_list"
   }
 }

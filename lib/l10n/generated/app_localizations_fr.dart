@@ -6921,6 +6921,35 @@ class L10nFr extends L10n {
   String get vault_inplace_section => 'In-place Encryption';
 
   @override
+  String get vault_decrypt_password_mismatch => 'Le mot de passe ou le sel configuré ne permet pas de déchiffrer ce fichier. Veuillez saisir le mot de passe principal et le sel corrects.';
+
+  @override
+  String get vault_remove_from_list => 'Retirer';
+
+  @override
+  String get vault_no_files => 'Aucun fichier';
+
+  @override
+  String vault_import_done(Object plain, Object enc) {
+    return 'Importé : $plain non chiffrés, $enc chiffrés';
+  }
+
+  @override
+  String get vault_section_unencrypted => 'Fichiers non chiffrés';
+
+  @override
+  String get vault_section_inplace_files => 'Fichiers chiffrés sur place';
+
+  @override
+  String get vault_section_sandbox_files => 'Fichiers chiffrés en bac à sable';
+
+  @override
+  String get vault_import_files => 'Importer des fichiers/dossiers';
+
+  @override
+  String get vault_action_encrypt => 'Chiffrer';
+
+  @override
   String get vault_open_location => 'Open Location';
 
   @override

@@ -6925,5 +6925,41 @@
   "crypt_set_master_password": "Set Encryption Master Password",
   "@crypt_set_master_password": {
     "description": "vault/crypt: crypt_set_master_password"
+  },
+  "vault_section_unencrypted": "未暗号化ファイル",
+  "@vault_section_unencrypted": {
+    "description": "vault: vault_section_unencrypted"
+  },
+  "vault_section_inplace_files": "インプレース暗号化ファイル",
+  "@vault_section_inplace_files": {
+    "description": "vault: vault_section_inplace_files"
+  },
+  "vault_section_sandbox_files": "サンドボックス暗号化ファイル",
+  "@vault_section_sandbox_files": {
+    "description": "vault: vault_section_sandbox_files"
+  },
+  "vault_import_files": "ファイル/フォルダをインポート",
+  "@vault_import_files": {
+    "description": "vault: vault_import_files"
+  },
+  "vault_action_encrypt": "暗号化",
+  "@vault_action_encrypt": {
+    "description": "vault: vault_action_encrypt"
+  },
+  "vault_import_done": "インポート完了：未暗号化 {plain} 件、暗号化済み {enc} 件",
+  "@vault_import_done": {
+    "description": "vault: vault_import_done"
+  },
+  "vault_no_files": "ファイルがありません",
+  "@vault_no_files": {
+    "description": "vault: vault_no_files"
+  },
+  "vault_decrypt_password_mismatch": "設定されたパスワードまたはソルトではこのファイルを復号できません。正しいマスターパスワードとソルトを入力してください。",
+  "@vault_decrypt_password_mismatch": {
+    "description": "vault: vault_decrypt_password_mismatch"
+  },
+  "vault_remove_from_list": "削除",
+  "@vault_remove_from_list": {
+    "description": "vault: vault_remove_from_list"
   }
 }

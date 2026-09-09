@@ -52,3 +52,4 @@ export 'crypt_operations.dart';
 export 'crypt_vfs.dart';
 export 'crypt_stream_server.dart';
 export 'vault_crypt_service.dart';
+export 'vault_import_store.dart';

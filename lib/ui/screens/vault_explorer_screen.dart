@@ -52,9 +52,26 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
   bool _securityExpanded = false;
   bool _backupExpanded = false;
 
-  // 新版原地加密文件列表
+  // 新版原地加密文件列表（挂载点扫描得到）
   List<CryptFileEntry> _inPlaceFiles = [];
   bool _isLoadingInPlace = true;
+
+  // 导入清单（持久化）：未加密条目进「未加密文件」，已加密条目进「原地加密文件」
+  List<VaultImportEntry> _importEntries = [];
+  bool _isLoadingImports = true;
+
+  // 三区域展开状态（默认展开，避免进入保险箱看不到内容）
+  bool _unencryptedExpanded = true;
+  bool _inplaceExpanded = true;
+  bool _sandboxExpanded = true;
+
+  /// 导入清单中的未加密条目
+  List<VaultImportEntry> get _unencryptedImports =>
+      _importEntries.where((e) => !e.encrypted).toList();
+
+  /// 导入清单中检测为已加密的条目
+  List<VaultImportEntry> get _encryptedImports =>
+      _importEntries.where((e) => e.encrypted).toList();
 
   @override
   void initState() {
@@ -63,7 +80,23 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     _loadSecurityState();
     _loadBiometricState();
     _loadInPlaceEncryptedFiles();
+    _loadImportEntries();
     _searchController.addListener(_onSearchChanged);
+  }
+
+  /// 加载导入清单
+  Future<void> _loadImportEntries() async {
+    setState(() => _isLoadingImports = true);
+    try {
+      final entries = await VaultImportStore.load();
+      if (!mounted) return;
+      setState(() {
+        _importEntries = entries;
+        _isLoadingImports = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _isLoadingImports = false);
+    }
   }
 
   /// 使用当前保险箱密码加载加密挂载点，避免 SecureStorage 未读到密码导致解密失败
@@ -433,11 +466,92 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     return _records.fold(0, (sum, rec) => sum + rec.size);
   }
 
-  /// 显示加密选项对话框
-  Future<void> _showEncryptionOptions() async {
+  /// 导入文件/文件夹（不询问加密方式）
+  ///
+  /// 仅登记路径、不移动原始文件：
+  /// - 检测为 rclone/OpenList 已加密 → 写入「原地加密文件」区域
+  /// - 普通未加密文件 → 写入「未加密文件」区域，后续再由用户选择加密方式
+  Future<void> _importFiles() async {
+    final l10n = L10n.of(context);
+    final fileManager = context.read<FileManagerProvider>();
+    final rootPath =
+        fileManager.rootPath.isNotEmpty ? fileManager.rootPath : '/storage/emulated/0';
+    final selectedPaths =
+        await InternalFilePickerScreen.show(context, rootPath: rootPath);
+    if (selectedPaths == null || selectedPaths.isEmpty || !mounted) return;
+
+    // await 之前先捕获导航器/提示条，避免跨异步使用 BuildContext
+    final navigator = Navigator.of(context);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    navigator.push(
+      MaterialPageRoute(
+        builder: (_) => const Center(child: CircularProgressIndicator()),
+      ),
+    );
+
+    var plainCount = 0;
+    var encryptedCount = 0;
+    try {
+      final mounts = await _loadMountsWithPassword();
+
+      for (final path in selectedPaths) {
+        final isDir = Directory(path).existsSync();
+        final encrypted = await VaultImportStore.detectEncrypted(path, mounts);
+
+        var size = 0;
+        var modifiedMs = 0;
+        try {
+          final stat = isDir
+              ? await Directory(path).stat()
+              : await File(path).stat();
+          size = stat.size;
+          modifiedMs = stat.modified.millisecondsSinceEpoch;
+        } catch (_) {}
+
+        await VaultImportStore.upsert(
+          VaultImportEntry(
+            path: path,
+            isDirectory: isDir,
+            encrypted: encrypted,
+            size: size,
+            modifiedMs: modifiedMs,
+          ),
+        );
+
+        if (encrypted) {
+          encryptedCount++;
+        } else {
+          plainCount++;
+        }
+      }
+
+      await _loadImportEntries();
+      await _loadInPlaceEncryptedFiles();
+
+      if (mounted) {
+        navigator.pop(); // 关闭进度
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text(l10n.vault_import_done('$plainCount', '$encryptedCount')),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        navigator.pop(); // 关闭进度
+        scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text(l10n.vault_import_failed)),
+        );
+      }
+    }
+  }
+
+  /// 显示加密方式选择（对单个条目加密时使用）
+  Future<void> _showEncryptMethodFor(VaultImportEntry entry) async {
     final theme = Theme.of(context);
     final l10n = L10n.of(context);
-    showModalBottomSheet(
+    await showModalBottomSheet(
       context: context,
       backgroundColor: theme.colorScheme.surface,
       shape: const RoundedRectangleBorder(
@@ -461,8 +575,9 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              Text(l10n.vault_select_encryption_method,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              Text(
+                l10n.vault_select_encryption_method,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
@@ -473,34 +588,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
                 subtitle: l10n.vault_inplace_encrypt_desc,
                 onTap: () async {
                   Navigator.pop(context);
-                  // 检查是否已设置加密密码
-                  final mounts = await CryptMountService.loadMountPoints();
-                  if (mounts.isEmpty) {
-                    if (context.mounted) {
-                      showDialog(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          title: Text(l10n.vault_need_set_password),
-                          content: Text(l10n.vault_need_set_password_desc),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx),
-                              child: const Text('取消'),
-                            ),
-                            FilledButton(
-                              onPressed: () {
-                                Navigator.pop(ctx);
-                                Navigator.push(context, MaterialPageRoute(builder: (_) => const CryptMountEditScreen()));
-                              },
-                              child: Text(l10n.vault_go_set_password),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-                    return;
-                  }
-                  _pickAndEncryptInPlace();
+                  await _encryptImportedEntry(entry, inplace: true);
                 },
               ),
               const SizedBox(height: 12),
@@ -509,9 +597,9 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
                 color: theme.colorScheme.primary,
                 title: l10n.vault_sandbox_encrypt,
                 subtitle: l10n.vault_sandbox_encrypt_desc,
-                onTap: () {
+                onTap: () async {
                   Navigator.pop(context);
-                  _pickAndLockFiles();
+                  await _encryptImportedEntry(entry, inplace: false);
                 },
               ),
               const SizedBox(height: 16),
@@ -520,6 +608,125 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
         ),
       ),
     );
+  }
+
+  /// 对「未加密文件」条目执行加密
+  ///
+  /// [inplace] true=原地加密（rclone/OpenList 格式，保留在原位置）
+  ///           false=沙盒加密（混淆后移入保险箱私有目录）
+  Future<void> _encryptImportedEntry(VaultImportEntry entry, {required bool inplace}) async {
+    final l10n = L10n.of(context);
+    final navigator = Navigator.of(context);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    navigator.push(
+      MaterialPageRoute(
+        builder: (_) => const Center(child: CircularProgressIndicator()),
+      ),
+    );
+
+    try {
+      if (inplace) {
+        final mounts = await _loadMountsWithPassword();
+        if (mounts.isEmpty) {
+          if (mounted) {
+            navigator.pop();
+            _showNeedPasswordDialog(l10n);
+          }
+          return;
+        }
+        CryptMountPoint? target;
+        for (final mount in mounts) {
+          if (mount.containsPath(entry.path)) {
+            target = mount;
+            break;
+          }
+        }
+        target ??= mounts.first;
+        final ops = CryptOperations(target);
+
+        // 加密后文件名/目录名会被替换成密文名，必须同步更新清单里的路径，
+        // 否则条目会指向已不存在的旧路径而「消失」。
+        String newPath;
+        if (entry.isDirectory) {
+          await ops.encryptDirectory(entry.path);
+          final isMountRoot = p.equals(entry.path, target.physicalPath);
+          newPath = isMountRoot
+              ? entry.path
+              : p.join(
+                  p.dirname(entry.path),
+                  target.crypt.encryptDirName(p.basename(entry.path)),
+                );
+        } else {
+          newPath = await ops.encryptFile(entry.path);
+        }
+
+        // 原地加密：保留在清单里，但标记为已加密 → 显示在「原地加密文件」区域
+        await VaultImportStore.remove(entry.path);
+        await VaultImportStore.upsert(entry.copyWith(path: newPath, encrypted: true));
+      } else {
+        // 沙盒加密：文件被移入保险箱私有目录，从清单移除，由沙盒区域接管
+        await _lockSinglePath(entry.path);
+        await VaultImportStore.remove(entry.path);
+      }
+      await _loadImportEntries();
+      await _loadInPlaceEncryptedFiles();
+      await _loadVaultData();
+
+      if (mounted) {
+        navigator.pop();
+        scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text(l10n.crypt_encrypt_success)),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        navigator.pop();
+        scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text(l10n.vault_encrypt_failed('$e'))),
+        );
+      }
+    }
+  }
+
+  /// 提示先去设置加密密码
+  void _showNeedPasswordDialog(dynamic l10n) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.vault_need_set_password),
+        content: Text(l10n.vault_need_set_password_desc),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const CryptMountEditScreen()));
+            },
+            child: Text(l10n.vault_go_set_password),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 将单个路径加入沙盒（复用保险箱加锁流程）
+  Future<void> _lockSinglePath(String path) async {
+    if (Directory(path).existsSync()) {
+      await VaultService.lockDirectory(
+        directory: Directory(path),
+        password: widget.password,
+      );
+    } else {
+      await VaultService.lockFile(
+        file: File(path),
+        password: widget.password,
+      );
+    }
   }
 
   /// 构建加密选项卡片
@@ -579,253 +786,6 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
         ),
       ),
     );
-  }
-
-  /// 选择文件/文件夹进行原地加密
-  Future<void> _pickAndEncryptInPlace() async {
-    final l10n = L10n.of(context);
-    final fileManager = context.read<FileManagerProvider>();
-    final rootPath = fileManager.rootPath.isNotEmpty ? fileManager.rootPath : '/storage/emulated/0';
-    final selectedPaths = await InternalFilePickerScreen.show(context, rootPath: rootPath);
-    if (selectedPaths == null || selectedPaths.isEmpty || !mounted) return;
-
-    // 显示进度对话框
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.vault_encrypting),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
-
-    try {
-      final mounts = await _loadMountsWithPassword();
-      int successCount = 0;
-
-      for (final path in selectedPaths) {
-        // 找到包含该路径的挂载点
-        CryptMountPoint? targetMount;
-        for (final mount in mounts) {
-          if (mount.containsPath(path) || path.startsWith(mount.physicalPath)) {
-            targetMount = mount;
-            break;
-          }
-        }
-
-        // 如果没有找到挂载点，使用第一个挂载点
-        targetMount ??= mounts.first;
-
-        final ops = CryptOperations(targetMount);
-        final entity = File(path);
-        if (await entity.exists()) {
-          await ops.encryptFile(path);
-          successCount++;
-        } else {
-          final dir = Directory(path);
-          if (await dir.exists()) {
-            await ops.encryptDirectory(path);
-            successCount++;
-          }
-        }
-      }
-
-      if (context.mounted) {
-        Navigator.pop(context); // 关闭进度对话框
-        await _loadInPlaceEncryptedFiles();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.vault_inplace_encrypt_done('$successCount'))),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.vault_encrypt_failed('$e'))),
-        );
-      }
-    }
-  }
-
-  Future<void> _pickAndLockFiles() async {
-    final fileManager = context.read<FileManagerProvider>();
-    final rootPath = fileManager.rootPath.isNotEmpty ? fileManager.rootPath : '/storage/emulated/0';
-    
-    // Launch ZenFile's custom internal picker
-    final selectedPaths = await InternalFilePickerScreen.show(context, rootPath: rootPath);
-    if (selectedPaths == null || selectedPaths.isEmpty) return;
-
-    if (!mounted) return;
-
-    // Show custom modal to select locking type
-    final bool? isSandbox = await showGeneralDialog<bool>(
-      context: context,
-      barrierDismissible: true,
-      barrierLabel: '锁定选项',
-      barrierColor: Colors.black.withOpacity(0.6),
-      transitionDuration: const Duration(milliseconds: 300),
-      pageBuilder: (context, anim1, anim2) => const SizedBox.shrink(),
-      transitionBuilder: (context, anim1, anim2, child) {
-        final theme = Theme.of(context);
-        return ScaleTransition(
-          scale: CurvedAnimation(parent: anim1, curve: Curves.easeOutBack),
-          child: FadeTransition(
-            opacity: anim1,
-            child: AlertDialog(
-              backgroundColor: theme.colorScheme.surface,
-              elevation: 12,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-              title: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withOpacity(0.12),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Broken.security_safe,
-                      color: theme.colorScheme.primary,
-                      size: 32,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    L10n.of(context).msg_vault_choose_mode,
-                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              content: Text(
-                L10n.of(context).msg_vault_mode_desc,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 14.5, height: 1.4),
-              ),
-              actionsAlignment: MainAxisAlignment.center,
-              actionsPadding: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
-              actions: [
-                Column(
-                  children: [
-                    // 加密到应用私有安全保险库（受保护存储：不再原地留可见 .nfv）
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.primary,
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size(double.maxFinite, 52),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        elevation: 0,
-                      ),
-                      onPressed: () => Navigator.pop(context, true),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Broken.security_safe, size: 20),
-                          const SizedBox(width: 8),
-                          Text(L10n.of(context).ui_secure_import, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, null),
-                      child: Text(L10n.of(context).ui_cancel, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-
-    if (isSandbox == null) return;
-
-    // Proceed to encrypt selected files with progress dialog
-    if (!mounted) return;
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Center(
-        child: Card(
-          elevation: 4,
-          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircularProgressIndicator(),
-                const SizedBox(height: 20),
-                Text(L10n.of(context).msg_scrambling, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-
-    int successCount = 0;
-    int failCount = 0;
-
-    for (int i = 0; i < selectedPaths.length; i++) {
-      final path = selectedPaths[i];
-      try {
-        if (FileSystemEntity.isDirectorySync(path)) {
-          final dir = Directory(path);
-          if (await dir.exists()) {
-            await VaultService.lockDirectory(
-              directory: dir,
-              password: widget.password,
-              inPlace: !isSandbox,
-            );
-            successCount++;
-          }
-        } else {
-          final file = File(path);
-          if (await file.exists()) {
-            await VaultService.lockFile(
-              file: file,
-              password: widget.password,
-              inPlace: !isSandbox,
-            );
-            successCount++;
-          }
-        }
-      } catch (e) {
-        debugPrint('Error locking entity $path: $e');
-        failCount++;
-      }
-      // 每处理一个文件让出UI线程，避免卡死
-      if (i % 2 == 0) {
-        await Future.delayed(Duration.zero);
-      }
-    }
-
-    Navigator.pop(context); // Dismiss loading dialog
-    await _loadVaultData();
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            failCount > 0
-              ? '${L10n.of(context).msg_protected_count(successCount)} ${L10n.of(context).msg_protect_failed_count(failCount)}'
-              : L10n.of(context).msg_protected_count(successCount),
-          ),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          backgroundColor: Theme.of(context).colorScheme.primary,
-        ),
-      );
-    }
   }
 
   Future<void> _unlockFile(VaultFileRecord record) async {
@@ -1208,52 +1168,61 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
                 ),
               ),
 
-              // 旧版沙盒加密文件列表
-              _isLoading
-                  ? const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 48),
-                      child: Center(child: CircularProgressIndicator()),
-                    )
-                  : _filteredRecords.isEmpty
-                      ? _buildPlaceholder(theme, isDark)
-                      : _buildFilesList(theme, isDark),
+              // 区域一：未加密文件（导入后待加密）
+              _buildCollapsibleSection(
+                theme: theme,
+                isDark: isDark,
+                title: l10n.vault_section_unencrypted,
+                icon: Icons.folder_open_outlined,
+                color: Colors.amber,
+                count: _unencryptedImports.length,
+                expanded: _unencryptedExpanded,
+                onToggle: () =>
+                    setState(() => _unencryptedExpanded = !_unencryptedExpanded),
+                body: _sectionBody(_isLoadingImports, _buildUnencryptedList(theme, isDark)),
+              ),
 
-              // 新版原地加密文件列表
-              if (!_isLoading) ...[
-                if (_isLoadingInPlace)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 24),
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                else if (_inPlaceFiles.isNotEmpty) ...[
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
-                    child: Row(
-                      children: [
-                        Icon(Icons.lock, size: 16, color: Colors.teal),
-                        SizedBox(width: 6),
-                        Text(
-                          l10n.vault_inplace_section,
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal),
-                        ),
-                      ],
-                    ),
-                  ),
-                  _buildInPlaceFilesList(theme, isDark),
-                ],
-              ],
+              // 区域二：原地加密文件（挂载点扫描 + 导入的已加密项）
+              _buildCollapsibleSection(
+                theme: theme,
+                isDark: isDark,
+                title: l10n.vault_section_inplace_files,
+                icon: Icons.lock_outline,
+                color: Colors.teal,
+                count: _inplaceItems.length,
+                expanded: _inplaceExpanded,
+                onToggle: () =>
+                    setState(() => _inplaceExpanded = !_inplaceExpanded),
+                body: _sectionBody(_isLoadingInPlace, _buildInPlaceFilesList(theme, isDark)),
+              ),
+
+              // 区域三：沙盒加密文件
+              _buildCollapsibleSection(
+                theme: theme,
+                isDark: isDark,
+                title: l10n.vault_section_sandbox_files,
+                icon: Icons.security,
+                color: theme.colorScheme.primary,
+                count: _filteredRecords.length,
+                expanded: _sandboxExpanded,
+                onToggle: () =>
+                    setState(() => _sandboxExpanded = !_sandboxExpanded),
+                body: _sectionBody(_isLoading, _buildFilesList(theme, isDark)),
+              ),
+
+              const SizedBox(height: 88),
             ],
             ),
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showEncryptionOptions,
+        onPressed: _importFiles,
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: Colors.white,
         elevation: 4,
-        icon: const Icon(Broken.add_square),
-        label: Text(l10n.vault_encrypt_files,
+        icon: const Icon(Broken.import),
+        label: Text(l10n.vault_import_files,
           style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.3),
         ),
       ),
@@ -1616,53 +1585,234 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     );
   }
 
-  Widget _buildPlaceholder(ThemeData theme, bool isDark) {
+  /// 可折叠区域：标题按钮 + 数量角标 + 展开/收起的正文
+  Widget _buildCollapsibleSection({
+    required ThemeData theme,
+    required bool isDark,
+    required String title,
+    required IconData icon,
+    required Color color,
+    required int count,
+    required bool expanded,
+    required VoidCallback onToggle,
+    required Widget body,
+  }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 48.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(28),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.08),
-              shape: BoxShape.circle,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: theme.colorScheme.outline.withOpacity(0.18)),
+          color: isDark ? Colors.white.withOpacity(0.02) : Colors.black.withOpacity(0.01),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            InkWell(
+              onTap: onToggle,
+              borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                child: Row(
+                  children: [
+                    Icon(icon, size: 18, color: color),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: color.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '$count',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: color,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Icon(
+                      expanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                      size: 22,
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            child: Icon(
-              Broken.security_safe,
-              size: 64,
-              color: theme.colorScheme.primary,
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            _searchQuery.isNotEmpty
-                ? L10n.of(context).ui_no_matching_files : L10n.of(context).ui_vault_empty,
-            style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            _searchQuery.isNotEmpty
-                ? L10n.of(context).ui_try_modify_search
-                : L10n.of(context).ui_vault_empty_desc,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              color: theme.colorScheme.onSurface.withOpacity(0.5),
-              height: 1.5,
-            ),
-          ),
-        ],
+            if (expanded) body,
+          ],
+        ),
       ),
     );
   }
 
+  /// 区域正文：加载中显示小转圈，否则显示列表
+  Widget _sectionBody(bool loading, Widget child) {
+    if (!loading) return child;
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 20),
+      child: Center(
+        child: SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      ),
+    );
+  }
+
+  /// 区域为空时的提示
+  Widget _buildEmptyHint(ThemeData theme, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Center(
+        child: Text(
+          text,
+          style: TextStyle(fontSize: 12.5, color: theme.colorScheme.onSurface.withOpacity(0.45)),
+        ),
+      ),
+    );
+  }
+
+  /// 构建「未加密文件」区域列表（菜单：浏览 / 加密 / 移除）
+  Widget _buildUnencryptedList(ThemeData theme, bool isDark) {
+    final l10n = L10n.of(context);
+    final items = _unencryptedImports;
+    if (items.isEmpty) return _buildEmptyHint(theme, l10n.vault_no_files);
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: items.length,
+      padding: const EdgeInsets.only(bottom: 12, left: 12, right: 12),
+      itemBuilder: (context, index) {
+        final entry = items[index];
+        final fileIcon = entry.isDirectory
+            ? FileUtils.getFolderIcon(context.watch<FileManagerProvider>().folderIconOption)
+            : FileUtils.getIconForFile(entry.name);
+        final fileColor = entry.isDirectory
+            ? Colors.amber
+            : FileUtils.getColorForFile(entry.name, context);
+
+        return Container(
+          margin: const EdgeInsets.symmetric(vertical: 5.0),
+          decoration: BoxDecoration(
+            color: isDark ? Colors.amber.withOpacity(0.05) : Colors.amber.withOpacity(0.03),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: Colors.amber.withOpacity(0.2), width: 1.2),
+          ),
+          child: ListTile(
+            onTap: () => _browseTo(entry.path),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            leading: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: fileColor.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(fileIcon, color: fileColor, size: 26),
+            ),
+            title: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    entry.name,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.withOpacity(0.18),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Text(
+                    '未加密',
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.amber),
+                  ),
+                ),
+              ],
+            ),
+            subtitle: Text(
+              entry.isDirectory ? '文件夹 · ${entry.path}' : '${_formatSize(entry.size)} · ${entry.path}',
+              style: TextStyle(fontSize: 11.5, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: PopupMenuButton<String>(
+              icon: Icon(Icons.more_vert, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+              onSelected: (value) async {
+                if (value == 'browse') {
+                  _browseTo(entry.path);
+                } else if (value == 'encrypt') {
+                  await _showEncryptMethodFor(entry);
+                } else if (value == 'remove') {
+                  await VaultImportStore.remove(entry.path);
+                  await _loadImportEntries();
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'browse',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.folder_open, size: 18),
+                      const SizedBox(width: 10),
+                      Text(l10n.crypt_action_browse, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'encrypt',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.lock_outline, size: 18),
+                      const SizedBox(width: 10),
+                      Text(l10n.vault_action_encrypt, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'remove',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.remove_circle_outline, size: 18),
+                      const SizedBox(width: 10),
+                      Text(l10n.vault_remove_from_list, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildFilesList(ThemeData theme, bool isDark) {
+    if (_filteredRecords.isEmpty) {
+      return _buildEmptyHint(theme, L10n.of(context).vault_no_files);
+    }
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: _filteredRecords.length,
-      padding: const EdgeInsets.only(bottom: 88, left: 12, right: 12),
+      padding: const EdgeInsets.only(bottom: 12, left: 12, right: 12),
       itemBuilder: (context, index) {
         final rec = _filteredRecords[index];
         final fileIcon = rec.isFolder
@@ -1774,16 +1924,6 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
                     ],
                   ),
                 ),
-                PopupMenuItem(
-                  value: 'info',
-                  child: Row(
-                    children: [
-                      const Icon(Broken.info_circle, size: 18),
-                      const SizedBox(width: 10),
-                      Text(L10n.of(context).msg1058354c, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
-                    ],
-                  ),
-                ),
                 const PopupMenuDivider(),
                 PopupMenuItem(
                   value: 'delete',
@@ -1810,22 +1950,56 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     );
   }
 
-  /// 构建新版原地加密文件列表
+  /// 原地加密区域展示项：挂载点扫描项 ∪ 导入的已加密项（按物理路径去重）
+  List<_InPlaceItem> get _inplaceItems {
+    final items = <_InPlaceItem>[];
+    final seen = <String>{};
+    for (final f in _inPlaceFiles) {
+      if (seen.add(f.physicalPath)) {
+        items.add(_InPlaceItem(
+          name: f.name,
+          path: f.physicalPath,
+          displayPath: f.virtualPath,
+          isDirectory: f.isDirectory,
+          size: f.size,
+          modified: f.modified,
+        ));
+      }
+    }
+    for (final e in _encryptedImports) {
+      if (seen.add(e.path)) {
+        items.add(_InPlaceItem(
+          name: e.name,
+          path: e.path,
+          displayPath: e.path,
+          isDirectory: e.isDirectory,
+          size: e.size,
+          modified: e.modified,
+          fromImport: true,
+        ));
+      }
+    }
+    return items;
+  }
+
+  /// 构建「原地加密文件」区域列表（菜单：浏览 / 解密）
   Widget _buildInPlaceFilesList(ThemeData theme, bool isDark) {
     final l10n = L10n.of(context);
+    final items = _inplaceItems;
+    if (items.isEmpty) return _buildEmptyHint(theme, l10n.vault_no_files);
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: _inPlaceFiles.length,
-      padding: const EdgeInsets.only(bottom: 24, left: 12, right: 12),
+      itemCount: items.length,
+      padding: const EdgeInsets.only(bottom: 12, left: 12, right: 12),
       itemBuilder: (context, index) {
-        final file = _inPlaceFiles[index];
-        final fileIcon = file.isDirectory
+        final item = items[index];
+        final fileIcon = item.isDirectory
             ? FileUtils.getFolderIcon(context.watch<FileManagerProvider>().folderIconOption)
-            : FileUtils.getIconForFile(file.name);
-        final fileColor = file.isDirectory
+            : FileUtils.getIconForFile(item.name);
+        final fileColor = item.isDirectory
             ? Colors.teal
-            : FileUtils.getColorForFile(file.name, context);
+            : FileUtils.getColorForFile(item.name, context);
 
         return Container(
           margin: const EdgeInsets.symmetric(vertical: 5.0),
@@ -1838,7 +2012,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
             ),
           ),
           child: ListTile(
-            onTap: () => _openInPlaceEntry(file),
+            onTap: () => _browseTo(item.path),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             leading: Container(
               width: 48,
@@ -1853,7 +2027,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    file.name,
+                    item.name,
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -1874,24 +2048,30 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
               ],
             ),
             subtitle: Text(
-              file.isDirectory
-                  ? '文件夹 · ${file.virtualPath}'
-                  : '${_formatSize(file.size)} · ${file.virtualPath}',
+              item.isDirectory
+                  ? '文件夹 · ${item.displayPath}'
+                  : '${_formatSize(item.size)} · ${item.displayPath}',
               style: TextStyle(fontSize: 11.5, color: theme.colorScheme.onSurface.withOpacity(0.5)),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
             trailing: PopupMenuButton<String>(
               icon: Icon(Icons.more_vert, color: theme.colorScheme.onSurface.withOpacity(0.5)),
-              onSelected: (value) => _handleInPlaceFileAction(value, file),
+              onSelected: (value) {
+                if (value == 'browse') {
+                  _browseTo(item.path);
+                } else if (value == 'decrypt') {
+                  _decryptPath(path: item.path, isDirectory: item.isDirectory);
+                }
+              },
               itemBuilder: (context) => [
                 PopupMenuItem(
-                  value: 'open',
+                  value: 'browse',
                   child: Row(
                     children: [
-                      Icon(Icons.folder_open, size: 18),
-                      SizedBox(width: 10),
-                      Text(l10n.vault_open_location, style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
+                      const Icon(Icons.folder_open, size: 18),
+                      const SizedBox(width: 10),
+                      Text(l10n.crypt_action_browse, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
                     ],
                   ),
                 ),
@@ -1899,9 +2079,9 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
                   value: 'decrypt',
                   child: Row(
                     children: [
-                      Icon(Icons.lock_open, size: 18),
-                      SizedBox(width: 10),
-                      Text(l10n.vault_decrypt_action, style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
+                      const Icon(Icons.lock_open, size: 18),
+                      const SizedBox(width: 10),
+                      Text(l10n.crypt_action_decrypt, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
                     ],
                   ),
                 ),
@@ -1913,121 +2093,178 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     );
   }
 
-  /// 处理原地加密文件的操作
-  void _handleInPlaceFileAction(String action, CryptFileEntry file) {
-    switch (action) {
-      case 'open':
-        _openInPlaceLocation(file);
-        break;
-      case 'decrypt':
-        _decryptInPlaceFile(file);
-        break;
-    }
-  }
-
-  /// 在浏览页中打开原地加密文件/目录的所在位置
-  Future<void> _openInPlaceLocation(CryptFileEntry file) async {
+  /// 跳转到浏览页查看指定文件/文件夹
+  ///
+  /// 与导出备份「打开文件所在位置」一致：先置位跳转，再 popUntil 回首页。
+  void _browseTo(String path) {
     final provider = context.read<FileManagerProvider>();
-    final targetDir = file.isDirectory ? file.virtualPath : p.dirname(file.virtualPath);
-    final highlightPaths = <String>[file.virtualPath];
-
-    // 与导出备份「打开文件所在位置」保持一致：先置位浏览页跳转，
-    // 再 popUntil 回首页，由首页 ValueListenableBuilder 切到浏览 Tab。
-    provider.setPendingBrowseNavigation(targetDir, highlightPaths);
+    final targetDir = Directory(path).existsSync() ? path : p.dirname(path);
+    provider.setPendingBrowseNavigation(targetDir, [path]);
     Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
-  /// 点击原地加密列表项：目录跳转浏览页，文件解密后打开
-  Future<void> _openInPlaceEntry(CryptFileEntry file) async {
-    if (!mounted) return;
-    if (file.isDirectory) {
-      // 目录：直接跳转到浏览页打开该目录
-      final provider = context.read<FileManagerProvider>();
-      provider.setPendingBrowseNavigation(file.virtualPath, [file.virtualPath]);
-      Navigator.of(context).popUntil((route) => route.isFirst);
-      return;
-    }
-
-    // 预先捕获导航器/提示条，await 之后只使用它们，不再触碰 BuildContext
+  /// 解密 rclone/OpenList 加密的文件/文件夹
+  ///
+  /// 先尝试用「加密设置」里已配置的主密码和盐；若解密失败（密码/盐对不上），
+  /// 弹出输入框让用户重新填写密码与盐后重试。
+  Future<void> _decryptPath({
+    required String path,
+    required bool isDirectory,
+  }) async {
+    final l10n = L10n.of(context);
     final navigator = Navigator.of(context);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
-    // 文件：走 FileManagerProvider.openFile，内部会自动解密到临时文件/流式 URL
-    navigator.push(
-      MaterialPageRoute(
-        builder: (_) => const Center(child: CircularProgressIndicator()),
-      ),
-    );
-
-    try {
-      final provider = context.read<FileManagerProvider>();
-      await provider.openFile(context, file.virtualPath);
-    } catch (e) {
-      debugPrint('打开原地加密文件失败: $e');
-      if (mounted) {
-        scaffoldMessenger.showSnackBar(
-          SnackBar(content: Text('打开失败：$e')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        navigator.pop(); // 关闭加载指示器
-      }
-    }
-  }
-
-  /// 解密原地加密的文件
-  Future<void> _decryptInPlaceFile(CryptFileEntry file) async {
-    final l10n = L10n.of(context);
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.vault_decrypt_confirm_title),
-        content: Text(l10n.vault_decrypt_confirm_desc(file.name)),
+        content: Text(l10n.vault_decrypt_confirm_desc(p.basename(path))),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('取消')),
           FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(l10n.vault_decrypt_action)),
         ],
       ),
     );
-
     if (confirm != true) return;
 
+    var loadingShown = false;
+    void showLoading() {
+      if (loadingShown) return;
+      loadingShown = true;
+      navigator.push(
+        MaterialPageRoute(builder: (_) => const Center(child: CircularProgressIndicator())),
+      );
+    }
+
+    void hideLoading() {
+      if (!loadingShown) return;
+      loadingShown = false;
+      navigator.pop();
+    }
+
+    Object? firstError;
     try {
-      // 找到对应的挂载点并解密
+      showLoading();
       final mounts = await _loadMountsWithPassword();
-      CryptMountPoint? matchedMount;
-      for (final mount in mounts) {
-        if (mount.containsPath(file.virtualPath)) {
-          matchedMount = mount;
+
+      // 1) 优先使用包含该路径的挂载点，其次退化为第一个挂载点
+      CryptMountPoint? mount;
+      for (final m in mounts) {
+        if (m.containsPath(path)) {
+          mount = m;
           break;
         }
       }
+      mount ??= mounts.isNotEmpty ? mounts.first : null;
 
-      if (matchedMount == null) {
-        throw Exception('未找到对应的加密挂载点');
+      if (mount != null) {
+        try {
+          final ops = CryptOperations(mount);
+          if (isDirectory) {
+            await ops.decryptDirectory(path);
+          } else {
+            await ops.decryptFile(path);
+          }
+          await _afterDecrypt(path);
+          if (mounted) {
+            hideLoading();
+            scaffoldMessenger.showSnackBar(
+              SnackBar(content: Text(l10n.vault_decrypt_success)),
+            );
+          }
+          return;
+        } catch (e) {
+          firstError = e;
+        }
       }
 
-      final ops = CryptOperations(matchedMount);
-      if (file.isDirectory) {
-        await ops.decryptDirectory(file.physicalPath);
+      // 2) 已配置的密码/盐对不上 → 让用户输入后再试
+      hideLoading();
+      final creds = await _promptPasswordAndSalt();
+      if (creds == null) return;
+
+      showLoading();
+      final cfg = RcloneCryptConfig(password: creds.$1, salt: creds.$2);
+      final fallbackMount = CryptMountPoint(
+        physicalPath: p.dirname(path),
+        config: cfg,
+      );
+      final ops = CryptOperations(fallbackMount);
+      if (isDirectory) {
+        await ops.decryptDirectory(path);
       } else {
-        await ops.decryptFile(file.physicalPath);
+        await ops.decryptFile(path);
       }
-
-      await _loadInPlaceEncryptedFiles();
+      await _afterDecrypt(path);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        hideLoading();
+        scaffoldMessenger.showSnackBar(
           SnackBar(content: Text(l10n.vault_decrypt_success)),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.vault_decrypt_failed('$e'))),
+        hideLoading();
+        scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text(l10n.vault_decrypt_failed('${firstError ?? e}'))),
         );
       }
     }
+  }
+
+  /// 解密成功后：从导入清单移除并刷新各区域
+  Future<void> _afterDecrypt(String path) async {
+    await VaultImportStore.remove(path);
+    await _loadImportEntries();
+    await _loadInPlaceEncryptedFiles();
+  }
+
+  /// 弹出密码/盐输入框（已配置的凭据无法解密时使用）
+  Future<(String, String?)?> _promptPasswordAndSalt() async {
+    final l10n = L10n.of(context);
+    final passwordController = TextEditingController();
+    final saltController = TextEditingController();
+
+    final result = await showDialog<(String, String?)>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.vault_need_set_password),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              l10n.vault_decrypt_password_mismatch,
+              style: const TextStyle(fontSize: 13),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: passwordController,
+              obscureText: true,
+              decoration: InputDecoration(labelText: l10n.crypt_field_password),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: saltController,
+              obscureText: true,
+              decoration: InputDecoration(labelText: l10n.crypt_field_salt),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+          FilledButton(
+            onPressed: () {
+              final pwd = passwordController.text;
+              if (pwd.isEmpty) return;
+              Navigator.pop(context, (pwd, saltController.text.isEmpty ? null : saltController.text));
+            },
+            child: Text(l10n.vault_decrypt_action),
+          ),
+        ],
+      ),
+    );
+    return result;
   }
 
   String _formatSize(int bytes) {
@@ -2036,4 +2273,37 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     if (bytes < 1024 * 1024 * 1024) return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
   }
+}
+
+/// 「原地加密文件」区域的统一展示项
+///
+/// 用于把两种来源合并到同一个列表：
+/// - 挂载点目录扫描出来的加密条目
+/// - 用户导入时被识别为已加密（rclone/OpenList）的条目
+class _InPlaceItem {
+  /// 显示名称
+  final String name;
+
+  /// 物理路径（真实存在于磁盘上的路径，用于浏览/解密）
+  final String path;
+
+  /// 副标题展示路径（扫描项用解密后的虚拟路径，导入项用原路径）
+  final String displayPath;
+
+  final bool isDirectory;
+  final int size;
+  final DateTime modified;
+
+  /// 是否来自导入清单（而非挂载点扫描）
+  final bool fromImport;
+
+  _InPlaceItem({
+    required this.name,
+    required this.path,
+    required this.displayPath,
+    required this.isDirectory,
+    this.size = 0,
+    DateTime? modified,
+    this.fromImport = false,
+  }) : modified = modified ?? DateTime.now();
 }
