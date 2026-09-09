@@ -7233,6 +7233,14 @@
   "@vault_import_done": {
     "description": "vault: vault_import_done"
   },
+  "vault_import_partial": "导入完成：未加密 {plain} 项，已加密 {enc} 项，失败 {failed} 项",
+  "@vault_import_partial": {
+    "description": "vault: vault_import_partial"
+  },
+  "vault_import_failed_detail": "导入失败：{error}",
+  "@vault_import_failed_detail": {
+    "description": "vault: vault_import_failed_detail"
+  },
   "vault_no_files": "暂无文件",
   "@vault_no_files": {
     "description": "vault: vault_no_files"

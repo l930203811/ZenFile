@@ -7094,6 +7094,14 @@
   "@vault_import_done": {
     "description": "vault: vault_import_done"
   },
+  "vault_import_partial": "導入完成：未加密 {plain} 項，已加密 {enc} 項，失敗 {failed} 項",
+  "@vault_import_partial": {
+    "description": "vault: vault_import_partial"
+  },
+  "vault_import_failed_detail": "導入失敗：{error}",
+  "@vault_import_failed_detail": {
+    "description": "vault: vault_import_failed_detail"
+  },
   "vault_no_files": "暫無檔案",
   "@vault_no_files": {
     "description": "vault: vault_no_files"

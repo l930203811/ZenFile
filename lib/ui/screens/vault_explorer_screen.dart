@@ -102,9 +102,17 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
   /// 使用当前保险箱密码加载加密挂载点，避免 SecureStorage 未读到密码导致解密失败
   Future<List<CryptMountPoint>> _loadMountsWithPassword() async {
     final mounts = await CryptMountService.loadMountPoints();
-    return mounts
-        .map((m) => m.copyWith(password: widget.password))
-        .toList();
+    final result = <CryptMountPoint>[];
+    for (final m in mounts) {
+      try {
+        result.add(m.copyWith(password: widget.password));
+      } catch (e) {
+        // 单个挂载点重建失败不应拖垮整体流程，保留原配置继续
+        debugPrint('[vault] 挂载点重建失败 ${m.physicalPath}: $e');
+        result.add(m);
+      }
+    }
+    return result;
   }
 
   /// 加载新版原地加密的文件/文件夹列表
@@ -492,37 +500,59 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
 
     var plainCount = 0;
     var encryptedCount = 0;
+    var failCount = 0;
+    Object? lastError;
     try {
-      final mounts = await _loadMountsWithPassword();
+      // 挂载点读取失败不应阻断导入：仅影响「是否加密」的识别，降级为未加密
+      List<CryptMountPoint> mounts = const [];
+      try {
+        mounts = await _loadMountsWithPassword();
+      } catch (e) {
+        debugPrint('[vault] 加载加密挂载点失败，降级为未加密识别: $e');
+      }
 
       for (final path in selectedPaths) {
-        final isDir = Directory(path).existsSync();
-        final encrypted = await VaultImportStore.detectEncrypted(path, mounts);
-
-        var size = 0;
-        var modifiedMs = 0;
         try {
-          final stat = isDir
-              ? await Directory(path).stat()
-              : await File(path).stat();
-          size = stat.size;
-          modifiedMs = stat.modified.millisecondsSinceEpoch;
-        } catch (_) {}
+          final isDir = Directory(path).existsSync();
+          final isFile = !isDir && File(path).existsSync();
+          if (!isDir && !isFile) {
+            failCount++;
+            debugPrint('[vault] 导入路径不存在: $path');
+            continue;
+          }
 
-        await VaultImportStore.upsert(
-          VaultImportEntry(
-            path: path,
-            isDirectory: isDir,
-            encrypted: encrypted,
-            size: size,
-            modifiedMs: modifiedMs,
-          ),
-        );
+          final encrypted = await VaultImportStore.detectEncrypted(path, mounts);
 
-        if (encrypted) {
-          encryptedCount++;
-        } else {
-          plainCount++;
+          var size = 0;
+          var modifiedMs = 0;
+          try {
+            final stat = isDir
+                ? await Directory(path).stat()
+                : await File(path).stat();
+            size = stat.size;
+            modifiedMs = stat.modified.millisecondsSinceEpoch;
+          } catch (_) {}
+
+          await VaultImportStore.upsert(
+            VaultImportEntry(
+              path: path,
+              isDirectory: isDir,
+              encrypted: encrypted,
+              size: size,
+              modifiedMs: modifiedMs,
+            ),
+          );
+
+          if (encrypted) {
+            encryptedCount++;
+          } else {
+            plainCount++;
+          }
+        } catch (e) {
+          // 单项失败不影响其余条目
+          failCount++;
+          lastError = e;
+          debugPrint('[vault] 导入条目失败 $path: $e');
         }
       }
 
@@ -531,17 +561,17 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
 
       if (mounted) {
         navigator.pop(); // 关闭进度
-        scaffoldMessenger.showSnackBar(
-          SnackBar(
-            content: Text(l10n.vault_import_done('$plainCount', '$encryptedCount')),
-          ),
-        );
+        final msg = failCount > 0
+            ? l10n.vault_import_partial('$plainCount', '$encryptedCount', '$failCount')
+            : l10n.vault_import_done('$plainCount', '$encryptedCount');
+        scaffoldMessenger.showSnackBar(SnackBar(content: Text(msg)));
       }
     } catch (e) {
+      debugPrint('[vault] 导入流程异常: $e');
       if (mounted) {
         navigator.pop(); // 关闭进度
         scaffoldMessenger.showSnackBar(
-          SnackBar(content: Text(l10n.vault_import_failed)),
+          SnackBar(content: Text(l10n.vault_import_failed_detail('${lastError ?? e}'))),
         );
       }
     }

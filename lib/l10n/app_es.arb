@@ -6946,6 +6946,14 @@
   "@vault_import_done": {
     "description": "vault: vault_import_done"
   },
+  "vault_import_partial": "Importado: {plain} sin cifrar, {enc} cifrados, {failed} con error",
+  "@vault_import_partial": {
+    "description": "vault: vault_import_partial"
+  },
+  "vault_import_failed_detail": "Error al importar: {error}",
+  "@vault_import_failed_detail": {
+    "description": "vault: vault_import_failed_detail"
+  },
   "vault_no_files": "Sin archivos",
   "@vault_no_files": {
     "description": "vault: vault_no_files"

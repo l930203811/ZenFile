@@ -6946,6 +6946,14 @@
   "@vault_import_done": {
     "description": "vault: vault_import_done"
   },
+  "vault_import_partial": "تم الاستيراد: {plain} غير مشفر، {enc} مشفر، {failed} فاشل",
+  "@vault_import_partial": {
+    "description": "vault: vault_import_partial"
+  },
+  "vault_import_failed_detail": "فشل الاستيراد: {error}",
+  "@vault_import_failed_detail": {
+    "description": "vault: vault_import_failed_detail"
+  },
   "vault_no_files": "لا توجد ملفات",
   "@vault_no_files": {
     "description": "vault: vault_no_files"

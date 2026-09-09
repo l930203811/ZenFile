@@ -6800,35 +6800,6 @@ class L10nAr extends L10n {
   String get vault_inplace_section => 'In-place Encryption';
 
   @override
-  String get vault_decrypt_password_mismatch => 'لا يمكن لكلمة المرور أو الملح المكوّنين فك تشفير هذا الملف. يرجى إدخال كلمة المرور الرئيسية والملح الصحيحين.';
-
-  @override
-  String get vault_remove_from_list => 'إزالة';
-
-  @override
-  String get vault_no_files => 'لا توجد ملفات';
-
-  @override
-  String vault_import_done(Object plain, Object enc) {
-    return 'تم الاستيراد: $plain غير مشفرة، $enc مشفرة';
-  }
-
-  @override
-  String get vault_section_unencrypted => 'ملفات غير مشفرة';
-
-  @override
-  String get vault_section_inplace_files => 'ملفات مشفرة في مكانها';
-
-  @override
-  String get vault_section_sandbox_files => 'ملفات مشفرة في وضع الحماية';
-
-  @override
-  String get vault_import_files => 'استيراد ملفات/مجلدات';
-
-  @override
-  String get vault_action_encrypt => 'تشفير';
-
-  @override
   String get vault_open_location => 'Open Location';
 
   @override
@@ -6852,4 +6823,43 @@ class L10nAr extends L10n {
 
   @override
   String get crypt_set_master_password => 'Set Encryption Master Password';
+
+  @override
+  String get vault_section_unencrypted => 'ملفات غير مشفرة';
+
+  @override
+  String get vault_section_inplace_files => 'ملفات مشفرة في مكانها';
+
+  @override
+  String get vault_section_sandbox_files => 'ملفات مشفرة في وضع الحماية';
+
+  @override
+  String get vault_import_files => 'استيراد ملفات/مجلدات';
+
+  @override
+  String get vault_action_encrypt => 'تشفير';
+
+  @override
+  String vault_import_done(Object enc, Object plain) {
+    return 'تم الاستيراد: $plain غير مشفرة، $enc مشفرة';
+  }
+
+  @override
+  String vault_import_partial(Object enc, Object failed, Object plain) {
+    return 'تم الاستيراد: $plain غير مشفر، $enc مشفر، $failed فاشل';
+  }
+
+  @override
+  String vault_import_failed_detail(Object error) {
+    return 'فشل الاستيراد: $error';
+  }
+  @override
+  String get vault_no_files => 'لا توجد ملفات';
+
+  @override
+  String get vault_decrypt_password_mismatch =>
+      'لا يمكن لكلمة المرور أو الملح المكوّنين فك تشفير هذا الملف. يرجى إدخال كلمة المرور الرئيسية والملح الصحيحين.';
+
+  @override
+  String get vault_remove_from_list => 'إزالة';
 }

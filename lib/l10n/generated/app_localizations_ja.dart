@@ -6636,35 +6636,6 @@ class L10nJa extends L10n {
   String get vault_inplace_section => 'In-place Encryption';
 
   @override
-  String get vault_decrypt_password_mismatch => '設定されたパスワードまたはソルトではこのファイルを復号できません。正しいマスターパスワードとソルトを入力してください。';
-
-  @override
-  String get vault_remove_from_list => '削除';
-
-  @override
-  String get vault_no_files => 'ファイルがありません';
-
-  @override
-  String vault_import_done(Object plain, Object enc) {
-    return 'インポート完了：未暗号化 $plain 件、暗号化済み $enc 件';
-  }
-
-  @override
-  String get vault_section_unencrypted => '未暗号化ファイル';
-
-  @override
-  String get vault_section_inplace_files => 'インプレース暗号化ファイル';
-
-  @override
-  String get vault_section_sandbox_files => 'サンドボックス暗号化ファイル';
-
-  @override
-  String get vault_import_files => 'ファイル/フォルダをインポート';
-
-  @override
-  String get vault_action_encrypt => '暗号化';
-
-  @override
   String get vault_open_location => 'Open Location';
 
   @override
@@ -6688,4 +6659,43 @@ class L10nJa extends L10n {
 
   @override
   String get crypt_set_master_password => 'Set Encryption Master Password';
+
+  @override
+  String get vault_section_unencrypted => '未暗号化ファイル';
+
+  @override
+  String get vault_section_inplace_files => 'インプレース暗号化ファイル';
+
+  @override
+  String get vault_section_sandbox_files => 'サンドボックス暗号化ファイル';
+
+  @override
+  String get vault_import_files => 'ファイル/フォルダをインポート';
+
+  @override
+  String get vault_action_encrypt => '暗号化';
+
+  @override
+  String vault_import_done(Object enc, Object plain) {
+    return 'インポート完了：未暗号化 $plain 件、暗号化済み $enc 件';
+  }
+
+  @override
+  String vault_import_partial(Object enc, Object failed, Object plain) {
+    return 'インポート完了：未暗号化 $plain 件、暗号化 $enc 件、失敗 $failed 件';
+  }
+
+  @override
+  String vault_import_failed_detail(Object error) {
+    return 'インポートに失敗しました：$error';
+  }
+  @override
+  String get vault_no_files => 'ファイルがありません';
+
+  @override
+  String get vault_decrypt_password_mismatch =>
+      '設定されたパスワードまたはソルトではこのファイルを復号できません。正しいマスターパスワードとソルトを入力してください。';
+
+  @override
+  String get vault_remove_from_list => '削除';
 }

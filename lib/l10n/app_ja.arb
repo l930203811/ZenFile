@@ -6950,6 +6950,14 @@
   "@vault_import_done": {
     "description": "vault: vault_import_done"
   },
+  "vault_import_partial": "インポート完了：未暗号化 {plain} 件、暗号化 {enc} 件、失敗 {failed} 件",
+  "@vault_import_partial": {
+    "description": "vault: vault_import_partial"
+  },
+  "vault_import_failed_detail": "インポートに失敗しました：{error}",
+  "@vault_import_failed_detail": {
+    "description": "vault: vault_import_failed_detail"
+  },
   "vault_no_files": "ファイルがありません",
   "@vault_no_files": {
     "description": "vault: vault_no_files"

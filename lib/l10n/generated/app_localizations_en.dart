@@ -6835,35 +6835,6 @@ class L10nEn extends L10n {
   String get vault_inplace_section => 'In-place Encryption';
 
   @override
-  String get vault_decrypt_password_mismatch => 'The configured password or salt cannot decrypt this file. Please enter the correct master password and salt.';
-
-  @override
-  String get vault_remove_from_list => 'Remove';
-
-  @override
-  String get vault_no_files => 'No files';
-
-  @override
-  String vault_import_done(Object plain, Object enc) {
-    return 'Imported: $plain unencrypted, $enc encrypted';
-  }
-
-  @override
-  String get vault_section_unencrypted => 'Unencrypted files';
-
-  @override
-  String get vault_section_inplace_files => 'In-place encrypted files';
-
-  @override
-  String get vault_section_sandbox_files => 'Sandbox encrypted files';
-
-  @override
-  String get vault_import_files => 'Import files/folders';
-
-  @override
-  String get vault_action_encrypt => 'Encrypt';
-
-  @override
   String get vault_open_location => 'Open Location';
 
   @override
@@ -6887,4 +6858,43 @@ class L10nEn extends L10n {
 
   @override
   String get crypt_set_master_password => 'Set Encryption Master Password';
+
+  @override
+  String get vault_section_unencrypted => 'Unencrypted files';
+
+  @override
+  String get vault_section_inplace_files => 'In-place encrypted files';
+
+  @override
+  String get vault_section_sandbox_files => 'Sandbox encrypted files';
+
+  @override
+  String get vault_import_files => 'Import files/folders';
+
+  @override
+  String get vault_action_encrypt => 'Encrypt';
+
+  @override
+  String vault_import_done(Object enc, Object plain) {
+    return 'Imported: $plain unencrypted, $enc encrypted';
+  }
+
+  @override
+  String vault_import_partial(Object enc, Object failed, Object plain) {
+    return 'Imported: $plain unencrypted, $enc encrypted, $failed failed';
+  }
+
+  @override
+  String vault_import_failed_detail(Object error) {
+    return 'Import failed: $error';
+  }
+  @override
+  String get vault_no_files => 'No files';
+
+  @override
+  String get vault_decrypt_password_mismatch =>
+      'The configured password or salt cannot decrypt this file. Please enter the correct master password and salt.';
+
+  @override
+  String get vault_remove_from_list => 'Remove';
 }

@@ -6889,35 +6889,6 @@ class L10nDe extends L10n {
   String get vault_inplace_section => 'In-place Encryption';
 
   @override
-  String get vault_decrypt_password_mismatch => 'Das konfigurierte Passwort oder Salt kann diese Datei nicht entschlüsseln. Bitte geben Sie das richtige Master-Passwort und Salt ein.';
-
-  @override
-  String get vault_remove_from_list => 'Entfernen';
-
-  @override
-  String get vault_no_files => 'Keine Dateien';
-
-  @override
-  String vault_import_done(Object plain, Object enc) {
-    return 'Importiert: $plain unverschlüsselt, $enc verschlüsselt';
-  }
-
-  @override
-  String get vault_section_unencrypted => 'Unverschlüsselte Dateien';
-
-  @override
-  String get vault_section_inplace_files => 'Vor-Ort-verschlüsselte Dateien';
-
-  @override
-  String get vault_section_sandbox_files => 'Sandbox-verschlüsselte Dateien';
-
-  @override
-  String get vault_import_files => 'Dateien/Ordner importieren';
-
-  @override
-  String get vault_action_encrypt => 'Verschlüsseln';
-
-  @override
   String get vault_open_location => 'Open Location';
 
   @override
@@ -6941,4 +6912,43 @@ class L10nDe extends L10n {
 
   @override
   String get crypt_set_master_password => 'Set Encryption Master Password';
+
+  @override
+  String get vault_section_unencrypted => 'Unverschlüsselte Dateien';
+
+  @override
+  String get vault_section_inplace_files => 'Vor-Ort-verschlüsselte Dateien';
+
+  @override
+  String get vault_section_sandbox_files => 'Sandbox-verschlüsselte Dateien';
+
+  @override
+  String get vault_import_files => 'Dateien/Ordner importieren';
+
+  @override
+  String get vault_action_encrypt => 'Verschlüsseln';
+
+  @override
+  String vault_import_done(Object enc, Object plain) {
+    return 'Importiert: $plain unverschlüsselt, $enc verschlüsselt';
+  }
+
+  @override
+  String vault_import_partial(Object enc, Object failed, Object plain) {
+    return 'Importiert: $plain unverschlüsselt, $enc verschlüsselt, $failed fehlgeschlagen';
+  }
+
+  @override
+  String vault_import_failed_detail(Object error) {
+    return 'Import fehlgeschlagen: $error';
+  }
+  @override
+  String get vault_no_files => 'Keine Dateien';
+
+  @override
+  String get vault_decrypt_password_mismatch =>
+      'Das konfigurierte Passwort oder Salt kann diese Datei nicht entschlüsseln. Bitte geben Sie das richtige Master-Passwort und Salt ein.';
+
+  @override
+  String get vault_remove_from_list => 'Entfernen';
 }

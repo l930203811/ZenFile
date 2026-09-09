@@ -4,7 +4,6 @@
 /// 在挂载点内，文件名和文件内容都会被自动加密/解密。
 library;
 
-import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'crypt_config.dart';
 import 'rclone_crypt.dart';
@@ -43,9 +42,13 @@ class CryptMountPoint {
     bool? isSandboxMode,
     String? password,
   }) {
+    // 仅传 password 时（如 _loadMountsWithPassword 用当前保险箱密码重建），
+    // 必须基于已有 config 派生副本。旧写法 `config!` 在 config 为 null 时
+    // 会抛 Null check 异常，导致导入/列表加载整体失败。
+    final baseConfig = config ?? this.config;
     return CryptMountPoint(
       physicalPath: physicalPath ?? this.physicalPath,
-      config: password != null ? config!.copyWith(password: password) : (config ?? this.config),
+      config: password != null ? baseConfig.copyWith(password: password) : baseConfig,
       name: name ?? this.name,
       isSandboxMode: isSandboxMode ?? this.isSandboxMode,
     );

@@ -6946,6 +6946,14 @@
   "@vault_import_done": {
     "description": "vault: vault_import_done"
   },
+  "vault_import_partial": "가져오기 완료: 암호화되지 않음 {plain}개, 암호화됨 {enc}개, 실패 {failed}개",
+  "@vault_import_partial": {
+    "description": "vault: vault_import_partial"
+  },
+  "vault_import_failed_detail": "가져오기 실패: {error}",
+  "@vault_import_failed_detail": {
+    "description": "vault: vault_import_failed_detail"
+  },
   "vault_no_files": "파일이 없습니다",
   "@vault_no_files": {
     "description": "vault: vault_no_files"

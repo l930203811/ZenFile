@@ -12226,60 +12226,6 @@ abstract class L10n {
   /// **'原地加密'**
   String get vault_inplace_section;
 
-  /// vault: vault_decrypt_password_mismatch
-  ///
-  /// In zh, this message translates to:
-  /// **'已配置的密码或盐无法解密该文件，请输入正确的主密码和盐。'**
-  String get vault_decrypt_password_mismatch;
-
-  /// vault: vault_remove_from_list
-  ///
-  /// In zh, this message translates to:
-  /// **'移除'**
-  String get vault_remove_from_list;
-
-  /// vault: vault_no_files
-  ///
-  /// In zh, this message translates to:
-  /// **'暂无文件'**
-  String get vault_no_files;
-
-  /// vault: vault_import_done
-  ///
-  /// In zh, this message translates to:
-  /// **'导入完成：未加密 {plain} 项，已加密 {enc} 项'**
-  String vault_import_done(Object plain, Object enc);
-
-  /// vault: vault_section_unencrypted
-  ///
-  /// In zh, this message translates to:
-  /// **'未加密文件'**
-  String get vault_section_unencrypted;
-
-  /// vault: vault_section_inplace_files
-  ///
-  /// In zh, this message translates to:
-  /// **'原地加密文件'**
-  String get vault_section_inplace_files;
-
-  /// vault: vault_section_sandbox_files
-  ///
-  /// In zh, this message translates to:
-  /// **'沙盒加密文件'**
-  String get vault_section_sandbox_files;
-
-  /// vault: vault_import_files
-  ///
-  /// In zh, this message translates to:
-  /// **'导入文件/文件夹'**
-  String get vault_import_files;
-
-  /// vault: vault_action_encrypt
-  ///
-  /// In zh, this message translates to:
-  /// **'加密'**
-  String get vault_action_encrypt;
-
   /// vault/crypt: vault_open_location
   ///
   /// In zh, this message translates to:
@@ -12321,6 +12267,71 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'设置加密主密码'**
   String get crypt_set_master_password;
+
+  /// vault: vault_section_unencrypted
+  ///
+  /// In zh, this message translates to:
+  /// **'未加密文件'**
+  String get vault_section_unencrypted;
+
+  /// vault: vault_section_inplace_files
+  ///
+  /// In zh, this message translates to:
+  /// **'原地加密文件'**
+  String get vault_section_inplace_files;
+
+  /// vault: vault_section_sandbox_files
+  ///
+  /// In zh, this message translates to:
+  /// **'沙盒加密文件'**
+  String get vault_section_sandbox_files;
+
+  /// vault: vault_import_files
+  ///
+  /// In zh, this message translates to:
+  /// **'导入文件/文件夹'**
+  String get vault_import_files;
+
+  /// vault: vault_action_encrypt
+  ///
+  /// In zh, this message translates to:
+  /// **'加密'**
+  String get vault_action_encrypt;
+
+  /// vault: vault_import_done
+  ///
+  /// In zh, this message translates to:
+  /// **'导入完成：未加密 {plain} 项，已加密 {enc} 项'**
+  String vault_import_done(Object enc, Object plain);
+
+  /// vault: vault_import_partial
+  ///
+  /// In zh, this message translates to:
+  /// **'导入完成：未加密 {plain} 项，已加密 {enc} 项，失败 {failed} 项'**
+  String vault_import_partial(Object enc, Object failed, Object plain);
+
+  /// vault: vault_import_failed_detail
+  ///
+  /// In zh, this message translates to:
+  /// **'导入失败：{error}'**
+  String vault_import_failed_detail(Object error);
+  /// vault: vault_no_files
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无文件'**
+  String get vault_no_files;
+
+  /// vault: vault_decrypt_password_mismatch
+  ///
+  /// In zh, this message translates to:
+  /// **'已配置的密码或盐无法解密该文件，请输入正确的主密码和盐。'**
+  String get vault_decrypt_password_mismatch;
+
+  /// vault: vault_remove_from_list
+  ///
+  /// In zh, this message translates to:
+  /// **'移除'**
+  String get vault_remove_from_list;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

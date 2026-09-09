@@ -6946,6 +6946,14 @@
   "@vault_import_done": {
     "description": "vault: vault_import_done"
   },
+  "vault_import_partial": "Импорт завершён: не зашифровано {plain}, зашифровано {enc}, ошибок {failed}",
+  "@vault_import_partial": {
+    "description": "vault: vault_import_partial"
+  },
+  "vault_import_failed_detail": "Ошибка импорта: {error}",
+  "@vault_import_failed_detail": {
+    "description": "vault: vault_import_failed_detail"
+  },
   "vault_no_files": "Нет файлов",
   "@vault_no_files": {
     "description": "vault: vault_no_files"
