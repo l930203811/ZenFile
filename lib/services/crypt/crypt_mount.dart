@@ -4,6 +4,8 @@
 /// 在挂载点内，文件名和文件内容都会被自动加密/解密。
 library;
 
+import 'dart:io';
+
 import 'package:path/path.dart' as p;
 import 'crypt_config.dart';
 import 'rclone_crypt.dart';
@@ -120,6 +122,83 @@ class CryptMountPoint {
     }
 
     return p.join(this.physicalPath, p.joinAll(decryptedSegments));
+  }
+
+  /// 解析虚拟路径对应的**磁盘上真实存在**的物理路径（异步，带兜底）。
+  ///
+  /// ⚠️ 为什么不能只用 [virtualToPhysical]：
+  /// `virtualToPhysical` 把虚拟名**重新加密**得到密文名，`decryptFileName` 则是
+  /// 把密文名**解密**得到虚拟名。二者并不对称——解密时会先剥掉加密后缀再解码，
+  /// 而加密时一定会按配置追加后缀。于是当挂载点配置的「文件名编码 / 加密后缀」
+  /// 与文件当初被加密时所用的不一致时（典型场景：
+  ///   · OpenList 用 base64 + **空后缀**，而本地挂载点配置仍是 `.bin`；
+  ///   · 用户在加密设置里把后缀清空后，此前用 `.bin` 加密的本应用文件），
+  /// 目录枚举（走 decryptFileName）**能正常显示解密名**，但
+  /// `virtualToPhysical` 算出来的名字在磁盘上不存在 → 打开文件时 File.exists()
+  /// 为 false → 图片打不开、音视频拿到一个不存在的路径无法播放。
+  ///
+  /// 兜底优先级：
+  /// 1. 虚拟路径本身存在 → 文件已是明文（已解密），直接用；
+  /// 2. `virtualToPhysical` 结果存在 → 正常映射；
+  /// 3. `virtualToPhysical` 结果加减后缀后存在 → 兼容后缀配置不一致；
+  /// 4. 扫描父目录，找「解密后名字 == 虚拟 basename」的条目
+  ///    （与 CryptDirectoryLister 的枚举逻辑互为逆运算，必定命中）；
+  /// 5. 都不存在时返回映射结果（调用方自行判空/报错）。
+  Future<String> resolvePhysicalPath(String virtualPath) async {
+    // 1) 已解密的明文文件
+    try {
+      if (await File(virtualPath).exists()) return virtualPath;
+    } catch (_) {}
+
+    // 2) 标准映射
+    String mapped;
+    try {
+      mapped = virtualToPhysical(virtualPath);
+    } catch (_) {
+      return virtualPath;
+    }
+    try {
+      if (await File(mapped).exists()) return mapped;
+    } catch (_) {}
+
+    // 3) 后缀不一致：尝试去掉 / 补上配置的加密后缀
+    final suffix = config.encryptedSuffix;
+    if (suffix.isNotEmpty) {
+      final withoutSuffix = mapped.endsWith(suffix)
+          ? mapped.substring(0, mapped.length - suffix.length)
+          : mapped;
+      try {
+        if (withoutSuffix != mapped && await File(withoutSuffix).exists()) {
+          return withoutSuffix;
+        }
+      } catch (_) {}
+      try {
+        final withSuffix = mapped.endsWith(suffix) ? mapped : '$mapped$suffix';
+        if (withSuffix != mapped && await File(withSuffix).exists()) {
+          return withSuffix;
+        }
+      } catch (_) {}
+    }
+
+    // 4) 目录扫描兜底：按解密名反查
+    try {
+      final parent = Directory(p.dirname(virtualPath));
+      if (await parent.exists()) {
+        final target = p.basename(virtualPath);
+        await for (final entity in parent.list()) {
+          final name = p.basename(entity.path);
+          if (name == target) return entity.path;
+          try {
+            if (crypt.decryptFileName(name) == target) return entity.path;
+          } catch (_) {}
+          try {
+            if (crypt.decryptDirName(name) == target) return entity.path;
+          } catch (_) {}
+        }
+      }
+    } catch (_) {}
+
+    return mapped;
   }
 
   /// 序列化为 JSON（用于持久化存储，不含密码）

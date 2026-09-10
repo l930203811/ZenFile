@@ -25,6 +25,7 @@ import 'file_type_icon.dart';
 import 'restricted_folder_banner.dart';
 import 'file_operation_progress_dialog.dart';
 import 'file_action_dialogs.dart';
+import 'progress_overlay.dart';
 import 'remote_cloud_badge.dart';
 import 'create_archive_dialog.dart';
 import 'batch_rename_dialog.dart';
@@ -615,32 +616,38 @@ class _PaneBrowserState extends State<PaneBrowser> {
 
     if (mode == null) return;
 
-    // 显示进度对话框
+    // 显示进度对话框（带百分比，避免用户面对一个没有反馈的转圈）
+    final progress = ValueNotifier<double?>(null);
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => const AlertDialog(
-        content: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(width: 16),
-            Text('加密中...'),
-          ],
-        ),
+      builder: (_) => ValueListenableBuilder<double?>(
+        valueListenable: progress,
+        builder: (_, v, __) => ProgressOverlay(message: '正在加密...', value: v),
       ),
     );
 
     try {
       if (mode == 'inplace') {
-        await VaultCryptService.instance.encryptInPlace(sourcePath: path, password: password);
+        await VaultCryptService.instance.encryptInPlace(
+          sourcePath: path,
+          password: password,
+          onProgress: (done, total) =>
+              progress.value = total > 0 ? done / total : null,
+        );
       } else {
-        await VaultCryptService.instance.encryptToSandbox(sourcePath: path, password: password);
+        await VaultCryptService.instance.encryptToSandbox(
+          sourcePath: path,
+          password: password,
+          onProgress: (done, total) =>
+              progress.value = total > 0 ? done / total : null,
+        );
       }
       if (context.mounted) {
         Navigator.pop(context); // 关闭进度对话框
-        provider.refreshCryptMountPoints();
-        provider.loadDirectory(provider.activeTab.currentPath);
+        // 必须等挂载点刷新完再重载目录，否则浏览页仍按旧挂载点枚举 → 显示密文名
+        await provider.refreshCryptMountPoints();
+        await provider.loadDirectory(provider.activeTab.currentPath);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('加密成功')),
         );
@@ -652,6 +659,8 @@ class _PaneBrowserState extends State<PaneBrowser> {
           SnackBar(content: Text('加密失败: $e')),
         );
       }
+    } finally {
+      progress.dispose();
     }
   }
 
@@ -660,28 +669,29 @@ class _PaneBrowserState extends State<PaneBrowser> {
     final password = await _verifyVaultPassword(context);
     if (password == null) return;
 
-    // 显示进度对话框
+    // 显示进度对话框（带百分比）
+    final progress = ValueNotifier<double?>(null);
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => const AlertDialog(
-        content: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(width: 16),
-            Text('解密中...'),
-          ],
-        ),
+      builder: (_) => ValueListenableBuilder<double?>(
+        valueListenable: progress,
+        builder: (_, v, __) => ProgressOverlay(message: '正在解密...', value: v),
       ),
     );
 
     try {
-      await VaultCryptService.instance.decryptInPlace(encryptedPath: path, password: password);
+      await VaultCryptService.instance.decryptInPlace(
+        encryptedPath: path,
+        password: password,
+        onProgress: (done, total) =>
+            progress.value = total > 0 ? done / total : null,
+      );
       if (context.mounted) {
         Navigator.pop(context); // 关闭进度对话框
-        provider.refreshCryptMountPoints();
-        provider.loadDirectory(provider.activeTab.currentPath);
+        // 必须等挂载点刷新完再重载目录，否则浏览页仍按旧挂载点枚举 → 显示密文名
+        await provider.refreshCryptMountPoints();
+        await provider.loadDirectory(provider.activeTab.currentPath);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('解密成功')),
         );
@@ -693,6 +703,8 @@ class _PaneBrowserState extends State<PaneBrowser> {
           SnackBar(content: Text('解密失败: $e')),
         );
       }
+    } finally {
+      progress.dispose();
     }
   }
 

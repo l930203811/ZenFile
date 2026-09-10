@@ -27,6 +27,7 @@ import '../widgets/directory_tab_bar.dart';
 import '../../services/folder_share_service.dart';
 import '../widgets/pane_browser.dart';
 import '../widgets/file_operation_progress_dialog.dart';
+import '../widgets/progress_overlay.dart';
 import '../../services/network_connections_service.dart';
 import 'network_connection_wizard_screen.dart';
 import '../../services/preferences_service.dart';
@@ -910,31 +911,37 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
 
     if (mode == null) return;
 
+    final progress = ValueNotifier<double?>(null);
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => const AlertDialog(
-        content: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(width: 16),
-            Text('加密中...'),
-          ],
-        ),
+      builder: (_) => ValueListenableBuilder<double?>(
+        valueListenable: progress,
+        builder: (_, v, __) => ProgressOverlay(message: '正在加密...', value: v),
       ),
     );
 
     try {
       if (mode == 'inplace') {
-        await VaultCryptService.instance.encryptInPlace(sourcePath: path, password: password);
+        await VaultCryptService.instance.encryptInPlace(
+          sourcePath: path,
+          password: password,
+          onProgress: (done, total) =>
+              progress.value = total > 0 ? done / total : null,
+        );
       } else {
-        await VaultCryptService.instance.encryptToSandbox(sourcePath: path, password: password);
+        await VaultCryptService.instance.encryptToSandbox(
+          sourcePath: path,
+          password: password,
+          onProgress: (done, total) =>
+              progress.value = total > 0 ? done / total : null,
+        );
       }
       if (context.mounted) {
         Navigator.pop(context);
-        provider.refreshCryptMountPoints();
-        provider.loadDirectory(provider.activeTab.currentPath);
+        // 必须等挂载点刷新完再重载目录，否则浏览页仍按旧挂载点枚举 → 显示密文名
+        await provider.refreshCryptMountPoints();
+        await provider.loadDirectory(provider.activeTab.currentPath);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('加密成功')),
         );
@@ -946,6 +953,8 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
           SnackBar(content: Text('加密失败: $e')),
         );
       }
+    } finally {
+      progress.dispose();
     }
   }
 
@@ -954,27 +963,28 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     final password = await _verifyVaultPassword(context);
     if (password == null) return;
 
+    final progress = ValueNotifier<double?>(null);
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => const AlertDialog(
-        content: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(width: 16),
-            Text('解密中...'),
-          ],
-        ),
+      builder: (_) => ValueListenableBuilder<double?>(
+        valueListenable: progress,
+        builder: (_, v, __) => ProgressOverlay(message: '正在解密...', value: v),
       ),
     );
 
     try {
-      await VaultCryptService.instance.decryptInPlace(encryptedPath: path, password: password);
+      await VaultCryptService.instance.decryptInPlace(
+        encryptedPath: path,
+        password: password,
+        onProgress: (done, total) =>
+            progress.value = total > 0 ? done / total : null,
+      );
       if (context.mounted) {
         Navigator.pop(context);
-        provider.refreshCryptMountPoints();
-        provider.loadDirectory(provider.activeTab.currentPath);
+        // 必须等挂载点刷新完再重载目录，否则浏览页仍按旧挂载点枚举 → 显示密文名
+        await provider.refreshCryptMountPoints();
+        await provider.loadDirectory(provider.activeTab.currentPath);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('解密成功')),
         );
@@ -986,6 +996,8 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
           SnackBar(content: Text('解密失败: $e')),
         );
       }
+    } finally {
+      progress.dispose();
     }
   }
 

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'crypt_config.dart';
 import 'crypt_mount.dart';
 import 'crypt_file.dart';
 
@@ -106,12 +107,8 @@ class CryptStreamServer {
         return;
       }
 
-      // 容错：传入的可能是虚拟路径，也可能本身就是物理路径
-      // （例如保险箱导入清单里的真实路径），两种都要能正确定位文件。
-      var physicalPath = mount.virtualToPhysical(virtualPath);
-      if (!await File(physicalPath).exists() && await File(virtualPath).exists()) {
-        physicalPath = virtualPath;
-      }
+      // 解析真实物理路径（含目录扫描兜底，兼容文件名编码/加密后缀配置不一致）。
+      final physicalPath = await mount.resolvePhysicalPath(virtualPath);
       final physicalFile = File(physicalPath);
       if (!await physicalFile.exists()) {
         request.response.statusCode = HttpStatus.notFound;
@@ -119,9 +116,18 @@ class CryptStreamServer {
         return;
       }
 
-      // 打开加密文件
-      final cryptFile = await CryptFile.open(physicalPath, mount.crypt, mode: CryptFileMode.read);
-      final decryptedSize = cryptFile.length;
+      // ⚠️ 位于加密挂载点目录内、但文件头没有 RCLONE magic 的文件是**已解密的明文**。
+      // 若仍走 CryptFile 解密，等于把明文再解一次 → 数据错乱 → 播放器无法播放。
+      final isEncrypted = await _fileHasCryptMagic(physicalPath);
+
+      CryptFile? cryptFile;
+      final int decryptedSize;
+      if (isEncrypted) {
+        cryptFile = await CryptFile.open(physicalPath, mount.crypt, mode: CryptFileMode.read);
+        decryptedSize = cryptFile.length;
+      } else {
+        decryptedSize = await physicalFile.length();
+      }
 
       // 读取文件头用于魔数识别格式。
       // ⚠️ 虚拟文件名可能没有扩展名（如 OpenList 用 base64 + 空后缀加密），
@@ -130,7 +136,9 @@ class CryptStreamServer {
       if (decryptedSize > 0) {
         try {
           final headerLen = decryptedSize < 16 ? decryptedSize : 16;
-          header = await cryptFile.read(0, headerLen);
+          header = isEncrypted
+              ? await cryptFile!.read(0, headerLen)
+              : await _readPlainBytes(physicalPath, 0, headerLen);
         } catch (_) {}
       }
 
@@ -155,7 +163,7 @@ class CryptStreamServer {
             request.response.statusCode = HttpStatus.requestedRangeNotSatisfiable;
             request.response.headers.set(HttpHeaders.contentRangeHeader, 'bytes */$decryptedSize');
             await request.response.close();
-            await cryptFile.close();
+            await cryptFile?.close();
             return;
           }
           if (end >= decryptedSize) {
@@ -188,13 +196,15 @@ class CryptStreamServer {
       var position = start;
       while (position <= end) {
         final readSize = position + chunkSize > end + 1 ? end - position + 1 : chunkSize;
-        final data = await cryptFile.read(position, readSize);
+        final data = isEncrypted
+            ? await cryptFile!.read(position, readSize)
+            : await _readPlainBytes(physicalPath, position, readSize);
         request.response.add(data);
         await request.response.flush();
         position += readSize;
       }
 
-      await cryptFile.close();
+      await cryptFile?.close();
       await request.response.close();
     } catch (e) {
       debugPrint('[ZenFile] Crypt stream request error: $e');
@@ -202,6 +212,41 @@ class CryptStreamServer {
         request.response.statusCode = HttpStatus.internalServerError;
         await request.response.close();
       } catch (_) {}
+    }
+  }
+
+  /// 判断文件头是否带 rclone crypt 的 magic（`RCLONE\x00\x00`）
+  Future<bool> _fileHasCryptMagic(String path) async {
+    RandomAccessFile? raf;
+    try {
+      final file = File(path);
+      if (!await file.exists()) return false;
+      final length = await file.length();
+      if (length < fileMagicSize) return false;
+      raf = await file.open(mode: FileMode.read);
+      final head = await raf.read(fileMagicSize);
+      if (head.length < fileMagicSize) return false;
+      for (var i = 0; i < fileMagicSize; i++) {
+        if (head[i] != fileHeaderMagicBytes[i]) return false;
+      }
+      return true;
+    } catch (_) {
+      return false;
+    } finally {
+      try {
+        await raf?.close();
+      } catch (_) {}
+    }
+  }
+
+  /// 读取明文文件的指定区间（用于已解密、无需再解密的文件）
+  Future<List<int>> _readPlainBytes(String path, int start, int length) async {
+    final raf = await File(path).open(mode: FileMode.read);
+    try {
+      await raf.setPosition(start);
+      return await raf.read(length);
+    } finally {
+      await raf.close();
     }
   }
 

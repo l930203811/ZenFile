@@ -208,10 +208,15 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
 
   /// 通过文件魔数判断是否为常见图片格式，用于无扩展名或扩展名被加密的图片。
   bool _isImageByHeader(String path) {
+    RandomAccessFile? raf;
     try {
       final file = File(path);
       if (!file.existsSync()) return false;
-      final bytes = file.readAsBytesSync();
+      // ⚠️ 只读前 12 字节。此前用 readAsBytesSync() 会把整个文件读进内存，
+      // 同级目录里若有几百 MB 的视频（加密目录常见），会瞬间 OOM / 卡死主线程，
+      // 表现为「打开图片黑屏」。
+      raf = file.openSync(mode: FileMode.read);
+      final bytes = raf.readSync(12);
       if (bytes.length < 12) return false;
       // JPEG
       if (bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF) return true;
@@ -235,6 +240,10 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
       return false;
     } catch (_) {
       return false;
+    } finally {
+      try {
+        raf?.closeSync();
+      } catch (_) {}
     }
   }
 

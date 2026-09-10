@@ -1573,11 +1573,59 @@ class FileManagerProvider extends ChangeNotifier {
       _cryptMountPoints = [];
     }
     _cryptMountsLoaded = true;
+    // 导入清单里的加密文件所在目录，按「加密设置」主密码构造临时挂载点，
+    // 让浏览页无需整机重启即可解密这些目录（此前只在整机重启时由 import 扫描重建，
+    // 表现为「导入/原地加密后浏览页仍是密文，重启才刷新」）。
+    await _appendImportedDirMounts();
     // 初始化流式解密服务器并注册挂载点（用于视频/音频边解密边播放）
     try {
       await CryptStreamServer.instance.ensureInitialized();
       CryptStreamServer.instance.registerMounts(_cryptMountPoints);
     } catch (_) {}
+  }
+
+  /// 为「导入清单」里每个加密条目所在目录，按主密码补一个（不持久化的）挂载点。
+  ///
+  /// 仅当该目录尚未被任何持久化挂载点覆盖时才添加，避免重复。
+  Future<void> _appendImportedDirMounts() async {
+    try {
+      final entries = await VaultImportStore.load();
+      if (entries.isEmpty) return;
+      final config = await VaultCryptService.instance.getMasterConfig();
+      if (config == null) return;
+      final added = <CryptMountPoint>[];
+      for (final e in entries) {
+        final dir = e.isDirectory ? e.path : p.dirname(e.path);
+        if (dir.isEmpty || _isStorageRootMount(dir)) continue;
+        final covered = _cryptMountPoints.any(
+          (m) => !m.isSandboxMode && m.containsPath(dir),
+        );
+        if (covered) continue;
+        added.add(
+          CryptMountPoint(
+            physicalPath: dir,
+            config: config,
+            name: p.basename(dir),
+          ),
+        );
+      }
+      if (added.isNotEmpty) {
+        _cryptMountPoints = [..._cryptMountPoints, ...added];
+      }
+    } catch (_) {}
+  }
+
+  /// 刷新加密挂载点并重新枚举所有已打开的本地标签页目录，
+  /// 让「导入 / 原地加解密」后浏览页即时显示解密后的文件（无需重启应用）。
+  Future<void> refreshAllBrowserTabs() async {
+    await refreshCryptMountPoints();
+    final count = _tabs.length;
+    for (int i = 0; i < count; i++) {
+      final tab = _tabs[i];
+      if (tab.isRemote || tab.remoteClient != null) continue;
+      if (tab.currentPath.isEmpty) continue;
+      await loadDirectoryForTab(i, tab.currentPath, showLoading: false, clearCache: true);
+    }
   }
 
   /// 刷新加密挂载点缓存（在加密设置页面修改后调用）
@@ -1699,22 +1747,35 @@ class FileManagerProvider extends ChangeNotifier {
   /// 对于视频和音频文件，返回流式播放 URL，实现边解密边播放。
   Future<String> _decryptCryptFileIfNeeded(String path) async {
     await _ensureCryptMountsLoaded();
-    final mount = _findCryptMountForPath(path);
+    var mount = _findCryptMountForPath(path);
+
+    // 兜底：文件确实是 rclone/OpenList 加密的（带 magic 头），但所在目录尚未
+    // 建立挂载点（例如刚导入到新目录的 OpenList 文件）。此时用「加密设置」里
+    // 配置的主密码构造一个临时挂载点尝试解密，避免把密文直接丢给播放器/查看器。
+    if (mount == null && await _isEncryptedPhysicalFile(path)) {
+      mount = await _buildMasterMountFor(p.dirname(path));
+    }
     if (mount == null) return path;
 
-    // 解析真实物理路径：优先按虚拟路径映射；若映射结果不存在而 path 本身
-    // 是存在的文件（例如已解密但仍留在加密目录内的普通文件），则用 path。
-    var physicalPath = mount.virtualToPhysical(path);
-    if (!await File(physicalPath).exists() && await File(path).exists()) {
-      physicalPath = path;
-    }
+    // 解析真实物理路径。
+    // ⚠️ 不能只用 virtualToPhysical：当挂载点的「文件名编码 / 加密后缀」配置
+    // 与文件当初被加密时不一致时（OpenList 空后缀 vs 本地 .bin，或反之），
+    // 重新加密得到的名字在磁盘上不存在，导致后续打开/播放全部失败。
+    // resolvePhysicalPath 内含目录扫描兜底，与 CryptDirectoryLister 互为逆运算。
+    final physicalPath = await mount.resolvePhysicalPath(path);
 
     // ⚠️ 只有真实加密文件（带 RCLONE magic 头）才走解密/流式播放。
     // 已解密的普通文件若仍位于加密挂载点目录内，此前会被误判为加密文件：
     // 图片分支因 CryptFile.open 抛错而回退原路径（所以图片一直正常），
     // 但音视频分支会直接返回流式 URL，服务端再对已解密文件做解密 →
     // 数据错乱/404 → 内置播放器无法播放（第三方直接读文件所以正常）。
-    if (!await _isEncryptedPhysicalFile(physicalPath)) {
+    final encryptedPhysical = await _isEncryptedPhysicalFile(physicalPath);
+    debugPrint('[ZenFile] crypt open: virtual=$path physical=$physicalPath encrypted=$encryptedPhysical');
+    if (!encryptedPhysical) {
+      // 未加密：优先返回磁盘上真实存在的那个路径，绝不返回不存在的虚拟路径
+      // （否则图片查看器/播放器拿到空路径 → 黑屏/无法播放）。
+      if (await File(path).exists()) return path;
+      if (await File(physicalPath).exists()) return physicalPath;
       return path;
     }
 
@@ -1727,8 +1788,10 @@ class FileManagerProvider extends ChangeNotifier {
       realName = p.basename(path);
     }
 
-    // 对于视频和音频文件，使用流式播放 URL，无需等待完整解密
-    if (_isVideoOrAudio(realName)) {
+    // 对于视频和音频文件，使用流式播放 URL，无需等待完整解密。
+    // ⚠️ 流式服务器未启动时会退化成「原样返回虚拟路径」（磁盘上不存在），
+    // 播放器必然失败，所以这里必须确保 isRunning，否则走完整解密兜底。
+    if (_isVideoOrAudio(realName) && CryptStreamServer.instance.isRunning) {
       try {
         final streamUrl = CryptStreamServer.instance.getStreamUrl(path);
         debugPrint('[ZenFile] Using stream URL for crypt media: $streamUrl');
@@ -1801,16 +1864,41 @@ class FileManagerProvider extends ChangeNotifier {
     }
   }
 
+  /// 用「加密设置」里配置的主密码，为 [dir] 构造一个临时（不持久化）挂载点。
+  ///
+  /// 仅用于「文件确实是 rclone/OpenList 加密的、但目录还没建挂载点」的场景，
+  /// 例如把 OpenList 加密文件导入到一个全新目录后立即打开。
+  Future<CryptMountPoint?> _buildMasterMountFor(String dir) async {
+    try {
+      final config = await VaultCryptService.instance.getMasterConfig();
+      if (config == null) return null;
+      final mount = CryptMountPoint(
+        physicalPath: dir,
+        config: config,
+        name: p.basename(dir),
+      );
+      // 同步注册到流式解密服务器，否则音视频拿到 stream URL 后服务端找不到
+      // 挂载点会直接 404。
+      try {
+        await CryptStreamServer.instance.ensureInitialized();
+        CryptStreamServer.instance.registerMount(mount);
+      } catch (_) {}
+      return mount;
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// 解密出加密文件的真实文件名；文件不属于加密挂载点或未加密时返回 null
   Future<String?> _realNameOfEncryptedFile(String path) async {
     try {
       await _ensureCryptMountsLoaded();
-      final mount = _findCryptMountForPath(path);
-      if (mount == null) return null;
-      var physicalPath = mount.virtualToPhysical(path);
-      if (!await File(physicalPath).exists() && await File(path).exists()) {
-        physicalPath = path;
+      var mount = _findCryptMountForPath(path);
+      if (mount == null && await _isEncryptedPhysicalFile(path)) {
+        mount = await _buildMasterMountFor(p.dirname(path));
       }
+      if (mount == null) return null;
+      final physicalPath = await mount.resolvePhysicalPath(path);
       if (!await _isEncryptedPhysicalFile(physicalPath)) return null;
       return mount.crypt.decryptFileName(p.basename(physicalPath));
     } catch (_) {

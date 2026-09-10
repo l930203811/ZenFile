@@ -23,6 +23,7 @@ import 'crypt_mount_edit_screen.dart';
 import '../../services/crypt/crypt.dart';
 import 'archive_viewer_screen.dart';
 import '../widgets/archive_type_icon.dart';
+import '../widgets/progress_overlay.dart';
 import 'package:zenfile/l10n/generated/app_localizations.dart';
 
 class VaultExplorerScreen extends StatefulWidget {
@@ -85,6 +86,26 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     _loadInPlaceEncryptedFiles();
     _loadImportEntries();
     _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void deactivate() {
+    // 离开保险箱时同步刷新浏览页：导入/原地加解密会改变磁盘上的文件名，
+    // 而浏览页缓存的列表不会自动重载，导致退出后仍显示密文名（需重启应用才更新）。
+    _refreshBrowser();
+    super.deactivate();
+  }
+
+  /// 刷新浏览页（重新加载加密挂载点 + 重载当前目录）
+  ///
+  /// 用 `showLoading: false` 避免闪一下全屏 loading。
+  Future<void> _refreshBrowser() async {
+    try {
+      final fm = context.read<FileManagerProvider>();
+      // 刷新挂载点 + 重新枚举所有已打开的本地标签页，让浏览页即时显示解密后的文件，
+      // 无需整机重启（此前「导入/原地加解密后浏览页仍是密文」即因挂载点仅在重启时重建）。
+      await fm.refreshAllBrowserTabs();
+    } catch (_) {}
   }
 
   /// 加载导入清单，并尝试把已加密条目的文件名解密为真实名称用于显示。
@@ -362,7 +383,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
+      builder: (_) => const ProgressOverlay(message: '正在导出...'),
     );
     String? exportedPath;
     try {
@@ -458,7 +479,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
+      builder: (_) => const ProgressOverlay(message: '正在导入备份...'),
     );
     try {
       final (imported, paramsRestored) = await VaultService.importVault(path);
@@ -560,11 +581,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     final navigator = Navigator.of(context);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
-    navigator.push(
-      MaterialPageRoute(
-        builder: (_) => const Center(child: CircularProgressIndicator()),
-      ),
-    );
+    pushProgressRoute(navigator, message: '正在导入...');
 
     var plainCount = 0;
     var encryptedCount = 0;
@@ -626,6 +643,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
 
       await _loadImportEntries();
       await _loadInPlaceEncryptedFiles();
+      await _refreshBrowser();
 
       if (mounted) {
         navigator.pop(); // 关闭进度
@@ -717,11 +735,8 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     final navigator = Navigator.of(context);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
-    navigator.push(
-      MaterialPageRoute(
-        builder: (_) => const Center(child: CircularProgressIndicator()),
-      ),
-    );
+    final progress = ValueNotifier<double?>(null);
+    pushProgressRoute(navigator, message: '正在加密...', progress: progress);
 
     try {
       if (inplace) {
@@ -739,7 +754,11 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
         // 否则条目会指向已不存在的旧路径而「消失」。
         String newPath;
         if (entry.isDirectory) {
-          await ops.encryptDirectory(entry.path);
+          await ops.encryptDirectory(
+            entry.path,
+            onProgress: (done, total) =>
+                progress.value = total > 0 ? done / total : null,
+          );
           final isMountRoot = p.equals(entry.path, mount.physicalPath);
           newPath = isMountRoot
               ? entry.path
@@ -762,6 +781,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
       await _loadImportEntries();
       await _loadInPlaceEncryptedFiles();
       await _loadVaultData();
+      await _refreshBrowser();
 
       if (mounted) {
         navigator.pop();
@@ -776,6 +796,8 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
           SnackBar(content: Text(l10n.vault_encrypt_failed('$e'))),
         );
       }
+    } finally {
+      progress.dispose();
     }
   }
 
@@ -882,7 +904,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
+      builder: (_) => const ProgressOverlay(message: '正在恢复...'),
     );
 
     try {
@@ -2218,13 +2240,12 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     );
     if (confirm != true) return;
 
+    final progress = ValueNotifier<double?>(null);
     var loadingShown = false;
     void showLoading() {
       if (loadingShown) return;
       loadingShown = true;
-      navigator.push(
-        MaterialPageRoute(builder: (_) => const Center(child: CircularProgressIndicator())),
-      );
+      pushProgressRoute(navigator, message: '正在解密...', progress: progress);
     }
 
     void hideLoading() {
@@ -2247,7 +2268,11 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
       try {
         final ops = CryptOperations(mount);
         if (isDirectory) {
-          await ops.decryptDirectory(path);
+          await ops.decryptDirectory(
+            path,
+            onProgress: (done, total) =>
+                progress.value = total > 0 ? done / total : null,
+          );
         } else {
           await ops.decryptFile(path);
         }
@@ -2273,6 +2298,8 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
           SnackBar(content: Text(l10n.vault_decrypt_failed('${firstError ?? e}'))),
         );
       }
+    } finally {
+      progress.dispose();
     }
   }
 
@@ -2281,6 +2308,9 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     await VaultImportStore.remove(path);
     await _loadImportEntries();
     await _loadInPlaceEncryptedFiles();
+    // 同步刷新浏览页：解密后磁盘上已变回普通文件名，
+    // 浏览页缓存不重载就仍显示密文名（需重启应用才更新）。
+    await _refreshBrowser();
   }
 
   String _formatSize(int bytes) {
