@@ -7214,7 +7214,9 @@ class FileManagerProvider extends ChangeNotifier {
     final originalPath = path;
     path = await _decryptCryptFileIfNeeded(path);
 
-    final mimeType = lookupMimeType(originalPath) ?? '';
+    // 对加密文件应使用解密后的真实路径判断 MIME（OpenList 等可能无加密后缀），
+    // 解密后路径回退到原始路径兜底。
+    final mimeType = lookupMimeType(path) ?? lookupMimeType(originalPath) ?? '';
     final ext = p.extension(path).toLowerCase();
     const docExts = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.epub', '.odt'];
 

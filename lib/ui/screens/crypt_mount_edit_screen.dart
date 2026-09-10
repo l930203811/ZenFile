@@ -46,12 +46,16 @@ class _CryptMountEditScreenState extends State<CryptMountEditScreen> {
     }
   }
 
-  /// 从SharedPreferences读取上次保存的密码和加盐
+  /// 从SharedPreferences读取上次保存的密码、加盐、文件名编码和加密后缀
   Future<void> _loadSavedCredentials() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final savedPassword = prefs.getString('crypt_last_password') ?? '';
       final savedSalt = prefs.getString('crypt_last_salt') ?? '';
+      final savedEnc = prefs.getString('crypt_last_filename_encoding') ?? '';
+      const suffixKey = 'crypt_last_encrypted_suffix';
+      final hasSavedSuffix = prefs.containsKey(suffixKey);
+      final savedSuffix = prefs.getString(suffixKey) ?? '';
       if (savedPassword.isNotEmpty) {
         _passwordController.text = savedPassword;
         _confirmPasswordController.text = savedPassword;
@@ -59,15 +63,27 @@ class _CryptMountEditScreenState extends State<CryptMountEditScreen> {
       if (savedSalt.isNotEmpty) {
         _saltController.text = savedSalt;
       }
+      if (savedEnc.isNotEmpty) {
+        _filenameEncoding = FilenameEncoding.values.firstWhere(
+          (e) => e.name == savedEnc,
+          orElse: () => FilenameEncoding.base32,
+        );
+      }
+      // 只要保存过 suffix 就覆盖输入框，允许空后缀；未保存过时保留默认 .bin。
+      if (hasSavedSuffix) {
+        _suffixController.text = savedSuffix;
+      }
     } catch (_) {}
   }
 
-  /// 保存密码和加盐到SharedPreferences
+  /// 保存密码、加盐、文件名编码和加密后缀到SharedPreferences
   Future<void> _saveCredentials() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('crypt_last_password', _passwordController.text);
       await prefs.setString('crypt_last_salt', _saltController.text);
+      await prefs.setString('crypt_last_filename_encoding', _filenameEncoding.name);
+      await prefs.setString('crypt_last_encrypted_suffix', _suffixController.text.trim());
     } catch (_) {}
   }
 
@@ -122,7 +138,7 @@ class _CryptMountEditScreenState extends State<CryptMountEditScreen> {
           filenameEncryption: _filenameEncryption,
           directoryNameEncryption: _directoryNameEncryption,
           filenameEncoding: _filenameEncoding,
-          encryptedSuffix: _suffixController.text.trim().isEmpty ? '.bin' : _suffixController.text.trim(),
+          encryptedSuffix: _suffixController.text.trim(),
         ),
       );
       await CryptMountService.addMountPoint(updated);

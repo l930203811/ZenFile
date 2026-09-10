@@ -178,18 +178,23 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
       final file = File(widget.imagePath);
       final parent = file.parent;
       final files = parent.listSync();
-      final images = <String>[];
+      final images = <String>{};
       for (final f in files) {
         if (f is File) {
           final mime = lookupMimeType(f.path);
           if ((mime != null && mime.startsWith('image/')) ||
-              f.path.toLowerCase().endsWith('.avif')) {
+              f.path.toLowerCase().endsWith('.avif') ||
+              _isImageByHeader(f.path)) {
             images.add(f.path);
           }
         }
       }
-      images.sort((a, b) => a.compareTo(b));
-      _imageList = images;
+      // 确保当前图片一定在列表中（解密后的临时文件可能无扩展名）
+      if (File(widget.imagePath).existsSync()) {
+        images.add(widget.imagePath);
+      }
+      final sorted = images.toList()..sort((a, b) => a.compareTo(b));
+      _imageList = sorted;
       _currentIndex = _imageList.indexOf(widget.imagePath);
       if (_currentIndex == -1) {
         _imageList.insert(0, widget.imagePath);
@@ -198,6 +203,38 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     } catch (_) {
       _imageList = [widget.imagePath];
       _currentIndex = 0;
+    }
+  }
+
+  /// 通过文件魔数判断是否为常见图片格式，用于无扩展名或扩展名被加密的图片。
+  bool _isImageByHeader(String path) {
+    try {
+      final file = File(path);
+      if (!file.existsSync()) return false;
+      final bytes = file.readAsBytesSync();
+      if (bytes.length < 12) return false;
+      // JPEG
+      if (bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF) return true;
+      // PNG
+      if (bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47) return true;
+      // GIF
+      if (bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46 && bytes[3] == 0x38) return true;
+      // BMP
+      if (bytes[0] == 0x42 && bytes[1] == 0x4D) return true;
+      // WebP (RIFF....WEBP)
+      if (bytes[0] == 0x52 && bytes[1] == 0x49 && bytes[2] == 0x46 && bytes[3] == 0x46 &&
+          bytes[8] == 0x57 && bytes[9] == 0x45 && bytes[10] == 0x42 && bytes[11] == 0x50) {
+        return true;
+      }
+      // HEIC/HEIF (ftyp box 后接 brand)
+      final brand = bytes.sublist(4, 12);
+      final brandStr = String.fromCharCodes(brand);
+      if (brandStr.contains('heic') || brandStr.contains('heix') || brandStr.contains('mif1')) {
+        return true;
+      }
+      return false;
+    } catch (_) {
+      return false;
     }
   }
 

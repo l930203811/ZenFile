@@ -14,10 +14,16 @@ import 'crypt_config.dart';
 /// ============================================================
 /// Salsa20/8 核心函数（用于 Scrypt 的 BlockMix）
 /// ============================================================
-
-/// Salsa20 核心变换：对 16 个 uint32 进行 8 轮 Salsa20 变换
 ///
-/// 输入/输出都是 64 字节（16 个 uint32，小端序）
+/// 严格对齐 RFC 7914 第 3 节 `salsa20_word_specification`（与 golang
+/// x/crypto/scrypt、libsodium、rclone/OpenList 完全一致）。
+/// 注意：scrypt 把整个 64 字节块直接当成状态，**不注入** sigma 常数。
+
+/// Salsa20/8 核心变换：对 16 个 uint32 进行 8 轮（= 4 个 double-round）变换
+///
+/// RFC 7914 section 3 的逐字列变换 + 行变换，循环 4 次（Salsa20/8）。
+/// 输入/输出都是 64 字节（16 个 uint32，小端序）。
+/// 偏移 `block.length - 64` 的写法已逐行核对 RFC 7914 与 golang 源码。
 Uint8List _salsa20Core8(Uint8List input) {
   assert(input.length == 64);
 
@@ -33,49 +39,42 @@ Uint8List _salsa20Core8(Uint8List input) {
   // 保存原始值
   final z = List<int>.from(x);
 
-  // 8 轮 Salsa20（4 轮列变换 + 4 轮行变换）
+  // Salsa20/8 = 4 个 double-round（每轮 = 一次列变换 + 一次行变换）。
   for (var i = 0; i < 4; i++) {
-    // 列变换
-    z[4] ^= _rotl((z[0] + z[12]) & 0xffffffff, 7);
-    z[8] ^= _rotl((z[4] + z[0]) & 0xffffffff, 9);
-    z[12] ^= _rotl((z[8] + z[4]) & 0xffffffff, 13);
-    z[0] ^= _rotl((z[12] + z[8]) & 0xffffffff, 18);
-
-    z[9] ^= _rotl((z[5] + z[1]) & 0xffffffff, 7);
-    z[13] ^= _rotl((z[9] + z[5]) & 0xffffffff, 9);
-    z[1] ^= _rotl((z[13] + z[9]) & 0xffffffff, 13);
-    z[5] ^= _rotl((z[1] + z[13]) & 0xffffffff, 18);
-
-    z[14] ^= _rotl((z[10] + z[6]) & 0xffffffff, 7);
-    z[2] ^= _rotl((z[14] + z[10]) & 0xffffffff, 9);
-    z[6] ^= _rotl((z[2] + z[14]) & 0xffffffff, 13);
-    z[10] ^= _rotl((z[6] + z[2]) & 0xffffffff, 18);
-
-    z[3] ^= _rotl((z[15] + z[11]) & 0xffffffff, 7);
-    z[7] ^= _rotl((z[3] + z[15]) & 0xffffffff, 9);
-    z[11] ^= _rotl((z[7] + z[3]) & 0xffffffff, 13);
-    z[15] ^= _rotl((z[11] + z[7]) & 0xffffffff, 18);
-
-    // 行变换
-    z[1] ^= _rotl((z[0] + z[3]) & 0xffffffff, 7);
-    z[2] ^= _rotl((z[1] + z[0]) & 0xffffffff, 9);
-    z[3] ^= _rotl((z[2] + z[1]) & 0xffffffff, 13);
-    z[0] ^= _rotl((z[3] + z[2]) & 0xffffffff, 18);
-
-    z[6] ^= _rotl((z[5] + z[4]) & 0xffffffff, 7);
-    z[7] ^= _rotl((z[6] + z[5]) & 0xffffffff, 9);
-    z[4] ^= _rotl((z[7] + z[6]) & 0xffffffff, 13);
-    z[5] ^= _rotl((z[4] + z[7]) & 0xffffffff, 18);
-
-    z[11] ^= _rotl((z[10] + z[9]) & 0xffffffff, 7);
-    z[8] ^= _rotl((z[11] + z[10]) & 0xffffffff, 9);
-    z[9] ^= _rotl((z[8] + z[11]) & 0xffffffff, 13);
-    z[10] ^= _rotl((z[9] + z[8]) & 0xffffffff, 18);
-
-    z[12] ^= _rotl((z[15] + z[14]) & 0xffffffff, 7);
-    z[13] ^= _rotl((z[12] + z[15]) & 0xffffffff, 9);
-    z[14] ^= _rotl((z[13] + z[12]) & 0xffffffff, 13);
-    z[15] ^= _rotl((z[14] + z[13]) & 0xffffffff, 18);
+    // ---- 列变换 (Column rounds) ----
+    x[4] ^= _rotl((x[0] + x[12]) & 0xffffffff, 7);
+    x[8] ^= _rotl((x[4] + x[0]) & 0xffffffff, 9);
+    x[12] ^= _rotl((x[8] + x[4]) & 0xffffffff, 13);
+    x[0] ^= _rotl((x[12] + x[8]) & 0xffffffff, 18);
+    x[9] ^= _rotl((x[5] + x[1]) & 0xffffffff, 7);
+    x[13] ^= _rotl((x[9] + x[5]) & 0xffffffff, 9);
+    x[1] ^= _rotl((x[13] + x[9]) & 0xffffffff, 13);
+    x[5] ^= _rotl((x[1] + x[13]) & 0xffffffff, 18);
+    x[14] ^= _rotl((x[10] + x[6]) & 0xffffffff, 7);
+    x[2] ^= _rotl((x[14] + x[10]) & 0xffffffff, 9);
+    x[6] ^= _rotl((x[2] + x[14]) & 0xffffffff, 13);
+    x[10] ^= _rotl((x[6] + x[2]) & 0xffffffff, 18);
+    x[3] ^= _rotl((x[15] + x[11]) & 0xffffffff, 7);
+    x[7] ^= _rotl((x[3] + x[15]) & 0xffffffff, 9);
+    x[11] ^= _rotl((x[7] + x[3]) & 0xffffffff, 13);
+    x[15] ^= _rotl((x[11] + x[7]) & 0xffffffff, 18);
+    // ---- 行变换 (Row rounds) ----
+    x[1] ^= _rotl((x[0] + x[3]) & 0xffffffff, 7);
+    x[2] ^= _rotl((x[1] + x[0]) & 0xffffffff, 9);
+    x[3] ^= _rotl((x[2] + x[1]) & 0xffffffff, 13);
+    x[0] ^= _rotl((x[3] + x[2]) & 0xffffffff, 18);
+    x[6] ^= _rotl((x[5] + x[4]) & 0xffffffff, 7);
+    x[7] ^= _rotl((x[6] + x[5]) & 0xffffffff, 9);
+    x[4] ^= _rotl((x[7] + x[6]) & 0xffffffff, 13);
+    x[5] ^= _rotl((x[4] + x[7]) & 0xffffffff, 18);
+    x[11] ^= _rotl((x[10] + x[9]) & 0xffffffff, 7);
+    x[8] ^= _rotl((x[11] + x[10]) & 0xffffffff, 9);
+    x[9] ^= _rotl((x[8] + x[11]) & 0xffffffff, 13);
+    x[10] ^= _rotl((x[9] + x[8]) & 0xffffffff, 18);
+    x[12] ^= _rotl((x[15] + x[14]) & 0xffffffff, 7);
+    x[13] ^= _rotl((x[12] + x[15]) & 0xffffffff, 9);
+    x[14] ^= _rotl((x[13] + x[12]) & 0xffffffff, 13);
+    x[15] ^= _rotl((x[14] + x[13]) & 0xffffffff, 18);
   }
 
   // 输出 = 原始值 + 变换后的值
@@ -163,7 +162,7 @@ Uint8List _romix(Uint8List block, int N, int r) {
 
   // 第二次循环：x = BlockMix(x XOR V[Integerify(x)])
   for (var i = 0; i < N; i++) {
-    final j = _integerify(x) % N;
+    final j = _integerify(x, r) % N;
     final vj = v[j];
     for (var k = 0; k < blockSize; k++) {
       x[k] ^= vj[k];
@@ -174,43 +173,64 @@ Uint8List _romix(Uint8List block, int N, int r) {
   return x;
 }
 
-/// BlockMix 函数
+/// BlockMix 函数（严格对齐 RFC 7914 / golang x/crypto/scrypt）
+///
+/// 标准算法：X = B[2r-1]，然后对每个 i = 0..2r-1：
+///   T = X XOR B[i]
+///   X = Salsa20/8(T)
+///   Y[i] = X
+/// **关键**：输出 Y 的写入是**交织**的（golang blockMix 的展开实现）：
+///   - 偶块索引 2k    → Y[k]        （输出前半段 [0 .. r-1]）
+///   - 奇块索引 2k+1  → Y[r + k]    （输出后半段 [r .. 2r-1]）
+/// r = 1 时交织等价于顺序写；r > 1 时二者结果不同，必须用交织写才能与
+/// rclone / OpenList 兼容。
 Uint8List _blockMix(Uint8List block, int r) {
   final blockSize = 128 * r;
   assert(block.length == blockSize);
 
-  // 2r 个 64 字节块
-  final halfLen = 64 * r;
-  final x = Uint8List.fromList(block.sublist(halfLen - 64, halfLen));
+  // 初始 X = 块的最后 64 字节（B[2r-1]）
+  final x = Uint8List.fromList(block.sublist(block.length - 64, block.length));
   final y = Uint8List(blockSize);
 
   for (var i = 0; i < 2 * r; i++) {
-    // x = Salsa20/8(x XOR block[i])
-    final blockIdx = (i % 2 == 0) ? i ~/ 2 : r + i ~/ 2;
-    final start = blockIdx * 64;
+    final start = i * 64;
     for (var j = 0; j < 64; j++) {
       x[j] ^= block[start + j];
     }
     final salsaOut = _salsa20Core8(x);
     x.setAll(0, salsaOut);
-
-    // y[i] = x
-    final yStart = (i % 2 == 0) ? (i ~/ 2) * 64 : (r + i ~/ 2) * 64;
-    y.setRange(yStart, yStart + 64, x);
+    // 交织写出（golang x/crypto/scrypt blockMix）
+    if (i % 2 == 0) {
+      final k = i ~/ 2;
+      y.setRange(k * 64, k * 64 + 64, x);
+    } else {
+      final k = (i - 1) ~/ 2;
+      y.setRange((k + r) * 64, (k + r) * 64 + 64, x);
+    }
   }
 
   return y;
 }
 
-/// Integerify：取块的最后 64 字节的最后一个 uint32（小端序）作为索引
-int _integerify(Uint8List block) {
-  final last64 = block.length - 64;
-  // 取最后 64 字节的最后一个 uint32（偏移 60-63）
-  final offset = last64 + 60;
-  return (block[offset]) |
+/// Integerify：取最后一个 64 字节子块 B[2r-1] 的**前 8 字节**，按小端序
+/// 解释为无符号 64 位整数，用作 ROMix 的 V 数组下标。
+///
+/// 严格对齐 RFC 7914 / golang `integer()`：`j = (2*r - 1) * 16` 个 uint32
+/// 处读取 2 个 uint32（= 块尾倒数第 64 字节起的 8 字节），即偏移
+/// `(2*r - 1) * 64 = block.length - 64`。这是 B[2r-1] 的**低 64 位**；
+/// 对 2 的幂 N 取模时只有低 log2(N) 位参与，等价于 RFC 的 "B[2r-1] 整体
+/// 小端整数 mod N"。注意：**不能**读整个块的最后 8 字节（那是子块的高 8 字节）。
+int _integerify(Uint8List block, int r) {
+  final offset = (2 * r - 1) * 64; // = block.length - 64
+  final low = block[offset] |
       (block[offset + 1] << 8) |
       (block[offset + 2] << 16) |
       (block[offset + 3] << 24);
+  final high = block[offset + 4] |
+      (block[offset + 5] << 8) |
+      (block[offset + 6] << 16) |
+      (block[offset + 7] << 24);
+  return low | (high << 32);
 }
 
 /// ============================================================

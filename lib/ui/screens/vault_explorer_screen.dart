@@ -60,6 +60,9 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
   List<VaultImportEntry> _importEntries = [];
   bool _isLoadingImports = true;
 
+  // 已加密导入条目的解密后文件名缓存（key=物理路径，value=解密名）
+  Map<String, String> _importDecryptedNames = {};
+
   // 三区域展开状态（默认展开，避免进入保险箱看不到内容）
   bool _unencryptedExpanded = true;
   bool _inplaceExpanded = true;
@@ -84,19 +87,55 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     _searchController.addListener(_onSearchChanged);
   }
 
-  /// 加载导入清单
+  /// 加载导入清单，并尝试把已加密条目的文件名解密为真实名称用于显示。
   Future<void> _loadImportEntries() async {
     setState(() => _isLoadingImports = true);
     try {
       final entries = await VaultImportStore.load();
+      final decryptedNames = await _decryptImportNames(entries);
       if (!mounted) return;
       setState(() {
         _importEntries = entries;
+        _importDecryptedNames = decryptedNames;
         _isLoadingImports = false;
       });
     } catch (_) {
       if (mounted) setState(() => _isLoadingImports = false);
     }
+  }
+
+  /// 对导入清单中标记为已加密的条目尝试解密文件名。
+  ///
+  /// 优先使用匹配路径的已持久化挂载点配置，否则回退到「加密设置」中
+  /// 保存的主密码/盐/编码/后缀。失败则保留原加密名。
+  Future<Map<String, String>> _decryptImportNames(List<VaultImportEntry> entries) async {
+    final result = <String, String>{};
+    try {
+      final mounts = await _loadMountsWithPassword();
+      final master = await VaultCryptService.instance.getMasterConfig();
+      final cryptCache = <RcloneCryptConfig, RcloneCrypt>{};
+
+      for (final entry in entries.where((e) => e.encrypted)) {
+        try {
+          CryptMountPoint? matchedMount;
+          for (final m in mounts) {
+            if (m.containsPath(entry.path)) {
+              matchedMount = m;
+              break;
+            }
+          }
+          final config = matchedMount?.config ?? master;
+          if (config == null) continue;
+
+          final crypt = cryptCache.putIfAbsent(config, () => RcloneCrypt(config: config));
+          final name = p.basename(entry.path);
+          result[entry.path] = crypt.decryptFileName(name);
+        } catch (_) {
+          // 解密失败：不缓存，后续显示原加密名
+        }
+      }
+    } catch (_) {}
+    return result;
   }
 
   /// 加载已持久化的加密挂载点。
@@ -2020,7 +2059,7 @@ class _VaultExplorerScreenState extends State<VaultExplorerScreen> {
     for (final e in _encryptedImports) {
       if (seen.add(e.path)) {
         items.add(_InPlaceItem(
-          name: e.name,
+          name: _importDecryptedNames[e.path] ?? e.name,
           path: e.path,
           displayPath: e.path,
           isDirectory: e.isDirectory,

@@ -68,21 +68,43 @@ class VaultCryptService {
   }
 
   /// 获取默认的沙盒 crypt 挂载点配置
+  ///
+  /// 文件名加密模式固定为 standard，但编码与后缀跟随用户在「加密设置」
+  /// 中保存的配置，确保与原地加密/OpenList 配置一致。
   Future<RcloneCryptConfig> getSandboxConfig(String password) async {
+    return _loadUserCryptConfig(password, null);
+  }
+
+  /// 从 SharedPreferences 读取用户在「加密设置」中保存的完整 rclone crypt 配置。
+  ///
+  /// 包含：password / salt / filenameEncoding / encryptedSuffix。
+  /// 如果用户尚未保存对应项，使用 rclone 默认值（base32 / .bin）。
+  Future<RcloneCryptConfig> _loadUserCryptConfig(String password, String? salt) async {
+    final prefs = await SharedPreferences.getInstance();
+    final saltStr = salt ?? prefs.getString('crypt_last_salt') ?? '';
+    final encName = prefs.getString('crypt_last_filename_encoding') ?? 'base32';
+    final suffix = prefs.getString('crypt_last_encrypted_suffix') ?? '.bin';
+
+    final filenameEncoding = FilenameEncoding.values.firstWhere(
+      (e) => e.name == encName,
+      orElse: () => FilenameEncoding.base32,
+    );
+
     return RcloneCryptConfig(
       password: password,
+      salt: saltStr.isEmpty ? null : saltStr,
       filenameEncryption: FilenameEncryption.standard,
       directoryNameEncryption: true,
-      filenameEncoding: FilenameEncoding.base32,
-      encryptedSuffix: '.bin',
+      filenameEncoding: filenameEncoding,
+      encryptedSuffix: suffix,
     );
   }
 
-  /// 读取「加密设置」里已配置的加密主密码与盐。
+  /// 读取「加密设置」里已配置的完整 rclone crypt 配置。
   ///
-  /// 加密设置页（CryptMountEditScreen）在「新增」模式下只把主密码/盐写入
-  /// SharedPreferences（crypt_last_password / crypt_last_salt），并不创建整机
-  /// 挂载点（避免浏览页全锁）。原地加密 / 解密都依赖这组共享凭据，因此从这里读取。
+  /// 加密设置页（CryptMountEditScreen）在「新增」模式下把主密码/盐/文件名编码
+  /// /加密后缀写入 SharedPreferences，并不创建整机挂载点（避免浏览页全锁）。
+  /// 原地加密 / 解密都依赖这组共享凭据，因此从这里读取。
   ///
   /// 返回 null 表示用户尚未在加密设置中配置主密码。
   Future<RcloneCryptConfig?> getMasterConfig() async {
@@ -90,13 +112,9 @@ class VaultCryptService {
     final password = prefs.getString('crypt_last_password') ?? '';
     if (password.isEmpty) return null;
     final saltStr = prefs.getString('crypt_last_salt');
-    return RcloneCryptConfig(
-      password: password,
-      salt: (saltStr == null || saltStr.isEmpty) ? null : saltStr,
-      filenameEncryption: FilenameEncryption.standard,
-      directoryNameEncryption: true,
-      filenameEncoding: FilenameEncoding.base32,
-      encryptedSuffix: '.bin',
+    return _loadUserCryptConfig(
+      password,
+      (saltStr == null || saltStr.isEmpty) ? null : saltStr,
     );
   }
 
@@ -184,14 +202,9 @@ class VaultCryptService {
     }
 
     if (parentMount == null) {
-      // 创建新的原地加密挂载点
-      final config = RcloneCryptConfig(
-        password: password,
-        filenameEncryption: FilenameEncryption.standard,
-        directoryNameEncryption: true,
-        filenameEncoding: FilenameEncoding.base32,
-        encryptedSuffix: '.bin',
-      );
+      // 创建新的原地加密挂载点：复用用户在「加密设置」中保存的编码与后缀，
+      // 保证与 OpenList / rclone 配置一致。
+      final config = await _loadUserCryptConfig(password, null);
       parentMount = CryptMountPoint(
         physicalPath: parentDir,
         config: config,
@@ -238,7 +251,6 @@ class VaultCryptService {
       await Directory(sourcePath).delete(recursive: true);
     } else {
       // 文件加密：先复制到沙盒目录，再加密（使用原地加密会自动重命名）
-      final destFile = File(destPath);
       await File(sourcePath).copy(destPath);
       await ops.encryptFile(destPath);
       // 删除原文件
