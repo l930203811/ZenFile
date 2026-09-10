@@ -1702,8 +1702,33 @@ class FileManagerProvider extends ChangeNotifier {
     final mount = _findCryptMountForPath(path);
     if (mount == null) return path;
 
+    // 解析真实物理路径：优先按虚拟路径映射；若映射结果不存在而 path 本身
+    // 是存在的文件（例如已解密但仍留在加密目录内的普通文件），则用 path。
+    var physicalPath = mount.virtualToPhysical(path);
+    if (!await File(physicalPath).exists() && await File(path).exists()) {
+      physicalPath = path;
+    }
+
+    // ⚠️ 只有真实加密文件（带 RCLONE magic 头）才走解密/流式播放。
+    // 已解密的普通文件若仍位于加密挂载点目录内，此前会被误判为加密文件：
+    // 图片分支因 CryptFile.open 抛错而回退原路径（所以图片一直正常），
+    // 但音视频分支会直接返回流式 URL，服务端再对已解密文件做解密 →
+    // 数据错乱/404 → 内置播放器无法播放（第三方直接读文件所以正常）。
+    if (!await _isEncryptedPhysicalFile(physicalPath)) {
+      return path;
+    }
+
+    // 解出真实文件名。密文名可能完全没有扩展名（如 OpenList 空后缀加密），
+    // 后续的类型判断与临时文件名都必须基于真实文件名，否则会误判为「未知格式」。
+    String realName;
+    try {
+      realName = mount.crypt.decryptFileName(p.basename(physicalPath));
+    } catch (_) {
+      realName = p.basename(path);
+    }
+
     // 对于视频和音频文件，使用流式播放 URL，无需等待完整解密
-    if (_isVideoOrAudio(path)) {
+    if (_isVideoOrAudio(realName)) {
       try {
         final streamUrl = CryptStreamServer.instance.getStreamUrl(path);
         debugPrint('[ZenFile] Using stream URL for crypt media: $streamUrl');
@@ -1714,8 +1739,6 @@ class FileManagerProvider extends ChangeNotifier {
     }
 
     try {
-      // 将虚拟路径转换为物理路径（加密文件的实际路径）
-      final physicalPath = mount.virtualToPhysical(path);
       final physicalFile = File(physicalPath);
       if (!await physicalFile.exists()) {
         debugPrint('[ZenFile] Crypt file not found: $physicalPath');
@@ -1724,8 +1747,8 @@ class FileManagerProvider extends ChangeNotifier {
 
       // 解密到临时目录
       final tempDirPath = await _getCryptTempDir();
-      // 使用解密后的文件名作为临时文件名
-      final decryptedName = p.basename(path);
+      // 使用解密后的真实文件名作为临时文件名（保证扩展名正确，便于播放器识别）
+      final decryptedName = realName;
       final tempFilePath = p.join(tempDirPath, '${DateTime.now().millisecondsSinceEpoch}_$decryptedName');
 
       final cryptFile = await CryptFile.open(physicalPath, mount.crypt, mode: CryptFileMode.read);
@@ -1754,6 +1777,44 @@ class FileManagerProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('[ZenFile] Failed to decrypt crypt file: $e');
       return path;
+    }
+  }
+
+  /// 判断物理文件是否为真实的 rclone/OpenList 加密文件（文件头带 RCLONE magic）
+  Future<bool> _isEncryptedPhysicalFile(String physicalPath) async {
+    try {
+      final file = File(physicalPath);
+      if (!await file.exists()) return false;
+      final raf = await file.open(mode: FileMode.read);
+      try {
+        final head = await raf.read(fileMagicSize);
+        if (head.length < fileMagicSize) return false;
+        for (var i = 0; i < fileMagicSize; i++) {
+          if (head[i] != fileHeaderMagicBytes[i]) return false;
+        }
+        return true;
+      } finally {
+        await raf.close();
+      }
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// 解密出加密文件的真实文件名；文件不属于加密挂载点或未加密时返回 null
+  Future<String?> _realNameOfEncryptedFile(String path) async {
+    try {
+      await _ensureCryptMountsLoaded();
+      final mount = _findCryptMountForPath(path);
+      if (mount == null) return null;
+      var physicalPath = mount.virtualToPhysical(path);
+      if (!await File(physicalPath).exists() && await File(path).exists()) {
+        physicalPath = path;
+      }
+      if (!await _isEncryptedPhysicalFile(physicalPath)) return null;
+      return mount.crypt.decryptFileName(p.basename(physicalPath));
+    } catch (_) {
+      return null;
     }
   }
 
@@ -7216,8 +7277,14 @@ class FileManagerProvider extends ChangeNotifier {
 
     // 对加密文件应使用解密后的真实路径判断 MIME（OpenList 等可能无加密后缀），
     // 解密后路径回退到原始路径兜底。
-    final mimeType = lookupMimeType(path) ?? lookupMimeType(originalPath) ?? '';
-    final ext = p.extension(path).toLowerCase();
+    // 若三者都判不出（密文名无扩展名 + 流式 URL 无扩展名），再用解密出的
+    // 真实文件名兜底，避免落到「未知格式」导致无法播放。
+    final realName = await _realNameOfEncryptedFile(originalPath);
+    final mimeType = lookupMimeType(path) ??
+        lookupMimeType(originalPath) ??
+        (realName != null ? lookupMimeType(realName) : null) ??
+        '';
+    final ext = p.extension(realName ?? path).toLowerCase();
     const docExts = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.epub', '.odt'];
 
     if (FileUtils.isArchive(path)) {
@@ -7239,10 +7306,10 @@ class FileManagerProvider extends ChangeNotifier {
 
     if (mimeType.startsWith('video/')) {
       if (!context.mounted) return true;
-      final folderVideoFiles = activeTab.currentFiles
+      final folderVideoItems = activeTab.currentFiles
           .where((f) => !f.isDirectory && (lookupMimeType(f.path)?.startsWith('video/') == true || FileUtils.isVideo(f.path)))
-          .map((f) => f.path)
           .toList();
+      final folderVideoFiles = folderVideoItems.map((f) => f.path).toList();
       // 对播放列表中的加密文件也进行解密
       final decryptedVideoFiles = <String>[];
       for (final vp in folderVideoFiles) {
@@ -7251,12 +7318,20 @@ class FileManagerProvider extends ChangeNotifier {
       int initialIndex = folderVideoFiles.indexOf(originalPath);
       if (initialIndex == -1) initialIndex = 0;
 
+      // 播放列表显示真实文件名（f.name 已由 CryptDirectoryLister 解密），
+      // 不再用密文名或流式 URL 的 basename（后者会显示成 decrypt.mp4?path=...）。
+      final hasPlaylist = decryptedVideoFiles.isNotEmpty;
+      final videoTitles = hasPlaylist
+          ? folderVideoItems.map((f) => f.name).toList()
+          : <String>[realName ?? p.basename(originalPath)];
+
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (_) => VideoPlayerScreen(
             videoPath: path,
-            playlist: decryptedVideoFiles.isNotEmpty ? decryptedVideoFiles : [path],
+            playlist: hasPlaylist ? decryptedVideoFiles : [path],
+            playlistTitles: videoTitles,
             initialIndex: initialIndex,
             isRemote: activeTab.isRemote,
           ),
@@ -7280,20 +7355,25 @@ class FileManagerProvider extends ChangeNotifier {
       List<SongModel>? allSongs;
       int initialIndex = 0;
 
-      if (folderAudioFiles.isNotEmpty && folderAudioFiles.any((f) => f.path == path)) {
+      // ⚠️ 必须用 originalPath 匹配：此时 path 已经是解密后的临时文件/流式 URL，
+      // 与列表里的（虚拟/物理）路径永远不相等，导致 allSongs 一直是 null，
+      // 播放器只能自行扫描目录 → 播放列表显示密文名且播放失败。
+      if (folderAudioFiles.isNotEmpty && folderAudioFiles.any((f) => f.path == originalPath)) {
         allSongs = [];
         for (int i = 0; i < folderAudioFiles.length; i++) {
           final file = folderAudioFiles[i];
+          // 显示真实文件名（file.name 已由 CryptDirectoryLister 解密），而非密文名
+          final displayName = file.name;
           final songMap = {
             '_id': i,
             '_data': decryptedAudioPaths[i],
-            'title': p.basenameWithoutExtension(file.path),
+            'title': p.basenameWithoutExtension(displayName),
             'artist': L10n.of(context).msg5e32276d,
             'album': L10n.of(context).msg497ec49d,
             'duration': 0,
             'size': file.size,
-            'display_name': p.basename(file.path),
-            'display_name_wo_ext': p.basenameWithoutExtension(file.path),
+            'display_name': displayName,
+            'display_name_wo_ext': p.basenameWithoutExtension(displayName),
             'is_music': true,
           };
           allSongs.add(SongModel(songMap));
@@ -7308,7 +7388,8 @@ class FileManagerProvider extends ChangeNotifier {
         MaterialPageRoute(
           builder: (_) => AudioPlayerScreen(
             audioPath: path,
-            title: p.basename(path),
+            // 标题同样用解密后的真实文件名（path 可能是带时间戳的临时文件名）
+            title: realName ?? p.basename(originalPath),
             allSongs: allSongs,
             initialIndex: initialIndex,
             isRemote: activeTab.isRemote,

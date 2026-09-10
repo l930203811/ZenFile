@@ -56,23 +56,29 @@ class _CryptMountEditScreenState extends State<CryptMountEditScreen> {
       const suffixKey = 'crypt_last_encrypted_suffix';
       final hasSavedSuffix = prefs.containsKey(suffixKey);
       final savedSuffix = prefs.getString(suffixKey) ?? '';
-      if (savedPassword.isNotEmpty) {
-        _passwordController.text = savedPassword;
-        _confirmPasswordController.text = savedPassword;
-      }
-      if (savedSalt.isNotEmpty) {
-        _saltController.text = savedSalt;
-      }
-      if (savedEnc.isNotEmpty) {
-        _filenameEncoding = FilenameEncoding.values.firstWhere(
-          (e) => e.name == savedEnc,
-          orElse: () => FilenameEncoding.base32,
-        );
-      }
-      // 只要保存过 suffix 就覆盖输入框，允许空后缀；未保存过时保留默认 .bin。
-      if (hasSavedSuffix) {
-        _suffixController.text = savedSuffix;
-      }
+      if (!mounted) return;
+      // ⚠️ 必须走 setState：本方法在 initState 里异步执行，首帧 build 时
+      // 用的仍是默认 base32/".bin"，不触发重建的话下拉框永远显示默认值，
+      // 用户会以为「保存的 Base64 没生效」。
+      setState(() {
+        if (savedPassword.isNotEmpty) {
+          _passwordController.text = savedPassword;
+          _confirmPasswordController.text = savedPassword;
+        }
+        if (savedSalt.isNotEmpty) {
+          _saltController.text = savedSalt;
+        }
+        if (savedEnc.isNotEmpty) {
+          _filenameEncoding = FilenameEncoding.values.firstWhere(
+            (e) => e.name == savedEnc,
+            orElse: () => FilenameEncoding.base32,
+          );
+        }
+        // 只要保存过 suffix 就覆盖输入框，允许空后缀；未保存过时保留默认 .bin。
+        if (hasSavedSuffix) {
+          _suffixController.text = savedSuffix;
+        }
+      });
     } catch (_) {}
   }
 
@@ -188,15 +194,6 @@ class _CryptMountEditScreenState extends State<CryptMountEditScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.crypt_set_master_password),
-        actions: [
-          TextButton(
-            onPressed: _save,
-            child: Text(
-              l10n.ui_save,
-              style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
       ),
       body: Form(
         key: _formKey,

@@ -106,7 +106,12 @@ class CryptStreamServer {
         return;
       }
 
-      final physicalPath = mount.virtualToPhysical(virtualPath);
+      // 容错：传入的可能是虚拟路径，也可能本身就是物理路径
+      // （例如保险箱导入清单里的真实路径），两种都要能正确定位文件。
+      var physicalPath = mount.virtualToPhysical(virtualPath);
+      if (!await File(physicalPath).exists() && await File(virtualPath).exists()) {
+        physicalPath = virtualPath;
+      }
       final physicalFile = File(physicalPath);
       if (!await physicalFile.exists()) {
         request.response.statusCode = HttpStatus.notFound;
@@ -117,6 +122,17 @@ class CryptStreamServer {
       // 打开加密文件
       final cryptFile = await CryptFile.open(physicalPath, mount.crypt, mode: CryptFileMode.read);
       final decryptedSize = cryptFile.length;
+
+      // 读取文件头用于魔数识别格式。
+      // ⚠️ 虚拟文件名可能没有扩展名（如 OpenList 用 base64 + 空后缀加密），
+      // 此时仅靠扩展名会返回 octet-stream，播放器无法识别导致无法播放。
+      List<int> header = const <int>[];
+      if (decryptedSize > 0) {
+        try {
+          final headerLen = decryptedSize < 16 ? decryptedSize : 16;
+          header = await cryptFile.read(0, headerLen);
+        } catch (_) {}
+      }
 
       // 解析 Range 请求
       final rangeHeader = request.headers.value(HttpHeaders.rangeHeader);
@@ -151,7 +167,12 @@ class CryptStreamServer {
       final contentLength = end - start + 1;
 
       // 设置响应头
-      request.response.headers.contentType = ContentType.parse(_guessMimeType(virtualPath));
+      // 扩展名识别不出格式时（无扩展名），改用文件头魔数识别。
+      var mimeType = _guessMimeType(virtualPath);
+      if (mimeType == 'application/octet-stream') {
+        mimeType = _detectMimeFromHeader(header) ?? mimeType;
+      }
+      request.response.headers.contentType = ContentType.parse(mimeType);
       request.response.headers.set(HttpHeaders.acceptRangesHeader, 'bytes');
       request.response.headers.set('Content-Length', contentLength.toString());
 
@@ -204,6 +225,59 @@ class CryptStreamServer {
     if (lower.endsWith('.wma')) return 'audio/x-ms-wma';
     if (lower.endsWith('.opus')) return 'audio/opus';
     return 'application/octet-stream';
+  }
+
+  /// 根据文件头魔数识别音视频格式（用于无扩展名的加密文件）
+  ///
+  /// 支持：MP4/MOV/M4A、Matroska(WebM/MKV)、AVI、WAV、MP3、FLAC、Ogg/Opus、AAC(ADTS)。
+  /// 识别不出时返回 null，由调用方回退。
+  String? _detectMimeFromHeader(List<int> b) {
+    if (b.length < 4) return null;
+
+    // Matroska / WebM（EBML 头）
+    if (b[0] == 0x1A && b[1] == 0x45 && b[2] == 0xDF && b[3] == 0xA3) {
+      return 'video/x-matroska';
+    }
+
+    // MP4 / MOV / M4A：偏移 4 处是 'ftyp'
+    if (b.length >= 12 &&
+        b[4] == 0x66 &&
+        b[5] == 0x74 &&
+        b[6] == 0x79 &&
+        b[7] == 0x70) {
+      final brand = String.fromCharCodes(b.sublist(8, 12)).toLowerCase();
+      // M4A 品牌是纯音频容器
+      if (brand.startsWith('m4a') || brand.startsWith('mp4a')) return 'audio/mp4';
+      return 'video/mp4';
+    }
+
+    // RIFF 容器：AVI / WAVE
+    if (b.length >= 12 &&
+        b[0] == 0x52 &&
+        b[1] == 0x49 &&
+        b[2] == 0x46 &&
+        b[3] == 0x46) {
+      final fmt = String.fromCharCodes(b.sublist(8, 12)).toUpperCase();
+      if (fmt.startsWith('AVI')) return 'video/x-msvideo';
+      if (fmt.startsWith('WAVE')) return 'audio/wav';
+    }
+
+    // MP3：ID3 标签 或 帧同步
+    if (b[0] == 0x49 && b[1] == 0x44 && b[2] == 0x33) return 'audio/mpeg';
+    if (b[0] == 0xFF && (b[1] & 0xE0) == 0xE0) return 'audio/mpeg';
+
+    // FLAC
+    if (b[0] == 0x66 && b[1] == 0x4C && b[2] == 0x61 && b[3] == 0x43) {
+      return 'audio/flac';
+    }
+    // Ogg / Opus
+    if (b[0] == 0x4F && b[1] == 0x67 && b[2] == 0x67 && b[3] == 0x53) {
+      return 'audio/ogg';
+    }
+    // AAC（ADTS）
+    if (b[0] == 0xFF && (b[1] & 0xF6) == 0xF0) return 'audio/aac';
+
+    return null;
   }
 
   /// 获取加密文件的流式播放 URL

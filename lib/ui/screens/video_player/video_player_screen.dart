@@ -26,6 +26,9 @@ import 'vertical_slider_widget.dart';
 class VideoPlayerScreen extends StatefulWidget {
   final String videoPath;
   final List<dynamic>? playlist;
+  /// 播放列表对应的显示名（可选）。加密文件应传入解密后的真实文件名，
+  /// 否则列表会显示密文名或流式 URL（如 decrypt.mp4?path=...）。
+  final List<String>? playlistTitles;
   final List<AssetEntity>? assetPlaylist;
   final int? initialIndex;
   final bool isRemote;
@@ -34,6 +37,7 @@ class VideoPlayerScreen extends StatefulWidget {
     super.key,
     required this.videoPath,
     this.playlist,
+    this.playlistTitles,
     this.assetPlaylist,
     this.initialIndex,
     this.isRemote = false,
@@ -675,11 +679,18 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
               itemBuilder: (context, index) {
                 String itemTitle = '';
                 if (playlist != null) {
-                  final item = playlist[index];
-                  if (item is String) {
-                    itemTitle = item.split(RegExp(r'[/\\]')).last;
-                  } else if (item is FileSystemEntity) {
-                    itemTitle = item.path.split(RegExp(r'[/\\]')).last;
+                  // 优先用调用方传入的真实文件名（加密文件解密后的名字），
+                  // 避免显示密文名或流式 URL 的 basename（如 decrypt.mp4?path=...）。
+                  final titles = widget.playlistTitles;
+                  if (titles != null && index < titles.length && titles[index].isNotEmpty) {
+                    itemTitle = titles[index];
+                  } else {
+                    final item = playlist[index];
+                    if (item is String) {
+                      itemTitle = item.split(RegExp(r'[/\\]')).last;
+                    } else if (item is FileSystemEntity) {
+                      itemTitle = item.path.split(RegExp(r'[/\\]')).last;
+                    }
                   }
                 } else if (assetPlaylist != null) {
                   final item = assetPlaylist[index];
@@ -2234,6 +2245,13 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   }
 
   String get _fileName {
+    // 优先用调用方传入的真实文件名（加密文件解密后的名字），
+    // 否则会显示流式 URL（如 decrypt.mp4?path=...）或密文名。
+    final titles = widget.playlistTitles;
+    if (titles != null && _currentIndex < titles.length && titles[_currentIndex].isNotEmpty) {
+      final t = titles[_currentIndex];
+      return t.length > 40 ? '${t.substring(0, 37)}...' : t;
+    }
     String currentPath = widget.videoPath;
     if (_effectivePlaylist != null && _currentIndex < _effectivePlaylist!.length) {
       final item = _effectivePlaylist![_currentIndex];
